@@ -564,31 +564,23 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
     timedelta_hours = np.diff(poa_global.index).astype(float) / 1e9 / 60 / 60
     timedelta_hours = np.append([timedelta_hours[0]], timedelta_hours)
 
-    df = pd.DataFrame({
-        'tamb': temp_air + 273.15,
-        'sun': poa_global * absorp,
-        'wind_speed': wind_speed,
-        'dtime': timedelta_hours,
-    })
+    tamb_array = temp_air + 273.15
+    sun_array = poa_global * absorp
 
     # Two of the calculations are easily vectorized, so precalculate them:
     # sky temperature -- Equation 24
-    df['tsky'] = 0.68 * (0.0552 * df['tamb']**1.5) + 0.32 * df['tamb']
+    tsky_array = 0.68 * (0.0552 * tamb_array**1.5) + 0.32 * tamb_array
     # wind speed at module height -- Equation 22
     # not sure why the 1e-4 factor is included -- maybe the equations don't
     # behave well if wind == 0?
-    df['windmod'] = df['wind_speed'] * (module_height/wind_height)**0.2 + 1e-4
+    windmod_array = wind_speed * (module_height/wind_height)**0.2 + 1e-4
 
     tmod0 = 293.15
-
-    for idx, row in df.iterrows():
-
-        tamb = row['tamb']
-        sun = row['sun']
-        windmod = row['windmod']
-        tsky = row['tsky']
-        dtime = row['dtime']
-
+    tmod_array = np.zeros_like(poa_global)
+    
+    iterator = zip(tamb_array, sun_array, windmod_array, tsky_array,
+                   timedelta_hours)
+    for i, (tamb, sun, windmod, tsky, dtime) in enumerate(iterator):
         # solve the heat transfer equation, iterating because the heat loss
         # terms depend on tmod. NB Fuentes doesn't show that 10 iterations is
         # sufficient for convergence.
@@ -621,9 +613,8 @@ def fuentes(poa_global, temp_air, wind_speed, inoct, module_height=5,
                     + (sun - sun0) / eigen
                 ) + sun - sun0
             ) / (hconv + hsky + hground)
-
-        df.loc[idx, 'tmod'] = tmod
+        tmod_array[i] = tmod
         tmod0 = tmod
         sun0 = sun
 
-    return df['tmod'] - 273.15
+    return pd.Series(tmod_array - 273.15, index=poa_global.index, name='tmod')

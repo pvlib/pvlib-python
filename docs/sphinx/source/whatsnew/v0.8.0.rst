@@ -112,6 +112,9 @@ Testing
 * Add wrappers around the pandas assert_X_equal functions to accommodate the
   changed API and default precision thresholds in pandas 1.1.0
   (:issue:`1018`, :pull:`1021`)
+* Add github action for publishing all commits to
+  `test.pypi.org <https://test.pypi.org/project/pvlib/>`_ and tags to
+  `pypi.org <https://pypi.org/project/pvlib/>`_.
 
 Documentation
 ~~~~~~~~~~~~~

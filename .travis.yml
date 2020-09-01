@@ -19,7 +19,8 @@ matrix:
       env:
         - CONDA_ENV=py36
         - TASK="coverage"
-        - DEPLOY_ENV="true"
+        # not needed as of GH1038. deploy block cannot run without this.
+        # - DEPLOY_ENV="true"
     - python: 3.6
       env: CONDA_ENV=py37
 

@@ -1,10 +1,15 @@
-name: Publish distributions to PyPI (releases only) and TestPyPI (all commits)
+name: Publish distributions to PyPI
 
-on: push
+# if this workflow is modified to be a generic CI workflow then
+# add an if statement to the publish step so it only runs on tags.
+on:
+  push:
+    tags:
+      - "v*"
 
 jobs:
   build-n-publish:
-    name: Build and publish distributions to PyPI (releases only) and TestPyPI (all commits)
+    name: Build and publish distributions to PyPI
     if: github.repository == 'pvlib/pvlib-python'
     runs-on: ubuntu-latest
     steps:
@@ -26,15 +31,7 @@ jobs:
     - name: Build packages
       run: python setup.py sdist bdist_wheel
 
-    - name: Publish distribution to Test PyPI
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        user: __token__
-        password: ${{ secrets.test_pypi_password }}
-        repository_url: https://test.pypi.org/legacy/
-
     - name: Publish distribution to PyPI
-      if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@master
       with:
         user: __token__

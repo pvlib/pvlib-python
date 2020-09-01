@@ -309,7 +309,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         contains all of the tracker axes. EG north-south trackers on a
         3-degree eastern slope would have a 3-degree side slope, depending
         on the tracker axis azimuth. Use ``calc_system_tracker_side_slope``
-        for more complicated system planes.
+        for more complicated system planes. [degrees]
 
     Returns
     -------

@@ -43,7 +43,7 @@ def test_scalars():
     expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
               'surface_tilt': 0}
     for k, v in expect.items():
-        assert_allclose(tracker_data[k], v)
+        assert np.isclose(tracker_data[k], v)
 
 
 def test_arrays():
@@ -57,7 +57,7 @@ def test_arrays():
     expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
               'surface_tilt': 0}
     for k, v in expect.items():
-        assert_allclose(tracker_data[k], v)
+        assert_allclose(tracker_data[k], v, atol=1e-7)
 
 
 def test_nans():
@@ -73,7 +73,7 @@ def test_nans():
               'surface_azimuth': np.array([90, nan, nan]),
               'surface_tilt': np.array([0, nan, nan])}
     for k, v in expect.items():
-        assert_allclose(tracker_data[k], v)
+        assert_allclose(tracker_data[k], v, atol=1e-7)
 
     # repeat with Series because nans can differ
     apparent_zenith = pd.Series(apparent_zenith)
@@ -270,7 +270,7 @@ def test_horizon_tilted():
     out = tracking.singleaxis(solar_zenith, solar_azimuth, axis_tilt=90,
                               axis_azimuth=180, backtrack=False, max_angle=180)
     expected = pd.DataFrame(np.array(
-        [[ 180.,  45.,   0.,  90.],
+        [[-180.,  45.,   0.,  90.],
          [   0.,  45., 180.,  90.],
          [ 179.,  45., 359.,  90.]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
@@ -278,15 +278,15 @@ def test_horizon_tilted():
 
 
 def test_low_sun_angles():
-    # GH 656
+    # GH 656, 824
     result = tracking.singleaxis(
         apparent_zenith=80, apparent_azimuth=338, axis_tilt=30,
         axis_azimuth=180, max_angle=60, backtrack=True, gcr=0.35)
     expected = {
-        'tracker_theta': np.array([-50.31051385]),
-        'aoi': np.array([61.35300178]),
-        'surface_azimuth': np.array([112.53615425]),
-        'surface_tilt': np.array([56.42233095])}
+        'tracker_theta': np.array([60.0]),
+        'aoi': np.array([80.420987]),
+        'surface_azimuth': np.array([253.897886]),
+        'surface_tilt': np.array([64.341094])}
     for k, v in result.items():
         assert_allclose(expected[k], v)
 
@@ -519,13 +519,13 @@ def test_calc_axis_tilt():
     sat = tracking.singleaxis(
         solpos.apparent_zenith, solpos.azimuth, axis_tilt, axis_azimuth,
         max_angle, backtrack=True, gcr=gcr, side_slope=side_slope)
-    assert np.allclose(
-        sat['tracker_theta'], expected['tracker_theta'], equal_nan=True)
-    assert np.allclose(sat['aoi'], expected['aoi'], equal_nan=True)
-    assert np.allclose(
-        sat['surface_azimuth'], expected['surface_azimuth'], equal_nan=True)
-    assert np.allclose(
-        sat['surface_tilt'], expected['surface_tilt'], equal_nan=True)
+    np.testing.assert_allclose(
+        sat['tracker_theta'], expected['tracker_theta'], atol=1e-7)
+    np.testing.assert_allclose(sat['aoi'], expected['aoi'], atol=1e-7)
+    np.testing.assert_allclose(
+        sat['surface_azimuth'], expected['surface_azimuth'], atol=1e-7)
+    np.testing.assert_allclose(
+        sat['surface_tilt'], expected['surface_tilt'], atol=1e-7)
 
 
 def test_slope_aware_backtracking():

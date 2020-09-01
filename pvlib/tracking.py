@@ -316,14 +316,14 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     dict or DataFrame with the following columns:
         * `tracker_theta`: The rotation angle of the tracker.
           tracker_theta = 0 is horizontal, and positive rotation angles are
-          clockwise.
+          clockwise. [degrees]
         * `aoi`: The angle-of-incidence of direct irradiance onto the
-          rotated panel surface.
+          rotated panel surface. [degrees]
         * `surface_tilt`: The angle between the panel surface and the earth
-          surface, accounting for panel rotation.
+          surface, accounting for panel rotation. [degrees]
         * `surface_azimuth`: The azimuth of the rotated panel, determined by
           projecting the vector normal to the panel's surface to the earth's
-          surface.
+          surface. [degrees]
 
     References
     ----------
@@ -362,19 +362,25 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # Here, the input solar azimuth is degrees East of North,
     # i.e., relative to a reference vector pointed
     # north with clockwise positive.
-    # Rotate sun azimuth to coordinate system as in [1]
+
+    # NOTE: Equations in [2] agree with the reference frame used here, so
+    # adjustments are not required
+
+    # Rotate sun azimuth to coordinate system as in [1, 2]
     # to calculate sun position.
 
-    az = apparent_azimuth - 180
-    apparent_elevation = 90 - apparent_zenith
-    x = cosd(apparent_elevation) * sind(az)
-    y = cosd(apparent_elevation) * cosd(az)
-    z = sind(apparent_elevation)
+    # NOTE: sin(90-x) = cos(x) & cos(90-x) = sin(x)
+    sin_zenith = sind(apparent_zenith)
+    x = sin_zenith * sind(apparent_azimuth)
+    y = sin_zenith * cosd(apparent_azimuth)
+    z = cosd(apparent_zenith)
 
     # translate array azimuth from compass bearing to [1] coord system
     # wholmgren: strange to see axis_azimuth calculated differently from az,
     # (not that it matters, or at least it shouldn't...).
-    axis_azimuth_south = axis_azimuth - 180
+
+    # NOTE: Coordinate system in [2] agrees with refernece frame used here, so
+    # adjustments are not required
 
     # translate input array tilt angle axis_tilt to [1] coordinate system.
 
@@ -396,13 +402,17 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # note that equation for yp (y' in Eq. 11 of Lorenzo et al 2011) is
     # corrected, after conversation with paper's authors.
 
-    xp = x*cosd(axis_azimuth_south) - y*sind(axis_azimuth_south)
-    yp = (x*cosd(axis_tilt)*sind(axis_azimuth_south) +
-          y*cosd(axis_tilt)*cosd(axis_azimuth_south) -
-          z*sind(axis_tilt))
-    zp = (x*sind(axis_tilt)*sind(axis_azimuth_south) +
-          y*sind(axis_tilt)*cosd(axis_azimuth_south) +
-          z*cosd(axis_tilt))
+    cos_axis_azimuth = cosd(axis_azimuth)
+    sin_axis_azimuth = sind(axis_azimuth)
+    cos_axis_tilt = cosd(axis_tilt)
+    sin_axis_tilt = sind(axis_tilt)
+    xp = x*cos_axis_azimuth - y*sin_axis_azimuth
+    yp = (x*cos_axis_tilt*sin_axis_azimuth
+          + y*cos_axis_tilt*cos_axis_azimuth
+          - z*sin_axis_tilt)
+    zp = (x*sin_axis_tilt*sin_axis_azimuth
+          + y*sin_axis_tilt*cos_axis_azimuth
+          + z*cos_axis_tilt)
 
     # The ideal tracking angle wid is the rotation to place the sun position
     # vector (xp, yp, zp) in the (y, z) plane; i.e., normal to the panel and
@@ -413,24 +423,26 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # a rotation toward the east is negative, and a rotation to the west is
     # positive.
 
-    # Use arctan2 and avoid the tmp corrections.
-
     # angle from x-y plane to projection of sun vector onto x-z plane
-#     tmp = np.degrees(np.arctan(zp/xp))
+    #     tmp = np.degrees(np.arctan(zp/xp))
 
     # Obtain wid by translating tmp to convention for rotation angles.
     # Have to account for which quadrant of the x-z plane in which the sun
     # vector lies.  Complete solution here but probably not necessary to
     # consider QIII and QIV.
-#     wid = pd.Series(index=times)
-#     wid[(xp>=0) & (zp>=0)] =  90 - tmp[(xp>=0) & (zp>=0)]  # QI
-#     wid[(xp<0)  & (zp>=0)] = -90 - tmp[(xp<0)  & (zp>=0)]  # QII
-#     wid[(xp<0)  & (zp<0)]  = -90 - tmp[(xp<0)  & (zp<0)]   # QIII
-#     wid[(xp>=0) & (zp<0)]  =  90 - tmp[(xp>=0) & (zp<0)]   # QIV
+    #     wid = pd.Series(index=times)
+    #     wid[(xp>=0) & (zp>=0)] =  90 - tmp[(xp>=0) & (zp>=0)]  # QI
+    #     wid[(xp<0)  & (zp>=0)] = -90 - tmp[(xp<0)  & (zp>=0)]  # QII
+    #     wid[(xp<0)  & (zp<0)]  = -90 - tmp[(xp<0)  & (zp<0)]   # QIII
+    #     wid[(xp>=0) & (zp<0)]  =  90 - tmp[(xp>=0) & (zp<0)]   # QIV
+
+    # NOTE: Use arctan2 and avoid the tmp corrections.
 
     # Calculate angle from x-y plane to projection of sun vector onto x-z plane
     # and then obtain wid by translating tmp to convention for rotation angles.
-    wid = 90 - np.degrees(np.arctan2(zp, xp))
+
+    # NOTE: if zp/xp = tan(90 - wid) = cot(wid) then tan(wid) = xp/zp
+    wid = np.degrees(np.arctan2(xp, zp))
 
     # filter for sun above panel horizon
     zen_gt_90 = apparent_zenith > 90
@@ -442,25 +454,33 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         # distance between rows in terms of rack lengths relative to side slope
         axes_distance = 1/gcr/cosd(side_slope)
         # clip needed for low angles. GH 656
-        temp = np.clip(axes_distance*cosd(wid - side_slope), -1, 1)
+        # temp = np.clip(axes_distance*cosd(wid - side_slope), -1, 1)
+
+        # NOTE: account for rare angles below array, see GH 824
+        with np.errstate(invalid='ignore'):
+            temp = np.abs(axes_distance * cosd(wid - side_slope))
 
         # backtrack angle
         # (always positive b/c acosd returns values between 0 and 180)
-        wc = np.degrees(np.arccos(temp))
+        # wc = np.degrees(np.arccos(temp))
+        # equation 14, ref [2]
+        wc = np.degrees(-np.sign(wid)*np.arccos(temp))
 
         # Eq 4 applied when wid in QIV (wid < 0 evalulates True), QI
-        with np.errstate(invalid='ignore'):
-            # errstate for GH 622
-            tracker_theta = np.where(wid < 0, wid + wc, wid - wc)
+        # with np.errstate(invalid='ignore'):
+        #     errstate for GH 622
+        #     tracker_theta = np.where(wid < 0, wid + wc, wid - wc)
+
+        # NOTE: in the middle of the day, arccos(temp) is out of range because
+        # there's no row-to-row shade to avoid, & backtracking is unnecessary
+        # Equations 15-16, ref [2]
+        tracker_theta = wid + np.where(temp < 1, wc, 0)
     else:
         tracker_theta = wid
 
-    # TODO: use np.clip
-    # "Equivalent to but faster than np.maximum(a_min, np.minimum(a, a_max))"
     # NOTE: max_angle defined relative to zero-point rotation, not the
     # system-plane normal
-    tracker_theta = np.minimum(tracker_theta, max_angle)
-    tracker_theta = np.maximum(tracker_theta, -max_angle)
+    tracker_theta = np.clip(tracker_theta, -max_angle, max_angle)
 
     # calculate panel normal vector in panel-oriented x, y, z coordinates.
     # y-axis is axis of tracker rotation.  tracker_theta is a compass angle
@@ -515,21 +535,21 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # calculation of surface_azimuth
     # 1. Find the angle.
-#     surface_azimuth = pd.Series(
-#         np.degrees(np.arctan(projected_normal[:,1]/projected_normal[:,0])),
-#                                 index=times)
+    #     surface_azimuth = pd.Series(
+    #         np.degrees(np.arctan(projected_normal[:,1]/projected_normal[:,0])),
+    #         index=times)
     surface_azimuth = \
         np.degrees(np.arctan2(projected_normal[:, 1], projected_normal[:, 0]))
 
     # 2. Clean up atan when x-coord or y-coord is zero
-#     surface_azimuth[(projected_normal[:,0]==0) & (projected_normal[:,1]>0)] =  90
-#     surface_azimuth[(projected_normal[:,0]==0) & (projected_normal[:,1]<0)] =  -90
-#     surface_azimuth[(projected_normal[:,1]==0) & (projected_normal[:,0]>0)] =  0
-#     surface_azimuth[(projected_normal[:,1]==0) & (projected_normal[:,0]<0)] = 180
+    #     surface_azimuth[(projected_normal[:,0]==0) & (projected_normal[:,1]>0)] =  90
+    #     surface_azimuth[(projected_normal[:,0]==0) & (projected_normal[:,1]<0)] =  -90
+    #     surface_azimuth[(projected_normal[:,1]==0) & (projected_normal[:,0]>0)] =  0
+    #     surface_azimuth[(projected_normal[:,1]==0) & (projected_normal[:,0]<0)] = 180
 
     # 3. Correct atan for QII and QIII
-#     surface_azimuth[(projected_normal[:,0]<0) & (projected_normal[:,1]>0)] += 180 # QII
-#     surface_azimuth[(projected_normal[:,0]<0) & (projected_normal[:,1]<0)] += 180 # QIII
+    #     surface_azimuth[(projected_normal[:,0]<0) & (projected_normal[:,1]>0)] += 180 # QII
+    #     surface_azimuth[(projected_normal[:,0]<0) & (projected_normal[:,1]<0)] += 180 # QIII
 
     # 4. Skip to below
 
@@ -540,18 +560,18 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # the positive y-axis.
     # Adjust to compass angles
     # (clockwise rotation from 0 along the positive y-axis)
-#    surface_azimuth[surface_azimuth<=90] = 90 - surface_azimuth[surface_azimuth<=90]
-#    surface_azimuth[surface_azimuth>90] = 450 - surface_azimuth[surface_azimuth>90]
+    #    surface_azimuth[surface_azimuth<=90] = 90 - surface_azimuth[surface_azimuth<=90]
+    #    surface_azimuth[surface_azimuth>90] = 450 - surface_azimuth[surface_azimuth>90]
 
     # finally rotate to align y-axis with true north
     # PVLIB_MATLAB has this latitude correction,
     # but I don't think it's latitude dependent if you always
     # specify axis_azimuth with respect to North.
-#     if latitude > 0 or True:
-#         surface_azimuth = surface_azimuth - axis_azimuth
-#     else:
-#         surface_azimuth = surface_azimuth - axis_azimuth - 180
-#     surface_azimuth[surface_azimuth<0] = 360 + surface_azimuth[surface_azimuth<0]
+    #     if latitude > 0 or True:
+    #         surface_azimuth = surface_azimuth - axis_azimuth
+    #     else:
+    #         surface_azimuth = surface_azimuth - axis_azimuth - 180
+    #     surface_azimuth[surface_azimuth<0] = 360 + surface_azimuth[surface_azimuth<0]
 
     # the commented code above is mostly part of PVLIB_MATLAB.
     # My (wholmgren) take is that it can be done more simply.
@@ -618,7 +638,7 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
        https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
     delta_gamma = axis_azimuth - system_azimuth
-    # equation 18-19
+    # equations 18-19
     tan_axis_tilt = cosd(delta_gamma) * tand(system_zenith)
     return np.degrees(np.arctan(tan_axis_tilt))
 

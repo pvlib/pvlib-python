@@ -712,8 +712,14 @@ def calc_system_tracker_side_slope(
     Calculate the component of the slope perpendicular to the tracker axes
     relative to the horizontal plane.
 
-    Use the side-slope to avoid row-to-row shade when backtracking on a system
-    plane (containing all tracker axes) with a non-parallel, cross-axis slope.
+    Use the side slope to avoid row-to-row shade when backtracking on a system
+    plane with a non-parallel, cross-axis slope. The "system plane" is defined
+    as the plane containing all of the tracker axes. EG: north-south trackers
+    on a 3-degree eastern slope would have a 3-degree side slope, depending on
+    the tracker axis azimuth. Side slope follows the same right-handed
+    convention as tracker rotation. For example a tracker with axis azimuth
+    facing south will have a negative side slope to the east and positive if
+    sloped westward.
 
     Parameters
     ----------

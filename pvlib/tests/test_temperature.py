@@ -166,7 +166,7 @@ def test_fuentes(filename, inoct):
         'poa_global': data['Plane of Array Irradiance (W/m^2)'],
         'temp_air': data['Ambient Temperature (C)'],
         'wind_speed': data['Wind Speed (m/s)'],
-        'inoct': inoct,
+        'noct_installed': inoct,
     }
     expected_tcell = data['Cell Temperature (C)']
     expected_tcell.name = 'tmod'

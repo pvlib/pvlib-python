@@ -526,7 +526,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     absorp = absorption
     xlen = hydraulic_diameter
     cap0 = 11000
-    tinoct = inoct + 273.15
+    tinoct = noct_installed + 273.15
 
     # convective coefficient of top surface of module at NOCT
     windmod = 1.0

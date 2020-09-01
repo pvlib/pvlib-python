@@ -115,6 +115,7 @@ Testing
 * Add github action for publishing all commits to
   `test.pypi.org <https://test.pypi.org/project/pvlib/>`_ and tags to
   `pypi.org <https://pypi.org/project/pvlib/>`_.
+* Remove Travis CI configuration.
 
 Documentation
 ~~~~~~~~~~~~~

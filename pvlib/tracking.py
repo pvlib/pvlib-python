@@ -709,11 +709,11 @@ def _calc_beta_c(v, dg, ba):
 def calc_system_tracker_side_slope(
         axis_azimuth, axis_tilt, system_azimuth, system_zenith):
     """
-    Calculate the component of the slope perpendicular to the tracker axis
-    relative to the horizontal plane as well as the rotation of the tracker
-    axes relative to the "system" plane containing all of the tracker axes.
-    Note in order for the backtracking algorithm to work correctly on a sloped
-    system plane, the side slope must be applied to the tracker rotation.
+    Calculate the component of the slope perpendicular to the tracker axes
+    relative to the horizontal plane.
+
+    Use the side-slope to avoid row-to-row shade when backtracking on a system
+    plane (containing all tracker axes) with a non-parallel, cross-axis slope.
 
     Parameters
     ----------

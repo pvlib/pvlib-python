@@ -265,6 +265,15 @@ Low-level functions for solving the single diode equation.
    singlediode.bishop88_v_from_i
    singlediode.bishop88_mpp
 
+Functions for fitting diode models
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.fit_sde_sandia
+    ivtools.fit_sdm_cec_sam
+    ivtools.fit_sdm_desoto
+
 Inverter models (DC to AC conversion)
 -------------------------------------
 
@@ -274,6 +283,14 @@ Inverter models (DC to AC conversion)
    inverter.sandia
    inverter.adr
    inverter.pvwatts
+
+Functions for fitting inverter models
+
+.. autosummary::
+   :toctree: generated/
+
+   inverter.fit_sandia
+
 
 PV System Models
 ----------------
@@ -297,6 +314,7 @@ Pvsyst model
 .. autosummary::
    :toctree: generated/
 
+   pvsystem.calcparams_pvsyst
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode
@@ -311,15 +329,32 @@ PVWatts model
    inverter.pvwatts
    pvsystem.pvwatts_losses
 
-Functions for fitting diode models
-----------------------------------
+Estimating PV model parameters
+------------------------------
+
+Functions for fitting single diode models
 
 .. autosummary::
    :toctree: generated/
 
-    ivtools.fit_sde_sandia
-    ivtools.fit_sdm_cec_sam
-    ivtools.fit_sdm_desoto
+    ivtools.sdm.fit_cec_sam
+    ivtools.sdm.fit_desoto
+    ivtools.sdm.fit_pvsyst_sandia
+    ivtools.sdm.fit_desoto_sandia
+
+Functions for fitting the single diode equation
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.sde.fit_sandia_simple
+
+Utilities for working with IV curve data
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.utility.rectify_iv_curve
 
 Other
 -----
@@ -347,6 +382,12 @@ Effects on PV System Output
    soiling.hsu
    soiling.kimber
 
+.. autosummary::
+   :toctree: generated/
+
+   shading.masking_angle
+   shading.masking_angle_passias
+   shading.sky_diffuse_passias
 
 
 Tracking
@@ -482,6 +523,8 @@ Creating a ModelChain object.
    :toctree: generated/
 
    modelchain.ModelChain
+   modelchain.ModelChain.with_pvwatts
+   modelchain.ModelChain.with_sapm
 
 Running
 -------

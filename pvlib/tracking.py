@@ -640,6 +640,8 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
     axis_tilt : float
         tilt of tracker [degrees]
 
+    Notes
+    -----
     Solving for the tracker tilt on a slope is derived in the following steps:
 
     1. the trackers axes are in the system plane, so the ``z-coord = 0``
@@ -665,20 +667,20 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
 
     3. solve for ``x_tr_sys`` ::
 
-          x_tr_sys*cos(sys_az-tr_az)+y_tr_sys*sin(sys_az-tr_az)*cos(sys_ze) = 0
-          x_tr_sys = -y_tr_sys*tan(sys_az-tr_az)*cos(sys_ze)
+        x_tr_sys*cos(sys_az-tr_az)+y_tr_sys*sin(sys_az-tr_az)*cos(sys_ze) = 0
+        x_tr_sys = -y_tr_sys*tan(sys_az-tr_az)*cos(sys_ze)
 
     4. so tracker axis tilt, ``tr_ze = arctan2(tr_rot_glo_z, tr_rot_glo_y)`` ::
 
-          tr_rot_glo_y = y_tr_sys*cos(sys_ze)*(
-            tan(sys_az-tr_az)*sin(sys_az-tr_az) + cos(sys_az-tr_az))
+        tr_rot_glo_y = y_tr_sys*cos(sys_ze)*(
+          tan(sys_az-tr_az)*sin(sys_az-tr_az) + cos(sys_az-tr_az))
 
-          tan(tr_ze) = -y_tr_sys*sin(sys_ze) / tr_rot_glo_y
+        tan(tr_ze) = -y_tr_sys*sin(sys_ze) / tr_rot_glo_y
 
     The trick is multiply top and bottom by cos(sys_az-tr_az) and remember that
     ``sin^2 + cos^2 = 1`` (or just use sympy.simplify) ::
 
-          tan(tr_ze) = -tan(sys_ze)*cos(sys_az-tr_az)
+        tan(tr_ze) = -tan(sys_ze)*cos(sys_az-tr_az)
     """
     system_azimuth_rad = np.radians(system_azimuth)
     axis_azimuth_rad = np.radians(axis_azimuth)
@@ -710,7 +712,11 @@ def calc_system_tracker_side_slope(
 
     Returns
     -------
-    tracker side slope and rotation relative to system plane [degrees]
+    side_slope : float
+        cross-axis slope angle from horizontal & perpendicular to tracker axes
+        in the cross-axis direction [degrees]
+    rotation : float
+        rotation relative to system plane [degrees]
     """
     # convert to radians
     system_azimuth_rad = np.radians(system_azimuth)

@@ -1013,8 +1013,7 @@ class ModelChain(object):
 
         return self
 
-
-    def _prep_inputs_solar_pos(self, **kwargs):
+    def _prep_inputs_solar_pos(self, kwargs):
         """
         Assign solar position
         """
@@ -1087,7 +1086,6 @@ class ModelChain(object):
         key_list = [k for k in POA_DATA_KEYS if k in data]
         self.total_irrad = data[key_list].copy()
         return self
-
 
     def prepare_inputs(self, weather):
         """
@@ -1254,7 +1252,7 @@ class ModelChain(object):
                     "Incomplete irradiance data for cell temperature model."
                     " Provide total_irrad['poa_global'] (preferred) or"
                     " attribute effective_irradiance.")
-        self.cell_temperature = self.temperature_model()
+        self.temperature_model()
         return self
 
     def run_model(self, weather):

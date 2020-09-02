@@ -1217,22 +1217,20 @@ class ModelChain(object):
         Assigns attribute ``cell_temperature``.
 
         """
-        try:
+        if 'cell_temperature' in data:
             self.cell_temperature = data['cell_temperature']
             if self.temperature_model is not None:
                 warnings.warn('using ''cell_temperature'' provided in input',
                               ' rather than specified temperature model: {0}'
                               .format(self.temperature_model.__name__))
             return self
-        except:
-            pass
 
         # cell_temperature is not in input. Calculate cell_temperature using
         # a temperature_model.
         # If module_temperature is in input data we can use the SAPM cell
         # temperature model.
-        if ('module_temperature' in data) and \
-            (self.temperature_model.__name__ == 'sapm'):
+        if (('module_temperature' in data) and
+            (self.temperature_model.__name__ == 'sapm')):
             # use SAPM cell temperature model only
             self.cell_temperature = pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],
@@ -1345,7 +1343,8 @@ class ModelChain(object):
         Effective irradiance is irradiance in the plane-of-array after any
         adjustments for soiling, reflections and spectrum.
 
-        Attribute `ModelChain.effective_irradiance` is required.
+        Expects attributes `ModelChain.effective_irradiance` and
+        `ModelChain.weather` to be assigned.
 
         This method calculates:
             * cell temperature
@@ -1355,16 +1354,17 @@ class ModelChain(object):
         Parameters
         ----------
         data : DataFrame, default None
-            May contain columns ``'cell_temperature'`` or
-            ``'module_temperaure'``.
+            If optional column ``'cell_temperature'`` is provided, these values
+            are used instead of `temperature_model`. If optional column
+            `module_temperature` is provided, `temperature_model` must be
+            ``'sapm'``.
 
         Returns
         -------
         self
 
-        Assigns attributes: ``effective_irradiance``, ``cell_temperature``,
-        ``dc``, ``ac``, ``losses``, ``diode_params`` (if dc_model is a single
-        diode model).
+        Assigns attributes: ``cell_temperature``, ``dc``, ``ac``, ``losses``,
+        ``diode_params`` (if dc_model is a single diode model).
         """
 
         self.prepare_temperature(data)

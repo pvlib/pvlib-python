@@ -178,6 +178,13 @@ def weather():
     return weather
 
 
+@pytest.fixture
+def total_irrad(weather):
+    return pd.DataFrame({'poa_global': [800., 500.],
+                         'poa_diffuse': [300., 200.],
+                         'poa_direct': [500., 300.]}, index=weather.index)
+
+
 def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
     ModelChain(sapm_dc_snl_ac_system, location)
 
@@ -325,6 +332,53 @@ def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
                                     'surface_tilt']).all()
     assert mc.ac[0] > 0
     assert np.isnan(mc.ac[1])
+
+
+def test__assign_total_irrad(sapm_dc_snl_ac_system, location, weather,
+                             total_irrad):
+    weather[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc._assign_total_irrad(weather)
+    for k in modelchain.POA_DATA_KEYS:
+        assert_series_equal(mc.total_irrad[k], total_irrad[k])
+
+
+def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
+                                 total_irrad):
+    data= weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.prepare_inputs_from_poa(data)
+    # weather attribute
+    for k in weather:
+        assert_series_equal(mc.weather[k], weather[k])
+    # total_irrad attribute
+    for k in total_irrad:
+        assert_series_equal(mc.total_irrad[k], total_irrad[k])
+
+
+def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_poa(total_irrad).ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=total_irrad.index)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
+                                             total_irrad):
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    # run_model_from_effective_irradiance requires mc.weather and
+    # mc.effective_irradiance to be assigned
+    mc.weather = pd.DataFrame({'temp_air': 20, 'wind_speed': 0},
+                              index=total_irrad.index)
+    mc.effective_irradiance = total_irrad['poa_global']
+    ac = mc.run_model_effective_irradiance(total_irrad).ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=total_irrad.index)
+    assert_series_equal(ac, expected)
 
 
 def poadc(mc):

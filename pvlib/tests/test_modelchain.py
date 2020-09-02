@@ -344,7 +344,7 @@ def test__assign_total_irrad(sapm_dc_snl_ac_system, location, weather,
 
 
 def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
-                                 total_irrad):
+                                 weather, total_irrad):
     data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     mc = ModelChain(sapm_dc_snl_ac_system, location)

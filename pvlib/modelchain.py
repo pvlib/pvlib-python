@@ -1022,7 +1022,7 @@ class ModelChain(object):
 
         return self
 
-    def _prep_inputs_solar_pos(self, kwargs):
+    def _prep_inputs_solar_pos(self, kwargs={}):
         """
         Assign solar position
         """

@@ -369,6 +369,13 @@ Other
 Effects on PV System Output
 ===========================
 
+Loss models
+^^^^^^^^^^^
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.combine_loss_factors
+
 .. autosummary::
    :toctree: generated/
 

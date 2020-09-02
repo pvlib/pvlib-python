@@ -5,7 +5,7 @@ PV modules and cells.
 
 import numpy as np
 import pandas as pd
-
+from pvlib.tools import sind
 
 TEMPERATURE_MODEL_PARAMETERS = {
     'sapm': {
@@ -426,7 +426,8 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     return temp_air + temp_difference
 
 
-def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, check_reynold):
+def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
+                   check_reynold):
     # Calculate the convective coefficient as in Fuentes 1987 -- a mixture of
     # free, laminar, and turbulent convection.
     densair = 0.003484 * 101325.0 / tave  # density
@@ -442,8 +443,8 @@ def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, check_reynold):
         # laminar convection
         hforce = 0.8600 / reynold**0.5 * densair * windmod * 1007 / 0.71**0.67
     # free convection via Grashof number
-    # NB: the 0.5 factor is from assuming tilt=30; should tilt be a parameter?
-    grashof = 9.8 / tave * temp_delta * xlen**3 / visair**2 * 0.5
+    # NB: Fuentes hardwires sind(tilt) as 0.5 for tilt=30
+    grashof = 9.8 / tave * temp_delta * xlen**3 / visair**2 * sind(tilt)
     # product of Nusselt number and (k/l)
     hfree = 0.21 * (grashof * 0.71)**0.32 * condair / xlen
     # combine free and forced components
@@ -451,9 +452,14 @@ def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, check_reynold):
     return hconv
 
 
+def _hydraulic_diameter(width, height):
+    # calculate the hydraulic diameter of a rectangle
+    return 2 * (width * height) / (width + height)
+
+
 def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
             wind_height=9.144, emissivity=0.84, absorption=0.83,
-            hydraulic_diameter=0.5):
+            surface_tilt=30, module_width=0.31579, module_length=1.2):
     """
     Calculate cell or module temperature using the Fuentes model.
 
@@ -492,9 +498,19 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         The fraction of incident irradiance that is converted to thermal
         energy in the module. [unitless]
 
-    hydraulic_diameter : float, default 0.5
-        The hydraulic diameter of the module. The default value of 0.5 is
-        provided in [1]_ for a module with dimensions 0.3m x 1.2m.  [m]
+    surface_tilt : float, default 30
+        Module tilt from horizontal. If not provided, the default value
+        of 30 degrees from [1]_ and [2]_ is used. [degrees]
+
+    module_width : float, default 0.31579
+        Module width. The default value of 0.31579 meters in combination with
+        the default `module_length` gives a hydraulic diameter of 0.5 as
+        assumed in [1]_ and [2]_. [m]
+
+    module_length : float, default 1.2
+        Module length. The default value of 1.2 meters in combination with
+        the default `module_width` gives a hydraulic diameter of 0.5 as
+        assumed in [1]_ and [2]_. [m]
 
     Returns
     -------
@@ -524,14 +540,15 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     boltz = 5.669e-8
     emiss = emissivity
     absorp = absorption
-    xlen = hydraulic_diameter
+    xlen = _hydraulic_diameter(module_width, module_length)
     cap0 = 11000
     tinoct = noct_installed + 273.15
 
     # convective coefficient of top surface of module at NOCT
     windmod = 1.0
     tave = (tinoct + 293.15) / 2
-    hconv = _fuentes_hconv(tave, windmod, tinoct, tinoct - 293.15, xlen, False)
+    hconv = _fuentes_hconv(tave, windmod, tinoct, tinoct - 293.15, xlen,
+                           surface_tilt, False)
 
     # determine the ground temperature ratio and the ratio of the total
     # convection to the top side convection
@@ -591,7 +608,8 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
             # overall convective coefficient
             tave = (tmod + tamb) / 2
             hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
-                                             abs(tmod-tamb), xlen, True)
+                                             abs(tmod-tamb), xlen,
+                                             surface_tilt, True)
             # sky radiation coefficient (Equation 3)
             hsky = emiss * boltz * (tmod**2 + tsky**2) * (tmod + tsky)
             # ground radiation coeffieicient (Equation 4)

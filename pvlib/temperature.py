@@ -484,7 +484,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         module.  [C]
 
     module_height : float, default 5.0
-        The height above ground of the module above the ground. The PVWatts
+        The height above ground of the center of the module. The PVWatts
         default is 5.0 [m]
 
     wind_height : float, default 9.144
@@ -541,7 +541,9 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     emiss = emissivity
     absorp = absorption
     xlen = _hydraulic_diameter(module_width, module_length)
-    cap0 = 11000  # units of [J / (m^2 K)], equal to mass per unit area times specific heat of the module.
+    # cap0 has units of [J / (m^2 K)], equal to mass per unit area times
+    # specific heat of the module.
+    cap0 = 11000
     tinoct = noct_installed + 273.15
 
     # convective coefficient of top surface of module at NOCT

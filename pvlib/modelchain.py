@@ -18,11 +18,20 @@ from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
 
+# keys that are used to detect input data and assign data to appropriate
+# ModelChain attribute
+# for ModelChain.weather
 WEATHER_KEYS = set(['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
                     'precipitable_water'])
 
+# for ModelChain.total_irrad
 POA_DATA_KEYS = set(['poa_global', 'poa_direct', 'poa_diffuse'])
 
+# Optional keys to communicate temperature data. If provided,
+# 'cell_temperature' overrides ModelChain.temperature_model and sets
+# ModelChain.cell_temperature to the data. If 'module_temperature' is provdied,
+# overrides ModelChain.temperature_model with
+# pvlib.temperature.sapm_celL_from_module
 TEMPERATURE_KEYS = set(['module_temperature', 'cell_temperature'])
 
 DATA_KEYS = WEATHER_KEYS | POA_DATA_KEYS | TEMPERATURE_KEYS
@@ -1054,23 +1063,23 @@ class ModelChain(object):
                                        self.solar_position['azimuth'])
         return self
 
-    def _verify_df(self, data, req):
-        """ Checks data for column names in req
+    def _verify_df(self, data, required):
+        """ Checks data for column names in required
 
         Parameters
         ----------
         data : Dataframe
-        req : List of str
+        required : List of str
 
         Raises
         ------
         ValueError if any of req are not in data.columns.
         """
-        if not set(req) <= set(data.columns):
+        if not set(required) <= set(data.columns):
             raise ValueError(
-                "Incomplete input data.\n"
-                "Data needs to contain {0}.\n"
-                "Detected data contains: {1}".format(req, list(data.columns)))
+                "Incomplete input data. Data needs to contain {0}. "
+                "Detected data contains: {1}".format(required,
+                                                     list(data.columns)))
         return
 
     def _assign_weather(self, data):
@@ -1155,7 +1164,7 @@ class ModelChain(object):
 
     def prepare_inputs_from_poa(self, data):
         """
-        Prepare the solar position, irradiance, and irradiance inputs to
+        Prepare the solar position, irradiance and weather inputs to
         the model, starting with plane-of-array irradiance.
 
         Parameters
@@ -1171,7 +1180,7 @@ class ModelChain(object):
         Notes
         -----
         Assigns attributes: ``weather``, ``total_irrad``, ``solar_position``,
-        ``airmass``, ``aoi``, ``temperature``.
+        ``airmass``, ``aoi``.
 
         See also
         --------
@@ -1219,10 +1228,6 @@ class ModelChain(object):
         """
         if 'cell_temperature' in data:
             self.cell_temperature = data['cell_temperature']
-            if self.temperature_model is not None:
-                warnings.warn('using ''cell_temperature'' provided in input',
-                              ' rather than specified temperature model: {0}'
-                              .format(self.temperature_model.__name__))
             return self
 
         # cell_temperature is not in input. Calculate cell_temperature using
@@ -1285,7 +1290,7 @@ class ModelChain(object):
         self.spectral_model()
         self.effective_irradiance_model()
 
-        self.run_model_from_effective_irradiance(weather)
+        self._run_from_effective_irrad(weather)
 
         return self
 
@@ -1332,24 +1337,13 @@ class ModelChain(object):
         self.spectral_model()
         self.effective_irradiance_model()
 
-        self.run_model_from_effective_irradiance(data)
+        self._run_from_effective_irrad(data)
 
         return self
 
-    def run_model_from_effective_irradiance(self, data=None):
+    def _run_from_effective_irrad(self, data=None):
         """
-        Run the model starting with effective irradiance in the plane of array.
-
-        Effective irradiance is irradiance in the plane-of-array after any
-        adjustments for soiling, reflections and spectrum.
-
-        Expects attributes `ModelChain.effective_irradiance` and
-        `ModelChain.weather` to be assigned.
-
-        This method calculates:
-            * cell temperature
-            * DC output
-            * AC output
+        Executes the temperature, DC, losses and AC models.
 
         Parameters
         ----------
@@ -1363,13 +1357,50 @@ class ModelChain(object):
         -------
         self
 
-        Assigns attributes: ``cell_temperature``, ``dc``, ``ac``, ``losses``,
+        Assigns ``cell_temperature``, ``dc``, ``ac``, ``losses``,
         ``diode_params`` (if dc_model is a single diode model).
         """
-
         self.prepare_temperature(data)
         self.dc_model()
         self.losses_model()
         self.ac_model()
 
         return self
+
+    def run_model_from_effective_irradiance(self, data=None):
+        """
+        Run the model starting with effective irradiance in the plane of array.
+
+        Effective irradiance is irradiance in the plane-of-array after any
+        adjustments for soiling, reflections and spectrum.
+
+        This method calculates:
+            * cell temperature
+            * DC output
+            * AC output
+
+        Parameters
+        ----------
+        data : DataFrame, default None
+            Required column is ``'effective_irradiance'``.
+            If optional column ``'cell_temperature'`` is provided, these values
+            are used instead of `temperature_model`. If optional column
+            `module_temperature` is provided, `temperature_model` must be
+            ``'sapm'``.
+
+        Returns
+        -------
+        self
+
+        Assigns attributes: ``weather``, ``total_irrad``,
+        ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode model).
+        """
+
+        self._assign_weather(data)
+        self._assign_total_irrad(data)
+        self.effective_irradiance = data['effective_irradiance']
+        self._run_from_effective_irrad(data)
+
+        return self
+

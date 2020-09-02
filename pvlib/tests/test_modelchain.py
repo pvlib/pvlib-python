@@ -367,15 +367,13 @@ def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
 
 
 def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
-                                             total_irrad):
+                                             weather, total_irrad):
+    data= weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    # run_model_from_effective_irradiance requires mc.weather and
-    # mc.effective_irradiance to be assigned
-    mc.weather = pd.DataFrame({'temp_air': 20, 'wind_speed': 0},
-                              index=total_irrad.index)
-    mc.effective_irradiance = total_irrad['poa_global']
-    ac = mc.run_model_effective_irradiance(total_irrad).ac
+    ac = mc.run_model_from_effective_irradiance(total_irrad).ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=total_irrad.index)
     assert_series_equal(ac, expected)

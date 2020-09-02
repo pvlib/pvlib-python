@@ -541,7 +541,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     emiss = emissivity
     absorp = absorption
     xlen = _hydraulic_diameter(module_width, module_length)
-    cap0 = 11000
+    cap0 = 11000  # units of [J / (m^2 K)], equal to mass per unit area times specific heat of the module.
     tinoct = noct_installed + 273.15
 
     # convective coefficient of top surface of module at NOCT

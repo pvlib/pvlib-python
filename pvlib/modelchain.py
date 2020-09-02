@@ -1073,7 +1073,7 @@ class ModelChain(object):
 
         Raises
         ------
-        ValueError if any of req are not in data.columns.
+        ValueError if any of required are not in data.columns.
         """
         if not set(required) <= set(data.columns):
             raise ValueError(
@@ -1119,7 +1119,7 @@ class ModelChain(object):
         ModelChain.complete_irradiance
         """
 
-        self._verify_df(weather, req=['ghi', 'dni', 'ghi'])
+        self._verify_df(weather, required=['ghi', 'dni', 'ghi'])
         self._assign_weather(weather)
 
         self.times = self.weather.index
@@ -1189,7 +1189,7 @@ class ModelChain(object):
 
         self._assign_weather(data)
 
-        self._verify_df(data, req=['poa_global', 'poa_direct', 'poa_diffuse'])
+        self._verify_df(data, required=['poa_global', 'poa_direct', 'poa_diffuse'])
         self._assign_total_irrad(data)
 
         self._prep_inputs_solar_pos()
@@ -1235,7 +1235,7 @@ class ModelChain(object):
         # If module_temperature is in input data we can use the SAPM cell
         # temperature model.
         if (('module_temperature' in data) and
-            (self.temperature_model.__name__ == 'sapm')):
+                (self.temperature_model.__name__ == 'sapm')):
             # use SAPM cell temperature model only
             self.cell_temperature = pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],
@@ -1403,4 +1403,3 @@ class ModelChain(object):
         self._run_from_effective_irrad(data)
 
         return self
-

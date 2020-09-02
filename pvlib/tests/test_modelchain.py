@@ -345,7 +345,7 @@ def test__assign_total_irrad(sapm_dc_snl_ac_system, location, weather,
 
 def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
                                  total_irrad):
-    data= weather.copy()
+    data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.prepare_inputs_from_poa(data)
@@ -368,7 +368,7 @@ def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
 
 def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
                                              weather, total_irrad):
-    data= weather.copy()
+    data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     data['effective_irradiance'] = data['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',

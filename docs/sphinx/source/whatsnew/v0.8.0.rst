@@ -78,23 +78,6 @@ Enhancements
 * Add :py:func:`pvlib.pvsystem.combine_loss_factors` as general purpose
   function to combine loss factors with a common index.
   Partialy addresses :issue:`988`. Contributed by Brock Taute :ghuser:`btaute`
-* Add :py:func:`pvlib.shading.sky_diffuse_passias`,
-  :py:func:`pvlib.shading.masking_angle_passias`, and
-  :py:func:`pvlib.shading.masking_angle` to model diffuse shading loss.
-  (:pull:`1017`)
-* Add :py:func:`pvlib.inverter.fit_sandia` that fits the Sandia inverter model
-  to a set of inverter efficiency curves. (:pull:`1011`)
-* Add :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia`
-  for fitting the Pvsyst and De Soto models to IV curve data (:issue:`227`)(:pull:`708`)
-* Add factory methods :py:meth:`~pvlib.modelchain.ModelChain.with_pvwatts`
-  :py:meth:`~pvlib.modelchain.ModelChain.with_sapm` to create ``ModelChain``
-  objects configured for the respective modeling paradigms. The
-  configurations are defined in ``modelchain.PVWATTS_CONFIG``, and
-  ``modelchain.SAPM_CONFIG``. (:issue:`1013`, :pull:`1022`)
-* Added *racking_model*, *module_type*, and *temperature_model_parameters* to
-  PVSystem, LocalizedPVSystem, SingleAxisTracker, and
-  LocalizedSingleAxisTracker repr methods. (:issue:`1027`)
-* Added ability for :py:func:`pvlib.soiling.hsu` to accept arbitrary time intervals. (:pull:`980`)
 
 Bug fixes
 ~~~~~~~~~

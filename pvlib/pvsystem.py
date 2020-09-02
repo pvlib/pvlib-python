@@ -2352,18 +2352,6 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
     return 1 - combined_factor
 
 
-ashraeiam = deprecated('0.7', alternative='iam.ashrae', name='ashraeiam',
-                       removal='0.8')(iam.ashrae)
-
-
-physicaliam = deprecated('0.7', alternative='iam.physical', name='physicaliam',
-                         removal='0.8')(iam.physical)
-
-
-sapm_aoi_loss = deprecated('0.7', alternative='iam.sapm', name='sapm_aoi_loss',
-                           removal='0.8')(iam.sapm)
-
-
 snlinverter = deprecated('0.8', alternative='inverter.sandia',
                          name='snlinverter', removal='0.9')(inverter.sandia)
 

@@ -373,9 +373,9 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
     data['effective_irradiance'] = data['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    ac = mc.run_model_from_effective_irradiance(total_irrad).ac
+    ac = mc.run_model_from_effective_irradiance(data).ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
-                         index=total_irrad.index)
+                         index=data.index)
     assert_series_equal(ac, expected)
 
 

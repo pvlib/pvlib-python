@@ -20,16 +20,18 @@ TEMPERATURE_MODEL_PARAMETERS = {
 
 There are keys for each model at the top level. Currently there are two models,
 ``'sapm'`` for the Sandia Array Performance Model, and ``'pvsyst'``. Each model
-has a dictionary of configurations; a value is itself a dictionary containing model
-parameters. Retrieve parameters by indexing the model and
-configuration by name. Note: the keys are lower-cased and case sensitive.
+has a dictionary of configurations; a value is itself a dictionary containing
+model parameters. Retrieve parameters by indexing the model and configuration
+by name. Note: the keys are lower-cased and case sensitive.
 
 Example
 -------
 Retrieve the open rack glass-polymer configuration for SAPM::
 
-    from pvlib.temperature import TEMPERATURE_MODEL_PARAMS
-    temp_params = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_polymer']
+    from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
+    temperature_model_parameters = (
+        TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_polymer'])
+    # {'a': -3.56, 'b': -0.075, 'deltaT': 3}
 """
 
 

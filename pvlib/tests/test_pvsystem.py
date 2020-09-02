@@ -5,7 +5,7 @@ from numpy import nan, array
 import pandas as pd
 
 import pytest
-from pandas.util.testing import assert_series_equal, assert_frame_equal
+from conftest import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
 from pvlib import inverter, pvsystem
@@ -15,65 +15,7 @@ from pvlib.location import Location
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import (
-    needs_numpy_1_10, requires_scipy, fail_on_pvlib_version, DATA_DIR)
-
-
-def test_systemdef_tmy3():
-    from pvlib.iotools import tmy
-    tmy3_testfile = DATA_DIR / '703165TY.csv'
-    tmy3_data, tmy3_metadata = tmy.read_tmy3(tmy3_testfile)
-    expected = {'tz': -9.0,
-                'albedo': 0.1,
-                'altitude': 7.0,
-                'latitude': 55.317,
-                'longitude': -160.517,
-                'name': '"SAND POINT"',
-                'strings_per_inverter': 5,
-                'modules_per_string': 5,
-                'surface_azimuth': 0,
-                'surface_tilt': 0}
-    assert expected == pvsystem.systemdef(tmy3_metadata, 0, 0, .1, 5, 5)
-
-
-def test_systemdef_tmy2():
-    from pvlib.iotools import tmy
-    tmy2_testfile = DATA_DIR / '12839.tm2'
-    tmy2_data, tmy2_metadata = tmy.read_tmy2(tmy2_testfile)
-
-    expected = {'tz': -5,
-                'albedo': 0.1,
-                'altitude': 2.0,
-                'latitude': 25.8,
-                'longitude': -80.26666666666667,
-                'name': 'MIAMI',
-                'strings_per_inverter': 5,
-                'modules_per_string': 5,
-                'surface_azimuth': 0,
-                'surface_tilt': 0}
-    assert expected == pvsystem.systemdef(tmy2_metadata, 0, 0, .1, 5, 5)
-
-
-def test_systemdef_dict():
-    meta = {'latitude': 37.8,
-            'longitude': -122.3,
-            'altitude': 10,
-            'Name': 'Oakland',
-            'State': 'CA',
-            'TZ': -8}
-
-    # Note that TZ is float, but Location sets tz as string
-    expected = {'tz': -8,
-                'albedo': 0.1,
-                'altitude': 10,
-                'latitude': 37.8,
-                'longitude': -122.3,
-                'name': 'Oakland',
-                'strings_per_inverter': 5,
-                'modules_per_string': 5,
-                'surface_azimuth': 0,
-                'surface_tilt': 5}
-    assert expected == pvsystem.systemdef(meta, 5, 0, .1, 5, 5)
+from conftest import needs_numpy_1_10, requires_scipy, fail_on_pvlib_version
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -103,6 +45,7 @@ def test_PVSystem_get_iam_interp(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     with pytest.raises(ValueError):
         system.get_iam(45, iam_model='interp')
+
 
 def test__normalize_sam_product_names():
 
@@ -253,17 +196,6 @@ def test_sapm(sapm_module_params):
     # just make sure it works with Series input
     pvsystem.sapm(effective_irradiance, temp_cell,
                   pd.Series(sapm_module_params))
-
-
-def test_pvsystem_sapm_warning(sapm_module_params):
-    # deprecation warning for change in effective_irradiance units in
-    # pvsystem.sapm
-    # TODO: remove after deprecation period (v0.8)
-    effective_irradiance = np.array([0.1, 0.2, 1.3])
-    temp_cell = np.array([25, 25, 50])
-    warn_txt = 'effective_irradiance inputs appear to be in suns'
-    with pytest.warns(RuntimeWarning, match=warn_txt):
-        pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
 
 def test_PVSystem_sapm(sapm_module_params, mocker):
@@ -441,14 +373,6 @@ def test__infer_temperature_model_params():
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['freestanding']
     assert expected == system._infer_temperature_model_params()
-
-
-def test__infer_temperature_model_params_deprec_warning():
-    warn_txt = "Reverting to deprecated default"
-    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
-        pvsystem.PVSystem(module_parameters={},
-                          racking_model='not_a_rack_model',
-                          module_type='glass_polymer')
 
 
 def test_calcparams_desoto(cec_module_params):
@@ -1176,23 +1100,43 @@ def test_PVSystem_localize_with_latlon():
 
 
 def test_PVSystem___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
+    system = pvsystem.PVSystem(
+        module='blah', inverter='blarg', name='pv ftw',
+        temperature_model_parameters={'a': -3.56})
 
-    expected = ('PVSystem: \n  name: pv ftw\n  surface_tilt: 0\n  '
-                'surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  '
-                'albedo: 0.25\n  racking_model: open_rack')
-
+    expected = """PVSystem:
+  name: pv ftw
+  surface_tilt: 0
+  surface_azimuth: 180
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: None
+  module_type: None
+  temperature_model_parameters: {'a': -3.56}"""
     assert system.__repr__() == expected
 
 
 def test_PVSystem_localize___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
+    system = pvsystem.PVSystem(
+        module='blah', inverter='blarg', name='pv ftw',
+        temperature_model_parameters={'a': -3.56})
     localized_system = system.localize(latitude=32, longitude=-111)
-
-    expected = ('LocalizedPVSystem: \n  name: None\n  latitude: 32\n  '
-                'longitude: -111\n  altitude: 0\n  tz: UTC\n  '
-                'surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  '
-                'inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack')
+    # apparently name is not preserved when creating a system using localize
+    expected = """LocalizedPVSystem:
+  name: None
+  latitude: 32
+  longitude: -111
+  altitude: 0
+  tz: UTC
+  surface_tilt: 0
+  surface_azimuth: 180
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: None
+  module_type: None
+  temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
 
@@ -1215,16 +1159,24 @@ def test_LocalizedPVSystem_creation():
 
 
 def test_LocalizedPVSystem___repr__():
-    localized_system = pvsystem.LocalizedPVSystem(latitude=32,
-                                                  longitude=-111,
-                                                  module='blah',
-                                                  inverter='blarg',
-                                                  name='my name')
+    localized_system = pvsystem.LocalizedPVSystem(
+        latitude=32, longitude=-111, module='blah', inverter='blarg',
+        name='my name', temperature_model_parameters={'a': -3.56})
 
-    expected = ('LocalizedPVSystem: \n  name: my name\n  latitude: 32\n  '
-                'longitude: -111\n  altitude: 0\n  tz: UTC\n  '
-                'surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  '
-                'inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack')
+    expected = """LocalizedPVSystem:
+  name: my name
+  latitude: 32
+  longitude: -111
+  altitude: 0
+  tz: UTC
+  surface_tilt: 0
+  surface_azimuth: 180
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: None
+  module_type: None
+  temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
 
@@ -1458,3 +1410,8 @@ def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
     # deprecated function pvsystem.spvwatts_ac
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvwatts_ac(90, 100, 0.95)
+    # for missing temperature_model_parameters
+    match = "Reverting to deprecated default: SAPM cell temperature"
+    system = pvsystem.PVSystem()
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        system.sapm_celltemp(1, 2, 3)

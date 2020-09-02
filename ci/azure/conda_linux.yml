@@ -10,6 +10,9 @@ jobs:
     matrix:
       Python35:
         python.version: '35'
+      Python35-min:
+        python.version: '35'
+        suffix: '-min'
       Python36:
         python.version: '36'
         coverage: true
@@ -21,7 +24,7 @@ jobs:
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
     displayName: Add conda to PATH
-  - script: conda env create --quiet --file ci/requirements-py$(python.version).yml
+  - script: conda env create --quiet --file ci/requirements-py$(python.version)$(suffix).yml
     displayName: Create Anaconda environment
   - script: |
       source activate test_env

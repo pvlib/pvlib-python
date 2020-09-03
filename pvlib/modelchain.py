@@ -1241,7 +1241,7 @@ class ModelChain(object):
             self.cell_temperature = pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],
                 poa_global=self.total_irrad['poa_global'],
-                deltaT=self.temperature_model_parameters['deltaT'])
+                deltaT=self.system.temperature_model_parameters['deltaT'])
             return self
 
         # Calculate cell temperature from weather data. Cell temperature models

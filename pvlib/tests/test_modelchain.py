@@ -10,7 +10,7 @@ from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import assert_series_equal
+from conftest import assert_series_equal, assert_frame_equal
 import pytest
 
 from conftest import fail_on_pvlib_version, requires_scipy
@@ -350,11 +350,9 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.prepare_inputs_from_poa(data)
     # weather attribute
-    for k in weather:
-        assert_series_equal(mc.weather[k], weather[k])
+    assert_frame_equal(mc.weather[k], weather[k])
     # total_irrad attribute
-    for k in total_irrad:
-        assert_series_equal(mc.total_irrad[k], total_irrad[k])
+    assert_frame_equal(mc.total_irrad[k], total_irrad[k])
 
 
 def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,

@@ -1269,12 +1269,17 @@ class ModelChain(object):
         -------
         self
 
+        Notes
+        -----
         Assigns attributes: ``solar_position``, ``airmass``, ``weather``,
         ``total_irrad``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
-        and ``effective_irradiance``.
-        Calls method `run_model_from_effective_irradiance`
-        to assign ``cell_temperature``, ``dc``, ``ac``,
+        and ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
         ``losses``, ``diode_params`` (if dc_model is a single diode model).
+
+        See also
+        --------
+        pvlib.modelchain.ModelChain.run_model_from_poa
+        pvlib.modelchain.ModelChain.run_model_from_effective_irradiance
         """
         self.prepare_inputs(weather)
         self.aoi_model()
@@ -1293,33 +1298,33 @@ class ModelChain(object):
         plane of array. Reflections and spectral adjustments are made to
         calculate effective irradiance (W/m2).
 
-        This method calculates:
-            * effective irradiance
-            * cell temperature
-            * DC output
-            * AC output
-
         Parameters
         ----------
         data : DataFrame
-            Required column names must include ``'poa_global'``,
+            Required column names include ``'poa_global'``,
             ``'poa_direct'`` and ``'poa_diffuse'``. If optional columns
             ``'temp_air'`` and ``'wind_speed'`` are not provided, air
             temperature of 20 C and wind speed of 0 m/s are assumed.
             If optional column ``'cell_temperature'`` is provided, these values
             are used instead of `temperature_model`. If optional column
-            `module_temperature` is provided, `temperature_model` must be
+            ``'module_temperature'`` is provided, `temperature_model` must be
             ``'sapm'``.
 
         Returns
         -------
         self
 
-        Assigns attributes: ``weather``, ``total_irrad``, ``solar_position``,
-        ``airmass``, ``aoi`` and ``effective_irradiance``.
-        Calls `run_model_from_effective_irradiance`
-        to assign ``cell_temperature``, ``dc``, ``ac``,
-        ``losses``, ``diode_params`` (if dc_model is a single diode model)
+        Notes
+        -----
+        Assigns attributes: ``solar_position``, ``airmass``, ``weather``,
+        ``total_irrad``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
+        and ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode model).
+
+        See also
+        --------
+        pvlib.modelchain.ModelChain.run_model
+        pvlib.modelchain.ModelChain.run_model_from_effective_irradiance
         """
 
         self.prepare_inputs_from_poa(data)
@@ -1348,7 +1353,9 @@ class ModelChain(object):
         -------
         self
 
-        Assigns ``cell_temperature``, ``dc``, ``ac``, ``losses``,
+        Notes
+        -----
+        Assigns attributes:``cell_temperature``, ``dc``, ``ac``, ``losses``,
         ``diode_params`` (if dc_model is a single diode model).
         """
         self._prepare_temperature(data)
@@ -1365,27 +1372,29 @@ class ModelChain(object):
         Effective irradiance is irradiance in the plane-of-array after any
         adjustments for soiling, reflections and spectrum.
 
-        This method calculates:
-            * cell temperature
-            * DC output
-            * AC output
-
         Parameters
         ----------
         data : DataFrame, default None
             Required column is ``'effective_irradiance'``.
             If optional column ``'cell_temperature'`` is provided, these values
             are used instead of `temperature_model`. If optional column
-            `module_temperature` is provided, `temperature_model` must be
+            ``'module_temperature'`` is provided, `temperature_model` must be
             ``'sapm'``.
 
         Returns
         -------
         self
 
+        Notes
+        -----
         Assigns attributes: ``weather``, ``total_irrad``,
         ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
         ``losses``, ``diode_params`` (if dc_model is a single diode model).
+
+        See also
+        --------
+        pvlib.modelchain.ModelChain.run_model_from
+        pvlib.modelchain.ModelChain.run_model_from_poa
         """
 
         self._assign_weather(data)

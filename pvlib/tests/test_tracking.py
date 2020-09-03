@@ -514,7 +514,7 @@ def test_calc_axis_tilt():
     assert np.isclose(axis_tilt, expected_axis_tilt)
     # calculate side slope and relative rotation
     side_slope = tracking.calc_system_tracker_side_slope(
-        *system_plane,axis_azimuth, axis_tilt)
+        *system_plane, axis_azimuth, axis_tilt)
     assert np.isclose(side_slope, expected_side_slope)
     sat = tracking.singleaxis(
         solpos.apparent_zenith, solpos.azimuth, axis_tilt, axis_azimuth,

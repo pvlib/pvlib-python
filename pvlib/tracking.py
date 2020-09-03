@@ -489,7 +489,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         # NOTE: in the middle of the day, arccos(temp) is out of range because
         # there's no row-to-row shade to avoid, & backtracking is unnecessary
         # Equations 15-16, ref [2]
-        tracker_theta = wid + np.where(temp < 1, wc, 0)
+        with np.errstate(invalid='ignore'):
+            tracker_theta = wid + np.where(temp < 1, wc, 0)
     else:
         tracker_theta = wid
 
@@ -604,7 +605,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # 5. Map azimuth into [0,360) domain.
     # surface_azimuth[surface_azimuth < 0] += 360
     # surface_azimuth[surface_azimuth >= 360] -= 360
-    surface_azimuth = surface_azimuth % 360
+    with np.errstate(invalid='ignore'):
+        surface_azimuth = surface_azimuth % 360
 
     # Calculate surface_tilt
     dotproduct = (panel_norm_earth * projected_normal).sum(axis=1)

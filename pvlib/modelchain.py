@@ -1236,7 +1236,7 @@ class ModelChain(object):
         # If module_temperature is in input data we can use the SAPM cell
         # temperature model.
         if (('module_temperature' in data) and
-                (self.temperature_model.__name__ == 'sapm')):
+                (self.temperature_model.__name__ == 'sapm_temp')):
             # use SAPM cell temperature model only
             self.cell_temperature = pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],

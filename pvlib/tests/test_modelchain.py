@@ -358,7 +358,7 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
 
 
 def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
-                             total_irrad):
+                              total_irrad):
     data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',

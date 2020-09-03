@@ -48,7 +48,7 @@ class SingleAxisTracker(PVSystem):
         "system plane" is defined as the plane that contains all of the tracker
         axes. EG north-south trackers on a 3-degree eastern slope would have a
         3-degree side slope, depending on the tracker axis azimuth. Use
-        :func:`~pvlib.tracking.calc_system_tracker_side_slope` for more
+        :func:`~pvlib.tracking.calc_system_side_slope` for more
         complicated system planes. [degrees]
 
     """
@@ -318,7 +318,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         "system plane" is defined as the plane that contains all of the tracker
         axes. EG north-south trackers on a 3-degree eastern slope would have a
         3-degree side slope, depending on the tracker axis azimuth. Use
-        :func:`~pvlib.tracking.calc_system_tracker_side_slope` for more
+        :func:`~pvlib.tracking.calc_system_side_slope` for more
         complicated system planes. [degrees]
 
     Returns
@@ -337,8 +337,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     See also
     --------
-    pvlib.tracking.calc_tracker_axis_tilt
-    pvlib.tracking.calc_system_tracker_side_slope
+    pvlib.tracking.calc_axis_tilt
+    pvlib.tracking.calc_system_side_slope
 
     References
     ----------
@@ -514,7 +514,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     return out
 
 
-def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
+def calc_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
     """
     Calculate tracker axis tilt in the global reference frame when on a sloped
     plane.
@@ -536,7 +536,7 @@ def calc_tracker_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
     See also
     --------
     pvlib.tracking.singleaxis
-    pvlib.tracking.calc_system_tracker_side_slope
+    pvlib.tracking.calc_system_side_slope
 
     Notes
     -----
@@ -607,7 +607,7 @@ def _calc_beta_c(v, dg, ba):
     return beta_c
 
 
-def calc_system_tracker_side_slope(
+def calc_system_side_slope(
         system_azimuth, system_zenith, axis_azimuth, axis_tilt):
     """
     Calculate the component of the slope perpendicular to the tracker axes
@@ -642,7 +642,7 @@ def calc_system_tracker_side_slope(
     See also
     --------
     pvlib.tracking.singleaxis
-    pvlib.tracking.calc_tracker_axis_tilt
+    pvlib.tracking.calc_axis_tilt
 
     Notes
     -----

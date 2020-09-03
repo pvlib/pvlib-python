@@ -509,11 +509,11 @@ def test_calc_axis_tilt():
     # Note: GCR is relative to horizontal distance between rows
     gcr = 0.33292759  # GCR = length / horizontal_pitch = 1.64 / 5 / cos(9.86)
     # calculate tracker axis zenith
-    axis_tilt = tracking.calc_tracker_axis_tilt(
+    axis_tilt = tracking.calc_axis_tilt(
         *system_plane, axis_azimuth=axis_azimuth)
     assert np.isclose(axis_tilt, expected_axis_tilt)
     # calculate side slope and relative rotation
-    side_slope = tracking.calc_system_tracker_side_slope(
+    side_slope = tracking.calc_system_side_slope(
         *system_plane, axis_azimuth, axis_tilt)
     assert np.isclose(side_slope, expected_side_slope)
     sat = tracking.singleaxis(
@@ -551,10 +551,10 @@ def test_slope_aware_backtracking():
     expected_slope_angle = -2.576
     system_azimuth, system_zenith = 180.0, 10.0
     axis_azimuth = 195.0
-    axis_tilt = tracking.calc_tracker_axis_tilt(
+    axis_tilt = tracking.calc_axis_tilt(
         system_azimuth, system_zenith, axis_azimuth)
     assert np.isclose(axis_tilt, expected_axis_tilt, rtol=1e-3, atol=1e-3)
-    side_slope = tracking.calc_system_tracker_side_slope(
+    side_slope = tracking.calc_system_side_slope(
         system_azimuth, system_zenith, axis_azimuth, axis_tilt)
     assert np.isclose(side_slope, expected_slope_angle, rtol=1e-3, atol=1e-3)
     sat = tracking.singleaxis(

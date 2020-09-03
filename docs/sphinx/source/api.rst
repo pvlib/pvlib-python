@@ -545,14 +545,25 @@ Creating a ModelChain object.
 Running
 -------
 
-Running a ModelChain.
+A ModelChain can be run from a number of starting points, depending on the
+input data available.
 
 .. autosummary::
    :toctree: generated/
 
    modelchain.ModelChain.run_model
+   modelchain.ModelChain.run_model_from_poa
+   modelchain.ModelChain.run_model_from_effective_irradiance
+
+Functions to assist with setting up ModelChains to run
+
+.. autosummary::
+   :toctree: generated/
+
    modelchain.ModelChain.complete_irradiance
    modelchain.ModelChain.prepare_inputs
+   modelchain.ModelChain.prepare_inputs_from_poa
+
 
 Attributes
 ----------

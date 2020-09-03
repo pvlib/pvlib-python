@@ -357,7 +357,7 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
         assert_series_equal(mc.total_irrad[k], total_irrad[k])
 
 
-def test_prepare_temperature(sapm_dc_snl_ac_system, location, weather,
+def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
                              total_irrad):
     data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
@@ -365,15 +365,15 @@ def test_prepare_temperature(sapm_dc_snl_ac_system, location, weather,
                     spectral_model='no_loss')
     # prepare_temperature expects mc.total_irrad to be set
     mc._assign_total_irrad(data)
-    mc.prepare_temperature(data)
+    mc._prepare_temperature(data)
     expected = pd.Series([48.928025, 38.080016], index=data.index)
     assert_series_equal(mc.cell_temperature, expected)
     data['module_temperature'] = [40., 30.]
-    mc.prepare_inputs(data)
+    mc._prepare_temperature(data)
     expected = pd.Series([42.4, 31.5], index=data.index)
     assert_series_equal(mc.cell_temperature, expected)
     data['cell_temperature'] = [50., 35.]
-    mc.prepare_temperature(data)
+    mc._prepare_temperature(data)
     assert_series_equal(mc.cell_temperature, data['cell_temperature'])
 
 

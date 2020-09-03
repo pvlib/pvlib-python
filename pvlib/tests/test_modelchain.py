@@ -350,9 +350,9 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.prepare_inputs_from_poa(data)
     # weather attribute
-    assert_frame_equal(mc.weather[k], weather[k])
+    assert_frame_equal(mc.weather, weather)
     # total_irrad attribute
-    assert_frame_equal(mc.total_irrad[k], total_irrad[k])
+    assert_frame_equal(mc.total_irrad, total_irrad)
 
 
 def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,

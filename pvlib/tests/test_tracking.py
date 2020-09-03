@@ -514,7 +514,7 @@ def test_calc_axis_tilt():
     assert np.isclose(axis_tilt, expected_axis_tilt)
     # calculate side slope and relative rotation
     side_slope = tracking.calc_system_tracker_side_slope(
-        axis_azimuth, axis_tilt, *system_plane)
+        *system_plane,axis_azimuth, axis_tilt)
     assert np.isclose(side_slope, expected_side_slope)
     sat = tracking.singleaxis(
         solpos.apparent_zenith, solpos.azimuth, axis_tilt, axis_azimuth,
@@ -555,7 +555,7 @@ def test_slope_aware_backtracking():
         system_azimuth, system_zenith, axis_azimuth)
     assert np.isclose(axis_tilt, expected_axis_tilt, rtol=1e-3, atol=1e-3)
     side_slope = tracking.calc_system_tracker_side_slope(
-        axis_azimuth, axis_tilt, system_azimuth, system_zenith)
+        system_azimuth, system_zenith, axis_azimuth, axis_tilt)
     assert np.isclose(side_slope, expected_slope_angle, rtol=1e-3, atol=1e-3)
     sat = tracking.singleaxis(
         90.0-expected_data['ApparentElevation'], expected_data['SolarAzimuth'],
@@ -563,4 +563,11 @@ def test_slope_aware_backtracking():
         side_slope=side_slope)
     np.testing.assert_allclose(
         sat['tracker_theta'], expected_data['Backtracking'],
+        rtol=1e-3, atol=1e-3)
+    truetracking = tracking.singleaxis(
+        90.0-expected_data['ApparentElevation'], expected_data['SolarAzimuth'],
+        axis_tilt, axis_azimuth, max_angle=90.0, backtrack=False, gcr=0.5,
+        side_slope=side_slope)
+    np.testing.assert_allclose(
+        truetracking['tracker_theta'], expected_data['TrueTracking'],
         rtol=1e-3, atol=1e-3)

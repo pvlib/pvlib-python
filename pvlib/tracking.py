@@ -602,7 +602,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # Bundle DataFrame for return values and filter for sun below horizon.
     out = {'tracker_theta': tracker_theta, 'aoi': aoi,
-           'surface_azimuth': surface_azimuth, 'surface_tilt': surface_tilt}
+           'surface_tilt': surface_tilt, 'surface_azimuth': surface_azimuth}
     if index is not None:
         out = pd.DataFrame(out, index=index)
         out = out[['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt']]
@@ -707,7 +707,7 @@ def _calc_beta_c(v, dg, ba):
 
 
 def calc_system_tracker_side_slope(
-        axis_azimuth, axis_tilt, system_azimuth, system_zenith):
+        system_azimuth, system_zenith, axis_azimuth, axis_tilt):
     """
     Calculate the component of the slope perpendicular to the tracker axes
     relative to the horizontal plane.

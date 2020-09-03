@@ -43,16 +43,26 @@ class SingleAxisTracker(PVSystem):
         between the tracking axes has a gcr of 2/6=0.333. If gcr is not
         provided, a gcr of 2/7 is default. gcr must be <=1.
 
+    side_slope : float, default 0.0
+        The slope of the "system plane" perpendicular to the tracker axes. The
+        "system plane" is defined as the plane that contains all of the tracker
+        axes. EG north-south trackers on a 3-degree eastern slope would have a
+        3-degree side slope, depending on the tracker axis azimuth. Use
+        :func:`~pvlib.tracking.calc_system_tracker_side_slope` for more
+        complicated system planes. [degrees]
+
     """
 
     def __init__(self, axis_tilt=0, axis_azimuth=0,
-                 max_angle=90, backtrack=True, gcr=2.0/7.0, **kwargs):
+                 max_angle=90, backtrack=True, gcr=2.0/7.0, side_slope=0.0,
+                 **kwargs):
 
         self.axis_tilt = axis_tilt
         self.axis_azimuth = axis_azimuth
         self.max_angle = max_angle
         self.backtrack = backtrack
         self.gcr = gcr
+        self.side_slope = side_slope
 
         kwargs['surface_tilt'] = None
         kwargs['surface_azimuth'] = None
@@ -88,8 +98,8 @@ class SingleAxisTracker(PVSystem):
         """
         tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
                                    self.axis_tilt, self.axis_azimuth,
-                                   self.max_angle,
-                                   self.backtrack, self.gcr)
+                                   self.max_angle, self.backtrack,
+                                   self.gcr, self.side_slope)
 
         return tracking_data
 
@@ -304,12 +314,12 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         provided, a gcr of 2/7 is default. gcr must be <=1.
 
     side_slope : float, default 0.0
-        The slope in degrees of the "system plane" perpendicular to the
-        tracker axes. The "system plane" is defined as the plane that
-        contains all of the tracker axes. EG north-south trackers on a
-        3-degree eastern slope would have a 3-degree side slope, depending
-        on the tracker axis azimuth. Use ``calc_system_tracker_side_slope``
-        for more complicated system planes. [degrees]
+        The slope of the "system plane" perpendicular to the tracker axes. The
+        "system plane" is defined as the plane that contains all of the tracker
+        axes. EG north-south trackers on a 3-degree eastern slope would have a
+        3-degree side slope, depending on the tracker axis azimuth. Use
+        :func:`~pvlib.tracking.calc_system_tracker_side_slope` for more
+        complicated system planes. [degrees]
 
     Returns
     -------

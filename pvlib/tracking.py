@@ -472,14 +472,14 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         # temp = np.clip(axes_distance*cosd(wid - side_slope), -1, 1)
 
         # NOTE: account for rare angles below array, see GH 824
-        with np.errstate(invalid='ignore'):
-            temp = np.abs(axes_distance * cosd(wid - side_slope))
+        temp = np.abs(axes_distance * cosd(wid - side_slope))
 
         # backtrack angle
         # (always positive b/c acosd returns values between 0 and 180)
         # wc = np.degrees(np.arccos(temp))
         # equation 14, ref [2]
-        wc = np.degrees(-np.sign(wid)*np.arccos(temp))
+        with np.errstate(invalid='ignore'):
+            wc = np.degrees(-np.sign(wid)*np.arccos(temp))
 
         # Eq 4 applied when wid in QIV (wid < 0 evalulates True), QI
         # with np.errstate(invalid='ignore'):

@@ -1299,6 +1299,18 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     assert out < pdc
 
 
+def test_combine_loss_factors():
+    test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='D')
+    loss_1 = pd.Series(.10, index=test_index)
+    loss_2 = pd.Series(.05, index=pd.date_range(start='1990/01/01T12:00',
+                                                periods=365*2, freq='D'))
+    loss_3 = pd.Series(.02, index=pd.date_range(start='1990/01/01',
+                                                periods=12, freq='MS'))
+    expected = pd.Series(.1621, index=test_index)
+    out = pvsystem.combine_loss_factors(test_index, loss_1, loss_2, loss_3)
+    assert_series_equal(expected, out)
+
+
 @fail_on_pvlib_version('0.9')
 def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
     # deprecated function pvsystem.snlinverter

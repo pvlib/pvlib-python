@@ -237,6 +237,15 @@ PV temperature models
    temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
+   temperature.fuentes
+
+Temperature Model Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. currentmodule:: pvlib.temperature
+.. autodata:: TEMPERATURE_MODEL_PARAMETERS
+   :annotation:
+
+.. currentmodule:: pvlib
 
 Single diode models
 -------------------
@@ -368,6 +377,13 @@ Other
 
 Effects on PV System Output
 ===========================
+
+Loss models
+^^^^^^^^^^^
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.combine_loss_factors
 
 .. autosummary::
    :toctree: generated/

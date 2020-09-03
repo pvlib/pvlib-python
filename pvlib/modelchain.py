@@ -1203,7 +1203,7 @@ class ModelChain(object):
 
         return self
 
-    def prepare_temperature(self, data=None):
+    def _prepare_temperature(self, data=None):
         """
         Sets cell_temperature using inputs in data and the specified
         temperature model.
@@ -1245,17 +1245,7 @@ class ModelChain(object):
             return self
 
         # Calculate cell temperature from weather data. Cell temperature models
-        # expect total_irrad['poa_global']. If not found, substitute
-        # self.effective_irradiance.
-        if 'poa_global' not in self.total_irrad:
-            try:
-                self.total_irrad['poa_global'] = self.effective_irradiance
-            except AttributeError:
-                # poa_global nor effective_irradiance is found.
-                raise ValueError(
-                    "Incomplete irradiance data for cell temperature model."
-                    " Provide total_irrad['poa_global'] (preferred) or"
-                    " attribute effective_irradiance.")
+        # expect total_irrad['poa_global'].
         self.temperature_model()
         return self
 
@@ -1361,7 +1351,7 @@ class ModelChain(object):
         Assigns ``cell_temperature``, ``dc``, ``ac``, ``losses``,
         ``diode_params`` (if dc_model is a single diode model).
         """
-        self.prepare_temperature(data)
+        self._prepare_temperature(data)
         self.dc_model()
         self.losses_model()
         self.ac_model()

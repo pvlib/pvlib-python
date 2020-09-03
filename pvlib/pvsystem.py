@@ -2310,6 +2310,48 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     return losses
 
 
+def combine_loss_factors(index, *losses, fill_method='ffill'):
+    r"""
+    Combines Series loss fractions while setting a common index.
+
+    The separate losses are compounded using the following equation:
+
+    .. math::
+
+        L_{total} = 1 - [ 1 - \Pi_i ( 1 - L_i ) ]
+
+    :math:`L_{total}` is the total loss returned
+    :math:`L_i` is each individual loss factor input
+
+    Note the losses must each be a series with a DatetimeIndex.
+    All losses will be resampled to match the index parameter using
+    the fill method specified (defaults to "fill forward").
+
+    Parameters
+    ----------
+    index : DatetimeIndex
+        The index of the returned loss factors
+
+    *losses : Series
+        One or more Series of fractions to be compounded
+
+    fill_method : {'ffill', 'bfill', 'nearest'}, default 'ffill'
+        Method to use for filling holes in reindexed DataFrame
+
+    Returns
+    -------
+    Series
+        Fractions resulting from the combination of each loss factor
+    """
+    combined_factor = 1
+
+    for loss in losses:
+        loss = loss.reindex(index, method=fill_method)
+        combined_factor *= (1 - loss)
+
+    return 1 - combined_factor
+
+
 snlinverter = deprecated('0.8', alternative='inverter.sandia',
                          name='snlinverter', removal='0.9')(inverter.sandia)
 

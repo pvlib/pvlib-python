@@ -82,6 +82,16 @@ skip_windows = pytest.mark.skipif(platform_is_windows,
 
 
 try:
+    import statsmodels  # noqa: F401
+    has_statsmodels = True
+except ImportError:
+    has_statsmodels = False
+
+requires_statsmodels = pytest.mark.skipif(
+    not has_statsmodels, reason='requires statsmodels')
+
+
+try:
     import tables
     has_tables = True
 except ImportError:

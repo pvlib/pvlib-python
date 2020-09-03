@@ -44,10 +44,10 @@ class SingleAxisTracker(PVSystem):
         provided, a gcr of 2/7 is default. gcr must be <=1.
 
     side_slope : float, default 0.0
-        The slope of the "system plane" perpendicular to the tracker axes. The
+        The slope of the line in the "system plane" perpendicular to the tracker azimuth. The
         "system plane" is defined as the plane that contains all of the tracker
-        axes. EG north-south trackers on a 3-degree eastern slope would have a
-        3-degree side slope, depending on the tracker axis azimuth. Use
+        axes. For example, north-south trackers on an east-facing, three-degree
+        upward slope would have a 'side_slope' value of 3.0. Use
         :func:`~pvlib.tracking.calc_system_side_slope` for more
         complicated system planes. [degrees]
 
@@ -374,11 +374,11 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     z = cosd(apparent_zenith)
 
     # Assume the tracker reference frame is right-handed. Positive y-axis is
-    # oriented along tracking axis tilted by the axis tilt and rotated
-    # clockwise from north by the axis azimuth; positive x-axis is orthogonal,
-    # 90 deg clockwise from y-axis, and parallel to the earth's surface (if y-
-    # axis is south, x-axis is west); positive z-axis is normal to x, y axes,
-    # pointed upward.
+    # oriented along tracking axis; from north, the y-axis is rotated
+    # clockwise by the axis azimuth and tilted from horizontal by the axis tilt.
+    # The positive x-axis is 90 deg clockwise from the y-axis and parallel to
+    # horizontal (e.g., if the y-axis is south, the x-axis is west); the positive
+    # z-axis is normal to the x and y axes, pointed upward.
 
     # Calculate sun position (xp, yp, zp) in tracker coordinate system using
     # [2] Eq 4.

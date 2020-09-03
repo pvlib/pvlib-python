@@ -1189,7 +1189,8 @@ class ModelChain(object):
 
         self._assign_weather(data)
 
-        self._verify_df(data, required=['poa_global', 'poa_direct', 'poa_diffuse'])
+        self._verify_df(data, required=['poa_global', 'poa_direct',
+                                        'poa_diffuse'])
         self._assign_total_irrad(data)
 
         self._prep_inputs_solar_pos()

@@ -357,10 +357,46 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
         assert_series_equal(mc.total_irrad[k], total_irrad[k])
 
 
+def test_prepare_temperature(sapm_dc_snl_ac_system, location, weather,
+                             total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    mc.prepare_temperature(data)
+    expected = pd.Series([48.928025, 38.080016], index=data.index)
+    assert_series_equal(mc.cell_temperature, expected)
+    data['module_temperature'] = [40., 30.]
+    mc.prepare_inputs(data)
+    expected = pd.Series([42.4, 31.5], index=data.index)
+    assert_series_equal(mc.cell_temperature, expected)
+    data['cell_temperature'] = [50., 35.]
+    mc.prepare_temperature(data)
+    assert_series_equal(mc.cell_temperature, data['cell_temperature'])
+
+
 def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
     ac = mc.run_model_from_poa(total_irrad).ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=total_irrad.index)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
+                                     total_irrad):
+    system = SingleAxisTracker(
+        module_parameters=sapm_dc_snl_ac_system.module_parameters,
+        temperature_model_parameters=(
+            sapm_dc_snl_ac_system.temperature_model_parameters
+        ),
+        inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
+    mc = ModelChain(system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_poa(total_irrad).ac
+    assert (mc.tracking.columns == ['tracker_theta', 'aoi', 'surface_azimuth',
+                                    'surface_tilt']).all()
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=total_irrad.index)
     assert_series_equal(ac, expected)

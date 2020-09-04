@@ -416,7 +416,7 @@ Functions
 
    tracking.singleaxis
    tracking.calc_axis_tilt
-   tracking.calc_system_side_slope
+   tracking.calc_cross_axis_tilt
 
 
 .. _iotools:

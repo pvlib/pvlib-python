@@ -43,26 +43,33 @@ class SingleAxisTracker(PVSystem):
         between the tracking axes has a gcr of 2/6=0.333. If gcr is not
         provided, a gcr of 2/7 is default. gcr must be <=1.
 
-    side_slope : float, default 0.0
-        The slope of the line in the "system plane" perpendicular to the tracker azimuth. The
-        "system plane" is defined as the plane that contains all of the tracker
-        axes. For example, north-south trackers on an east-facing, three-degree
-        upward slope would have a 'side_slope' value of 3.0. Use
-        :func:`~pvlib.tracking.calc_system_side_slope` for more
-        complicated system planes. [degrees]
+    cross_axis_tilt : float, default 0.0
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. The slope is assumed to be a plane
+        containing all tracker axes. Cross-axis tilt follows the same
+        right-handed convention as tracker rotation. For example a tracker with
+        axis azimuth facing south will have a negative cross-axis tilt if
+        sloped down to the east and positive if sloped up. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` for more complicated
+        slopes. [degrees]
 
+    See also
+    --------
+    pvlib.tracking.singleaxis
+    pvlib.tracking.calc_axis_tilt
+    pvlib.tracking.calc_cross_axis_tilt
     """
 
-    def __init__(self, axis_tilt=0, axis_azimuth=0,
-                 max_angle=90, backtrack=True, gcr=2.0/7.0, side_slope=0.0,
-                 **kwargs):
+    def __init__(self, axis_tilt=0, axis_azimuth=0, max_angle=90,
+                 backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0.0, **kwargs):
 
         self.axis_tilt = axis_tilt
         self.axis_azimuth = axis_azimuth
         self.max_angle = max_angle
         self.backtrack = backtrack
         self.gcr = gcr
-        self.side_slope = side_slope
+        self.cross_axis_tilt = cross_axis_tilt
 
         kwargs['surface_tilt'] = None
         kwargs['surface_azimuth'] = None
@@ -70,7 +77,8 @@ class SingleAxisTracker(PVSystem):
         super(SingleAxisTracker, self).__init__(**kwargs)
 
     def __repr__(self):
-        attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr']
+        attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr',
+                 'cross_axis_tilt']
         sat_repr = ('SingleAxisTracker:\n  ' + '\n  '.join(
             ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
         # get the parent PVSystem info
@@ -99,7 +107,7 @@ class SingleAxisTracker(PVSystem):
         tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
                                    self.axis_tilt, self.axis_azimuth,
                                    self.max_angle, self.backtrack,
-                                   self.gcr, self.side_slope)
+                                   self.gcr, self.cross_axis_tilt)
 
         return tracking_data
 
@@ -257,13 +265,13 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
 
 def singleaxis(apparent_zenith, apparent_azimuth,
                axis_tilt=0, axis_azimuth=0, max_angle=90,
-               backtrack=True, gcr=2.0/7.0, side_slope=0):
+               backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
     """
     Determine the rotation angle of a single axis tracker when given a
     particular sun zenith and azimuth angle.
 
-    See [1]_, [2]_ for details about the equations. Backtracking may be
-    specified, and if so, a ground coverage ratio is required.
+    See [1]_ for details about the equations. Backtracking may be specified,
+    and if so, a ground coverage ratio is required.
 
     Rotation angle is determined in a panel-oriented coordinate system.
     The tracker azimuth axis_azimuth defines the positive y-axis; the
@@ -313,13 +321,16 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         between the tracking axes has a gcr of 2/6=0.333. If gcr is not
         provided, a gcr of 2/7 is default. gcr must be <=1.
 
-    side_slope : float, default 0.0
-        The slope of the "system plane" perpendicular to the tracker axes. The
-        "system plane" is defined as the plane that contains all of the tracker
-        axes. EG north-south trackers on a 3-degree eastern slope would have a
-        3-degree side slope, depending on the tracker axis azimuth. Use
-        :func:`~pvlib.tracking.calc_system_side_slope` for more
-        complicated system planes. [degrees]
+    cross_axis_tilt : float, default 0.0
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. The slope is assumed to be a plane
+        containing all tracker axes. Cross-axis tilt follows the same
+        right-handed convention as tracker rotation. For example a tracker with
+        axis azimuth facing south will have a negative cross-axis tilt if
+        sloped down to the east and positive if sloped up. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` for more complicated
+        slopes. [degrees]
 
     Returns
     -------
@@ -338,13 +349,11 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     See also
     --------
     pvlib.tracking.calc_axis_tilt
-    pvlib.tracking.calc_system_side_slope
+    pvlib.tracking.calc_cross_axis_tilt
 
     References
     ----------
-    .. [1] Lorenzo, E et al., 2011, "Tracking and back-tracking", Prog. in
-       Photovoltaics: Research and Applications, v. 19, pp. 747-753.
-    .. [2] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
+    .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
        https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
@@ -364,7 +373,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     if apparent_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
         raise ValueError('Input dimensions must not exceed 1')
 
-    # Calculate sun position x, y, z using coordinate system as in [2], Eq 1.
+    # Calculate sun position x, y, z using coordinate system as in [1], Eq 1.
 
     # NOTE: solar elevation = 90 - solar zenith, then use trig identities:
     # sin(90-x) = cos(x) & cos(90-x) = sin(x)
@@ -374,14 +383,14 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     z = cosd(apparent_zenith)
 
     # Assume the tracker reference frame is right-handed. Positive y-axis is
-    # oriented along tracking axis; from north, the y-axis is rotated
-    # clockwise by the axis azimuth and tilted from horizontal by the axis tilt.
-    # The positive x-axis is 90 deg clockwise from the y-axis and parallel to
-    # horizontal (e.g., if the y-axis is south, the x-axis is west); the positive
-    # z-axis is normal to the x and y axes, pointed upward.
+    # oriented along tracking axis; from north, the y-axis is rotated clockwise
+    # by the axis azimuth and tilted from horizontal by the axis tilt. The
+    # positive x-axis is 90 deg clockwise from the y-axis and parallel to
+    # horizontal (e.g., if the y-axis is south, the x-axis is west); the
+    # positive z-axis is normal to the x and y axes, pointed upward.
 
     # Calculate sun position (xp, yp, zp) in tracker coordinate system using
-    # [2] Eq 4.
+    # [1] Eq 4.
 
     cos_axis_azimuth = cosd(axis_azimuth)
     sin_axis_azimuth = sind(axis_azimuth)
@@ -405,7 +414,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # positive. This is a right-handed rotation around the tracker y-axis.
 
     # Calculate angle from x-y plane to projection of sun vector onto x-z plane
-    # using [2] Eq. 5.
+    # using [1] Eq. 5.
 
     wid = np.degrees(np.arctan2(xp, zp))
 
@@ -415,19 +424,20 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # Account for backtracking
     if backtrack:
-        # distance between rows in terms of rack lengths relative to side slope
-        axes_distance = 1/gcr/cosd(side_slope)
+        # distance between rows in terms of rack lengths relative to cross-axis
+        # tilt
+        axes_distance = 1/gcr/cosd(cross_axis_tilt)
 
         # NOTE: account for rare angles below array, see GH 824
-        temp = np.abs(axes_distance * cosd(wid - side_slope))
+        temp = np.abs(axes_distance * cosd(wid - cross_axis_tilt))
 
-        # backtrack angle using [2], Eq. 14
+        # backtrack angle using [1], Eq. 14
         with np.errstate(invalid='ignore'):
             wc = np.degrees(-np.sign(wid)*np.arccos(temp))
 
         # NOTE: in the middle of the day, arccos(temp) is out of range because
         # there's no row-to-row shade to avoid, & backtracking is unnecessary
-        # [2], Eqs. 15-16
+        # [1], Eqs. 15-16
         with np.errstate(invalid='ignore'):
             tracker_theta = wid + np.where(temp < 1, wc, 0)
     else:
@@ -514,16 +524,16 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     return out
 
 
-def calc_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
+def calc_axis_tilt(slope_azimuth, slope_tilt, axis_azimuth):
     """
     Calculate tracker axis tilt in the global reference frame when on a sloped
     plane.
 
     Parameters
     ----------
-    system_azimuth : float
+    slope_azimuth : float
         direction of normal to slope on horizontal [degrees]
-    system_zenith : float
+    slope_tilt : float
         tilt of normal to slope relative to vertical [degrees]
     axis_azimuth : float
         direction of tracker axes on horizontal [degrees]
@@ -536,7 +546,7 @@ def calc_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
     See also
     --------
     pvlib.tracking.singleaxis
-    pvlib.tracking.calc_system_side_slope
+    pvlib.tracking.calc_cross_axis_tilt
 
     Notes
     -----
@@ -548,9 +558,9 @@ def calc_axis_tilt(system_azimuth, system_zenith, axis_azimuth):
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
        https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
-    delta_gamma = axis_azimuth - system_azimuth
+    delta_gamma = axis_azimuth - slope_azimuth
     # equations 18-19
-    tan_axis_tilt = cosd(delta_gamma) * tand(system_zenith)
+    tan_axis_tilt = cosd(delta_gamma) * tand(slope_tilt)
     return np.degrees(np.arctan(tan_axis_tilt))
 
 
@@ -585,7 +595,7 @@ def _calc_tracker_norm(ba, bg, dg):
 
 def _calc_beta_c(v, dg, ba):
     """
-    Calculate the side slope angle.
+    Calculate the cross-axis tilt angle.
 
     Parameters
     ----------
@@ -599,7 +609,7 @@ def _calc_beta_c(v, dg, ba):
     Returns
     -------
     beta_c : float
-        side slope angle [radians]
+        cross-axis tilt angle [radians]
     """
     vnorm = np.sqrt(np.dot(v, v))
     beta_c = np.arcsin(
@@ -607,26 +617,25 @@ def _calc_beta_c(v, dg, ba):
     return beta_c
 
 
-def calc_system_side_slope(
-        system_azimuth, system_zenith, axis_azimuth, axis_tilt):
+def calc_cross_axis_tilt(
+        slope_azimuth, slope_tilt, axis_azimuth, axis_tilt):
     """
-    Calculate the component of the slope perpendicular to the tracker axes
-    relative to the horizontal plane.
+    Calculate the angle, relative to horizontal, of the line formed by the
+    intersection between the slope containing the tracker axes and a plane
+    perpendicular to the tracker axes.
 
-    Use the side slope to avoid row-to-row shade when backtracking on a system
-    plane with a non-parallel, cross-axis slope. The "system plane" is defined
-    as the plane containing all of the tracker axes. EG: north-south trackers
-    on a 3-degree eastern slope would have a 3-degree side slope, depending on
-    the tracker axis azimuth. Side slope follows the same right-handed
-    convention as tracker rotation. For example a tracker with axis azimuth
-    facing south will have a negative side slope to the east and positive if
-    sloped westward.
+    Use the cross-axis tilt to avoid row-to-row shade when backtracking on a
+    slope not parallel with the axis azimuth. The slope is assumed to be a
+    plane containing all tracker axes. Cross-axis tilt follows the same
+    right-handed convention as tracker rotation. For example a tracker with
+    axis azimuth facing south will have a negative cross-axis tilt if sloped
+    down to the east and positive if sloped up.
 
     Parameters
     ----------
-    system_azimuth : float
+    slope_azimuth : float
         direction of normal to slope on horizontal [degrees]
-    system_zenith : float
+    slope_tilt : float
         tilt of normal to slope relative to vertical [degrees]
     axis_azimuth : float
         direction of tracker axes on horizontal [degrees]
@@ -635,7 +644,7 @@ def calc_system_side_slope(
 
     Returns
     -------
-    side_slope : float
+    cross_axis_tilt : float
         cross-axis slope angle from horizontal & perpendicular to tracker axes
         in the cross-axis direction [degrees]
 
@@ -655,9 +664,9 @@ def calc_system_side_slope(
        https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
     # delta-gamma, difference between axis and slope azimuths
-    delta_gamma = axis_azimuth - system_azimuth
+    delta_gamma = axis_azimuth - slope_azimuth
     # equation 22
-    v = _calc_tracker_norm(axis_tilt, system_zenith, delta_gamma)
+    v = _calc_tracker_norm(axis_tilt, slope_tilt, delta_gamma)
     # equation 26
     beta_c = _calc_beta_c(v, delta_gamma, axis_tilt)
     return np.degrees(beta_c)

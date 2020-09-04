@@ -333,12 +333,7 @@ def poadc(mc):
 
 
 @pytest.mark.parametrize('dc_model', [
-    'sapm',
-    pytest.param('cec'),
-    pytest.param('desoto'),
-    pytest.param('pvsyst'),
-    pytest.param('singlediode'),
-    'pvwatts_dc'])
+    'sapm', 'cec', 'desoto', 'pvsyst', 'singlediode', 'pvwatts_dc'])
 def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
                         pvsyst_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
                         location, dc_model, weather, mocker):
@@ -377,10 +372,7 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
 
 
-@pytest.mark.parametrize('dc_model', [
-    'sapm',
-    pytest.param('cec'),
-    pytest.param('cec_native')])
+@pytest.mark.parametrize('dc_model', ['sapm', 'cec', 'cec_native'])
 def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
                               cec_dc_snl_ac_system,
                               cec_dc_native_snl_ac_system, dc_model):
@@ -394,8 +386,7 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
 
 
 @pytest.mark.parametrize('temp_model', [
-    'sapm_temp', 'faiman_temp',
-    pytest.param('pvsyst_temp')])
+    'sapm_temp', 'faiman_temp', 'pvsyst_temp'])
 def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                           pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                           pvwatts_dc_pvwatts_ac_faiman_temp_system,
@@ -451,8 +442,7 @@ def acdc(mc):
     mc.ac = mc.dc
 
 
-@pytest.mark.parametrize('ac_model', [
-    'sandia', pytest.param('adr'), 'pvwatts'])
+@pytest.mark.parametrize('ac_model', ['sandia', 'adr', 'pvwatts'])
 def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    pvwatts_dc_pvwatts_ac_system, location, ac_model,
                    weather, mocker):
@@ -475,8 +465,7 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
 
 
 # TODO in v0.9: remove this test for a deprecation warning
-@pytest.mark.parametrize('ac_model', [
-    'snlinverter', pytest.param('adrinverter')])
+@pytest.mark.parametrize('ac_model', ['snlinverter', 'adrinverter'])
 def test_ac_models_deprecated(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                               location, ac_model, weather):
     ac_systems = {'snlinverter': sapm_dc_snl_ac_system,

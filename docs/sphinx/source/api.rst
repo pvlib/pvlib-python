@@ -238,6 +238,7 @@ PV temperature models
    temperature.pvsyst_cell
    temperature.faiman
    temperature.fuentes
+   temperature.ross
 
 Temperature Model Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

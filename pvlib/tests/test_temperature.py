@@ -124,6 +124,14 @@ def test_faiman_ndarray():
     assert_allclose(expected, result, 3)
 
 
+def test_ross():
+    result = temperature.ross(np.array([1000., 600., 1000.]),
+                              np.array([20., 40., 60.]),
+                              np.array([40., 100., 20.]))
+    expected = np.array([45., 100., 60.])
+    assert_allclose(expected, result)
+
+
 def test_faiman_series():
     times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12H")
     temps = pd.Series([0, 10, 5], index=times)

@@ -6,6 +6,9 @@ or other variables to account for temporal or spatial characteristics.
 import numpy as np
 import pandas as pd
 
+import scipy.optimize
+from scipy.spatial.distance import pdist
+
 
 def wvm(clearsky_index, positions, cloud_speed, dt=None):
     """
@@ -58,9 +61,6 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
     """
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019
-
-    import scipy.optimize
-    from scipy.spatial.distance import pdist
 
     pos = np.array(positions)
     dist = pdist(pos, 'euclidean')

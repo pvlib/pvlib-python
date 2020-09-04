@@ -8,6 +8,8 @@ import numpy as np
 from pvlib.tools import _golden_sect_DataFrame
 
 from scipy.optimize import brentq, newton
+from scipy.special import lambertw
+
 # set keyword arguments for all uses of newton in this module
 newton = partial(newton, tol=1e-6, maxiter=100, fprime2=None)
 
@@ -496,8 +498,6 @@ def _prepare_newton_inputs(i_or_v_tup, args, v0):
 
 def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,
                        saturation_current, photocurrent):
-    from scipy.special import lambertw
-
     # Record if inputs were all scalar
     output_is_scalar = all(map(np.isscalar,
                                [resistance_shunt, resistance_series, nNsVth,
@@ -575,8 +575,6 @@ def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 
 def _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                        saturation_current, photocurrent):
-    from scipy.special import lambertw
-
     # Record if inputs were all scalar
     output_is_scalar = all(map(np.isscalar,
                                [resistance_shunt, resistance_series, nNsVth,

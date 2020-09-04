@@ -26,6 +26,7 @@ def expected_output():
         index=dt)
     return expected_no_cleaning
 
+
 @pytest.fixture
 def expected_output_1():
     dt = pd.date_range(start=pd.Timestamp(2019, 1, 1, 0, 0, 0),
@@ -38,6 +39,7 @@ def expected_output_1():
               0.88772062, 0.87968325, 0.8718622, 0.86425049],
         index=dt)
     return expected_output_1
+
 
 @pytest.fixture
 def expected_output_2():
@@ -68,6 +70,7 @@ def expected_output_3():
               0.96576705, 0.9387675, 0.91437615, 0.89186852],
         index=dt_new)
     return expected_output_3
+
 
 @pytest.fixture
 def rainfall_input():
@@ -123,7 +126,6 @@ def test_hsu_defaults(rainfall_input, expected_output_1):
     assert np.allclose(result.values, expected_output_1)
 
 
-@requires_scipy
 def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
     """
     Test Soiling HSU function with variable time intervals.
@@ -141,6 +143,7 @@ def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
         pm2_5=1, pm10=2, depo_veloc=depo_veloc,
         rain_accum_period=pd.Timedelta('2h'))
     assert np.allclose(result, expected_output_3)
+
 
 @pytest.fixture
 def greensboro_rain():

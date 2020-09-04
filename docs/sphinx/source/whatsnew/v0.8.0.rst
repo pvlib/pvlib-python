@@ -97,7 +97,7 @@ Enhancements
   function to combine loss factors with a common index.
   Partialy addresses :issue:`988`. Contributed by Brock Taute :ghuser:`btaute`
 * Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
-  only NOCT. (:pull:`XXXX`)
+  only NOCT. (:pull:`1045`)
 
 Bug fixes
 ~~~~~~~~~

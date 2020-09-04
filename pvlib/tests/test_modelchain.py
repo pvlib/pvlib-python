@@ -563,7 +563,7 @@ def constant_spectral_loss(mc):
 
 
 @pytest.mark.parametrize('spectral_model', [
-        'sapm', 'first_solar', 'no_loss', constant_spectral_loss
+    'sapm', 'first_solar', 'no_loss', constant_spectral_loss
 ])
 def test_spectral_models(sapm_dc_snl_ac_system, location, spectral_model,
                          weather):

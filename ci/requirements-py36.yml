@@ -9,8 +9,8 @@ dependencies:
     - netcdf4
     - nose
     - numba
-    - numpy
-    - pandas
+    - numpy >= 1.12.0
+    - pandas >= 0.22.0
     - pip
     - pytables  # tables when using pip+PyPI
     - pytest
@@ -22,7 +22,7 @@ dependencies:
     - python=3.6
     - pytz
     - requests
-    - scipy
+    - scipy >= 1.2.0
     - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - statsmodels

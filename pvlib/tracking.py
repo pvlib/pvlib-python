@@ -234,14 +234,14 @@ class SingleAxisTracker(PVSystem):
 
 class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
     """
-    The :pv:class:`~pvlib.tracking.LocalizedSingleAxisTracker` class defines a
+    The :py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` class defines a
     standard set of installed PV system attributes and modeling functions. This
     class combines the attributes and methods of the
-    :pv:class:`~pvlib.tracking.SingleAxisTracker` (a subclass of
+    :py:class:`~pvlib.tracking.SingleAxisTracker` (a subclass of
     :py:class:`~pvlib.pvsystem.PVSystem`) and
     :py:class:`~pvlib.location.Location` classes.
 
-    The :pv:class:`~pvlib.tracking.LocalizedSingleAxisTracker` may have bugs
+    The :py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` may have bugs
     due to the difficulty of robustly implementing multiple inheritance. See
     :py:class:`~pvlib.modelchain.ModelChain` for an alternative paradigm
     for modeling PV systems at specific locations.

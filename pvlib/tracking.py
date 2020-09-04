@@ -10,8 +10,9 @@ from pvlib import irradiance, atmosphere
 
 class SingleAxisTracker(PVSystem):
     """
-    Inherits the PV modeling methods from :py:class:`~pvlib.pvsystem.PVSystem`.
-
+    A class for single-axis trackers that inherits the PV modeling methods from
+    :py:class:`~pvlib.pvsystem.PVSystem`. For details on calculating tracker
+    rotation see :py:func:`pvlib.tracking.singleaxis`.
 
     Parameters
     ----------
@@ -46,13 +47,13 @@ class SingleAxisTracker(PVSystem):
     cross_axis_tilt : float, default 0.0
         The angle, relative to horizontal, of the line formed by the
         intersection between the slope containing the tracker axes and a plane
-        perpendicular to the tracker axes. The slope is assumed to be a plane
-        containing all tracker axes. Cross-axis tilt follows the same
-        right-handed convention as tracker rotation. For example a tracker with
-        axis azimuth facing south will have a negative cross-axis tilt if
-        sloped down to the east and positive if sloped up. Use
-        :func:`~pvlib.tracking.calc_cross_axis_tilt` for more complicated
-        slopes. [degrees]
+        perpendicular to the tracker axes. Cross-axis tilt should be specified
+        using a right-handed convention. For example, trackers with axis
+        azimuth of 180 degrees (heading south) will have a negative cross-axis
+        tilt if the tracker axes plane slopes down to the east and positive
+        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        `cross_axis_tilt`. [degrees]
 
     See also
     --------
@@ -233,13 +234,15 @@ class SingleAxisTracker(PVSystem):
 
 class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
     """
-    The LocalizedSingleAxisTracker class defines a standard set of
-    installed PV system attributes and modeling functions. This class
-    combines the attributes and methods of the SingleAxisTracker (a
-    subclass of PVSystem) and Location classes.
+    The :pv:class:`~pvlib.tracking.LocalizedSingleAxisTracker` class defines a
+    standard set of installed PV system attributes and modeling functions. This
+    class combines the attributes and methods of the
+    :pv:class:`~pvlib.tracking.SingleAxisTracker` (a subclass of
+    :py:class:`~pvlib.pvsystem.PVSystem`) and
+    :py:class:`~pvlib.location.Location` classes.
 
-    The LocalizedSingleAxisTracker may have bugs due to the difficulty
-    of robustly implementing multiple inheritance. See
+    The :pv:class:`~pvlib.tracking.LocalizedSingleAxisTracker` may have bugs
+    due to the difficulty of robustly implementing multiple inheritance. See
     :py:class:`~pvlib.modelchain.ModelChain` for an alternative paradigm
     for modeling PV systems at specific locations.
     """
@@ -267,23 +270,23 @@ def singleaxis(apparent_zenith, apparent_azimuth,
                axis_tilt=0, axis_azimuth=0, max_angle=90,
                backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
     """
-    Determine the rotation angle of a single axis tracker when given a
-    particular sun zenith and azimuth angle.
+    Determine the rotation angle of a single-axis tracker when given particular
+    solar zenith and azimuth angles.
 
     See [1]_ for details about the equations. Backtracking may be specified,
     and if so, a ground coverage ratio is required.
 
-    Rotation angle is determined in a panel-oriented coordinate system.
-    The tracker azimuth axis_azimuth defines the positive y-axis; the
-    positive x-axis is 90 degress clockwise from the y-axis and parallel
-    to the earth surface, and the positive z-axis is normal and oriented
-    towards the sun. Rotation angle tracker_theta indicates tracker
-    position relative to horizontal: tracker_theta = 0 is horizontal,
-    and positive tracker_theta is a clockwise rotation around the y axis
-    in the x, y, z coordinate system. For example, if tracker azimuth
-    axis_azimuth is 180 (oriented south), tracker_theta = 30 is a
-    rotation of 30 degrees towards the west, and tracker_theta = -90 is
-    a rotation to the vertical plane facing east.
+    Rotation angle is determined in a right-handed coordinate system. The
+    tracker `axis_azimuth` defines the positive y-axis, the positive x-axis is
+    90 degrees clockwise from the y-axis and parallel to the Earth's surface,
+    and the positive z-axis is normal to both x & y-axes and oriented skyward.
+    Rotation angle `tracker_theta` is a right-handed rotation around the y-axis
+    in the x, y, z coordinate system and indicates tracker position relative to
+    horizontal. For example, if tracker `axis_azimuth` is 180 (oriented south)
+    and `axis_tilt` is zero, then a `tracker_theta` of zero is horizontal, a
+    `tracker_theta` of 30 degrees is a rotation of 30 degrees towards the west,
+    and a `tracker_theta` of -90 degrees is a rotation to the vertical plane
+    facing east.
 
     Parameters
     ----------
@@ -324,13 +327,13 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     cross_axis_tilt : float, default 0.0
         The angle, relative to horizontal, of the line formed by the
         intersection between the slope containing the tracker axes and a plane
-        perpendicular to the tracker axes. The slope is assumed to be a plane
-        containing all tracker axes. Cross-axis tilt follows the same
-        right-handed convention as tracker rotation. For example a tracker with
-        axis azimuth facing south will have a negative cross-axis tilt if
-        sloped down to the east and positive if sloped up. Use
-        :func:`~pvlib.tracking.calc_cross_axis_tilt` for more complicated
-        slopes. [degrees]
+        perpendicular to the tracker axes. Cross-axis tilt should be specified
+        using a right-handed convention. For example, trackers with axis
+        azimuth of 180 degrees (heading south) will have a negative cross-axis
+        tilt if the tracker axes plane slopes down to the east and positive
+        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        `cross_axis_tilt`. [degrees]
 
     Returns
     -------
@@ -405,8 +408,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
           + z*cos_axis_tilt)
 
     # The ideal tracking angle wid is the rotation to place the sun position
-    # vector (xp, yp, zp) in the (y, z) plane; i.e., normal to the panel and
-    # containing the axis of rotation.  wid = 0 indicates that the panel is
+    # vector (xp, yp, zp) in the (y, z) plane, which is normal to the panel and
+    # contains the axis of rotation.  wid = 0 indicates that the panel is
     # horizontal. Here, our convention is that a clockwise rotation is
     # positive, to view rotation angles in the same frame of reference as
     # azimuth. For example, for a system with tracking axis oriented south, a
@@ -426,7 +429,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     if backtrack:
         # distance between rows in terms of rack lengths relative to cross-axis
         # tilt
-        axes_distance = 1/gcr/cosd(cross_axis_tilt)
+        axes_distance = 1/(gcr * cosd(cross_axis_tilt))
 
         # NOTE: account for rare angles below array, see GH 824
         temp = np.abs(axes_distance * cosd(wid - cross_axis_tilt))
@@ -625,28 +628,31 @@ def calc_cross_axis_tilt(
     perpendicular to the tracker axes.
 
     Use the cross-axis tilt to avoid row-to-row shade when backtracking on a
-    slope not parallel with the axis azimuth. The slope is assumed to be a
-    plane containing all tracker axes. Cross-axis tilt follows the same
-    right-handed convention as tracker rotation. For example a tracker with
-    axis azimuth facing south will have a negative cross-axis tilt if sloped
-    down to the east and positive if sloped up.
+    slope not parallel with the axis azimuth. Cross-axis tilt should be
+    specified using a right-handed convention. For example, trackers with axis
+    azimuth of 180 degrees (heading south) will have a negative cross-axis tilt
+    if the tracker axes plane slopes down to the east and positive cross-axis
+    tilt if the tracker axes plane slopes up to the east.
 
     Parameters
     ----------
     slope_azimuth : float
-        direction of normal to slope on horizontal [degrees]
+        direction of the normal to the slope containing the tracker axes, when
+        projected on the horizontal [degrees]
     slope_tilt : float
-        tilt of normal to slope relative to vertical [degrees]
+        angle of the slope containing the tracker axes, relative to horizontal
+        [degrees]
     axis_azimuth : float
-        direction of tracker axes on horizontal [degrees]
+        direction of tracker axes projected on the horizontal [degrees]
     axis_tilt : float
-        tilt of tracker [degrees]
+        tilt of trackers relative to horizontal [degrees]
 
     Returns
     -------
     cross_axis_tilt : float
-        cross-axis slope angle from horizontal & perpendicular to tracker axes
-        in the cross-axis direction [degrees]
+        angle, relative to horizontal, of the line formed by the intersection
+        between the slope containing the tracker axes and a plane perpendicular
+        to the tracker axes [degrees]
 
     See also
     --------

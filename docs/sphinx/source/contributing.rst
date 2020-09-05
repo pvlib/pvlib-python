@@ -196,8 +196,6 @@ pvlib python generally follows the `PEP 8 -- Style Guide for Python Code
 <https://www.python.org/dev/peps/pep-0008/>`_. Maximum line length for code
 is 79 characters.
 
-Code must be compatible with Python 3.5 and above.
-
 pvlib python uses a mix of full and abbreviated variable names. See
 :ref:`variables_style_rules`. We could be better about consistency.
 Prefer full names for new contributions. This is especially important
@@ -475,9 +473,10 @@ PVSystem method is called through ``ModelChain.run_model``.
         mc.run_model(times)
 
         # assertion fails if PVSystem.sapm is not called once
-        # if using returned m, prefer this over m.assert_called_once()
-        # for compatibility with python < 3.6
-        assert m.call_count == 1
+        m.assert_called_once()
+
+        # use `assert m.call_count == num` if function should be called
+        # more than once
 
         # ensure that dc attribute now exists and is correct type
         assert isinstance(mc.dc, (pd.Series, pd.DataFrame))

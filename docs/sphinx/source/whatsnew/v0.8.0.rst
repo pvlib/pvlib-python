@@ -158,7 +158,10 @@ Documentation
 
 Requirements
 ~~~~~~~~~~~~
+* Python 3.6 or greater. (:pull:`1035`)
 * Minimum pandas version increased to v0.22.0, released Dec 31, 2017. (:pull:`1003`)
+* Scipy >= v1.2.0, released Dec 17, 2018, is now a required dependency
+  rather an optional dependency. (:issue:`972`, :pull:`1035`)
 
 Contributors
 ~~~~~~~~~~~~

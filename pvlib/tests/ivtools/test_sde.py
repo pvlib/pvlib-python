@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from pvlib import pvsystem
 from pvlib.ivtools import sde
-from pvlib.tests.conftest import requires_scipy
 
 
 @pytest.fixture
@@ -10,7 +9,6 @@ def get_test_iv_params():
     return {'IL': 8.0, 'I0': 5e-10, 'Rs': 0.2, 'Rsh': 1000, 'nNsVth': 1.61864}
 
 
-@requires_scipy
 def test_fit_sandia_simple(get_test_iv_params, get_bad_iv_curves):
     test_params = get_test_iv_params
     testcurve = pvsystem.singlediode(photocurrent=test_params['IL'],
@@ -41,7 +39,6 @@ def test_fit_sandia_simple(get_test_iv_params, get_bad_iv_curves):
     assert np.allclose(result, expected, rtol=5e-5)
 
 
-@requires_scipy
 def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
     # bad IV curves for coverage of if/then in sde._sandia_simple_params
     v1, i1, v2, i2 = get_bad_iv_curves

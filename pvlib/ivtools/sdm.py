@@ -8,6 +8,10 @@ Function names should follow the pattern "fit_" + name of model + "_" +
 
 import numpy as np
 
+import scipy.constants
+from scipy import optimize
+from scipy.special import lambertw
+
 from pvlib.pvsystem import singlediode, v_from_i
 
 from pvlib.ivtools.utility import constants, rectify_iv_curve, _numdiff
@@ -197,12 +201,6 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
        2006.
     """
 
-    try:
-        from scipy.optimize import root
-        import scipy.constants
-    except ImportError:
-        raise ImportError("The fit_desoto function requires scipy.")
-
     # Constants
     k = scipy.constants.value('Boltzmann constant in eV/K')
     Tref = temp_ref + 273.15  # [K]
@@ -222,8 +220,8 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
              Tref, k)
 
     # computing with system of equations described in [1]
-    optimize_result = root(_system_of_equations_desoto, x0=params_i,
-                           args=(specs,), **root_kwargs)
+    optimize_result = optimize.root(_system_of_equations_desoto, x0=params_i,
+                                    args=(specs,), **root_kwargs)
 
     if optimize_result.success:
         sdm_params = optimize_result.x
@@ -657,8 +655,8 @@ def _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const):
     try:
         import statsmodels.api as sm
     except ImportError:
-        raise ImportError('Parameter extraction using Sandia method requires',
-                          ' statsmodels')
+        raise ImportError(
+            'Parameter extraction using Sandia method requires statsmodels')
 
     x = specs['cells_in_series'] * vth * np.log(ee / const['E0'])
     y = voc - specs['beta_voc'] * (tc - const['T0'])
@@ -791,11 +789,10 @@ def _extract_sdm_params(ee, tc, iph, io, rs, rsh, n, u, specs, const,
     # Get single diode model parameters from five parameters iph, io, rs, rsh
     # and n vs. effective irradiance and temperature
     try:
-        from scipy import optimize
         import statsmodels.api as sm
     except ImportError:
-        raise ImportError('Parameter extraction using Sandia method requires',
-                          ' scipy and statsmodels')
+        raise ImportError(
+            'Parameter extraction using Sandia method requires statsmodels')
 
     tck = tc + 273.15
     tok = const['T0'] + 273.15  # convert to to K
@@ -1183,12 +1180,6 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
        real solar cells using Lambert W-function", Solar Energy Materials and
        Solar Cells, 81 (2004) 269-277.
     """
-
-    try:
-        from scipy.special import lambertw
-    except ImportError:
-        raise ImportError('calc_theta_phi_exact requires scipy')
-
     # handle singleton inputs
     vmp = np.asarray(vmp)
     imp = np.asarray(imp)

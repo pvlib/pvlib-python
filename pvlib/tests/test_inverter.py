@@ -6,7 +6,7 @@ import pandas as pd
 from conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
-from conftest import needs_numpy_1_10, DATA_DIR
+from conftest import DATA_DIR
 import pytest
 
 from pvlib import inverter
@@ -115,7 +115,6 @@ def test_pvwatts_possible_negative():
     assert_allclose(out, expected)
 
 
-@needs_numpy_1_10
 def test_pvwatts_arrays():
     pdc = np.array([[np.nan], [0], [50], [100]])
     pdc0 = 100

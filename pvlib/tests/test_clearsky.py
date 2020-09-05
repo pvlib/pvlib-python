@@ -15,7 +15,7 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-from conftest import requires_scipy, requires_tables, DATA_DIR
+from conftest import requires_tables, DATA_DIR
 
 
 def test_ineichen_series():
@@ -546,7 +546,6 @@ def detect_clearsky_data():
     return expected, cs
 
 
-@requires_scipy
 def test_detect_clearsky(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -555,7 +554,6 @@ def test_detect_clearsky(detect_clearsky_data):
                         check_dtype=False, check_names=False)
 
 
-@requires_scipy
 def test_detect_clearsky_components(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples, components, alpha = clearsky.detect_clearsky(
@@ -566,7 +564,6 @@ def test_detect_clearsky_components(detect_clearsky_data):
     assert np.allclose(alpha, 0.9633903181941296)
 
 
-@requires_scipy
 def test_detect_clearsky_iterations(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     alpha = 1.0448
@@ -581,7 +578,6 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
                         check_dtype=False, check_names=False)
 
 
-@requires_scipy
 def test_detect_clearsky_kwargs(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -591,7 +587,6 @@ def test_detect_clearsky_kwargs(detect_clearsky_data):
     assert clear_samples.all()
 
 
-@requires_scipy
 def test_detect_clearsky_window(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -602,7 +597,6 @@ def test_detect_clearsky_window(detect_clearsky_data):
                         check_dtype=False, check_names=False)
 
 
-@requires_scipy
 def test_detect_clearsky_arrays(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -611,7 +605,6 @@ def test_detect_clearsky_arrays(detect_clearsky_data):
     assert (clear_samples == expected['Clear or not'].values).all()
 
 
-@requires_scipy
 def test_detect_clearsky_irregular_times(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     times = cs.index.values.copy()

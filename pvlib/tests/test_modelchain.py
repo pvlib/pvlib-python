@@ -13,7 +13,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 from conftest import assert_series_equal, assert_frame_equal
 import pytest
 
-from conftest import fail_on_pvlib_version, requires_scipy
+from conftest import fail_on_pvlib_version, requires_tables
 
 
 @pytest.fixture(scope='function')
@@ -422,12 +422,7 @@ def poadc(mc):
 
 
 @pytest.mark.parametrize('dc_model', [
-    'sapm',
-    pytest.param('cec', marks=requires_scipy),
-    pytest.param('desoto', marks=requires_scipy),
-    pytest.param('pvsyst', marks=requires_scipy),
-    pytest.param('singlediode', marks=requires_scipy),
-    'pvwatts_dc'])
+    'sapm', 'cec', 'desoto', 'pvsyst', 'singlediode', 'pvwatts_dc'])
 def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
                         pvsyst_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
                         location, dc_model, weather, mocker):
@@ -466,10 +461,7 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
 
 
-@pytest.mark.parametrize('dc_model', [
-    'sapm',
-    pytest.param('cec', marks=requires_scipy),
-    pytest.param('cec_native', marks=requires_scipy)])
+@pytest.mark.parametrize('dc_model', ['sapm', 'cec', 'cec_native'])
 def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
                               cec_dc_snl_ac_system,
                               cec_dc_native_snl_ac_system, dc_model):
@@ -483,8 +475,7 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
 
 
 @pytest.mark.parametrize('temp_model', [
-    'sapm_temp', 'faiman_temp',
-    pytest.param('pvsyst_temp', marks=requires_scipy)])
+    'sapm_temp', 'faiman_temp', 'pvsyst_temp'])
 def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                           pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                           pvwatts_dc_pvwatts_ac_faiman_temp_system,
@@ -500,7 +491,6 @@ def test_infer_temp_model(location, sapm_dc_snl_ac_system,
     assert isinstance(mc, ModelChain)
 
 
-@requires_scipy
 def test_infer_temp_model_invalid(location, sapm_dc_snl_ac_system):
     sapm_dc_snl_ac_system.temperature_model_parameters.pop('a')
     with pytest.raises(ValueError):
@@ -510,7 +500,6 @@ def test_infer_temp_model_invalid(location, sapm_dc_snl_ac_system):
 
 
 # ModelChain.infer_temperature_model. remove or statement in v0.9
-@requires_scipy
 @fail_on_pvlib_version('0.9')
 def test_infer_temp_model_no_params(location, system_no_temp, weather):
     mc = ModelChain(system_no_temp, location, aoi_model='physical',
@@ -520,7 +509,6 @@ def test_infer_temp_model_no_params(location, system_no_temp, weather):
         mc.run_model(weather)
 
 
-@requires_scipy
 def test_temperature_model_inconsistent(location, sapm_dc_snl_ac_system):
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location,
@@ -543,8 +531,7 @@ def acdc(mc):
     mc.ac = mc.dc
 
 
-@pytest.mark.parametrize('ac_model', [
-    'sandia', pytest.param('adr', marks=requires_scipy), 'pvwatts'])
+@pytest.mark.parametrize('ac_model', ['sandia', 'adr', 'pvwatts'])
 def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    pvwatts_dc_pvwatts_ac_system, location, ac_model,
                    weather, mocker):
@@ -567,8 +554,7 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
 
 
 # TODO in v0.9: remove this test for a deprecation warning
-@pytest.mark.parametrize('ac_model', [
-    'snlinverter', pytest.param('adrinverter', marks=requires_scipy)])
+@pytest.mark.parametrize('ac_model', ['snlinverter', 'adrinverter'])
 def test_ac_models_deprecated(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                               location, ac_model, weather):
     ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
@@ -665,9 +651,8 @@ def constant_spectral_loss(mc):
     mc.spectral_modifier = 0.9
 
 
-@requires_scipy
 @pytest.mark.parametrize('spectral_model', [
-        'sapm', 'first_solar', 'no_loss', constant_spectral_loss
+    'sapm', 'first_solar', 'no_loss', constant_spectral_loss
 ])
 def test_spectral_models(sapm_dc_snl_ac_system, location, spectral_model,
                          weather):
@@ -787,7 +772,6 @@ def test_deprecated_09(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    aoi_model='no_loss', spectral_model='no_loss')
 
 
-@requires_scipy
 def test_basic_chain_required(sam_data, cec_inverter_parameters,
                               sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -805,7 +789,7 @@ def test_basic_chain_required(sam_data, cec_inverter_parameters,
         )
 
 
-@requires_scipy
+@requires_tables
 def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                             sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -828,7 +812,7 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
     assert_series_equal(ac, expected)
 
 
-@requires_scipy
+@requires_tables
 def test_basic_chain_strategy(sam_data, cec_inverter_parameters,
                               sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -849,7 +833,7 @@ def test_basic_chain_strategy(sam_data, cec_inverter_parameters,
     assert_series_equal(ac, expected)
 
 
-@requires_scipy
+@requires_tables
 def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                        sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -913,7 +897,6 @@ def test_ModelChain___repr__(sapm_dc_snl_ac_system, location, strategy,
     assert mc.__repr__() == expected
 
 
-@requires_scipy
 def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
     """The DataFrame should not change if all columns are passed"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)
@@ -931,7 +914,7 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
                         pd.Series([9, 5], index=times, name='ghi'))
 
 
-@requires_scipy
+@requires_tables
 def test_complete_irradiance(sapm_dc_snl_ac_system, location):
     """Check calculations"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)

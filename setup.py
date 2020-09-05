@@ -62,10 +62,6 @@ CLASSIFIERS = [
     'Intended Audience :: Science/Research',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
     'Topic :: Scientific/Engineering',
 ]
 
@@ -73,7 +69,7 @@ setuptools_kwargs = {
     'zip_safe': False,
     'scripts': [],
     'include_package_data': True,
-    'python_requires': '~=3.5'
+    'python_requires': '>=3.6'
 }
 
 # set up pvlib packages to be installed and extensions to be compiled

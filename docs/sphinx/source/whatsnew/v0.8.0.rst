@@ -109,7 +109,7 @@ Enhancements
   irradiance, or with back-of-module or cell temperature data. New methods are
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_poa`,
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`,
-  and :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs_from_poa` (:pull:943)
+  and :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs_from_poa` (:issue:`536`, :pull:`943`)
 
 Bug fixes
 ~~~~~~~~~

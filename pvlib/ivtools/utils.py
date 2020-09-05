@@ -1,5 +1,5 @@
 """
-The ``pvlib.ivtools.utility.py`` module contains utility functions related to
+The ``pvlib.ivtools.utils.py`` module contains utility functions related to
 working with IV curves, or fitting equations to IV curve data.
 
 """
@@ -10,9 +10,6 @@ import pandas as pd
 
 # A small number used to decide when a slope is equivalent to zero
 EPS = np.finfo('float').eps**(1/3)
-
-
-constants = {'E0': 1000.0, 'T0': 25.0, 'k': 1.38066e-23, 'q': 1.60218e-19}
 
 
 def _numdiff(x, f):

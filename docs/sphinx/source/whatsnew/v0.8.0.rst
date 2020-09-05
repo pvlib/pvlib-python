@@ -105,6 +105,11 @@ Enhancements
 * Add :py:func:`pvlib.pvsystem.combine_loss_factors` as general purpose
   function to combine loss factors with a common index.
   Partialy addresses :issue:`988`. Contributed by Brock Taute :ghuser:`btaute`
+* Add capability to run a ModelChain starting with plane-of-array or effective
+  irradiance, or with back-of-module or cell temperature data. New methods are
+  :py:meth:`pvlib.modelchain.ModelChain.run_model_from_poa`,
+  :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`,
+  and :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs_from_poa` (:issue:`536`, :pull:`943`)
 
 Bug fixes
 ~~~~~~~~~

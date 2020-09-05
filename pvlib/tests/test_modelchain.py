@@ -10,7 +10,7 @@ from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import assert_series_equal
+from conftest import assert_series_equal, assert_frame_equal
 import pytest
 
 from conftest import fail_on_pvlib_version, requires_scipy
@@ -178,6 +178,13 @@ def weather():
     return weather
 
 
+@pytest.fixture
+def total_irrad(weather):
+    return pd.DataFrame({'poa_global': [800., 500.],
+                         'poa_diffuse': [300., 200.],
+                         'poa_direct': [500., 300.]}, index=weather.index)
+
+
 def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
     ModelChain(sapm_dc_snl_ac_system, location)
 
@@ -325,6 +332,88 @@ def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
                                     'surface_tilt']).all()
     assert mc.ac[0] > 0
     assert np.isnan(mc.ac[1])
+
+
+def test__assign_total_irrad(sapm_dc_snl_ac_system, location, weather,
+                             total_irrad):
+    weather[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc._assign_total_irrad(weather)
+    for k in modelchain.POA_DATA_KEYS:
+        assert_series_equal(mc.total_irrad[k], total_irrad[k])
+
+
+def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
+                                 weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.prepare_inputs_from_poa(data)
+    # weather attribute
+    assert_frame_equal(mc.weather, weather)
+    # total_irrad attribute
+    assert_frame_equal(mc.total_irrad, total_irrad)
+
+
+def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
+                              total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    # prepare_temperature expects mc.total_irrad and mc.weather to be set
+    mc._assign_weather(data)
+    mc._assign_total_irrad(data)
+    mc._prepare_temperature(data)
+    expected = pd.Series([48.928025, 38.080016], index=data.index)
+    assert_series_equal(mc.cell_temperature, expected)
+    data['module_temperature'] = [40., 30.]
+    mc._prepare_temperature(data)
+    expected = pd.Series([42.4, 31.5], index=data.index)
+    assert_series_equal(mc.cell_temperature, expected)
+    data['cell_temperature'] = [50., 35.]
+    mc._prepare_temperature(data)
+    assert_series_equal(mc.cell_temperature, data['cell_temperature'])
+
+
+def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_poa(total_irrad).ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=total_irrad.index)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
+                                     total_irrad):
+    system = SingleAxisTracker(
+        module_parameters=sapm_dc_snl_ac_system.module_parameters,
+        temperature_model_parameters=(
+            sapm_dc_snl_ac_system.temperature_model_parameters
+        ),
+        inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
+    mc = ModelChain(system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_poa(total_irrad).ac
+    assert (mc.tracking.columns == ['tracker_theta', 'aoi', 'surface_azimuth',
+                                    'surface_tilt']).all()
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=total_irrad.index)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
+                                             weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global']
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_effective_irradiance(data).ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=data.index)
+    assert_series_equal(ac, expected)
 
 
 def poadc(mc):

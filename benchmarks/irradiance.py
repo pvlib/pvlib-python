@@ -66,12 +66,3 @@ class TimeSuite:
         irradiance.erbs(self.clearsky_irradiance.ghi,
                         self.solar_position.apparent_zenith,
                         self.times)
-
-    def time_gti_dirint(self):
-        irradiance.gti_dirint(poa_global=self.clearsky_irradiance.ghi * 1.3,
-                              aoi=self.aoi,
-                              solar_zenith=self.solar_position.apparent_zenith,
-                              solar_azimuth=self.solar_position.azimuth,
-                              times=self.times,
-                              surface_tilt=self.tilt,
-                              surface_azimuth=self.azimuth)

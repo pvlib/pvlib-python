@@ -4,7 +4,7 @@ ASV benchmarks for location.py
 
 import pandas as pd
 import pvlib
-
+from pkg_resources import parse_version
 
 class TimeSuite:
 
@@ -28,10 +28,12 @@ class TimeSuite:
         self.location.get_clearsky(times=self.times,
                                    solar_position=self.solar_position)
 
-    def time_location_get_sun_rise_set_transit_pyephem(self):
-        self.location.get_sun_rise_set_transit(times=self.days,
-                                               method='pyephem')
+    if parse_version(pvlib.__version__) >= parse_version('0.6.1'):
+        def time_location_get_sun_rise_set_transit_pyephem(self):
+            self.location.get_sun_rise_set_transit(times=self.days,
+                                                   method='pyephem')
 
-    def time_location_get_sun_rise_set_transit_spa(self):
-        self.location.get_sun_rise_set_transit(times=self.days,
-                                               method='spa')
+    if parse_version(pvlib.__version__) >= parse_version('0.6.1'):
+        def time_location_get_sun_rise_set_transit_spa(self):
+            self.location.get_sun_rise_set_transit(times=self.days,
+                                                   method='spa')

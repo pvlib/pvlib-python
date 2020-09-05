@@ -3,8 +3,16 @@ ASV benchmarks for solarposition.py
 """
 
 import pandas as pd
+import pvlib
 from pvlib import solarposition
 
+from pkg_resources import parse_version
+
+
+if parse_version(pvlib.__version__) >= parse_version('0.6.1'):
+    sun_rise_set_transit_spa = solarposition.sun_rise_set_transit_spa
+else:
+    sun_rise_set_transit_spa = solarposition.get_sun_rise_set_transit
 
 class TimeSuite:
 
@@ -27,8 +35,8 @@ class TimeSuite:
         solarposition.spa_python(self.times_localized[::5], self.lat, self.lon)
 
     def time_sun_rise_set_transit_spa(self):
-        solarposition.sun_rise_set_transit_spa(self.times_localized[::30],
-                                               self.lat, self.lon)
+        sun_rise_set_transit_spa(self.times_localized[::30],
+                                 self.lat, self.lon)
 
     def time_nrel_earthsun_distance(self):
         solarposition.nrel_earthsun_distance(self.times_localized)

@@ -85,7 +85,7 @@ class Location:
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']
         return ('Location: \n  ' + '\n  '.join(
-            '{}: {}'.format(attr, getattr(self, attr)) for attr in attrs))
+            f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):

@@ -14,6 +14,7 @@ if parse_version(pvlib.__version__) >= parse_version('0.6.1'):
 else:
     sun_rise_set_transit_spa = solarposition.get_sun_rise_set_transit
 
+
 class TimeSuite:
 
     def setup(self):

@@ -6,6 +6,7 @@ import pandas as pd
 import pvlib
 from pkg_resources import parse_version
 
+
 class TimeSuite:
 
     def setup(self):

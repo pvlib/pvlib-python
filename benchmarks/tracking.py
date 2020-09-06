@@ -6,6 +6,7 @@ import pandas as pd
 from pvlib import tracking, solarposition
 import numpy as np
 
+
 class TimeSuite:
 
     def setup(self):

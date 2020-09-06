@@ -225,7 +225,7 @@ class PVSystem:
                  'inverter', 'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters']
         return ('PVSystem:\n  ' + '\n  '.join(
-            '{}: {}'.format(attr, getattr(self, attr)) for attr in attrs))
+            f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.

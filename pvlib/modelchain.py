@@ -1076,9 +1076,8 @@ class ModelChain:
         """
         if not set(required) <= set(data.columns):
             raise ValueError(
-                "Incomplete input data. Data needs to contain {}. "
-                "Detected data contains: {}".format(required,
-                                                    list(data.columns)))
+                f"Incomplete input data. Data needs to contain {required}. "
+                f"Detected data contains: {list(data.columns)}")
         return
 
     def _assign_weather(self, data):

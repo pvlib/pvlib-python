@@ -62,7 +62,7 @@ def meta_expected():
 @pytest.fixture
 def csv_meta(meta_expected):
     return [
-        '{}: {} ({})'.format(k, v['description'], v['units']) for k, v
+        f'{k}: {v['description']} ({v['units']})' for k, v
         in meta_expected['outputs']['tmy_hourly']['variables'].items()]
 
 

@@ -16,11 +16,11 @@ from pvlib.tools import cosd, sind, tand, asind
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
 _IAM_MODEL_PARAMS = {
-    'ashrae': set(['b']),
-    'physical': set(['n', 'K', 'L']),
-    'martin_ruiz': set(['a_r']),
-    'sapm': set(['B0', 'B1', 'B2', 'B3', 'B4', 'B5']),
-    'interp': set([])
+    'ashrae': {'b'},
+    'physical': {'n', 'K', 'L'},
+    'martin_ruiz': {'a_r'},
+    'sapm': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
+    'interp': set()
 }
 
 
@@ -79,7 +79,7 @@ def ashrae(aoi, b=0.05):
     pvlib.iam.interp
     """
 
-    iam = 1 - b * ((1 / np.cos(np.radians(aoi)) - 1))
+    iam = 1 - b * (1 / np.cos(np.radians(aoi)) - 1)
     aoi_gte_90 = np.full_like(aoi, False, dtype='bool')
     np.greater_equal(np.abs(aoi), 90, where=~np.isnan(aoi), out=aoi_gte_90)
     iam = np.where(aoi_gte_90, 0, iam)
@@ -675,7 +675,7 @@ def marion_integrate(function, surface_tilt, region, num=None):
         elif region == 'horizon':
             num = 1800
         else:
-            raise ValueError('Invalid region: {}'.format(region))
+            raise ValueError(f'Invalid region: {region}')
 
     beta = np.radians(surface_tilt)
     if isinstance(beta, pd.Series):
@@ -697,7 +697,7 @@ def marion_integrate(function, surface_tilt, region, num=None):
     elif region == 'ground':
         mask = (phi_range >= np.pi/2)
     else:
-        raise ValueError('Invalid region: {}'.format(region))
+        raise ValueError(f'Invalid region: {region}')
     phi_range = phi_range[mask]
 
     # fast Cartesian product of phi and psi

@@ -209,7 +209,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
 
     if 'kastenyoung1989' == model:
         am = (1.0 / (np.cos(zenith_rad) +
-              0.50572*(((6.07995 + (90 - z)) ** - 1.6364))))
+              0.50572*((6.07995 + (90 - z)) ** - 1.6364)))
     elif 'kasten1966' == model:
         am = 1.0 / (np.cos(zenith_rad) + 0.15*((93.885 - z) ** - 1.253))
     elif 'simple' == model:
@@ -434,7 +434,7 @@ def first_solar_spectral_correction(pw, airmass_absolute,
     pw = pw.astype('float64')
     if np.min(pw) < min_pw:
         pw = np.maximum(pw, min_pw)
-        warn('Exceptionally low pw values replaced with {0} cm to prevent '
+        warn('Exceptionally low pw values replaced with {} cm to prevent '
              'model divergence'.format(min_pw))
 
     # Warn user about Pw data that is exceptionally high

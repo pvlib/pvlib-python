@@ -62,7 +62,7 @@ def meta_expected():
 @pytest.fixture
 def csv_meta(meta_expected):
     return [
-        '%s: %s (%s)' % (k, v['description'], v['units']) for k, v
+        '{}: {} ({})'.format(k, v['description'], v['units']) for k, v
         in meta_expected['outputs']['tmy_hourly']['variables'].items()]
 
 
@@ -254,6 +254,6 @@ def test_read_pvgis_tmy_basic(expected, meta_expected):
 
 def test_read_pvgis_tmy_exception():
     bad_outputformat = 'bad'
-    err_msg = "pvgis format '{:s}' was unknown".format(bad_outputformat)
+    err_msg = f"pvgis format '{bad_outputformat:s}' was unknown"
     with pytest.raises(ValueError, match=err_msg):
         read_pvgis_tmy('filename', pvgis_format=bad_outputformat)

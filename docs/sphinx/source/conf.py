@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # PVLIB_Python documentation build configuration file, created by
 # sphinx-quickstart on Fri Nov  7 15:56:33 2014.
@@ -80,8 +79,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pvlib-python'
-copyright = u'2015, Sandia National Labs, Rob Andrews, University of Arizona, github contributors'
+project = 'pvlib-python'
+copyright = '2015, Sandia National Labs, Rob Andrews, University of Arizona, github contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -251,8 +250,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'PVLIB_Python.tex', u'PVLIB\\_Python Documentation',
-   u'Sandia National Labs, Rob Andrews, University of Arizona, github contributors', 'manual'),
+  ('index', 'PVLIB_Python.tex', 'PVLIB\\_Python Documentation',
+   'Sandia National Labs, Rob Andrews, University of Arizona, github contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -289,8 +288,8 @@ extlinks = {
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pvlib_python', u'PVLIB_Python Documentation',
-     [u'Sandia National Labs, Rob Andrews, University of Arizona, github contributors'], 1)
+    ('index', 'pvlib_python', 'PVLIB_Python Documentation',
+     ['Sandia National Labs, Rob Andrews, University of Arizona, github contributors'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -303,8 +302,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'PVLIB_Python', u'PVLIB_Python Documentation',
-   u'Sandia National Labs, Rob Andrews, University of Arizona, github contributors', 'PVLIB_Python', 'One line description of project.',
+  ('index', 'PVLIB_Python', 'PVLIB_Python Documentation',
+   'Sandia National Labs, Rob Andrews, University of Arizona, github contributors', 'PVLIB_Python', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -432,7 +431,7 @@ def make_github_url(pagename):
         # add line numbers if possible:
         start, end = get_linenos(obj)
         if start and end:
-            target_url += '#L{}-L{}'.format(start, end)
+            target_url += f'#L{start}-L{end}'
 
     # Just a normal source RST page
     else:

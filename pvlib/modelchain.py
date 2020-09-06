@@ -21,18 +21,18 @@ from pvlib.tools import _build_kwargs
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
 # for ModelChain.weather
-WEATHER_KEYS = set(['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
-                    'precipitable_water'])
+WEATHER_KEYS = {'ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
+                    'precipitable_water'}
 
 # for ModelChain.total_irrad
-POA_DATA_KEYS = set(['poa_global', 'poa_direct', 'poa_diffuse'])
+POA_DATA_KEYS = {'poa_global', 'poa_direct', 'poa_diffuse'}
 
 # Optional keys to communicate temperature data. If provided,
 # 'cell_temperature' overrides ModelChain.temperature_model and sets
 # ModelChain.cell_temperature to the data. If 'module_temperature' is provdied,
 # overrides ModelChain.temperature_model with
 # pvlib.temperature.sapm_celL_from_module
-TEMPERATURE_KEYS = set(['module_temperature', 'cell_temperature'])
+TEMPERATURE_KEYS = {'module_temperature', 'cell_temperature'}
 
 DATA_KEYS = WEATHER_KEYS | POA_DATA_KEYS | TEMPERATURE_KEYS
 
@@ -260,7 +260,7 @@ def get_orientation(strategy, **kwargs):
     return surface_tilt, surface_azimuth
 
 
-class ModelChain(object):
+class ModelChain:
     """
     The ModelChain class to provides a standardized, high-level
     interface for all of the modeling steps necessary for calculating PV
@@ -555,7 +555,7 @@ class ModelChain(object):
             return out
 
         return ('ModelChain: \n  ' + '\n  '.join(
-            ('{}: {}'.format(attr, getmcattr(self, attr)) for attr in attrs)))
+            '{}: {}'.format(attr, getmcattr(self, attr)) for attr in attrs))
 
     @property
     def orientation_strategy(self):
@@ -610,18 +610,18 @@ class ModelChain(object):
 
     def infer_dc_model(self):
         params = set(self.system.module_parameters.keys())
-        if set(['A0', 'A1', 'C7']) <= params:
+        if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
-        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-                  'R_s', 'Adjust']) <= params:
+        elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                  'R_s', 'Adjust'} <= params:
             return self.cec, 'cec'
-        elif set(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-                  'R_s']) <= params:
+        elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+                  'R_s'} <= params:
             return self.desoto, 'desoto'
-        elif set(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
-                  'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s']) <= params:
+        elif {'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+                  'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s'} <= params:
             return self.pvsyst, 'pvsyst'
-        elif set(['pdc0', 'gamma_pdc']) <= params:
+        elif {'pdc0', 'gamma_pdc'} <= params:
             return self.pvwatts_dc, 'pvwatts'
         else:
             raise ValueError('could not infer DC model from '
@@ -705,11 +705,11 @@ class ModelChain(object):
 
     def infer_ac_model(self):
         inverter_params = set(self.system.inverter_parameters.keys())
-        if set(['C0', 'C1', 'C2']) <= inverter_params:
+        if {'C0', 'C1', 'C2'} <= inverter_params:
             return self.snlinverter
-        elif set(['ADRCoefficients']) <= inverter_params:
+        elif {'ADRCoefficients'} <= inverter_params:
             return self.adrinverter
-        elif set(['pdc0']) <= inverter_params:
+        elif {'pdc0'} <= inverter_params:
             return self.pvwatts_inverter
         else:
             raise ValueError('could not infer AC model from '
@@ -756,13 +756,13 @@ class ModelChain(object):
 
     def infer_aoi_model(self):
         params = set(self.system.module_parameters.keys())
-        if set(['K', 'L', 'n']) <= params:
+        if {'K', 'L', 'n'} <= params:
             return self.physical_aoi_loss
-        elif set(['B5', 'B4', 'B3', 'B2', 'B1', 'B0']) <= params:
+        elif {'B5', 'B4', 'B3', 'B2', 'B1', 'B0'} <= params:
             return self.sapm_aoi_loss
-        elif set(['b']) <= params:
+        elif {'b'} <= params:
             return self.ashrae_aoi_loss
-        elif set(['a_r']) <= params:
+        elif {'a_r'} <= params:
             return self.martin_ruiz_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
@@ -816,7 +816,7 @@ class ModelChain(object):
 
     def infer_spectral_model(self):
         params = set(self.system.module_parameters.keys())
-        if set(['A4', 'A3', 'A2', 'A1', 'A0']) <= params:
+        if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
             return self.sapm_spectral_loss
         elif ((('Technology' in params or
                 'Material' in params) and
@@ -878,13 +878,13 @@ class ModelChain(object):
     def infer_temperature_model(self):
         params = set(self.system.temperature_model_parameters.keys())
         # remove or statement in v0.9
-        if set(['a', 'b', 'deltaT']) <= params or (
+        if {'a', 'b', 'deltaT'} <= params or (
                 not params and self.system.racking_model is None
                 and self.system.module_type is None):
             return self.sapm_temp
-        elif set(['u_c', 'u_v']) <= params:
+        elif {'u_c', 'u_v'} <= params:
             return self.pvsyst_temp
-        elif set(['u0', 'u1']) <= params:
+        elif {'u0', 'u1'} <= params:
             return self.faiman_temp
         else:
             raise ValueError('could not infer temperature model from '
@@ -1077,8 +1077,8 @@ class ModelChain(object):
         """
         if not set(required) <= set(data.columns):
             raise ValueError(
-                "Incomplete input data. Data needs to contain {0}. "
-                "Detected data contains: {1}".format(required,
+                "Incomplete input data. Data needs to contain {}. "
+                "Detected data contains: {}".format(required,
                                                      list(data.columns)))
         return
 

@@ -12,7 +12,7 @@ import pytz
 from pvlib import solarposition, clearsky, atmosphere, irradiance
 
 
-class Location(object):
+class Location:
     """
     Location objects are convenient containers for latitude, longitude,
     timezone, and altitude data associated with a particular
@@ -85,7 +85,7 @@ class Location(object):
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']
         return ('Location: \n  ' + '\n  '.join(
-            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
+            '{}: {}'.format(attr, getattr(self, attr)) for attr in attrs))
 
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):
@@ -310,7 +310,7 @@ class Location(object):
         elif model in atmosphere.TRUE_ZENITH_MODELS:
             zenith = solar_position['zenith']
         else:
-            raise ValueError('{} is not a valid airmass model'.format(model))
+            raise ValueError(f'{model} is not a valid airmass model')
 
         airmass_relative = atmosphere.get_relative_airmass(zenith, model)
 

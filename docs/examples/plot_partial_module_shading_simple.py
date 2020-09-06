@@ -322,8 +322,8 @@ plt.figure()
 plt.imshow(results_pivot, origin='lower', aspect='auto')
 plt.xlabel('shaded fraction')
 plt.ylabel('diffuse fraction')
-xlabels = ["{:0.02f}".format(fs) for fs in results_pivot.columns[::5]]
-ylabels = ["{:0.02f}".format(fd) for fd in results_pivot.index]
+xlabels = [f"{fs:0.02f}" for fs in results_pivot.columns[::5]]
+ylabels = [f"{fd:0.02f}" for fd in results_pivot.index]
 plt.xticks(range(0, 5*len(xlabels), 5), xlabels)
 plt.yticks(range(0, len(ylabels)), ylabels)
 plt.title('Module P_mp across shading conditions')

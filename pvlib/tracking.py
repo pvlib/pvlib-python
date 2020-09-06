@@ -81,7 +81,7 @@ class SingleAxisTracker(PVSystem):
         attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr',
                  'cross_axis_tilt']
         sat_repr = ('SingleAxisTracker:\n  ' + '\n  '.join(
-            '{}: {}'.format(attr, getattr(self, attr)) for attr in attrs))
+            f'{attr}: {getattr(self, attr)}' for attr in attrs))
         # get the parent PVSystem info
         pvsystem_repr = super().__repr__()
         # remove the first line (contains 'PVSystem: \n')

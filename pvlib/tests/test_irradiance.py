@@ -278,6 +278,13 @@ def test_sky_diffuse_zenith_close_to_90(model):
     assert sky_diffuse < 100
 
 
+def test_get_sky_diffuse_invalid():
+    with pytest.raises(ValueError):
+        irradiance.get_sky_diffuse(
+            30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
+            model='invalid')
+
+
 def test_liujordan():
     expected = pd.DataFrame(np.array(
         [[863.859736967, 653.123094076, 220.65905025]]),

@@ -6,7 +6,7 @@ import pandas as pd
 from pvlib import irradiance, location
 
 
-class TimeSuite:
+class Irradiance:
 
     def setup(self):
         self.times = pd.date_range(start='20180601', freq='1min',

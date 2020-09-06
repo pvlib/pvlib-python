@@ -15,7 +15,7 @@ else:
     sun_rise_set_transit_spa = solarposition.get_sun_rise_set_transit
 
 
-class TimeSuite:
+class SolarPosition:
 
     def setup(self):
         self.times = pd.date_range(start='20180601', freq='1min',

@@ -7,7 +7,7 @@ from pvlib import tracking, solarposition
 import numpy as np
 
 
-class TimeSuite:
+class SingleAxis:
 
     def setup(self):
         self.times = pd.date_range(start='20180601', freq='1min',

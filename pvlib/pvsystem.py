@@ -871,7 +871,7 @@ class LocalizedPVSystem(PVSystem, Location):
                  'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters']
         return ('LocalizedPVSystem:\n  ' + '\n  '.join(
-            '{}: {}'.format(attr, getattr(self, attr)) for attr in attrs))
+            f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,

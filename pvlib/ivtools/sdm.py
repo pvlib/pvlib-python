@@ -945,7 +945,7 @@ def _update_io(voc, iph, io, rs, rsh, nnsvth):
         dvoc = pvoc - voc
 
         # Update Io
-        with np.errstate(invalid="ignore"):
+        with np.errstate(invalid="ignore", divide="ignore"):
             new_io = tio * (1. + (2. * dvoc) / (2. * nnsvth - dvoc))
             # Calculate Maximum Percent Difference
             maxerr = np.max(np.abs(new_io - tio) / tio) * 100.
@@ -1138,8 +1138,9 @@ def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
 
     for i in range(niter):
         _, z = _calc_theta_phi_exact(vmp, imp, iph, io, rs, x1, nnsvth)
-        next_x1 = (1 + z) / z * ((iph + io) * x1 / imp - nnsvth * z / imp - 2 *
-                                 vmp / imp)
+        with np.errstate(divide="ignore"):
+            next_x1 = (1 + z) / z * ((iph + io) * x1 / imp - nnsvth * z / imp
+                                     - 2 * vmp / imp)
         x1 = next_x1
 
     return x1
@@ -1207,7 +1208,7 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
 
     # Argument for Lambert W function involved in V = V(I) [2] Eq. 12; [3]
     # Eq. 3
-    with np.errstate(over="ignore", invalid="ignore"):
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
         argw = np.where(
             nnsvth == 0,
             np.nan,
@@ -1232,7 +1233,7 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
 
     # Argument for Lambert W function involved in I = I(V) [2] Eq. 11; [3]
     # E1. 2
-    with np.errstate(over="ignore", invalid="ignore"):
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
         argw = np.where(
             nnsvth == 0,
             np.nan,
@@ -1243,10 +1244,12 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
     # NaN where argw overflows. Switch to log space to evaluate
     u = np.isinf(argw)
     if np.any(u):
-        logargw = (
-            np.log(rsh[u]) / (rsh[u] + rs[u]) + np.log(rs[u]) + np.log(io[u])
-            - np.log(nnsvth[u]) + (rsh[u] / (rsh[u] + rs[u]))
-            * (rs[u] * (iph[u] + io[u]) + vmp[u]) / nnsvth[u])
+        with np.errstate(divide="ignore"):
+            logargw = (
+                np.log(rsh[u]) - np.log(rsh[u] + rs[u]) + np.log(rs[u])
+                + np.log(io[u]) - np.log(nnsvth[u])
+                + (rsh[u] / (rsh[u] + rs[u]))
+                * (rs[u] * (iph[u] + io[u]) + vmp[u]) / nnsvth[u])
         # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
         # The initial guess is w=logargW. Where direct evaluation (above)
         # results in NaN from overflow, 3 iterations of Newton's method gives

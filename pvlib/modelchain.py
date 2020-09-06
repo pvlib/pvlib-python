@@ -22,7 +22,7 @@ from pvlib.tools import _build_kwargs
 # ModelChain attribute
 # for ModelChain.weather
 WEATHER_KEYS = {'ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
-                    'precipitable_water'}
+                'precipitable_water'}
 
 # for ModelChain.total_irrad
 POA_DATA_KEYS = {'poa_global', 'poa_direct', 'poa_diffuse'}
@@ -612,14 +612,13 @@ class ModelChain:
         params = set(self.system.module_parameters.keys())
         if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
-        elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-                  'R_s', 'Adjust'} <= params:
+        elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s',
+              'Adjust'} <= params:
             return self.cec, 'cec'
-        elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-                  'R_s'} <= params:
+        elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s'} <= params:
             return self.desoto, 'desoto'
-        elif {'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
-                  'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'R_s'} <= params:
+        elif {'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+              'R_sh_0', 'R_sh_exp', 'R_s'} <= params:
             return self.pvsyst, 'pvsyst'
         elif {'pdc0', 'gamma_pdc'} <= params:
             return self.pvwatts_dc, 'pvwatts'
@@ -1079,7 +1078,7 @@ class ModelChain:
             raise ValueError(
                 "Incomplete input data. Data needs to contain {}. "
                 "Detected data contains: {}".format(required,
-                                                     list(data.columns)))
+                                                    list(data.columns)))
         return
 
     def _assign_weather(self, data):

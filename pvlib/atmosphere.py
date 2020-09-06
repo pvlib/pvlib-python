@@ -434,8 +434,8 @@ def first_solar_spectral_correction(pw, airmass_absolute,
     pw = pw.astype('float64')
     if np.min(pw) < min_pw:
         pw = np.maximum(pw, min_pw)
-        warn('Exceptionally low pw values replaced with {} cm to prevent '
-             'model divergence'.format(min_pw))
+        warn(f'Exceptionally low pw values replaced with {min_pw} cm to prevent '
+             'model divergence')
 
     # Warn user about Pw data that is exceptionally high
     if np.max(pw) > max_pw:

@@ -9,6 +9,7 @@ import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
 from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
+
 @pytest.fixture
 def expected():
     return pd.read_csv(DATA_DIR / 'pvgis_tmy_test.dat', index_col='time(UTC)')
@@ -62,7 +63,7 @@ def meta_expected():
 @pytest.fixture
 def csv_meta(meta_expected):
     return [
-        f'{k}: {v['description']} ({v['units']})' for k, v
+        f"{k}: {v['description']} ({v['units']})" for k, v
         in meta_expected['outputs']['tmy_hourly']['variables'].items()]
 
 

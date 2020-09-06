@@ -262,7 +262,8 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
         attrs = ['latitude', 'longitude', 'altitude', 'tz']
         return ('Localized' +
                 super().__repr__() + '\n  ' +
-                '\n  '.join(f'{attr}: {getattr(self, attr)}' for attr in attrs))
+                '\n  '.join(
+                    f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,

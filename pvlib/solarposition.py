@@ -20,6 +20,7 @@ except ImportError:
 
 import numpy as np
 import pandas as pd
+import scipy.optimize as so
 import warnings
 
 from pvlib import atmosphere
@@ -911,12 +912,6 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         If the given attribute is not an attribute of a
         PyEphem.Sun object.
     """
-
-    try:
-        import scipy.optimize as so
-    except ImportError:
-        raise ImportError('The calc_time function requires scipy')
-
     obs, sun = _ephem_setup(latitude, longitude, altitude,
                             pressure, temperature, horizon)
 
@@ -1126,7 +1121,7 @@ def equation_of_time_pvcdrom(dayofyear):
 
     See Also
     --------
-    equation_of_time_Spencer71
+    equation_of_time_spencer71
     """
     # day angle relative to Vernal Equinox, typically March 22 (day number 81)
     bday = \
@@ -1380,7 +1375,7 @@ def hour_angle(times, longitude, equation_of_time):
 
     See Also
     --------
-    equation_of_time_Spencer71
+    equation_of_time_spencer71
     equation_of_time_pvcdrom
     """
     naive_times = times.tz_localize(None)  # naive but still localized

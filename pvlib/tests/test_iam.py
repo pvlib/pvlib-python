@@ -9,14 +9,12 @@ import numpy as np
 import pandas as pd
 
 import pytest
-from pandas.util.testing import assert_series_equal
+from conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import iam as _iam
-from conftest import needs_numpy_1_10, requires_scipy
 
 
-@needs_numpy_1_10
 def test_ashrae():
     thetas = np.array([-90., -67.5, -45., -22.5, 0., 22.5, 45., 67.5, 89., 90.,
                        np.nan])
@@ -28,7 +26,6 @@ def test_ashrae():
     assert_series_equal(iam_series, pd.Series(expected))
 
 
-@needs_numpy_1_10
 def test_ashrae_scalar():
     thetas = -45.
     iam = _iam.ashrae(thetas, .05)
@@ -40,7 +37,6 @@ def test_ashrae_scalar():
     assert_allclose(iam, expected, equal_nan=True)
 
 
-@needs_numpy_1_10
 def test_physical():
     aoi = np.array([-90., -67.5, -45., -22.5, 0., 22.5, 45., 67.5, 90.,
                     np.nan])
@@ -56,7 +52,6 @@ def test_physical():
     assert_series_equal(iam, expected)
 
 
-@needs_numpy_1_10
 def test_physical_scalar():
     aoi = -45.
     iam = _iam.physical(aoi, 1.526, 0.002, 4)
@@ -147,7 +142,6 @@ def test_martin_ruiz_diffuse():
     assert_series_equal(iam[1], expected_gnd)
 
 
-@requires_scipy
 def test_iam_interp():
 
     aoi_meas = [0.0, 45.0, 65.0, 75.0]
@@ -218,3 +212,114 @@ def test_sapm_limits():
 
     module_parameters = {'B0': -5, 'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0}
     assert _iam.sapm(1, module_parameters) == 0
+
+
+def test_marion_diffuse_model(mocker):
+    # 1: return values are correct
+    # 2: the underlying models are called appropriately
+    ashrae_expected = {
+        'sky': 0.9596085829811408,
+        'horizon': 0.8329070417832541,
+        'ground': 0.719823559106309
+    }
+    physical_expected = {
+        'sky': 0.9539178294437575,
+        'horizon': 0.7652650139134007,
+        'ground': 0.6387140117795903
+    }
+    ashrae_spy = mocker.spy(_iam, 'ashrae')
+    physical_spy = mocker.spy(_iam, 'physical')
+
+    ashrae_actual = _iam.marion_diffuse('ashrae', 20)
+    assert ashrae_spy.call_count == 3  # one call for each of the 3 regions
+    assert physical_spy.call_count == 0
+    physical_actual = _iam.marion_diffuse('physical', 20)
+    assert ashrae_spy.call_count == 3
+    assert physical_spy.call_count == 3
+
+    for k, v in ashrae_expected.items():
+        np.testing.assert_allclose(ashrae_actual[k], v)
+
+    for k, v in physical_expected.items():
+        np.testing.assert_allclose(physical_actual[k], v)
+
+
+def test_marion_diffuse_kwargs():
+    # kwargs get passed to underlying model
+    expected = {
+        'sky': 0.967489994422575,
+        'horizon': 0.8647842827418412,
+        'ground': 0.7700443455928433
+    }
+    actual = _iam.marion_diffuse('ashrae', 20, b=0.04)
+
+    for k, v in expected.items():
+        np.testing.assert_allclose(actual[k], v)
+
+
+def test_marion_diffuse_invalid():
+    with pytest.raises(ValueError):
+        _iam.marion_diffuse('not_a_model', 20)
+
+
+@pytest.mark.parametrize('region,N,expected', [
+    ('sky', 180, 0.9596085829811408),
+    ('horizon', 1800, 0.8329070417832541),
+    ('ground', 180, 0.719823559106309)
+])
+def test_marion_integrate_scalar(region, N, expected):
+    actual = _iam.marion_integrate(_iam.ashrae, 20, region, N)
+    assert_allclose(actual, expected)
+
+    with np.errstate(invalid='ignore'):
+        actual = _iam.marion_integrate(_iam.ashrae, np.nan, region, N)
+    expected = np.nan
+    assert_allclose(actual, expected)
+
+
+@pytest.mark.parametrize('region,N,expected', [
+    ('sky', 180, [0.9523611991069362, 0.9596085829811408, 0.9619811198105501]),
+    ('horizon', 1800, [0.0, 0.8329070417832541, 0.8987287652347437]),
+    ('ground', 180, [0.0, 0.719823559106309, 0.8186360238536674])
+])
+def test_marion_integrate_list(region, N, expected):
+    actual = _iam.marion_integrate(_iam.ashrae, [0, 20, 30], region, N)
+    assert_allclose(actual, expected)
+
+    with np.errstate(invalid='ignore'):
+        actual = _iam.marion_integrate(_iam.ashrae, [0, 20, np.nan], region, N)
+    assert_allclose(actual, [expected[0], expected[1], np.nan])
+
+
+@pytest.mark.parametrize('region,N,expected', [
+    ('sky', 180, [0.9523611991069362, 0.9596085829811408, 0.9619811198105501]),
+    ('horizon', 1800, [0.0, 0.8329070417832541, 0.8987287652347437]),
+    ('ground', 180, [0.0, 0.719823559106309, 0.8186360238536674])
+])
+def test_marion_integrate_series(region, N, expected):
+    idx = pd.date_range('2019-01-01', periods=3, freq='h')
+    tilt = pd.Series([0, 20, 30], index=idx)
+    expected = pd.Series(expected, index=idx)
+    actual = _iam.marion_integrate(_iam.ashrae, tilt, region, N)
+    assert_series_equal(actual, expected)
+
+    tilt.iloc[1] = np.nan
+    expected.iloc[1] = np.nan
+    with np.errstate(invalid='ignore'):
+        actual = _iam.marion_integrate(_iam.ashrae, tilt, region, N)
+    assert_allclose(actual, expected)
+
+
+def test_marion_integrate_ground_flat():
+    iam = _iam.marion_integrate(_iam.ashrae, 0, 'horizon', 1800)
+    assert_allclose(iam, 0)
+
+
+def test_marion_integrate_invalid():
+    # check for invalid region string.  this actually gets checked twice,
+    # with the difference being whether `num` is specified or not.
+    with pytest.raises(ValueError):
+        _iam.marion_integrate(_iam.ashrae, 0, 'bad')
+
+    with pytest.raises(ValueError):
+        _iam.marion_integrate(_iam.ashrae, 0, 'bad', 180)

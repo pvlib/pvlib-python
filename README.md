@@ -61,8 +61,8 @@
 <tr>
   <td>Publications</td>
   <td>
-    <a href="https://doi.org/10.5281/zenodo.2554311">
-    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.2554311.svg" alt="zenodo reference" />
+    <a href="https://doi.org/10.5281/zenodo.3762635">
+    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.3762635.svg" alt="zenodo reference">
     </a>
     <a href="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1">
     <img src="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg" alt="JOSS reference" />
@@ -104,10 +104,6 @@ Installation
 
 pvlib-python releases may be installed using the ``pip`` and ``conda`` tools.
 Please see the [Installation page](http://pvlib-python.readthedocs.io/en/stable/installation.html) of the documentation for complete instructions.
-
-pvlib-python is compatible with Python 3.5 and above.
-
-**Python 2.7 support ended on June 1, 2019, with pvlib-python 0.6.3.**
 
 
 Contributing

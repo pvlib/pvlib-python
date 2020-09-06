@@ -38,16 +38,19 @@ MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
 INSTALL_REQUIRES = ['numpy >= 1.12.0',
-                    'pandas >= 0.18.1',
+                    'pandas >= 0.22.0',
                     'pytz',
-                    'requests']
+                    'requests',
+                    'scipy >= 1.2.0']
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'pytest-timeout', 'pytest-rerunfailures', 'pytest-remotedata']
 EXTRAS_REQUIRE = {
-    'optional': ['ephem', 'cython', 'netcdf4', 'nrel-pysam', 'numba',
-                 'pvfactors', 'scipy', 'siphon', 'tables'],
+    'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
+                 'pvfactors', 'siphon', 'statsmodels', 'tables',
+                 'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 1.8.5', 'sphinx_rtd_theme',
-            'sphinx-gallery', 'docutils == 0.15.2'],
+            'sphinx-gallery', 'docutils == 0.15.2', 'pillow',
+            'netcdf4', 'siphon', 'tables'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
@@ -59,9 +62,6 @@ CLASSIFIERS = [
     'Intended Audience :: Science/Research',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
     'Topic :: Scientific/Engineering',
 ]
 
@@ -69,7 +69,7 @@ setuptools_kwargs = {
     'zip_safe': False,
     'scripts': [],
     'include_package_data': True,
-    'python_requires': '~=3.5'
+    'python_requires': '>=3.6'
 }
 
 # set up pvlib packages to be installed and extensions to be compiled

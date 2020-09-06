@@ -622,7 +622,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     .. math::
 
-       F' = 1 - (I_{d0} / GHI)
+       F' = 1 - (I_{d0} / GHI)^2
 
     Klucher's 1979 model determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 import pytest
-from pandas.util.testing import assert_series_equal
+from conftest import DATA_DIR, assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import temperature
@@ -24,6 +24,12 @@ def test_sapm_module(sapm_default):
     default = temperature.sapm_module(900, 20, 5, sapm_default['a'],
                                       sapm_default['b'])
     assert_allclose(default, 40.809, 3)
+
+
+def test_sapm_cell_from_module(sapm_default):
+    default = temperature.sapm_cell_from_module(50, 900,
+                                                sapm_default['deltaT'])
+    assert_allclose(default, 50 + 900 / 1000 * sapm_default['deltaT'])
 
 
 def test_sapm_ndarray(sapm_default):
@@ -136,3 +142,51 @@ def test__temperature_model_params():
         'open_rack_glass_glass']
     with pytest.raises(KeyError):
         temperature._temperature_model_params('sapm', 'not_a_parameter_set')
+
+
+def _read_pvwatts_8760(filename):
+    df = pd.read_csv(filename,
+                     skiprows=17,  # ignore location/simulation metadata
+                     skipfooter=1,  # ignore "Totals" row
+                     engine='python')
+    df['Year'] = 2019
+    df.index = pd.to_datetime(df[['Year', 'Month', 'Day', 'Hour']])
+    return df
+
+
+@pytest.mark.parametrize('filename,inoct', [
+    ('pvwatts_8760_rackmount.csv', 45),
+    ('pvwatts_8760_roofmount.csv', 49),
+])
+def test_fuentes(filename, inoct):
+    # Test against data exported from pvwatts.nrel.gov
+    data = _read_pvwatts_8760(DATA_DIR / filename)
+    data = data.iloc[:24*7, :]  # just use one week
+    inputs = {
+        'poa_global': data['Plane of Array Irradiance (W/m^2)'],
+        'temp_air': data['Ambient Temperature (C)'],
+        'wind_speed': data['Wind Speed (m/s)'],
+        'noct_installed': inoct,
+    }
+    expected_tcell = data['Cell Temperature (C)']
+    expected_tcell.name = 'tmod'
+    actual_tcell = temperature.fuentes(**inputs)
+    # the SSC implementation of PVWatts diverges from the Fuentes model at
+    # at night by setting Tcell=Tamb when POA=0. This not only means that
+    # nighttime values are slightly different (Fuentes models cooling to sky
+    # at night), but because of the thermal inertia, there is a transient
+    # error after dawn as well. Test each case separately:
+    is_night = inputs['poa_global'] == 0
+    is_dawn = is_night.shift(1) & ~is_night
+    is_daytime = (inputs['poa_global'] > 0) & ~is_dawn
+    # the accuracy is probably higher than 3 digits here, but the PVWatts
+    # export data has low precision so can only test up to 3 digits
+    assert_series_equal(expected_tcell[is_daytime].round(3),
+                        actual_tcell[is_daytime].round(3))
+    # use lower precision for dawn times to accommodate the dawn transient
+    error = actual_tcell[is_dawn] - expected_tcell[is_dawn]
+    assert (error.abs() < 0.1).all()
+    # sanity check on night values -- Fuentes not much lower than PVWatts
+    night_difference = expected_tcell[is_night] - actual_tcell[is_night]
+    assert night_difference.max() < 6
+    assert night_difference.min() > 0

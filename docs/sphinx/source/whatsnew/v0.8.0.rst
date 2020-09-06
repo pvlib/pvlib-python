@@ -1,0 +1,173 @@
+.. _whatsnew_0800:
+
+v0.8.0 (Month day, year)
+-------------------------
+
+API Breaking Changes
+~~~~~~~~~~~~~~~~~~~~
+
+* The ``ivtools.py`` module has been reorganized into sub-modules and functions
+  in ``ivtools.py`` have been renamed (:pull:`708`)
+   - Functions for fitting diode models are now in ``ivtools\sdm.py``
+   - :py:func:`pvlib.ivtools.fit_sdm_cec_sam` is now :py:func:`pvlib.ivtools.sdm.fit_cec_sam`
+   - :py:func:`pvlib.ivtools.fit_sdm_desoto` is now :py:func:`pvlib.ivtools.sdm.fit_desoto`
+   - Functions for fitting the single diode equation are now in ``ivtools\sde.py``
+   - :py:func:`pvlib.ivtools.fit_sde_sandia` is now :py:func:`pvlib.ivtools.sde.fit_sandia_simple`
+
+API Changes with Deprecations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Moved functions related to inverters from ``pvsystem.py`` to ``inverter.py``.
+  Functions are renamed to follow a more consistent pattern, as follows (:pull:`886`):
+   - :py:func:`pvlib.pvsystem.snlinverter` is now :py:func:`pvlib.inverter.sandia`
+   - :py:func:`pvlib.pvsystem.pvwatts_ac` is now :py:func:`pvlib.inverter.pvwatts`
+   - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
+* Argument ``ac_model`` for :py:class:`pvlib.modelchain.ModelChain` now accepts
+  ``'sandia'``, ``'pvwatts'`` and ``'adr'`` for the inverter models.  (:pull:`886`)
+* :py:class:`pvlib.pvsystem.PVSystem` ``module_type`` and ``racking_model`` now
+  default to ``None``. This continues a deprecation of assuming SAPM values
+  for cell temperature modeling. In this v0.8 release series, calling
+  :py:meth:`pvlib.pvsystem.PVSystem.sapm_celltemp` without setting ``PVSystem.temperature model parameters``,
+  or a valid combination of ``PVsystem.module_type`` and ``PVsystem.racking_model``, will cause
+  ``PVSystem.temperature_model_parameters`` to be set to SAPM values for a
+  glass/glass module in open racking and emit a warning. In v0.9, users must
+  provide ``temperature_model_parameters`` or a valid combination of
+  ``module_type`` and ``racking_model``. (:issue:`1030`, :pull:`1033`)
+
+API Changes
+~~~~~~~~~~~
+* Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs``
+  from :py:func:`pvlib.bifacial.pvfactors_timeseries` inputs (:issue:`902`) (:pull:`934`)
+* :py:func:`pvlib.iotools.read_tmy3` can now only read local data files because
+  the NREL RREDC server hosting the TMY3 dataset has been retired. For
+  fetching TMY data from NREL servers, :py:func:`pvlib.iotools.get_psm3` is
+  now recommended to retrieve newer PSM3 data over the older TMY3 data.
+  (:issue:`996`) (:pull:`1004`)
+* The tkinter-based file selection dialog has been removed from
+  :py:func:`pvlib.iotools.read_tmy2` and :py:func:`pvlib.iotools.read_tmy3`;
+  the filepath is now a required parameter. (:pull:`1004`)
+* Removed ``systemdef`` function from ``pvsystem.py``. This function was not
+  used in pvlib and its output was not directly compatible with any pvlib
+  function. See :py:func:`pvlib.iotools.read_tmy2`,
+  :py:func:`pvlib.iotools.read_tmy3`, :py:meth:`pvlib.location.Location.from_tmy`, and
+  :py:class:`pvlib.pvsystem.LocalizedPVSystem` for alternatives. (:issue:`965`)
+  (:pull:`1008`)
+* The following functions, methods, and arguments were deprecated in a previous
+  release and have now been removed (:issue:`966`, :pull:`1033`):
+    * ``pvsystem.PVSystem.ashraeiam``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.PVSystem.physicaliam``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.PVSystem.sapm_aoi_loss``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
+    * ``pvsystem.ashraeiam``. Use :py:func:`pvlib.iam.ashrae`.
+    * ``pvsystem.physicaliam``. Use :py:func:`pvlib.iam.physical`.
+    * ``pvsystem.sapm_aoi_loss``. Use :py:func:`pvlib.iam.sapm`.
+    * ``pvsystem.sapm_celltemp``. Use :py:func:`pvlib.temperature.sapm_cell`.
+    * ``pvsystem.pvsyst_celltemp``. Use :py:func:`pvlib.temperature.pvsyst_cell`.
+    * ``times`` keyword argument of
+      :py:meth:`pvlib.modelchain.ModelChain.run_model`,
+      :py:meth:`pvlib.modelchain.ModelChain.complete_irradiance`, and
+      :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`.
+      The index of the input DataFrame is used instead.
+    * ``temp_model`` keyword argument of
+      :py:meth:`pvlib.modelchain.ModelChain`. Use ``temperature_model`` instead.
+
+Enhancements
+~~~~~~~~~~~~
+* Update :func:`~pvlib.bifacial.pvfactors_timeseries` to run with ``pvfactors`` v1.4.1 (:issue:`902`)(:pull:`934`)
+* Add :py:func:`pvlib.iam.marion_diffuse` and
+  :py:func:`pvlib.iam.marion_integrate` to calculate IAM values for
+  diffuse irradiance. (:pull:`984`)
+* Add :py:func:`pvlib.shading.sky_diffuse_passias`,
+  :py:func:`pvlib.shading.masking_angle_passias`, and
+  :py:func:`pvlib.shading.masking_angle` to model diffuse shading loss.
+  (:pull:`1017`)
+* Add :py:func:`pvlib.inverter.fit_sandia` that fits the Sandia inverter model
+  to a set of inverter efficiency curves. (:pull:`1011`)
+* Add :py:func:`pvlib.ivtools.sdm.fit_pvsyst_sandia` and :py:func:`pvlib.ivtools.sdm.fit_desoto_sandia`
+  for fitting the Pvsyst and De Soto models to IV curve data (:issue:`227`)(:pull:`708`)
+* Add factory methods :py:meth:`~pvlib.modelchain.ModelChain.with_pvwatts`
+  :py:meth:`~pvlib.modelchain.ModelChain.with_sapm` to create ``ModelChain``
+  objects configured for the respective modeling paradigms. The
+  configurations are defined in ``modelchain.PVWATTS_CONFIG``, and
+  ``modelchain.SAPM_CONFIG``. (:issue:`1013`, :pull:`1022`)
+* Added *racking_model*, *module_type*, and *temperature_model_parameters* to
+  PVSystem, LocalizedPVSystem, SingleAxisTracker, and
+  LocalizedSingleAxisTracker repr methods. (:issue:`1027`)
+* Added :py:func:`~pvlib.tracking.calc_axis_tilt` to calculate the
+  tracker axes tilt and :py:func:`~pvlib.tracking.calc_cross_axis_tilt` to
+  calculate the cross-axis tilt, which is the angle, relative to horizontal, of
+  the line formed by the intersection between the slope containing the tracker
+  axes and a plane perpendicular to the tracker axes. (:pull:`823`)
+* Added ``cross_axis_tilt`` argument to :py:func:`~pvlib.tracking.singleaxis`
+  and :py:func:`~pvlib.tracking.SingleAxisTracker` which defaults to zero. Use
+  :py:func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate the cross-axis
+  tilt angle if necessary. (:pull:`823`)
+* Added ability for :py:func:`pvlib.soiling.hsu` to accept arbitrary time intervals. (:pull:`980`)
+* Added :py:func:`pvlib.temperature.fuentes` for cell temperature modeling. (:pull:`1037`)
+* Add :py:func:`pvlib.pvsystem.combine_loss_factors` as general purpose
+  function to combine loss factors with a common index.
+  Partialy addresses :issue:`988`. Contributed by Brock Taute :ghuser:`btaute`
+* Add capability to run a ModelChain starting with plane-of-array or effective
+  irradiance, or with back-of-module or cell temperature data. New methods are
+  :py:meth:`pvlib.modelchain.ModelChain.run_model_from_poa`,
+  :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`,
+  and :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs_from_poa` (:issue:`536`, :pull:`943`)
+
+Bug fixes
+~~~~~~~~~
+* Fixed unit and default value errors in :py:func:`pvlib.soiling.hsu`. (:pull:`977`, :pull:`980`)
+* Handle NUL characters and fix version column dtype in
+  :py:func:`~pvlib.iotools.crn.read_crn`. (:issue:`1025`)
+* Fix low sun angle tracker rotation calculation. (:issue:`824`)
+
+Testing
+~~~~~~~
+* Decorator :py:func:`pvlib.conftest.fail_on_pvlib_version` can now be
+  applied to functions that require args or kwargs. (:pull:`973`)
+* Test added for :py:class:`pvlib.modelchain.ModelChain` to confirm ValueError when
+  ``ac_model`` is an invalid string. (:pull:`886`)
+* Add minimum requirements configuration to Azure Pipelines build.
+  (:pull:`1006`)
+* Update the `data/test_psm3_tmy-2017.csv` datafile to match the updated
+  NSRDB data. (:issue:`1005`, :pull:`1007`)
+* Add wrappers around the pandas assert_X_equal functions to accommodate the
+  changed API and default precision thresholds in pandas 1.1.0
+  (:issue:`1018`, :pull:`1021`)
+* Add github action for publishing tags to
+  `pypi.org <https://pypi.org/project/pvlib/>`_.
+  (:issue:`950`, :pull:`1038`, :pull:`1039`)
+* Remove Travis CI configuration. (:issue:`950`)
+
+Documentation
+~~~~~~~~~~~~~
+* Improved formatting and content of docstrings in :py:mod:`pvlib.atmosphere`.
+  (:pull:`969`)
+* Fix LaTeX rendering in :py:func:`pvlib.singlediode.bishop88`. (:pull:`967`)
+* Clarify units for heat loss factors in
+  :py:func:`pvlib.temperature.pvsyst_cell` and
+  :py:func:`pvlib.temperature.faiman`. (:pull:`960`)
+* Added hsu soiling model example to the gallery.  (:pull:`990`)
+* Add make.bat so that docs can be built on Windows without ``make`` installed.
+  (:issue:`978`, :pull:`981`)
+* Add instructions to build the documentation. (:pull:`982`)
+* Corrected key names for :py:func:`pvlib.inverter.sandia`. (:issue:`976`,
+  :pull:`886`)
+* Add a transposition gain example to the gallery.  (:pull:`979`)
+* Add a gallery example of calculating diffuse IAM using
+  :py:func:`pvlib.iam.marion_diffuse`. (:pull:`984`)
+* Add a gallery example of modeling diffuse shading loss. (:pull:`1017`)
+* Add minigalleries to API reference pages. (:pull:`991`)
+
+Requirements
+~~~~~~~~~~~~
+* Python 3.6 or greater. (:pull:`1035`)
+* Minimum pandas version increased to v0.22.0, released Dec 31, 2017. (:pull:`1003`)
+* Scipy >= v1.2.0, released Dec 17, 2018, is now a required dependency
+  rather an optional dependency. (:issue:`972`, :pull:`1035`)
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Joshua S. Stein (:ghuser:`jsstein`)
+* Marc A. Anoma (:ghuser:`anomam`)
+* Will Holmgren (:ghuser:`wholmgren`)

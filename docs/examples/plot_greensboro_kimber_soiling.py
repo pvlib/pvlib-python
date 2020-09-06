@@ -7,7 +7,7 @@ Examples of soiling using the Kimber model.
 
 # %%
 # This example shows basic usage of pvlib's Kimber Soiling model [1]_ with
-# :py:meth:`pvlib.losses.soiling_kimber`.
+# :py:func:`pvlib.soiling.kimber`.
 #
 # References
 # ----------
@@ -33,7 +33,7 @@ from datetime import datetime
 import pathlib
 from matplotlib import pyplot as plt
 from pvlib.iotools import read_tmy3
-from pvlib.losses import soiling_kimber
+from pvlib.soiling import kimber
 import pvlib
 
 # get full path to the data directory
@@ -45,7 +45,7 @@ greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
 greensboro_rain = greensboro.Lprecipdepth
 # calculate soiling with no wash dates and cleaning threshold of 25-mm of rain
 THRESHOLD = 25.0
-soiling_no_wash = soiling_kimber(greensboro_rain, cleaning_threshold=THRESHOLD)
+soiling_no_wash = kimber(greensboro_rain, cleaning_threshold=THRESHOLD)
 soiling_no_wash.name = 'soiling'
 # daily rain totals
 daily_rain = greensboro_rain.iloc[:-1].resample('D').sum()

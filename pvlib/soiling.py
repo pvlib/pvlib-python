@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-This module contains functions for losses of various types: soiling, mismatch,
-snow cover, etc.
+This module contains functions for soiling models
 """
 
 import datetime
 import numpy as np
 import pandas as pd
+from scipy.special import erf
+
 from pvlib.tools import cosd
 
 
-def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
-                depo_veloc=None, rain_accum_period=pd.Timedelta('1h')):
+def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
+        depo_veloc=None, rain_accum_period=pd.Timedelta('1h')):
     """
-    Calculates soiling ratio given particulate and rain data using the model
-    from Humboldt State University (HSU).
+    Calculates soiling ratio given particulate and rain data using the
+    Fixed Velocity model from Humboldt State University (HSU).
 
     The HSU soiling model [1]_ returns the soiling ratio, a value between zero
     and one which is equivalent to (1 - transmission loss). Therefore a soiling
@@ -41,7 +42,7 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
         Concentration of airborne particulate matter (PM) with
         aerodynamicdiameter less than 10 microns. [g/m^3]
 
-    depo_veloc : dict, default {'2_5': 0.4, '10': 0.09}
+    depo_veloc : dict, default {'2_5': 0.0009, '10': 0.004}
         Deposition or settling velocity of particulates. [m/s]
 
     rain_accum_period : Timedelta, default 1 hour
@@ -63,22 +64,26 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
        Change. J. Seinfeld and S. Pandis. Wiley and Sons 2001.
 
     """
-    try:
-        from scipy.special import erf
-    except ImportError:
-        raise ImportError("The soiling_hsu function requires scipy.")
-
     # never use mutable input arguments
     if depo_veloc is None:
-        depo_veloc = {'2_5': 0.004, '10': 0.0009}
+        depo_veloc = {'2_5': 0.0009, '10': 0.004}
 
     # accumulate rainfall into periods for comparison with threshold
     accum_rain = rainfall.rolling(rain_accum_period, closed='right').sum()
     # cleaning is True for intervals with rainfall greater than threshold
     cleaning_times = accum_rain.index[accum_rain >= cleaning_threshold]
 
-    horiz_mass_rate = pm2_5 * depo_veloc['2_5']\
-        + np.maximum(pm10 - pm2_5, 0.) * depo_veloc['10']
+    # determine the time intervals in seconds (dt_sec)
+    dt = rainfall.index
+    # subtract shifted values from original and convert to seconds
+    dt_diff = (dt[1:] - dt[:-1]).total_seconds()
+    # ensure same number of elements in the array, assuming that the interval
+    # prior to the first value is equal in length to the first interval
+    dt_sec = np.append(dt_diff[0], dt_diff).astype('float64')
+
+    horiz_mass_rate = (
+        pm2_5 * depo_veloc['2_5'] + np.maximum(pm10 - pm2_5, 0.)
+        * depo_veloc['10']) * dt_sec
     tilted_mass_rate = horiz_mass_rate * cosd(tilt)  # assuming no rain
 
     # tms -> tilt_mass_rate
@@ -96,9 +101,9 @@ def soiling_hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     return soiling_ratio
 
 
-def soiling_kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
-                   grace_period=14, max_soiling=0.3, manual_wash_dates=None,
-                   initial_soiling=0, rain_accum_period=24):
+def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
+           grace_period=14, max_soiling=0.3, manual_wash_dates=None,
+           initial_soiling=0, rain_accum_period=24):
     """
     Calculates fraction of energy lost due to soiling given rainfall data and
     daily loss rate using the Kimber model.

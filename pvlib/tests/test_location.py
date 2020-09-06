@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import numpy as np
 from numpy import nan
 import pandas as pd
-from pandas.util.testing import assert_frame_equal, assert_index_equal
+from conftest import assert_frame_equal, assert_index_equal
 
 import pytest
 
@@ -16,7 +16,7 @@ from pvlib.location import Location
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
 from test_solarposition import expected_solpos, golden, golden_mst
-from conftest import requires_ephem, requires_scipy
+from conftest import requires_ephem, requires_tables
 
 
 def test_location_required():
@@ -78,7 +78,7 @@ def times():
                          freq='3H')
 
 
-@requires_scipy
+@requires_tables
 def test_get_clearsky(mocker, times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     m = mocker.spy(pvlib.clearsky, 'ineichen')

@@ -223,6 +223,8 @@ Incident angle modifiers
    iam.martin_ruiz_diffuse
    iam.sapm
    iam.interp
+   iam.marion_diffuse
+   iam.marion_integrate
 
 PV temperature models
 ---------------------
@@ -232,8 +234,18 @@ PV temperature models
 
    temperature.sapm_cell
    temperature.sapm_module
+   temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
+   temperature.fuentes
+
+Temperature Model Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. currentmodule:: pvlib.temperature
+.. autodata:: TEMPERATURE_MODEL_PARAMETERS
+   :annotation:
+
+.. currentmodule:: pvlib
 
 Single diode models
 -------------------
@@ -262,44 +274,7 @@ Low-level functions for solving the single diode equation.
    singlediode.bishop88_v_from_i
    singlediode.bishop88_mpp
 
-SAPM model
-----------
-
-Functions relevant for the SAPM model.
-
-.. autosummary::
-   :toctree: generated/
-
-   pvsystem.sapm
-   pvsystem.sapm_effective_irradiance
-   pvsystem.sapm_spectral_loss
-   pvsystem.sapm_aoi_loss
-   pvsystem.snlinverter
-   pvsystem.adrinverter
-   temperature.sapm_cell
-
-Pvsyst model
--------------
-
-Functions relevant for the Pvsyst model.
-
-.. autosummary::
-   :toctree: generated/
-
-   temperature.pvsyst_cell
-
-PVWatts model
--------------
-
-.. autosummary::
-   :toctree: generated/
-
-   pvsystem.pvwatts_dc
-   pvsystem.pvwatts_ac
-   pvsystem.pvwatts_losses
-
 Functions for fitting diode models
-----------------------------------
 
 .. autosummary::
    :toctree: generated/
@@ -308,15 +283,87 @@ Functions for fitting diode models
     ivtools.fit_sdm_cec_sam
     ivtools.fit_sdm_desoto
 
-Losses
-------
+Inverter models (DC to AC conversion)
+-------------------------------------
 
 .. autosummary::
    :toctree: generated/
 
-   losses.soiling_hsu
-   losses.soiling_kimber
+   inverter.sandia
+   inverter.adr
+   inverter.pvwatts
 
+Functions for fitting inverter models
+
+.. autosummary::
+   :toctree: generated/
+
+   inverter.fit_sandia
+
+
+PV System Models
+----------------
+
+Sandia array performance model (SAPM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.sapm
+   pvsystem.sapm_effective_irradiance
+   pvsystem.sapm_spectral_loss
+   pvsystem.sapm_aoi_loss
+   inverter.sandia
+   temperature.sapm_cell
+
+Pvsyst model
+^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.calcparams_pvsyst
+   temperature.pvsyst_cell
+   pvsystem.calcparams_pvsyst
+   pvsystem.singlediode
+
+PVWatts model
+^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.pvwatts_dc
+   inverter.pvwatts
+   pvsystem.pvwatts_losses
+
+Estimating PV model parameters
+------------------------------
+
+Functions for fitting single diode models
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.sdm.fit_cec_sam
+    ivtools.sdm.fit_desoto
+    ivtools.sdm.fit_pvsyst_sandia
+    ivtools.sdm.fit_desoto_sandia
+
+Functions for fitting the single diode equation
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.sde.fit_sandia_simple
+
+Utilities for working with IV curve data
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.utility.rectify_iv_curve
 
 Other
 -----
@@ -325,8 +372,38 @@ Other
    :toctree: generated/
 
    pvsystem.retrieve_sam
-   pvsystem.systemdef
    pvsystem.scale_voltage_current_power
+
+
+Effects on PV System Output
+===========================
+
+Loss models
+^^^^^^^^^^^
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.combine_loss_factors
+
+.. autosummary::
+   :toctree: generated/
+
+   snow.coverage_nrel
+   snow.fully_covered_nrel
+   snow.dc_loss_nrel
+
+.. autosummary::
+   :toctree: generated/
+
+   soiling.hsu
+   soiling.kimber
+
+.. autosummary::
+   :toctree: generated/
+
+   shading.masking_angle
+   shading.masking_angle_passias
+   shading.sky_diffuse_passias
 
 
 Tracking
@@ -354,6 +431,8 @@ Functions
    :toctree: generated/
 
    tracking.singleaxis
+   tracking.calc_axis_tilt
+   tracking.calc_cross_axis_tilt
 
 
 .. _iotools:
@@ -462,18 +541,31 @@ Creating a ModelChain object.
    :toctree: generated/
 
    modelchain.ModelChain
+   modelchain.ModelChain.with_pvwatts
+   modelchain.ModelChain.with_sapm
 
 Running
 -------
 
-Running a ModelChain.
+A ModelChain can be run from a number of starting points, depending on the
+input data available.
 
 .. autosummary::
    :toctree: generated/
 
    modelchain.ModelChain.run_model
+   modelchain.ModelChain.run_model_from_poa
+   modelchain.ModelChain.run_model_from_effective_irradiance
+
+Functions to assist with setting up ModelChains to run
+
+.. autosummary::
+   :toctree: generated/
+
    modelchain.ModelChain.complete_irradiance
    modelchain.ModelChain.prepare_inputs
+   modelchain.ModelChain.prepare_inputs_from_poa
+
 
 Attributes
 ----------

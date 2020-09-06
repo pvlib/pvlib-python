@@ -815,7 +815,7 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
     HrAngle = LocAST - RtAscen
     HrAngleR = np.radians(HrAngle)
-    HrAngle = HrAngle - (360 * ((abs(HrAngle) > 180)))
+    HrAngle = HrAngle - (360 * (abs(HrAngle) > 180))
 
     SunAz = np.degrees(np.arctan2(-np.sin(HrAngleR),
                                   np.cos(LatR)*np.tan(DecR) -

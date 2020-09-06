@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Low-level functions for solving the single diode equation.
 """

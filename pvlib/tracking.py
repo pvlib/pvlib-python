@@ -75,15 +75,15 @@ class SingleAxisTracker(PVSystem):
         kwargs['surface_tilt'] = None
         kwargs['surface_azimuth'] = None
 
-        super(SingleAxisTracker, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def __repr__(self):
         attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr',
                  'cross_axis_tilt']
         sat_repr = ('SingleAxisTracker:\n  ' + '\n  '.join(
-            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
+            f'{attr}: {getattr(self, attr)}' for attr in attrs))
         # get the parent PVSystem info
-        pvsystem_repr = super(SingleAxisTracker, self).__repr__()
+        pvsystem_repr = super().__repr__()
         # remove the first line (contains 'PVSystem: \n')
         pvsystem_repr = '\n'.join(pvsystem_repr.split('\n')[1:])
         return sat_repr + '\n' + pvsystem_repr
@@ -261,9 +261,9 @@ class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
     def __repr__(self):
         attrs = ['latitude', 'longitude', 'altitude', 'tz']
         return ('Localized' +
-                super(LocalizedSingleAxisTracker, self).__repr__() + '\n  ' +
-                '\n  '.join(('{}: {}'.format(attr, getattr(self, attr))
-                             for attr in attrs)))
+                super().__repr__() + '\n  ' +
+                '\n  '.join(
+                    f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,

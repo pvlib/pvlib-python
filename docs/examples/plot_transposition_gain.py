@@ -76,7 +76,7 @@ df_monthly = pd.DataFrame()
 for tilt in range(0, 50, 10):
     # we will hardcode azimuth=180 (south) for all fixed-tilt cases
     poa_irradiance = calculate_poa(tmy, solar_position, tilt, 180)
-    column_name = "FT-{}".format(tilt)
+    column_name = f"FT-{tilt}"
     # TMYs are hourly, so we can just sum up irradiance [W/m^2] to get
     # insolation [Wh/m^2]:
     df_monthly[column_name] = poa_irradiance.resample('m').sum()

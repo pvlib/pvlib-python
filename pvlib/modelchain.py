@@ -555,7 +555,7 @@ class ModelChain:
             return out
 
         return ('ModelChain: \n  ' + '\n  '.join(
-            '{}: {}'.format(attr, getmcattr(self, attr)) for attr in attrs))
+            f'{attr}: {getmcattr(self, attr)}' for attr in attrs))
 
     @property
     def orientation_strategy(self):

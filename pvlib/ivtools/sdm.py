@@ -14,7 +14,7 @@ from scipy.special import lambertw
 
 from pvlib.pvsystem import singlediode, v_from_i
 
-from pvlib.ivtools.utility import constants, rectify_iv_curve, _numdiff
+from pvlib.ivtools.utils import rectify_iv_curve, _numdiff
 from pvlib.ivtools.sde import _fit_sandia_cocontent
 
 
@@ -299,7 +299,7 @@ def _system_of_equations_desoto(params, specs):
     return y
 
 
-def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
+def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     """
     Estimate parameters for the PVsyst module performance model.
 
@@ -414,6 +414,9 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     .. [7] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
 
+    if const is None:
+        const = {'E0': 1000.0, 'T0': 25.0, 'k': 1.38066e-23, 'q': 1.60218e-19}
+
     ee = ivcurves['ee']
     tc = ivcurves['tc']
     tck = tc + 273.15
@@ -474,7 +477,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
     return pvsyst
 
 
-def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
+def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     """
     Estimate parameters for the De Soto module performance model.
 
@@ -572,6 +575,9 @@ def fit_desoto_sandia(ivcurves, specs, const=constants, maxiter=5, eps1=1.e-3):
         Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
     .. [4] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
+
+    if const is None:
+        const = {'E0': 1000.0, 'T0': 25.0, 'k': 1.38066e-23, 'q': 1.60218e-19}
 
     ee = ivcurves['ee']
     tc = ivcurves['tc']
@@ -936,10 +942,11 @@ def _update_io(voc, iph, io, rs, rsh, nnsvth):
         dvoc = pvoc - voc
 
         # Update Io
-        new_io = tio * (1. + (2. * dvoc) / (2. * nnsvth - dvoc))
+        with np.errstate(invalid="ignore", divide="ignore"):
+            new_io = tio * (1. + (2. * dvoc) / (2. * nnsvth - dvoc))
+            # Calculate Maximum Percent Difference
+            maxerr = np.max(np.abs(new_io - tio) / tio) * 100.
 
-        # Calculate Maximum Percent Difference
-        maxerr = np.max(np.abs(new_io - tio) / tio) * 100.
         tio = new_io
         k += 1.
 
@@ -1128,8 +1135,9 @@ def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
 
     for i in range(niter):
         _, z = _calc_theta_phi_exact(vmp, imp, iph, io, rs, x1, nnsvth)
-        next_x1 = (1 + z) / z * ((iph + io) * x1 / imp - nnsvth * z / imp - 2 *
-                                 vmp / imp)
+        with np.errstate(divide="ignore"):
+            next_x1 = (1 + z) / z * ((iph + io) * x1 / imp - nnsvth * z / imp
+                                     - 2 * vmp / imp)
         x1 = next_x1
 
     return x1
@@ -1191,12 +1199,12 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
 
     # Argument for Lambert W function involved in V = V(I) [2] Eq. 12; [3]
     # Eq. 3
-    with np.errstate(over="ignore"):
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
         argw = np.where(
             nnsvth == 0,
             np.nan,
             rsh * io / nnsvth * np.exp(rsh * (iph + io - imp) / nnsvth))
-    phi = np.where(argw > 0, lambertw(argw).real, np.nan)
+        phi = np.where(argw > 0, lambertw(argw).real, np.nan)
 
     # NaN where argw overflows. Switch to log space to evaluate
     u = np.isinf(argw)
@@ -1216,21 +1224,23 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
 
     # Argument for Lambert W function involved in I = I(V) [2] Eq. 11; [3]
     # E1. 2
-    with np.errstate(over="ignore"):
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
         argw = np.where(
             nnsvth == 0,
             np.nan,
             rsh / (rsh + rs) * rs * io / nnsvth * np.exp(
                 rsh / (rsh + rs) * (rs * (iph + io) + vmp) / nnsvth))
-    theta = np.where(argw > 0, lambertw(argw).real, np.nan)
+        theta = np.where(argw > 0, lambertw(argw).real, np.nan)
 
     # NaN where argw overflows. Switch to log space to evaluate
     u = np.isinf(argw)
     if np.any(u):
-        logargw = (
-            np.log(rsh[u]) / (rsh[u] + rs[u]) + np.log(rs[u]) + np.log(io[u])
-            - np.log(nnsvth[u]) + (rsh[u] / (rsh[u] + rs[u]))
-            * (rs[u] * (iph[u] + io[u]) + vmp[u]) / nnsvth[u])
+        with np.errstate(divide="ignore"):
+            logargw = (
+                np.log(rsh[u]) - np.log(rsh[u] + rs[u]) + np.log(rs[u])
+                + np.log(io[u]) - np.log(nnsvth[u])
+                + (rsh[u] / (rsh[u] + rs[u]))
+                * (rs[u] * (iph[u] + io[u]) + vmp[u]) / nnsvth[u])
         # Three iterations of Newton-Raphson method to solve w+log(w)=logargW.
         # The initial guess is w=logargW. Where direct evaluation (above)
         # results in NaN from overflow, 3 iterations of Newton's method gives

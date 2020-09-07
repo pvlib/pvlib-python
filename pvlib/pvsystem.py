@@ -220,6 +220,12 @@ class PVSystem:
 
         self.name = name
 
+        if kwargs:
+            warnings.warn(
+                'Arbitrary PVSystem kwargs are deprecated and will be '
+                'removed in v0.9', pvlibDeprecationWarning
+            )
+
     def __repr__(self):
         attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
                  'inverter', 'albedo', 'racking_model', 'module_type',
@@ -843,6 +849,8 @@ class PVSystem:
         return LocalizedPVSystem(pvsystem=self, location=location)
 
 
+@deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
+            name='LocalizedPVSystem', removal='0.9')
 class LocalizedPVSystem(PVSystem, Location):
     """
     The LocalizedPVSystem class defines a standard set of installed PV

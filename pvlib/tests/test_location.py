@@ -323,3 +323,10 @@ def test_get_sun_rise_set_transit_valueerror(golden):
                              tz='MST')
     with pytest.raises(ValueError):
         golden.get_sun_rise_set_transit(times, method='eyeball')
+
+
+@fail_on_pvlib_version('0.9')
+def test_deprecated_09():
+    match = "Arbitrary Location kwargs"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        system = location.Location(32.2, -111, arbitrary_kwarg='value')

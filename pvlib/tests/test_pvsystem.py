@@ -1064,10 +1064,12 @@ def test_PVSystem_get_irradiance():
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 
+@fail_on_pvlib_version('0.9')
 def test_PVSystem_localize_with_location():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')
     location = Location(latitude=32, longitude=-111)
-    localized_system = system.localize(location=location)
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = system.localize(location=location)
 
     assert localized_system.module == 'blah'
     assert localized_system.inverter == 'blarg'
@@ -1075,9 +1077,11 @@ def test_PVSystem_localize_with_location():
     assert localized_system.longitude == -111
 
 
+@fail_on_pvlib_version('0.9')
 def test_PVSystem_localize_with_latlon():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')
-    localized_system = system.localize(latitude=32, longitude=-111)
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = system.localize(latitude=32, longitude=-111)
 
     assert localized_system.module == 'blah'
     assert localized_system.inverter == 'blarg'
@@ -1103,11 +1107,13 @@ def test_PVSystem___repr__():
     assert system.__repr__() == expected
 
 
+@fail_on_pvlib_version('0.9')
 def test_PVSystem_localize___repr__():
     system = pvsystem.PVSystem(
         module='blah', inverter='blarg', name='pv ftw',
         temperature_model_parameters={'a': -3.56})
-    localized_system = system.localize(latitude=32, longitude=-111)
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = system.localize(latitude=32, longitude=-111)
     # apparently name is not preserved when creating a system using localize
     expected = """LocalizedPVSystem:
   name: None
@@ -1131,12 +1137,13 @@ def test_PVSystem_localize___repr__():
 # when they are attached to LocalizedPVSystem, but
 # that's probably not necessary at this point.
 
-
+@fail_on_pvlib_version('0.9')
 def test_LocalizedPVSystem_creation():
-    localized_system = pvsystem.LocalizedPVSystem(latitude=32,
-                                                  longitude=-111,
-                                                  module='blah',
-                                                  inverter='blarg')
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = pvsystem.LocalizedPVSystem(latitude=32,
+                                                    longitude=-111,
+                                                    module='blah',
+                                                    inverter='blarg')
 
     assert localized_system.module == 'blah'
     assert localized_system.inverter == 'blarg'
@@ -1144,10 +1151,12 @@ def test_LocalizedPVSystem_creation():
     assert localized_system.longitude == -111
 
 
+@fail_on_pvlib_version('0.9')
 def test_LocalizedPVSystem___repr__():
-    localized_system = pvsystem.LocalizedPVSystem(
-        latitude=32, longitude=-111, module='blah', inverter='blarg',
-        name='my name', temperature_model_parameters={'a': -3.56})
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = pvsystem.LocalizedPVSystem(
+            latitude=32, longitude=-111, module='blah', inverter='blarg',
+            name='my name', temperature_model_parameters={'a': -3.56})
 
     expected = """LocalizedPVSystem:
   name: my name
@@ -1311,3 +1320,6 @@ def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
     system = pvsystem.PVSystem()
     with pytest.warns(pvlibDeprecationWarning, match=match):
         system.sapm_celltemp(1, 2, 3)
+    match = "Arbitrary PVSystem kwargs"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        system = pvsystem.PVSystem(arbitrary_kwarg='value')

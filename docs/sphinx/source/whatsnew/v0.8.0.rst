@@ -32,6 +32,16 @@ API Changes with Deprecations
   glass/glass module in open racking and emit a warning. In v0.9, users must
   provide ``temperature_model_parameters`` or a valid combination of
   ``module_type`` and ``racking_model``. (:issue:`1030`, :pull:`1033`)
+* :py:class:`pvlib.location.Location`, :py:class:`pvlib.pvsystem.PVSystem`,
+  :py:class:`pvlib.tracking.SingleAxisTracker`, and
+  :py:class:`pvlib.modelchain.ModelChain`, no longer accept arbitrary keyword
+  arguments. (:issue:`1029`, :pull:`update me`)
+* ``pvlib.pvsystem.LocalizedPVSystem`` and ``pvlib.pvsystem.LocalizedSingleAxisTracker``
+  are deprecated and will be removed in 0.9. Use
+  :py:class:`pvlib.location.Location`, :py:class:`pvlib.pvsystem.PVSystem`,
+  :py:class:`pvlib.tracking.SingleAxisTracker`, and
+  :py:class:`pvlib.modelchain.ModelChain` instead.
+  (:issue:`1029`, :pull:`1034`, :pull:`update me`)
 
 API Changes
 ~~~~~~~~~~~

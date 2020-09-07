@@ -6,6 +6,7 @@ from pvlib.pvsystem import _combine_localized_attributes
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 from pvlib import irradiance, atmosphere
+from pvlib._deprecation import deprecated
 
 
 class SingleAxisTracker(PVSystem):
@@ -54,6 +55,9 @@ class SingleAxisTracker(PVSystem):
         cross-axis tilt if the tracker axes plane slopes up to the east. Use
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
+
+    **kwargs
+        Passed to :py:class:`~pvlib.pvsystem.PVSystem`.
 
     See also
     --------
@@ -232,6 +236,8 @@ class SingleAxisTracker(PVSystem):
                                                **kwargs)
 
 
+@deprecated('0.8', alternative='SingleAxisTracker, Location, and ModelChain',
+            name='LocalizedSingleAxisTracker', removal='0.9')
 class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
     """
     The :py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` class defines a

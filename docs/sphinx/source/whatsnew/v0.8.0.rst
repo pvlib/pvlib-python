@@ -6,30 +6,37 @@ v0.8.0 (September 8, 2020)
 Breaking changes
 ~~~~~~~~~~~~~~~~
 * The ``ivtools.py`` module has been reorganized into a subpackage and functions
-  in ``ivtools.py`` have been renamed (:pull:`708`)
-   - Functions for fitting diode models are now in :py:mod:`pvlib.ivtools.sdm`
-   - :py:func:`pvlib.ivtools.fit_sdm_cec_sam` is now :py:func:`pvlib.ivtools.sdm.fit_cec_sam`
-   - :py:func:`pvlib.ivtools.fit_sdm_desoto` is now :py:func:`pvlib.ivtools.sdm.fit_desoto`
-   - Functions for fitting the single diode equation are now in :py:mod:`pvlib.ivtools.sde.py`
-   - :py:func:`pvlib.ivtools.fit_sde_sandia` is now :py:func:`pvlib.ivtools.sde.fit_sandia_simple`
+  in ``ivtools.py`` have been renamed (:pull:`708`):
+
+    - Functions for fitting diode models are now in :py:mod:`pvlib.ivtools.sdm`
+    - :py:func:`pvlib.ivtools.fit_sdm_cec_sam` is now :py:func:`pvlib.ivtools.sdm.fit_cec_sam`
+    - :py:func:`pvlib.ivtools.fit_sdm_desoto` is now :py:func:`pvlib.ivtools.sdm.fit_desoto`
+    - Functions for fitting the single diode equation are now in :py:mod:`pvlib.ivtools.sde.py`
+    - :py:func:`pvlib.ivtools.fit_sde_sandia` is now :py:func:`pvlib.ivtools.sde.fit_sandia_simple`
+
 * Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs``
   from :py:func:`pvlib.bifacial.pvfactors_timeseries` inputs (:issue:`902`) (:pull:`934`)
+
 * :py:func:`pvlib.iotools.read_tmy3` can now only read local data files because
   the NREL RREDC server hosting the TMY3 dataset has been retired. For
   fetching TMY data from NREL servers, :py:func:`pvlib.iotools.get_psm3` is
   now recommended to retrieve newer PSM3 data over the older TMY3 data.
   (:issue:`996`) (:pull:`1004`)
+
 * The tkinter-based file selection dialog has been removed from
   :py:func:`pvlib.iotools.read_tmy2` and :py:func:`pvlib.iotools.read_tmy3`;
   the filepath is now a required parameter. (:pull:`1004`)
+
 * Removed ``systemdef`` function from ``pvsystem.py``. This function was not
   used in pvlib and its output was not directly compatible with any pvlib
   function. See :py:func:`pvlib.iotools.read_tmy2`,
   :py:func:`pvlib.iotools.read_tmy3`, :py:meth:`pvlib.location.Location.from_tmy`, and
   :py:class:`pvlib.pvsystem.LocalizedPVSystem` for alternatives. (:issue:`965`)
   (:pull:`1008`)
+
 * The following functions, methods, and arguments were deprecated in a previous
   release and have now been removed (:issue:`966`, :pull:`1033`):
+
     * ``pvsystem.PVSystem.ashraeiam``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
     * ``pvsystem.PVSystem.physicaliam``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
     * ``pvsystem.PVSystem.sapm_aoi_loss``. Use :py:meth:`pvlib.pvsystem.PVSystem.get_iam`.
@@ -50,11 +57,14 @@ Deprecations
 ~~~~~~~~~~~~
 * Moved functions related to inverters from ``pvsystem.py`` to ``inverter.py``.
   Functions are renamed to follow a more consistent pattern, as follows (:pull:`886`):
-   - :py:func:`pvlib.pvsystem.snlinverter` is now :py:func:`pvlib.inverter.sandia`
-   - :py:func:`pvlib.pvsystem.pvwatts_ac` is now :py:func:`pvlib.inverter.pvwatts`
-   - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
+
+    - ``pvlib.pvsystem.snlinverter`` is now :py:func:`pvlib.inverter.sandia`
+    - ``pvlib.pvsystem.pvwatts_ac`` is now :py:func:`pvlib.inverter.pvwatts`
+    - ``pvlib.pvsystem.adrinverter`` is now :py:func:`pvlib.inverter.adr`
+
 * Argument ``ac_model`` for :py:class:`pvlib.modelchain.ModelChain` now accepts
   ``'sandia'``, ``'pvwatts'`` and ``'adr'`` for the inverter models.  (:pull:`886`)
+
 * :py:class:`pvlib.pvsystem.PVSystem` ``module_type`` and ``racking_model`` now
   default to ``None``. This continues a deprecation of assuming SAPM values
   for cell temperature modeling. In this v0.8 release series, calling
@@ -167,3 +177,4 @@ Contributors
 * Joshua S. Stein (:ghuser:`jsstein`)
 * Marc A. Anoma (:ghuser:`anomam`)
 * Will Holmgren (:ghuser:`wholmgren`)
+* Brock Taute (:ghuser:`btaute`)

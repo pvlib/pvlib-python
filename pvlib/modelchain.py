@@ -609,6 +609,7 @@ class ModelChain:
             self._dc_model = partial(model, self)
 
     def infer_dc_model(self):
+        """Infer DC power model from system attributes."""
         params = set(self.system.module_parameters.keys())
         if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
@@ -703,6 +704,7 @@ class ModelChain:
             self._ac_model = partial(model, self)
 
     def infer_ac_model(self):
+        """Infer AC power model from system attributes."""
         inverter_params = set(self.system.inverter_parameters.keys())
         if {'C0', 'C1', 'C2'} <= inverter_params:
             return self.snlinverter
@@ -814,6 +816,7 @@ class ModelChain:
             self._spectral_model = partial(model, self)
 
     def infer_spectral_model(self):
+        """Infer spectral model from system attributes."""
         params = set(self.system.module_parameters.keys())
         if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
             return self.sapm_spectral_loss
@@ -875,6 +878,7 @@ class ModelChain:
             self._temperature_model = partial(model, self)
 
     def infer_temperature_model(self):
+        """Infer temperature model from system attributes."""
         params = set(self.system.temperature_model_parameters.keys())
         # remove or statement in v0.9
         if {'a', 'b', 'deltaT'} <= params or (

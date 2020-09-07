@@ -1,40 +1,17 @@
 .. _whatsnew_0800:
 
-v0.8.0 (Month day, year)
--------------------------
+v0.8.0 (September 8, 2020)
+--------------------------
 
-API Breaking Changes
-~~~~~~~~~~~~~~~~~~~~
-
-* The ``ivtools.py`` module has been reorganized into sub-modules and functions
+Breaking changes
+~~~~~~~~~~~~~~~~
+* The ``ivtools.py`` module has been reorganized into a subpackage and functions
   in ``ivtools.py`` have been renamed (:pull:`708`)
    - Functions for fitting diode models are now in :py:mod:`pvlib.ivtools.sdm`
    - :py:func:`pvlib.ivtools.fit_sdm_cec_sam` is now :py:func:`pvlib.ivtools.sdm.fit_cec_sam`
    - :py:func:`pvlib.ivtools.fit_sdm_desoto` is now :py:func:`pvlib.ivtools.sdm.fit_desoto`
    - Functions for fitting the single diode equation are now in :py:mod:`pvlib.ivtools.sde.py`
    - :py:func:`pvlib.ivtools.fit_sde_sandia` is now :py:func:`pvlib.ivtools.sde.fit_sandia_simple`
-
-API Changes with Deprecations
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Moved functions related to inverters from ``pvsystem.py`` to ``inverter.py``.
-  Functions are renamed to follow a more consistent pattern, as follows (:pull:`886`):
-   - :py:func:`pvlib.pvsystem.snlinverter` is now :py:func:`pvlib.inverter.sandia`
-   - :py:func:`pvlib.pvsystem.pvwatts_ac` is now :py:func:`pvlib.inverter.pvwatts`
-   - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
-* Argument ``ac_model`` for :py:class:`pvlib.modelchain.ModelChain` now accepts
-  ``'sandia'``, ``'pvwatts'`` and ``'adr'`` for the inverter models.  (:pull:`886`)
-* :py:class:`pvlib.pvsystem.PVSystem` ``module_type`` and ``racking_model`` now
-  default to ``None``. This continues a deprecation of assuming SAPM values
-  for cell temperature modeling. In this v0.8 release series, calling
-  :py:meth:`pvlib.pvsystem.PVSystem.sapm_celltemp` without setting ``PVSystem.temperature model parameters``,
-  or a valid combination of ``PVsystem.module_type`` and ``PVsystem.racking_model``, will cause
-  ``PVSystem.temperature_model_parameters`` to be set to SAPM values for a
-  glass/glass module in open racking and emit a warning. In v0.9, users must
-  provide ``temperature_model_parameters`` or a valid combination of
-  ``module_type`` and ``racking_model``. (:issue:`1030`, :pull:`1033`)
-
-API Changes
-~~~~~~~~~~~
 * Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs``
   from :py:func:`pvlib.bifacial.pvfactors_timeseries` inputs (:issue:`902`) (:pull:`934`)
 * :py:func:`pvlib.iotools.read_tmy3` can now only read local data files because
@@ -68,6 +45,25 @@ API Changes
       The index of the input DataFrame is used instead.
     * ``temp_model`` keyword argument of
       :py:meth:`pvlib.modelchain.ModelChain`. Use ``temperature_model`` instead.
+
+Deprecations
+~~~~~~~~~~~~
+* Moved functions related to inverters from ``pvsystem.py`` to ``inverter.py``.
+  Functions are renamed to follow a more consistent pattern, as follows (:pull:`886`):
+   - :py:func:`pvlib.pvsystem.snlinverter` is now :py:func:`pvlib.inverter.sandia`
+   - :py:func:`pvlib.pvsystem.pvwatts_ac` is now :py:func:`pvlib.inverter.pvwatts`
+   - :py:func:`pvlib.pvsystem.adrinverter` is now :py:func:`pvlib.inverter.adr`
+* Argument ``ac_model`` for :py:class:`pvlib.modelchain.ModelChain` now accepts
+  ``'sandia'``, ``'pvwatts'`` and ``'adr'`` for the inverter models.  (:pull:`886`)
+* :py:class:`pvlib.pvsystem.PVSystem` ``module_type`` and ``racking_model`` now
+  default to ``None``. This continues a deprecation of assuming SAPM values
+  for cell temperature modeling. In this v0.8 release series, calling
+  :py:meth:`pvlib.pvsystem.PVSystem.sapm_celltemp` without setting ``PVSystem.temperature model parameters``,
+  or a valid combination of ``PVsystem.module_type`` and ``PVsystem.racking_model``, will cause
+  ``PVSystem.temperature_model_parameters`` to be set to SAPM values for a
+  glass/glass module in open racking and emit a warning. In v0.9, users must
+  provide ``temperature_model_parameters`` or a valid combination of
+  ``module_type`` and ``racking_model``. (:issue:`1030`, :pull:`1033`)
 
 Enhancements
 ~~~~~~~~~~~~

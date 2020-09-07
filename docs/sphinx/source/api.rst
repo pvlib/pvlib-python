@@ -240,7 +240,7 @@ PV temperature models
    temperature.fuentes
 
 Temperature Model Parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. currentmodule:: pvlib.temperature
 .. autodata:: TEMPERATURE_MODEL_PARAMETERS
    :annotation:
@@ -279,9 +279,9 @@ Functions for fitting diode models
 .. autosummary::
    :toctree: generated/
 
-    ivtools.fit_sde_sandia
-    ivtools.fit_sdm_cec_sam
-    ivtools.fit_sdm_desoto
+    ivtools.sde.fit_sandia_simple
+    ivtools.sdm.fit_cec_sam
+    ivtools.sdm.fit_desoto
 
 Inverter models (DC to AC conversion)
 -------------------------------------
@@ -362,7 +362,7 @@ Utilities for working with IV curve data
 .. autosummary::
    :toctree: generated/
 
-    ivtools.utility.rectify_iv_curve
+    ivtools.utils.rectify_iv_curve
 
 Other
 -----
@@ -378,7 +378,8 @@ Effects on PV System Output
 ===========================
 
 Loss models
-^^^^^^^^^^^
+-----------
+
 .. autosummary::
    :toctree: generated/
 

@@ -123,6 +123,8 @@ Bug fixes
 * Handle NUL characters and fix version column dtype in
   :py:func:`~pvlib.iotools.crn.read_crn`. (:issue:`1025`)
 * Fix low sun angle tracker rotation calculation. (:issue:`824`)
+* Fix issue with big-endian and little-endian data in ``forecast.py``.
+  (:issue:`921`)
 
 Testing
 ~~~~~~~
@@ -178,3 +180,7 @@ Contributors
 * Marc A. Anoma (:ghuser:`anomam`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Brock Taute (:ghuser:`btaute`)
+* Cameron Stark (:ghuser:`CameronTStark`)
+* :ghuser:`kahemker`
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Stephen Lightfoote (:ghuser:`srlightfoote`)

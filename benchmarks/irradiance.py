@@ -30,9 +30,9 @@ class Irradiance:
                        self.solar_position.azimuth)
 
     def time_aoi_projection(self):
-        irradiance.aoi(self.tilt, self.azimuth,
-                       self.solar_position.apparent_zenith,
-                       self.solar_position.azimuth)
+        irradiance.aoi_projection(self.tilt, self.azimuth,
+                                  self.solar_position.apparent_zenith,
+                                  self.solar_position.azimuth)
 
     def time_get_ground_diffuse(self):
         irradiance.get_ground_diffuse(self.tilt, self.clearsky_irradiance.ghi)

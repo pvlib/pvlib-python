@@ -15,7 +15,7 @@ from pvlib.location import Location
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import needs_numpy_1_10, requires_scipy, fail_on_pvlib_version
+from conftest import fail_on_pvlib_version
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -637,7 +637,6 @@ def fixture_v_from_i(request):
     return request.param
 
 
-@requires_scipy
 @pytest.mark.parametrize(
     'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-8)]
 )
@@ -659,7 +658,6 @@ def test_v_from_i(fixture_v_from_i, method, atol):
     assert_allclose(V, V_expected, atol=atol)
 
 
-@requires_scipy
 def test_i_from_v_from_i(fixture_v_from_i):
     # Solution set loaded from fixture
     Rsh = fixture_v_from_i['Rsh']
@@ -757,7 +755,6 @@ def fixture_i_from_v(request):
     return request.param
 
 
-@requires_scipy
 @pytest.mark.parametrize(
     'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11)]
 )
@@ -779,7 +776,6 @@ def test_i_from_v(fixture_i_from_v, method, atol):
     assert_allclose(I, I_expected, atol=atol)
 
 
-@requires_scipy
 def test_PVSystem_i_from_v(mocker):
     system = pvsystem.PVSystem()
     m = mocker.patch('pvlib.pvsystem.i_from_v', autospec=True)
@@ -788,7 +784,6 @@ def test_PVSystem_i_from_v(mocker):
     m.assert_called_once_with(*args)
 
 
-@requires_scipy
 def test_i_from_v_size():
     with pytest.raises(ValueError):
         pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
@@ -800,7 +795,6 @@ def test_i_from_v_size():
                           method='newton')
 
 
-@requires_scipy
 def test_v_from_i_size():
     with pytest.raises(ValueError):
         pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0)
@@ -812,7 +806,6 @@ def test_v_from_i_size():
                           method='newton')
 
 
-@requires_scipy
 def test_mpp_floats():
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (7, 6e-7, .1, 20, .5)
@@ -828,7 +821,6 @@ def test_mpp_floats():
         assert np.isclose(v, expected[k])
 
 
-@requires_scipy
 def test_mpp_array():
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
@@ -844,7 +836,6 @@ def test_mpp_array():
         assert np.allclose(v, expected[k])
 
 
-@requires_scipy
 def test_mpp_series():
     """test max_power_point"""
     idx = ['2008-02-17T11:30:00-0800', '2008-02-17T12:30:00-0800']
@@ -863,7 +854,6 @@ def test_mpp_series():
         assert np.allclose(v, expected[k])
 
 
-@requires_scipy
 def test_singlediode_series(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=2, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0], index=times)
@@ -883,7 +873,6 @@ def test_singlediode_series(cec_module_params):
     assert isinstance(out, pd.DataFrame)
 
 
-@requires_scipy
 def test_singlediode_array():
     # github issue 221
     photocurrent = np.linspace(0, 10, 11)
@@ -913,7 +902,6 @@ def test_singlediode_array():
     assert_allclose(sd['i_mp'], expected, atol=0.01)
 
 
-@requires_scipy
 def test_singlediode_floats():
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, method='lambertw')
     expected = {'i_xx': 4.2498,
@@ -933,7 +921,6 @@ def test_singlediode_floats():
             assert_allclose(v, expected[k], atol=1e-3)
 
 
-@requires_scipy
 def test_singlediode_floats_ivcurve():
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3, method='lambertw')
     expected = {'i_xx': 4.2498,
@@ -950,7 +937,6 @@ def test_singlediode_floats_ivcurve():
         assert_allclose(v, expected[k], atol=1e-3)
 
 
-@requires_scipy
 def test_singlediode_series_ivcurve(cec_module_params):
     times = pd.date_range(start='2015-06-01', periods=3, freq='6H')
     effective_irradiance = pd.Series([0.0, 400.0, 800.0], index=times)
@@ -1187,7 +1173,6 @@ def test_pvwatts_dc_scalars():
     assert_allclose(out, expected)
 
 
-@needs_numpy_1_10
 def test_pvwatts_dc_arrays():
     irrad_trans = np.array([np.nan, 900, 900])
     temp_cell = np.array([30, np.nan, 30])
@@ -1213,7 +1198,6 @@ def test_pvwatts_losses_default():
     assert_allclose(out, expected)
 
 
-@needs_numpy_1_10
 def test_pvwatts_losses_arrays():
     expected = np.array([nan, 14.934904])
     age = np.array([nan, 1])
@@ -1297,6 +1281,18 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     inverter.pvwatts.assert_called_once_with(pdc,
                                              **system.inverter_parameters)
     assert out < pdc
+
+
+def test_combine_loss_factors():
+    test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='D')
+    loss_1 = pd.Series(.10, index=test_index)
+    loss_2 = pd.Series(.05, index=pd.date_range(start='1990/01/01T12:00',
+                                                periods=365*2, freq='D'))
+    loss_3 = pd.Series(.02, index=pd.date_range(start='1990/01/01',
+                                                periods=12, freq='MS'))
+    expected = pd.Series(.1621, index=test_index)
+    out = pvsystem.combine_loss_factors(test_index, loss_1, loss_2, loss_3)
+    assert_series_equal(expected, out)
 
 
 @fail_on_pvlib_version('0.9')

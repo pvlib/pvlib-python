@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This module contains functions for soiling models
 """
@@ -6,14 +5,16 @@ This module contains functions for soiling models
 import datetime
 import numpy as np
 import pandas as pd
+from scipy.special import erf
+
 from pvlib.tools import cosd
 
 
 def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
         depo_veloc=None, rain_accum_period=pd.Timedelta('1h')):
     """
-    Calculates soiling ratio given particulate and rain data using the model
-    from Humboldt State University (HSU).
+    Calculates soiling ratio given particulate and rain data using the
+    Fixed Velocity model from Humboldt State University (HSU).
 
     The HSU soiling model [1]_ returns the soiling ratio, a value between zero
     and one which is equivalent to (1 - transmission loss). Therefore a soiling
@@ -62,11 +63,6 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
        Change. J. Seinfeld and S. Pandis. Wiley and Sons 2001.
 
     """
-    try:
-        from scipy.special import erf
-    except ImportError:
-        raise ImportError("The pvlib.soiling.hsu function requires scipy.")
-
     # never use mutable input arguments
     if depo_veloc is None:
         depo_veloc = {'2_5': 0.0009, '10': 0.004}
@@ -76,8 +72,17 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
     # cleaning is True for intervals with rainfall greater than threshold
     cleaning_times = accum_rain.index[accum_rain >= cleaning_threshold]
 
-    horiz_mass_rate = pm2_5 * depo_veloc['2_5']\
-        + np.maximum(pm10 - pm2_5, 0.) * depo_veloc['10'] * 3600
+    # determine the time intervals in seconds (dt_sec)
+    dt = rainfall.index
+    # subtract shifted values from original and convert to seconds
+    dt_diff = (dt[1:] - dt[:-1]).total_seconds()
+    # ensure same number of elements in the array, assuming that the interval
+    # prior to the first value is equal in length to the first interval
+    dt_sec = np.append(dt_diff[0], dt_diff).astype('float64')
+
+    horiz_mass_rate = (
+        pm2_5 * depo_veloc['2_5'] + np.maximum(pm10 - pm2_5, 0.)
+        * depo_veloc['10']) * dt_sec
     tilted_mass_rate = horiz_mass_rate * cosd(tilt)  # assuming no rain
 
     # tms -> tilt_mass_rate

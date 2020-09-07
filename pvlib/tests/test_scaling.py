@@ -5,7 +5,6 @@ import pytest
 from numpy.testing import assert_almost_equal
 
 from pvlib import scaling
-from conftest import requires_scipy
 
 
 # Sample cloud speed
@@ -119,20 +118,17 @@ def test_compute_wavelet_array_invalid(clear_sky_index):
         scaling._compute_wavelet(clear_sky_index)
 
 
-@requires_scipy
 def test_wvm_series(clear_sky_index, time, positions, expect_cs_smooth):
     csi_series = pd.Series(clear_sky_index, index=time)
     cs_sm, _, _ = scaling.wvm(csi_series, positions, cloud_speed)
     assert_almost_equal(cs_sm[5000:5005], expect_cs_smooth, decimal=4)
 
 
-@requires_scipy
 def test_wvm_array(clear_sky_index, positions, expect_cs_smooth):
     cs_sm, _, _ = scaling.wvm(clear_sky_index, positions, cloud_speed, dt=dt)
     assert_almost_equal(cs_sm[5000:5005], expect_cs_smooth, decimal=4)
 
 
-@requires_scipy
 def test_wvm_series_xyaslist(clear_sky_index, time, positions,
                              expect_cs_smooth):
     csi_series = pd.Series(clear_sky_index, index=time)
@@ -140,7 +136,6 @@ def test_wvm_series_xyaslist(clear_sky_index, time, positions,
     assert_almost_equal(cs_sm[5000:5005], expect_cs_smooth, decimal=4)
 
 
-@requires_scipy
 def test_wvm_invalid(clear_sky_index, positions):
     with pytest.raises(ValueError):
         scaling.wvm(clear_sky_index, positions, cloud_speed)

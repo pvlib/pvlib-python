@@ -224,9 +224,9 @@ environment) when you start a new shell or terminal.
 Compatibility
 -------------
 
-pvlib-python is compatible with Python 3.5 and above.
+pvlib-python is compatible with Python 3.
 
-pvlib-python requires Pandas and Numpy. The minimum version requirements
+pvlib-python requires Pandas, Numpy, and SciPy. The minimum version requirements
 are specified in
 `setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
 They are typically releases from several years ago.
@@ -235,8 +235,8 @@ A handful of pvlib-python features require additional packages that must
 be installed separately using pip or conda. These packages/features
 include:
 
-* scipy: single diode model, clear sky detection
 * pytables (tables on PyPI): Linke turbidity look up for clear sky models
+* statsmodels: parameter fitting
 * numba: fastest solar position calculations
 * pyephem: solar positions calculations using an astronomical library
 * siphon: forecasting PV power using the pvlib.forecast module

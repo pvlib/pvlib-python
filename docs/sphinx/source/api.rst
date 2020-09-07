@@ -237,6 +237,15 @@ PV temperature models
    temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
+   temperature.fuentes
+
+Temperature Model Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. currentmodule:: pvlib.temperature
+.. autodata:: TEMPERATURE_MODEL_PARAMETERS
+   :annotation:
+
+.. currentmodule:: pvlib
 
 Single diode models
 -------------------
@@ -314,6 +323,7 @@ Pvsyst model
 .. autosummary::
    :toctree: generated/
 
+   pvsystem.calcparams_pvsyst
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode
@@ -328,6 +338,33 @@ PVWatts model
    inverter.pvwatts
    pvsystem.pvwatts_losses
 
+Estimating PV model parameters
+------------------------------
+
+Functions for fitting single diode models
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.sdm.fit_cec_sam
+    ivtools.sdm.fit_desoto
+    ivtools.sdm.fit_pvsyst_sandia
+    ivtools.sdm.fit_desoto_sandia
+
+Functions for fitting the single diode equation
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.sde.fit_sandia_simple
+
+Utilities for working with IV curve data
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.utility.rectify_iv_curve
+
 Other
 -----
 
@@ -340,6 +377,13 @@ Other
 
 Effects on PV System Output
 ===========================
+
+Loss models
+^^^^^^^^^^^
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.combine_loss_factors
 
 .. autosummary::
    :toctree: generated/
@@ -387,6 +431,8 @@ Functions
    :toctree: generated/
 
    tracking.singleaxis
+   tracking.calc_axis_tilt
+   tracking.calc_cross_axis_tilt
 
 
 .. _iotools:
@@ -501,14 +547,25 @@ Creating a ModelChain object.
 Running
 -------
 
-Running a ModelChain.
+A ModelChain can be run from a number of starting points, depending on the
+input data available.
 
 .. autosummary::
    :toctree: generated/
 
    modelchain.ModelChain.run_model
+   modelchain.ModelChain.run_model_from_poa
+   modelchain.ModelChain.run_model_from_effective_irradiance
+
+Functions to assist with setting up ModelChains to run
+
+.. autosummary::
+   :toctree: generated/
+
    modelchain.ModelChain.complete_irradiance
    modelchain.ModelChain.prepare_inputs
+   modelchain.ModelChain.prepare_inputs_from_poa
+
 
 Attributes
 ----------

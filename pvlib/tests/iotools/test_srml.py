@@ -44,9 +44,9 @@ def test_read_srml_nans_exist():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_srml_dt_index(url, year, month):
     data = srml.read_srml(url)
-    start = pd.Timestamp('{:04d}{:02d}01 00:00'.format(year, month))
+    start = pd.Timestamp(f'{year:04d}{month:02d}01 00:00')
     start = start.tz_localize('Etc/GMT+8')
-    end = pd.Timestamp('{:04d}{:02d}31 23:59'.format(year, month))
+    end = pd.Timestamp(f'{year:04d}{month:02d}31 23:59')
     end = end.tz_localize('Etc/GMT+8')
     assert data.index[0] == start
     assert data.index[-1] == end

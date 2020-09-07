@@ -1,35 +1,15 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May  9 10:51:15 2019
-
-@author: cwhanse
-"""
-
 import numpy as np
-import pandas as pd
 import pytest
 from pvlib import pvsystem
-from pvlib import ivtools
-from conftest import requires_scipy, requires_pysam
+from pvlib.ivtools import sde
 
 
 @pytest.fixture
 def get_test_iv_params():
-    return {'IL': 8.0, 'I0': 5e-10, 'Rsh': 1000, 'Rs': 0.2, 'nNsVth': 1.61864}
+    return {'IL': 8.0, 'I0': 5e-10, 'Rs': 0.2, 'Rsh': 1000, 'nNsVth': 1.61864}
 
 
-@pytest.fixture
-def get_cec_params_cansol_cs5p_220p():
-    return {'input': {'V_mp_ref': 46.6, 'I_mp_ref': 4.73, 'V_oc_ref': 58.3,
-                      'I_sc_ref': 5.05, 'alpha_sc': 0.0025,
-                      'beta_voc': -0.19659, 'gamma_pmp': -0.43,
-                      'cells_in_series': 96},
-            'output': {'a_ref': 2.3674, 'I_L_ref': 5.056, 'I_o_ref': 1.01e-10,
-                       'R_sh_ref': 837.51, 'R_s': 1.004, 'Adjust': 2.3}}
-
-
-@requires_scipy
-def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
+def test_fit_sandia_simple(get_test_iv_params, get_bad_iv_curves):
     test_params = get_test_iv_params
     testcurve = pvsystem.singlediode(photocurrent=test_params['IL'],
                                      saturation_current=test_params['I0'],
@@ -37,98 +17,83 @@ def test_fit_sde_sandia(get_test_iv_params, get_bad_iv_curves):
                                      resistance_series=test_params['Rs'],
                                      nNsVth=test_params['nNsVth'],
                                      ivcurve_pnts=300)
-    expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rsh', 'Rs',
+    expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rs', 'Rsh',
                      'nNsVth'])
-    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
-                                    current=testcurve['i'])
+    result = sde.fit_sandia_simple(voltage=testcurve['v'],
+                                   current=testcurve['i'])
     assert np.allclose(result, expected, rtol=5e-5)
-    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
-                                    current=testcurve['i'],
-                                    v_oc=testcurve['v_oc'],
-                                    i_sc=testcurve['i_sc'])
+    result = sde.fit_sandia_simple(voltage=testcurve['v'],
+                                   current=testcurve['i'],
+                                   v_oc=testcurve['v_oc'],
+                                   i_sc=testcurve['i_sc'])
     assert np.allclose(result, expected, rtol=5e-5)
-    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
-                                    current=testcurve['i'],
-                                    v_oc=testcurve['v_oc'],
-                                    i_sc=testcurve['i_sc'],
-                                    v_mp_i_mp=(testcurve['v_mp'],
-                                    testcurve['i_mp']))
+    result = sde.fit_sandia_simple(voltage=testcurve['v'],
+                                   current=testcurve['i'],
+                                   v_oc=testcurve['v_oc'],
+                                   i_sc=testcurve['i_sc'],
+                                   v_mp_i_mp=(testcurve['v_mp'],
+                                   testcurve['i_mp']))
     assert np.allclose(result, expected, rtol=5e-5)
-    result = ivtools.fit_sde_sandia(voltage=testcurve['v'],
-                                    current=testcurve['i'], vlim=0.1)
+    result = sde.fit_sandia_simple(voltage=testcurve['v'],
+                                   current=testcurve['i'], vlim=0.1)
     assert np.allclose(result, expected, rtol=5e-5)
 
 
-@requires_scipy
-def test_fit_sde_sandia_bad_iv(get_bad_iv_curves):
-    # bad IV curves for coverage of if/then in _calculate_sde_parameters
+def test_fit_sandia_simple_bad_iv(get_bad_iv_curves):
+    # bad IV curves for coverage of if/then in sde._sandia_simple_params
     v1, i1, v2, i2 = get_bad_iv_curves
-    result = ivtools.fit_sde_sandia(voltage=v1, current=i1)
-    assert np.allclose(result, (-2.4322856072799985, 8.854688976836396,
-                                -63.56227601452038, 111.18558915546389,
+    result = sde.fit_sandia_simple(voltage=v1, current=i1)
+    assert np.allclose(result, (-2.4322856072799985, 8.826830831727355,
+                                111.18558915546389, -63.56227601452038,
                                 -137.9965046659527))
-    result = ivtools.fit_sde_sandia(voltage=v2, current=i2)
-    assert np.allclose(result, (2.62405311949227, 1.8657963912925288,
-                                110.35202827739991, -65.652554411442,
+    result = sde.fit_sandia_simple(voltage=v2, current=i2)
+    assert np.allclose(result, (2.62405311949227, 5.075520636620032,
+                                -65.652554411442, 110.35202827739991,
                                 174.49362093001415))
 
 
-@requires_pysam
-def test_fit_sdm_cec_sam(get_cec_params_cansol_cs5p_220p):
-    input_data = get_cec_params_cansol_cs5p_220p['input']
-    I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
-        ivtools.fit_sdm_cec_sam(
-            celltype='polySi', v_mp=input_data['V_mp_ref'],
-            i_mp=input_data['I_mp_ref'], v_oc=input_data['V_oc_ref'],
-            i_sc=input_data['I_sc_ref'], alpha_sc=input_data['alpha_sc'],
-            beta_voc=input_data['beta_voc'],
-            gamma_pmp=input_data['gamma_pmp'],
-            cells_in_series=input_data['cells_in_series'])
-    expected = pd.Series(get_cec_params_cansol_cs5p_220p['output'])
-    modeled = pd.Series(index=expected.index, data=np.nan)
-    modeled['a_ref'] = a_ref
-    modeled['I_L_ref'] = I_L_ref
-    modeled['I_o_ref'] = I_o_ref
-    modeled['R_sh_ref'] = R_sh_ref
-    modeled['R_s'] = R_s
-    modeled['Adjust'] = Adjust
-    assert np.allclose(modeled.values, expected.values, rtol=5e-2)
-    # test for fitting failure
-    with pytest.raises(RuntimeError):
-        I_L_ref, I_o_ref, R_sh_ref, R_s, a_ref, Adjust = \
-            ivtools.fit_sdm_cec_sam(
-                celltype='polySi', v_mp=0.45, i_mp=5.25, v_oc=0.55, i_sc=5.5,
-                alpha_sc=0.00275, beta_voc=0.00275, gamma_pmp=0.0055,
-                cells_in_series=1, temp_ref=25)
+@pytest.mark.parametrize('i,v,nsvth,expected',  [
+    (np.array(
+        [4., 3.95, 3.92, 3.9, 3.89, 3.88, 3.82, 3.8, 3.75, 3.7, 3.68, 3.66,
+         3.65, 3.5, 3.2, 2.7, 2.2, 1.3, .6, 0.]),
+     np.array(
+        [0., .2, .4, .6, .8, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.2, 2.4, 2.6, 2.7,
+         2.76, 2.78, 2.81, 2.85, 2.88]),
+     2.,
+     (-96695.792, 96699.876, 7.4791, .0288, -.1413)),
+    (np.array([3., 2.9, 2.8, 2.7, 2.6, 2.5, 2.4, 1.7, 0.8, 0.]),
+     np.array([0., 0.2, 0.4, 0.6, 0.8, 1., 1.2, 1.4, 1.45, 1.5]),
+     10.,
+     (2.3392, 11.6865, -.232, -.2596, -.7119)),
+    (np.array(
+        [5., 4.9, 4.8, 4.7, 4.6, 4.5, 4.4, 4.3, 4.2, 4.1, 4., 3.8, 3.5, 1.7,
+         0.]),
+     np.array(
+        [0., .1, .2, .3, .4, .5, .6, .7, .8, .9, 1., 1.1, 1.18, 1.2, 1.22]),
+     15.,
+     (-22.0795, 27.1196, -4.2076, -.0056, -.0498))])
+def test__fit_sandia_cocontent(i, v, nsvth, expected):
+    # test confirms agreement with Matlab code. The returned parameters
+    # are nonsense
+    iph, io, rsh, rs, n = sde._fit_sandia_cocontent(v, i, nsvth)
+    np.testing.assert_allclose(iph, np.array(expected[0]), atol=.0001)
+    np.testing.assert_allclose(io, np.array([expected[1]]), atol=.0001)
+    np.testing.assert_allclose(rs, np.array([expected[2]]), atol=.0001)
+    np.testing.assert_allclose(rsh, np.array([expected[3]]), atol=.0001)
+    np.testing.assert_allclose(n, np.array([expected[4]]), atol=.0001)
 
 
-@requires_scipy
-def test_fit_sdm_desoto():
-    result, _ = ivtools.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3,
-                                       i_sc=9.43, alpha_sc=0.005658,
-                                       beta_voc=-0.13788,
-                                       cells_in_series=60)
-    result_expected = {'I_L_ref': 9.45232,
-                       'I_o_ref': 3.22460e-10,
-                       'a_ref': 1.59128,
-                       'R_sh_ref': 125.798,
-                       'R_s': 0.297814,
-                       'alpha_sc': 0.005658,
-                       'EgRef': 1.121,
-                       'dEgdT': -0.0002677,
-                       'irrad_ref': 1000,
-                       'temp_ref': 25}
-    assert np.allclose(pd.Series(result), pd.Series(result_expected),
-                       rtol=1e-4)
-
-
-@requires_scipy
-def test_fit_sdm_desoto_failure():
-    with pytest.raises(RuntimeError) as exc:
-        ivtools.fit_sdm_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
-                               alpha_sc=0.005658, beta_voc=-0.13788,
-                               cells_in_series=10)
-    assert ('Parameter estimation failed') in str(exc.value)
+def test__fit_sandia_cocontent_fail():
+    # tests for ValueError
+    exc_text = 'voltage and current should have the same length'
+    with pytest.raises(ValueError, match=exc_text):
+        sde._fit_sandia_cocontent(np.array([0., 1., 2.]), np.array([4., 3.]),
+                                  2.)
+    exc_text = 'at least 6 voltage points are required; ~50 are recommended'
+    with pytest.raises(ValueError, match=exc_text):
+        sde._fit_sandia_cocontent(np.array([0., 1., 2., 3., 4.]),
+                                  np.array([4., 3.9, 3.4, 2., 0.]),
+                                  2.)
 
 
 @pytest.fixture

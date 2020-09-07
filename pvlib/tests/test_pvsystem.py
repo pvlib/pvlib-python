@@ -1141,9 +1141,9 @@ def test_PVSystem_localize___repr__():
 def test_LocalizedPVSystem_creation():
     with pytest.warns(pvlibDeprecationWarning):
         localized_system = pvsystem.LocalizedPVSystem(latitude=32,
-                                                    longitude=-111,
-                                                    module='blah',
-                                                    inverter='blarg')
+                                                      longitude=-111,
+                                                      module='blah',
+                                                      inverter='blarg')
 
     assert localized_system.module == 'blah'
     assert localized_system.inverter == 'blarg'

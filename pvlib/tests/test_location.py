@@ -16,7 +16,8 @@ from pvlib.location import Location
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
 from test_solarposition import expected_solpos, golden, golden_mst
-from conftest import requires_ephem, requires_tables
+from pvlib._deprecation import pvlibDeprecationWarning
+from conftest import requires_ephem, requires_tables, fail_on_pvlib_version
 
 
 def test_location_required():
@@ -329,4 +330,4 @@ def test_get_sun_rise_set_transit_valueerror(golden):
 def test_deprecated_09():
     match = "Arbitrary Location kwargs"
     with pytest.warns(pvlibDeprecationWarning, match=match):
-        system = location.Location(32.2, -111, arbitrary_kwarg='value')
+        Location(32.2, -111, arbitrary_kwarg='value')

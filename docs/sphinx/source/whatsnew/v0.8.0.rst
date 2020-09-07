@@ -35,13 +35,13 @@ API Changes with Deprecations
 * :py:class:`pvlib.location.Location`, :py:class:`pvlib.pvsystem.PVSystem`,
   :py:class:`pvlib.tracking.SingleAxisTracker`, and
   :py:class:`pvlib.modelchain.ModelChain`, no longer accept arbitrary keyword
-  arguments. (:issue:`1029`, :pull:`update me`)
+  arguments. (:issue:`1029`, :pull:`1053`)
 * ``pvlib.pvsystem.LocalizedPVSystem`` and ``pvlib.pvsystem.LocalizedSingleAxisTracker``
   are deprecated and will be removed in 0.9. Use
   :py:class:`pvlib.location.Location`, :py:class:`pvlib.pvsystem.PVSystem`,
   :py:class:`pvlib.tracking.SingleAxisTracker`, and
   :py:class:`pvlib.modelchain.ModelChain` instead.
-  (:issue:`1029`, :pull:`1034`, :pull:`update me`)
+  (:issue:`1029`, :pull:`1034`, :pull:`1053`)
 
 API Changes
 ~~~~~~~~~~~

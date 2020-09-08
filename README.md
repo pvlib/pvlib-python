@@ -25,9 +25,6 @@
 <tr>
   <td>Build Status</td>
   <td>
-    <a href="https://travis-ci.org/pvlib/pvlib-python">
-    <img src="https://travis-ci.org/pvlib/pvlib-python.svg?branch=master" alt="travis build status" />
-    </a>
     <a href="http://pvlib-python.readthedocs.org/en/stable/">
     <img src="https://readthedocs.org/projects/pvlib-python/badge/?version=stable" alt="documentation build status" />
     </a>

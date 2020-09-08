@@ -108,7 +108,7 @@ Enhancements
   configurations are defined in ``modelchain.PVWATTS_CONFIG``, and
   ``modelchain.SAPM_CONFIG``. (:issue:`1013`, :pull:`1022`)
 * Added ``racking_model``, ``module_type``, and ``temperature_model_parameters`` to
-  :py:class:`~pvlib.pvystem.PVSystem` and :py:class:`~pvlib.tracking.SingleAxisTracker`
+  :py:class:`~pvlib.pvsystem.PVSystem` and :py:class:`~pvlib.tracking.SingleAxisTracker`
   repr methods. (:issue:`1027`)
 * Added :py:func:`~pvlib.tracking.calc_axis_tilt` to calculate the
   tracker axes tilt and :py:func:`~pvlib.tracking.calc_cross_axis_tilt` to

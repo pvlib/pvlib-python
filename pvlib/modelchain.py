@@ -333,10 +333,6 @@ class ModelChain:
 
     name: None or str, default None
         Name of ModelChain instance.
-
-    **kwargs
-        Arbitrary keyword arguments. Included for compatibility, but not
-        used.
     """
 
     def __init__(self, system, location,
@@ -371,6 +367,12 @@ class ModelChain:
         self.weather = None
         self.times = None
         self.solar_position = None
+
+        if kwargs:
+            warnings.warn(
+                'Arbitrary ModelChain kwargs are deprecated and will be '
+                'removed in v0.9', pvlibDeprecationWarning
+            )
 
     @classmethod
     def with_pvwatts(cls, system, location,

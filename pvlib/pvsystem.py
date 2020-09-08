@@ -79,9 +79,6 @@ class PVSystem:
     :py:class:`~pvlib.modelchain.ModelChain`
     objects.
 
-    See the :py:class:`LocalizedPVSystem` class for an object model that
-    describes an installed PV system.
-
     The class supports basic system topologies consisting of:
 
         * `N` total modules arranged in series
@@ -164,7 +161,6 @@ class PVSystem:
     --------
     pvlib.location.Location
     pvlib.tracking.SingleAxisTracker
-    pvlib.pvsystem.LocalizedPVSystem
     """
 
     def __init__(self,
@@ -827,7 +823,9 @@ class PVSystem:
 
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
-        """Creates a LocalizedPVSystem object using this object
+        """DEPRECATED.
+
+        Creates a LocalizedPVSystem object using this object
         and location data. Must supply either location object or
         latitude, longitude, and any location kwargs
 

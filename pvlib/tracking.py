@@ -116,11 +116,12 @@ class SingleAxisTracker(PVSystem):
 
         return tracking_data
 
+    @deprecated('0.8',
+                alternative='SingleAxisTracker, Location, and ModelChain',
+                name='SingleAxisTracker.localize', removal='0.9')
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
         """
-        DEPRECATED.
-
         Creates a :py:class:`LocalizedSingleAxisTracker` object using
         this object and location data. Must supply either location
         object or latitude, longitude, and any location kwargs

@@ -821,10 +821,11 @@ class PVSystem:
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
 
+    @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
+                name='PVSystem.localize', removal='0.9')
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
-        """DEPRECATED.
-
+        """
         Creates a LocalizedPVSystem object using this object
         and location data. Must supply either location object or
         latitude, longitude, and any location kwargs

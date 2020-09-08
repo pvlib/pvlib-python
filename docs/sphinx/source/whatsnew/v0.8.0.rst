@@ -75,6 +75,19 @@ Deprecations
   provide ``temperature_model_parameters`` or a valid combination of
   ``module_type`` and ``racking_model``. (:issue:`1030`, :pull:`1033`)
 
+* Deprecated arbitrary keyword arguments for
+  :py:class:`pvlib.location.Location`, :py:class:`pvlib.pvsystem.PVSystem`,
+  :py:class:`pvlib.tracking.SingleAxisTracker`, and
+  :py:class:`pvlib.modelchain.ModelChain`. Supplying arbitrary keyword
+  to these objects will result in TypeErrors in v0.9. (:issue:`1029`, :pull:`1053`)
+
+* ``pvlib.pvsystem.LocalizedPVSystem`` and ``pvlib.pvsystem.LocalizedSingleAxisTracker``
+  are deprecated and will be removed in 0.9. Use
+  :py:class:`pvlib.location.Location`, :py:class:`pvlib.pvsystem.PVSystem`,
+  :py:class:`pvlib.tracking.SingleAxisTracker`, and
+  :py:class:`pvlib.modelchain.ModelChain` instead.
+  (:issue:`1029`, :pull:`1034`, :pull:`1053`)
+
 Enhancements
 ~~~~~~~~~~~~
 * Update :func:`~pvlib.bifacial.pvfactors_timeseries` to run with ``pvfactors`` v1.4.1 (:issue:`902`)(:pull:`934`)

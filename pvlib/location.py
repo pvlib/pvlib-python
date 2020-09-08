@@ -5,11 +5,13 @@ This module contains the Location class.
 # Will Holmgren, University of Arizona, 2014-2016.
 
 import datetime
+import warnings
 
 import pandas as pd
 import pytz
 
 from pvlib import solarposition, clearsky, atmosphere, irradiance
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 class Location:
@@ -48,10 +50,6 @@ class Location:
     name : None or string, default None.
         Sets the name attribute of the Location object.
 
-    **kwargs
-        Arbitrary keyword arguments.
-        Included for compatibility, but not used.
-
     See also
     --------
     pvlib.pvsystem.PVSystem
@@ -81,6 +79,12 @@ class Location:
         self.altitude = altitude
 
         self.name = name
+
+        if kwargs:
+            warnings.warn(
+                'Arbitrary Location kwargs are deprecated and will be '
+                'removed in v0.9', pvlibDeprecationWarning
+            )
 
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']

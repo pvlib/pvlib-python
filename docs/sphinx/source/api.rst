@@ -22,8 +22,6 @@ corresponding procedural code.
    pvsystem.PVSystem
    tracking.SingleAxisTracker
    modelchain.ModelChain
-   pvsystem.LocalizedPVSystem
-   tracking.LocalizedSingleAxisTracker
 
 
 Solar Position
@@ -210,7 +208,6 @@ wrap the functions listed below. See its documentation for details.
    :toctree: generated/
 
    pvsystem.PVSystem
-   pvsystem.LocalizedPVSystem
 
 Incident angle modifiers
 ------------------------
@@ -432,8 +429,6 @@ The :py:class:`~tracking.SingleAxisTracker` inherits from
    tracking.SingleAxisTracker
    tracking.SingleAxisTracker.singleaxis
    tracking.SingleAxisTracker.get_irradiance
-   tracking.SingleAxisTracker.localize
-   tracking.LocalizedSingleAxisTracker
 
 Functions
 ---------

@@ -21,20 +21,20 @@ from pvlib.tools import _build_kwargs
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
 # for ModelChain.weather
-WEATHER_KEYS = {'ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
-                'precipitable_water'}
+WEATHER_KEYS = ('ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
+                'precipitable_water')
 
 # for ModelChain.total_irrad
-POA_DATA_KEYS = {'poa_global', 'poa_direct', 'poa_diffuse'}
+POA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
 
 # Optional keys to communicate temperature data. If provided,
 # 'cell_temperature' overrides ModelChain.temperature_model and sets
 # ModelChain.cell_temperature to the data. If 'module_temperature' is provdied,
 # overrides ModelChain.temperature_model with
 # pvlib.temperature.sapm_celL_from_module
-TEMPERATURE_KEYS = {'module_temperature', 'cell_temperature'}
+TEMPERATURE_KEYS = ('module_temperature', 'cell_temperature')
 
-DATA_KEYS = WEATHER_KEYS | POA_DATA_KEYS | TEMPERATURE_KEYS
+DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
 
 # these dictionaries contain the default configuration for following
 # established modeling sequences. They can be used in combination with
@@ -333,10 +333,6 @@ class ModelChain:
 
     name: None or str, default None
         Name of ModelChain instance.
-
-    **kwargs
-        Arbitrary keyword arguments. Included for compatibility, but not
-        used.
     """
 
     def __init__(self, system, location,
@@ -371,6 +367,12 @@ class ModelChain:
         self.weather = None
         self.times = None
         self.solar_position = None
+
+        if kwargs:
+            warnings.warn(
+                'Arbitrary ModelChain kwargs are deprecated and will be '
+                'removed in v0.9', pvlibDeprecationWarning
+            )
 
     @classmethod
     def with_pvwatts(cls, system, location,
@@ -1094,7 +1096,7 @@ class ModelChain:
         return self
 
     def _assign_total_irrad(self, data):
-        key_list = [k for k in POA_DATA_KEYS if k in data]
+        key_list = [k for k in POA_KEYS if k in data]
         self.total_irrad = data[key_list].copy()
         return self
 

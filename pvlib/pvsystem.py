@@ -79,9 +79,6 @@ class PVSystem:
     :py:class:`~pvlib.modelchain.ModelChain`
     objects.
 
-    See the :py:class:`LocalizedPVSystem` class for an object model that
-    describes an installed PV system.
-
     The class supports basic system topologies consisting of:
 
         * `N` total modules arranged in series
@@ -164,7 +161,6 @@ class PVSystem:
     --------
     pvlib.location.Location
     pvlib.tracking.SingleAxisTracker
-    pvlib.pvsystem.LocalizedPVSystem
     """
 
     def __init__(self,
@@ -219,6 +215,12 @@ class PVSystem:
             self.losses_parameters = losses_parameters
 
         self.name = name
+
+        if kwargs:
+            warnings.warn(
+                'Arbitrary PVSystem kwargs are deprecated and will be '
+                'removed in v0.9', pvlibDeprecationWarning
+            )
 
     def __repr__(self):
         attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
@@ -819,9 +821,12 @@ class PVSystem:
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
 
+    @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
+                name='PVSystem.localize', removal='0.9')
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
-        """Creates a LocalizedPVSystem object using this object
+        """
+        Creates a LocalizedPVSystem object using this object
         and location data. Must supply either location object or
         latitude, longitude, and any location kwargs
 
@@ -843,6 +848,8 @@ class PVSystem:
         return LocalizedPVSystem(pvsystem=self, location=location)
 
 
+@deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
+            name='LocalizedPVSystem', removal='0.9')
 class LocalizedPVSystem(PVSystem, Location):
     """
     The LocalizedPVSystem class defines a standard set of installed PV

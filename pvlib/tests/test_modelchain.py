@@ -181,8 +181,8 @@ def weather():
 @pytest.fixture
 def total_irrad(weather):
     return pd.DataFrame({'poa_global': [800., 500.],
-                         'poa_diffuse': [300., 200.],
-                         'poa_direct': [500., 300.]}, index=weather.index)
+                         'poa_direct': [500., 300.],
+                         'poa_diffuse': [300., 200.]}, index=weather.index)
 
 
 def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
@@ -336,21 +336,25 @@ def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
 
 def test__assign_total_irrad(sapm_dc_snl_ac_system, location, weather,
                              total_irrad):
-    weather[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data = pd.concat([weather, total_irrad], axis=1)
     mc = ModelChain(sapm_dc_snl_ac_system, location)
-    mc._assign_total_irrad(weather)
-    for k in modelchain.POA_DATA_KEYS:
-        assert_series_equal(mc.total_irrad[k], total_irrad[k])
+    mc._assign_total_irrad(data)
+    assert_frame_equal(mc.total_irrad, total_irrad)
 
 
 def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
                                  weather, total_irrad):
-    data = weather.copy()
-    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data = pd.concat([weather, total_irrad], axis=1)
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.prepare_inputs_from_poa(data)
+    weather_expected = weather.copy()
+    weather_expected['temp_air'] = 20
+    weather_expected['wind_speed'] = 0
+    # order as expected
+    weather_expected = weather_expected[
+        ['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air']]
     # weather attribute
-    assert_frame_equal(mc.weather, weather)
+    assert_frame_equal(mc.weather, weather_expected)
     # total_irrad attribute
     assert_frame_equal(mc.total_irrad, total_irrad)
 
@@ -770,6 +774,13 @@ def test_deprecated_09(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
     with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
         ModelChain(system, location, ac_model=ac_model,
                    aoi_model='no_loss', spectral_model='no_loss')
+
+
+@fail_on_pvlib_version('0.9')
+def test_ModelChain_kwargs_deprecated_09(sapm_dc_snl_ac_system, location):
+    match = "Arbitrary ModelChain kwargs"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        ModelChain(sapm_dc_snl_ac_system, location, arbitrary_kwarg='value')
 
 
 def test_basic_chain_required(sam_data, cec_inverter_parameters,

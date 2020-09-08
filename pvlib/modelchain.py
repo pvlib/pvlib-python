@@ -25,7 +25,7 @@ WEATHER_KEYS = ('ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
                 'precipitable_water')
 
 # for ModelChain.total_irrad
-POA_DATA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
+POA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
 
 # Optional keys to communicate temperature data. If provided,
 # 'cell_temperature' overrides ModelChain.temperature_model and sets
@@ -34,7 +34,7 @@ POA_DATA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
 # pvlib.temperature.sapm_celL_from_module
 TEMPERATURE_KEYS = ('module_temperature', 'cell_temperature')
 
-DATA_KEYS = WEATHER_KEYS + POA_DATA_KEYS + TEMPERATURE_KEYS
+DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
 
 # these dictionaries contain the default configuration for following
 # established modeling sequences. They can be used in combination with
@@ -1090,7 +1090,7 @@ class ModelChain:
         return self
 
     def _assign_total_irrad(self, data):
-        key_list = [k for k in POA_DATA_KEYS if k in data]
+        key_list = [k for k in POA_KEYS if k in data]
         self.total_irrad = data[key_list].copy()
         return self
 

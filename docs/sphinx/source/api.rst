@@ -138,6 +138,7 @@ Methods for irradiance calculations
 
    pvsystem.PVSystem.get_irradiance
    pvsystem.PVSystem.get_aoi
+   pvsystem.PVSystem.get_iam
    tracking.SingleAxisTracker.get_irradiance
 
 Decomposing and combining irradiance
@@ -238,6 +239,7 @@ PV temperature models
    temperature.pvsyst_cell
    temperature.faiman
    temperature.fuentes
+   pvsystem.PVSystem.sapm_celltemp
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -385,6 +387,9 @@ Loss models
 
    pvsystem.combine_loss_factors
 
+Snow
+----
+
 .. autosummary::
    :toctree: generated/
 
@@ -392,11 +397,17 @@ Loss models
    snow.fully_covered_nrel
    snow.dc_loss_nrel
 
+Soiling
+-------
+
 .. autosummary::
    :toctree: generated/
 
    soiling.hsu
    soiling.kimber
+
+Shading
+-------
 
 .. autosummary::
    :toctree: generated/

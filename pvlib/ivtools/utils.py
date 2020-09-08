@@ -144,7 +144,7 @@ def rectify_iv_curve(voltage, current, decimals=None):
 
     Notes
     -----
-    ``rectify_IV_curve`` ensures that the IV curve lies in the first quadrant
+    ``rectify_iv_curve`` ensures that the IV curve lies in the first quadrant
     of the (voltage, current) plane. The returned IV curve:
 
       * increases in voltage

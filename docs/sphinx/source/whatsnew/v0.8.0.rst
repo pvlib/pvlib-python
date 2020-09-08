@@ -68,7 +68,7 @@ Deprecations
 * :py:class:`pvlib.pvsystem.PVSystem` ``module_type`` and ``racking_model`` now
   default to ``None``. This continues a deprecation of assuming SAPM values
   for cell temperature modeling. In this v0.8 release series, calling
-  :py:meth:`pvlib.pvsystem.PVSystem.sapm_celltemp` without setting ``PVSystem.temperature model parameters``,
+  :py:meth:`pvlib.pvsystem.PVSystem.sapm_celltemp` without setting ``PVSystem.temperature_model_parameters``,
   or a valid combination of ``PVsystem.module_type`` and ``PVsystem.racking_model``, will cause
   ``PVSystem.temperature_model_parameters`` to be set to SAPM values for a
   glass/glass module in open racking and emit a warning. In v0.9, users must
@@ -121,7 +121,7 @@ Bug fixes
 ~~~~~~~~~
 * Fixed unit and default value errors in :py:func:`pvlib.soiling.hsu`. (:pull:`977`, :pull:`980`)
 * Handle NUL characters and fix version column dtype in
-  :py:func:`~pvlib.iotools.crn.read_crn`. (:issue:`1025`)
+  :py:func:`~pvlib.iotools.read_crn`. (:issue:`1025`)
 * Fix low sun angle tracker rotation calculation. (:issue:`824`)
 * Fix issue with big-endian and little-endian data in ``forecast.py``.
   (:issue:`921`)

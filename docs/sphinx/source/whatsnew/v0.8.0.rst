@@ -11,7 +11,7 @@ Breaking changes
     - Functions for fitting diode models are now in :py:mod:`pvlib.ivtools.sdm`
     - :py:func:`pvlib.ivtools.fit_sdm_cec_sam` is now :py:func:`pvlib.ivtools.sdm.fit_cec_sam`
     - :py:func:`pvlib.ivtools.fit_sdm_desoto` is now :py:func:`pvlib.ivtools.sdm.fit_desoto`
-    - Functions for fitting the single diode equation are now in :py:mod:`pvlib.ivtools.sde.py`
+    - Functions for fitting the single diode equation are now in :py:mod:`pvlib.ivtools.sde`
     - :py:func:`pvlib.ivtools.fit_sde_sandia` is now :py:func:`pvlib.ivtools.sde.fit_sandia_simple`
 
 * Removed ``run_parallel_calculations`` and ``n_workers_for_parallel_calcs``

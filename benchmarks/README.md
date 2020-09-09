@@ -11,45 +11,34 @@ We refer readers to the ASV documentation for more details. The AstroPy
 may also be helpful.
 
 The test configuration is described in [asv.conf.json](asv.conf.json).
-
 The performance tests are located in the [benchmarks](benchmarks) directory.
 
-First, from the same directory as `asv.conf.json`, run the tests in a
-command prompt (`$`):
-
-```
-$ asv run
-```
+Comparing timings
+-----------------
 
 Note that, unlike pytest, the asv tests require changes to be committed
 to git before they can be tested. The ``run`` command takes a positional
 argument to describe the range of git commits or branches to be tested.
 For example, if your feature branch is named ``feature``, a useful asv
-run may be:
+run may be (from the same directory as `asv.conf.json`):
 
 ```
 $ asv run master..feature
 ```
 
-Next, publish the test results to the archive:
+This will generate timings for every commit between the two specified
+revisions. If you only care about certain commits, you can run them by
+their git hashes directly like this:
 
 ```
-$ asv publish
+$ asv run e42f8d24^!
 ```
 
-Finally, start a http server to view the test results:
+Note: depending on what shell they use, Windows users may need to use
+double-carets:
 
 ```
-$ asv preview
-```
-
-You might also find it useful to compare results from the command line
-instead of through the HTML report. After generating timing results by
-benchmarking a series of commits as above, or running individual commits
-like this:
-
-```
-asv run e42f8d24^!
+$ asv run e42f8d24^^!
 ```
 
 You can then compare the timing results of two commits:
@@ -70,6 +59,30 @@ All benchmarks:
 The `ratio` column shows the ratio of `after / before` timings. For this
 example, the `aoi` function was slowed down on purpose to demonstrate
 the comparison.
+
+Generating an HTML report
+-------------------------
+
+asv can generate a collection of interactive plots of benchmark timings across
+a commit history. First, generate timings for a series of commits, like:
+
+```
+$ asv run v0.6.0..v0.8.0
+```
+
+Next, generate the HTML report:
+
+```
+$ asv publish
+```
+
+Finally, start a http server to view the test results:
+
+```
+$ asv preview
+
+```
+
 
 Nightly benchmarking
 --------------------

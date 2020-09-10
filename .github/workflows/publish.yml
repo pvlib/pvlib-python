@@ -1,0 +1,38 @@
+name: Publish distributions to PyPI
+
+# if this workflow is modified to be a generic CI workflow then
+# add an if statement to the publish step so it only runs on tags.
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-n-publish:
+    name: Build and publish distributions to PyPI
+    if: github.repository == 'pvlib/pvlib-python'
+    runs-on: ubuntu-latest
+    steps:
+    # fetch all commits and tags so versioneer works
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install build tools
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools wheel
+
+    - name: Build packages
+      run: python setup.py sdist bdist_wheel
+
+    - name: Publish distribution to PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.pypi_password }}

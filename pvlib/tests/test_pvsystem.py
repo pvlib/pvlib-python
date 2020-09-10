@@ -5,7 +5,7 @@ from numpy import nan, array
 import pandas as pd
 
 import pytest
-from pandas.testing import assert_series_equal, assert_frame_equal
+from conftest import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 
 from pvlib import inverter, pvsystem
@@ -15,7 +15,7 @@ from pvlib.location import Location
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import needs_numpy_1_10, requires_scipy, fail_on_pvlib_version
+from conftest import fail_on_pvlib_version
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -198,17 +198,6 @@ def test_sapm(sapm_module_params):
                   pd.Series(sapm_module_params))
 
 
-def test_pvsystem_sapm_warning(sapm_module_params):
-    # deprecation warning for change in effective_irradiance units in
-    # pvsystem.sapm
-    # TODO: remove after deprecation period (v0.8)
-    effective_irradiance = np.array([0.1, 0.2, 1.3])
-    temp_cell = np.array([25, 25, 50])
-    warn_txt = 'effective_irradiance inputs appear to be in suns'
-    with pytest.warns(RuntimeWarning, match=warn_txt):
-        pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
-
-
 def test_PVSystem_sapm(sapm_module_params, mocker):
     mocker.spy(pvsystem, 'sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
@@ -384,14 +373,6 @@ def test__infer_temperature_model_params():
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['freestanding']
     assert expected == system._infer_temperature_model_params()
-
-
-def test__infer_temperature_model_params_deprec_warning():
-    warn_txt = "Reverting to deprecated default"
-    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
-        pvsystem.PVSystem(module_parameters={},
-                          racking_model='not_a_rack_model',
-                          module_type='glass_polymer')
 
 
 def test_calcparams_desoto(cec_module_params):
@@ -656,7 +637,6 @@ def fixture_v_from_i(request):
     return request.param
 
 
-@requires_scipy
 @pytest.mark.parametrize(
     'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-8)]
 )
@@ -678,7 +658,6 @@ def test_v_from_i(fixture_v_from_i, method, atol):
     assert_allclose(V, V_expected, atol=atol)
 
 
-@requires_scipy
 def test_i_from_v_from_i(fixture_v_from_i):
     # Solution set loaded from fixture
     Rsh = fixture_v_from_i['Rsh']
@@ -776,7 +755,6 @@ def fixture_i_from_v(request):
     return request.param
 
 
-@requires_scipy
 @pytest.mark.parametrize(
     'method, atol', [('lambertw', 1e-11), ('brentq', 1e-11), ('newton', 1e-11)]
 )
@@ -798,7 +776,6 @@ def test_i_from_v(fixture_i_from_v, method, atol):
     assert_allclose(I, I_expected, atol=atol)
 
 
-@requires_scipy
 def test_PVSystem_i_from_v(mocker):
     system = pvsystem.PVSystem()
     m = mocker.patch('pvlib.pvsystem.i_from_v', autospec=True)
@@ -807,7 +784,6 @@ def test_PVSystem_i_from_v(mocker):
     m.assert_called_once_with(*args)
 
 
-@requires_scipy
 def test_i_from_v_size():
     with pytest.raises(ValueError):
         pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
@@ -819,7 +795,6 @@ def test_i_from_v_size():
                           method='newton')
 
 
-@requires_scipy
 def test_v_from_i_size():
     with pytest.raises(ValueError):
         pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0)
@@ -831,7 +806,6 @@ def test_v_from_i_size():
                           method='newton')
 
 
-@requires_scipy
 def test_mpp_floats():
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (7, 6e-7, .1, 20, .5)
@@ -847,7 +821,6 @@ def test_mpp_floats():
         assert np.isclose(v, expected[k])
 
 
-@requires_scipy
 def test_mpp_array():
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
@@ -863,7 +836,6 @@ def test_mpp_array():
         assert np.allclose(v, expected[k])
 
 
-@requires_scipy
 def test_mpp_series():
     """test max_power_point"""
     idx = ['2008-02-17T11:30:00-0800', '2008-02-17T12:30:00-0800']
@@ -882,7 +854,6 @@ def test_mpp_series():
         assert np.allclose(v, expected[k])
 
 
-@requires_scipy
 def test_singlediode_series(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=2, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0], index=times)
@@ -902,7 +873,6 @@ def test_singlediode_series(cec_module_params):
     assert isinstance(out, pd.DataFrame)
 
 
-@requires_scipy
 def test_singlediode_array():
     # github issue 221
     photocurrent = np.linspace(0, 10, 11)
@@ -932,7 +902,6 @@ def test_singlediode_array():
     assert_allclose(sd['i_mp'], expected, atol=0.01)
 
 
-@requires_scipy
 def test_singlediode_floats():
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, method='lambertw')
     expected = {'i_xx': 4.2498,
@@ -952,7 +921,6 @@ def test_singlediode_floats():
             assert_allclose(v, expected[k], atol=1e-3)
 
 
-@requires_scipy
 def test_singlediode_floats_ivcurve():
     out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3, method='lambertw')
     expected = {'i_xx': 4.2498,
@@ -969,7 +937,6 @@ def test_singlediode_floats_ivcurve():
         assert_allclose(v, expected[k], atol=1e-3)
 
 
-@requires_scipy
 def test_singlediode_series_ivcurve(cec_module_params):
     times = pd.date_range(start='2015-06-01', periods=3, freq='6H')
     effective_irradiance = pd.Series([0.0, 400.0, 800.0], index=times)
@@ -1097,10 +1064,12 @@ def test_PVSystem_get_irradiance():
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 
+@fail_on_pvlib_version('0.9')
 def test_PVSystem_localize_with_location():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')
     location = Location(latitude=32, longitude=-111)
-    localized_system = system.localize(location=location)
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = system.localize(location=location)
 
     assert localized_system.module == 'blah'
     assert localized_system.inverter == 'blarg'
@@ -1108,9 +1077,11 @@ def test_PVSystem_localize_with_location():
     assert localized_system.longitude == -111
 
 
+@fail_on_pvlib_version('0.9')
 def test_PVSystem_localize_with_latlon():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')
-    localized_system = system.localize(latitude=32, longitude=-111)
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = system.localize(latitude=32, longitude=-111)
 
     assert localized_system.module == 'blah'
     assert localized_system.inverter == 'blarg'
@@ -1119,23 +1090,45 @@ def test_PVSystem_localize_with_latlon():
 
 
 def test_PVSystem___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
+    system = pvsystem.PVSystem(
+        module='blah', inverter='blarg', name='pv ftw',
+        temperature_model_parameters={'a': -3.56})
 
-    expected = ('PVSystem: \n  name: pv ftw\n  surface_tilt: 0\n  '
-                'surface_azimuth: 180\n  module: blah\n  inverter: blarg\n  '
-                'albedo: 0.25\n  racking_model: open_rack')
-
+    expected = """PVSystem:
+  name: pv ftw
+  surface_tilt: 0
+  surface_azimuth: 180
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: None
+  module_type: None
+  temperature_model_parameters: {'a': -3.56}"""
     assert system.__repr__() == expected
 
 
+@fail_on_pvlib_version('0.9')
 def test_PVSystem_localize___repr__():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg', name='pv ftw')
-    localized_system = system.localize(latitude=32, longitude=-111)
-
-    expected = ('LocalizedPVSystem: \n  name: None\n  latitude: 32\n  '
-                'longitude: -111\n  altitude: 0\n  tz: UTC\n  '
-                'surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  '
-                'inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack')
+    system = pvsystem.PVSystem(
+        module='blah', inverter='blarg', name='pv ftw',
+        temperature_model_parameters={'a': -3.56})
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = system.localize(latitude=32, longitude=-111)
+    # apparently name is not preserved when creating a system using localize
+    expected = """LocalizedPVSystem:
+  name: None
+  latitude: 32
+  longitude: -111
+  altitude: 0
+  tz: UTC
+  surface_tilt: 0
+  surface_azimuth: 180
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: None
+  module_type: None
+  temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
 
@@ -1144,12 +1137,13 @@ def test_PVSystem_localize___repr__():
 # when they are attached to LocalizedPVSystem, but
 # that's probably not necessary at this point.
 
-
+@fail_on_pvlib_version('0.9')
 def test_LocalizedPVSystem_creation():
-    localized_system = pvsystem.LocalizedPVSystem(latitude=32,
-                                                  longitude=-111,
-                                                  module='blah',
-                                                  inverter='blarg')
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = pvsystem.LocalizedPVSystem(latitude=32,
+                                                      longitude=-111,
+                                                      module='blah',
+                                                      inverter='blarg')
 
     assert localized_system.module == 'blah'
     assert localized_system.inverter == 'blarg'
@@ -1157,17 +1151,27 @@ def test_LocalizedPVSystem_creation():
     assert localized_system.longitude == -111
 
 
+@fail_on_pvlib_version('0.9')
 def test_LocalizedPVSystem___repr__():
-    localized_system = pvsystem.LocalizedPVSystem(latitude=32,
-                                                  longitude=-111,
-                                                  module='blah',
-                                                  inverter='blarg',
-                                                  name='my name')
+    with pytest.warns(pvlibDeprecationWarning):
+        localized_system = pvsystem.LocalizedPVSystem(
+            latitude=32, longitude=-111, module='blah', inverter='blarg',
+            name='my name', temperature_model_parameters={'a': -3.56})
 
-    expected = ('LocalizedPVSystem: \n  name: my name\n  latitude: 32\n  '
-                'longitude: -111\n  altitude: 0\n  tz: UTC\n  '
-                'surface_tilt: 0\n  surface_azimuth: 180\n  module: blah\n  '
-                'inverter: blarg\n  albedo: 0.25\n  racking_model: open_rack')
+    expected = """LocalizedPVSystem:
+  name: my name
+  latitude: 32
+  longitude: -111
+  altitude: 0
+  tz: UTC
+  surface_tilt: 0
+  surface_azimuth: 180
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: None
+  module_type: None
+  temperature_model_parameters: {'a': -3.56}"""
 
     assert localized_system.__repr__() == expected
 
@@ -1178,7 +1182,6 @@ def test_pvwatts_dc_scalars():
     assert_allclose(out, expected)
 
 
-@needs_numpy_1_10
 def test_pvwatts_dc_arrays():
     irrad_trans = np.array([np.nan, 900, 900])
     temp_cell = np.array([30, np.nan, 30])
@@ -1204,7 +1207,6 @@ def test_pvwatts_losses_default():
     assert_allclose(out, expected)
 
 
-@needs_numpy_1_10
 def test_pvwatts_losses_arrays():
     expected = np.array([nan, 14.934904])
     age = np.array([nan, 1])
@@ -1290,92 +1292,16 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     assert out < pdc
 
 
-@fail_on_pvlib_version('0.8')
-def test_deprecated_08():
-    # deprecated function pvsystem.sapm_celltemp
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.sapm_celltemp(1000, 25, 1)
-    # deprecated function pvsystem.pvsyst_celltemp
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.pvsyst_celltemp(1000, 25)
-    module_parameters = {'R_sh_ref': 1, 'a_ref': 1, 'I_o_ref': 1,
-                         'alpha_sc': 1, 'I_L_ref': 1, 'R_s': 1,
-                         'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
-                         'B1': 0.0, 'B0': 1.0,
-                         'b': 0.05, 'K': 4, 'L': 0.002, 'n': 1.526,
-                         'a_r': 0.16}
-    temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
-        'open_rack_glass_glass']
-    # for missing temperature_model_parameters
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.PVSystem(module_parameters=module_parameters,
-                          racking_model='open', module_type='glass_glass')
-    pv = pvsystem.PVSystem(module_parameters=module_parameters,
-                           temperature_model_parameters=temp_model_params,
-                           racking_model='open', module_type='glass_glass')
-    # deprecated method PVSystem.ashraeiam
-    with pytest.warns(pvlibDeprecationWarning):
-        pv.ashraeiam(45)
-    # deprecated function ashraeiam
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.ashraeiam(45)
-    # deprecated method PVSystem.physicaliam
-    with pytest.warns(pvlibDeprecationWarning):
-        pv.physicaliam(45)
-    # deprecated function physicaliam
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.physicaliam(45)
-    # deprecated method PVSystem.sapm_aoi_loss
-    with pytest.warns(pvlibDeprecationWarning):
-        pv.sapm_aoi_loss(45)
-    # deprecated function sapm_aoi_loss
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.sapm_aoi_loss(45, {'B5': 0.0, 'B4': 0.0, 'B3': 0.0, 'B2': 0.0,
-                                    'B1': 0.0, 'B0': 1.0})
-
-
-@fail_on_pvlib_version('0.8')
-def test__pvsyst_celltemp_translator():
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, 5)
-    assert_allclose(result, 45.137, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, 5, 0.1, 0.9,
-                                                  [29.0, 0.0])
-    assert_allclose(result, 45.137, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(poa_global=900, temp_air=20,
-                                                  wind_speed=5)
-    assert_allclose(result, 45.137, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5)
-    assert_allclose(result, 45.137, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
-                                                  u_c=23.5, u_v=6.25,
-                                                  eta_m=0.1)
-    assert_allclose(result, 33.315, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
-                                                  eta_m=0.1,
-                                                  model_params=[23.5, 6.25])
-    assert_allclose(result, 33.315, 0.001)
-    result = pvsystem._pvsyst_celltemp_translator(900, 20, wind_speed=5.0,
-                                                  eta_m=0.1,
-                                                  model_params=(23.5, 6.25))
-    assert_allclose(result, 33.315, 0.001)
-
-
-@fail_on_pvlib_version('0.8')
-def test__sapm_celltemp_translator():
-    result = pvsystem._sapm_celltemp_translator(900, 5, 20,
-                                                'open_rack_glass_glass')
-    assert_allclose(result, 43.509, 3)
-    result = pvsystem._sapm_celltemp_translator(900, 5, temp_air=20,
-                                                model='open_rack_glass_glass')
-    assert_allclose(result, 43.509, 3)
-    params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
-        'open_rack_glass_glass']
-    result = pvsystem._sapm_celltemp_translator(900, 5, 20, params)
-    assert_allclose(result, 43.509, 3)
-    result = pvsystem._sapm_celltemp_translator(900, 5, 20,
-                                                [params['a'], params['b'],
-                                                 params['deltaT']])
-    assert_allclose(result, 43.509, 3)
+def test_combine_loss_factors():
+    test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='D')
+    loss_1 = pd.Series(.10, index=test_index)
+    loss_2 = pd.Series(.05, index=pd.date_range(start='1990/01/01T12:00',
+                                                periods=365*2, freq='D'))
+    loss_3 = pd.Series(.02, index=pd.date_range(start='1990/01/01',
+                                                periods=12, freq='MS'))
+    expected = pd.Series(.1621, index=test_index)
+    out = pvsystem.combine_loss_factors(test_index, loss_1, loss_2, loss_3)
+    assert_series_equal(expected, out)
 
 
 @fail_on_pvlib_version('0.9')
@@ -1389,3 +1315,11 @@ def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
     # deprecated function pvsystem.spvwatts_ac
     with pytest.warns(pvlibDeprecationWarning):
         pvsystem.pvwatts_ac(90, 100, 0.95)
+    # for missing temperature_model_parameters
+    match = "Reverting to deprecated default: SAPM cell temperature"
+    system = pvsystem.PVSystem()
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        system.sapm_celltemp(1, 2, 3)
+    match = "Arbitrary PVSystem kwargs"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        system = pvsystem.PVSystem(arbitrary_kwarg='value')

@@ -1,5 +1,5 @@
 import pandas as pd
-from pandas.testing import assert_frame_equal
+from conftest import assert_frame_equal
 import numpy as np
 from numpy import nan
 

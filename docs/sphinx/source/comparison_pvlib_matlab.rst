@@ -54,7 +54,6 @@ Major differences
 * pvlib-python implements a handful of class designed to simplify the
   PV modeling process. These include :py:class:`~pvlib.location.Location`,
   :py:class:`~pvlib.pvsystem.PVSystem`,
-  :py:class:`~pvlib.pvsystem.LocalizedPVSystem`,
   :py:class:`~pvlib.tracking.SingleAxisTracker`,
   and
   :py:class:`~pvlib.modelchain.ModelChain`.

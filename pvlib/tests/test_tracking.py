@@ -3,11 +3,13 @@ from numpy import nan
 import pandas as pd
 
 import pytest
-from pandas.testing import assert_frame_equal
+from conftest import assert_frame_equal
 from numpy.testing import assert_allclose
 
+import pvlib
 from pvlib.location import Location
 from pvlib import tracking
+from conftest import DATA_DIR
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']
@@ -41,7 +43,7 @@ def test_scalars():
     expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
               'surface_tilt': 0}
     for k, v in expect.items():
-        assert_allclose(tracker_data[k], v)
+        assert np.isclose(tracker_data[k], v)
 
 
 def test_arrays():
@@ -55,7 +57,7 @@ def test_arrays():
     expect = {'tracker_theta': 0, 'aoi': 10, 'surface_azimuth': 90,
               'surface_tilt': 0}
     for k, v in expect.items():
-        assert_allclose(tracker_data[k], v)
+        assert_allclose(tracker_data[k], v, atol=1e-7)
 
 
 def test_nans():
@@ -71,7 +73,7 @@ def test_nans():
               'surface_azimuth': np.array([90, nan, nan]),
               'surface_tilt': np.array([0, nan, nan])}
     for k, v in expect.items():
-        assert_allclose(tracker_data[k], v)
+        assert_allclose(tracker_data[k], v, atol=1e-7)
 
     # repeat with Series because nans can differ
     apparent_zenith = pd.Series(apparent_zenith)
@@ -268,7 +270,7 @@ def test_horizon_tilted():
     out = tracking.singleaxis(solar_zenith, solar_azimuth, axis_tilt=90,
                               axis_azimuth=180, backtrack=False, max_angle=180)
     expected = pd.DataFrame(np.array(
-        [[ 180.,  45.,   0.,  90.],
+        [[-180.,  45.,   0.,  90.],
          [   0.,  45., 180.,  90.],
          [ 179.,  45., 359.,  90.]]),
         columns=['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt'])
@@ -276,15 +278,15 @@ def test_horizon_tilted():
 
 
 def test_low_sun_angles():
-    # GH 656
+    # GH 656, 824
     result = tracking.singleaxis(
         apparent_zenith=80, apparent_azimuth=338, axis_tilt=30,
         axis_azimuth=180, max_angle=60, backtrack=True, gcr=0.35)
     expected = {
-        'tracker_theta': np.array([-50.31051385]),
-        'aoi': np.array([61.35300178]),
-        'surface_azimuth': np.array([112.53615425]),
-        'surface_tilt': np.array([56.42233095])}
+        'tracker_theta': np.array([60.0]),
+        'aoi': np.array([80.420987]),
+        'surface_azimuth': np.array([253.897886]),
+        'surface_tilt': np.array([64.341094])}
     for k, v in result.items():
         assert_allclose(expected[k], v)
 
@@ -438,28 +440,137 @@ def test_get_irradiance():
 
 
 def test_SingleAxisTracker___repr__():
-    system = tracking.SingleAxisTracker(max_angle=45, gcr=.25,
-                                        module='blah', inverter='blarg')
-    expected = ('SingleAxisTracker: \n  axis_tilt: 0\n  axis_azimuth: 0\n  '
-                'max_angle: 45\n  backtrack: True\n  gcr: 0.25\n  '
-                'name: None\n  surface_tilt: None\n  surface_azimuth: None\n  '
-                'module: blah\n  inverter: blarg\n  albedo: 0.25\n  '
-                'racking_model: open_rack')
+    system = tracking.SingleAxisTracker(
+        max_angle=45, gcr=.25, module='blah', inverter='blarg',
+        temperature_model_parameters={'a': -3.56})
+    expected = """SingleAxisTracker:
+  axis_tilt: 0
+  axis_azimuth: 0
+  max_angle: 45
+  backtrack: True
+  gcr: 0.25
+  cross_axis_tilt: 0.0
+  name: None
+  surface_tilt: None
+  surface_azimuth: None
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: None
+  module_type: None
+  temperature_model_parameters: {'a': -3.56}"""
     assert system.__repr__() == expected
 
 
 def test_LocalizedSingleAxisTracker___repr__():
-    localized_system = tracking.LocalizedSingleAxisTracker(latitude=32,
-                                                           longitude=-111,
-                                                           module='blah',
-                                                           inverter='blarg',
-                                                           gcr=0.25)
-
-    expected = ('LocalizedSingleAxisTracker: \n  axis_tilt: 0\n  '
-                'axis_azimuth: 0\n  max_angle: 90\n  backtrack: True\n  '
-                'gcr: 0.25\n  name: None\n  surface_tilt: None\n  '
-                'surface_azimuth: None\n  module: blah\n  inverter: blarg\n  '
-                'albedo: 0.25\n  racking_model: open_rack\n  '
-                'latitude: 32\n  longitude: -111\n  altitude: 0\n  tz: UTC')
+    localized_system = tracking.LocalizedSingleAxisTracker(
+        latitude=32, longitude=-111, module='blah', inverter='blarg',
+        gcr=0.25, temperature_model_parameters={'a': -3.56})
+    # apparently the repr order is different for LocalizedSingleAxisTracker
+    # than for LocalizedPVSystem. maybe a MRO thing.
+    expected = """LocalizedSingleAxisTracker:
+  axis_tilt: 0
+  axis_azimuth: 0
+  max_angle: 90
+  backtrack: True
+  gcr: 0.25
+  cross_axis_tilt: 0.0
+  name: None
+  surface_tilt: None
+  surface_azimuth: None
+  module: blah
+  inverter: blarg
+  albedo: 0.25
+  racking_model: None
+  module_type: None
+  temperature_model_parameters: {'a': -3.56}
+  latitude: 32
+  longitude: -111
+  altitude: 0
+  tz: UTC"""
 
     assert localized_system.__repr__() == expected
+
+
+def test_calc_axis_tilt():
+    # expected values
+    expected_axis_tilt = 2.239  # [degrees]
+    expected_side_slope = 9.86649274360294  # [degrees]
+    expected = DATA_DIR / 'singleaxis_tracker_wslope.csv'
+    expected = pd.read_csv(expected, index_col='timestamp', parse_dates=True)
+    # solar positions
+    starttime = '2017-01-01T00:30:00-0300'
+    stoptime = '2017-12-31T23:59:59-0300'
+    lat, lon = -27.597300, -48.549610
+    times = pd.DatetimeIndex(pd.date_range(starttime, stoptime, freq='H'))
+    solpos = pvlib.solarposition.get_solarposition(times, lat, lon)
+    # singleaxis tracker w/slope data
+    slope_azimuth, slope_tilt = 77.34, 10.1149
+    axis_azimuth = 0.0
+    max_angle = 75.0
+    # Note: GCR is relative to horizontal distance between rows
+    gcr = 0.33292759  # GCR = length / horizontal_pitch = 1.64 / 5 / cos(9.86)
+    # calculate tracker axis zenith
+    axis_tilt = tracking.calc_axis_tilt(
+        slope_azimuth, slope_tilt, axis_azimuth=axis_azimuth)
+    assert np.isclose(axis_tilt, expected_axis_tilt)
+    # calculate cross-axis tilt and relative rotation
+    cross_axis_tilt = tracking.calc_cross_axis_tilt(
+        slope_azimuth, slope_tilt, axis_azimuth, axis_tilt)
+    assert np.isclose(cross_axis_tilt, expected_side_slope)
+    sat = tracking.singleaxis(
+        solpos.apparent_zenith, solpos.azimuth, axis_tilt, axis_azimuth,
+        max_angle, backtrack=True, gcr=gcr, cross_axis_tilt=cross_axis_tilt)
+    np.testing.assert_allclose(
+        sat['tracker_theta'], expected['tracker_theta'], atol=1e-7)
+    np.testing.assert_allclose(sat['aoi'], expected['aoi'], atol=1e-7)
+    np.testing.assert_allclose(
+        sat['surface_azimuth'], expected['surface_azimuth'], atol=1e-7)
+    np.testing.assert_allclose(
+        sat['surface_tilt'], expected['surface_tilt'], atol=1e-7)
+
+
+def test_slope_aware_backtracking():
+    """
+    Test validation data set from https://www.nrel.gov/docs/fy20osti/76626.pdf
+    """
+    expected_data = np.array(
+        [('2019-01-01T08:00-0500',  2.404287, 122.79177, -84.440, -10.899),
+         ('2019-01-01T09:00-0500', 11.263058, 133.288729, -72.604, -25.747),
+         ('2019-01-01T10:00-0500', 18.733558, 145.285552, -59.861, -59.861),
+         ('2019-01-01T11:00-0500', 24.109076, 158.939435, -45.578, -45.578),
+         ('2019-01-01T12:00-0500', 26.810735, 173.931802, -28.764, -28.764),
+         ('2019-01-01T13:00-0500', 26.482495, 189.371536, -8.475, -8.475),
+         ('2019-01-01T14:00-0500', 23.170447, 204.13681, 15.120, 15.120),
+         ('2019-01-01T15:00-0500', 17.296785, 217.446538, 39.562, 39.562),
+         ('2019-01-01T16:00-0500',  9.461862, 229.102218, 61.587, 32.339),
+         ('2019-01-01T17:00-0500',  0.524817, 239.330401, 79.530, 5.490)],
+        dtype=[
+            ('Time', '<M8[h]'), ('ApparentElevation', '<f8'),
+            ('SolarAzimuth', '<f8'), ('TrueTracking', '<f8'),
+            ('Backtracking', '<f8')])
+    expected_axis_tilt = 9.666
+    expected_slope_angle = -2.576
+    slope_azimuth, slope_tilt = 180.0, 10.0
+    axis_azimuth = 195.0
+    axis_tilt = tracking.calc_axis_tilt(
+        slope_azimuth, slope_tilt, axis_azimuth)
+    assert np.isclose(axis_tilt, expected_axis_tilt, rtol=1e-3, atol=1e-3)
+    cross_axis_tilt = tracking.calc_cross_axis_tilt(
+        slope_azimuth, slope_tilt, axis_azimuth, axis_tilt)
+    assert np.isclose(
+        cross_axis_tilt, expected_slope_angle, rtol=1e-3, atol=1e-3)
+    sat = tracking.singleaxis(
+        90.0-expected_data['ApparentElevation'], expected_data['SolarAzimuth'],
+        axis_tilt, axis_azimuth, max_angle=90.0, backtrack=True, gcr=0.5,
+        cross_axis_tilt=cross_axis_tilt)
+    np.testing.assert_allclose(
+        sat['tracker_theta'], expected_data['Backtracking'],
+        rtol=1e-3, atol=1e-3)
+    truetracking = tracking.singleaxis(
+        90.0-expected_data['ApparentElevation'], expected_data['SolarAzimuth'],
+        axis_tilt, axis_azimuth, max_angle=90.0, backtrack=False, gcr=0.5,
+        cross_axis_tilt=cross_axis_tilt)
+    np.testing.assert_allclose(
+        truetracking['tracker_theta'], expected_data['TrueTracking'],
+        rtol=1e-3, atol=1e-3)

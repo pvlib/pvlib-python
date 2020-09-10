@@ -482,6 +482,19 @@ PVSystem method is called through ``ModelChain.run_model``.
         assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
 
 
+Benchmarking
+~~~~~~~~~~~~
+
+pvlib includes a small number of performance benchmarking tests. These
+tests are run using the `airspeed velocity
+<https://asv.readthedocs.io/en/stable/>`_ tool. We do not require new
+performance tests for most contributions at this time. Pull request
+reviewers will provide further information if a performance test is
+necessary. See our `README
+<https://github.com/pvlib/pvlib-python/tree/master/benchmarks/README.md>`_
+for instructions on running the benchmarks.
+
+
 This documentation
 ~~~~~~~~~~~~~~~~~~
 

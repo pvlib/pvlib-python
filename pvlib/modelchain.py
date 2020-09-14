@@ -21,20 +21,20 @@ from pvlib.tools import _build_kwargs
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
 # for ModelChain.weather
-WEATHER_KEYS = {'ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
-                'precipitable_water'}
+WEATHER_KEYS = ('ghi', 'dhi', 'dni', 'wind_speed', 'temp_air',
+                'precipitable_water')
 
 # for ModelChain.total_irrad
-POA_DATA_KEYS = {'poa_global', 'poa_direct', 'poa_diffuse'}
+POA_KEYS = ('poa_global', 'poa_direct', 'poa_diffuse')
 
 # Optional keys to communicate temperature data. If provided,
 # 'cell_temperature' overrides ModelChain.temperature_model and sets
 # ModelChain.cell_temperature to the data. If 'module_temperature' is provdied,
 # overrides ModelChain.temperature_model with
 # pvlib.temperature.sapm_celL_from_module
-TEMPERATURE_KEYS = {'module_temperature', 'cell_temperature'}
+TEMPERATURE_KEYS = ('module_temperature', 'cell_temperature')
 
-DATA_KEYS = WEATHER_KEYS | POA_DATA_KEYS | TEMPERATURE_KEYS
+DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
 
 # these dictionaries contain the default configuration for following
 # established modeling sequences. They can be used in combination with
@@ -333,10 +333,6 @@ class ModelChain:
 
     name: None or str, default None
         Name of ModelChain instance.
-
-    **kwargs
-        Arbitrary keyword arguments. Included for compatibility, but not
-        used.
     """
 
     def __init__(self, system, location,
@@ -371,6 +367,12 @@ class ModelChain:
         self.weather = None
         self.times = None
         self.solar_position = None
+
+        if kwargs:
+            warnings.warn(
+                'Arbitrary ModelChain kwargs are deprecated and will be '
+                'removed in v0.9', pvlibDeprecationWarning
+            )
 
     @classmethod
     def with_pvwatts(cls, system, location,
@@ -609,6 +611,7 @@ class ModelChain:
             self._dc_model = partial(model, self)
 
     def infer_dc_model(self):
+        """Infer DC power model from system attributes."""
         params = set(self.system.module_parameters.keys())
         if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
@@ -703,6 +706,7 @@ class ModelChain:
             self._ac_model = partial(model, self)
 
     def infer_ac_model(self):
+        """Infer AC power model from system attributes."""
         inverter_params = set(self.system.inverter_parameters.keys())
         if {'C0', 'C1', 'C2'} <= inverter_params:
             return self.snlinverter
@@ -814,6 +818,7 @@ class ModelChain:
             self._spectral_model = partial(model, self)
 
     def infer_spectral_model(self):
+        """Infer spectral model from system attributes."""
         params = set(self.system.module_parameters.keys())
         if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
             return self.sapm_spectral_loss
@@ -875,6 +880,7 @@ class ModelChain:
             self._temperature_model = partial(model, self)
 
     def infer_temperature_model(self):
+        """Infer temperature model from system attributes."""
         params = set(self.system.temperature_model_parameters.keys())
         # remove or statement in v0.9
         if {'a', 'b', 'deltaT'} <= params or (
@@ -1090,7 +1096,7 @@ class ModelChain:
         return self
 
     def _assign_total_irrad(self, data):
-        key_list = [k for k in POA_DATA_KEYS if k in data]
+        key_list = [k for k in POA_KEYS if k in data]
         self.total_irrad = data[key_list].copy()
         return self
 

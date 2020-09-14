@@ -44,10 +44,6 @@ class SolarPosition:
         solarposition.sun_rise_set_transit_ephem(
             self.times_daily, self.lat, self.lon)
 
-    def time_sun_rise_set_transit_ephem_horizon(self):
-        solarposition.sun_rise_set_transit_ephem(
-            self.times_daily, self.lat, self.lon, horizon='3:00')
-
     def time_sun_rise_set_transit_geometric(self):
         dayofyear = self.times_daily.dayofyear
         declination = solarposition.declination_spencer71(dayofyear)

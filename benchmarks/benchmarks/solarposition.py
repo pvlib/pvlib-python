@@ -2,6 +2,7 @@
 ASV benchmarks for solarposition.py
 """
 
+import datetime
 import pandas as pd
 import pvlib
 from pvlib import solarposition
@@ -37,6 +38,9 @@ class SolarPosition:
     def time_spa_python(self):
         solarposition.spa_python(self.times_localized, self.lat, self.lon)
 
+    def time_pyephem(self):
+        solarposition.pyephem(self.times_localized, self.lat, self.lon)
+
     def time_sun_rise_set_transit_spa(self):
         sun_rise_set_transit_spa(self.times_daily, self.lat, self.lon)
 
@@ -54,3 +58,17 @@ class SolarPosition:
 
     def time_nrel_earthsun_distance(self):
         solarposition.nrel_earthsun_distance(self.times_localized)
+
+    def time_calc_time(self):
+        # sunrise at 13:12 UTC according to google.
+        # test calc_time for finding time at which sun is 3 degrees
+        # above the horizon
+        solarposition.calc_time(
+            datetime.datetime(2020, 9, 14, 12),
+            datetime.datetime(2020, 9, 14, 15),
+            32.2,
+            -110.9,
+            'alt',
+            0.05235987755982988,  # 3 degrees in radians
+        )
+        # datetime.datetime(2020, 9, 14, 13, 24, 13, 861913, tzinfo=<UTC>)

@@ -121,7 +121,7 @@
             // Note: these don't have a minimum in setup.py
             "pytables": "3.6.1",
             "ephem": "3.7.6.0",
-            "numba": "",
+            "numba": "0.36.1",
         },
         // latest versions available
         {

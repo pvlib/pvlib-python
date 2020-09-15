@@ -20,12 +20,12 @@ class SolarPosition:
 
     def setup(self):
         self.times = pd.date_range(start='20180601', freq='1min',
-                                   periods=14400)  # 100 days
+                                   periods=14400)  # 10 days
         self.times_localized = self.times.tz_localize('Etc/GMT+7')
         self.lat = 35.1
         self.lon = -106.6
         self.times_daily = pd.date_range(
-            start='20180601', freq='24h', periods=100, tz='Etc/GMT+7')
+            start='20180601', freq='24h', periods=10, tz='Etc/GMT+7')
 
     # GH 512
     def time_ephemeris(self):

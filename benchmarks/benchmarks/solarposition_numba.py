@@ -7,15 +7,15 @@ code during setup.
 Try to keep relevant sections in sync with benchmarks/solarposition.py
 """
 
-import os
-# os.environ['PVLIB_USE_NUMBA'] = '1'
-
+from pkg_resources import parse_version
 import pandas as pd
 
-import pvlib
-from pvlib import solarposition
+import os
+os.environ['PVLIB_USE_NUMBA'] = '1'
 
-from pkg_resources import parse_version
+
+import pvlib  # NOQA: E402
+from pvlib import solarposition  # NOQA: E402
 
 
 if parse_version(pvlib.__version__) >= parse_version('0.6.1'):
@@ -34,9 +34,6 @@ class SolarPositionNumba:
         self.lon = -106.6
         self.times_daily = pd.date_range(
             start='20180601', freq='24h', periods=100, tz='Etc/GMT+7')
-        solarposition._spa_python_import('numba')
-        solarposition.spa_python(
-            self.times_localized[:2], self.lat, self.lon, how='numba')
 
     def time_spa_python(self):
         solarposition.spa_python(

@@ -60,15 +60,27 @@ class SolarPosition:
         solarposition.nrel_earthsun_distance(self.times_localized)
 
     def time_calc_time(self):
-        # sunrise at 13:12 UTC according to google.
-        # test calc_time for finding time at which sun is 3 degrees
-        # above the horizon
+        # test calc_time for finding times at which sun is 3 degrees
+        # above the horizon.
+        three_degrees = 0.05235987755982988
+        # Tucson sunrise at 6:08 AM MST, 13:08 UTC according to google.
         solarposition.calc_time(
             datetime.datetime(2020, 9, 14, 12),
             datetime.datetime(2020, 9, 14, 15),
             32.2,
             -110.9,
             'alt',
-            0.05235987755982988,  # 3 degrees in radians
+            three_degrees,
         )
         # datetime.datetime(2020, 9, 14, 13, 24, 13, 861913, tzinfo=<UTC>)
+
+        # Tucson sunset at 6:30 PM MST, 01:30 UTC according to google
+        pvlib.solarposition.calc_time(
+            datetime.datetime(2020, 9, 14, 22),
+            datetime.datetime(2020, 9, 15, 4),
+            32.2,
+            -110.9,
+            'alt',
+            three_degrees,
+        )
+        # datetime.datetime(2020, 9, 15, 1, 13, 2, 720384, tzinfo=<UTC>)

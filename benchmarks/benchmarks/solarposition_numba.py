@@ -25,20 +25,21 @@ else:
 
 
 class SolarPositionNumba:
+    params = [1, 10, 100]  # number of days
 
-    def setup(self):
+    def setup(self, ndays):
         self.times = pd.date_range(start='20180601', freq='1min',
-                                   periods=14400)  # 10 days
+                                   periods=1440*ndays)
         self.times_localized = self.times.tz_localize('Etc/GMT+7')
         self.lat = 35.1
         self.lon = -106.6
         self.times_daily = pd.date_range(
-            start='20180601', freq='24h', periods=10, tz='Etc/GMT+7')
+            start='20180601', freq='24h', periods=ndays, tz='Etc/GMT+7')
 
-    def time_spa_python(self):
+    def time_spa_python(self, ndays):
         solarposition.spa_python(
             self.times_localized, self.lat, self.lon, how='numba')
 
-    def time_sun_rise_set_transit_spa(self):
+    def time_sun_rise_set_transit_spa(self, ndays):
         sun_rise_set_transit_spa(
             self.times_daily, self.lat, self.lon, how='numba')

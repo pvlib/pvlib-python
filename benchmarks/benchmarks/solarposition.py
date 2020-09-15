@@ -17,38 +17,39 @@ else:
 
 
 class SolarPosition:
+    params = [1, 10, 100]  # number of days
 
-    def setup(self):
+    def setup(self, ndays):
         self.times = pd.date_range(start='20180601', freq='1min',
-                                   periods=14400)  # 10 days
+                                   periods=1440*ndays)
         self.times_localized = self.times.tz_localize('Etc/GMT+7')
         self.lat = 35.1
         self.lon = -106.6
         self.times_daily = pd.date_range(
-            start='20180601', freq='24h', periods=10, tz='Etc/GMT+7')
+            start='20180601', freq='24h', periods=ndays, tz='Etc/GMT+7')
 
     # GH 512
-    def time_ephemeris(self):
+    def time_ephemeris(self, ndays):
         solarposition.ephemeris(self.times, self.lat, self.lon)
 
     # GH 512
-    def time_ephemeris_localized(self):
+    def time_ephemeris_localized(self, ndays):
         solarposition.ephemeris(self.times_localized, self.lat, self.lon)
 
-    def time_spa_python(self):
+    def time_spa_python(self, ndays):
         solarposition.spa_python(self.times_localized, self.lat, self.lon)
 
-    def time_pyephem(self):
+    def time_pyephem(self, ndays):
         solarposition.pyephem(self.times_localized, self.lat, self.lon)
 
-    def time_sun_rise_set_transit_spa(self):
+    def time_sun_rise_set_transit_spa(self, ndays):
         sun_rise_set_transit_spa(self.times_daily, self.lat, self.lon)
 
-    def time_sun_rise_set_transit_ephem(self):
+    def time_sun_rise_set_transit_ephem(self, ndays):
         solarposition.sun_rise_set_transit_ephem(
             self.times_daily, self.lat, self.lon)
 
-    def time_sun_rise_set_transit_geometric_full_comparison(self):
+    def time_sun_rise_set_transit_geometric_full_comparison(self, ndays):
         dayofyear = self.times_daily.dayofyear
         declination = solarposition.declination_spencer71(dayofyear)
         equation_of_time = solarposition.equation_of_time_spencer71(dayofyear)
@@ -56,7 +57,7 @@ class SolarPosition:
             self.times_daily, self.lat, self.lon, declination,
             equation_of_time)
 
-    def time_nrel_earthsun_distance(self):
+    def time_nrel_earthsun_distance(self, ndays):
         solarposition.nrel_earthsun_distance(self.times_localized)
 
 

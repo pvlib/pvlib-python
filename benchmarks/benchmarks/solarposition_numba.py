@@ -8,7 +8,7 @@ Try to keep relevant sections in sync with benchmarks/solarposition.py
 """
 
 import os
-os.environ['PVLIB_USE_NUMBA'] = '1'
+# os.environ['PVLIB_USE_NUMBA'] = '1'
 
 import pandas as pd
 

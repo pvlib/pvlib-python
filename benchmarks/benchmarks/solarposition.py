@@ -48,7 +48,7 @@ class SolarPosition:
         solarposition.sun_rise_set_transit_ephem(
             self.times_daily, self.lat, self.lon)
 
-    def time_sun_rise_set_transit_geometric(self):
+    def time_sun_rise_set_transit_geometric_full_comparison(self):
         dayofyear = self.times_daily.dayofyear
         declination = solarposition.declination_spencer71(dayofyear)
         equation_of_time = solarposition.equation_of_time_spencer71(dayofyear)
@@ -59,28 +59,24 @@ class SolarPosition:
     def time_nrel_earthsun_distance(self):
         solarposition.nrel_earthsun_distance(self.times_localized)
 
-    def time_calc_time(self):
+
+class SolarPositionCalcTime:
+
+    def setup(self):
         # test calc_time for finding times at which sun is 3 degrees
         # above the horizon.
-        three_degrees = 0.05235987755982988
-        # Tucson sunrise at 6:08 AM MST, 13:08 UTC according to google.
-        solarposition.calc_time(
-            datetime.datetime(2020, 9, 14, 12),
-            datetime.datetime(2020, 9, 14, 15),
-            32.2,
-            -110.9,
-            'alt',
-            three_degrees,
-        )
-        # datetime.datetime(2020, 9, 14, 13, 24, 13, 861913, tzinfo=<UTC>)
+        # Tucson 2020-09-14 sunrise at 6:08 AM MST, 13:08 UTC
+        # according to google.
+        self.start = datetime.datetime(2020, 9, 14, 12)
+        self.end = datetime.datetime(2020, 9, 14, 15)
+        self.value = 0.05235987755982988
+        self.lat = 32.2
+        self.lon = -110.9
+        self.attribute = 'alt'
 
-        # Tucson sunset at 6:30 PM MST, 01:30 UTC according to google
-        pvlib.solarposition.calc_time(
-            datetime.datetime(2020, 9, 14, 22),
-            datetime.datetime(2020, 9, 15, 4),
-            32.2,
-            -110.9,
-            'alt',
-            three_degrees,
+    def time_calc_time(self):
+        # datetime.datetime(2020, 9, 14, 13, 24, 13, 861913, tzinfo=<UTC>)
+        solarposition.calc_time(
+            self.start, self.end, self.lat, self.lon, self.attribute,
+            self.value
         )
-        # datetime.datetime(2020, 9, 15, 1, 13, 2, 720384, tzinfo=<UTC>)

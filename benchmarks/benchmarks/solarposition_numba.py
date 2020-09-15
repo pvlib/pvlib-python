@@ -35,6 +35,7 @@ class SolarPositionNumba:
         self.times_daily = pd.date_range(
             start='20180601', freq='24h', periods=100, tz='Etc/GMT+7')
         solarposition._spa_python_import('numba')
+        solarposition.spa_python(self.times_localized[:2], self.lat, self.lon)
 
     def time_spa_python(self):
         solarposition.spa_python(

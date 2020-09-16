@@ -22,7 +22,7 @@ Bug fixes
 Testing
 ~~~~~~~
 * Add airspeed velocity performance testing configuration and a few benchmarks.
-  (:issue:`419`, :pull:`1049`)
+  (:issue:`419`, :pull:`1049`, :pull:`1059`)
 
 Documentation
 ~~~~~~~~~~~~~

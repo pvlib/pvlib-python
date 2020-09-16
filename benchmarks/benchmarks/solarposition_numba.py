@@ -26,6 +26,7 @@ else:
 
 class SolarPositionNumba:
     params = [1, 10, 100]  # number of days
+    param_names = ['ndays']
 
     def setup(self, ndays):
         self.times = pd.date_range(start='20180601', freq='1min',

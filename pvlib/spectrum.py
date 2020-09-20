@@ -104,7 +104,8 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
     # Rayleigh scattering
     airmass = relative_airmass * surface_pressure / 101300
     rayleigh_transmittance = np.exp(
-        #-airmass / (wavelength**4 * (115.6406 - 1.335 / wavelength**2))
+        # Note: the report uses 1.335 but spectrl2_2.c uses 1.3366
+        # -airmass / (wavelength**4 * (115.6406 - 1.335 / wavelength**2))
         -airmass / (wavelength**4 * (115.6406 - 1.3366 / wavelength**2))
     )  # Eq 2-4
 
@@ -125,7 +126,8 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
 
     # Mixed gas absorption, Eq 2-11
     aM = mixed_coeff * airmass
-    #mixed_transmittance = np.exp(-1.41 * aM / (1 + 118.93 * aM)**0.45)
+    # Note: the report uses 118.93, but spectrl2_2.c uses 118.3
+    # mixed_transmittance = np.exp(-1.41 * aM / (1 + 118.93 * aM)**0.45)
     mixed_transmittance = np.exp(-1.41 * aM / (1 + 118.3 * aM)**0.45)
 
     # split out aerosol components for diffuse irradiance calcs
@@ -146,53 +148,103 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
         mixed_transmittance,
         aerosol_scattering,
         aerosol_absorption,
-        locals()
     )
 
 
 def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
-             surface_pressure, precipitable_water, ozone, dayofyear,
-             alpha=1.14, scattering_albedo_04=0.945,
-             aerosol_thickness_500nm=0.5, wavelength_variation_factor=0.095,
+             surface_pressure, relative_airmass, precipitable_water, ozone,
+             dayofyear, aerosol_turbidity_500nm, scattering_albedo_400nm=0.945,
+             alpha=1.14, wavelength_variation_factor=0.095,
              aerosol_asymmetry_factor=0.65):
     """
-    Estimate the spectral irradiance using the Bird Simple Spectral Model.
+    Estimate spectral irradiance using the Bird Simple Spectral Model
+    (SPECTRL2).
 
-    The Bird Simple Spectral Model produces terrestrial spectra between 0.3
-    and 400 um with a resolution of approximately 10 nm. Direct and diffuse
+    The Bird Simple Spectral Model [1]_ produces terrestrial spectra between
+    0.3 and 4 um with a resolution of approximately 10 nm. Direct and diffuse
     spectral irradiance are modeled for horizontal and tilted surfaces under
-    cloudless skies.
+    cloudless skies. SPECTRL2 models radiative transmission, absorption, and
+    scattering due to atmospheric aerosol, water vapor, and ozone content.
 
     Parameters
     ----------
+    surface_tilt : float or numpy array
+        Panel tilt from horizontal [degrees]
+    apparent_zenith : float or numpy array
+        Solar zenith angle [degrees]
+    aoi : float or numpy array
+        Angle of incidence of the solar vector on the panel [degrees]
+    ground_albedo : float or numpy array
+        Albedo [0-1] of the ground surface. Can be provided as a scalar value
+        if albedo is not spectrally-dependent, or as a 122xN matrix where
+        the first dimension spans the wavelength range and the second spans
+        the number of simulations. [unitless]
+    surface_pressure : float or numpy array
+        Surface pressure [Pa]
+    relative_airmass : float or numpy array
+        Relative airmass. The airmass model used in [1]_ is the `'kasten1966'`
+        model, while a later implementation by NREL uses the
+        `'kastenyoung1989'` model. [unitless]
+    precipitable_water : float or numpy array
+        Atmospheric water vapor content [cm]
+    ozone : float or numpy array
+        Atmospheric ozone content [atm-cm]
+    dayofyear : float or numpy array
+        The day of year [1-365]
+    aerosol_turbidity_500nm : float or numpy array
+        Aerosol turbidity at 500 nm [unitless]
+    scattering_albedo_400nm : float or numpy array, default 0.945
+        Aerosol single scattering albedo at 400nm. The default value of 0.945
+        is suggested in [1]_ for a rural aerosol model. [unitless]
+    alpha : float or numpy array, default 1.14
+        Angstrom turbidity exponent. The default value of 1.14 is suggested
+        in [1]_ for a rural aerosol model. [unitless]
+    wavelength_variation_factor : float or numpy array, default 0.095
+        Wavelength variation factor [unitless]
+    aerosol_asymmetry_factor : float or numpy array, default 0.65
+        Aeorosol asymmetry factor (mean cosine of scattering angle) [unitless]
 
     Returns
     -------
+    spectra : dict
+        A dict of arrays of length 122. All values are spectral irradiance
+        with units W/m^2/um except for `wavelength`, which is in microns.
+            * wavelength
+            * et
+            * dhi
+            * dni
+            * poa_sky_diffuse
+            * poa_ground_diffuse
+            * poa_direct
+            * poa_global
 
+    References
+    ----------
+    .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
+       direct and diffuse irradiance on horizontal and tilted planes at the
+       earth's surface for cloudless atmospheres", NREL Technical Report
+       TR-215-2436 doi:10.2172/5986936.
     """
-    relative_airmass = pvlib.atmosphere.get_relative_airmass(
-        apparent_zenith, model='kasten1966'
-    )  # Eq 2-5
-
     wavelength = _SPECTRL2_COEFFS['wavelength'][:, np.newaxis]
     spectrum_et = _SPECTRL2_COEFFS['spectral_irradiance_et'][:, np.newaxis]
 
     optical_thickness = (
-        aerosol_thickness_500nm * (wavelength / 0.5)**-alpha
+        aerosol_turbidity_500nm * (wavelength / 0.5)**-alpha
     )  # Eq 2-7
 
     # Eq 3-16
-    scattering_albedo = scattering_albedo_04 * \
+    scattering_albedo = scattering_albedo_400nm * \
         np.exp(-wavelength_variation_factor * np.log(wavelength / 0.4)**2)
 
     spectrl2 = _spectrl2_transmittances(apparent_zenith, relative_airmass,
                                         surface_pressure, precipitable_water,
                                         ozone, optical_thickness,
                                         scattering_albedo, dayofyear)
-    D, Tr, Ta, Tw, To, Tu, Tas, Taa, sub_extras = spectrl2
+    D, Tr, Ta, Tw, To, Tu, Tas, Taa = spectrl2
 
+    spectrum_et_adj = spectrum_et * D
     # spectrum of direct irradiance, Eq 2-1
-    Id = spectrum_et * D * Tr * Ta * Tw * To * Tu
+    Id = spectrum_et_adj * Tr * Ta * Tw * To * Tu
 
     cosZ = cosd(apparent_zenith)
     Cs = np.where(wavelength <= 0.45, (wavelength + 0.55)**1.8, 1.0)  # Eq 3-17
@@ -208,24 +260,34 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
                                       surface_pressure, precipitable_water,
                                       ozone, optical_thickness,
                                       scattering_albedo, dayofyear)
-    _, Trp, Tap, Twp, Top, Tup, Tasp, Taap, sub_extras2 = primes
+    _, Trp, Tap, Twp, Top, Tup, Tasp, Taap = primes
 
-    # NOTE: not sure what the correct form of this equation is.
+    # Note: not sure what the correct form of this equation is.
     # The first coefficient is To' in Eq 3-8 but Tu' in the code appendix.
+    # spectrl2_2.c uses Tu'.
     sky_reflectivity = (
+        # Top * Twp * Taap * (0.5 * (1-Trp) + (1-Fsp) * Trp * (1-Tasp))
         Tup * Twp * Taap * (0.5 * (1-Trp) + (1-Fsp) * Trp * (1-Tasp))
     )  # Eq 3-8
 
     # a common factor for 3-5 and 3-6
-    common_factor = spectrum_et * D * cosZ * To * Tu * Tw * Taa
-    Ir = common_factor * (1 - Tr**0.95) * 0.5 * Cs  # Eq 3-5
-    Ia = common_factor * Tr**1.5 * (1 - Tas) * Fs * Cs  # Eq 3-6
+    common_factor = spectrum_et_adj * cosZ * To * Tu * Tw * Taa
+    # Note: spectrl2_2.c differs from the report in how the Cs value is used.
+    # The two commented out lines match the report, while the following match
+    # spectrl2_2.c:
+    # Ir = common_factor * (1 - Tr**0.95) * 0.5 * Cs  # Eq 3-5
+    # Ia = common_factor * Tr**1.5 * (1 - Tas) * Fs * Cs  # Eq 3-6
+    Ir = common_factor * (1 - Tr**0.95) * 0.5  # Eq 3-5
+    Ia = common_factor * Tr**1.5 * (1 - Tas) * Fs  # Eq 3-6
+
     rs = sky_reflectivity
     rg = ground_albedo
-    Ig = (Id * cosZ + Ir + Ia) * rs * rg * Cs / (1 - rs * rg)  # Eq 3-7
+    Ig = (Id * cosZ + Ir + Ia) * rs * rg / (1 - rs * rg)  # Eq 3-7
 
     # total scattered irradiance
-    Is = Ir + Ia + Ig  # Eq 3-1
+    # Note: see discussion about Cs above.
+    # Is = Ir + Ia + Ig  # Eq 3-1
+    Is = (Ir + Ia + Ig) * Cs  # Eq 3-1
 
     # calculate spectral irradiance on a tilted surface, Eq 3-18
     Ibeam = Id * cosd(aoi)
@@ -236,7 +298,7 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
                                       surface_azimuth=None,
                                       dhi=Is,
                                       dni=Id,
-                                      dni_extra=spectrum_et * D,
+                                      dni_extra=spectrum_et_adj,
                                       projection_ratio=projection_ratio)
 
     ghi = Id * cosZ + Is
@@ -244,6 +306,13 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
 
     Itilt = Ibeam + Isky + Iground
 
-    extras = locals()
-
-    return wavelength, Is, Id, spectrum_et * D, Itilt, extras
+    return {
+        'wavelength': wavelength.ravel(),  # This only ever needs 1 dimension
+        'et': spectrum_et_adj,
+        'dhi': Is,
+        'dni': Id,
+        'poa_sky_diffuse': Isky,
+        'poa_ground_diffuse': Iground,
+        'poa_direct': Ibeam,
+        'poa_global': Itilt,
+    }

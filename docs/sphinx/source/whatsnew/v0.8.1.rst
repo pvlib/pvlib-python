@@ -13,7 +13,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add a numpy-based implementation of the SPECTRL2 spectral irradiance model.
+  (:pull:`XX`)
 
 Bug fixes
 ~~~~~~~~~

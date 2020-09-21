@@ -5,14 +5,16 @@ This module contains the Location class.
 # Will Holmgren, University of Arizona, 2014-2016.
 
 import datetime
+import warnings
 
 import pandas as pd
 import pytz
 
 from pvlib import solarposition, clearsky, atmosphere, irradiance
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
-class Location(object):
+class Location:
     """
     Location objects are convenient containers for latitude, longitude,
     timezone, and altitude data associated with a particular
@@ -48,10 +50,6 @@ class Location(object):
     name : None or string, default None.
         Sets the name attribute of the Location object.
 
-    **kwargs
-        Arbitrary keyword arguments.
-        Included for compatibility, but not used.
-
     See also
     --------
     pvlib.pvsystem.PVSystem
@@ -82,10 +80,16 @@ class Location(object):
 
         self.name = name
 
+        if kwargs:
+            warnings.warn(
+                'Arbitrary Location kwargs are deprecated and will be '
+                'removed in v0.9', pvlibDeprecationWarning
+            )
+
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']
         return ('Location: \n  ' + '\n  '.join(
-            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
+            f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
     @classmethod
     def from_tmy(cls, tmy_metadata, tmy_data=None, **kwargs):
@@ -310,7 +314,7 @@ class Location(object):
         elif model in atmosphere.TRUE_ZENITH_MODELS:
             zenith = solar_position['zenith']
         else:
-            raise ValueError('{} is not a valid airmass model'.format(model))
+            raise ValueError(f'{model} is not a valid airmass model')
 
         airmass_relative = atmosphere.get_relative_airmass(zenith, model)
 

@@ -22,26 +22,26 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
-    'sapm': set([
+    'sapm': {
         'A0', 'A1', 'A2', 'A3', 'A4', 'B0', 'B1', 'B2', 'B3',
         'B4', 'B5', 'C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
         'C7', 'Isco', 'Impo', 'Voco', 'Vmpo', 'Aisc', 'Aimp', 'Bvoco',
         'Mbvoc', 'Bvmpo', 'Mbvmp', 'N', 'Cells_in_Series',
-        'IXO', 'IXXO', 'FD']),
-    'desoto': set([
+        'IXO', 'IXXO', 'FD'},
+    'desoto': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-        'R_sh_ref', 'R_s']),
-    'cec': set([
+        'R_sh_ref', 'R_s'},
+    'cec': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-        'R_sh_ref', 'R_s', 'Adjust']),
-    'pvsyst': set([
+        'R_sh_ref', 'R_s', 'Adjust'},
+    'pvsyst': {
         'gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_sh_0', 'R_s', 'alpha_sc', 'EgRef',
-        'cells_in_series']),
-    'singlediode': set([
+        'cells_in_series'},
+    'singlediode': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
-        'R_sh_ref', 'R_s']),
-    'pvwatts': set(['pdc0', 'gamma_pdc'])
+        'R_sh_ref', 'R_s'},
+    'pvwatts': {'pdc0', 'gamma_pdc'}
 }
 
 
@@ -69,7 +69,7 @@ def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.
-class PVSystem(object):
+class PVSystem:
     """
     The PVSystem class defines a standard set of PV system attributes
     and modeling functions. This class describes the collection and
@@ -78,9 +78,6 @@ class PVSystem(object):
     :py:class:`~pvlib.location.Location` and
     :py:class:`~pvlib.modelchain.ModelChain`
     objects.
-
-    See the :py:class:`LocalizedPVSystem` class for an object model that
-    describes an installed PV system.
 
     The class supports basic system topologies consisting of:
 
@@ -164,7 +161,6 @@ class PVSystem(object):
     --------
     pvlib.location.Location
     pvlib.tracking.SingleAxisTracker
-    pvlib.pvsystem.LocalizedPVSystem
     """
 
     def __init__(self,
@@ -220,12 +216,18 @@ class PVSystem(object):
 
         self.name = name
 
+        if kwargs:
+            warnings.warn(
+                'Arbitrary PVSystem kwargs are deprecated and will be '
+                'removed in v0.9', pvlibDeprecationWarning
+            )
+
     def __repr__(self):
         attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
                  'inverter', 'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters']
         return ('PVSystem:\n  ' + '\n  '.join(
-            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
+            f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
@@ -493,7 +495,7 @@ class PVSystem(object):
     def _infer_temperature_model_params(self):
         # try to infer temperature model parameters from from racking_model
         # and module_type
-        param_set = '{}_{}'.format(self.racking_model, self.module_type)
+        param_set = f'{self.racking_model}_{self.module_type}'
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
             return temperature._temperature_model_params('sapm', param_set)
         elif 'freestanding' in param_set:
@@ -819,9 +821,12 @@ class PVSystem(object):
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
 
+    @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
+                name='PVSystem.localize', removal='0.9')
     def localize(self, location=None, latitude=None, longitude=None,
                  **kwargs):
-        """Creates a LocalizedPVSystem object using this object
+        """
+        Creates a LocalizedPVSystem object using this object
         and location data. Must supply either location object or
         latitude, longitude, and any location kwargs
 
@@ -843,6 +848,8 @@ class PVSystem(object):
         return LocalizedPVSystem(pvsystem=self, location=location)
 
 
+@deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
+            name='LocalizedPVSystem', removal='0.9')
 class LocalizedPVSystem(PVSystem, Location):
     """
     The LocalizedPVSystem class defines a standard set of installed PV
@@ -871,7 +878,7 @@ class LocalizedPVSystem(PVSystem, Location):
                  'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters']
         return ('LocalizedPVSystem:\n  ' + '\n  '.join(
-            ('{}: {}'.format(attr, getattr(self, attr)) for attr in attrs)))
+            f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,
@@ -1419,7 +1426,7 @@ def retrieve_sam(name=None, path=None):
             csvdata = os.path.join(
                 data_path, 'sam-library-cec-inverters-2019-03-05.csv')
         else:
-            raise ValueError('invalid name {}'.format(name))
+            raise ValueError(f'invalid name {name}')
     elif path is not None:
         if path.startswith('http'):
             response = urlopen(path)

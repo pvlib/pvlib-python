@@ -13,7 +13,7 @@ from conftest import assert_frame_equal, assert_series_equal
 
 from pvlib import irradiance
 
-from conftest import (needs_numpy_1_10, requires_ephem, requires_numba)
+from conftest import requires_ephem, requires_numba
 
 
 # fixtures create realistic test input data
@@ -245,7 +245,6 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
 
-@needs_numpy_1_10
 def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
@@ -277,6 +276,13 @@ def test_sky_diffuse_zenith_close_to_90(model):
         30, 180, 89.999, 230,
         dni=10, ghi=51, dhi=50, dni_extra=1360, airmass=12, model=model)
     assert sky_diffuse < 100
+
+
+def test_get_sky_diffuse_invalid():
+    with pytest.raises(ValueError):
+        irradiance.get_sky_diffuse(
+            30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
+            model='invalid')
 
 
 def test_liujordan():
@@ -680,7 +686,6 @@ def test_erbs_all_scalar():
         assert_allclose(v, expected[k], 5)
 
 
-@needs_numpy_1_10
 def test_dirindex(times):
     ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
     ghi_clearsky = pd.Series(

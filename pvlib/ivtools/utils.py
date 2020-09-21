@@ -1,5 +1,5 @@
 """
-The ``pvlib.ivtools.utility.py`` module contains utility functions related to
+The ``pvlib.ivtools.utils.py`` module contains utility functions related to
 working with IV curves, or fitting equations to IV curve data.
 
 """
@@ -10,9 +10,6 @@ import pandas as pd
 
 # A small number used to decide when a slope is equivalent to zero
 EPS = np.finfo('float').eps**(1/3)
-
-
-constants = {'E0': 1000.0, 'T0': 25.0, 'k': 1.38066e-23, 'q': 1.60218e-19}
 
 
 def _numdiff(x, f):
@@ -145,20 +142,17 @@ def rectify_iv_curve(voltage, current, decimals=None):
     voltage : numeric [V]
     current : numeric [A]
 
-    Raises
-    ------
-    ValueError if voltage and current are different length
-
     Notes
     -----
-    ``rectify_IV_curve`` ensures that the IV curve lies in the first quadrant
+    ``rectify_iv_curve`` ensures that the IV curve lies in the first quadrant
     of the (voltage, current) plane. The returned IV curve:
-        * increases in voltage
-        * contains no negative current or voltage values
-        * contains no NaNs
-        * contains no points with duplicate voltage values. Where voltage
-          values are repeated, a single data point is substituted with current
-          equal to the average of current at duplicated voltages.
+
+      * increases in voltage
+      * contains no negative current or voltage values
+      * contains no NaNs
+      * contains no points with duplicate voltage values. Where voltage
+        values are repeated, a single data point is substituted with current
+        equal to the average of current at duplicated voltages.
     """
 
     df = pd.DataFrame(data=np.vstack((voltage, current)).T, columns=['v', 'i'])

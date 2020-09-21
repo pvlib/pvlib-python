@@ -10,10 +10,10 @@ from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import assert_series_equal
+from conftest import assert_series_equal, assert_frame_equal
 import pytest
 
-from conftest import fail_on_pvlib_version, requires_scipy
+from conftest import fail_on_pvlib_version, requires_tables
 
 
 @pytest.fixture(scope='function')
@@ -178,6 +178,13 @@ def weather():
     return weather
 
 
+@pytest.fixture
+def total_irrad(weather):
+    return pd.DataFrame({'poa_global': [800., 500.],
+                         'poa_direct': [500., 300.],
+                         'poa_diffuse': [300., 200.]}, index=weather.index)
+
+
 def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
     ModelChain(sapm_dc_snl_ac_system, location)
 
@@ -327,18 +334,99 @@ def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
     assert np.isnan(mc.ac[1])
 
 
+def test__assign_total_irrad(sapm_dc_snl_ac_system, location, weather,
+                             total_irrad):
+    data = pd.concat([weather, total_irrad], axis=1)
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc._assign_total_irrad(data)
+    assert_frame_equal(mc.total_irrad, total_irrad)
+
+
+def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
+                                 weather, total_irrad):
+    data = pd.concat([weather, total_irrad], axis=1)
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.prepare_inputs_from_poa(data)
+    weather_expected = weather.copy()
+    weather_expected['temp_air'] = 20
+    weather_expected['wind_speed'] = 0
+    # order as expected
+    weather_expected = weather_expected[
+        ['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air']]
+    # weather attribute
+    assert_frame_equal(mc.weather, weather_expected)
+    # total_irrad attribute
+    assert_frame_equal(mc.total_irrad, total_irrad)
+
+
+def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
+                              total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    # prepare_temperature expects mc.total_irrad and mc.weather to be set
+    mc._assign_weather(data)
+    mc._assign_total_irrad(data)
+    mc._prepare_temperature(data)
+    expected = pd.Series([48.928025, 38.080016], index=data.index)
+    assert_series_equal(mc.cell_temperature, expected)
+    data['module_temperature'] = [40., 30.]
+    mc._prepare_temperature(data)
+    expected = pd.Series([42.4, 31.5], index=data.index)
+    assert_series_equal(mc.cell_temperature, expected)
+    data['cell_temperature'] = [50., 35.]
+    mc._prepare_temperature(data)
+    assert_series_equal(mc.cell_temperature, data['cell_temperature'])
+
+
+def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_poa(total_irrad).ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=total_irrad.index)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
+                                     total_irrad):
+    system = SingleAxisTracker(
+        module_parameters=sapm_dc_snl_ac_system.module_parameters,
+        temperature_model_parameters=(
+            sapm_dc_snl_ac_system.temperature_model_parameters
+        ),
+        inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
+    mc = ModelChain(system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_poa(total_irrad).ac
+    assert (mc.tracking.columns == ['tracker_theta', 'aoi', 'surface_azimuth',
+                                    'surface_tilt']).all()
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=total_irrad.index)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
+                                             weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global']
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_effective_irradiance(data).ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=data.index)
+    assert_series_equal(ac, expected)
+
+
 def poadc(mc):
     mc.dc = mc.total_irrad['poa_global'] * 0.2
     mc.dc.name = None  # assert_series_equal will fail without this
 
 
 @pytest.mark.parametrize('dc_model', [
-    'sapm',
-    pytest.param('cec', marks=requires_scipy),
-    pytest.param('desoto', marks=requires_scipy),
-    pytest.param('pvsyst', marks=requires_scipy),
-    pytest.param('singlediode', marks=requires_scipy),
-    'pvwatts_dc'])
+    'sapm', 'cec', 'desoto', 'pvsyst', 'singlediode', 'pvwatts_dc'])
 def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
                         pvsyst_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
                         location, dc_model, weather, mocker):
@@ -377,10 +465,7 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     assert isinstance(mc.dc, (pd.Series, pd.DataFrame))
 
 
-@pytest.mark.parametrize('dc_model', [
-    'sapm',
-    pytest.param('cec', marks=requires_scipy),
-    pytest.param('cec_native', marks=requires_scipy)])
+@pytest.mark.parametrize('dc_model', ['sapm', 'cec', 'cec_native'])
 def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
                               cec_dc_snl_ac_system,
                               cec_dc_native_snl_ac_system, dc_model):
@@ -394,8 +479,7 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
 
 
 @pytest.mark.parametrize('temp_model', [
-    'sapm_temp', 'faiman_temp',
-    pytest.param('pvsyst_temp', marks=requires_scipy)])
+    'sapm_temp', 'faiman_temp', 'pvsyst_temp'])
 def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                           pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                           pvwatts_dc_pvwatts_ac_faiman_temp_system,
@@ -411,7 +495,6 @@ def test_infer_temp_model(location, sapm_dc_snl_ac_system,
     assert isinstance(mc, ModelChain)
 
 
-@requires_scipy
 def test_infer_temp_model_invalid(location, sapm_dc_snl_ac_system):
     sapm_dc_snl_ac_system.temperature_model_parameters.pop('a')
     with pytest.raises(ValueError):
@@ -421,7 +504,6 @@ def test_infer_temp_model_invalid(location, sapm_dc_snl_ac_system):
 
 
 # ModelChain.infer_temperature_model. remove or statement in v0.9
-@requires_scipy
 @fail_on_pvlib_version('0.9')
 def test_infer_temp_model_no_params(location, system_no_temp, weather):
     mc = ModelChain(system_no_temp, location, aoi_model='physical',
@@ -431,7 +513,6 @@ def test_infer_temp_model_no_params(location, system_no_temp, weather):
         mc.run_model(weather)
 
 
-@requires_scipy
 def test_temperature_model_inconsistent(location, sapm_dc_snl_ac_system):
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location,
@@ -454,8 +535,7 @@ def acdc(mc):
     mc.ac = mc.dc
 
 
-@pytest.mark.parametrize('ac_model', [
-    'sandia', pytest.param('adr', marks=requires_scipy), 'pvwatts'])
+@pytest.mark.parametrize('ac_model', ['sandia', 'adr', 'pvwatts'])
 def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    pvwatts_dc_pvwatts_ac_system, location, ac_model,
                    weather, mocker):
@@ -478,8 +558,7 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
 
 
 # TODO in v0.9: remove this test for a deprecation warning
-@pytest.mark.parametrize('ac_model', [
-    'snlinverter', pytest.param('adrinverter', marks=requires_scipy)])
+@pytest.mark.parametrize('ac_model', ['snlinverter', 'adrinverter'])
 def test_ac_models_deprecated(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                               location, ac_model, weather):
     ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
@@ -576,9 +655,8 @@ def constant_spectral_loss(mc):
     mc.spectral_modifier = 0.9
 
 
-@requires_scipy
 @pytest.mark.parametrize('spectral_model', [
-        'sapm', 'first_solar', 'no_loss', constant_spectral_loss
+    'sapm', 'first_solar', 'no_loss', constant_spectral_loss
 ])
 def test_spectral_models(sapm_dc_snl_ac_system, location, spectral_model,
                          weather):
@@ -698,7 +776,13 @@ def test_deprecated_09(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    aoi_model='no_loss', spectral_model='no_loss')
 
 
-@requires_scipy
+@fail_on_pvlib_version('0.9')
+def test_ModelChain_kwargs_deprecated_09(sapm_dc_snl_ac_system, location):
+    match = "Arbitrary ModelChain kwargs"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        ModelChain(sapm_dc_snl_ac_system, location, arbitrary_kwarg='value')
+
+
 def test_basic_chain_required(sam_data, cec_inverter_parameters,
                               sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -716,7 +800,7 @@ def test_basic_chain_required(sam_data, cec_inverter_parameters,
         )
 
 
-@requires_scipy
+@requires_tables
 def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                             sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -739,7 +823,7 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
     assert_series_equal(ac, expected)
 
 
-@requires_scipy
+@requires_tables
 def test_basic_chain_strategy(sam_data, cec_inverter_parameters,
                               sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -760,7 +844,7 @@ def test_basic_chain_strategy(sam_data, cec_inverter_parameters,
     assert_series_equal(ac, expected)
 
 
-@requires_scipy
+@requires_tables
 def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                        sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -824,7 +908,6 @@ def test_ModelChain___repr__(sapm_dc_snl_ac_system, location, strategy,
     assert mc.__repr__() == expected
 
 
-@requires_scipy
 def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
     """The DataFrame should not change if all columns are passed"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)
@@ -842,7 +925,7 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
                         pd.Series([9, 5], index=times, name='ghi'))
 
 
-@requires_scipy
+@requires_tables
 def test_complete_irradiance(sapm_dc_snl_ac_system, location):
     """Check calculations"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)

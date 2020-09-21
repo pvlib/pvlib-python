@@ -7,7 +7,7 @@ Function names should follow the pattern "fit_" + fitting method.
 
 import numpy as np
 
-from pvlib.ivtools.utility import _schumaker_qspline
+from pvlib.ivtools.utils import _schumaker_qspline
 
 
 # set constant for numpy.linalg.lstsq parameter rcond

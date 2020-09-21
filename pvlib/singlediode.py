@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Low-level functions for solving the single diode equation.
 """
@@ -7,23 +6,11 @@ from functools import partial
 import numpy as np
 from pvlib.tools import _golden_sect_DataFrame
 
-# Try to import brentq from scipy to use when specified in bishop88_i_from_v,
-# bishop88_v_from_i, and bishop88_mpp methods below. If not imported, raises
-# ImportError when 'brentq' method is specified for those methods.
-try:
-    from scipy.optimize import brentq
-except ImportError:
-    def brentq(*a, **kw):
-        raise ImportError(
-            "brentq couldn't be imported. Is SciPy installed?")
+from scipy.optimize import brentq, newton
+from scipy.special import lambertw
 
-# FIXME: change this to newton when scipy-1.2 is released
-try:
-    from scipy.optimize import _array_newton
-except ImportError:
-    from pvlib.tools import _array_newton
-# rename newton and set keyword arguments
-newton = partial(_array_newton, tol=1e-6, maxiter=100, fprime2=None)
+# set keyword arguments for all uses of newton in this module
+newton = partial(newton, tol=1e-6, maxiter=100, fprime2=None)
 
 # intrinsic voltage per cell junction for a:Si, CdTe, Mertens et al.
 VOLTAGE_BUILTIN = 0.9  # [V]
@@ -510,11 +497,6 @@ def _prepare_newton_inputs(i_or_v_tup, args, v0):
 
 def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,
                        saturation_current, photocurrent):
-    try:
-        from scipy.special import lambertw
-    except ImportError:
-        raise ImportError('This function requires scipy')
-
     # Record if inputs were all scalar
     output_is_scalar = all(map(np.isscalar,
                                [resistance_shunt, resistance_series, nNsVth,
@@ -592,11 +574,6 @@ def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,
 
 def _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                        saturation_current, photocurrent):
-    try:
-        from scipy.special import lambertw
-    except ImportError:
-        raise ImportError('This function requires scipy')
-
     # Record if inputs were all scalar
     output_is_scalar = all(map(np.isscalar,
                                [resistance_shunt, resistance_series, nNsVth,

@@ -20,6 +20,7 @@ except ImportError:
 
 import numpy as np
 import pandas as pd
+import scipy.optimize as so
 import warnings
 
 from pvlib import atmosphere
@@ -814,7 +815,7 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
     HrAngle = LocAST - RtAscen
     HrAngleR = np.radians(HrAngle)
-    HrAngle = HrAngle - (360 * ((abs(HrAngle) > 180)))
+    HrAngle = HrAngle - (360 * (abs(HrAngle) > 180))
 
     SunAz = np.degrees(np.arctan2(-np.sin(HrAngleR),
                                   np.cos(LatR)*np.tan(DecR) -
@@ -911,12 +912,6 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         If the given attribute is not an attribute of a
         PyEphem.Sun object.
     """
-
-    try:
-        import scipy.optimize as so
-    except ImportError:
-        raise ImportError('The calc_time function requires scipy')
-
     obs, sun = _ephem_setup(latitude, longitude, altitude,
                             pressure, temperature, horizon)
 

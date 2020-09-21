@@ -70,7 +70,7 @@ for gcr in [0.2, 0.4, 0.6]:
 
     backtracking_position = backtracking_angles['tracker_theta'].fillna(0)
     backtracking_position.plot(title='Backtracking Curve',
-                               label='GCR:{:0.01f}'.format(gcr),
+                               label=f'GCR:{gcr:0.01f}',
                                ax=ax)
 
 plt.legend()

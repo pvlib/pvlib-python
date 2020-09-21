@@ -22,8 +22,6 @@ corresponding procedural code.
    pvsystem.PVSystem
    tracking.SingleAxisTracker
    modelchain.ModelChain
-   pvsystem.LocalizedPVSystem
-   tracking.LocalizedSingleAxisTracker
 
 
 Solar Position
@@ -138,6 +136,7 @@ Methods for irradiance calculations
 
    pvsystem.PVSystem.get_irradiance
    pvsystem.PVSystem.get_aoi
+   pvsystem.PVSystem.get_iam
    tracking.SingleAxisTracker.get_irradiance
 
 Decomposing and combining irradiance
@@ -209,7 +208,6 @@ wrap the functions listed below. See its documentation for details.
    :toctree: generated/
 
    pvsystem.PVSystem
-   pvsystem.LocalizedPVSystem
 
 Incident angle modifiers
 ------------------------
@@ -241,7 +239,7 @@ PV temperature models
    temperature.ross
 
 Temperature Model Parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. currentmodule:: pvlib.temperature
 .. autodata:: TEMPERATURE_MODEL_PARAMETERS
    :annotation:
@@ -280,9 +278,9 @@ Functions for fitting diode models
 .. autosummary::
    :toctree: generated/
 
-    ivtools.fit_sde_sandia
-    ivtools.fit_sdm_cec_sam
-    ivtools.fit_sdm_desoto
+    ivtools.sde.fit_sandia_simple
+    ivtools.sdm.fit_cec_sam
+    ivtools.sdm.fit_desoto
 
 Inverter models (DC to AC conversion)
 -------------------------------------
@@ -314,7 +312,6 @@ Sandia array performance model (SAPM)
    pvsystem.sapm
    pvsystem.sapm_effective_irradiance
    pvsystem.sapm_spectral_loss
-   pvsystem.sapm_aoi_loss
    inverter.sandia
    temperature.sapm_cell
 
@@ -364,7 +361,7 @@ Utilities for working with IV curve data
 .. autosummary::
    :toctree: generated/
 
-    ivtools.utility.rectify_iv_curve
+    ivtools.utils.rectify_iv_curve
 
 Other
 -----
@@ -380,11 +377,15 @@ Effects on PV System Output
 ===========================
 
 Loss models
-^^^^^^^^^^^
+-----------
+
 .. autosummary::
    :toctree: generated/
 
    pvsystem.combine_loss_factors
+
+Snow
+----
 
 .. autosummary::
    :toctree: generated/
@@ -393,11 +394,17 @@ Loss models
    snow.fully_covered_nrel
    snow.dc_loss_nrel
 
+Soiling
+-------
+
 .. autosummary::
    :toctree: generated/
 
    soiling.hsu
    soiling.kimber
+
+Shading
+-------
 
 .. autosummary::
    :toctree: generated/
@@ -422,8 +429,6 @@ The :py:class:`~tracking.SingleAxisTracker` inherits from
    tracking.SingleAxisTracker
    tracking.SingleAxisTracker.singleaxis
    tracking.SingleAxisTracker.get_irradiance
-   tracking.SingleAxisTracker.localize
-   tracking.LocalizedSingleAxisTracker
 
 Functions
 ---------
@@ -432,6 +437,8 @@ Functions
    :toctree: generated/
 
    tracking.singleaxis
+   tracking.calc_axis_tilt
+   tracking.calc_cross_axis_tilt
 
 
 .. _iotools:
@@ -546,14 +553,25 @@ Creating a ModelChain object.
 Running
 -------
 
-Running a ModelChain.
+A ModelChain can be run from a number of starting points, depending on the
+input data available.
 
 .. autosummary::
    :toctree: generated/
 
    modelchain.ModelChain.run_model
+   modelchain.ModelChain.run_model_from_poa
+   modelchain.ModelChain.run_model_from_effective_irradiance
+
+Functions to assist with setting up ModelChains to run
+
+.. autosummary::
+   :toctree: generated/
+
    modelchain.ModelChain.complete_irradiance
    modelchain.ModelChain.prepare_inputs
+   modelchain.ModelChain.prepare_inputs_from_poa
+
 
 Attributes
 ----------

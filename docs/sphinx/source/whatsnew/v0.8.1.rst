@@ -1,0 +1,39 @@
+.. _whatsnew_0810:
+
+v0.8.1 (MONTH DAY YEAR)
+-----------------------
+
+Breaking changes
+~~~~~~~~~~~~~~~~
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+* Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
+  only NOCT. (:pull:`1045`)
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+* Add airspeed velocity performance testing configuration and a few benchmarks.
+  (:issue:`419`, :pull:`1049`, :pull:`1059`)
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

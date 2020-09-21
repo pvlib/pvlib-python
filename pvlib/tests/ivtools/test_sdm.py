@@ -6,8 +6,7 @@ import pytest
 from pvlib.ivtools import sdm
 from pvlib import pvsystem
 
-from pvlib.tests.conftest import requires_scipy, requires_pysam
-from pvlib.tests.conftest import requires_statsmodels
+from pvlib.tests.conftest import requires_pysam, requires_statsmodels
 
 from conftest import DATA_DIR
 
@@ -61,7 +60,6 @@ def test_fit_cec_sam_estimation_failure(cec_params_cansol_cs5p_220p):
                         gamma_pmp=0.0055, cells_in_series=1, temp_ref=25)
 
 
-@requires_scipy
 def test_fit_desoto():
     result, _ = sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
                                alpha_sc=0.005658, beta_voc=-0.13788,
@@ -80,7 +78,6 @@ def test_fit_desoto():
                        rtol=1e-4)
 
 
-@requires_scipy
 def test_fit_desoto_failure():
     with pytest.raises(RuntimeError) as exc:
         sdm.fit_desoto(v_mp=31.0, i_mp=8.71, v_oc=38.3, i_sc=9.43,
@@ -89,7 +86,6 @@ def test_fit_desoto_failure():
     assert ('Parameter estimation failed') in str(exc.value)
 
 
-@requires_scipy
 @requires_statsmodels
 def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     # this test computes a set of IV curves for the input fixture, fits
@@ -224,7 +220,6 @@ def _read_pvsyst_expected(datafile):
     return pvsyst_specs, pvsyst
 
 
-@requires_scipy
 @requires_statsmodels
 def test_fit_pvsyst_sandia(npts=3000):
 
@@ -295,7 +290,6 @@ def test_fit_pvsyst_sandia(npts=3000):
         equal_nan=True, rtol=0.63)
 
 
-@requires_scipy
 @pytest.mark.parametrize('vmp, imp, iph, io, rs, rsh, nnsvth, expected', [
     (2., 2., 2., 2., 2., 2., 2., np.nan),
     (2., 2., 0., 2., 2., 2., 2., np.nan),
@@ -309,14 +303,12 @@ def test__update_rsh_fixed_pt_nans(vmp, imp, iph, io, rs, rsh, nnsvth,
     assert np.all(np.isnan(outrsh))
 
 
-@requires_scipy
 def test__update_rsh_fixed_pt_vmp0():
     outrsh = sdm._update_rsh_fixed_pt(vmp=0., imp=2., iph=2., io=2., rs=2.,
                                       rsh=2., nnsvth=2.)
     np.testing.assert_allclose(outrsh, np.array([502.]), atol=.0001)
 
 
-@requires_scipy
 def test__update_rsh_fixed_pt_vector():
     outrsh = sdm._update_rsh_fixed_pt(rsh=np.array([-1., 3, .5, 2.]),
                                       rs=np.array([1., -.5, 2., 2.]),
@@ -329,7 +321,6 @@ def test__update_rsh_fixed_pt_vector():
     np.testing.assert_allclose(outrsh[3], np.array([502.]), atol=.0001)
 
 
-@requires_scipy
 @pytest.mark.parametrize('voc, iph, io, rs, rsh, nnsvth, expected', [
     (2., 2., 2., 2., 2., 2., 0.5911),
     (2., 2., 2., 0., 2., 2., 0.5911),
@@ -341,7 +332,6 @@ def test__update_io(voc, iph, io, rs, rsh, nnsvth, expected):
     np.testing.assert_allclose(outio, expected, atol=.0001)
 
 
-@requires_scipy
 @pytest.mark.parametrize('voc, iph, io, rs, rsh, nnsvth', [
     (2., 2., 2., 2., 2., 0.),
     (-1., -1., -1., -1., -1., -1.)])
@@ -350,7 +340,6 @@ def test__update_io_nan(voc, iph, io, rs, rsh, nnsvth):
     assert np.isnan(outio)
 
 
-@requires_scipy
 @pytest.mark.parametrize('vmp, imp, iph, io, rs, rsh, nnsvth, expected', [
     (2., 2., 2., 2., 2., 2., 2., (1.8726, 2.)),
     (2., 0., 2., 2., 2., 2., 2., (1.8726, 3.4537)),
@@ -362,7 +351,6 @@ def test__calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth, expected):
     np.testing.assert_allclose(phi, expected[1], atol=.0001)
 
 
-@requires_scipy
 @pytest.mark.parametrize('vmp, imp, iph, io, rs, rsh, nnsvth', [
     (2., 2., 2., 0., 2., 2., 2.),
     (2., 2., 2., 2., 2., 2., 0.),
@@ -373,7 +361,6 @@ def test__calc_theta_phi_exact_both_nan(vmp, imp, iph, io, rs, rsh, nnsvth):
     assert np.isnan(phi)
 
 
-@requires_scipy
 def test__calc_theta_phi_exact_one_nan():
     theta, phi = sdm._calc_theta_phi_exact(imp=2., iph=2., vmp=2., io=2.,
                                            nnsvth=2., rs=0., rsh=2.)
@@ -381,7 +368,6 @@ def test__calc_theta_phi_exact_one_nan():
     np.testing.assert_allclose(phi, 2., atol=.0001)
 
 
-@requires_scipy
 def test__calc_theta_phi_exact_vector():
     theta, phi = sdm._calc_theta_phi_exact(imp=np.array([1., -1.]),
                                            iph=np.array([-1., 1.]),

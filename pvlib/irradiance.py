@@ -432,7 +432,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth, airmass,
                     model=model_perez)
     else:
-        raise ValueError('invalid model selection {}'.format(model))
+        raise ValueError(f'invalid model selection {model}')
 
     return sky
 
@@ -927,9 +927,9 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
         The diffuse component of the solar radiation.
     '''
 
-    sky_diffuse = (dhi * ((1 + tools.cosd(surface_tilt))) / 2 + ghi *
-                   ((0.012 * solar_zenith - 0.04)) *
-                   ((1 - tools.cosd(surface_tilt))) / 2)
+    sky_diffuse = (dhi * (1 + tools.cosd(surface_tilt)) / 2 + ghi *
+                   (0.012 * solar_zenith - 0.04) *
+                   (1 - tools.cosd(surface_tilt)) / 2)
     sky_diffuse = np.maximum(sky_diffuse, 0)
 
     return sky_diffuse

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This module contains functions for soiling models
 """
@@ -6,6 +5,8 @@ This module contains functions for soiling models
 import datetime
 import numpy as np
 import pandas as pd
+from scipy.special import erf
+
 from pvlib.tools import cosd
 
 
@@ -62,11 +63,6 @@ def hsu(rainfall, cleaning_threshold, tilt, pm2_5, pm10,
        Change. J. Seinfeld and S. Pandis. Wiley and Sons 2001.
 
     """
-    try:
-        from scipy.special import erf
-    except ImportError:
-        raise ImportError("The pvlib.soiling.hsu function requires scipy.")
-
     # never use mutable input arguments
     if depo_veloc is None:
         depo_veloc = {'2_5': 0.0009, '10': 0.004}

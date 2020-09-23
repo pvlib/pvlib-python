@@ -37,3 +37,5 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Cliff Hansen (:ghuser:`cwhanse`)

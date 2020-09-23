@@ -448,25 +448,27 @@ def ross(poa_global, temp_air, noct):
     r'''
     Calculate cell temperature using the Ross model.
 
-    The Ross model [1]_ assumes that difference betwen cell temperature
+    The Ross model [1]_ assumes the difference between cell temperature
     and ambient temperature is proportional to the plane of array irradiance,
-    and ignores the effects of wind.
+    and ignores the effects of wind. The model implicitly assumes steady or
+    slowly changing irradiance conditions.
 
     Parameters
     ----------
     poa_global : numeric
-        Total incident irradiance [W/m^2].
+        Total incident irradiance. [W/m^2]
 
     temp_air : numeric
-        Ambient dry bulb temperature [C].
+        Ambient dry bulb temperature. [C]
 
     noct : numeric
-        Nominal operating cell temperature, determined at conditions of
-        800 W/m^2 irradiance, 20C ambient air temperature and 1 m/s wind. [C]
+        Nominal operating cell temperature [C], determined at conditions of
+        800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
 
     Returns
     -------
-    numeric, values in degrees Celsius
+    cell_temperature : numeric
+        Cell temperature. [C]
 
     Notes
     -----
@@ -477,6 +479,7 @@ def ross(poa_global, temp_air, noct):
         T_{C} = T_{a} + \frac{NOCT - 20}{80} S
 
     where :math:`S` is the plane of array irradiance in :math:`mW/{cm}^2`.
+    This function expects irradiance in :math:`W/m^2`.
 
     References
     ----------

@@ -237,6 +237,9 @@ PV temperature models
    temperature.faiman
    temperature.fuentes
    temperature.ross
+   pvsystem.PVSystem.sapm_celltemp
+   pvsystem.PVSystem.pvsyst_celltemp
+   pvsystem.PVSystem.faiman_celltemp
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

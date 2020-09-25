@@ -247,7 +247,7 @@ class PVSystem:
 
         try:
             aoi = [irradiance.aoi(t, a, solar_zenith, solar_azimuth)
-                for t, a in zip(self.surface_tilt, self.surface_azimuth)]
+                   for t, a in zip(self.surface_tilt, self.surface_azimuth)]
             if isinstance(self.surface_tilt, np.ndarray):
                 aoi = np.asarray(aoi)
             return aoi
@@ -382,11 +382,10 @@ class PVSystem:
                                 'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
                                 'irrad_ref', 'temp_ref'],
                                self.module_parameters)
-        try:
-            return [calcparams_desoto(ee, temp_cell, **kwargs)
-                for ee, tc in zip(effective_irradiance, temp_cell)]
-        except TypeError:
-            return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
+        if isinstance(effective_irradiance, list):
+            return [calcparams_desoto(ee, tc, **kwargs)
+                    for ee, tc in zip(effective_irradiance, temp_cell)]
+        return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
     def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -567,9 +566,9 @@ class PVSystem:
         """
         try:
             ee = [sapm_effective_irradiance(
-                    df['poa_direct'], df['poa_diffuse'], airmass_absolute, aoi,
-                    self.module_parameters)
-                for df, aoi in zip(total_irrad, aoi)]
+                  df['poa_direct'], df['poa_diffuse'], airmass_absolute, aoi,
+                  self.module_parameters)
+                  for df, aoi in zip(total_irrad, aoi)]
             return ee
         except TypeError:
             return sapm_effective_irradiance(

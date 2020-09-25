@@ -245,9 +245,16 @@ class PVSystem:
             The angle of incidence
         """
 
-        aoi = irradiance.aoi(self.surface_tilt, self.surface_azimuth,
-                             solar_zenith, solar_azimuth)
-        return aoi
+        try:
+            aoi = [irradiance.aoi(t, a, solar_zenith, solar_azimuth)
+                for t, a in zip(self.surface_tilt, self.surface_azimuth)]
+            if isinstance(self.surface_tilt, np.ndarray):
+                aoi = np.asarray(aoi)
+            return aoi
+        except TypeError:
+            return irradiance.aoi(self.surface_tilt, self.surface_azimuth,
+                                  solar_zenith, solar_azimuth)
+
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
@@ -293,15 +300,20 @@ class PVSystem:
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        return irradiance.get_total_irradiance(self.surface_tilt,
-                                               self.surface_azimuth,
-                                               solar_zenith, solar_azimuth,
-                                               dni, ghi, dhi,
-                                               dni_extra=dni_extra,
-                                               airmass=airmass,
-                                               model=model,
-                                               albedo=self.albedo,
-                                               **kwargs)
+        try:
+            poa = [irradiance.get_total_irradiance(
+                t, a, solar_zenith, solar_azimuth, dni, ghi, dhi,
+                dni_extra=dni_extra, airmass=airmass, model=model,
+                albedo=self.albedo, **kwargs)
+                for t, a in zip(self.surface_tilt, self.surface_azimuth)]
+            if isinstance(self.surface_tilt, np.ndarray):
+                poa = np.asarray(poa)
+            return poa
+        except TypeError:
+            return irradiance.get_total_irradiance(
+                self.surface_tilt, self.surface_azimuth, solar_zenith,
+                solar_azimuth, dni, ghi, dhi, dni_extra=dni_extra,
+                airmass=airmass, model=model, albedo=self.albedo, **kwargs)
 
     def get_iam(self, aoi, iam_model='physical'):
         """
@@ -370,8 +382,11 @@ class PVSystem:
                                 'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
                                 'irrad_ref', 'temp_ref'],
                                self.module_parameters)
-
-        return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
+        try:
+            return [calcparams_desoto(ee, temp_cell, **kwargs)
+                for ee, tc in zip(effective_irradiance, temp_cell)]
+        except TypeError:
+            return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
 
     def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -524,7 +539,7 @@ class PVSystem:
         """
         return sapm_spectral_loss(airmass_absolute, self.module_parameters)
 
-    def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
+    def sapm_effective_irradiance(self, total_irrad,
                                   airmass_absolute, aoi,
                                   reference_irradiance=1000):
         """
@@ -534,11 +549,10 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_direct : numeric
-            The direct irradiance incident upon the module.  [W/m2]
-
-        poa_diffuse : numeric
-            The diffuse irradiance incident on module.  [W/m2]
+        total_irrad : Dataframe
+            Contains 'poa_direct', the direct irradiance incident upon the
+            module [W/m2], and 'poa_diffuse', the diffuse irradiance incident
+            on the module [W/m2].
 
         airmass_absolute : numeric
             Absolute airmass. [unitless]
@@ -551,9 +565,16 @@ class PVSystem:
         effective_irradiance : numeric
             The SAPM effective irradiance. [W/m2]
         """
-        return sapm_effective_irradiance(
-            poa_direct, poa_diffuse, airmass_absolute, aoi,
-            self.module_parameters)
+        try:
+            ee = [sapm_effective_irradiance(
+                    df['poa_direct'], df['poa_diffuse'], airmass_absolute, aoi,
+                    self.module_parameters)
+                for df, aoi in zip(total_irrad, aoi)]
+            return ee
+        except TypeError:
+            return sapm_effective_irradiance(
+                total_irrad['poa_direct'], total_irrad['poa_diffuse'],
+                airmass_absolute, aoi, self.module_parameters)
 
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`temperature.pvsyst_cell` to calculate cell

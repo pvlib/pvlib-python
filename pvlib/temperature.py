@@ -599,7 +599,8 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     # n.b. the way Fuentes calculates the first timedelta makes it seem like
     # the value doesn't matter -- rather than recreate it here, just assume
     # it's the same as the second timedelta:
-    timedelta_hours = np.diff(poa_global.index).astype(float) / 1e9 / 60 / 60
+    timedeltas = (poa_global.index[1:] - poa_global.index[:-1])
+    timedelta_hours = timedeltas.total_seconds() / 60 / 60
     timedelta_hours = np.append([timedelta_hours[0]], timedelta_hours)
 
     tamb_array = temp_air + 273.15

@@ -624,6 +624,7 @@ ModelChain model definitions.
    modelchain.ModelChain.sapm_temp
    modelchain.ModelChain.pvsyst_temp
    modelchain.ModelChain.faiman_temp
+   modelchain.ModelChain.fuentes_temp
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 

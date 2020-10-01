@@ -13,6 +13,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Create :py:func:`~pvlib.pvsystem.PVSystem.fuentes_celltemp` and add `temperature_model='fuentes'``
+  option to :py:class:`~pvlib.modelchain.ModelChain`. (:pull:`1042`) (:issue:`1073`)
 
 
 Bug fixes

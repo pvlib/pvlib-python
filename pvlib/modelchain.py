@@ -922,6 +922,7 @@ class ModelChain:
         self.cell_temperature = self.system.fuentes_celltemp(
             self.total_irrad['poa_global'], self.weather['temp_air'],
             self.weather['wind_speed'])
+        return self
 
     @property
     def losses_model(self):

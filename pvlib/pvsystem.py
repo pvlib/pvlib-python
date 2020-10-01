@@ -611,7 +611,7 @@ class PVSystem:
 
     def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
         """
-        Use :py:func:`temperature.faiman` to calculate cell temperature.
+        Use :py:func:`temperature.fuentes` to calculate cell temperature.
 
         Parameters
         ----------
@@ -631,7 +631,7 @@ class PVSystem:
         """
         kwargs = _build_kwargs([
             'noct_installed', 'module_height', 'wind_height', 'emissivity',
-            'absorption', 'surface_tilt', 'module_width', 'module_height'],
+            'absorption', 'surface_tilt', 'module_width', 'module_length'],
             self.temperature_model_parameters)
         return temperature.fuentes(poa_global, temp_air, wind_speed,
                                    **kwargs)

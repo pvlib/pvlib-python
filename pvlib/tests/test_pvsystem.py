@@ -360,6 +360,24 @@ def test_PVSystem_faiman_celltemp(mocker):
     assert_allclose(out, 56.4, atol=1)
 
 
+def test_PVSystem_fuentes_celltemp(mocker):
+    noct_installed = 45
+    temp_model_params = {'noct_installed': noct_installed}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    spy = mocker.spy(temperature, 'fuentes')
+    index = pd.date_range('2019-01-01 11:00', freq='h', periods=3)
+    temps = pd.Series(25, index)
+    irrads = pd.Series(1000, index)
+    winds = pd.Series(1, index)
+    out = system.fuentes_celltemp(irrads, temps, winds)
+    assert_series_equal(spy.call_args[0][0], irrads)
+    assert_series_equal(spy.call_args[0][1], temps)
+    assert_series_equal(spy.call_args[0][2], winds)
+    assert spy.call_args[1]['noct_installed'] == noct_installed
+    assert_series_equal(out, pd.Series([51.85, 55.85, 55.85], index,
+                                       name='tmod'))
+
+
 def test__infer_temperature_model_params():
     system = pvsystem.PVSystem(module_parameters={},
                                racking_model='open_rack',

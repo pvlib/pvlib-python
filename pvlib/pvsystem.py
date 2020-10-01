@@ -609,6 +609,33 @@ class PVSystem:
         return temperature.faiman(poa_global, temp_air, wind_speed,
                                   **kwargs)
 
+    def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
+        """
+        Use :py:func:`temperature.faiman` to calculate cell temperature.
+
+        Parameters
+        ----------
+        poa_global : pandas Series
+            Total incident irradiance [W/m^2]
+
+        temp_air : pandas Series
+            Ambient dry bulb temperature [C]
+
+        wind_speed : pandas Series
+            Wind speed [m/s]
+
+        Returns
+        -------
+        temperature_cell : pandas Series
+            The modeled cell temperature [C]
+        """
+        kwargs = _build_kwargs([
+            'noct_installed', 'module_height', 'wind_height', 'emissivity',
+            'absorption', 'surface_tilt', 'module_width', 'module_height'],
+            self.temperature_model_parameters)
+        return temperature.fuentes(poa_global, temp_air, wind_speed,
+                                   **kwargs)
+
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
         """

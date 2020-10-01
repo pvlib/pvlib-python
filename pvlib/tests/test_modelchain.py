@@ -317,6 +317,23 @@ def test_run_model_with_weather_faiman_temp(sapm_dc_snl_ac_system, location,
     assert not mc.ac.empty
 
 
+def test_run_model_with_weather_fuentes_temp(sapm_dc_snl_ac_system, location,
+                                        weather, mocker):
+    weather['wind_speed'] = 5
+    weather['temp_air'] = 10
+    sapm_dc_snl_ac_system.temperature_model_parameters = {
+        'noct_installed': 45
+    }
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.temperature_model = 'fuentes'
+    m_fuentes = mocker.spy(sapm_dc_snl_ac_system, 'fuentes_celltemp')
+    mc.run_model(weather)
+    assert m_fuentes.call_count == 1
+    assert_series_equal(m_fuentes.call_args[0][1], weather['temp_air'])
+    assert_series_equal(m_fuentes.call_args[0][2], weather['wind_speed'])
+    assert not mc.ac.empty
+
+
 def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
     system = SingleAxisTracker(
         module_parameters=sapm_dc_snl_ac_system.module_parameters,

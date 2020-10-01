@@ -323,9 +323,9 @@ class ModelChain:
         as the first argument to a user-defined function.
 
     temperature_model: None, str or function, default None
-        Valid strings are 'sapm', 'pvsyst', and 'faiman'. The ModelChain
-        instance will be passed as the first argument to a user-defined
-        function.
+        Valid strings are 'sapm', 'pvsyst', 'faiman', and 'fuentes'.
+        The ModelChain instance will be passed as the first argument to a
+        user-defined function.
 
     losses_model: str or function, default 'no_loss'
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
@@ -866,6 +866,8 @@ class ModelChain:
                 self._temperature_model = self.pvsyst_temp
             elif model == 'faiman':
                 self._temperature_model = self.faiman_temp
+            elif model == 'fuentes':
+                self._temperature_model = self.fuentes_temp
             else:
                 raise ValueError(model + ' is not a valid temperature model')
             # check system.temperature_model_parameters for consistency
@@ -891,6 +893,8 @@ class ModelChain:
             return self.pvsyst_temp
         elif {'u0', 'u1'} <= params:
             return self.faiman_temp
+        elif {'noct_installed'} <= params:
+            return self.fuentes_temp
         else:
             raise ValueError('could not infer temperature model from '
                              'system.temperature_module_parameters {}.'
@@ -913,6 +917,11 @@ class ModelChain:
             self.total_irrad['poa_global'], self.weather['temp_air'],
             self.weather['wind_speed'])
         return self
+
+    def fuentes_temp(self):
+        self.cell_temperature = self.system.fuentes_celltemp(
+            self.total_irrad['poa_global'], self.weather['temp_air'],
+            self.weather['wind_speed'])
 
     @property
     def losses_model(self):

@@ -632,7 +632,7 @@ class PVSystem:
         Notes
         -----
         The Fuentes thermal model uses the module surface tilt for convection
-        modeling. The SAM implementation of PVWatts hardcodes the value at 30
+        modeling. The SAM implementation of PVWatts hardcodes the surface tilt value at 30
         degrees, ignoring whatever value is used for irradiance transposition.
         This method defaults to using ``self.surface_tilt``, but if
         you want to match the PVWatts behavior, you can override it by

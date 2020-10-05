@@ -9,6 +9,8 @@ import calendar
 
 import numpy as np
 import pandas as pd
+from scipy.optimize import minimize_scalar
+from scipy.linalg import hankel
 
 from pvlib import atmosphere, tools
 
@@ -853,7 +855,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                     align='left', return_components=False):
     """
     Detects clear sky times according to the algorithm developed by Reno
-    and Hansen for GHI measurements [1]. The algorithm was designed and
+    and Hansen for GHI measurements. The algorithm [1]_ was designed and
     validated for analyzing GHI time series only. Users may attempt to
     apply it to other types of time series data using different filter
     settings, but should be skeptical of the results.
@@ -925,9 +927,9 @@ def detect_clearsky(measured, clearsky, times, window_length,
 
     References
     ----------
-    [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
-    sky irradiance in time series of GHI measurements" Renewable Energy,
-    v90, p. 520-531, 2016.
+    .. [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+       sky irradiance in time series of GHI measurements" Renewable Energy,
+       v90, p. 520-531, 2016.
 
     Notes
     -----
@@ -996,7 +998,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
             break
     else:
         import warnings
-        warnings.warn('failed to converge after %s iterations' \
+        warnings.warn('failed to converge after %s iterations'
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input

@@ -597,211 +597,6 @@ def _calc_d(aod700, p):
     return d
 
 
-def detect_clearsky(measured, clearsky, times, window_length,
-                    mean_diff=75, max_diff=75,
-                    lower_line_length=-5, upper_line_length=10,
-                    var_diff=0.005, slope_dev=8, max_iterations=20,
-                    return_components=False):
-    """
-    Detects clear sky times according to the algorithm developed by Reno
-    and Hansen for GHI measurements. The algorithm [1]_ was designed and
-    validated for analyzing GHI time series only. Users may attempt to
-    apply it to other types of time series data using different filter
-    settings, but should be skeptical of the results.
-
-    The algorithm detects clear sky times by comparing statistics for a
-    measured time series and an expected clearsky time series.
-    Statistics are calculated using a sliding time window (e.g., 10
-    minutes). An iterative algorithm identifies clear periods, uses the
-    identified periods to estimate bias in the clearsky data, scales the
-    clearsky data and repeats.
-
-    Clear times are identified by meeting 5 criteria. Default values for
-    these thresholds are appropriate for 10 minute windows of 1 minute
-    GHI data.
-
-    Parameters
-    ----------
-    measured : array or Series
-        Time series of measured values.
-    clearsky : array or Series
-        Time series of the expected clearsky values.
-    times : DatetimeIndex
-        Times of measured and clearsky values.
-    window_length : int
-        Length of sliding time window in minutes. Must be greater than 2
-        periods.
-    mean_diff : float, default 75
-        Threshold value for agreement between mean values of measured
-        and clearsky in each interval, see Eq. 6 in [1].
-    max_diff : float, default 75
-        Threshold value for agreement between maxima of measured and
-        clearsky values in each interval, see Eq. 7 in [1].
-    lower_line_length : float, default -5
-        Lower limit of line length criterion from Eq. 8 in [1].
-        Criterion satisfied when
-        lower_line_length < line length difference < upper_line_length
-    upper_line_length : float, default 10
-        Upper limit of line length criterion from Eq. 8 in [1].
-    var_diff : float, default 0.005
-        Threshold value in Hz for the agreement between normalized
-        standard deviations of rate of change in irradiance, see Eqs. 9
-        through 11 in [1].
-    slope_dev : float, default 8
-        Threshold value for agreement between the largest magnitude of
-        change in successive values, see Eqs. 12 through 14 in [1].
-    max_iterations : int, default 20
-        Maximum number of times to apply a different scaling factor to
-        the clearsky and redetermine clear_samples. Must be 1 or larger.
-    return_components : bool, default False
-        Controls if additional output should be returned. See below.
-
-    Returns
-    -------
-    clear_samples : array or Series
-        Boolean array or Series of whether or not the given time is
-        clear. Return type is the same as the input type.
-
-    components : OrderedDict, optional
-        Dict of arrays of whether or not the given time window is clear
-        for each condition. Only provided if return_components is True.
-
-    alpha : scalar, optional
-        Scaling factor applied to the clearsky_ghi to obtain the
-        detected clear_samples. Only provided if return_components is
-        True.
-
-    References
-    ----------
-    .. [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
-       sky irradiance in time series of GHI measurements" Renewable Energy,
-       v90, p. 520-531, 2016.
-
-    Notes
-    -----
-    Initial implementation in MATLAB by Matthew Reno. Modifications for
-    computational efficiency by Joshua Patrick and Curtis Martin. Ported
-    to Python by Will Holmgren, Tony Lorenzo, and Cliff Hansen.
-
-    Differences from MATLAB version:
-
-        * no support for unequal times
-        * automatically determines sample_interval
-        * requires a reference clear sky series instead calculating one
-          from a user supplied location and UTCoffset
-        * parameters are controllable via keyword arguments
-        * option to return individual test components and clearsky scaling
-          parameter
-    """
-
-    # calculate deltas in units of minutes (matches input window_length units)
-    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
-
-    # determine the unique deltas and if we can proceed
-    unique_deltas = np.unique(deltas)
-    if len(unique_deltas) == 1:
-        sample_interval = unique_deltas[0]
-    else:
-        raise NotImplementedError('algorithm does not yet support unequal '
-                                  'times. consider resampling your data.')
-
-    intervals_per_window = int(window_length / sample_interval)
-
-    # generate matrix of integers for creating windows with indexing
-    from scipy.linalg import hankel
-    H = hankel(np.arange(intervals_per_window),                   # noqa: N806
-               np.arange(intervals_per_window - 1, len(times)))
-
-    # convert pandas input to numpy array, but save knowledge of input state
-    # so we can return a series if that's what was originally provided
-    ispandas = isinstance(measured, pd.Series)
-    measured = np.asarray(measured)
-    clearsky = np.asarray(clearsky)
-
-    # calculate measurement statistics
-    meas_mean = np.mean(measured[H], axis=0)
-    meas_max = np.max(measured[H], axis=0)
-    meas_diff = np.diff(measured[H], n=1, axis=0)
-    meas_slope = np.diff(measured[H], n=1, axis=0) / sample_interval
-    # matlab std function normalizes by N-1, so set ddof=1 here
-    meas_slope_nstd = np.std(meas_slope, axis=0, ddof=1) / meas_mean
-    meas_line_length = np.sum(np.sqrt(
-        meas_diff * meas_diff +
-        sample_interval * sample_interval), axis=0)
-
-    # calculate clear sky statistics
-    clear_mean = np.mean(clearsky[H], axis=0)
-    clear_max = np.max(clearsky[H], axis=0)
-    clear_diff = np.diff(clearsky[H], n=1, axis=0)
-    clear_slope = np.diff(clearsky[H], n=1, axis=0) / sample_interval
-
-    from scipy.optimize import minimize_scalar
-
-    alpha = 1
-    for iteration in range(max_iterations):
-        clear_line_length = np.sum(np.sqrt(
-            alpha * alpha * clear_diff * clear_diff +
-            sample_interval * sample_interval), axis=0)
-
-        line_diff = meas_line_length - clear_line_length
-
-        # evaluate comparison criteria
-        c1 = np.abs(meas_mean - alpha*clear_mean) < mean_diff
-        c2 = np.abs(meas_max - alpha*clear_max) < max_diff
-        c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
-        c4 = meas_slope_nstd < var_diff
-        c5 = np.max(np.abs(meas_slope -
-                           alpha * clear_slope), axis=0) < slope_dev
-        c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
-        clear_windows = c1 & c2 & c3 & c4 & c5 & c6
-
-        # create array to return
-        clear_samples = np.full_like(measured, False, dtype='bool')
-        # find the samples contained in any window classified as clear
-        clear_samples[np.unique(H[:, clear_windows])] = True
-
-        # find a new alpha
-        previous_alpha = alpha
-        clear_meas = measured[clear_samples]
-        clear_clear = clearsky[clear_samples]
-
-        def rmse(alpha):
-            return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
-
-        alpha = minimize_scalar(rmse).x
-        if round(alpha*10000) == round(previous_alpha*10000):
-            break
-    else:
-        import warnings
-        warnings.warn('failed to converge after %s iterations'
-                      % max_iterations, RuntimeWarning)
-
-    # be polite about returning the same type as was input
-    if ispandas:
-        clear_samples = pd.Series(clear_samples, index=times)
-
-    if return_components:
-        components = OrderedDict()
-        components['mean_diff_flag'] = c1
-        components['max_diff_flag'] = c2
-        components['line_length_flag'] = c3
-        components['slope_nstd_flag'] = c4
-        components['slope_max_flag'] = c5
-        components['mean_nan_flag'] = c6
-        components['windows'] = clear_windows
-
-        components['mean_diff'] = np.abs(meas_mean - alpha * clear_mean)
-        components['max_diff'] = np.abs(meas_max - alpha * clear_max)
-        components['line_length'] = meas_line_length - clear_line_length
-        components['slope_nstd'] = meas_slope_nstd
-        components['slope_max'] = (np.max(
-            meas_slope - alpha * clear_slope, axis=0))
-
-        return clear_samples, components, alpha
-    else:
-        return clear_samples
-
-
 def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
          ozone=0.3, pressure=101325., dni_extra=1364., asymmetry=0.85,
          albedo=0.2):
@@ -926,3 +721,297 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     if isinstance(irrads['dni'], pd.Series):
         irrads = pd.DataFrame.from_dict(irrads)
     return irrads
+
+
+def _calc_stats(data, samples_per_window, sample_interval, H, align):
+    """ Calculates statistics for each window, used by Reno-style clear
+    sky detection functions
+
+    Parameters
+    ----------
+    data : Series
+    samples_per_window : int
+        Number of data points in each window
+    sample_interval : float
+        Time in minutes in each sample interval
+    H : np.array
+        2D Hankel matrix that arranges data into sliding windows
+    align : bool, default 'left'
+        Alignment of labels to data in sliding window. Must be one of
+        'left', 'center', 'right'.
+
+    Returns
+    -------
+    data_mean : np.array
+        mean of data in each window
+    data_max : np.array
+        maximum of data in each window
+    data_line_length : np.array
+        length of line segments connecting successive data points
+    data_slope_nstd : np.array
+        standard deviation of difference between data points in each window
+    data_slope : np.array
+        difference between successive data points
+    """
+
+    shift = _shift_from_align(align, samples_per_window)
+    center = align=='center'
+    data_mean = data.rolling(samples_per_window,
+                             center=center).mean().shift(shift)
+    data_max = data.rolling(samples_per_window,
+                            center=center).max().shift(shift)
+    # shift to get forward difference, .diff() is backward difference instead
+    data_diff = data.diff().shift(-1)
+    data_slope = data_diff / sample_interval
+    # because data_slope_nstd is calculated on differenes the window is
+    # shortened by 1.  :gh:issue:`1070`
+    data_slope_nstd = data.rolling(samples_per_window, center=center).apply(_calc_slope_nstd)
+    data_slope_nstd = data_slope_nstd.shift(shift)
+    data_line_length = data.rolling(samples_per_window, center=center).apply(_calc_line_length, args=(sample_interval,))
+    data_line_length = data_line_length.shift(shift)
+
+    return (data_mean, data_max, data_line_length, data_slope_nstd, data_slope)
+
+
+def _calc_slope_nstd(data):
+    return data.diff().std() / data.mean()
+
+
+def _shift_from_align(align, window):
+    # pandas.Series.rolling uses kwarg center with values of True or False
+    # default is False which means right aligned labels by default
+    # calculate shift to align='left' (legacy pvlib behavior)
+    if align=='left':
+        shift = 1 - window
+    else:
+        shift = 0
+    return shift
+
+
+def _count_in_window(ts, window):
+    # return int type instead of default int64, to avoid error in pandas
+    return int(ts.resample(window).agg('sum')[0])
+
+
+def _get_sample_intervals(times, window_length):
+    """ Calculates timeinterval and samples per window for Reno-style clear
+    sky detection functions
+    """
+    window = pd.Timedelta(minutes=window_length)
+    temp = pd.Series(data=1, index=times)
+
+    # determine if we can proceed
+    if times.inferred_freq and len(temp.unique()) == 1:
+        sample_interval = times[1] - times[0]
+        sample_interval = sample_interval.seconds / 60  # interval in minutes
+        samples_per_window = _count_in_window(temp, window)
+        return sample_interval, samples_per_window
+    else:
+        raise NotImplementedError('algorithm does not yet support unequal ' \
+                                  'times. consider resampling your data.')
+
+
+def _calc_line_length(data, sample_interval):
+    """ Calculates line length for Reno-style clear sky detection functions.
+    """
+    return np.sum(np.sqrt(data.diff()**2 + sample_interval**2))
+
+
+def _calc_c5(meas_slope, clear_slope, window, align, limit):
+    shift = _shift_from_align(align, window)
+    center = align=='center'
+    slope_diff = np.abs(meas_slope - clear_slope)
+    slope_diff = slope_diff.rolling(
+        window - 1, center=center).max().shift(shift + 1)
+    return slope_diff < limit
+
+
+def _clear_sample_index(clear_windows, samples_per_window, align, H):
+    """
+    Returns indices of clear samples in clear windows
+    """
+    if align=='right':
+        shift = 1 - samples_per_window
+    elif align=='center':
+        shift = - (samples_per_window // 2)
+    else:
+        shift = 0
+    # first window is in first column of H. clear_windows is aligned by 'align'
+    # shift clear_windows so that first window is in left position, lined up
+    # with first column of H
+    idx = clear_windows.shift(shift)
+    idx.drop(clear_windows.tail(samples_per_window - 1).index, inplace=True)
+    idx = idx.astype(bool)  # shift added nan, changed type to object
+    clear_samples = np.unique(H[:, idx])
+    return clear_samples
+
+
+def detect_clearsky(measured, clearsky, times, window_length,
+                    mean_diff=75, max_diff=75,
+                    lower_line_length=-5, upper_line_length=10,
+                    var_diff=0.005, slope_dev=8, max_iterations=20,
+                    align='left', return_components=False):
+    """
+    Detects clear sky times according to the algorithm developed by Reno
+    and Hansen for GHI measurements [1]. The algorithm was designed and
+    validated for analyzing GHI time series only. Users may attempt to
+    apply it to other types of time series data using different filter
+    settings, but should be skeptical of the results.
+
+    The algorithm detects clear sky times by comparing statistics for a
+    measured time series and an expected clearsky time series.
+    Statistics are calculated using a sliding time window (e.g., 10
+    minutes). An iterative algorithm identifies clear periods, uses the
+    identified periods to estimate bias in the clearsky data, scales the
+    clearsky data and repeats.
+
+    Clear times are identified by meeting 5 criteria. Default values for
+    these thresholds are appropriate for 10 minute windows of 1 minute
+    GHI data.
+
+    Parameters
+    ----------
+    measured : array or Series
+        Time series of measured values.
+    clearsky : array or Series
+        Time series of the expected clearsky values.
+    times : DatetimeIndex
+        Times of measured and clearsky values.
+    window_length : int
+        Length of sliding time window in minutes. Must be greater than 2
+        periods.
+    mean_diff : float, default 75
+        Threshold value for agreement between mean values of measured
+        and clearsky in each interval, see Eq. 6 in [1].
+    max_diff : float, default 75
+        Threshold value for agreement between maxima of measured and
+        clearsky values in each interval, see Eq. 7 in [1].
+    lower_line_length : float, default -5
+        Lower limit of line length criterion from Eq. 8 in [1].
+        Criterion satisfied when
+        lower_line_length < line length difference < upper_line_length
+    upper_line_length : float, default 10
+        Upper limit of line length criterion from Eq. 8 in [1].
+    var_diff : float, default 0.005
+        Threshold value in Hz for the agreement between normalized
+        standard deviations of rate of change in irradiance, see Eqs. 9
+        through 11 in [1].
+    slope_dev : float, default 8
+        Threshold value for agreement between the largest magnitude of
+        change in successive values, see Eqs. 12 through 14 in [1].
+    max_iterations : int, default 20
+        Maximum number of times to apply a different scaling factor to
+        the clearsky and redetermine clear_samples. Must be 1 or larger.
+    align : bool, default 'left'
+        Alignment of labels to data in sliding window. Must be one of
+        'left', 'center', 'right'.
+    return_components : bool, default False
+        Controls if additional output should be returned. See below.
+
+    Returns
+    -------
+    clear_samples : array or Series
+        Boolean array or Series of whether or not the given time is
+        clear. Return type is the same as the input type.
+
+    components : OrderedDict, optional
+        Dict of arrays of whether or not the given time window is clear
+        for each condition. Only provided if return_components is True.
+
+    alpha : scalar, optional
+        Scaling factor applied to the clearsky_ghi to obtain the
+        detected clear_samples. Only provided if return_components is
+        True.
+
+    References
+    ----------
+    [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+    sky irradiance in time series of GHI measurements" Renewable Energy,
+    v90, p. 520-531, 2016.
+
+    Notes
+    -----
+    Initial implementation in MATLAB by Matthew Reno. Modifications for
+    computational efficiency by Joshua Patrick and Curtis Martin. Ported
+    to Python by Will Holmgren, Tony Lorenzo, and Cliff Hansen.
+
+    Differences from MATLAB version:
+
+        * no support for unequal times
+        * automatically determines sample_interval
+        * requires a reference clear sky series instead calculating one
+          from a user supplied location and UTCoffset
+        * parameters are controllable via keyword arguments
+        * option to return individual test components and clearsky scaling
+          parameter
+    """
+
+    sample_interval, samples_per_window = _get_sample_intervals(times,
+                                                                window_length)
+
+    # generate matrix of integers for creating windows with indexing
+    H = hankel(np.arange(samples_per_window),
+               np.arange(samples_per_window-1, len(times)))
+
+    # calculate measurement statistics
+    meas_mean, meas_max, meas_line_length, meas_slope_nstd, meas_slope \
+        = _calc_stats(measured, samples_per_window, sample_interval, H, align)
+
+    # calculate clear sky statistics
+    clear_mean, clear_max, _, _, clear_slope \
+        = _calc_stats(clearsky, samples_per_window, sample_interval, H, align)
+
+    alpha = 1
+    for iteration in range(max_iterations):
+        _, _, clear_line_length, _, _ = _calc_stats(
+                alpha * clearsky, samples_per_window, sample_interval, H,
+                align)
+
+        line_diff = meas_line_length - clear_line_length
+
+        # evaluate comparison criteria
+        c1 = np.abs(meas_mean - alpha*clear_mean) < mean_diff
+        c2 = np.abs(meas_max - alpha*clear_max) < max_diff
+        c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
+        c4 = meas_slope_nstd < var_diff
+        c5 = _calc_c5(meas_slope, alpha * clear_slope, samples_per_window,
+                      align, slope_dev)
+        c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
+        clear_windows = c1 & c2 & c3 & c4 & c5 & c6
+
+        # create array to return
+        clear_samples = np.full_like(measured, False, dtype='bool')
+        # find the samples contained in any window classified as clear
+        idx = _clear_sample_index(clear_windows, samples_per_window, align, H)
+        clear_samples[idx] = True
+
+        # find a new alpha
+        previous_alpha = alpha
+        clear_meas = measured[clear_samples]
+        clear_clear = clearsky[clear_samples]
+        def rmse(alpha):
+            return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
+        alpha = minimize_scalar(rmse).x
+        if round(alpha*10000) == round(previous_alpha*10000):
+            break
+    else:
+        import warnings
+        warnings.warn('failed to converge after %s iterations' \
+                      % max_iterations, RuntimeWarning)
+
+    # be polite about returning the same type as was input
+    if isinstance(measured, pd.Series):
+        clear_samples = pd.Series(clear_samples, index=times)
+
+    if return_components:
+        components = OrderedDict()
+        components['mean_diff'] = c1
+        components['max_diff'] = c2
+        components['line_length'] = c3
+        components['slope_nstd'] = c4
+        components['slope_max'] = c5
+        components['mean_nan'] = c6
+#        components['windows'] = clear_windows
+        return clear_samples, components, alpha
+    else:
+        return clear_samples

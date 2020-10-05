@@ -816,7 +816,7 @@ def _get_sample_intervals(times, window_length):
 def _calc_line_length(data, sample_interval):
     """ Calculates line length for Reno-style clear sky detection functions.
     """
-    return np.sum(np.sqrt(data.diff()**2 + sample_interval**2))
+    return np.sum(np.sqrt(np.diff(data)**2 + sample_interval**2))
 
 
 def _calc_c5(meas_slope, clear_slope, window, align, limit):

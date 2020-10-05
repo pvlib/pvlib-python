@@ -725,7 +725,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     return irrads
 
 
-def _calc_stats(data, samples_per_window, sample_interval, H, align):
+def _calc_stats(data, samples_per_window, sample_interval, align):
     """ Calculates statistics for each window, used by Reno-style clear
     sky detection functions
 
@@ -736,8 +736,6 @@ def _calc_stats(data, samples_per_window, sample_interval, H, align):
         Number of data points in each window
     sample_interval : float
         Time in minutes in each sample interval
-    H : np.array
-        2D Hankel matrix that arranges data into sliding windows
     align : bool, default 'left'
         Alignment of labels to data in sliding window. Must be one of
         'left', 'center', 'right'.
@@ -778,7 +776,7 @@ def _calc_stats(data, samples_per_window, sample_interval, H, align):
 
 
 def _calc_slope_nstd(data):
-    return data.diff().std() / data.mean()
+    return np.diff(data).std() / data.mean()
 
 
 def _shift_from_align(align, window):

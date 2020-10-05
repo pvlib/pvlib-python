@@ -971,16 +971,16 @@ def detect_clearsky(measured, clearsky, times, window_length,
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_line_length, meas_slope_nstd, meas_slope \
-        = _calc_stats(meas, samples_per_window, sample_interval, H, align)
+        = _calc_stats(meas, samples_per_window, sample_interval, align)
 
     # calculate clear sky statistics
     clear_mean, clear_max, _, _, clear_slope \
-        = _calc_stats(clear, samples_per_window, sample_interval, H, align)
+        = _calc_stats(clear, samples_per_window, sample_interval, align)
 
     alpha = 1
     for iteration in range(max_iterations):
         _, _, clear_line_length, _, _ = _calc_stats(
-            alpha * clear, samples_per_window, sample_interval, H, align)
+            alpha * clear, samples_per_window, sample_interval, align)
 
         line_diff = meas_line_length - clear_line_length
 

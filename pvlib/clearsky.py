@@ -948,6 +948,15 @@ def detect_clearsky(measured, clearsky, times, window_length,
           parameter
     """
 
+    # be polite about returning the same type as was input
+    ispandas = isinstance(measured, pd.Series)
+
+    # for internal use, need a Series
+    if not ispandas:
+        meas = pd.Series(measured, index=times)
+    else:
+        meas = measured
+
     sample_interval, samples_per_window = _get_sample_intervals(times,
                                                                 window_length)
 
@@ -957,7 +966,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_line_length, meas_slope_nstd, meas_slope \
-        = _calc_stats(measured, samples_per_window, sample_interval, H, align)
+        = _calc_stats(meas, samples_per_window, sample_interval, H, align)
 
     # calculate clear sky statistics
     clear_mean, clear_max, _, _, clear_slope \
@@ -982,14 +991,14 @@ def detect_clearsky(measured, clearsky, times, window_length,
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
         # create array to return
-        clear_samples = np.full_like(measured, False, dtype='bool')
+        clear_samples = np.full_like(meas, False, dtype='bool')
         # find the samples contained in any window classified as clear
         idx = _clear_sample_index(clear_windows, samples_per_window, align, H)
         clear_samples[idx] = True
 
         # find a new alpha
         previous_alpha = alpha
-        clear_meas = measured[clear_samples]
+        clear_meas = meas[clear_samples]
         clear_clear = clearsky[clear_samples]
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
@@ -1002,7 +1011,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input
-    if isinstance(measured, pd.Series):
+    if ispandas:
         clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:

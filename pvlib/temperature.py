@@ -450,7 +450,7 @@ def ross(poa_global, temp_air, noct):
 
     The Ross model [1]_ assumes the difference between cell temperature
     and ambient temperature is proportional to the plane of array irradiance,
-    and ignores the effects of wind. The model implicitly assumes steady or
+    and assumes wind speed of 1 m/s. The model implicitly assumes steady or
     slowly changing irradiance conditions.
 
     Parameters

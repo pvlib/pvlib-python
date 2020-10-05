@@ -757,7 +757,7 @@ def _calc_stats(data, samples_per_window, sample_interval, H, align):
     """
 
     shift = _shift_from_align(align, samples_per_window)
-    center = align=='center'
+    center = align == 'center'
     data_mean = data.rolling(samples_per_window,
                              center=center).mean().shift(shift)
     data_max = data.rolling(samples_per_window,
@@ -767,9 +767,11 @@ def _calc_stats(data, samples_per_window, sample_interval, H, align):
     data_slope = data_diff / sample_interval
     # because data_slope_nstd is calculated on differenes the window is
     # shortened by 1.  :gh:issue:`1070`
-    data_slope_nstd = data.rolling(samples_per_window, center=center).apply(_calc_slope_nstd)
+    data_slope_nstd = data.rolling(samples_per_window, center=center).apply(
+        _calc_slope_nstd)
     data_slope_nstd = data_slope_nstd.shift(shift)
-    data_line_length = data.rolling(samples_per_window, center=center).apply(_calc_line_length, args=(sample_interval,))
+    data_line_length = data.rolling(samples_per_window, center=center).apply(
+        _calc_line_length, args=(sample_interval,))
     data_line_length = data_line_length.shift(shift)
 
     return (data_mean, data_max, data_line_length, data_slope_nstd, data_slope)
@@ -783,7 +785,7 @@ def _shift_from_align(align, window):
     # pandas.Series.rolling uses kwarg center with values of True or False
     # default is False which means right aligned labels by default
     # calculate shift to align='left' (legacy pvlib behavior)
-    if align=='left':
+    if align == 'left':
         shift = 1 - window
     else:
         shift = 0
@@ -809,7 +811,7 @@ def _get_sample_intervals(times, window_length):
         samples_per_window = _count_in_window(temp, window)
         return sample_interval, samples_per_window
     else:
-        raise NotImplementedError('algorithm does not yet support unequal ' \
+        raise NotImplementedError('algorithm does not yet support unequal '
                                   'times. consider resampling your data.')
 
 
@@ -821,7 +823,7 @@ def _calc_line_length(data, sample_interval):
 
 def _calc_c5(meas_slope, clear_slope, window, align, limit):
     shift = _shift_from_align(align, window)
-    center = align=='center'
+    center = align == 'center'
     slope_diff = np.abs(meas_slope - clear_slope)
     slope_diff = slope_diff.rolling(
         window - 1, center=center).max().shift(shift + 1)
@@ -832,9 +834,9 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     """
     Returns indices of clear samples in clear windows
     """
-    if align=='right':
+    if align == 'right':
         shift = 1 - samples_per_window
-    elif align=='center':
+    elif align == 'center':
         shift = - (samples_per_window // 2)
     else:
         shift = 0
@@ -957,6 +959,11 @@ def detect_clearsky(measured, clearsky, times, window_length,
     else:
         meas = measured
 
+    if not isinstance(clearsky, pd.Series):
+        clear = pd.Series(clearsky, index=times)
+    else:
+        clear = clearsky
+
     sample_interval, samples_per_window = _get_sample_intervals(times,
                                                                 window_length)
 
@@ -970,13 +977,12 @@ def detect_clearsky(measured, clearsky, times, window_length,
 
     # calculate clear sky statistics
     clear_mean, clear_max, _, _, clear_slope \
-        = _calc_stats(clearsky, samples_per_window, sample_interval, H, align)
+        = _calc_stats(clear, samples_per_window, sample_interval, H, align)
 
     alpha = 1
     for iteration in range(max_iterations):
         _, _, clear_line_length, _, _ = _calc_stats(
-                alpha * clearsky, samples_per_window, sample_interval, H,
-                align)
+            alpha * clear, samples_per_window, sample_interval, H, align)
 
         line_diff = meas_line_length - clear_line_length
 
@@ -999,7 +1005,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
         # find a new alpha
         previous_alpha = alpha
         clear_meas = meas[clear_samples]
-        clear_clear = clearsky[clear_samples]
+        clear_clear = clear[clear_samples]
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
         alpha = minimize_scalar(rmse).x

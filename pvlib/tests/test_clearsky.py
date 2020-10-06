@@ -611,9 +611,11 @@ def test_detect_clearsky_irregular_times(detect_clearsky_data):
     times[0] += 10**9
     times = pd.DatetimeIndex(times)
     with pytest.raises(NotImplementedError):
-        clear_samples = clearsky.detect_clearsky(
-            expected['GHI'].values, cs['ghi'].values, times, 10)
+        clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values,
+                                 times, 10)
 
+def test__calc_stats(data, samples_per_window, sample_interval, align):
+    
 
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""

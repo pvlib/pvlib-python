@@ -742,15 +742,15 @@ def _calc_stats(data, samples_per_window, sample_interval, align):
 
     Returns
     -------
-    data_mean : np.array
+    data_mean : Series
         mean of data in each window
-    data_max : np.array
+    data_max : Series
         maximum of data in each window
-    data_line_length : np.array
+    data_line_length : Series
         length of line segments connecting successive data points
-    data_slope_nstd : np.array
+    data_slope_nstd : Series
         standard deviation of difference between data points in each window
-    data_slope : np.array
+    data_slope : Series
         difference between successive data points
     """
 
@@ -776,7 +776,7 @@ def _calc_stats(data, samples_per_window, sample_interval, align):
 
 
 def _calc_slope_nstd(data):
-    return np.diff(data).std() / data.mean()
+    return np.diff(data).std(ddof=1) / data.mean()
 
 
 def _shift_from_align(align, window):

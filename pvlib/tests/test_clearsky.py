@@ -629,7 +629,7 @@ def test__calc_stats():
                          np.sqrt(2), np.sqrt(2)])
     slope_nstd = diff_std / mean_x
     slope = x.diff().shift(-1)
-    
+
     expected = {}
     for align in alignments:
         expected[align] = {}
@@ -652,7 +652,22 @@ def test__calc_stats():
         assert_series_equal(res_line_length, expected[align]['line_length'])
         assert_series_equal(res_slope_nstd, expected[align]['slope_nstd'])
         assert_series_equal(res_slope, expected[align]['slope'])
-   
+
+
+def test_calc_c5():
+    alignments = ['left', 'center', 'right']
+    ms = pd.Series(np.array([1., 0., 2., 5., -10.]))
+    cs = pd.Series(np.array([0., 0., 1., 1., 0.]))
+    limit = 2.
+    expected = {}
+    expected['left'] = pd.Series([1., 4., 10., np.nan, np.nan]) < limit
+    expected['center'] = pd.Series([np.nan, 1., 4., 10., np.nan]) < limit
+    expected['right'] = pd.Series([np.nan, np.nan, 1., 4., 10.]) < limit
+    # here test for window=3
+    for align in alignments:
+        result = clearsky._calc_c5(ms, cs, window=3, align=align, limit=limit)
+        assert_series_equal(result, expected[align])
+
 
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""

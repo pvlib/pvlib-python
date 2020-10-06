@@ -614,8 +614,46 @@ def test_detect_clearsky_irregular_times(detect_clearsky_data):
         clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values,
                                  times, 10)
 
-def test__calc_stats(data, samples_per_window, sample_interval, align):
+
+def test__calc_stats():
+    # assumes window=3
+    alignments = ['left', 'center', 'right']
+    shift = {k: s for k, s in zip(alignments, [-2, -1, 0])}
+    x = pd.Series(np.arange(0, 7)**2.)
+    # all assume right align
+    # line length between adjacent points
+    sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
+    mean_x = pd.Series(np.array([np.nan, np.nan, 5, 14, 29, 50, 77]) / 3.)
+    max_x = pd.Series(np.array([np.nan, np.nan, 4, 9, 16, 25, 36]))
+    diff_std = np.array([np.nan, np.nan, np.std([1, 3], ddof=1),
+                         np.std([3, 5], ddof=1), np.std([5, 7], ddof=1),
+                         np.std([7, 9], ddof=1), np.std([9, 11], ddof=1)])
+    slope_nstd = diff_std / mean_x
+    slope = x.diff().shift(-1)
     
+    expected = {}
+    for align in alignments:
+        expected[align] = {}
+        s = shift[align]
+        expected[align]['mean'] = mean_x.shift(s)
+        expected[align]['max'] = max_x.shift(s)
+        # slope between adjacent points
+        expected[align]['slope'] = slope
+        line_length = sqt + sqt.shift(-1)
+        expected[align]['line_length'] = line_length.shift(s + 1)
+        expected[align]['slope_nstd'] = slope_nstd.shift(s)
+        expected[align]['data'] = x
+    for align in expected:
+        data = expected[align]['data']
+        result = clearsky._calc_stats(data=data, window=3, sample_interval=1,
+                                      align=align)
+        res_mean, res_max, res_line_length, res_slope_nstd, res_slope = result
+        assert_series_equal(res_mean, expected[align]['mean'])
+        assert_series_equal(res_max, expected[align]['max'])
+        assert_series_equal(res_line_length, expected[align]['line_length'])
+        assert_series_equal(res_slope_nstd, expected[align]['slope_nstd'])
+        assert_series_equal(res_slope, expected[align]['slope'])
+   
 
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""

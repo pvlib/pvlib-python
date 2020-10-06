@@ -881,6 +881,223 @@ class LocalizedPVSystem(PVSystem, Location):
             f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
 
+class Array:
+    """
+    An Array is a set of of modules at a specific orientation.
+
+    Specifically, an array is defined by a tilt, azimuth, the
+    module parameters, the number of strings of modules and the
+    number of modules on each string.
+
+    Parameters
+    ----------
+    surface_tilt: float or array-like, default 0
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth: float or array-like, default 180
+        Azimuth angle of the module surface.
+        North=0, East=90, South=180, West=270.
+
+    albedo : None or float, default None
+        The ground albedo. If ``None``, will attempt to use
+        ``surface_type`` and ``irradiance.SURFACE_ALBEDOS``
+        to lookup albedo.
+
+    surface_type : None or string, default None
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
+        for valid values.
+
+    module : None or string, default None
+        The model name of the modules.
+        May be used to look up the module_parameters dictionary
+        via some other method.
+
+    module_type : None or string, default 'glass_polymer'
+         Describes the module's construction. Valid strings are 'glass_polymer'
+         and 'glass_glass'. Used for cell and module temperature calculations.
+
+    module_parameters : None, dict or Series, default None
+        Module parameters as defined by the SAPM, CEC, or other.
+
+    temperature_model_parameters : None, dict or Series, default None.
+        Temperature model parameters as defined by the SAPM, Pvsyst, or other.
+
+    modules_per_string: int, default 1
+        Number of modules per string in the array.
+
+    strings: int, default 1
+        Number of strings in the array.
+
+    racking_model : None or string, default 'open_rack'
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
+
+    """
+
+    def __init__(self,
+                 surface_tilt=0, surface_azimuth=180,
+                 albedo=None, surface_type=None,
+                 module=None, module_type=None,
+                 module_parameters=None,
+                 temperature_model_parameters=None,
+                 modules_per_string=1, strings=1,
+                 racking_model=None):
+        self.surface_tilt = surface_tilt
+        self.surface_azimuth = surface_azimuth
+
+        # TODO now would be a good time to address the suggestion above:
+        #      'could tie these together with @property'
+        self.surface_type = surface_type
+        if albedo is None:
+            self.albedo = irradiance.SURFACE_ALBEDOS.get(surface_type, 0.25)
+        else:
+            self.albedo = None
+
+        # TODO now would be a good time to address the suggestion above:
+        #      'could tie these together with @property'
+        self.module = module
+        if module_parameters is None:
+            self.module_parameters = {}
+        else:
+            self.module_parameters = module_parameters
+
+        self.module_type = module_type
+        self.racking_model = racking_model
+
+        self.strings = strings
+        self.modules_per_string = modules_per_string
+
+        self.temperature_model_parameters = temperature_model_parameters
+
+    def __repr__(self):
+        attrs = ['surface_tilt', 'surface_azimuth', 'module',
+                 'albedo', 'racking_model', 'module_type',
+                 'temperature_model_parameters',
+                 'strings', 'modules_per_string']
+        return 'Array:\n ' + '\n  '.join(
+            f'{attr}: {getattr(self, attr)}' for attr in attrs
+        )
+
+    def get_aoi(self, solar_zenith, solar_azimuth):
+        """
+        Get the angle of incidence on the array.
+
+        Parameters
+        ----------
+        solar_zenith : float or Series
+            Solar zenith angle.
+        solar_azimuth : float or Series
+            Solar azimuth angle
+
+        Returns
+        -------
+        aoi : Series
+            Then angle of incidence.
+        """
+        return irradiance.aoi(self.surface_tilt, self.surface_azimuth,
+                              solar_zenith, solar_azimuth)
+
+    def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
+                       dni_extra=None, airmass=None, model='haydavies',
+                       **kwargs):
+        """
+        Get plane of array irradiance components.
+
+        Uses the :py:func:`irradiance.get_total_irradiance` function to
+        calculate the plane of array irradiance components for a surface
+        defined by ``self.surface_tilt`` and ``self.surface_azimuth`` with
+        albedo ``self.albedo``.
+
+        Parameters
+        ----------
+        solar_zenith : float or Series.
+            Solar zenith angle.
+        solar_azimuth : float or Series.
+            Solar azimuth angle.
+        dni : float or Series
+            Direct Normal Irradiance
+        ghi : float or Series
+            Global horizontal irradiance
+        dhi : float or Series
+            Diffuse horizontal irradiance
+        dni_extra : None, float or Series, default None
+            Extraterrestrial direct normal irradiance
+        airmass : None, float or Series, default None
+            Airmass
+        model : String, default 'haydavies'
+            Irradiance model.
+
+        kwargs
+            Extra parameters passed to :func:`irradiance.get_total_irradiance`.
+
+        Returns
+        -------
+        poa_irradiance : DataFrame
+            Column names are: ``total, beam, sky, ground``.
+        """
+        # TODO address code duplication
+        # not needed for all models, but this is easier
+        if dni_extra is None:
+            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
+
+        if airmass is None:
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
+
+        return irradiance.get_total_irradiance(self.surface_tilt,
+                                               self.surface_azimuth,
+                                               solar_zenith, solar_azimuth,
+                                               dni, ghi, dhi,
+                                               dni_extra=dni_extra,
+                                               airmass=airmass,
+                                               model=model,
+                                               albedo=self.albedo,
+                                               **kwargs)
+
+    def get_iam(self, aoi, iam_model='physical'):
+        """
+        Determine the incidence angle modifier using the method specified by
+        ``iam_model``.
+
+        Parameters for the selected IAM model are expected to be in
+        ``PVSystem.module_parameters``. Default parameters are available for
+        the 'physical', 'ashrae' and 'martin_ruiz' models.
+
+        Parameters
+        ----------
+        aoi : numeric
+            The angle of incidence in degrees.
+
+        aoi_model : string, default 'physical'
+            The IAM model to be used. Valid strings are 'physical', 'ashrae',
+            'martin_ruiz' and 'sapm'.
+
+        Returns
+        -------
+        iam : numeric
+            The AOI modifier.
+
+        Raises
+        ------
+        ValueError if `iam_model` is not a valid model name.
+        """
+        # TODO address code duplication
+        model = iam_model.lower()
+        if model in ['ashrae', 'physical', 'martin_ruiz']:
+            param_names = iam._IAM_MODEL_PARAMS[model]
+            kwargs = _build_kwargs(param_names, self.module_parameters)
+            func = getattr(iam, model)
+            return func(aoi, **kwargs)
+        elif model == 'sapm':
+            return iam.sapm(aoi, self.module_parameters)
+        elif model == 'interp':
+            raise ValueError(model + ' is not implemented as an IAM model'
+                             'option for PVSystem')
+        else:
+            raise ValueError(model + ' is not a valid IAM model')
+
+
 def calcparams_desoto(effective_irradiance, temp_cell,
                       alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
                       EgRef=1.121, dEgdT=-0.0002677,

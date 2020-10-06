@@ -701,12 +701,6 @@ class PVSystem:
                     ivcurve_pnts=None):
         """Wrapper around the :py:func:`pvlib.pvsystem.singlediode` function.
 
-        Parameters
-        ----------
-        See :py:func:`pvsystem.singlediode` for details
-
-        Returns
-        -------
         See :py:func:`pvsystem.singlediode` for details
         """
         return singlediode(photocurrent, saturation_current,
@@ -717,12 +711,6 @@ class PVSystem:
                  saturation_current, photocurrent):
         """Wrapper around the :py:func:`pvlib.pvsystem.i_from_v` function.
 
-        Parameters
-        ----------
-        See :py:func:`pvsystem.i_from_v` for details
-
-        Returns
-        -------
         See :py:func:`pvsystem.i_from_v` for details
         """
         return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
@@ -733,12 +721,6 @@ class PVSystem:
         """Uses :py:func:`pvlib.inverter.sandia` to calculate AC power based on
         ``self.inverter_parameters`` and the input voltage and power.
 
-        Parameters
-        ----------
-        See :py:func:`pvlib.inverter.sandia` for details
-
-        Returns
-        -------
         See :py:func:`pvlib.inverter.sandia` for details
         """
         return inverter.sandia(v_dc, p_dc, self.inverter_parameters)
@@ -747,12 +729,6 @@ class PVSystem:
         """Uses :py:func:`pvlib.inverter.adr` to calculate AC power based on
         ``self.inverter_parameters`` and the input voltage and power.
 
-        Parameters
-        ----------
-        See :py:func:`pvlib.inverter.adr` for details
-
-        Returns
-        -------
         See :py:func:`pvlib.inverter.adr` for details
         """
         return inverter.adr(v_dc, p_dc, self.inverter_parameters)

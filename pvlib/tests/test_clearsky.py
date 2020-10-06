@@ -625,9 +625,8 @@ def test__calc_stats():
     sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
     mean_x = pd.Series(np.array([np.nan, np.nan, 5, 14, 29, 50, 77]) / 3.)
     max_x = pd.Series(np.array([np.nan, np.nan, 4, 9, 16, 25, 36]))
-    diff_std = np.array([np.nan, np.nan, np.std([1, 3], ddof=1),
-                         np.std([3, 5], ddof=1), np.std([5, 7], ddof=1),
-                         np.std([7, 9], ddof=1), np.std([9, 11], ddof=1)])
+    diff_std = np.array([np.nan, np.nan, np.sqrt(2), np.sqrt(2), np.sqrt(2),
+                         np.sqrt(2), np.sqrt(2)])
     slope_nstd = diff_std / mean_x
     slope = x.diff().shift(-1)
     

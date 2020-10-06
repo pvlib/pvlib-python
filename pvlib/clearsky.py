@@ -823,8 +823,7 @@ def _calc_c5(meas_slope, clear_slope, window, align, limit):
     shift = _shift_from_align(align, window)
     center = align == 'center'
     slope_diff = np.abs(meas_slope - clear_slope)
-    slope_diff = slope_diff.rolling(
-        window - 1, center=center).max().shift(shift + 1)
+    slope_diff = slope_diff.rolling(window, center=center).max()
     return slope_diff < limit
 
 
@@ -989,7 +988,8 @@ def detect_clearsky(measured, clearsky, times, window_length,
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
-        c5 = _calc_c5(meas_slope, alpha * clear_slope, samples_per_window,
+        # need to reduce window by 1 since slope is differenced already
+        c5 = _calc_c5(meas_slope, alpha * clear_slope, samples_per_window - 1,
                       align, slope_dev)
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6

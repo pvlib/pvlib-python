@@ -13,7 +13,7 @@ def set_weather_data(obj):
                               periods=14400)
     obj.poa = pd.Series(1000, index=obj.times)
     obj.tamb = pd.Series(20, index=obj.times)
-    obj.windspeed = pd.Series(2, index=obj.times)
+    obj.wind_speed = pd.Series(2, index=obj.times)
 
 
 class SAPM:
@@ -35,7 +35,7 @@ class SAPM:
 
     def time_sapm_cell(self):
         # use version-appropriate wrapper
-        self.sapm_cell_wrapper(self.poa, self.tamb, self.windspeed)
+        self.sapm_cell_wrapper(self.poa, self.tamb, self.wind_speed)
 
 
 class Fuentes:

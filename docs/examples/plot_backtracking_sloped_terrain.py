@@ -2,7 +2,7 @@
 Backtracking on sloped terrain
 ==============================
 
-Modeling backtracking for single-axis tracker arrays built on sloped terrain.
+Modeling backtracking for single-axis tracker arrays on sloped terrain.
 """
 
 # %%
@@ -19,7 +19,59 @@ Modeling backtracking for single-axis tracker arrays built on sloped terrain.
 # array geometry parameters and :py:func:`pvlib.tracking.singleaxis` to
 # calculate the backtracking angles.
 #
-# First, let's plot the simple case where the tracker axes are at right angles
+# Angle conventions
+# -----------------
+#
+# First let's go over the sign conventions used for angles. In contrast to
+# fixed-tilt arrays, the convention for the azimuth angle of a single-axis
+# tracker array is along the tracker axis. Note that the axis azimuth is
+# a property of the array and is distinct from the azimuth of the panel
+# orientation, which changes based on tracker angle.
+# Because the tracker axis points in two directions, there are two choices for
+# the axis azimuth angle, and by convention (at least in the northern
+# hemisphere), the more southward angle is chosen:
+#
+# .. image:: ../_images/tracker_azimuth_angle_convention.png
+#   :alt: Image showing the azimuth convention for single-axis tracker arrays.
+#   :width: 500
+#   :align: center
+#
+# Note that, as with fixed-tilt arrays, the axis azimuth is determined as the
+# angle clockwise from north.
+#
+# Using the axis azimuth convention above, the sign convention for tracker
+# rotations is given by the
+# `right-hand rule <https://en.wikipedia.org/wiki/Right-hand_rule>`_.
+# Point the right hand thumb along the axis in the direction of the axis
+# azimuth and the fingers curl in the direction of positive rotation angle:
+#
+# .. image:: ../_images/tracker_rotation_angle_convention.png
+#   :alt: Image showing the rotation sign convention for single-axis trackers.
+#   :width: 500
+#   :align: center
+#
+# So for an array with ``axis_azimuth=180`` (tracker axis aligned perfectly
+# north-south), pointing the right-hand thumb along the axis azimuth has the
+# fingers curling towards the west, meaning rotations towards the west are
+# positive and rotations towards the east are negative.
+#
+# The sign convention for ground slope follows the same convention -- align
+# the right-hand thumb along the tracker axis in the direction of the axis
+# azimuth and the fingers curl towards positive angles. So in this example,
+# with the axis azimuth coming out of the page, an east-facing slope is a
+# negative rotation from horizontal:
+#
+# .. image:: ../_images/ground_slope_angle_convention.png
+#   :alt: Image showing the ground slope sign convention.
+#   :width: 500
+#   :align: center
+#
+
+# %%
+# Rotation curves
+# ---------------
+#
+# Now, let's plot the simple case where the tracker axes are at right angles
 # to the direction of the slope.  In this case, the cross-axis tilt angle
 # is the same as the slope of the terrain and the tracker axis itself is
 # horizontal.
@@ -52,7 +104,7 @@ for cross_axis_tilt in [0, 5, 10]:
         cross_axis_tilt=cross_axis_tilt)
 
     backtracking_position = tracker_data['tracker_theta'].fillna(0)
-    label = r'$\beta_c$: {}°'.format(cross_axis_tilt)
+    label = 'cross-axis tilt: {}°'.format(cross_axis_tilt)
     backtracking_position.plot(label=label, ax=ax)
 
 plt.legend()
@@ -64,11 +116,7 @@ plt.show()
 # For example, unlike the flat-terrain backtracking curve, the sloped-terrain
 # curves do not approach zero at the end of the day. Because of the vertical
 # offset between rows introduced by the sloped terrain, the trackers can be
-# slightly tilted without shading each other:
-#
-# TODO: RHR image
-#
-# TODO: talk about RHR
+# slightly tilted without shading each other.
 #
 # Now let's examine the general case where the terrain slope makes an
 # inconvenient angle to the tracker axes. For example, consider an array
@@ -87,10 +135,8 @@ axis_azimuth = 180  # tracker axis is still N-S
 axis_tilt = tracking.calc_axis_tilt(slope_azimuth, slope_tilt, axis_azimuth)
 
 # calculate the cross-axis tilt:
-cross_axis_tilt = tracking.calc_cross_axis_tilt(slope_azimuth,
-                                                slope_tilt,
-                                                axis_azimuth,
-                                                axis_tilt)
+cross_axis_tilt = tracking.calc_cross_axis_tilt(slope_azimuth, slope_tilt,
+                                                axis_azimuth, axis_tilt)
 
 print('Axis tilt:', '{:0.01f}°'.format(axis_tilt))
 print('Cross-axis tilt:', '{:0.01f}°'.format(cross_axis_tilt))

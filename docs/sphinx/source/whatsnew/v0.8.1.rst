@@ -26,7 +26,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Add gallery example about backtracking on sloped terrain. (:pull:`1077`)
 
 Requirements
 ~~~~~~~~~~~~

@@ -851,7 +851,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
-                    align='left', return_components=False):
+                    return_components=False):
     """
     Detects clear sky times according to the algorithm developed by Reno
     and Hansen for GHI measurements. The algorithm [1]_ was designed and
@@ -903,9 +903,6 @@ def detect_clearsky(measured, clearsky, times, window_length,
     max_iterations : int, default 20
         Maximum number of times to apply a different scaling factor to
         the clearsky and redetermine clear_samples. Must be 1 or larger.
-    align : bool, default 'left'
-        Alignment of labels to data in sliding window. Must be one of
-        'left', 'center', 'right'.
     return_components : bool, default False
         Controls if additional output should be returned. See below.
 
@@ -945,6 +942,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
         * parameters are controllable via keyword arguments
         * option to return individual test components and clearsky scaling
           parameter
+        * uses centered windows (Matlab function uses left-aligned windows)
     """
 
     # be polite about returning the same type as was input
@@ -970,16 +968,16 @@ def detect_clearsky(measured, clearsky, times, window_length,
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_line_length, meas_slope_nstd, meas_slope \
-        = _calc_stats(meas, samples_per_window, sample_interval, align)
+        = _calc_stats(meas, samples_per_window, sample_interval, 'center')
 
     # calculate clear sky statistics
     clear_mean, clear_max, _, _, clear_slope \
-        = _calc_stats(clear, samples_per_window, sample_interval, align)
+        = _calc_stats(clear, samples_per_window, sample_interval, 'center')
 
     alpha = 1
     for iteration in range(max_iterations):
         _, _, clear_line_length, _, _ = _calc_stats(
-            alpha * clear, samples_per_window, sample_interval, align)
+            alpha * clear, samples_per_window, sample_interval, 'center')
 
         line_diff = meas_line_length - clear_line_length
 
@@ -990,14 +988,15 @@ def detect_clearsky(measured, clearsky, times, window_length,
         c4 = meas_slope_nstd < var_diff
         # need to reduce window by 1 since slope is differenced already
         c5 = _calc_c5(meas_slope, alpha * clear_slope, samples_per_window - 1,
-                      align, slope_dev)
+                      'center', slope_dev)
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
         # create array to return
         clear_samples = np.full_like(meas, False, dtype='bool')
         # find the samples contained in any window classified as clear
-        idx = _clear_sample_index(clear_windows, samples_per_window, align, H)
+        idx = _clear_sample_index(clear_windows, samples_per_window, 'center',
+                                  H)
         clear_samples[idx] = True
 
         # find a new alpha

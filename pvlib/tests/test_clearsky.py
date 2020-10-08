@@ -617,8 +617,8 @@ def test_detect_clearsky_irregular_times(detect_clearsky_data):
 
 def test__calc_stats():
     # assumes window=3
-    alignments = ['left', 'center', 'right']
-    shift = {k: s for k, s in zip(alignments, [-2, -1, 0])}
+    alignments = ['center']  # 'left' and 'right' could be added in the future
+    shift = {'center': -1}  # 'left': -2, 'right': 0
     x = pd.Series(np.arange(0, 7)**2.)
     # all assume right align
     # line length between adjacent points
@@ -655,7 +655,7 @@ def test__calc_stats():
 
 
 def test_calc_c5():
-    alignments = ['left', 'center', 'right']
+    alignments = ['center']  # 'left' and 'right' could be added in the future
     ms = pd.Series(np.array([1., 0., 2., 5., -10.]))
     cs = pd.Series(np.array([0., 0., 1., 1., 0.]))
     limit = 2.

@@ -6,8 +6,8 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 """
 
 # %%
-# Tracker systems avoid row-to-row shading when the sun is low in the sky
-# by backtracking. The backtracking strategy orients the modules exactly
+# Tracker systems use backtracking to avoid row-to-row shading when the
+# sun is low in the sky. The backtracking strategy orients the modules exactly
 # on the boundary between shaded and unshaded so that the modules are oriented
 # as much towards the sun as possible while still remaining unshaded.
 # Unlike the truetracking calculation (which only depends on solar position),
@@ -23,10 +23,10 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 # -----------------
 #
 # First let's go over the sign conventions used for angles. In contrast to
-# fixed-tilt arrays, the convention for the azimuth angle of a single-axis
-# tracker array is along the tracker axis. Note that the axis azimuth is
+# fixed-tilt arrays where the azimuth is that of the normal to the panels, the convention
+# for the azimuth of a single-axis tracker is along the tracker axis. Note that the axis azimuth is
 # a property of the array and is distinct from the azimuth of the panel
-# orientation, which changes based on tracker angle.
+# orientation, which changes based on tracker rotation angle.
 # Because the tracker axis points in two directions, there are two choices for
 # the axis azimuth angle, and by convention (at least in the northern
 # hemisphere), the more southward angle is chosen:
@@ -58,7 +58,7 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 # The sign convention for ground slope follows the same convention -- align
 # the right-hand thumb along the tracker axis in the direction of the axis
 # azimuth and the fingers curl towards positive angles. So in this example,
-# with the axis azimuth coming out of the page, an east-facing slope is a
+# with the axis azimuth coming out of the page, an east-facing, downward slope is a
 # negative rotation from horizontal:
 #
 # .. image:: ../_images/ground_slope_angle_convention.png

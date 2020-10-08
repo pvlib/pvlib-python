@@ -37,7 +37,10 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 #   :align: center
 #
 # Note that, as with fixed-tilt arrays, the axis azimuth is determined as the
-# angle clockwise from north.
+# angle clockwise from north. The azimuth of the terrain's slope is also
+# determined as an angle clockwise from north, pointing in the direction
+# of falling slope. So for example, a hillside that slopes down to the east
+# has an azimuth of 90 degrees.
 #
 # Using the axis azimuth convention above, the sign convention for tracker
 # rotations is given by the
@@ -55,7 +58,9 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 # fingers curling towards the west, meaning rotations towards the west are
 # positive and rotations towards the east are negative.
 #
-# The sign convention for ground slope follows the same convention -- align
+# The ground slope itself is always positive, but the component of the slope
+# perpendicular to the tracker axes can be positive or negative. The convention
+# for the cross-axis slope angle follows the right-hand rule: align
 # the right-hand thumb along the tracker axis in the direction of the axis
 # azimuth and the fingers curl towards positive angles. So in this example,
 # with the axis azimuth coming out of the page, an east-facing, downward slope
@@ -127,8 +132,11 @@ plt.show()
 # cross-axis tilt angles are not immediately obvious. We can use pvlib
 # to calculate them for us:
 
-slope_azimuth = 155  # terrain slopes down to the south-south-east
-slope_tilt = 10  # terrain is sloped at 10 degrees from horizontal
+# terrain slopes 10 degrees downward to the south-south-east. note: because
+# slope_azimuth is defined in the direction of falling slope, slope_tilt is
+# always positive.
+slope_azimuth = 155
+slope_tilt = 10
 axis_azimuth = 180  # tracker axis is still N-S
 
 # calculate the tracker axis tilt, assuming that the axis follows the terrain:

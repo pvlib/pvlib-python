@@ -823,7 +823,7 @@ def _calc_c5(meas_slope, clear_slope, window, align, limit):
     shift = _shift_from_align(align, window)
     center = align == 'center'
     slope_diff = np.abs(meas_slope - clear_slope)
-    slope_diff = slope_diff.rolling(window, center=center).max()
+    slope_diff = slope_diff.rolling(window, center=center).max().shift(shift)
     return slope_diff < limit
 
 

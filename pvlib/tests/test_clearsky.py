@@ -644,8 +644,8 @@ def test__calc_stats():
         expected[align]['data'] = x
     for align in expected:
         data = expected[align]['data']
-        result = clearsky._calc_stats(data=data, window=3, sample_interval=1,
-                                      align=align)
+        result = clearsky._calc_stats(data=data, samples_per_window=3,
+                                      sample_interval=1, align=align)
         res_mean, res_max, res_line_length, res_slope_nstd, res_slope = result
         assert_series_equal(res_mean, expected[align]['mean'])
         assert_series_equal(res_max, expected[align]['max'])

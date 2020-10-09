@@ -13,7 +13,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Create :py:func:`~pvlib.pvsystem.PVSystem.fuentes_celltemp` and add `temperature_model='fuentes'``
+* Create :py:func:`~pvlib.pvsystem.PVSystem.fuentes_celltemp` and add ``temperature_model='fuentes'``
   option to :py:class:`~pvlib.modelchain.ModelChain`. (:pull:`1042`) (:issue:`1073`)
 * Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
   only NOCT. (:pull:`1045`)

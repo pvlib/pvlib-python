@@ -19,7 +19,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* Fix issue with :py:func:`pvlib.temperature.fuentes` with timezone-aware
+  inputs. (:issue:`1071`, :pull:`1072`)
 
 Testing
 ~~~~~~~
@@ -28,7 +29,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Add gallery example about backtracking on sloped terrain. (:pull:`1077`)
 
 Requirements
 ~~~~~~~~~~~~

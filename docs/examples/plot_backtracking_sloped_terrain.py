@@ -108,6 +108,7 @@ for cross_axis_tilt in [0, 5, 10]:
         gcr=gcr,
         cross_axis_tilt=cross_axis_tilt)
 
+    # tracker rotation is undefined at night
     backtracking_position = tracker_data['tracker_theta'].fillna(0)
     label = 'cross-axis tilt: {}°'.format(cross_axis_tilt)
     backtracking_position.plot(label=label, ax=ax)

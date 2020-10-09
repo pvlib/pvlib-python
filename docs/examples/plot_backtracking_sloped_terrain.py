@@ -10,7 +10,7 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 # sun is low in the sky. The backtracking strategy orients the modules exactly
 # on the boundary between shaded and unshaded so that the modules are oriented
 # as much towards the sun as possible while still remaining unshaded.
-# Unlike the truetracking calculation (which only depends on solar position),
+# Unlike the true-tracking calculation (which only depends on solar position),
 # calculating the backtracking angle requires knowledge of the relative spacing
 # of adjacent tracker rows. This example shows how the backtracking angle
 # changes based on a vertical offset between rows caused by sloped terrain.

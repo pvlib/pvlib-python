@@ -431,7 +431,8 @@ class PVSystem:
         numeric, values in degrees C.
         """
         # warn user about change in default behavior in 0.9.
-        if (self.temperature_model_parameters == {}
+        temperature_model_params = self._array.temperature_model_parameters
+        if (temperature_model_params == {}
                 and self._array.module_type is None
                 and self._array.racking_model is None):
             warnings.warn(
@@ -444,27 +445,12 @@ class PVSystem:
                 pvlibDeprecationWarning)
             params = temperature._temperature_model_params(
                 'sapm', 'open_rack_glass_glass')
-            self.temperature_model_parameters = params
+            temperature_model_params = params
 
         kwargs = _build_kwargs(['a', 'b', 'deltaT'],
-                               self.temperature_model_parameters)
+                               temperature_model_params)
         return temperature.sapm_cell(poa_global, temp_air, wind_speed,
                                      **kwargs)
-
-    def _infer_temperature_model_params(self):
-        # try to infer temperature model parameters from from racking_model
-        # and module_type
-        param_set = f'{self._array.racking_model}_{self._array.module_type}'
-        if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
-            return temperature._temperature_model_params('sapm', param_set)
-        elif 'freestanding' in param_set:
-            return temperature._temperature_model_params('pvsyst',
-                                                         'freestanding')
-        elif 'insulated' in param_set:  # after SAPM to avoid confusing keys
-            return temperature._temperature_model_params('pvsyst',
-                                                         'insulated')
-        else:
-            return {}
 
     def sapm_spectral_loss(self, airmass_absolute):
         """
@@ -539,7 +525,7 @@ class PVSystem:
         kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
                                self._array.module_parameters)
         kwargs.update(_build_kwargs(['u_c', 'u_v'],
-                                    self.temperature_model_parameters))
+                                    self._array.temperature_model_parameters))
         return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
                                        **kwargs)
 
@@ -565,7 +551,7 @@ class PVSystem:
         numeric, values in degrees C.
         """
         kwargs = _build_kwargs(['u0', 'u1'],
-                               self.temperature_model_parameters)
+                               self._array.temperature_model_parameters)
         return temperature.faiman(poa_global, temp_air, wind_speed,
                                   **kwargs)
 
@@ -937,16 +923,35 @@ class Array:
         self.strings = strings
         self.modules_per_string = modules_per_string
 
-        self.temperature_model_parameters = temperature_model_parameters
+        if temperature_model_parameters is None:
+            self.temperature_model_parameters = \
+                self._infer_temperature_model_params()
+        else:
+            self.temperature_model_parameters = temperature_model_parameters
 
     def __repr__(self):
         attrs = ['surface_tilt', 'surface_azimuth', 'module',
                  'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters',
                  'strings', 'modules_per_string']
-        return 'Array:\n ' + '\n  '.join(
+        return 'Array:\n  ' + '\n  '.join(
             f'{attr}: {getattr(self, attr)}' for attr in attrs
         )
+
+    def _infer_temperature_model_params(self):
+        # try to infer temperature model parameters from from racking_model
+        # and module_type
+        param_set = f'{self.racking_model}_{self.module_type}'
+        if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
+            return temperature._temperature_model_params('sapm', param_set)
+        elif 'freestanding' in param_set:
+            return temperature._temperature_model_params('pvsyst',
+                                                         'freestanding')
+        elif 'insulated' in param_set:  # after SAPM to avoid confusing keys
+            return temperature._temperature_model_params('pvsyst',
+                                                         'insulated')
+        else:
+            return {}
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """
@@ -1005,7 +1010,6 @@ class Array:
         poa_irradiance : DataFrame
             Column names are: ``total, beam, sky, ground``.
         """
-        # TODO address code duplication
         # not needed for all models, but this is easier
         if dni_extra is None:
             dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
@@ -1050,7 +1054,6 @@ class Array:
         ------
         ValueError if `iam_model` is not a valid model name.
         """
-        # TODO address code duplication
         model = iam_model.lower()
         if model in ['ashrae', 'physical', 'martin_ruiz']:
             param_names = iam._IAM_MODEL_PARAMS[model]

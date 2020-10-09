@@ -360,19 +360,19 @@ def test_PVSystem_faiman_celltemp(mocker):
     assert_allclose(out, 56.4, atol=1)
 
 
-def test__infer_temperature_model_params():
-    system = pvsystem.PVSystem(module_parameters={},
-                               racking_model='open_rack',
-                               module_type='glass_polymer')
+def test_Array__infer_temperature_model_params():
+    array = pvsystem.Array(module_parameters={},
+                            racking_model='open_rack',
+                            module_type='glass_polymer')
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'sapm']['open_rack_glass_polymer']
-    assert expected == system._infer_temperature_model_params()
-    system = pvsystem.PVSystem(module_parameters={},
-                               racking_model='freestanding',
-                               module_type='glass_polymer')
+    assert expected == array._infer_temperature_model_params()
+    array = pvsystem.Array(module_parameters={},
+                           racking_model='freestanding',
+                           module_type='glass_polymer')
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['freestanding']
-    assert expected == system._infer_temperature_model_params()
+    assert expected == array._infer_temperature_model_params()
 
 
 def test_calcparams_desoto(cec_module_params):

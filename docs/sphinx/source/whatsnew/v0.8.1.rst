@@ -13,6 +13,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
+  only NOCT. (:pull:`1045`)
 
 
 Bug fixes
@@ -36,3 +38,5 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Cliff Hansen (:ghuser:`cwhanse`)

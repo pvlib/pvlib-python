@@ -124,6 +124,14 @@ def test_faiman_ndarray():
     assert_allclose(expected, result, 3)
 
 
+def test_ross():
+    result = temperature.ross(np.array([1000., 600., 1000.]),
+                              np.array([20., 40., 60.]),
+                              np.array([40., 100., 20.]))
+    expected = np.array([45., 100., 60.])
+    assert_allclose(expected, result)
+
+
 def test_faiman_series():
     times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12H")
     temps = pd.Series([0, 10, 5], index=times)
@@ -190,3 +198,17 @@ def test_fuentes(filename, inoct):
     night_difference = expected_tcell[is_night] - actual_tcell[is_night]
     assert night_difference.max() < 6
     assert night_difference.min() > 0
+
+
+@pytest.mark.parametrize('tz', [None, 'Etc/GMT+5'])
+def test_fuentes_timezone(tz):
+    index = pd.date_range('2019-01-01', freq='h', periods=3, tz=tz)
+
+    df = pd.DataFrame({'poa_global': 1000, 'temp_air': 20, 'wind_speed': 1},
+                      index)
+
+    out = temperature.fuentes(df['poa_global'], df['temp_air'],
+                              df['wind_speed'], noct_installed=45)
+
+    assert_series_equal(out, pd.Series([47.85, 50.85, 50.85], index=index,
+                                       name='tmod'))

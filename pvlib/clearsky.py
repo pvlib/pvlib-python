@@ -763,8 +763,6 @@ def _calc_stats(data, samples_per_window, sample_interval, align):
     # shift to get forward difference, .diff() is backward difference instead
     data_diff = data.diff().shift(-1)
     data_slope = data_diff / sample_interval
-    # because data_slope_nstd is calculated on differenes the window is
-    # shortened by 1.  :gh:issue:`1070`
     data_slope_nstd = data.rolling(samples_per_window, center=center).apply(
         _calc_slope_nstd)
     data_slope_nstd = data_slope_nstd.shift(shift)
@@ -780,13 +778,18 @@ def _calc_slope_nstd(data):
 
 
 def _shift_from_align(align, window):
+    # number of places to shift to line up pandas.Series.rolling with
+    # align value.
     # pandas.Series.rolling uses kwarg center with values of True or False
     # default is False which means right aligned labels by default
-    # calculate shift to align='left' (legacy pvlib behavior)
-    if align == 'left':
-        shift = 1 - window
-    else:
-        shift = 0
+    # center=True aligns to center
+    # Here, calculate shift to align='left' (legacy pvlib behavior)
+    # code here for future capability if align='left', 'right' are of interest
+    # commented out to avoid decreasing test coverage
+#    if align == 'left':
+#    else:
+#        shift = 0
+    shift = 0
     return shift
 
 
@@ -819,14 +822,14 @@ def _calc_line_length(data, sample_interval):
     return np.sum(np.sqrt(np.diff(data)**2 + sample_interval**2))
 
 
-def _calc_c5(meas_slope, clear_slope, window, align, limit):
-    shift = _shift_from_align(align, window)
-    # because input is differenced already (slopes), subtract 1 from window and
-    # add 1 to shift
+def _maxdiff(s):
+    return np.abs(np.diff(s)).max()
+
+
+def _calc_c5(meas, clear, window, align, limit):
     center = align == 'center'
-    slope_diff = np.abs(meas_slope - clear_slope)
-    slope_diff = slope_diff.rolling(window - 1, center=center).max().shift(
-        shift + 1)
+    irrad_diff = meas - clear
+    slope_diff = irrad_diff.rolling(window, center=center).apply(_maxdiff)
     return slope_diff < limit
 
 
@@ -834,16 +837,17 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     """
     Returns indices of clear samples in clear windows
     """
+    # first window is in first column of H. clear_windows is aligned by 'align'
+    # shift clear_windows.index so that first window is in left position, lined
+    # up with column of H containing the indices of the first window
     if align == 'right':
         shift = 1 - samples_per_window
     elif align == 'center':
         shift = - (samples_per_window // 2)
     else:
         shift = 0
-    # first window is in first column of H. clear_windows is aligned by 'align'
-    # shift clear_windows so that first window is in left position, lined up
-    # with first column of H
     idx = clear_windows.shift(shift)
+    # drop rows at the end corresponding to windows past the end of data
     idx.drop(clear_windows.tail(samples_per_window - 1).index, inplace=True)
     idx = idx.astype(bool)  # shift added nan, changed type to object
     clear_samples = np.unique(H[:, idx])
@@ -989,7 +993,8 @@ def detect_clearsky(measured, clearsky, times, window_length,
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
-        c5 = _calc_c5(meas_slope, alpha * clear_slope, samples_per_window,
+        # need to reduce window by 1 since slope is differenced already
+        c5 = _calc_c5(meas, alpha * clear, samples_per_window,
                       'center', slope_dev)
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6

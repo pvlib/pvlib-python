@@ -52,7 +52,7 @@ def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
     """
     if pvsystem is not None:
         pv_dict = pvsystem.__dict__
-        pv_dict = {**pv_dict, **pv_dict['_array'].__dict__}
+        pv_dict = {**pv_dict, **pv_dict['_arrays'][0].__dict__}
     else:
         pv_dict = {}
 
@@ -65,6 +65,22 @@ def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
         list(pv_dict.items()) + list(loc_dict.items()) + list(kwargs.items())
     )
     return new_kwargs
+
+
+def singleton_as_scalar(func):
+    """Return a scalar if `func` returns a singleton list.
+
+    Parameters
+    ----------
+    func : funciton
+        A function that returns a list-like object.
+    """
+    def f(*args, **kwargs):
+        x = func(*args, **kwargs)
+        if len(x) == 1:
+            return x[0]
+        return x
+    return f
 
 
 # not sure if this belongs in the pvsystem module.
@@ -175,7 +191,7 @@ class PVSystem:
                  racking_model=None, losses_parameters=None, name=None,
                  **kwargs):
 
-        self._array = Array(
+        self._arrays = [Array(
             surface_tilt,
             surface_azimuth,
             albedo,
@@ -187,7 +203,7 @@ class PVSystem:
             modules_per_string,
             strings_per_inverter,
             racking_model
-        )
+        )]
 
         self.inverter = inverter
         if inverter_parameters is None:
@@ -215,6 +231,7 @@ class PVSystem:
         return ('PVSystem:\n  ' + '\n  '.join(
             f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
+    @singleton_as_scalar
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
 
@@ -231,8 +248,10 @@ class PVSystem:
             The angle of incidence
         """
 
-        return self._array.get_aoi(solar_zenith, solar_azimuth)
+        return [array.get_aoi(solar_zenith, solar_azimuth)
+                for array in self._arrays]
 
+    @singleton_as_scalar
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
@@ -269,12 +288,12 @@ class PVSystem:
         poa_irradiance : DataFrame
             Column names are: ``total, beam, sky, ground``.
         """
-        return self._array.get_irradiance(
-            solar_zenith, solar_azimuth,
-            dni, ghi, dhi,
-            dni_extra, airmass
-        )
+        return [array.get_irradiance(solar_zenith, solar_azimuth,
+                                     dni, ghi, dhi,
+                                     dni_extra, airmass)
+            for array in self._arrays]
 
+    @singleton_as_scalar
     def get_iam(self, aoi, iam_model='physical'):
         """
         Determine the incidence angle modifier using the method specified by
@@ -292,7 +311,6 @@ class PVSystem:
         aoi_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
             'martin_ruiz' and 'sapm'.
-
         Returns
         -------
         iam : numeric
@@ -302,7 +320,7 @@ class PVSystem:
         ------
         ValueError if `iam_model` is not a valid model name.
         """
-        return self._array.get_iam(aoi, iam_model)
+        return [array.get_iam(aoi, iam_model) for array in self._arrays]
 
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
@@ -833,60 +851,74 @@ class PVSystem:
         return LocalizedPVSystem(pvsystem=self, location=location)
 
     @property
+    @singleton_as_scalar
     def module_parameters(self):
-        return self._array.module_parameters
+        return [array.module_parameters for array in self._arrays]
 
     @property
+    @singleton_as_scalar
     def module(self):
-        return self._array.module
+        return [array.module for array in self._arrays]
 
     @property
+    @singleton_as_scalar
     def module_type(self):
-        return self._array.module_type
+        return [array.module_type for array in self._arrays]
 
     @property
+    @singleton_as_scalar
     def temperature_model_parameters(self):
-        return self._array.temperature_model_parameters
+        return [array.temperature_model_parameters for array in self._arrays]
 
     @temperature_model_parameters.setter
     def temperature_model_parameters(self, value):
-        self._array.temperature_model_parameters = value
+        for array in self._arrays:
+            array.temperature_model_parameters = value
 
     @property
+    @singleton_as_scalar
     def surface_tilt(self):
-        return self._array.surface_tilt
+        return [array.surface_tilt for array in self._arrays]
 
     @surface_tilt.setter
     def surface_tilt(self, value):
-        self._array.surface_tilt = value
+        for array in self._arrays:
+            array.surface_tilt = value
 
     @property
+    @singleton_as_scalar
     def surface_azimuth(self):
-        return self._array.surface_azimuth
+        return [array.surface_azimuth for array in self._arrays]
 
     @surface_azimuth.setter
     def surface_azimuth(self, value):
-        self._array.surface_azimuth = value
+        for array in self._arrays:
+            array.surface_azimuth = value
 
     @property
+    @singleton_as_scalar
     def albedo(self):
-        return self._array.albedo
+        return [array.albedo for array in self._arrays]
 
     @property
+    @singleton_as_scalar
     def racking_model(self):
-        return self._array.racking_model
+        return [array.racking_model for array in self._arrays]
 
     @racking_model.setter
     def racking_model(self, value):
-        self._array.racking_model = value
+        for array in self._arrays:
+            array.racking_model = value
 
     @property
+    @singleton_as_scalar
     def modules_per_string(self):
-        return self._array.modules_per_string
+        return [array.modules_per_string for array in self._arrays]
 
     @property
+    @singleton_as_scalar
     def strings_per_inverter(self):
-        return self._array.strings
+        return [array.strings for array in self._arrays]
 
 
 @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',

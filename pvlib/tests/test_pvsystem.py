@@ -362,8 +362,8 @@ def test_PVSystem_faiman_celltemp(mocker):
 
 def test_Array__infer_temperature_model_params():
     array = pvsystem.Array(module_parameters={},
-                            racking_model='open_rack',
-                            module_type='glass_polymer')
+                           racking_model='open_rack',
+                           module_type='glass_polymer')
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'sapm']['open_rack_glass_polymer']
     assert expected == array._infer_temperature_model_params()

@@ -13,11 +13,16 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Create :py:func:`~pvlib.pvsystem.PVSystem.fuentes_celltemp` and add ``temperature_model='fuentes'``
+  option to :py:class:`~pvlib.modelchain.ModelChain`. (:pull:`1042`) (:issue:`1073`)
+* Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
+  only NOCT. (:pull:`1045`)
 
 
 Bug fixes
 ~~~~~~~~~
-
+* Fix issue with :py:func:`pvlib.temperature.fuentes` with timezone-aware
+  inputs. (:issue:`1071`, :pull:`1072`)
 
 Testing
 ~~~~~~~
@@ -26,7 +31,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Add gallery example about backtracking on sloped terrain. (:pull:`1077`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -35,3 +40,5 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Cliff Hansen (:ghuser:`cwhanse`)

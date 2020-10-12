@@ -52,6 +52,7 @@ def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
     """
     if pvsystem is not None:
         pv_dict = pvsystem.__dict__
+        pv_dict = {**pv_dict, **pv_dict['_array'].__dict__}
     else:
         pv_dict = {}
 

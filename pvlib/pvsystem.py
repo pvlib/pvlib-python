@@ -994,7 +994,7 @@ class Array:
         if albedo is None:
             self.albedo = irradiance.SURFACE_ALBEDOS.get(surface_type, 0.25)
         else:
-            self.albedo = None
+            self.albedo = albedo
 
         # TODO now would be a good time to address the suggestion above:
         #      'could tie these together with @property'

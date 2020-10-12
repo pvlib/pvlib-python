@@ -377,9 +377,10 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
 def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     r'''
-    Calculate cell or module temperature using the Faiman model.  The Faiman
-    model uses an empirical heat loss factor model [1]_ and is adopted in the
-    IEC 61853 standards [2]_ and [3]_.
+    Calculate cell or module temperature using the Faiman model.
+
+    The Faiman model uses an empirical heat loss factor model [1]_ and is
+    adopted in the IEC 61853 standards [2]_ and [3]_.
 
     Usage of this model in the IEC 61853 standard does not distinguish
     between cell and module temperature.
@@ -441,6 +442,53 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     heat_input = poa_global
     temp_difference = heat_input / total_loss_factor
     return temp_air + temp_difference
+
+
+def ross(poa_global, temp_air, noct):
+    r'''
+    Calculate cell temperature using the Ross model.
+
+    The Ross model [1]_ assumes the difference between cell temperature
+    and ambient temperature is proportional to the plane of array irradiance,
+    and assumes wind speed of 1 m/s. The model implicitly assumes steady or
+    slowly changing irradiance conditions.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance. [W/m^2]
+
+    temp_air : numeric
+        Ambient dry bulb temperature. [C]
+
+    noct : numeric
+        Nominal operating cell temperature [C], determined at conditions of
+        800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
+
+    Returns
+    -------
+    cell_temperature : numeric
+        Cell temperature. [C]
+
+    Notes
+    -----
+    The Ross model for cell temperature :math:`T_{C}` is given in [1]_ as
+
+    .. math::
+
+        T_{C} = T_{a} + \frac{NOCT - 20}{80} S
+
+    where :math:`S` is the plane of array irradiance in :math:`mW/{cm}^2`.
+    This function expects irradiance in :math:`W/m^2`.
+
+    References
+    ----------
+    .. [1] Ross, R. G. Jr., (1981). "Design Techniques for Flat-Plate
+       Photovoltaic Arrays". 15th IEEE Photovoltaic Specialist Conference,
+       Orlando, FL.
+    '''
+    # factor of 0.1 converts irradiance from W/m2 to mW/cm2
+    return temp_air + (noct - 20.) / 80. * poa_global * 0.1
 
 
 def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
@@ -599,8 +647,9 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     # n.b. the way Fuentes calculates the first timedelta makes it seem like
     # the value doesn't matter -- rather than recreate it here, just assume
     # it's the same as the second timedelta:
-    timedelta_hours = np.diff(poa_global.index).astype(float) / 1e9 / 60 / 60
-    timedelta_hours = np.append([timedelta_hours[0]], timedelta_hours)
+    timedelta_seconds = poa_global.index.to_series().diff().dt.total_seconds()
+    timedelta_hours = timedelta_seconds / 3600
+    timedelta_hours.iloc[0] = timedelta_hours.iloc[1]
 
     tamb_array = temp_air + 273.15
     sun_array = poa_global * absorp

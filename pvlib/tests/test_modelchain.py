@@ -139,6 +139,18 @@ def pvwatts_dc_pvwatts_ac_pvsyst_temp_system():
 
 
 @pytest.fixture(scope="function")
+def pvwatts_dc_pvwatts_ac_fuentes_temp_system():
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_params = {'noct_installed': 45}
+    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
+                      inverter_parameters=inverter_parameters)
+    return system
+
+
+@pytest.fixture(scope="function")
 def system_no_aoi(cec_module_cs5p_220m, sapm_temperature_cs5p_220m,
                   cec_inverter_parameters):
     module_parameters = cec_module_cs5p_220m.copy()
@@ -317,6 +329,23 @@ def test_run_model_with_weather_faiman_temp(sapm_dc_snl_ac_system, location,
     assert not mc.ac.empty
 
 
+def test_run_model_with_weather_fuentes_temp(sapm_dc_snl_ac_system, location,
+                                             weather, mocker):
+    weather['wind_speed'] = 5
+    weather['temp_air'] = 10
+    sapm_dc_snl_ac_system.temperature_model_parameters = {
+        'noct_installed': 45
+    }
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.temperature_model = 'fuentes'
+    m_fuentes = mocker.spy(sapm_dc_snl_ac_system, 'fuentes_celltemp')
+    mc.run_model(weather)
+    assert m_fuentes.call_count == 1
+    assert_series_equal(m_fuentes.call_args[0][1], weather['temp_air'])
+    assert_series_equal(m_fuentes.call_args[0][2], weather['wind_speed'])
+    assert not mc.ac.empty
+
+
 def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
     system = SingleAxisTracker(
         module_parameters=sapm_dc_snl_ac_system.module_parameters,
@@ -479,14 +508,16 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
 
 
 @pytest.mark.parametrize('temp_model', [
-    'sapm_temp', 'faiman_temp', 'pvsyst_temp'])
+    'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp'])
 def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                           pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                           pvwatts_dc_pvwatts_ac_faiman_temp_system,
+                          pvwatts_dc_pvwatts_ac_fuentes_temp_system,
                           temp_model):
     dc_systems = {'sapm_temp': sapm_dc_snl_ac_system,
                   'pvsyst_temp': pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
-                  'faiman_temp': pvwatts_dc_pvwatts_ac_faiman_temp_system}
+                  'faiman_temp': pvwatts_dc_pvwatts_ac_faiman_temp_system,
+                  'fuentes_temp': pvwatts_dc_pvwatts_ac_fuentes_temp_system}
     system = dc_systems[temp_model]
     mc = ModelChain(system, location,
                     orientation_strategy='None', aoi_model='physical',

@@ -786,9 +786,10 @@ def _shift_from_align(align, window):
     # Here, calculate shift to align='left' (legacy pvlib behavior)
     # code here for future capability if align='left', 'right' are of interest
     # commented out to avoid decreasing test coverage
-#    if align == 'left':
-#    else:
-#        shift = 0
+    # if align == 'left':
+    #     shift = 1 - window
+    # else:
+    #     shift = 0
     shift = 0
     return shift
 

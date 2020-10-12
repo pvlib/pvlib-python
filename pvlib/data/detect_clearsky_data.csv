@@ -1,7 +1,7 @@
-# latitude:35.04,,
-# longitude:-106.62,,
-# elevation:1619,,
-# window_length:10,,
+# latitude:35.04
+# longitude:-106.62
+# elevation:1619
+# window_length:10
 Time (UTC),GHI,Clear or not
 4/1/2012 17:30,862.0935268,1
 4/1/2012 17:31,863.9298884,1

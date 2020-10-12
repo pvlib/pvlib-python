@@ -176,7 +176,7 @@ class PVSystem:
 
         self._array = Array(
             surface_tilt,
-            surface_tilt,
+            surface_azimuth,
             albedo,
             surface_type,
             module,

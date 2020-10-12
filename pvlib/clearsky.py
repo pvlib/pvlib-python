@@ -841,12 +841,14 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     # first window is in first column of H. clear_windows is aligned by 'align'
     # shift clear_windows.index so that first window is in left position, lined
     # up with column of H containing the indices of the first window
-    if align == 'right':
-        shift = 1 - samples_per_window
-    elif align == 'center':
-        shift = - (samples_per_window // 2)
-    else:
-        shift = 0
+    # commented if/else block for future align='left', 'right' capability
+    # if align == 'right':
+    #     shift = 1 - samples_per_window
+    # elif align == 'center':
+    #     shift = - (samples_per_window // 2)
+    # else:
+    #     shift = 0
+    shift = -(samples_per_window // 2)
     idx = clear_windows.shift(shift)
     # drop rows at the end corresponding to windows past the end of data
     idx.drop(clear_windows.tail(samples_per_window - 1).index, inplace=True)

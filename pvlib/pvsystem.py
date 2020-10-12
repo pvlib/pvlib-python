@@ -801,6 +801,54 @@ class PVSystem:
 
         return LocalizedPVSystem(pvsystem=self, location=location)
 
+    @property
+    def module_parameters(self):
+        return self._array.module_parameters
+
+    @property
+    def module(self):
+        return self._array.module
+
+    @property
+    def module_type(self):
+        return self._array.module_type
+
+    @property
+    def temperature_model_parameters(self):
+        return self._array.temperature_model_parameters
+
+    @temperature_model_parameters.setter
+    def temperature_model_parameters(self, value):
+        self._array.temperature_model_parameters = value
+
+    @property
+    def surface_tilt(self):
+        return self._array.surface_tilt
+
+    @surface_tilt.setter
+    def surface_tilt(self, value):
+        self._array.surface_tilt = value
+
+    @property
+    def surface_azimuth(self):
+        return self._array.surface_azimuth
+
+    @surface_azimuth.setter
+    def surface_azimuth(self, value):
+        self._array.surface_azimuth = value
+
+    @property
+    def albedo(self):
+        return self._array.albedo
+
+    @property
+    def racking_model(self):
+        return self._array.racking_model
+
+    @racking_model.setter
+    def racking_model(self, value):
+        self._array.racking_model = value
+
 
 @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
             name='LocalizedPVSystem', removal='0.9')

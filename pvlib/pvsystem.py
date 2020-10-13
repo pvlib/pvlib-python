@@ -638,15 +638,14 @@ class PVSystem:
         -------
         numeric, values in degrees C.
         """
-        build_kwargs = lambda array: {
-            **_build_kwargs(['eta_m', 'alpha_absorption'],
-                            array.module_parameters),
-            **_build_kwargs(['u_c', 'u_v'],
-                            array.temperature_model_parameters)
-        }
+        def build_celltemp_kwargs(array):
+            return {**_build_kwargs(['eta_m', 'alpha_absorption'],
+                                    array.module_parameters),
+                    **_build_kwargs(['u_c', 'u_v'],
+                                    array.temperature_model_parameters)}
         return [
             temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
-                                    **build_kwargs(array))
+                                    **build_celltemp_kwargs(array))
             for array, poa_global in zip(self._arrays, poa_global)
         ]
 

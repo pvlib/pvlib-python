@@ -265,7 +265,7 @@ def get_orientation(strategy, **kwargs):
 class ModelChainResult:
     # system-level information
     # weather: pd.DataFrame = field(default=None)
-    # solar_position: pd.DataFrame = field(default=None)
+    solar_position: pd.DataFrame = field(default=None)
     airmass: pd.DataFrame = field(default=None)
     ac: pd.Series = field(default=None)
     # per DC array information
@@ -654,30 +654,31 @@ class ModelChain:
                              'set the model with the dc_model kwarg.')
 
     def sapm(self):
-        self.dc = self.system.sapm(self.effective_irradiance,
-                                   self.cell_temperature)
+        self.results.dc = self.system.sapm(self.results.effective_irradiance,
+                                   self.results.cell_temperature)
 
-        self.dc = self.system.scale_voltage_current_power(self.dc)
+        self.results.dc = self.system.scale_voltage_current_power(
+            self.results.dc)
 
         return self
 
     def _singlediode(self, calcparams_model_function):
         (photocurrent, saturation_current, resistance_series,
          resistance_shunt, nNsVth) = (
-            calcparams_model_function(self.effective_irradiance,
-                                      self.cell_temperature))
+            calcparams_model_function(self.results.effective_irradiance,
+                                      self.results.cell_temperature))
 
-        self.diode_params = pd.DataFrame({'I_L': photocurrent,
-                                          'I_o': saturation_current,
-                                          'R_s': resistance_series,
-                                          'R_sh': resistance_shunt,
-                                          'nNsVth': nNsVth})
+        self.results.diode_params = pd.DataFrame(
+            {'I_L': photocurrent, 'I_o': saturation_current,
+             'R_s': resistance_series, 'R_sh': resistance_shunt,
+             'nNsVth': nNsVth})
 
-        self.dc = self.system.singlediode(
+        self.results.dc = self.system.singlediode(
             photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)
 
-        self.dc = self.system.scale_voltage_current_power(self.dc).fillna(0)
+        self.results.dc = self.system.scale_voltage_current_power(
+            self.results.dc).fillna(0)
 
         return self
 
@@ -691,8 +692,8 @@ class ModelChain:
         return self._singlediode(self.system.calcparams_pvsyst)
 
     def pvwatts_dc(self):
-        self.dc = self.system.pvwatts_dc(self.effective_irradiance,
-                                         self.cell_temperature)
+        self.results.dc = self.system.pvwatts_dc(
+            self.results.effective_irradiance, self.results.cell_temperature)
         return self
 
     @property
@@ -743,15 +744,17 @@ class ModelChain:
                              'set the model with the ac_model kwarg.')
 
     def snlinverter(self):
-        self.ac = self.system.snlinverter(self.dc['v_mp'], self.dc['p_mp'])
+        self.results.ac = self.system.snlinverter(self.results.dc['v_mp'],
+                                                  self.results.dc['p_mp'])
         return self
 
     def adrinverter(self):
-        self.ac = self.system.adrinverter(self.dc['v_mp'], self.dc['p_mp'])
+        self.results.ac = self.system.adrinverter(self.results.dc['v_mp'],
+                                                  self.results.dc['p_mp'])
         return self
 
     def pvwatts_inverter(self):
-        self.ac = self.system.pvwatts_ac(self.dc).fillna(0)
+        self.results.ac = self.system.pvwatts_ac(self.results.dc).fillna(0)
         return self
 
     @property
@@ -798,24 +801,27 @@ class ModelChain:
                              'kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
-        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='ashrae')
+        self.results.aoi_modifier = self.system.get_iam(
+            self.results.aoi, iam_model='ashrae')
         return self
 
     def physical_aoi_loss(self):
-        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='physical')
+        self.results.aoi_modifier = self.system.get_iam(self.results.aoi,
+                                                        iam_model='physical')
         return self
 
     def sapm_aoi_loss(self):
-        self.aoi_modifier = self.system.get_iam(self.aoi, iam_model='sapm')
+        self.results.aoi_modifier = self.system.get_iam(self.results.aoi,
+                                                        iam_model='sapm')
         return self
 
     def martin_ruiz_aoi_loss(self):
-        self.aoi_modifier = self.system.get_iam(self.aoi,
+        self.results.aoi_modifier = self.system.get_iam(self.results.aoi,
                                                 iam_model='martin_ruiz')
         return self
 
     def no_aoi_loss(self):
-        self.aoi_modifier = 1.0
+        self.results.aoi_modifier = 1.0
         return self
 
     @property
@@ -858,18 +864,18 @@ class ModelChain:
                              'spectral_model="no_loss".')
 
     def first_solar_spectral_loss(self):
-        self.spectral_modifier = self.system.first_solar_spectral_loss(
+        self.results.spectral_modifier = self.system.first_solar_spectral_loss(
             self.weather['precipitable_water'],
             self.results.airmass['airmass_absolute'])
         return self
 
     def sapm_spectral_loss(self):
-        self.spectral_modifier = self.system.sapm_spectral_loss(
+        self.results.spectral_modifier = self.system.sapm_spectral_loss(
             self.results.airmass['airmass_absolute'])
         return self
 
     def no_spectral_loss(self):
-        self.spectral_modifier = 1
+        self.results.spectral_modifier = 1
         return self
 
     @property
@@ -923,26 +929,26 @@ class ModelChain:
                              .format(self.system.temperature_model_parameters))
 
     def sapm_temp(self):
-        self.cell_temperature = self.system.sapm_celltemp(
-            self.total_irrad['poa_global'], self.weather['temp_air'],
+        self.results.cell_temperature = self.system.sapm_celltemp(
+            self.results.total_irrad['poa_global'], self.weather['temp_air'],
             self.weather['wind_speed'])
         return self
 
     def pvsyst_temp(self):
-        self.cell_temperature = self.system.pvsyst_celltemp(
-            self.total_irrad['poa_global'], self.weather['temp_air'],
+        self.results.cell_temperature = self.system.pvsyst_celltemp(
+            self.results.total_irrad['poa_global'], self.weather['temp_air'],
             self.weather['wind_speed'])
         return self
 
     def faiman_temp(self):
-        self.cell_temperature = self.system.faiman_celltemp(
-            self.total_irrad['poa_global'], self.weather['temp_air'],
+        self.results.cell_temperature = self.system.faiman_celltemp(
+            self.results.total_irrad['poa_global'], self.weather['temp_air'],
             self.weather['wind_speed'])
         return self
 
     def fuentes_temp(self):
-        self.cell_temperature = self.system.fuentes_celltemp(
-            self.total_irrad['poa_global'], self.weather['temp_air'],
+        self.results.cell_temperature = self.system.fuentes_celltemp(
+            self.results.total_irrad['poa_global'], self.weather['temp_air'],
             self.weather['wind_speed'])
         return self
 
@@ -970,7 +976,7 @@ class ModelChain:
 
     def pvwatts_losses(self):
         self.losses = (100 - self.system.pvwatts_losses()) / 100.
-        self.dc *= self.losses
+        self.results.dc *= self.losses
         return self
 
     def no_extra_losses(self):
@@ -979,9 +985,10 @@ class ModelChain:
 
     def effective_irradiance_model(self):
         fd = self.system.module_parameters.get('FD', 1.)
-        self.effective_irradiance = self.spectral_modifier * (
-            self.total_irrad['poa_direct']*self.aoi_modifier +
-            fd*self.total_irrad['poa_diffuse'])
+        self.results.effective_irradiance = self.results.spectral_modifier * (
+            self.results.total_irrad['poa_direct'] * 
+            self.results.aoi_modifier +
+            fd * self.results.total_irrad['poa_diffuse'])
         return self
 
     def complete_irradiance(self, weather):
@@ -1029,7 +1036,7 @@ class ModelChain:
         """
         self.weather = weather
 
-        self.solar_position = self.location.get_solarposition(
+        self.results.solar_position = self.location.get_solarposition(
             self.weather.index, method=self.solar_position_method)
 
         icolumns = set(self.weather.columns)
@@ -1040,22 +1047,23 @@ class ModelChain:
 
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
-                self.weather.index, solar_position=self.solar_position)
+                self.weather.index, solar_position=self.results.solar_position)
             self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
                 self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
-                self.solar_position.zenith,
+                self.results.solar_position.zenith,
                 clearsky_dni=clearsky['dni'],
                 clearsky_tolerance=1.1)
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
             self.weather.loc[:, 'ghi'] = (
-                self.weather.dni * tools.cosd(self.solar_position.zenith) +
-                self.weather.dhi)
+                self.weather.dhi + self.weather.dni * \
+                tools.cosd(self.results.solar_position.zenith)
+                )
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
             self.weather.loc[:, 'dhi'] = (
                 self.weather.ghi - self.weather.dni *
-                tools.cosd(self.solar_position.zenith))
+                tools.cosd(self.results.solar_position.zenith))
 
         return self
 
@@ -1063,7 +1071,7 @@ class ModelChain:
         """
         Assign solar position
         """
-        self.solar_position = self.location.get_solarposition(
+        self.results.solar_position = self.location.get_solarposition(
             self.weather.index, method=self.solar_position_method,
             **kwargs)
         return self
@@ -1073,7 +1081,8 @@ class ModelChain:
         Assign airmass
         """
         self.results.airmass = self.location.get_airmass(
-            solar_position=self.solar_position, model=self.airmass_model)
+            solar_position=self.results.solar_position,
+            model=self.airmass_model)
         return self
 
     def _prep_inputs_tracking(self):
@@ -1081,23 +1090,24 @@ class ModelChain:
         Calculate tracker position and AOI
         """
         self.tracking = self.system.singleaxis(
-            self.solar_position['apparent_zenith'],
-            self.solar_position['azimuth'])
+            self.results.solar_position['apparent_zenith'],
+            self.results.solar_position['azimuth'])
         self.tracking['surface_tilt'] = (
             self.tracking['surface_tilt']
                 .fillna(self.system.axis_tilt))
         self.tracking['surface_azimuth'] = (
             self.tracking['surface_azimuth']
                 .fillna(self.system.axis_azimuth))
-        self.aoi = self.tracking['aoi']
+        self.results.aoi = self.tracking['aoi']
         return self
 
     def _prep_inputs_fixed(self):
         """
         Calculate AOI for fixed tilt system
         """
-        self.aoi = self.system.get_aoi(self.solar_position['apparent_zenith'],
-                                       self.solar_position['azimuth'])
+        self.results.aoi = self.system.get_aoi(
+            self.results.solar_position['apparent_zenith'],
+            self.results.solar_position['azimuth'])
         return self
 
     def _verify_df(self, data, required):
@@ -1129,7 +1139,7 @@ class ModelChain:
 
     def _assign_total_irrad(self, data):
         key_list = [k for k in POA_KEYS if k in data]
-        self.total_irrad = data[key_list].copy()
+        self.results.total_irrad = data[key_list].copy()
         return self
 
     def prepare_inputs(self, weather):
@@ -1180,16 +1190,16 @@ class ModelChain:
                 self.system.get_irradiance,
                 self.tracking['surface_tilt'],
                 self.tracking['surface_azimuth'],
-                self.solar_position['apparent_zenith'],
-                self.solar_position['azimuth'])
+                self.results.solar_position['apparent_zenith'],
+                self.results.solar_position['azimuth'])
         else:
             self._prep_inputs_fixed()
             get_irradiance = partial(
                 self.system.get_irradiance,
-                self.solar_position['apparent_zenith'],
-                self.solar_position['azimuth'])
+                self.results.solar_position['apparent_zenith'],
+                self.results.solar_position['azimuth'])
 
-        self.total_irrad = get_irradiance(
+        self.results.total_irrad = get_irradiance(
             self.weather['dni'],
             self.weather['ghi'],
             self.weather['dhi'],
@@ -1264,7 +1274,7 @@ class ModelChain:
 
         """
         if 'cell_temperature' in data:
-            self.cell_temperature = data['cell_temperature']
+            self.results.cell_temperature = data['cell_temperature']
             return self
 
         # cell_temperature is not in input. Calculate cell_temperature using
@@ -1274,9 +1284,10 @@ class ModelChain:
         if (('module_temperature' in data) and
                 (self.temperature_model.__name__ == 'sapm_temp')):
             # use SAPM cell temperature model only
-            self.cell_temperature = pvlib.temperature.sapm_cell_from_module(
+            self.results.cell_temperature = \
+                pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],
-                poa_global=self.total_irrad['poa_global'],
+                poa_global=self.results.total_irrad['poa_global'],
                 deltaT=self.system.temperature_model_parameters['deltaT'])
             return self
 
@@ -1435,7 +1446,7 @@ class ModelChain:
 
         self._assign_weather(data)
         self._assign_total_irrad(data)
-        self.effective_irradiance = data['effective_irradiance']
+        self.results.effective_irradiance = data['effective_irradiance']
         self._run_from_effective_irrad(data)
 
         return self

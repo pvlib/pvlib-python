@@ -399,7 +399,7 @@ def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
     mc._assign_total_irrad(data)
     mc._prepare_temperature(data)
     expected = pd.Series([48.928025, 38.080016], index=data.index)
-    assert_series_equal(mc.cell_temperature, expected)
+    assert_series_equal(mc.results.cell_temperature, expected)
     data['module_temperature'] = [40., 30.]
     mc._prepare_temperature(data)
     expected = pd.Series([42.4, 31.5], index=data.index)
@@ -735,7 +735,7 @@ def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,
                     losses_model=constant_losses)
     mc.run_model(weather)
     assert m.call_count == 1
-    assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
+    assert isinstance(mc.results.ac, (pd.Series, pd.DataFrame))
     assert mc.losses == 0.9
     assert not mc.results.ac.empty
 

@@ -255,6 +255,20 @@ class PVSystem:
             f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
     @singleton_as_scalar
+    def _infer_cell_type(self):
+
+        """
+        Examines module_parameters and maps the Technology key for the CEC
+        database and the Material key for the Sandia database to a common
+        list of strings for cell type.
+
+        Returns
+        -------
+        cell_type: str
+        """
+        return [array._infer_cell_type() for array in self._arrays]
+
+    @singleton_as_scalar
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
 

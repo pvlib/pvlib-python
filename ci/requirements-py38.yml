@@ -6,6 +6,7 @@ dependencies:
     - coveralls
     - cython
     - ephem
+    - dataclasses
     - netcdf4
     - nose
     - numba

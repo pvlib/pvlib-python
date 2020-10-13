@@ -9,6 +9,7 @@ the time to read the source code for the module.
 from functools import partial
 import warnings
 import pandas as pd
+from dataclasses import dataclass, field
 
 from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
                    temperature, tools)
@@ -260,6 +261,25 @@ def get_orientation(strategy, **kwargs):
     return surface_tilt, surface_azimuth
 
 
+@dataclass
+class ModelChainResult:
+    # system-level information
+    # weather: pd.DataFrame = field(default=None)
+    # solar_position: pd.DataFrame = field(default=None)
+    airmass: pd.DataFrame = field(default=None)
+    ac: pd.Series = field(default=None)
+    # per DC array information
+    total_irrad: pd.DataFrame = field(default=None)
+    aoi: pd.Series = field(default=None)
+    aoi_modifier: pd.Series = field(default=None)
+    spectral_modifier: pd.Series = field(default=None)
+    cell_temperature: pd.Series = field(default=None)
+    effective_irradiance: pd.Series = field(default=None)
+    dc: pd.Series = field(default=None)
+    array_ac: pd.Series = field(default=None)
+    diode_params: pd.DataFrame = field(default=None)
+
+
 class ModelChain:
     """
     The ModelChain class to provides a standardized, high-level
@@ -367,6 +387,8 @@ class ModelChain:
         self.weather = None
         self.times = None
         self.solar_position = None
+
+        self.results = ModelChainResult()
 
         if kwargs:
             warnings.warn(
@@ -838,12 +860,12 @@ class ModelChain:
     def first_solar_spectral_loss(self):
         self.spectral_modifier = self.system.first_solar_spectral_loss(
             self.weather['precipitable_water'],
-            self.airmass['airmass_absolute'])
+            self.results.airmass['airmass_absolute'])
         return self
 
     def sapm_spectral_loss(self):
         self.spectral_modifier = self.system.sapm_spectral_loss(
-            self.airmass['airmass_absolute'])
+            self.results.airmass['airmass_absolute'])
         return self
 
     def no_spectral_loss(self):
@@ -1050,7 +1072,7 @@ class ModelChain:
         """
         Assign airmass
         """
-        self.airmass = self.location.get_airmass(
+        self.results.airmass = self.location.get_airmass(
             solar_position=self.solar_position, model=self.airmass_model)
         return self
 
@@ -1171,7 +1193,7 @@ class ModelChain:
             self.weather['dni'],
             self.weather['ghi'],
             self.weather['dhi'],
-            airmass=self.airmass['airmass_relative'],
+            airmass=self.results.airmass['airmass_relative'],
             model=self.transposition_model)
 
         return self

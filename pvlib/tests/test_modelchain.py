@@ -403,7 +403,7 @@ def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
     data['module_temperature'] = [40., 30.]
     mc._prepare_temperature(data)
     expected = pd.Series([42.4, 31.5], index=data.index)
-    assert_series_equal(mc.cell_temperature, expected)
+    assert_series_equal(mc.results.cell_temperature, expected)
     data['cell_temperature'] = [50., 35.]
     mc._prepare_temperature(data)
     assert_series_equal(mc.results.cell_temperature, data['cell_temperature'])
@@ -450,8 +450,8 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
 
 
 def poadc(mc):
-    mc.dc = mc.total_irrad['poa_global'] * 0.2
-    mc.dc.name = None  # assert_series_equal will fail without this
+    mc.results.dc = mc.results.total_irrad['poa_global'] * 0.2
+    mc.results.dc.name = None  # assert_series_equal will fail without this
 
 
 @pytest.mark.parametrize('dc_model', [
@@ -558,12 +558,12 @@ def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
                     aoi_model='no_loss', spectral_model='no_loss')
     mc.run_model(weather)
     assert m.call_count == 1
-    assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
+    assert isinstance(mc.results.ac, (pd.Series, pd.DataFrame))
     assert not mc.results.ac.empty
 
 
 def acdc(mc):
-    mc.ac = mc.dc
+    mc.results.ac = mc.results.dc
 
 
 @pytest.mark.parametrize('ac_model', ['sandia', 'adr', 'pvwatts'])
@@ -701,7 +701,7 @@ def test_spectral_models(sapm_dc_snl_ac_system, location, spectral_model,
 
 def constant_losses(mc):
     mc.losses = 0.9
-    mc.dc *= mc.losses
+    mc.results.dc *= mc.losses
 
 
 def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -715,11 +715,11 @@ def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
     mc.run_model(weather)
     assert m.call_count == 1
     m.assert_called_with(age=age)
-    assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
-    assert not mc.ac.empty
+    assert isinstance(mc.results.ac, (pd.Series, pd.DataFrame))
+    assert not mc.results.ac.empty
     # check that we're applying correction to dc
     # GH 696
-    dc_with_loss = mc.dc
+    dc_with_loss = mc.results.dc
     mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
                     aoi_model='no_loss', spectral_model='no_loss',
                     losses_model='no_loss')

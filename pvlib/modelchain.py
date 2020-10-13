@@ -276,6 +276,7 @@ class ModelChainResult:
     cell_temperature: pd.Series = field(default=None)
     effective_irradiance: pd.Series = field(default=None)
     dc: pd.Series = field(default=None)
+    # losses: dont_know_tye_type = field(default=None)
     array_ac: pd.Series = field(default=None)
     diode_params: pd.DataFrame = field(default=None)
 
@@ -1056,8 +1057,8 @@ class ModelChain:
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
             self.weather.loc[:, 'ghi'] = (
-            self.weather.dhi + self.weather.dni *
-            tools.cosd(self.results.solar_position.zenith)
+                self.weather.dhi + self.weather.dni *
+                tools.cosd(self.results.solar_position.zenith)
             )
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)

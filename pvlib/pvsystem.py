@@ -69,13 +69,10 @@ def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
     return new_kwargs
 
 
-def singleton_as_scalar(func):
-    """Return a scalar if `func` returns a singleton list.
-
-    Parameters
-    ----------
-    func : funciton
-        A function that returns a list-like object.
+def return_singleton_value(func):
+    """Decorator that returns the value contained when `func`
+    returns a singleton list or the list if it has more than one
+    element.
     """
     @functools.wraps(func)
     def f(*args, **kwargs):
@@ -105,7 +102,7 @@ def validate_against_arrays(*list_params):
         of elements as there are Arrays in the PVSystem instance.
     """
     def list_or_scalar(func):
-        @singleton_as_scalar
+        @return_singleton_value
         @functools.wraps(func)
         def f(ref, *args, **kwargs):
             sig = inspect.signature(func)
@@ -271,7 +268,7 @@ class PVSystem:
         return ('PVSystem:\n  ' + '\n  '.join(
             f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
-    @singleton_as_scalar
+    @return_singleton_value
     def _infer_cell_type(self):
 
         """
@@ -285,7 +282,7 @@ class PVSystem:
         """
         return [array._infer_cell_type() for array in self._arrays]
 
-    @singleton_as_scalar
+    @return_singleton_value
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
 
@@ -305,7 +302,7 @@ class PVSystem:
         return [array.get_aoi(solar_zenith, solar_azimuth)
                 for array in self._arrays]
 
-    @singleton_as_scalar
+    @return_singleton_value
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
@@ -564,7 +561,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         ]
 
-    @singleton_as_scalar
+    @return_singleton_value
     def sapm_spectral_loss(self, airmass_absolute):
         """
         Use the :py:func:`sapm_spectral_loss` function, the input
@@ -730,7 +727,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         ]
 
-    @singleton_as_scalar
+    @return_singleton_value
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
         """
@@ -839,7 +836,7 @@ class PVSystem:
         """
         return inverter.adr(v_dc, p_dc, self.inverter_parameters)
 
-    @singleton_as_scalar
+    @return_singleton_value
     @validate_against_arrays('data')
     def scale_voltage_current_power(self, data):
         """
@@ -938,22 +935,22 @@ class PVSystem:
         return LocalizedPVSystem(pvsystem=self, location=location)
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def module_parameters(self):
         return [array.module_parameters for array in self._arrays]
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def module(self):
         return [array.module for array in self._arrays]
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def module_type(self):
         return [array.module_type for array in self._arrays]
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def temperature_model_parameters(self):
         return [array.temperature_model_parameters for array in self._arrays]
 
@@ -963,7 +960,7 @@ class PVSystem:
             array.temperature_model_parameters = value
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def surface_tilt(self):
         return [array.surface_tilt for array in self._arrays]
 
@@ -973,7 +970,7 @@ class PVSystem:
             array.surface_tilt = value
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def surface_azimuth(self):
         return [array.surface_azimuth for array in self._arrays]
 
@@ -983,12 +980,12 @@ class PVSystem:
             array.surface_azimuth = value
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def albedo(self):
         return [array.albedo for array in self._arrays]
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def racking_model(self):
         return [array.racking_model for array in self._arrays]
 
@@ -998,12 +995,12 @@ class PVSystem:
             array.racking_model = value
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def modules_per_string(self):
         return [array.modules_per_string for array in self._arrays]
 
     @property
-    @singleton_as_scalar
+    @return_singleton_value
     def strings_per_inverter(self):
         return [array.strings for array in self._arrays]
 

@@ -4,6 +4,8 @@ performance of PV modules and inverters.
 """
 
 from collections import OrderedDict
+import functools
+import inspect
 import io
 import os
 from urllib.request import urlopen
@@ -75,12 +77,33 @@ def singleton_as_scalar(func):
     func : funciton
         A function that returns a list-like object.
     """
+    @functools.wraps(func)
     def f(*args, **kwargs):
+        return_list = kwargs.pop('return_list', False)
         x = func(*args, **kwargs)
-        if len(x) == 1:
+        if len(x) == 1 and not return_list:
             return x[0]
         return x
     return f
+
+
+def list_or_scalar(*list_params):
+    def list_or_scalar(func):
+        @functools.wraps(func)
+        def f(ref, *args, **kwargs):
+            sig = inspect.signature(func)
+            bindings = sig.bind(*tuple([ref, *args]), **kwargs)
+            for param in bindings.arguments.keys():
+                if param in list_params:
+                    if not isinstance(bindings.arguments[param], list):
+                        bindings.arguments[param] = [bindings.arguments[param]]
+                    if len(bindings.arguments[param]) != len(ref._arrays):
+                        raise ValueError(
+                            f"Length mismatch for parameter {param}"
+                        )
+            return func(*bindings.args, **bindings.kwargs)
+        return f
+    return list_or_scalar
 
 
 # not sure if this belongs in the pvsystem module.
@@ -294,6 +317,7 @@ class PVSystem:
             for array in self._arrays]
 
     @singleton_as_scalar
+    @list_or_scalar('aoi')
     def get_iam(self, aoi, iam_model='physical'):
         """
         Determine the incidence angle modifier using the method specified by
@@ -320,8 +344,11 @@ class PVSystem:
         ------
         ValueError if `iam_model` is not a valid model name.
         """
-        return [array.get_iam(aoi, iam_model) for array in self._arrays]
+        return [array.get_iam(aoi, iam_model)
+                for array, aoi in zip(self._arrays, aoi)]
 
+    @singleton_as_scalar
+    @list_or_scalar('effective_irradiance', 'temp_cell')
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
@@ -344,13 +371,24 @@ class PVSystem:
         See pvsystem.calcparams_desoto for details
         """
 
-        kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-                                'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
-                                'irrad_ref', 'temp_ref'],
-                               self.module_parameters)
+        build_kwargs = functools.partial(
+            _build_kwargs,
+            ['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+             'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
+             'irrad_ref', 'temp_ref']
+        )
 
-        return calcparams_desoto(effective_irradiance, temp_cell, **kwargs)
+        return [
+            calcparams_desoto(
+                effective_irradiance, temp_cell,
+                **build_kwargs(array.module_parameters)
+            )
+            for array, effective_irradiance, temp_cell
+                in zip(self._arrays, effective_irradiance, temp_cell)
+        ]
 
+    @singleton_as_scalar
+    @list_or_scalar('effective_irradiance', 'temp_cell')
     def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_cec` function, the input
@@ -373,13 +411,24 @@ class PVSystem:
         See pvsystem.calcparams_cec for details
         """
 
-        kwargs = _build_kwargs(['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
-                                'R_s', 'alpha_sc', 'Adjust', 'EgRef', 'dEgdT',
-                                'irrad_ref', 'temp_ref'],
-                               self.module_parameters)
+        build_kwargs = functools.partial(
+            _build_kwargs,
+            ['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+             'R_s', 'alpha_sc', 'Adjust', 'EgRef', 'dEgdT',
+             'irrad_ref', 'temp_ref']
+        )
 
-        return calcparams_cec(effective_irradiance, temp_cell, **kwargs)
+        return [
+            calcparams_cec(
+                effective_irradiance, temp_cell,
+                **build_kwargs(array.module_parameters)
+            )
+            for array, effective_irradiance, temp_cell
+                in zip(self._arrays, effective_irradiance, temp_cell)
+        ]
 
+    @singleton_as_scalar
+    @list_or_scalar('effective_irradiance', 'temp_cell')
     def calcparams_pvsyst(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`calcparams_pvsyst` function, the input
@@ -399,15 +448,26 @@ class PVSystem:
         See pvsystem.calcparams_pvsyst for details
         """
 
-        kwargs = _build_kwargs(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
-                                'R_sh_ref', 'R_sh_0', 'R_sh_exp',
-                                'R_s', 'alpha_sc', 'EgRef',
-                                'irrad_ref', 'temp_ref',
-                                'cells_in_series'],
-                               self.module_parameters)
+        build_kwargs = functools.partial(
+            _build_kwargs,
+            ['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+             'R_sh_ref', 'R_sh_0', 'R_sh_exp',
+             'R_s', 'alpha_sc', 'EgRef',
+             'irrad_ref', 'temp_ref',
+             'cells_in_series']
+        )
 
-        return calcparams_pvsyst(effective_irradiance, temp_cell, **kwargs)
+        return [
+            calcparams_pvsyst(
+                effective_irradiance, temp_cell,
+                **build_kwargs(array.module_parameters)
+            )
+            for array, effective_irradiance, temp_cell
+            in zip(self._arrays, effective_irradiance, temp_cell)
+        ]
 
+    @singleton_as_scalar
+    @list_or_scalar('effective_irradiance', 'temp_cell')
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`sapm` function, the input parameters,
@@ -429,8 +489,12 @@ class PVSystem:
         -------
         See pvsystem.sapm for details
         """
-        return sapm(effective_irradiance, temp_cell, self.module_parameters)
+        return [sapm(effective_irradiance, temp_cell, array.module_parameters)
+                for array, effective_irradiance, temp_cell
+                in zip(self._arrays, effective_irradiance, temp_cell)]
 
+    @singleton_as_scalar
+    @list_or_scalar('poa_global')
     def sapm_celltemp(self, poa_global, temp_air, wind_speed):
         """Uses :py:func:`temperature.sapm_cell` to calculate cell
         temperatures.
@@ -450,26 +514,32 @@ class PVSystem:
         -------
         numeric, values in degrees C.
         """
-        # warn user about change in default behavior in 0.9.
-        if (self.temperature_model_parameters == {} and self.module_type
-                is None and self.racking_model is None):
-            warnings.warn(
-                'temperature_model_parameters, racking_model, and module_type '
-                'are not specified. Reverting to deprecated default: SAPM '
-                'cell temperature model parameters for a glass/glass module '
-                'in open racking. In v0.9, temperature_model_parameters or a '
-                'valid combination of racking_model and module_type will be '
-                'required.',
-                pvlibDeprecationWarning)
-            params = temperature._temperature_model_params(
-                'sapm', 'open_rack_glass_glass')
-            self.temperature_model_parameters = params
+        for array in self._arrays:
+            # warn user about change in default behavior in 0.9.
+            if (array.temperature_model_parameters == {} and array.module_type
+                    is None and array.racking_model is None):
+                warnings.warn(
+                    'temperature_model_parameters, racking_model, and '
+                    'module_type are not specified. Reverting to deprecated '
+                    'default: SAPM cell temperature model parameters for a '
+                    'glass/glass module in open racking. In v0.9, '
+                    'temperature_model_parameters or a valid combination of '
+                    'racking_model and module_type will be required.',
+                    pvlibDeprecationWarning)
+                params = temperature._temperature_model_params(
+                    'sapm', 'open_rack_glass_glass')
+                array.temperature_model_parameters = params
 
-        kwargs = _build_kwargs(['a', 'b', 'deltaT'],
-                               self.temperature_model_parameters)
-        return temperature.sapm_cell(poa_global, temp_air, wind_speed,
-                                     **kwargs)
+        build_kwargs = functools.partial(_build_kwargs, ['a', 'b', 'deltaT'])
+        return [
+            temperature.sapm_cell(
+                poa_global, temp_air, wind_speed,
+                **build_kwargs(array.temperature_model_parameters)
+            )
+            for array, poa_global in zip(self._arrays, poa_global)
+        ]
 
+    @singleton_as_scalar
     def sapm_spectral_loss(self, airmass_absolute):
         """
         Use the :py:func:`sapm_spectral_loss` function, the input
@@ -485,8 +555,11 @@ class PVSystem:
         F1 : numeric
             The SAPM spectral loss coefficient.
         """
-        return sapm_spectral_loss(airmass_absolute, self.module_parameters)
+        return [sapm_spectral_loss(airmass_absolute, array.module_parameters)
+                for array in self._arrays]
 
+    @singleton_as_scalar
+    @list_or_scalar('poa_direct', 'poa_diffuse', 'aoi')
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
                                   reference_irradiance=1000):
@@ -514,10 +587,16 @@ class PVSystem:
         effective_irradiance : numeric
             The SAPM effective irradiance. [W/m2]
         """
-        return sapm_effective_irradiance(
-            poa_direct, poa_diffuse, airmass_absolute, aoi,
-            self.module_parameters)
+        return [
+            sapm_effective_irradiance(
+                poa_direct, poa_diffuse, airmass_absolute, aoi,
+                array.module_parameters)
+            for array, poa_direct, poa_diffuse, aoi
+            in zip(self._arrays, poa_direct, poa_diffuse, aoi)
+        ]
 
+    @singleton_as_scalar
+    @list_or_scalar('poa_global')
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
         temperature.
@@ -539,13 +618,20 @@ class PVSystem:
         -------
         numeric, values in degrees C.
         """
-        kwargs = _build_kwargs(['eta_m', 'alpha_absorption'],
-                               self.module_parameters)
-        kwargs.update(_build_kwargs(['u_c', 'u_v'],
-                                    self.temperature_model_parameters))
-        return temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
-                                       **kwargs)
+        build_kwargs = lambda array: {
+            **_build_kwargs(['eta_m', 'alpha_absorption'],
+                            array.module_parameters),
+            **_build_kwargs(['u_c', 'u_v'],
+                            array.temperature_model_parameters)
+        }
+        return [
+            temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
+                                    **build_kwargs(array))
+            for array, poa_global in zip(self._arrays, poa_global)
+        ]
 
+    @singleton_as_scalar
+    @list_or_scalar('poa_global')
     def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """
         Use :py:func:`temperature.faiman` to calculate cell temperature.
@@ -567,11 +653,16 @@ class PVSystem:
         -------
         numeric, values in degrees C.
         """
-        kwargs = _build_kwargs(['u0', 'u1'],
-                               self.temperature_model_parameters)
-        return temperature.faiman(poa_global, temp_air, wind_speed,
-                                  **kwargs)
+        return [
+            temperature.faiman(
+                poa_global, temp_air, wind_speed,
+                **_build_kwargs(
+                    ['u0', 'u1'], array.temperature_model_parameters))
+            for array, poa_global in zip(self._arrays, poa_global)
+        ]
 
+    @singleton_as_scalar
+    @list_or_scalar('poa_global')
     def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
         """
         Use :py:func:`temperature.fuentes` to calculate cell temperature.
@@ -603,15 +694,22 @@ class PVSystem:
         """
         # default to using the PVSystem attribute, but allow user to
         # override with a custom surface_tilt value
-        kwargs = {'surface_tilt': self.surface_tilt}
-        temp_model_kwargs = _build_kwargs([
-            'noct_installed', 'module_height', 'wind_height', 'emissivity',
-            'absorption', 'surface_tilt', 'module_width', 'module_length'],
-            self.temperature_model_parameters)
-        kwargs.update(temp_model_kwargs)
-        return temperature.fuentes(poa_global, temp_air, wind_speed,
-                                   **kwargs)
+        def _build_kwargs_fuentes(array):
+            kwargs = {'surface_tilt': array.surface_tilt}
+            temp_model_kwargs = _build_kwargs([
+                'noct_installed', 'module_height', 'wind_height', 'emissivity',
+                'absorption', 'surface_tilt', 'module_width', 'module_length'],
+            array.temperature_model_parameters)
+            kwargs.update(temp_model_kwargs)
+            return kwargs
+        return [
+            temperature.fuentes(
+                poa_global, temp_air, wind_speed,
+                **_build_kwargs_fuentes(array))
+            for array, poa_global in zip(self._arrays, poa_global)
+        ]
 
+    @singleton_as_scalar
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
         """
@@ -642,62 +740,22 @@ class PVSystem:
             electrical current.
         """
 
-        if 'first_solar_spectral_coefficients' in \
-                self.module_parameters.keys():
-            coefficients = \
-                self.module_parameters['first_solar_spectral_coefficients']
-            module_type = None
-        else:
-            module_type = self._infer_cell_type()
-            coefficients = None
+        spectral_correction = []
+        for array in self._arrays:
+            if 'first_solar_spectral_coefficients' in \
+                    array.module_parameters.keys():
+                coefficients = \
+                    array.module_parameters['first_solar_spectral_coefficients']
+                module_type = None
+            else:
+                module_type = array._infer_cell_type()
+                coefficients = None
 
-        return atmosphere.first_solar_spectral_correction(pw,
-                                                          airmass_absolute,
-                                                          module_type,
-                                                          coefficients)
-
-    def _infer_cell_type(self):
-
-        """
-        Examines module_parameters and maps the Technology key for the CEC
-        database and the Material key for the Sandia database to a common
-        list of strings for cell type.
-
-        Returns
-        -------
-        cell_type: str
-
-        """
-
-        _cell_type_dict = {'Multi-c-Si': 'multisi',
-                           'Mono-c-Si': 'monosi',
-                           'Thin Film': 'cigs',
-                           'a-Si/nc': 'asi',
-                           'CIS': 'cigs',
-                           'CIGS': 'cigs',
-                           '1-a-Si': 'asi',
-                           'CdTe': 'cdte',
-                           'a-Si': 'asi',
-                           '2-a-Si': None,
-                           '3-a-Si': None,
-                           'HIT-Si': 'monosi',
-                           'mc-Si': 'multisi',
-                           'c-Si': 'multisi',
-                           'Si-Film': 'asi',
-                           'EFG mc-Si': 'multisi',
-                           'GaAs': None,
-                           'a-Si / mono-Si': 'monosi'}
-
-        if 'Technology' in self.module_parameters.keys():
-            # CEC module parameter set
-            cell_type = _cell_type_dict[self.module_parameters['Technology']]
-        elif 'Material' in self.module_parameters.keys():
-            # Sandia module parameter set
-            cell_type = _cell_type_dict[self.module_parameters['Material']]
-        else:
-            cell_type = None
-
-        return cell_type
+            spectral_correction.append(
+                atmosphere.first_solar_spectral_correction(
+                    pw, airmass_absolute,
+                    module_type, coefficients))
+        return spectral_correction
 
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
@@ -760,6 +818,8 @@ class PVSystem:
         """
         return inverter.adr(v_dc, p_dc, self.inverter_parameters)
 
+    @singleton_as_scalar
+    @list_or_scalar('data')
     def scale_voltage_current_power(self, data):
         """
         Scales the voltage, current, and power of the `data` DataFrame
@@ -777,10 +837,15 @@ class PVSystem:
             A scaled copy of the input data.
         """
 
-        return scale_voltage_current_power(data,
-                                           voltage=self.modules_per_string,
-                                           current=self.strings_per_inverter)
+        return [
+            scale_voltage_current_power(data,
+                                        voltage=array.modules_per_string,
+                                        current=array.strings)
+            for array, data in zip(self._arrays, data)
+        ]
 
+    @singleton_as_scalar
+    @list_or_scalar('g_poa_effective', 'temp_cell')
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
         Calcuates DC power according to the PVWatts model using
@@ -789,12 +854,14 @@ class PVSystem:
 
         See :py:func:`pvlib.pvsystem.pvwatts_dc` for details.
         """
-        kwargs = _build_kwargs(['temp_ref'], self.module_parameters)
-
-        return pvwatts_dc(g_poa_effective, temp_cell,
-                          self.module_parameters['pdc0'],
-                          self.module_parameters['gamma_pdc'],
-                          **kwargs)
+        return [
+            pvwatts_dc(g_poa_effective, temp_cell,
+                       array.module_parameters['pdc0'],
+                       array.module_parameters['gamma_pdc'],
+                       **_build_kwargs(['temp_ref'], array.module_parameters))
+            for array, g_poa_effective, temp_cell
+            in zip(self._arrays, g_poa_effective, temp_cell)
+        ]
 
     def pvwatts_losses(self):
         """
@@ -1071,6 +1138,49 @@ class Array:
                                                          'insulated')
         else:
             return {}
+
+    def _infer_cell_type(self):
+
+        """
+        Examines module_parameters and maps the Technology key for the CEC
+        database and the Material key for the Sandia database to a common
+        list of strings for cell type.
+
+        Returns
+        -------
+        cell_type: str
+
+        """
+
+        _cell_type_dict = {'Multi-c-Si': 'multisi',
+                           'Mono-c-Si': 'monosi',
+                           'Thin Film': 'cigs',
+                           'a-Si/nc': 'asi',
+                           'CIS': 'cigs',
+                           'CIGS': 'cigs',
+                           '1-a-Si': 'asi',
+                           'CdTe': 'cdte',
+                           'a-Si': 'asi',
+                           '2-a-Si': None,
+                           '3-a-Si': None,
+                           'HIT-Si': 'monosi',
+                           'mc-Si': 'multisi',
+                           'c-Si': 'multisi',
+                           'Si-Film': 'asi',
+                           'EFG mc-Si': 'multisi',
+                           'GaAs': None,
+                           'a-Si / mono-Si': 'monosi'}
+
+        if 'Technology' in self.module_parameters.keys():
+            # CEC module parameter set
+            cell_type = _cell_type_dict[self.module_parameters['Technology']]
+        elif 'Material' in self.module_parameters.keys():
+            # Sandia module parameter set
+            cell_type = _cell_type_dict[self.module_parameters['Material']]
+        else:
+            cell_type = None
+
+        return cell_type
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """

@@ -87,8 +87,25 @@ def singleton_as_scalar(func):
     return f
 
 
-def list_or_scalar(*list_params):
+def validate_against_arrays(*list_params):
+    """Decorator that validates the value passed to each parameter in
+    `list_params` against the number of Arrays in the PVSystem.
+
+    If the value passed for each parameter in `list_params` is not a list,
+    then it is transformed into a singleton list before validation. This
+    means existing code that assumes a PVSystem has only one array will
+    continue to function with no changes.
+
+    Implicitly applies the `@singleton_as_scalar` decorator as well.
+
+    Parameters
+    ----------
+    list_params : iterable
+        names of the parameters that should be lists with the same number
+        of elements as there are Arrays in the PVSystem instance.
+    """
     def list_or_scalar(func):
+        @singleton_as_scalar
         @functools.wraps(func)
         def f(ref, *args, **kwargs):
             sig = inspect.signature(func)
@@ -330,8 +347,7 @@ class PVSystem:
                                      dni_extra, airmass)
             for array in self._arrays]
 
-    @singleton_as_scalar
-    @list_or_scalar('aoi')
+    @validate_against_arrays('aoi')
     def get_iam(self, aoi, iam_model='physical'):
         """
         Determine the incidence angle modifier using the method specified by
@@ -361,8 +377,7 @@ class PVSystem:
         return [array.get_iam(aoi, iam_model)
                 for array, aoi in zip(self._arrays, aoi)]
 
-    @singleton_as_scalar
-    @list_or_scalar('effective_irradiance', 'temp_cell')
+    @validate_against_arrays('effective_irradiance', 'temp_cell')
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
@@ -401,8 +416,7 @@ class PVSystem:
                 in zip(self._arrays, effective_irradiance, temp_cell)
         ]
 
-    @singleton_as_scalar
-    @list_or_scalar('effective_irradiance', 'temp_cell')
+    @validate_against_arrays('effective_irradiance', 'temp_cell')
     def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_cec` function, the input
@@ -441,8 +455,7 @@ class PVSystem:
                 in zip(self._arrays, effective_irradiance, temp_cell)
         ]
 
-    @singleton_as_scalar
-    @list_or_scalar('effective_irradiance', 'temp_cell')
+    @validate_against_arrays('effective_irradiance', 'temp_cell')
     def calcparams_pvsyst(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`calcparams_pvsyst` function, the input
@@ -480,8 +493,7 @@ class PVSystem:
             in zip(self._arrays, effective_irradiance, temp_cell)
         ]
 
-    @singleton_as_scalar
-    @list_or_scalar('effective_irradiance', 'temp_cell')
+    @validate_against_arrays('effective_irradiance', 'temp_cell')
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`sapm` function, the input parameters,
@@ -507,8 +519,7 @@ class PVSystem:
                 for array, effective_irradiance, temp_cell
                 in zip(self._arrays, effective_irradiance, temp_cell)]
 
-    @singleton_as_scalar
-    @list_or_scalar('poa_global')
+    @validate_against_arrays('poa_global')
     def sapm_celltemp(self, poa_global, temp_air, wind_speed):
         """Uses :py:func:`temperature.sapm_cell` to calculate cell
         temperatures.
@@ -572,8 +583,7 @@ class PVSystem:
         return [sapm_spectral_loss(airmass_absolute, array.module_parameters)
                 for array in self._arrays]
 
-    @singleton_as_scalar
-    @list_or_scalar('poa_direct', 'poa_diffuse', 'aoi')
+    @validate_against_arrays('poa_direct', 'poa_diffuse', 'aoi')
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
                                   reference_irradiance=1000):
@@ -609,8 +619,7 @@ class PVSystem:
             in zip(self._arrays, poa_direct, poa_diffuse, aoi)
         ]
 
-    @singleton_as_scalar
-    @list_or_scalar('poa_global')
+    @validate_against_arrays('poa_global')
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
         temperature.
@@ -644,8 +653,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         ]
 
-    @singleton_as_scalar
-    @list_or_scalar('poa_global')
+    @validate_against_arrays('poa_global')
     def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """
         Use :py:func:`temperature.faiman` to calculate cell temperature.
@@ -675,8 +683,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         ]
 
-    @singleton_as_scalar
-    @list_or_scalar('poa_global')
+    @validate_against_arrays('poa_global')
     def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
         """
         Use :py:func:`temperature.fuentes` to calculate cell temperature.
@@ -833,7 +840,7 @@ class PVSystem:
         return inverter.adr(v_dc, p_dc, self.inverter_parameters)
 
     @singleton_as_scalar
-    @list_or_scalar('data')
+    @validate_against_arrays('data')
     def scale_voltage_current_power(self, data):
         """
         Scales the voltage, current, and power of the `data` DataFrame
@@ -858,8 +865,7 @@ class PVSystem:
             for array, data in zip(self._arrays, data)
         ]
 
-    @singleton_as_scalar
-    @list_or_scalar('g_poa_effective', 'temp_cell')
+    @validate_against_arrays('g_poa_effective', 'temp_cell')
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
         Calcuates DC power according to the PVWatts model using

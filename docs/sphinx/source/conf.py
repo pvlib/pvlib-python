@@ -221,6 +221,8 @@ def setup(app):
     app.add_stylesheet("no_scrollbars.css")
     # Override footnote callout CSS to be normal text instead of superscript
     app.add_stylesheet("no_reference_superscript.css")
+    # In-line links to references as numbers in brackets.
+    app.add_stylesheet("bracketed_reference_number.css")
 
 # -- Options for LaTeX output ---------------------------------------------
 

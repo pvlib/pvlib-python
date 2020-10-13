@@ -342,7 +342,7 @@ class PVSystem:
         return [array.get_irradiance(solar_zenith, solar_azimuth,
                                      dni, ghi, dhi,
                                      dni_extra, airmass)
-            for array in self._arrays]
+                for array in self._arrays]
 
     @validate_against_arrays('aoi')
     def get_iam(self, aoi, iam_model='physical'):
@@ -410,7 +410,7 @@ class PVSystem:
                 **build_kwargs(array.module_parameters)
             )
             for array, effective_irradiance, temp_cell
-                in zip(self._arrays, effective_irradiance, temp_cell)
+            in zip(self._arrays, effective_irradiance, temp_cell)
         ]
 
     @validate_against_arrays('effective_irradiance', 'temp_cell')
@@ -449,7 +449,7 @@ class PVSystem:
                 **build_kwargs(array.module_parameters)
             )
             for array, effective_irradiance, temp_cell
-                in zip(self._arrays, effective_irradiance, temp_cell)
+            in zip(self._arrays, effective_irradiance, temp_cell)
         ]
 
     @validate_against_arrays('effective_irradiance', 'temp_cell')
@@ -717,7 +717,7 @@ class PVSystem:
             temp_model_kwargs = _build_kwargs([
                 'noct_installed', 'module_height', 'wind_height', 'emissivity',
                 'absorption', 'surface_tilt', 'module_width', 'module_length'],
-            array.temperature_model_parameters)
+                array.temperature_model_parameters)
             kwargs.update(temp_model_kwargs)
             return kwargs
         return [
@@ -763,7 +763,9 @@ class PVSystem:
             if 'first_solar_spectral_coefficients' in \
                     array.module_parameters.keys():
                 coefficients = \
-                    array.module_parameters['first_solar_spectral_coefficients']
+                    array.module_parameters[
+                        'first_solar_spectral_coefficients'
+                    ]
                 module_type = None
             else:
                 module_type = array._infer_cell_type()

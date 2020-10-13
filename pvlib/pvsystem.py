@@ -609,6 +609,46 @@ class PVSystem:
         return temperature.faiman(poa_global, temp_air, wind_speed,
                                   **kwargs)
 
+    def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
+        """
+        Use :py:func:`temperature.fuentes` to calculate cell temperature.
+
+        Parameters
+        ----------
+        poa_global : pandas Series
+            Total incident irradiance [W/m^2]
+
+        temp_air : pandas Series
+            Ambient dry bulb temperature [C]
+
+        wind_speed : pandas Series
+            Wind speed [m/s]
+
+        Returns
+        -------
+        temperature_cell : pandas Series
+            The modeled cell temperature [C]
+
+        Notes
+        -----
+        The Fuentes thermal model uses the module surface tilt for convection
+        modeling. The SAM implementation of PVWatts hardcodes the surface tilt
+        value at 30 degrees, ignoring whatever value is used for irradiance
+        transposition. This method defaults to using ``self.surface_tilt``, but
+        if you want to match the PVWatts behavior, you can override it by
+        including a ``surface_tilt`` value in ``temperature_model_parameters``.
+        """
+        # default to using the PVSystem attribute, but allow user to
+        # override with a custom surface_tilt value
+        kwargs = {'surface_tilt': self.surface_tilt}
+        temp_model_kwargs = _build_kwargs([
+            'noct_installed', 'module_height', 'wind_height', 'emissivity',
+            'absorption', 'surface_tilt', 'module_width', 'module_length'],
+            self.temperature_model_parameters)
+        kwargs.update(temp_model_kwargs)
+        return temperature.fuentes(poa_global, temp_air, wind_speed,
+                                   **kwargs)
+
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
         """

@@ -655,7 +655,7 @@ class ModelChain:
 
     def sapm(self):
         self.results.dc = self.system.sapm(self.results.effective_irradiance,
-                                   self.results.cell_temperature)
+                                           self.results.cell_temperature)
 
         self.results.dc = self.system.scale_voltage_current_power(
             self.results.dc)
@@ -986,7 +986,7 @@ class ModelChain:
     def effective_irradiance_model(self):
         fd = self.system.module_parameters.get('FD', 1.)
         self.results.effective_irradiance = self.results.spectral_modifier * (
-            self.results.total_irrad['poa_direct'] * 
+            self.results.total_irrad['poa_direct'] *
             self.results.aoi_modifier +
             fd * self.results.total_irrad['poa_diffuse'])
         return self
@@ -1056,9 +1056,9 @@ class ModelChain:
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
             self.weather.loc[:, 'ghi'] = (
-                self.weather.dhi + self.weather.dni * \
-                tools.cosd(self.results.solar_position.zenith)
-                )
+            self.weather.dhi + self.weather.dni *
+            tools.cosd(self.results.solar_position.zenith)
+            )
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
             self.weather.loc[:, 'dhi'] = (

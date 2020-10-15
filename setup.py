@@ -48,9 +48,9 @@ EXTRAS_REQUIRE = {
     'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
                  'pvfactors', 'siphon', 'statsmodels', 'tables',
                  'cftime >= 1.1.1'],
-    'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2', 'sphinx_rtd_theme==0.5.0',
-            'sphinx-gallery', 'docutils == 0.15.2', 'pillow',
-            'netcdf4', 'siphon', 'tables'],
+    'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2',
+            'sphinx_rtd_theme==0.5.0', 'sphinx-gallery', 'docutils == 0.15.2',
+            'pillow', 'netcdf4', 'siphon', 'tables'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))

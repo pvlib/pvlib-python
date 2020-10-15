@@ -218,11 +218,10 @@ htmlhelp_basename = 'pvlib_pythondoc'
 # custom CSS workarounds
 def setup(app):
     # A workaround for the responsive tables always having annoying scrollbars.
-    app.add_stylesheet("no_scrollbars.css")
+    app.add_css_file("no_scrollbars.css")
     # Override footnote callout CSS to be normal text instead of superscript
-    app.add_stylesheet("no_reference_superscript.css")
     # In-line links to references as numbers in brackets.
-    app.add_stylesheet("bracketed_reference_number.css")
+    app.add_css_file("reference_format.css")
 
 # -- Options for LaTeX output ---------------------------------------------
 

@@ -5,12 +5,12 @@
 .. autoclass:: {{ objname }}
 
    {% block methods %}
-   .. automethod:: __init__
-
    {% if methods %}
    .. rubric:: Methods
 
    .. autosummary::
+      :toctree:
+      :recursive:
    {% for item in methods %}
       ~{{ name }}.{{ item }}
    {%- endfor %}

@@ -31,6 +31,8 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Update sphinx to 3.1.2 and use the ``recursive`` option in ``autosummary`` class template.
+  (:issue:`1055`, :pull:`1075`)
 * Add gallery example about backtracking on sloped terrain. (:pull:`1077`)
 
 Requirements
@@ -40,5 +42,6 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)

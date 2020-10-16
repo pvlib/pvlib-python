@@ -1177,6 +1177,29 @@ def test_PVSystem_localize___repr__():
     assert localized_system.__repr__() == expected
 
 
+def test_Array___repr__():
+    array = pvsystem.Array(
+        surface_tilt=10, surface_azimuth=100,
+        albedo=0.15, module_type='glass_glass',
+        temperature_model_parameters={'a': -3.56},
+        racking_model='close_mount',
+        module_parameters={'foo': 'bar'},
+        modules_per_string=100,
+        strings=10, module='baz'
+    )
+    expected = """Array:
+  surface_tilt: 10
+  surface_azimuth: 100
+  module: baz
+  albedo: 0.15
+  racking_model: close_mount
+  module_type: glass_glass
+  temperature_model_parameters: {'a': -3.56}
+  strings: 10
+  modules_per_string: 100"""
+    assert array.__repr__() == expected
+
+
 # we could retest each of the models tested above
 # when they are attached to LocalizedPVSystem, but
 # that's probably not necessary at this point.

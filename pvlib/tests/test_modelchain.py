@@ -197,6 +197,27 @@ def total_irrad(weather):
                          'poa_diffuse': [300., 200.]}, index=weather.index)
 
 
+@pytest.fixture(scope='function')
+def sapm_dc_snl_ac_system_Array(sapm_module_params, cec_inverter_parameters,
+                                sapm_temperature_cs5p_220m):
+    module = 'Canadian_Solar_CS5P_220M___2009_'
+    module_parameters = sapm_module_params.copy()
+    temp_model_params = sapm_temperature_cs5p_220m.copy()
+    array_one = pvsystem.Array(surface_tilt=32, surface_azimuth=180,
+                               albedo=0.2, module=module,
+                               module_parameters=module_parameters,
+                               temperature_mode_parameters = temp_model_params,
+                               modules_per_string=1,
+                               strings_per_inverter=1)
+    array_two = pvsystem.Array(surface_tilt=15, surface_azimuth=180,
+                               albedo=0.2, module=module,
+                               module_parameters=module_parameters,
+                               temperature_mode_parameters = temp_model_params,
+                               modules_per_string=1,
+                               strings_per_inverter=1)
+    return PVSystem(arrays=[array_one, array_two])
+
+
 def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
     ModelChain(sapm_dc_snl_ac_system, location)
 
@@ -789,6 +810,14 @@ def test_invalid_models(model, sapm_dc_snl_ac_system, location):
 def test_bad_get_orientation():
     with pytest.raises(ValueError):
         modelchain.get_orientation('bad value')
+
+
+# tests for PVSystem with multiple Array 
+def test_with_sapm_pvsystem_arrasy(sapm_dc_snl_ac_system, location, weather):
+    mc = ModelChain.with_sapm(sapm_dc_snl_ac_system, location)
+    assert mc.dc_model == mc.sapm
+    mc.run_model(weather)
+    assert mc.results
 
 
 @fail_on_pvlib_version('0.9')

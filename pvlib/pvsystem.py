@@ -152,10 +152,22 @@ class PVSystem:
 
     Parameters
     ----------
-    arrays : list of Array, optional
+    arrays : iterable of Array, optional
         List of arrays that are part of the system. If not specified
-        a single array is created from the other parameters (`surface_tilt`,
-        `surface_azimuth` etc.)
+        a single array is created from the other parameters (e.g.
+        `surface_tilt`, `surface_azimuth`). If `arrays` is specified
+        the following parameters are ignored:
+
+        - `surface_tilt`
+        - `surface_azimuth`
+        - `albedo`
+        - `surface_type`
+        - `module`
+        - `module_type`
+        - `module_parameters`
+        - `temperature_model_parameters`
+        - `modules_per_string`
+        - `strings_per_inverter`
 
     surface_tilt: float or array-like, default 0
         Surface tilt angles in decimal degrees.

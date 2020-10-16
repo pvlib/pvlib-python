@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 from conftest import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
+import unittest.mock as mock
 
 from pvlib import inverter, pvsystem
 from pvlib import atmosphere
@@ -1053,6 +1054,26 @@ def test_PVSystem_scale_voltage_current_power(mocker):
         'pvlib.pvsystem.scale_voltage_current_power', autospec=True)
     system.scale_voltage_current_power(data)
     m.assert_called_once_with(data, voltage=2, current=3)
+
+
+def test_PVSystem_multi_scale_voltage_current_power(mocker):
+    data = (1, 2)
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(modules_per_string=2, strings=3),
+                pvsystem.Array(modules_per_string=3, strings=5)]
+    )
+    m = mocker.patch(
+        'pvlib.pvsystem.scale_voltage_current_power', autospec=True
+    )
+    system.scale_voltage_current_power(data)
+    m.assert_has_calls(
+        [mock.call(1, voltage=2, current=3),
+         mock.call(2, voltage=3, current=5)],
+        any_order=True
+    )
+    with pytest.raises(ValueError,
+                       match="Length mismatch for parameter data"):
+        system.scale_voltage_current_power(None)
 
 
 def test_PVSystem_snlinverter(cec_inverter_parameters):

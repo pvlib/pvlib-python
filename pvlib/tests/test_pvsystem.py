@@ -1170,7 +1170,7 @@ def test_PVSystem_multi_array_get_irradiance():
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     solar_position = location.get_solarposition(times)
-    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
+    irrads = pd.DataFrame({'dni': [900,0], 'ghi': [600,0], 'dhi': [100,0]},
                           index=times)
     array_one_expected = array_one.get_irradiance(
         solar_position['apparent_zenith'],

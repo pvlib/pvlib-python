@@ -3,8 +3,10 @@ The ``temperature`` module contains functions for modeling temperature of
 PV modules and cells.
 """
 
+import math
 import numpy as np
 import pandas as pd
+from pandas.tseries.frequencies import to_offset
 from pvlib.tools import sind
 
 TEMPERATURE_MODEL_PARAMETERS = {
@@ -657,3 +659,72 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         sun0 = sun
 
     return pd.Series(tmod_array - 273.15, index=poa_global.index, name='tmod')
+
+
+def _calculate_radiative_heat_transfer(module_area, view_factor12, emissivity1, temperature1, emissivity2, temperature2):
+    r"""
+    """
+    # Stefan-Boltzmann constant
+    sigma = 5.670374419E-8      # W m^-2 K^-4
+    q12 = sigma * module_area * view_factor12 * (emissivity1*(temperature1 ** 4) - emissivity2*(temperature2 ** 4))
+
+    return q12
+
+
+def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area, t_mod_init=None, emissivity_sky=0.95,
+          emissivity_ground=0.85, k_c=12.7, k_v=2.0, wind_sensor_height=2.5, z0=0.25, mod_heat_capacity=840):
+    r"""
+    for fixed tilt
+
+    for now if initial module temperature not provided, assumes it is ambient temp. as suggested in github issue,
+    this should really only be allowed if it is middle of night (midnight) and panels are in steady state equilibrium
+    with environment
+
+    performs best (better than PVsyst model) for small time intervals (< 5 minutes). could also interpolate hourly data
+    to 5 minute for higher accuracy when only lower res data is available
+
+    units for heat cap dont make sense, also might be optimized for CdTE
+
+    emissivity ground is defaulted to sand value, grass is 0.9
+
+    convective coefficients are defaulted to those for "hot" climates (Koppen-Geiger Dry B and Temperate C)
+    for "temperate" climates (Koppen-Geiger Cold D), k_c = 16.5 and k_v = 3.2
+
+    """
+    # TODO validation for length of inputs?
+
+    # infer the time resolution from the inputted time series. first get pandas frequency alias, then convert to seconds
+    freq = pd.infer_freq(poa_effective.index)
+    dt = pd.to_timedelta(to_offset(freq)).seconds
+
+    # calculate short wave radiation (from sun) using effective POA (POA accounting for optical losses)
+    q_short_wave_radiation = module_area * poa_effective
+
+    # calculate the portion of incoming solar irradiance converted to electrical energy
+    p_out = module_efficiency * module_area * poa_effective
+
+    # adjust wind speed if sensor height not at 2.5 meters
+    wind_speed_adj = wind_speed * (math.log(2.5 / z0) / math.log(wind_sensor_height / z0))
+
+    t_mod = np.zeros_like(poa_effective)
+    t_mod_i = (t_mod_init if t_mod_init is not None else temp_air[0]) + 273.15
+    t_mod[0] = t_mod_i
+    # calculate successive module temperatures for each time stamp
+    for i in range(len(t_mod) - 1):
+        # TODO figure these out
+        # calculate long wave radiation (radiative interactions between module and objects within Earth's atmosphere)
+        q_mod_sky = 0 # _calculate_radiative_heat_transfer(module_area, )
+        q_mod_ground = 0 # _calculate_radiative_heat_transfer(module_area, )
+        q_mod_mod = 0 # _calculate_radiative_heat_transfer(module_area, )
+        q_long_wave_radiation = q_mod_sky + q_mod_ground + q_mod_mod
+
+        # calculation convective heat transfer
+        q_convection = (k_c + k_v * wind_speed_adj[i]) * (t_mod_i - temp_air[i] - 273.15)
+
+        # calculate the delta in module temperature, and add it to the current module temperature
+        t_mod_delta = (dt / mod_heat_capacity) * \
+                      (q_long_wave_radiation + q_short_wave_radiation[i] + q_convection - p_out[i]) / 34.5  # TODO
+        t_mod_i += t_mod_delta
+        t_mod[i + 1] = t_mod_i
+
+    return pd.Series(t_mod - 273.15, index=poa_effective.index, name='tmod')

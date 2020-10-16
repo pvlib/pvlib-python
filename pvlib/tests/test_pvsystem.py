@@ -1079,10 +1079,10 @@ def test_PVSystem_multiple_array_creation():
     array_one = pvsystem.Array(surface_tilt=32)
     array_two = pvsystem.Array(surface_tilt=15, module_parameters={'pdc0': 1})
     pv_system = pvsystem.PVSystem(arrays=[array_one, array_two])
-    assert pv_system.surface_tilt == [32, 15]
-    assert pv_system.surface_azimuth == [180, 180]
-    assert pv_system.module_parameters == [{}, {'pdc0': 1}]
-    with pytest.raises(ValueError):
+    assert pv_system.surface_tilt == (32, 15)
+    assert pv_system.surface_azimuth == (180, 180)
+    assert pv_system.module_parameters == ({}, {'pdc0': 1})
+    with pytest.raises(TypeError):
         pvsystem.PVSystem(arrays=array_one)
 
 

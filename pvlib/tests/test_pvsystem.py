@@ -1454,6 +1454,9 @@ def test_PVSystem_multiple_array_pvwatts_dc_value_error():
         system.pvwatts_dc((1, 1, 1, 1), (1, 1))
     with pytest.raises(ValueError, match='Length mismatch for parameter .*'):
         system.pvwatts_dc(2, 3)
+    with pytest.raises(ValueError, match=temp_cell_error_msg):
+        # ValueError is raised for non-tuple iterable with correct length
+        system.pvwatts_dc((1, 1, 1), pd.Series([1, 2, 3]))
 
 def test_PVSystem_pvwatts_losses(mocker):
     mocker.spy(pvsystem, 'pvwatts_losses')

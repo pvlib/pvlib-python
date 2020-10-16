@@ -1404,6 +1404,34 @@ def test_PVSystem_pvwatts_dc_kwargs(mocker):
     assert_allclose(expected, out, atol=10)
 
 
+def test_PVSystem_multiple_array_pvwatts_dc():
+    array_one_module_parameters = {
+        'pdc0': 100, 'gamma_pdc': -0.003, 'temp_ref': 20
+    }
+    array_one = pvsystem.Array(
+        module_parameters=array_one_module_parameters
+    )
+    array_two_module_parameters = {
+        'pdc0': 150, 'gamma_pdc': -0.002, 'temp_ref': 25
+    }
+    array_two = pvsystem.Array(
+        module_parameters=array_two_module_parameters
+    )
+    system = pvsystem.PVSystem(arrays=[array_one, array_two])
+    irrad_one = 900
+    irrad_two = 500
+    temp_cell_one = 30
+    temp_cell_two = 20
+    expected_one = pvsystem.pvwatts_dc(irrad_one, temp_cell_one,
+                                       **array_one_module_parameters)
+    expected_two = pvsystem.pvwatts_dc(irrad_two, temp_cell_two,
+                                       **array_two_module_parameters)
+    dc_one, dc_two = system.pvwatts_dc((irrad_one, irrad_two),
+                                       (temp_cell_one, temp_cell_two))
+    assert dc_one == expected_one
+    assert dc_two == expected_two
+
+
 def test_PVSystem_pvwatts_losses(mocker):
     mocker.spy(pvsystem, 'pvwatts_losses')
     system = make_pvwatts_system_defaults()

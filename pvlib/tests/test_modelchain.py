@@ -823,7 +823,7 @@ def test_ModelChain_attributes_deprecated_10(sapm_dc_snl_ac_system, location):
     with pytest.warns(pvlibDeprecationWarning, match=match):
         mc.aoi = 5
 
-    
+
 def test_basic_chain_required(sam_data, cec_inverter_parameters,
                               sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',

@@ -387,7 +387,6 @@ class ModelChain:
 
         self.weather = None
         self.times = None
-        self.solar_position = None
 
         self.results = ModelChainResult()
 

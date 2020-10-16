@@ -1075,6 +1075,17 @@ def test_PVSystem_creation():
     pv_system.inverter_parameters['Paco'] = 1
 
 
+def test_PVSystem_multiple_array_creation():
+    array_one = pvsystem.Array(surface_tilt=32)
+    array_two = pvsystem.Array(surface_tilt=15, module_parameters={'pdc0': 1})
+    pv_system = pvsystem.PVSystem(arrays=[array_one, array_two])
+    assert pv_system.surface_tilt == [32, 15]
+    assert pv_system.surface_azimuth == [180, 180]
+    assert pv_system.module_parameters == [{}, {'pdc0': 1}]
+    with pytest.raises(ValueError):
+        pvsystem.PVSystem(arrays=array_one)
+
+
 def test_PVSystem_get_aoi():
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
     aoi = system.get_aoi(30, 225)

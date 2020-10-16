@@ -151,6 +151,11 @@ class PVSystem:
 
     Parameters
     ----------
+    arrays : list of Array, optional
+        List of arrays that are part of the system. If not specified
+        a single array is created from the other parameters (`surface_tilt`,
+        `surface_azimuth` etc.)
+
     surface_tilt: float or array-like, default 0
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as degrees from horizontal
@@ -218,6 +223,7 @@ class PVSystem:
     """
 
     def __init__(self,
+                 arrays=None,
                  surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
                  module=None, module_type=None,
@@ -228,19 +234,25 @@ class PVSystem:
                  racking_model=None, losses_parameters=None, name=None,
                  **kwargs):
 
-        self._arrays = [Array(
-            surface_tilt,
-            surface_azimuth,
-            albedo,
-            surface_type,
-            module,
-            module_type,
-            module_parameters,
-            temperature_model_parameters,
-            modules_per_string,
-            strings_per_inverter,
-            racking_model
-        )]
+        if arrays is None:
+            self._arrays = [Array(
+                surface_tilt,
+                surface_azimuth,
+                albedo,
+                surface_type,
+                module,
+                module_type,
+                module_parameters,
+                temperature_model_parameters,
+                modules_per_string,
+                strings_per_inverter,
+                racking_model
+            )]
+        elif not isinstance(arrays, list):
+            raise ValueError("expected `arrays` to be a list, got "
+                             f"{type(arrays).__name__}")
+        else:
+            self._arrays = arrays
 
         self.inverter = inverter
         if inverter_parameters is None:

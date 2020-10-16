@@ -783,8 +783,8 @@ class PVSystem:
                 coefficients = None
 
             return atmosphere.first_solar_spectral_correction(
-                    pw, airmass_absolute,
-                    module_type, coefficients
+                pw, airmass_absolute,
+                module_type, coefficients
             )
         return tuple(_spectral_correction(array) for array in self._arrays)
 

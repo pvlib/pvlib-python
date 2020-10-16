@@ -109,8 +109,9 @@ def validate_against_arrays(*list_params):
             bindings = sig.bind(*tuple([ref, *args]), **kwargs)
             for param in bindings.arguments.keys():
                 if param in list_params:
-                    if not isinstance(bindings.arguments[param], list):
-                        bindings.arguments[param] = [bindings.arguments[param]]
+                    value = bindings.arguments[param]
+                    if not isinstance(value, tuple):
+                        bindings.arguments[param] = (value,)
                     if len(bindings.arguments[param]) != len(ref._arrays):
                         raise ValueError(
                             f"Length mismatch for parameter {param}"

@@ -1113,6 +1113,17 @@ def test_PVSystem_get_aoi():
     assert np.round(aoi, 4) == 42.7408
 
 
+def test_PVSystem_multiple_array_get_aoi():
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(surface_tilt=15, surface_azimuth=135),
+                pvsystem.Array(surface_tilt=32, surface_azimuth=135)]
+    )
+    aoi_one, aoi_two = system.get_aoi(30, 225)
+    assert np.round(aoi_two, 4) == 42.7408
+    assert aoi_two != aoi_one
+    assert aoi_one > 0
+
+
 def test_PVSystem_get_irradiance():
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
     times = pd.date_range(start='20160101 1200-0700',

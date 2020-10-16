@@ -33,6 +33,17 @@ def test_PVSystem_get_iam(mocker, iam_model, model_params):
     assert iam < 1.
 
 
+def test_PVSystem_multi_array_get_iam():
+    model_params = {'b': 0.05}
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(module_parameters=model_params),
+                pvsystem.Array(module_parameters=model_params)]
+    )
+    iam = system.get_iam((1, 5), iam_model='ashrae')
+    assert len(iam) == 2
+    assert iam[0] != iam[1]
+
+
 def test_PVSystem_get_iam_sapm(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     mocker.spy(_iam, 'sapm')

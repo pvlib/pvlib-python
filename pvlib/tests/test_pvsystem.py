@@ -1432,6 +1432,29 @@ def test_PVSystem_multiple_array_pvwatts_dc():
     assert dc_two == expected_two
 
 
+def test_PVSystem_multiple_array_pvwatts_dc_value_error():
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(), pvsystem.Array(), pvsystem.Array()]
+    )
+    poa_error_msg = 'Length mismatch for parameter g_poa_effective'
+    with pytest.raises(ValueError, match=poa_error_msg):
+        system.pvwatts_dc(10, (1, 1, 1))
+    with pytest.raises(ValueError, match=poa_error_msg):
+        system.pvwatts_dc((10, 10), (1, 1, 1))
+    with pytest.raises(ValueError, match=poa_error_msg):
+        system.pvwatts_dc((10, 10, 10, 10), (1, 1, 1))
+    temp_cell_error_msg = 'Length mismatch for parameter temp_cell'
+    with pytest.raises(ValueError, match=temp_cell_error_msg):
+        system.pvwatts_dc((1, 1, 1), 1)
+    with pytest.raises(ValueError, match=temp_cell_error_msg):
+        system.pvwatts_dc((1, 1, 1), (1,))
+    with pytest.raises(ValueError, match='Length mismatch for parameter .*'):
+        system.pvwatts_dc((1,), 1)
+    with pytest.raises(ValueError, match='Length mismatch for parameter .*'):
+        system.pvwatts_dc((1, 1, 1, 1), (1, 1))
+    with pytest.raises(ValueError, match='Length mismatch for parameter .*'):
+        system.pvwatts_dc(2, 3)
+
 def test_PVSystem_pvwatts_losses(mocker):
     mocker.spy(pvsystem, 'pvwatts_losses')
     system = make_pvwatts_system_defaults()

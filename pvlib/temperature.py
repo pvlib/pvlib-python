@@ -661,19 +661,21 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     return pd.Series(tmod_array - 273.15, index=poa_global.index, name='tmod')
 
 
-def _calculate_radiative_heat_transfer(module_area, view_factor12, emissivity1, temperature1, emissivity2, temperature2):
-    r"""
+def _calculate_radiative_heat(module_area, view_factor, emissivity, temperature1, temperature2):
+    """
+
     """
     # Stefan-Boltzmann constant
     sigma = 5.670374419E-8      # W m^-2 K^-4
-    q12 = sigma * module_area * view_factor12 * (emissivity1*(temperature1 ** 4) - emissivity2*(temperature2 ** 4))
+    q = sigma * module_area * view_factor * emissivity * (temperature1 ** 4 - temperature2 ** 4)
 
-    return q12
+    return q
 
 
-def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area, t_mod_init=None, emissivity_sky=0.95,
-          emissivity_ground=0.85, k_c=12.7, k_v=2.0, wind_sensor_height=2.5, z0=0.25, mod_heat_capacity=840):
-    r"""
+def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area, module_tilt, t_mod_init=None,
+          emissivity_sky=0.95, emissivity_ground=0.85, k_c=12.7, k_v=2.0, wind_sensor_height=2.5, z0=0.25,
+          mod_heat_capacity=840):
+    """
     for fixed tilt
 
     for now if initial module temperature not provided, assumes it is ambient temp. as suggested in github issue,
@@ -691,35 +693,38 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area, t
     for "temperate" climates (Koppen-Geiger Cold D), k_c = 16.5 and k_v = 3.2
 
     """
-    # TODO validation for length of inputs?
+    # ensure that time series inputs are all of the same length
+    if not (len(poa_effective) == len(temp_air) and len(temp_air) == len(wind_speed)):
+        raise ValueError('poa_effective, temp_air, and wind_speed must all be pandas Series of the same size.')
 
     # infer the time resolution from the inputted time series. first get pandas frequency alias, then convert to seconds
     freq = pd.infer_freq(poa_effective.index)
     dt = pd.to_timedelta(to_offset(freq)).seconds
 
-    # calculate short wave radiation (from sun) using effective POA (POA accounting for optical losses)
-    q_short_wave_radiation = module_area * poa_effective
-
-    # calculate the portion of incoming solar irradiance converted to electrical energy
-    p_out = module_efficiency * module_area * poa_effective
+    q_short_wave_radiation = module_area * poa_effective        # radiation (from sun)
+    p_out = module_efficiency * module_area * poa_effective     # converted electrical energy
 
     # adjust wind speed if sensor height not at 2.5 meters
     wind_speed_adj = wind_speed * (math.log(2.5 / z0) / math.log(wind_sensor_height / z0))
+
+    # calculate view factors (simplified calculations)
+    view_factor_mod_sky = (1 + math.cos(module_tilt)) / 2
+    view_factor_mod_ground = (1 - math.cos(module_tilt)) / 2
 
     t_mod = np.zeros_like(poa_effective)
     t_mod_i = (t_mod_init if t_mod_init is not None else temp_air[0]) + 273.15
     t_mod[0] = t_mod_i
     # calculate successive module temperatures for each time stamp
     for i in range(len(t_mod) - 1):
-        # TODO figure these out
         # calculate long wave radiation (radiative interactions between module and objects within Earth's atmosphere)
-        q_mod_sky = 0 # _calculate_radiative_heat_transfer(module_area, )
-        q_mod_ground = 0 # _calculate_radiative_heat_transfer(module_area, )
-        q_mod_mod = 0 # _calculate_radiative_heat_transfer(module_area, )
+        t_sky = temp_air[i] - 20 + 273.15
+        q_mod_sky = _calculate_radiative_heat(module_area, view_factor_mod_sky, emissivity_sky, t_mod_i, t_sky)
+        q_mod_ground = _calculate_radiative_heat(module_area, view_factor_mod_ground, emissivity_ground, t_mod_i, t_mod_i)
+        q_mod_mod = 0   # current assumption is that it is negligible
         q_long_wave_radiation = q_mod_sky + q_mod_ground + q_mod_mod
 
         # calculation convective heat transfer
-        q_convection = (k_c + k_v * wind_speed_adj[i]) * (t_mod_i - temp_air[i] - 273.15)
+        q_convection = (k_c + k_v * wind_speed_adj[i]) * ((t_mod_i - 273.15) - temp_air[i])
 
         # calculate the delta in module temperature, and add it to the current module temperature
         t_mod_delta = (dt / mod_heat_capacity) * \

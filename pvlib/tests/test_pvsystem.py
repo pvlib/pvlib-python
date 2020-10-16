@@ -1151,6 +1151,39 @@ def test_PVSystem_get_irradiance():
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 
+def test_PVSystem_multi_array_get_irradiance():
+    array_one = pvsystem.Array(surface_tilt=32, surface_azimuth=135)
+    array_two = pvsystem.Array(surface_tilt=5, surface_azimuth=150)
+    system = pvsystem.PVSystem(arrays=[array_one, array_two])
+    location = Location(latitude=32, longitude=-111)
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
+    solar_position = location.get_solarposition(times)
+    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
+                          index=times)
+    array_one_expected = array_one.get_irradiance(
+        solar_position['apparent_zenith'],
+        solar_position['azimuth'],
+        irrads['dni'], irrads['ghi'], irrads['dhi']
+    )
+    array_two_expected = array_two.get_irradiance(
+        solar_position['apparent_zenith'],
+        solar_position['azimuth'],
+        irrads['dni'], irrads['ghi'], irrads['dhi']
+    )
+    array_one_irrad, array_two_irrad = system.get_irradiance(
+        solar_position['apparent_zenith'],
+        solar_position['azimuth'],
+        irrads['dni'], irrads['ghi'], irrads['dhi']
+    )
+    assert_frame_equal(
+        array_one_irrad, array_one_expected, check_less_precise=2
+    )
+    assert_frame_equal(
+        array_two_irrad, array_two_expected, check_less_precise=2
+    )
+
+
 @fail_on_pvlib_version('0.9')
 def test_PVSystem_localize_with_location():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')

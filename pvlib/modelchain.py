@@ -397,6 +397,38 @@ class ModelChain:
                 'removed in v0.9', pvlibDeprecationWarning
             )
 
+    def __getattr__(self, key):
+        # here to deprecate old attributes
+        deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
+                            'aoi', 'aoi_modifier', 'spectral_modifier',
+                            'cell_temperature', 'effective_irradiance',
+                            'dc', 'diode_params']
+        if key in deprecated_attrs:
+            msg = f'ModelChain.{key} is deprecated and will' \
+                  f' be removed in v1.0. Use' \
+                  f' ModelChain.results.{key} instead'
+            warnings.warn(msg, pvlibDeprecationWarning)
+            return getattr(self.results, key)
+        else:
+            try:
+                return self.__dict__[key]
+            except(KeyError):
+                raise AttributeError
+
+    def __setattr__(self, key, value):
+        # here to deprecate old attributes
+        deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
+                            'aoi', 'aoi_modifier', 'spectral_modifier',
+                            'cell_temperature', 'effective_irradiance',
+                            'dc', 'diode_params']
+        if key in deprecated_attrs:
+            msg = f'ModelChain.{key} is deprecated from v0.9. Use' \
+                  f' ModelChain.results.{key} instead'
+            warnings.warn(msg, pvlibDeprecationWarning)
+            setattr(self.results, key, value)
+        else:
+            object.__setattr__(self, key, value)
+
     @classmethod
     def with_pvwatts(cls, system, location,
                      orientation_strategy=None,

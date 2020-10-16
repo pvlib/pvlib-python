@@ -814,6 +814,16 @@ def test_ModelChain_kwargs_deprecated_09(sapm_dc_snl_ac_system, location):
         ModelChain(sapm_dc_snl_ac_system, location, arbitrary_kwarg='value')
 
 
+@fail_on_pvlib_version('1.0')
+def test_ModelChain_attributes_deprecated_10(sapm_dc_snl_ac_system, location):
+    match = 'Use ModelChain.results'
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        mc.aoi
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        mc.aoi = 5
+
+    
 def test_basic_chain_required(sam_data, cec_inverter_parameters,
                               sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',

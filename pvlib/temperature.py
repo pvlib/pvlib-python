@@ -675,7 +675,8 @@ def _calculate_radiative_heat(module_area, view_factor, emissivity,
         View factor of object 1 with respect to object 2 [unitless]
 
     emissivity : float
-        Thermal emissivity [unitless] # TODO there are probably 2 of these values
+        # TODO there are probably 2 of these values
+        Thermal emissivity [unitless]
 
     temperature1 : float
         Temperature of object 1 [C]

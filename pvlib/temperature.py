@@ -676,6 +676,10 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area, m
           emissivity_sky=0.95, emissivity_ground=0.85, k_c=12.7, k_v=2.0, wind_sensor_height=2.5, z0=0.25,
           mod_heat_capacity=840):
     """
+    Calculate module temperature at sub-hourly resolution for fixed tilt systems per the Hayes model.
+
+    [refrence paper]
+
     for fixed tilt
 
     for now if initial module temperature not provided, assumes it is ambient temp. as suggested in github issue,

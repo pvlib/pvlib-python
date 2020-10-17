@@ -190,3 +190,21 @@ def test_fuentes(filename, inoct):
     night_difference = expected_tcell[is_night] - actual_tcell[is_night]
     assert night_difference.max() < 6
     assert night_difference.min() > 0
+
+
+def test__calculate_radiative_heat():
+    # TODO placeholder until final model is validated
+    q = temperature._calculate_radiative_heat(
+        module_area=2.47,
+        view_factor=0.5,
+        emissivity=0.5,
+        temperature1=30 + 273.15,
+        temperature2=10 + 273.15
+    )
+    assert round(q, 5) == 70.65021
+
+
+def test_hayes():
+    # TODO placeholder until final model is validated
+    pass
+

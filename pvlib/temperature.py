@@ -676,14 +676,14 @@ def _calculate_radiative_heat(module_area, view_factor, emissivity,
 
     emissivity : float
         # TODO there are probably 2 of these values
-        Thermal emissivity [unitless]
+        Thermal emissivity [unitless]. Must be between 0 and 1.
 
     temperature1 : float
-        Temperature of object 1 [C]
+        Temperature of object 1 [K]
 
     temperature2 : float
 
-        Temperature of object 2 [C]
+        Temperature of object 2 [K]
     Returns
     -------
     q : float
@@ -745,11 +745,12 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
         module would be in steady-state equilibrium with the environment
 
     emissivity_sky : float, default 0.95
-        Thermal emissivity of sky [unitless].
+        Thermal emissivity of sky [unitless]. Must be between 0 and 1.
 
     emissivity_ground : float, default 0.85
         Thermal emissivity of ground [unitless]. Default value is suggested
-        value for sand. Suggested value for grass is 0.9.
+        value for sand. Suggested value for grass is 0.9. Must be between
+        0 and 1.
 
     k_c : float, default 12.7
         Free convective heat coefficient. Defaults to value for "hot"
@@ -823,6 +824,7 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
             temperature1=t_mod_i,
             temperature2=t_sky
         )
+        # TODO paper indicates temps equal, but that yields zero q
         q_mod_ground = _calculate_radiative_heat(
             module_area=module_area,
             view_factor=view_factor_mod_ground,

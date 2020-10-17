@@ -775,16 +775,6 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     tmod : pandas Series
         The modeled module temperature [C]
 
-    Notes
-    -----
-    The Hayes model for module temperature :math:`T_{t + dt}`, for a given
-    timestamp is given by
-
-    .. math::
-       :label: Hayes
-
-        T_{t + dt} = \frac{dt}{C_{mod}}
-
     References
     ----------
     .. [1] W. Hayes and L. Ngan, "A Time-Dependent Model for CdTe PV Module

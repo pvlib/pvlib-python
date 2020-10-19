@@ -223,6 +223,30 @@ def test_PVSystem_sapm(sapm_module_params, mocker):
     assert_allclose(out['p_mp'], 100, atol=100)
 
 
+def test_PVSystem_multi_array_sapm(sapm_module_params):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(module_parameters=sapm_module_params),
+                pvsystem.Array(module_parameters=sapm_module_params)]
+    )
+    effective_irradiance=(100, 500)
+    temp_cell=(15, 25)
+    sapm_one, sapm_two = system.sapm(effective_irradiance, temp_cell)
+    assert sapm_one['p_mp'] != sapm_two['p_mp']
+    sapm_one_flip, sapm_two_flip = system.sapm(
+        (effective_irradiance[1], effective_irradiance[0]),
+        (temp_cell[1], temp_cell[0])
+    )
+    assert sapm_one_flip['p_mp'] == sapm_two['p_mp']
+    assert sapm_two_flip['p_mp'] == sapm_one['p_mp']
+    with pytest.raises(ValueError,
+                       match="Length mismatch for parameter temp_cell"):
+        system.sapm(effective_irradiance, 10)
+    with pytest.raises(ValueError,
+                       match="Length mismatch for parameter "
+                             "effective_irradiance"):
+        system.sapm(500, temp_cell)
+
+
 @pytest.mark.parametrize('airmass,expected', [
     (1.5, 1.00028714375),
     (np.array([[10, np.nan]]), np.array([[0.999535, 0]])),

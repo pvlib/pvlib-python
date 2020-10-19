@@ -304,6 +304,21 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
     assert_allclose(out, 1, atol=0.5)
 
 
+def test_PVSystem_multi_array_first_solar_spectral_loss():
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(
+            module_parameters={'Technology': 'mc-Si'},
+            module_type='multisi'
+        ),
+        pvsystem.Array(
+            module_parameters={'Technology': 'mc-Si'},
+            module_type='multisi'
+        )]
+    )
+    loss_one, loss_two = system.first_solar_spectral_loss(1, 3)
+    assert loss_one == loss_two
+
+
 @pytest.mark.parametrize('test_input,expected', [
     ([1000, 100, 5, 45], 1140.0510967821877),
     ([np.array([np.nan, 1000, 1000]),

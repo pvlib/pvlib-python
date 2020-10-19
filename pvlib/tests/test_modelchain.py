@@ -206,13 +206,13 @@ def sapm_dc_snl_ac_system_Array(sapm_module_params, cec_inverter_parameters,
     array_one = pvsystem.Array(surface_tilt=32, surface_azimuth=180,
                                albedo=0.2, module=module,
                                module_parameters=module_parameters,
-                               temperature_mode_parameters = temp_model_params,
+                               temperature_mode_parameters=temp_model_params,
                                modules_per_string=1,
                                strings_per_inverter=1)
     array_two = pvsystem.Array(surface_tilt=15, surface_azimuth=180,
                                albedo=0.2, module=module,
                                module_parameters=module_parameters,
-                               temperature_mode_parameters = temp_model_params,
+                               temperature_mode_parameters=temp_model_params,
                                modules_per_string=1,
                                strings_per_inverter=1)
     return PVSystem(arrays=[array_one, array_two])
@@ -812,7 +812,7 @@ def test_bad_get_orientation():
         modelchain.get_orientation('bad value')
 
 
-# tests for PVSystem with multiple Array 
+# tests for PVSystem with multiple Array
 def test_with_sapm_pvsystem_arrasy(sapm_dc_snl_ac_system, location, weather):
     mc = ModelChain.with_sapm(sapm_dc_snl_ac_system, location)
     assert mc.dc_model == mc.sapm

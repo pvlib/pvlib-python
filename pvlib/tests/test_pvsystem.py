@@ -306,14 +306,16 @@ def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
 
 def test_PVSystem_multi_array_first_solar_spectral_loss():
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(
-            module_parameters={'Technology': 'mc-Si'},
-            module_type='multisi'
-        ),
-        pvsystem.Array(
-            module_parameters={'Technology': 'mc-Si'},
-            module_type='multisi'
-        )]
+        arrays=[
+            pvsystem.Array(
+                module_parameters={'Technology': 'mc-Si'},
+                module_type='multisi'
+            ),
+            pvsystem.Array(
+                module_parameters={'Technology': 'mc-Si'},
+                module_type='multisi'
+            )
+        ]
     )
     loss_one, loss_two = system.first_solar_spectral_loss(1, 3)
     assert loss_one == loss_two

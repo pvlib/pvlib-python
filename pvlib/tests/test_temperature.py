@@ -258,4 +258,4 @@ def test_hayes():
                                    module_weight, module_tilt)
 
     assert [round(t, 2) for t in tmod_hayes.values] == \
-           [-13.20, -7.81, -8.98, -9.85]
+           [-13.20, -14.81, -15.98, -16.85]

@@ -376,9 +376,16 @@ def test_PVSystem_multi_array_sapm_effective_irradiance(sapm_module_params):
 
 @pytest.fixture
 def two_array_system():
-    """Two-array PVSystem where Arrays use default parameters."""
+    """Two-array PVSystem.
+
+    Both arrays are identical.
+    """
+    temperature_model = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass'
+    ]
     return pvsystem.PVSystem(
-        arrays=[pvsystem.Array(), pvsystem.Array()]
+        arrays=[pvsystem.Array(temperature_model_parameters=temperature_model),
+                pvsystem.Array(temperature_model_parameters=temperature_model)]
     )
 
 
@@ -424,7 +431,7 @@ def test_PVSystem_sapm_celltemp_kwargs(mocker):
     assert_allclose(out, 57, atol=1)
 
 
-def test_PVSystem_multi_array_sapm_celltemp():
+def test_PVSystem_multi_array_sapm_celltemp_different_arrays():
     temp_model_one = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
         'open_rack_glass_glass']
     temp_model_two = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
@@ -437,14 +444,6 @@ def test_PVSystem_multi_array_sapm_celltemp():
         (1000, 1000), 25, 1
     )
     assert temp_one != temp_two
-
-
-@pytest.mark.parametrize("irrad", [10, (10,), (1, 1, 1)])
-def test_PVSystem_multi_array_sapm_celltemp_value_error(
-        irrad, two_array_system):
-    with pytest.raises(ValueError,
-                       match="Length mismatch for parameter poa_global"):
-        two_array_system.sapm_celltemp(irrad, 25, 0)
 
 
 def test_PVSystem_pvsyst_celltemp(mocker):
@@ -467,20 +466,6 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     assert (out < 90) and (out > 70)
 
 
-def test_PVSystem_multi_array_pvsyst_celltemp(two_array_system):
-    temp_one, temp_two = two_array_system.pvsyst_celltemp(
-        (100, 800), 45, 1
-    )
-    assert temp_one != temp_two
-
-@pytest.mark.parametrize("irrad", [1, (1, 2, 3), (1,)])
-def test_PVSystem_multi_array_pvsyst_celltemp_value_error(
-        irrad, two_array_system):
-    with pytest.raises(ValueError,
-                       match="Length mismatch for parameter poa_global"):
-        two_array_system.pvsyst_celltemp(irrad, 1, 1)
-
-
 def test_PVSystem_faiman_celltemp(mocker):
     u0, u1 = 25.0, 6.84  # default values
     temp_model_params = {'u0': u0, 'u1': u1}
@@ -492,6 +477,27 @@ def test_PVSystem_faiman_celltemp(mocker):
     out = system.faiman_celltemp(irrads, temps, winds)
     temperature.faiman.assert_called_once_with(irrads, temps, winds, u0, u1)
     assert_allclose(out, 56.4, atol=1)
+
+
+@pytest.mark.parametrize("celltemp",
+                         [pvsystem.PVSystem.faiman_celltemp,
+                          pvsystem.PVSystem.pvsyst_celltemp,
+                          pvsystem.PVSystem.sapm_celltemp])
+def test_PVSystem_multi_array_celltemp_functions(celltemp, two_array_system):
+    temp_one, temp_two = celltemp(two_array_system, (1000, 500), 25, 1)
+    assert temp_one != temp_two
+
+
+@pytest.mark.parametrize("celltemp",
+                         [pvsystem.PVSystem.faiman_celltemp,
+                          pvsystem.PVSystem.pvsyst_celltemp,
+                          pvsystem.PVSystem.fuentes_celltemp,
+                          pvsystem.PVSystem.sapm_celltemp])
+def test_PVSystem_multi_array_celltemp_poa_length_mismatch(
+        celltemp, two_array_system):
+    with pytest.raises(ValueError,
+                       match="Length mismatch for parameter poa_global"):
+        celltemp(two_array_system, 1000, 25, 1)
 
 
 def test_PVSystem_fuentes_celltemp(mocker):

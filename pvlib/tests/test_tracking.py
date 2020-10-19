@@ -451,14 +451,17 @@ def test_SingleAxisTracker___repr__():
   gcr: 0.25
   cross_axis_tilt: 0.0
   name: None
-  surface_tilt: None
-  surface_azimuth: None
-  module: blah
-  inverter: blarg
-  albedo: 0.25
-  racking_model: None
-  module_type: None
-  temperature_model_parameters: {'a': -3.56}"""
+  Array:
+    surface_tilt: None
+    surface_azimuth: None
+    module: blah
+    albedo: 0.25
+    racking_model: None
+    module_type: None
+    temperature_model_parameters: {'a': -3.56}
+    strings: 1
+    modules_per_string: 1
+  inverter: blarg"""
     assert system.__repr__() == expected
 
 
@@ -476,14 +479,17 @@ def test_LocalizedSingleAxisTracker___repr__():
   gcr: 0.25
   cross_axis_tilt: 0.0
   name: None
-  surface_tilt: None
-  surface_azimuth: None
-  module: blah
+  Array:
+    surface_tilt: None
+    surface_azimuth: None
+    module: blah
+    albedo: 0.25
+    racking_model: None
+    module_type: None
+    temperature_model_parameters: {'a': -3.56}
+    strings: 1
+    modules_per_string: 1
   inverter: blarg
-  albedo: 0.25
-  racking_model: None
-  module_type: None
-  temperature_model_parameters: {'a': -3.56}
   latitude: 32
   longitude: -111
   altitude: 0

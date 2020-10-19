@@ -735,7 +735,7 @@ class PVSystem:
         if you want to match the PVWatts behavior, you can override it by
         including a ``surface_tilt`` value in ``temperature_model_parameters``.
         """
-        # default to using the PVSystem attribute, but allow user to
+        # default to using the Array attribute, but allow user to
         # override with a custom surface_tilt value
         def _build_kwargs_fuentes(array):
             kwargs = {'surface_tilt': array.surface_tilt}

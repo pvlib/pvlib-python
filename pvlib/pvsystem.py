@@ -1131,16 +1131,12 @@ class Array:
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
 
-        # TODO now would be a good time to address the suggestion above:
-        #      'could tie these together with @property'
         self.surface_type = surface_type
         if albedo is None:
             self.albedo = irradiance.SURFACE_ALBEDOS.get(surface_type, 0.25)
         else:
             self.albedo = albedo
 
-        # TODO now would be a good time to address the suggestion above:
-        #      'could tie these together with @property'
         self.module = module
         if module_parameters is None:
             self.module_parameters = {}

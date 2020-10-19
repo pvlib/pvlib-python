@@ -228,8 +228,8 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
         arrays=[pvsystem.Array(module_parameters=sapm_module_params),
                 pvsystem.Array(module_parameters=sapm_module_params)]
     )
-    effective_irradiance=(100, 500)
-    temp_cell=(15, 25)
+    effective_irradiance = (100, 500)
+    temp_cell = (15, 25)
     sapm_one, sapm_two = system.sapm(effective_irradiance, temp_cell)
     assert sapm_one['p_mp'] != sapm_two['p_mp']
     sapm_one_flip, sapm_two_flip = system.sapm(
@@ -1260,7 +1260,7 @@ def test_PVSystem_multi_array_get_irradiance():
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     solar_position = location.get_solarposition(times)
-    irrads = pd.DataFrame({'dni': [900,0], 'ghi': [600,0], 'dhi': [100,0]},
+    irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
                           index=times)
     array_one_expected = array_one.get_irradiance(
         solar_position['apparent_zenith'],

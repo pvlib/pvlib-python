@@ -1357,6 +1357,21 @@ def test_PVSystem_multi_array_get_irradiance():
     )
 
 
+def test_PVSystem_change_surface_azimuth():
+    system = pvsystem.PVSystem(surface_azimuth=180)
+    assert system.surface_azimuth == 180
+    system.surface_azimuth = 90
+    assert system.surface_azimuth == 90
+
+
+def test_PVSystem_get_albedo(two_array_system):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(albedo=0.5)]
+    )
+    assert system.albedo == 0.5
+    assert two_array_system.albedo == (0.25, 0.25)
+
+
 @fail_on_pvlib_version('0.9')
 def test_PVSystem_localize_with_location():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')

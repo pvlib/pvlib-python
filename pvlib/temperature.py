@@ -796,7 +796,7 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     dt = pd.to_timedelta(to_offset(freq)).seconds
 
     # radiation (from sun)
-    q_short_wave_radiation = poa_effective # module_area * poa_effective
+    q_short_wave_radiation = poa_effective      # module_area * poa_effective
 
     # converted electrical energy
     p_out = module_efficiency * module_area * poa_effective

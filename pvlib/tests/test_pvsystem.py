@@ -1404,15 +1404,50 @@ def test_PVSystem___repr__():
 
     expected = """PVSystem:
   name: pv ftw
-  surface_tilt: 0
-  surface_azimuth: 180
-  module: blah
-  inverter: blarg
-  albedo: 0.25
-  racking_model: None
-  module_type: None
-  temperature_model_parameters: {'a': -3.56}"""
+  Array:
+    surface_tilt: 0
+    surface_azimuth: 180
+    module: blah
+    albedo: 0.25
+    racking_model: None
+    module_type: None
+    temperature_model_parameters: {'a': -3.56}
+    strings: 1
+    modules_per_string: 1
+  inverter: blarg"""
     assert system.__repr__() == expected
+
+
+def test_PVSystem_multi_array___repr__():
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(surface_tilt=30, surface_azimuth=100),
+                pvsystem.Array(surface_tilt=20, surface_azimuth=220)],
+        inverter='blarg',
+    )
+    expected = """PVSystem:
+  name: None
+  Array:
+    surface_tilt: 30
+    surface_azimuth: 100
+    module: None
+    albedo: 0.25
+    racking_model: None
+    module_type: None
+    temperature_model_parameters: {}
+    strings: 1
+    modules_per_string: 1
+  Array:
+    surface_tilt: 20
+    surface_azimuth: 220
+    module: None
+    albedo: 0.25
+    racking_model: None
+    module_type: None
+    temperature_model_parameters: {}
+    strings: 1
+    modules_per_string: 1
+  inverter: blarg"""
+    assert expected == system.__repr__()
 
 
 @fail_on_pvlib_version('0.9')

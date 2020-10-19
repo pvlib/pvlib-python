@@ -286,11 +286,12 @@ class PVSystem:
             )
 
     def __repr__(self):
-        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
-                 'inverter', 'albedo', 'racking_model', 'module_type',
-                 'temperature_model_parameters']
-        return ('PVSystem:\n  ' + '\n  '.join(
-            f'{attr}: {getattr(self, attr)}' for attr in attrs))
+        repr = f'PVSystem:\n  name: {self.name}\n  '
+        for array in self._arrays:
+            repr += '\n  '.join(array.__repr__().split('\n'))
+            repr += '\n  '
+        repr += f'inverter: {self.inverter}'
+        return repr
 
     @_unwrap_single_value
     def _infer_cell_type(self):

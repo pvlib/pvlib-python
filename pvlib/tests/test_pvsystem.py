@@ -42,6 +42,8 @@ def test_PVSystem_multi_array_get_iam():
     iam = system.get_iam((1, 5), iam_model='ashrae')
     assert len(iam) == 2
     assert iam[0] != iam[1]
+    with pytest.raises(ValueError, match="Length mismatch .*"):
+        system.get_iam((1,), iam_model='ashrae')
 
 
 def test_PVSystem_get_iam_sapm(sapm_module_params, mocker):

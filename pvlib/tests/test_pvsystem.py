@@ -344,6 +344,36 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
     assert_allclose(out, expected, atol=0.1)
 
 
+def test_PVSystem_multi_array_sapm_effective_irradiance(sapm_module_params):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(module_parameters=sapm_module_params),
+                pvsystem.Array(module_parameters=sapm_module_params)]
+    )
+    poa_direct = (500, 900)
+    poa_diffuse = (50, 100)
+    aoi = (0, 10)
+    airmass_absolute = 1.5
+    irrad_one, irrad_two = system.sapm_effective_irradiance(
+        poa_direct, poa_diffuse, airmass_absolute, aoi
+    )
+    assert irrad_one != irrad_two
+
+
+@pytest.mark.parametrize("poa_direct, poa_diffuse, aoi",
+                         [(20, (10, 10), (20, 20)),
+                          ((20, 20), (10,), (20, 20)),
+                          ((20, 20), (10, 10), 20)])
+def test_PVSystem_sapm_effective_irradiance_value_error(
+        poa_direct, poa_diffuse, aoi):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(), pvsystem.Array()]
+    )
+    with pytest.raises(ValueError, match="Length mismatch for parameter .*"):
+        system.sapm_effective_irradiance(
+            poa_direct, poa_diffuse, 10, aoi
+        )
+
+
 def test_PVSystem_sapm_celltemp(mocker):
     a, b, deltaT = (-3.47, -0.0594, 3)  # open_rack_glass_glass
     temp_model_params = {'a': a, 'b': b, 'deltaT': deltaT}

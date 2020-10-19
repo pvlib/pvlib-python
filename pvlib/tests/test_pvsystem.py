@@ -377,7 +377,7 @@ def test_PVSystem_multi_array_sapm_effective_irradiance(sapm_module_params):
 
 
 @pytest.fixture
-def two_array_system():
+def two_array_system(pvsyst_module_params, cec_module_params):
     """Two-array PVSystem.
 
     Both arrays are identical.
@@ -385,9 +385,18 @@ def two_array_system():
     temperature_model = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
         'open_rack_glass_glass'
     ]
+    module_params = {**pvsyst_module_params, **cec_module_params}
     return pvsystem.PVSystem(
-        arrays=[pvsystem.Array(temperature_model_parameters=temperature_model),
-                pvsystem.Array(temperature_model_parameters=temperature_model)]
+        arrays=[
+            pvsystem.Array(
+                temperature_model_parameters=temperature_model,
+                module_parameters=module_params
+            ),
+            pvsystem.Array(
+                temperature_model_parameters=temperature_model,
+                module_parameters=module_params
+            )
+        ]
     )
 
 
@@ -704,6 +713,29 @@ def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
     assert_allclose(Rs, 0.5, atol=0.1)
     assert_allclose(Rsh, np.array([1000, 305.757]), atol=50)
     assert_allclose(nNsVth, np.array([1.6186, 1.7961]), atol=0.1)
+
+
+@pytest.mark.parametrize('calcparams', [pvsystem.PVSystem.calcparams_pvsyst,
+                                        pvsystem.PVSystem.calcparams_desoto,
+                                        pvsystem.PVSystem.calcparams_cec])
+def test_PVSystem_multi_array_calcparams(calcparams, two_array_system):
+    params_one, params_two = calcparams(
+        two_array_system, (1000, 500), (30, 20)
+    )
+    assert params_one != params_two
+
+
+@pytest.mark.parametrize('calcparams, irrad, celltemp',
+                         [ (f, irrad, celltemp)
+                           for f in (pvsystem.PVSystem.calcparams_desoto,
+                                     pvsystem.PVSystem.calcparams_cec,
+                                     pvsystem.PVSystem.calcparams_pvsyst)
+                           for irrad, celltemp in [(1, (1, 1)), ((1, 1), 1)]])
+def test_PVSystem_multi_array_calcparams_value_error(
+        calcparams, irrad, celltemp, two_array_system):
+    with pytest.raises(ValueError,
+                       match='Length mismatch for parameter'):
+        calcparams(two_array_system, irrad, celltemp)
 
 
 @pytest.fixture(params=[

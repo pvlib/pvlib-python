@@ -404,6 +404,31 @@ def test_PVSystem_sapm_celltemp_kwargs(mocker):
     assert_allclose(out, 57, atol=1)
 
 
+def test_PVSystem_multi_array_sapm_celltemp():
+    temp_model_one = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'open_rack_glass_glass']
+    temp_model_two = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
+        'close_mount_glass_glass']
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(temperature_model_parameters=temp_model_one),
+                pvsystem.Array(temperature_model_parameters=temp_model_two)]
+    )
+    temp_one, temp_two = system.sapm_celltemp(
+        (1000, 1000), 25, 1
+    )
+    assert temp_one != temp_two
+
+
+@pytest.mark.parametrize("irrad", [10, (10,), (1, 1, 1)])
+def test_PVSystem_multi_array_sapm_celltemp_value_error(irrad):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(), pvsystem.Array()]
+    )
+    with pytest.raises(ValueError,
+                       match="Length mismatch for parameter poa_global"):
+        system.sapm_celltemp(irrad, 25, 0)
+
+
 def test_PVSystem_pvsyst_celltemp(mocker):
     parameter_set = 'insulated'
     temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][

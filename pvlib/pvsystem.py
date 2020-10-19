@@ -69,10 +69,12 @@ def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
     return new_kwargs
 
 
-def return_singleton_value(func):
-    """Decorator that returns the value contained when `func`
-    returns a singleton list or the list if it has more than one
-    element.
+def _unwrap_single_value(func):
+    """Decorator for functions that return iterables.
+
+    If the length of the iterable returned by `func` is 1, then
+    the single member of the iterable is returned. If the length is
+    greater than 1, then entire iterable is returned.
     """
     @functools.wraps(func)
     def f(*args, **kwargs):
@@ -84,7 +86,7 @@ def return_singleton_value(func):
     return f
 
 
-def validate_against_arrays(*list_params):
+def _validate_against_arrays(*list_params):
     """Decorator that validates the value passed to each parameter in
     `list_params` against the number of Arrays in the PVSystem.
 
@@ -101,8 +103,8 @@ def validate_against_arrays(*list_params):
         names of the parameters that should be lists with the same number
         of elements as there are Arrays in the PVSystem instance.
     """
-    def list_or_scalar(func):
-        @return_singleton_value
+    def validate_args(func):
+        @_unwrap_single_value
         @functools.wraps(func)
         def f(ref, *args, **kwargs):
             sig = inspect.signature(func)
@@ -118,7 +120,7 @@ def validate_against_arrays(*list_params):
                         )
             return func(*bindings.args, **bindings.kwargs)
         return f
-    return list_or_scalar
+    return validate_args
 
 
 # not sure if this belongs in the pvsystem module.
@@ -290,7 +292,7 @@ class PVSystem:
         return ('PVSystem:\n  ' + '\n  '.join(
             f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
-    @return_singleton_value
+    @_unwrap_single_value
     def _infer_cell_type(self):
 
         """
@@ -304,7 +306,7 @@ class PVSystem:
         """
         return tuple(array._infer_cell_type() for array in self._arrays)
 
-    @return_singleton_value
+    @_unwrap_single_value
     def get_aoi(self, solar_zenith, solar_azimuth):
         """Get the angle of incidence on the system.
 
@@ -324,7 +326,7 @@ class PVSystem:
         return tuple(array.get_aoi(solar_zenith, solar_azimuth)
                      for array in self._arrays)
 
-    @return_singleton_value
+    @_unwrap_single_value
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
@@ -366,7 +368,7 @@ class PVSystem:
                                           dni_extra, airmass)
                      for array in self._arrays)
 
-    @validate_against_arrays('aoi')
+    @_validate_against_arrays('aoi')
     def get_iam(self, aoi, iam_model='physical'):
         """
         Determine the incidence angle modifier using the method specified by
@@ -396,7 +398,7 @@ class PVSystem:
         return tuple(array.get_iam(aoi, iam_model)
                      for array, aoi in zip(self._arrays, aoi))
 
-    @validate_against_arrays('effective_irradiance', 'temp_cell')
+    @_validate_against_arrays('effective_irradiance', 'temp_cell')
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
@@ -435,7 +437,7 @@ class PVSystem:
             in zip(self._arrays, effective_irradiance, temp_cell)
         )
 
-    @validate_against_arrays('effective_irradiance', 'temp_cell')
+    @_validate_against_arrays('effective_irradiance', 'temp_cell')
     def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_cec` function, the input
@@ -474,7 +476,7 @@ class PVSystem:
             in zip(self._arrays, effective_irradiance, temp_cell)
         )
 
-    @validate_against_arrays('effective_irradiance', 'temp_cell')
+    @_validate_against_arrays('effective_irradiance', 'temp_cell')
     def calcparams_pvsyst(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`calcparams_pvsyst` function, the input
@@ -512,7 +514,7 @@ class PVSystem:
             in zip(self._arrays, effective_irradiance, temp_cell)
         )
 
-    @validate_against_arrays('effective_irradiance', 'temp_cell')
+    @_validate_against_arrays('effective_irradiance', 'temp_cell')
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`sapm` function, the input parameters,
@@ -540,7 +542,7 @@ class PVSystem:
             in zip(self._arrays, effective_irradiance, temp_cell)
         )
 
-    @validate_against_arrays('poa_global')
+    @_validate_against_arrays('poa_global')
     def sapm_celltemp(self, poa_global, temp_air, wind_speed):
         """Uses :py:func:`temperature.sapm_cell` to calculate cell
         temperatures.
@@ -585,7 +587,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         )
 
-    @return_singleton_value
+    @_unwrap_single_value
     def sapm_spectral_loss(self, airmass_absolute):
         """
         Use the :py:func:`sapm_spectral_loss` function, the input
@@ -606,7 +608,7 @@ class PVSystem:
             for array in self._arrays
         )
 
-    @validate_against_arrays('poa_direct', 'poa_diffuse', 'aoi')
+    @_validate_against_arrays('poa_direct', 'poa_diffuse', 'aoi')
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
                                   reference_irradiance=1000):
@@ -642,7 +644,7 @@ class PVSystem:
             in zip(self._arrays, poa_direct, poa_diffuse, aoi)
         )
 
-    @validate_against_arrays('poa_global')
+    @_validate_against_arrays('poa_global')
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
         temperature.
@@ -675,7 +677,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         )
 
-    @validate_against_arrays('poa_global')
+    @_validate_against_arrays('poa_global')
     def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """
         Use :py:func:`temperature.faiman` to calculate cell temperature.
@@ -705,7 +707,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         )
 
-    @validate_against_arrays('poa_global')
+    @_validate_against_arrays('poa_global')
     def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
         """
         Use :py:func:`temperature.fuentes` to calculate cell temperature.
@@ -752,7 +754,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         )
 
-    @return_singleton_value
+    @_unwrap_single_value
     def first_solar_spectral_loss(self, pw, airmass_absolute):
 
         """
@@ -862,8 +864,8 @@ class PVSystem:
         """
         return inverter.adr(v_dc, p_dc, self.inverter_parameters)
 
-    @return_singleton_value
-    @validate_against_arrays('data')
+    @_unwrap_single_value
+    @_validate_against_arrays('data')
     def scale_voltage_current_power(self, data):
         """
         Scales the voltage, current, and power of the `data` DataFrame
@@ -888,7 +890,7 @@ class PVSystem:
             for array, data in zip(self._arrays, data)
         )
 
-    @validate_against_arrays('g_poa_effective', 'temp_cell')
+    @_validate_against_arrays('g_poa_effective', 'temp_cell')
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
         Calcuates DC power according to the PVWatts model using
@@ -961,22 +963,22 @@ class PVSystem:
         return LocalizedPVSystem(pvsystem=self, location=location)
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def module_parameters(self):
         return tuple(array.module_parameters for array in self._arrays)
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def module(self):
         return tuple(array.module for array in self._arrays)
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def module_type(self):
         return tuple(array.module_type for array in self._arrays)
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def temperature_model_parameters(self):
         return tuple(array.temperature_model_parameters
                      for array in self._arrays)
@@ -987,7 +989,7 @@ class PVSystem:
             array.temperature_model_parameters = value
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def surface_tilt(self):
         return tuple(array.surface_tilt for array in self._arrays)
 
@@ -997,7 +999,7 @@ class PVSystem:
             array.surface_tilt = value
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def surface_azimuth(self):
         return tuple(array.surface_azimuth for array in self._arrays)
 
@@ -1007,12 +1009,12 @@ class PVSystem:
             array.surface_azimuth = value
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def albedo(self):
         return tuple(array.albedo for array in self._arrays)
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def racking_model(self):
         return tuple(array.racking_model for array in self._arrays)
 
@@ -1022,12 +1024,12 @@ class PVSystem:
             array.racking_model = value
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def modules_per_string(self):
         return tuple(array.modules_per_string for array in self._arrays)
 
     @property
-    @return_singleton_value
+    @_unwrap_single_value
     def strings_per_inverter(self):
         return tuple(array.strings for array in self._arrays)
 

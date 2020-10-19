@@ -272,6 +272,15 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
     assert_allclose(out, 1, atol=0.5)
 
 
+def test_PVSystem_multi_array_sapm_spectral_loss(sapm_module_params):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(module_parameters=sapm_module_params),
+                pvsystem.Array(module_parameters=sapm_module_params)]
+    )
+    loss_one, loss_two = system.sapm_spectral_loss(2)
+    assert loss_one == loss_two
+
+
 # this test could be improved to cover all cell types.
 # could remove the need for specifying spectral coefficients if we don't
 # care about the return value at all

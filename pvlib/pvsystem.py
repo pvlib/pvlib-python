@@ -86,20 +86,20 @@ def _unwrap_single_value(func):
     return f
 
 
-def _validate_against_arrays(*list_params):
+def _validate_against_arrays(*tuple_params):
     """Decorator that validates the value passed to each parameter in
     `list_params` against the number of Arrays in the PVSystem.
 
-    If the value passed for each parameter in `list_params` is not a list,
-    then it is transformed into a singleton list before validation. This
+    If the value passed for each parameter in `list_params` is not a tuple,
+    then it is transformed into a length 1 before validation. This
     means existing code that assumes a PVSystem has only one array will
     continue to function with no changes.
 
-    Implicitly applies the `@singleton_as_scalar` decorator as well.
+    Implicitly applies the `@_unwrap_single_value` decorator as well.
 
     Parameters
     ----------
-    list_params : iterable
+    tuple_params : iterable
         names of the parameters that should be lists with the same number
         of elements as there are Arrays in the PVSystem instance.
     """
@@ -110,7 +110,7 @@ def _validate_against_arrays(*list_params):
             sig = inspect.signature(func)
             bindings = sig.bind(*tuple([ref, *args]), **kwargs)
             for param in bindings.arguments.keys():
-                if param in list_params:
+                if param in tuple_params:
                     value = bindings.arguments[param]
                     if not isinstance(value, tuple):
                         bindings.arguments[param] = (value,)

@@ -206,15 +206,15 @@ def sapm_dc_snl_ac_system_Array(sapm_module_params, cec_inverter_parameters,
     array_one = pvsystem.Array(surface_tilt=32, surface_azimuth=180,
                                albedo=0.2, module=module,
                                module_parameters=module_parameters,
-                               temperature_mode_parameters=temp_model_params,
+                               temperature_model_parameters=temp_model_params,
                                modules_per_string=1,
-                               strings_per_inverter=1)
+                               strings=1)
     array_two = pvsystem.Array(surface_tilt=15, surface_azimuth=180,
                                albedo=0.2, module=module,
                                module_parameters=module_parameters,
-                               temperature_mode_parameters=temp_model_params,
+                               temperature_model_parameters=temp_model_params,
                                modules_per_string=1,
-                               strings_per_inverter=1)
+                               strings=1)
     return PVSystem(arrays=[array_one, array_two])
 
 

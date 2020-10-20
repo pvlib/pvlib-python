@@ -86,43 +86,6 @@ def _unwrap_single_value(func):
     return f
 
 
-def _validate_against_arrays(*tuple_params):
-    """Decorator that validates the value passed to each parameter in
-    `list_params` against the number of Arrays in the PVSystem.
-
-    If the value passed for each parameter in `list_params` is not a tuple,
-    then it is transformed into a length 1 before validation. This
-    means existing code that assumes a PVSystem has only one array will
-    continue to function with no changes.
-
-    Implicitly applies the `@_unwrap_single_value` decorator as well.
-
-    Parameters
-    ----------
-    tuple_params : iterable
-        names of the parameters that should be lists with the same number
-        of elements as there are Arrays in the PVSystem instance.
-    """
-    def validate_args(func):
-        @_unwrap_single_value
-        @functools.wraps(func)
-        def f(ref, *args, **kwargs):
-            sig = inspect.signature(func)
-            bindings = sig.bind(*tuple([ref, *args]), **kwargs)
-            for param in bindings.arguments.keys():
-                if param in tuple_params:
-                    value = bindings.arguments[param]
-                    if not isinstance(value, tuple):
-                        bindings.arguments[param] = (value,)
-                    if len(bindings.arguments[param]) != len(ref._arrays):
-                        raise ValueError(
-                            f"Length mismatch for parameter {param}"
-                        )
-            return func(*bindings.args, **bindings.kwargs)
-        return f
-    return validate_args
-
-
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.
@@ -293,6 +256,17 @@ class PVSystem:
         repr += f'inverter: {self.inverter}'
         return repr
 
+    def _validate_per_array(self, values):
+        # Check that values is a tuple of the same length as
+        # `self._arrays`. If it is a single vlaue it is packed in to
+        # a length-1 tuple before the check. If the length is not the
+        # same a ValueError is raised, otherwise the tuple is returned.
+        if not isinstance(values, tuple):
+            values = (values,)
+        if len(values) != len(self._arrays):
+            raise ValueError("Length mismatch for per-array parameter")
+        return values
+
     @_unwrap_single_value
     def _infer_cell_type(self):
 
@@ -369,7 +343,7 @@ class PVSystem:
                                           dni_extra, airmass)
                      for array in self._arrays)
 
-    @_validate_against_arrays('aoi')
+    @_unwrap_single_value
     def get_iam(self, aoi, iam_model='physical'):
         """
         Determine the incidence angle modifier using the method specified by
@@ -396,10 +370,11 @@ class PVSystem:
         ------
         ValueError if `iam_model` is not a valid model name.
         """
+        aoi = self._validate_per_array(aoi)
         return tuple(array.get_iam(aoi, iam_model)
                      for array, aoi in zip(self._arrays, aoi))
 
-    @_validate_against_arrays('effective_irradiance', 'temp_cell')
+    @_unwrap_single_value
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_desoto` function, the input
@@ -421,6 +396,8 @@ class PVSystem:
         -------
         See pvsystem.calcparams_desoto for details
         """
+        effective_irradiance = self._validate_per_array(effective_irradiance)
+        temp_cell = self._validate_per_array(temp_cell)
 
         build_kwargs = functools.partial(
             _build_kwargs,
@@ -438,7 +415,7 @@ class PVSystem:
             in zip(self._arrays, effective_irradiance, temp_cell)
         )
 
-    @_validate_against_arrays('effective_irradiance', 'temp_cell')
+    @_unwrap_single_value
     def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`calcparams_cec` function, the input
@@ -460,6 +437,8 @@ class PVSystem:
         -------
         See pvsystem.calcparams_cec for details
         """
+        effective_irradiance = self._validate_per_array(effective_irradiance)
+        temp_cell = self._validate_per_array(temp_cell)
 
         build_kwargs = functools.partial(
             _build_kwargs,
@@ -477,7 +456,7 @@ class PVSystem:
             in zip(self._arrays, effective_irradiance, temp_cell)
         )
 
-    @_validate_against_arrays('effective_irradiance', 'temp_cell')
+    @_unwrap_single_value
     def calcparams_pvsyst(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`calcparams_pvsyst` function, the input
@@ -496,6 +475,8 @@ class PVSystem:
         -------
         See pvsystem.calcparams_pvsyst for details
         """
+        effective_irradiance = self._validate_per_array(effective_irradiance)
+        temp_cell = self._validate_per_array(temp_cell)
 
         build_kwargs = functools.partial(
             _build_kwargs,
@@ -515,7 +496,7 @@ class PVSystem:
             in zip(self._arrays, effective_irradiance, temp_cell)
         )
 
-    @_validate_against_arrays('effective_irradiance', 'temp_cell')
+    @_unwrap_single_value
     def sapm(self, effective_irradiance, temp_cell, **kwargs):
         """
         Use the :py:func:`sapm` function, the input parameters,
@@ -537,13 +518,16 @@ class PVSystem:
         -------
         See pvsystem.sapm for details
         """
+        effective_irradiance = self._validate_per_array(effective_irradiance)
+        temp_cell = self._validate_per_array(temp_cell)
+
         return tuple(
             sapm(effective_irradiance, temp_cell, array.module_parameters)
             for array, effective_irradiance, temp_cell
             in zip(self._arrays, effective_irradiance, temp_cell)
         )
 
-    @_validate_against_arrays('poa_global')
+    @_unwrap_single_value
     def sapm_celltemp(self, poa_global, temp_air, wind_speed):
         """Uses :py:func:`temperature.sapm_cell` to calculate cell
         temperatures.
@@ -563,6 +547,7 @@ class PVSystem:
         -------
         numeric, values in degrees C.
         """
+        poa_global = self._validate_per_array(poa_global)
         for array in self._arrays:
             # warn user about change in default behavior in 0.9.
             if (array.temperature_model_parameters == {} and array.module_type
@@ -609,7 +594,7 @@ class PVSystem:
             for array in self._arrays
         )
 
-    @_validate_against_arrays('poa_direct', 'poa_diffuse', 'aoi')
+    @_unwrap_single_value
     def sapm_effective_irradiance(self, poa_direct, poa_diffuse,
                                   airmass_absolute, aoi,
                                   reference_irradiance=1000):
@@ -637,6 +622,9 @@ class PVSystem:
         effective_irradiance : numeric
             The SAPM effective irradiance. [W/m2]
         """
+        poa_direct = self._validate_per_array(poa_direct)
+        poa_diffuse = self._validate_per_array(poa_diffuse)
+        aoi = self._validate_per_array(aoi)
         return tuple(
             sapm_effective_irradiance(
                 poa_direct, poa_diffuse, airmass_absolute, aoi,
@@ -645,7 +633,7 @@ class PVSystem:
             in zip(self._arrays, poa_direct, poa_diffuse, aoi)
         )
 
-    @_validate_against_arrays('poa_global')
+    @_unwrap_single_value
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
         temperature.
@@ -667,6 +655,7 @@ class PVSystem:
         -------
         numeric, values in degrees C.
         """
+        poa_global = self._validate_per_array(poa_global)
         def build_celltemp_kwargs(array):
             return {**_build_kwargs(['eta_m', 'alpha_absorption'],
                                     array.module_parameters),
@@ -678,7 +667,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         )
 
-    @_validate_against_arrays('poa_global')
+    @_unwrap_single_value
     def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """
         Use :py:func:`temperature.faiman` to calculate cell temperature.
@@ -700,6 +689,7 @@ class PVSystem:
         -------
         numeric, values in degrees C.
         """
+        poa_global = self._validate_per_array(poa_global)
         return tuple(
             temperature.faiman(
                 poa_global, temp_air, wind_speed,
@@ -708,7 +698,7 @@ class PVSystem:
             for array, poa_global in zip(self._arrays, poa_global)
         )
 
-    @_validate_against_arrays('poa_global')
+    @_unwrap_single_value
     def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
         """
         Use :py:func:`temperature.fuentes` to calculate cell temperature.
@@ -740,6 +730,7 @@ class PVSystem:
         """
         # default to using the Array attribute, but allow user to
         # override with a custom surface_tilt value
+        poa_global = self._validate_per_array(poa_global)
         def _build_kwargs_fuentes(array):
             kwargs = {'surface_tilt': array.surface_tilt}
             temp_model_kwargs = _build_kwargs([
@@ -866,7 +857,6 @@ class PVSystem:
         return inverter.adr(v_dc, p_dc, self.inverter_parameters)
 
     @_unwrap_single_value
-    @_validate_against_arrays('data')
     def scale_voltage_current_power(self, data):
         """
         Scales the voltage, current, and power of the `data` DataFrame
@@ -883,7 +873,7 @@ class PVSystem:
         scaled_data: DataFrame
             A scaled copy of the input data.
         """
-
+        data = self._validate_per_array(data)
         return tuple(
             scale_voltage_current_power(data,
                                         voltage=array.modules_per_string,
@@ -891,7 +881,7 @@ class PVSystem:
             for array, data in zip(self._arrays, data)
         )
 
-    @_validate_against_arrays('g_poa_effective', 'temp_cell')
+    @_unwrap_single_value
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
         Calcuates DC power according to the PVWatts model using
@@ -900,6 +890,8 @@ class PVSystem:
 
         See :py:func:`pvlib.pvsystem.pvwatts_dc` for details.
         """
+        g_poa_effective = self._validate_per_array(g_poa_effective)
+        temp_cell = self._validate_per_array(temp_cell)
         return tuple(
             pvwatts_dc(g_poa_effective, temp_cell,
                        array.module_parameters['pdc0'],

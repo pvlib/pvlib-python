@@ -42,7 +42,8 @@ def test_PVSystem_multi_array_get_iam():
     iam = system.get_iam((1, 5), iam_model='ashrae')
     assert len(iam) == 2
     assert iam[0] != iam[1]
-    with pytest.raises(ValueError, match="Length mismatch .*"):
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
         system.get_iam((1,), iam_model='ashrae')
 
 
@@ -239,11 +240,10 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
     assert sapm_one_flip['p_mp'] == sapm_two['p_mp']
     assert sapm_two_flip['p_mp'] == sapm_one['p_mp']
     with pytest.raises(ValueError,
-                       match="Length mismatch for parameter temp_cell"):
+                       match="Length mismatch for per-array parameter"):
         system.sapm(effective_irradiance, 10)
     with pytest.raises(ValueError,
-                       match="Length mismatch for parameter "
-                             "effective_irradiance"):
+                       match="Length mismatch for per-array parameter"):
         system.sapm(500, temp_cell)
 
 
@@ -406,7 +406,8 @@ def two_array_system(pvsyst_module_params, cec_module_params):
                           ((20, 20), (10, 10), 20)])
 def test_PVSystem_sapm_effective_irradiance_value_error(
         poa_direct, poa_diffuse, aoi, two_array_system):
-    with pytest.raises(ValueError, match="Length mismatch for parameter .*"):
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
         two_array_system.sapm_effective_irradiance(
             poa_direct, poa_diffuse, 10, aoi
         )
@@ -507,7 +508,7 @@ def test_PVSystem_multi_array_celltemp_functions(celltemp, two_array_system):
 def test_PVSystem_multi_array_celltemp_poa_length_mismatch(
         celltemp, two_array_system):
     with pytest.raises(ValueError,
-                       match="Length mismatch for parameter poa_global"):
+                       match="Length mismatch for per-array parameter"):
         celltemp(two_array_system, 1000, 25, 1)
 
 
@@ -734,7 +735,7 @@ def test_PVSystem_multi_array_calcparams(calcparams, two_array_system):
 def test_PVSystem_multi_array_calcparams_value_error(
         calcparams, irrad, celltemp, two_array_system):
     with pytest.raises(ValueError,
-                       match='Length mismatch for parameter'):
+                       match='Length mismatch for per-array parameter'):
         calcparams(two_array_system, irrad, celltemp)
 
 
@@ -1245,7 +1246,7 @@ def test_PVSystem_multi_scale_voltage_current_power(mocker):
         any_order=True
     )
     with pytest.raises(ValueError,
-                       match="Length mismatch for parameter data"):
+                       match="Length mismatch for per-array parameter"):
         system.scale_voltage_current_power(None)
 
 
@@ -1659,25 +1660,24 @@ def test_PVSystem_multiple_array_pvwatts_dc_value_error():
     system = pvsystem.PVSystem(
         arrays=[pvsystem.Array(), pvsystem.Array(), pvsystem.Array()]
     )
-    poa_error_msg = 'Length mismatch for parameter g_poa_effective'
-    with pytest.raises(ValueError, match=poa_error_msg):
+    error_message = 'Length mismatch for per-array parameter'
+    with pytest.raises(ValueError, match=error_message):
         system.pvwatts_dc(10, (1, 1, 1))
-    with pytest.raises(ValueError, match=poa_error_msg):
+    with pytest.raises(ValueError, match=error_message):
         system.pvwatts_dc((10, 10), (1, 1, 1))
-    with pytest.raises(ValueError, match=poa_error_msg):
+    with pytest.raises(ValueError, match=error_message):
         system.pvwatts_dc((10, 10, 10, 10), (1, 1, 1))
-    temp_cell_error_msg = 'Length mismatch for parameter temp_cell'
-    with pytest.raises(ValueError, match=temp_cell_error_msg):
+    with pytest.raises(ValueError, match=error_message):
         system.pvwatts_dc((1, 1, 1), 1)
-    with pytest.raises(ValueError, match=temp_cell_error_msg):
+    with pytest.raises(ValueError, match=error_message):
         system.pvwatts_dc((1, 1, 1), (1,))
-    with pytest.raises(ValueError, match='Length mismatch for parameter .*'):
+    with pytest.raises(ValueError, match=error_message):
         system.pvwatts_dc((1,), 1)
-    with pytest.raises(ValueError, match='Length mismatch for parameter .*'):
+    with pytest.raises(ValueError, match=error_message):
         system.pvwatts_dc((1, 1, 1, 1), (1, 1))
-    with pytest.raises(ValueError, match='Length mismatch for parameter .*'):
+    with pytest.raises(ValueError, match=error_message):
         system.pvwatts_dc(2, 3)
-    with pytest.raises(ValueError, match=temp_cell_error_msg):
+    with pytest.raises(ValueError, match=error_message):
         # ValueError is raised for non-tuple iterable with correct length
         system.pvwatts_dc((1, 1, 1), pd.Series([1, 2, 3]))
 

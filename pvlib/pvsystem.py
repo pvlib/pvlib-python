@@ -655,6 +655,7 @@ class PVSystem:
         numeric, values in degrees C.
         """
         poa_global = self._validate_per_array(poa_global)
+
         def build_celltemp_kwargs(array):
             return {**_build_kwargs(['eta_m', 'alpha_absorption'],
                                     array.module_parameters),
@@ -730,6 +731,7 @@ class PVSystem:
         # default to using the Array attribute, but allow user to
         # override with a custom surface_tilt value
         poa_global = self._validate_per_array(poa_global)
+
         def _build_kwargs_fuentes(array):
             kwargs = {'surface_tilt': array.surface_tilt}
             temp_model_kwargs = _build_kwargs([

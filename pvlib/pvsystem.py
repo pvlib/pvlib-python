@@ -5,7 +5,6 @@ performance of PV modules and inverters.
 
 from collections import OrderedDict
 import functools
-import inspect
 import io
 import os
 from urllib.request import urlopen

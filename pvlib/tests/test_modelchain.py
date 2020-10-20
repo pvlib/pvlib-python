@@ -812,9 +812,10 @@ def test_bad_get_orientation():
         modelchain.get_orientation('bad value')
 
 
-# tests for PVSystem with multiple Array
-def test_with_sapm_pvsystem_arrasy(sapm_dc_snl_ac_system, location, weather):
-    mc = ModelChain.with_sapm(sapm_dc_snl_ac_system, location)
+# tests for PVSystem with multiple Arrays
+def test_with_sapm_pvsystem_arrays(sapm_dc_snl_ac_system_Array, location,
+                                   weather):
+    mc = ModelChain.with_sapm(sapm_dc_snl_ac_system_Array, location)
     assert mc.dc_model == mc.sapm
     mc.run_model(weather)
     assert mc.results

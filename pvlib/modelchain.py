@@ -9,6 +9,7 @@ the time to read the source code for the module.
 from functools import partial
 import warnings
 import pandas as pd
+import numpy as np
 from dataclasses import dataclass, field
 
 from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
@@ -666,7 +667,12 @@ class ModelChain:
 
     def infer_dc_model(self):
         """Infer DC power model from system attributes."""
-        params = set(self.system.module_parameters.keys())
+        params = np.unique(
+            [set(a.module_parameters.keys()) for a in self.system._arrays])
+        if len(params) > 1:
+            raise ValueError('PVSystem arrays module_parameters have '
+                             'different keys. All arrays should have keys for '
+                             'the same DC model.')
         if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
         elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s',
@@ -762,7 +768,12 @@ class ModelChain:
 
     def infer_ac_model(self):
         """Infer AC power model from system attributes."""
-        inverter_params = set(self.system.inverter_parameters.keys())
+        inverter_params = np.unique(
+            [set(a.inverter_parameters.keys()) for a in self.system._arrays])
+        if len(inverter_params) > 1:
+            raise ValueError('PVSystem arrays inverter_parameters have '
+                             'different keys. All arrays should have keys for '
+                             'the same AC model.')
         if {'C0', 'C1', 'C2'} <= inverter_params:
             return self.snlinverter
         elif {'ADRCoefficients'} <= inverter_params:
@@ -815,7 +826,12 @@ class ModelChain:
             self._aoi_model = partial(model, self)
 
     def infer_aoi_model(self):
-        params = set(self.system.module_parameters.keys())
+        params = np.unique(
+            [set(a.module_parameters.keys()) for a in self.system._arrays])
+        if len(params) > 1:
+            raise ValueError('PVSystem arrays module_parameters have '
+                             'different keys. All arrays should have keys for '
+                             'the same AOI model.')
         if {'K', 'L', 'n'} <= params:
             return self.physical_aoi_loss
         elif {'B5', 'B4', 'B3', 'B2', 'B1', 'B0'} <= params:
@@ -879,7 +895,12 @@ class ModelChain:
 
     def infer_spectral_model(self):
         """Infer spectral model from system attributes."""
-        params = set(self.system.module_parameters.keys())
+        params = np.unique(
+            [set(a.module_parameters.keys()) for a in self.system._arrays])
+        if len(params) > 1:
+            raise ValueError('PVSystem arrays module_parameters have '
+                             'different keys. All arrays should have keys for '
+                             'the same spectral modifier model.')
         if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
             return self.sapm_spectral_loss
         elif ((('Technology' in params or
@@ -934,16 +955,21 @@ class ModelChain:
             name_from_params = self.infer_temperature_model().__name__
             if self._temperature_model.__name__ != name_from_params:
                 raise ValueError(
-                    'Temperature model {} is inconsistent with '
-                    'PVsystem.temperature_model_parameters {}'.format(
-                        self._temperature_model.__name__,
-                        self.system.temperature_model_parameters))
+                    f'Temperature model {self._temperature_model.__name__} is'
+                    'inconsistent with PVSystem temperature model parameters'
+                    '{self.system._arrays[0].temperature_model_parameters.keys()}')  # noqa: E501
         else:
             self._temperature_model = partial(model, self)
 
     def infer_temperature_model(self):
         """Infer temperature model from system attributes."""
-        params = set(self.system.temperature_model_parameters.keys())
+        params = np.unique(
+            [set(a.temperature_model_parameters.keys()) for a in 
+             self.system._arrays])
+        if len(params) > 1:
+            raise ValueError('PVSystem arrays temperature_model_parameters '
+                             'have different keys. All arrays should have '
+                             'keys for the same cell temperature model.')
         # remove or statement in v0.9
         if {'a', 'b', 'deltaT'} <= params or (
                 not params and self.system.racking_model is None
@@ -956,32 +982,37 @@ class ModelChain:
         elif {'noct_installed'} <= params:
             return self.fuentes_temp
         else:
-            raise ValueError('could not infer temperature model from '
-                             'system.temperature_module_parameters {}.'
-                             .format(self.system.temperature_model_parameters))
+            raise ValueError(f'could not infer temperature model from '
+                             'system.temperature_module_parameters {params}.')
+
+    def _tuple_from_dfs(dfs, name):
+        ''' Extract a column from each df in dfs, return as tuple of Series
+        '''
+        dfs = tuple(dfs)
+        return tuple(df[name] for df in dfs)
 
     def sapm_temp(self):
+        poa = self._tuple_from_dfs(self.results.total_irrad, 'poa_global')
         self.results.cell_temperature = self.system.sapm_celltemp(
-            self.results.total_irrad['poa_global'], self.weather['temp_air'],
-            self.weather['wind_speed'])
+            poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
 
     def pvsyst_temp(self):
+        poa = self._tuple_from_dfs(self.results.total_irrad, 'poa_global')
         self.results.cell_temperature = self.system.pvsyst_celltemp(
-            self.results.total_irrad['poa_global'], self.weather['temp_air'],
-            self.weather['wind_speed'])
+            poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
 
     def faiman_temp(self):
+        poa = self._tuple_from_dfs(self.results.total_irrad, 'poa_global')
         self.results.cell_temperature = self.system.faiman_celltemp(
-            self.results.total_irrad['poa_global'], self.weather['temp_air'],
-            self.weather['wind_speed'])
+            poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
 
     def fuentes_temp(self):
+        poa = self._tuple_from_dfs(self.results.total_irrad, 'poa_global')
         self.results.cell_temperature = self.system.fuentes_celltemp(
-            self.results.total_irrad['poa_global'], self.weather['temp_air'],
-            self.weather['wind_speed'])
+            poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
 
     @property
@@ -1016,11 +1047,15 @@ class ModelChain:
         return self
 
     def effective_irradiance_model(self):
-        fd = self.system.module_parameters.get('FD', 1.)
-        self.results.effective_irradiance = self.results.spectral_modifier * (
-            self.results.total_irrad['poa_direct'] *
-            self.results.aoi_modifier +
-            fd * self.results.total_irrad['poa_diffuse'])
+        def _eff_irrad(array, total_irrad, spect_mod, aoi_mod):
+            fd = array.module_parameters.get('FD', 1.)
+            return spect_mod * (total_irrad['poa_direct'] * aoi_mod +
+                fd * total_irrad['poa_diffuse'])
+        self.effective_irradiance = tuple(
+            _eff_irrad(array, total_irrad, spect_mod, aoi_mod) for
+            array, total_irrad, spect_mod, aoi_mod in zip(
+                self.system._arrays, self.total_irrad, self.spectral_modifier,
+                self.aoi_modifier))
         return self
 
     def complete_irradiance(self, weather):

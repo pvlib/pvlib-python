@@ -768,12 +768,7 @@ class ModelChain:
 
     def infer_ac_model(self):
         """Infer AC power model from system attributes."""
-        inverter_params = np.unique(
-            [set(a.inverter_parameters.keys()) for a in self.system._arrays])
-        if len(inverter_params) > 1:
-            raise ValueError('PVSystem arrays inverter_parameters have '
-                             'different keys. All arrays should have keys for '
-                             'the same AC model.')
+        inverter_params = set(self.system.inverter_parameters.keys())
         if {'C0', 'C1', 'C2'} <= inverter_params:
             return self.snlinverter
         elif {'ADRCoefficients'} <= inverter_params:

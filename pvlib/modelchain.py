@@ -980,32 +980,26 @@ class ModelChain:
             raise ValueError(f'could not infer temperature model from '
                              f'system.temperature_module_parameters {params}.')
 
-    def _tuple_from_dfs(dfs, name):
-        ''' Extract a column from each df in dfs, return as tuple of Series
-        '''
-        dfs = tuple(dfs)
-        return tuple(df[name] for df in dfs)
-
     def sapm_temp(self):
-        poa = self._tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
         self.results.cell_temperature = self.system.sapm_celltemp(
             poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
 
     def pvsyst_temp(self):
-        poa = self._tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
         self.results.cell_temperature = self.system.pvsyst_celltemp(
             poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
 
     def faiman_temp(self):
-        poa = self._tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
         self.results.cell_temperature = self.system.faiman_celltemp(
             poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
 
     def fuentes_temp(self):
-        poa = self._tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
         self.results.cell_temperature = self.system.fuentes_celltemp(
             poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
@@ -1515,3 +1509,10 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
+
+
+def _tuple_from_dfs(dfs, name):
+    ''' Extract a column from each df in dfs, return as tuple of Series
+    '''
+    dfs = tuple(dfs)
+    return tuple(df[name] for df in dfs)

@@ -951,15 +951,15 @@ class ModelChain:
             if self._temperature_model.__name__ != name_from_params:
                 raise ValueError(
                     f'Temperature model {self._temperature_model.__name__} is'
-                    'inconsistent with PVSystem temperature model parameters'
-                    '{self.system._arrays[0].temperature_model_parameters.keys()}')  # noqa: E501
+                    f'inconsistent with PVSystem temperature model parameters'
+                    f'{self.system._arrays[0].temperature_model_parameters.keys()}')  # noqa: E501
         else:
             self._temperature_model = partial(model, self)
 
     def infer_temperature_model(self):
         """Infer temperature model from system attributes."""
         params = np.unique(
-            [set(a.temperature_model_parameters.keys()) for a in 
+            [set(a.temperature_model_parameters.keys()) for a in
              self.system._arrays])
         if len(params) > 1:
             raise ValueError('PVSystem arrays temperature_model_parameters '
@@ -978,7 +978,7 @@ class ModelChain:
             return self.fuentes_temp
         else:
             raise ValueError(f'could not infer temperature model from '
-                             'system.temperature_module_parameters {params}.')
+                             f'system.temperature_module_parameters {params}.')
 
     def _tuple_from_dfs(dfs, name):
         ''' Extract a column from each df in dfs, return as tuple of Series
@@ -1045,12 +1045,15 @@ class ModelChain:
         def _eff_irrad(array, total_irrad, spect_mod, aoi_mod):
             fd = array.module_parameters.get('FD', 1.)
             return spect_mod * (total_irrad['poa_direct'] * aoi_mod +
-                fd * total_irrad['poa_diffuse'])
+                                fd * total_irrad['poa_diffuse'])
+        total_irrad = self.system._validate_per_array(self.results.total_irrad)
+        spect_mod = self.system._validate_per_array(
+            self.results.spectral_modifier)
+        aoi_mod = self.system._validate_per_array(self.results.aoi_modifier)
         self.effective_irradiance = tuple(
-            _eff_irrad(array, total_irrad, spect_mod, aoi_mod) for
-            array, total_irrad, spect_mod, aoi_mod in zip(
-                self.system._arrays, self.total_irrad, self.spectral_modifier,
-                self.aoi_modifier))
+            _eff_irrad(array, ti, sm, am) for
+            array, ti, sm, am in zip(
+                self.system._arrays, total_irrad, spect_mod, aoi_mod))
         return self
 
     def complete_irradiance(self, weather):

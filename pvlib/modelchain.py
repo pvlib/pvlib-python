@@ -663,8 +663,9 @@ class ModelChain:
             model = model.lower()
             if model in _DC_MODEL_PARAMS.keys():
                 # validate module parameters
-                missing_params = (_DC_MODEL_PARAMS[model]
-                                  - set(self.system.module_parameters.keys()))
+                missing_params = (
+                    _DC_MODEL_PARAMS[model] -
+                    set(self.system._arrays[0].module_parameters.keys()))
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
                                      'one or more required parameters are '
@@ -1042,12 +1043,12 @@ class ModelChain:
             self.effective_irradiance = tuple(
                 _eff_irrad(array, ti, sm, am) for
                 array, ti, sm, am in zip(
-                    self.system._arrays, self.results.total_irrad, 
+                    self.system._arrays, self.results.total_irrad,
                     self.results.spectral_modifier, self.results.aoi_modifier))
         else:
             fd = self.system.module_parameters.get('FD', 1.)
             self.effective_irradiance = self.results.spectral_modifier * \
-                (self.results.total_irrad['poa_direct'] * \
+                (self.results.total_irrad['poa_direct'] *
                  self.results.aoi_modifier
                  + fd * self.results.total_irrad['poa_diffuse'])
         return self

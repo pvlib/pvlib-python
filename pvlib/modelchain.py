@@ -1040,14 +1040,18 @@ class ModelChain:
             fd = array.module_parameters.get('FD', 1.)
             return spect_mod * (total_irrad['poa_direct'] * aoi_mod +
                                 fd * total_irrad['poa_diffuse'])
-        total_irrad = self.system._validate_per_array(self.results.total_irrad)
-        spect_mod = self.system._validate_per_array(
-            self.results.spectral_modifier)
-        aoi_mod = self.system._validate_per_array(self.results.aoi_modifier)
-        self.effective_irradiance = tuple(
-            _eff_irrad(array, ti, sm, am) for
-            array, ti, sm, am in zip(
-                self.system._arrays, total_irrad, spect_mod, aoi_mod))
+        if isinstance(self.results.total_irrad, tuple):
+            self.effective_irradiance = tuple(
+                _eff_irrad(array, ti, sm, am) for
+                array, ti, sm, am in zip(
+                    self.system._arrays, self.results.total_irrad, 
+                    self.results.spectral_modifier, self.results.aoi_modifier))
+        else:
+            fd = self.system.module_parameters.get('FD', 1.)
+            self.effective_irradiance = self.results.spectral_modifier * \
+                (self.results.total_irrad['poa_direct'] * \
+                 self.results.aoi_modifier
+                 + fd * self.results.total_irrad['poa_diffuse'])
         return self
 
     def complete_irradiance(self, weather):
@@ -1512,7 +1516,10 @@ class ModelChain:
 
 
 def _tuple_from_dfs(dfs, name):
-    ''' Extract a column from each df in dfs, return as tuple of Series
+    ''' Extract a column from each df in dfs, return as Series or tuple of
+    Series
     '''
-    dfs = tuple(dfs)
-    return tuple(df[name] for df in dfs)
+    if isinstance(dfs, tuple):
+        return tuple(df[name] for df in dfs)
+    else:
+        return dfs[name]

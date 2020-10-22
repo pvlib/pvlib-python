@@ -686,7 +686,7 @@ class ModelChain:
 
     def infer_dc_model(self):
         """Infer DC power model from array module parameters."""
-        params = self.system._arrays[0].module_parameters
+        params = set(self.system._arrays[0].module_parameters)
         if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
         elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s',
@@ -835,7 +835,7 @@ class ModelChain:
             self._aoi_model = partial(model, self)
 
     def infer_aoi_model(self):
-        params = self.system._arrays[0].module_parameters
+        params = set(self.system._arrays[0].module_parameters)
         if {'K', 'L', 'n'} <= params:
             return self.physical_aoi_loss
         elif {'B5', 'B4', 'B3', 'B2', 'B1', 'B0'} <= params:
@@ -899,7 +899,7 @@ class ModelChain:
 
     def infer_spectral_model(self):
         """Infer spectral model from system attributes."""
-        params = self.system._arrays[0].module_parameters
+        params = set(self.system._arrays[0].module_parameters)
         if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
             return self.sapm_spectral_loss
         elif ((('Technology' in params or
@@ -962,7 +962,7 @@ class ModelChain:
 
     def infer_temperature_model(self):
         """Infer temperature model from system attributes."""
-        params = self.system._arrays[0].temperature_model_parameters
+        params = set(self.system._arrays[0].temperature_model_parameters)
         # remove or statement in v0.9
         if {'a', 'b', 'deltaT'} <= params or (
                 not params and self.system.racking_model is None

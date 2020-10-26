@@ -74,12 +74,15 @@ def _unwrap_single_value(func):
     If the length of the iterable returned by `func` is 1, then
     the single member of the iterable is returned. If the length is
     greater than 1, then entire iterable is returned.
+
+    Adds 'unwrap' as a keyword argument that can be set to False
+    to force the return value to be a tuple, regardless of its length.
     """
     @functools.wraps(func)
     def f(*args, **kwargs):
-        return_list = kwargs.pop('return_list', False)
+        unwrap = kwargs.pop('unwrap', True)
         x = func(*args, **kwargs)
-        if len(x) == 1 and not return_list:
+        if unwrap and len(x) == 1:
             return x[0]
         return x
     return f

@@ -95,6 +95,27 @@ def test_sandia_Pnt_micro():
     assert_series_equal(pacs, pd.Series([-0.043, 132.545914746, 240.0]))
 
 
+def test_sandia_multi(cec_inverter_parameters):
+    vdcs = pd.Series(np.linspace(0, 50, 3))
+    idcs = pd.Series(np.linspace(0, 11, 3)) / 2
+    pdcs = idcs * vdcs
+
+    pacs = inverter.sandia_multi((vdcs, vdcs), (pdcs, pdcs),
+                                 cec_inverter_parameters)
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+
+
+def test_sandia_multi_dc_limit(cec_inverter_parameters):
+    vdcs = pd.Series(np.linspace(0, 50, 3))
+    idcs = pd.Series(np.linspace(0, 11, 3)) / 2
+    pdcs = idcs * vdcs
+
+    pacs = inverter.sandia_multi((vdcs, vdcs), (pdcs, pdcs),
+                                 cec_inverter_parameters, dc_limit=50)
+    assert_series_equal(2 * pacs, pd.Series([-0.020000, 2 * 47.05127939,
+                                             2 * 47.01461547]))
+
+
 def test_pvwatts_scalars():
     expected = 85.58556604752516
     out = inverter.pvwatts(90, 100, 0.95)

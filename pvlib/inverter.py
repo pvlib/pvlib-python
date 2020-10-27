@@ -16,6 +16,34 @@ import pandas as pd
 from numpy.polynomial.polynomial import polyfit  # different than np.polyfit
 
 
+def _sandia_eff(v_dc, p_dc, inverter):
+    r'''
+    Calculate the inverter AC power without clipping
+    '''
+    Paco = inverter['Paco']
+    Pdco = inverter['Pdco']
+    Vdco = inverter['Vdco']
+    C0 = inverter['C0']
+    C1 = inverter['C1']
+    C2 = inverter['C2']
+    C3 = inverter['C3']
+    Pso = inverter['Pso']
+
+    A = Pdco * (1 + C1 * (v_dc - Vdco))
+    B = Pso * (1 + C2 * (v_dc - Vdco))
+    C = C0 * (1 + C3 * (v_dc - Vdco))
+
+    return (Paco / (A - B) - C * (A - B)) * (p_dc - B) + C * (p_dc - B)**2
+
+
+def _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso):
+    r'''
+    Applies minimum and maximum power limits to `power_ac`
+    '''
+    power_ac = np.minimum(Paco, power_ac)
+    return np.where(p_dc < Pso, -1.0 * abs(Pnt), power_ac)
+
+    
 def sandia(v_dc, p_dc, inverter):
     r'''
     Convert DC power and voltage to AC power using Sandia's
@@ -91,26 +119,68 @@ def sandia(v_dc, p_dc, inverter):
     '''
 
     Paco = inverter['Paco']
-    Pdco = inverter['Pdco']
-    Vdco = inverter['Vdco']
-    Pso = inverter['Pso']
-    C0 = inverter['C0']
-    C1 = inverter['C1']
-    C2 = inverter['C2']
-    C3 = inverter['C3']
     Pnt = inverter['Pnt']
+    Pso = inverter['Pso']
 
-    A = Pdco * (1 + C1 * (v_dc - Vdco))
-    B = Pso * (1 + C2 * (v_dc - Vdco))
-    C = C0 * (1 + C3 * (v_dc - Vdco))
-
-    power_ac = (Paco / (A - B) - C * (A - B)) * (p_dc - B) + C * (p_dc - B)**2
-    power_ac = np.minimum(Paco, power_ac)
-    power_ac = np.where(p_dc < Pso, -1.0 * abs(Pnt), power_ac)
+    power_ac = _sandia_eff(v_dc, p_dc, inverter)
+    power_ac = _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso)
 
     if isinstance(p_dc, pd.Series):
         power_ac = pd.Series(power_ac, index=p_dc.index)
 
+    return power_ac
+
+
+def sandia_multi(v_dc, p_dc, inverter, dc_limit=None):
+    r'''
+    Convert DC power and voltage to AC power for an inverter with multiple
+    MPPT inputs.
+
+    Uses Sandia's Grid-Connected PV Inverter model [1]_.
+
+    Parameters
+    ----------
+    v_dc : tuple
+        DC voltage on each MPPT input of the inverter. [V]
+
+    p_dc : tuple
+        DC power on each MPPT input of the inverter. [W]
+
+    inverter : dict-like
+        Defines parameters for the inverter model in [1]_.
+
+    dc_limit : float, default None
+        Limit applied to DC power on a MPPT input. [W]
+
+    Returns
+    -------
+    power_ac : numeric
+        AC power output for the inverter. [W]
+
+    Notes
+    -----
+
+    See :py:func:`pvlib.inverter.sandia` for definition of the parameters in
+    `inverter`.
+
+    References
+    ----------
+    .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
+       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
+       National Laboratories.
+
+    See also
+    --------
+    pvlib.inverter.sandia
+    '''
+    power_ac = np.zeros_like(p_dc[0])
+    power_dc = np.zeros_like(p_dc[0])
+    for pdc in p_dc:
+        power_dc += pdc
+
+    for vdc, pdc in zip(v_dc, p_dc):
+        f = pdc / power_dc
+        power_ac += np.minimum(f * sandia(vdc, power_dc), dc_limit)
     return power_ac
 
 

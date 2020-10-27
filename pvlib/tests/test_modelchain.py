@@ -250,7 +250,6 @@ def test_orientation_strategy(strategy, expected, sapm_dc_snl_ac_system,
     assert sapm_dc_snl_ac_system.surface_tilt == expected[0]
     assert sapm_dc_snl_ac_system.surface_azimuth == expected[1]
 
-
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
@@ -261,6 +260,76 @@ def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
     expected = pd.Series(np.array([187.80746494643176, -0.02]),
                          index=times)
     assert_series_equal(ac, expected)
+
+@pytest.fixture(scope='function')
+def multi_array_pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_parameters = sapm_temperature_cs5p_220m.copy()
+    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
+    array_one = pvsystem.Array(
+        surface_tilt=32.2, surface_azimuth=180,
+        module_parameters=module_parameters,
+        temperature_model_parameters=temp_model_parameters
+    )
+    array_two = pvsystem.Array(
+        surface_tilt=32.2, surface_azimuth=220,
+        module_parameters=module_parameters,
+        temperature_model_parameters=temp_model_parameters
+    )
+    two_array_system = PVSystem(
+        arrays=[array_one, array_two],
+        inverter_parameters=inverter_parameters
+    )
+    array_one_system = PVSystem(
+        arrays=[array_one],
+        inverter_parameters=inverter_parameters
+    )
+    array_two_system = PVSystem(
+        arrays=[array_two],
+        inverter_parameters=inverter_parameters
+    )
+    return {'two_array_system': two_array_system,
+            'array_one_system': array_one_system,
+            'array_two_system': array_two_system}
+
+
+def test_run_model_from_irradiance_arrays_no_loss(
+        multi_array_pvwatts_dc_pvwatts_ac_system, location):
+    mc_both = ModelChain(
+        multi_array_pvwatts_dc_pvwatts_ac_system['two_array_system'],
+        location,
+        aoi_model='no_loss',
+        spectral_model='no_loss',
+        losses_model='no_loss'
+    )
+    mc_one = ModelChain(
+        multi_array_pvwatts_dc_pvwatts_ac_system['array_one_system'],
+        location,
+        aoi_model='no_loss',
+        spectral_model='no_loss',
+        losses_model='no_loss'
+    )
+    mc_two = ModelChain(
+        multi_array_pvwatts_dc_pvwatts_ac_system['array_two_system'],
+        location,
+        aoi_model='no_loss',
+        spectral_model='no_loss',
+        losses_model='no_loss'
+    )
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
+                              index=times)
+    mc_one.run_model(irradiance)
+    mc_two.run_model(irradiance)
+    mc_both.run_model(irradiance)
+    assert_series_equal(
+        mc_both.results.dc[0],
+        mc_one.results.dc
+    )
+    assert_series_equal(
+        mc_both.results.dc[1],
+        mc_two.results.dc
+    )
 
 
 def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):

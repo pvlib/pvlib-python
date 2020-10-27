@@ -43,7 +43,7 @@ def _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso):
     power_ac = np.minimum(Paco, power_ac)
     return np.where(p_dc < Pso, -1.0 * abs(Pnt), power_ac)
 
-    
+
 def sandia(v_dc, p_dc, inverter):
     r'''
     Convert DC power and voltage to AC power using Sandia's
@@ -180,7 +180,7 @@ def sandia_multi(v_dc, p_dc, inverter, dc_limit=None):
 
     for vdc, pdc in zip(v_dc, p_dc):
         f = pdc / power_dc
-        power_ac += np.minimum(f * sandia(vdc, power_dc), dc_limit)
+        power_ac += np.minimum(f * sandia(vdc, power_dc, inverter), dc_limit)
     return power_ac
 
 

@@ -174,7 +174,7 @@ def sandia_multi(v_dc, p_dc, inverter, dc_limit=None):
     --------
     pvlib.inverter.sandia
     '''
-    if dc_limit == None:
+    if dc_limit is None:
         dc_limit = inverter['Paco']
 
     power_ac = np.zeros_like(p_dc[0])

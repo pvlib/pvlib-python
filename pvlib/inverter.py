@@ -150,7 +150,8 @@ def sandia_multi(v_dc, p_dc, inverter, dc_limit=None):
         Defines parameters for the inverter model in [1]_.
 
     dc_limit : float, default None
-        Limit applied to DC power on a MPPT input. [W]
+        Limit applied to DC power on a MPPT input. If None,
+        then dc_limit is set equal to inverter['Paco']. [W]
 
     Returns
     -------
@@ -173,6 +174,9 @@ def sandia_multi(v_dc, p_dc, inverter, dc_limit=None):
     --------
     pvlib.inverter.sandia
     '''
+    if dc_limit == None:
+        dc_limit = inverter['Paco']
+
     power_ac = np.zeros_like(p_dc[0])
     power_dc = np.zeros_like(p_dc[0])
     for pdc in p_dc:

@@ -654,7 +654,7 @@ def test__calc_stats():
         assert_series_equal(res_slope, expected[align]['slope'])
 
 
-def test_calc_c5():
+def test__calc_c5():
     alignments = ['center']  # 'left' and 'right' could be added in the future
     ms = pd.Series(np.array([1., 0., 2., 5., -10.]))
     cs = pd.Series(np.array([0., 0., 1., 1., 0.]))

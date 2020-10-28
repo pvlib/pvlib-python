@@ -736,7 +736,7 @@ def _calc_stats(data, samples_per_window, sample_interval, align):
         Number of data points in each window
     sample_interval : float
         Time in minutes in each sample interval
-    align : bool, default 'left'
+    align : str
         Alignment of labels to data in sliding window. Must be one of
         'left', 'center', 'right'.
 
@@ -756,18 +756,15 @@ def _calc_stats(data, samples_per_window, sample_interval, align):
 
     shift = _shift_from_align(align, samples_per_window)
     center = align == 'center'
-    data_mean = data.rolling(samples_per_window,
-                             center=center).mean().shift(shift)
-    data_max = data.rolling(samples_per_window,
-                            center=center).max().shift(shift)
+    roller = data.rolling(samples_per_window, center=center)
+    data_mean = roller.mean().shift(shift)
+    data_max = roller.max().shift(shift)
     # shift to get forward difference, .diff() is backward difference instead
     data_diff = data.diff().shift(-1)
     data_slope = data_diff / sample_interval
-    data_slope_nstd = data.rolling(samples_per_window, center=center).apply(
-        _calc_slope_nstd)
+    data_slope_nstd = roller.apply(_calc_slope_nstd)
     data_slope_nstd = data_slope_nstd.shift(shift)
-    data_line_length = data.rolling(samples_per_window, center=center).apply(
-        _calc_line_length, args=(sample_interval,))
+    data_line_length = roller.apply(_calc_line_length, args=(sample_interval,))
     data_line_length = data_line_length.shift(shift)
 
     return (data_mean, data_max, data_line_length, data_slope_nstd, data_slope)
@@ -799,18 +796,17 @@ def _count_in_window(ts, window):
     return int(ts.resample(window).agg('sum')[0])
 
 
-def _get_sample_intervals(times, window_length):
-    """ Calculates timeinterval and samples per window for Reno-style clear
+def _get_sample_intervals(times, win_length):
+    """ Calculates time interval and samples per window for Reno-style clear
     sky detection functions
     """
-    window = pd.Timedelta(minutes=window_length)
-    temp = pd.Series(data=1, index=times)
+    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
 
     # determine if we can proceed
-    if times.inferred_freq and len(temp.unique()) == 1:
+    if times.inferred_freq and len(np.unique(deltas)) == 1:
         sample_interval = times[1] - times[0]
         sample_interval = sample_interval.seconds / 60  # interval in minutes
-        samples_per_window = _count_in_window(temp, window)
+        samples_per_window = int(win_length / sample_interval)
         return sample_interval, samples_per_window
     else:
         raise NotImplementedError('algorithm does not yet support unequal '
@@ -1035,7 +1031,7 @@ def detect_clearsky(measured, clearsky, times, window_length,
         components['slope_nstd'] = c4
         components['slope_max'] = c5
         components['mean_nan'] = c6
-#        components['windows'] = clear_windows
+        components['windows'] = clear_windows
         return clear_samples, components, alpha
     else:
         return clear_samples

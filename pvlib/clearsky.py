@@ -791,11 +791,6 @@ def _shift_from_align(align, window):
     return shift
 
 
-def _count_in_window(ts, window):
-    # return int type instead of default int64, to avoid error in pandas
-    return int(ts.resample(window).agg('sum')[0])
-
-
 def _get_sample_intervals(times, win_length):
     """ Calculates time interval and samples per window for Reno-style clear
     sky detection functions

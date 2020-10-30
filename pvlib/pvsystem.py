@@ -838,6 +838,27 @@ class PVSystem:
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
 
+    def pvsyst_dc_losses_eq_ohms(self):
+        """
+        Calculates the equivalent resistance of the wires using
+        :py:func:`pvlib.pvsystem.pvsyst_dc_losses_eq_ohms`,
+        `self.losses_parameters["dc_ohmic_percent"]`,
+        `self.module_parameters["V_mp_ref"]`,
+        `self.module_parameters["I_mp_ref"]`,
+        `self.modules_per_string`, and `self.strings_per_inverter`.
+
+        See :py:func:`pvlib.pvsystem.pvsyst_dc_losses_eq_ohms` for details.
+        """
+        kwargs = _build_kwargs(['dc_ohmic_percent'], self.losses_parameters)
+
+        kwargs.update(_build_kwargs(['V_mp_ref', 'I_mp_ref'],
+                                    self.module_parameters))
+
+        kwargs.update({'modules_per_string': self.modules_per_string,
+                       'strings_per_inverter': self.strings_per_inverter})
+
+        return pvsyst_dc_losses_eq_ohms(**kwargs)
+
     @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
                 name='PVSystem.localize', removal='0.9')
     def localize(self, location=None, latitude=None, longitude=None,
@@ -2332,6 +2353,35 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     losses = (1 - perf) * 100.
 
     return losses
+
+
+def pvsyst_dc_losses_eq_ohms(V_mp_ref, I_mp_ref, dc_ohmic_percent=0,
+                             modules_per_string=1,
+                             strings_per_inverter=1):
+    """
+    Calculates the equivalent resistance of the wires from a percent
+    ohmic loss at STC, defined by the user as an input to loss_parameters.
+    Equivalent resistance is calculated with the fucntion:
+
+    .. math::
+
+        Rw = (%_loss_at_stc / 100) * (Varray / Iarray)
+
+    Parameters
+    ----------
+    V_mp_ref: numeric
+    I_mp_ref: numeric
+    dc_ohmic_percent: numeric, default 0
+    modules_per_string: numeric, defualt 1
+    strings_per_inverter: numeric, defualt 1
+    """
+    vmp = modules_per_string * V_mp_ref
+
+    imp = strings_per_inverter * I_mp_ref
+
+    Rw = (dc_ohmic_percent / 100) * (vmp / imp)
+
+    return Rw
 
 
 def combine_loss_factors(index, *losses, fill_method='ffill'):

@@ -328,8 +328,8 @@ class ModelChain:
         user-defined function.
 
     losses_model: str, default 'no_loss'
-        Valid strings are 'pvwatts', 'no_loss'. The loss functions will
-        be set according to this parameter.
+        Valid strings are 'pvwatts', 'no_loss', 'pvsyst'. The loss functions
+        will be set according to this parameter.
 
     name: None or str, default None
         Name of ModelChain instance.
@@ -940,6 +940,9 @@ class ModelChain:
             elif model == 'no_loss':
                 self._losses_model = model
                 self._dc_losses = self.no_extra_losses
+            elif model == 'pvsyst':
+                self._losses_model = model
+                self._dc_losses = self.pvsyst_dc_losses
             else:
                 raise ValueError(model + ' is not a valid losses model')
         else:
@@ -955,6 +958,19 @@ class ModelChain:
 
     def no_extra_losses(self):
         self.losses = 1
+        return self
+
+    def pvsyst_dc_losses(self):
+        """
+        Calculate time series of ohmic losses and apply those to the mpp power
+        output of the `dc_model` based on the pvsyst equivalent resistance
+        method. Uses a `dc_ohmic_percent` parameter in the `losses_parameters`
+        of the PVsystem.
+        """
+        Rw = self.system.pvsyst_dc_losses_eq_ohms()
+        ohmic_loss_fraction = Rw * self.dc['i_mp'] / self.dc['v_mp']
+        self.dc_ohmic_losses = ohmic_loss_fraction * self.dc['p_mp']
+        self.dc['p_mp'] = self.dc['p_mp'] - self.dc_ohmic_losses
         return self
 
     def effective_irradiance_model(self):

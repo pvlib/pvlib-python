@@ -818,6 +818,23 @@ def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
     assert not np.allclose(mc.results.dc, dc_with_loss, equal_nan=True)
 
 
+def test_losses_models_pvwatts_arrays(multi_array_pvwatts_dc_pvwatts_ac_system,
+                                      location, weather):
+    age = 1
+    system_both = multi_array_pvwatts_dc_pvwatts_ac_system['two_array_system']
+    system_both.losses_parameters = dict(age=age)
+    mc = ModelChain(system_both, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model='pvwatts')
+    mc.run_model(weather)
+    dc_with_loss = mc.results.dc
+    mc = ModelChain(system_both, location, dc_model='pvwatts',
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    losses_model='pvwatts')
+    mc.run_model(weather)
+    assert not np.allclose(mc.results.dc, dc_with_loss, equal_nan=True)
+
+
 def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,
                                mocker):
     m = mocker.spy(sys.modules[__name__], 'constant_losses')

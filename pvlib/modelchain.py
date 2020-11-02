@@ -1052,14 +1052,14 @@ class ModelChain:
             return spect_mod * (total_irrad['poa_direct'] * aoi_mod +
                                 fd * total_irrad['poa_diffuse'])
         if isinstance(self.results.total_irrad, tuple):
-            self.effective_irradiance = tuple(
+            self.results.effective_irradiance = tuple(
                 _eff_irrad(array, ti, sm, am) for
                 array, ti, sm, am in zip(
                     self.system.module_parameters, self.results.total_irrad,
                     self.results.spectral_modifier, self.results.aoi_modifier))
         else:
             fd = self.system.module_parameters.get('FD', 1.)
-            self.effective_irradiance = self.results.spectral_modifier * \
+            self.results.effective_irradiance = self.results.spectral_modifier * \
                 (self.results.total_irrad['poa_direct'] *
                  self.results.aoi_modifier
                  + fd * self.results.total_irrad['poa_diffuse'])

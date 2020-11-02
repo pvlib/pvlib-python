@@ -874,11 +874,10 @@ class ModelChain:
         return self
 
     def no_aoi_loss(self):
-        num_arrays = len(self.system._arrays)
-        if num_arrays == 1:
+        if self.system.num_arrays == 1:
             self.results.aoi_modifier = 1.0
         else:
-            self.results.aoi_modifier = (1.0,) * num_arrays
+            self.results.aoi_modifier = (1.0,) * self.system.num_arrays
         return self
 
     @property
@@ -932,11 +931,10 @@ class ModelChain:
         return self
 
     def no_spectral_loss(self):
-        num_arrays = len(self.system._arrays)
-        if num_arrays == 1:
+        if self.system.num_arrays == 1:
             self.results.spectral_modifier = 1
         else:
-            self.results.spectral_modifier = (1,) * num_arrays
+            self.results.spectral_modifier = (1,) * self.system.num_arrays
         return self
 
     @property
@@ -1346,7 +1344,7 @@ class ModelChain:
 
         """
         if 'cell_temperature' in data:
-            # TODO replicate len(self.system._arrays) times ???
+            # TODO replicate self.system.num_arrays times ???
             self.results.cell_temperature = data['cell_temperature']
             return self
 
@@ -1521,8 +1519,8 @@ class ModelChain:
 
         self._assign_weather(data)
         self._assign_total_irrad(data)
-        # TODO handle multiple irradiances (? replicat len(self.system._arrays)
-        #      times?
+        # TODO handle multiple irradiances (replicate self.system.num_arrays
+        #      times?)
         self.results.effective_irradiance = data['effective_irradiance']
         self._run_from_effective_irrad(data)
 

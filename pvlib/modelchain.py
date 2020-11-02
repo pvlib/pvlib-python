@@ -874,7 +874,11 @@ class ModelChain:
         return self
 
     def no_aoi_loss(self):
-        self.results.aoi_modifier = 1.0
+        num_arrays = len(self.system._arrays)
+        if num_arrays == 1:
+            self.results.aoi_modifier = 1.0
+        else:
+            self.results.aoi_modifier = (1.0,) * num_arrays
         return self
 
     @property
@@ -928,7 +932,11 @@ class ModelChain:
         return self
 
     def no_spectral_loss(self):
-        self.results.spectral_modifier = 1
+        num_arrays = len(self.system._arrays)
+        if num_arrays == 1:
+            self.results.spectral_modifier = 1
+        else:
+            self.results.spectral_modifier = (1,) * num_arrays
         return self
 
     @property
@@ -1027,6 +1035,7 @@ class ModelChain:
 
     def pvwatts_losses(self):
         self.losses = (100 - self.system.pvwatts_losses()) / 100.
+        # TODO handle multiple arrays
         self.results.dc *= self.losses
         return self
 
@@ -1201,6 +1210,7 @@ class ModelChain:
 
     def _assign_total_irrad(self, data):
         key_list = [k for k in POA_KEYS if k in data]
+        # TODO multiple arrays
         self.results.total_irrad = data[key_list].copy()
         return self
 
@@ -1336,6 +1346,7 @@ class ModelChain:
 
         """
         if 'cell_temperature' in data:
+            # TODO replicate len(self.system._arrays) times ???
             self.results.cell_temperature = data['cell_temperature']
             return self
 
@@ -1349,7 +1360,9 @@ class ModelChain:
             self.results.cell_temperature = \
                 pvlib.temperature.sapm_cell_from_module(
                     module_temperature=data['module_temperature'],
+                    # TODO handle multiple poa irradiance (multiple arrays)
                     poa_global=self.results.total_irrad['poa_global'],
+                    # TODO handle multiple temperature models
                     deltaT=self.system.temperature_model_parameters['deltaT'])
             return self
 
@@ -1508,6 +1521,8 @@ class ModelChain:
 
         self._assign_weather(data)
         self._assign_total_irrad(data)
+        # TODO handle multiple irradiances (? replicat len(self.system._arrays)
+        #      times?
         self.results.effective_irradiance = data['effective_irradiance']
         self._run_from_effective_irrad(data)
 

@@ -261,6 +261,7 @@ def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
                          index=times)
     assert_series_equal(ac, expected)
 
+
 @pytest.fixture(scope='function')
 def multi_array_pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}

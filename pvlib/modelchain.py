@@ -638,14 +638,16 @@ class ModelChain:
     def _check_consistent_params(self):
         # check consistent module_parameters
         params = np.unique(
-            [set(a.module_parameters.keys()) for a in self.system._arrays])
+            [set(module_parameters.keys())
+             for module_parameters in self.system.module_parameters])
         if len(params) > 1:
             raise ValueError('PVSystem arrays have module_parameters with'
                              'different keys.')
         # check consistent temperature_model_parameters
         params = np.unique(
-            [set(a.temperature_model_parameters.keys()) for a in
-             self.system._arrays])
+            [set(temperature_model_parameters.keys())
+             for temperature_model_parameters
+             in self.system.temperature_model_parameters])
         if len(params) > 1:
             raise ValueError('PVSystem arrays temperature_model_parameters '
                              'have different keys. All arrays should have '
@@ -668,7 +670,7 @@ class ModelChain:
                 # validate module parameters
                 missing_params = (
                     _DC_MODEL_PARAMS[model] -
-                    set(self.system._arrays[0].module_parameters.keys()))
+                    _array_keys(self.system.module_parameters, 0))
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
                                      'one or more required parameters are '
@@ -690,7 +692,7 @@ class ModelChain:
 
     def infer_dc_model(self):
         """Infer DC power model from array module parameters."""
-        params = set(self.system._arrays[0].module_parameters)
+        params = _array_keys(self.system.module_parameters, 0)
         if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
         elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s',
@@ -839,7 +841,7 @@ class ModelChain:
             self._aoi_model = partial(model, self)
 
     def infer_aoi_model(self):
-        params = set(self.system._arrays[0].module_parameters)
+        params = _array_keys(self.system.module_parameters, 0)
         if {'K', 'L', 'n'} <= params:
             return self.physical_aoi_loss
         elif {'B5', 'B4', 'B3', 'B2', 'B1', 'B0'} <= params:
@@ -906,7 +908,7 @@ class ModelChain:
 
     def infer_spectral_model(self):
         """Infer spectral model from system attributes."""
-        params = set(self.system._arrays[0].module_parameters)
+        params = _array_keys(self.system.module_parameters, 0)
         if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
             return self.sapm_spectral_loss
         elif ((('Technology' in params or
@@ -966,13 +968,13 @@ class ModelChain:
                 raise ValueError(
                     f'Temperature model {self._temperature_model.__name__} is'
                     f'inconsistent with PVSystem temperature model parameters'
-                    f'{self.system._arrays[0].temperature_model_parameters.keys()}')  # noqa: E501
+                    f'{_array_keys(self.system.temperature_model_parameters, 0)}')  # noqa: E501
         else:
             self._temperature_model = partial(model, self)
 
     def infer_temperature_model(self):
         """Infer temperature model from system attributes."""
-        params = set(self.system._arrays[0].temperature_model_parameters)
+        params = _array_keys(self.system.temperature_model_parameters, 0)
         # remove or statement in v0.9
         if {'a', 'b', 'deltaT'} <= params or (
                 not params and self.system.racking_model is None
@@ -1045,15 +1047,15 @@ class ModelChain:
         return self
 
     def effective_irradiance_model(self):
-        def _eff_irrad(array, total_irrad, spect_mod, aoi_mod):
-            fd = array.module_parameters.get('FD', 1.)
+        def _eff_irrad(module_parameters, total_irrad, spect_mod, aoi_mod):
+            fd = module_parameters.get('FD', 1.)
             return spect_mod * (total_irrad['poa_direct'] * aoi_mod +
                                 fd * total_irrad['poa_diffuse'])
         if isinstance(self.results.total_irrad, tuple):
             self.effective_irradiance = tuple(
                 _eff_irrad(array, ti, sm, am) for
                 array, ti, sm, am in zip(
-                    self.system._arrays, self.results.total_irrad,
+                    self.system.module_parameters, self.results.total_irrad,
                     self.results.spectral_modifier, self.results.aoi_modifier))
         else:
             fd = self.system.module_parameters.get('FD', 1.)
@@ -1528,6 +1530,14 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
+
+
+def _array_keys(dicts, array):
+    """Return a set of keys from element `array` of `dicts` if it is a tuple
+    otherwise return the set of keys in dicts."""
+    if isinstance(dicts, tuple):
+        return set(dicts[array])
+    return set(dicts)
 
 
 def _tuple_from_dfs(dfs, name):

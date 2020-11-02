@@ -1712,6 +1712,13 @@ def test_PVSystem_pvwatts_ac_kwargs(mocker):
     assert out < pdc
 
 
+def test_PVSystem_num_arrays():
+    system_one = pvsystem.PVSystem()
+    system_two = pvsystem.PVSystem(arrays=[pvsystem.Array(), pvsystem.Array()])
+    assert system_one.num_arrays == 1
+    assert system_two.num_arrays == 2
+
+
 def test_combine_loss_factors():
     test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='D')
     loss_1 = pd.Series(.10, index=test_index)

@@ -1030,6 +1030,11 @@ class PVSystem:
     def strings_per_inverter(self):
         return tuple(array.strings for array in self._arrays)
 
+    @property
+    def num_arrays(self):
+        """The number of Arrays in the system."""
+        return len(self._arrays)
+
 
 @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
             name='LocalizedPVSystem', removal='0.9')

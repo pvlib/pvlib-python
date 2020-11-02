@@ -11,6 +11,7 @@ import warnings
 import pandas as pd
 import numpy as np
 from dataclasses import dataclass, field
+from typing import Union, Tuple, Optional, TypeVar
 
 from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
                    temperature, tools)
@@ -264,22 +265,24 @@ def get_orientation(strategy, **kwargs):
 
 @dataclass
 class ModelChainResult:
+    T = TypeVar('T')
+    PerArray = Union[T, Tuple[T, ...]]
     # system-level information
     # weather: pd.DataFrame = field(default=None)
     solar_position: pd.DataFrame = field(default=None)
     airmass: pd.DataFrame = field(default=None)
     ac: pd.Series = field(default=None)
     # per DC array information
-    total_irrad: pd.DataFrame = field(default=None)
-    aoi: pd.Series = field(default=None)
-    aoi_modifier: pd.Series = field(default=None)
-    spectral_modifier: pd.Series = field(default=None)
-    cell_temperature: pd.Series = field(default=None)
-    effective_irradiance: pd.Series = field(default=None)
-    dc: pd.Series = field(default=None)
+    total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
+    aoi: Optional[PerArray[pd.Series]] = field(default=None)
+    aoi_modifier: Optional[PerArray[pd.Series]] = field(default=None)
+    spectral_modifier: Optional[PerArray[pd.Series]] = field(default=None)
+    cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
+    effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
+    dc: Optional[PerArray[pd.Series]] = field(default=None)
     # losses: dont_know_tye_type = field(default=None)
-    array_ac: pd.Series = field(default=None)
-    diode_params: pd.DataFrame = field(default=None)
+    array_ac: Optional[PerArray[pd.Series]] = field(default=None)
+    diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
 
 
 class ModelChain:
@@ -1358,10 +1361,10 @@ class ModelChain:
             self.results.cell_temperature = \
                 pvlib.temperature.sapm_cell_from_module(
                     module_temperature=data['module_temperature'],
-                    # TODO handle multiple poa irradiance (multiple arrays)
-                    poa_global=self.results.total_irrad['poa_global'],
-                    # TODO handle multiple temperature models
-                    deltaT=self.system.temperature_model_parameters['deltaT'])
+                    poa_global=_tuple_from_dfs(
+                        self.results.total_irrad, 'poa_global'),
+                    deltaT=_tuple_from_dfs(
+                        self.system.temperature_model_parameters, 'deltaT'))
             return self
 
         # Calculate cell temperature from weather data. Cell temperature models

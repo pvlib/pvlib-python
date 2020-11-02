@@ -1059,7 +1059,8 @@ class ModelChain:
                     self.results.spectral_modifier, self.results.aoi_modifier))
         else:
             fd = self.system.module_parameters.get('FD', 1.)
-            self.results.effective_irradiance = self.results.spectral_modifier * \
+            self.results.effective_irradiance = \
+                self.results.spectral_modifier * \
                 (self.results.total_irrad['poa_direct'] *
                  self.results.aoi_modifier
                  + fd * self.results.total_irrad['poa_diffuse'])

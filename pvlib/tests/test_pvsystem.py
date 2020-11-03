@@ -1406,6 +1406,7 @@ def test_PVSystem___repr__():
     expected = """PVSystem:
   name: pv ftw
   Array:
+    name: None
     surface_tilt: 0
     surface_azimuth: 180
     module: blah
@@ -1422,12 +1423,14 @@ def test_PVSystem___repr__():
 def test_PVSystem_multi_array___repr__():
     system = pvsystem.PVSystem(
         arrays=[pvsystem.Array(surface_tilt=30, surface_azimuth=100),
-                pvsystem.Array(surface_tilt=20, surface_azimuth=220)],
+                pvsystem.Array(surface_tilt=20, surface_azimuth=220,
+                               name='foo')],
         inverter='blarg',
     )
     expected = """PVSystem:
   name: None
   Array:
+    name: None
     surface_tilt: 30
     surface_azimuth: 100
     module: None
@@ -1438,6 +1441,7 @@ def test_PVSystem_multi_array___repr__():
     strings: 1
     modules_per_string: 1
   Array:
+    name: foo
     surface_tilt: 20
     surface_azimuth: 220
     module: None
@@ -1485,9 +1489,11 @@ def test_Array___repr__():
         racking_model='close_mount',
         module_parameters={'foo': 'bar'},
         modules_per_string=100,
-        strings=10, module='baz'
+        strings=10, module='baz',
+        name='biz'
     )
     expected = """Array:
+  name: biz
   surface_tilt: 10
   surface_azimuth: 100
   module: baz

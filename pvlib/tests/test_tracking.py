@@ -452,6 +452,7 @@ def test_SingleAxisTracker___repr__():
   cross_axis_tilt: 0.0
   name: None
   Array:
+    name: None
     surface_tilt: None
     surface_azimuth: None
     module: blah
@@ -480,6 +481,7 @@ def test_LocalizedSingleAxisTracker___repr__():
   cross_axis_tilt: 0.0
   name: None
   Array:
+    name: None
     surface_tilt: None
     surface_azimuth: None
     module: blah

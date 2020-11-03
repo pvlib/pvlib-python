@@ -1131,7 +1131,7 @@ class Array:
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings=1,
-                 racking_model=None):
+                 racking_model=None, name=None):
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
 
@@ -1159,8 +1159,10 @@ class Array:
         else:
             self.temperature_model_parameters = temperature_model_parameters
 
+        self.name = name
+
     def __repr__(self):
-        attrs = ['surface_tilt', 'surface_azimuth', 'module',
+        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
                  'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters',
                  'strings', 'modules_per_string']

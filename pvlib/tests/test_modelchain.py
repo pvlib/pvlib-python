@@ -47,6 +47,33 @@ def cec_dc_snl_ac_system(cec_module_cs5p_220m, cec_inverter_parameters,
 
 
 @pytest.fixture
+def cec_dc_snl_ac_arrays(cec_module_cs5p_220m, cec_inverter_parameters,
+                         sapm_temperature_cs5p_220m):
+    module_parameters = cec_module_cs5p_220m.copy()
+    module_parameters['b'] = 0.05
+    module_parameters['EgRef'] = 1.121
+    module_parameters['dEgdT'] = -0.0002677
+    temp_model_params = sapm_temperature_cs5p_220m.copy()
+    array_one = pvsystem.Array(
+        surface_tilt=32.2, surface_azimuth=180,
+        module=module_parameters['Name'],
+        module_parameters=module_parameters.copy(),
+        temperature_model_parameters=temp_model_params.copy()
+    )
+    array_two = pvsystem.Array(
+        surface_tilt=42.2, surface_azimuth=220,
+        module=module_parameters['Name'],
+        module_parameters=module_parameters.copy(),
+        temperature_model_parameters=temp_model_params.copy()
+    )
+    system = PVSystem(
+        arrays=[array_one, array_two],
+        inverter_parameters = cec_inverter_parameters
+    )
+    return system
+
+
+@pytest.fixture
 def cec_dc_native_snl_ac_system(cec_module_cs5p_220m, cec_inverter_parameters,
                                 sapm_temperature_cs5p_220m):
     module_parameters = cec_module_cs5p_220m.copy()
@@ -71,6 +98,32 @@ def pvsyst_dc_snl_ac_system(pvsyst_module_params, cec_inverter_parameters,
                       module_parameters=module_parameters,
                       temperature_model_parameters=temp_model_params,
                       inverter_parameters=cec_inverter_parameters)
+    return system
+
+
+@pytest.fixture
+def pvsyst_dc_snl_ac_arrays(pvsyst_module_params, cec_inverter_parameters,
+                            sapm_temperature_cs5p_220m):
+    module = 'PVsyst test module'
+    module_parameters = pvsyst_module_params
+    module_parameters['b'] = 0.05
+    temp_model_params = sapm_temperature_cs5p_220m.copy()
+    array_one = pvsystem.Array(
+        surface_tilt=32.2, surface_azimuth=180,
+        module=module,
+        module_parameters=module_parameters.copy(),
+        temperature_model_parameters=temp_model_params.copy()
+    )
+    array_two = pvsystem.Array(
+        surface_tilt=42.2, surface_azimuth=220,
+        module=module,
+        module_parameters=module_parameters.copy(),
+        temperature_model_parameters=temp_model_params.copy()
+    )
+    system = PVSystem(
+        arrays=[array_one, array_two],
+        inverter_parameters=cec_inverter_parameters
+    )
     return system
 
 
@@ -583,6 +636,36 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.results.dc, (pd.Series, pd.DataFrame))
+
+
+@pytest.mark.parametrize('dc_model', ['cec', 'desoto', 'pvsyst'])
+def test_singlediode_dc_arrays(location, dc_model,
+                               cec_dc_snl_ac_arrays,
+                               pvsyst_dc_snl_ac_arrays,
+                               weather):
+    systems = {'cec': cec_dc_snl_ac_arrays,
+               'pvsyst': pvsyst_dc_snl_ac_arrays,
+               'desoto': cec_dc_snl_ac_arrays}
+    temp_sapm = {'a': -3.40641, 'b': -0.0842075, 'deltaT': 3}
+    temp_pvsyst = {'u_c': 29.0, 'u_v': 0}
+    temp_model_params = {'cec': temp_sapm,
+                         'desoto': temp_sapm,
+                         'pvsyst': temp_pvsyst}
+    temp_model = {'cec': 'sapm', 'desoto': 'sapm', 'pvsyst': 'pvsyst'}
+    system = systems[dc_model]
+    system.temperature_model_parameters = temp_model_params[dc_model]
+    if dc_model == 'desoto':
+        for module_parameters in system.module_parameters:
+            module_parameters.pop('Adjust')
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss', spectral_model='no_loss',
+                    temperature_model=temp_model[dc_model])
+    mc.run_model(weather)
+    assert isinstance(mc.results.dc, tuple)
+    assert len(mc.results.dc) == system.num_arrays
+    for dc in mc.results.dc:
+        assert isinstance(dc, (pd.Series, pd.DataFrame))
+
 
 
 @pytest.mark.parametrize('dc_model', ['sapm', 'cec', 'cec_native'])

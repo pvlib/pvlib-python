@@ -721,23 +721,35 @@ class ModelChain:
         return self
 
     def _singlediode(self, calcparams_model_function):
-        (photocurrent, saturation_current, resistance_series,
-         resistance_shunt, nNsVth) = (
-            calcparams_model_function(self.results.effective_irradiance,
-                                      self.results.cell_temperature))
-
-        self.results.diode_params = pd.DataFrame(
-            {'I_L': photocurrent, 'I_o': saturation_current,
-             'R_s': resistance_series, 'R_sh': resistance_shunt,
-             'nNsVth': nNsVth})
-
-        self.results.dc = self.system.singlediode(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth)
-
+        def _make_diode_params(photocurrent, saturation_current,
+                               resistance_series, resistance_shunt,
+                               nNsVth):
+            return pd.DataFrame(
+                {'I_L': photocurrent, 'I_o': saturation_current,
+                 'R_s': resistance_series, 'R_sh': resistance_shunt,
+                 'nNsVth': nNsVth}
+            )
+        params = calcparams_model_function(self.results.effective_irradiance,
+                                           self.results.cell_temperature)
+        if self.system.num_arrays == 1:
+            self.results.diode_params = _make_diode_params(*params)
+            self.results.dc = self.system.singlediode(*params)
+        else:
+            self.results.diode_params = tuple(
+                _make_diode_params(*params) for params in params
+            )
+            self.results.dc = tuple(
+                self.system.singlediode(*params)
+                for params in params
+            )
         self.results.dc = self.system.scale_voltage_current_power(
-            self.results.dc).fillna(0)
-
+            self.results.dc
+        )
+        if self.system.num_arrays == 1:
+            self.results.dc.fillna(0, inplace=True)
+        else:
+            for dc in self.results.dc:
+                dc.fillna(0, inplace=True)
         return self
 
     def desoto(self):

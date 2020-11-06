@@ -42,7 +42,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     names : str, default 'tmy'
         PSM3 API parameter specifing year or TMY variant to download, see notes
         below for options
-    interval : int, default 60
+    interval : int, {60, 5, 15, 30}
         interval size in minutes, must be 5, 15, 30 or 60.  Only used for
         single-year requests (i.e., it is ignored for tmy/tgy/tdy requests).
     attributes : list of str, optional

@@ -97,8 +97,10 @@ def test_get_psm3_5min(nrel_api_key):
     """test get_psm3 for 5-minute data"""
     header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
                                  PVLIB_EMAIL, names='2019', interval=5)
+    assert len(data) == 525600/5
+    first_day = data.loc['2019-01-01']
     expected = pd.read_csv(YEAR_TEST_DATA_5MIN)
-    assert_psm3_equal(header, data, expected)
+    assert_psm3_equal(header, first_day, expected)
 
 
 @pytest.mark.remote_data

@@ -20,6 +20,8 @@ Enhancements
 * :py:func:`pvlib.clearsky.detect_clearsky` now uses centered rolling windows
   instead of left-aligned rolling windows. (:pull:`1074`)
 
+* Added optional ``attributes`` parameter to :py:func:`pvlib.iotools.get_psm3`
+  and added the option of fetching 5- and 15-minute PSM3 data. (:pull:`1086`)
 
 Bug fixes
 ~~~~~~~~~

@@ -249,36 +249,38 @@ def _build_kwargs(keys, input_dict):
     return kwargs
 
 
-# Created April,2014
-# Author: Rob Andrews, Calama Consulting
-
-def _golden_sect_DataFrame(params, VL, VH, func):
+# Created April,2014 by Rob Andrews, Calama Consulting
+# Modified: November, 2020 by C. W. Hansen, to add atol and change exit
+# criteria
+def _golden_sect_DataFrame(params, VL, VH, func, atol=1e-8):
     """
     Vectorized golden section search for finding MPP from a dataframe
     timeseries.
 
     Parameters
     ----------
-    params : dict
-        Dictionary containing scalars or arrays
+    params : dict or Dataframe
+        Parameters for the IV curve(s) where MPP will be found. Must contain
+        keys: 'r_sh', 'r_s', 'nNsVth', 'i_0', 'i_l'
         of inputs to the function to be optimized.
         Each row should represent an independent optimization.
 
     VL: float
-        Lower bound of the optimization
+        Lower bound on voltage for the optimization
 
-    VH: float
-        Upper bound of the optimization
+    VH: array-like
+        Upper bound on voltage for the optimization
 
     func: function
-        Function to be optimized must be in the form f(array-like, x)
+        Function to be optimized must be in the form f(dict or Dataframe, str)
+        where str is the key corresponding to voltage 
 
     Returns
     -------
-    func(df,'V1') : DataFrame
+    func(params, 'V1') : dict or DataFrame
         function evaluated at the optimal point
 
-    df['V1']: Dataframe
+    df['V1']: array-like or Series
         Dataframe of optimal points
 
     Notes
@@ -286,16 +288,19 @@ def _golden_sect_DataFrame(params, VL, VH, func):
     This function will find the MAXIMUM of a function
     """
 
+    phim1 = (np.sqrt(5) - 1) / 2
+
     df = params
     df['VH'] = VH
     df['VL'] = VL
 
     errflag = True
     iterations = 0
+    iterlimit = np.max(np.trunc(np.log(atol / (VH - VL)) / np.log(phim1))) + 1
 
     while errflag:
 
-        phi = (np.sqrt(5)-1)/2*(df['VH']-df['VL'])
+        phi = phim1 * (df['VH'] - df['VL'])
         df['V1'] = df['VL'] + phi
         df['V2'] = df['VH'] - phi
 
@@ -306,15 +311,20 @@ def _golden_sect_DataFrame(params, VL, VH, func):
         df['VL'] = df['V2']*df['SW_Flag'] + df['VL']*(~df['SW_Flag'])
         df['VH'] = df['V1']*~df['SW_Flag'] + df['VH']*(df['SW_Flag'])
 
-        err = df['V1'] - df['V2']
+        err = abs(df['V2'] - df['V1'])
         try:
-            errflag = (abs(err) > .01).any()
+            errflag = (err > atol).any()
         except ValueError:
-            errflag = (abs(err) > .01)
+            errflag = err > atol
 
         iterations += 1
 
-        if iterations > 50:
-            raise Exception("EXCEPTION:iterations exceeded maximum (50)")
+        try:
+            iterflag = (iterations > iterlimit).any()
+        except ValueError:
+            iterflag = iterations > iterlimit
+
+        if iterflag and errflag:
+            raise Exception("EXCEPTION: iteration limit exceeded")
 
     return func(df, 'V1'), df['V1']

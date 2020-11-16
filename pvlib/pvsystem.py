@@ -838,16 +838,16 @@ class PVSystem:
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
 
-    def pvsyst_dc_losses_eq_ohms(self):
+    def dc_ohms_from_percent(self):
         """
         Calculates the equivalent resistance of the wires using
-        :py:func:`pvlib.pvsystem.pvsyst_dc_losses_eq_ohms`,
+        :py:func:`pvlib.pvsystem.dc_ohms_from_percent`,
         `self.losses_parameters["dc_ohmic_percent"]`,
         `self.module_parameters["V_mp_ref"]`,
         `self.module_parameters["I_mp_ref"]`,
         `self.modules_per_string`, and `self.strings_per_inverter`.
 
-        See :py:func:`pvlib.pvsystem.pvsyst_dc_losses_eq_ohms` for details.
+        See :py:func:`pvlib.pvsystem.dc_ohms_from_percent` for details.
         """
         kwargs = _build_kwargs(['dc_ohmic_percent'], self.losses_parameters)
 
@@ -857,7 +857,7 @@ class PVSystem:
         kwargs.update({'modules_per_string': self.modules_per_string,
                        'strings_per_inverter': self.strings_per_inverter})
 
-        return pvsyst_dc_losses_eq_ohms(**kwargs)
+        return dc_ohms_from_percent(**kwargs)
 
     @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
                 name='PVSystem.localize', removal='0.9')
@@ -2355,29 +2355,42 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     return losses
 
 
-def pvsyst_dc_losses_eq_ohms(V_mp_ref, I_mp_ref, dc_ohmic_percent=0,
-                             modules_per_string=1,
-                             strings_per_inverter=1):
+def dc_ohms_from_percent(v_mp_ref, i_mp_ref, dc_ohmic_percent=0,
+                         modules_per_string=1,
+                         strings_per_inverter=1):
     """
     Calculates the equivalent resistance of the wires from a percent
-    ohmic loss at STC, defined by the user as an input to loss_parameters.
-    Equivalent resistance is calculated with the fucntion:
+    ohmic loss at STC.
+
+    Equivalent resistance is calculated with the function:
 
     .. math::
 
-        Rw = (%_loss_at_stc / 100) * (Varray / Iarray)
+        Rw = (L_{stc} / 100) * (Varray / Iarray)
+
+    :math:`L_{stc}` is the input dc loss as a percent, e.g. 1.5% loss is
+    input as 1.5
 
     Parameters
     ----------
     V_mp_ref: numeric
     I_mp_ref: numeric
     dc_ohmic_percent: numeric, default 0
-    modules_per_string: numeric, defualt 1
-    strings_per_inverter: numeric, defualt 1
-    """
-    vmp = modules_per_string * V_mp_ref
+    modules_per_string: numeric, default 1
+    strings_per_inverter: numeric, default 1
 
-    imp = strings_per_inverter * I_mp_ref
+    Returns
+    ----------
+    Rw: numeric
+        Equivalent resistance in ohms
+
+    References
+    ----------
+    -- [1] PVsyst 7 Help. "Array ohmic wiring loss". https://www.pvsyst.com/help/ohmic_loss.htm
+    """
+    vmp = modules_per_string * v_mp_ref
+
+    imp = strings_per_inverter * i_mp_ref
 
     Rw = (dc_ohmic_percent / 100) * (vmp / imp)
 

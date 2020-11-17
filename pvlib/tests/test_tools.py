@@ -18,17 +18,22 @@ def test_build_kwargs(keys, input_dict, expected):
 def _obj_test_golden_sect(params, loc):
     return params[loc] * (1. - params['c'] * params[loc]**params['n'])
 
-                               
+
+@pytest.mark.parametrize('params, lb, ub, expected, func', [
+    ({'c': 1., 'n': 1.}, 0., 1., 0.5, _obj_test_golden_sect),
+    ({'c': 1e6, 'n': 6.}, 0., 1., 0.07230200263994839, _obj_test_golden_sect),
+    ({'c': 0.2, 'n': 0.3}, 0., 100., 89.14332727531685, _obj_test_golden_sect)
+])
 def test__golden_sect_DataFrame(params, lb, ub, expected, func):
-    v, x = tools._golden_sect_DataFrame(params, lb, ub, func)    
+    v, x = tools._golden_sect_DataFrame(params, lb, ub, func)
     assert np.isclose(x, expected, atol=1e-8)
 
 
 def test__golden_sect_DataFrame_atol():
     params = {'c': 0.2, 'n': 0.3}
     expected = 89.14332727531685
-    v, x = tools._golden_sect_DataFrame(params, 0., 100., _obj_test_golden_sect,
-                                  atol=1e-12)
+    v, x = tools._golden_sect_DataFrame(
+        params, 0., 100., _obj_test_golden_sect, atol=1e-12)
     assert np.isclose(x, expected, atol=1e-12)
 
 

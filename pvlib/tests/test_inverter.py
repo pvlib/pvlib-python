@@ -131,7 +131,7 @@ def test_sandia_multi_float(cec_inverter_parameters):
     idc = 0.
     pdc = idc * vdc
     pac = inverter.sandia_multi(vdc, pdc, cec_inverter_parameters)
-    assert_allclose(pac, cec_inverter_parameters['Pnt'])
+    assert_allclose(pac, -1.0 * cec_inverter_parameters['Pnt'])
 
 
 def test_pvwatts_scalars():

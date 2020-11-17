@@ -180,6 +180,8 @@ def sandia_multi(v_dc, p_dc, inverter):
     '''
 
     if isinstance(p_dc, tuple):
+        if isinstance(v_dc, tuple) and not len(p_dc)==len(v_dc):
+            raise ValueError('p_dc and v_dc have different lengths')
         power_dc = sum(p_dc)
     else:
         power_dc = sum((p_dc,))  # handle Series, array or float
@@ -187,12 +189,8 @@ def sandia_multi(v_dc, p_dc, inverter):
     power_ac = 0. * power_dc
 
     if isinstance(p_dc, tuple):
-        if len((p_dc,)) == len((v_dc,)):
-            for vdc, pdc in zip(v_dc, p_dc):
-                power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc,
-                                                         inverter)
-        else:
-            raise ValueError('p_dc and v_dc have different lengths')
+        for vdc, pdc in zip(v_dc, p_dc):
+            power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
     else:
         power_ac = _sandia_eff(v_dc, power_dc, inverter)
 

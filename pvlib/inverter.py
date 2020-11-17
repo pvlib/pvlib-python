@@ -41,7 +41,11 @@ def _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso):
     Applies minimum and maximum power limits to `power_ac`
     '''
     power_ac = np.minimum(Paco, power_ac)
-    power_ac[p_dc < Pso] = -1.0 * abs(Pnt)
+    try:
+        power_ac[p_dc < Pso] = -1.0 * abs(Pnt)
+    except TypeError:  # float
+        if power_ac < Pso:
+            power_ac = -1.0 * abs(Pnt)
     return power_ac
 
 
@@ -141,10 +145,10 @@ def sandia_multi(v_dc, p_dc, inverter):
 
     Parameters
     ----------
-    v_dc : tuple
+    v_dc : numeric or tuple of numeric
         DC voltage on each MPPT input of the inverter. [V]
 
-    p_dc : tuple
+    p_dc : numeric or tuple of numeric
         DC power on each MPPT input of the inverter. [W]
 
     inverter : dict-like
@@ -175,16 +179,25 @@ def sandia_multi(v_dc, p_dc, inverter):
     pvlib.inverter.sandia
     '''
 
-    power_dc = sum(p_dc)
-    power_ac = np.zeros_like(power_dc)
-
-    if len(p_dc) == len(v_dc):
-        for vdc, pdc in zip(v_dc, p_dc):
-            power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
-        return _sandia_limits(power_ac, p_dc, inverter['Paco'],
-                              inverter['Pnt'], inverter['Pso'])
+    if isinstance(p_dc, tuple):
+        power_dc = sum(p_dc)
     else:
-        raise ValueError('p_dc and v_dc have different lengths')
+        power_dc = sum((p_dc,))  # handle Series, array or float
+
+    power_ac = 0. * power_dc
+
+    if isinstance(p_dc, tuple):
+        if len((p_dc,)) == len((v_dc,)):
+            for vdc, pdc in zip(v_dc, p_dc):
+                power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc,
+                                                         inverter)
+        else:
+            raise ValueError('p_dc and v_dc have different lengths')
+    else:
+        power_ac = _sandia_eff(v_dc, power_dc, inverter)
+
+    return _sandia_limits(power_ac, power_dc, inverter['Paco'],
+                          inverter['Pnt'], inverter['Pso'])
 
 
 def adr(v_dc, p_dc, inverter, vtol=0.10):

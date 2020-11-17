@@ -99,21 +99,27 @@ def test_sandia_multi(cec_inverter_parameters):
     vdcs = pd.Series(np.linspace(0, 50, 3))
     idcs = pd.Series(np.linspace(0, 11, 3)) / 2
     pdcs = idcs * vdcs
-
     pacs = inverter.sandia_multi((vdcs, vdcs), (pdcs, pdcs),
                                  cec_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308,
+                                                    250.000000]))
 
 
-def test_sandia_multi_dc_limit(cec_inverter_parameters):
-    vdcs = pd.Series(np.linspace(0, 50, 3))
-    idcs = pd.Series(np.linspace(0, 11, 3)) / 2
+def test_sandia_multi_array(cec_inverter_parameters):
+    vdcs = np.linspace(0, 50, 3)
+    idcs = np.linspace(0, 11, 3)
     pdcs = idcs * vdcs
+    pacs = inverter.sandia_multi(vdcs, pdcs, cec_inverter_parameters)
+    assert_allclose(pacs, np.array([-0.020000, 132.004278, 250.000000]))
 
-    pacs = inverter.sandia_multi((vdcs, vdcs), (pdcs, pdcs),
-                                 cec_inverter_parameters, dc_limit=50)
-    assert_series_equal(2 * pacs, pd.Series([-0.020000, 2 * 47.05127939,
-                                             2 * 47.01461547]))
+    
+def test_sandia_multi_float(cec_inverter_parameters):
+    vdc = 25.
+    idc = 2.75
+    pdc = idc * vdc
+
+    pac = inverter.sandia_multi(vdc, pdc, cec_inverter_parameters)
+    assert_allclose(pac, 65.296672)
 
 
 def test_pvwatts_scalars():

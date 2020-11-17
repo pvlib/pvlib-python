@@ -273,7 +273,7 @@ def _golden_sect_DataFrame(params, VL, VH, func, atol=1e-8):
 
     func: function
         Function to be optimized must be in the form f(dict or Dataframe, str)
-        where str is the key corresponding to voltage 
+        where str is the key corresponding to voltage
 
     Returns
     -------

@@ -101,8 +101,15 @@ def test_sandia_multi(cec_inverter_parameters):
     pdcs = idcs * vdcs
     pacs = inverter.sandia_multi((vdcs, vdcs), (pdcs, pdcs),
                                  cec_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308,
-                                                    250.000000]))
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+
+
+def test_sandia_multi_error(cec_inverter_parameters):
+    vdcs = pd.Series(np.linspace(0, 50, 3))
+    idcs = pd.Series(np.linspace(0, 11, 3)) / 2
+    pdcs = idcs * vdcs
+    with pytest.raises(ValueError, match='p_dc and v_dc have different'):
+        inverter.sandia_multi((vdcs,), (pdcs, pdcs), cec_inverter_parameters)
 
 
 def test_sandia_multi_array(cec_inverter_parameters):
@@ -112,7 +119,7 @@ def test_sandia_multi_array(cec_inverter_parameters):
     pacs = inverter.sandia_multi(vdcs, pdcs, cec_inverter_parameters)
     assert_allclose(pacs, np.array([-0.020000, 132.004278, 250.000000]))
 
-    
+
 def test_sandia_multi_float(cec_inverter_parameters):
     vdc = 25.
     idc = 2.75

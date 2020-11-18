@@ -1358,6 +1358,55 @@ def test_PVSystem_multi_array_get_irradiance():
     )
 
 
+def test_PVSystem_multi_array_get_irradiance_multi_irrad():
+    array_one = pvsystem.Array()
+    array_two = pvsystem.Array()
+    system = pvsystem.PVSystem(arrays=[array_one, array_two])
+    location = Location(latitude=32, longitude=-111)
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
+    solar_position = location.get_solarposition(times)
+    irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
+                          index=times)
+    irrads_two = pd.DataFrame(
+        {'dni': [0, 900], 'ghi': [0, 600], 'dhi': [0, 100]},
+        index=times
+    )
+    array_irrad = system.get_irradiance(
+        solar_position['apparent_zenith'],
+        solar_position['azimuth'],
+        (irrads['dhi'], irrads['dhi']),
+        (irrads['ghi'], irrads['ghi']),
+        (irrads['dni'], irrads['dni'])
+    )
+    assert_frame_equal(array_irrad[0], array_irrad[1])
+    array_irrad = system.get_irradiance(
+        solar_position['apparent_zenith'],
+        solar_position['azimuth'],
+        (irrads['dhi'], irrads_two['dhi']),
+        (irrads['ghi'], irrads_two['ghi']),
+        (irrads['dni'], irrads_two['dni'])
+    )
+    assert not array_irrad[0].equals(array_irrad[1])
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.get_irradiance(
+            solar_position['apparent_zenith'],
+            solar_position['azimuth'],
+            (irrads['dhi'], irrads_two['dhi'], irrads['dhi']),
+            (irrads['ghi'], irrads_two['ghi']),
+            irrads['dni']
+        )
+    array_irrad = system.get_irradiance(
+        solar_position['apparent_zenith'],
+        solar_position['azimuth'],
+        (irrads['dhi'], irrads_two['dhi']),
+        irrads['ghi'],
+        irrads['dni']
+    )
+    assert not array_irrad[0].equals(array_irrad[1])
+
+
 def test_PVSystem_change_surface_azimuth():
     system = pvsystem.PVSystem(surface_azimuth=180)
     assert system.surface_azimuth == 180

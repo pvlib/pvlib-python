@@ -258,11 +258,21 @@ class PVSystem:
         repr += f'inverter: {self.inverter}'
         return repr
 
-    def _validate_per_array(self, values):
-        # Check that values is a tuple of the same length as
-        # `self._arrays`. If it is a single vlaue it is packed in to
-        # a length-1 tuple before the check. If the length is not the
-        # same a ValueError is raised, otherwise the tuple is returned.
+    def _validate_per_array(self, values, system_wide=False):
+        """Check that `values` is a tuple of the same length as
+        `self._arrays`.
+
+        If it is a single vlaue it is packed in to a length-1 tuple before
+        the check. If the length is not the same a ValueError is raised,
+        otherwise the tuple is returned.
+
+        When `system_wide` is True, single values are accepted even if there
+        is more than one Array. In this case the single value is replicated
+        in a tuple of the same length as `self._arrays` and that tuple is
+        returned.
+        """
+        if system_wide and not isinstance(values, tuple):
+            return (values,) * self.num_arrays
         if not isinstance(values, tuple):
             values = (values,)
         if len(values) != len(self._arrays):
@@ -340,10 +350,17 @@ class PVSystem:
         poa_irradiance : DataFrame
             Column names are: ``total, beam, sky, ground``.
         """
-        return tuple(array.get_irradiance(solar_zenith, solar_azimuth,
-                                          dni, ghi, dhi,
-                                          dni_extra, airmass)
-                     for array in self._arrays)
+        dni = self._validate_per_array(dni, system_wide=True)
+        ghi = self._validate_per_array(ghi, system_wide=True)
+        dhi = self._validate_per_array(dhi, system_wide=True)
+        return tuple(
+            array.get_irradiance(solar_zenith, solar_azimuth,
+                                 dni, ghi, dhi,
+                                 dni_extra, airmass)
+            for array, dni, ghi, dhi in zip(
+                self._arrays, dni, ghi, dhi
+            )
+        )
 
     @_unwrap_single_value
     def get_iam(self, aoi, iam_model='physical'):

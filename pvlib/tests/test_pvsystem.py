@@ -1359,6 +1359,13 @@ def test_PVSystem_multi_array_get_irradiance():
 
 
 def test_PVSystem_multi_array_get_irradiance_multi_irrad():
+    """Test a system with two identical arrays but different irradiance.
+
+    Because only the irradiance is different we expect the same output
+    when only one GHI/DHI/DNI input is given, but different output
+    for each array when different GHI/DHI/DNI input is given. For the later
+    case we verify that the correct irradiance data is passed to each array.
+    """
     array_one = pvsystem.Array()
     array_two = pvsystem.Array()
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
@@ -1387,7 +1394,19 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad():
         (irrads['ghi'], irrads_two['ghi']),
         (irrads['dni'], irrads_two['dni'])
     )
+    array_one_expected = array_one.get_irradiance(
+        solar_position['apparent_zenith'],
+        solar_position['azimuth'],
+        irrads['dhi'], irrads['ghi'], irrads['dni']
+    )
+    array_two_expected = array_two.get_irradiance(
+        solar_position['apparent_zenith'],
+        solar_position['azimuth'],
+        irrads_two['dhi'], irrads_two['ghi'], irrads_two['dni']
+    )
     assert not array_irrad[0].equals(array_irrad[1])
+    assert_frame_equal(array_irrad[0], array_one_expected)
+    assert_frame_equal(array_irrad[1], array_two_expected)
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
         system.get_irradiance(
@@ -1404,6 +1423,7 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad():
         irrads['ghi'],
         irrads['dni']
     )
+    assert_frame_equal(array_irrad[0], array_one_expected)
     assert not array_irrad[0].equals(array_irrad[1])
 
 

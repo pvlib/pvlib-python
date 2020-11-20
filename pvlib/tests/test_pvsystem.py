@@ -588,7 +588,7 @@ def test_PVSystem_multi_array_celltemp_temp_too_long(
         celltemp, two_array_system):
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
-        celltemp(two_array_system, (1000, 1000), (1,1,1), 1)
+        celltemp(two_array_system, (1000, 1000), (1, 1, 1), 1)
 
 
 @pytest.mark.parametrize("celltemp",
@@ -612,7 +612,7 @@ def test_PVSystem_multi_array_celltemp_wind_too_long(
         celltemp, two_array_system):
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
-        celltemp(two_array_system, (1000, 1000), 25, (1,1,1))
+        celltemp(two_array_system, (1000, 1000), 25, (1, 1, 1))
 
 
 @pytest.mark.parametrize("celltemp",

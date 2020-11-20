@@ -270,6 +270,26 @@ To install the NREL SPA algorithm for use with pvlib:
 #. From the ``pvlib-python`` directory, run ``pip uninstall pvlib``
    followed by ``pip install .``
 
+
+.. _using_numba:
+
+Numba Acceleration
+------------------
+
+It is not always possible to use python and numpy to create an efficient
+implementation of complex modeling algorithms.  As a result, some function
+in pvlib-python include optional JIT-compiling support through the
+`numba <https://numba.pydata.org/>`_ python package.  Installing numba
+is not required to run these functions, but it will improve the runtime
+of these functions significantly.  Functions that can be accelerated
+with numba have a corresponding note on their page in the API Reference.
+
+By default, numba is used automatically if it is present in your
+python environment.  However, it can be disabled by using the
+``NUMBA_DISABLE_JIT`` environment variable.  For more details, see numba's
+`documentation <https://numba.pydata.org/numba-doc/dev/user/troubleshoot.html#disabling-jit-compilation>`_.
+
+
 .. _references:
 
 References

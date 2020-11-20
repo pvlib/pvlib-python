@@ -5,7 +5,7 @@ PV modules and cells.
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import jit
+from pvlib.tools import jit, jit_annotate
 
 TEMPERATURE_MODEL_PARAMETERS = {
     'sapm': {
@@ -559,6 +559,7 @@ def _hydraulic_diameter(width, height):
     return 2 * (width * height) / (width + height)
 
 
+@jit_annotate
 def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
             wind_height=9.144, emissivity=0.84, absorption=0.83,
             surface_tilt=30, module_width=0.31579, module_length=1.2):

@@ -6,6 +6,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import pytz
+import textwrap
 
 
 def cosd(angle):
@@ -334,3 +335,16 @@ try:
     from numba import jit
 except ImportError:
     jit = dummy_jit
+
+
+def jit_annotate(func):
+    original_docstring = func.__doc__
+    annotation = "\n".join([
+        "",
+        ".. note::",
+        "   This function can be accelerated using Numba;",
+        "   see :ref:`using_numba`.",
+    ])
+    new_docstring = textwrap.dedent(original_docstring) + annotation
+    func.__doc__ = new_docstring
+    return func

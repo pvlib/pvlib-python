@@ -68,7 +68,7 @@ def cec_dc_snl_ac_arrays(cec_module_cs5p_220m, cec_inverter_parameters,
     )
     system = PVSystem(
         arrays=[array_one, array_two],
-        inverter_parameters = cec_inverter_parameters
+        inverter_parameters=cec_inverter_parameters
     )
     return system
 

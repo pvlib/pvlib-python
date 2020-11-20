@@ -248,6 +248,7 @@ def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):
     with pytest.raises(ValueError):
         mc.prepare_inputs(weather)
 
+
 @pytest.mark.parametrize("missing", ['dhi', 'ghi', 'dni'])
 def test_prepare_inputs_missing_irrad_component(
         sapm_dc_snl_ac_system, location, missing):

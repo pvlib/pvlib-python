@@ -385,6 +385,10 @@ def two_array_system(pvsyst_module_params, cec_module_params):
     temperature_model = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
         'open_rack_glass_glass'
     ]
+    # Need u_v to be non-zero so wind-speed changes cell temperature
+    # under the pvsyst model.
+    temperature_model['u_v'] = 1.0
+    temperature_model['noct_installed'] = 45
     module_params = {**pvsyst_module_params, **cec_module_params}
     return pvsystem.PVSystem(
         arrays=[
@@ -494,10 +498,121 @@ def test_PVSystem_faiman_celltemp(mocker):
 @pytest.mark.parametrize("celltemp",
                          [pvsystem.PVSystem.faiman_celltemp,
                           pvsystem.PVSystem.pvsyst_celltemp,
-                          pvsystem.PVSystem.sapm_celltemp])
+                          pvsystem.PVSystem.sapm_celltemp,
+                          pvsystem.PVSystem.fuentes_celltemp])
 def test_PVSystem_multi_array_celltemp_functions(celltemp, two_array_system):
-    temp_one, temp_two = celltemp(two_array_system, (1000, 500), 25, 1)
-    assert temp_one != temp_two
+    times = pd.date_range(start='2020-08-25 11:00', freq='H', periods=3)
+    irrad_one = pd.Series(1000, index=times)
+    irrad_two = pd.Series(500, index=times)
+    temp_air = pd.Series(25, index=times)
+    wind_speed = pd.Series(1, index=times)
+    temp_one, temp_two = celltemp(
+        two_array_system, (irrad_one, irrad_two), temp_air, wind_speed)
+    assert (temp_one != temp_two).all()
+
+
+@pytest.mark.parametrize("celltemp",
+                         [pvsystem.PVSystem.faiman_celltemp,
+                          pvsystem.PVSystem.pvsyst_celltemp,
+                          pvsystem.PVSystem.sapm_celltemp,
+                          pvsystem.PVSystem.fuentes_celltemp])
+def test_PVSystem_multi_array_celltemp_multi_temp(celltemp, two_array_system):
+    times = pd.date_range(start='2020-08-25 11:00', freq='H', periods=3)
+    irrad = pd.Series(1000, index=times)
+    temp_air_one = pd.Series(25, index=times)
+    temp_air_two = pd.Series(5, index=times)
+    wind_speed = pd.Series(1, index=times)
+    temp_one, temp_two = celltemp(
+        two_array_system,
+        (irrad, irrad),
+        (temp_air_one, temp_air_two),
+        wind_speed
+    )
+    assert (temp_one != temp_two).all()
+    temp_one_swtich, temp_two_switch = celltemp(
+        two_array_system,
+        (irrad, irrad),
+        (temp_air_two, temp_air_one),
+        wind_speed
+    )
+    assert_series_equal(temp_one, temp_two_switch)
+    assert_series_equal(temp_two, temp_one_swtich)
+
+
+@pytest.mark.parametrize("celltemp",
+                         [pvsystem.PVSystem.faiman_celltemp,
+                          pvsystem.PVSystem.pvsyst_celltemp,
+                          pvsystem.PVSystem.sapm_celltemp,
+                          pvsystem.PVSystem.fuentes_celltemp])
+def test_PVSystem_multi_array_celltemp_multi_wind(celltemp, two_array_system):
+    times = pd.date_range(start='2020-08-25 11:00', freq='H', periods=3)
+    irrad = pd.Series(1000, index=times)
+    temp_air = pd.Series(25, index=times)
+    wind_speed_one = pd.Series(1, index=times)
+    wind_speed_two = pd.Series(5, index=times)
+    temp_one, temp_two = celltemp(
+        two_array_system,
+        (irrad, irrad),
+        temp_air,
+        (wind_speed_one, wind_speed_two)
+    )
+    assert (temp_one != temp_two).all()
+    temp_one_swtich, temp_two_switch = celltemp(
+        two_array_system,
+        (irrad, irrad),
+        temp_air,
+        (wind_speed_two, wind_speed_one)
+    )
+    assert_series_equal(temp_one, temp_two_switch)
+    assert_series_equal(temp_two, temp_one_swtich)
+
+
+@pytest.mark.parametrize("celltemp",
+                         [pvsystem.PVSystem.faiman_celltemp,
+                          pvsystem.PVSystem.pvsyst_celltemp,
+                          pvsystem.PVSystem.sapm_celltemp,
+                          pvsystem.PVSystem.fuentes_celltemp])
+def test_PVSystem_multi_array_celltemp_temp_too_short(
+        celltemp, two_array_system):
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        celltemp(two_array_system, (1000, 1000), (1,), 1)
+
+
+@pytest.mark.parametrize("celltemp",
+                         [pvsystem.PVSystem.faiman_celltemp,
+                          pvsystem.PVSystem.pvsyst_celltemp,
+                          pvsystem.PVSystem.sapm_celltemp,
+                          pvsystem.PVSystem.fuentes_celltemp])
+def test_PVSystem_multi_array_celltemp_temp_too_long(
+        celltemp, two_array_system):
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        celltemp(two_array_system, (1000, 1000), (1,1,1), 1)
+
+
+@pytest.mark.parametrize("celltemp",
+                         [pvsystem.PVSystem.faiman_celltemp,
+                          pvsystem.PVSystem.pvsyst_celltemp,
+                          pvsystem.PVSystem.sapm_celltemp,
+                          pvsystem.PVSystem.fuentes_celltemp])
+def test_PVSystem_multi_array_celltemp_wind_too_short(
+        celltemp, two_array_system):
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        celltemp(two_array_system, (1000, 1000), 25, (1,))
+
+
+@pytest.mark.parametrize("celltemp",
+                         [pvsystem.PVSystem.faiman_celltemp,
+                          pvsystem.PVSystem.pvsyst_celltemp,
+                          pvsystem.PVSystem.sapm_celltemp,
+                          pvsystem.PVSystem.fuentes_celltemp])
+def test_PVSystem_multi_array_celltemp_wind_too_long(
+        celltemp, two_array_system):
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        celltemp(two_array_system, (1000, 1000), 25, (1,1,1))
 
 
 @pytest.mark.parametrize("celltemp",

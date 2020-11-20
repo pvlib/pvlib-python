@@ -567,6 +567,8 @@ class PVSystem:
         numeric, values in degrees C.
         """
         poa_global = self._validate_per_array(poa_global)
+        temp_air = self._validate_per_array(temp_air, system_wide=True)
+        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
         for array in self._arrays:
             # warn user about change in default behavior in 0.9.
             if (array.temperature_model_parameters == {} and array.module_type
@@ -589,7 +591,9 @@ class PVSystem:
                 poa_global, temp_air, wind_speed,
                 **build_kwargs(array.temperature_model_parameters)
             )
-            for array, poa_global in zip(self._arrays, poa_global)
+            for array, poa_global, temp_air, wind_speed in zip(
+                self._arrays, poa_global, temp_air, wind_speed
+            )
         )
 
     @_unwrap_single_value
@@ -675,6 +679,8 @@ class PVSystem:
         numeric, values in degrees C.
         """
         poa_global = self._validate_per_array(poa_global)
+        temp_air = self._validate_per_array(temp_air, system_wide=True)
+        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
 
         def build_celltemp_kwargs(array):
             return {**_build_kwargs(['eta_m', 'alpha_absorption'],
@@ -684,7 +690,9 @@ class PVSystem:
         return tuple(
             temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
                                     **build_celltemp_kwargs(array))
-            for array, poa_global in zip(self._arrays, poa_global)
+            for array, poa_global, temp_air, wind_speed in zip(
+                self._arrays, poa_global, temp_air, wind_speed
+            )
         )
 
     @_unwrap_single_value
@@ -710,12 +718,16 @@ class PVSystem:
         numeric, values in degrees C.
         """
         poa_global = self._validate_per_array(poa_global)
+        temp_air = self._validate_per_array(temp_air, system_wide=True)
+        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
         return tuple(
             temperature.faiman(
                 poa_global, temp_air, wind_speed,
                 **_build_kwargs(
                     ['u0', 'u1'], array.temperature_model_parameters))
-            for array, poa_global in zip(self._arrays, poa_global)
+            for array, poa_global, temp_air, wind_speed in zip(
+                self._arrays, poa_global, temp_air, wind_speed
+            )
         )
 
     @_unwrap_single_value
@@ -751,6 +763,8 @@ class PVSystem:
         # default to using the Array attribute, but allow user to
         # override with a custom surface_tilt value
         poa_global = self._validate_per_array(poa_global)
+        temp_air = self._validate_per_array(temp_air, system_wide=True)
+        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
 
         def _build_kwargs_fuentes(array):
             kwargs = {'surface_tilt': array.surface_tilt}
@@ -764,7 +778,9 @@ class PVSystem:
             temperature.fuentes(
                 poa_global, temp_air, wind_speed,
                 **_build_kwargs_fuentes(array))
-            for array, poa_global in zip(self._arrays, poa_global)
+            for array, poa_global, temp_air, wind_speed in zip(
+                self._arrays, poa_global, temp_air, wind_speed
+            )
         )
 
     @_unwrap_single_value

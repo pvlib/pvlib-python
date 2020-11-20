@@ -1133,7 +1133,7 @@ class ModelChain:
         ModelChain.complete_irradiance
         """
 
-        self._verify_df(weather, required=['ghi', 'dni', 'ghi'])
+        self._verify_df(weather, required=['ghi', 'dni', 'dhi'])
         self._assign_weather(weather)
 
         self.times = self.weather.index

@@ -189,8 +189,8 @@ def test_fuentes(filename, inoct):
     is_daytime = (inputs['poa_global'] > 0) & ~is_dawn
     # the accuracy is probably higher than 3 digits here, but the PVWatts
     # export data has low precision so can only test up to 3 digits
-    assert_series_equal(expected_tcell[is_daytime].round(3),
-                        actual_tcell[is_daytime].round(3))
+    day_difference = expected_tcell[is_daytime] - actual_tcell[is_daytime]
+    assert (day_difference.abs() < 1e-3).all()
     # use lower precision for dawn times to accommodate the dawn transient
     error = actual_tcell[is_dawn] - expected_tcell[is_dawn]
     assert (error.abs() < 0.1).all()

@@ -522,34 +522,35 @@ def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
 def _fuentes_iteration(tmod0, sun0, tmod, sun, tamb, tsky, tinoct, xlen, emiss,
                        cap, windmod, convrat, tgrat, surface_tilt, dtime,
                        boltz):
-    # overall convective coefficient
-    tave = (tmod + tamb) / 2
-    hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
-                                     abs(tmod-tamb), xlen,
-                                     surface_tilt, True)
-    # sky radiation coefficient (Equation 3)
-    hsky = emiss * boltz * (tmod**2 + tsky**2) * (tmod + tsky)
-    # ground radiation coeffieicient (Equation 4)
-    tground = tamb + tgrat * (tmod - tamb)
-    hground = emiss * boltz * (tmod**2 + tground**2) * (tmod + tground)
-    # thermal lag -- Equation 8
-    eigen = - (hconv + hsky + hground) / cap * dtime * 3600
-    # not sure why this check is done, maybe as a speed optimization?
-    if eigen > -10:
-        ex = np.exp(eigen)
-    else:
-        ex = 0
-    # Equation 7 -- note that `sun` and `sun0` already account for
-    # absorption (alpha)
-    tmod = tmod0 * ex + (
-        (1 - ex) * (
-            hconv * tamb
-            + hsky * tsky
-            + hground * tground
-            + sun0
-            + (sun - sun0) / eigen
-        ) + sun - sun0
-    ) / (hconv + hsky + hground)
+    for j in range(10):
+        # overall convective coefficient
+        tave = (tmod + tamb) / 2
+        hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
+                                         abs(tmod-tamb), xlen,
+                                         surface_tilt, True)
+        # sky radiation coefficient (Equation 3)
+        hsky = emiss * boltz * (tmod**2 + tsky**2) * (tmod + tsky)
+        # ground radiation coeffieicient (Equation 4)
+        tground = tamb + tgrat * (tmod - tamb)
+        hground = emiss * boltz * (tmod**2 + tground**2) * (tmod + tground)
+        # thermal lag -- Equation 8
+        eigen = - (hconv + hsky + hground) / cap * dtime * 3600
+        # not sure why this check is done, maybe as a speed optimization?
+        if eigen > -10:
+            ex = np.exp(eigen)
+        else:
+            ex = 0
+        # Equation 7 -- note that `sun` and `sun0` already account for
+        # absorption (alpha)
+        tmod = tmod0 * ex + (
+            (1 - ex) * (
+                hconv * tamb
+                + hsky * tsky
+                + hground * tground
+                + sun0
+                + (sun - sun0) / eigen
+            ) + sun - sun0
+        ) / (hconv + hsky + hground)
     return tmod, sun
 
 
@@ -677,10 +678,6 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     if tinoct > 321.15:
         cap = cap * (1 + (tinoct - 321.15) / 12)
 
-    # iterate through timeseries inputs
-    sun0 = 0
-    tmod0 = 293.15
-
     # n.b. the way Fuentes calculates the first timedelta makes it seem like
     # the value doesn't matter -- rather than recreate it here, just assume
     # it's the same as the second timedelta:
@@ -699,18 +696,17 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     # behave well if wind == 0?
     windmod_array = wind_speed * (module_height/wind_height)**0.2 + 1e-4
 
-    tmod0 = 293.15
+    sun0 = 0
+    tmod = tmod0 = 293.15
     tmod_array = np.zeros_like(poa_global)
 
     iterator = zip(tamb_array, sun_array, windmod_array, tsky_array,
                    timedelta_hours)
     for i, (tamb, sun, windmod, tsky, dtime) in enumerate(iterator):
-        tmod = tmod0
-        for j in range(10):
-            tmod, sun = _fuentes_iteration(tmod0, sun0, tmod, sun, tamb, tsky,
-                                           tinoct, xlen, emiss, cap, windmod,
-                                           convrat, tgrat, surface_tilt, dtime,
-                                           boltz)
+        tmod, sun = _fuentes_iteration(tmod0, sun0, tmod, sun, tamb, tsky,
+                                       tinoct, xlen, emiss, cap, windmod,
+                                       convrat, tgrat, surface_tilt, dtime,
+                                       boltz)
         tmod_array[i] = tmod
         tmod0 = tmod
         sun0 = sun

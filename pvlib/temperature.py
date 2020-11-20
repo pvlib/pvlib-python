@@ -522,6 +522,9 @@ def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
 def _fuentes_iteration(tmod0, sun0, tmod, sun, tamb, tsky, tinoct, xlen, emiss,
                        cap, windmod, convrat, tgrat, surface_tilt, dtime,
                        boltz):
+    # solve the heat transfer equation, iterating because the heat loss
+    # terms depend on tmod. NB Fuentes doesn't show that 10 iterations is
+    # sufficient for convergence.
     for j in range(10):
         # overall convective coefficient
         tave = (tmod + tamb) / 2

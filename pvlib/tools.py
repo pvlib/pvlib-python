@@ -318,3 +318,19 @@ def _golden_sect_DataFrame(params, VL, VH, func):
             raise Exception("EXCEPTION:iterations exceeded maximum (50)")
 
     return func(df, 'V1'), df['V1']
+
+
+# Enable numba JIT if it's installed, otherwise just define a no-op decorator
+def dummy_jit(func=None, *args, **kwargs):
+    # accommodate using as either `@jit` or `@jit()`
+    def wrapper(func):
+        return func
+    if func is not None:
+        return func
+    return wrapper
+
+
+try:
+    from numba import jit
+except ImportError:
+    jit = dummy_jit

@@ -5,7 +5,7 @@ PV modules and cells.
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import sind
+from pvlib.tools import jit
 
 TEMPERATURE_MODEL_PARAMETERS = {
     'sapm': {
@@ -491,6 +491,7 @@ def ross(poa_global, temp_air, noct):
     return temp_air + (noct - 20.) / 80. * poa_global * 0.1
 
 
+@jit(nopython=True)
 def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
                    check_reynold):
     # Calculate the convective coefficient as in Fuentes 1987 -- a mixture of
@@ -509,12 +510,47 @@ def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
         hforce = 0.8600 / reynold**0.5 * densair * windmod * 1007 / 0.71**0.67
     # free convection via Grashof number
     # NB: Fuentes hardwires sind(tilt) as 0.5 for tilt=30
-    grashof = 9.8 / tave * temp_delta * xlen**3 / visair**2 * sind(tilt)
+    grashof = 9.8 / tave * temp_delta * xlen**3 / visair**2 * np.sin(tilt)
     # product of Nusselt number and (k/l)
     hfree = 0.21 * (grashof * 0.71)**0.32 * condair / xlen
     # combine free and forced components
     hconv = (hfree**3 + hforce**3)**(1/3)
     return hconv
+
+
+@jit(nopython=True)
+def _fuentes_iteration(tmod0, sun0, tmod, sun, tamb, tsky, tinoct, xlen, emiss,
+                       cap, windmod, convrat, tgrat, surface_tilt, dtime,
+                       boltz):
+    # overall convective coefficient
+    tave = (tmod + tamb) / 2
+    hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
+                                     abs(tmod-tamb), xlen,
+                                     surface_tilt, True)
+    # sky radiation coefficient (Equation 3)
+    hsky = emiss * boltz * (tmod**2 + tsky**2) * (tmod + tsky)
+    # ground radiation coeffieicient (Equation 4)
+    tground = tamb + tgrat * (tmod - tamb)
+    hground = emiss * boltz * (tmod**2 + tground**2) * (tmod + tground)
+    # thermal lag -- Equation 8
+    eigen = - (hconv + hsky + hground) / cap * dtime * 3600
+    # not sure why this check is done, maybe as a speed optimization?
+    if eigen > -10:
+        ex = np.exp(eigen)
+    else:
+        ex = 0
+    # Equation 7 -- note that `sun` and `sun0` already account for
+    # absorption (alpha)
+    tmod = tmod0 * ex + (
+        (1 - ex) * (
+            hconv * tamb
+            + hsky * tsky
+            + hground * tground
+            + sun0
+            + (sun - sun0) / eigen
+        ) + sun - sun0
+    ) / (hconv + hsky + hground)
+    return tmod, sun
 
 
 def _hydraulic_diameter(width, height):
@@ -610,6 +646,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     # specific heat of the module.
     cap0 = 11000
     tinoct = noct_installed + 273.15
+    surface_tilt = np.radians(surface_tilt)
 
     # convective coefficient of top surface of module at NOCT
     windmod = 1.0
@@ -668,39 +705,12 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     iterator = zip(tamb_array, sun_array, windmod_array, tsky_array,
                    timedelta_hours)
     for i, (tamb, sun, windmod, tsky, dtime) in enumerate(iterator):
-        # solve the heat transfer equation, iterating because the heat loss
-        # terms depend on tmod. NB Fuentes doesn't show that 10 iterations is
-        # sufficient for convergence.
         tmod = tmod0
         for j in range(10):
-            # overall convective coefficient
-            tave = (tmod + tamb) / 2
-            hconv = convrat * _fuentes_hconv(tave, windmod, tinoct,
-                                             abs(tmod-tamb), xlen,
-                                             surface_tilt, True)
-            # sky radiation coefficient (Equation 3)
-            hsky = emiss * boltz * (tmod**2 + tsky**2) * (tmod + tsky)
-            # ground radiation coeffieicient (Equation 4)
-            tground = tamb + tgrat * (tmod - tamb)
-            hground = emiss * boltz * (tmod**2 + tground**2) * (tmod + tground)
-            # thermal lag -- Equation 8
-            eigen = - (hconv + hsky + hground) / cap * dtime * 3600
-            # not sure why this check is done, maybe as a speed optimization?
-            if eigen > -10:
-                ex = np.exp(eigen)
-            else:
-                ex = 0
-            # Equation 7 -- note that `sun` and `sun0` already account for
-            # absorption (alpha)
-            tmod = tmod0 * ex + (
-                (1 - ex) * (
-                    hconv * tamb
-                    + hsky * tsky
-                    + hground * tground
-                    + sun0
-                    + (sun - sun0) / eigen
-                ) + sun - sun0
-            ) / (hconv + hsky + hground)
+            tmod, sun = _fuentes_iteration(tmod0, sun0, tmod, sun, tamb, tsky,
+                                           tinoct, xlen, emiss, cap, windmod,
+                                           convrat, tgrat, surface_tilt, dtime,
+                                           boltz)
         tmod_array[i] = tmod
         tmod0 = tmod
         sun0 = sun

@@ -272,6 +272,30 @@ def sapm_dc_snl_ac_system_Array(sapm_module_params, cec_inverter_parameters,
                     inverter_parameters=cec_inverter_parameters)
 
 
+@pytest.fixture(scope='function')
+def sapm_dc_snl_ac_system_same_arrays(sapm_module_params,
+                                      cec_inverter_parameters,
+                                      sapm_temperature_cs5p_220m):
+    """A system with two identical arrays."""
+    module = 'Canadian_Solar_CS5P_220M___2009_'
+    module_parameters = sapm_module_params.copy()
+    temp_model_params = sapm_temperature_cs5p_220m.copy()
+    array_one = pvsystem.Array(surface_tilt=32, surface_azimuth=180,
+                               albedo=0.2, module=module,
+                               module_parameters=module_parameters,
+                               temperature_model_parameters=temp_model_params,
+                               modules_per_string=1,
+                               strings=1)
+    array_two = pvsystem.Array(surface_tilt=32, surface_azimuth=180,
+                               albedo=0.2, module=module,
+                               module_parameters=module_parameters,
+                               temperature_model_parameters=temp_model_params,
+                               modules_per_string=1,
+                               strings=1)
+    return PVSystem(arrays=[array_one, array_two],
+                    inverter_parameters=cec_inverter_parameters)
+
+
 def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
     ModelChain(sapm_dc_snl_ac_system, location)
 
@@ -477,6 +501,17 @@ def test_prepare_inputs_missing_irrad_component(
     weather.drop(columns=missing, inplace=True)
     with pytest.raises(ValueError):
         mc.prepare_inputs(weather)
+
+
+def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays, location):
+    mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
+    times = pd.date_range('20200101 1200-0700', periods=2, freq='6H')
+    weather_one = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
+                               index=times)
+    weather_two = pd.DataFrame({'dni': 500, 'ghi': 300, 'dhi': 75},
+                               index=times)
+    mc.run_model((weather_one, weather_two))
+    assert (mc.dc[0] != mc.dc[1]).all()
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):

@@ -14,6 +14,7 @@ import warnings
 
 TMY_TEST_DATA = DATA_DIR / 'test_psm3_tmy-2017.csv'
 YEAR_TEST_DATA = DATA_DIR / 'test_psm3_2017.csv'
+YEAR_TEST_DATA_5MIN = DATA_DIR / 'test_psm3_2019_5min.csv'
 MANUAL_TEST_DATA = DATA_DIR / 'test_read_psm3.csv'
 LATITUDE, LONGITUDE = 40.5137, -108.5449
 HEADER_FIELDS = [
@@ -88,6 +89,18 @@ def test_get_psm3_singleyear(nrel_api_key):
                                  PVLIB_EMAIL, names='2017', interval=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(header, data, expected)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_psm3_5min(nrel_api_key):
+    """test get_psm3 for 5-minute data"""
+    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
+                                 PVLIB_EMAIL, names='2019', interval=5)
+    assert len(data) == 525600/5
+    first_day = data.loc['2019-01-01']
+    expected = pd.read_csv(YEAR_TEST_DATA_5MIN)
+    assert_psm3_equal(header, first_day, expected)
 
 
 @pytest.mark.remote_data

@@ -149,8 +149,8 @@ class SingleAxisTracker(PVSystem):
 
         For a given set of solar zenith and azimuth angles, the
         surface tilt and azimuth parameters are typically determined
-        by :py:method:`~SingleAxisTracker.singleaxis`. The
-        :py:method:`~SingleAxisTracker.singleaxis` method also returns
+        by :py:meth:`~SingleAxisTracker.singleaxis`. The
+        :py:meth:`~SingleAxisTracker.singleaxis` method also returns
         the angle of incidence, so this method is only needed
         if using a different tracking algorithm.
 

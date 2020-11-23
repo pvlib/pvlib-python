@@ -455,6 +455,16 @@ def test_ModelChain_times_arrays(sapm_dc_snl_ac_system_Array, location):
     assert mc.times.equals(times)
 
 
+@pytest.mark.parametrize("missing", ['dhi', 'ghi', 'dni'])
+def test_prepare_inputs_missing_irrad_component(
+        sapm_dc_snl_ac_system, location, missing):
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    weather = pd.DataFrame({'dhi': [1, 2], 'dni': [1, 2], 'ghi': [1, 2]})
+    weather.drop(columns=missing, inplace=True)
+    with pytest.raises(ValueError):
+        mc.prepare_inputs(weather)
+
+
 def test_run_model_perez(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location,
                     transposition_model='perez')

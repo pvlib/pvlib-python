@@ -1280,7 +1280,7 @@ class ModelChain:
         """
         if isinstance(weather, tuple):
             _validate_weather_indices(weather)
-        self._verify_df(weather, required=['ghi', 'dni', 'ghi'])
+        self._verify_df(weather, required=['ghi', 'dni', 'dhi'])
         self._assign_weather(weather)
         self._assign_times()
 

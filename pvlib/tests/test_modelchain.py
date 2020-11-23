@@ -413,6 +413,20 @@ def test_prepare_inputs_arrays_one_missing_irradiance(
         mc.prepare_inputs((weather_incomplete, weather))
 
 
+def test_prepare_inputs_weather_wrong_length(
+        sapm_dc_snl_ac_system_Array, location):
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    weather = pd.DataFrame({'ghi': [1], 'dhi': [1], 'dni': [1]})
+    with pytest.raises(ValueError,
+                       match="Weather must be same length as number of arrays "
+                             r"in system\. Expected 2, got 1\."):
+        mc.prepare_inputs((weather,))
+    with pytest.raises(ValueError,
+                       match="Weather must be same length as number of arrays "
+                             r"in system\. Expected 2, got 3\."):
+        mc.prepare_inputs((weather, weather, weather))
+
+
 def test_ModelChain_times_error_arrays(sapm_dc_snl_ac_system_Array, location):
     """ModelChain.times is assigned a single index given multiple weather
     DataFrames.

@@ -1256,6 +1256,13 @@ class ModelChain:
         else:
             self.times = self.weather.index
 
+    def _check_weather_length(self, data):
+        if len(data) != self.system.num_arrays:
+            raise ValueError(
+                "Weather must be same length as number of arrays in system. "
+                f"Expected {self.system.num_arrays}, got {len(data)}."
+            )
+
     def prepare_inputs(self, weather):
         """
         Prepare the solar position, irradiance, and weather inputs to
@@ -1270,14 +1277,16 @@ class ModelChain:
             of 0 m/s will be added to the DataFrame if not provided.
 
             If `weather` is a tuple each DataFrame it contains must have
-            the same index.
+            the same index and it must be the same length as the number
+            of Arrays in the system.
 
         Raises
         ------
         ValueError
-            If the `weather` DataFrame(s) are missing an irradiance component
-            or if `weather` is a tuple and the DataFrames it contains do not
-            all have the same index.
+            If the `weather` DataFrame(s) are missing an irradiance component,
+            if `weather` is a tuple and the DataFrames it contains do not
+            all have the same index, or if `weather` is a tuple with a
+            different length than the number of Arrays in the system.
 
         Notes
         -----
@@ -1289,6 +1298,7 @@ class ModelChain:
         ModelChain.complete_irradiance
         """
         if isinstance(weather, tuple):
+            self._check_weather_length(weather)
             _validate_weather_indices(weather)
         self._verify_df(weather, required=['ghi', 'dni', 'dhi'])
         self._assign_weather(weather)

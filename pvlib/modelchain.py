@@ -1263,11 +1263,21 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame
+        weather : DataFrame or tuple of DataFrame
             Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
+
+            If `weather` is a tuple each DataFrame it contains must have
+            the same index.
+
+        Raises
+        ------
+        ValueError
+            If the `weather` DataFrame(s) are missing an irradiance component
+            or if `weather` is a tuple and the DataFrames it contains do not
+            all have the same index.
 
         Notes
         -----

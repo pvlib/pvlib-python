@@ -7,6 +7,7 @@ the time to read the source code for the module.
 """
 
 from functools import partial
+import itertools
 import warnings
 import pandas as pd
 import numpy as np
@@ -1159,7 +1160,7 @@ class ModelChain:
         Assign solar position
         """
         self.results.solar_position = self.location.get_solarposition(
-            self.weather.index, method=self.solar_position_method,
+            self.times, method=self.solar_position_method,
             **kwargs)
         return self
 
@@ -1209,19 +1210,33 @@ class ModelChain:
         ------
         ValueError if any of required are not in data.columns.
         """
-        if not set(required) <= set(data.columns):
-            raise ValueError(
-                f"Incomplete input data. Data needs to contain {required}. "
-                f"Detected data contains: {list(data.columns)}")
-        return
+        def _verify(data):
+            if not set(required) <= set(data.columns):
+                raise ValueError(
+                    "Incomplete input data. Data needs to contain "
+                    f"{required}. Detected data contains: "
+                    f"{list(data.columns)}")
+        if not isinstance(data, tuple):
+            _verify(data)
+        else:
+            for array_data in data:
+                _verify(array_data)
 
     def _assign_weather(self, data):
-        key_list = [k for k in WEATHER_KEYS if k in data]
-        self.weather = data[key_list].copy()
-        if self.weather.get('wind_speed') is None:
-            self.weather['wind_speed'] = 0
-        if self.weather.get('temp_air') is None:
-            self.weather['temp_air'] = 20
+        def _build_weather(data):
+            key_list = [k for k in WEATHER_KEYS if k in data]
+            weather = data[key_list].copy()
+            if weather.get('wind_speed') is None:
+                weather['wind_speed'] = 0
+            if weather.get('temp_air') is None:
+                weather['temp_air'] = 20
+            return weather
+        if not isinstance(data, tuple):
+            self.weather = _build_weather(data)
+        else:
+            self.weather = tuple(
+                _build_weather(weather) for weather in data
+            )
         return self
 
     def _assign_total_irrad(self, data):
@@ -1229,6 +1244,17 @@ class ModelChain:
         # TODO multiple arrays
         self.results.total_irrad = data[key_list].copy()
         return self
+
+    def _assign_times(self):
+        """Assign self.times according the the index of self.weather.
+
+        If there are multiple DataFrames in self.weather then the index
+        of the first one is assigned
+        """
+        if isinstance(self.weather, tuple):
+            self.times = self.weather[0].index
+        else:
+            self.times = self.weather.index
 
     def prepare_inputs(self, weather):
         """
@@ -1252,15 +1278,17 @@ class ModelChain:
         --------
         ModelChain.complete_irradiance
         """
-
+        if isinstance(weather, tuple):
+            _validate_weather_indices(weather)
         self._verify_df(weather, required=['ghi', 'dni', 'ghi'])
         self._assign_weather(weather)
-
-        self.times = self.weather.index
+        self._assign_times()
 
         # build kwargs for solar position calculation
         try:
-            press_temp = _build_kwargs(['pressure', 'temp_air'], weather)
+            press_temp = _build_kwargs(['pressure', 'temp_air'],
+                                       weather[0] if isinstance(weather, tuple)
+                                       else weather)
             press_temp['temperature'] = press_temp.pop('temp_air')
         except KeyError:
             pass
@@ -1288,9 +1316,9 @@ class ModelChain:
                 self.results.solar_position['azimuth'])
 
         self.results.total_irrad = get_irradiance(
-            self.weather['dni'],
-            self.weather['ghi'],
-            self.weather['dhi'],
+            _tuple_from_dfs(self.weather, 'dni'),
+            _tuple_from_dfs(self.weather, 'ghi'),
+            _tuple_from_dfs(self.weather, 'dhi'),
             airmass=self.results.airmass['airmass_relative'],
             model=self.transposition_model)
 
@@ -1543,6 +1571,12 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
+
+
+def _validate_weather_indices(data):
+    if not all(map(lambda data: data[0].index.equals(data[1].index),
+               itertools.combinations(data, 2))):
+        raise ValueError("Weather DataFrames must have same index.")
 
 
 def _array_keys(dicts, array):

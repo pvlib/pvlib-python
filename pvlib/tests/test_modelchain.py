@@ -268,7 +268,8 @@ def sapm_dc_snl_ac_system_Array(sapm_module_params, cec_inverter_parameters,
                                temperature_model_parameters=temp_model_params,
                                modules_per_string=1,
                                strings=1)
-    return PVSystem(arrays=[array_one, array_two])
+    return PVSystem(arrays=[array_one, array_two],
+                    inverter_parameters=cec_inverter_parameters)
 
 
 def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
@@ -391,6 +392,67 @@ def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):
     weather = pd.DataFrame()
     with pytest.raises(ValueError):
         mc.prepare_inputs(weather)
+
+
+def test_prepare_inputs_arrays_one_missing_irradiance(
+        sapm_dc_snl_ac_system_Array, location):
+    """If any of the input DataFrames is missing a column then a
+    ValueError is raised."""
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    weather = pd.DataFrame(
+        {'ghi': [1], 'dhi': [1], 'dni': [1]}
+    )
+    weather_incomplete = pd.DataFrame(
+        {'ghi': [1], 'dhi': [1]}
+    )
+    with pytest.raises(ValueError,
+                       match=r"Incomplete input data\. .*"):
+        mc.prepare_inputs((weather, weather_incomplete))
+    with pytest.raises(ValueError,
+                       match=r"Incomplete input data\. .*"):
+        mc.prepare_inputs((weather_incomplete, weather))
+
+
+def test_ModelChain_times_error_arrays(sapm_dc_snl_ac_system_Array, location):
+    """ModelChain.times is assigned a single index given multiple weather
+    DataFrames.
+    """
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    irradiance = {'ghi': [1, 2], 'dhi': [1, 2], 'dni': [1, 2]}
+    times_one = pd.date_range(start='1/1/2020', freq='6H', periods=2)
+    times_two = pd.date_range(start='1/1/2020 00:15', freq='6H', periods=2)
+    weather_one = pd.DataFrame(irradiance, index=times_one)
+    weather_two = pd.DataFrame(irradiance, index=times_two)
+    with pytest.raises(ValueError, match="Weather DataFrames must have "
+                                         r"same index\."):
+        mc.prepare_inputs((weather_one, weather_two))
+    # test with overlapping, but differently sized indices.
+    times_three = pd.date_range(start='1/1/2020', freq='6H', periods=3)
+    irradiance_three = irradiance
+    irradiance_three['ghi'].append(3)
+    irradiance_three['dhi'].append(3)
+    irradiance_three['dni'].append(3)
+    weather_three = pd.DataFrame(irradiance_three, index=times_three)
+    with pytest.raises(ValueError, match="Weather DataFrames must have "
+                                         r"same index\."):
+        mc.prepare_inputs((weather_one, weather_three))
+
+
+def test_ModelChain_times_arrays(sapm_dc_snl_ac_system_Array, location):
+    """ModelChain.times is assigned a single index given multiple weather
+    DataFrames.
+    """
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    irradiance_one = {'ghi': [1, 2], 'dhi': [1, 2], 'dni': [1, 2]}
+    irradiance_two = {'ghi': [2, 1], 'dhi': [2, 1], 'dni': [2, 1]}
+    times = pd.date_range(start='1/1/2020', freq='6H', periods=2)
+    weather_one = pd.DataFrame(irradiance_one, index=times)
+    weather_two = pd.DataFrame(irradiance_two, index=times)
+    mc.prepare_inputs((weather_one, weather_two))
+    assert mc.times.equals(times)
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    mc.prepare_inputs(weather_one)
+    assert mc.times.equals(times)
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):

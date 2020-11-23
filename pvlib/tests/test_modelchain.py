@@ -674,6 +674,41 @@ def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
     assert_series_equal(mc.results.cell_temperature, data['cell_temperature'])
 
 
+def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
+                                             location, weather,
+                                             total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data_two = data.copy() * 0.5
+    mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    # prepare_temperature expects mc.total_irrad and mc.weather to be set
+    mc._assign_weather((data, data_two))
+    mc._assign_total_irrad((data, data_two))
+    mc._prepare_temperature((data, data_two))
+    expected = pd.Series([48.928025, 38.080016], index=data.index)
+    assert_series_equal(mc.results.cell_temperature[0], expected)
+    data['module_temperature'] = [40., 30.]
+    mc._prepare_temperature((data, data_two))
+    expected = pd.Series([42.4, 31.5], index=data.index)
+    assert_series_equal(mc.results.cell_temperature[0], expected)
+    data['cell_temperature'] = [50., 35.]
+    mc._prepare_temperature((data, data_two))
+    assert_series_equal(
+        mc.results.cell_temperature[0], data['cell_temperature'])
+    data_two['module_temperature'] = [40., 30.]
+    mc._prepare_temperature((data, data_two))
+    assert_series_equal(mc.results.cell_temperature[1], expected)
+    assert_series_equal(
+        mc.results.cell_temperature[0], data['cell_temperature'])
+    data_two['cell_temperature'] = [10.0, 20.0]
+    mc._prepare_temperature((data, data_two))
+    assert_series_equal(
+        mc.results.cell_temperature[1], data_two['cell_temperature'])
+    assert_series_equal(
+        mc.results.cell_temperature[0], data['cell_temperature'])
+
+
 def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')

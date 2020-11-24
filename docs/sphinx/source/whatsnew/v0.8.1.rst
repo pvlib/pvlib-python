@@ -37,6 +37,7 @@ Documentation
 * Update sphinx to 3.1.2 and use the ``recursive`` option in ``autosummary`` class template.
   (:issue:`1055`, :pull:`1075`)
 * Add gallery example about backtracking on sloped terrain. (:pull:`1077`)
+* Add toggle button for code prompts to make copying code easier (:pull:`1096`)
 
 Requirements
 ~~~~~~~~~~~~

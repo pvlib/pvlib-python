@@ -1005,24 +1005,29 @@ class ModelChain:
 
     def sapm_temp(self):
         poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        temp_air = _tuple_from_dfs(self.weather, 'temp_air')
+        wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = self.system.sapm_celltemp(
-            poa, self.weather['temp_air'], self.weather['wind_speed'])
+            poa, temp_air, wind_speed)
         return self
 
     def pvsyst_temp(self):
         poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        # TODO handle multiple weather
         self.results.cell_temperature = self.system.pvsyst_celltemp(
             poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
 
     def faiman_temp(self):
         poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        # TODO handle multiple weather
         self.results.cell_temperature = self.system.faiman_celltemp(
             poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
 
     def fuentes_temp(self):
         poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        # TODO handle multiple weather
         self.results.cell_temperature = self.system.fuentes_celltemp(
             poa, self.weather['temp_air'], self.weather['wind_speed'])
         return self
@@ -1240,9 +1245,15 @@ class ModelChain:
         return self
 
     def _assign_total_irrad(self, data):
-        key_list = [k for k in POA_KEYS if k in data]
-        # TODO multiple arrays
-        self.results.total_irrad = data[key_list].copy()
+        def _build_irrad(data):
+            key_list = [k for k in POA_KEYS if k in data]
+            return data[key_list].copy()
+        if isinstance(data, tuple):
+            self.results.total_irrad = tuple(
+                _build_irrad(irrad_data) for irrad_data in data
+            )
+            return self
+        self.results.total_irrad = _build_irrad(data)
         return self
 
     def _assign_times(self):
@@ -1385,6 +1396,40 @@ class ModelChain:
 
         return self
 
+    def _get_cell_temperature(self, data,
+                              total_irrad, temperature_model_parameters):
+        """Extract the cell temperature data from a DataFrame.
+
+        If 'cell_temperature' column exists then it is returned. If
+        'module_temperature' column exists then it is used to calculate
+        the cell temperature. If neither column exists then None is
+        returned.
+        """
+        if 'cell_temperature' in data:
+            return data['cell_temperature']
+        # cell_temperature is not in input. Calculate cell_temperature using
+        # a temperature_model.
+        # If module_temperature is in input data we can use the SAPM cell
+        # temperature model.
+        if (('module_temperature' in data) and
+                (self.temperature_model.__name__ == 'sapm_temp')):
+            # use SAPM cell temperature model only
+            return pvlib.temperature.sapm_cell_from_module(
+                    module_temperature=data['module_temperature'],
+                    poa_global=total_irrad['poa_global'],
+                    deltaT=temperature_model_parameters['deltaT'])
+
+    def _prepare_temperature_single_array(self, data):
+        """Set cell_temperature using a single weather data frame."""
+        self.results.cell_temperature = self._get_cell_temperature(
+            data,
+            self.results.total_irrad,
+            self.system.temperature_model_parameters
+        )
+        if self.results.cell_temperature is None:
+            self.temperature_model()
+        return self
+
     def _prepare_temperature(self, data=None):
         """
         Sets cell_temperature using inputs in data and the specified
@@ -1406,33 +1451,29 @@ class ModelChain:
         -------
         self
 
-        Assigns attribute ``cell_temperature``.
+        Assigns attribute ``results.cell_temperature``.
 
         """
-        if 'cell_temperature' in data:
-            # TODO replicate self.system.num_arrays times ???
-            self.results.cell_temperature = data['cell_temperature']
-            return self
-
-        # cell_temperature is not in input. Calculate cell_temperature using
-        # a temperature_model.
-        # If module_temperature is in input data we can use the SAPM cell
-        # temperature model.
-        if (('module_temperature' in data) and
-                (self.temperature_model.__name__ == 'sapm_temp')):
-            # use SAPM cell temperature model only
-            self.results.cell_temperature = \
-                pvlib.temperature.sapm_cell_from_module(
-                    module_temperature=data['module_temperature'],
-                    poa_global=_tuple_from_dfs(
-                        self.results.total_irrad, 'poa_global'),
-                    deltaT=_tuple_from_dfs(
-                        self.system.temperature_model_parameters, 'deltaT'))
-            return self
-
+        if not isinstance(data, tuple) and self.system.num_arrays > 1:
+            data = (data,) * self.system.num_arrays
+        elif not isinstance(data, tuple):
+            return self._prepare_temperature_single_array(data)
+        given_cell_temperature = itertools.starmap(
+            self._get_cell_temperature,
+            zip(data, self.results.total_irrad,
+                self.system.temperature_model_parameters)
+        )
         # Calculate cell temperature from weather data. Cell temperature models
         # expect total_irrad['poa_global'].
         self.temperature_model()
+        # replace calculated cell temperature with temperature given in `data`
+        # where available.
+        self.results.cell_temperature = tuple(
+            itertools.starmap(
+                lambda given, modeled: modeled if given is None else given,
+                zip(given_cell_temperature, self.results.cell_temperature)
+            )
+        )
         return self
 
     def run_model(self, weather):

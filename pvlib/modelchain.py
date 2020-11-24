@@ -1594,8 +1594,9 @@ class ModelChain:
 
 
 def _validate_weather_indices(data):
-    if not all(map(lambda data: data[0].index.equals(data[1].index),
-               itertools.combinations(data, 2))):
+    indexes = map(lambda df: df.index, data)
+    if not all(itertools.starmap(pd.Index.equals,
+                                 itertools.combinations(indexes, 2))):
         raise ValueError("Weather DataFrames must have same index.")
 
 

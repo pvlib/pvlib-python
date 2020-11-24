@@ -107,7 +107,8 @@ def test_sandia_multi(cec_inverter_parameters):
                                  cec_inverter_parameters)
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
     # with arrays instead of tuples
-    pacs = inverter.sandia_multi(np.array([vdcs, vdcs]), np.array([pdcs, pdcs]),
+    pacs = inverter.sandia_multi(np.array([vdcs, vdcs]),
+                                 np.array([pdcs, pdcs]),
                                  cec_inverter_parameters)
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 

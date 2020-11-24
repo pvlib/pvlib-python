@@ -186,7 +186,7 @@ def sandia_multi(v_dc, p_dc, inverter):
 
         for vdc, pdc in zip(v_dc, p_dc):
             power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
-    
+
         return _sandia_limits(power_ac, power_dc, inverter['Paco'],
                               inverter['Pnt'], inverter['Pso'])
     else:

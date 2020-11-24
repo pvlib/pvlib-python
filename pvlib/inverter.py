@@ -181,15 +181,16 @@ def sandia_multi(v_dc, p_dc, inverter):
     '''
 
     if len(p_dc) == len(v_dc):
+        power_dc = sum(p_dc)
+        power_ac = 0. * power_dc
+
+        for vdc, pdc in zip(v_dc, p_dc):
+            power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
+    
+        return _sandia_limits(power_ac, power_dc, inverter['Paco'],
+                              inverter['Pnt'], inverter['Pso'])
+    else:
         raise ValueError('p_dc and v_dc have different lengths')
-    power_dc = sum(p_dc)
-    power_ac = 0. * power_dc
-
-    for vdc, pdc in zip(v_dc, p_dc):
-        power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
-
-    return _sandia_limits(power_ac, power_dc, inverter['Paco'],
-                          inverter['Pnt'], inverter['Pso'])
 
 
 def adr(v_dc, p_dc, inverter, vtol=0.10):

@@ -679,7 +679,7 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                                              total_irrad):
     data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
-    data_two = data.copy() * 0.5
+    data_two = data.copy()
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location,
                     aoi_model='no_loss', spectral_model='no_loss')
     # prepare_temperature expects mc.total_irrad and mc.weather to be set
@@ -688,9 +688,11 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
     mc._prepare_temperature((data, data_two))
     expected = pd.Series([48.928025, 38.080016], index=data.index)
     assert_series_equal(mc.results.cell_temperature[0], expected)
+    assert_series_equal(mc.results.cell_temperature[1], expected)
     data['module_temperature'] = [40., 30.]
     mc._prepare_temperature((data, data_two))
     expected = pd.Series([42.4, 31.5], index=data.index)
+    assert (mc.results.cell_temperature[1] != expected).all()
     assert_series_equal(mc.results.cell_temperature[0], expected)
     data['cell_temperature'] = [50., 35.]
     mc._prepare_temperature((data, data_two))

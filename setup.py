@@ -50,7 +50,7 @@ EXTRAS_REQUIRE = {
                  'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2',
             'sphinx_rtd_theme==0.5.0', 'sphinx-gallery', 'docutils == 0.15.2',
-            'pillow', 'netcdf4', 'siphon', 'tables'],
+            'pillow', 'netcdf4', 'siphon', 'tables', 'sphinx-toggleprompt >= 0.0.4'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))

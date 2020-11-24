@@ -1003,37 +1003,39 @@ class ModelChain:
             raise ValueError(f'could not infer temperature model from '
                              f'system.temperature_module_parameters {params}.')
 
-    def sapm_temp(self):
+    def _set_celltemp(self, model):
+        """Set self.results.cell_temp using the given cell temperature model.
+
+        Parameters
+        ----------
+        model : function
+            A function that takes POA irradiance, air temperature, and
+            wind speed and returns cell temperature. `model` must accept
+            tuples or single values for each parameter where each element of
+            the tuple is the value for a different array in the system
+            (see :py:class:`pvlib.pvsystem.PVSystem` for more information).
+
+        Returns
+        -------
+        self
+        """
         poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
-        self.results.cell_temperature = self.system.sapm_celltemp(
-            poa, temp_air, wind_speed)
+        self.results.cell_temperature = model(poa, temp_air, wind_speed)
         return self
+
+    def sapm_temp(self):
+        return self._set_celltemp(self.system.sapm_celltemp)
 
     def pvsyst_temp(self):
-        poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
-        temp_air = _tuple_from_dfs(self.weather, 'temp_air')
-        wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
-        self.results.cell_temperature = self.system.pvsyst_celltemp(
-            poa, temp_air, wind_speed)
-        return self
+        return self._set_celltemp(self.system.pvsyst_celltemp)
 
     def faiman_temp(self):
-        poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
-        temp_air = _tuple_from_dfs(self.weather, 'temp_air')
-        wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
-        self.results.cell_temperature = self.system.faiman_celltemp(
-            poa, temp_air, wind_speed)
-        return self
+        return self._set_celltemp(self.system.faiman_celltemp)
 
     def fuentes_temp(self):
-        poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
-        temp_air = _tuple_from_dfs(self.weather, 'temp_air')
-        wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
-        self.results.cell_temperature = self.system.fuentes_celltemp(
-             poa, temp_air, wind_speed)
-        return self
+        return self._set_celltemp(self.system.fuentes_celltemp)
 
     @property
     def losses_model(self):

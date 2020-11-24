@@ -1415,9 +1415,9 @@ class ModelChain:
                 (self.temperature_model.__name__ == 'sapm_temp')):
             # use SAPM cell temperature model only
             return pvlib.temperature.sapm_cell_from_module(
-                    module_temperature=data['module_temperature'],
-                    poa_global=total_irrad['poa_global'],
-                    deltaT=temperature_model_parameters['deltaT'])
+                module_temperature=data['module_temperature'],
+                poa_global=total_irrad['poa_global'],
+                deltaT=temperature_model_parameters['deltaT'])
 
     def _prepare_temperature_single_array(self, data):
         """Set cell_temperature using a single weather data frame."""

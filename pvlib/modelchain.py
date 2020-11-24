@@ -1013,23 +1013,26 @@ class ModelChain:
 
     def pvsyst_temp(self):
         poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
-        # TODO handle multiple weather
+        temp_air = _tuple_from_dfs(self.weather, 'temp_air')
+        wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = self.system.pvsyst_celltemp(
-            poa, self.weather['temp_air'], self.weather['wind_speed'])
+            poa, temp_air, wind_speed)
         return self
 
     def faiman_temp(self):
         poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
-        # TODO handle multiple weather
+        temp_air = _tuple_from_dfs(self.weather, 'temp_air')
+        wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = self.system.faiman_celltemp(
-            poa, self.weather['temp_air'], self.weather['wind_speed'])
+            poa, temp_air, wind_speed)
         return self
 
     def fuentes_temp(self):
         poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
-        # TODO handle multiple weather
+        temp_air = _tuple_from_dfs(self.weather, 'temp_air')
+        wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = self.system.fuentes_celltemp(
-            poa, self.weather['temp_air'], self.weather['wind_speed'])
+             poa, temp_air, wind_speed)
         return self
 
     @property

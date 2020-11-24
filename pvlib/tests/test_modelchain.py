@@ -711,6 +711,33 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
         mc.results.cell_temperature[0], data['cell_temperature'])
 
 
+@pytest.mark.parametrize('temp_params,temp_model',
+                         [({'a': -3.47, 'b': -.0594, 'deltaT': 3},
+                           ModelChain.sapm_temp),
+                          ({'u_c': 29.0, 'u_v': 0},
+                           ModelChain.pvsyst_temp),
+                          ({'u0': 25.0, 'u1': 6.84},
+                           ModelChain.faiman_temp),
+                          ({'noct_installed': 45},
+                           ModelChain.fuentes_temp)])
+def test_temperature_models_arrays_multi_weather(
+        temp_params, temp_model,
+        sapm_dc_snl_ac_system_same_arrays,
+        location, weather, total_irrad):
+    sapm_dc_snl_ac_system_same_arrays.temperature_model_parameters = \
+        temp_params
+    # set air temp so it does not default to the same value for both arrays
+    weather['temp_air'] = 25
+    weather_one = weather
+    weather_two = weather.copy() * 0.5
+    mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    mc.prepare_inputs((weather_one, weather_two))
+    temp_model(mc)
+    assert (mc.results.cell_temperature[0]
+            != mc.results.cell_temperature[1]).all()
+
+
 def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')

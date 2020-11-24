@@ -146,10 +146,10 @@ def sandia_multi(v_dc, p_dc, inverter):
 
     Parameters
     ----------
-    v_dc : tuple, list or array of numeric
+    v_dc : tuple or list of numeric
         DC voltage on each MPPT input of the inverter. [V]
 
-    p_dc : tuple, list or array of numeric
+    p_dc : tuple or list of numeric
         DC power on each MPPT input of the inverter. [W]
 
     inverter : dict-like

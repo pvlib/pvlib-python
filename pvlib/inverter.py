@@ -12,7 +12,6 @@ naming pattern 'fit_<model name>', e.g., fit_sandia.
 
 import numpy as np
 import pandas as pd
-
 from numpy.polynomial.polynomial import polyfit  # different than np.polyfit
 
 
@@ -41,11 +40,13 @@ def _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso):
     Applies minimum and maximum power limits to `power_ac`
     '''
     power_ac = np.minimum(Paco, power_ac)
+    min_ac_power = -1.0 * abs(Pnt)
+    below_limit = p_dc < Pso
     try:
-        power_ac[p_dc < Pso] = -1.0 * abs(Pnt)
-    except TypeError:  # float
-        if power_ac < Pso:
-            power_ac = -1.0 * abs(Pnt)
+        power_ac[below_limit] = min_ac_power
+    except TypeError:  # power_ac is a float
+        if below_limit:
+            power_ac = min_ac_power
     return power_ac
 
 
@@ -145,10 +146,10 @@ def sandia_multi(v_dc, p_dc, inverter):
 
     Parameters
     ----------
-    v_dc : numeric or tuple of numeric
+    v_dc : tuple, list or array of numeric
         DC voltage on each MPPT input of the inverter. [V]
 
-    p_dc : numeric or tuple of numeric
+    p_dc : tuple, list or array of numeric
         DC power on each MPPT input of the inverter. [W]
 
     inverter : dict-like
@@ -179,20 +180,13 @@ def sandia_multi(v_dc, p_dc, inverter):
     pvlib.inverter.sandia
     '''
 
-    if isinstance(p_dc, tuple):
-        if isinstance(v_dc, tuple) and not len(p_dc) == len(v_dc):
-            raise ValueError('p_dc and v_dc have different lengths')
-        power_dc = sum(p_dc)
-    else:
-        power_dc = sum((p_dc,))  # handle Series, array or float
-
+    if len(p_dc) == len(v_dc):
+        raise ValueError('p_dc and v_dc have different lengths')
+    power_dc = sum(p_dc)
     power_ac = 0. * power_dc
 
-    if isinstance(p_dc, tuple):
-        for vdc, pdc in zip(v_dc, p_dc):
-            power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
-    else:
-        power_ac = _sandia_eff(v_dc, power_dc, inverter)
+    for vdc, pdc in zip(v_dc, p_dc):
+        power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
 
     return _sandia_limits(power_ac, power_dc, inverter['Paco'],
                           inverter['Pnt'], inverter['Pso'])

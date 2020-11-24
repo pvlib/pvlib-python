@@ -102,9 +102,17 @@ def test_sandia_multi(cec_inverter_parameters):
     pacs = inverter.sandia_multi((vdcs, vdcs), (pdcs, pdcs),
                                  cec_inverter_parameters)
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    # with lists instead of tuples
+    pacs = inverter.sandia_multi([vdcs, vdcs], [pdcs, pdcs],
+                                 cec_inverter_parameters)
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    # with arrays instead of tuples
+    pacs = inverter.sandia_multi(np.array([vdcs, vdcs]), np.array([pdcs, pdcs]),
+                                 cec_inverter_parameters)
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
-def test_sandia_multi_error(cec_inverter_parameters):
+def test_sandia_multi_length_error(cec_inverter_parameters):
     vdcs = pd.Series(np.linspace(0, 50, 3))
     idcs = pd.Series(np.linspace(0, 11, 3)) / 2
     pdcs = idcs * vdcs
@@ -112,26 +120,20 @@ def test_sandia_multi_error(cec_inverter_parameters):
         inverter.sandia_multi((vdcs,), (pdcs, pdcs), cec_inverter_parameters)
 
 
+def test_sandia_multi_type_error(cec_inverter_parameters):
+    vdcs = pd.Series(np.linspace(0, 50, 3))
+    idcs = pd.Series(np.linspace(0, 11, 3)) / 2
+    pdcs = idcs * vdcs
+    with pytest.raises(TypeError):
+        inverter.sandia_multi(vdcs, pdcs, cec_inverter_parameters)
+
+
 def test_sandia_multi_array(cec_inverter_parameters):
     vdcs = np.linspace(0, 50, 3)
     idcs = np.linspace(0, 11, 3)
     pdcs = idcs * vdcs
-    pacs = inverter.sandia_multi(vdcs, pdcs, cec_inverter_parameters)
+    pacs = inverter.sandia_multi((vdcs,), (pdcs,), cec_inverter_parameters)
     assert_allclose(pacs, np.array([-0.020000, 132.004278, 250.000000]))
-
-
-def test_sandia_multi_float(cec_inverter_parameters):
-    vdc = 25.
-    idc = 2.75
-    pdc = idc * vdc
-    pac = inverter.sandia_multi(vdc, pdc, cec_inverter_parameters)
-    assert_allclose(pac, 65.296672)
-
-    vdc = 25.
-    idc = 0.
-    pdc = idc * vdc
-    pac = inverter.sandia_multi(vdc, pdc, cec_inverter_parameters)
-    assert_allclose(pac, -1.0 * cec_inverter_parameters['Pnt'])
 
 
 def test_pvwatts_scalars():

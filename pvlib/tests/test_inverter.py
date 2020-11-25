@@ -60,9 +60,14 @@ def test_sandia_float(cec_inverter_parameters):
     vdcs = 25.
     idcs = 5.5
     pdcs = idcs * vdcs
-
     pacs = inverter.sandia(vdcs, pdcs, cec_inverter_parameters)
     assert_allclose(pacs, 132.004278, 5)
+    # test at low power condition
+    vdcs = 25.
+    idcs = 0
+    pdcs = idcs * vdcs
+    pacs = inverter.sandia(vdcs, pdcs, cec_inverter_parameters)
+    assert_allclose(pacs, -1. * cec_inverter_parameters['Pnt'], 5)
 
 
 def test_sandia_Pnt_micro():

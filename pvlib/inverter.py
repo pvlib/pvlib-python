@@ -146,11 +146,13 @@ def sandia_multi(v_dc, p_dc, inverter):
 
     Parameters
     ----------
-    v_dc : tuple or list of numeric
-        DC voltage on each MPPT input of the inverter. [V]
+    v_dc : tuple, list or array of numeric
+        DC voltage on each MPPT input of the inverter. If type is array, must
+        be 2d with axis 0 being the MPPT inputs. [V]
 
-    p_dc : tuple or list of numeric
-        DC power on each MPPT input of the inverter. [W]
+    p_dc : tuple, list or array of numeric
+        DC power on each MPPT input of the inverter. If type is array, must
+        be 2d with axis 0 being the MPPT inputs. [W]
 
     inverter : dict-like
         Defines parameters for the inverter model in [1]_.
@@ -180,17 +182,16 @@ def sandia_multi(v_dc, p_dc, inverter):
     pvlib.inverter.sandia
     '''
 
-    if len(p_dc) == len(v_dc):
-        power_dc = sum(p_dc)
-        power_ac = 0. * power_dc
-
-        for vdc, pdc in zip(v_dc, p_dc):
-            power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
-
-        return _sandia_limits(power_ac, power_dc, inverter['Paco'],
-                              inverter['Pnt'], inverter['Pso'])
-    else:
+    if len(p_dc) != len(v_dc):
         raise ValueError('p_dc and v_dc have different lengths')
+    power_dc = sum(p_dc)
+    power_ac = 0. * power_dc
+
+    for vdc, pdc in zip(v_dc, p_dc):
+        power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
+
+    return _sandia_limits(power_ac, power_dc, inverter['Paco'],
+                          inverter['Pnt'], inverter['Pso'])
 
 
 def adr(v_dc, p_dc, inverter, vtol=0.10):

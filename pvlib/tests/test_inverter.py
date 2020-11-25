@@ -115,7 +115,7 @@ def test_sandia_multi(cec_inverter_parameters):
 
 def test_sandia_multi_length_error(cec_inverter_parameters):
     vdcs = pd.Series(np.linspace(0, 50, 3))
-    idcs = pd.Series(np.linspace(0, 11, 3)) / 2
+    idcs = pd.Series(np.linspace(0, 11, 3))
     pdcs = idcs * vdcs
     with pytest.raises(ValueError, match='p_dc and v_dc have different'):
         inverter.sandia_multi((vdcs,), (pdcs, pdcs), cec_inverter_parameters)

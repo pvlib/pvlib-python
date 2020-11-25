@@ -121,14 +121,6 @@ def test_sandia_multi_length_error(cec_inverter_parameters):
         inverter.sandia_multi((vdcs,), (pdcs, pdcs), cec_inverter_parameters)
 
 
-def test_sandia_multi_type_error(cec_inverter_parameters):
-    vdcs = pd.Series(np.linspace(0, 50, 3))
-    idcs = pd.Series(np.linspace(0, 11, 3)) / 2
-    pdcs = idcs * vdcs
-    with pytest.raises(TypeError):
-        inverter.sandia_multi(vdcs, pdcs, cec_inverter_parameters)
-
-
 def test_sandia_multi_array(cec_inverter_parameters):
     vdcs = np.linspace(0, 50, 3)
     idcs = np.linspace(0, 11, 3)

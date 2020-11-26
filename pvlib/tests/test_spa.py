@@ -2,29 +2,15 @@ import os
 import datetime as dt
 import warnings
 
-try:
-    from importlib import reload
-except ImportError:
-    try:
-        from imp import reload
-    except ImportError:
-        pass
+from importlib import reload
 
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pandas as pd
+import pvlib
 
 import unittest
-import pytest
-
-
-try:
-    from numba import __version__ as numba_version
-    numba_version_int = int(numba_version.split('.')[0] +
-                            numba_version.split('.')[1])
-except ImportError:
-    numba_version_int = 0
-
+from conftest import requires_numba
 
 times = (pd.date_range('2003-10-17 12:30:30', periods=1, freq='D')
            .tz_localize('MST'))
@@ -378,34 +364,48 @@ class NumpySpaTest(unittest.TestCase, SpaBase):
     """Import spa without compiling to numba then run tests"""
     @classmethod
     def setUpClass(self):
-        os.environ['PVLIB_USE_NUMBA'] = '0'
-        import pvlib.spa as spa
-        spa = reload(spa)
-        self.spa = spa
+        try:
+            import numba
+            numba.config.DISABLE_JIT = 1
+        except ImportError:
+            pass
+
+        self.pvlib = reload(pvlib)
+        self.pvlib.tools = reload(pvlib.tools)
+        self.spa = reload(pvlib.spa)
 
     @classmethod
     def tearDownClass(self):
-        del os.environ['PVLIB_USE_NUMBA']
+        try:
+            import numba
+            numba.config.DISABLE_JIT = 0
+        except ImportError:
+            pass
+
+    def test_numba_active(self):
+        assert not self.pvlib.tools.NUMBA_ACTIVE
 
     def test_julian_day(self):
         assert_almost_equal(JD, self.spa.julian_day(unixtimes)[0], 6)
 
 
-@pytest.mark.skipif(numba_version_int < 17,
-                    reason='Numba not installed or version not >= 0.17.0')
+@requires_numba
 class NumbaSpaTest(unittest.TestCase, SpaBase):
     """Import spa, compiling to numba, and run tests"""
     @classmethod
     def setUpClass(self):
-        os.environ['PVLIB_USE_NUMBA'] = '1'
-        if numba_version_int >= 17:
-            import pvlib.spa as spa
-            spa = reload(spa)
-            self.spa = spa
+        import numba
+        numba.config.DISABLE_JIT = 0
+        self.pvlib = reload(pvlib)
+        self.pvlib.tools = reload(pvlib.tools)
+        self.spa = reload(pvlib.spa)
 
     @classmethod
     def tearDownClass(self):
-        del os.environ['PVLIB_USE_NUMBA']
+        pass
+
+    def test_numba_active(self):
+        assert self.pvlib.tools.NUMBA_ACTIVE
 
     def test_julian_day(self):
         assert_almost_equal(JD, self.spa.julian_day(unixtimes[0]), 6)

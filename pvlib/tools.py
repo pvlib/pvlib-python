@@ -322,7 +322,7 @@ def _golden_sect_DataFrame(params, VL, VH, func):
 
 
 # Enable numba JIT if it's installed, otherwise just define a no-op decorator
-def dummy_jit(func=None, *args, **kwargs):
+def _dummy_jit(func=None, *args, **kwargs):
     # accommodate using as either `@jit` or `@jit()`
     def wrapper(func):
         return func
@@ -331,10 +331,19 @@ def dummy_jit(func=None, *args, **kwargs):
     return wrapper
 
 
+NUMBA_ACTIVE = False
+jit = _dummy_jit
+
 try:
-    from numba import jit
+    import numba
+    jit = numba.jit
+    if numba.config.DISABLE_JIT == 0:
+        # NUMBA_DISABLE_JIT will turn the decorator into a no-op, but
+        # for cases like the SPA where we need to switch manually
+        # between functions, we need a flag for which branch to take:
+        NUMBA_ACTIVE = True
 except ImportError:
-    jit = dummy_jit
+    pass
 
 
 def jit_annotate(func):

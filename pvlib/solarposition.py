@@ -8,31 +8,24 @@ Calculate the solar position using a variety of methods/packages.
 # Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 # Cliff hansen (@cwhanse), Sandia National Laboratories, 2018
 
-import os
 import datetime as dt
-try:
-    from importlib import reload
-except ImportError:
-    try:
-        from imp import reload
-    except ImportError:
-        pass
 
 import numpy as np
 import pandas as pd
 import scipy.optimize as so
 import warnings
 
-from pvlib import atmosphere
-from pvlib.tools import datetime_to_djd, djd_to_datetime
+from pvlib import atmosphere, spa
+from pvlib.tools import datetime_to_djd, djd_to_datetime, jit_annotate
 
+from pvlib._deprecation import pvlibDeprecationWarning
 
 NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
 
 
 def get_solarposition(time, latitude, longitude,
                       altitude=None, pressure=None,
-                      method='nrel_numpy',
+                      method='nrel',
                       temperature=12, **kwargs):
     """
     A convenience wrapper for the solar position calculators.
@@ -58,13 +51,10 @@ def get_solarposition(time, latitude, longitude,
         If None, computed from altitude. Assumed to be 101325 Pa
         if altitude is also None.
 
-    method : string, default 'nrel_numpy'
-        'nrel_numpy' uses an implementation of the NREL SPA algorithm
-        described in [1] (default, recommended): :py:func:`spa_python`
-
-        'nrel_numba' uses an implementation of the NREL SPA algorithm
-        described in [1], but also compiles the code first:
-        :py:func:`spa_python`
+    method : string, default 'nrel'
+        'nrel' uses an implementation of the NREL SPA algorithm
+        described in [1], optionally accelerated with numba
+        if possible (default, recommended): :py:func:`spa_python`
 
         'pyephem' uses the PyEphem package: :py:func:`pyephem`
 
@@ -106,14 +96,13 @@ def get_solarposition(time, latitude, longitude,
     if method == 'nrel_c':
         ephem_df = spa_c(time, latitude, longitude, pressure, temperature,
                          **kwargs)
-    elif method == 'nrel_numba':
+    elif method in {'nrel', 'nrel_numpy', 'nrel_numba'}:
+        if method != 'nrel':
+            warnings.warn(f'method={method} is deprecated; Use method="nrel" '
+                          'instead. See (TODO)', pvlibDeprecationWarning)
         ephem_df = spa_python(time, latitude, longitude, altitude,
                               pressure, temperature,
-                              how='numba', **kwargs)
-    elif method == 'nrel_numpy':
-        ephem_df = spa_python(time, latitude, longitude, altitude,
-                              pressure, temperature,
-                              how='numpy', **kwargs)
+                              **kwargs)
     elif method == 'pyephem':
         ephem_df = pyephem(time, latitude, longitude,
                            altitude=altitude,
@@ -243,39 +232,10 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
         return dfout
 
 
-def _spa_python_import(how):
-    """Compile spa.py appropriately"""
-
-    from pvlib import spa
-
-    # check to see if the spa module was compiled with numba
-    using_numba = spa.USE_NUMBA
-
-    if how == 'numpy' and using_numba:
-        # the spa module was compiled to numba code, so we need to
-        # reload the module without compiling
-        # the PVLIB_USE_NUMBA env variable is used to tell the module
-        # to not compile with numba
-        warnings.warn('Reloading spa to use numpy')
-        os.environ['PVLIB_USE_NUMBA'] = '0'
-        spa = reload(spa)
-        del os.environ['PVLIB_USE_NUMBA']
-    elif how == 'numba' and not using_numba:
-        # The spa module was not compiled to numba code, so set
-        # PVLIB_USE_NUMBA so it does compile to numba on reload.
-        warnings.warn('Reloading spa to use numba')
-        os.environ['PVLIB_USE_NUMBA'] = '1'
-        spa = reload(spa)
-        del os.environ['PVLIB_USE_NUMBA']
-    elif how != 'numba' and how != 'numpy':
-        raise ValueError("how must be either 'numba' or 'numpy'")
-
-    return spa
-
-
+@jit_annotate
 def spa_python(time, latitude, longitude,
                altitude=0, pressure=101325, temperature=12, delta_t=67.0,
-               atmos_refract=None, how='numpy', numthreads=4, **kwargs):
+               atmos_refract=None, numthreads=4, **kwargs):
     """
     Calculate the solar position using a python implementation of the
     NREL SPA algorithm.
@@ -314,12 +274,8 @@ def spa_python(time, latitude, longitude,
     atmos_refrac : None or float, optional, default None
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
-    how : str, optional, default 'numpy'
-        Options are 'numpy' or 'numba'. If numba >= 0.17.0
-        is installed, how='numba' will compile the spa functions
-        to machine code and run them multithreaded.
     numthreads : int, optional, default 4
-        Number of threads to use if how == 'numba'.
+        Number of threads to use when numba acceleration is used.
 
     Returns
     -------
@@ -367,8 +323,6 @@ def spa_python(time, latitude, longitude,
 
     unixtime = np.array(time.astype(np.int64)/10**9)
 
-    spa = _spa_python_import(how)
-
     delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
 
     app_zenith, zenith, app_elevation, elevation, azimuth, eot = \
@@ -384,6 +338,7 @@ def spa_python(time, latitude, longitude,
     return result
 
 
+@jit_annotate
 def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
                              delta_t=67.0, numthreads=4):
     """
@@ -446,8 +401,6 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     # must convert to midnight UTC on day of interest
     utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
     unixtime = np.array(utcday.astype(np.int64)/10**9)
-
-    spa = _spa_python_import(how)
 
     delta_t = delta_t or spa.calculate_deltat(times.year, times.month)
 
@@ -1002,8 +955,6 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
             time = pd.DatetimeIndex([time, ])
 
     unixtime = np.array(time.astype(np.int64)/10**9)
-
-    spa = _spa_python_import(how)
 
     delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
 

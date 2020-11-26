@@ -326,7 +326,7 @@ def _dummy_jit(func=None, *args, **kwargs):
     # accommodate using as either `@jit` or `@jit()`
     def wrapper(func):
         return func
-    if func is not None:
+    if callable(func):
         return func
     return wrapper
 

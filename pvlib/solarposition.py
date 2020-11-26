@@ -339,7 +339,7 @@ def spa_python(time, latitude, longitude,
 
 
 @jit_annotate
-def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
+def sun_rise_set_transit_spa(times, latitude, longitude, how=None,
                              delta_t=67.0, numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
@@ -368,12 +368,10 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.
         By default, use USNO historical data and predictions
-    how : str, optional, default 'numpy'
-        Options are 'numpy' or 'numba'. If numba >= 0.17.0
-        is installed, how='numba' will compile the spa functions
-        to machine code and run them multithreaded.
+    how :
+        Deprecated
     numthreads : int, optional, default 4
-        Number of threads to use if how == 'numba'.
+        Number of threads to use if using numba.
 
     Returns
     -------
@@ -388,6 +386,10 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
        USA, http://www.nrel.gov.
     """
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
+
+    if how is not None:
+        warnings.warn("The 'how' parameter is deprecated; see (TODO)",
+                      pvlibDeprecationWarning)
 
     lat = latitude
     lon = longitude
@@ -907,7 +909,7 @@ def pyephem_earthsun_distance(time):
     return pd.Series(earthsun, index=time)
 
 
-def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
+def nrel_earthsun_distance(time, how=None, delta_t=67.0, numthreads=4):
     """
     Calculates the distance from the earth to the sun using the
     NREL SPA algorithm.
@@ -919,10 +921,8 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
     time : pandas.DatetimeIndex
         Must be localized or UTC will be assumed.
 
-    how : str, optional, default 'numpy'
-        Options are 'numpy' or 'numba'. If numba >= 0.17.0
-        is installed, how='numba' will compile the spa functions
-        to machine code and run them multithreaded.
+    how :
+        Deprecated
 
     delta_t : float, optional, default 67.0
         If delta_t is None, uses spa.calculate_deltat
@@ -934,7 +934,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         By default, use USNO historical data and predictions
 
     numthreads : int, optional, default 4
-        Number of threads to use if how == 'numba'.
+        Number of threads to use if using numba.
 
     Returns
     -------
@@ -947,6 +947,10 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
        radiation applications. Technical report: NREL/TP-560- 34302. Golden,
        USA, http://www.nrel.gov.
     """
+
+    if how is not None:
+        warnings.warn("The 'how' parameter is deprecated; see (TODO)",
+                      pvlibDeprecationWarning)
 
     if not isinstance(time, pd.DatetimeIndex):
         try:

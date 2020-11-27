@@ -235,7 +235,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 @jit_annotate
 def spa_python(time, latitude, longitude,
                altitude=0, pressure=101325, temperature=12, delta_t=67.0,
-               atmos_refract=None, numthreads=4, **kwargs):
+               atmos_refract=None, how=None, numthreads=4, **kwargs):
     """
     Calculate the solar position using a python implementation of the
     NREL SPA algorithm.
@@ -274,6 +274,8 @@ def spa_python(time, latitude, longitude,
     atmos_refrac : None or float, optional, default None
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
+    how :
+        Deprecated
     numthreads : int, optional, default 4
         Number of threads to use when numba acceleration is used.
 
@@ -307,6 +309,10 @@ def spa_python(time, latitude, longitude,
     """
 
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
+
+    if how is not None:
+        warnings.warn("The 'how' parameter is deprecated; see (TODO)",
+                      pvlibDeprecationWarning)
 
     lat = latitude
     lon = longitude

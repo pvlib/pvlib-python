@@ -12,7 +12,12 @@ import pytest
 from pvlib.location import Location
 from pvlib import solarposition, spa
 
-from conftest import requires_ephem, requires_spa_c, requires_numba
+from conftest import (
+    requires_ephem, requires_spa_c, requires_numba, requires_no_numba
+)
+
+from pvlib._deprecation import pvlibDeprecationWarning
+from conftest import fail_on_pvlib_version
 
 
 # setup times and locations to be tested.
@@ -581,6 +586,7 @@ def test_equation_of_time():
     assert np.allclose(eot_2 / eot_rng, eot / eot_rng, atol=0.4)  # pvcdrom
 
 
+@requires_no_numba
 def test_declination():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
                           freq="H")
@@ -742,55 +748,40 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
                        atol=np.abs(expected_transit_error).max())
 
 
-# put numba tests at end of file to minimize reloading
-
 @requires_numba
-def test_spa_python_numba_physical(expected_solpos, golden_mst):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
-                          periods=1, freq='D', tz=golden_mst.tz)
-    with warnings.catch_warnings():
-        # don't warn on method reload or num threads
-        # ensure that numpy is the most recently used method so that
-        # we can use the warns filter below
-        warnings.simplefilter("ignore")
-        ephem_data = solarposition.spa_python(times, golden_mst.latitude,
-                                              golden_mst.longitude,
-                                              pressure=82000,
-                                              temperature=11, delta_t=67,
-                                              atmos_refract=0.5667,
-                                              how='numpy', numthreads=1)
-    with pytest.warns(UserWarning):
-        ephem_data = solarposition.spa_python(times, golden_mst.latitude,
-                                              golden_mst.longitude,
-                                              pressure=82000,
-                                              temperature=11, delta_t=67,
-                                              atmos_refract=0.5667,
-                                              how='numba', numthreads=1)
+@pytest.mark.parametrize('location,date',
+                         [('golden', '2003-10-17 13:30:30'),
+                          ('golden_mst', '2003-10-17 12:30:30')])
+def test_spa_python_numba_physical(expected_solpos, location, date, request):
+
+    # workaround for https://github.com/pytest-dev/pytest/issues/349
+    location = request.getfixturevalue(location)
+
+    times = pd.date_range(date, periods=1, freq='D', tz=location.tz)
+
+    ephem_data = solarposition.spa_python(times, location.latitude,
+                                          location.longitude,
+                                          pressure=82000,
+                                          temperature=11, delta_t=67,
+                                          atmos_refract=0.5667,
+                                          numthreads=1)
     expected_solpos.index = times
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-@requires_numba
-def test_spa_python_numba_physical_dst(expected_solpos, golden):
-    times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
+@fail_on_pvlib_version('0.10')
+def test_spa_python_deprecated(golden):
+
+    times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
                           periods=1, freq='D', tz=golden.tz)
 
-    with warnings.catch_warnings():
-        # don't warn on method reload or num threads
-        warnings.simplefilter("ignore")
-        ephem_data = solarposition.spa_python(times, golden.latitude,
-                                              golden.longitude, pressure=82000,
-                                              temperature=11, delta_t=67,
-                                              atmos_refract=0.5667,
-                                              how='numba', numthreads=1)
-    expected_solpos.index = times
-    assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
+    match = "The 'how' parameter is deprecated;"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
 
-    with pytest.warns(UserWarning):
-        # test that we get a warning when reloading to use numpy only
-        ephem_data = solarposition.spa_python(times, golden.latitude,
-                                              golden.longitude,
-                                              pressure=82000,
-                                              temperature=11, delta_t=67,
-                                              atmos_refract=0.5667,
-                                              how='numpy', numthreads=1)
+        _ = solarposition.spa_python(times, golden.latitude,
+                                     golden.longitude,
+                                     pressure=82000,
+                                     temperature=11, delta_t=67,
+                                     atmos_refract=0.5667,
+                                     how='numba',
+                                     numthreads=1)

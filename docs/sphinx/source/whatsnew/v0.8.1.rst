@@ -50,3 +50,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Will Vining (:ghuser:`wfvining`)
+* Michael Jurasovic (:ghuser:`jurasofish`)

@@ -2355,7 +2355,7 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     return losses
 
 
-def dc_ohms_from_percent(v_mp_ref, i_mp_ref, dc_ohmic_percent=0,
+def dc_ohms_from_percent(V_mp_ref, I_mp_ref, dc_ohmic_percent,
                          modules_per_string=1,
                          strings_per_inverter=1):
     """
@@ -2388,9 +2388,9 @@ def dc_ohms_from_percent(v_mp_ref, i_mp_ref, dc_ohmic_percent=0,
     ----------
     -- [1] PVsyst 7 Help. "Array ohmic wiring loss". https://www.pvsyst.com/help/ohmic_loss.htm
     """
-    vmp = modules_per_string * v_mp_ref
+    vmp = modules_per_string * V_mp_ref
 
-    imp = strings_per_inverter * i_mp_ref
+    imp = strings_per_inverter * I_mp_ref
 
     Rw = (dc_ohmic_percent / 100) * (vmp / imp)
 

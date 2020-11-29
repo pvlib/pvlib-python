@@ -327,9 +327,9 @@ class ModelChain:
         The ModelChain instance will be passed as the first argument to a
         user-defined function.
 
-    losses_model: str, default 'no_loss'
-        Valid strings are 'pvwatts', 'no_loss'. The loss functions will
-        be set according to this parameter.
+    losses_model: str or function, default 'no_loss'
+        Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
+        will be passed as the first argument to a user-defined function.
 
     name: None or str, default None
         Name of ModelChain instance.
@@ -935,15 +935,13 @@ class ModelChain:
         elif isinstance(model, str):
             model = model.lower()
             if model == 'pvwatts':
-                self._losses_model = model
-                self._dc_losses = self.pvwatts_losses
+                self._losses_model = self.pvwatts_losses
             elif model == 'no_loss':
-                self._losses_model = model
-                self._dc_losses = self.no_extra_losses
+                self._losses_model = self.no_extra_losses
             else:
                 raise ValueError(model + ' is not a valid losses model')
         else:
-            raise ValueError('losses_model must be a string')
+            self._losses_model = partial(model, self)
 
     def infer_losses_model(self):
         raise NotImplementedError
@@ -1376,7 +1374,7 @@ class ModelChain:
         """
         self._prepare_temperature(data)
         self.dc_model()
-        self._dc_losses()
+        self.losses_model()
         self.ac_model()
 
         return self

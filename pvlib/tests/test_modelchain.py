@@ -1498,3 +1498,9 @@ def test_complete_irradiance_arrays_wrong_length(
         mc.complete_irradiance((weather,))
     with pytest.raises(ValueError, match=error_str):
         mc.complete_irradiance((weather, weather, weather))
+
+
+def test_unknown_attribute(sapm_dc_snl_ac_system, location):
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    with pytest.raises(AttributeError):
+        mc.unknown_attribute

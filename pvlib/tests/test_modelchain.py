@@ -655,8 +655,8 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
 
 def test_prepare_poa_wrong_number_arrays(
         sapm_dc_snl_ac_system_Array, location, total_irrad, weather):
-    error_str = "POA must be provided independently for each " \
-                r"array\. Input must be a tuple of length 2\."
+    error_str = "Input must be provided independently for each " \
+                r"array\. You must pass a tuple of length 2\."
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     poa = pd.concat([weather, total_irrad], axis=1)
     with pytest.raises(ValueError, match=error_str):
@@ -809,6 +809,45 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
     assert_series_equal(ac, expected)
+
+
+def test_run_model_from_effective_irradiance_arrays_error(
+        sapm_dc_snl_ac_system_Array, location, weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effetive_irradiance'] = data['poa_global']
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    error_str = r"Input must be provided independently for each array\. " \
+                r"You must pass a tuple of length 2\."
+    with pytest.raises(ValueError, match=error_str):
+        mc.run_model_from_effective_irradiance(data)
+    with pytest.raises(ValueError, match=error_str):
+        mc.run_model_from_effective_irradiance((data,))
+    with pytest.raises(ValueError, match=error_str):
+        mc.run_model_from_effective_irradiance((data, data, data))
+    with pytest.raises(ValueError,
+                       match=r"Weather DataFrames must have same index\."):
+        mc.run_model_from_effective_irradiance(
+            (data, data.shift(periods=1, freq='infer'))
+        )
+
+
+def test_run_model_from_effective_irradiance_arrays(
+        sapm_dc_snl_ac_system_Array, location, weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global']
+    data['cell_temperature'] = 40
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    mc.run_model_from_effective_irradiance((data, data))
+    # arrays have different orientation, but should give same dc power
+    # because we are the same passing effective irradiance and cell
+    # temperature.
+    assert_frame_equal(mc.dc[0], mc.dc[1])
+    data_two = data.copy()
+    data_two['effective_irradiance'] = data['poa_global'] * 0.5
+    mc.run_model_from_effective_irradiance((data, data_two))
+    assert (mc.dc[0] != mc.dc[1]).all().all()
 
 
 def poadc(mc):

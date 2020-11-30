@@ -1380,14 +1380,14 @@ class ModelChain:
 
         return self
 
-    def _check_poa_length(self, data):
+    def _check_length(self, data):
         """Check that the number of elements in `data` is the same as
         the number of arrays in `self.system`."""
         if self.system.num_arrays == 1 and not isinstance(data, tuple):
             return
         if not isinstance(data, tuple) or len(data) != self.system.num_arrays:
-            raise ValueError("POA must be provided independently for "
-                             "each array. Input must be a tuple of length "
+            raise ValueError("Input must be provided independently for "
+                             "each array. You must pass a tuple of length "
                              f"{self.system.num_arrays}.")
 
     def prepare_inputs_from_poa(self, data):
@@ -1423,7 +1423,7 @@ class ModelChain:
         --------
         pvlib.modelchain.ModelChain.prepare_inputs
         """
-        self._check_poa_length(data)
+        self._check_length(data)
         if isinstance(data, tuple):
             _validate_weather_indices(data)
         self._assign_weather(data)
@@ -1647,16 +1647,27 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame, default None
+        data : DataFrame or tuple of DataFrame, default None
             Required column is ``'effective_irradiance'``.
             If optional column ``'cell_temperature'`` is provided, these values
             are used instead of `temperature_model`. If optional column
             ``'module_temperature'`` is provided, `temperature_model` must be
             ``'sapm'``.
 
+            If the system has multiple arrays, `data` must be a tuple with
+            the same length as the number of arrays in the system where
+            each element provides the effective irradiance and weather
+            for each array.
+
         Returns
         -------
         self
+
+        Raises
+        ------
+        ValueError
+            If the number of arrays is different than the number of data
+            frames passed in `data` or the DataFrames have different indices.
 
         Notes
         -----
@@ -1669,12 +1680,12 @@ class ModelChain:
         pvlib.modelchain.ModelChain.run_model_from
         pvlib.modelchain.ModelChain.run_model_from_poa
         """
-
+        self._check_length(data)
+        _validate_weather_indices(data)
         self._assign_weather(data)
         self._assign_total_irrad(data)
-        # TODO handle multiple irradiances (replicate self.system.num_arrays
-        #      times?)
-        self.results.effective_irradiance = data['effective_irradiance']
+        self.results.effective_irradiance = _tuple_from_dfs(
+            data, 'effective_irradiance')
         self._run_from_effective_irrad(data)
 
         return self

@@ -1380,6 +1380,16 @@ class ModelChain:
 
         return self
 
+    def _check_poa_length(self, data):
+        """Check that the number of elements in `data` is the same as
+        the number of arrays in `self.system`."""
+        if self.system.num_arrays == 1 and not isinstance(data, tuple):
+            return
+        if not isinstance(data, tuple) or len(data) != self.system.num_arrays:
+            raise ValueError("POA must be provided independently for "
+                             "each array. Input must be a tuple of length "
+                             f"{self.system.num_arrays}.")
+
     def prepare_inputs_from_poa(self, data):
         """
         Prepare the solar position, irradiance and weather inputs to
@@ -1387,13 +1397,22 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame
+        data : DataFrame or tuple of DataFrame
             Contains plane-of-array irradiance data. Required column names
             include ``'poa_global'``, ``'poa_direct'`` and ``'poa_diffuse'``.
             Columns with weather-related data are ssigned to the
             ``weather`` attribute.  If columns for ``'temp_air'`` and
             ``'wind_speed'`` are not provided, air temperature of 20 C and wind
             speed of 0 m/s are assumed.
+
+            If there are multiple arrays in the system then `data` must be
+            a tuple with the same length as the number of arrays.
+
+        Raises
+        ------
+        ValueError
+             If the number of DataFrames passed in `data` is not the same
+             as the number of arrays in the system.
 
         Notes
         -----
@@ -1404,7 +1423,9 @@ class ModelChain:
         --------
         pvlib.modelchain.ModelChain.prepare_inputs
         """
-
+        self._check_poa_length(data)
+        if isinstance(data, tuple):
+            _validate_weather_indices(data)
         self._assign_weather(data)
 
         self._verify_df(data, required=['poa_global', 'poa_direct',

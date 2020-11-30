@@ -653,6 +653,39 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
     assert_frame_equal(mc.results.total_irrad, total_irrad)
 
 
+def test_prepare_poa_wrong_number_arrays(
+        sapm_dc_snl_ac_system_Array, location, total_irrad, weather):
+    error_str = "POA must be provided independently for each " \
+                r"array\. Input must be a tuple of length 2\."
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    poa = pd.concat([weather, total_irrad], axis=1)
+    with pytest.raises(ValueError, match=error_str):
+        mc.prepare_inputs_from_poa(poa)
+    with pytest.raises(ValueError, match=error_str):
+        mc.prepare_inputs_from_poa((poa,))
+    with pytest.raises(ValueError, match=error_str):
+        mc.prepare_inputs_from_poa((poa, poa, poa))
+
+
+def test_prepare_poa_arrays_different_indices(
+        sapm_dc_snl_ac_system_Array, location, total_irrad, weather):
+    error_str = r"Weather DataFrames must have same index\."
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    poa = pd.concat([weather, total_irrad], axis=1)
+    with pytest.raises(ValueError, match=error_str):
+        mc.prepare_inputs_from_poa((poa, poa.shift(periods=1, freq='infer')))
+
+
+def test_prepare_poa_arrays_missing_column(
+        sapm_dc_snl_ac_system_Array, location, weather, total_irrad):
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    poa = pd.concat([weather, total_irrad], axis=1)
+    with pytest.raises(ValueError, match=r"Incomplete input data\. "
+                                         r"Data needs to contain .*\. "
+                                         r"Detected data contains: .*"):
+        mc.prepare_inputs_from_poa((poa, poa.drop(columns='poa_global')))
+
+
 def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
                               total_irrad):
     data = weather.copy()

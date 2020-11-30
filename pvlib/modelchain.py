@@ -1132,12 +1132,23 @@ class ModelChain:
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
         >>> mc.run_model(my_weather)  # doctest: +SKIP
         """
+        if isinstance(weather, tuple):
+            _validate_weather_indices(weather)
         self.weather = weather
-
+        self._assign_times()
         self.results.solar_position = self.location.get_solarposition(
-            self.weather.index, method=self.solar_position_method)
+            self.times, method=self.solar_position_method)
 
-        icolumns = set(self.weather.columns)
+        if isinstance(weather, tuple):
+            for w in self.weather:
+                self._complete_irradiance(w)
+        else:
+            self._complete_irradiance(self.weather)
+
+        return self
+
+    def _complete_irradiance(self, weather):
+        icolumns = set(weather.columns)
         wrn_txt = ("This function is not safe at the moment.\n" +
                    "Results can be too high or negative.\n" +
                    "Help to improve this function on github:\n" +
@@ -1145,25 +1156,23 @@ class ModelChain:
 
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
-                self.weather.index, solar_position=self.results.solar_position)
-            self.weather.loc[:, 'dni'] = pvlib.irradiance.dni(
-                self.weather.loc[:, 'ghi'], self.weather.loc[:, 'dhi'],
+                weather.index, solar_position=self.results.solar_position)
+            weather.loc[:, 'dni'] = pvlib.irradiance.dni(
+                weather.loc[:, 'ghi'], weather.loc[:, 'dhi'],
                 self.results.solar_position.zenith,
                 clearsky_dni=clearsky['dni'],
                 clearsky_tolerance=1.1)
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
-            self.weather.loc[:, 'ghi'] = (
-                self.weather.dhi + self.weather.dni *
+            weather.loc[:, 'ghi'] = (
+                weather.dhi + weather.dni *
                 tools.cosd(self.results.solar_position.zenith)
             )
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
-            self.weather.loc[:, 'dhi'] = (
-                self.weather.ghi - self.weather.dni *
+            weather.loc[:, 'dhi'] = (
+                weather.ghi - weather.dni *
                 tools.cosd(self.results.solar_position.zenith))
-
-        return self
 
     def _prep_inputs_solar_pos(self, kwargs={}):
         """

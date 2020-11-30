@@ -1376,3 +1376,38 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
     assert_series_equal(mc.weather['dni'],
                         pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))
+
+
+@pytest.mark.filterwarnings("ignore:This function is not safe at the moment")
+def test_complete_irradiance_arrays(
+        sapm_dc_snl_ac_system_same_arrays, location):
+    """ModelChain.complete_irradiance can accept a tuple of weather
+    DataFrames."""
+    times = pd.date_range(start='2020-01-01 0700-0700', periods=2, freq='H')
+    weather = pd.DataFrame({'dni': [2, 3],
+                            'dhi': [4, 6],
+                            'ghi': [9, 5]}, index=times)
+    mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
+    with pytest.raises(ValueError,
+                       match=r"Weather DataFrames must have same index\."):
+        mc.complete_irradiance((weather, weather[1:]))
+    mc.complete_irradiance((weather, weather))
+    for mc_weather in mc.weather:
+        assert_series_equal(mc_weather['dni'],
+                            pd.Series([2, 3], index=times, name='dni'))
+        assert_series_equal(mc_weather['dhi'],
+                            pd.Series([4, 6], index=times, name='dhi'))
+        assert_series_equal(mc_weather['ghi'],
+                            pd.Series([9, 5], index=times, name='ghi'))
+    mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
+    mc.complete_irradiance((weather[['ghi', 'dhi']], weather[['dhi', 'dni']]))
+    assert 'dni' in mc.weather[0].columns
+    assert 'ghi' in mc.weather[1].columns
+    mc.complete_irradiance((weather, weather[['ghi', 'dni']]))
+    assert_series_equal(mc.weather[0]['dhi'],
+                        pd.Series([4, 6], index=times, name='dhi'))
+    assert_series_equal(mc.weather[0]['ghi'],
+                        pd.Series([9, 5], index=times, name='ghi'))
+    assert_series_equal(mc.weather[0]['dni'],
+                        pd.Series([2, 3], index=times, name='dni'))
+    assert 'dhi' in mc.weather[1].columns

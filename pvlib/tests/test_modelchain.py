@@ -1498,4 +1498,3 @@ def test_complete_irradiance_arrays_wrong_length(
         mc.complete_irradiance((weather,))
     with pytest.raises(ValueError, match=error_str):
         mc.complete_irradiance((weather, weather, weather))
-

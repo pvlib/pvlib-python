@@ -1694,10 +1694,20 @@ class ModelChain:
         return self
 
 
+def _pairwise(iterable):
+    """s -> (s0,s1), (s1,s2), (s2, s3), ...
+
+    From the itertools cookbook.
+    """
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
 def _validate_weather_indices(data):
     indexes = map(lambda df: df.index, data)
     if not all(itertools.starmap(pd.Index.equals,
-                                 itertools.combinations(indexes, 2))):
+                                 _pairwise(indexes))):
         raise ValueError("Weather DataFrames must have same index.")
 
 

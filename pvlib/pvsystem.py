@@ -2386,7 +2386,8 @@ def dc_ohms_from_percent(V_mp_ref, I_mp_ref, dc_ohmic_percent,
 
     References
     ----------
-    -- [1] PVsyst 7 Help. "Array ohmic wiring loss". https://www.pvsyst.com/help/ohmic_loss.htm
+    -- [1] PVsyst 7 Help. "Array ohmic wiring loss".
+            https://www.pvsyst.com/help/ohmic_loss.htm
     """
     vmp = modules_per_string * V_mp_ref
 

@@ -1681,7 +1681,8 @@ class ModelChain:
         pvlib.modelchain.ModelChain.run_model_from_poa
         """
         self._check_length(data)
-        _validate_weather_indices(data)
+        if isinstance(data, tuple):
+            _validate_weather_indices(data)
         self._assign_weather(data)
         self._assign_total_irrad(data)
         self.results.effective_irradiance = _tuple_from_dfs(

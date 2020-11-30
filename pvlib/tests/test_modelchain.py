@@ -1411,3 +1411,19 @@ def test_complete_irradiance_arrays(
     assert_series_equal(mc.weather[0]['dni'],
                         pd.Series([2, 3], index=times, name='dni'))
     assert 'dhi' in mc.weather[1].columns
+
+
+def test_complete_irradiance_arrays_wrong_length(
+        sapm_dc_snl_ac_system_same_arrays, location):
+    mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
+    times = pd.date_range(start='2020-01-01 0700-0700', periods=2, freq='H')
+    weather = pd.DataFrame({'dni': [2, 3],
+                            'dhi': [4, 6],
+                            'ghi': [9, 5]}, index=times)
+    error_str = "Weather must be same length as number " \
+                r"of arrays in system\. Expected 2, got [0-9]+\."
+    with pytest.raises(ValueError, match=error_str):
+        mc.complete_irradiance((weather,))
+    with pytest.raises(ValueError, match=error_str):
+        mc.complete_irradiance((weather, weather, weather))
+

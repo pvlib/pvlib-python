@@ -1101,15 +1101,25 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame
+        weather : DataFrame or tuple of DatFrame
             Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
+            If weather is a tuple it must be the same length as the number
+            of arrays in the system and the indices for each DataFrame must
+            be the same.
 
         Returns
         -------
         self
+
+        Raises
+        ------
+        ValueError
+            if the number of dataframes in `weather` is not the same as the
+            number of arrays in the system or if the indices of all elements
+            of `weather` are not the same.
 
         Notes
         -----
@@ -1133,6 +1143,7 @@ class ModelChain:
         >>> mc.run_model(my_weather)  # doctest: +SKIP
         """
         if isinstance(weather, tuple):
+            self._check_weather_length(weather)
             _validate_weather_indices(weather)
         self.weather = weather
         self._assign_times()

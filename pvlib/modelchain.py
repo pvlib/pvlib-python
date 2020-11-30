@@ -381,7 +381,7 @@ class ModelChain:
         self.airmass_model = airmass_model
 
         # check that every array has parameters for the same models
-        self._check_consistent_params
+        self._check_consistent_params()
 
         # calls setters
         self.dc_model = dc_model
@@ -637,6 +637,8 @@ class ModelChain:
         self._orientation_strategy = strategy
 
     def _check_consistent_params(self):
+        if self.system.num_arrays == 1:
+            return
         # check consistent module_parameters
         params = np.unique(
             [set(module_parameters.keys())

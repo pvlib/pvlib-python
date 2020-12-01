@@ -8,7 +8,7 @@ from numpy.testing import assert_allclose
 
 import pvlib
 from pvlib.location import Location
-from pvlib import tracking
+from pvlib import tracking, pvsystem
 from conftest import DATA_DIR
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
@@ -301,6 +301,20 @@ def test_SingleAxisTracker_creation():
     assert system.gcr == .25
     assert system.module == 'blah'
     assert system.inverter == 'blarg'
+
+
+def test_SingleAxisTracker_one_array_only():
+    system = tracking.SingleAxisTracker(
+        arrays=[pvsystem.Array(module='foo')]
+    )
+    assert system.module == 'foo'
+    with pytest.raises(ValueError,
+                       match="SingleAxisTracker does not currently support "
+                             r"multiple arrays\."):
+        tracking.SingleAxisTracker(
+            arrays=[pvsystem.Array(module='foo'),
+                    pvsystem.Array(module='bar')]
+        )
 
 
 def test_SingleAxisTracker_tracking():

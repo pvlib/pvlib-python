@@ -57,7 +57,13 @@ class SingleAxisTracker(PVSystem):
         `cross_axis_tilt`. [degrees]
 
     **kwargs
-        Passed to :py:class:`~pvlib.pvsystem.PVSystem`.
+        Passed to :py:class:`~pvlib.pvsystem.PVSystem`. If the `arrays`
+        parameter is specified it must have only a single Array.
+
+    Raises
+    ------
+    ValueError
+        If more than one Array is specified.
 
     See also
     --------
@@ -69,6 +75,7 @@ class SingleAxisTracker(PVSystem):
     def __init__(self, axis_tilt=0, axis_azimuth=0, max_angle=90,
                  backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0.0, **kwargs):
 
+        _ensure_single_array(kwargs)
         self.axis_tilt = axis_tilt
         self.axis_azimuth = axis_azimuth
         self.max_angle = max_angle
@@ -237,6 +244,15 @@ class SingleAxisTracker(PVSystem):
                                                model=model,
                                                albedo=self.albedo,
                                                **kwargs)
+
+
+def _ensure_single_array(kwargs):
+    """Raise an error if `kwargs` indicates the system has more
+    than one array."""
+    arrays = kwargs.get('arrays', [])
+    if len(arrays) > 1:
+        raise ValueError("SingleAxisTracker does not currently support "
+                         "multiple arrays.")
 
 
 @deprecated('0.8', alternative='SingleAxisTracker, Location, and ModelChain',

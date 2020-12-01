@@ -1224,6 +1224,15 @@ def test_dc_ohms_from_percent():
     out = pvsystem.dc_ohms_from_percent(38, 8, 3, 1, 1)
     assert_allclose(out, expected)
 
+
+def test_PVSystem_dc_ohms_from_percent():
+    expected = .1425
+    system = pvsystem.PVSystem(losses_parameters={'dc_ohmic_percent': 3},
+                               module_parameters={'I_mp_ref': 8,
+                                                  'V_mp_ref': 38})
+    out = system.dc_ohms_from_percent()
+    assert_allclose(out, expected)
+
 def test_pvwatts_dc_scalars():
     expected = 88.65
     out = pvsystem.pvwatts_dc(900, 30, 100, -0.003)

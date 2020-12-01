@@ -511,7 +511,7 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays, location):
     weather_two = pd.DataFrame({'dni': 500, 'ghi': 300, 'dhi': 75},
                                index=times)
     mc.run_model((weather_one, weather_two))
-    assert (mc.dc[0] != mc.dc[1]).all()
+    assert (mc.results.dc[0] != mc.results.dc[1]).all()
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):
@@ -843,11 +843,11 @@ def test_run_model_from_effective_irradiance_arrays(
     # arrays have different orientation, but should give same dc power
     # because we are the same passing effective irradiance and cell
     # temperature.
-    assert_frame_equal(mc.dc[0], mc.dc[1])
+    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
     data_two = data.copy()
     data_two['effective_irradiance'] = data['poa_global'] * 0.5
     mc.run_model_from_effective_irradiance((data, data_two))
-    assert (mc.dc[0] != mc.dc[1]).all().all()
+    assert (mc.results.dc[0] != mc.results.dc[1]).all().all()
 
 
 def poadc(mc):

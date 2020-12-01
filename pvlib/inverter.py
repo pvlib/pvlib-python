@@ -89,7 +89,7 @@ def sandia(v_dc, p_dc, inverter):
     ======   ============================================================
     Paco     AC power rating of the inverter. [W]
     Pdco     DC power input that results in Paco output at reference
-             voltage Vdoc0. [W]
+             voltage Vdco. [W]
     Vdco     DC voltage at which the AC power rating is achieved
              with Pdco power input. [V]
     Pso      DC power required to start the inversion process, or
@@ -164,7 +164,8 @@ def sandia_multi(v_dc, p_dc, inverter):
 
     Raises
     ------
-    ValueError if v_dc and p_dc have different lengths.
+    ValueError
+        If v_dc and p_dc have different lengths.
 
     Notes
     -----

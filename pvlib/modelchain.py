@@ -644,7 +644,7 @@ class ModelChain:
             [set(module_parameters.keys())
              for module_parameters in self.system.module_parameters])
         if len(params) > 1:
-            raise ValueError('PVSystem arrays have module_parameters with'
+            raise ValueError('PVSystem arrays have module_parameters with '
                              'different keys.')
         # check consistent temperature_model_parameters
         params = np.unique(

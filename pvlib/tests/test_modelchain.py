@@ -1505,3 +1505,25 @@ def test_unknown_attribute(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     with pytest.raises(AttributeError):
         mc.unknown_attribute
+
+
+def test_inconsistent_array_params(location):
+    module_error = "PVSystem arrays have module_parameters " \
+                   r"with different keys\."
+    temperature_error = "PVSystem arrays temperature_model_parameters " \
+                        r"have different keys\. All arrays should have " \
+                        r"keys for the same cell temperature model\."
+    different_module_system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(module_parameters={'foo': 1}),
+                pvsystem.Array(module_parameters={'foo': 2}),
+                pvsystem.Array(module_parameters={'bar': 1})]
+    )
+    with pytest.raises(ValueError, match=module_error):
+        _ = ModelChain(different_module_system, location)
+    different_temp_system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(temperature_model_parameters={'a': 1}),
+                pvsystem.Array(temperature_model_parameters={'b': 2}),
+                pvsystem.Array(temperature_model_parameters={'b': 3})]
+    )
+    with pytest.raises(ValueError, match=temperature_error):
+        _ = ModelChain(different_temp_system, location)

@@ -1557,6 +1557,30 @@ def test_PVSystem_get_albedo(two_array_system):
     assert two_array_system.albedo == (0.25, 0.25)
 
 
+def test_PVSystem_modules_per_string():
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(modules_per_string=1),
+                pvsystem.Array(modules_per_string=2)]
+    )
+    assert system.modules_per_string == (1, 2)
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(modules_per_string=5)]
+    )
+    assert system.modules_per_string == 5
+
+
+def test_PVSystem_strings_per_inverter():
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(strings=2),
+                pvsystem.Array(strings=1)]
+    )
+    assert system.strings_per_inverter == (2, 1)
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(strings=5)]
+    )
+    assert system.strings_per_inverter == 5
+
+
 @fail_on_pvlib_version('0.9')
 def test_PVSystem_localize_with_location():
     system = pvsystem.PVSystem(module='blah', inverter='blarg')

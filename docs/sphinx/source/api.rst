@@ -20,6 +20,7 @@ corresponding procedural code.
 
    location.Location
    pvsystem.PVSystem
+   pvsystem.Array
    tracking.SingleAxisTracker
    modelchain.ModelChain
 

@@ -442,11 +442,11 @@ def test_prepare_inputs_weather_wrong_length(
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     weather = pd.DataFrame({'ghi': [1], 'dhi': [1], 'dni': [1]})
     with pytest.raises(ValueError,
-                       match="Weather must be same length as number of arrays "
+                       match="Input must be same length as number of arrays "
                              r"in system\. Expected 2, got 1\."):
         mc.prepare_inputs((weather,))
     with pytest.raises(ValueError,
-                       match="Weather must be same length as number of arrays "
+                       match="Input must be same length as number of arrays "
                              r"in system\. Expected 2, got 3\."):
         mc.prepare_inputs((weather, weather, weather))
 
@@ -455,14 +455,14 @@ def test_ModelChain_times_error_arrays(sapm_dc_snl_ac_system_Array, location):
     """ModelChain.times is assigned a single index given multiple weather
     DataFrames.
     """
+    error_str = r"Input DataFrames must have same index\."
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     irradiance = {'ghi': [1, 2], 'dhi': [1, 2], 'dni': [1, 2]}
     times_one = pd.date_range(start='1/1/2020', freq='6H', periods=2)
     times_two = pd.date_range(start='1/1/2020 00:15', freq='6H', periods=2)
     weather_one = pd.DataFrame(irradiance, index=times_one)
     weather_two = pd.DataFrame(irradiance, index=times_two)
-    with pytest.raises(ValueError, match="Weather DataFrames must have "
-                                         r"same index\."):
+    with pytest.raises(ValueError, match=error_str):
         mc.prepare_inputs((weather_one, weather_two))
     # test with overlapping, but differently sized indices.
     times_three = pd.date_range(start='1/1/2020', freq='6H', periods=3)
@@ -471,8 +471,7 @@ def test_ModelChain_times_error_arrays(sapm_dc_snl_ac_system_Array, location):
     irradiance_three['dhi'].append(3)
     irradiance_three['dni'].append(3)
     weather_three = pd.DataFrame(irradiance_three, index=times_three)
-    with pytest.raises(ValueError, match="Weather DataFrames must have "
-                                         r"same index\."):
+    with pytest.raises(ValueError, match=error_str):
         mc.prepare_inputs((weather_one, weather_three))
 
 
@@ -655,21 +654,22 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
 
 def test_prepare_poa_wrong_number_arrays(
         sapm_dc_snl_ac_system_Array, location, total_irrad, weather):
-    error_str = "Input must be provided independently for each " \
-                r"array\. You must pass a tuple of length 2\."
+    len_error = r"Input must be same length as number of arrays in system\. " \
+                r"Expected 2, got [0-9]+\."
+    type_error = r"Input must be a tuple of length 2, got .*\."
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     poa = pd.concat([weather, total_irrad], axis=1)
-    with pytest.raises(ValueError, match=error_str):
+    with pytest.raises(ValueError, match=type_error):
         mc.prepare_inputs_from_poa(poa)
-    with pytest.raises(ValueError, match=error_str):
+    with pytest.raises(ValueError, match=len_error):
         mc.prepare_inputs_from_poa((poa,))
-    with pytest.raises(ValueError, match=error_str):
+    with pytest.raises(ValueError, match=len_error):
         mc.prepare_inputs_from_poa((poa, poa, poa))
 
 
 def test_prepare_poa_arrays_different_indices(
         sapm_dc_snl_ac_system_Array, location, total_irrad, weather):
-    error_str = r"Weather DataFrames must have same index\."
+    error_str = r"Input DataFrames must have same index\."
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     poa = pd.concat([weather, total_irrad], axis=1)
     with pytest.raises(ValueError, match=error_str):
@@ -817,16 +817,17 @@ def test_run_model_from_effective_irradiance_arrays_error(
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     data['effetive_irradiance'] = data['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
-    error_str = r"Input must be provided independently for each array\. " \
-                r"You must pass a tuple of length 2\."
-    with pytest.raises(ValueError, match=error_str):
+    len_error = r"Input must be same length as number of arrays in system\. " \
+                r"Expected 2, got [0-9]+\."
+    type_error = r"Input must be a tuple of length 2, got DataFrame\."
+    with pytest.raises(ValueError, match=type_error):
         mc.run_model_from_effective_irradiance(data)
-    with pytest.raises(ValueError, match=error_str):
+    with pytest.raises(ValueError, match=len_error):
         mc.run_model_from_effective_irradiance((data,))
-    with pytest.raises(ValueError, match=error_str):
+    with pytest.raises(ValueError, match=len_error):
         mc.run_model_from_effective_irradiance((data, data, data))
     with pytest.raises(ValueError,
-                       match=r"Weather DataFrames must have same index\."):
+                       match=r"Input DataFrames must have same index\."):
         mc.run_model_from_effective_irradiance(
             (data, data.shift(periods=1, freq='infer'))
         )
@@ -1461,7 +1462,7 @@ def test_complete_irradiance_arrays(
                             'ghi': [9, 5]}, index=times)
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
     with pytest.raises(ValueError,
-                       match=r"Weather DataFrames must have same index\."):
+                       match=r"Input DataFrames must have same index\."):
         mc.complete_irradiance((weather, weather[1:]))
     mc.complete_irradiance((weather, weather))
     for mc_weather in mc.weather:
@@ -1492,7 +1493,7 @@ def test_complete_irradiance_arrays_wrong_length(
     weather = pd.DataFrame({'dni': [2, 3],
                             'dhi': [4, 6],
                             'ghi': [9, 5]}, index=times)
-    error_str = "Weather must be same length as number " \
+    error_str = "Input must be same length as number " \
                 r"of arrays in system\. Expected 2, got [0-9]+\."
     with pytest.raises(ValueError, match=error_str):
         mc.complete_irradiance((weather,))

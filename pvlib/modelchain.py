@@ -1144,9 +1144,7 @@ class ModelChain:
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
         >>> mc.run_model(my_weather)  # doctest: +SKIP
         """
-        if isinstance(weather, tuple):
-            self._check_weather_length(weather)
-            _validate_weather_indices(weather)
+        self._check_multiple_input(weather)
         self.weather = weather
         self._assign_times()
         self.results.solar_position = self.location.get_solarposition(
@@ -1294,13 +1292,6 @@ class ModelChain:
         else:
             self.times = self.weather.index
 
-    def _check_weather_length(self, data):
-        if len(data) != self.system.num_arrays:
-            raise ValueError(
-                "Weather must be same length as number of arrays in system. "
-                f"Expected {self.system.num_arrays}, got {len(data)}."
-            )
-
     def prepare_inputs(self, weather):
         """
         Prepare the solar position, irradiance, and weather inputs to
@@ -1335,9 +1326,7 @@ class ModelChain:
         --------
         ModelChain.complete_irradiance
         """
-        if isinstance(weather, tuple):
-            self._check_weather_length(weather)
-            _validate_weather_indices(weather)
+        self._check_multiple_input(weather, strict=False)
         self._verify_df(weather, required=['ghi', 'dni', 'dhi'])
         self._assign_weather(weather)
         self._assign_times()
@@ -1382,15 +1371,26 @@ class ModelChain:
 
         return self
 
-    def _check_length(self, data):
+    def _check_multiple_input(self, data, strict=True):
         """Check that the number of elements in `data` is the same as
-        the number of arrays in `self.system`."""
-        if self.system.num_arrays == 1 and not isinstance(data, tuple):
+        the number of arrays in `self.system`. If `strict` is False then
+        `data` does not have to be a tuple and length validation is not
+        performed. If `data` is a tuple of the correct length the indices
+        of each DataFrame it contains are compared for equality and an
+        error is raised if they differ.
+        """
+        if (not strict or self.system.num_arrays == 1) \
+                and not isinstance(data, tuple):
             return
-        if not isinstance(data, tuple) or len(data) != self.system.num_arrays:
-            raise ValueError("Input must be provided independently for "
-                             "each array. You must pass a tuple of length "
-                             f"{self.system.num_arrays}.")
+        if strict and not isinstance(data, tuple):
+            raise ValueError("Input must be a tuple of length "
+                             f"{self.system.num_arrays}, "
+                             f"got {type(data).__name__}.")
+        if len(data) != self.system.num_arrays:
+            raise ValueError("Input must be same length as number of arrays "
+                             f"in system. Expected {self.system.num_arrays}, "
+                             f"got {len(data)}.")
+        _validate_indices(data)
 
     def prepare_inputs_from_poa(self, data):
         """
@@ -1425,9 +1425,7 @@ class ModelChain:
         --------
         pvlib.modelchain.ModelChain.prepare_inputs
         """
-        self._check_length(data)
-        if isinstance(data, tuple):
-            _validate_weather_indices(data)
+        self._check_multiple_input(data)
         self._assign_weather(data)
 
         self._verify_df(data, required=['poa_global', 'poa_direct',
@@ -1682,9 +1680,7 @@ class ModelChain:
         pvlib.modelchain.ModelChain.run_model_from
         pvlib.modelchain.ModelChain.run_model_from_poa
         """
-        self._check_length(data)
-        if isinstance(data, tuple):
-            _validate_weather_indices(data)
+        self._check_multiple_input(data)
         self._assign_weather(data)
         self._assign_total_irrad(data)
         self.results.effective_irradiance = _tuple_from_dfs(
@@ -1704,11 +1700,11 @@ def _pairwise(iterable):
     return zip(a, b)
 
 
-def _validate_weather_indices(data):
+def _validate_indices(data):
     indexes = map(lambda df: df.index, data)
     if not all(itertools.starmap(pd.Index.equals,
                                  _pairwise(indexes))):
-        raise ValueError("Weather DataFrames must have same index.")
+        raise ValueError("Input DataFrames must have same index.")
 
 
 def _array_keys(dicts, array):

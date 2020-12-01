@@ -1219,6 +1219,7 @@ def test_LocalizedPVSystem___repr__():
 
     assert localized_system.__repr__() == expected
 
+
 def test_dc_ohms_from_percent():
     expected = .1425
     out = pvsystem.dc_ohms_from_percent(38, 8, 3, 1, 1)
@@ -1232,6 +1233,7 @@ def test_PVSystem_dc_ohms_from_percent():
                                                   'V_mp_ref': 38})
     out = system.dc_ohms_from_percent()
     assert_allclose(out, expected)
+
 
 def test_pvwatts_dc_scalars():
     expected = 88.65

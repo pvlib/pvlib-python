@@ -1226,12 +1226,19 @@ def test_dc_ohms_from_percent():
     assert_allclose(out, expected)
 
 
-def test_PVSystem_dc_ohms_from_percent():
+def test_PVSystem_dc_ohms_from_percent(mocker):
+    mocker.spy(pvsystem, 'dc_ohms_from_percent')
+
     expected = .1425
     system = pvsystem.PVSystem(losses_parameters={'dc_ohmic_percent': 3},
                                module_parameters={'I_mp_ref': 8,
                                                   'V_mp_ref': 38})
     out = system.dc_ohms_from_percent()
+
+    pvsystem.dc_ohms_from_percent.assert_called_once_with(dc_ohmic_percent=3,
+                                                          I_mp_ref=8,
+                                                          V_mp_ref=38)
+
     assert_allclose(out, expected)
 
 

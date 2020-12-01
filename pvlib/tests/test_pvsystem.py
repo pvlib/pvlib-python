@@ -684,6 +684,17 @@ def test_Array__infer_temperature_model_params():
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['freestanding']
     assert expected == array._infer_temperature_model_params()
+    array = pvsystem.Array(module_parameters={},
+                           racking_model='insulated',
+                           module_type=None)
+    expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
+        'pvsyst']['insulated']
+    assert expected == array._infer_temperature_model_params()
+
+
+def test_Array__infer_cell_type():
+    array = pvsystem.Array(module_parameters={})
+    assert array._infer_cell_type() is None
 
 
 def test_calcparams_desoto(cec_module_params):

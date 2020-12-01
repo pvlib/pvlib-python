@@ -1390,7 +1390,7 @@ class ModelChain:
             raise ValueError("Input must be same length as number of arrays "
                              f"in system. Expected {self.system.num_arrays}, "
                              f"got {len(data)}.")
-        _validate_indices(data)
+        _all_same_index(data)
 
     def prepare_inputs_from_poa(self, data):
         """
@@ -1690,21 +1690,12 @@ class ModelChain:
         return self
 
 
-def _pairwise(iterable):
-    """s -> (s0,s1), (s1,s2), (s2, s3), ...
-
-    From the itertools cookbook.
-    """
-    a, b = itertools.tee(iterable)
-    next(b, None)
-    return zip(a, b)
-
-
-def _validate_indices(data):
+def _all_same_index(data):
     indexes = map(lambda df: df.index, data)
-    if not all(itertools.starmap(pd.Index.equals,
-                                 _pairwise(indexes))):
-        raise ValueError("Input DataFrames must have same index.")
+    next(indexes, None)
+    for index in indexes:
+        if not index.equals(data[0].index):
+            raise ValueError("Input DataFrames must have same index.")
 
 
 def _array_keys(dicts, array):

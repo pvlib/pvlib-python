@@ -12,8 +12,42 @@ naming pattern 'fit_<model name>', e.g., fit_sandia.
 
 import numpy as np
 import pandas as pd
-
 from numpy.polynomial.polynomial import polyfit  # different than np.polyfit
+
+
+def _sandia_eff(v_dc, p_dc, inverter):
+    r'''
+    Calculate the inverter AC power without clipping
+    '''
+    Paco = inverter['Paco']
+    Pdco = inverter['Pdco']
+    Vdco = inverter['Vdco']
+    C0 = inverter['C0']
+    C1 = inverter['C1']
+    C2 = inverter['C2']
+    C3 = inverter['C3']
+    Pso = inverter['Pso']
+
+    A = Pdco * (1 + C1 * (v_dc - Vdco))
+    B = Pso * (1 + C2 * (v_dc - Vdco))
+    C = C0 * (1 + C3 * (v_dc - Vdco))
+
+    return (Paco / (A - B) - C * (A - B)) * (p_dc - B) + C * (p_dc - B)**2
+
+
+def _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso):
+    r'''
+    Applies minimum and maximum power limits to `power_ac`
+    '''
+    power_ac = np.minimum(Paco, power_ac)
+    min_ac_power = -1.0 * abs(Pnt)
+    below_limit = p_dc < Pso
+    try:
+        power_ac[below_limit] = min_ac_power
+    except TypeError:  # power_ac is a float
+        if below_limit:
+            power_ac = min_ac_power
+    return power_ac
 
 
 def sandia(v_dc, p_dc, inverter):
@@ -54,10 +88,10 @@ def sandia(v_dc, p_dc, inverter):
     Column   Description
     ======   ============================================================
     Paco     AC power rating of the inverter. [W]
-    Pdco     DC power input to inverter, typically assumed to be equal
-             to the PV array maximum power. [W]
+    Pdco     DC power input that results in Paco output at reference
+             voltage Vdco. [W]
     Vdco     DC voltage at which the AC power rating is achieved
-             at the reference operating condition. [V]
+             with Pdco power input. [V]
     Pso      DC power required to start the inversion process, or
              self-consumption by inverter, strongly influences inverter
              efficiency at low power levels. [W]
@@ -91,27 +125,74 @@ def sandia(v_dc, p_dc, inverter):
     '''
 
     Paco = inverter['Paco']
-    Pdco = inverter['Pdco']
-    Vdco = inverter['Vdco']
-    Pso = inverter['Pso']
-    C0 = inverter['C0']
-    C1 = inverter['C1']
-    C2 = inverter['C2']
-    C3 = inverter['C3']
     Pnt = inverter['Pnt']
+    Pso = inverter['Pso']
 
-    A = Pdco * (1 + C1 * (v_dc - Vdco))
-    B = Pso * (1 + C2 * (v_dc - Vdco))
-    C = C0 * (1 + C3 * (v_dc - Vdco))
-
-    power_ac = (Paco / (A - B) - C * (A - B)) * (p_dc - B) + C * (p_dc - B)**2
-    power_ac = np.minimum(Paco, power_ac)
-    power_ac = np.where(p_dc < Pso, -1.0 * abs(Pnt), power_ac)
+    power_ac = _sandia_eff(v_dc, p_dc, inverter)
+    power_ac = _sandia_limits(power_ac, p_dc, Paco, Pnt, Pso)
 
     if isinstance(p_dc, pd.Series):
         power_ac = pd.Series(power_ac, index=p_dc.index)
 
     return power_ac
+
+
+def sandia_multi(v_dc, p_dc, inverter):
+    r'''
+    Convert DC power and voltage to AC power for an inverter with multiple
+    MPPT inputs.
+
+    Uses Sandia's Grid-Connected PV Inverter model [1]_.
+
+    Parameters
+    ----------
+    v_dc : tuple, list or array of numeric
+        DC voltage on each MPPT input of the inverter. If type is array, must
+        be 2d with axis 0 being the MPPT inputs. [V]
+
+    p_dc : tuple, list or array of numeric
+        DC power on each MPPT input of the inverter. If type is array, must
+        be 2d with axis 0 being the MPPT inputs. [W]
+
+    inverter : dict-like
+        Defines parameters for the inverter model in [1]_.
+
+    Returns
+    -------
+    power_ac : numeric
+        AC power output for the inverter. [W]
+
+    Raises
+    ------
+    ValueError
+        If v_dc and p_dc have different lengths.
+
+    Notes
+    -----
+    See :py:func:`pvlib.inverter.sandia` for definition of the parameters in
+    `inverter`.
+
+    References
+    ----------
+    .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
+       for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
+       National Laboratories.
+
+    See also
+    --------
+    pvlib.inverter.sandia
+    '''
+
+    if len(p_dc) != len(v_dc):
+        raise ValueError('p_dc and v_dc have different lengths')
+    power_dc = sum(p_dc)
+    power_ac = 0. * power_dc
+
+    for vdc, pdc in zip(v_dc, p_dc):
+        power_ac += pdc / power_dc * _sandia_eff(vdc, power_dc, inverter)
+
+    return _sandia_limits(power_ac, power_dc, inverter['Paco'],
+                          inverter['Pnt'], inverter['Pso'])
 
 
 def adr(v_dc, p_dc, inverter, vtol=0.10):

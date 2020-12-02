@@ -704,6 +704,41 @@ def constant_losses(mc):
     mc.dc *= mc.losses
 
 
+def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
+                                          location,
+                                          weather,
+                                          mocker):
+
+    m = mocker.spy(pvsystem, 'dc_ohms_from_percent')
+
+    cec_dc_snl_ac_system.losses_parameters = dict(dc_ohmic_percent=3)
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='dc_ohms_from_percent')
+    mc.run_model(weather)
+
+    assert m.call_count == 1
+
+    assert isinstance(mc.dc_ohmic_losses, pd.Series)
+
+
+def test_dc_ohmic_model_no_dc_ohmic_loss(cec_dc_snl_ac_system,
+                                         location,
+                                         weather,
+                                         mocker):
+
+    m = mocker.spy(pvsystem, 'dc_ohms_from_percent')
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='no_loss')
+    mc.run_model(weather)
+
+    assert m.call_count == 0
+    assert hasattr(mc, 'dc_ohmic_losses') is False
+
+
 def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
                                mocker):
     age = 1

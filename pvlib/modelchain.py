@@ -1721,7 +1721,7 @@ def _array_keys(dicts, array):
 
 def _tuple_from_dfs(dfs, name):
     """Extract a column from each DataFrame in `dfs` if `dfs` is a tuple.
-    
+
     Returns a tuple of Series if `dfs` is a tuple or a Series if `dfs` is
     a DataFrame.
     """

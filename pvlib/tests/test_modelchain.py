@@ -1478,6 +1478,7 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
 
 
 @pytest.mark.filterwarnings("ignore:This function is not safe at the moment")
+@requires_tables
 def test_complete_irradiance_arrays(
         sapm_dc_snl_ac_system_same_arrays, location):
     """ModelChain.complete_irradiance can accept a tuple of weather

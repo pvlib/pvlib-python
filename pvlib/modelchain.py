@@ -269,7 +269,6 @@ class ModelChainResult:
     T = TypeVar('T')
     PerArray = Union[T, Tuple[T, ...]]
     # system-level information
-    # weather: pd.DataFrame = field(default=None)
     solar_position: pd.DataFrame = field(default=None)
     airmass: pd.DataFrame = field(default=None)
     ac: pd.Series = field(default=None)
@@ -281,7 +280,6 @@ class ModelChainResult:
     cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
     effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
     dc: Optional[PerArray[pd.Series]] = field(default=None)
-    # losses: dont_know_tye_type = field(default=None)
     array_ac: Optional[PerArray[pd.Series]] = field(default=None)
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
 

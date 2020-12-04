@@ -635,6 +635,9 @@ class ModelChain:
         self._orientation_strategy = strategy
 
     def _check_consistent_params(self):
+        """Ensure that each all arrays in ``self.system`` have the same
+        module and temperature model parameters. If parameters differ
+        a ValueError is raised."""
         if self.system.num_arrays == 1:
             return
         # check consistent module_parameters

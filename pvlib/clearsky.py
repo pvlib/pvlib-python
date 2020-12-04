@@ -848,7 +848,7 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     return clear_samples
 
 
-def detect_clearsky(measured, clearsky, times, window_length,
+def detect_clearsky(measured, clearsky, times=None, window_length=10,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
@@ -874,24 +874,25 @@ def detect_clearsky(measured, clearsky, times, window_length,
     Parameters
     ----------
     measured : array or Series
-        Time series of measured values.
+        Time series of measured GHI. [W/m2]
     clearsky : array or Series
-        Time series of the expected clearsky values.
-    times : DatetimeIndex
-        Times of measured and clearsky values.
-    window_length : int
+        Time series of the expected clearsky GHI. [W/m2]
+    times : DatetimeIndex or None, default None.
+        Times of measured and clearsky values. If None the index of measured
+        will be used.
+    window_length : int, default 10
         Length of sliding time window in minutes. Must be greater than 2
         periods.
     mean_diff : float, default 75
         Threshold value for agreement between mean values of measured
-        and clearsky in each interval, see Eq. 6 in [1].
+        and clearsky in each interval, see Eq. 6 in [1]. [W/m2]
     max_diff : float, default 75
         Threshold value for agreement between maxima of measured and
-        clearsky values in each interval, see Eq. 7 in [1].
+        clearsky values in each interval, see Eq. 7 in [1]. [W/m2]
     lower_line_length : float, default -5
         Lower limit of line length criterion from Eq. 8 in [1].
-        Criterion satisfied when
-        lower_line_length < line length difference < upper_line_length
+        Criterion satisfied when lower_line_length < line length difference
+        < upper_line_length.
     upper_line_length : float, default 10
         Upper limit of line length criterion from Eq. 8 in [1].
     var_diff : float, default 0.005
@@ -922,6 +923,13 @@ def detect_clearsky(measured, clearsky, times, window_length,
         detected clear_samples. Only provided if return_components is
         True.
 
+    Raises
+    ------
+    ValueError
+        If measured is not a Series and times is not provided
+    NotImplementedError
+        If timestamps are not equally spaced
+
     References
     ----------
     .. [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
@@ -945,6 +953,13 @@ def detect_clearsky(measured, clearsky, times, window_length,
           parameter
         * uses centered windows (Matlab function uses left-aligned windows)
     """
+
+    if times is None:
+        try:
+            times = measured.index
+        except AttributeError:
+            raise ValueError("times is required when measured is not a Series")
+
     # determine the unique deltas and if we can proceed
     deltas = np.diff(times.values) / np.timedelta64(1, '60s')
     unique_deltas = np.unique(deltas)

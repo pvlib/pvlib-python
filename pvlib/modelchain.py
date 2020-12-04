@@ -1075,8 +1075,11 @@ class ModelChain:
 
     def pvwatts_losses(self):
         self.losses = (100 - self.system.pvwatts_losses()) / 100.
-        # TODO handle multiple arrays
-        self.results.dc *= self.losses
+        if self.system.num_arrays > 1:
+            for dc in self.results.dc:
+                dc *= self.losses
+        else:
+            self.results.dc *= self.losses
         return self
 
     def no_extra_losses(self):

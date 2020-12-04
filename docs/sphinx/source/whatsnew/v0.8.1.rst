@@ -17,6 +17,8 @@ Enhancements
   option to :py:class:`~pvlib.modelchain.ModelChain`. (:pull:`1042`) (:issue:`1073`)
 * Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
   only NOCT. (:pull:`1045`)
+* Added :py:func:`pvlib.inverter.sandia_multi` for modeling inverters with
+  multiple MPPTs (:issue:`457`, :pull:`1085`)
 * Added optional ``attributes`` parameter to :py:func:`pvlib.iotools.get_psm3`
   and added the option of fetching 5- and 15-minute PSM3 data. (:pull:`1086`)
 
@@ -37,6 +39,7 @@ Documentation
 * Update sphinx to 3.1.2 and use the ``recursive`` option in ``autosummary`` class template.
   (:issue:`1055`, :pull:`1075`)
 * Add gallery example about backtracking on sloped terrain. (:pull:`1077`)
+* Add toggle button for code prompts to make copying code easier (:pull:`1096`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -49,3 +52,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Will Vining (:ghuser:`wfvining`)
+* Michael Jurasovic (:ghuser:`jurasofish`)

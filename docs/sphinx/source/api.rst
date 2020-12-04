@@ -293,6 +293,7 @@ Inverter models (DC to AC conversion)
    :toctree: generated/
 
    inverter.sandia
+   inverter.sandia_multi
    inverter.adr
    inverter.pvwatts
 

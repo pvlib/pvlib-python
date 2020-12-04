@@ -1121,7 +1121,7 @@ class ModelChain:
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
-            If weather is a tuple it must be the same length as the number
+            If `weather` is a tuple it must be the same length as the number
             of arrays in the system and the indices for each DataFrame must
             be the same.
 
@@ -1670,7 +1670,7 @@ class ModelChain:
             If the system has multiple arrays, `data` must be a tuple with
             the same length as the number of arrays in the system where
             each element provides the effective irradiance and weather
-            for each array.
+            for the corresponding array.
 
         Returns
         -------
@@ -1720,9 +1720,11 @@ def _array_keys(dicts, array):
 
 
 def _tuple_from_dfs(dfs, name):
-    ''' Extract a column from each df in dfs, return as Series or tuple of
-    Series
-    '''
+    """Extract a column from each DataFrame in `dfs` if `dfs` is a tuple.
+    
+    Returns a tuple of Series if `dfs` is a tuple or a Series if `dfs` is
+    a DataFrame.
+    """
     if isinstance(dfs, tuple):
         return tuple(df[name] for df in dfs)
     else:

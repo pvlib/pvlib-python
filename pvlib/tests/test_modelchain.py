@@ -848,7 +848,7 @@ def test_run_model_from_effective_irradiance_arrays_error(
     with pytest.raises(ValueError,
                        match=r"Input DataFrames must have same index\."):
         mc.run_model_from_effective_irradiance(
-            (data, data.shift(periods=1, freq='infer'))
+            (data, data.shift(periods=1, freq='6H'))
         )
 
 

@@ -1417,8 +1417,8 @@ def test_PVSystem_sandia_multi_single_array(cec_inverter_parameters):
         inverter=cec_inverter_parameters['Name'],
         inverter_parameters=cec_inverter_parameters,
     )
-    vdcs = pd.Series(np.linspace(0,50,3))
-    idcs = pd.Series(np.linspace(0,11,3))
+    vdcs = pd.Series(np.linspace(0, 50, 3))
+    idcs = pd.Series(np.linspace(0, 11, 3))
     pdcs = idcs * vdcs
 
     pacs = system.sandia_multi(vdcs, pdcs)
@@ -1431,7 +1431,6 @@ def test_PVSystem_sandia_multi_single_array(cec_inverter_parameters):
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
         system.sandia_multi((vdcs,), (pdcs, pdcs))
-
 
 
 def test_PVSystem_creation():

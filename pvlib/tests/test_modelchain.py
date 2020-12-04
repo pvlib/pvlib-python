@@ -342,7 +342,8 @@ def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
 
 @pytest.fixture(scope='function')
 def multi_array_sapm_dc_snl_ac_system(
-        sapm_temperature_cs5p_220m, sapm_module_params, cec_inverter_parameters):
+        sapm_temperature_cs5p_220m, sapm_module_params,
+        cec_inverter_parameters):
     module_parameters = sapm_module_params
     temp_model_parameters = sapm_temperature_cs5p_220m.copy()
     inverter_parameters = cec_inverter_parameters

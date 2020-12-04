@@ -692,7 +692,7 @@ def test_prepare_poa_arrays_different_indices(
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     poa = pd.concat([weather, total_irrad], axis=1)
     with pytest.raises(ValueError, match=error_str):
-        mc.prepare_inputs_from_poa((poa, poa.shift(periods=1, freq='infer')))
+        mc.prepare_inputs_from_poa((poa, poa.shift(periods=1, freq='6H')))
 
 
 def test_prepare_poa_arrays_missing_column(

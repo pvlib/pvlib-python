@@ -787,6 +787,8 @@ class ModelChain:
                                   " ac_model = 'sandia' instead.",
                                   pvlibDeprecationWarning)
                 self._ac_model = self.snlinverter
+            elif model == 'sandia_multi':
+                self._ac_model = self.sandia_multi_inverter
             elif model in ['adr', 'adrinverter']:
                 if model == 'adrinverter':
                     warnings.warn("ac_model = 'adrinverter' is deprecated and"
@@ -815,6 +817,13 @@ class ModelChain:
                              'system.inverter_parameters. Check '
                              'system.inverter_parameters or explicitly '
                              'set the model with the ac_model kwarg.')
+
+    def sandia_multi_inverter(self):
+        self.results.ac = self.system.sandia_multi(
+            _tuple_from_dfs(self.results.dc, 'v_mp'),
+            _tuple_from_dfs(self.results.dc, 'p_mp')
+        )
+        return self
 
     def snlinverter(self):
         self.results.ac = self.system.snlinverter(self.results.dc['v_mp'],

@@ -800,7 +800,7 @@ def _get_sample_intervals(times, win_length):
     # determine if we can proceed
     if times.inferred_freq and len(np.unique(deltas)) == 1:
         sample_interval = times[1] - times[0]
-        sample_interval = sample_interval.seconds / 60  # interval in minutes
+        sample_interval = sample_interval.total_seconds() / 60  # interval in minutes
         samples_per_window = int(win_length / sample_interval)
         return sample_interval, samples_per_window
     else:
@@ -959,15 +959,6 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
             times = measured.index
         except AttributeError:
             raise ValueError("times is required when measured is not a Series")
-
-    # determine the unique deltas and if we can proceed
-    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
-    unique_deltas = np.unique(deltas)
-    if len(unique_deltas) == 1:
-        sample_interval = unique_deltas[0]
-    else:
-        raise NotImplementedError('algorithm does not yet support unequal '
-                                  'times. consider resampling your data.')
 
     # be polite about returning the same type as was input
     ispandas = isinstance(measured, pd.Series)

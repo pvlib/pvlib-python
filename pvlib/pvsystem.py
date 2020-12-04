@@ -862,6 +862,19 @@ class PVSystem:
         """
         return inverter.sandia(v_dc, p_dc, self.inverter_parameters)
 
+    def sandia_multi(self, v_dc, p_dc):
+        """Uses :py:func:`pvlib.inverter.sandia_multi` to calculate AC power
+        based on ``self.inverter_parameters`` and the input voltage and power.
+
+        The parameters `v_dc` and `p_dc` must be tuples of the same length as
+        ``self.num_arrays`` if the system has more than one array.
+
+        See :py:func:`pvlib.inverter.sandia_multi` for details.
+        """
+        v_dc = self._validate_per_array(v_dc)
+        p_dc = self._validate_per_array(p_dc)
+        return inverter.sandia_multi(v_dc, p_dc, self.inverter_parameters)
+
     def adrinverter(self, v_dc, p_dc):
         """Uses :py:func:`pvlib.inverter.adr` to calculate AC power based on
         ``self.inverter_parameters`` and the input voltage and power.

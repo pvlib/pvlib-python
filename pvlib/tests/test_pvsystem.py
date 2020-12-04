@@ -1389,6 +1389,51 @@ def test_PVSystem_snlinverter(cec_inverter_parameters):
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
+def test_PVSystem_sandia_multi(cec_inverter_parameters):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(), pvsystem.Array()],
+        inverter=cec_inverter_parameters['Name'],
+        inverter_parameters=cec_inverter_parameters,
+    )
+    vdcs = pd.Series(np.linspace(0, 50, 3))
+    idcs = pd.Series(np.linspace(0, 11, 3)) / 2
+    pdcs = idcs * vdcs
+    pacs = system.sandia_multi((vdcs, vdcs), (pdcs, pdcs))
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.sandia_multi(vdcs, (pdcs, pdcs))
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.sandia_multi(vdcs, (pdcs,))
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.sandia_multi((vdcs, vdcs), (pdcs, pdcs, pdcs))
+
+
+def test_PVSystem_sandia_multi_single_array(cec_inverter_parameters):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array()],
+        inverter=cec_inverter_parameters['Name'],
+        inverter_parameters=cec_inverter_parameters,
+    )
+    vdcs = pd.Series(np.linspace(0,50,3))
+    idcs = pd.Series(np.linspace(0,11,3))
+    pdcs = idcs * vdcs
+
+    pacs = system.sandia_multi(vdcs, pdcs)
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    pacs = system.sandia_multi((vdcs,), (pdcs,))
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.sandia_multi((vdcs, vdcs), pdcs)
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.sandia_multi((vdcs,), (pdcs, pdcs))
+
+
+
 def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
     # ensure that parameter attributes are dict-like. GH 294

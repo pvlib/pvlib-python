@@ -411,6 +411,18 @@ def test_run_model_from_irradiance_arrays_no_loss(
     )
 
 
+@pytest.mark.parametrize('inverter', ['adr', 'pvwatts'])
+def test_ModelChain_invalid_inverter_params_arrays(
+        inverter, sapm_dc_snl_ac_system_same_arrays,
+        location, adr_inverter_parameters):
+    inverter_params = {'adr': adr_inverter_parameters,
+                       'pvwatts': {'pdc0': 220, 'eta_inv_nom': 0.95}}
+    sapm_dc_snl_ac_system_same_arrays.inverter_parameters = \
+        inverter_params[inverter]
+    with pytest.raises(ValueError, match='could not infer AC model from'):
+        ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
+
+
 def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     weather = pd.DataFrame()

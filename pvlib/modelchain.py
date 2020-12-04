@@ -806,11 +806,14 @@ class ModelChain:
     def infer_ac_model(self):
         """Infer AC power model from system attributes."""
         inverter_params = set(self.system.inverter_parameters.keys())
-        if {'C0', 'C1', 'C2'} <= inverter_params:
+        single_array = self.system.num_arrays == 1
+        if not single_array and {'C0', 'C1', 'C2'} <= inverter_params:
+            return self.sandia_multi_inverter
+        elif single_array and {'C0', 'C1', 'C2'} <= inverter_params:
             return self.snlinverter
-        elif {'ADRCoefficients'} <= inverter_params:
+        elif single_array and {'ADRCoefficients'} <= inverter_params:
             return self.adrinverter
-        elif {'pdc0'} <= inverter_params:
+        elif single_array and {'pdc0'} <= inverter_params:
             return self.pvwatts_inverter
         else:
             raise ValueError('could not infer AC model from '

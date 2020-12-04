@@ -945,6 +945,14 @@ def detect_clearsky(measured, clearsky, times, window_length,
           parameter
         * uses centered windows (Matlab function uses left-aligned windows)
     """
+    # determine the unique deltas and if we can proceed
+    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
+    unique_deltas = np.unique(deltas)
+    if len(unique_deltas) == 1:
+        sample_interval = unique_deltas[0]
+    else:
+        raise NotImplementedError('algorithm does not yet support unequal '
+                                  'times. consider resampling your data.')
 
     # be polite about returning the same type as was input
     ispandas = isinstance(measured, pd.Series)

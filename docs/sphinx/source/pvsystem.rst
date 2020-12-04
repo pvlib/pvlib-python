@@ -166,6 +166,54 @@ modules each.
     print(data_scaled)
 
 
+.. _multiarray:
+
+PVSystem with multiple Arrays
+-----------------------------
+
+It is possible to model a system with multiple arrays by passing a list of
+:py:class:`~pvlib.pvsystem.Array` to the :py:class:`~pvlib.pvsystem.PVSystem`
+constructor. The :py:class:`~pvlib.pvsystem.Array` class subsumes all the
+:py:class:`~pvlib.pvsystem.PVSystem` attributes that might differ from array
+to array. These attributes include `surface_tilt`, `surface_azimuth`,
+`module_parameters`, `temperature_model_parameters`, `modules_per_string`,
+`strings_per_inverter`, `albedo`, `surface_type`, `module_type`, and
+`racking_model`.
+
+.. ipython:: python
+
+    array_one = pvsystem.Array(surface_tilt=30, surface_azimuth=90)
+    array_two = pvsystem.Array(surface_tilt=30, surface_azimuth=220)
+    system = pvsystem.PVSystem(arrays=[array_one, array_two])
+    system.num_arrays
+
+
+When instantiating a :py:class:`~pvlib.pvsystem.PVSystem` by passing a list
+of arrays, as above, you may not pass any of the above parameters to the
+`PVSystem` constructor. Each non-default parameter must be specified
+individually for each array.
+
+The output of `PVSystem` methods and attributes changes when the system has
+multiple arrays. For any of the attributes listed above, accessing them will
+return a tuple with the value of the attribute for each array, specified in
+the same order as the `arrays` parameter. For example, using the system
+constructed above:
+
+.. ipython:: python
+
+    system.surface_tilt
+    system.surface_azimuth
+
+Similarly, other `PVSystem` methods that either return values that vary
+depending on array characteristics, or take values that may differ between
+arrays return (or accept) tuples.
+
+.. ipython:: python
+
+    aoi = system.get_aoi(30, 180)
+    print(aoi)
+    system.get_iam(aoi)
+
 .. _sat:
 
 SingleAxisTracker

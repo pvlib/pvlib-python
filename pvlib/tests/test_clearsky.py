@@ -549,7 +549,15 @@ def detect_clearsky_data():
 def test_detect_clearsky(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
-        expected['GHI'], cs['ghi'], cs.index, 10)
+        expected['GHI'], cs['ghi'], times=cs.index, window_length=10)
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+
+
+def test_detect_clearsky_defaults(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'])
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 
@@ -557,7 +565,8 @@ def test_detect_clearsky(detect_clearsky_data):
 def test_detect_clearsky_components(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples, components, alpha = clearsky.detect_clearsky(
-        expected['GHI'], cs['ghi'], cs.index, 10, return_components=True)
+        expected['GHI'], cs['ghi'], times=cs.index, window_length=10,
+        return_components=True)
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
     assert isinstance(components, OrderedDict)
@@ -569,11 +578,11 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
     alpha = 1.0448
     with pytest.warns(RuntimeWarning):
         clear_samples = clearsky.detect_clearsky(
-            expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=1)
+            expected['GHI'], cs['ghi']*alpha, max_iterations=1)
     assert (clear_samples[:'2012-04-01 10:41:00'] == True).all()
     assert (clear_samples['2012-04-01 10:42:00':] == False).all()
     clear_samples = clearsky.detect_clearsky(
-            expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=20)
+            expected['GHI'], cs['ghi']*alpha, max_iterations=20)
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 
@@ -581,7 +590,7 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
 def test_detect_clearsky_kwargs(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
-        expected['GHI'], cs['ghi'], cs.index, 10,
+        expected['GHI'], cs['ghi'], times=cs.index, window_length=10,
         mean_diff=1000, max_diff=1000, lower_line_length=-1000,
         upper_line_length=1000, var_diff=10, slope_dev=1000)
     assert clear_samples.all()
@@ -590,7 +599,7 @@ def test_detect_clearsky_kwargs(detect_clearsky_data):
 def test_detect_clearsky_window(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
-        expected['GHI'], cs['ghi'], cs.index, 3)
+        expected['GHI'], cs['ghi'], window_length=3)
     expected = expected['Clear or not'].copy()
     expected.iloc[-3:] = True
     assert_series_equal(expected, clear_samples,
@@ -600,7 +609,8 @@ def test_detect_clearsky_window(detect_clearsky_data):
 def test_detect_clearsky_arrays(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
-        expected['GHI'].values, cs['ghi'].values, cs.index, 10)
+        expected['GHI'].values, cs['ghi'].values, times=cs.index,
+        window_length=10)
     assert isinstance(clear_samples, np.ndarray)
     assert (clear_samples == expected['Clear or not'].values).all()
 
@@ -613,6 +623,12 @@ def test_detect_clearsky_irregular_times(detect_clearsky_data):
     with pytest.raises(NotImplementedError):
         clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values,
                                  times, 10)
+
+
+def test_detect_clearsky_missing_index(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    with pytest.raises(ValueError):
+        clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values)
 
 
 def test__calc_stats():

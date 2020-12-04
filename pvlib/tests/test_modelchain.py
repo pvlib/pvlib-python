@@ -341,10 +341,11 @@ def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
 
 
 @pytest.fixture(scope='function')
-def multi_array_pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
-    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+def multi_array_sapm_dc_snl_ac_system(
+        sapm_temperature_cs5p_220m, sapm_module_params, cec_inverter_parameters):
+    module_parameters = sapm_module_params
     temp_model_parameters = sapm_temperature_cs5p_220m.copy()
-    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
+    inverter_parameters = cec_inverter_parameters
     array_one = pvsystem.Array(
         surface_tilt=32.2, surface_azimuth=180,
         module_parameters=module_parameters,
@@ -373,23 +374,23 @@ def multi_array_pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
 
 
 def test_run_model_from_irradiance_arrays_no_loss(
-        multi_array_pvwatts_dc_pvwatts_ac_system, location):
+        multi_array_sapm_dc_snl_ac_system, location):
     mc_both = ModelChain(
-        multi_array_pvwatts_dc_pvwatts_ac_system['two_array_system'],
+        multi_array_sapm_dc_snl_ac_system['two_array_system'],
         location,
         aoi_model='no_loss',
         spectral_model='no_loss',
         losses_model='no_loss'
     )
     mc_one = ModelChain(
-        multi_array_pvwatts_dc_pvwatts_ac_system['array_one_system'],
+        multi_array_sapm_dc_snl_ac_system['array_one_system'],
         location,
         aoi_model='no_loss',
         spectral_model='no_loss',
         losses_model='no_loss'
     )
     mc_two = ModelChain(
-        multi_array_pvwatts_dc_pvwatts_ac_system['array_two_system'],
+        multi_array_sapm_dc_snl_ac_system['array_two_system'],
         location,
         aoi_model='no_loss',
         spectral_model='no_loss',
@@ -401,11 +402,11 @@ def test_run_model_from_irradiance_arrays_no_loss(
     mc_one.run_model(irradiance)
     mc_two.run_model(irradiance)
     mc_both.run_model(irradiance)
-    assert_series_equal(
+    assert_frame_equal(
         mc_both.results.dc[0],
         mc_one.results.dc
     )
-    assert_series_equal(
+    assert_frame_equal(
         mc_both.results.dc[1],
         mc_two.results.dc
     )
@@ -516,13 +517,18 @@ def test_prepare_inputs_missing_irrad_component(
 
 def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays, location):
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
-    times = pd.date_range('20200101 1200-0700', periods=2, freq='6H')
-    weather_one = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
+    times = pd.date_range('20200101 1200-0700', periods=2, freq='2H')
+    weather_one = pd.DataFrame({'dni': [900, 800],
+                                'ghi': [600, 500],
+                                'dhi': [150, 100]},
                                index=times)
-    weather_two = pd.DataFrame({'dni': 500, 'ghi': 300, 'dhi': 75},
+    weather_two = pd.DataFrame({'dni': [500, 400],
+                                'ghi': [300, 200],
+                                'dhi': [75, 65]},
                                index=times)
     mc.run_model((weather_one, weather_two))
-    assert (mc.results.dc[0] != mc.results.dc[1]).all()
+    assert (mc.results.dc[0] != mc.results.dc[1]).all().all()
+    assert not mc.results.ac.empty
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):
@@ -1258,8 +1264,10 @@ def test_bad_get_orientation():
 # tests for PVSystem with multiple Arrays
 def test_with_sapm_pvsystem_arrays(sapm_dc_snl_ac_system_Array, location,
                                    weather):
-    mc = ModelChain.with_sapm(sapm_dc_snl_ac_system_Array, location)
+    mc = ModelChain.with_sapm(sapm_dc_snl_ac_system_Array, location,
+                              ac_model='sandia_multi')
     assert mc.dc_model == mc.sapm
+    assert mc.ac_model == mc.sandia_multi_inverter
     mc.run_model(weather)
     assert mc.results
 

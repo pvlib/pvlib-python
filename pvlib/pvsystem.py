@@ -2398,6 +2398,29 @@ def dc_ohms_from_percent(V_mp_ref, I_mp_ref, dc_ohmic_percent,
     return Rw
 
 
+def dc_ohmic_losses(ohms, current):
+    """
+    Returns ohmic losses in in units of power from the equivalent
+    resistance of of the wires and the operating current.
+
+    Parameters
+    ----------
+    ohms: numeric, float
+    current: numeric, float or array-like
+
+    Returns
+    ----------
+    numeric
+        Single or array-like value of the losses in units of power
+
+    References
+    ----------
+    -- [1] PVsyst 7 Help. "Array ohmic wiring loss".
+            https://www.pvsyst.com/help/ohmic_loss.htm
+    """
+    return ohms * current * current
+
+
 def combine_loss_factors(index, *losses, fill_method='ffill'):
     r"""
     Combines Series loss fractions while setting a common index.

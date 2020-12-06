@@ -960,8 +960,7 @@ class ModelChain:
         of the PVsystem.
         """
         Rw = self.system.dc_ohms_from_percent()
-        ohmic_loss_fraction = Rw * self.dc['i_mp'] / self.dc['v_mp']
-        self.dc_ohmic_losses = ohmic_loss_fraction * self.dc['p_mp']
+        self.dc_ohmic_losses = pvsystem.dc_ohmic_losses(Rw, self.dc['i_mp'])
         self.dc['p_mp'] = self.dc['p_mp'] - self.dc_ohmic_losses
         return self
 

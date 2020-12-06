@@ -1246,6 +1246,12 @@ def test_PVSystem_dc_ohms_from_percent(mocker):
     assert_allclose(out, expected)
 
 
+def test_dc_ohmic_losses():
+    expected = 9.12
+    out = pvsystem.dc_ohmic_losses(.1425, 8)
+    assert_allclose(out, expected)
+
+
 def test_pvwatts_dc_scalars():
     expected = 88.65
     out = pvsystem.pvwatts_dc(900, 30, 100, -0.003)

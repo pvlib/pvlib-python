@@ -204,13 +204,12 @@ constructed above:
     system.surface_tilt
     system.surface_azimuth
 
-Similarly, other `PVSystem` methods that either return values that vary
-depending on array characteristics, or take values that may differ between
-arrays return (or accept) tuples.
+Similarly, other `PVSystem` methods expect tuples as input and return tuples
+for values that differ among arrays.
 
 .. ipython:: python
 
-    aoi = system.get_aoi(30, 180)
+    aoi = system.get_aoi(solar_zenith=30, solar_azimuth=180)
     print(aoi)
     system.get_iam(aoi)
 

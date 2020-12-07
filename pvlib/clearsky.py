@@ -800,7 +800,7 @@ def _get_sample_intervals(times, win_length):
     # determine if we can proceed
     if times.inferred_freq and len(np.unique(deltas)) == 1:
         sample_interval = times[1] - times[0]
-        sample_interval = sample_interval.total_seconds() / 60  # in minutes
+        sample_interval = sample_interval.seconds / 60  # in minutes
         samples_per_window = int(win_length / sample_interval)
         return sample_interval, samples_per_window
     else:

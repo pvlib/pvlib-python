@@ -325,7 +325,6 @@ Pvsyst model
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.calcparams_pvsyst
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode

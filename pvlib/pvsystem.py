@@ -1132,7 +1132,8 @@ class Array:
         Parameters for the module model, e.g., SAPM, CEC, or other.
 
     temperature_model_parameters : None, dict or Series, default None.
-        Parameters for the module temperature model, e.g., SAPM, Pvsyst, or other.
+        Parameters for the module temperature model, e.g., SAPM, Pvsyst, or
+        other.
 
     modules_per_string: int, default 1
         Number of modules per string in the array.

@@ -262,14 +262,13 @@ class PVSystem:
         """Check that `values` is a tuple of the same length as
         `self._arrays`.
 
-        If it is a single vlaue it is packed in to a length-1 tuple before
-        the check. If the length is not the same a ValueError is raised,
-        otherwise the tuple is returned.
+        If `values` is not a tuple it is packed in to a length-1 tuple before
+        the check. If the lengths are not the same a ValueError is raised,
+        otherwise the tuple `values` is returned.
 
-        When `system_wide` is True, single values are accepted even if there
-        is more than one Array. In this case the single value is replicated
-        in a tuple of the same length as `self._arrays` and that tuple is
-        returned.
+        When `system_wide` is True and `values` is not a tuple, `values`
+        is replicated to a tuple of the same length as `self._arrays` and that
+        tuple is returned.
         """
         if system_wide and not isinstance(values, tuple):
             return (values,) * self.num_arrays
@@ -1096,7 +1095,7 @@ class Array:
     """
     An Array is a set of of modules at a specific orientation.
 
-    Specifically, an array is defined by a tilt, azimuth, the
+    Specifically, an array is defined by tilt, azimuth, the
     module parameters, the number of strings of modules and the
     number of modules on each string.
 
@@ -1113,8 +1112,8 @@ class Array:
 
     albedo : None or float, default None
         The ground albedo. If ``None``, will attempt to use
-        ``surface_type`` and ``irradiance.SURFACE_ALBEDOS``
-        to lookup albedo.
+        ``surface_type`` to look up an albedo value in
+        ``irradiance.SURFACE_ALBEDOS``
 
     surface_type : None or string, default None
         The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
@@ -1130,16 +1129,16 @@ class Array:
          and 'glass_glass'. Used for cell and module temperature calculations.
 
     module_parameters : None, dict or Series, default None
-        Module parameters as defined by the SAPM, CEC, or other.
+        Parameters for the module model, e.g., SAPM, CEC, or other.
 
     temperature_model_parameters : None, dict or Series, default None.
-        Temperature model parameters as defined by the SAPM, Pvsyst, or other.
+        Parameters for the module temperature model, e.g., SAPM, Pvsyst, or other.
 
     modules_per_string: int, default 1
         Number of modules per string in the array.
 
     strings: int, default 1
-        Number of strings in the array.
+        Number of parallel strings in the array.
 
     racking_model : None or string, default 'open_rack'
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.

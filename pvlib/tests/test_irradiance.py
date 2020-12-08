@@ -13,7 +13,8 @@ from conftest import assert_frame_equal, assert_series_equal
 
 from pvlib import irradiance
 
-from conftest import requires_ephem, requires_numba
+from conftest import requires_ephem, requires_numba, fail_on_pvlib_version
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # fixtures create realistic test input data
@@ -939,3 +940,11 @@ def test_clearness_index_zenith_independent(airmass_kt):
                                                         airmass)
     expected = pd.Series([np.nan, 0.553744437562], index=times)
     assert_series_equal(out, expected)
+
+
+@fail_on_pvlib_version('0.9')
+def test_deprecated_09():
+    # deprecated function irradiance.liujordan
+    with pytest.warns(pvlibDeprecationWarning):
+        irradiance.liujordan(
+        pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]), dni_extra=1400)

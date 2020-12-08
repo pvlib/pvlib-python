@@ -2298,7 +2298,7 @@ def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
 
 
 liujordan = deprecated('0.8', alternative='campbellnormam',
-                         name='liujordan', removal='0.9')(liujordan)
+                       name='liujordan', removal='0.9')(liujordan)
 
 
 def _get_perez_coefficients(perezmodel):

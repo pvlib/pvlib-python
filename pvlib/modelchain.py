@@ -1119,7 +1119,7 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame or tuple of DatFrame
+        weather : DataFrame or tuple of DataFrame
             Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed

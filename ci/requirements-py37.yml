@@ -5,7 +5,6 @@ channels:
 dependencies:
     - coveralls
     - cython
-    - dataclasses
     - ephem
     - netcdf4
     - nose

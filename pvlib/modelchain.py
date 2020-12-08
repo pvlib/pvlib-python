@@ -750,10 +750,9 @@ class ModelChain:
             self.results.dc
         )
         if self.system.num_arrays == 1:
-            self.results.dc.fillna(0, inplace=True)
+            self.results.dc = self.results.dc.fillna(0)
         else:
-            for dc in self.results.dc:
-                dc.fillna(0, inplace=True)
+            self.results.dc = tuple(dc.fillna(0) for dc in self.results.dc)
         return self
 
     def desoto(self):

@@ -1086,17 +1086,17 @@ class ModelChain:
                                 fd * total_irrad['poa_diffuse'])
         if isinstance(self.results.total_irrad, tuple):
             self.results.effective_irradiance = tuple(
-                _eff_irrad(array, ti, sm, am) for
+                _eff_irrad(array.module_parameters, ti, sm, am) for
                 array, ti, sm, am in zip(
-                    self.system.module_parameters, self.results.total_irrad,
+                    self.system.arrays, self.results.total_irrad,
                     self.results.spectral_modifier, self.results.aoi_modifier))
         else:
-            fd = self.system.module_parameters.get('FD', 1.)
-            self.results.effective_irradiance = \
-                self.results.spectral_modifier * \
-                (self.results.total_irrad['poa_direct'] *
-                 self.results.aoi_modifier
-                 + fd * self.results.total_irrad['poa_diffuse'])
+            self.results.effective_irradiance = _eff_irrad(
+                self.system.module_parameters,
+                self.results.total_irrad,
+                self.results.spectral_modifier,
+                self.results.aoi_modifier
+            )
         return self
 
     def complete_irradiance(self, weather):

@@ -53,7 +53,7 @@ def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
     """
     if pvsystem is not None:
         pv_dict = pvsystem.__dict__
-        pv_dict = {**pv_dict, **pv_dict['_arrays'][0].__dict__}
+        pv_dict = {**pv_dict, **pv_dict['arrays'][0].__dict__}
     else:
         pv_dict = {}
 
@@ -215,7 +215,7 @@ class PVSystem:
                  **kwargs):
 
         if arrays is None:
-            self._arrays = (Array(
+            self.arrays = (Array(
                 surface_tilt,
                 surface_azimuth,
                 albedo,
@@ -229,7 +229,7 @@ class PVSystem:
                 racking_model
             ),)
         else:
-            self._arrays = tuple(arrays)
+            self.arrays = tuple(arrays)
 
         self.inverter = inverter
         if inverter_parameters is None:
@@ -252,7 +252,7 @@ class PVSystem:
 
     def __repr__(self):
         repr = f'PVSystem:\n  name: {self.name}\n  '
-        for array in self._arrays:
+        for array in self.arrays:
             repr += '\n  '.join(array.__repr__().split('\n'))
             repr += '\n  '
         repr += f'inverter: {self.inverter}'
@@ -260,21 +260,21 @@ class PVSystem:
 
     def _validate_per_array(self, values, system_wide=False):
         """Check that `values` is a tuple of the same length as
-        `self._arrays`.
+        `self.arrays`.
 
         If `values` is not a tuple it is packed in to a length-1 tuple before
         the check. If the lengths are not the same a ValueError is raised,
         otherwise the tuple `values` is returned.
 
         When `system_wide` is True and `values` is not a tuple, `values`
-        is replicated to a tuple of the same length as `self._arrays` and that
+        is replicated to a tuple of the same length as `self.arrays` and that
         tuple is returned.
         """
         if system_wide and not isinstance(values, tuple):
             return (values,) * self.num_arrays
         if not isinstance(values, tuple):
             values = (values,)
-        if len(values) != len(self._arrays):
+        if len(values) != len(self.arrays):
             raise ValueError("Length mismatch for per-array parameter")
         return values
 
@@ -290,7 +290,7 @@ class PVSystem:
         -------
         cell_type: str
         """
-        return tuple(array._infer_cell_type() for array in self._arrays)
+        return tuple(array._infer_cell_type() for array in self.arrays)
 
     @_unwrap_single_value
     def get_aoi(self, solar_zenith, solar_azimuth):
@@ -310,7 +310,7 @@ class PVSystem:
         """
 
         return tuple(array.get_aoi(solar_zenith, solar_azimuth)
-                     for array in self._arrays)
+                     for array in self.arrays)
 
     @_unwrap_single_value
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
@@ -357,7 +357,7 @@ class PVSystem:
                                  dni, ghi, dhi,
                                  dni_extra, airmass)
             for array, dni, ghi, dhi in zip(
-                self._arrays, dni, ghi, dhi
+                self.arrays, dni, ghi, dhi
             )
         )
 
@@ -390,7 +390,7 @@ class PVSystem:
         """
         aoi = self._validate_per_array(aoi)
         return tuple(array.get_iam(aoi, iam_model)
-                     for array, aoi in zip(self._arrays, aoi))
+                     for array, aoi in zip(self.arrays, aoi))
 
     @_unwrap_single_value
     def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
@@ -430,7 +430,7 @@ class PVSystem:
                 **build_kwargs(array.module_parameters)
             )
             for array, effective_irradiance, temp_cell
-            in zip(self._arrays, effective_irradiance, temp_cell)
+            in zip(self.arrays, effective_irradiance, temp_cell)
         )
 
     @_unwrap_single_value
@@ -471,7 +471,7 @@ class PVSystem:
                 **build_kwargs(array.module_parameters)
             )
             for array, effective_irradiance, temp_cell
-            in zip(self._arrays, effective_irradiance, temp_cell)
+            in zip(self.arrays, effective_irradiance, temp_cell)
         )
 
     @_unwrap_single_value
@@ -511,7 +511,7 @@ class PVSystem:
                 **build_kwargs(array.module_parameters)
             )
             for array, effective_irradiance, temp_cell
-            in zip(self._arrays, effective_irradiance, temp_cell)
+            in zip(self.arrays, effective_irradiance, temp_cell)
         )
 
     @_unwrap_single_value
@@ -542,7 +542,7 @@ class PVSystem:
         return tuple(
             sapm(effective_irradiance, temp_cell, array.module_parameters)
             for array, effective_irradiance, temp_cell
-            in zip(self._arrays, effective_irradiance, temp_cell)
+            in zip(self.arrays, effective_irradiance, temp_cell)
         )
 
     @_unwrap_single_value
@@ -568,7 +568,7 @@ class PVSystem:
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
-        for array in self._arrays:
+        for array in self.arrays:
             # warn user about change in default behavior in 0.9.
             if (array.temperature_model_parameters == {} and array.module_type
                     is None and array.racking_model is None):
@@ -591,7 +591,7 @@ class PVSystem:
                 **build_kwargs(array.temperature_model_parameters)
             )
             for array, poa_global, temp_air, wind_speed in zip(
-                self._arrays, poa_global, temp_air, wind_speed
+                self.arrays, poa_global, temp_air, wind_speed
             )
         )
 
@@ -613,7 +613,7 @@ class PVSystem:
         """
         return tuple(
             sapm_spectral_loss(airmass_absolute, array.module_parameters)
-            for array in self._arrays
+            for array in self.arrays
         )
 
     @_unwrap_single_value
@@ -652,7 +652,7 @@ class PVSystem:
                 poa_direct, poa_diffuse, airmass_absolute, aoi,
                 array.module_parameters)
             for array, poa_direct, poa_diffuse, aoi
-            in zip(self._arrays, poa_direct, poa_diffuse, aoi)
+            in zip(self.arrays, poa_direct, poa_diffuse, aoi)
         )
 
     @_unwrap_single_value
@@ -690,7 +690,7 @@ class PVSystem:
             temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
                                     **build_celltemp_kwargs(array))
             for array, poa_global, temp_air, wind_speed in zip(
-                self._arrays, poa_global, temp_air, wind_speed
+                self.arrays, poa_global, temp_air, wind_speed
             )
         )
 
@@ -725,7 +725,7 @@ class PVSystem:
                 **_build_kwargs(
                     ['u0', 'u1'], array.temperature_model_parameters))
             for array, poa_global, temp_air, wind_speed in zip(
-                self._arrays, poa_global, temp_air, wind_speed
+                self.arrays, poa_global, temp_air, wind_speed
             )
         )
 
@@ -778,7 +778,7 @@ class PVSystem:
                 poa_global, temp_air, wind_speed,
                 **_build_kwargs_fuentes(array))
             for array, poa_global, temp_air, wind_speed in zip(
-                self._arrays, poa_global, temp_air, wind_speed
+                self.arrays, poa_global, temp_air, wind_speed
             )
         )
 
@@ -830,7 +830,7 @@ class PVSystem:
                 pw, airmass_absolute,
                 module_type, coefficients
             )
-        return tuple(_spectral_correction(array) for array in self._arrays)
+        return tuple(_spectral_correction(array) for array in self.arrays)
 
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
@@ -904,7 +904,7 @@ class PVSystem:
             scale_voltage_current_power(data,
                                         voltage=array.modules_per_string,
                                         current=array.strings)
-            for array, data in zip(self._arrays, data)
+            for array, data in zip(self.arrays, data)
         )
 
     @_unwrap_single_value
@@ -924,7 +924,7 @@ class PVSystem:
                        array.module_parameters['gamma_pdc'],
                        **_build_kwargs(['temp_ref'], array.module_parameters))
             for array, g_poa_effective, temp_cell
-            in zip(self._arrays, g_poa_effective, temp_cell)
+            in zip(self.arrays, g_poa_effective, temp_cell)
         )
 
     def pvwatts_losses(self):
@@ -984,78 +984,78 @@ class PVSystem:
     @property
     @_unwrap_single_value
     def module_parameters(self):
-        return tuple(array.module_parameters for array in self._arrays)
+        return tuple(array.module_parameters for array in self.arrays)
 
     @property
     @_unwrap_single_value
     def module(self):
-        return tuple(array.module for array in self._arrays)
+        return tuple(array.module for array in self.arrays)
 
     @property
     @_unwrap_single_value
     def module_type(self):
-        return tuple(array.module_type for array in self._arrays)
+        return tuple(array.module_type for array in self.arrays)
 
     @property
     @_unwrap_single_value
     def temperature_model_parameters(self):
         return tuple(array.temperature_model_parameters
-                     for array in self._arrays)
+                     for array in self.arrays)
 
     @temperature_model_parameters.setter
     def temperature_model_parameters(self, value):
-        for array in self._arrays:
+        for array in self.arrays:
             array.temperature_model_parameters = value
 
     @property
     @_unwrap_single_value
     def surface_tilt(self):
-        return tuple(array.surface_tilt for array in self._arrays)
+        return tuple(array.surface_tilt for array in self.arrays)
 
     @surface_tilt.setter
     def surface_tilt(self, value):
-        for array in self._arrays:
+        for array in self.arrays:
             array.surface_tilt = value
 
     @property
     @_unwrap_single_value
     def surface_azimuth(self):
-        return tuple(array.surface_azimuth for array in self._arrays)
+        return tuple(array.surface_azimuth for array in self.arrays)
 
     @surface_azimuth.setter
     def surface_azimuth(self, value):
-        for array in self._arrays:
+        for array in self.arrays:
             array.surface_azimuth = value
 
     @property
     @_unwrap_single_value
     def albedo(self):
-        return tuple(array.albedo for array in self._arrays)
+        return tuple(array.albedo for array in self.arrays)
 
     @property
     @_unwrap_single_value
     def racking_model(self):
-        return tuple(array.racking_model for array in self._arrays)
+        return tuple(array.racking_model for array in self.arrays)
 
     @racking_model.setter
     def racking_model(self, value):
-        for array in self._arrays:
+        for array in self.arrays:
             array.racking_model = value
 
     @property
     @_unwrap_single_value
     def modules_per_string(self):
-        return tuple(array.modules_per_string for array in self._arrays)
+        return tuple(array.modules_per_string for array in self.arrays)
 
     @property
     @_unwrap_single_value
     def strings_per_inverter(self):
-        return tuple(array.strings for array in self._arrays)
+        return tuple(array.strings for array in self.arrays)
 
     @property
     def num_arrays(self):
         """The number of Arrays in the system."""
-        return len(self._arrays)
+        return len(self.arrays)
 
 
 @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',

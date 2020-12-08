@@ -16,3 +16,8 @@ from pvlib import singlediode  # noqa: F401
 from pvlib import bifacial  # noqa: F401
 from pvlib import soiling  # noqa: F401
 from pvlib import snow  # noqa: F401
+from pvlib import shading  # noqa: F401
+from pvlib import iam  # noqa: F401
+from pvlib import inverter  # noqa: F401
+from pvlib import scaling  # noqa: F401
+from pvlib import temperature # noqa: F401

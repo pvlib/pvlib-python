@@ -359,6 +359,12 @@ class ModelChain:
         Name of ModelChain instance.
     """
 
+    # list of deprecated attributes
+    _deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
+                         'aoi', 'aoi_modifier', 'spectral_modifier',
+                         'cell_temperature', 'effective_irradiance',
+                         'dc', 'ac', 'diode_params']
+
     def __init__(self, system, location,
                  orientation_strategy=None,
                  clearsky_model='ineichen',
@@ -403,12 +409,7 @@ class ModelChain:
             )
 
     def __getattr__(self, key):
-        # here to deprecate old attributes
-        deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
-                            'aoi', 'aoi_modifier', 'spectral_modifier',
-                            'cell_temperature', 'effective_irradiance',
-                            'dc', 'diode_params']
-        if key in deprecated_attrs:
+        if key in ModelChain._deprecated_attrs:
             msg = f'ModelChain.{key} is deprecated and will' \
                   f' be removed in v1.0. Use' \
                   f' ModelChain.results.{key} instead'
@@ -421,12 +422,7 @@ class ModelChain:
                 raise AttributeError
 
     def __setattr__(self, key, value):
-        # here to deprecate old attributes
-        deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
-                            'aoi', 'aoi_modifier', 'spectral_modifier',
-                            'cell_temperature', 'effective_irradiance',
-                            'dc', 'diode_params']
-        if key in deprecated_attrs:
+        if key in ModelChain._deprecated_attrs:
             msg = f'ModelChain.{key} is deprecated from v0.9. Use' \
                   f' ModelChain.results.{key} instead'
             warnings.warn(msg, pvlibDeprecationWarning)

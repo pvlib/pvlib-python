@@ -181,6 +181,7 @@ DNI estimation models
    irradiance.dirint
    irradiance.dirindex
    irradiance.erbs
+   irradiance.campbellnorman
    irradiance.liujordan
    irradiance.gti_dirint
 

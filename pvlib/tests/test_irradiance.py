@@ -295,6 +295,17 @@ def test_liujordan():
     assert_frame_equal(out, expected)
 
 
+def test_campbellnorman():
+    expected = pd.DataFrame(np.array(
+        [[863.859736967, 653.123094076, 220.65905025]]),
+        columns=['ghi', 'dni', 'dhi'],
+        index=[0])
+    out = irradiance.campbellnorman(
+        pd.Series([10]), pd.Series([0.5]), pd.Series([109764.21013135818]),
+        dni_extra=1400)
+    assert_frame_equal(out, expected)
+
+
 def test_get_total_irradiance(irrad_data, ephem_data, dni_et, relative_airmass):
     models = ['isotropic', 'klucher',
               'haydavies', 'reindl', 'king', 'perez']

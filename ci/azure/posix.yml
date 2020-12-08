@@ -20,10 +20,6 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
 
-  - script: pip install dataclasses
-    condition: eq(variables['python.version'], '3.6')
-    displayName: Install dataclasses if python 3.6
-
   - script: |
       pip install pytest pytest-cov pytest-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
       pip install -e .

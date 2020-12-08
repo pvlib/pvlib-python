@@ -634,20 +634,17 @@ class ModelChain:
         """Ensure that each all arrays in ``self.system`` have the same
         module and temperature model parameters. If parameters differ
         a ValueError is raised."""
-        if self.system.num_arrays == 1:
-            return
         # check consistent module_parameters
         params = np.unique(
-            [set(module_parameters.keys())
-             for module_parameters in self.system.module_parameters])
+            [set(array.module_parameters.keys())
+             for array in self.system.arrays])
         if len(params) > 1:
             raise ValueError('PVSystem arrays have module_parameters with '
                              'different keys.')
         # check consistent temperature_model_parameters
         params = np.unique(
-            [set(temperature_model_parameters.keys())
-             for temperature_model_parameters
-             in self.system.temperature_model_parameters])
+            [set(array.temperature_model_parameters.keys())
+             for array in self.system.arrays])
         if len(params) > 1:
             raise ValueError('PVSystem arrays temperature_model_parameters '
                              'have different keys. All arrays should have '

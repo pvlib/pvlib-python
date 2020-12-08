@@ -411,7 +411,7 @@ class ModelChain:
     def __getattr__(self, key):
         if key in ModelChain._deprecated_attrs:
             msg = f'ModelChain.{key} is deprecated and will' \
-                  f' be removed in v1.0. Use' \
+                  f' be removed in v0.10. Use' \
                   f' ModelChain.results.{key} instead'
             warnings.warn(msg, pvlibDeprecationWarning)
             return getattr(self.results, key)

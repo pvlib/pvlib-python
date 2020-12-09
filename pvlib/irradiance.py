@@ -2241,7 +2241,7 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
     return irrads
 
 
-def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
+def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and optical air mass number.
@@ -2300,7 +2300,7 @@ def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
 
 
 liujordan = deprecated('0.8', alternative='campbellnormam',
-                       name='liujordan', removal='0.9')(liujordan)
+                       name='liujordan', removal='0.9')(_liujordan)
 
 
 def _get_perez_coefficients(perezmodel):

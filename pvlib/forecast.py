@@ -15,7 +15,7 @@ from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
 import warnings
-from pvlib._deprecation import deprecated, pvlibDeprecationWarning
+from pvlib._deprecation import deprecated
 
 
 warnings.warn(

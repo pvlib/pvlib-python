@@ -520,7 +520,7 @@ Processing data
    forecast.ForecastModel.cloud_cover_to_ghi_linear
    forecast.ForecastModel.cloud_cover_to_irradiance_clearsky_scaling
    forecast.ForecastModel.cloud_cover_to_transmittance_linear
-   forecast.ForecastModel.cloud_cover_to_irradiance_liujordan
+   forecast.ForecastModel.cloud_cover_to_irradiance_campbel_norman
    forecast.ForecastModel.cloud_cover_to_irradiance
    forecast.ForecastModel.kelvin_to_celsius
    forecast.ForecastModel.isobaric_to_ambient_temperature

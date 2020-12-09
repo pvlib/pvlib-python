@@ -11,8 +11,10 @@ from conftest import (
     has_siphon,
     skip_windows,
     requires_recent_cftime,
+    fail_on_pvlib_version
 )
 from conftest import RERUNS, RERUNS_DELAY
+from pvlib._deprecation import pvlibDeprecationWarning
 
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 
@@ -69,7 +71,7 @@ def model(request):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_process_data(model):
-    for how in ['liujordan', 'clearsky_scaling']:
+    for how in ['campbell_norman', 'clearsky_scaling']:
         if model.raw_data.empty:
             warnings.warn('Could not test {} process_data with how={} '
                           'because raw_data was empty'.format(model, how))

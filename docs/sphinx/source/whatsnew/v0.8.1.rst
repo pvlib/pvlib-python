@@ -25,6 +25,8 @@ Enhancements
   from extraterrestrial irradiance. This function replaces ``pvlib.irradiance.liujordan``;
   users of ``pvlib.irradiance.liujordan`` should note that :py:func:`pvlib.irradiance.campbell_norman`
   expects different parameters.
+* :py:meth:`pvlib.forecast.Forecast.cloud_cover_to_irradiance_campbell_norman`
+  replaces ``pvlib.forecast.Forecast.cloud_cover_to_irradiance_liujordan``.
 
 Bug fixes
 ~~~~~~~~~

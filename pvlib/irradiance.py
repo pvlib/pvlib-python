@@ -2187,7 +2187,8 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     return data
 
 
-def campbellnorman(zenith, transmittance, pressure=101325.0, dni_extra=1367.0):
+def campbell_norman(zenith, transmittance, pressure=101325.0,
+                    dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and atmospheric pressure.
@@ -2225,8 +2226,9 @@ def campbellnorman(zenith, transmittance, pressure=101325.0, dni_extra=1367.0):
     airmass = atmosphere.get_relative_airmass(zenith, model='simple')
     airmass = atmosphere.get_absolute_airmass(airmass, pressure=pressure)
     dni = dni_extra*tau**airmass
-    dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * np.cos(np.radians(zenith))
-    ghi = dhi + dni * np.cos(np.radians(zenith))
+    cos_zen = tools.cosd(zenith)
+    dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * cos_zen
+    ghi = dhi + dni * cos_zen
 
     irrads = OrderedDict()
     irrads['ghi'] = ghi

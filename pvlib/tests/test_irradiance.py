@@ -294,7 +294,8 @@ def test_liujordan():
         index=[0])
     with pytest.warns(pvlibDeprecationWarning):
         out = irradiance.liujordan(
-            pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]), dni_extra=1400)
+            pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]),
+            dni_extra=1400)
     assert_frame_equal(out, expected)
 
 

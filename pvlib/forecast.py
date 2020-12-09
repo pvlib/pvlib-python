@@ -570,7 +570,7 @@ class ForecastModel:
     def cloud_cover_to_irradiance_liujordan(self, cloud_cover, **kwargs):
         """
         Deprecated. Use cloud_cover_to_irradiance_campbell_norman instead.
-        
+
         Estimates irradiance from cloud cover in the following steps:
 
         1. Determine transmittance using a function of cloud cover e.g.

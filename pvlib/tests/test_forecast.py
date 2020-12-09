@@ -10,11 +10,9 @@ from conftest import (
     requires_siphon,
     has_siphon,
     skip_windows,
-    requires_recent_cftime,
-    fail_on_pvlib_version
+    requires_recent_cftime
 )
 from conftest import RERUNS, RERUNS_DELAY
-from pvlib._deprecation import pvlibDeprecationWarning
 
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 

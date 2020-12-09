@@ -678,7 +678,7 @@ def test_prepare_poa_wrong_number_arrays(
     type_error = r"Input must be a tuple of length 2, got .*\."
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     poa = pd.concat([weather, total_irrad], axis=1)
-    with pytest.raises(ValueError, match=type_error):
+    with pytest.raises(TypeError, match=type_error):
         mc.prepare_inputs_from_poa(poa)
     with pytest.raises(ValueError, match=len_error):
         mc.prepare_inputs_from_poa((poa,))
@@ -839,7 +839,7 @@ def test_run_model_from_effective_irradiance_arrays_error(
     len_error = r"Input must be same length as number of arrays in system\. " \
                 r"Expected 2, got [0-9]+\."
     type_error = r"Input must be a tuple of length 2, got DataFrame\."
-    with pytest.raises(ValueError, match=type_error):
+    with pytest.raises(TypeError, match=type_error):
         mc.run_model_from_effective_irradiance(data)
     with pytest.raises(ValueError, match=len_error):
         mc.run_model_from_effective_irradiance((data,))

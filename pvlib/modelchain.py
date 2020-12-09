@@ -1391,9 +1391,9 @@ class ModelChain:
                 and not isinstance(data, tuple):
             return
         if strict and not isinstance(data, tuple):
-            raise ValueError("Input must be a tuple of length "
-                             f"{self.system.num_arrays}, "
-                             f"got {type(data).__name__}.")
+            raise TypeError("Input must be a tuple of length "
+                            f"{self.system.num_arrays}, "
+                            f"got {type(data).__name__}.")
         if len(data) != self.system.num_arrays:
             raise ValueError("Input must be same length as number of arrays "
                              f"in system. Expected {self.system.num_arrays}, "

@@ -20,7 +20,7 @@ from pvlib import (  # noqa: F401
     soiling,
     solarposition,
     spa,
-    spectrum
+    spectrum,
     temperature,
     tools,
     tracking,

@@ -9,7 +9,7 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
-
+* ``pvlib.irradiance.liujordan`` is deprecated.
 
 Enhancements
 ~~~~~~~~~~~~
@@ -21,6 +21,12 @@ Enhancements
   multiple MPPTs (:issue:`457`, :pull:`1085`)
 * Added optional ``attributes`` parameter to :py:func:`pvlib.iotools.get_psm3`
   and added the option of fetching 5- and 15-minute PSM3 data. (:pull:`1086`)
+* Added :py:func:`pvlib.irradiance.campbell_norman` for estimating DNI, DHI and GHI
+  from extraterrestrial irradiance. This function replaces ``pvlib.irradiance.liujordan``;
+  users of ``pvlib.irradiance.liujordan`` should note that :py:func:`pvlib.irradiance.campbell_norman`
+  expects different parameters.
+* :py:meth:`pvlib.forecast.Forecast.cloud_cover_to_irradiance_campbell_norman`
+  replaces ``pvlib.forecast.Forecast.cloud_cover_to_irradiance_liujordan``.
 
 Bug fixes
 ~~~~~~~~~

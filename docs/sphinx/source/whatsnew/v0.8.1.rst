@@ -34,6 +34,8 @@ Bug fixes
   inputs. (:issue:`1071`, :pull:`1072`)
 * Raise ``ValueError`` from  :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`
   when input does not have a 'dhi' column. (:issue:`1092`, :pull:`1093`)
+* Add missing modules (including ``shading`` and ``scaling``) to ``__init__.py``.
+  (:pull:`1103`)
 
 Testing
 ~~~~~~~

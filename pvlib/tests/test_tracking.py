@@ -305,7 +305,11 @@ def test_SingleAxisTracker_creation():
 
 def test_SingleAxisTracker_one_array_only():
     system = tracking.SingleAxisTracker(
-        arrays=[pvsystem.Array(module='foo')]
+        arrays=[pvsystem.Array(
+            module='foo',
+            surface_tilt=None,
+            surface_azimuth=None
+        )]
     )
     assert system.module == 'foo'
     with pytest.raises(ValueError,
@@ -315,6 +319,17 @@ def test_SingleAxisTracker_one_array_only():
             arrays=[pvsystem.Array(module='foo'),
                     pvsystem.Array(module='bar')]
         )
+    with pytest.raises(ValueError,
+                       match="Array must not have surface_tilt "):
+        tracking.SingleAxisTracker(arrays=[pvsystem.Array(module='foo')])
+    with pytest.raises(ValueError,
+                       match="Array must not have surface_tilt "):
+        tracking.SingleAxisTracker(
+            arrays=[pvsystem.Array(surface_azimuth=None)])
+    with pytest.raises(ValueError,
+                       match="Array must not have surface_tilt "):
+        tracking.SingleAxisTracker(
+            arrays=[pvsystem.Array(surface_tilt=None)])
 
 
 def test_SingleAxisTracker_tracking():

@@ -348,7 +348,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     Parameters
     ----------
-    p_dc : numeric
+    pdc : numeric
         DC power. Same unit as ``pdc0``.
     pdc0: numeric
         DC input limit of the inverter.  Same unit as ``pdc``.
@@ -410,7 +410,7 @@ def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     Parameters
     ----------
-    p_dc : tuple, list or array of numeric
+    pdc : tuple, list or array of numeric
         DC power on each MPPT input of the inverter. If type is array, must
         be 2d with axis 0 being the MPPT inputs. Same unit as ``pdc0``.
     pdc0: numeric

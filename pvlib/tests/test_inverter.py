@@ -178,7 +178,7 @@ def test_pvwatts_multi():
     out = inverter.pvwatts_multi((pdc, pdc), pdc0, 0.95)
     assert_allclose(expected, out)
     # with 2D array
-    pdc_2d = np.array([pdc, pdc]).T
+    pdc_2d = np.array([pdc, pdc])
     out = inverter.pvwatts_multi(pdc_2d, pdc0, 0.95)
     assert_allclose(expected, out)
     # with Series

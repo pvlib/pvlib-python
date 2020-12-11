@@ -1542,7 +1542,7 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame
+        weather : DataFrame or tuple of DataFrame
             Irradiance column names must include ``'dni'``, ``'ghi'``, and
             ``'dhi'``. If optional columns ``'temp_air'`` and ``'wind_speed'``
             are not provided, air temperature of 20 C and wind speed of 0 m/s
@@ -1550,6 +1550,13 @@ class ModelChain:
             ``'cell_temperature'`` is provided, these values are used instead
             of `temperature_model`. If optional column `module_temperature`
             is provided, `temperature_model` must be ``'sapm'``.
+
+            If `weather` is a tuple it must have the same length as the number
+            of arrays in the system being modeled. Each element should specify
+            the POA (and other input) to the corresponding array in the system
+            being modeled.  For example, ``weather[0]`` contains weather data
+            for ``system.arrays[0]``. Each element must satisfy the
+            requirements described above.
 
         Returns
         -------
@@ -1586,7 +1593,7 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame
+        data : DataFrame or tuple of DataFrame
             Required column names include ``'poa_global'``,
             ``'poa_direct'`` and ``'poa_diffuse'``. If optional columns
             ``'temp_air'`` and ``'wind_speed'`` are not provided, air
@@ -1595,6 +1602,13 @@ class ModelChain:
             are used instead of `temperature_model`. If optional column
             ``'module_temperature'`` is provided, `temperature_model` must be
             ``'sapm'``.
+
+            If `data` is a tuple it must have the same length as the number
+            of arrays in the system being modeled. Each element should specify
+            the POA (and other input) to the corresponding array in the system
+            being modeled.  For example, ``data[0]`` contains POA irradiance
+            for ``system.arrays[0]``. Each element must satisfy the
+            requirements described above.
 
         Returns
         -------

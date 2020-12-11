@@ -1155,7 +1155,7 @@ class ModelChain:
         self._check_multiple_input(weather)
         # Don't use ModelChain._assign_weather() here because it adds
         # temperature and wind-speed columns which we do not need here.
-        self.weather = weather
+        self.weather = _copy(weather)
         self._assign_times()
         self.results.solar_position = self.location.get_solarposition(
             self.times, method=self.solar_position_method)
@@ -1701,6 +1701,14 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
+
+
+def _copy(data):
+    """Return a copy of each DataFrame in `data` if it is a tuple,
+    otherwise return a copy of `data`."""
+    if not isinstance(data, tuple):
+        return data.copy()
+    return tuple(df.copy() for df in data)
 
 
 def _all_same_index(data):

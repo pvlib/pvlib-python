@@ -295,6 +295,7 @@ Inverter models (DC to AC conversion)
    inverter.sandia_multi
    inverter.adr
    inverter.pvwatts
+   inverter.pvwatts_multi
 
 Functions for fitting inverter models
 

@@ -328,7 +328,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
 def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    Implements NREL's PVWatts inverter model.
+    Extends NREL's PVWatts inverter model for multiple MPP inputs.
 
     The PVWatts inverter model [1]_ calculates inverter efficiency :math:`\eta`
     as a function of input DC power
@@ -348,8 +348,9 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     Parameters
     ----------
-    pdc: numeric
-        DC power. Same unit as ``pdc0``.
+    p_dc : tuple, list or array of numeric
+        DC power on each MPPT input of the inverter. If type is array, must
+        be 2d with axis 0 being the MPPT inputs. Same unit as ``pdc0``.
     pdc0: numeric
         DC input limit of the inverter.  Same unit as ``pdc``.
     eta_inv_nom: numeric, default 0.96
@@ -394,6 +395,39 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     power_ac = np.maximum(0, power_ac)     # GH 541
 
     return power_ac
+
+
+def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
+    r"""
+    Extends NREL's PVWatts inverter model for multiple MPP inputs.
+
+    DC input power is summed over MPP inputs to obtain the DC power
+    input to the PVWatts inverter model. See :py:func:`pvlib.inverter.pvwatts`
+    for details.
+
+    Parameters
+    ----------
+    p_dc : tuple, list or array of numeric
+        DC power on each MPPT input of the inverter. If type is array, must
+        be 2d with axis 0 being the MPPT inputs. Same unit as ``pdc0``.
+    pdc0: numeric
+        DC input limit of the inverter.  Same unit as ``pdc``.
+    eta_inv_nom: numeric, default 0.96
+        Nominal inverter efficiency. [unitless]
+    eta_inv_ref: numeric, default 0.9637
+        Reference inverter efficiency. PVWatts defines it to be 0.9637
+        and is included here for flexibility. [unitless]
+
+    Returns
+    -------
+    power_ac: numeric
+        AC power.  Same unit as ``pdc0``.
+
+    See also
+    --------
+    pvlib.inverter.pvwatts
+    """
+    return pvwatts(sum(pdc), pdc0, eta_inv_nom, eta_inv_ref)
 
 
 def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):

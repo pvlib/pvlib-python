@@ -328,7 +328,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
 
 def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    Extends NREL's PVWatts inverter model for multiple MPP inputs.
+    NREL's PVWatts inverter model.
 
     The PVWatts inverter model [1]_ calculates inverter efficiency :math:`\eta`
     as a function of input DC power

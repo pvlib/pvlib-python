@@ -1325,10 +1325,13 @@ class ModelChain:
         Raises
         ------
         ValueError
-            If the `weather` DataFrame(s) are missing an irradiance component,
-            if `weather` is a tuple and the DataFrames it contains do not
-            all have the same index, or if `weather` is a tuple with a
-            different length than the number of Arrays in the system.
+            If the `weather` DataFrame(s) are missing an irradiance component.
+        ValueError
+            If `weather` is a tuple and the DataFrames it contains have
+            different indices.
+        ValueError
+            If `weather` is a tuple with a different length than the number
+            of Arrays in the system.
 
         Notes
         -----
@@ -1694,7 +1697,10 @@ class ModelChain:
         ------
         ValueError
             If the number of arrays is different than the number of data
-            frames passed in `data` or the DataFrames have different indices.
+            frames passed in `data`
+        ValueError
+            If `data` is a tuple and the DataFrames it contains have
+            different indices.
 
         Notes
         -----

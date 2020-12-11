@@ -348,9 +348,8 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     Parameters
     ----------
-    p_dc : tuple, list or array of numeric
-        DC power on each MPPT input of the inverter. If type is array, must
-        be 2d with axis 0 being the MPPT inputs. Same unit as ``pdc0``.
+    p_dc : numeric
+        DC power. Same unit as ``pdc0``.
     pdc0: numeric
         DC input limit of the inverter.  Same unit as ``pdc``.
     eta_inv_nom: numeric, default 0.96
@@ -371,6 +370,10 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     the DC power input limit of the inverter. ``pdc0`` in
     :py:func:`pvlib.pvsystem.pvwatts_dc` refers to the DC power of the modules
     at reference conditions.
+
+    See Also
+    --------
+    pvlib.inverter.pvwatts_multi
 
     References
     ----------
@@ -399,7 +402,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
 def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    Extends NREL's PVWatts inverter model for multiple MPP inputs.
+    Extend NREL's PVWatts inverter model for multiple MPP inputs.
 
     DC input power is summed over MPP inputs to obtain the DC power
     input to the PVWatts inverter model. See :py:func:`pvlib.inverter.pvwatts`
@@ -423,7 +426,7 @@ def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     power_ac: numeric
         AC power.  Same unit as ``pdc0``.
 
-    See also
+    See Also
     --------
     pvlib.inverter.pvwatts
     """

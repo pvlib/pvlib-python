@@ -179,7 +179,7 @@ def test_pvwatts_multi():
     assert_allclose(expected, out)
     # with 2D array
     pdc_2d = np.array([pdc, pdc]).T
-    out = inverter.pvwatts_multi((pdc_2d, pdc_2d), pdc0, 0.95)
+    out = inverter.pvwatts_multi(pdc_2d, pdc0, 0.95)
     assert_allclose(expected, out)
     # with Series
     pdc = pd.Series(pdc)
@@ -188,7 +188,7 @@ def test_pvwatts_multi():
     # with list instead of tuple
     out = inverter.pvwatts_multi([pdc, pdc], pdc0, 0.95)
     assert_series_equal(expected, out)
-    
+
 
 INVERTER_TEST_MEAS = DATA_DIR / 'inverter_fit_snl_meas.csv'
 INVERTER_TEST_SIM = DATA_DIR / 'inverter_fit_snl_sim.csv'

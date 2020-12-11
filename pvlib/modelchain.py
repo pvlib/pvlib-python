@@ -1293,7 +1293,10 @@ class ModelChain:
         """Assign self.times according the the index of self.weather.
 
         If there are multiple DataFrames in self.weather then the index
-        of the first one is assigned
+        of the first one is assigned. It is assumed that the indices of
+        each data frame in `weather` are the same. This can be verified
+        by calling :py:func:`_all_same_index` or
+        :py:meth:`self._check_multiple_weather` before calling this method.
         """
         if isinstance(self.weather, tuple):
             self.times = self.weather[0].index

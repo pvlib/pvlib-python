@@ -799,20 +799,28 @@ class ModelChain:
     def infer_ac_model(self):
         """Infer AC power model from system attributes."""
         inverter_params = set(self.system.inverter_parameters.keys())
-        single_array = self.system.num_arrays == 1
-        if not single_array and {'C0', 'C1', 'C2'} <= inverter_params:
-            return self.sandia_multi_inverter
-        elif single_array and {'C0', 'C1', 'C2'} <= inverter_params:
+        if self.system.num_arrays > 1:
+            return self._infer_ac_model_multi(inverter_params)
+        if _snl_params(inverter_params):
             return self.snlinverter
-        elif single_array and {'ADRCoefficients'} <= inverter_params:
+        if _adr_params(inverter_params):
             return self.adrinverter
-        elif single_array and {'pdc0'} <= inverter_params:
+        if _pvwatts_params(inverter_params):
             return self.pvwatts_inverter
-        else:
-            raise ValueError('could not infer AC model from '
-                             'system.inverter_parameters. Check '
-                             'system.inverter_parameters or explicitly '
-                             'set the model with the ac_model kwarg.')
+        raise ValueError('could not infer AC model from '
+                         'system.inverter_parameters. Check '
+                         'system.inverter_parameters or explicitly '
+                         'set the model with the ac_model kwarg.')
+
+    def _infer_ac_model_multi(self, inverter_params):
+        if _snl_params(inverter_params):
+            return self.sandia_multi_inverter
+        raise ValueError('could not infer multi-array AC model from '
+                         'system.inverter_parameters. Not all ac models '
+                         'support systems with mutiple arrays. '
+                         'Only sandia_multi supports multiple '
+                         'arrays. Check system.inverter_parameters or '
+                         'explicitly set the model with the ac_model kwarg.')
 
     def sandia_multi_inverter(self):
         self.results.ac = self.system.sandia_multi(
@@ -1721,6 +1729,24 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
+
+
+def _snl_params(inverter_params):
+    """Return True if `inverter_params` includes parameters for the
+    Sandia inverter model."""
+    return {'C0', 'C1', 'C2'} <= inverter_params
+
+
+def _adr_params(inverter_params):
+    """Return True if `inverter_params` includes parameters for the ADR
+    inverter model."""
+    return {'ADRCoefficients'} <= inverter_params
+
+
+def _pvwatts_params(inverter_params):
+    """Return True if `inverter_params` includes parameters for the
+    PVWatts inverter model."""
+    return {'pdc0'} <= inverter_params
 
 
 def _copy(data):

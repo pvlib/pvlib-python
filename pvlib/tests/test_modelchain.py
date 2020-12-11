@@ -421,7 +421,8 @@ def test_ModelChain_invalid_inverter_params_arrays(
                        'pvwatts': {'pdc0': 220, 'eta_inv_nom': 0.95}}
     sapm_dc_snl_ac_system_same_arrays.inverter_parameters = \
         inverter_params[inverter]
-    with pytest.raises(ValueError, match='could not infer AC model from'):
+    with pytest.raises(ValueError,
+                       match=r'Only sandia_multi supports multiple arrays\.'):
         ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
 
 

@@ -91,17 +91,15 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
     ozone_coeff = _SPECTRL2_COEFFS['ozone_absorption'][:, np.newaxis]
     mixed_coeff = _SPECTRL2_COEFFS['mixed_absorption'][:, np.newaxis]
 
-    # ET spectral irradiance correction for earth-sun distance seasonality
-    day_angle = 2 * np.pi * (dayofyear - 1) / 365.0  # Eq 2-3
-    earth_sun_distance_correction = (
-        1.000110
-        + 0.034221 * np.cos(day_angle)
-        + 0.001280 * np.sin(day_angle)
-        + 0.000719 * np.cos(2*day_angle)
-        + 0.000077 * np.sin(2*day_angle)
-    )  # Eq 2-2
-
+    # ET spectral irradiance correction for earth-sun distance seasonality.
+    # Note that we only want the distance correction coefficient, so set
+    # solar_constant=1:
+    earth_sun_distance_correction = \
+        pvlib.irradiance.get_extra_radiation(method='spencer',
+                                             solar_constant=1) # Eq 2-2, 2-3
     # Rayleigh scattering
+    # note: 101300 is used for consistentcy with reference; can't use
+    # atmosphere.get_absolute_airmass because it uses 101325
     airmass = relative_airmass * surface_pressure / 101300
     rayleigh_transmittance = np.exp(
         # Note: the report uses 1.335 but spectrl2_2.c uses 1.3366

@@ -93,7 +93,6 @@ def test_get_psm3_singleyear(nrel_api_key):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-@pytest.mark.xfail(strict=True, reason='github 1091')
 def test_get_psm3_5min(nrel_api_key):
     """test get_psm3 for 5-minute data"""
     header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,

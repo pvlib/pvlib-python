@@ -95,7 +95,7 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
     # Note that we only want the distance correction coefficient, so set
     # solar_constant=1:
     earth_sun_distance_correction = \
-        pvlib.irradiance.get_extra_radiation(method='spencer',
+        pvlib.irradiance.get_extra_radiation(dayofyear, method='spencer',
                                              solar_constant=1) # Eq 2-2, 2-3
     # Rayleigh scattering
     # note: 101300 is used for consistentcy with reference; can't use

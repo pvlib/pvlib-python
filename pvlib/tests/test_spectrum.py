@@ -47,7 +47,7 @@ def test_spectrl2(spectrl2_data):
                     atol=7e-5)
     assert_allclose(expected['specdir'].values, actual['dni'].ravel(),
                     atol=1.5e-4)
-    assert_allclose(expected['specetr'], actual['et'].ravel(),
+    assert_allclose(expected['specetr'], actual['dni_extra'].ravel(),
                     atol=2e-4)
     assert_allclose(expected['specglo'], actual['poa_global'].ravel(),
                     atol=1e-4)
@@ -61,7 +61,7 @@ def test_spectrl2_multiple(spectrl2_data):
 
     assert actual['wavelength'].shape == (122,)
 
-    keys = ['et', 'dhi', 'dni', 'poa_sky_diffuse', 'poa_ground_diffuse',
+    keys = ['dni_extra', 'dhi', 'dni', 'poa_sky_diffuse', 'poa_ground_diffuse',
             'poa_direct', 'poa_global']
     for key in keys:
         assert actual[key].shape == (122, 3)

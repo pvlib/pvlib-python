@@ -13,7 +13,8 @@ from conftest import assert_frame_equal, assert_series_equal
 
 from pvlib import irradiance
 
-from conftest import requires_ephem, requires_numba
+from conftest import requires_ephem, requires_numba, fail_on_pvlib_version
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # fixtures create realistic test input data
@@ -285,13 +286,27 @@ def test_get_sky_diffuse_invalid():
             model='invalid')
 
 
+@fail_on_pvlib_version('0.9')
 def test_liujordan():
     expected = pd.DataFrame(np.array(
         [[863.859736967, 653.123094076, 220.65905025]]),
         columns=['ghi', 'dni', 'dhi'],
         index=[0])
-    out = irradiance.liujordan(
-        pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]), dni_extra=1400)
+    with pytest.warns(pvlibDeprecationWarning):
+        out = irradiance.liujordan(
+            pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]),
+            dni_extra=1400)
+    assert_frame_equal(out, expected)
+
+
+def test_campbell_norman():
+    expected = pd.DataFrame(np.array(
+        [[863.859736967, 653.123094076, 220.65905025]]),
+        columns=['ghi', 'dni', 'dhi'],
+        index=[0])
+    out = irradiance.campbell_norman(
+        pd.Series([10]), pd.Series([0.5]), pd.Series([109764.21013135818]),
+        dni_extra=1400)
     assert_frame_equal(out, expected)
 
 

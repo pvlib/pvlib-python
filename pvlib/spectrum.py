@@ -210,7 +210,7 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
         A dict of arrays of length 122. All values are spectral irradiance
         with units W/m^2/um except for `wavelength`, which is in microns.
             * wavelength
-            * et
+            * dni_extra
             * dhi
             * dni
             * poa_sky_diffuse
@@ -308,7 +308,7 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
 
     return {
         'wavelength': wavelength.ravel(),  # This only ever needs 1 dimension
-        'et': spectrum_et_adj,
+        'dni_extra': spectrum_et_adj,
         'dhi': Is,
         'dni': Id,
         'poa_sky_diffuse': Isky,

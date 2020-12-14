@@ -1076,6 +1076,17 @@ def test_ac_model_not_a_model(pvwatts_dc_pvwatts_ac_system, location, weather):
                    spectral_model='no_loss')
 
 
+def test_infer_ac_model_invalid_params(location):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(
+            module_parameters=pvsystem._DC_MODEL_PARAMS['pvwatts']
+        )],
+        inverter_parameters={'foo': 1, 'bar': 2}
+    )
+    with pytest.raises(ValueError, match='could not infer AC model'):
+        ModelChain(system, location)
+
+
 def constant_aoi_loss(mc):
     mc.results.aoi_modifier = 0.9
 

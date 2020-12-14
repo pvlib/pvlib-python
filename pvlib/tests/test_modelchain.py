@@ -704,6 +704,10 @@ def constant_losses(mc):
     mc.dc *= mc.losses
 
 
+def dc_constant_losses(mc):
+    mc.dc['p_mp'] *= 0.9
+
+
 def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
                                           location,
                                           weather,
@@ -728,15 +732,39 @@ def test_dc_ohmic_model_no_dc_ohmic_loss(cec_dc_snl_ac_system,
                                          weather,
                                          mocker):
 
-    m = mocker.spy(pvsystem, 'dc_ohms_from_percent')
+    m = mocker.spy(modelchain.ModelChain, 'no_dc_ohmic_loss')
     mc = ModelChain(cec_dc_snl_ac_system, location,
                     aoi_model='no_loss',
                     spectral_model='no_loss',
                     dc_ohmic_model='no_loss')
     mc.run_model(weather)
 
-    assert m.call_count == 0
+    assert m.call_count == 1
     assert hasattr(mc, 'dc_ohmic_losses') is False
+
+
+def test_dc_ohmic_ext_def(cec_dc_snl_ac_system, location,
+                          weather, mocker):
+    m = mocker.spy(sys.modules[__name__], 'dc_constant_losses')
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model=dc_constant_losses)
+    mc.run_model(weather)
+
+    assert m.call_count == 1
+    assert isinstance(mc.ac, (pd.Series, pd.DataFrame))
+    assert not mc.ac.empty
+
+
+def test_dc_ohmic_not_a_model(cec_dc_snl_ac_system, location,
+                              weather, mocker):
+    exc_text = 'not_a_dc_model is not a valid losses model'
+    with pytest.raises(ValueError, match=exc_text):
+        ModelChain(cec_dc_snl_ac_system, location,
+                   aoi_model='no_loss',
+                   spectral_model='no_loss',
+                   dc_ohmic_model='not_a_dc_model')
 
 
 def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,

@@ -1536,22 +1536,41 @@ def test_unknown_attribute(sapm_dc_snl_ac_system, location):
 
 
 def test_inconsistent_array_params(location):
-    module_error = "PVSystem arrays have module_parameters " \
-                   r"with different keys\."
-    temperature_error = "PVSystem arrays temperature_model_parameters " \
-                        r"have different keys\. All arrays should have " \
-                        r"keys for the same cell temperature model\."
+    module_error = ".* selected for the DC model but one or more arrays are " \
+                   "missing one or more required parameters"
+    temperature_error = "could not infer temperature model from " \
+                        r"system\.temperature_model_parameters\. Check " \
+                        r"that all Arrays in system\.arrays have " \
+                        r"parameters for the same model \(or models\) .*"
     different_module_system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(module_parameters={'foo': 1}),
-                pvsystem.Array(module_parameters={'foo': 2}),
-                pvsystem.Array(module_parameters={'bar': 1})]
+        arrays=[
+            pvsystem.Array(
+                module_parameters=pvsystem._DC_MODEL_PARAMS['sapm']),
+            pvsystem.Array(
+                module_parameters=pvsystem._DC_MODEL_PARAMS['cec']),
+            pvsystem.Array(
+                module_parameters=pvsystem._DC_MODEL_PARAMS['cec'])]
     )
     with pytest.raises(ValueError, match=module_error):
-        _ = ModelChain(different_module_system, location)
+        ModelChain(different_module_system, location, dc_model='cec')
     different_temp_system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(temperature_model_parameters={'a': 1}),
-                pvsystem.Array(temperature_model_parameters={'b': 2}),
-                pvsystem.Array(temperature_model_parameters={'b': 3})]
+        arrays=[
+            pvsystem.Array(
+                module_parameters=pvsystem._DC_MODEL_PARAMS['cec'],
+                temperature_model_parameters={'a': 1,
+                                              'b': 1,
+                                              'deltaT': 1}),
+            pvsystem.Array(
+                module_parameters=pvsystem._DC_MODEL_PARAMS['cec'],
+                temperature_model_parameters={'a': 2,
+                                              'b': 2,
+                                              'deltaT': 2}),
+            pvsystem.Array(
+                module_parameters=pvsystem._DC_MODEL_PARAMS['cec'],
+                temperature_model_parameters={'b': 3, 'deltaT': 3})]
     )
     with pytest.raises(ValueError, match=temperature_error):
-        _ = ModelChain(different_temp_system, location)
+        ModelChain(different_temp_system, location,
+                   ac_model='sandia_multi',
+                   aoi_model='no_loss', spectral_model='no_loss',
+                   temperature_model='sapm')

@@ -10,7 +10,6 @@ from functools import partial
 import itertools
 import warnings
 import pandas as pd
-import numpy as np
 from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
 
@@ -384,9 +383,6 @@ class ModelChain:
         self.solar_position_method = solar_position_method
         self.airmass_model = airmass_model
 
-        # check that every array has parameters for the same models
-        self._check_consistent_params()
-
         # calls setters
         self.dc_model = dc_model
         self.ac_model = ac_model
@@ -629,26 +625,6 @@ class ModelChain:
                 get_orientation(strategy, latitude=self.location.latitude)
 
         self._orientation_strategy = strategy
-
-    def _check_consistent_params(self):
-        """Ensure that each all arrays in ``self.system`` have the same
-        module and temperature model parameters. If parameters differ
-        a ValueError is raised."""
-        # check consistent module_parameters
-        params = np.unique(
-            [set(array.module_parameters.keys())
-             for array in self.system.arrays])
-        if len(params) > 1:
-            raise ValueError('PVSystem arrays have module_parameters with '
-                             'different keys.')
-        # check consistent temperature_model_parameters
-        params = np.unique(
-            [set(array.temperature_model_parameters.keys())
-             for array in self.system.arrays])
-        if len(params) > 1:
-            raise ValueError('PVSystem arrays temperature_model_parameters '
-                             'have different keys. All arrays should have '
-                             'keys for the same cell temperature model.')
 
     @property
     def dc_model(self):
@@ -1022,9 +998,10 @@ class ModelChain:
             return self.fuentes_temp
         else:
             raise ValueError(f'could not infer temperature model from '
-                             f'system.temperature_module_parameters. Check '
-                             f'all Arrays in system.arrays contain parameters '
-                             f'for the same model (or models) {params}.')
+                             f'system.temperature_model_parameters. Check '
+                             f'that all Arrays in system.arrays have '
+                             f'parameters for the same model (or models) '
+                             f'{params}.')
 
     def _set_celltemp(self, model):
         """Set self.results.cell_temp using the given cell temperature model.

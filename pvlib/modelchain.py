@@ -670,8 +670,9 @@ class ModelChain:
                     _common_keys(self.system.module_parameters))
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
-                                     'one or more required parameters are '
-                                     'missing : ' + str(missing_params))
+                                     'one or more arrays are missing '
+                                     'one or more required parameters '
+                                     ' : ' + str(missing_params))
                 if model == 'sapm':
                     self._dc_model = self.sapm
                 elif model == 'desoto':
@@ -881,7 +882,8 @@ class ModelChain:
         else:
             raise ValueError('could not infer AOI model from '
                              'system.module_parameters. Check that the '
-                             'system.module_parameters contain parameters for '
+                             'module_parameters for all Arrays in '
+                             'system.arrays contain parameters for '
                              'the physical, aoi, ashrae or martin_ruiz model; '
                              'explicitly set the model with the aoi_model '
                              'kwarg; or set aoi_model="no_loss".')
@@ -947,7 +949,8 @@ class ModelChain:
         else:
             raise ValueError('could not infer spectral model from '
                              'system.module_parameters. Check that the '
-                             'system.module_parameters contain valid '
+                             'module_parameters for all Arrays in '
+                             'system.arrays contain valid '
                              'first_solar_spectral_coefficients, a valid '
                              'Material or Technology value, or set '
                              'spectral_model="no_loss".')
@@ -994,9 +997,12 @@ class ModelChain:
             name_from_params = self.infer_temperature_model().__name__
             if self._temperature_model.__name__ != name_from_params:
                 raise ValueError(
-                    f'Temperature model {self._temperature_model.__name__} is'
-                    f'inconsistent with PVSystem temperature model parameters'
-                    f'{_common_keys(self.system.temperature_model_parameters)}')  # noqa: E501
+                    f'Temperature model {self._temperature_model.__name__} is '
+                    f'inconsistent with PVSystem temperature model '
+                    f'parameters. All Arrays in system.arrays must have '
+                    f'consistent parameters. '
+                    f'{_common_keys(self.system.temperature_model_parameters)}'
+                )
         else:
             self._temperature_model = partial(model, self)
 
@@ -1016,7 +1022,9 @@ class ModelChain:
             return self.fuentes_temp
         else:
             raise ValueError(f'could not infer temperature model from '
-                             f'system.temperature_module_parameters {params}.')
+                             f'system.temperature_module_parameters. Check '
+                             f'all Arrays in system.arrays contain parameters '
+                             f'for the same model (or models) {params}.')
 
     def _set_celltemp(self, model):
         """Set self.results.cell_temp using the given cell temperature model.

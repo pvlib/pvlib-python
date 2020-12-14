@@ -422,7 +422,7 @@ def test_ModelChain_invalid_inverter_params_arrays(
     sapm_dc_snl_ac_system_same_arrays.inverter_parameters = \
         inverter_params[inverter]
     with pytest.raises(ValueError,
-                       match=r'Only sandia_multi supports multiple arrays\.'):
+                       match=r'Only sandia_multi supports multiple Arrays\.'):
         ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
 
 
@@ -457,11 +457,11 @@ def test_prepare_inputs_weather_wrong_length(
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     weather = pd.DataFrame({'ghi': [1], 'dhi': [1], 'dni': [1]})
     with pytest.raises(ValueError,
-                       match="Input must be same length as number of arrays "
+                       match="Input must be same length as number of Arrays "
                              r"in system\. Expected 2, got 1\."):
         mc.prepare_inputs((weather,))
     with pytest.raises(ValueError,
-                       match="Input must be same length as number of arrays "
+                       match="Input must be same length as number of Arrays "
                              r"in system\. Expected 2, got 3\."):
         mc.prepare_inputs((weather, weather, weather))
 
@@ -674,7 +674,7 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
 
 def test_prepare_poa_wrong_number_arrays(
         sapm_dc_snl_ac_system_Array, location, total_irrad, weather):
-    len_error = r"Input must be same length as number of arrays in system\. " \
+    len_error = r"Input must be same length as number of Arrays in system\. " \
                 r"Expected 2, got [0-9]+\."
     type_error = r"Input must be a tuple of length 2, got .*\."
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
@@ -837,7 +837,7 @@ def test_run_model_from_effective_irradiance_arrays_error(
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     data['effetive_irradiance'] = data['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
-    len_error = r"Input must be same length as number of arrays in system\. " \
+    len_error = r"Input must be same length as number of Arrays in system\. " \
                 r"Expected 2, got [0-9]+\."
     type_error = r"Input must be a tuple of length 2, got DataFrame\."
     with pytest.raises(TypeError, match=type_error):
@@ -1533,7 +1533,7 @@ def test_complete_irradiance_arrays_wrong_length(
                             'dhi': [4, 6],
                             'ghi': [9, 5]}, index=times)
     error_str = "Input must be same length as number " \
-                r"of arrays in system\. Expected 2, got [0-9]+\."
+                r"of Arrays in system\. Expected 2, got [0-9]+\."
     with pytest.raises(ValueError, match=error_str):
         mc.complete_irradiance((weather,))
     with pytest.raises(ValueError, match=error_str):
@@ -1547,7 +1547,7 @@ def test_unknown_attribute(sapm_dc_snl_ac_system, location):
 
 
 def test_inconsistent_array_params(location):
-    module_error = ".* selected for the DC model but one or more arrays are " \
+    module_error = ".* selected for the DC model but one or more Arrays are " \
                    "missing one or more required parameters"
     temperature_error = "could not infer temperature model from " \
                         r"system\.temperature_model_parameters\. Check " \

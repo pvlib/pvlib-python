@@ -646,7 +646,7 @@ class ModelChain:
                     _common_keys(self.system.module_parameters))
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
-                                     'one or more arrays are missing '
+                                     'one or more Arrays are missing '
                                      'one or more required parameters '
                                      ' : ' + str(missing_params))
                 if model == 'sapm':
@@ -665,7 +665,7 @@ class ModelChain:
             self._dc_model = partial(model, self)
 
     def infer_dc_model(self):
-        """Infer DC power model from array module parameters."""
+        """Infer DC power model from Array module parameters."""
         params = _common_keys(self.system.module_parameters)
         if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
@@ -794,9 +794,9 @@ class ModelChain:
             return self.sandia_multi_inverter
         raise ValueError('could not infer multi-array AC model from '
                          'system.inverter_parameters. Not all ac models '
-                         'support systems with mutiple arrays. '
+                         'support systems with mutiple Arrays. '
                          'Only sandia_multi supports multiple '
-                         'arrays. Check system.inverter_parameters or '
+                         'Arrays. Check system.inverter_parameters or '
                          'explicitly set the model with the ac_model kwarg.')
 
     def sandia_multi_inverter(self):
@@ -1110,7 +1110,7 @@ class ModelChain:
             are required. Air temperature of 20 C and wind speed
             of 0 m/s will be added to the DataFrame if not provided.
             If `weather` is a tuple it must be the same length as the number
-            of arrays in the system and the indices for each DataFrame must
+            of Arrays in the system and the indices for each DataFrame must
             be the same.
 
         Returns
@@ -1121,7 +1121,7 @@ class ModelChain:
         ------
         ValueError
             if the number of dataframes in `weather` is not the same as the
-            number of arrays in the system or if the indices of all elements
+            number of Arrays in the system or if the indices of all elements
             of `weather` are not the same.
 
         Notes
@@ -1382,7 +1382,7 @@ class ModelChain:
 
     def _check_multiple_input(self, data, strict=True):
         """Check that the number of elements in `data` is the same as
-        the number of arrays in `self.system`. If `strict` is False then
+        the number of Arrays in `self.system`. If `strict` is False then
         `data` does not have to be a tuple and length validation is not
         performed. If `data` is a tuple of the correct length the indices
         of each DataFrame it contains are compared for equality and an
@@ -1396,7 +1396,7 @@ class ModelChain:
                             f"{self.system.num_arrays}, "
                             f"got {type(data).__name__}.")
         if len(data) != self.system.num_arrays:
-            raise ValueError("Input must be same length as number of arrays "
+            raise ValueError("Input must be same length as number of Arrays "
                              f"in system. Expected {self.system.num_arrays}, "
                              f"got {len(data)}.")
         _all_same_index(data)
@@ -1416,14 +1416,14 @@ class ModelChain:
             ``'wind_speed'`` are not provided, air temperature of 20 C and wind
             speed of 0 m/s are assumed.
 
-            If there are multiple arrays in the system then `data` must be
-            a tuple with the same length as the number of arrays.
+            If there are multiple Arrays in the system then `data` must be
+            a tuple with the same length as the number of Arrays.
 
         Raises
         ------
         ValueError
              If the number of DataFrames passed in `data` is not the same
-             as the number of arrays in the system.
+             as the number of Arrays in the system.
 
         Notes
         -----
@@ -1548,8 +1548,8 @@ class ModelChain:
             is provided, `temperature_model` must be ``'sapm'``.
 
             If `weather` is a tuple it must have the same length as the number
-            of arrays in the system being modeled. Each element should specify
-            the POA (and other input) to the corresponding array in the system
+            of Arrays in the system being modeled. Each element should specify
+            the POA (and other input) to the corresponding Array in the system
             being modeled.  For example, ``weather[0]`` contains weather data
             for ``system.arrays[0]``. Each element must satisfy the
             requirements described above.
@@ -1600,8 +1600,8 @@ class ModelChain:
             ``'sapm'``.
 
             If `data` is a tuple it must have the same length as the number
-            of arrays in the system being modeled. Each element should specify
-            the POA (and other input) to the corresponding array in the system
+            of Arrays in the system being modeled. Each element should specify
+            the POA (and other input) to the corresponding Array in the system
             being modeled.  For example, ``data[0]`` contains POA irradiance
             for ``system.arrays[0]``. Each element must satisfy the
             requirements described above.
@@ -1677,10 +1677,10 @@ class ModelChain:
             ``'module_temperature'`` is provided, `temperature_model` must be
             ``'sapm'``.
 
-            If the system has multiple arrays, `data` must be a tuple with
-            the same length as the number of arrays in the system where
+            If the system has multiple Arrays, `data` must be a tuple with
+            the same length as the number of Arrays in the system where
             each element provides the effective irradiance and weather
-            for the corresponding array.
+            for the corresponding Array.
 
         Returns
         -------
@@ -1689,7 +1689,7 @@ class ModelChain:
         Raises
         ------
         ValueError
-            If the number of arrays is different than the number of data
+            If the number of Arrays is different than the number of data
             frames passed in `data`
         ValueError
             If `data` is a tuple and the DataFrames it contains have

@@ -1718,7 +1718,7 @@ class ModelChain:
 
         See also
         --------
-        pvlib.modelchain.ModelChain.run_model_from
+        pvlib.modelchain.ModelChain.run_model
         pvlib.modelchain.ModelChain.run_model_from_poa
         """
         self._check_multiple_input(data)

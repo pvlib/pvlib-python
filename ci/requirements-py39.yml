@@ -6,9 +6,9 @@ dependencies:
     - coveralls
     - cython
     - ephem
-    # - netcdf4
+    # - netcdf4  # pulls in a different version of numpy with ImportError
     - nose
-    # - numba
+    # - numba  # python 3.9 compat in early 2021
     - numpy >= 1.12.0
     - pandas >= 0.22.0
     - pip
@@ -27,5 +27,5 @@ dependencies:
     # - siphon  # conda-forge
     - statsmodels
     - pip:
-        - nrel-pysam>=2.0
+        # - nrel-pysam>=2.0  # install error on windows
         - pvfactors==1.4.1

@@ -153,7 +153,7 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
     )
 
 
-def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
+def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
              surface_pressure, relative_airmass, precipitable_water, ozone,
              dayofyear, aerosol_turbidity_500nm, scattering_albedo_400nm=0.945,
              alpha=1.14, wavelength_variation_factor=0.095,
@@ -170,12 +170,12 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
 
     Parameters
     ----------
-    surface_tilt : float or numpy array
-        Panel tilt from horizontal [degrees]
     apparent_zenith : float or numpy array
         Solar zenith angle [degrees]
     aoi : float or numpy array
         Angle of incidence of the solar vector on the panel [degrees]
+    surface_tilt : float or numpy array
+        Panel tilt from horizontal [degrees]
     ground_albedo : float or numpy array
         Albedo [0-1] of the ground surface. Can be provided as a scalar value
         if albedo is not spectrally-dependent, or as a 122xN matrix where

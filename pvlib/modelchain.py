@@ -1685,7 +1685,10 @@ class ModelChain:
             If the system has multiple Arrays, `data` must be a tuple with
             the same length as the number of Arrays in the system where
             each element provides the effective irradiance and weather
-            for the corresponding Array.
+            for the corresponding Array. Note that if any of the DataFrames
+            in `data` are missing a ``'cell_temperature'`` column, you must
+            provide a ``'poa_global'`` column in *every* DataFrame (not just
+            the one(s) without ``'cell_temperature'``).
 
         Returns
         -------

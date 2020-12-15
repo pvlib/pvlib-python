@@ -71,24 +71,17 @@ spectra = spectrum.spectrl2(
 )
 
 # %%
-# The SPECTRL2 model returns spectral irradiance for several irradiance
-# components at 122 wavelength bands from 0.3 to 4 microns:
-
-print(spectra.keys())
-print(spectra['wavelength'].ravel())
-
-# %%
 # The ``poa_global`` array represents the total spectral irradiance on our
 # hypothetical solar panel. Let's plot it against wavelength to recreate
 # Figure 5-1A:
 
 plt.figure()
 plt.plot(spectra['wavelength'], spectra['poa_global'])
-plt.xlim(0.2, 2.7)
-plt.ylim(0, 1800)
+plt.xlim(200, 2700)
+plt.ylim(0, 1.8)
 plt.title(r"Day 80 1984, $\tau=0.1$, Wv=0.5 cm")
-plt.ylabel(r"Irradiance ($W m^{-2} \mu m^{-1}$)")
-plt.xlabel(r"Wavelength ($\mu m$)")
+plt.ylabel(r"Irradiance ($W m^{-2} nm^{-1}$)")
+plt.xlabel(r"Wavelength ($nm$)")
 time_labels = times.strftime("%H:%M %p")
 labels = [
     "AM {:0.02f}, Z{:0.02f}, {}".format(*vals)

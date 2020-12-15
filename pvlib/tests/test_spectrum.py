@@ -35,6 +35,9 @@ def spectrl2_data():
         'dayofyear': 75
     }
     df = pd.read_csv(SPECTRL2_TEST_DATA)
+    # convert um to nm
+    df['wavelength'] *= 1000
+    df[['specdif', 'specdir', 'specetr', 'specglo']] /= 1000
     return kwargs, df
 
 

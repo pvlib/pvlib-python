@@ -15,33 +15,36 @@ _SPECTRL2_COEFFS = np.zeros(122, dtype=np.dtype([
     ('ozone_absorption', 'float64'),
     ('mixed_absorption', 'float64'),
 ]))
-_SPECTRL2_COEFFS['wavelength'] = [  # um
-    0.3, 0.305, 0.31, 0.315, 0.32, 0.325, 0.33, 0.335, 0.34, 0.345, 0.35,
-    0.36, 0.37, 0.38, 0.39, 0.4, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47,
-    0.48, 0.49, 0.5, 0.51, 0.52, 0.53, 0.54, 0.55, 0.57, 0.593, 0.61, 0.63,
-    0.656, 0.6676, 0.69, 0.71, 0.718, 0.7244, 0.74, 0.7525, 0.7575, 0.7625,
-    0.7675, 0.78, 0.8, 0.816, 0.8237, 0.8315, 0.84, 0.86, 0.88, 0.905, 0.915,
-    0.925, 0.93, 0.937, 0.948, 0.965, 0.98, 0.9935, 1.04, 1.07, 1.1, 1.12,
-    1.13, 1.145, 1.161, 1.17, 1.2, 1.24, 1.27, 1.29, 1.32, 1.35, 1.395, 1.4425,
-    1.4625, 1.477, 1.497, 1.52, 1.539, 1.558, 1.578, 1.592, 1.61, 1.63, 1.646,
-    1.678, 1.74, 1.8, 1.86, 1.92, 1.96, 1.985, 2.005, 2.035, 2.065, 2.1, 2.148,
-    2.198, 2.27, 2.36, 2.45, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4,
-    3.5, 3.6, 3.7, 3.8, 3.9, 4.0
+_SPECTRL2_COEFFS['wavelength'] = [  # nm
+    300.0, 305.0, 310.0, 315.0, 320.0, 325.0, 330.0, 335.0, 340.0, 345.0,
+    350.0, 360.0, 370.0, 380.0, 390.0, 400.0, 410.0, 420.0, 430.0, 440.0,
+    450.0, 460.0, 470.0, 480.0, 490.0, 500.0, 510.0, 520.0, 530.0, 540.0,
+    550.0, 570.0, 593.0, 610.0, 630.0, 656.0, 667.6, 690.0, 710.0, 718.0,
+    724.4, 740.0, 752.5, 757.5, 762.5, 767.5, 780.0, 800.0, 816.0, 823.7,
+    831.5, 840.0, 860.0, 880.0, 905.0, 915.0, 925.0, 930.0, 937.0, 948.0,
+    965.0, 980.0, 993.5, 1040.0, 1070.0, 1100.0, 1120.0, 1130.0, 1145.0,
+    1161.0, 1170.0, 1200.0, 1240.0, 1270.0, 1290.0, 1320.0, 1350.0, 1395.0,
+    1442.5, 1462.5, 1477.0, 1497.0, 1520.0, 1539.0, 1558.0, 1578.0, 1592.0,
+    1610.0, 1630.0, 1646.0, 1678.0, 1740.0, 1800.0, 1860.0, 1920.0, 1960.0,
+    1985.0, 2005.0, 2035.0, 2065.0, 2100.0, 2148.0, 2198.0, 2270.0, 2360.0,
+    2450.0, 2500.0, 2600.0, 2700.0, 2800.0, 2900.0, 3000.0, 3100.0, 3200.0,
+    3300.0, 3400.0, 3500.0, 3600.0, 3700.0, 3800.0, 3900.0, 4000.0
 ]
-_SPECTRL2_COEFFS['spectral_irradiance_et'] = [  # W/m^2/um
-    535.9, 558.3, 622.0, 692.7, 715.1, 832.9, 961.9, 931.9, 900.6, 911.3,
-    975.5, 975.9, 1119.9, 1103.8, 1033.8, 1479.1, 1701.3, 1740.4, 1587.2,
-    1837.0, 2005.0, 2043.0, 1987.0, 2027.0, 1896.0, 1909.0, 1927.0, 1831.0,
-    1891.0, 1898.0, 1892.0, 1840.0, 1768.0, 1728.0, 1658.0, 1524.0, 1531.0,
-    1420.0, 1399.0, 1374.0, 1373.0, 1298.0, 1269.0, 1245.0, 1223.0, 1205.0,
-    1183.0, 1148.0, 1091.0, 1062.0, 1038.0, 1022.0, 998.7, 947.2, 893.2, 868.2,
-    829.7, 830.3, 814.0, 786.9, 768.3, 767.0, 757.6, 688.1, 640.7, 606.2,
-    585.9, 570.2, 564.1, 544.2, 533.4, 501.6, 477.5, 442.7, 440.0, 416.8,
-    391.4, 358.9, 327.5, 317.5, 307.3, 300.4, 292.8, 275.5, 272.1, 259.3,
-    246.9, 244.0, 243.5, 234.8, 220.5, 190.8, 171.1, 144.5, 135.7, 123.0,
-    123.8, 113.0, 108.5, 97.5, 92.4, 82.4, 74.6, 68.3, 63.8, 49.5, 48.5, 38.6,
-    36.6, 32.0, 28.1, 24.8, 22.1, 19.6, 17.5, 15.7, 14.1, 12.7, 11.5, 10.4,
-    9.5, 8.6
+_SPECTRL2_COEFFS['spectral_irradiance_et'] = [  # W/m^2/nm
+    0.5359, 0.5583, 0.622, 0.6927, 0.7151, 0.8329, 0.9619, 0.9319, 0.9006,
+    0.9113, 0.9755, 0.9759, 1.1199, 1.1038, 1.0338, 1.4791, 1.7013, 1.7404,
+    1.5872, 1.837, 2.005, 2.043, 1.987, 2.027, 1.896, 1.909, 1.927, 1.831,
+    1.891, 1.898, 1.892, 1.84, 1.768, 1.728, 1.658, 1.524, 1.531, 1.42,
+    1.399, 1.374, 1.373, 1.298, 1.269, 1.245, 1.223, 1.205, 1.183, 1.148,
+    1.091, 1.062, 1.038, 1.022, 0.9987, 0.9472, 0.8932, 0.8682, 0.8297,
+    0.8303, 0.814, 0.7869, 0.7683, 0.767, 0.7576, 0.6881, 0.6407, 0.6062,
+    0.5859, 0.5702, 0.5641, 0.5442, 0.5334, 0.5016, 0.4775, 0.4427, 0.44,
+    0.4168, 0.3914, 0.3589, 0.3275, 0.3175, 0.3073, 0.3004, 0.2928, 0.2755,
+    0.2721, 0.2593, 0.2469, 0.244, 0.2435, 0.2348, 0.2205, 0.1908, 0.1711,
+    0.1445, 0.1357, 0.123, 0.1238, 0.113, 0.1085, 0.0975, 0.0924, 0.0824,
+    0.0746, 0.0683, 0.0638, 0.0495, 0.0485, 0.0386, 0.0366, 0.032, 0.0281,
+    0.0248, 0.0221, 0.0196, 0.0175, 0.0157, 0.0141, 0.0127, 0.0115, 0.0104,
+    0.0095, 0.0086
 ]
 _SPECTRL2_COEFFS['water_vapor_absorption'] = [
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -96,15 +99,16 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
     # solar_constant=1:
     earth_sun_distance_correction = \
         pvlib.irradiance.get_extra_radiation(dayofyear, method='spencer',
-                                             solar_constant=1) # Eq 2-2, 2-3
+                                             solar_constant=1)  # Eq 2-2, 2-3
     # Rayleigh scattering
     # note: 101300 is used for consistentcy with reference; can't use
     # atmosphere.get_absolute_airmass because it uses 101325
     airmass = relative_airmass * surface_pressure / 101300
+    wavelength_um = wavelength / 1000
     rayleigh_transmittance = np.exp(
         # Note: the report uses 1.335 but spectrl2_2.c uses 1.3366
-        # -airmass / (wavelength**4 * (115.6406 - 1.335 / wavelength**2))
-        -airmass / (wavelength**4 * (115.6406 - 1.3366 / wavelength**2))
+        # -airmass / (wavelength_um**4 * (115.6406 - 1.335 / wavelength_um**2))
+        -airmass / (wavelength_um**4 * (115.6406 - 1.3366 / wavelength_um**2))
     )  # Eq 2-4
 
     # Aerosol scattering and absorption, Eq 2-6
@@ -129,8 +133,8 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
     mixed_transmittance = np.exp(-1.41 * aM / (1 + 118.3 * aM)**0.45)
 
     # split out aerosol components for diffuse irradiance calcs
-    aerosol_scattering = (
-        np.exp(-scattering_albedo * optical_thickness * relative_airmass)
+    aerosol_scattering = np.exp(
+        -scattering_albedo * optical_thickness * relative_airmass
     )  # Eq 3-9
 
     aerosol_absorption = np.exp(
@@ -159,10 +163,10 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
     (SPECTRL2).
 
     The Bird Simple Spectral Model [1]_ produces terrestrial spectra between
-    0.3 and 4 um with a resolution of approximately 10 nm. Direct and diffuse
-    spectral irradiance are modeled for horizontal and tilted surfaces under
-    cloudless skies. SPECTRL2 models radiative transmission, absorption, and
-    scattering due to atmospheric aerosol, water vapor, and ozone content.
+    300 and 4000 nm with a resolution of approximately 10 nm. Direct and
+    diffuse spectral irradiance are modeled for horizontal and tilted surfaces
+    under cloudless skies. SPECTRL2 models radiative transmission, absorption,
+    and scattering due to atmospheric aerosol, water vapor, and ozone content.
 
     Parameters
     ----------
@@ -206,7 +210,7 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
     -------
     spectra : dict
         A dict of arrays of length 122. All values are spectral irradiance
-        with units W/m^2/um except for `wavelength`, which is in microns.
+        with units W/m^2/nm except for `wavelength`, which is in nanometers.
             * wavelength
             * dni_extra
             * dhi
@@ -227,12 +231,12 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
     spectrum_et = _SPECTRL2_COEFFS['spectral_irradiance_et'][:, np.newaxis]
 
     optical_thickness = (
-        aerosol_turbidity_500nm * (wavelength / 0.5)**-alpha
+        aerosol_turbidity_500nm * (wavelength / 500)**-alpha
     )  # Eq 2-7
 
     # Eq 3-16
     scattering_albedo = scattering_albedo_400nm * \
-        np.exp(-wavelength_variation_factor * np.log(wavelength / 0.4)**2)
+        np.exp(-wavelength_variation_factor * np.log(wavelength / 400)**2)
 
     spectrl2 = _spectrl2_transmittances(apparent_zenith, relative_airmass,
                                         surface_pressure, precipitable_water,
@@ -245,7 +249,8 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
     Id = spectrum_et_adj * Tr * Ta * Tw * To * Tu
 
     cosZ = cosd(apparent_zenith)
-    Cs = np.where(wavelength <= 0.45, (wavelength + 0.55)**1.8, 1.0)  # Eq 3-17
+    # Eq 3-17
+    Cs = np.where(wavelength <= 450, ((wavelength + 550)/1000)**1.8, 1.0)
     ALG = np.log(1 - aerosol_asymmetry_factor)  # Eq 3-14
     BFS = ALG * (0.0783 + ALG * (-0.3824 - ALG * 0.5874))  # Eq 3-13
     AFS = ALG * (1.459 + ALG * (0.1595 + ALG * 0.4129))  # Eq 3-12

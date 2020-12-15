@@ -1383,11 +1383,16 @@ class ModelChain:
 
     def _check_multiple_input(self, data, strict=True):
         """Check that the number of elements in `data` is the same as
-        the number of Arrays in `self.system`. If `strict` is False then
-        `data` does not have to be a tuple and length validation is not
-        performed. If `data` is a tuple of the correct length the indices
-        of each DataFrame it contains are compared for equality and an
-        error is raised if they differ.
+        the number of Arrays in `self.system`.
+
+        In most cases if ``self.system.num_arrays`` is greater than 1 we
+        want to raise an error when `data` is not a tuple; however, that
+        behavior can be suppressed by setting ``strict=False``. This is
+        useful for validating inputs such as GHI, DHI, DNI, wind speed, or
+        air temperature that can be applied a ``PVSystem`` as a system-wide
+        input. In this case we want to ensure that when a tuple is provided
+        it has the same length as the number of Arrays, but we do not want
+        to fail if the input is not a tuple.
         """
         if (not strict or self.system.num_arrays == 1) \
                 and not isinstance(data, tuple):
@@ -1524,8 +1529,24 @@ class ModelChain:
         if all(cell_temp is not None for cell_temp in given_cell_temperature):
             self.results.cell_temperature = given_cell_temperature
             return self
-        # Calculate cell temperature from weather data. Cell temperature models
-        # expect total_irrad['poa_global'].
+        # Calculate cell temperature from weather data. If cell_temperature
+        # has not been provided for some arrays then it is computed with
+        # ModelChain.temperature_model(). Because this operates on all Arrays
+        # simultaneously, 'poa_global' must be known for all arrays, including
+        # those that have a known cell temperature.
+        try:
+            self._verify_df(self.results.total_irrad, ['poa_global'])
+        except ValueError:
+            # Provide a more informative error message. Because only
+            # run_model_from_effective_irradiance() can get to this point
+            # without known POA we can suggest a very specific remedy in the
+            # error message.
+            raise ValueError("Incomplete input data. Data must contain "
+                             "'poa_global'. For systems with multiple Arrays "
+                             "if you have provided 'cell_temperature' for "
+                             "only a subset of Arrays you must provide "
+                             "'poa_global' for all Arrays, including those "
+                             "that have a known 'cell_temperature'.")
         self.temperature_model()
         # replace calculated cell temperature with temperature given in `data`
         # where available.

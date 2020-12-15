@@ -894,6 +894,23 @@ def test_run_model_from_effective_irradiance_minimal_input(
     assert not mc.results.ac.empty
 
 
+def test_run_model_from_effective_irradiance_missing_poa(
+        sapm_dc_snl_ac_system_Array, location, total_irrad):
+    data_incomplete = pd.DataFrame(
+        {'effective_irradiance': total_irrad['poa_global'],
+         'poa_global': total_irrad['poa_global']},
+        index=total_irrad.index)
+    data_complete = pd.DataFrame(
+        {'effective_irradiance': total_irrad['poa_global'],
+         'cell_temperature': 30},
+        index=total_irrad.index)
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    with pytest.raises(ValueError,
+                       match="you must provide 'poa_global' for all Arrays"):
+        mc.run_model_from_effective_irradiance(
+            (data_complete, data_incomplete))
+
+
 def poadc(mc):
     mc.results.dc = mc.results.total_irrad['poa_global'] * 0.2
     mc.results.dc.name = None  # assert_series_equal will fail without this

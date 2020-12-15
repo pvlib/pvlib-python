@@ -17,7 +17,7 @@ from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
                    temperature, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
-from pvlib.pvsystem import _DC_MODEL_PARAMS
+from pvlib.pvsystem import _DC_MODEL_PARAMS, _unwrap_single_value
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
 
@@ -1544,7 +1544,7 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame or tuple of DataFrame
+        weather : DataFrame, or list or tuple of DataFrame
             Irradiance column names must include ``'dni'``, ``'ghi'``, and
             ``'dhi'``. If optional columns ``'temp_air'`` and ``'wind_speed'``
             are not provided, air temperature of 20 C and wind speed of 0 m/s
@@ -1553,16 +1553,20 @@ class ModelChain:
             of `temperature_model`. If optional column `module_temperature`
             is provided, `temperature_model` must be ``'sapm'``.
 
-            If `weather` is a tuple it must have the same length as the number
-            of Arrays in the system being modeled. Each element should specify
-            the POA (and other input) to the corresponding Array in the system
-            being modeled.  For example, ``weather[0]`` contains weather data
-            for ``system.arrays[0]``. Each element must satisfy the
-            requirements described above.
+            If list or tuple, must be of the same length and order as the
+            Arrays of the ModelChain's PVSystem.
 
         Returns
         -------
         self
+
+        Raises
+        ------
+        ValueError
+            If the number of DataFrames in `data` is different than the number
+            of Arrays in the PVSystem.
+        ValueError
+            If the DataFrames in `data` have different indexes.
 
         Notes
         -----
@@ -1576,6 +1580,7 @@ class ModelChain:
         pvlib.modelchain.ModelChain.run_model_from_poa
         pvlib.modelchain.ModelChain.run_model_from_effective_irradiance
         """
+        weather = _to_tuple(weather)
         self.prepare_inputs(weather)
         self.aoi_model()
         self.spectral_model()
@@ -1595,7 +1600,7 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame or tuple of DataFrame
+        data : DataFrame, or list or tuple of DataFrame
             Required column names include ``'poa_global'``,
             ``'poa_direct'`` and ``'poa_diffuse'``. If optional columns
             ``'temp_air'`` and ``'wind_speed'`` are not provided, air
@@ -1605,16 +1610,22 @@ class ModelChain:
             ``'module_temperature'`` is provided, `temperature_model` must be
             ``'sapm'``.
 
-            If `data` is a tuple it must have the same length as the number
-            of Arrays in the system being modeled. Each element should specify
-            the POA (and other input) to the corresponding Array in the system
-            being modeled.  For example, ``data[0]`` contains POA irradiance
-            for ``system.arrays[0]``. Each element must satisfy the
-            requirements described above.
+            If the ModelChain's PVSystem has multiple arrays, `data` must be a
+            list or tuple with the same length and order as the PVsystem's
+            Arrays. Each element of `data` provides the irradiance and weather
+            for the corresponding array.
 
         Returns
         -------
         self
+
+        Raises
+        ------
+        ValueError
+            If the number of DataFrames in `data` is different than the number
+            of Arrays in the PVSystem.
+        ValueError
+            If the DataFrames in `data` have different indexes.
 
         Notes
         -----
@@ -1628,7 +1639,7 @@ class ModelChain:
         pvlib.modelchain.ModelChain.run_model
         pvlib.modelchain.ModelChain.run_model_from_effective_irradiance
         """
-
+        data = _to_tuple(data)
         self.prepare_inputs_from_poa(data)
 
         self.aoi_model()
@@ -1676,20 +1687,17 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame or tuple of DataFrame, default None
+        data : DataFrame, or list or tuple of DataFrame
             Required column is ``'effective_irradiance'``.
             If optional column ``'cell_temperature'`` is provided, these values
             are used instead of `temperature_model`. If optional column
             ``'module_temperature'`` is provided, `temperature_model` must be
             ``'sapm'``.
 
-            If the system has multiple Arrays, `data` must be a tuple with
-            the same length as the number of Arrays in the system where
-            each element provides the effective irradiance and weather
-            for the corresponding Array. Note that if any of the DataFrames
-            in `data` are missing a ``'cell_temperature'`` column, you must
-            provide a ``'poa_global'`` column in *every* DataFrame (not just
-            the one(s) without ``'cell_temperature'``).
+            If the ModelChain's PVSystem has multiple arrays, `data` must be a
+            list or tuple with the same length and order as the PVsystem's
+            Arrays. Each element of `data` provides the irradiance and weather
+            for the corresponding array.
 
         Returns
         -------
@@ -1698,11 +1706,10 @@ class ModelChain:
         Raises
         ------
         ValueError
-            If the number of Arrays is different than the number of data
-            frames passed in `data`
+            If the number of DataFrames in `data` is different than the number
+            of Arrays in the PVSystem.
         ValueError
-            If `data` is a tuple and the DataFrames it contains have
-            different indices.
+            If the DataFrames in `data` have different indexes.
 
         Notes
         -----
@@ -1715,6 +1722,7 @@ class ModelChain:
         pvlib.modelchain.ModelChain.run_model
         pvlib.modelchain.ModelChain.run_model_from_poa
         """
+        data = _to_tuple(data)
         self._check_multiple_input(data)
         self._assign_weather(data)
         self._assign_total_irrad(data)
@@ -1775,3 +1783,8 @@ def _tuple_from_dfs(dfs, name):
         return tuple(df[name] for df in dfs)
     else:
         return dfs[name]
+
+
+@_unwrap_single_value
+def _to_tuple(x):
+    return tuple(x)

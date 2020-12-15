@@ -10,7 +10,7 @@ from conftest import (
     requires_siphon,
     has_siphon,
     skip_windows,
-    requires_recent_cftime,
+    requires_recent_cftime
 )
 from conftest import RERUNS, RERUNS_DELAY
 
@@ -69,7 +69,7 @@ def model(request):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_process_data(model):
-    for how in ['liujordan', 'clearsky_scaling']:
+    for how in ['campbell_norman', 'clearsky_scaling']:
         if model.raw_data.empty:
             warnings.warn('Could not test {} process_data with how={} '
                           'because raw_data was empty'.format(model, how))

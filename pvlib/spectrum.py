@@ -220,12 +220,32 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
             * poa_direct
             * poa_global
 
+    Notes
+    -----
+    NREL's C implementation ``spectrl2_2.c`` [2]_ of the model differs in
+    several ways from the original report [1]_.  The report itself also has
+    a few differences between the in-text equations and the code appendix.
+    The list of known differences is shown below.  Note that this
+    implementation follows ``spectrl2_2.c``.
+
+    =================== ========== ========== ===============
+    Equation            Report     Appendix   spectrl2_2.c
+    =================== ========== ========== ===============
+    2-4                 1.335      1.335      1.3366
+    2-11                118.93     118.93     118.3
+    3-8                 To'        Tu'        Tu'
+    3-5, 3-6, 3-7, 3-1  double Cs  single Cs  sigle Cs
+    2-5                 kasten1966 kasten1966 kastenyoung1989
+    =================== ========== ========== ===============
+
     References
     ----------
     .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
        direct and diffuse irradiance on horizontal and tilted planes at the
        earth's surface for cloudless atmospheres", NREL Technical Report
        TR-215-2436 doi:10.2172/5986936.
+    .. [2] Bird Simple Spectral Model: spectrl2_2.c.
+       https://www.nrel.gov/grid/solar-resource/spectral.html
     """
     wavelength = _SPECTRL2_COEFFS['wavelength'][:, np.newaxis]
     spectrum_et = _SPECTRL2_COEFFS['spectral_irradiance_et'][:, np.newaxis]
@@ -308,9 +328,9 @@ def spectrl2(surface_tilt, apparent_zenith, aoi, ground_albedo,
     Iground = pvlib.irradiance.get_ground_diffuse(surface_tilt, ghi, albedo=rg)
 
     Itilt = Ibeam + Isky + Iground
-
+    wavelength_1d = wavelength.ravel()  # return value only needs 1 dimension
     return {
-        'wavelength': wavelength.ravel(),  # This only ever needs 1 dimension
+        'wavelength': wavelength_1d,
         'dni_extra': spectrum_et_adj,
         'dhi': Is,
         'dni': Id,

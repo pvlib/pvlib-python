@@ -906,7 +906,7 @@ def test_run_model_from_effective_irradiance_missing_poa(
         index=total_irrad.index)
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     with pytest.raises(ValueError,
-                       match="you must provide 'poa_global' for every Array"):
+                       match="you must provide 'poa_global' for all Arrays"):
         mc.run_model_from_effective_irradiance(
             (data_complete, data_incomplete))
 

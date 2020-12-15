@@ -9,11 +9,14 @@ from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
-from pvlib.irradiance import liujordan, get_extra_radiation, disc
+from pvlib.irradiance import campbell_norman, get_extra_radiation, disc
+from pvlib.irradiance import _liujordan
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
 import warnings
+from pvlib._deprecation import deprecated
+
 
 warnings.warn(
     'The forecast module algorithms and features are highly experimental. '
@@ -526,8 +529,48 @@ class ForecastModel:
 
         return transmittance
 
+    def cloud_cover_to_irradiance_campbell_norman(self, cloud_cover, **kwargs):
+        """
+        Estimates irradiance from cloud cover in the following steps:
+
+        1. Determine transmittance using a function of cloud cover e.g.
+           :py:meth:`~ForecastModel.cloud_cover_to_transmittance_linear`
+        2. Calculate GHI, DNI, DHI using the
+           :py:func:`pvlib.irradiance.campbell_norman` model
+
+        Parameters
+        ----------
+        cloud_cover : Series
+
+        Returns
+        -------
+        irradiance : DataFrame
+            Columns include ghi, dni, dhi
+        """
+        # in principle, get_solarposition could use the forecast
+        # pressure, temp, etc., but the cloud cover forecast is not
+        # accurate enough to justify using these minor corrections
+        solar_position = self.location.get_solarposition(cloud_cover.index)
+        dni_extra = get_extra_radiation(cloud_cover.index)
+
+        transmittance = self.cloud_cover_to_transmittance_linear(cloud_cover,
+                                                                 **kwargs)
+
+        irrads = campbell_norman(solar_position['apparent_zenith'],
+                                 transmittance, dni_extra=dni_extra)
+        irrads = irrads.fillna(0)
+
+        return irrads
+
+    @deprecated(
+        '0.8',
+        alternative='Forecast.cloud_cover_to_irradiance_campbell_norman',
+        name='Forecast.cloud_cover_to_irradiance_liujordan',
+        removal='0.9')
     def cloud_cover_to_irradiance_liujordan(self, cloud_cover, **kwargs):
         """
+        Deprecated. Use cloud_cover_to_irradiance_campbell_norman instead.
+
         Estimates irradiance from cloud cover in the following steps:
 
         1. Determine transmittance using a function of cloud cover e.g.
@@ -554,9 +597,9 @@ class ForecastModel:
         transmittance = self.cloud_cover_to_transmittance_linear(cloud_cover,
                                                                  **kwargs)
 
-        irrads = liujordan(solar_position['apparent_zenith'],
-                           transmittance, airmass['airmass_absolute'],
-                           dni_extra=dni_extra)
+        irrads = _liujordan(solar_position['apparent_zenith'],
+                            transmittance, airmass['airmass_absolute'],
+                            dni_extra=dni_extra)
         irrads = irrads.fillna(0)
 
         return irrads
@@ -571,7 +614,8 @@ class ForecastModel:
         cloud_cover : Series
         how : str, default 'clearsky_scaling'
             Selects the method for conversion. Can be one of
-            clearsky_scaling or liujordan.
+            clearsky_scaling or campbell_norman. Method liujordan is
+            deprecated.
         **kwargs
             Passed to the selected method.
 
@@ -584,6 +628,9 @@ class ForecastModel:
         how = how.lower()
         if how == 'clearsky_scaling':
             irrads = self.cloud_cover_to_irradiance_clearsky_scaling(
+                cloud_cover, **kwargs)
+        elif how == 'campbell_norman':
+            irrads = self.cloud_cover_to_irradiance_campbell_norman(
                 cloud_cover, **kwargs)
         elif how == 'liujordan':
             irrads = self.cloud_cover_to_irradiance_liujordan(

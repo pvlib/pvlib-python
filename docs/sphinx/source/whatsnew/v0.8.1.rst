@@ -9,7 +9,7 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
-
+* ``pvlib.irradiance.liujordan`` is deprecated.
 
 Enhancements
 ~~~~~~~~~~~~
@@ -17,10 +17,16 @@ Enhancements
   option to :py:class:`~pvlib.modelchain.ModelChain`. (:pull:`1042`) (:issue:`1073`)
 * Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
   only NOCT. (:pull:`1045`)
-* Added :py:func:`pvlib.inverter.sandia_multi` for modeling inverters with
-  multiple MPPTs (:issue:`457`, :pull:`1085`)
+* Added :py:func:`pvlib.inverter.sandia_multi` and :py:func:`pvlib.inverter.pvwatts_multi`
+  for modeling inverters with multiple MPPTs (:issue:`457`, :pull:`1085`, :pull:`1106`)
 * Added optional ``attributes`` parameter to :py:func:`pvlib.iotools.get_psm3`
   and added the option of fetching 5- and 15-minute PSM3 data. (:pull:`1086`)
+* Added :py:func:`pvlib.irradiance.campbell_norman` for estimating DNI, DHI and GHI
+  from extraterrestrial irradiance. This function replaces ``pvlib.irradiance.liujordan``;
+  users of ``pvlib.irradiance.liujordan`` should note that :py:func:`pvlib.irradiance.campbell_norman`
+  expects different parameters.
+* :py:meth:`pvlib.forecast.Forecast.cloud_cover_to_irradiance_campbell_norman`
+  replaces ``pvlib.forecast.Forecast.cloud_cover_to_irradiance_liujordan``.
 
 Bug fixes
 ~~~~~~~~~
@@ -28,6 +34,8 @@ Bug fixes
   inputs. (:issue:`1071`, :pull:`1072`)
 * Raise ``ValueError`` from  :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`
   when input does not have a 'dhi' column. (:issue:`1092`, :pull:`1093`)
+* Add missing modules (including ``shading`` and ``scaling``) to ``__init__.py``.
+  (:pull:`1103`)
 
 Testing
 ~~~~~~~

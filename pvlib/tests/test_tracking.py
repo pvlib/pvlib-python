@@ -8,7 +8,7 @@ from numpy.testing import assert_allclose
 
 import pvlib
 from pvlib.location import Location
-from pvlib import tracking
+from pvlib import tracking, pvsystem
 from conftest import DATA_DIR
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
@@ -303,6 +303,35 @@ def test_SingleAxisTracker_creation():
     assert system.inverter == 'blarg'
 
 
+def test_SingleAxisTracker_one_array_only():
+    system = tracking.SingleAxisTracker(
+        arrays=[pvsystem.Array(
+            module='foo',
+            surface_tilt=None,
+            surface_azimuth=None
+        )]
+    )
+    assert system.module == 'foo'
+    with pytest.raises(ValueError,
+                       match="SingleAxisTracker does not currently support "
+                             r"multiple arrays\."):
+        tracking.SingleAxisTracker(
+            arrays=[pvsystem.Array(module='foo'),
+                    pvsystem.Array(module='bar')]
+        )
+    with pytest.raises(ValueError,
+                       match="Array must not have surface_tilt "):
+        tracking.SingleAxisTracker(arrays=[pvsystem.Array(module='foo')])
+    with pytest.raises(ValueError,
+                       match="Array must not have surface_tilt "):
+        tracking.SingleAxisTracker(
+            arrays=[pvsystem.Array(surface_azimuth=None)])
+    with pytest.raises(ValueError,
+                       match="Array must not have surface_tilt "):
+        tracking.SingleAxisTracker(
+            arrays=[pvsystem.Array(surface_tilt=None)])
+
+
 def test_SingleAxisTracker_tracking():
     system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
                                         axis_azimuth=180, gcr=2.0/7.0,
@@ -451,14 +480,18 @@ def test_SingleAxisTracker___repr__():
   gcr: 0.25
   cross_axis_tilt: 0.0
   name: None
-  surface_tilt: None
-  surface_azimuth: None
-  module: blah
-  inverter: blarg
-  albedo: 0.25
-  racking_model: None
-  module_type: None
-  temperature_model_parameters: {'a': -3.56}"""
+  Array:
+    name: None
+    surface_tilt: None
+    surface_azimuth: None
+    module: blah
+    albedo: 0.25
+    racking_model: None
+    module_type: None
+    temperature_model_parameters: {'a': -3.56}
+    strings: 1
+    modules_per_string: 1
+  inverter: blarg"""
     assert system.__repr__() == expected
 
 
@@ -476,14 +509,18 @@ def test_LocalizedSingleAxisTracker___repr__():
   gcr: 0.25
   cross_axis_tilt: 0.0
   name: None
-  surface_tilt: None
-  surface_azimuth: None
-  module: blah
+  Array:
+    name: None
+    surface_tilt: None
+    surface_azimuth: None
+    module: blah
+    albedo: 0.25
+    racking_model: None
+    module_type: None
+    temperature_model_parameters: {'a': -3.56}
+    strings: 1
+    modules_per_string: 1
   inverter: blarg
-  albedo: 0.25
-  racking_model: None
-  module_type: None
-  temperature_model_parameters: {'a': -3.56}
   latitude: 32
   longitude: -111
   altitude: 0

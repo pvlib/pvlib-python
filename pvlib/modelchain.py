@@ -17,7 +17,7 @@ from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
                    temperature, tools)
 from pvlib.tracking import SingleAxisTracker
 import pvlib.irradiance  # avoid name conflict with full import
-from pvlib.pvsystem import _DC_MODEL_PARAMS, _unwrap_single_value
+from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
 
@@ -1149,6 +1149,7 @@ class ModelChain:
         self._check_multiple_input(weather)
         # Don't use ModelChain._assign_weather() here because it adds
         # temperature and wind-speed columns which we do not need here.
+        weather = _to_tuple(weather)
         self.weather = _copy(weather)
         self._assign_times()
         self.results.solar_position = self.location.get_solarposition(
@@ -1806,6 +1807,7 @@ def _tuple_from_dfs(dfs, name):
         return dfs[name]
 
 
-@_unwrap_single_value
 def _to_tuple(x):
+    if not isinstance(x, (tuple, list)):
+        return x
     return tuple(x)

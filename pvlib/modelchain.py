@@ -1383,11 +1383,16 @@ class ModelChain:
 
     def _check_multiple_input(self, data, strict=True):
         """Check that the number of elements in `data` is the same as
-        the number of Arrays in `self.system`. If `strict` is False then
-        `data` does not have to be a tuple and length validation is not
-        performed. If `data` is a tuple of the correct length the indices
-        of each DataFrame it contains are compared for equality and an
-        error is raised if they differ.
+        the number of Arrays in `self.system`.
+
+        In most cases if ``self.system.num_arrays`` is greater than 1 we
+        want to raise an error when `data` is not a tuple; however, that
+        behavior can be suppressed by setting ``strict=False``. This is
+        useful for validating inputs such as GHI, DHI, DNI, wind speed, or
+        air temperature that can be applied a ``PVSystem`` as a system-wide
+        input. In this case we want to ensure that when a tuple is provided
+        it has the same length as the number of Arrays, but we do not want
+        to fail if the input is not a tuple.
         """
         if (not strict or self.system.num_arrays == 1) \
                 and not isinstance(data, tuple):

@@ -879,6 +879,8 @@ def test_run_model_from_effective_irradiance_minimal_input(
                         index=total_irrad.index)
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.run_model_from_effective_irradiance(data)
+    # make sure, for a single Array, the result is the correct type and value
+    assert_series_equal(mc.results.cell_temperature, data['cell_temperature'])
     assert not mc.results.dc.empty
     assert not mc.results.ac.empty
     # test with multiple arrays

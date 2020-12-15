@@ -641,8 +641,10 @@ def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
     mc = ModelChain(system, location)
     mc.run_model(weather)
     assert system.singleaxis.call_count == 1
-    assert (mc.tracking.columns == ['tracker_theta', 'aoi', 'surface_azimuth',
-                                    'surface_tilt']).all()
+    assert (mc.results.tracking.columns == ['tracker_theta',
+                                            'aoi',
+                                            'surface_azimuth',
+                                            'surface_tilt']).all()
     assert mc.results.ac[0] > 0
     assert np.isnan(mc.results.ac[1])
 
@@ -811,8 +813,10 @@ def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
     mc = ModelChain(system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
     ac = mc.run_model_from_poa(total_irrad).results.ac
-    assert (mc.tracking.columns == ['tracker_theta', 'aoi', 'surface_azimuth',
-                                    'surface_tilt']).all()
+    assert (mc.results.tracking.columns == ['tracker_theta',
+                                            'aoi',
+                                            'surface_azimuth',
+                                            'surface_tilt']).all()
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=total_irrad.index)
     assert_series_equal(ac, expected)

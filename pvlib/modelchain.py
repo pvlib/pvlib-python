@@ -272,6 +272,7 @@ class ModelChainResult:
     airmass: pd.DataFrame = field(default=None)
     ac: pd.Series = field(default=None)
     # per DC array information
+    tracking: Optional[pd.DataFrame] = field(default=None)
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
     aoi: Optional[PerArray[pd.Series]] = field(default=None)
     aoi_modifier: Optional[PerArray[pd.Series]] = field(default=None)
@@ -362,7 +363,7 @@ class ModelChain:
     _deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
                          'aoi', 'aoi_modifier', 'spectral_modifier',
                          'cell_temperature', 'effective_irradiance',
-                         'dc', 'ac', 'diode_params']
+                         'dc', 'ac', 'diode_params', 'tracking']
 
     def __init__(self, system, location,
                  orientation_strategy=None,
@@ -1210,16 +1211,16 @@ class ModelChain:
         """
         Calculate tracker position and AOI
         """
-        self.tracking = self.system.singleaxis(
+        self.results.tracking = self.system.singleaxis(
             self.results.solar_position['apparent_zenith'],
             self.results.solar_position['azimuth'])
-        self.tracking['surface_tilt'] = (
-            self.tracking['surface_tilt']
+        self.results.tracking['surface_tilt'] = (
+            self.results.tracking['surface_tilt']
                 .fillna(self.system.axis_tilt))
-        self.tracking['surface_azimuth'] = (
-            self.tracking['surface_azimuth']
+        self.results.tracking['surface_azimuth'] = (
+            self.results.tracking['surface_azimuth']
                 .fillna(self.system.axis_azimuth))
-        self.results.aoi = self.tracking['aoi']
+        self.results.aoi = self.results.tracking['aoi']
         return self
 
     def _prep_inputs_fixed(self):
@@ -1360,8 +1361,8 @@ class ModelChain:
             self._prep_inputs_tracking()
             get_irradiance = partial(
                 self.system.get_irradiance,
-                self.tracking['surface_tilt'],
-                self.tracking['surface_azimuth'],
+                self.results.tracking['surface_tilt'],
+                self.results.tracking['surface_azimuth'],
                 self.results.solar_position['apparent_zenith'],
                 self.results.solar_position['azimuth'])
         else:

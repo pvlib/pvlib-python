@@ -871,6 +871,23 @@ def test_run_model_from_effective_irradiance_arrays(
     assert (mc.results.dc[0] != mc.results.dc[1]).all().all()
 
 
+def test_run_model_from_effective_irradiance_minimal_input(
+        sapm_dc_snl_ac_system, sapm_dc_snl_ac_system_Array,
+        location, total_irrad):
+    data = pd.DataFrame({'effective_irradiance': total_irrad['poa_global'],
+                         'cell_temperature': 40},
+                        index=total_irrad.index)
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.run_model_from_effective_irradiance(data)
+    assert not mc.results.dc.empty
+    assert not mc.results.ac.empty
+    # test with multiple arrays
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    mc.run_model_from_effective_irradiance((data, data))
+    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+    assert not mc.results.ac.empty
+
+
 def poadc(mc):
     mc.results.dc = mc.results.total_irrad['poa_global'] * 0.2
     mc.results.dc.name = None  # assert_series_equal will fail without this

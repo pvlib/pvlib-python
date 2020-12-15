@@ -1513,11 +1513,16 @@ class ModelChain:
             data = (data,) * self.system.num_arrays
         elif not isinstance(data, tuple):
             return self._prepare_temperature_single_array(data)
-        given_cell_temperature = itertools.starmap(
+        given_cell_temperature = tuple(itertools.starmap(
             self._get_cell_temperature,
             zip(data, self.results.total_irrad,
                 self.system.temperature_model_parameters)
-        )
+        ))
+        # If cell temperature has been specified for all arrays return
+        # immediately and do not try to compute it.
+        if all(cell_temp is not None for cell_temp in given_cell_temperature):
+            self.results.cell_temperature = given_cell_temperature
+            return self
         # Calculate cell temperature from weather data. Cell temperature models
         # expect total_irrad['poa_global'].
         self.temperature_model()

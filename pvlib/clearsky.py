@@ -848,7 +848,7 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     return clear_samples
 
 
-def detect_clearsky(measured, clearsky, times=None, window_length=10,
+def detect_clearsky(measured, clearsky, window_length=10,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
@@ -873,13 +873,10 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     Parameters
     ----------
-    measured : array or Series
+    measured : Series
         Time series of measured GHI. [W/m2]
-    clearsky : array or Series
+    clearsky : Series
         Time series of the expected clearsky GHI. [W/m2]
-    times : DatetimeIndex or None, default None.
-        Times of measured and clearsky values. If None the index of measured
-        will be used.
     window_length : int, default 10
         Length of sliding time window in minutes. Must be greater than 2
         periods.
@@ -910,9 +907,9 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     Returns
     -------
-    clear_samples : array or Series
-        Boolean array or Series of whether or not the given time is
-        clear. Return type is the same as the input type.
+    clear_samples : Series
+        Series of boolean indicating whether or not the given time is
+        clear.
 
     components : OrderedDict, optional
         Dict of arrays of whether or not the given time window is clear
@@ -925,8 +922,6 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     Raises
     ------
-    ValueError
-        If measured is not a Series and times is not provided
     NotImplementedError
         If timestamps are not equally spaced
 
@@ -954,45 +949,25 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         * uses centered windows (Matlab function uses left-aligned windows)
     """
 
-    if times is None:
-        try:
-            times = measured.index
-        except AttributeError:
-            raise ValueError("times is required when measured is not a Series")
-
-    # be polite about returning the same type as was input
-    ispandas = isinstance(measured, pd.Series)
-
-    # for internal use, need a Series
-    if not ispandas:
-        meas = pd.Series(measured, index=times)
-    else:
-        meas = measured
-
-    if not isinstance(clearsky, pd.Series):
-        clear = pd.Series(clearsky, index=times)
-    else:
-        clear = clearsky
-
-    sample_interval, samples_per_window = _get_sample_intervals(times,
+    sample_interval, samples_per_window = _get_sample_intervals(measured.index,
                                                                 window_length)
 
     # generate matrix of integers for creating windows with indexing
     H = hankel(np.arange(samples_per_window),
-               np.arange(samples_per_window-1, len(times)))
+               np.arange(samples_per_window-1, len(measured.index)))
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_line_length, meas_slope_nstd, meas_slope \
-        = _calc_stats(meas, samples_per_window, sample_interval, 'center')
+        = _calc_stats(measured, samples_per_window, sample_interval, 'center')
 
     # calculate clear sky statistics
     clear_mean, clear_max, _, _, clear_slope \
-        = _calc_stats(clear, samples_per_window, sample_interval, 'center')
+        = _calc_stats(clearsky, samples_per_window, sample_interval, 'center')
 
     alpha = 1
     for iteration in range(max_iterations):
         _, _, clear_line_length, _, _ = _calc_stats(
-            alpha * clear, samples_per_window, sample_interval, 'center')
+            alpha * clearsky, samples_per_window, sample_interval, 'center')
 
         line_diff = meas_line_length - clear_line_length
 
@@ -1002,13 +977,13 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
         # need to reduce window by 1 since slope is differenced already
-        c5 = _calc_c5(meas, alpha * clear, samples_per_window,
+        c5 = _calc_c5(measured, alpha * clearsky, samples_per_window,
                       'center', slope_dev)
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
         # create array to return
-        clear_samples = np.full_like(meas, False, dtype='bool')
+        clear_samples = np.full_like(measured, False, dtype='bool')
         # find the samples contained in any window classified as clear
         idx = _clear_sample_index(clear_windows, samples_per_window, 'center',
                                   H)
@@ -1016,10 +991,12 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
         # find a new alpha
         previous_alpha = alpha
-        clear_meas = meas[clear_samples]
-        clear_clear = clear[clear_samples]
+        clear_meas = measured[clear_samples]
+        clear_clear = clearsky[clear_samples]
+
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
+
         alpha = minimize_scalar(rmse).x
         if round(alpha*10000) == round(previous_alpha*10000):
             break
@@ -1027,10 +1004,6 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         import warnings
         warnings.warn('failed to converge after %s iterations'
                       % max_iterations, RuntimeWarning)
-
-    # be polite about returning the same type as was input
-    if ispandas:
-        clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:
         components = OrderedDict()

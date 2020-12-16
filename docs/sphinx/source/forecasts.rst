@@ -259,7 +259,7 @@ are as follows.
     # cloud cover in percentage units here
     transmittance = ((100.0 - cloud_cover) / 100.0) * 0.75
     # irrads is a DataFrame containing ghi, dni, dhi
-    irrads = liujordan(apparent_zenith, transmittance, airmass_absolute)
+    irrads = campbell_norman(apparent_zenith, transmittance)
 
 The figure below shows the result of the Campbell-Norman total cloud cover to
 irradiance conversion.

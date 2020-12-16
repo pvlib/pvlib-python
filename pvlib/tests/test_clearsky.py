@@ -579,8 +579,8 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
     with pytest.warns(RuntimeWarning):
         clear_samples = clearsky.detect_clearsky(
             expected['GHI'], cs['ghi']*alpha, max_iterations=1)
-    assert (clear_samples[:'2012-04-01 10:41:00'] is True).all()
-    assert (clear_samples['2012-04-01 10:42:00':] is False).all()
+    assert (clear_samples[:'2012-04-01 10:41:00'] == True).all()
+    assert (clear_samples['2012-04-01 10:42:00':] == False).all()
     clear_samples = clearsky.detect_clearsky(
             expected['GHI'], cs['ghi']*alpha, max_iterations=20)
     assert_series_equal(expected['Clear or not'], clear_samples,
@@ -604,6 +604,15 @@ def test_detect_clearsky_window(detect_clearsky_data):
     expected.iloc[-3:] = True
     assert_series_equal(expected, clear_samples,
                         check_dtype=False, check_names=False)
+
+
+def test_detect_clearsky_arrays(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'].values, cs['ghi'].values, times=cs.index,
+        window_length=10)
+    assert isinstance(clear_samples, np.ndarray)
+    assert (clear_samples == expected['Clear or not'].values).all()
 
 
 def test_detect_clearsky_irregular_times(detect_clearsky_data):

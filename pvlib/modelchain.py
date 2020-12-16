@@ -1307,26 +1307,25 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame or tuple of DataFrame
-            Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
-            ``'wind_speed'``, ``'temp_air'``. All irradiance components
-            are required. Air temperature of 20 C and wind speed
-            of 0 m/s will be added to the DataFrame if not provided.
+        weather : DataFrame, or tuple or list of DataFrame
+            Required column names include ``'dni'``, ``'ghi'``, ``'dhi'``.
+            Optional column names are ``'wind_speed'``, ``'temp_air'``; if not
+            provided, air temperature of 20 C and wind speed
+            of 0 m/s will be added to the DataFrame.
 
-            If `weather` is a tuple each DataFrame it contains must have
-            the same index and it must be the same length as the number
-            of Arrays in the system.
+            If `weather` is a tuple or list, it must be of the same length and
+            order as the Arrays of the ModelChain's PVSystem.
 
         Raises
         ------
         ValueError
-            If the `weather` DataFrame(s) are missing an irradiance component.
+            If any `weather` DataFrame(s) is missing an irradiance component.
         ValueError
-            If `weather` is a tuple and the DataFrames it contains have
+            If `weather` is a tuple or list and the DataFrames it contains have
             different indices.
         ValueError
-            If `weather` is a tuple with a different length than the number
-            of Arrays in the system.
+            If `weather` is a tuple or list with a different length than the
+            number of Arrays in the system.
 
         Notes
         -----
@@ -1423,8 +1422,8 @@ class ModelChain:
             ``'wind_speed'`` are not provided, air temperature of 20 C and wind
             speed of 0 m/s are assumed.
 
-            If there are multiple Arrays in the system then `data` must be
-            a tuple with the same length as the number of Arrays.
+            If list or tuple, must be of the same length and order as the
+            Arrays of the ModelChain's PVSystem.
 
         Raises
         ------

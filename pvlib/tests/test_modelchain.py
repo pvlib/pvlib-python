@@ -826,19 +826,17 @@ def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
     assert_series_equal(ac, expected)
 
 
+@pytest.mark.parametrize("input_type", [tuple, list])
 def test_run_model_from_poa_arrays(sapm_dc_snl_ac_system_Array, location,
-                                   weather, total_irrad):
+                                   weather, total_irrad, input_type):
     data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    mc.run_model_from_poa((data, data))
+    mc.run_model_from_poa(input_type((data, data)))
     # arrays have different orientation, but should give same dc power
     # because we are the same passing POA irradiance and air
     # temperature.
-    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
-    # test with list instead of tuple
-    mc.run_model_from_poa([data, data])
     assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
 
 

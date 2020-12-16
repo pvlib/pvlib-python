@@ -215,6 +215,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
         122, each array has shape (122, N) where N is the length of the
         input ``apparent_zenith``.  All values are spectral irradiance
         with units W/m^2/nm except for `wavelength`, which is in nanometers.
+
             * wavelength
             * dni_extra
             * dhi
@@ -238,7 +239,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     2-4                 1.335      1.335      1.3366
     2-11                118.93     118.93     118.3
     3-8                 To'        Tu'        Tu'
-    3-5, 3-6, 3-7, 3-1  double Cs  single Cs  sigle Cs
+    3-5, 3-6, 3-7, 3-1  double Cs  single Cs  single Cs
     2-5                 kasten1966 kasten1966 kastenyoung1989
     =================== ========== ========== ===============
 

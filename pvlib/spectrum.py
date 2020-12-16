@@ -258,10 +258,10 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
          scattering_albedo_400nm, alpha, wavelength_variation_factor,
          aerosol_asymmetry_factor) = \
             tuple(map(np.array, [
-                 apparent_zenith, aoi, surface_tilt, ground_albedo,
-                 surface_pressure, relative_airmass, precipitable_water, ozone,
-                 aerosol_turbidity_500nm, scattering_albedo_400nm, alpha,
-                 wavelength_variation_factor, aerosol_asymmetry_factor]))
+                apparent_zenith, aoi, surface_tilt, ground_albedo,
+                surface_pressure, relative_airmass, precipitable_water, ozone,
+                aerosol_turbidity_500nm, scattering_albedo_400nm, alpha,
+                wavelength_variation_factor, aerosol_asymmetry_factor]))
 
         dayofyear = original_index.dayofyear.values
 

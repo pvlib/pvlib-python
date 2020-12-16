@@ -56,10 +56,26 @@ def test_spectrl2(spectrl2_data):
                     atol=1e-4)
 
 
-def test_spectrl2_multiple(spectrl2_data):
+def test_spectrl2_array(spectrl2_data):
     # test that supplying arrays instead of scalars works
     kwargs, expected = spectrl2_data
     kwargs = {k: np.array([v, v, v]) for k, v in kwargs.items()}
+    actual = spectrum.spectrl2(**kwargs)
+
+    assert actual['wavelength'].shape == (122,)
+
+    keys = ['dni_extra', 'dhi', 'dni', 'poa_sky_diffuse', 'poa_ground_diffuse',
+            'poa_direct', 'poa_global']
+    for key in keys:
+        assert actual[key].shape == (122, 3)
+
+
+def test_spectrl2_series(spectrl2_data):
+    # test that supplying Series instead of scalars works
+    kwargs, expected = spectrl2_data
+    kwargs.pop('dayofyear')
+    index = pd.to_datetime(['2020-03-15 10:45:59']*3)
+    kwargs = {k: pd.Series([v, v, v], index=index) for k, v in kwargs.items()}
     actual = spectrum.spectrl2(**kwargs)
 
     assert actual['wavelength'].shape == (122,)

@@ -58,15 +58,14 @@ relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
 # arrays (one dimension for wavelength, one for time).
 
 spectra = spectrum.spectrl2(
-    apparent_zenith=solpos.apparent_zenith.values,
-    aoi=aoi.values,
+    apparent_zenith=solpos.apparent_zenith,
+    aoi=aoi,
     surface_tilt=tilt,
     ground_albedo=albedo,
     surface_pressure=pressure,
-    relative_airmass=relative_airmass.values,
+    relative_airmass=relative_airmass,
     precipitable_water=water_vapor_content,
     ozone=ozone,
-    dayofyear=times.dayofyear.values,
     aerosol_turbidity_500nm=tau500,
 )
 

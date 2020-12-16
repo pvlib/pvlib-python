@@ -6,6 +6,7 @@ irradiance spectrum.
 import pvlib
 from pvlib.tools import cosd
 import numpy as np
+import pandas as pd
 
 # SPECTRL2 extraterrestrial spectrum and atmospheric absorption coefficients
 _SPECTRL2_COEFFS = np.zeros(122, dtype=np.dtype([
@@ -155,9 +156,9 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
 
 def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
              surface_pressure, relative_airmass, precipitable_water, ozone,
-             dayofyear, aerosol_turbidity_500nm, scattering_albedo_400nm=0.945,
-             alpha=1.14, wavelength_variation_factor=0.095,
-             aerosol_asymmetry_factor=0.65):
+             aerosol_turbidity_500nm, dayofyear=None,
+             scattering_albedo_400nm=0.945, alpha=1.14,
+             wavelength_variation_factor=0.095, aerosol_asymmetry_factor=0.65):
     """
     Estimate spectral irradiance using the Bird Simple Spectral Model
     (SPECTRL2).
@@ -170,40 +171,41 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
 
     Parameters
     ----------
-    apparent_zenith : float or numpy array
+    apparent_zenith : numeric
         Solar zenith angle [degrees]
-    aoi : float or numpy array
+    aoi : numeric
         Angle of incidence of the solar vector on the panel [degrees]
-    surface_tilt : float or numpy array
+    surface_tilt : numeric
         Panel tilt from horizontal [degrees]
-    ground_albedo : float or numpy array
+    ground_albedo : numeric
         Albedo [0-1] of the ground surface. Can be provided as a scalar value
         if albedo is not spectrally-dependent, or as a 122xN matrix where
         the first dimension spans the wavelength range and the second spans
         the number of simulations. [unitless]
-    surface_pressure : float or numpy array
+    surface_pressure : numeric
         Surface pressure [Pa]
-    relative_airmass : float or numpy array
+    relative_airmass : numeric
         Relative airmass. The airmass model used in [1]_ is the `'kasten1966'`
         model, while a later implementation by NREL uses the
         `'kastenyoung1989'` model. [unitless]
-    precipitable_water : float or numpy array
+    precipitable_water : numeric
         Atmospheric water vapor content [cm]
-    ozone : float or numpy array
+    ozone : numeric
         Atmospheric ozone content [atm-cm]
-    dayofyear : float or numpy array
-        The day of year [1-365]
-    aerosol_turbidity_500nm : float or numpy array
+    aerosol_turbidity_500nm : numeric
         Aerosol turbidity at 500 nm [unitless]
-    scattering_albedo_400nm : float or numpy array, default 0.945
+    dayofyear : numeric, optional
+        The day of year [1-365].  Must be provided if ``apparent_zenith`` is
+        not a pandas Series.
+    scattering_albedo_400nm : numeric, default 0.945
         Aerosol single scattering albedo at 400nm. The default value of 0.945
         is suggested in [1]_ for a rural aerosol model. [unitless]
-    alpha : float or numpy array, default 1.14
+    alpha : numeric, default 1.14
         Angstrom turbidity exponent. The default value of 1.14 is suggested
         in [1]_ for a rural aerosol model. [unitless]
-    wavelength_variation_factor : float or numpy array, default 0.095
+    wavelength_variation_factor : numeric, default 0.095
         Wavelength variation factor [unitless]
-    aerosol_asymmetry_factor : float or numpy array, default 0.65
+    aerosol_asymmetry_factor : numeric, default 0.65
         Aeorosol asymmetry factor (mean cosine of scattering angle) [unitless]
 
     Returns
@@ -247,6 +249,22 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     .. [2] Bird Simple Spectral Model: spectrl2_2.c.
        https://www.nrel.gov/grid/solar-resource/spectral.html
     """
+    # values need to be np arrays for broadcasting, so unwrap Series if needed:
+    is_pandas = isinstance(apparent_zenith, pd.Series)
+    if is_pandas:
+        original_index = apparent_zenith.index
+        (apparent_zenith, aoi, surface_tilt, ground_albedo, surface_pressure,
+         relative_airmass, precipitable_water, ozone, aerosol_turbidity_500nm,
+         scattering_albedo_400nm, alpha, wavelength_variation_factor,
+         aerosol_asymmetry_factor) = \
+            tuple(map(np.array, [
+                 apparent_zenith, aoi, surface_tilt, ground_albedo,
+                 surface_pressure, relative_airmass, precipitable_water, ozone,
+                 aerosol_turbidity_500nm, scattering_albedo_400nm, alpha,
+                 wavelength_variation_factor, aerosol_asymmetry_factor]))
+
+        dayofyear = original_index.dayofyear.values
+
     wavelength = _SPECTRL2_COEFFS['wavelength'][:, np.newaxis]
     spectrum_et = _SPECTRL2_COEFFS['spectral_irradiance_et'][:, np.newaxis]
 

@@ -411,6 +411,26 @@ def test_run_model_from_irradiance_arrays_no_loss(
         mc_both.results.dc[1],
         mc_two.results.dc
     )
+    # repeat test with tuple/list of weather
+    mc_both_results = mc_both.results.copy()
+    mc_both.run_model((irradiance, irradiance))
+    assert_frame_equal(
+        mc_both.results.dc[0],
+        mc_both_results.dc[0]
+    )
+    assert_frame_equal(
+        mc_both.results.dc[1],
+        mc_both_results.dc[1]
+    )
+    mc_both.run_model([irradiance, irradiance])
+    assert_frame_equal(
+        mc_both.results.dc[0],
+        mc_both_results.dc[0]
+    )
+    assert_frame_equal(
+        mc_both.results.dc[1],
+        mc_both_results.dc[1]
+    )
 
 
 @pytest.mark.parametrize('inverter', ['adr', 'pvwatts'])
@@ -529,6 +549,10 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays, location):
                                 'dhi': [75, 65]},
                                index=times)
     mc.run_model((weather_one, weather_two))
+    assert (mc.results.dc[0] != mc.results.dc[1]).all().all()
+    assert not mc.results.ac.empty
+    # test with list of weather
+    mc.run_model([weather_one, weather_two])
     assert (mc.results.dc[0] != mc.results.dc[1]).all().all()
     assert not mc.results.ac.empty
 
@@ -802,6 +826,22 @@ def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
     assert_series_equal(ac, expected)
 
 
+def test_run_model_from_poa_arrays(sapm_dc_snl_ac_system_Array, location,
+                                   weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    mc.run_model_from_poa((data, data))
+    # arrays have different orientation, but should give same dc power
+    # because we are the same passing POA irradiance and air
+    # temperature.
+    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+    # test with list instead of tuple
+    mc.run_model_from_poa([data, data])
+    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+
+
 def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
                                      total_irrad):
     system = SingleAxisTracker(
@@ -869,6 +909,10 @@ def test_run_model_from_effective_irradiance_arrays(
     # because we are the same passing effective irradiance and cell
     # temperature.
     assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+    # test with list instead of tuple
+    mc.run_model_from_effective_irradiance([data, data])
+    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+    # test that unequal inputs create unequal results
     data_two = data.copy()
     data_two['effective_irradiance'] = data['poa_global'] * 0.5
     mc.run_model_from_effective_irradiance((data, data_two))

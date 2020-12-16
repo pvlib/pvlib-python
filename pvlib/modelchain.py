@@ -1146,10 +1146,10 @@ class ModelChain:
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
         >>> mc.run_model(my_weather)  # doctest: +SKIP
         """
+        weather = _to_tuple(weather)
         self._check_multiple_input(weather)
         # Don't use ModelChain._assign_weather() here because it adds
         # temperature and wind-speed columns which we do not need here.
-        weather = _to_tuple(weather)
         self.weather = _copy(weather)
         self._assign_times()
         self.results.solar_position = self.location.get_solarposition(

@@ -265,6 +265,10 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
 
         dayofyear = original_index.dayofyear.values
 
+    if not is_pandas and dayofyear is None:
+        raise ValueError('dayofyear must be specified if not using pandas '
+                         'Series inputs')
+
     wavelength = _SPECTRL2_COEFFS['wavelength'][:, np.newaxis]
     spectrum_et = _SPECTRL2_COEFFS['spectral_irradiance_et'][:, np.newaxis]
 

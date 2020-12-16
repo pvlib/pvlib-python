@@ -84,3 +84,11 @@ def test_spectrl2_series(spectrl2_data):
             'poa_direct', 'poa_global']
     for key in keys:
         assert actual[key].shape == (122, 3)
+
+
+def test_dayofyear_missing(spectrl2_data):
+    # test that not specifying dayofyear with non-pandas inputs raises error
+    kwargs, expected = spectrl2_data
+    kwargs.pop('dayofyear')
+    with pytest.raises(ValueError, match='dayofyear must be specified'):
+        _ = spectrum.spectrl2(**kwargs)

@@ -704,7 +704,8 @@ def test_prepare_poa_arrays_missing_column(
     poa = pd.concat([weather, total_irrad], axis=1)
     with pytest.raises(ValueError, match=r"Incomplete input data\. "
                                          r"Data needs to contain .*\. "
-                                         r"Detected data contains: .*"):
+                                         r"Detected data in element 1 "
+                                         r"contains: .*"):
         mc.prepare_inputs_from_poa((poa, poa.drop(columns='poa_global')))
 
 

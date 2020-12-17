@@ -1242,17 +1242,18 @@ class ModelChain:
         ------
         ValueError if any of required are not in data.columns.
         """
-        def _verify(data):
+        def _verify(data, index=None):
             if not set(required) <= set(data.columns):
+                tuple_txt = "" if index is None else f"in element {index} "
                 raise ValueError(
                     "Incomplete input data. Data needs to contain "
-                    f"{required}. Detected data contains: "
+                    f"{required}. Detected data {tuple_txt}contains: "
                     f"{list(data.columns)}")
         if not isinstance(data, tuple):
             _verify(data)
         else:
-            for array_data in data:
-                _verify(array_data)
+            for (i, array_data) in enumerate(data):
+                _verify(array_data, i)
 
     def _assign_weather(self, data):
         def _build_weather(data):

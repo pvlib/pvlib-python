@@ -281,7 +281,6 @@ class ModelChainResult:
     effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
     dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \
         field(default=None)
-    array_ac: Optional[PerArray[pd.Series]] = field(default=None)
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
 
 

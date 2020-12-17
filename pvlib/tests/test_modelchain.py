@@ -328,6 +328,7 @@ def test_orientation_strategy(strategy, expected, sapm_dc_snl_ac_system,
     assert sapm_dc_snl_ac_system.surface_tilt == expected[0]
     assert sapm_dc_snl_ac_system.surface_azimuth == expected[1]
 
+
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
@@ -413,6 +414,44 @@ def test_run_model_from_irradiance_arrays_no_loss(
     )
 
 
+@pytest.mark.parametrize("input_type", [tuple, list])
+def test_run_model_from_irradiance_arrays_no_loss_input_type(
+        multi_array_sapm_dc_snl_ac_system, location, input_type):
+    mc_both = ModelChain(
+        multi_array_sapm_dc_snl_ac_system['two_array_system'],
+        location,
+        aoi_model='no_loss',
+        spectral_model='no_loss',
+        losses_model='no_loss'
+    )
+    mc_one = ModelChain(
+        multi_array_sapm_dc_snl_ac_system['array_one_system'],
+        location,
+        aoi_model='no_loss',
+        spectral_model='no_loss',
+        losses_model='no_loss'
+    )
+    mc_two = ModelChain(
+        multi_array_sapm_dc_snl_ac_system['array_two_system'],
+        location,
+        aoi_model='no_loss',
+        spectral_model='no_loss',
+        losses_model='no_loss'
+    )
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
+                              index=times)
+    mc_one.run_model(irradiance)
+    mc_two.run_model(irradiance)
+    mc_both.run_model(input_type((irradiance, irradiance)))
+    assert_frame_equal(
+        mc_both.results.dc[0], mc_one.results.dc
+    )
+    assert_frame_equal(
+        mc_both.results.dc[1], mc_two.results.dc
+    )
+
+
 @pytest.mark.parametrize('inverter', ['adr', 'pvwatts'])
 def test_ModelChain_invalid_inverter_params_arrays(
         inverter, sapm_dc_snl_ac_system_same_arrays,
@@ -424,6 +463,16 @@ def test_ModelChain_invalid_inverter_params_arrays(
     with pytest.raises(ValueError,
                        match=r'Only sandia_multi supports multiple Arrays\.'):
         ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
+
+
+@pytest.mark.parametrize("input_type", [tuple, list])
+def test_prepare_inputs_multi_weather(
+        sapm_dc_snl_ac_system_Array, location, input_type):
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    weather = pd.DataFrame({'ghi': [1], 'dhi': [1], 'dni': [1]})
+    mc.prepare_inputs(input_type((weather, weather)))
+    num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
+    assert len(mc.results.total_irrad) == num_arrays
 
 
 def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):
@@ -452,18 +501,19 @@ def test_prepare_inputs_arrays_one_missing_irradiance(
         mc.prepare_inputs((weather_incomplete, weather))
 
 
+@pytest.mark.parametrize("input_type", [tuple, list])
 def test_prepare_inputs_weather_wrong_length(
-        sapm_dc_snl_ac_system_Array, location):
+        sapm_dc_snl_ac_system_Array, location, input_type):
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     weather = pd.DataFrame({'ghi': [1], 'dhi': [1], 'dni': [1]})
     with pytest.raises(ValueError,
                        match="Input must be same length as number of Arrays "
                              r"in system\. Expected 2, got 1\."):
-        mc.prepare_inputs((weather,))
+        mc.prepare_inputs(input_type((weather,)))
     with pytest.raises(ValueError,
                        match="Input must be same length as number of Arrays "
                              r"in system\. Expected 2, got 3\."):
-        mc.prepare_inputs((weather, weather, weather))
+        mc.prepare_inputs(input_type((weather, weather, weather)))
 
 
 def test_ModelChain_times_error_arrays(sapm_dc_snl_ac_system_Array, location):
@@ -517,7 +567,9 @@ def test_prepare_inputs_missing_irrad_component(
         mc.prepare_inputs(weather)
 
 
-def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays, location):
+@pytest.mark.parametrize("input_type", [tuple, list])
+def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays, location,
+                                  input_type):
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
     times = pd.date_range('20200101 1200-0700', periods=2, freq='2H')
     weather_one = pd.DataFrame({'dni': [900, 800],
@@ -528,7 +580,7 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays, location):
                                 'ghi': [300, 200],
                                 'dhi': [75, 65]},
                                index=times)
-    mc.run_model((weather_one, weather_two))
+    mc.run_model(input_type((weather_one, weather_two)))
     assert (mc.results.dc[0] != mc.results.dc[1]).all().all()
     assert not mc.results.ac.empty
 
@@ -674,8 +726,21 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
     assert_frame_equal(mc.results.total_irrad, total_irrad)
 
 
-def test_prepare_poa_wrong_number_arrays(
-        sapm_dc_snl_ac_system_Array, location, total_irrad, weather):
+@pytest.mark.parametrize("input_type", [tuple, list])
+def test_prepare_inputs_from_poa_multi_data(
+        sapm_dc_snl_ac_system_Array, location, total_irrad, weather,
+        input_type):
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    poa = pd.concat([weather, total_irrad], axis=1)
+    mc.prepare_inputs_from_poa(input_type((poa, poa)))
+    num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
+    assert len(mc.results.total_irrad) == num_arrays
+
+
+@pytest.mark.parametrize("input_type", [tuple, list])
+def test_prepare_inputs_from_poa_wrong_number_arrays(
+        sapm_dc_snl_ac_system_Array, location, total_irrad, weather,
+        input_type):
     len_error = r"Input must be same length as number of Arrays in system\. " \
                 r"Expected 2, got [0-9]+\."
     type_error = r"Input must be a tuple of length 2, got .*\."
@@ -684,12 +749,12 @@ def test_prepare_poa_wrong_number_arrays(
     with pytest.raises(TypeError, match=type_error):
         mc.prepare_inputs_from_poa(poa)
     with pytest.raises(ValueError, match=len_error):
-        mc.prepare_inputs_from_poa((poa,))
+        mc.prepare_inputs_from_poa(input_type((poa,)))
     with pytest.raises(ValueError, match=len_error):
-        mc.prepare_inputs_from_poa((poa, poa, poa))
+        mc.prepare_inputs_from_poa(input_type((poa, poa, poa)))
 
 
-def test_prepare_poa_arrays_different_indices(
+def test_prepare_inputs_from_poa_arrays_different_indices(
         sapm_dc_snl_ac_system_Array, location, total_irrad, weather):
     error_str = r"Input DataFrames must have same index\."
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
@@ -698,7 +763,7 @@ def test_prepare_poa_arrays_different_indices(
         mc.prepare_inputs_from_poa((poa, poa.shift(periods=1, freq='6H')))
 
 
-def test_prepare_poa_arrays_missing_column(
+def test_prepare_inputs_from_poa_arrays_missing_column(
         sapm_dc_snl_ac_system_Array, location, weather, total_irrad):
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     poa = pd.concat([weather, total_irrad], axis=1)
@@ -803,6 +868,20 @@ def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
     assert_series_equal(ac, expected)
 
 
+@pytest.mark.parametrize("input_type", [tuple, list])
+def test_run_model_from_poa_arrays(sapm_dc_snl_ac_system_Array, location,
+                                   weather, total_irrad, input_type):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    mc.run_model_from_poa(input_type((data, data)))
+    # arrays have different orientation, but should give same dc power
+    # because we are the same passing POA irradiance and air
+    # temperature.
+    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+
+
 def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
                                      total_irrad):
     system = SingleAxisTracker(
@@ -836,8 +915,10 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
     assert_series_equal(ac, expected)
 
 
+@pytest.mark.parametrize("input_type", [tuple, list])
 def test_run_model_from_effective_irradiance_arrays_error(
-        sapm_dc_snl_ac_system_Array, location, weather, total_irrad):
+        sapm_dc_snl_ac_system_Array, location, weather, total_irrad,
+        input_type):
     data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     data['effetive_irradiance'] = data['poa_global']
@@ -848,9 +929,9 @@ def test_run_model_from_effective_irradiance_arrays_error(
     with pytest.raises(TypeError, match=type_error):
         mc.run_model_from_effective_irradiance(data)
     with pytest.raises(ValueError, match=len_error):
-        mc.run_model_from_effective_irradiance((data,))
+        mc.run_model_from_effective_irradiance(input_type((data,)))
     with pytest.raises(ValueError, match=len_error):
-        mc.run_model_from_effective_irradiance((data, data, data))
+        mc.run_model_from_effective_irradiance(input_type((data, data, data)))
     with pytest.raises(ValueError,
                        match=r"Input DataFrames must have same index\."):
         mc.run_model_from_effective_irradiance(
@@ -858,21 +939,24 @@ def test_run_model_from_effective_irradiance_arrays_error(
         )
 
 
+@pytest.mark.parametrize("input_type", [tuple, list])
 def test_run_model_from_effective_irradiance_arrays(
-        sapm_dc_snl_ac_system_Array, location, weather, total_irrad):
+        sapm_dc_snl_ac_system_Array, location, weather, total_irrad,
+        input_type):
     data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     data['effective_irradiance'] = data['poa_global']
     data['cell_temperature'] = 40
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
-    mc.run_model_from_effective_irradiance((data, data))
+    mc.run_model_from_effective_irradiance(input_type((data, data)))
     # arrays have different orientation, but should give same dc power
     # because we are the same passing effective irradiance and cell
     # temperature.
     assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+    # test that unequal inputs create unequal results
     data_two = data.copy()
     data_two['effective_irradiance'] = data['poa_global'] * 0.5
-    mc.run_model_from_effective_irradiance((data, data_two))
+    mc.run_model_from_effective_irradiance(input_type((data, data_two)))
     assert (mc.results.dc[0] != mc.results.dc[1]).all().all()
 
 
@@ -984,7 +1068,6 @@ def test_singlediode_dc_arrays(location, dc_model,
     assert len(mc.results.dc) == system.num_arrays
     for dc in mc.results.dc:
         assert isinstance(dc, (pd.Series, pd.DataFrame))
-
 
 
 @pytest.mark.parametrize('dc_model', ['sapm', 'cec', 'cec_native'])
@@ -1531,9 +1614,10 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
 
 
 @pytest.mark.filterwarnings("ignore:This function is not safe at the moment")
+@pytest.mark.parametrize("input_type", [tuple, list])
 @requires_tables
 def test_complete_irradiance_arrays(
-        sapm_dc_snl_ac_system_same_arrays, location):
+        sapm_dc_snl_ac_system_same_arrays, location, input_type):
     """ModelChain.complete_irradiance can accept a tuple of weather
     DataFrames."""
     times = pd.date_range(start='2020-01-01 0700-0700', periods=2, freq='H')
@@ -1543,8 +1627,8 @@ def test_complete_irradiance_arrays(
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
     with pytest.raises(ValueError,
                        match=r"Input DataFrames must have same index\."):
-        mc.complete_irradiance((weather, weather[1:]))
-    mc.complete_irradiance((weather, weather))
+        mc.complete_irradiance(input_type((weather, weather[1:])))
+    mc.complete_irradiance(input_type((weather, weather)))
     for mc_weather in mc.weather:
         assert_series_equal(mc_weather['dni'],
                             pd.Series([2, 3], index=times, name='dni'))
@@ -1553,10 +1637,11 @@ def test_complete_irradiance_arrays(
         assert_series_equal(mc_weather['ghi'],
                             pd.Series([9, 5], index=times, name='ghi'))
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
-    mc.complete_irradiance((weather[['ghi', 'dhi']], weather[['dhi', 'dni']]))
+    mc.complete_irradiance(input_type((weather[['ghi', 'dhi']],
+                                       weather[['dhi', 'dni']])))
     assert 'dni' in mc.weather[0].columns
     assert 'ghi' in mc.weather[1].columns
-    mc.complete_irradiance((weather, weather[['ghi', 'dni']]))
+    mc.complete_irradiance(input_type((weather, weather[['ghi', 'dni']])))
     assert_series_equal(mc.weather[0]['dhi'],
                         pd.Series([4, 6], index=times, name='dhi'))
     assert_series_equal(mc.weather[0]['ghi'],
@@ -1566,8 +1651,9 @@ def test_complete_irradiance_arrays(
     assert 'dhi' in mc.weather[1].columns
 
 
+@pytest.mark.parametrize("input_type", [tuple, list])
 def test_complete_irradiance_arrays_wrong_length(
-        sapm_dc_snl_ac_system_same_arrays, location):
+        sapm_dc_snl_ac_system_same_arrays, location, input_type):
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
     times = pd.date_range(start='2020-01-01 0700-0700', periods=2, freq='H')
     weather = pd.DataFrame({'dni': [2, 3],
@@ -1576,9 +1662,9 @@ def test_complete_irradiance_arrays_wrong_length(
     error_str = "Input must be same length as number " \
                 r"of Arrays in system\. Expected 2, got [0-9]+\."
     with pytest.raises(ValueError, match=error_str):
-        mc.complete_irradiance((weather,))
+        mc.complete_irradiance(input_type((weather,)))
     with pytest.raises(ValueError, match=error_str):
-        mc.complete_irradiance((weather, weather, weather))
+        mc.complete_irradiance(input_type((weather, weather, weather)))
 
 
 def test_unknown_attribute(sapm_dc_snl_ac_system, location):

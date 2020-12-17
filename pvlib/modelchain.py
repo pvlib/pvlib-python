@@ -1770,6 +1770,8 @@ def _copy(data):
 
 
 def _all_same_index(data):
+    """Raise a ValueError if all DataFrames in `data` do not have the
+    same index."""
     indexes = map(lambda df: df.index, data)
     next(indexes, None)
     for index in indexes:
@@ -1778,6 +1780,8 @@ def _all_same_index(data):
 
 
 def _common_keys(dicts):
+    """Return the intersection of the set of keys for each dictionary
+    in `dicts`"""
     if isinstance(dicts, tuple):
         return set.intersection(*map(set, dicts))
     return set(dicts)

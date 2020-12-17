@@ -1603,6 +1603,7 @@ class ModelChain:
         pvlib.modelchain.ModelChain.run_model_from_poa
         pvlib.modelchain.ModelChain.run_model_from_effective_irradiance
         """
+        weather = _to_tuple(weather)
         self.prepare_inputs(weather)
         self.aoi_model()
         self.spectral_model()

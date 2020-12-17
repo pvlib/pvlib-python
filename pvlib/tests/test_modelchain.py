@@ -947,7 +947,7 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     # remove Adjust from model parameters for desoto, singlediode
     if dc_model in ['desoto', 'singlediode']:
         system.module_parameters.pop('Adjust')
-    m = mocker.spy(system, dc_model_function[dc_model])
+    m = mocker.spy(pvsystem, dc_model_function[dc_model])
     mc = ModelChain(system, location,
                     aoi_model='no_loss', spectral_model='no_loss',
                     temperature_model=temp_model_function[dc_model])

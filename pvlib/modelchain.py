@@ -705,25 +705,22 @@ class ModelChain:
                  'nNsVth': nNsVth}
             )
         params = calcparams_model_function(self.results.effective_irradiance,
-                                           self.results.cell_temperature)
-        if self.system.num_arrays == 1:
-            self.results.diode_params = _make_diode_params(*params)
-            self.results.dc = self.system.singlediode(*params)
-        else:
-            self.results.diode_params = tuple(
-                _make_diode_params(*params) for params in params
-            )
-            self.results.dc = tuple(
-                self.system.singlediode(*params)
-                for params in params
-            )
+                                           self.results.cell_temperature,
+                                           unwrap=False)
+        self.results.diode_params = tuple(itertools.starmap(
+            _make_diode_params, params))
+        self.results.dc = tuple(itertools.starmap(
+            self.system.singlediode, params))
         self.results.dc = self.system.scale_voltage_current_power(
-            self.results.dc
+            self.results.dc,
+            unwrap=False
         )
+        self.results.dc = tuple(dc.fillna(0) for dc in self.results.dc)
+        # If the system has one Array, unwrap the single return value
+        # to preserve the original behavior of ModelChain
         if self.system.num_arrays == 1:
-            self.results.dc = self.results.dc.fillna(0)
-        else:
-            self.results.dc = tuple(dc.fillna(0) for dc in self.results.dc)
+            self.results.diode_params = self.results.diode_params[0]
+            self.results.dc = self.results.dc[0]
         return self
 
     def desoto(self):

@@ -268,9 +268,9 @@ class ModelChainResult:
     T = TypeVar('T')
     PerArray = Union[T, Tuple[T, ...]]
     # system-level information
-    solar_position: pd.DataFrame = field(default=None)
-    airmass: pd.DataFrame = field(default=None)
-    ac: pd.Series = field(default=None)
+    solar_position: Optional[pd.DataFrame] = field(default=None)
+    airmass: Optional[pd.DataFrame] = field(default=None)
+    ac: Optional[pd.Series] = field(default=None)
     # per DC array information
     tracking: Optional[pd.DataFrame] = field(default=None)
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
@@ -279,7 +279,8 @@ class ModelChainResult:
     spectral_modifier: Optional[PerArray[pd.Series]] = field(default=None)
     cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
     effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
-    dc: Optional[PerArray[pd.Series]] = field(default=None)
+    dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \
+        field(default=None)
     array_ac: Optional[PerArray[pd.Series]] = field(default=None)
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
 

@@ -468,8 +468,11 @@ def test_ModelChain_invalid_inverter_params_arrays(
 @pytest.mark.parametrize("input_type", [tuple, list])
 def test_prepare_inputs_multi_weather(
         sapm_dc_snl_ac_system_Array, location, input_type):
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
-    weather = pd.DataFrame({'ghi': [1], 'dhi': [1], 'dni': [1]})
+    weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1},
+                           index=times)
     mc.prepare_inputs(input_type((weather, weather)))
     num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
     assert len(mc.results.total_irrad) == num_arrays

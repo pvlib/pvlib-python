@@ -1004,7 +1004,8 @@ class ModelChain:
                              f'Common temperature model parameters: {params}.')
 
     def _set_celltemp(self, model):
-        """Set self.results.cell_temp using the given cell temperature model.
+        """Set self.results.cell_temperature using the given cell
+        temperature model.
 
         Parameters
         ----------

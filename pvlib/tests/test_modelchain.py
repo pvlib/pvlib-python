@@ -1593,7 +1593,8 @@ def test_inconsistent_array_params(location):
     temperature_error = "could not infer temperature model from " \
                         r"system\.temperature_model_parameters\. Check " \
                         r"that all Arrays in system\.arrays have " \
-                        r"parameters for the same model \(or models\) .*"
+                        r"parameters for the same temperature model\. " \
+                        r"Common temperature model parameters: .*"
     different_module_system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(

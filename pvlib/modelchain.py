@@ -975,7 +975,8 @@ class ModelChain:
                     f'Temperature model {self._temperature_model.__name__} is '
                     f'inconsistent with PVSystem temperature model '
                     f'parameters. All Arrays in system.arrays must have '
-                    f'consistent parameters. '
+                    f'consistent parameters. Common temperature model '
+                    f'parameters: '
                     f'{_common_keys(self.system.temperature_model_parameters)}'
                 )
         else:
@@ -999,8 +1000,8 @@ class ModelChain:
             raise ValueError(f'could not infer temperature model from '
                              f'system.temperature_model_parameters. Check '
                              f'that all Arrays in system.arrays have '
-                             f'parameters for the same model (or models) '
-                             f'{params}.')
+                             f'parameters for the same temperature model. '
+                             f'Common temperature model parameters: {params}.')
 
     def _set_celltemp(self, model):
         """Set self.results.cell_temp using the given cell temperature model.

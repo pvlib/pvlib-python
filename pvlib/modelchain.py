@@ -1336,6 +1336,7 @@ class ModelChain:
         --------
         ModelChain.complete_irradiance
         """
+        weather = _to_tuple(weather)
         self._check_multiple_input(weather, strict=False)
         self._verify_df(weather, required=['ghi', 'dni', 'dhi'])
         self._assign_weather(weather)
@@ -1440,6 +1441,7 @@ class ModelChain:
         --------
         pvlib.modelchain.ModelChain.prepare_inputs
         """
+        data = _to_tuple(data)
         self._check_multiple_input(data)
         self._assign_weather(data)
 
@@ -1601,7 +1603,6 @@ class ModelChain:
         pvlib.modelchain.ModelChain.run_model_from_poa
         pvlib.modelchain.ModelChain.run_model_from_effective_irradiance
         """
-        weather = _to_tuple(weather)
         self.prepare_inputs(weather)
         self.aoi_model()
         self.spectral_model()

@@ -12,24 +12,23 @@ PVSystem
 
 The :py:class:`~pvlib.pvsystem.PVSystem` represents one inverter and the
 PV modules that supply DC power to the inverter. A PV system may be on fixed
-mounting or single axis trackers. The :py:class`~pvlib.pvsystem.PVSystem`
+mounting or single axis trackers. The :py:class:`~pvlib.pvsystem.PVSystem`
 is supported by the :py:class:`~pvlib.pvsystem.Array` which represents the
-PV modules in the :py:class`~pvlib.pvsystem.PVSystem`. An instance of
+PV modules in the :py:class:`~pvlib.pvsystem.PVSystem`. An instance of
 :py:class:`~pvlib.pvsystem.PVSystem` has a single inverter, but can have
 multiple instances of :py:class:`~pvlib.pvsystem.Array`. Arrays can have
 different tilt, orientation, and number or type of modules.
 
 The :py:class:`~pvlib.pvsystem.PVSystem` class methods wrap many of the
-functions in the :py:mod:`~pvlib.pvsystem` module. Similarly, the
+functions in the :py:mod:`~pvlib.pvsystem` module. Similarly,
 :py:class:`~pvlib.pvsystem.Array` wraps several functions with its class
-methods.  Methods that wrap functions have similar names as the wrapped function.
+methods.  Methods that wrap functions have similar names as the wrapped functions.
 This practice simplifies the API for :py:class:`~pvlib.pvsystem.PVSystem`
 and :py:class:`~pvlib.pvsystem.Array` methods by eliminating the need to specify
 arguments that are stored as attributes of these classes, such as
-module and inverter properties when calling PVSystem methods. Using
-:py:class:`~pvlib.pvsystem.PVSystem` is not better or worse than using the
-functions it wraps -- it is simply an alternative way of organizing
-your data and calculations.
+module and inverter properties. Using :py:class:`~pvlib.pvsystem.PVSystem`
+is not better or worse than using the functions it wraps -- it is an
+alternative way of organizing your data and calculations.
 
 This guide aims to build understanding of the PVSystem class. It assumes
 basic familiarity with object-oriented code in Python, but most
@@ -63,9 +62,8 @@ that describe a PV system's inverter is stored in
     system = pvsystem.PVSystem(inverter_parameters=inverter_parameters)
     print(system.inverter_parameters)
 
-The parameters that describe a PV system's modules can be provided to
-`PVSystem.module_parameters` (in the case of a single array) or by providing
-a list of instances of the :py:class:`~pvlib.pvsystem.Array`:
+In the case of a PV system with a single array, the parameters that describe the
+system's modules can be provided directly to `PVSystem.module_parameters`:
 
 .. ipython:: python
 
@@ -74,14 +72,24 @@ a list of instances of the :py:class:`~pvlib.pvsystem.Array`:
                                inverter_parameters=inverter_parameters)
     print(system.module_parameters)
 
+In the case of a PV system with several arrays, the module parameters are
+provided for each array, and the arrays are provided to
+:py:class:`~pvlib.pvsystem.PVSystem` as a tuple or list of instances of
+:py:class:`~pvlib.pvsystem.Array`:
+
 .. ipython:: python
 
     module_parameters = {'pdc0': 5000, 'gamma_pdc': -0.004}
-    array = pvsystem.Array(module_parameters=module_parameters)
-    system = pvsystem.PVSystem(arrays=[array],
+    array_one = pvsystem.Array(module_parameters=module_parameters)
+    array_two = pvsystem.Array(module_parameters=module_parameters)
+    system = pvsystem.PVSystem(arrays=[array_one, array_two],
                                inverter_parameters=inverter_parameters)
     print(system.module_parameters)
     print(system.inverter_parameters)
+
+Note that in the case of a PV system with multiple arrays, the
+`module_parameters` attribute contains a tuple with the `module_parameters`
+for each array.
 
 Extrinsic data is passed to a PVSystem instance as method arguments. For example,
 the :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method accepts extrinsic
@@ -89,10 +97,10 @@ data irradiance and temperature.
 
 .. ipython:: python
 
-    pdc = system.pvwatts_dc(1000, 30)
+    pdc = system.pvwatts_dc(g_poa_effective=1000, temp_cell=30)
     print(pdc)
 
-Methods attached to a PVSystem object wrap corresponding functions in
+Methods attached to a PVSystem object wrap the corresponding functions in
 :py:mod:`~pvlib.pvsystem`. The methods simplify the argument list by
 using data stored in the PVSystem attributes. Compare the
 :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method signature to the
@@ -144,11 +152,13 @@ The `surface_tilt` and `surface_azimuth` attributes are used in PVSystem
 (or Array) methods such as :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi` or
 :py:meth:`~pvlib.pvsystem.Array.get_aoi`. The angle of incidence (AOI)
 (AOI) calculations require `surface_tilt`, `surface_azimuth` and also
-the extrinsic sun position. The :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi` method
-uses the `surface_tilt` and `surface_azimuth` attributes from its PVSystem
-object, and so requires only `solar_zenith` and `solar_azimuth` as
-arguments. The :py:meth:`~pvlib.pvsystem.Array.get_aoi` operates in a similar
-manner.
+the extrinsic sun position. The `PVSystem` method :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi`
+uses the `surface_tilt` and `surface_azimuth` attributes from the
+:py:class:`pvlib.pvsystem.PVSystem` instance, and so requires only `solar_zenith`
+and `solar_azimuth` as arguments. The `Array` method :py:meth:`~pvlib.pvsystem.Array.get_aoi`
+operates in a similar manner. These two methods differ only in scope: the
+`Array` method operates only on the `Array` instance, whereas the `PVSystem`
+method operates on all `Array` instances.
 
 .. ipython:: python
 
@@ -171,11 +181,11 @@ manner.
     aoi = system_multiarray.get_aoi(solar_zenith=30, solar_azimuth=180)
     print(aoi)
 
-Note that when the PV system includes more than one array, the output of
-:py:meth:`~pvlib.pvsystem.PVSystem.get_aoi` is a *tuple* with the order of the
-elements corresponding to the order of the arrays. If the AOI is desired for
-a specific array, :py:meth:`~pvlib.pvsystem.Array.get_aoi` returns the AOI for
-the array represented by the method's object.
+Note that when the PV system includes more than one array, the output of the
+`PVSystem` method :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi` is a *tuple* with
+the order of the elements corresponding to the order of the arrays. If the AOI
+is desired for a specific array, the `Array` method :py:meth:`~pvlib.pvsystem.Array.get_aoi`
+returns the AOI for the specific array.
 
 .. ipython:: python
 
@@ -184,32 +194,26 @@ the array represented by the method's object.
 
 `module_parameters` and `inverter_parameters` contain the data
 necessary for computing DC and AC power using one of the available
-PVSystem methods. These attributes are typically specified using data from
-the :py:func:`~pvlib.pvsystem.retrieve_sam` function:
+PVSystem methods. Values for these attributes can be obtained from databases
+included with pvlib python by using the :py:func:`~pvlib.pvsystem.retrieve_sam` function:
 
 .. ipython:: python
 
+    # Load the database of CEC module model parameters
+    modules = pvsystem.retrieve_sam('cecmod')
     # retrieve_sam returns a dict. the dict keys are module names,
     # and the values are model parameters for that module
-    modules = pvsystem.retrieve_sam('cecmod')
     module_parameters = modules['Canadian_Solar_Inc__CS5P_220M']
+    # Load the database of CEC inverter model parameters
     inverters = pvsystem.retrieve_sam('cecinverter')
     inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
     system_one_array = pvsystem.PVSystem(module_parameters=module_parameters,
                                          inverter_parameters=inverter_parameters)
 
 The module and/or inverter parameters can also be specified manually.
-This is useful for specifying modules and inverters that are not
-included in the supplied databases. It is also useful for specifying
-systems for use with the PVWatts models, as demonstrated in
-:ref:`designphilosophy`.
-
-The `losses_parameters` attribute contains data that may be used with
-methods that calculate system losses. At present, these methods include
-only :py:meth:`PVSystem.pvwatts_losses
-<pvlib.pvsystem.PVSystem.pvwatts_losses>` and
-:py:func:`pvsystem.pvwatts_losses <pvlib.pvsystem.pvwatts_losses>`, but
-we hope to add more related functions and methods in the future.
+This is useful for modules or inverters that are not
+included in the supplied databases, or when using the PVWatts model,
+as demonstrated in :ref:`designphilosophy`.
 
 The attributes `modules_per_string` and `strings_per_inverter` are used
 in the :py:meth:`~pvlib.pvsystem.PVSystem.scale_voltage_current_power`
@@ -227,6 +231,12 @@ arranged into 5 strings of 7 modules each.
     data_scaled = system.scale_voltage_current_power(data)
     print(data_scaled)
 
+The `losses_parameters` attribute contains data that may be used with
+methods that calculate system losses. At present, these methods include
+only :py:meth:`PVSystem.pvwatts_losses
+<pvlib.pvsystem.PVSystem.pvwatts_losses>` and
+:py:func:`pvsystem.pvwatts_losses <pvlib.pvsystem.pvwatts_losses>`, but
+we hope to add more related functions and methods in the future.
 
 .. _multiarray:
 
@@ -236,7 +246,7 @@ PVSystem with multiple Arrays
 It is possible to model a system with multiple arrays by passing a list of
 :py:class:`~pvlib.pvsystem.Array` to the :py:class:`~pvlib.pvsystem.PVSystem`
 constructor. The :py:class:`~pvlib.pvsystem.Array` class includes those 
-:py:class:`~pvlib.pvsystem.PVSystem` attributes that may differ from array
+:py:class:`~pvlib.pvsystem.PVSystem` attributes that may vary from array
 to array. These attributes include `surface_tilt`, `surface_azimuth`,
 `module_parameters`, `temperature_model_parameters`, `modules_per_string`,
 `strings_per_inverter`, `albedo`, `surface_type`, `module_type`, and
@@ -249,12 +259,12 @@ to array. These attributes include `surface_tilt`, `surface_azimuth`,
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
     system.num_arrays
 
-When instantiating a :py:class:`~pvlib.pvsystem.PVSystem` with a list
-of :py:class:`~pvlib.pvsystem.Array`, each parameter must be specified individually
-for each array when the :py:class:`~pvlib.pvsystem.PVSystem` instances are constructed.
+When instantiating a :py:class:`~pvlib.pvsystem.PVSystem` with a tuple or list
+of :py:class:`~pvlib.pvsystem.Array`, each array parameter must be specified individually
+when each instance of :py:class:`~pvlib.pvsystem.Array` is constructed.
 For example, if all arrays are at the same tilt you must specify that tilt for
-every array. When using a list of :py:class:`~pvlib.pvsystem.Array` you shouldn't
-also pass any attributes for Arrays to the `PVSystem` attributes; these values
+every array. When using :py:class:`~pvlib.pvsystem.Array` you shouldn't
+also pass any array attributes to the `PVSystem` attributes; these values
 are ignored.
 
 The output of `PVSystem` methods and attributes changes when the system has
@@ -268,8 +278,7 @@ constructed above:
     system.surface_tilt
     system.surface_azimuth
 
-Similarly, other `PVSystem` methods expect tuples as input and return tuples
-for values that differ among arrays.
+Similarly, other `PVSystem` methods expect tuples as input and return tuples:
 
 .. ipython:: python
 

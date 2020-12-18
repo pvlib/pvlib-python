@@ -159,9 +159,6 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
         -(1 - scattering_albedo) * optical_thickness * relative_airmass
     )  # Eq 3-10
 
-    import pdb
-    pdb.set_trace()
-
     return (
         earth_sun_distance_correction,
         rayleigh_transmittance,

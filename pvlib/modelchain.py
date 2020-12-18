@@ -268,9 +268,9 @@ class ModelChainResult:
     T = TypeVar('T')
     PerArray = Union[T, Tuple[T, ...]]
     # system-level information
-    solar_position: pd.DataFrame = field(default=None)
-    airmass: pd.DataFrame = field(default=None)
-    ac: pd.Series = field(default=None)
+    solar_position: Optional[pd.DataFrame] = field(default=None)
+    airmass: Optional[pd.DataFrame] = field(default=None)
+    ac: Optional[pd.Series] = field(default=None)
     # per DC array information
     tracking: Optional[pd.DataFrame] = field(default=None)
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
@@ -279,8 +279,8 @@ class ModelChainResult:
     spectral_modifier: Optional[PerArray[pd.Series]] = field(default=None)
     cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
     effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
-    dc: Optional[PerArray[pd.Series]] = field(default=None)
-    array_ac: Optional[PerArray[pd.Series]] = field(default=None)
+    dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \
+        field(default=None)
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
 
 
@@ -705,25 +705,22 @@ class ModelChain:
                  'nNsVth': nNsVth}
             )
         params = calcparams_model_function(self.results.effective_irradiance,
-                                           self.results.cell_temperature)
-        if self.system.num_arrays == 1:
-            self.results.diode_params = _make_diode_params(*params)
-            self.results.dc = self.system.singlediode(*params)
-        else:
-            self.results.diode_params = tuple(
-                _make_diode_params(*params) for params in params
-            )
-            self.results.dc = tuple(
-                self.system.singlediode(*params)
-                for params in params
-            )
+                                           self.results.cell_temperature,
+                                           unwrap=False)
+        self.results.diode_params = tuple(itertools.starmap(
+            _make_diode_params, params))
+        self.results.dc = tuple(itertools.starmap(
+            self.system.singlediode, params))
         self.results.dc = self.system.scale_voltage_current_power(
-            self.results.dc
+            self.results.dc,
+            unwrap=False
         )
+        self.results.dc = tuple(dc.fillna(0) for dc in self.results.dc)
+        # If the system has one Array, unwrap the single return value
+        # to preserve the original behavior of ModelChain
         if self.system.num_arrays == 1:
-            self.results.dc = self.results.dc.fillna(0)
-        else:
-            self.results.dc = tuple(dc.fillna(0) for dc in self.results.dc)
+            self.results.diode_params = self.results.diode_params[0]
+            self.results.dc = self.results.dc[0]
         return self
 
     def desoto(self):
@@ -977,7 +974,8 @@ class ModelChain:
                     f'Temperature model {self._temperature_model.__name__} is '
                     f'inconsistent with PVSystem temperature model '
                     f'parameters. All Arrays in system.arrays must have '
-                    f'consistent parameters. '
+                    f'consistent parameters. Common temperature model '
+                    f'parameters: '
                     f'{_common_keys(self.system.temperature_model_parameters)}'
                 )
         else:
@@ -1001,11 +999,12 @@ class ModelChain:
             raise ValueError(f'could not infer temperature model from '
                              f'system.temperature_model_parameters. Check '
                              f'that all Arrays in system.arrays have '
-                             f'parameters for the same model (or models) '
-                             f'{params}.')
+                             f'parameters for the same temperature model. '
+                             f'Common temperature model parameters: {params}.')
 
     def _set_celltemp(self, model):
-        """Set self.results.cell_temp using the given cell temperature model.
+        """Set self.results.cell_temperature using the given cell
+        temperature model.
 
         Parameters
         ----------
@@ -1245,17 +1244,18 @@ class ModelChain:
         ------
         ValueError if any of required are not in data.columns.
         """
-        def _verify(data):
+        def _verify(data, index=None):
             if not set(required) <= set(data.columns):
+                tuple_txt = "" if index is None else f"in element {index} "
                 raise ValueError(
                     "Incomplete input data. Data needs to contain "
-                    f"{required}. Detected data contains: "
+                    f"{required}. Detected data {tuple_txt}contains: "
                     f"{list(data.columns)}")
         if not isinstance(data, tuple):
             _verify(data)
         else:
-            for array_data in data:
-                _verify(array_data)
+            for (i, array_data) in enumerate(data):
+                _verify(array_data, i)
 
     def _assign_weather(self, data):
         def _build_weather(data):
@@ -1783,6 +1783,8 @@ def _copy(data):
 
 
 def _all_same_index(data):
+    """Raise a ValueError if all DataFrames in `data` do not have the
+    same index."""
     indexes = map(lambda df: df.index, data)
     next(indexes, None)
     for index in indexes:
@@ -1791,6 +1793,8 @@ def _all_same_index(data):
 
 
 def _common_keys(dicts):
+    """Return the intersection of the set of keys for each dictionary
+    in `dicts`"""
     if isinstance(dicts, tuple):
         return set.intersection(*map(set, dicts))
     return set(dicts)

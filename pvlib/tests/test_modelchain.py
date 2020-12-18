@@ -468,8 +468,11 @@ def test_ModelChain_invalid_inverter_params_arrays(
 @pytest.mark.parametrize("input_type", [tuple, list])
 def test_prepare_inputs_multi_weather(
         sapm_dc_snl_ac_system_Array, location, input_type):
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
-    weather = pd.DataFrame({'ghi': [1], 'dhi': [1], 'dni': [1]})
+    weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1},
+                           index=times)
     mc.prepare_inputs(input_type((weather, weather)))
     num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
     assert len(mc.results.total_irrad) == num_arrays
@@ -769,7 +772,8 @@ def test_prepare_inputs_from_poa_arrays_missing_column(
     poa = pd.concat([weather, total_irrad], axis=1)
     with pytest.raises(ValueError, match=r"Incomplete input data\. "
                                          r"Data needs to contain .*\. "
-                                         r"Detected data contains: .*"):
+                                         r"Detected data in element 1 "
+                                         r"contains: .*"):
         mc.prepare_inputs_from_poa((poa, poa.drop(columns='poa_global')))
 
 
@@ -1031,7 +1035,7 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     # remove Adjust from model parameters for desoto, singlediode
     if dc_model in ['desoto', 'singlediode']:
         system.module_parameters.pop('Adjust')
-    m = mocker.spy(system, dc_model_function[dc_model])
+    m = mocker.spy(pvsystem, dc_model_function[dc_model])
     mc = ModelChain(system, location,
                     aoi_model='no_loss', spectral_model='no_loss',
                     temperature_model=temp_model_function[dc_model])
@@ -1678,7 +1682,8 @@ def test_inconsistent_array_params(location):
     temperature_error = "could not infer temperature model from " \
                         r"system\.temperature_model_parameters\. Check " \
                         r"that all Arrays in system\.arrays have " \
-                        r"parameters for the same model \(or models\) .*"
+                        r"parameters for the same temperature model\. " \
+                        r"Common temperature model parameters: .*"
     different_module_system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(

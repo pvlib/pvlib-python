@@ -49,6 +49,7 @@ Documentation
   (:issue:`1055`, :pull:`1075`)
 * Add gallery example about backtracking on sloped terrain. (:pull:`1077`)
 * Add toggle button for code prompts to make copying code easier (:pull:`1096`)
+* Add project urls to setup.py for pypi page (:pull:`1119`)
 
 Requirements
 ~~~~~~~~~~~~

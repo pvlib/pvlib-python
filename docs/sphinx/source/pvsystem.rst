@@ -82,10 +82,10 @@ provided for each array, and the arrays are provided to
     module_parameters = {'pdc0': 5000, 'gamma_pdc': -0.004}
     array_one = pvsystem.Array(module_parameters=module_parameters)
     array_two = pvsystem.Array(module_parameters=module_parameters)
-    system = pvsystem.PVSystem(arrays=[array_one, array_two],
-                               inverter_parameters=inverter_parameters)
-    print(system.module_parameters)
-    print(system.inverter_parameters)
+    system_two_arrays = pvsystem.PVSystem(arrays=[array_one, array_two],
+                                          inverter_parameters=inverter_parameters)
+    print(system_two_arrays.module_parameters)
+    print(system_two_arrays.inverter_parameters)
 
 Note that in the case of a PV system with multiple arrays, the
 `module_parameters` attribute contains a tuple with the `module_parameters`
@@ -209,6 +209,7 @@ included with pvlib python by using the :py:func:`~pvlib.pvsystem.retrieve_sam` 
     inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
     system_one_array = pvsystem.PVSystem(module_parameters=module_parameters,
                                          inverter_parameters=inverter_parameters)
+
 
 The module and/or inverter parameters can also be specified manually.
 This is useful for modules or inverters that are not

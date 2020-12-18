@@ -62,3 +62,5 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Will Vining (:ghuser:`wfvining`)
 * Michael Jurasovic (:ghuser:`jurasofish`)
+* Aziz Ben Othman (:ghuser:`AzizCode92`)
+

@@ -1,6 +1,5 @@
 r"""
-The ``spectrum`` module contains functions that implement models for the solar
-irradiance spectrum.
+The ``spectrl2`` module implements the Bird Simple Spectral Model.
 """
 
 import pvlib
@@ -89,7 +88,25 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
                              optical_thickness, scattering_albedo, dayofyear):
     """
     Calculate transmittance factors from Section 2 of Bird and Riordan 1984.
+
+    Parameters
+    ----------
+    apparent_zenith, relative_airmass, surface_pressure, precipitable_water,
+    ozone, dayofyear: float or 1d np.array
+        One value per timestamp
+    optical_thickness, scattering_albedo: np.ndarray
+        Array with shape (122, N) where N is either 1 or len(apparent_zenith)
+
+    Returns
+    -------
+    earth_sun_distance_correction: float or 1d np.array
+        Same shape/type as apparent_zenith
+    rayleigh_transmittance, aerosol_transmittance, vapor_transmittance,
+    ozone_transmittance, mixed_transmittance, aerosol_scattering,
+    aerosol_absorption: np.ndarray
+        Array with shape (122, N) where N is len(apparent_zenith)
     """
+    # add a dimension so that each ndarray is 2d with shape (122, 1)
     wavelength = _SPECTRL2_COEFFS['wavelength'][:, np.newaxis]
     vapor_coeff = _SPECTRL2_COEFFS['water_vapor_absorption'][:, np.newaxis]
     ozone_coeff = _SPECTRL2_COEFFS['ozone_absorption'][:, np.newaxis]
@@ -141,6 +158,9 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
     aerosol_absorption = np.exp(
         -(1 - scattering_albedo) * optical_thickness * relative_airmass
     )  # Eq 3-10
+
+    import pdb
+    pdb.set_trace()
 
     return (
         earth_sun_distance_correction,
@@ -206,7 +226,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     wavelength_variation_factor : numeric, default 0.095
         Wavelength variation factor [unitless]
     aerosol_asymmetry_factor : numeric, default 0.65
-        Aeorosol asymmetry factor (mean cosine of scattering angle) [unitless]
+        Aerosol asymmetry factor (mean cosine of scattering angle) [unitless]
 
     Returns
     -------
@@ -260,7 +280,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
          relative_airmass, precipitable_water, ozone, aerosol_turbidity_500nm,
          scattering_albedo_400nm, alpha, wavelength_variation_factor,
          aerosol_asymmetry_factor) = \
-            tuple(map(np.array, [
+            tuple(map(np.asanyarray, [
                 apparent_zenith, aoi, surface_tilt, ground_albedo,
                 surface_pressure, relative_airmass, precipitable_water, ozone,
                 aerosol_turbidity_500nm, scattering_albedo_400nm, alpha,
@@ -272,6 +292,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
         raise ValueError('dayofyear must be specified if not using pandas '
                          'Series inputs')
 
+    # add a dimension so that each ndarray is 2d with shape (122, 1)
     wavelength = _SPECTRL2_COEFFS['wavelength'][:, np.newaxis]
     spectrum_et = _SPECTRL2_COEFFS['spectral_irradiance_et'][:, np.newaxis]
 
@@ -353,7 +374,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     Iground = pvlib.irradiance.get_ground_diffuse(surface_tilt, ghi, albedo=rg)
 
     Itilt = Ibeam + Isky + Iground
-    wavelength_1d = wavelength.ravel()  # return value only needs 1 dimension
+    wavelength_1d = wavelength.reshape(-1)  # only needs 1 dimension
     return {
         'wavelength': wavelength_1d,
         'dni_extra': spectrum_et_adj,

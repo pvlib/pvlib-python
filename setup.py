@@ -79,7 +79,6 @@ PROJECT_URLS = {
     "Source Code": "https://github.com/pvlib/pvlib-python",
 }
 
-
 # set up pvlib packages to be installed and extensions to be compiled
 PACKAGES = ['pvlib']
 

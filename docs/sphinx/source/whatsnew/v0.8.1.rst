@@ -41,6 +41,7 @@ Testing
 ~~~~~~~
 * Add airspeed velocity performance testing configuration and a few benchmarks.
   (:issue:`419`, :pull:`1049`, :pull:`1059`)
+* Add Python 3.9 CI configurations. (:issue:`1102`, :pull:`1112`)
 
 Documentation
 ~~~~~~~~~~~~~

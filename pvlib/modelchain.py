@@ -1104,7 +1104,7 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame or tuple of DataFrame
+        weather : DataFrame, or tuple or list of DataFrame
             Column names must be ``'dni'``, ``'ghi'``, ``'dhi'``,
             ``'wind_speed'``, ``'temp_air'``. All irradiance components
             are required. Air temperature of 20 C and wind speed
@@ -1415,7 +1415,7 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame or tuple of DataFrame
+        data : DataFrame, or tuple or list of DataFrame
             Contains plane-of-array irradiance data. Required column names
             include ``'poa_global'``, ``'poa_direct'`` and ``'poa_diffuse'``.
             Columns with weather-related data are ssigned to the
@@ -1567,7 +1567,7 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame, or list or tuple of DataFrame
+        weather : DataFrame, or tuple or list of DataFrame
             Irradiance column names must include ``'dni'``, ``'ghi'``, and
             ``'dhi'``. If optional columns ``'temp_air'`` and ``'wind_speed'``
             are not provided, air temperature of 20 C and wind speed of 0 m/s
@@ -1623,7 +1623,7 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame, or list or tuple of DataFrame
+        data : DataFrame, or tuple or list of DataFrame
             Required column names include ``'poa_global'``,
             ``'poa_direct'`` and ``'poa_diffuse'``. If optional columns
             ``'temp_air'`` and ``'wind_speed'`` are not provided, air
@@ -1679,7 +1679,7 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame, default None
+        data : DataFrame, or tuple of DataFrame, default None
             If optional column ``'cell_temperature'`` is provided, these values
             are used instead of `temperature_model`. If optional column
             `module_temperature` is provided, `temperature_model` must be

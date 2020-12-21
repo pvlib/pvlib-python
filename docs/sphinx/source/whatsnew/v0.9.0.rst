@@ -26,10 +26,13 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Added :py:class:`~pvlib.pvsystem.Array` class to represent an array of
-  modules independently from a :py:class:`~pvlib.pvsystem.PVSystem`.
+* In :py:class:`~pvlib.modelchain.ModelChain`, attributes which contain
+  output of models are now collected into ``ModelChain.results``.
   (:pull:`1076`, :issue:`1067`)
-* Support added for modeling PV systems with multiple arrays in
+* Added :py:class:`~pvlib.pvsystem.Array` class to represent an array of
+  modules separately from a :py:class:`~pvlib.pvsystem.PVSystem`.
+  (:pull:`1076`, :issue:`1067`)
+* Added capability for modeling a PV system with multiple arrays in
   :py:class:`~pvlib.pvsystem.PVSystem`. Updates the ``PVSystem`` API
   to operate on and return tuples where each element of the tuple corresponds
   to the input or output for a specific ``Array``. (:pull:`1076`,

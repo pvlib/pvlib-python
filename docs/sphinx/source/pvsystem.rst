@@ -62,6 +62,7 @@ that describe a PV system's inverter is stored in
     system = pvsystem.PVSystem(inverter_parameters=inverter_parameters)
     print(system.inverter_parameters)
 
+
 In the case of a PV system with a single array, the parameters that describe the
 system's modules can be provided directly to `PVSystem.module_parameters`:
 
@@ -71,6 +72,7 @@ system's modules can be provided directly to `PVSystem.module_parameters`:
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
     print(system.module_parameters)
+
 
 In the case of a PV system with several arrays, the module parameters are
 provided for each array, and the arrays are provided to
@@ -88,10 +90,10 @@ provided for each array, and the arrays are provided to
     print(system_two_arrays.inverter_parameters)
 
 Note that in the case of a PV system with multiple arrays, the
-`module_parameters` attribute contains a tuple with the `module_parameters`
-for each array.
+:py:class:`~pvlib.pvsystem.PVSystem` attribute `module_parameters` contains
+a tuple with the `module_parameters` for each array.
 
-Extrinsic data is passed to a PVSystem instance as method arguments. For example,
+Extrinsic data is passed to the arguments of PVSystem methods. For example,
 the :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method accepts extrinsic
 data irradiance and temperature.
 
@@ -141,12 +143,35 @@ Please see the :py:class:`~pvlib.pvsystem.PVSystem` and
 :py:class:`~pvlib.pvsystem.Array` class documentation for a
 comprehensive list of attributes.
 
+
+Tilt and azimuth
+^^^^^^^^^^^^^^^^
+
 The first parameters which describe the DC part of a PV system are the tilt
 and azimuth of the modules. In the case of a PV system with a single array,
 these parameters can be specified using the `PVSystem.surface_tilt` and
-`PVSystem.surface_azimuth` attributes. In the case of a PV system with
-several arrays, the parameters are specified for each array using
-the attributes `Array.surface_tilt` and `Array.surface_azimuth`.
+`PVSystem.surface_azimuth` attributes.
+
+.. ipython:: python
+
+    # single south-facing array at 20 deg tilt
+    system_one_array = pvsystem.PVSystem(surface_tilt=20, surface_azimuth=180)
+    print(system_one_array.surface_tilt, system_one_array.surface_azimuth)
+
+
+In the case of a PV system with several arrays, the parameters are specified
+for each array using the attributes `Array.surface_tilt` and `Array.surface_azimuth`.
+
+.. ipython:: python
+
+    array_one = pvsystem.Array(surface_tilt=30, surface_azimuth=90)
+    print(array_one.surface_tilt, array_one.surface_azimuth)
+    array_two = pvsystem.Array(surface_tilt=30, surface_azimuth=220)
+    system = pvsystem.PVSystem(arrays=[array_one, array_two])
+    system.num_arrays
+    system.surface_tilt
+    system.surface_azimuth
+
 
 The `surface_tilt` and `surface_azimuth` attributes are used in PVSystem
 (or Array) methods such as :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi` or
@@ -155,10 +180,7 @@ The `surface_tilt` and `surface_azimuth` attributes are used in PVSystem
 the extrinsic sun position. The `PVSystem` method :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi`
 uses the `surface_tilt` and `surface_azimuth` attributes from the
 :py:class:`pvlib.pvsystem.PVSystem` instance, and so requires only `solar_zenith`
-and `solar_azimuth` as arguments. The `Array` method :py:meth:`~pvlib.pvsystem.Array.get_aoi`
-operates in a similar manner. These two methods differ only in scope: the
-`Array` method operates only on the `Array` instance, whereas the `PVSystem`
-method operates on all `Array` instances.
+and `solar_azimuth` as arguments.
 
 .. ipython:: python
 
@@ -170,10 +192,24 @@ method operates on all `Array` instances.
     aoi = system_one_array.get_aoi(solar_zenith=30, solar_azimuth=180)
     print(aoi)
 
+
+The `Array` method :py:meth:`~pvlib.pvsystem.Array.get_aoi`
+operates in a similar manner.
+
 .. ipython:: python
 
     # two arrays each at 30 deg tilt with different facing
     array_one = pvsystem.Array(surface_tilt=30, surface_azimuth=90)
+    array_one_aoi = array_one.get_aoi(solar_zenith=30, solar_azimuth=180)
+    print(aoi)
+
+
+The `PVSystem` method :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi`
+operates on all `Array` instances in the `PVSystem`, whereas the the
+`Array` method operates only on its `Array` instance.
+
+.. ipython:: python
+
     array_two = pvsystem.Array(surface_tilt=30, surface_azimuth=220)
     system_multiarray = pvsystem.PVSystem(arrays=[array_one, array_two])
     print(system_multiarray.num_arrays)
@@ -181,16 +217,23 @@ method operates on all `Array` instances.
     aoi = system_multiarray.get_aoi(solar_zenith=30, solar_azimuth=180)
     print(aoi)
 
-Note that when the PV system includes more than one array, the output of the
+
+As a reminder, when the PV system includes more than one array, the output of the
 `PVSystem` method :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi` is a *tuple* with
-the order of the elements corresponding to the order of the arrays. If the AOI
-is desired for a specific array, the `Array` method :py:meth:`~pvlib.pvsystem.Array.get_aoi`
-returns the AOI for the specific array.
+the order of the elements corresponding to the order of the arrays.
+
+Other `PVSystem` and `Array` methods operate in a similar manner. When a `PVSystem`
+method needs input for each array, the input is provided in a tuple:
 
 .. ipython:: python
 
-    aoi = array_one.get_aoi(solar_zenith=30, solar_azimuth=180)
+    aoi = system.get_aoi(solar_zenith=30, solar_azimuth=180)
     print(aoi)
+    system_multiarray.get_iam(aoi)
+
+
+Module and inverter parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 `module_parameters` and `inverter_parameters` contain the data
 necessary for computing DC and AC power using one of the available
@@ -216,6 +259,10 @@ This is useful for modules or inverters that are not
 included in the supplied databases, or when using the PVWatts model,
 as demonstrated in :ref:`designphilosophy`.
 
+
+Module strings
+^^^^^^^^^^^^^^
+
 The attributes `modules_per_string` and `strings_per_inverter` are used
 in the :py:meth:`~pvlib.pvsystem.PVSystem.scale_voltage_current_power`
 method. Some DC power models in :py:class:`~pvlib.modelchain.ModelChain`
@@ -232,6 +279,10 @@ arranged into 5 strings of 7 modules each.
     data_scaled = system.scale_voltage_current_power(data)
     print(data_scaled)
 
+
+Losses
+^^^^^^
+
 The `losses_parameters` attribute contains data that may be used with
 methods that calculate system losses. At present, these methods include
 only :py:meth:`PVSystem.pvwatts_losses
@@ -239,12 +290,13 @@ only :py:meth:`PVSystem.pvwatts_losses
 :py:func:`pvsystem.pvwatts_losses <pvlib.pvsystem.pvwatts_losses>`, but
 we hope to add more related functions and methods in the future.
 
+
 .. _multiarray:
 
 PVSystem with multiple Arrays
 -----------------------------
 
-It is possible to model a system with multiple arrays by passing a list of
+A system with multiple arrays is specified by passing a list of
 :py:class:`~pvlib.pvsystem.Array` to the :py:class:`~pvlib.pvsystem.PVSystem`
 constructor. The :py:class:`~pvlib.pvsystem.Array` class includes those 
 :py:class:`~pvlib.pvsystem.PVSystem` attributes that may vary from array
@@ -252,13 +304,6 @@ to array. These attributes include `surface_tilt`, `surface_azimuth`,
 `module_parameters`, `temperature_model_parameters`, `modules_per_string`,
 `strings_per_inverter`, `albedo`, `surface_type`, `module_type`, and
 `racking_model`.
-
-.. ipython:: python
-
-    array_one = pvsystem.Array(surface_tilt=30, surface_azimuth=90)
-    array_two = pvsystem.Array(surface_tilt=30, surface_azimuth=220)
-    system = pvsystem.PVSystem(arrays=[array_one, array_two])
-    system.num_arrays
 
 When instantiating a :py:class:`~pvlib.pvsystem.PVSystem` with a tuple or list
 of :py:class:`~pvlib.pvsystem.Array`, each array parameter must be specified individually
@@ -268,24 +313,6 @@ every array. When using :py:class:`~pvlib.pvsystem.Array` you shouldn't
 also pass any array attributes to the `PVSystem` attributes; these values
 are ignored.
 
-The output of `PVSystem` methods and attributes changes when the system has
-multiple arrays. Accessing any of Array attributes on the PVSystem object returns
-return a tuple with the value of the attribute for each array, in
-the same order as the `PVSystem.arrays` parameter. For example, using the system
-constructed above:
-
-.. ipython:: python
-
-    system.surface_tilt
-    system.surface_azimuth
-
-Similarly, other `PVSystem` methods expect tuples as input and return tuples:
-
-.. ipython:: python
-
-    aoi = system.get_aoi(solar_zenith=30, solar_azimuth=180)
-    print(aoi)
-    system.get_iam(aoi)
 
 .. _sat:
 

@@ -1795,9 +1795,11 @@ def _all_same_index(data):
 def _common_keys(dicts):
     """Return the intersection of the set of keys for each dictionary
     in `dicts`"""
+    def _keys(x):
+        return set(x.keys())
     if isinstance(dicts, tuple):
-        return set.intersection(*map(set, dicts))
-    return set(dicts)
+        return set.intersection(*map(_keys, dicts))
+    return _keys(dicts)
 
 
 def _tuple_from_dfs(dfs, name):

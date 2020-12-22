@@ -775,6 +775,8 @@ def _calc_slope_nstd(data):
 
 
 def _shift_from_align(align, window):
+    # development code left here as comments in case we decide to support
+    # align='left', 'right' in the future
     # number of places to shift to line up pandas.Series.rolling with
     # align value.
     # pandas.Series.rolling uses kwarg center with values of True or False
@@ -842,7 +844,7 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     shift = -(samples_per_window // 2)
     idx = clear_windows.shift(shift)
     # drop rows at the end corresponding to windows past the end of data
-    idx.drop(clear_windows.tail(samples_per_window - 1).index, inplace=True)
+    idx.drop(clear_windows.index[1 - samples_per_window:], inplace=True)
     idx = idx.astype(bool)  # shift added nan, changed type to object
     clear_samples = np.unique(H[:, idx])
     return clear_samples
@@ -989,6 +991,12 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     clear_mean, clear_max, _, _, clear_slope \
         = _calc_stats(clear, samples_per_window, sample_interval, 'center')
 
+    # find a scaling factor for the clear sky time series that minimizes the
+    # RMSE between the clear times identified in the measured data and the
+    # scaled clear sky time series. Optimization to determine the scaling
+    # factor considers all identified clear times, which is different from [1]
+    # where the scaling factor was determined from clear times on days with
+    # at least 50% of the day being identified as clear.
     alpha = 1
     for iteration in range(max_iterations):
         _, _, clear_line_length, _, _ = _calc_stats(
@@ -1001,7 +1009,6 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
-        # need to reduce window by 1 since slope is differenced already
         c5 = _calc_c5(meas, alpha * clear, samples_per_window,
                       'center', slope_dev)
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
@@ -1018,14 +1025,16 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         previous_alpha = alpha
         clear_meas = meas[clear_samples]
         clear_clear = clear[clear_samples]
+
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
+
         alpha = minimize_scalar(rmse).x
         if round(alpha*10000) == round(previous_alpha*10000):
             break
     else:
         import warnings
-        warnings.warn('failed to converge after %s iterations'
+        warnings.warn('rescaling failed to converge after %s iterations'
                       % max_iterations, RuntimeWarning)
 
     # be polite about returning the same type as was input

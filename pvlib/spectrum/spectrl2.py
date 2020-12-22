@@ -340,7 +340,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     common_factor = spectrum_et_adj * cosZ * To * Tu * Tw * Taa
     # Note: spectrl2_2.c differs from the report in how the Cs value is used.
     # The two commented out lines match the report, while the following match
-    # spectrl2_2.c:
+    # spectrl2_2.c. With regard to Cs, the equations in the report and spectrl12_2.c are algebraically equivalent.
     # Ir = common_factor * (1 - Tr**0.95) * 0.5 * Cs  # Eq 3-5
     # Ia = common_factor * Tr**1.5 * (1 - Tas) * Fs * Cs  # Eq 3-6
     Ir = common_factor * (1 - Tr**0.95) * 0.5  # Eq 3-5

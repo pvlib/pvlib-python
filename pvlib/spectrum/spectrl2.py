@@ -293,9 +293,10 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     wavelength = _SPECTRL2_COEFFS['wavelength'][:, np.newaxis]
     spectrum_et = _SPECTRL2_COEFFS['spectral_irradiance_et'][:, np.newaxis]
 
-    optical_thickness = (
-        aerosol_turbidity_500nm * (wavelength / 500)**-alpha
-    )  # Eq 2-7
+    optical_thickness = \
+        pvlib.atmosphere.angstrom_aod_at_lambda(aod0=aerosol_turbidity_500nm,
+                                                lambda0=500, alpha=alpha,
+                                                lambda1=wavelength)  # Eq 2-7
 
     # Eq 3-16
     scattering_albedo = scattering_albedo_400nm * \
@@ -317,7 +318,6 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     ALG = np.log(1 - aerosol_asymmetry_factor)  # Eq 3-14
     BFS = ALG * (0.0783 + ALG * (-0.3824 - ALG * 0.5874))  # Eq 3-13
     AFS = ALG * (1.459 + ALG * (0.1595 + ALG * 0.4129))  # Eq 3-12
-    cosZ = cosd(apparent_zenith)
     Fs = 1 - 0.5 * np.exp((AFS + BFS * cosZ) * cosZ)  # Eq 3-11
     Fsp = 1 - 0.5 * np.exp((AFS + BFS / 1.8) / 1.8)  # Eq 3.15
 
@@ -340,7 +340,8 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     common_factor = spectrum_et_adj * cosZ * To * Tu * Tw * Taa
     # Note: spectrl2_2.c differs from the report in how the Cs value is used.
     # The two commented out lines match the report, while the following match
-    # spectrl2_2.c. With regard to Cs, the equations in the report and spectrl12_2.c are algebraically equivalent.
+    # spectrl2_2.c. With regard to Cs, the equations in the report and
+    # spectrl12_2.c are algebraically equivalent.
     # Ir = common_factor * (1 - Tr**0.95) * 0.5 * Cs  # Eq 3-5
     # Ia = common_factor * Tr**1.5 * (1 - Tas) * Fs * Cs  # Eq 3-6
     Ir = common_factor * (1 - Tr**0.95) * 0.5  # Eq 3-5

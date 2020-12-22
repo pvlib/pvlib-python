@@ -5,8 +5,6 @@ v0.8.1 (MONTH DAY YEAR)
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
-* :py:func:`pvlib.clearsky.detect_clearsky` no longer returns the Boolean areas
-  
 
 Deprecations
 ~~~~~~~~~~~~
@@ -20,6 +18,7 @@ Enhancements
   only NOCT. (:pull:`1045`)
 * :py:func:`pvlib.clearsky.detect_clearsky` now uses centered rolling windows
   instead of left-aligned rolling windows. (:pull:`1074`)
+* The 'times' parameter is now optional in :py:func:`pvlib.clearsky.detect_clearsky`. (:pull:`1074`)
 * Added :py:func:`pvlib.inverter.sandia_multi` and :py:func:`pvlib.inverter.pvwatts_multi`
   for modeling inverters with multiple MPPTs (:issue:`457`, :pull:`1085`, :pull:`1106`)
 * Added optional ``attributes`` parameter to :py:func:`pvlib.iotools.get_psm3`

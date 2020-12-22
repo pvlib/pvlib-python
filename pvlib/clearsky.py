@@ -599,132 +599,6 @@ def _calc_d(aod700, p):
     return d
 
 
-def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
-         ozone=0.3, pressure=101325., dni_extra=1364., asymmetry=0.85,
-         albedo=0.2):
-    """
-    Bird Simple Clear Sky Broadband Solar Radiation Model
-
-    Based on NREL Excel implementation by Daryl R. Myers [1, 2].
-
-    Bird and Hulstrom define the zenith as the "angle between a line to
-    the sun and the local zenith". There is no distinction in the paper
-    between solar zenith and apparent (or refracted) zenith, but the
-    relative airmass is defined using the Kasten 1966 expression, which
-    requires apparent zenith. Although the formulation for calculated
-    zenith is never explicitly defined in the report, since the purpose
-    was to compare existing clear sky models with "rigorous radiative
-    transfer models" (RTM) it is possible that apparent zenith was
-    obtained as output from the RTM. However, the implentation presented
-    in PVLIB is tested against the NREL Excel implementation by Daryl
-    Myers which uses an analytical expression for solar zenith instead
-    of apparent zenith.
-
-    Parameters
-    ----------
-    zenith : numeric
-        Solar or apparent zenith angle in degrees - see note above
-    airmass_relative : numeric
-        Relative airmass
-    aod380 : numeric
-        Aerosol optical depth [cm] measured at 380[nm]
-    aod500 : numeric
-        Aerosol optical depth [cm] measured at 500[nm]
-    precipitable_water : numeric
-        Precipitable water [cm]
-    ozone : numeric
-        Atmospheric ozone [cm], defaults to 0.3[cm]
-    pressure : numeric
-        Ambient pressure [Pa], defaults to 101325[Pa]
-    dni_extra : numeric
-        Extraterrestrial radiation [W/m^2], defaults to 1364[W/m^2]
-    asymmetry : numeric
-        Asymmetry factor, defaults to 0.85
-    albedo : numeric
-        Albedo, defaults to 0.2
-
-    Returns
-    -------
-    clearsky : DataFrame (if Series input) or OrderedDict of arrays
-        DataFrame/OrderedDict contains the columns/keys
-        ``'dhi', 'dni', 'ghi', 'direct_horizontal'`` in  [W/m^2].
-
-    See also
-    --------
-    pvlib.atmosphere.bird_hulstrom80_aod_bb
-    pvlib.atmosphere.get_relative_airmass
-
-    References
-    ----------
-    .. [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for
-       Direct and Diffuse Insolation on Horizontal Surfaces" SERI Technical
-       Report SERI/TR-642-761, Feb 1981. Solar Energy Research Institute,
-       Golden, CO.
-
-    .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
-       Energy Applications", pp. 46-51 CRC Press (2013)
-
-    .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
-       clearsky/>`_
-
-    .. [4] `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/
-       tr-642-761.pdf>`_
-
-    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
-       error_reports.html>`_
-    """
-    etr = dni_extra  # extraradiation
-    ze_rad = np.deg2rad(zenith)  # zenith in radians
-    airmass = airmass_relative
-    # Bird clear sky model
-    am_press = atmosphere.get_absolute_airmass(airmass, pressure)
-    t_rayleigh = (
-        np.exp(-0.0903 * am_press ** 0.84 * (
-            1.0 + am_press - am_press ** 1.01
-        ))
-    )
-    am_o3 = ozone*airmass
-    t_ozone = (
-        1.0 - 0.1611 * am_o3 * (1.0 + 139.48 * am_o3) ** -0.3034 -
-        0.002715 * am_o3 / (1.0 + 0.044 * am_o3 + 0.0003 * am_o3 ** 2.0)
-    )
-    t_gases = np.exp(-0.0127 * am_press ** 0.26)
-    am_h2o = airmass * precipitable_water
-    t_water = (
-        1.0 - 2.4959 * am_h2o / (
-            (1.0 + 79.034 * am_h2o) ** 0.6828 + 6.385 * am_h2o
-        )
-    )
-    bird_huldstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
-    t_aerosol = np.exp(
-        -(bird_huldstrom ** 0.873) *
-        (1.0 + bird_huldstrom - bird_huldstrom ** 0.7088) * airmass ** 0.9108
-    )
-    taa = 1.0 - 0.1 * (1.0 - airmass + airmass ** 1.06) * (1.0 - t_aerosol)
-    rs = 0.0685 + (1.0 - asymmetry) * (1.0 - t_aerosol / taa)
-    id_ = 0.9662 * etr * t_aerosol * t_water * t_gases * t_ozone * t_rayleigh
-    ze_cos = np.where(zenith < 90, np.cos(ze_rad), 0.0)
-    id_nh = id_ * ze_cos
-    ias = (
-        etr * ze_cos * 0.79 * t_ozone * t_gases * t_water * taa *
-        (0.5 * (1.0 - t_rayleigh) + asymmetry * (1.0 - (t_aerosol / taa))) / (
-            1.0 - airmass + airmass ** 1.02
-        )
-    )
-    gh = (id_nh + ias) / (1.0 - albedo * rs)
-    diffuse_horiz = gh - id_nh
-    # TODO: be DRY, use decorator to wrap methods that need to return either
-    # OrderedDict or DataFrame instead of repeating this boilerplate code
-    irrads = OrderedDict()
-    irrads['direct_horizontal'] = id_nh
-    irrads['ghi'] = gh
-    irrads['dni'] = id_
-    irrads['dhi'] = diffuse_horiz
-    if isinstance(irrads['dni'], pd.Series):
-        irrads = pd.DataFrame.from_dict(irrads)
-    return irrads
-
-
 def _calc_stats(data, samples_per_window, sample_interval, align):
     """ Calculates statistics for each window, used by Reno-style clear
     sky detection functions
@@ -816,15 +690,15 @@ def _calc_line_length(data, sample_interval):
     return np.sum(np.sqrt(np.diff(data)**2 + sample_interval**2))
 
 
-def _maxdiff(s):
-    return np.abs(np.diff(s)).max()
+def _calc_slope_max_diff(meas, clear, window, align):
+    """ Calculates maximum difference in slope on rolling windows
+    """
+    def _maxdiff(s):
+        return np.abs(np.diff(s)).max()
 
-
-def _calc_c5(meas, clear, window, align, limit):
     center = align == 'center'
     irrad_diff = meas - clear
-    slope_diff = irrad_diff.rolling(window, center=center).apply(_maxdiff)
-    return slope_diff < limit
+    return irrad_diff.rolling(window, center=center).apply(_maxdiff)
 
 
 def _clear_sample_index(clear_windows, samples_per_window, align, H):
@@ -1009,8 +883,8 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
-        c5 = _calc_c5(meas, alpha * clear, samples_per_window,
-                      'center', slope_dev)
+        c5 = _calc_slope_max_diff(
+            meas, alpha * clear, samples_per_window, 'center') < slope_dev
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
@@ -1043,13 +917,148 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     if return_components:
         components = OrderedDict()
-        components['mean_diff'] = c1
-        components['max_diff'] = c2
-        components['line_length'] = c3
-        components['slope_nstd'] = c4
-        components['slope_max'] = c5
-        components['mean_nan'] = c6
+        components = OrderedDict()
+        components['mean_diff_flag'] = c1
+        components['max_diff_flag'] = c2
+        components['line_length_flag'] = c3
+        components['slope_nstd_flag'] = c4
+        components['slope_max_flag'] = c5
+        components['mean_nan_flag'] = c6
         components['windows'] = clear_windows
+
+        components['mean_diff'] = np.abs(meas_mean - alpha * clear_mean)
+        components['max_diff'] = np.abs(meas_max - alpha * clear_max)
+        components['line_length'] = meas_line_length - clear_line_length
+        components['slope_nstd'] = meas_slope_nstd
+        components['slope_max'] = _calc_slope_max_diff(
+            meas, alpha * clear, samples_per_window, 'center')
+
         return clear_samples, components, alpha
     else:
         return clear_samples
+
+
+def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
+         ozone=0.3, pressure=101325., dni_extra=1364., asymmetry=0.85,
+         albedo=0.2):
+    """
+    Bird Simple Clear Sky Broadband Solar Radiation Model
+
+    Based on NREL Excel implementation by Daryl R. Myers [1, 2].
+
+    Bird and Hulstrom define the zenith as the "angle between a line to
+    the sun and the local zenith". There is no distinction in the paper
+    between solar zenith and apparent (or refracted) zenith, but the
+    relative airmass is defined using the Kasten 1966 expression, which
+    requires apparent zenith. Although the formulation for calculated
+    zenith is never explicitly defined in the report, since the purpose
+    was to compare existing clear sky models with "rigorous radiative
+    transfer models" (RTM) it is possible that apparent zenith was
+    obtained as output from the RTM. However, the implentation presented
+    in PVLIB is tested against the NREL Excel implementation by Daryl
+    Myers which uses an analytical expression for solar zenith instead
+    of apparent zenith.
+
+    Parameters
+    ----------
+    zenith : numeric
+        Solar or apparent zenith angle in degrees - see note above
+    airmass_relative : numeric
+        Relative airmass
+    aod380 : numeric
+        Aerosol optical depth [cm] measured at 380[nm]
+    aod500 : numeric
+        Aerosol optical depth [cm] measured at 500[nm]
+    precipitable_water : numeric
+        Precipitable water [cm]
+    ozone : numeric
+        Atmospheric ozone [cm], defaults to 0.3[cm]
+    pressure : numeric
+        Ambient pressure [Pa], defaults to 101325[Pa]
+    dni_extra : numeric
+        Extraterrestrial radiation [W/m^2], defaults to 1364[W/m^2]
+    asymmetry : numeric
+        Asymmetry factor, defaults to 0.85
+    albedo : numeric
+        Albedo, defaults to 0.2
+
+    Returns
+    -------
+    clearsky : DataFrame (if Series input) or OrderedDict of arrays
+        DataFrame/OrderedDict contains the columns/keys
+        ``'dhi', 'dni', 'ghi', 'direct_horizontal'`` in  [W/m^2].
+
+    See also
+    --------
+    pvlib.atmosphere.bird_hulstrom80_aod_bb
+    pvlib.atmosphere.get_relative_airmass
+
+    References
+    ----------
+    .. [1] R. E. Bird and R. L Hulstrom, "A Simplified Clear Sky model for
+       Direct and Diffuse Insolation on Horizontal Surfaces" SERI Technical
+       Report SERI/TR-642-761, Feb 1981. Solar Energy Research Institute,
+       Golden, CO.
+
+    .. [2] Daryl R. Myers, "Solar Radiation: Practical Modeling for Renewable
+       Energy Applications", pp. 46-51 CRC Press (2013)
+
+    .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
+       clearsky/>`_
+
+    .. [4] `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/
+       tr-642-761.pdf>`_
+
+    .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
+       error_reports.html>`_
+    """
+    etr = dni_extra  # extraradiation
+    ze_rad = np.deg2rad(zenith)  # zenith in radians
+    airmass = airmass_relative
+    # Bird clear sky model
+    am_press = atmosphere.get_absolute_airmass(airmass, pressure)
+    t_rayleigh = (
+        np.exp(-0.0903 * am_press ** 0.84 * (
+            1.0 + am_press - am_press ** 1.01
+        ))
+    )
+    am_o3 = ozone*airmass
+    t_ozone = (
+        1.0 - 0.1611 * am_o3 * (1.0 + 139.48 * am_o3) ** -0.3034 -
+        0.002715 * am_o3 / (1.0 + 0.044 * am_o3 + 0.0003 * am_o3 ** 2.0)
+    )
+    t_gases = np.exp(-0.0127 * am_press ** 0.26)
+    am_h2o = airmass * precipitable_water
+    t_water = (
+        1.0 - 2.4959 * am_h2o / (
+            (1.0 + 79.034 * am_h2o) ** 0.6828 + 6.385 * am_h2o
+        )
+    )
+    bird_huldstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
+    t_aerosol = np.exp(
+        -(bird_huldstrom ** 0.873) *
+        (1.0 + bird_huldstrom - bird_huldstrom ** 0.7088) * airmass ** 0.9108
+    )
+    taa = 1.0 - 0.1 * (1.0 - airmass + airmass ** 1.06) * (1.0 - t_aerosol)
+    rs = 0.0685 + (1.0 - asymmetry) * (1.0 - t_aerosol / taa)
+    id_ = 0.9662 * etr * t_aerosol * t_water * t_gases * t_ozone * t_rayleigh
+    ze_cos = np.where(zenith < 90, np.cos(ze_rad), 0.0)
+    id_nh = id_ * ze_cos
+    ias = (
+        etr * ze_cos * 0.79 * t_ozone * t_gases * t_water * taa *
+        (0.5 * (1.0 - t_rayleigh) + asymmetry * (1.0 - (t_aerosol / taa))) / (
+            1.0 - airmass + airmass ** 1.02
+        )
+    )
+    gh = (id_nh + ias) / (1.0 - albedo * rs)
+    diffuse_horiz = gh - id_nh
+    # TODO: be DRY, use decorator to wrap methods that need to return either
+    # OrderedDict or DataFrame instead of repeating this boilerplate code
+    irrads = OrderedDict()
+    irrads['direct_horizontal'] = id_nh
+    irrads['ghi'] = gh
+    irrads['dni'] = id_
+    irrads['dhi'] = diffuse_horiz
+    if isinstance(irrads['dni'], pd.Series):
+        irrads = pd.DataFrame.from_dict(irrads)
+    return irrads

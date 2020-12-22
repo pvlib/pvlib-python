@@ -579,8 +579,8 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
     with pytest.warns(RuntimeWarning):
         clear_samples = clearsky.detect_clearsky(
             expected['GHI'], cs['ghi']*alpha, max_iterations=1)
-    assert (clear_samples[:'2012-04-01 10:41:00'] is True).all()
-    assert (clear_samples['2012-04-01 10:42:00':] is False).all()
+    assert clear_samples[:'2012-04-01 10:41:00'].all()
+    assert not clear_samples['2012-04-01 10:42:00':].all()  # expected False
     clear_samples = clearsky.detect_clearsky(
             expected['GHI'], cs['ghi']*alpha, max_iterations=20)
     assert_series_equal(expected['Clear or not'], clear_samples,
@@ -670,7 +670,7 @@ def test__calc_stats():
         assert_series_equal(res_slope, expected[align]['slope'])
 
 
-def test__calc_c5():
+def test__calc_slope_max_diff():
     alignments = ['center']  # 'left' and 'right' could be added in the future
     ms = pd.Series(np.array([1., 0., 2., 5., -10.]))
     cs = pd.Series(np.array([0., 0., 1., 1., 0.]))
@@ -681,7 +681,8 @@ def test__calc_c5():
     expected['right'] = pd.Series([np.nan, np.nan, 1., 4., 10.]) < limit
     # here test for window=3
     for align in alignments:
-        result = clearsky._calc_c5(ms, cs, window=3, align=align, limit=limit)
+        result = clearsky._calc_slope_max_diff(
+            ms, cs, window=3, align=align) < limit
         assert_series_equal(result, expected[align])
 
 

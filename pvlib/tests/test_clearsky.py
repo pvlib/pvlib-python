@@ -583,7 +583,7 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
     assert clear_samples[:'2012-04-01 10:41:00'].all()
     assert not clear_samples['2012-04-01 10:42:00':].all()  # expected False
     clear_samples = clearsky.detect_clearsky(
-            expected['GHI'], cs['ghi']*alpha, max_iterations=20)
+        expected['GHI'], cs['ghi']*alpha, max_iterations=20)
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 
@@ -659,7 +659,9 @@ def test__calc_windowed_stat():
 
 
 def test__calc_stats():
-    # assumes window=3
+    # stats are hand-computed assuming window = 3 and sample_interval = 1
+    samples_per_window = 3
+    sample_interval = 1
     alignments = ['center']  # 'left' and 'right' could be added in the future
     shift = {'center': -1}  # 'left': -2, 'right': 0
     x = pd.Series(np.arange(0, 7)**2.)
@@ -669,6 +671,8 @@ def test__calc_stats():
                          np.sqrt(2), np.sqrt(2)])
     slope_nstd = diff_std / mean_x
     slope = x.diff().shift(-1)
+    H = hankel(np.arange(samples_per_window),
+               np.arange(samples_per_window-1, len(x)))
     expected = {}
     for align in alignments:
         expected[align] = {}
@@ -681,8 +685,8 @@ def test__calc_stats():
         expected[align]['data'] = x
     for align in expected:
         data = expected[align]['data']
-        result = clearsky._calc_stats(data=data, samples_per_window=3,
-                                      sample_interval=1)
+        result = clearsky._calc_stats(data, samples_per_window,
+                                      sample_interval, H)
         res_mean, res_max, res_slope_nstd, res_slope = result
         assert_series_equal(res_mean, expected[align]['mean'])
         assert_series_equal(res_max, expected[align]['max'])

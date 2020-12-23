@@ -599,10 +599,10 @@ def _calc_d(aod700, p):
     return d
 
 
-def _calc_stats(data, samples_per_window, sample_interval, align):
+def _calc_stats(data, samples_per_window, sample_interval, H):
     """ Calculates statistics for each window, used by Reno-style clear
     sky detection functions. Does not return the line length statistic
-    which is provided by _calc_line_length_windowed
+    which is provided by _calc_windowed_stat and _line_length
 
     Parameters
     ----------
@@ -611,9 +611,8 @@ def _calc_stats(data, samples_per_window, sample_interval, align):
         Number of data points in each window
     sample_interval : float
         Time in minutes in each sample interval
-    align : str
-        Alignment of labels to data in sliding window. Must be one of
-        'left', 'center', 'right'.
+    H : 2D ndarray
+        Hankel matrix defining the indices for each window.
 
     Returns
     -------
@@ -627,41 +626,34 @@ def _calc_stats(data, samples_per_window, sample_interval, align):
         difference between successive data points
     """
 
-    shift = _shift_from_align(align, samples_per_window)
-    center = align == 'center'
-    roller = data.rolling(samples_per_window, center=center)
-    data_mean = roller.mean().shift(shift)
-    data_max = roller.max().shift(shift)
+    roller = data.rolling(samples_per_window, center=True)
+    data_mean = roller.mean()
+    data_max = roller.max()
     # shift to get forward difference, .diff() is backward difference instead
     data_diff = data.diff().shift(-1)
     data_slope = data_diff / sample_interval
-    data_slope_nstd = roller.apply(_calc_slope_nstd)
-    data_slope_nstd = data_slope_nstd.shift(shift)
+    data_slope_nstd = _calc_windowed_stat(
+        data.values, _slope_nstd, samples_per_window, H)
+    data_slope_nstd = data_slope_nstd
 
     return data_mean, data_max, data_slope_nstd, data_slope
 
 
-def _calc_slope_nstd(data):
-    return np.diff(data).std(ddof=1) / data.mean()
+def _slope_nstd(data):
+    with np.errstate(divide='ignore', invalid='ignore'):
+        return np.diff(data).std(ddof=1) / data.mean()
 
 
-def _shift_from_align(align, window):
-    # development code left here as comments in case we decide to support
-    # align='left', 'right' in the future
-    # number of places to shift to line up pandas.Series.rolling with
-    # align value.
-    # pandas.Series.rolling uses kwarg center with values of True or False
-    # default is False which means right aligned labels by default
-    # center=True aligns to center
-    # Here, calculate shift to align='left' (legacy pvlib behavior)
-    # code here for future capability if align='left', 'right' are of interest
-    # commented out to avoid decreasing test coverage
-    # if align == 'left':
-    #     shift = 1 - window
-    # else:
-    #     shift = 0
-    shift = 0
-    return shift
+def _line_length(data, sample_interval):
+    """
+    Calculates line length where sample_interval is the time step
+    between data points.
+    """
+    return np.sum(np.sqrt(np.diff(data)**2 + sample_interval**2))
+
+
+def _max_diff(data):
+    return np.abs(np.diff(data)).max()
 
 
 def _get_sample_intervals(times, win_length):
@@ -681,51 +673,23 @@ def _get_sample_intervals(times, win_length):
                                   'times. consider resampling your data.')
 
 
-def _calc_line_length_windowed(data, samples_per_window, sample_interval,
-                               align):
-    """ Calculates line-length for each window in data
+def _to_centered_series(vals, idx, H, samples_per_window):
+    vals = np.pad(vals, ((0, len(idx) - H.shape[1]),), constant_values=np.nan)
+    shift = samples_per_window // 2  # align = 'center' only
+    return pd.Series(index=idx, data=vals).shift(shift)
 
-    Parameters
-    ----------
-    data : Series
-    samples_per_window : int
-        Number of data points in each window
-    sample_interval : float
-        Time in minutes in each sample interval
-    align : str
-        Alignment of labels to data in sliding window. Must be one of
-        'left', 'center', 'right'.
 
-    Returns
-    -------
-    data_line_length : Series
-        length of line segments connecting successive data points
+def _calc_windowed_stat(data, func, samples_per_window, H, args=()):
     """
+    Applies func to each rolling window in data. data must be Series.
+    func accepts a 1d array and returns a float. args are passed to func.
+    H is a Hankel matrix defining the indices for each window.
 
-    shift = _shift_from_align(align, samples_per_window)
-    center = align == 'center'
-    roller = data.rolling(samples_per_window, center=center)
-    data_line_length = roller.apply(_calc_line_length, args=(sample_interval,))
-    data_line_length = data_line_length.shift(shift)
-
-    return data_line_length
-
-
-def _calc_line_length(data, sample_interval):
-    """ Calculates line length for Reno-style clear sky detection functions.
+    Returns a Series of the output of func in each window, aligned to center
+    of each window.
     """
-    return np.sum(np.sqrt(np.diff(data)**2 + sample_interval**2))
-
-
-def _calc_slope_max_diff(meas, clear, window, align):
-    """ Calculates maximum difference in slope on rolling windows
-    """
-    def _maxdiff(s):
-        return np.abs(np.diff(s)).max()
-
-    center = align == 'center'
-    irrad_diff = meas - clear
-    return irrad_diff.rolling(window, center=center).apply(_maxdiff)
+    vals = np.apply_along_axis(func, 0, data.values[H], *args)
+    return _to_centered_series(vals, data.index, H, samples_per_window)
 
 
 def _clear_sample_index(clear_windows, samples_per_window, align, H):
@@ -890,13 +854,13 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_slope_nstd, meas_slope \
-        = _calc_stats(meas, samples_per_window, sample_interval, 'center')
-    meas_line_length = _calc_line_length_windowed(
-        meas, samples_per_window, sample_interval, 'center')
+        = _calc_stats(meas, samples_per_window, sample_interval, H)
+    meas_line_length = _calc_windowed_stat(
+        meas, _line_length, samples_per_window, H, args=(sample_interval,))
 
     # calculate clear sky statistics
     clear_mean, clear_max, _, clear_slope \
-        = _calc_stats(clear, samples_per_window, sample_interval, 'center')
+        = _calc_stats(clear, samples_per_window, sample_interval, H)
 
     # find a scaling factor for the clear sky time series that minimizes the
     # RMSE between the clear times identified in the measured data and the
@@ -907,18 +871,19 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     alpha = 1
     for iteration in range(max_iterations):
         scaled_clear = alpha * clear
-        clear_line_length = _calc_line_length_windowed(
-            scaled_clear, samples_per_window, sample_interval, 'center')
+        clear_line_length = _calc_windowed_stat(
+            scaled_clear, _line_length, samples_per_window, H,
+            args=(sample_interval,))
 
         line_diff = meas_line_length - clear_line_length
-
+        slope_max_diff = _calc_windowed_stat(
+            meas - scaled_clear, _max_diff, samples_per_window, H)
         # evaluate comparison criteria
         c1 = np.abs(meas_mean - alpha*clear_mean) < mean_diff
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
-        c5 = _calc_slope_max_diff(
-            meas, scaled_clear, samples_per_window, 'center') < slope_dev
+        c5 = slope_max_diff < slope_dev
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
@@ -964,8 +929,7 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         components['max_diff'] = np.abs(meas_max - alpha * clear_max)
         components['line_length'] = meas_line_length - clear_line_length
         components['slope_nstd'] = meas_slope_nstd
-        components['slope_max'] = _calc_slope_max_diff(
-            meas, alpha * clear, samples_per_window, 'center')
+        components['slope_max'] = slope_max_diff
 
         return clear_samples, components, alpha
     else:

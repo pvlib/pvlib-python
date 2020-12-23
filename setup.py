@@ -73,6 +73,12 @@ setuptools_kwargs = {
     'python_requires': '>=3.6'
 }
 
+PROJECT_URLS = {
+    "Bug Tracker": "https://github.com/pvlib/pvlib-python/issues",
+    "Documentation": "https://pvlib-python.readthedocs.io/",
+    "Source Code": "https://github.com/pvlib/pvlib-python",
+}
+
 # set up pvlib packages to be installed and extensions to be compiled
 PACKAGES = ['pvlib']
 
@@ -109,5 +115,6 @@ setup(name=DISTNAME,
       maintainer_email=MAINTAINER_EMAIL,
       license=LICENSE,
       url=URL,
+      project_urls=PROJECT_URLS,
       classifiers=CLASSIFIERS,
       **setuptools_kwargs)

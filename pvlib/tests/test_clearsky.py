@@ -631,21 +631,36 @@ def test_detect_clearsky_missing_index(detect_clearsky_data):
         clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values)
 
 
+def test__calc_line_length_windowed():
+    # assumes window=3
+    alignments = ['center']  # 'left' and 'right' could be added in the future
+    shift = {'center': -1}  # 'left': -2, 'right': 0
+    # line length between adjacent points
+    sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
+    expected = {}
+    for align in alignments:
+        expected[align] = {}
+        s = shift[align]
+        line_length = sqt + sqt.shift(-1)
+        expected[align] = line_length.shift(s + 1)
+    for align in expected:
+        data = expected[align]['data']
+        result = clearsky._calc_line_length_windowed(
+            data=data, samples_per_window=3, sample_interval=1, align=align)
+        assert_series_equal(result, expected[align])
+
+
 def test__calc_stats():
     # assumes window=3
     alignments = ['center']  # 'left' and 'right' could be added in the future
     shift = {'center': -1}  # 'left': -2, 'right': 0
     x = pd.Series(np.arange(0, 7)**2.)
-    # all assume right align
-    # line length between adjacent points
-    sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
     mean_x = pd.Series(np.array([np.nan, np.nan, 5, 14, 29, 50, 77]) / 3.)
     max_x = pd.Series(np.array([np.nan, np.nan, 4, 9, 16, 25, 36]))
     diff_std = np.array([np.nan, np.nan, np.sqrt(2), np.sqrt(2), np.sqrt(2),
                          np.sqrt(2), np.sqrt(2)])
     slope_nstd = diff_std / mean_x
     slope = x.diff().shift(-1)
-
     expected = {}
     for align in alignments:
         expected[align] = {}
@@ -654,18 +669,15 @@ def test__calc_stats():
         expected[align]['max'] = max_x.shift(s)
         # slope between adjacent points
         expected[align]['slope'] = slope
-        line_length = sqt + sqt.shift(-1)
-        expected[align]['line_length'] = line_length.shift(s + 1)
         expected[align]['slope_nstd'] = slope_nstd.shift(s)
         expected[align]['data'] = x
     for align in expected:
         data = expected[align]['data']
         result = clearsky._calc_stats(data=data, samples_per_window=3,
                                       sample_interval=1, align=align)
-        res_mean, res_max, res_line_length, res_slope_nstd, res_slope = result
+        res_mean, res_max, res_slope_nstd, res_slope = result
         assert_series_equal(res_mean, expected[align]['mean'])
         assert_series_equal(res_max, expected[align]['max'])
-        assert_series_equal(res_line_length, expected[align]['line_length'])
         assert_series_equal(res_slope_nstd, expected[align]['slope_nstd'])
         assert_series_equal(res_slope, expected[align]['slope'])
 

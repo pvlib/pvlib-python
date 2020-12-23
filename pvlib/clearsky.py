@@ -601,7 +601,8 @@ def _calc_d(aod700, p):
 
 def _calc_stats(data, samples_per_window, sample_interval, align):
     """ Calculates statistics for each window, used by Reno-style clear
-    sky detection functions
+    sky detection functions. Does not return the line length statistic
+    which is provided by _calc_line_length_windowed
 
     Parameters
     ----------
@@ -620,8 +621,6 @@ def _calc_stats(data, samples_per_window, sample_interval, align):
         mean of data in each window
     data_max : Series
         maximum of data in each window
-    data_line_length : Series
-        length of line segments connecting successive data points
     data_slope_nstd : Series
         standard deviation of difference between data points in each window
     data_slope : Series
@@ -638,10 +637,8 @@ def _calc_stats(data, samples_per_window, sample_interval, align):
     data_slope = data_diff / sample_interval
     data_slope_nstd = roller.apply(_calc_slope_nstd)
     data_slope_nstd = data_slope_nstd.shift(shift)
-    data_line_length = roller.apply(_calc_line_length, args=(sample_interval,))
-    data_line_length = data_line_length.shift(shift)
 
-    return (data_mean, data_max, data_line_length, data_slope_nstd, data_slope)
+    return data_mean, data_max, data_slope_nstd, data_slope
 
 
 def _calc_slope_nstd(data):
@@ -684,6 +681,36 @@ def _get_sample_intervals(times, win_length):
                                   'times. consider resampling your data.')
 
 
+def _calc_line_length_windowed(data, samples_per_window, sample_interval,
+                               align):
+    """ Calculates line-length for each window in data
+
+    Parameters
+    ----------
+    data : Series
+    samples_per_window : int
+        Number of data points in each window
+    sample_interval : float
+        Time in minutes in each sample interval
+    align : str
+        Alignment of labels to data in sliding window. Must be one of
+        'left', 'center', 'right'.
+
+    Returns
+    -------
+    data_line_length : Series
+        length of line segments connecting successive data points
+    """
+
+    shift = _shift_from_align(align, samples_per_window)
+    center = align == 'center'
+    roller = data.rolling(samples_per_window, center=center)
+    data_line_length = roller.apply(_calc_line_length, args=(sample_interval,))
+    data_line_length = data_line_length.shift(shift)
+
+    return data_line_length
+
+
 def _calc_line_length(data, sample_interval):
     """ Calculates line length for Reno-style clear sky detection functions.
     """
@@ -705,9 +732,13 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     """
     Returns indices of clear samples in clear windows
     """
-    # first window is in first column of H. clear_windows is aligned by 'align'
-    # shift clear_windows.index so that first window is in left position, lined
-    # up with column of H containing the indices of the first window
+    # H contains indices for each window, e.g. indices for the first window
+    # are in first column of H.
+    # clear_windows contains one boolean for each window and is aligned
+    # by 'align', default to center
+    # shift clear_windows.index to be aligned left (e.g. first value in the
+    # left-most position) to line up with the first column of H.
+
     # commented if/else block for future align='left', 'right' capability
     # if align == 'right':
     #     shift = 1 - samples_per_window
@@ -718,8 +749,8 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     shift = -(samples_per_window // 2)
     idx = clear_windows.shift(shift)
     # drop rows at the end corresponding to windows past the end of data
-    idx.drop(clear_windows.index[1 - samples_per_window:], inplace=True)
-    idx = idx.astype(bool)  # shift added nan, changed type to object
+    idx = idx.drop(clear_windows.index[1 - samples_per_window:])
+    idx = idx.astype(bool)  # shift changed type to object
     clear_samples = np.unique(H[:, idx])
     return clear_samples
 
@@ -858,11 +889,13 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
                np.arange(samples_per_window-1, len(times)))
 
     # calculate measurement statistics
-    meas_mean, meas_max, meas_line_length, meas_slope_nstd, meas_slope \
+    meas_mean, meas_max, meas_slope_nstd, meas_slope \
         = _calc_stats(meas, samples_per_window, sample_interval, 'center')
+    meas_line_length = _calc_line_length_windowed(
+        meas, samples_per_window, sample_interval, 'center')
 
     # calculate clear sky statistics
-    clear_mean, clear_max, _, _, clear_slope \
+    clear_mean, clear_max, _, clear_slope \
         = _calc_stats(clear, samples_per_window, sample_interval, 'center')
 
     # find a scaling factor for the clear sky time series that minimizes the
@@ -873,8 +906,9 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     # at least 50% of the day being identified as clear.
     alpha = 1
     for iteration in range(max_iterations):
-        _, _, clear_line_length, _, _ = _calc_stats(
-            alpha * clear, samples_per_window, sample_interval, 'center')
+        scaled_clear = alpha * clear
+        clear_line_length = _calc_line_length_windowed(
+            scaled_clear, samples_per_window, sample_interval, 'center')
 
         line_diff = meas_line_length - clear_line_length
 
@@ -884,7 +918,7 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
         c5 = _calc_slope_max_diff(
-            meas, alpha * clear, samples_per_window, 'center') < slope_dev
+            meas, scaled_clear, samples_per_window, 'center') < slope_dev
         c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 

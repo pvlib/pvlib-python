@@ -8,7 +8,8 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
-* ``pvlib.irradiance.liujordan`` is deprecated.
+* ``pvlib.irradiance.liujordan`` is deprecated. :py:func:`pvlib.irradiance.campbell_norman`
+  replaces ``pvlib.irradiance.liujordan``.
 
 Enhancements
 ~~~~~~~~~~~~
@@ -18,7 +19,10 @@ Enhancements
   only NOCT. (:pull:`1045`)
 * :py:func:`pvlib.clearsky.detect_clearsky` now uses centered rolling windows
   instead of left-aligned rolling windows. (:pull:`1074`)
-* The 'times' parameter is now optional in :py:func:`pvlib.clearsky.detect_clearsky`. (:pull:`1074`)
+* The 'times' and 'window_length` parameters are now optional kwargs in
+  :py:func:`pvlib.clearsky.detect_clearsky`. If omitted, 'times' is set
+  equal to the index of parameter 'measured', and 'window_length' is set to
+  10 minutes. (:pull:`1074`)
 * Added :py:func:`pvlib.inverter.sandia_multi` and :py:func:`pvlib.inverter.pvwatts_multi`
   for modeling inverters with multiple MPPTs (:issue:`457`, :pull:`1085`, :pull:`1106`)
 * Added optional ``attributes`` parameter to :py:func:`pvlib.iotools.get_psm3`

@@ -4,6 +4,7 @@ import numpy as np
 from numpy import nan
 import pandas as pd
 import pytz
+from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
@@ -631,13 +632,16 @@ def test_detect_clearsky_missing_index(detect_clearsky_data):
         clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values)
 
 
-def test__calc_line_length_windowed():
-    # assumes window=3
+def test__calc_windowed_stat():
+    # sqt is hand-calculated assuming window=3
+    samples_per_window = 3
     alignments = ['center']  # 'left' and 'right' could be added in the future
     shift = {'center': -1}  # 'left': -2, 'right': 0
     x = pd.Series(np.arange(0, 7)**2.)
     # line length between adjacent points
     sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
+    H = hankel(np.arange(samples_per_window),
+               np.arange(samples_per_window-1, len(sqt)))
     expected = {}
     for align in alignments:
         expected[align] = {}
@@ -647,8 +651,10 @@ def test__calc_line_length_windowed():
         expected[align]['data'] = x
     for align in expected:
         data = expected[align]['data']
-        result = clearsky._calc_line_length_windowed(
-            data=data, samples_per_window=3, sample_interval=1, align=align)
+        sample_interval = 1
+        result = clearsky._calc_windowed_stat(
+            data, clearsky._line_length, samples_per_window, H,
+            args=(sample_interval,))
         assert_series_equal(result, expected[align]['line_length'])
 
 
@@ -676,28 +682,12 @@ def test__calc_stats():
     for align in expected:
         data = expected[align]['data']
         result = clearsky._calc_stats(data=data, samples_per_window=3,
-                                      sample_interval=1, align=align)
+                                      sample_interval=1)
         res_mean, res_max, res_slope_nstd, res_slope = result
         assert_series_equal(res_mean, expected[align]['mean'])
         assert_series_equal(res_max, expected[align]['max'])
         assert_series_equal(res_slope_nstd, expected[align]['slope_nstd'])
         assert_series_equal(res_slope, expected[align]['slope'])
-
-
-def test__calc_slope_max_diff():
-    alignments = ['center']  # 'left' and 'right' could be added in the future
-    ms = pd.Series(np.array([1., 0., 2., 5., -10.]))
-    cs = pd.Series(np.array([0., 0., 1., 1., 0.]))
-    limit = 2.
-    expected = {}
-    expected['left'] = pd.Series([1., 4., 10., np.nan, np.nan]) < limit
-    expected['center'] = pd.Series([np.nan, 1., 4., 10., np.nan]) < limit
-    expected['right'] = pd.Series([np.nan, np.nan, 1., 4., 10.]) < limit
-    # here test for window=3
-    for align in alignments:
-        result = clearsky._calc_slope_max_diff(
-            ms, cs, window=3, align=align) < limit
-        assert_series_equal(result, expected[align])
 
 
 def test_bird():

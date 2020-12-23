@@ -635,6 +635,7 @@ def test__calc_line_length_windowed():
     # assumes window=3
     alignments = ['center']  # 'left' and 'right' could be added in the future
     shift = {'center': -1}  # 'left': -2, 'right': 0
+    x = pd.Series(np.arange(0, 7)**2.)
     # line length between adjacent points
     sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
     expected = {}
@@ -642,12 +643,13 @@ def test__calc_line_length_windowed():
         expected[align] = {}
         s = shift[align]
         line_length = sqt + sqt.shift(-1)
-        expected[align] = line_length.shift(s + 1)
+        expected[align]['line_length'] = line_length.shift(s + 1)
+        expected[align]['data'] = x
     for align in expected:
         data = expected[align]['data']
         result = clearsky._calc_line_length_windowed(
             data=data, samples_per_window=3, sample_interval=1, align=align)
-        assert_series_equal(result, expected[align])
+        assert_series_equal(result, expected[align]['line_length'])
 
 
 def test__calc_stats():

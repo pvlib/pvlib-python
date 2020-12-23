@@ -18,13 +18,15 @@ class DetectClear:
             self.times, self.lat, self.lon)
         clearsky_df = clearsky.simplified_solis(
             self.solar_position['apparent_elevation'])
-        self.clearsky = self.clearsky_df['ghi']
-        measured_dni = clearsky_df['dni'].where(self.times.hour % 2, 0)
+        self.clearsky = clearsky_df['ghi']
+        measured_dni = clearsky_df['dni'].where(
+            (self.times.hour % 2).astype(bool), 0)
         cos_zen = np.cos(np.deg2rad(self.solar_position['apparent_zenith']))
         self.measured = measured_dni * cos_zen + clearsky_df['dhi']
         self.measured *= 0.98
+        self.window_length = 10
 
-    def detect_clearsky(self):
+    def time_detect_clearsky(self):
         clearsky.detect_clearsky(
             self.measured, self.clearsky, self.times, self.window_length
         )

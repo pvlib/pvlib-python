@@ -674,7 +674,8 @@ def _get_sample_intervals(times, win_length):
 
 
 def _to_centered_series(vals, idx, H, samples_per_window):
-    vals = np.pad(vals, ((0, len(idx) - H.shape[1]),), constant_values=np.nan)
+    vals = np.pad(vals, ((0, len(idx) - H.shape[1]),), mode='constant',
+                  constant_values=np.nan)
     shift = samples_per_window // 2  # align = 'center' only
     return pd.Series(index=idx, data=vals).shift(shift)
 

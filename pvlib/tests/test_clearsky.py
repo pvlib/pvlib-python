@@ -661,8 +661,7 @@ def test__max_diff_windowed(detect_clearsky_helper_data):
     expected = {}
     expected['max_diff'] = pd.Series(
         data=[np.nan, 3., 5., 7., 9., 11., np.nan], index=x.index)
-    result = clearsky._max_diff_windowed(
-        x, H, samples_per_window, sample_interval)
+    result = clearsky._max_diff_windowed(x, H, samples_per_window)
     assert_series_equal(result, expected['max_diff'])
 
 

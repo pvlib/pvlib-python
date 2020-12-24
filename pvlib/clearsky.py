@@ -632,28 +632,37 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
     # shift to get forward difference, .diff() is backward difference instead
     data_diff = data.diff().shift(-1)
     data_slope = data_diff / sample_interval
-    data_slope_nstd = _calc_windowed_stat(
-        data, _slope_nstd, samples_per_window, H)
+    data_slope_nstd = _slope_nstd_windowed(data, H, samples_per_window)
     data_slope_nstd = data_slope_nstd
 
     return data_mean, data_max, data_slope_nstd, data_slope
 
 
-def _slope_nstd(data):
+def _slope_nstd_windowed(data, H, samples_per_window):
     with np.errstate(divide='ignore', invalid='ignore'):
-        return np.diff(data).std(ddof=1) / data.mean()
+        raw = np.diff(data)
+        raw = raw[H[:-1, ]].std(ddof=1, axis=0) / data[H].mean(axis=0)
+    return _to_centered_series(raw, data.index, samples_per_window)
 
 
-def _line_length(data, sample_interval):
-    """
-    Calculates line length where sample_interval is the time step
-    between data points.
-    """
-    return np.sum(np.sqrt(np.diff(data)**2 + sample_interval**2))
+def _max_diff_windowed(data, H, samples_per_window):
+    raw = np.diff(data)
+    raw = np.abs(raw[H[:-1, ]]).max(axis=0)
+    return _to_centered_series(raw, data.index, samples_per_window)
 
 
-def _max_diff(data):
-    return np.abs(np.diff(data)).max()
+def _line_length_windowed(data, H, samples_per_window,
+                          sample_interval):
+    raw = np.sqrt(np.diff(data)**2. + sample_interval**2.)
+    raw = np.sum(raw[H[:-1, ]], axis=0)
+    return _to_centered_series(raw, data.index, samples_per_window)
+
+
+def _to_centered_series(vals, idx, samples_per_window):
+    vals = np.pad(vals, ((0, len(idx) - len(vals)),), mode='constant',
+                  constant_values=np.nan)
+    shift = samples_per_window // 2  # align = 'center' only
+    return pd.Series(index=idx, data=vals).shift(shift)
 
 
 def _get_sample_intervals(times, win_length):
@@ -671,26 +680,6 @@ def _get_sample_intervals(times, win_length):
     else:
         raise NotImplementedError('algorithm does not yet support unequal '
                                   'times. consider resampling your data.')
-
-
-def _to_centered_series(vals, idx, H, samples_per_window):
-    vals = np.pad(vals, ((0, len(idx) - H.shape[1]),), mode='constant',
-                  constant_values=np.nan)
-    shift = samples_per_window // 2  # align = 'center' only
-    return pd.Series(index=idx, data=vals).shift(shift)
-
-
-def _calc_windowed_stat(data, func, samples_per_window, H, args=()):
-    """
-    Applies func to each rolling window in data. data must be Series.
-    func accepts a 1d array and returns a float. args are passed to func.
-    H is a Hankel matrix defining the indices for each window.
-
-    Returns a Series of the output of func in each window, aligned to center
-    of each window.
-    """
-    vals = np.apply_along_axis(func, 0, data.values[H], *args)
-    return _to_centered_series(vals, data.index, H, samples_per_window)
 
 
 def _clear_sample_index(clear_windows, samples_per_window, align, H):
@@ -856,8 +845,8 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     # calculate measurement statistics
     meas_mean, meas_max, meas_slope_nstd, meas_slope \
         = _calc_stats(meas, samples_per_window, sample_interval, H)
-    meas_line_length = _calc_windowed_stat(
-        meas, _line_length, samples_per_window, H, args=(sample_interval,))
+    meas_line_length = _line_length_windowed(
+        meas, H, samples_per_window, sample_interval)
 
     # calculate clear sky statistics
     clear_mean, clear_max, _, clear_slope \
@@ -872,13 +861,12 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     alpha = 1
     for iteration in range(max_iterations):
         scaled_clear = alpha * clear
-        clear_line_length = _calc_windowed_stat(
-            scaled_clear, _line_length, samples_per_window, H,
-            args=(sample_interval,))
+        clear_line_length = _line_length_windowed(
+            scaled_clear, H, samples_per_window, sample_interval)
 
         line_diff = meas_line_length - clear_line_length
-        slope_max_diff = _calc_windowed_stat(
-            meas - scaled_clear, _max_diff, samples_per_window, H)
+        slope_max_diff = _max_diff_windowed(
+            meas - scaled_clear, H, samples_per_window)
         # evaluate comparison criteria
         c1 = np.abs(meas_mean - alpha*clear_mean) < mean_diff
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff

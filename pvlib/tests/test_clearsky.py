@@ -632,7 +632,7 @@ def test_detect_clearsky_missing_index(detect_clearsky_data):
         clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values)
 
 
-def test__calc_windowed_stat():
+def test__line_length_windowed():
     # sqt is hand-calculated assuming window=3
     samples_per_window = 3
     alignments = ['center']  # 'left' and 'right' could be added in the future
@@ -652,10 +652,23 @@ def test__calc_windowed_stat():
     for align in expected:
         data = expected[align]['data']
         sample_interval = 1
-        result = clearsky._calc_windowed_stat(
-            data, clearsky._line_length, samples_per_window, H,
-            args=(sample_interval,))
+        result = clearsky._line_length_windowed(
+            data, H, samples_per_window, sample_interval)
         assert_series_equal(result, expected[align]['line_length'])
+
+
+def test__max_diff_windowed():
+    samples_per_window = 3
+    sample_interval = 1
+    x = pd.Series(np.arange(0, 7)**2.)
+    H = hankel(np.arange(samples_per_window),
+               np.arange(samples_per_window-1, len(x)))
+    expected = {}
+    expected['max_diff'] = pd.Series(
+        data=[np.nan, 3., 5., 7., 9., 11., np.nan], index=x.index)
+    result = clearsky._line_length_windowed(
+        x, H, samples_per_window, sample_interval)
+    assert_series_equal(result, expected['max_diff'])
 
 
 def test__calc_stats():

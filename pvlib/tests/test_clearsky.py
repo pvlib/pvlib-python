@@ -661,14 +661,15 @@ def test__max_diff_windowed(detect_clearsky_helper_data):
     expected = {}
     expected['max_diff'] = pd.Series(
         data=[np.nan, 3., 5., 7., 9., 11., np.nan], index=x.index)
-    result = clearsky._line_length_windowed(
+    result = clearsky._max_diff_windowed(
         x, H, samples_per_window, sample_interval)
     assert_series_equal(result, expected['max_diff'])
 
 
 def test__calc_stats(detect_clearsky_helper_data):
     x, samples_per_window, sample_interval, H = detect_clearsky_helper_data
-    # stats are hand-computed assuming window = 3 and sample_interval = 1
+    # stats are hand-computed assuming window = 3, sample_interval = 1,
+    # and right-aligned labels
     mean_x = pd.Series(np.array([np.nan, np.nan, 5, 14, 29, 50, 77]) / 3.)
     max_x = pd.Series(np.array([np.nan, np.nan, 4, 9, 16, 25, 36]))
     diff_std = np.array([np.nan, np.nan, np.sqrt(2), np.sqrt(2), np.sqrt(2),
@@ -676,11 +677,11 @@ def test__calc_stats(detect_clearsky_helper_data):
     slope_nstd = diff_std / mean_x
     slope = x.diff().shift(-1)
     expected = {}
-    expected['mean'] = mean_x
-    expected['max'] = max_x
+    expected['mean'] = mean_x.shift(-1)  # shift to align to center
+    expected['max'] = max_x.shift(-1)
     # slope between adjacent points
     expected['slope'] = slope
-    expected['slope_nstd'] = slope_nstd
+    expected['slope_nstd'] = slope_nstd.shift(-1)
     result = clearsky._calc_stats(
         x, samples_per_window, sample_interval, H)
     res_mean, res_max, res_slope_nstd, res_slope = result

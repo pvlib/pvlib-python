@@ -641,7 +641,7 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
 def _slope_nstd_windowed(data, H, samples_per_window):
     with np.errstate(divide='ignore', invalid='ignore'):
         raw = np.diff(data)
-        raw = raw[H[:-1, ]].std(ddof=1, axis=0) / data[H].mean(axis=0)
+        raw = raw[H[:-1, ]].std(ddof=1, axis=0) / data.values[H].mean(axis=0)
     return _to_centered_series(raw, data.index, samples_per_window)
 
 

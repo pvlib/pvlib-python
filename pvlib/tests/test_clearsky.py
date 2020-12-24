@@ -632,8 +632,8 @@ def test_detect_clearsky_missing_index(detect_clearsky_data):
         clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values)
 
 
-def test__line_length_windowed():
-    # sqt is hand-calculated assuming window=3
+@pytest.fixture
+def detect_clearsky_helper_data():
     samples_per_window = 3
     sample_interval = 1
     x = pd.Series(np.arange(0, 7)**2.)
@@ -641,6 +641,14 @@ def test__line_length_windowed():
     sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
     H = hankel(np.arange(samples_per_window),
                np.arange(samples_per_window-1, len(sqt)))
+    return x, samples_per_window, sample_interval, H
+
+
+def test__line_length_windowed(detect_clearsky_helper_data):
+    x, samples_per_window, sample_interval, H = detect_clearsky_helper_data
+    # sqt is hand-calculated assuming window=3
+    # line length between adjacent points
+    sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
     expected = {}
     expected['line_length'] = sqt + sqt.shift(-1)
     result = clearsky._line_length_windowed(
@@ -648,12 +656,8 @@ def test__line_length_windowed():
     assert_series_equal(result, expected['line_length'])
 
 
-def test__max_diff_windowed():
-    samples_per_window = 3
-    sample_interval = 1
-    x = pd.Series(np.arange(0, 7)**2.)
-    H = hankel(np.arange(samples_per_window),
-               np.arange(samples_per_window-1, len(x)))
+def test__max_diff_windowed(detect_clearsky_helper_data):
+    x, samples_per_window, sample_interval, H = detect_clearsky_helper_data
     expected = {}
     expected['max_diff'] = pd.Series(
         data=[np.nan, 3., 5., 7., 9., 11., np.nan], index=x.index)
@@ -662,19 +666,15 @@ def test__max_diff_windowed():
     assert_series_equal(result, expected['max_diff'])
 
 
-def test__calc_stats():
+def test__calc_stats(detect_clearsky_helper_data):
+    x, samples_per_window, sample_interval, H = detect_clearsky_helper_data
     # stats are hand-computed assuming window = 3 and sample_interval = 1
-    samples_per_window = 3
-    sample_interval = 1
-    x = pd.Series(np.arange(0, 7)**2.)
     mean_x = pd.Series(np.array([np.nan, np.nan, 5, 14, 29, 50, 77]) / 3.)
     max_x = pd.Series(np.array([np.nan, np.nan, 4, 9, 16, 25, 36]))
     diff_std = np.array([np.nan, np.nan, np.sqrt(2), np.sqrt(2), np.sqrt(2),
                          np.sqrt(2), np.sqrt(2)])
     slope_nstd = diff_std / mean_x
     slope = x.diff().shift(-1)
-    H = hankel(np.arange(samples_per_window),
-               np.arange(samples_per_window-1, len(x)))
     expected = {}
     expected['mean'] = mean_x
     expected['max'] = max_x

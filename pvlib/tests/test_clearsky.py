@@ -635,26 +635,17 @@ def test_detect_clearsky_missing_index(detect_clearsky_data):
 def test__line_length_windowed():
     # sqt is hand-calculated assuming window=3
     samples_per_window = 3
-    alignments = ['center']  # 'left' and 'right' could be added in the future
-    shift = {'center': -1}  # 'left': -2, 'right': 0
+    sample_interval = 1
     x = pd.Series(np.arange(0, 7)**2.)
     # line length between adjacent points
     sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
     H = hankel(np.arange(samples_per_window),
                np.arange(samples_per_window-1, len(sqt)))
     expected = {}
-    for align in alignments:
-        expected[align] = {}
-        s = shift[align]
-        line_length = sqt + sqt.shift(-1)
-        expected[align]['line_length'] = line_length.shift(s + 1)
-        expected[align]['data'] = x
-    for align in expected:
-        data = expected[align]['data']
-        sample_interval = 1
-        result = clearsky._line_length_windowed(
-            data, H, samples_per_window, sample_interval)
-        assert_series_equal(result, expected[align]['line_length'])
+    expected['line_length'] = sqt + sqt.shift(-1)
+    result = clearsky._line_length_windowed(
+        x, H, samples_per_window, sample_interval)
+    assert_series_equal(result, expected['line_length'])
 
 
 def test__max_diff_windowed():
@@ -675,8 +666,6 @@ def test__calc_stats():
     # stats are hand-computed assuming window = 3 and sample_interval = 1
     samples_per_window = 3
     sample_interval = 1
-    alignments = ['center']  # 'left' and 'right' could be added in the future
-    shift = {'center': -1}  # 'left': -2, 'right': 0
     x = pd.Series(np.arange(0, 7)**2.)
     mean_x = pd.Series(np.array([np.nan, np.nan, 5, 14, 29, 50, 77]) / 3.)
     max_x = pd.Series(np.array([np.nan, np.nan, 4, 9, 16, 25, 36]))
@@ -687,24 +676,18 @@ def test__calc_stats():
     H = hankel(np.arange(samples_per_window),
                np.arange(samples_per_window-1, len(x)))
     expected = {}
-    for align in alignments:
-        expected[align] = {}
-        s = shift[align]
-        expected[align]['mean'] = mean_x.shift(s)
-        expected[align]['max'] = max_x.shift(s)
-        # slope between adjacent points
-        expected[align]['slope'] = slope
-        expected[align]['slope_nstd'] = slope_nstd.shift(s)
-        expected[align]['data'] = x
-    for align in expected:
-        data = expected[align]['data']
-        result = clearsky._calc_stats(data, samples_per_window,
-                                      sample_interval, H)
-        res_mean, res_max, res_slope_nstd, res_slope = result
-        assert_series_equal(res_mean, expected[align]['mean'])
-        assert_series_equal(res_max, expected[align]['max'])
-        assert_series_equal(res_slope_nstd, expected[align]['slope_nstd'])
-        assert_series_equal(res_slope, expected[align]['slope'])
+    expected['mean'] = mean_x
+    expected['max'] = max_x
+    # slope between adjacent points
+    expected['slope'] = slope
+    expected['slope_nstd'] = slope_nstd
+    result = clearsky._calc_stats(
+        x, samples_per_window, sample_interval, H)
+    res_mean, res_max, res_slope_nstd, res_slope = result
+    assert_series_equal(res_mean, expected['mean'])
+    assert_series_equal(res_max, expected['max'])
+    assert_series_equal(res_slope_nstd, expected['slope_nstd'])
+    assert_series_equal(res_slope, expected['slope'])
 
 
 def test_bird():

@@ -626,9 +626,10 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
         difference between successive data points
     """
 
-    roller = data.rolling(samples_per_window, center=True)
-    data_mean = roller.mean()
-    data_max = roller.max()
+    data_mean = np.mean(data[H], axis=0)
+    data_mean = _to_centered_series(data_mean, data.index, samples_per_window)
+    data_max = np.max(data[H], axis=0)
+    data_max = _to_centered_series(data_max, data.index, samples_per_window)
     # shift to get forward difference, .diff() is backward difference instead
     data_diff = data.diff().shift(-1)
     data_slope = data_diff / sample_interval

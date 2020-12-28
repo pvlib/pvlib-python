@@ -8,10 +8,12 @@ import numpy as np
 
 
 class DetectClear:
+    params = [1, 10, 100]  # number of days
+    param_names = ['ndays']
 
-    def setup(self):
+    def setup(self, ndays):
         self.times = pd.date_range(start='20180601', freq='1min',
-                                   periods=14400)
+                                   periods=1440*ndays)
         self.lat = 35.1
         self.lon = -106.6
         self.solar_position = solarposition.get_solarposition(
@@ -26,7 +28,7 @@ class DetectClear:
         self.measured *= 0.98
         self.window_length = 10
 
-    def time_detect_clearsky(self):
+    def time_detect_clearsky(self, ndays):
         clearsky.detect_clearsky(
             self.measured, self.clearsky, self.times, self.window_length
         )

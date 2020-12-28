@@ -825,17 +825,6 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     # be polite about returning the same type as was input
     ispandas = isinstance(measured, pd.Series)
 
-    # for internal use, need a Series
-    if not ispandas:
-        meas = pd.Series(measured, index=times)
-    else:
-        meas = measured
-
-    if not isinstance(clearsky, pd.Series):
-        clear = pd.Series(clearsky, index=times)
-    else:
-        clear = clearsky
-
     sample_interval, samples_per_window = _get_sample_intervals(times,
                                                                 window_length)
 
@@ -845,13 +834,13 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_slope_nstd, meas_slope \
-        = _calc_stats(meas, samples_per_window, sample_interval, H)
+        = _calc_stats(measured, samples_per_window, sample_interval, H)
     meas_line_length = _line_length_windowed(
-        meas, H, samples_per_window, sample_interval)
+        measured, H, samples_per_window, sample_interval)
 
     # calculate clear sky statistics
     clear_mean, clear_max, _, clear_slope \
-        = _calc_stats(clear, samples_per_window, sample_interval, H)
+        = _calc_stats(clearsky, samples_per_window, sample_interval, H)
 
     # find a scaling factor for the clear sky time series that minimizes the
     # RMSE between the clear times identified in the measured data and the
@@ -861,13 +850,13 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     # at least 50% of the day being identified as clear.
     alpha = 1
     for iteration in range(max_iterations):
-        scaled_clear = alpha * clear
+        scaled_clear = alpha * clearsky
         clear_line_length = _line_length_windowed(
             scaled_clear, H, samples_per_window, sample_interval)
 
         line_diff = meas_line_length - clear_line_length
         slope_max_diff = _max_diff_windowed(
-            meas - scaled_clear, H, samples_per_window)
+            measured - scaled_clear, H, samples_per_window)
         # evaluate comparison criteria
         c1 = np.abs(meas_mean - alpha*clear_mean) < mean_diff
         c2 = np.abs(meas_max - alpha*clear_max) < max_diff
@@ -878,7 +867,7 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
         # create array to return
-        clear_samples = np.full_like(meas, False, dtype='bool')
+        clear_samples = np.full_like(measured, False, dtype='bool')
         # find the samples contained in any window classified as clear
         idx = _clear_sample_index(clear_windows, samples_per_window, 'center',
                                   H)
@@ -886,8 +875,8 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
         # find a new alpha
         previous_alpha = alpha
-        clear_meas = meas[clear_samples]
-        clear_clear = clear[clear_samples]
+        clear_meas = measured[clear_samples]
+        clear_clear = clearsky[clear_samples]
 
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))

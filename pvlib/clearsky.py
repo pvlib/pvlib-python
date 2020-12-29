@@ -850,8 +850,8 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         meas, H, samples_per_window, sample_interval)
 
     # calculate clear sky statistics
-    clear_mean, clear_max, _, clear_slope \
-        = _calc_stats(clear, samples_per_window, sample_interval, H)
+    clear_mean, clear_max, _, clear_slope = _calc_stats(
+        clear, samples_per_window, sample_interval, H)
 
     # find a scaling factor for the clear sky time series that minimizes the
     # RMSE between the clear times identified in the measured data and the

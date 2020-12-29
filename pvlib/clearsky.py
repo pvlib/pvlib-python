@@ -906,7 +906,6 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     if return_components:
         components = OrderedDict()
-        components = OrderedDict()
         components['mean_diff_flag'] = c1
         components['max_diff_flag'] = c2
         components['line_length_flag'] = c3

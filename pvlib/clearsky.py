@@ -844,8 +844,8 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
                np.arange(samples_per_window-1, len(times)))
 
     # calculate measurement statistics
-    meas_mean, meas_max, meas_slope_nstd, meas_slope \
-        = _calc_stats(meas, samples_per_window, sample_interval, H)
+    meas_mean, meas_max, meas_slope_nstd, meas_slope = _calc_stats(
+        meas, samples_per_window, sample_interval, H)
     meas_line_length = _line_length_windowed(
         meas, H, samples_per_window, sample_interval)
 

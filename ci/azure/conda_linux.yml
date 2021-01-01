@@ -11,6 +11,8 @@ jobs:
       Python36-min:
         python.version: '36'
         suffix: '-min'
+        coverage: true  # report coverage for both 36 and 36-min to combine
+                        # coverage for both numba and non-numba codepaths
       Python36:
         python.version: '36'
         coverage: true

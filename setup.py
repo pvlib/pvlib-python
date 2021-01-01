@@ -50,7 +50,8 @@ EXTRAS_REQUIRE = {
                  'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2',
             'sphinx_rtd_theme==0.5.0', 'sphinx-gallery', 'docutils == 0.15.2',
-            'pillow', 'netcdf4', 'siphon', 'tables'],
+            'pillow', 'netcdf4', 'siphon', 'tables',
+            'sphinx-toggleprompt >= 0.0.5'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
@@ -70,6 +71,12 @@ setuptools_kwargs = {
     'scripts': [],
     'include_package_data': True,
     'python_requires': '>=3.6'
+}
+
+PROJECT_URLS = {
+    "Bug Tracker": "https://github.com/pvlib/pvlib-python/issues",
+    "Documentation": "https://pvlib-python.readthedocs.io/",
+    "Source Code": "https://github.com/pvlib/pvlib-python",
 }
 
 # set up pvlib packages to be installed and extensions to be compiled
@@ -108,5 +115,6 @@ setup(name=DISTNAME,
       maintainer_email=MAINTAINER_EMAIL,
       license=LICENSE,
       url=URL,
+      project_urls=PROJECT_URLS,
       classifiers=CLASSIFIERS,
       **setuptools_kwargs)

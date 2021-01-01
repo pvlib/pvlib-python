@@ -181,7 +181,7 @@ DNI estimation models
    irradiance.dirint
    irradiance.dirindex
    irradiance.erbs
-   irradiance.liujordan
+   irradiance.campbell_norman
    irradiance.gti_dirint
 
 Clearness index models
@@ -292,8 +292,10 @@ Inverter models (DC to AC conversion)
    :toctree: generated/
 
    inverter.sandia
+   inverter.sandia_multi
    inverter.adr
    inverter.pvwatts
+   inverter.pvwatts_multi
 
 Functions for fitting inverter models
 
@@ -324,7 +326,6 @@ Pvsyst model
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.calcparams_pvsyst
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode
@@ -520,7 +521,7 @@ Processing data
    forecast.ForecastModel.cloud_cover_to_ghi_linear
    forecast.ForecastModel.cloud_cover_to_irradiance_clearsky_scaling
    forecast.ForecastModel.cloud_cover_to_transmittance_linear
-   forecast.ForecastModel.cloud_cover_to_irradiance_liujordan
+   forecast.ForecastModel.cloud_cover_to_irradiance_campbell_norman
    forecast.ForecastModel.cloud_cover_to_irradiance
    forecast.ForecastModel.kelvin_to_celsius
    forecast.ForecastModel.isobaric_to_ambient_temperature

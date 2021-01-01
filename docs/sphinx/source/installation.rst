@@ -287,7 +287,7 @@ with numba have a corresponding note on their page in the API Reference.
 By default, numba is used automatically if it is present in your
 python environment.  However, it can be disabled by using the
 ``NUMBA_DISABLE_JIT`` environment variable.  The same can be accomplished
-by importing and configuring numba prior to importing pvlib, like this
+by importing and configuring numba prior to importing pvlib, like this::
 
     import numba
     numba.config.DISABLE_JIT = 1

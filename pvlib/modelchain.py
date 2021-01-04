@@ -289,7 +289,10 @@ class ModelChain:
     """
     The ModelChain class to provides a standardized, high-level
     interface for all of the modeling steps necessary for calculating PV
-    power from a time series of weather inputs.
+    power from a time series of weather inputs. The same models are applied
+    to all ``pvsystem.Array`` objects, so each Array must contain the
+    appropriate model parameters. For example, if ``dc_model='pvwatts'``,
+    then each ``Array.module_parameters`` must contain ``'pdc0'``.
 
     See https://pvlib-python.readthedocs.io/en/stable/modelchain.html
     for examples.

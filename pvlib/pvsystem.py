@@ -355,7 +355,8 @@ class PVSystem:
         return tuple(
             array.get_irradiance(solar_zenith, solar_azimuth,
                                  dni, ghi, dhi,
-                                 dni_extra, airmass)
+                                 dni_extra, airmass, model,
+                                 **kwargs)
             for array, dni, ghi, dhi in zip(
                 self.arrays, dni, ghi, dhi
             )

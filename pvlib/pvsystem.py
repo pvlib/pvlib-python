@@ -1098,7 +1098,7 @@ class LocalizedPVSystem(PVSystem, Location):
 
 class Array:
     """
-    An Array is a set of of modules at a fixed orientation.
+    An Array is a set of of modules at the same orientation.
 
     Specifically, an array is defined by tilt, azimuth, the
     module parameters, the number of parallel strings of modules

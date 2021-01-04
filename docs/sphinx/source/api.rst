@@ -417,6 +417,13 @@ Shading
    shading.masking_angle_passias
    shading.sky_diffuse_passias
 
+Spectrum
+--------
+
+.. autosummary::
+   :toctree: generated/
+
+   spectrum.spectrl2
 
 Tracking
 ========

@@ -1331,7 +1331,7 @@ class Array:
         ``iam_model``.
 
         Parameters for the selected IAM model are expected to be in
-        ``PVSystem.module_parameters``. Default parameters are available for
+        ``Array.module_parameters``. Default parameters are available for
         the 'physical', 'ashrae' and 'martin_ruiz' models.
 
         Parameters
@@ -1350,7 +1350,8 @@ class Array:
 
         Raises
         ------
-        ValueError if `iam_model` is not a valid model name.
+        ValueError
+            if `iam_model` is not a valid model name.
         """
         model = iam_model.lower()
         if model in ['ashrae', 'physical', 'martin_ruiz']:

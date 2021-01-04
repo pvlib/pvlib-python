@@ -294,7 +294,7 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_aoi(self, solar_zenith, solar_azimuth):
-        """Get the angle of incidence on the system.
+        """Get the angle of incidence on the Array(s) in the system.
 
         Parameters
         ----------
@@ -305,7 +305,7 @@ class PVSystem:
 
         Returns
         -------
-        aoi : Series
+        aoi : Series or tuple of Series
             The angle of incidence
         """
 
@@ -346,7 +346,7 @@ class PVSystem:
 
         Returns
         -------
-        poa_irradiance : DataFrame
+        poa_irradiance : DataFrame or tuple of DataFrame
             Column names are: ``total, beam, sky, ground``.
         """
         dni = self._validate_per_array(dni, system_wide=True)
@@ -381,7 +381,7 @@ class PVSystem:
             'martin_ruiz' and 'sapm'.
         Returns
         -------
-        iam : numeric
+        iam : numeric or tuple of numeric
             The AOI modifier.
 
         Raises
@@ -563,7 +563,8 @@ class PVSystem:
 
         Returns
         -------
-        numeric, values in degrees C.
+        numeric or tuple of numeric
+            values in degrees C.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
@@ -608,7 +609,7 @@ class PVSystem:
 
         Returns
         -------
-        F1 : numeric
+        F1 : numeric or tuple of numeric
             The SAPM spectral loss coefficient.
         """
         return tuple(
@@ -641,7 +642,7 @@ class PVSystem:
 
         Returns
         -------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The SAPM effective irradiance. [W/m2]
         """
         poa_direct = self._validate_per_array(poa_direct)
@@ -675,7 +676,8 @@ class PVSystem:
 
         Returns
         -------
-        numeric, values in degrees C.
+        numeric or tuple of numeric
+            values in degrees C.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
@@ -714,7 +716,8 @@ class PVSystem:
 
         Returns
         -------
-        numeric, values in degrees C.
+        numeric or tuple of numeric
+            values in degrees C.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
@@ -747,7 +750,7 @@ class PVSystem:
 
         Returns
         -------
-        temperature_cell : pandas Series
+        temperature_cell : Series or tuple of Series
             The modeled cell temperature [C]
 
         Notes
@@ -807,7 +810,7 @@ class PVSystem:
 
         Returns
         -------
-        modifier: array-like
+        modifier: array-like or tuple of array-like
             spectral mismatch factor (unitless) which can be multiplied
             with broadband irradiance reaching a module's cells to estimate
             effective irradiance, i.e., the irradiance that is converted to
@@ -896,7 +899,7 @@ class PVSystem:
 
         Returns
         -------
-        scaled_data: DataFrame
+        scaled_data: DataFrame or tuple of DataFrame
             A scaled copy of the input data.
         """
         data = self._validate_per_array(data)

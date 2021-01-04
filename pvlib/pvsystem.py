@@ -328,11 +328,11 @@ class PVSystem:
             Solar zenith angle.
         solar_azimuth : float or Series.
             Solar azimuth angle.
-        dni : float or Series
+        dni : float or Series or tuple of float or Series
             Direct Normal Irradiance
-        ghi : float or Series
+        ghi : float or Series or tuple of float or Series
             Global horizontal irradiance
-        dhi : float or Series
+        dhi : float or Series or tuple of float or Series
             Diffuse horizontal irradiance
         dni_extra : None, float or Series, default None
             Extraterrestrial direct normal irradiance
@@ -374,7 +374,7 @@ class PVSystem:
 
         Parameters
         ----------
-        aoi : numeric
+        aoi : numeric or tuple of numeric
             The angle of incidence in degrees.
 
         aoi_model : string, default 'physical'
@@ -403,10 +403,10 @@ class PVSystem:
 
         Parameters
         ----------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The irradiance (W/m2) that is converted to photocurrent.
 
-        temp_cell : float or Series
+        temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
 
         **kwargs
@@ -444,10 +444,10 @@ class PVSystem:
 
         Parameters
         ----------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The irradiance (W/m2) that is converted to photocurrent.
 
-        temp_cell : float or Series
+        temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
 
         **kwargs
@@ -485,10 +485,10 @@ class PVSystem:
 
         Parameters
         ----------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The irradiance (W/m2) that is converted to photocurrent.
 
-        temp_cell : float or Series
+        temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
 
         Returns
@@ -525,10 +525,10 @@ class PVSystem:
 
         Parameters
         ----------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The irradiance (W/m2) that is converted to photocurrent.
 
-        temp_cell : float or Series
+        temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
 
         kwargs
@@ -554,13 +554,13 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_global : numeric
+        poa_global : numeric or tuple of numeric
             Total incident irradiance in W/m^2.
 
-        temp_air : numeric
+        temp_air : numeric or tuple of numeric
             Ambient dry bulb temperature in degrees C.
 
-        wind_speed : numeric
+        wind_speed : numeric or tuple of numeric
             Wind speed in m/s at a height of 10 meters.
 
         Returns
@@ -630,16 +630,16 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_direct : numeric
+        poa_direct : numeric or tuple of numeric
             The direct irradiance incident upon the module.  [W/m2]
 
-        poa_diffuse : numeric
+        poa_diffuse : numeric or tuple of numeric
             The diffuse irradiance incident on module.  [W/m2]
 
         airmass_absolute : numeric
             Absolute airmass. [unitless]
 
-        aoi : numeric
+        aoi : numeric or tuple of numeric
             Angle of incidence. [degrees]
 
         Returns
@@ -665,13 +665,13 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_global : numeric
+        poa_global : numeric or tuple of numeric
             Total incident irradiance in W/m^2.
 
-        temp_air : numeric
+        temp_air : numeric or tuple of numeric
             Ambient dry bulb temperature in degrees C.
 
-        wind_speed : numeric, default 1.0
+        wind_speed : numeric or tuple of numeric, default 1.0
             Wind speed in m/s measured at the same height for which the wind
             loss factor was determined.  The default value is 1.0, which is
             the wind speed at module height used to determine NOCT.
@@ -705,13 +705,13 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_global : numeric
+        poa_global : numeric or tuple of numeric
             Total incident irradiance [W/m^2].
 
-        temp_air : numeric
+        temp_air : numeric or tuple of numeric
             Ambient dry bulb temperature [C].
 
-        wind_speed : numeric, default 1.0
+        wind_speed : numeric or tuple of numeric, default 1.0
             Wind speed in m/s measured at the same height for which the wind
             loss factor was determined.  The default value 1.0 m/s is the wind
             speed at module height used to determine NOCT. [m/s]
@@ -741,13 +741,13 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_global : pandas Series
+        poa_global : pandas Series or tuple of Series
             Total incident irradiance [W/m^2]
 
-        temp_air : pandas Series
+        temp_air : pandas Series or tuple of Series
             Ambient dry bulb temperature [C]
 
-        wind_speed : pandas Series
+        wind_speed : pandas Series or tuple of Series
             Wind speed [m/s]
 
         Returns
@@ -895,7 +895,7 @@ class PVSystem:
 
         Parameters
         ----------
-        data: DataFrame
+        data: DataFrame or tuple of DataFrame
             Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
             'i_sc', 'p_mp'`.
 

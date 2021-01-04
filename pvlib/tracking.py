@@ -81,7 +81,7 @@ class SingleAxisTracker(PVSystem):
 
         arrays = kwargs.get('arrays', [])
         if len(arrays) > 1:
-            raise ValueError("SingleAxisTracker does not currently support "
+            raise ValueError("SingleAxisTracker does not support "
                              "multiple arrays.")
         elif len(arrays) == 1:
             surface_tilt = arrays[0].surface_tilt

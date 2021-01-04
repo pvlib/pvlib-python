@@ -344,6 +344,14 @@ class PVSystem:
         kwargs
             Extra parameters passed to :func:`irradiance.get_total_irradiance`.
 
+        Notes
+        -----
+        Each of `dni`, `ghi`, and `dni` parameters may be passed as a tuple
+        to provide different irradiance for each array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
+
         Returns
         -------
         poa_irradiance : DataFrame or tuple of DataFrame
@@ -567,6 +575,14 @@ class PVSystem:
         -------
         numeric or tuple of numeric
             values in degrees C.
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
@@ -680,6 +696,14 @@ class PVSystem:
         -------
         numeric or tuple of numeric
             values in degrees C.
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
@@ -720,6 +744,14 @@ class PVSystem:
         -------
         numeric or tuple of numeric
             values in degrees C.
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
@@ -763,6 +795,14 @@ class PVSystem:
         transposition. This method defaults to using ``self.surface_tilt``, but
         if you want to match the PVWatts behavior, you can override it by
         including a ``surface_tilt`` value in ``temperature_model_parameters``.
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
         """
         # default to using the Array attribute, but allow user to
         # override with a custom surface_tilt value

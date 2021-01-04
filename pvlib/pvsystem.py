@@ -386,7 +386,8 @@ class PVSystem:
 
         Raises
         ------
-        ValueError if `iam_model` is not a valid model name.
+        ValueError
+            if `iam_model` is not a valid model name.
         """
         aoi = self._validate_per_array(aoi)
         return tuple(array.get_iam(aoi, iam_model)

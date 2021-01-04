@@ -23,7 +23,6 @@ corresponding procedural code.
    pvsystem.Array
    tracking.SingleAxisTracker
    modelchain.ModelChain
-   modelchain.ModelChainResult
 
 
 Solar Position

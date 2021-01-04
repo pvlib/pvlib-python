@@ -265,7 +265,6 @@ def get_orientation(strategy, **kwargs):
 
 @dataclass
 class ModelChainResult:
-    """Contains the results of running a ModelChain."""
     T = TypeVar('T')
     PerArray = Union[T, Tuple[T, ...]]
     # system-level information

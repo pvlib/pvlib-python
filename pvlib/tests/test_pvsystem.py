@@ -1497,7 +1497,7 @@ def test_PVSystem_get_irradiance():
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 
-def test_PVSystem_get_irradiance(mocker):
+def test_PVSystem_get_irradiance_model(mocker):
     spy_perez = mocker.spy(irradiance, 'perez')
     spy_haydavies = mocker.spy(irradiance, 'haydavies')
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
@@ -1505,7 +1505,7 @@ def test_PVSystem_get_irradiance(mocker):
                           end='20160101 1800-0700', freq='6H')
     location = Location(latitude=32, longitude=-111)
     solar_position = location.get_solarposition(times)
-    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
+    irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
                           index=times)
     system.get_irradiance(solar_position['apparent_zenith'],
                           solar_position['azimuth'],
@@ -1520,7 +1520,6 @@ def test_PVSystem_get_irradiance(mocker):
                           irrads['dhi'],
                           model='perez')
     spy_perez.assert_called_once()
-
 
 
 def test_PVSystem_multi_array_get_irradiance():

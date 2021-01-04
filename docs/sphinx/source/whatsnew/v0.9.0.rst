@@ -1,4 +1,4 @@
-.. _whatsnew_0810:
+.. _whatsnew_0900:
 
 v0.9.0 (MONTH DAY YEAR)
 -----------------------

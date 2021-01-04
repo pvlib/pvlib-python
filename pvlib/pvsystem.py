@@ -1118,7 +1118,8 @@ class Array:
     albedo : None or float, default None
         The ground albedo. If ``None``, will attempt to use
         ``surface_type`` to look up an albedo value in
-        ``irradiance.SURFACE_ALBEDOS``
+        ``irradiance.SURFACE_ALBEDOS``. If a surface albedo
+        cannot be found then 0.25 is used.
 
     surface_type : None or string, default None
         The ground surface type. See ``irradiance.SURFACE_ALBEDOS``

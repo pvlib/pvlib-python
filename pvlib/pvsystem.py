@@ -870,7 +870,7 @@ class PVSystem:
         """Uses :py:func:`pvlib.inverter.sandia_multi` to calculate AC power
         based on ``self.inverter_parameters`` and the input voltage and power.
 
-        The parameters `v_dc` and `p_dc` must be tuples of the same length as
+        The parameters `v_dc` and `p_dc` must be tuples with length equal to
         ``self.num_arrays`` if the system has more than one array.
 
         See :py:func:`pvlib.inverter.sandia_multi` for details.

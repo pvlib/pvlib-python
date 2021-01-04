@@ -1276,7 +1276,7 @@ class Array:
         """
         Get plane of array irradiance components.
 
-        Uses the :py:func:`irradiance.get_total_irradiance` function to
+        Uses the :py:func:`pvlib.irradiance.get_total_irradiance` function to
         calculate the plane of array irradiance components for a surface
         defined by ``self.surface_tilt`` and ``self.surface_azimuth`` with
         albedo ``self.albedo``.
@@ -1301,7 +1301,8 @@ class Array:
             Irradiance model.
 
         kwargs
-            Extra parameters passed to :func:`irradiance.get_total_irradiance`.
+            Extra parameters passed to
+            :py:func:`pvlib.irradiance.get_total_irradiance`.
 
         Returns
         -------

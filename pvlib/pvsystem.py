@@ -1130,7 +1130,7 @@ class Array:
         May be used to look up the module_parameters dictionary
         via some other method.
 
-    module_type : None or string, default 'glass_polymer'
+    module_type : None or string, default None
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
@@ -1147,7 +1147,7 @@ class Array:
     strings: int, default 1
         Number of parallel strings in the array.
 
-    racking_model : None or string, default 'open_rack'
+    racking_model : None or string, default None
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
         Used to identify a parameter set for the SAPM cell temperature model.
 

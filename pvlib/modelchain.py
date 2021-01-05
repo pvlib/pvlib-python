@@ -415,11 +415,10 @@ class ModelChain:
                   f' ModelChain.results.{key} instead'
             warnings.warn(msg, pvlibDeprecationWarning)
             return getattr(self.results, key)
-        else:
-            try:
-                return self.__dict__[key]
-            except(KeyError):
-                raise AttributeError
+        # __getattr__ is only called if __getattribute__ fails.
+        # In that case we should check if key is a deprecated attribute,
+        # and fail with an AttributeError if it is not.
+        raise AttributeError
 
     def __setattr__(self, key, value):
         if key in ModelChain._deprecated_attrs:

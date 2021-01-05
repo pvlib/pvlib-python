@@ -265,8 +265,9 @@ def get_orientation(strategy, **kwargs):
 
 @dataclass
 class ModelChainResult:
-    T = TypeVar('T')
-    PerArray = Union[T, Tuple[T, ...]]
+    _T = TypeVar('T')
+    PerArray = Union[_T, Tuple[_T, ...]]
+    """Type for fields that vary between arrays"""
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
     airmass: Optional[pd.DataFrame] = field(default=None)

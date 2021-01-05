@@ -1,10 +1,7 @@
 .. _whatsnew_0810:
 
-v0.8.1 (MONTH DAY YEAR)
------------------------
-
-Breaking changes
-~~~~~~~~~~~~~~~~
+v0.8.1 (January 4, 2021)
+------------------------
 
 Deprecations
 ~~~~~~~~~~~~

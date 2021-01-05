@@ -64,3 +64,7 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Will Vining (:ghuser:`wfvining`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Nate Croft (:ghuser:`ncroft-b4`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

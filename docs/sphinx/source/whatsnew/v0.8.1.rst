@@ -3,10 +3,6 @@
 v0.8.1 (MONTH DAY YEAR)
 -----------------------
 
-Breaking changes
-~~~~~~~~~~~~~~~~
-
-
 Deprecations
 ~~~~~~~~~~~~
 * ``pvlib.irradiance.liujordan`` is deprecated.
@@ -16,7 +12,7 @@ Enhancements
 * Add a numpy-based implementation of the SPECTRL2 spectral irradiance model
   :py:func:`pvlib.spectrum.spectrl2` (:pull:`1062`)
 * Create :py:func:`~pvlib.pvsystem.PVSystem.fuentes_celltemp` and add ``temperature_model='fuentes'``
-  option to :py:class:`~pvlib.modelchain.ModelChain`. (:pull:`1042`) (:issue:`1073`)
+  option to :py:class:`~pvlib.modelchain.ModelChain`. (:issue:`1042`) (:pull:`1073`)
 * Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
   only NOCT. (:pull:`1045`)
 * Added :py:func:`pvlib.inverter.sandia_multi` and :py:func:`pvlib.inverter.pvwatts_multi`
@@ -26,9 +22,9 @@ Enhancements
 * Added :py:func:`pvlib.irradiance.campbell_norman` for estimating DNI, DHI and GHI
   from extraterrestrial irradiance. This function replaces ``pvlib.irradiance.liujordan``;
   users of ``pvlib.irradiance.liujordan`` should note that :py:func:`pvlib.irradiance.campbell_norman`
-  expects different parameters.
-* :py:meth:`pvlib.forecast.Forecast.cloud_cover_to_irradiance_campbell_norman`
-  replaces ``pvlib.forecast.Forecast.cloud_cover_to_irradiance_liujordan``.
+  expects different parameters. (:pull:`1104`)
+* :py:meth:`pvlib.forecast.ForecastModel.cloud_cover_to_irradiance_campbell_norman`
+  replaces ``pvlib.forecast.ForecastModel.cloud_cover_to_irradiance_liujordan``. (:pull:`1104`)
 
 Bug fixes
 ~~~~~~~~~
@@ -54,9 +50,6 @@ Documentation
 * Add gallery example about backtracking on sloped terrain. (:pull:`1077`)
 * Add toggle button for code prompts to make copying code easier (:pull:`1096`)
 * Add project urls to setup.py for pypi page (:pull:`1119`)
-
-Requirements
-~~~~~~~~~~~~
 
 
 Contributors

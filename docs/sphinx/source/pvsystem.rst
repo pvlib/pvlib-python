@@ -55,11 +55,12 @@ The data that represents the PV system is *intrinsic*. The
 data that influences the PV system is *extrinsic*.
 
 Intrinsic data is stored in object attributes. For example, the parameters
-that describe a PV system's inverter is stored in
-`PVSystem.inverter_parameters`.
+that describe a PV system's modules and inverter are stored in
+`PVSystem.module_parameters` and `PVSystem.inverter_parameters`.
 
 .. ipython:: python
 
+    module_parameters = {'pdc0': 5000, 'gamma_pdc': -0.004}
     inverter_parameters = {'pdc0': 5000, 'eta_inv_nom': 0.96}
     system = pvsystem.PVSystem(inverter_parameters=inverter_parameters)
     print(system.inverter_parameters)
@@ -119,9 +120,11 @@ passed to `PVSystem.module_parameters`:
 .. ipython:: python
 
     module_parameters = {'pdc0': 5000, 'gamma_pdc': -0.004}
+    inverter_parameters = {'pdc0': 5000, 'eta_inv_nom': 0.96}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
     print(system.module_parameters)
+    print(system.inverter_parameters)
 
 
 A system with multiple arrays is specified by passing a list of

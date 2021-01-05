@@ -61,4 +61,7 @@ Contributors
 * Will Vining (:ghuser:`wfvining`)
 * Michael Jurasovic (:ghuser:`jurasofish`)
 * Aziz Ben Othman (:ghuser:`AzizCode92`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Junaid Fatehi (:ghuser:`jhfatehi`)
 

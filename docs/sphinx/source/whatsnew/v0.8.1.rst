@@ -21,7 +21,7 @@ Enhancements
   only NOCT. (:pull:`1045`)
 * :py:func:`pvlib.clearsky.detect_clearsky` now uses centered rolling windows
   instead of left-aligned rolling windows. (:pull:`1074`)
-* The 'times' and 'window_length` parameters are now optional kwargs in
+* The 'times' and 'window_length' parameters are now optional kwargs in
   :py:func:`pvlib.clearsky.detect_clearsky`. If omitted, 'times' is set
   equal to the index of parameter 'measured', and 'window_length' is set to
   10 minutes. (:pull:`1074`)

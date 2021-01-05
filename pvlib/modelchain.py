@@ -427,7 +427,7 @@ class ModelChain:
             warnings.warn(msg, pvlibDeprecationWarning)
             setattr(self.results, key, value)
         else:
-            object.__setattr__(self, key, value)
+            super().__setattr__(key, value)
 
     @classmethod
     def with_pvwatts(cls, system, location,

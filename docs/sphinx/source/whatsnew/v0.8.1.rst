@@ -1,10 +1,7 @@
 .. _whatsnew_0810:
 
-v0.8.1 (MONTH DAY YEAR)
------------------------
-
-Breaking changes
-~~~~~~~~~~~~~~~~
+v0.8.1 (January 4, 2021)
+------------------------
 
 Deprecations
 ~~~~~~~~~~~~
@@ -16,12 +13,12 @@ Enhancements
 * Add a numpy-based implementation of the SPECTRL2 spectral irradiance model
   :py:func:`pvlib.spectrum.spectrl2` (:pull:`1062`)
 * Create :py:func:`~pvlib.pvsystem.PVSystem.fuentes_celltemp` and add ``temperature_model='fuentes'``
-  option to :py:class:`~pvlib.modelchain.ModelChain`. (:pull:`1042`) (:issue:`1073`)
+  option to :py:class:`~pvlib.modelchain.ModelChain`. (:issue:`1042`) (:pull:`1073`)
 * Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
   only NOCT. (:pull:`1045`)
 * :py:func:`pvlib.clearsky.detect_clearsky` now uses centered rolling windows
   instead of left-aligned rolling windows. (:pull:`1074`)
-* The 'times' and 'window_length` parameters are now optional kwargs in
+* The 'times' and 'window_length' parameters are now optional kwargs in
   :py:func:`pvlib.clearsky.detect_clearsky`. If omitted, 'times' is set
   equal to the index of parameter 'measured', and 'window_length' is set to
   10 minutes. (:pull:`1074`)
@@ -32,9 +29,9 @@ Enhancements
 * Added :py:func:`pvlib.irradiance.campbell_norman` for estimating DNI, DHI and GHI
   from extraterrestrial irradiance. This function replaces ``pvlib.irradiance.liujordan``;
   users of ``pvlib.irradiance.liujordan`` should note that :py:func:`pvlib.irradiance.campbell_norman`
-  expects different parameters.
-* :py:meth:`pvlib.forecast.Forecast.cloud_cover_to_irradiance_campbell_norman`
-  replaces ``pvlib.forecast.Forecast.cloud_cover_to_irradiance_liujordan``.
+  expects different parameters. (:pull:`1104`)
+* :py:meth:`pvlib.forecast.ForecastModel.cloud_cover_to_irradiance_campbell_norman`
+  replaces ``pvlib.forecast.ForecastModel.cloud_cover_to_irradiance_liujordan``. (:pull:`1104`)
 
 Bug fixes
 ~~~~~~~~~
@@ -61,9 +58,6 @@ Documentation
 * Add toggle button for code prompts to make copying code easier (:pull:`1096`)
 * Add project urls to setup.py for pypi page (:pull:`1119`)
 
-Requirements
-~~~~~~~~~~~~
-
 
 Contributors
 ~~~~~~~~~~~~
@@ -74,4 +68,7 @@ Contributors
 * Will Vining (:ghuser:`wfvining`)
 * Michael Jurasovic (:ghuser:`jurasofish`)
 * Aziz Ben Othman (:ghuser:`AzizCode92`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Junaid Fatehi (:ghuser:`jhfatehi`)
 

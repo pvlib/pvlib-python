@@ -294,7 +294,7 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_aoi(self, solar_zenith, solar_azimuth):
-        """Get the angle of incidence on the system.
+        """Get the angle of incidence on the Array(s) in the system.
 
         Parameters
         ----------
@@ -305,7 +305,7 @@ class PVSystem:
 
         Returns
         -------
-        aoi : Series
+        aoi : Series or tuple of Series
             The angle of incidence
         """
 
@@ -328,11 +328,11 @@ class PVSystem:
             Solar zenith angle.
         solar_azimuth : float or Series.
             Solar azimuth angle.
-        dni : float or Series
+        dni : float or Series or tuple of float or Series
             Direct Normal Irradiance
-        ghi : float or Series
+        ghi : float or Series or tuple of float or Series
             Global horizontal irradiance
-        dhi : float or Series
+        dhi : float or Series or tuple of float or Series
             Diffuse horizontal irradiance
         dni_extra : None, float or Series, default None
             Extraterrestrial direct normal irradiance
@@ -344,9 +344,17 @@ class PVSystem:
         kwargs
             Extra parameters passed to :func:`irradiance.get_total_irradiance`.
 
+        Notes
+        -----
+        Each of `dni`, `ghi`, and `dni` parameters may be passed as a tuple
+        to provide different irradiance for each array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
+
         Returns
         -------
-        poa_irradiance : DataFrame
+        poa_irradiance : DataFrame or tuple of DataFrame
             Column names are: ``total, beam, sky, ground``.
         """
         dni = self._validate_per_array(dni, system_wide=True)
@@ -355,7 +363,8 @@ class PVSystem:
         return tuple(
             array.get_irradiance(solar_zenith, solar_azimuth,
                                  dni, ghi, dhi,
-                                 dni_extra, airmass)
+                                 dni_extra, airmass, model,
+                                 **kwargs)
             for array, dni, ghi, dhi in zip(
                 self.arrays, dni, ghi, dhi
             )
@@ -373,7 +382,7 @@ class PVSystem:
 
         Parameters
         ----------
-        aoi : numeric
+        aoi : numeric or tuple of numeric
             The angle of incidence in degrees.
 
         aoi_model : string, default 'physical'
@@ -381,12 +390,13 @@ class PVSystem:
             'martin_ruiz' and 'sapm'.
         Returns
         -------
-        iam : numeric
+        iam : numeric or tuple of numeric
             The AOI modifier.
 
         Raises
         ------
-        ValueError if `iam_model` is not a valid model name.
+        ValueError
+            if `iam_model` is not a valid model name.
         """
         aoi = self._validate_per_array(aoi)
         return tuple(array.get_iam(aoi, iam_model)
@@ -401,10 +411,10 @@ class PVSystem:
 
         Parameters
         ----------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The irradiance (W/m2) that is converted to photocurrent.
 
-        temp_cell : float or Series
+        temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
 
         **kwargs
@@ -442,10 +452,10 @@ class PVSystem:
 
         Parameters
         ----------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The irradiance (W/m2) that is converted to photocurrent.
 
-        temp_cell : float or Series
+        temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
 
         **kwargs
@@ -483,10 +493,10 @@ class PVSystem:
 
         Parameters
         ----------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The irradiance (W/m2) that is converted to photocurrent.
 
-        temp_cell : float or Series
+        temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
 
         Returns
@@ -523,10 +533,10 @@ class PVSystem:
 
         Parameters
         ----------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The irradiance (W/m2) that is converted to photocurrent.
 
-        temp_cell : float or Series
+        temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
 
         kwargs
@@ -552,18 +562,27 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_global : numeric
+        poa_global : numeric or tuple of numeric
             Total incident irradiance in W/m^2.
 
-        temp_air : numeric
+        temp_air : numeric or tuple of numeric
             Ambient dry bulb temperature in degrees C.
 
-        wind_speed : numeric
+        wind_speed : numeric or tuple of numeric
             Wind speed in m/s at a height of 10 meters.
 
         Returns
         -------
-        numeric, values in degrees C.
+        numeric or tuple of numeric
+            values in degrees C.
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
@@ -608,7 +627,7 @@ class PVSystem:
 
         Returns
         -------
-        F1 : numeric
+        F1 : numeric or tuple of numeric
             The SAPM spectral loss coefficient.
         """
         return tuple(
@@ -627,21 +646,21 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_direct : numeric
+        poa_direct : numeric or tuple of numeric
             The direct irradiance incident upon the module.  [W/m2]
 
-        poa_diffuse : numeric
+        poa_diffuse : numeric or tuple of numeric
             The diffuse irradiance incident on module.  [W/m2]
 
         airmass_absolute : numeric
             Absolute airmass. [unitless]
 
-        aoi : numeric
+        aoi : numeric or tuple of numeric
             Angle of incidence. [degrees]
 
         Returns
         -------
-        effective_irradiance : numeric
+        effective_irradiance : numeric or tuple of numeric
             The SAPM effective irradiance. [W/m2]
         """
         poa_direct = self._validate_per_array(poa_direct)
@@ -662,20 +681,29 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_global : numeric
+        poa_global : numeric or tuple of numeric
             Total incident irradiance in W/m^2.
 
-        temp_air : numeric
+        temp_air : numeric or tuple of numeric
             Ambient dry bulb temperature in degrees C.
 
-        wind_speed : numeric, default 1.0
+        wind_speed : numeric or tuple of numeric, default 1.0
             Wind speed in m/s measured at the same height for which the wind
             loss factor was determined.  The default value is 1.0, which is
             the wind speed at module height used to determine NOCT.
 
         Returns
         -------
-        numeric, values in degrees C.
+        numeric or tuple of numeric
+            values in degrees C.
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
@@ -701,20 +729,29 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_global : numeric
+        poa_global : numeric or tuple of numeric
             Total incident irradiance [W/m^2].
 
-        temp_air : numeric
+        temp_air : numeric or tuple of numeric
             Ambient dry bulb temperature [C].
 
-        wind_speed : numeric, default 1.0
+        wind_speed : numeric or tuple of numeric, default 1.0
             Wind speed in m/s measured at the same height for which the wind
             loss factor was determined.  The default value 1.0 m/s is the wind
             speed at module height used to determine NOCT. [m/s]
 
         Returns
         -------
-        numeric, values in degrees C.
+        numeric or tuple of numeric
+            values in degrees C.
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
@@ -736,18 +773,18 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_global : pandas Series
+        poa_global : pandas Series or tuple of Series
             Total incident irradiance [W/m^2]
 
-        temp_air : pandas Series
+        temp_air : pandas Series or tuple of Series
             Ambient dry bulb temperature [C]
 
-        wind_speed : pandas Series
+        wind_speed : pandas Series or tuple of Series
             Wind speed [m/s]
 
         Returns
         -------
-        temperature_cell : pandas Series
+        temperature_cell : Series or tuple of Series
             The modeled cell temperature [C]
 
         Notes
@@ -758,6 +795,14 @@ class PVSystem:
         transposition. This method defaults to using ``self.surface_tilt``, but
         if you want to match the PVWatts behavior, you can override it by
         including a ``surface_tilt`` value in ``temperature_model_parameters``.
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
         """
         # default to using the Array attribute, but allow user to
         # override with a custom surface_tilt value
@@ -807,7 +852,7 @@ class PVSystem:
 
         Returns
         -------
-        modifier: array-like
+        modifier: array-like or tuple of array-like
             spectral mismatch factor (unitless) which can be multiplied
             with broadband irradiance reaching a module's cells to estimate
             effective irradiance, i.e., the irradiance that is converted to
@@ -865,7 +910,7 @@ class PVSystem:
         """Uses :py:func:`pvlib.inverter.sandia_multi` to calculate AC power
         based on ``self.inverter_parameters`` and the input voltage and power.
 
-        The parameters `v_dc` and `p_dc` must be tuples of the same length as
+        The parameters `v_dc` and `p_dc` must be tuples with length equal to
         ``self.num_arrays`` if the system has more than one array.
 
         See :py:func:`pvlib.inverter.sandia_multi` for details.
@@ -890,13 +935,13 @@ class PVSystem:
 
         Parameters
         ----------
-        data: DataFrame
+        data: DataFrame or tuple of DataFrame
             Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
             'i_sc', 'p_mp'`.
 
         Returns
         -------
-        scaled_data: DataFrame
+        scaled_data: DataFrame or tuple of DataFrame
             A scaled copy of the input data.
         """
         data = self._validate_per_array(data)
@@ -1093,7 +1138,7 @@ class LocalizedPVSystem(PVSystem, Location):
 
 class Array:
     """
-    An Array is a set of of modules at a fixed orientation.
+    An Array is a set of of modules at the same orientation.
 
     Specifically, an array is defined by tilt, azimuth, the
     module parameters, the number of parallel strings of modules
@@ -1113,7 +1158,8 @@ class Array:
     albedo : None or float, default None
         The ground albedo. If ``None``, will attempt to use
         ``surface_type`` to look up an albedo value in
-        ``irradiance.SURFACE_ALBEDOS``
+        ``irradiance.SURFACE_ALBEDOS``. If a surface albedo
+        cannot be found then 0.25 is used.
 
     surface_type : None or string, default None
         The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
@@ -1124,7 +1170,7 @@ class Array:
         May be used to look up the module_parameters dictionary
         via some other method.
 
-    module_type : None or string, default 'glass_polymer'
+    module_type : None or string, default None
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
@@ -1141,7 +1187,7 @@ class Array:
     strings: int, default 1
         Number of parallel strings in the array.
 
-    racking_model : None or string, default 'open_rack'
+    racking_model : None or string, default None
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
         Used to identify a parameter set for the SAPM cell temperature model.
 

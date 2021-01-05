@@ -313,7 +313,7 @@ def test_SingleAxisTracker_one_array_only():
     )
     assert system.module == 'foo'
     with pytest.raises(ValueError,
-                       match="SingleAxisTracker does not currently support "
+                       match="SingleAxisTracker does not support "
                              r"multiple arrays\."):
         tracking.SingleAxisTracker(
             arrays=[pvsystem.Array(module='foo'),

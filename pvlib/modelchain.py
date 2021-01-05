@@ -288,7 +288,10 @@ class ModelChain:
     """
     The ModelChain class to provides a standardized, high-level
     interface for all of the modeling steps necessary for calculating PV
-    power from a time series of weather inputs.
+    power from a time series of weather inputs. The same models are applied
+    to all ``pvsystem.Array`` objects, so each Array must contain the
+    appropriate model parameters. For example, if ``dc_model='pvwatts'``,
+    then each ``Array.module_parameters`` must contain ``'pdc0'``.
 
     See https://pvlib-python.readthedocs.io/en/stable/modelchain.html
     for examples.
@@ -412,11 +415,10 @@ class ModelChain:
                   f' ModelChain.results.{key} instead'
             warnings.warn(msg, pvlibDeprecationWarning)
             return getattr(self.results, key)
-        else:
-            try:
-                return self.__dict__[key]
-            except(KeyError):
-                raise AttributeError
+        # __getattr__ is only called if __getattribute__ fails.
+        # In that case we should check if key is a deprecated attribute,
+        # and fail with an AttributeError if it is not.
+        raise AttributeError
 
     def __setattr__(self, key, value):
         if key in ModelChain._deprecated_attrs:
@@ -425,7 +427,7 @@ class ModelChain:
             warnings.warn(msg, pvlibDeprecationWarning)
             setattr(self.results, key, value)
         else:
-            object.__setattr__(self, key, value)
+            super().__setattr__(key, value)
 
     @classmethod
     def with_pvwatts(cls, system, location,
@@ -1476,7 +1478,7 @@ class ModelChain:
         # If module_temperature is in input data we can use the SAPM cell
         # temperature model.
         if (('module_temperature' in data) and
-                (self.temperature_model is self.sapm_temp)):
+                (self.temperature_model == self.sapm_temp)):
             # use SAPM cell temperature model only
             return pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],

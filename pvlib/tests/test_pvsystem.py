@@ -12,6 +12,7 @@ import unittest.mock as mock
 from pvlib import inverter, pvsystem
 from pvlib import atmosphere
 from pvlib import iam as _iam
+from pvlib import irradiance
 from pvlib.location import Location
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
@@ -1494,6 +1495,31 @@ def test_PVSystem_get_irradiance():
                             index=times)
 
     assert_frame_equal(irradiance, expected, check_less_precise=2)
+
+
+def test_PVSystem_get_irradiance_model(mocker):
+    spy_perez = mocker.spy(irradiance, 'perez')
+    spy_haydavies = mocker.spy(irradiance, 'haydavies')
+    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
+    location = Location(latitude=32, longitude=-111)
+    solar_position = location.get_solarposition(times)
+    irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
+                          index=times)
+    system.get_irradiance(solar_position['apparent_zenith'],
+                          solar_position['azimuth'],
+                          irrads['dni'],
+                          irrads['ghi'],
+                          irrads['dhi'])
+    spy_haydavies.assert_called_once()
+    system.get_irradiance(solar_position['apparent_zenith'],
+                          solar_position['azimuth'],
+                          irrads['dni'],
+                          irrads['ghi'],
+                          irrads['dhi'],
+                          model='perez')
+    spy_perez.assert_called_once()
 
 
 def test_PVSystem_multi_array_get_irradiance():

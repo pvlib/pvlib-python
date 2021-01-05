@@ -165,7 +165,7 @@ by examining the parameters defined for the module.
         # model results (ac, dc) and intermediates (aoi, temps, etc.)
         # assigned as mc object attributes
         mc.run_model(weather)
-        annual_energy = mc.ac.sum()
+        annual_energy = mc.results.ac.sum()
         energies[name] = annual_energy
 
     energies = pd.Series(energies)

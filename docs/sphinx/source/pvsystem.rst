@@ -62,7 +62,8 @@ that describe a PV system's modules and inverter are stored in
 
     module_parameters = {'pdc0': 5000, 'gamma_pdc': -0.004}
     inverter_parameters = {'pdc0': 5000, 'eta_inv_nom': 0.96}
-    system = pvsystem.PVSystem(inverter_parameters=inverter_parameters)
+    system = pvsystem.PVSystem(inverter_parameters=inverter_parameters,
+                               module_parameters=module_parameters)
     print(system.inverter_parameters)
 
 

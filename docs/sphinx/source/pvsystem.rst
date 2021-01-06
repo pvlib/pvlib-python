@@ -233,7 +233,7 @@ operates in a similar manner.
     # two arrays each at 30 deg tilt with different facing
     array_one = pvsystem.Array(surface_tilt=30, surface_azimuth=90)
     array_one_aoi = array_one.get_aoi(solar_zenith=30, solar_azimuth=180)
-    print(aoi)
+    print(array_one_aoi)
 
 
 The `PVSystem` method :py:meth:`~pvlib.pvsystem.PVSystem.get_aoi`

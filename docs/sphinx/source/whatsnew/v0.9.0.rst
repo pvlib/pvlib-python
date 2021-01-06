@@ -20,6 +20,7 @@ Deprecations
   * ``ModelChain.dc``
   * ``ModelChain.diode_params``
   * ``ModelChain.effective_irradiance``
+  * ``ModelChain.solar_position``
   * ``ModelChain.spectral_modifier``
   * ``ModelChain.total_irrad``
   * ``ModelChain.tracking``

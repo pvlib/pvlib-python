@@ -584,6 +584,12 @@ Functions to assist with setting up ModelChains to run
    modelchain.ModelChain.prepare_inputs
    modelchain.ModelChain.prepare_inputs_from_poa
 
+Results
+-------
+
+Output from the running the ModelChain is stored in the
+:py:attr:`modelchain.ModelChain.results` attribute. For more
+information see :py:class:`modelchain.ModelChainResult`.
 
 Attributes
 ----------

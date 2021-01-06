@@ -1409,7 +1409,7 @@ class Array:
         elif model == 'sapm':
             return iam.sapm(aoi, self.module_parameters)
         elif model == 'interp':
-            raise ValueError(model + ' is not implemented as an IAM model'
+            raise ValueError(model + ' is not implemented as an IAM model '
                              'option for Array')
         else:
             raise ValueError(model + ' is not a valid IAM model')

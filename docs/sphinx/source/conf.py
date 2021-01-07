@@ -388,6 +388,10 @@ def get_linenos(obj):
         lines, start = inspect.getsourcelines(obj)
     except TypeError:  # obj is an attribute or None
         return None, None
+    except OSError:  # obj listing cannot be found
+        # This happens for methods that are not explicitly defined
+        # such as the __init__ method for a dataclass
+        return None, None
     else:
         return start, start + len(lines) - 1
 

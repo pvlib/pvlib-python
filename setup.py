@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 
 try:
     from setuptools import setup
@@ -42,6 +43,11 @@ INSTALL_REQUIRES = ['numpy >= 1.12.0',
                     'pytz',
                     'requests',
                     'scipy >= 1.2.0']
+
+# include dataclasses as a dependency only on python 3.6
+if sys.version_info.major == 3 and sys.version_info.minor == 6:
+    INSTALL_REQUIRES.append('dataclasses')
+
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'pytest-timeout', 'pytest-rerunfailures', 'pytest-remotedata']
 EXTRAS_REQUIRE = {

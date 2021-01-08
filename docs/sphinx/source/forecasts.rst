@@ -471,7 +471,7 @@ Here's the forecast plane of array irradiance...
 
 .. ipython:: python
 
-    mc.total_irrad.plot();
+    mc.results.total_irrad.plot();
     @savefig poa_irrad.png width=6in
     plt.ylabel('Plane of array irradiance ($W/m^2$)');
     plt.legend(loc='best');
@@ -482,7 +482,7 @@ Here's the forecast plane of array irradiance...
 
 .. ipython:: python
 
-    mc.cell_temperature.plot();
+    mc.results.cell_temperature.plot();
     @savefig pv_temps.png width=6in
     plt.ylabel('Cell Temperature (C)');
     @suppress
@@ -492,7 +492,7 @@ Here's the forecast plane of array irradiance...
 
 .. ipython:: python
 
-    mc.ac.fillna(0).plot();
+    mc.results.ac.fillna(0).plot();
     plt.ylim(0, None);
     @savefig ac_power.png width=6in
     plt.ylabel('AC Power (W)');

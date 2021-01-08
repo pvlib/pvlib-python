@@ -159,7 +159,8 @@ def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
     for meta_value in meta:
         if not meta_value:
             continue
-        if meta_value == 'PVGIS (c) European Communities, 2001-2020':
+        # don't check end year because it changes every year
+        if meta_value[:-4] == 'PVGIS (c) European Communities, 2001-':
             continue
         assert meta_value in csv_meta
 

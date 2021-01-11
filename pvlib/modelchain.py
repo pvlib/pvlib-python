@@ -1023,7 +1023,8 @@ class ModelChain:
         -------
         self
         """
-        poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+
+        poa = self._irrad_for_celltemp()
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = model(poa, temp_air, wind_speed)
@@ -1040,6 +1041,21 @@ class ModelChain:
 
     def fuentes_temp(self):
         return self._set_celltemp(self.system.fuentes_celltemp)
+
+    def _irrad_for_celltemp(self):
+        """
+        Determine irradiance to use for cell temperature models, in order
+        of preference 'poa_global' or 'effective_irradiance'
+
+        Returns
+        -------
+        None.
+
+        """
+        if all(['poa_global' in df for df in self.results.total_irrad]):
+            return _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        else:
+            return self.results.effective_irradiance
 
     @property
     def losses_model(self):
@@ -1481,9 +1497,10 @@ class ModelChain:
         if (('module_temperature' in data) and
                 (self.temperature_model == self.sapm_temp)):
             # use SAPM cell temperature model only
+            poa = self._irrad_for_celltemp()
             return pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],
-                poa_global=total_irrad['poa_global'],
+                poa_global=poa,
                 deltaT=temperature_model_parameters['deltaT'])
 
     def _prepare_temperature_single_array(self, data):
@@ -1505,7 +1522,7 @@ class ModelChain:
         If 'data' contains 'cell_temperature', these values are assigned to
         attribute ``cell_temperature``. If 'data' contains 'module_temperature`
         and `temperature_model' is 'sapm', cell temperature is calculated using
-        :py:func:`pvlib.temperature.sapm_celL_from_module`. Otherwise, cell
+        :py:func:`pvlib.temperature.sapm_cell_from_module`. Otherwise, cell
         temperature is calculated by 'temperature_model'.
 
         Parameters
@@ -1522,6 +1539,7 @@ class ModelChain:
 
         """
         if not isinstance(data, tuple) and self.system.num_arrays > 1:
+            # broadcast data to all arrays
             data = (data,) * self.system.num_arrays
         elif not isinstance(data, tuple):
             return self._prepare_temperature_single_array(data)

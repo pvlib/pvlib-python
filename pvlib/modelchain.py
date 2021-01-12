@@ -1052,10 +1052,16 @@ class ModelChain:
         None.
 
         """
-        if all(['poa_global' in df for df in self.results.total_irrad]):
-            return _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        if isinstance(self.results.total_irrad, tuple):
+            if all(['poa_global' in df for df in self.results.total_irrad]):
+                return _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+            else:
+                return self.results.effective_irradiance
         else:
-            return self.results.effective_irradiance
+            if 'poa_global' in self.results.total_irrad:
+                return self.results.total_irrad['poa_global']
+            else:
+                return self.results.effective_irradiance
 
     @property
     def losses_model(self):

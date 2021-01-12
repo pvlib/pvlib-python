@@ -921,7 +921,7 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
 def test_run_model_from_effective_irradiance_no_poa_global(
         sapm_dc_snl_ac_system, location, weather, total_irrad):
     data = weather.copy()
-    data['effective_irradiance'] = data['poa_global']
+    data['effective_irradiance'] = total_irrad['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
     ac = mc.run_model_from_effective_irradiance(data).results.ac

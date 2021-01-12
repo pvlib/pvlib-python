@@ -1024,7 +1024,8 @@ class ModelChain:
         self
         """
 
-        poa = self._irrad_for_celltemp()
+        poa = self._irrad_for_celltemp(self.results.total_irrad,
+                                       self.results.effective_irradiance)
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = model(poa, temp_air, wind_speed)
@@ -1042,7 +1043,8 @@ class ModelChain:
     def fuentes_temp(self):
         return self._set_celltemp(self.system.fuentes_celltemp)
 
-    def _irrad_for_celltemp(self):
+    @staticmethod
+    def _irrad_for_celltemp(total_irrad, effective_irradiance):
         """
         Determine irradiance to use for cell temperature models, in order
         of preference 'poa_global' or 'effective_irradiance'
@@ -1052,16 +1054,16 @@ class ModelChain:
         None.
 
         """
-        if isinstance(self.results.total_irrad, tuple):
-            if all(['poa_global' in df for df in self.results.total_irrad]):
-                return _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+        if isinstance(total_irrad, tuple):
+            if all(['poa_global' in df for df in total_irrad]):
+                return _tuple_from_dfs(total_irrad, 'poa_global')
             else:
-                return self.results.effective_irradiance
+                return effective_irradiance
         else:
-            if 'poa_global' in self.results.total_irrad:
-                return self.results.total_irrad['poa_global']
+            if 'poa_global' in total_irrad:
+                return total_irrad['poa_global']
             else:
-                return self.results.effective_irradiance
+                return effective_irradiance
 
     @property
     def losses_model(self):
@@ -1493,6 +1495,15 @@ class ModelChain:
         'module_temperature' column exists then it is used to calculate
         the cell temperature. If neither column exists then None is
         returned.
+
+        Parameters
+        ----------
+        data : DataFrame (not a tuple of DataFrame)
+        total_irrad : DataFrame (not a tuple of DataFrame)
+
+        Returns
+        -------
+        Series
         """
         if 'cell_temperature' in data:
             return data['cell_temperature']
@@ -1503,7 +1514,8 @@ class ModelChain:
         if (('module_temperature' in data) and
                 (self.temperature_model == self.sapm_temp)):
             # use SAPM cell temperature model only
-            poa = self._irrad_for_celltemp()
+            poa = self._irrad_for_celltemp(self.results.total_irrad,
+                                           self.results.effective_irradiance)
             return pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],
                 poa_global=poa,

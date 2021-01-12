@@ -1560,7 +1560,7 @@ class ModelChain:
             # broadcast data to all arrays
             data = (data,) * self.system.num_arrays
         elif not isinstance(data, tuple):
-            return self._prepare_temperature_single_array(data)
+            return self._prepare_temperature_single_array(data, poa)
         given_cell_temperature = tuple(itertools.starmap(
             self._get_cell_temperature,
             zip(data, poa, self.system.temperature_model_parameters)

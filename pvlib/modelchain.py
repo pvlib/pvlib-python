@@ -1488,18 +1488,18 @@ class ModelChain:
         return self
 
     def _get_cell_temperature(self, data,
-                              total_irrad, temperature_model_parameters):
+                              poa, temperature_model_parameters):
         """Extract the cell temperature data from a DataFrame.
 
-        If 'cell_temperature' column exists then it is returned. If
-        'module_temperature' column exists then it is used to calculate
-        the cell temperature. If neither column exists then None is
+        If 'cell_temperature' column exists in data then it is returned. If
+        'module_temperature' column exists in data, then it is used with poa to
+        calculate the cell temperature. If neither column exists then None is
         returned.
 
         Parameters
         ----------
         data : DataFrame (not a tuple of DataFrame)
-        total_irrad : DataFrame (not a tuple of DataFrame)
+        poa : Series (not a tuple of Series)
 
         Returns
         -------
@@ -1514,18 +1514,16 @@ class ModelChain:
         if (('module_temperature' in data) and
                 (self.temperature_model == self.sapm_temp)):
             # use SAPM cell temperature model only
-            poa = self._irrad_for_celltemp(self.results.total_irrad,
-                                           self.results.effective_irradiance)
             return pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],
                 poa_global=poa,
                 deltaT=temperature_model_parameters['deltaT'])
 
-    def _prepare_temperature_single_array(self, data):
-        """Set cell_temperature using a single weather data frame."""
+    def _prepare_temperature_single_array(self, data, poa):
+        """Set cell_temperature using a single data frame."""
         self.results.cell_temperature = self._get_cell_temperature(
             data,
-            self.results.total_irrad,
+            poa,
             self.system.temperature_model_parameters
         )
         if self.results.cell_temperature is None:
@@ -1556,6 +1554,8 @@ class ModelChain:
         Assigns attribute ``results.cell_temperature``.
 
         """
+        poa = self._irrad_for_celltemp(self.results.total_irrad,
+                                       self.results.effective_irradiance)
         if not isinstance(data, tuple) and self.system.num_arrays > 1:
             # broadcast data to all arrays
             data = (data,) * self.system.num_arrays
@@ -1563,8 +1563,7 @@ class ModelChain:
             return self._prepare_temperature_single_array(data)
         given_cell_temperature = tuple(itertools.starmap(
             self._get_cell_temperature,
-            zip(data, self.results.total_irrad,
-                self.system.temperature_model_parameters)
+            zip(data, poa, self.system.temperature_model_parameters)
         ))
         # If cell temperature has been specified for all arrays return
         # immediately and do not try to compute it.

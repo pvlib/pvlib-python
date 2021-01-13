@@ -47,9 +47,9 @@ Enhancements
   :py:class:`~pvlib.modelchain.ModelChain` (as ``ac_model='sandia_multi'``).
   (:pull:`1076`, :issue:`1067`)
 * :py:class:`~pvlib.modelchain.ModelChain` 'run_model' methods now
-  automatically switch to using 'effective_irradiance' (if available) for
-  cell temperature models, when 'poa_global' is not provided in input weather
-  or calculated from input weather data.
+  automatically switch to using ``'effective_irradiance'`` (if available) for
+  cell temperature models, when ``'poa_global'`` is not provided in input
+  weather or calculated from input weather data.
 
 Bug fixes
 ~~~~~~~~~

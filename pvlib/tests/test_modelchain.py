@@ -802,7 +802,7 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                                              location, weather,
                                              total_irrad):
     data = weather.copy()
-    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data[['poa_global', 'poa_direct', 'poa_diffuse']] = total_irrad
     data_two = data.copy()
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location,
                     aoi_model='no_loss', spectral_model='no_loss')
@@ -926,6 +926,19 @@ def test_run_model_from_effective_irradiance_no_poa_global(
                     spectral_model='no_loss')
     ac = mc.run_model_from_effective_irradiance(data).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=data.index)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_effective_irradiance_poa_global_differs(
+        sapm_dc_snl_ac_system, location, weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global'] * 0.8
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_effective_irradiance(data).results.ac
+    expected = pd.Series(np.array([118.302801, 76.099841]),
                          index=data.index)
     assert_series_equal(ac, expected)
 

@@ -1047,11 +1047,12 @@ class ModelChain:
     def _irrad_for_celltemp(total_irrad, effective_irradiance):
         """
         Determine irradiance to use for cell temperature models, in order
-        of preference 'poa_global' or 'effective_irradiance'
+        of preference 'poa_global' then 'effective_irradiance'
 
         Returns
         -------
-        None.
+        Series of tuple of Series
+            tuple if total_irrad is a tuple of DataFrame
 
         """
         if isinstance(total_irrad, tuple):
@@ -1751,10 +1752,8 @@ class ModelChain:
         ----------
         data : DataFrame, or list or tuple of DataFrame
             Required column is ``'effective_irradiance'``.
-            If optional column ``'cell_temperature'`` is provided, these values
-            are used instead of `temperature_model`. If optional column
-            ``'module_temperature'`` is provided, `temperature_model` must be
-            ``'sapm'``.
+            Optional columns include ``'cell_temperature'``,
+            ``'module_temperature'`` and ``'poa_global'``.
 
             If the ModelChain's PVSystem has multiple arrays, `data` must be a
             list or tuple with the same length and order as the PVsystem's
@@ -1775,6 +1774,19 @@ class ModelChain:
 
         Notes
         -----
+        Optional `data` columns ``'cell_temperature'``,
+        ``'module_temperature'`` and ``'poa_global'`` are used for determining
+        cell temperature.
+        * If optional column ``'cell_temperature'`` is present, these values
+          are used and `temperature_model` is ignored.
+        * If optional column ``'module_temperature'`` is preset,
+          `temperature_model` must be ``'sapm'``.
+        * Otherwise, cell temperature is calculated using `temperature_model`.
+
+        The cell temperature models require plane-of-array irradiance as input.
+        If optional column ``'poa_global'`` is present, these data are used.
+        If ``'poa_global'`` is not present, ``'effective_irradiance'`` is used.
+
         Assigns attributes: ``weather``, ``total_irrad``,
         ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
         ``losses``, ``diode_params`` (if dc_model is a single diode model).

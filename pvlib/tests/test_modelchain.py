@@ -1770,3 +1770,26 @@ def test_modelchain__common_keys():
     assert {'b'} == modelchain._common_keys(
         (series, no_a)
     )
+
+
+def test__irrad_for_celltemp():
+    total_irrad = pd.DataFrame(index=[0, 1], columns=['poa_global'],
+                               data=[10., 20.])
+    empty = total_irrad.drop('poa_global', axis=1)
+    effect_irrad = pd.Series(index=total_irrad.index, data=[5., 8.])
+    # test with single array inputs
+    poa = modelchain._irrad_for_celltemp(total_irrad, effect_irrad)
+    assert_series_equal(poa, total_irrad['poa_global'])
+    poa = modelchain._irrad_for_celltemp(empty, effect_irrad)
+    assert_series_equal(poa, effect_irrad)
+    # test with tuples
+    poa = modelchain._irrad_for_celltemp(
+        (total_irrad, total_irrad), (effect_irrad, effect_irrad))
+    assert len(poa) == 2
+    assert_series_equal(poa[0], total_irrad['poa_global'])
+    assert_series_equal(poa[1], total_irrad['poa_global'])
+    poa = modelchain._irrad_for_celltemp(
+        (empty, empty), (effect_irrad, effect_irrad))
+    assert len(poa) == 2
+    assert_series_equal(poa[0], effect_irrad)
+    assert_series_equal(poa[1], effect_irrad)

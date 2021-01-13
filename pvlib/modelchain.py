@@ -1024,8 +1024,8 @@ class ModelChain:
         self
         """
 
-        poa = self._irrad_for_celltemp(self.results.total_irrad,
-                                       self.results.effective_irradiance)
+        poa = _irrad_for_celltemp(self.results.total_irrad,
+                                  self.results.effective_irradiance)
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = model(poa, temp_air, wind_speed)
@@ -1042,29 +1042,6 @@ class ModelChain:
 
     def fuentes_temp(self):
         return self._set_celltemp(self.system.fuentes_celltemp)
-
-    @staticmethod
-    def _irrad_for_celltemp(total_irrad, effective_irradiance):
-        """
-        Determine irradiance to use for cell temperature models, in order
-        of preference 'poa_global' then 'effective_irradiance'
-
-        Returns
-        -------
-        Series of tuple of Series
-            tuple if total_irrad is a tuple of DataFrame
-
-        """
-        if isinstance(total_irrad, tuple):
-            if all(['poa_global' in df for df in total_irrad]):
-                return _tuple_from_dfs(total_irrad, 'poa_global')
-            else:
-                return effective_irradiance
-        else:
-            if 'poa_global' in total_irrad:
-                return total_irrad['poa_global']
-            else:
-                return effective_irradiance
 
     @property
     def losses_model(self):
@@ -1555,8 +1532,8 @@ class ModelChain:
         Assigns attribute ``results.cell_temperature``.
 
         """
-        poa = self._irrad_for_celltemp(self.results.total_irrad,
-                                       self.results.effective_irradiance)
+        poa = _irrad_for_celltemp(self.results.total_irrad,
+                                  self.results.effective_irradiance)
         if not isinstance(data, tuple) and self.system.num_arrays > 1:
             # broadcast data to all arrays
             data = (data,) * self.system.num_arrays
@@ -1805,6 +1782,29 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
+
+
+def _irrad_for_celltemp(total_irrad, effective_irradiance):
+    """
+    Determine irradiance to use for cell temperature models, in order
+    of preference 'poa_global' then 'effective_irradiance'
+
+    Returns
+    -------
+    Series of tuple of Series
+        tuple if total_irrad is a tuple of DataFrame
+
+    """
+    if isinstance(total_irrad, tuple):
+        if all(['poa_global' in df for df in total_irrad]):
+            return _tuple_from_dfs(total_irrad, 'poa_global')
+        else:
+            return effective_irradiance
+    else:
+        if 'poa_global' in total_irrad:
+            return total_irrad['poa_global']
+        else:
+            return effective_irradiance
 
 
 def _snl_params(inverter_params):

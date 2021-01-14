@@ -1751,9 +1751,10 @@ class ModelChain:
 
         Notes
         -----
-        Optional `data` columns ``'cell_temperature'``,
+        Optional ``data`` columns ``'cell_temperature'``,
         ``'module_temperature'`` and ``'poa_global'`` are used for determining
         cell temperature.
+
         * If optional column ``'cell_temperature'`` is present, these values
           are used and `temperature_model` is ignored.
         * If optional column ``'module_temperature'`` is preset,
@@ -1791,7 +1792,7 @@ def _irrad_for_celltemp(total_irrad, effective_irradiance):
 
     Returns
     -------
-    Series of tuple of Series
+    Series or tuple of Series
         tuple if total_irrad is a tuple of DataFrame
 
     """

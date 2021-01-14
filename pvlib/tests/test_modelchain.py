@@ -802,7 +802,7 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                                              location, weather,
                                              total_irrad):
     data = weather.copy()
-    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data[['poa_global', 'poa_direct', 'poa_diffuse']] = total_irrad
     data_two = data.copy()
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location,
                     aoi_model='no_loss', spectral_model='no_loss')
@@ -914,6 +914,31 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
                     spectral_model='no_loss')
     ac = mc.run_model_from_effective_irradiance(data).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=data.index)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_effective_irradiance_no_poa_global(
+        sapm_dc_snl_ac_system, location, weather, total_irrad):
+    data = weather.copy()
+    data['effective_irradiance'] = total_irrad['poa_global']
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_effective_irradiance(data).results.ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=data.index)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_effective_irradiance_poa_global_differs(
+        sapm_dc_snl_ac_system, location, weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global'] * 0.8
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_effective_irradiance(data).results.ac
+    expected = pd.Series(np.array([118.302801, 76.099841]),
                          index=data.index)
     assert_series_equal(ac, expected)
 
@@ -1745,3 +1770,26 @@ def test_modelchain__common_keys():
     assert {'b'} == modelchain._common_keys(
         (series, no_a)
     )
+
+
+def test__irrad_for_celltemp():
+    total_irrad = pd.DataFrame(index=[0, 1], columns=['poa_global'],
+                               data=[10., 20.])
+    empty = total_irrad.drop('poa_global', axis=1)
+    effect_irrad = pd.Series(index=total_irrad.index, data=[5., 8.])
+    # test with single array inputs
+    poa = modelchain._irrad_for_celltemp(total_irrad, effect_irrad)
+    assert_series_equal(poa, total_irrad['poa_global'])
+    poa = modelchain._irrad_for_celltemp(empty, effect_irrad)
+    assert_series_equal(poa, effect_irrad)
+    # test with tuples
+    poa = modelchain._irrad_for_celltemp(
+        (total_irrad, total_irrad), (effect_irrad, effect_irrad))
+    assert len(poa) == 2
+    assert_series_equal(poa[0], total_irrad['poa_global'])
+    assert_series_equal(poa[1], total_irrad['poa_global'])
+    poa = modelchain._irrad_for_celltemp(
+        (empty, empty), (effect_irrad, effect_irrad))
+    assert len(poa) == 2
+    assert_series_equal(poa[0], effect_irrad)
+    assert_series_equal(poa[1], effect_irrad)

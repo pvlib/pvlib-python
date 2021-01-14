@@ -1023,7 +1023,9 @@ class ModelChain:
         -------
         self
         """
-        poa = _tuple_from_dfs(self.results.total_irrad, 'poa_global')
+
+        poa = _irrad_for_celltemp(self.results.total_irrad,
+                                  self.results.effective_irradiance)
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = model(poa, temp_air, wind_speed)
@@ -1464,13 +1466,22 @@ class ModelChain:
         return self
 
     def _get_cell_temperature(self, data,
-                              total_irrad, temperature_model_parameters):
+                              poa, temperature_model_parameters):
         """Extract the cell temperature data from a DataFrame.
 
-        If 'cell_temperature' column exists then it is returned. If
-        'module_temperature' column exists then it is used to calculate
-        the cell temperature. If neither column exists then None is
+        If 'cell_temperature' column exists in data then it is returned. If
+        'module_temperature' column exists in data, then it is used with poa to
+        calculate the cell temperature. If neither column exists then None is
         returned.
+
+        Parameters
+        ----------
+        data : DataFrame (not a tuple of DataFrame)
+        poa : Series (not a tuple of Series)
+
+        Returns
+        -------
+        Series
         """
         if 'cell_temperature' in data:
             return data['cell_temperature']
@@ -1483,14 +1494,14 @@ class ModelChain:
             # use SAPM cell temperature model only
             return pvlib.temperature.sapm_cell_from_module(
                 module_temperature=data['module_temperature'],
-                poa_global=total_irrad['poa_global'],
+                poa_global=poa,
                 deltaT=temperature_model_parameters['deltaT'])
 
-    def _prepare_temperature_single_array(self, data):
-        """Set cell_temperature using a single weather data frame."""
+    def _prepare_temperature_single_array(self, data, poa):
+        """Set cell_temperature using a single data frame."""
         self.results.cell_temperature = self._get_cell_temperature(
             data,
-            self.results.total_irrad,
+            poa,
             self.system.temperature_model_parameters
         )
         if self.results.cell_temperature is None:
@@ -1505,7 +1516,7 @@ class ModelChain:
         If 'data' contains 'cell_temperature', these values are assigned to
         attribute ``cell_temperature``. If 'data' contains 'module_temperature`
         and `temperature_model' is 'sapm', cell temperature is calculated using
-        :py:func:`pvlib.temperature.sapm_celL_from_module`. Otherwise, cell
+        :py:func:`pvlib.temperature.sapm_cell_from_module`. Otherwise, cell
         temperature is calculated by 'temperature_model'.
 
         Parameters
@@ -1521,14 +1532,16 @@ class ModelChain:
         Assigns attribute ``results.cell_temperature``.
 
         """
+        poa = _irrad_for_celltemp(self.results.total_irrad,
+                                  self.results.effective_irradiance)
         if not isinstance(data, tuple) and self.system.num_arrays > 1:
+            # broadcast data to all arrays
             data = (data,) * self.system.num_arrays
         elif not isinstance(data, tuple):
-            return self._prepare_temperature_single_array(data)
+            return self._prepare_temperature_single_array(data, poa)
         given_cell_temperature = tuple(itertools.starmap(
             self._get_cell_temperature,
-            zip(data, self.results.total_irrad,
-                self.system.temperature_model_parameters)
+            zip(data, poa, self.system.temperature_model_parameters)
         ))
         # If cell temperature has been specified for all arrays return
         # immediately and do not try to compute it.
@@ -1716,10 +1729,8 @@ class ModelChain:
         ----------
         data : DataFrame, or list or tuple of DataFrame
             Required column is ``'effective_irradiance'``.
-            If optional column ``'cell_temperature'`` is provided, these values
-            are used instead of `temperature_model`. If optional column
-            ``'module_temperature'`` is provided, `temperature_model` must be
-            ``'sapm'``.
+            Optional columns include ``'cell_temperature'``,
+            ``'module_temperature'`` and ``'poa_global'``.
 
             If the ModelChain's PVSystem has multiple arrays, `data` must be a
             list or tuple with the same length and order as the PVsystem's
@@ -1740,6 +1751,20 @@ class ModelChain:
 
         Notes
         -----
+        Optional ``data`` columns ``'cell_temperature'``,
+        ``'module_temperature'`` and ``'poa_global'`` are used for determining
+        cell temperature.
+
+        * If optional column ``'cell_temperature'`` is present, these values
+          are used and `temperature_model` is ignored.
+        * If optional column ``'module_temperature'`` is preset,
+          `temperature_model` must be ``'sapm'``.
+        * Otherwise, cell temperature is calculated using `temperature_model`.
+
+        The cell temperature models require plane-of-array irradiance as input.
+        If optional column ``'poa_global'`` is present, these data are used.
+        If ``'poa_global'`` is not present, ``'effective_irradiance'`` is used.
+
         Assigns attributes: ``weather``, ``total_irrad``,
         ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
         ``losses``, ``diode_params`` (if dc_model is a single diode model).
@@ -1758,6 +1783,29 @@ class ModelChain:
         self._run_from_effective_irrad(data)
 
         return self
+
+
+def _irrad_for_celltemp(total_irrad, effective_irradiance):
+    """
+    Determine irradiance to use for cell temperature models, in order
+    of preference 'poa_global' then 'effective_irradiance'
+
+    Returns
+    -------
+    Series or tuple of Series
+        tuple if total_irrad is a tuple of DataFrame
+
+    """
+    if isinstance(total_irrad, tuple):
+        if all(['poa_global' in df for df in total_irrad]):
+            return _tuple_from_dfs(total_irrad, 'poa_global')
+        else:
+            return effective_irradiance
+    else:
+        if 'poa_global' in total_irrad:
+            return total_irrad['poa_global']
+        else:
+            return effective_irradiance
 
 
 def _snl_params(inverter_params):

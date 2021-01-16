@@ -2,10 +2,20 @@
 .. codeauthor:: Adam R. Jensen<adam-r-j@hotmail.com>
 """
 
-import gzip
-from collections import OrderedDict
 import pandas as pd
+import gzip
 import os
+
+COL_SPECS = [(0,3),(4,9),(10,16),(17,22),(23,27),(28,32),(33,39),(40,45),
+            (46,50),(51,55),(56,64),(65,70),(71,75)]
+
+BSRN_COLUMNS = ['day','minute',
+                'ghi','ghi_std','ghi_min','ghi_max',
+                'dni','dni_std','dni_min','dni_max',
+                'empty0','empty1','empty2','empty3','empty4',
+                'dhi','dhi_std','dhi_min','dhi_max',
+                'lwd','lwd_std','lwd_min','lwd_max',
+                'air_temperature','relative_humidity','pressure']
 
 
 def read_bsrn(filename):
@@ -30,28 +40,12 @@ def read_bsrn(filename):
     
     Returns
     -------
-    Tuple of the form (data, metadata).
-
     data: Dataframe
         A Dataframe with the columns as described below. For more extensive
         description of the variables, consult [2]_.
-        
-    metadata: dict
-        Site metadata included in the file.
     
     Notes
     -----
-    Metadata dictionary includes the following fields:
-
-    ===============  ======  ===============
-    Key              Format  Description
-    ===============  ======  ===============
-    station          String  site name
-    latitude         Float   site latitude
-    longitude        Float   site longitude
-    elevation        Int     site elevation
-    ===============  ======  ===============
-
     The data Dataframe includes the following fields:
 
     =======================  ======  ==========================================
@@ -91,69 +85,56 @@ def read_bsrn(filename):
        <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_
     .. [4] `BSRN Data Release Guidelines
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
-       
-
-
     """
     
-    # Read file and store the starting line number for each each section
-    line_no_dict = OrderedDict()
-    if str(filename).endswith('.gz'): # if file is a gzipped (.gz) file
+   
+    # Read file and store the starting line number for each each logical record (LR)
+    line_no_dict = {}
+    if str(filename).endswith('.gz'): # check if file is a gzipped (.gz) file
         with gzip.open(filename,'rt') as f:
             for num, line in enumerate(f):
-                if ('*U' in line) or ('*C' in line):
-                    line_no_dict[line.splitlines()[0]] = num
+                if line.startswith('*'): # Find start of all logical records
+                    line_no_dict[line[2:6]] = num # key is 4 digit LR number
+
     else:
         with open(filename, 'r') as f:
             for num, line in enumerate(f):
-                if ('*U' in line) or ('*C' in line):
-                    line_no_dict[line.splitlines()[0]] = num
-                    
-    # Get line numbers for the data set
-    line_no_dict_keys = list(line_no_dict.keys())
-    data_id = [k for k in line_no_dict_keys if ('*C0100' in k) or ('*U0100' in k)][0] # tag for start of data sets, either *C0100 or *U0100
-    start_row = line_no_dict[data_id] + 1 # First line number of data
-    if data_id == line_no_dict_keys[-1]: # check if the dataset is the last dataset
-        end_row = num
-    else:
-        end_row = line_no_dict[line_no_dict_keys[line_no_dict_keys.index(data_id)+1]] # Last line number of data # should there be -1?
+                if line.startswith('*'): # Find start of all logical records
+                    line_no_dict[line[2:6]] = num
+
+    # Determine start and end line of logical recrod 0100 to be parsed
+    start_row = line_no_dict['0100'] + 1 # Start line number of the data (LR0100)
+    if start_row-1 == max(line_no_dict.values()): # If LR0100 is the last logical record
+        end_row = num # then parse rest of the file
+    else: # otherwise parse until the beginning of the next logical record
+        end_row = min([i for i in line_no_dict.values() if i>start_row])
     nrows = end_row-start_row
 
     # Read file as a fixed width file (fwf)
-    COLSPECS = [(0,3),(4,9),(10,16),(17,22),(23,27),(28,32),(33,39),(40,45),
-                (46,50),(51,55),(56,64),(65,70),(71,75)]
     data = pd.read_fwf(filename, skiprows=start_row, nrows=nrows, header=None,
-                       colspecs=COLSPECS, na_values=[-999.0, -99.9])
-    
+                       colspecs=COL_SPECS, na_values=[-999.0,-99.9])
+
     # Assign multi-index and unstack DataFrame, such that each variable has a seperate column
     data = data.set_index([data.index//2, data.index%2]).unstack(level=1).swaplevel(i=0, j=1, axis='columns')
-    
+
     # Sort columns to match original order and assign column names
     data = data.reindex(sorted(data.columns), axis='columns')
-    BSRN_COLUMNS = ['day','minute',
-                    'ghi','ghi_std','ghi_min','ghi_max',
-                    'dni','dni_std','dni_min','dni_max','empty0','empty1','empty2','empty3','empty4',
-                    'dhi','dhi_std','dhi_min','dhi_max',
-                    'lwd','lwd_std','lwd_min','lwd_max',
-                    'air_temperature','relative_humidity','pressure']
     data.columns = BSRN_COLUMNS
-    
+
     # Change day and minute type to integer and drop empty columns
     data['day'] = data['day'].astype('Int64')
     data['minute'] = data['minute'].astype('Int64')
     data = data.drop(['empty0','empty1','empty2','empty3','empty4'], axis='columns')
 
     # Set datetime index and localize to UTC
-    basename = os.path.basename(filename)
+    basename = os.path.basename(filename) # get month and year from filename
     data.index = pd.to_datetime(basename[3:7], format='%m%y') + pd.to_timedelta(data['day']-1, unit='d') + pd.to_timedelta(data['minute'], unit='min')
-    
-    
+
     try:
         data.index = data.index.tz_localize('UTC') # all BSRN timestamps are in UTC
     except TypeError:
         pass
 
-    # Sort index and add missing timesteps
-    ##data = data.sort_index().asfreq('1min') # can cause problems with duplicate time stamps
-    meta = {}
-    return data, meta
+    return data
+
+    

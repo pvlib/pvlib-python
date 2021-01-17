@@ -16,7 +16,10 @@ account for sloped surfaces. The process is follows several steps:
 
 References
 ----------
-[1] Bill Marion, et al. IEEE PVSC 2017
+[1] A Practical Irradiance Model for Bifacial PV Modules, Bill Marion, et al.,
+IEEE PVSC 2017
+[2] Bifacial Performance Modeling in Large Arrays, Mikofski, et al., IEEE PVSC
+2018
 """
 
 from collections import OrderedDict

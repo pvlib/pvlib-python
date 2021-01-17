@@ -12,6 +12,17 @@ set BUILDDIR=build
 
 if "%1" == "" goto help
 
+
+if "%1" == "clean" (
+    REM override the default `make clean` behavior of sphinx-build;
+    REM this lets us clean out the various build files in sphinx/source/
+	for /d %%i in (%BUILDDIR%\*) do rmdir /q /s %%i
+	rmdir /q /s %SOURCEDIR%\generated >nul 2>&1
+	rmdir /q /s %SOURCEDIR%\auto_examples >nul 2>&1
+	rmdir /q /s %SOURCEDIR%\savefig >nul 2>&1
+	goto end
+)
+
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (
 	echo.

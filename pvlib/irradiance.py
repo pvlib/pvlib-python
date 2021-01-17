@@ -13,6 +13,9 @@ import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
 
+from pvlib._deprecation import deprecated
+
+
 # see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
                    'grass': 0.20,
@@ -432,7 +435,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth, airmass,
                     model=model_perez)
     else:
-        raise ValueError('invalid model selection {}'.format(model))
+        raise ValueError(f'invalid model selection {model}')
 
     return sky
 
@@ -927,9 +930,9 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
         The diffuse component of the solar radiation.
     '''
 
-    sky_diffuse = (dhi * ((1 + tools.cosd(surface_tilt))) / 2 + ghi *
-                   ((0.012 * solar_zenith - 0.04)) *
-                   ((1 - tools.cosd(surface_tilt))) / 2)
+    sky_diffuse = (dhi * (1 + tools.cosd(surface_tilt)) / 2 + ghi *
+                   (0.012 * solar_zenith - 0.04) *
+                   (1 - tools.cosd(surface_tilt)) / 2)
     sky_diffuse = np.maximum(sky_diffuse, 0)
 
     return sky_diffuse
@@ -2184,7 +2187,61 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     return data
 
 
-def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
+def campbell_norman(zenith, transmittance, pressure=101325.0,
+                    dni_extra=1367.0):
+    '''
+    Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
+    and atmospheric pressure.
+
+    Parameters
+    ----------
+    zenith: pd.Series
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. If Z is a vector it must be of the same size as all
+        other vector inputs. Z must be >=0 and <=180.
+
+    transmittance: float
+        Atmospheric transmittance between 0 and 1.
+
+    pressure: float, default 101325.0
+        Air pressure
+
+    dni_extra: float, default 1367.0
+        Direct irradiance incident at the top of the atmosphere.
+
+    Returns
+    -------
+    irradiance: DataFrame
+        Modeled direct normal irradiance, direct horizontal irradiance,
+        and global horizontal irradiance in W/m^2
+
+    References
+    ----------
+    .. [1] Campbell, G. S., J. M. Norman (1998) An Introduction to
+       Environmental Biophysics. 2nd Ed. New York: Springer.
+    '''
+
+    tau = transmittance
+
+    airmass = atmosphere.get_relative_airmass(zenith, model='simple')
+    airmass = atmosphere.get_absolute_airmass(airmass, pressure=pressure)
+    dni = dni_extra*tau**airmass
+    cos_zen = tools.cosd(zenith)
+    dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * cos_zen
+    ghi = dhi + dni * cos_zen
+
+    irrads = OrderedDict()
+    irrads['ghi'] = ghi
+    irrads['dni'] = dni
+    irrads['dhi'] = dhi
+
+    if isinstance(ghi, pd.Series):
+        irrads = pd.DataFrame(irrads)
+
+    return irrads
+
+
+def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and optical air mass number.
@@ -2240,6 +2297,10 @@ def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
         irrads = pd.DataFrame(irrads)
 
     return irrads
+
+
+liujordan = deprecated('0.8', alternative='campbellnormam',
+                       name='liujordan', removal='0.9')(_liujordan)
 
 
 def _get_perez_coefficients(perezmodel):

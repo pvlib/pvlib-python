@@ -13,7 +13,8 @@ from conftest import assert_frame_equal, assert_series_equal
 
 from pvlib import irradiance
 
-from conftest import (needs_numpy_1_10, requires_ephem, requires_numba)
+from conftest import requires_ephem, requires_numba, fail_on_pvlib_version
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # fixtures create realistic test input data
@@ -245,7 +246,6 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
 
-@needs_numpy_1_10
 def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
@@ -279,13 +279,34 @@ def test_sky_diffuse_zenith_close_to_90(model):
     assert sky_diffuse < 100
 
 
+def test_get_sky_diffuse_invalid():
+    with pytest.raises(ValueError):
+        irradiance.get_sky_diffuse(
+            30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
+            model='invalid')
+
+
+@fail_on_pvlib_version('0.9')
 def test_liujordan():
     expected = pd.DataFrame(np.array(
         [[863.859736967, 653.123094076, 220.65905025]]),
         columns=['ghi', 'dni', 'dhi'],
         index=[0])
-    out = irradiance.liujordan(
-        pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]), dni_extra=1400)
+    with pytest.warns(pvlibDeprecationWarning):
+        out = irradiance.liujordan(
+            pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]),
+            dni_extra=1400)
+    assert_frame_equal(out, expected)
+
+
+def test_campbell_norman():
+    expected = pd.DataFrame(np.array(
+        [[863.859736967, 653.123094076, 220.65905025]]),
+        columns=['ghi', 'dni', 'dhi'],
+        index=[0])
+    out = irradiance.campbell_norman(
+        pd.Series([10]), pd.Series([0.5]), pd.Series([109764.21013135818]),
+        dni_extra=1400)
     assert_frame_equal(out, expected)
 
 
@@ -680,7 +701,6 @@ def test_erbs_all_scalar():
         assert_allclose(v, expected[k], 5)
 
 
-@needs_numpy_1_10
 def test_dirindex(times):
     ghi = pd.Series([0, 0, 1038.62, 254.53], index=times)
     ghi_clearsky = pd.Series(

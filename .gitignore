@@ -92,3 +92,8 @@ coverage.xml
 
 # Ignore Mac DS_store files
 *.DS_Store
+
+# airspeed velocity
+env
+results
+

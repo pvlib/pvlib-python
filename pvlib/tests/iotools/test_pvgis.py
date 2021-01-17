@@ -9,6 +9,7 @@ import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
 from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
+
 @pytest.fixture
 def expected():
     return pd.read_csv(DATA_DIR / 'pvgis_tmy_test.dat', index_col='time(UTC)')
@@ -62,7 +63,7 @@ def meta_expected():
 @pytest.fixture
 def csv_meta(meta_expected):
     return [
-        '%s: %s (%s)' % (k, v['description'], v['units']) for k, v
+        f"{k}: {v['description']} ({v['units']})" for k, v
         in meta_expected['outputs']['tmy_hourly']['variables'].items()]
 
 
@@ -158,7 +159,8 @@ def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
     for meta_value in meta:
         if not meta_value:
             continue
-        if meta_value == 'PVGIS (c) European Communities, 2001-2020':
+        # don't check end year because it changes every year
+        if meta_value[:-4] == 'PVGIS (c) European Communities, 2001-':
             continue
         assert meta_value in csv_meta
 
@@ -254,6 +256,6 @@ def test_read_pvgis_tmy_basic(expected, meta_expected):
 
 def test_read_pvgis_tmy_exception():
     bad_outputformat = 'bad'
-    err_msg = "pvgis format '{:s}' was unknown".format(bad_outputformat)
+    err_msg = f"pvgis format '{bad_outputformat:s}' was unknown"
     with pytest.raises(ValueError, match=err_msg):
         read_pvgis_tmy('filename', pvgis_format=bad_outputformat)

@@ -1,0 +1,74 @@
+.. _whatsnew_0810:
+
+v0.8.1 (January 4, 2021)
+------------------------
+
+Deprecations
+~~~~~~~~~~~~
+* ``pvlib.irradiance.liujordan`` is deprecated. :py:func:`pvlib.irradiance.campbell_norman`
+  replaces ``pvlib.irradiance.liujordan``.
+
+Enhancements
+~~~~~~~~~~~~
+* Add a numpy-based implementation of the SPECTRL2 spectral irradiance model
+  :py:func:`pvlib.spectrum.spectrl2` (:pull:`1062`)
+* Create :py:func:`~pvlib.pvsystem.PVSystem.fuentes_celltemp` and add ``temperature_model='fuentes'``
+  option to :py:class:`~pvlib.modelchain.ModelChain`. (:issue:`1042`) (:pull:`1073`)
+* Added :py:func:`pvlib.temperature.ross` for cell temperature modeling using
+  only NOCT. (:pull:`1045`)
+* :py:func:`pvlib.clearsky.detect_clearsky` now uses centered rolling windows
+  instead of left-aligned rolling windows. (:pull:`1074`)
+* The 'times' and 'window_length' parameters are now optional kwargs in
+  :py:func:`pvlib.clearsky.detect_clearsky`. If omitted, 'times' is set
+  equal to the index of parameter 'measured', and 'window_length' is set to
+  10 minutes. (:pull:`1074`)
+* Added :py:func:`pvlib.inverter.sandia_multi` and :py:func:`pvlib.inverter.pvwatts_multi`
+  for modeling inverters with multiple MPPTs (:issue:`457`, :pull:`1085`, :pull:`1106`)
+* Added optional ``attributes`` parameter to :py:func:`pvlib.iotools.get_psm3`
+  and added the option of fetching 5- and 15-minute PSM3 data. (:pull:`1086`)
+* Added :py:func:`pvlib.irradiance.campbell_norman` for estimating DNI, DHI and GHI
+  from extraterrestrial irradiance. This function replaces ``pvlib.irradiance.liujordan``;
+  users of ``pvlib.irradiance.liujordan`` should note that :py:func:`pvlib.irradiance.campbell_norman`
+  expects different parameters. (:pull:`1104`)
+* :py:meth:`pvlib.forecast.ForecastModel.cloud_cover_to_irradiance_campbell_norman`
+  replaces ``pvlib.forecast.ForecastModel.cloud_cover_to_irradiance_liujordan``. (:pull:`1104`)
+
+Bug fixes
+~~~~~~~~~
+* Fix issue with :py:func:`pvlib.temperature.fuentes` with timezone-aware
+  inputs. (:issue:`1071`, :pull:`1072`)
+* Raise ``ValueError`` from  :py:meth:`pvlib.modelchain.ModelChain.prepare_inputs`
+  when input does not have a 'dhi' column. (:issue:`1092`, :pull:`1093`)
+* Add missing modules (including ``shading`` and ``scaling``) to ``__init__.py``.
+  (:pull:`1103`)
+
+Testing
+~~~~~~~
+* Add airspeed velocity performance testing configuration and a few benchmarks.
+  (:issue:`419`, :pull:`1049`, :pull:`1059`)
+* Add Python 3.9 CI configurations. (:issue:`1102`, :pull:`1112`)
+* Update ``test_pvgis.py`` to be more flexible about the PVGIS copyright notice
+  (:pull:`1121`)
+
+Documentation
+~~~~~~~~~~~~~
+* Update sphinx to 3.1.2 and use the ``recursive`` option in ``autosummary`` class template.
+  (:issue:`1055`, :pull:`1075`)
+* Add gallery example about backtracking on sloped terrain. (:pull:`1077`)
+* Add toggle button for code prompts to make copying code easier (:pull:`1096`)
+* Add project urls to setup.py for pypi page (:pull:`1119`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Siyan (Veronica) Guo (:ghuser:`veronicaguo`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Will Vining (:ghuser:`wfvining`)
+* Michael Jurasovic (:ghuser:`jurasofish`)
+* Aziz Ben Othman (:ghuser:`AzizCode92`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Junaid Fatehi (:ghuser:`jhfatehi`)
+

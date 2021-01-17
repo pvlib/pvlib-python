@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # PVLIB_Python documentation build configuration file, created by
 # sphinx-quickstart on Fri Nov  7 15:56:33 2014.
@@ -15,23 +14,11 @@
 import sys
 import os
 
-# Mock modules so RTD works
-from unittest.mock import MagicMock
-
 # for warning suppression
 import warnings
 
 # for generating GH links with linenumbers
 import inspect
-
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return Mock()
-
-MOCK_MODULES = []
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 import pandas as pd
 pd.show_versions()
@@ -63,6 +50,7 @@ extensions = [
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx_gallery.gen_gallery',
+    'sphinx_toggleprompt',
 ]
 
 napoleon_use_rtype = False  # group rtype on same line together with return
@@ -80,8 +68,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pvlib-python'
-copyright = u'2015, Sandia National Labs, Rob Andrews, University of Arizona, github contributors'
+project = 'pvlib python'
+copyright = \
+    '2013-2020, Sandia National Laboratories and pvlib python Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -224,15 +213,16 @@ html_show_copyright = False
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PVLIB_Pythondoc'
+htmlhelp_basename = 'pvlib_pythondoc'
 
 
 # custom CSS workarounds
 def setup(app):
     # A workaround for the responsive tables always having annoying scrollbars.
-    app.add_stylesheet("no_scrollbars.css")
+    app.add_css_file("no_scrollbars.css")
     # Override footnote callout CSS to be normal text instead of superscript
-    app.add_stylesheet("no_reference_superscript.css")
+    # In-line links to references as numbers in brackets.
+    app.add_css_file("reference_format.css")
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -251,8 +241,9 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'PVLIB_Python.tex', u'PVLIB\\_Python Documentation',
-   u'Sandia National Labs, Rob Andrews, University of Arizona, github contributors', 'manual'),
+    ('index', 'pvlib_python.tex', 'pvlib\\_python Documentation',
+     'Sandia National Laboratoraties and pvlib python Development Team',
+     'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -289,8 +280,8 @@ extlinks = {
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pvlib_python', u'PVLIB_Python Documentation',
-     [u'Sandia National Labs, Rob Andrews, University of Arizona, github contributors'], 1)
+    ('index', 'pvlib_python', 'pvlib_python Documentation',
+     ['Sandia National Laboratoraties and pvlib python Development Team'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -303,9 +294,10 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'PVLIB_Python', u'PVLIB_Python Documentation',
-   u'Sandia National Labs, Rob Andrews, University of Arizona, github contributors', 'PVLIB_Python', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'pvlib python', 'pvlib python Documentation',
+     'Sandia National Laboratoraties and pvlib python Development Team',
+     'pvlib python', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -322,7 +314,7 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.7/', None),
+    'python': ('https://docs.python.org/3.8/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
 }
@@ -396,6 +388,10 @@ def get_linenos(obj):
         lines, start = inspect.getsourcelines(obj)
     except TypeError:  # obj is an attribute or None
         return None, None
+    except OSError:  # obj listing cannot be found
+        # This happens for methods that are not explicitly defined
+        # such as the __init__ method for a dataclass
+        return None, None
     else:
         return start, start + len(lines) - 1
 
@@ -432,7 +428,7 @@ def make_github_url(pagename):
         # add line numbers if possible:
         start, end = get_linenos(obj)
         if start and end:
-            target_url += '#L{}-L{}'.format(start, end)
+            target_url += f'#L{start}-L{end}'
 
     # Just a normal source RST page
     else:

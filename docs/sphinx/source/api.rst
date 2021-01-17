@@ -20,11 +20,10 @@ corresponding procedural code.
 
    location.Location
    pvsystem.PVSystem
+   pvsystem.Array
    tracking.SingleAxisTracker
    modelchain.ModelChain
-   pvsystem.LocalizedPVSystem
-   tracking.LocalizedSingleAxisTracker
-
+   modelchain.ModelChainResult
 
 Solar Position
 ==============
@@ -138,6 +137,7 @@ Methods for irradiance calculations
 
    pvsystem.PVSystem.get_irradiance
    pvsystem.PVSystem.get_aoi
+   pvsystem.PVSystem.get_iam
    tracking.SingleAxisTracker.get_irradiance
    infinite_sheds.get_irradiance
 
@@ -183,7 +183,7 @@ DNI estimation models
    irradiance.dirint
    irradiance.dirindex
    irradiance.erbs
-   irradiance.liujordan
+   irradiance.campbell_norman
    irradiance.gti_dirint
 
 Clearness index models
@@ -210,7 +210,6 @@ wrap the functions listed below. See its documentation for details.
    :toctree: generated/
 
    pvsystem.PVSystem
-   pvsystem.LocalizedPVSystem
 
 Incident angle modifiers
 ------------------------
@@ -238,6 +237,19 @@ PV temperature models
    temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
+   temperature.fuentes
+   temperature.ross
+   pvsystem.PVSystem.sapm_celltemp
+   pvsystem.PVSystem.pvsyst_celltemp
+   pvsystem.PVSystem.faiman_celltemp
+
+Temperature Model Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. currentmodule:: pvlib.temperature
+.. autodata:: TEMPERATURE_MODEL_PARAMETERS
+   :annotation:
+
+.. currentmodule:: pvlib
 
 Single diode models
 -------------------
@@ -271,9 +283,9 @@ Functions for fitting diode models
 .. autosummary::
    :toctree: generated/
 
-    ivtools.fit_sde_sandia
-    ivtools.fit_sdm_cec_sam
-    ivtools.fit_sdm_desoto
+    ivtools.sde.fit_sandia_simple
+    ivtools.sdm.fit_cec_sam
+    ivtools.sdm.fit_desoto
 
 Inverter models (DC to AC conversion)
 -------------------------------------
@@ -282,8 +294,10 @@ Inverter models (DC to AC conversion)
    :toctree: generated/
 
    inverter.sandia
+   inverter.sandia_multi
    inverter.adr
    inverter.pvwatts
+   inverter.pvwatts_multi
 
 Functions for fitting inverter models
 
@@ -305,7 +319,6 @@ Sandia array performance model (SAPM)
    pvsystem.sapm
    pvsystem.sapm_effective_irradiance
    pvsystem.sapm_spectral_loss
-   pvsystem.sapm_aoi_loss
    inverter.sandia
    temperature.sapm_cell
 
@@ -329,6 +342,33 @@ PVWatts model
    inverter.pvwatts
    pvsystem.pvwatts_losses
 
+Estimating PV model parameters
+------------------------------
+
+Functions for fitting single diode models
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.sdm.fit_cec_sam
+    ivtools.sdm.fit_desoto
+    ivtools.sdm.fit_pvsyst_sandia
+    ivtools.sdm.fit_desoto_sandia
+
+Functions for fitting the single diode equation
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.sde.fit_sandia_simple
+
+Utilities for working with IV curve data
+
+.. autosummary::
+   :toctree: generated/
+
+    ivtools.utils.rectify_iv_curve
+
 Other
 -----
 
@@ -342,6 +382,17 @@ Other
 Effects on PV System Output
 ===========================
 
+Loss models
+-----------
+
+.. autosummary::
+   :toctree: generated/
+
+   pvsystem.combine_loss_factors
+
+Snow
+----
+
 .. autosummary::
    :toctree: generated/
 
@@ -349,11 +400,17 @@ Effects on PV System Output
    snow.fully_covered_nrel
    snow.dc_loss_nrel
 
+Soiling
+-------
+
 .. autosummary::
    :toctree: generated/
 
    soiling.hsu
    soiling.kimber
+
+Shading
+-------
 
 .. autosummary::
    :toctree: generated/
@@ -362,6 +419,13 @@ Effects on PV System Output
    shading.masking_angle_passias
    shading.sky_diffuse_passias
 
+Spectrum
+--------
+
+.. autosummary::
+   :toctree: generated/
+
+   spectrum.spectrl2
 
 Tracking
 ========
@@ -378,8 +442,6 @@ The :py:class:`~tracking.SingleAxisTracker` inherits from
    tracking.SingleAxisTracker
    tracking.SingleAxisTracker.singleaxis
    tracking.SingleAxisTracker.get_irradiance
-   tracking.SingleAxisTracker.localize
-   tracking.LocalizedSingleAxisTracker
 
 Functions
 ---------
@@ -388,6 +450,8 @@ Functions
    :toctree: generated/
 
    tracking.singleaxis
+   tracking.calc_axis_tilt
+   tracking.calc_cross_axis_tilt
 
 
 .. _iotools:
@@ -466,7 +530,7 @@ Processing data
    forecast.ForecastModel.cloud_cover_to_ghi_linear
    forecast.ForecastModel.cloud_cover_to_irradiance_clearsky_scaling
    forecast.ForecastModel.cloud_cover_to_transmittance_linear
-   forecast.ForecastModel.cloud_cover_to_irradiance_liujordan
+   forecast.ForecastModel.cloud_cover_to_irradiance_campbell_norman
    forecast.ForecastModel.cloud_cover_to_irradiance
    forecast.ForecastModel.kelvin_to_celsius
    forecast.ForecastModel.isobaric_to_ambient_temperature
@@ -502,14 +566,31 @@ Creating a ModelChain object.
 Running
 -------
 
-Running a ModelChain.
+A ModelChain can be run from a number of starting points, depending on the
+input data available.
 
 .. autosummary::
    :toctree: generated/
 
    modelchain.ModelChain.run_model
+   modelchain.ModelChain.run_model_from_poa
+   modelchain.ModelChain.run_model_from_effective_irradiance
+
+Functions to assist with setting up ModelChains to run
+
+.. autosummary::
+   :toctree: generated/
+
    modelchain.ModelChain.complete_irradiance
    modelchain.ModelChain.prepare_inputs
+   modelchain.ModelChain.prepare_inputs_from_poa
+
+Results
+-------
+
+Output from the running the ModelChain is stored in the
+:py:attr:`modelchain.ModelChain.results` attribute. For more
+information see :py:class:`modelchain.ModelChainResult`.
 
 Attributes
 ----------
@@ -562,6 +643,7 @@ ModelChain model definitions.
    modelchain.ModelChain.sapm_temp
    modelchain.ModelChain.pvsyst_temp
    modelchain.ModelChain.faiman_temp
+   modelchain.ModelChain.fuentes_temp
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 

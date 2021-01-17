@@ -8,14 +8,14 @@ jobs:
     vmImage: ${{ parameters.vmImage }}
   strategy:
     matrix:
-      Python35-windows:
-        python.version: '35'
       Python36-windows:
         python.version: '36'
       Python37-windows:
         python.version: '37'
       Python38-windows:
         python.version: '38'
+      Python39-windows:
+        python.version: '39'
 
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"

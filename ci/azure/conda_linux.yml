@@ -8,10 +8,8 @@ jobs:
     vmImage: ${{ parameters.vmImage }}
   strategy:
     matrix:
-      Python35:
-        python.version: '35'
-      Python35-min:
-        python.version: '35'
+      Python36-min:
+        python.version: '36'
         suffix: '-min'
       Python36:
         python.version: '36'
@@ -20,6 +18,8 @@ jobs:
         python.version: '37'
       Python38:
         python.version: '38'
+      Python39:
+        python.version: '39'
 
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"

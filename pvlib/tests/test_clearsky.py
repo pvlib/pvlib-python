@@ -4,6 +4,7 @@ import numpy as np
 from numpy import nan
 import pandas as pd
 import pytz
+from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
@@ -15,7 +16,7 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-from conftest import requires_scipy, requires_tables, DATA_DIR
+from conftest import requires_tables, DATA_DIR
 
 
 def test_ineichen_series():
@@ -546,80 +547,147 @@ def detect_clearsky_data():
     return expected, cs
 
 
-@requires_scipy
 def test_detect_clearsky(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
-        expected['GHI'], cs['ghi'], cs.index, 10)
+        expected['GHI'], cs['ghi'], times=cs.index, window_length=10)
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 
 
-@requires_scipy
+def test_detect_clearsky_defaults(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'])
+    assert_series_equal(expected['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+
+
 def test_detect_clearsky_components(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples, components, alpha = clearsky.detect_clearsky(
-        expected['GHI'], cs['ghi'], cs.index, 10, return_components=True)
+        expected['GHI'], cs['ghi'], times=cs.index, window_length=10,
+        return_components=True)
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
     assert isinstance(components, OrderedDict)
     assert np.allclose(alpha, 0.9633903181941296)
 
 
-@requires_scipy
 def test_detect_clearsky_iterations(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     alpha = 1.0448
     with pytest.warns(RuntimeWarning):
         clear_samples = clearsky.detect_clearsky(
-            expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=1)
-    assert (clear_samples[:'2012-04-01 10:41:00'] == True).all()
-    assert (clear_samples['2012-04-01 10:42:00':] == False).all()
+            expected['GHI'], cs['ghi']*alpha, max_iterations=1)
+    assert clear_samples[:'2012-04-01 10:41:00'].all()
+    assert not clear_samples['2012-04-01 10:42:00':].any()  # expected False
     clear_samples = clearsky.detect_clearsky(
-            expected['GHI'], cs['ghi']*alpha, cs.index, 10, max_iterations=20)
+        expected['GHI'], cs['ghi']*alpha, max_iterations=20)
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 
 
-@requires_scipy
 def test_detect_clearsky_kwargs(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
-        expected['GHI'], cs['ghi'], cs.index, 10,
+        expected['GHI'], cs['ghi'], times=cs.index, window_length=10,
         mean_diff=1000, max_diff=1000, lower_line_length=-1000,
         upper_line_length=1000, var_diff=10, slope_dev=1000)
     assert clear_samples.all()
 
 
-@requires_scipy
 def test_detect_clearsky_window(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
-        expected['GHI'], cs['ghi'], cs.index, 3)
+        expected['GHI'], cs['ghi'], window_length=3)
     expected = expected['Clear or not'].copy()
     expected.iloc[-3:] = True
     assert_series_equal(expected, clear_samples,
                         check_dtype=False, check_names=False)
 
 
-@requires_scipy
 def test_detect_clearsky_arrays(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
-        expected['GHI'].values, cs['ghi'].values, cs.index, 10)
+        expected['GHI'].values, cs['ghi'].values, times=cs.index,
+        window_length=10)
     assert isinstance(clear_samples, np.ndarray)
     assert (clear_samples == expected['Clear or not'].values).all()
 
 
-@requires_scipy
 def test_detect_clearsky_irregular_times(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     times = cs.index.values.copy()
     times[0] += 10**9
     times = pd.DatetimeIndex(times)
     with pytest.raises(NotImplementedError):
-        clear_samples = clearsky.detect_clearsky(
-            expected['GHI'].values, cs['ghi'].values, times, 10)
+        clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values,
+                                 times, 10)
+
+
+def test_detect_clearsky_missing_index(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    with pytest.raises(ValueError):
+        clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values)
+
+
+@pytest.fixture
+def detect_clearsky_helper_data():
+    samples_per_window = 3
+    sample_interval = 1
+    x = pd.Series(np.arange(0, 7)**2.)
+    # line length between adjacent points
+    sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
+    H = hankel(np.arange(samples_per_window),
+               np.arange(samples_per_window-1, len(sqt)))
+    return x, samples_per_window, sample_interval, H
+
+
+def test__line_length_windowed(detect_clearsky_helper_data):
+    x, samples_per_window, sample_interval, H = detect_clearsky_helper_data
+    # sqt is hand-calculated assuming window=3
+    # line length between adjacent points
+    sqt = pd.Series(np.sqrt(np.array([np.nan, 2., 10., 26., 50., 82, 122.])))
+    expected = {}
+    expected['line_length'] = sqt + sqt.shift(-1)
+    result = clearsky._line_length_windowed(
+        x, H, samples_per_window, sample_interval)
+    assert_series_equal(result, expected['line_length'])
+
+
+def test__max_diff_windowed(detect_clearsky_helper_data):
+    x, samples_per_window, sample_interval, H = detect_clearsky_helper_data
+    expected = {}
+    expected['max_diff'] = pd.Series(
+        data=[np.nan, 3., 5., 7., 9., 11., np.nan], index=x.index)
+    result = clearsky._max_diff_windowed(x, H, samples_per_window)
+    assert_series_equal(result, expected['max_diff'])
+
+
+def test__calc_stats(detect_clearsky_helper_data):
+    x, samples_per_window, sample_interval, H = detect_clearsky_helper_data
+    # stats are hand-computed assuming window = 3, sample_interval = 1,
+    # and right-aligned labels
+    mean_x = pd.Series(np.array([np.nan, np.nan, 5, 14, 29, 50, 77]) / 3.)
+    max_x = pd.Series(np.array([np.nan, np.nan, 4, 9, 16, 25, 36]))
+    diff_std = np.array([np.nan, np.nan, np.sqrt(2), np.sqrt(2), np.sqrt(2),
+                         np.sqrt(2), np.sqrt(2)])
+    slope_nstd = diff_std / mean_x
+    slope = x.diff().shift(-1)
+    expected = {}
+    expected['mean'] = mean_x.shift(-1)  # shift to align to center
+    expected['max'] = max_x.shift(-1)
+    # slope between adjacent points
+    expected['slope'] = slope
+    expected['slope_nstd'] = slope_nstd.shift(-1)
+    result = clearsky._calc_stats(
+        x, samples_per_window, sample_interval, H)
+    res_mean, res_max, res_slope_nstd, res_slope = result
+    assert_series_equal(res_mean, expected['mean'])
+    assert_series_equal(res_max, expected['max'])
+    assert_series_equal(res_slope_nstd, expected['slope_nstd'])
+    assert_series_equal(res_slope, expected['slope'])
 
 
 def test_bird():

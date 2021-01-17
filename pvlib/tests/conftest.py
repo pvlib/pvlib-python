@@ -2,7 +2,6 @@ from pathlib import Path
 import platform
 import warnings
 
-import numpy as np
 import pandas as pd
 from pkg_resources import parse_version
 import pytest
@@ -81,13 +80,15 @@ platform_is_windows = platform.system() == 'Windows'
 skip_windows = pytest.mark.skipif(platform_is_windows,
                                   reason='does not run on windows')
 
-try:
-    import scipy
-    has_scipy = True
-except ImportError:
-    has_scipy = False
 
-requires_scipy = pytest.mark.skipif(not has_scipy, reason='requires scipy')
+try:
+    import statsmodels  # noqa: F401
+    has_statsmodels = True
+except ImportError:
+    has_statsmodels = False
+
+requires_statsmodels = pytest.mark.skipif(
+    not has_statsmodels, reason='requires statsmodels')
 
 
 try:
@@ -106,14 +107,6 @@ except ImportError:
     has_ephem = False
 
 requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
-
-
-def numpy_1_10():
-    return parse_version(np.__version__) >= parse_version('1.10.0')
-
-
-needs_numpy_1_10 = pytest.mark.skipif(
-    not numpy_1_10(), reason='requires numpy 1.10 or greater')
 
 
 def has_spa_c():

@@ -68,11 +68,11 @@ def test_solar_projection_tangent():
 
 def test_solar_projection():
     # frontside
-    phi, tan_phi = pvlib.infinite_sheds.solar_projection(
+    _, tan_phi = pvlib.infinite_sheds.solar_projection(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, SYSAZ_RAD)
     assert np.allclose(tan_phi, TESTDATA.tan_phi_f)
     # backside
-    phi, tan_phi = pvlib.infinite_sheds.solar_projection(
+    _, tan_phi = pvlib.infinite_sheds.solar_projection(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, BACK_SYSAZ_RAD)
     assert np.allclose(tan_phi, TESTDATA.tan_phi_b)
 
@@ -195,13 +195,13 @@ def test_diffuse_fraction():
 def test_poa_ground_sky():
     # front side
     poa_gnd_sky = pvlib.infinite_sheds.poa_ground_sky(
-        TESTDATA.poa_ground_diffuse_f, F_GND_SKY, DF)
+        TESTDATA.poa_ground_diffuse_f, F_GND_SKY, DF, 1.0)
     # CSV file decimals are truncated
     assert np.allclose(
         poa_gnd_sky, FRONT_POA_GND_SKY, equal_nan=True, atol=1e-6)
     # backside
     poa_gnd_sky = pvlib.infinite_sheds.poa_ground_sky(
-        TESTDATA.poa_ground_diffuse_b, F_GND_SKY, DF)
+        TESTDATA.poa_ground_diffuse_b, F_GND_SKY, DF, 1.0)
     assert np.allclose(poa_gnd_sky, BACK_POA_GND_SKY, equal_nan=True)
 
 

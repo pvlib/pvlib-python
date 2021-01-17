@@ -25,7 +25,7 @@ IEEE PVSC 2017
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-from pvlib import irradiance, pvsystem
+from pvlib import irradiance, pvsystem, iam
 
 MAXP = 10
 
@@ -358,29 +358,57 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     psi_z = ground_sky_angles(fz, *args)
     # front edge
     psi_z0 = ground_sky_angles_prev(fz, *args)
+    fz_sky_next = calc_fz_sky(*psi_z0)
     fz0_sky_next = []
     prev_row = 0.0
     # loop over rows by adding 1.0 to fz until prev_row < ceil(fz0_limit)
     while (fz0_limit - prev_row) > 0:
-        fz0_sky_next.append(
-            np.interp(fz + prev_row, fz, calc_fz_sky(*psi_z0)))
+        fz0_sky_next.append(np.interp(fz + prev_row, fz, fz_sky_next))
         prev_row += 1.0
     # back edge
     psi_z1 = ground_sky_angles_next(fz, *args)
+    fz_sky_prev = calc_fz_sky(*psi_z1)
     fz1_sky_prev = []
     next_row = 0.0
     # loop over rows by subtracting 1.0 to fz until next_row < ceil(fz1_limit)
     while (fz1_limit - next_row) > 0:
-        fz1_sky_prev.append(
-            np.interp(fz - next_row, fz, calc_fz_sky(*psi_z1)))
+        fz1_sky_prev.append(np.interp(fz - next_row, fz, fz_sky_prev))
         next_row += 1.0
     # calculate the view factor of the sky from the ground at point z
     fz_sky = (
             calc_fz_sky(*psi_z)  # current row
-            + np.sum(fz0_sky_next, axis=0)  # sum of all previous rows
-            + np.sum(fz1_sky_prev, axis=0))  # sum of all next rows
+            + np.sum(fz0_sky_next, axis=0)  # sum of all next rows
+            + np.sum(fz1_sky_prev, axis=0))  # sum of all previous rows
     fz_row = np.linspace(0, 1, npoints)
     return fz_row, np.interp(fz_row, fz, fz_sky)
+
+
+def vf_ground_sky(gcr, height, tilt, pitch, npoints=100):
+    """
+    Integrated view factor from the ground in between central rows of the sky.
+
+    Parameters
+    ----------
+    gcr : numeric
+        ground coverage ratio
+    height : numeric
+        height of module lower edge above the ground
+    tilt : numeric
+        module tilt in radians, between 0 and 180-degrees
+    pitch : numeric
+        row spacing
+    npoints : int
+        divide the ground into discrete points
+
+    """
+    args = gcr, height, tilt, pitch
+    # calculate the view factor of the diffuse sky from the ground between rows
+    z_star, fz_sky = ground_sky_diffuse_view_factor(*args, npoints=npoints)
+
+    # calculate the integrated view factor for all of the ground between rows
+    fgnd_sky = np.trapz(fz_sky, z_star)
+
+    return fgnd_sky, fz_sky
 
 
 def _big_z(psi_x_bottom, height, tilt, pitch):
@@ -415,10 +443,8 @@ def calc_fgndpv_zsky(x, gcr, height, tilt, pitch, npoints=100, maxp=MAXP):
     fx = x / hmod  # = x/gcr/pitch
 
     # calculate the view factor of the diffuse sky from the ground between rows
-    z_star, fz_sky = ground_sky_diffuse_view_factor(*args, npoints=npoints)
-
-    # calculate the integrated view factor for all of the ground between rows
-    fgnd_sky = np.trapz(fz_sky, z_star)
+    # and integrate the view factor for all of the ground between rows
+    fgnd_sky, fz_sky = vf_ground_sky(*args, npoints=npoints)
 
     # if fx is zero, point x is at the bottom of the row, psi_x_bottom is zero,
     # bigz = Inf, and all of the ground is visible, so the view factor is just
@@ -447,7 +473,7 @@ def calc_fgndpv_zsky(x, gcr, height, tilt, pitch, npoints=100, maxp=MAXP):
     # increment the ground input segments that are delta wide
     delta = 1.0 / (npoints - 1)
     # start at the next row, z=1, and go back toward the previous row, z<1
-    z_star = 1 - np.linspace(num_rows-1, 1, 1 + num_rows * (npoints - 1))
+    # z_star = 1 - np.linspace(num_rows-1, 1, 1 + num_rows * (npoints - 1))
     # shift by a half delta
     halfdelta = delta / 2.0
 
@@ -456,13 +482,13 @@ def calc_fgndpv_zsky(x, gcr, height, tilt, pitch, npoints=100, maxp=MAXP):
     # use uniform angles
     psidelta = psi_ref * halfdelta
     psi_zuni = np.linspace(psidelta, psi_ref - psidelta, npoints - 1)
-    zuni = np.flip(1-_big_z(tilt-psi_zuni, height, tilt, pitch)/pitch)
+    # zuni = np.flip(1-_big_z(tilt-psi_zuni, height, tilt, pitch)/pitch)
 
-    fzuni_sky = np.interp(zuni, z_star, fz_sky, fgnd_sky, fgnd_sky)
+    # fzuni_sky = np.interp(zuni, z_star, fz_sky, fgnd_sky, fgnd_sky)
     dfgnd_pv = (np.cos(psi_zuni-psidelta) - np.cos(psi_zuni+psidelta)) / 2
-    fgnd_pv = np.sum(dfgnd_pv)
     # FIXME: not working for backside
     # fskyz = np.sum(fzuni_sky * dfgnd_pv)
+    fgnd_pv = np.sum(dfgnd_pv)
     fskyz = fgnd_sky * fgnd_pv
     return fskyz, fgnd_pv
 
@@ -486,10 +512,10 @@ def diffuse_fraction(ghi, dhi):
     return dhi/ghi
 
 
-def poa_ground_sky(poa_ground, f_gnd_sky, df):
+def poa_ground_sky(poa_ground, f_gnd_sky, df, vf_gnd_sky):
     """
     transposed ground reflected diffuse component adjusted for ground
-    illumination, but not accounting for adjacent rows
+    illumination, AND accounting for infinite adjacent rows in both directions
 
     Parameters
     ----------
@@ -499,14 +525,16 @@ def poa_ground_sky(poa_ground, f_gnd_sky, df):
         ground illumination
     df : numeric
         ratio of DHI to GHI
+    vf_gnd_sky : numeric
+        fraction of all sky visible form ground integrated from row to row
 
     Returns
     -------
     poa_gnd_sky : numeric
         adjusted irradiance on modules reflected from ground
     """
-    # FIXME: DHI is reduced by obstruction of panels too
-    return poa_ground * np.where(np.isnan(df), 0.0, f_gnd_sky * (1 - df) + df)
+    gnd_illumination = np.where(np.isnan(df), 0.0, f_gnd_sky * (1 - df) + df)
+    return poa_ground * vf_gnd_sky * gnd_illumination
 
 
 def shade_line(gcr, tilt, tan_phi):
@@ -864,9 +892,9 @@ def poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
     return poa_global_front + poa_global_back * bifaciality * effects
 
 
-def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, tilt, ghi,
-                   dhi, poa_ground, poa_sky_diffuse, poa_direct, iam,
-                   all_output=False):
+def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
+                   tilt, pitch, ghi, dhi, poa_ground, poa_sky_diffuse,
+                   poa_direct, iam, npoints=100, all_output=False):
     """Get irradiance from infinite sheds model."""
     # calculate solar projection
     tan_phi = solar_projection_tangent(
@@ -875,9 +903,11 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, tilt, ghi,
     f_gnd_sky = unshaded_ground_fraction(gcr, tilt, tan_phi)
     # diffuse fraction
     df = diffuse_fraction(ghi, dhi)
+    # view factor from the ground in between infinited central rows of the sky
+    vf_gnd_sky, _ = vf_ground_sky(gcr, height, tilt, pitch, npoints)
     # diffuse from sky reflected from ground accounting from shade from panels
-    # but not considering the fraction of ground blocked by the next row
-    poa_gnd_sky = poa_ground_sky(poa_ground, f_gnd_sky, df)
+    # considering the fraction of ground blocked by infinite adjacent rows
+    poa_gnd_sky = poa_ground_sky(poa_ground, f_gnd_sky, df, vf_gnd_sky)
     # fraction of panel shaded
     f_x = shade_line(gcr, tilt, tan_phi)
     # angles from shadeline to top of next row
@@ -920,8 +950,8 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, tilt, ghi,
 
 
 def get_poa_global_bifacial(solar_zenith, solar_azimuth, system_azimuth, gcr,
-                            tilt, ghi, dhi, dni, dni_extra, am_rel,
-                            iam_b0_front=0.05, iam_b0_back=0.05,
+                            height, tilt, pitch, ghi, dhi, dni, dni_extra,
+                            am_rel, iam_b0_front=0.05, iam_b0_back=0.05,
                             bifaciality=0.8, shade_factor=-0.02,
                             transmission_factor=0, method='haydavies'):
     """Get global bifacial irradiance from infinite sheds model."""
@@ -940,18 +970,18 @@ def get_poa_global_bifacial(solar_zenith, solar_azimuth, system_azimuth, gcr,
         backside_tilt, backside_sysaz, solar_zenith, solar_azimuth,
         dni, ghi, dhi, dni_extra, am_rel, model=method)
     # iam
-    iam_front = pvsystem.ashraeiam(aoi_front, iam_b0_front)
-    iam_back = pvsystem.ashraeiam(aoi_back, iam_b0_back)
+    iam_front = iam.ashrae(aoi_front, iam_b0_front)
+    iam_back = iam.ashrae(aoi_back, iam_b0_back)
     # get front side
     poa_global_front = get_irradiance(
-        solar_zenith, solar_azimuth, system_azimuth, gcr, tilt, ghi, dhi,
-        irrad_front.poa_ground_diffuse, irrad_front.poa_sky_diffuse,
-        irrad_front.poa_direct, iam_front)
+        solar_zenith, solar_azimuth, system_azimuth, gcr, height, tilt, pitch,
+        ghi, dhi, irrad_front['poa_ground_diffuse'],
+        irrad_front['poa_sky_diffuse'], irrad_front['poa_direct'], iam_front)
     # get backside
     poa_global_back = get_irradiance(
-        solar_zenith, solar_azimuth, backside_sysaz, gcr, backside_tilt, ghi,
-        dhi, irrad_back.poa_ground_diffuse, irrad_back.poa_sky_diffuse,
-        irrad_back.poa_direct, iam_back)
+        solar_zenith, solar_azimuth, backside_sysaz, gcr, height,
+        backside_tilt, pitch, ghi, dhi, irrad_back['poa_ground_diffuse'],
+        irrad_back['poa_sky_diffuse'], irrad_back['poa_direct'], iam_back)
     # get bifacial
     poa_glo_bifi = poa_global_bifacial(
         poa_global_front[0], poa_global_back[0], bifaciality, shade_factor,
@@ -967,11 +997,15 @@ def _backside(tilt, system_azimuth):
 
 class InfiniteSheds(object):
     """An infinite sheds model"""
-    def __init__(self, system_azimuth, gcr, tilt, is_bifacial=True,
-                 bifaciality=0.8, shade_factor=-0.02, transmission_factor=0):
+    def __init__(self, system_azimuth, gcr, height, tilt, pitch, npoints=100,
+                 is_bifacial=True, bifaciality=0.8, shade_factor=-0.02,
+                 transmission_factor=0):
         self.system_azimuth = system_azimuth
         self.gcr = gcr
+        self.height = height
         self.tilt = tilt
+        self.pitch = pitch
+        self.npoints = npoints
         self.is_bifacial = is_bifacial
         self.bifaciality = bifaciality
         self.shade_factor = shade_factor
@@ -991,17 +1025,18 @@ class InfiniteSheds(object):
                        poa_sky_diffuse, poa_direct, iam):
         self.front_side = _PVSurface(*get_irradiance(
             solar_zenith, solar_azimuth, self.system_azimuth,
-            self.gcr, self.tilt, ghi, dhi, poa_ground, poa_sky_diffuse,
-            poa_direct, iam, all_output=True))
+            self.gcr, self.height, self.tilt, self.pitch, ghi, dhi, poa_ground,
+            poa_sky_diffuse, poa_direct, iam, npoints=self.npoints,
+            all_output=True))
         self.tan_phi = self.front_side.tan_phi
         self.f_gnd_sky = self.front_side.f_gnd_sky
         self.df = self.front_side.df
         if self.is_bifacial and self.bifaciality > 0:
             self.back_side = _PVSurface(*get_irradiance(
                 solar_zenith, solar_azimuth, self.backside_sysaz,
-                self.gcr, self.backside_tilt, ghi, dhi, poa_ground,
-                poa_sky_diffuse, poa_direct, iam,
-                all_output=True))
+                self.gcr, self.height, self.backside_tilt, self.pitch, ghi,
+                dhi, poa_ground, poa_sky_diffuse, poa_direct, iam,
+                self.npoints, all_output=True))
             self.poa_global_bifacial = poa_global_bifacial(
                 self.front_side.poa_global_pv, self.back_side.poa_global_pv,
                 self.bifaciality, self.shade_factor, self.transmission_factor)

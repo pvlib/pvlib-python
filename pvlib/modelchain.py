@@ -793,6 +793,8 @@ class ModelChain:
     def _infer_ac_model_multi(self, inverter_params):
         if _snl_params(inverter_params):
             return self.sandia_multi_inverter
+        elif _pvwatts_params(inverter_params):
+            return self.pvwatts_multi_inverter
         raise ValueError('could not infer multi-array AC model from '
                          'system.inverter_parameters. Not all ac models '
                          'support systems with mutiple Arrays. '
@@ -803,6 +805,12 @@ class ModelChain:
     def sandia_multi_inverter(self):
         self.results.ac = self.system.sandia_multi(
             _tuple_from_dfs(self.results.dc, 'v_mp'),
+            _tuple_from_dfs(self.results.dc, 'p_mp')
+        )
+        return self
+
+    def pvwatts_multi_inverter(self):
+        self.results.ac = self.system.pvwatts_multi(
             _tuple_from_dfs(self.results.dc, 'p_mp')
         )
         return self

@@ -1171,18 +1171,21 @@ def acdc(mc):
 
 
 @pytest.mark.parametrize('ac_model', ['sandia', 'adr',
-                                      'pvwatts', 'sandia_multi'])
+                                      'pvwatts', 'sandia_multi',
+                                      'pvwatts_multi'])
 def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    pvwatts_dc_pvwatts_ac_system, location, ac_model,
                    weather, mocker):
     ac_systems = {'sandia': sapm_dc_snl_ac_system,
                   'sandia_multi': sapm_dc_snl_ac_system,
                   'adr': cec_dc_adr_ac_system,
-                  'pvwatts': pvwatts_dc_pvwatts_ac_system}
+                  'pvwatts': pvwatts_dc_pvwatts_ac_system,
+                  'pvwatts_multi': pvwatts_dc_pvwatts_ac_system}
     ac_method_name = {'sandia': 'snlinverter',
                       'sandia_multi': 'sandia_multi',
                       'adr': 'adrinverter',
-                      'pvwatts': 'pvwatts_ac'}
+                      'pvwatts': 'pvwatts_ac',
+                      'pvwatts_multi': 'pvwatts_multi'}
     system = ac_systems[ac_model]
 
     mc = ModelChain(system, location, ac_model=ac_model,

@@ -2006,26 +2006,26 @@ def test_PVSystem_pvwatts_ac_kwargs(pvwatts_system_kwargs, mocker):
     assert out < pdc
 
 
-def test_PVSystem_pvwatts_multi(cec_inverter_parameters):
+@pytest.mark.parametrize(
+    'pvwatts_system', [(pvwatts_system_defaults,), (pvwatts_system_kwargs,)]
+)
+def test_PVSystem_pvwatts_multi(pvwatts_system):
     system = pvsystem.PVSystem(
         arrays=[pvsystem.Array(), pvsystem.Array()],
-        inverter=cec_inverter_parameters['Name'],
-        inverter_parameters=cec_inverter_parameters,
+        inverter_parameters=pvwatts_system.inverter_parameters,
     )
-    vdcs = pd.Series(np.linspace(0, 50, 3))
-    idcs = pd.Series(np.linspace(0, 11, 3)) / 2
-    pdcs = idcs * vdcs
-    pacs = system.sandia_multi((vdcs, vdcs), (pdcs, pdcs))
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    pdcs = pd.Series([0., 50., 100.])
+    pacs = system.pvwatts_multi((pdcs, pdcs))
+    assert_series_equal(pacs, pd.Series([0.0, 48.123524, 86.400000]))
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
-        system.sandia_multi(vdcs, (pdcs, pdcs))
+        system.sandia_multi((pdcs,))
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
-        system.sandia_multi(vdcs, (pdcs,))
+        system.sandia_multi(pdcs)
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
-        system.sandia_multi((vdcs, vdcs), (pdcs, pdcs, pdcs))
+        system.sandia_multi((pdcs, pdcs, pdcs))
 
 
 def test_PVSystem_num_arrays():

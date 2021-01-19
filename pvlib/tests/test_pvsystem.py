@@ -1935,15 +1935,6 @@ def test_combine_loss_factors():
 
 @fail_on_pvlib_version('0.9')
 def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
-    # deprecated function pvsystem.snlinverter
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.snlinverter(250, 40, cec_inverter_parameters)
-    # deprecated function pvsystem.adrinverter
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.adrinverter(1232, 154, adr_inverter_parameters)
-    # deprecated function pvsystem.spvwatts_ac
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.pvwatts_ac(90, 100, 0.95)
     # for missing temperature_model_parameters
     match = "Reverting to deprecated default: SAPM cell temperature"
     system = pvsystem.PVSystem()

@@ -2809,15 +2809,3 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
         combined_factor *= (1 - loss)
 
     return 1 - combined_factor
-
-
-snlinverter = deprecated('0.8', alternative='inverter.sandia',
-                         name='snlinverter', removal='0.9')(inverter.sandia)
-
-
-adrinverter = deprecated('0.8', alternative='inverter.adr', name='adrinverter',
-                         removal='0.9')(inverter.adr)
-
-
-pvwatts_ac = deprecated('0.8', alternative='inverter.pvwatts',
-                        name='pvwatts_ac', removal='0.9')(inverter.pvwatts)

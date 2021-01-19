@@ -3,13 +3,11 @@ from numpy import nan
 import pandas as pd
 
 import pytest
-from conftest import assert_frame_equal
 from numpy.testing import assert_allclose
 
 import pvlib
-from pvlib.location import Location
 from pvlib import tracking, pvsystem
-from conftest import DATA_DIR
+from conftest import DATA_DIR, assert_frame_equal
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']
@@ -371,42 +369,6 @@ def test_SingleAxisTracker_tracking():
     assert_frame_equal(expect, tracker_data)
 
 
-def test_LocalizedSingleAxisTracker_creation():
-    localized_system = tracking.LocalizedSingleAxisTracker(latitude=32,
-                                                           longitude=-111,
-                                                           module='blah',
-                                                           inverter='blarg')
-
-    assert localized_system.module == 'blah'
-    assert localized_system.inverter == 'blarg'
-    assert localized_system.latitude == 32
-    assert localized_system.longitude == -111
-
-
-def test_SingleAxisTracker_localize():
-    system = tracking.SingleAxisTracker(max_angle=45, gcr=.25,
-                                        module='blah', inverter='blarg')
-
-    localized_system = system.localize(latitude=32, longitude=-111)
-
-    assert localized_system.module == 'blah'
-    assert localized_system.inverter == 'blarg'
-    assert localized_system.latitude == 32
-    assert localized_system.longitude == -111
-
-
-def test_SingleAxisTracker_localize_location():
-    system = tracking.SingleAxisTracker(max_angle=45, gcr=.25,
-                                        module='blah', inverter='blarg')
-    location = Location(latitude=32, longitude=-111)
-    localized_system = system.localize(location=location)
-
-    assert localized_system.module == 'blah'
-    assert localized_system.inverter == 'blarg'
-    assert localized_system.latitude == 32
-    assert localized_system.longitude == -111
-
-
 # see test_irradiance for more thorough testing
 def test_get_aoi():
     system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
@@ -493,40 +455,6 @@ def test_SingleAxisTracker___repr__():
     modules_per_string: 1
   inverter: blarg"""
     assert system.__repr__() == expected
-
-
-def test_LocalizedSingleAxisTracker___repr__():
-    localized_system = tracking.LocalizedSingleAxisTracker(
-        latitude=32, longitude=-111, module='blah', inverter='blarg',
-        gcr=0.25, temperature_model_parameters={'a': -3.56})
-    # apparently the repr order is different for LocalizedSingleAxisTracker
-    # than for LocalizedPVSystem. maybe a MRO thing.
-    expected = """LocalizedSingleAxisTracker:
-  axis_tilt: 0
-  axis_azimuth: 0
-  max_angle: 90
-  backtrack: True
-  gcr: 0.25
-  cross_axis_tilt: 0.0
-  name: None
-  Array:
-    name: None
-    surface_tilt: None
-    surface_azimuth: None
-    module: blah
-    albedo: 0.25
-    racking_model: None
-    module_type: None
-    temperature_model_parameters: {'a': -3.56}
-    strings: 1
-    modules_per_string: 1
-  inverter: blarg
-  latitude: 32
-  longitude: -111
-  altitude: 0
-  tz: UTC"""
-
-    assert localized_system.__repr__() == expected
 
 
 def test_calc_axis_tilt():

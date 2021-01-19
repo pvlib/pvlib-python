@@ -15,9 +15,6 @@ from pvlib import iam as _iam
 from pvlib import irradiance
 from pvlib.location import Location
 from pvlib import temperature
-from pvlib._deprecation import pvlibDeprecationWarning
-
-from conftest import fail_on_pvlib_version
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -1933,8 +1930,6 @@ def test_combine_loss_factors():
     assert_series_equal(expected, out)
 
 
-@fail_on_pvlib_version('0.9')
-def test_deprecated_09():
-    match = "Arbitrary PVSystem kwargs"
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        system = pvsystem.PVSystem(arbitrary_kwarg='value')
+def test_no_extra_kwargs():
+    with pytest.raises(TypeError, match="arbitrary_kwarg"):
+        pvsystem.PVSystem(arbitrary_kwarg='value')

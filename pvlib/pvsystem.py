@@ -188,8 +188,7 @@ class PVSystem:
                  temperature_model_parameters=None,
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
-                 racking_model=None, losses_parameters=None, name=None,
-                 **kwargs):
+                 racking_model=None, losses_parameters=None, name=None):
 
         if arrays is None:
             self.arrays = (Array(
@@ -220,12 +219,6 @@ class PVSystem:
             self.losses_parameters = losses_parameters
 
         self.name = name
-
-        if kwargs:
-            warnings.warn(
-                'Arbitrary PVSystem kwargs are deprecated and will be '
-                'removed in v0.9', pvlibDeprecationWarning
-            )
 
     def __repr__(self):
         repr = f'PVSystem:\n  name: {self.name}\n  '

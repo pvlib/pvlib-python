@@ -42,10 +42,12 @@ Enhancements
   :py:class:`~pvlib.modelchain.ModelChain`. This includes substantial API
   enhancements for accepting different weather input for each ``Array`` in the
   system. (:pull:`1076`, :issue:`1067`)
-* Support for :py:func:`~pvlib.inverter.sandia_multi` added to
+* Support for :py:func:`~pvlib.inverter.sandia_multi` and
+  :py:func:`~pvlib.inverter.pvwatts_multi` added to
   :py:class:`~pvlib.pvsystem.PVSystem` and
-  :py:class:`~pvlib.modelchain.ModelChain` (as ``ac_model='sandia_multi'``).
-  (:pull:`1076`, :issue:`1067`)
+  :py:class:`~pvlib.modelchain.ModelChain` (as ``ac_model='sandia_multi'``
+  and  ``ac_model='pvwatts_multi'``).
+  (:pull:`1076`, :issue:`1067`, :pull:`1132`, :issue:`1117`)
 * :py:class:`~pvlib.modelchain.ModelChain` 'run_model' methods now
   automatically switch to using ``'effective_irradiance'`` (if available) for
   cell temperature models, when ``'poa_global'`` is not provided in input

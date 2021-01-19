@@ -744,22 +744,11 @@ class ModelChain:
             self._ac_model = self.infer_ac_model()
         elif isinstance(model, str):
             model = model.lower()
-            # TODO in v0.9: remove 'snlinverter', 'adrinverter'
-            if model in ['sandia', 'snlinverter']:
-                if model == 'snlinverter':
-                    warnings.warn("ac_model = 'snlinverter' is deprecated and"
-                                  " will be removed in v0.9; use"
-                                  " ac_model = 'sandia' instead.",
-                                  pvlibDeprecationWarning)
+            if model == 'sandia':
                 self._ac_model = self.snlinverter
             elif model == 'sandia_multi':
                 self._ac_model = self.sandia_multi_inverter
-            elif model in ['adr', 'adrinverter']:
-                if model == 'adrinverter':
-                    warnings.warn("ac_model = 'adrinverter' is deprecated and"
-                                  " will be removed in v0.9; use"
-                                  " ac_model = 'adr' instead.",
-                                  pvlibDeprecationWarning)
+            elif model in 'adr':
                 self._ac_model = self.adrinverter
             elif model == 'pvwatts':
                 self._ac_model = self.pvwatts_inverter

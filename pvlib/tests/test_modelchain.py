@@ -589,10 +589,14 @@ def test_prepare_inputs_missing_irrad_component(
         mc.prepare_inputs(weather)
 
 
+@pytest.mark.parametrize('ac_model', ['sandia', 'pvwatts'])
 @pytest.mark.parametrize("input_type", [tuple, list])
-def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays, location,
-                                  input_type):
-    mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
+def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
+                                  pvwatts_dc_pvwatts_ac_system_arrays,
+                                  location, ac_model, input_type):
+    system = {'sandia': sapm_dc_snl_ac_system_same_arrays,
+              'pvwatts': pvwatts_dc_pvwatts_ac_system_arrays}
+    mc = ModelChain(system[ac_model], location)
     times = pd.date_range('20200101 1200-0700', periods=2, freq='2H')
     weather_one = pd.DataFrame({'dni': [900, 800],
                                 'ghi': [600, 500],

@@ -452,16 +452,15 @@ def test_run_model_from_irradiance_arrays_no_loss_input_type(
     )
 
 
-@pytest.mark.parametrize('inverter', ['adr', 'pvwatts'])
+@pytest.mark.parametrize('inverter', ['adr'])
 def test_ModelChain_invalid_inverter_params_arrays(
         inverter, sapm_dc_snl_ac_system_same_arrays,
         location, adr_inverter_parameters):
-    inverter_params = {'adr': adr_inverter_parameters,
-                       'pvwatts': {'pdc0': 220, 'eta_inv_nom': 0.95}}
+    inverter_params = {'adr': adr_inverter_parameters}
     sapm_dc_snl_ac_system_same_arrays.inverter_parameters = \
         inverter_params[inverter]
     with pytest.raises(ValueError,
-                       match=r'Only sandia_multi supports multiple Arrays\.'):
+                       match=r'Only sandia and pvwatts inverter models\.'):
         ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
 
 

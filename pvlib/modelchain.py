@@ -769,6 +769,8 @@ class ModelChain:
                 self._ac_model = self.adrinverter
             elif model == 'pvwatts':
                 self._ac_model = self.pvwatts_inverter
+            elif model == 'pvwatts_multi':
+                self._ac_model = self.pvwatts_multi_inverter
             else:
                 raise ValueError(model + ' is not a valid AC power model')
         else:
@@ -796,9 +798,8 @@ class ModelChain:
         elif _pvwatts_params(inverter_params):
             return self.pvwatts_multi_inverter
         raise ValueError('could not infer multi-array AC model from '
-                         'system.inverter_parameters. Not all ac models '
-                         'support systems with mutiple Arrays. '
-                         'Only sandia_multi supports multiple '
+                         'system.inverter_parameters. Only sandia and pvwatts '
+                         'inverter models support multiple '
                          'Arrays. Check system.inverter_parameters or '
                          'explicitly set the model with the ac_model kwarg.')
 

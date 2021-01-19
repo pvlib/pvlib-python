@@ -377,7 +377,7 @@ class ModelChain:
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temperature_model=None,
-                 losses_model='no_loss', name=None, **kwargs):
+                 losses_model='no_loss', name=None):
 
         self.name = name
         self.system = system
@@ -402,12 +402,6 @@ class ModelChain:
         self.times = None
 
         self.results = ModelChainResult()
-
-        if kwargs:
-            warnings.warn(
-                'Arbitrary ModelChain kwargs are deprecated and will be '
-                'removed in v0.9', pvlibDeprecationWarning
-            )
 
     def __getattr__(self, key):
         if key in ModelChain._deprecated_attrs:

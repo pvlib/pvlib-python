@@ -1447,10 +1447,8 @@ def test_deprecated_09(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    aoi_model='no_loss', spectral_model='no_loss')
 
 
-@fail_on_pvlib_version('0.9')
-def test_ModelChain_kwargs_deprecated_09(sapm_dc_snl_ac_system, location):
-    match = "Arbitrary ModelChain kwargs"
-    with pytest.warns(pvlibDeprecationWarning, match=match):
+def test_ModelChain_no_extra_kwargs(sapm_dc_snl_ac_system, location):
+    with pytest.raises(TypeError, match="arbitrary_kwarg"):
         ModelChain(sapm_dc_snl_ac_system, location, arbitrary_kwarg='value')
 
 

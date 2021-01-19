@@ -1138,16 +1138,6 @@ def test_infer_temp_model_invalid(location, sapm_dc_snl_ac_system):
                    spectral_model='no_loss')
 
 
-# ModelChain.infer_temperature_model. remove or statement in v0.9
-@fail_on_pvlib_version('0.9')
-def test_infer_temp_model_no_params(location, system_no_temp, weather):
-    mc = ModelChain(system_no_temp, location, aoi_model='physical',
-                    spectral_model='no_loss')
-    match = "Reverting to deprecated default: SAPM cell temperature"
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        mc.run_model(weather)
-
-
 def test_temperature_model_inconsistent(location, sapm_dc_snl_ac_system):
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location,

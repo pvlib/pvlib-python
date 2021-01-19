@@ -1934,12 +1934,7 @@ def test_combine_loss_factors():
 
 
 @fail_on_pvlib_version('0.9')
-def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
-    # for missing temperature_model_parameters
-    match = "Reverting to deprecated default: SAPM cell temperature"
-    system = pvsystem.PVSystem()
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        system.sapm_celltemp(1, 2, 3)
+def test_deprecated_09():
     match = "Arbitrary PVSystem kwargs"
     with pytest.warns(pvlibDeprecationWarning, match=match):
         system = pvsystem.PVSystem(arbitrary_kwarg='value')

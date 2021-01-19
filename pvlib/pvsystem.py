@@ -564,21 +564,6 @@ class PVSystem:
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
-        for array in self.arrays:
-            # warn user about change in default behavior in 0.9.
-            if (array.temperature_model_parameters == {} and array.module_type
-                    is None and array.racking_model is None):
-                warnings.warn(
-                    'temperature_model_parameters, racking_model, and '
-                    'module_type are not specified. Reverting to deprecated '
-                    'default: SAPM cell temperature model parameters for a '
-                    'glass/glass module in open racking. In v0.9, '
-                    'temperature_model_parameters or a valid combination of '
-                    'racking_model and module_type will be required.',
-                    pvlibDeprecationWarning)
-                params = temperature._temperature_model_params(
-                    'sapm', 'open_rack_glass_glass')
-                array.temperature_model_parameters = params
 
         build_kwargs = functools.partial(_build_kwargs, ['a', 'b', 'deltaT'])
         return tuple(

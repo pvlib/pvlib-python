@@ -167,6 +167,26 @@ def pvwatts_dc_pvwatts_ac_system(sapm_temperature_cs5p_220m):
 
 
 @pytest.fixture(scope="function")
+def pvwatts_dc_pvwatts_ac_system_arrays(sapm_temperature_cs5p_220m):
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_params = sapm_temperature_cs5p_220m.copy()
+    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
+    array_one = pvsystem.Array(
+        surface_tilt=32.2, surface_azimuth=180,
+        module_parameters=module_parameters.copy(),
+        temperature_model_parameters=temp_model_params.copy()
+    )
+    array_two = pvsystem.Array(
+        surface_tilt=42.2, surface_azimuth=220,
+        module_parameters=module_parameters.copy(),
+        temperature_model_parameters=temp_model_params.copy()
+    )
+    system = PVSystem(
+        arrays=[array_one, array_two], inverter_parameters=inverter_parameters)
+    return system
+
+
+@pytest.fixture(scope="function")
 def pvwatts_dc_pvwatts_ac_faiman_temp_system():
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     temp_model_params = {'u0': 25.0, 'u1': 6.84}
@@ -460,7 +480,7 @@ def test_ModelChain_invalid_inverter_params_arrays(
     sapm_dc_snl_ac_system_same_arrays.inverter_parameters = \
         inverter_params[inverter]
     with pytest.raises(ValueError,
-                       match=r'Only sandia and pvwatts inverter models\.'):
+                       match=r'Only sandia and pvwatts inverter models'):
         ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
 
 

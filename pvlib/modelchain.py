@@ -811,9 +811,7 @@ class ModelChain:
         return self
 
     def pvwatts_multi_inverter(self):
-        self.results.ac = self.system.pvwatts_multi(
-            _tuple_from_dfs(self.results.dc, 'p_mp')
-        )
+        self.results.ac = self.system.pvwatts_multi(self.results.dc)
         return self
 
     def snlinverter(self):

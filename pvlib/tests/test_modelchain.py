@@ -596,7 +596,8 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                                   location, ac_model, input_type):
     system = {'sandia': sapm_dc_snl_ac_system_same_arrays,
               'pvwatts': pvwatts_dc_pvwatts_ac_system_arrays}
-    mc = ModelChain(system[ac_model], location)
+    mc = ModelChain(system[ac_model], location, aoi_model='no_loss',
+                    spectral_model='no_loss')
     times = pd.date_range('20200101 1200-0700', periods=2, freq='2H')
     weather_one = pd.DataFrame({'dni': [900, 800],
                                 'ghi': [600, 500],

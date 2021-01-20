@@ -11,8 +11,6 @@ import pandas as pd
 import pytz
 
 from pvlib import solarposition, clearsky, atmosphere, irradiance
-from pvlib._deprecation import pvlibDeprecationWarning
-
 
 class Location:
     """
@@ -55,8 +53,7 @@ class Location:
     pvlib.pvsystem.PVSystem
     """
 
-    def __init__(self, latitude, longitude, tz='UTC', altitude=0,
-                 name=None, **kwargs):
+    def __init__(self, latitude, longitude, tz='UTC', altitude=0, name=None):
 
         self.latitude = latitude
         self.longitude = longitude
@@ -79,12 +76,6 @@ class Location:
         self.altitude = altitude
 
         self.name = name
-
-        if kwargs:
-            warnings.warn(
-                'Arbitrary Location kwargs are deprecated and will be '
-                'removed in v0.9', pvlibDeprecationWarning
-            )
 
     def __repr__(self):
         attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz']

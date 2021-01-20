@@ -1162,16 +1162,6 @@ def test_infer_temp_model_invalid(location, sapm_dc_snl_ac_system):
                    spectral_model='no_loss')
 
 
-# ModelChain.infer_temperature_model. remove or statement in v0.9
-@fail_on_pvlib_version('0.9')
-def test_infer_temp_model_no_params(location, system_no_temp, weather):
-    mc = ModelChain(system_no_temp, location, aoi_model='physical',
-                    spectral_model='no_loss')
-    match = "Reverting to deprecated default: SAPM cell temperature"
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        mc.run_model(weather)
-
-
 def test_temperature_model_inconsistent(location, sapm_dc_snl_ac_system):
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location,
@@ -1220,20 +1210,6 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
     assert mc.results.ac[1] < 1
-
-
-# TODO in v0.9: remove this test for a deprecation warning
-@pytest.mark.parametrize('ac_model', ['snlinverter', 'adrinverter'])
-def test_ac_models_deprecated(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
-                              location, ac_model, weather):
-    ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
-                  'adrinverter': cec_dc_adr_ac_system}
-    system = ac_systems[ac_model]
-    warn_txt = "ac_model = '" + ac_model + "' is deprecated and will be" +\
-               " removed in v0.9"
-    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
-        ModelChain(system, location, ac_model=ac_model,
-                   aoi_model='no_loss', spectral_model='no_loss')
 
 
 def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -1468,26 +1444,8 @@ def test_with_sapm_pvsystem_arrays(sapm_dc_snl_ac_system_Array, location,
     assert mc.results
 
 
-@fail_on_pvlib_version('0.9')
-@pytest.mark.parametrize('ac_model', ['snlinverter', 'adrinverter'])
-def test_deprecated_09(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
-                       location, ac_model, weather):
-    # ModelChain.ac_model = 'snlinverter' or 'adrinverter' deprecated in v0.8,
-    # removed in v0.9
-    ac_systems = {'snlinverter': sapm_dc_snl_ac_system,
-                  'adrinverter': cec_dc_adr_ac_system}
-    system = ac_systems[ac_model]
-    warn_txt = "ac_model = '" + ac_model + "' is deprecated and will be" +\
-               " removed in v0.9"
-    with pytest.warns(pvlibDeprecationWarning, match=warn_txt):
-        ModelChain(system, location, ac_model=ac_model,
-                   aoi_model='no_loss', spectral_model='no_loss')
-
-
-@fail_on_pvlib_version('0.9')
-def test_ModelChain_kwargs_deprecated_09(sapm_dc_snl_ac_system, location):
-    match = "Arbitrary ModelChain kwargs"
-    with pytest.warns(pvlibDeprecationWarning, match=match):
+def test_ModelChain_no_extra_kwargs(sapm_dc_snl_ac_system, location):
+    with pytest.raises(TypeError, match="arbitrary_kwarg"):
         ModelChain(sapm_dc_snl_ac_system, location, arbitrary_kwarg='value')
 
 

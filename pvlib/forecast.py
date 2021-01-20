@@ -15,7 +15,6 @@ from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
 import warnings
-from pvlib._deprecation import deprecated
 
 
 warnings.warn(
@@ -562,48 +561,6 @@ class ForecastModel:
 
         return irrads
 
-    @deprecated(
-        '0.8',
-        alternative='Forecast.cloud_cover_to_irradiance_campbell_norman',
-        name='Forecast.cloud_cover_to_irradiance_liujordan',
-        removal='0.9')
-    def cloud_cover_to_irradiance_liujordan(self, cloud_cover, **kwargs):
-        """
-        Deprecated. Use cloud_cover_to_irradiance_campbell_norman instead.
-
-        Estimates irradiance from cloud cover in the following steps:
-
-        1. Determine transmittance using a function of cloud cover e.g.
-           :py:meth:`~ForecastModel.cloud_cover_to_transmittance_linear`
-        2. Calculate GHI, DNI, DHI using the
-           :py:func:`pvlib.irradiance.liujordan` model
-
-        Parameters
-        ----------
-        cloud_cover : Series
-
-        Returns
-        -------
-        irradiance : DataFrame
-            Columns include ghi, dni, dhi
-        """
-        # in principle, get_solarposition could use the forecast
-        # pressure, temp, etc., but the cloud cover forecast is not
-        # accurate enough to justify using these minor corrections
-        solar_position = self.location.get_solarposition(cloud_cover.index)
-        dni_extra = get_extra_radiation(cloud_cover.index)
-        airmass = self.location.get_airmass(cloud_cover.index)
-
-        transmittance = self.cloud_cover_to_transmittance_linear(cloud_cover,
-                                                                 **kwargs)
-
-        irrads = _liujordan(solar_position['apparent_zenith'],
-                            transmittance, airmass['airmass_absolute'],
-                            dni_extra=dni_extra)
-        irrads = irrads.fillna(0)
-
-        return irrads
-
     def cloud_cover_to_irradiance(self, cloud_cover, how='clearsky_scaling',
                                   **kwargs):
         """
@@ -631,9 +588,6 @@ class ForecastModel:
                 cloud_cover, **kwargs)
         elif how == 'campbell_norman':
             irrads = self.cloud_cover_to_irradiance_campbell_norman(
-                cloud_cover, **kwargs)
-        elif how == 'liujordan':
-            irrads = self.cloud_cover_to_irradiance_liujordan(
                 cloud_cover, **kwargs)
         else:
             raise ValueError('invalid how argument')

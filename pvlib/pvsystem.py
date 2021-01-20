@@ -17,7 +17,6 @@ from pvlib._deprecation import deprecated
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
 from pvlib.tools import _build_kwargs
-from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
 
@@ -44,28 +43,6 @@ _DC_MODEL_PARAMS = {
         'R_sh_ref', 'R_s'},
     'pvwatts': {'pdc0', 'gamma_pdc'}
 }
-
-
-def _combine_localized_attributes(pvsystem=None, location=None, **kwargs):
-    """
-    Get and combine attributes from the pvsystem and/or location
-    with the rest of the kwargs.
-    """
-    if pvsystem is not None:
-        pv_dict = pvsystem.__dict__
-        pv_dict = {**pv_dict, **pv_dict['arrays'][0].__dict__}
-    else:
-        pv_dict = {}
-
-    if location is not None:
-        loc_dict = location.__dict__
-    else:
-        loc_dict = {}
-
-    new_kwargs = dict(
-        list(pv_dict.items()) + list(loc_dict.items()) + list(kwargs.items())
-    )
-    return new_kwargs
 
 
 def _unwrap_single_value(func):
@@ -211,8 +188,7 @@ class PVSystem:
                  temperature_model_parameters=None,
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
-                 racking_model=None, losses_parameters=None, name=None,
-                 **kwargs):
+                 racking_model=None, losses_parameters=None, name=None):
 
         if arrays is None:
             self.arrays = (Array(
@@ -243,12 +219,6 @@ class PVSystem:
             self.losses_parameters = losses_parameters
 
         self.name = name
-
-        if kwargs:
-            warnings.warn(
-                'Arbitrary PVSystem kwargs are deprecated and will be '
-                'removed in v0.9', pvlibDeprecationWarning
-            )
 
     def __repr__(self):
         repr = f'PVSystem:\n  name: {self.name}\n  '
@@ -587,21 +557,6 @@ class PVSystem:
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
-        for array in self.arrays:
-            # warn user about change in default behavior in 0.9.
-            if (array.temperature_model_parameters == {} and array.module_type
-                    is None and array.racking_model is None):
-                warnings.warn(
-                    'temperature_model_parameters, racking_model, and '
-                    'module_type are not specified. Reverting to deprecated '
-                    'default: SAPM cell temperature model parameters for a '
-                    'glass/glass module in open racking. In v0.9, '
-                    'temperature_model_parameters or a valid combination of '
-                    'racking_model and module_type will be required.',
-                    pvlibDeprecationWarning)
-                params = temperature._temperature_model_params(
-                    'sapm', 'open_rack_glass_glass')
-                array.temperature_model_parameters = params
 
         build_kwargs = functools.partial(_build_kwargs, ['a', 'b', 'deltaT'])
         return tuple(
@@ -1015,32 +970,6 @@ class PVSystem:
         return inverter.pvwatts_multi(p_dc, self.inverter_parameters['pdc0'],
                                       **kwargs)
 
-    @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
-                name='PVSystem.localize', removal='0.9')
-    def localize(self, location=None, latitude=None, longitude=None,
-                 **kwargs):
-        """
-        Creates a LocalizedPVSystem object using this object
-        and location data. Must supply either location object or
-        latitude, longitude, and any location kwargs
-
-        Parameters
-        ----------
-        location : None or Location, default None
-        latitude : None or float, default None
-        longitude : None or float, default None
-        **kwargs : see Location
-
-        Returns
-        -------
-        localized_system : LocalizedPVSystem
-        """
-
-        if location is None:
-            location = Location(latitude, longitude, **kwargs)
-
-        return LocalizedPVSystem(pvsystem=self, location=location)
-
     @property
     @_unwrap_single_value
     def module_parameters(self):
@@ -1116,39 +1045,6 @@ class PVSystem:
     def num_arrays(self):
         """The number of Arrays in the system."""
         return len(self.arrays)
-
-
-@deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
-            name='LocalizedPVSystem', removal='0.9')
-class LocalizedPVSystem(PVSystem, Location):
-    """
-    The LocalizedPVSystem class defines a standard set of installed PV
-    system attributes and modeling functions. This class combines the
-    attributes and methods of the PVSystem and Location classes.
-
-    The LocalizedPVSystem may have bugs due to the difficulty of
-    robustly implementing multiple inheritance. See
-    :py:class:`~pvlib.modelchain.ModelChain` for an alternative paradigm
-    for modeling PV systems at specific locations.
-    """
-    def __init__(self, pvsystem=None, location=None, **kwargs):
-
-        new_kwargs = _combine_localized_attributes(
-            pvsystem=pvsystem,
-            location=location,
-            **kwargs,
-        )
-
-        PVSystem.__init__(self, **new_kwargs)
-        Location.__init__(self, **new_kwargs)
-
-    def __repr__(self):
-        attrs = ['name', 'latitude', 'longitude', 'altitude', 'tz',
-                 'surface_tilt', 'surface_azimuth', 'module', 'inverter',
-                 'albedo', 'racking_model', 'module_type',
-                 'temperature_model_parameters']
-        return ('LocalizedPVSystem:\n  ' + '\n  '.join(
-            f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
 
 class Array:
@@ -2906,15 +2802,3 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
         combined_factor *= (1 - loss)
 
     return 1 - combined_factor
-
-
-snlinverter = deprecated('0.8', alternative='inverter.sandia',
-                         name='snlinverter', removal='0.9')(inverter.sandia)
-
-
-adrinverter = deprecated('0.8', alternative='inverter.adr', name='adrinverter',
-                         removal='0.9')(inverter.adr)
-
-
-pvwatts_ac = deprecated('0.8', alternative='inverter.pvwatts',
-                        name='pvwatts_ac', removal='0.9')(inverter.pvwatts)

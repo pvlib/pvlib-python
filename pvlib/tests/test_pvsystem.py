@@ -15,9 +15,6 @@ from pvlib import iam as _iam
 from pvlib import irradiance
 from pvlib.location import Location
 from pvlib import temperature
-from pvlib._deprecation import pvlibDeprecationWarning
-
-from conftest import fail_on_pvlib_version
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -1663,31 +1660,6 @@ def test_PVSystem_strings_per_inverter():
     assert system.strings_per_inverter == 5
 
 
-@fail_on_pvlib_version('0.9')
-def test_PVSystem_localize_with_location():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg')
-    location = Location(latitude=32, longitude=-111)
-    with pytest.warns(pvlibDeprecationWarning):
-        localized_system = system.localize(location=location)
-
-    assert localized_system.module == 'blah'
-    assert localized_system.inverter == 'blarg'
-    assert localized_system.latitude == 32
-    assert localized_system.longitude == -111
-
-
-@fail_on_pvlib_version('0.9')
-def test_PVSystem_localize_with_latlon():
-    system = pvsystem.PVSystem(module='blah', inverter='blarg')
-    with pytest.warns(pvlibDeprecationWarning):
-        localized_system = system.localize(latitude=32, longitude=-111)
-
-    assert localized_system.module == 'blah'
-    assert localized_system.inverter == 'blarg'
-    assert localized_system.latitude == 32
-    assert localized_system.longitude == -111
-
-
 def test_PVSystem___repr__():
     system = pvsystem.PVSystem(
         module='blah', inverter='blarg', name='pv ftw',
@@ -1745,32 +1717,6 @@ def test_PVSystem_multi_array___repr__():
     assert expected == system.__repr__()
 
 
-@fail_on_pvlib_version('0.9')
-def test_PVSystem_localize___repr__():
-    system = pvsystem.PVSystem(
-        module='blah', inverter='blarg', name='pv ftw',
-        temperature_model_parameters={'a': -3.56})
-    with pytest.warns(pvlibDeprecationWarning):
-        localized_system = system.localize(latitude=32, longitude=-111)
-    # apparently name is not preserved when creating a system using localize
-    expected = """LocalizedPVSystem:
-  name: None
-  latitude: 32
-  longitude: -111
-  altitude: 0
-  tz: UTC
-  surface_tilt: 0
-  surface_azimuth: 180
-  module: blah
-  inverter: blarg
-  albedo: 0.25
-  racking_model: None
-  module_type: None
-  temperature_model_parameters: {'a': -3.56}"""
-
-    assert localized_system.__repr__() == expected
-
-
 def test_Array___repr__():
     array = pvsystem.Array(
         surface_tilt=10, surface_azimuth=100,
@@ -1794,49 +1740,6 @@ def test_Array___repr__():
   strings: 10
   modules_per_string: 100"""
     assert array.__repr__() == expected
-
-
-# we could retest each of the models tested above
-# when they are attached to LocalizedPVSystem, but
-# that's probably not necessary at this point.
-
-@fail_on_pvlib_version('0.9')
-def test_LocalizedPVSystem_creation():
-    with pytest.warns(pvlibDeprecationWarning):
-        localized_system = pvsystem.LocalizedPVSystem(latitude=32,
-                                                      longitude=-111,
-                                                      module='blah',
-                                                      inverter='blarg')
-
-    assert localized_system.module == 'blah'
-    assert localized_system.inverter == 'blarg'
-    assert localized_system.latitude == 32
-    assert localized_system.longitude == -111
-
-
-@fail_on_pvlib_version('0.9')
-def test_LocalizedPVSystem___repr__():
-    with pytest.warns(pvlibDeprecationWarning):
-        localized_system = pvsystem.LocalizedPVSystem(
-            latitude=32, longitude=-111, module='blah', inverter='blarg',
-            name='my name', temperature_model_parameters={'a': -3.56})
-
-    expected = """LocalizedPVSystem:
-  name: my name
-  latitude: 32
-  longitude: -111
-  altitude: 0
-  tz: UTC
-  surface_tilt: 0
-  surface_azimuth: 180
-  module: blah
-  inverter: blarg
-  albedo: 0.25
-  racking_model: None
-  module_type: None
-  temperature_model_parameters: {'a': -3.56}"""
-
-    assert localized_system.__repr__() == expected
 
 
 def test_pvwatts_dc_scalars():
@@ -2049,22 +1952,6 @@ def test_combine_loss_factors():
     assert_series_equal(expected, out)
 
 
-@fail_on_pvlib_version('0.9')
-def test_deprecated_09(cec_inverter_parameters, adr_inverter_parameters):
-    # deprecated function pvsystem.snlinverter
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.snlinverter(250, 40, cec_inverter_parameters)
-    # deprecated function pvsystem.adrinverter
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.adrinverter(1232, 154, adr_inverter_parameters)
-    # deprecated function pvsystem.spvwatts_ac
-    with pytest.warns(pvlibDeprecationWarning):
-        pvsystem.pvwatts_ac(90, 100, 0.95)
-    # for missing temperature_model_parameters
-    match = "Reverting to deprecated default: SAPM cell temperature"
-    system = pvsystem.PVSystem()
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        system.sapm_celltemp(1, 2, 3)
-    match = "Arbitrary PVSystem kwargs"
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        system = pvsystem.PVSystem(arbitrary_kwarg='value')
+def test_no_extra_kwargs():
+    with pytest.raises(TypeError, match="arbitrary_kwarg"):
+        pvsystem.PVSystem(arbitrary_kwarg='value')

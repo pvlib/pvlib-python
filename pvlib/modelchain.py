@@ -730,8 +730,27 @@ class ModelChain:
         return self._singlediode(self.system.calcparams_pvsyst)
 
     def pvwatts_dc(self):
+        """Calculate DC power using the PVWatts model.
+
+        Results are stored in ModelChain.results.dc. DC power is computed
+        from PVSystem.module_parameters['pdc0'] and then scaled by
+        PVSystem.modules_per_string and PVSystem.strings_per_inverter.
+
+        Returns
+        -------
+        self
+
+        See also
+        --------
+        pvlib.pvsystem.PVSystem.pvwatts_dc
+        pvlib.pvsystem.PVSystem.scale_voltage_current_power
+        """
         self.results.dc = self.system.pvwatts_dc(
             self.results.effective_irradiance, self.results.cell_temperature)
+        self.results.dc = self.system.scale_voltage_current_power(
+            self.results.dc,
+            unwrap=False
+        )
         return self
 
     @property

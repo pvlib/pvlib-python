@@ -1180,6 +1180,23 @@ def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
     assert not mc.results.ac.empty
 
 
+def test_pvwatts_dc_multiple_strings(pvwatts_dc_pvwatts_ac_system, location,
+                                     weather, mocker):
+    system = pvwatts_dc_pvwatts_ac_system.copy()
+    system.modules_per_string = 2
+    m = mocker.spy(system, 'scale_voltage_current_power')
+    mc1 = ModelChain(pvwatts_dc_pvwatts_ac_system, location,
+                     aoi_model='no_loss', spectral_model='no_loss')
+    mc1.run_model(weather)
+    mc2 = ModelChain(system, location,
+                     aoi_model='no_loss', spectral_model='no_loss')
+    mc2.run_model(weather)
+    assert m.call_count == 1
+    assert isinstance(mc2.results.ac, (pd.Series, pd.DataFrame))
+    assert not mc2.results.ac.empty
+    assert np.isclose(mc2.results.dc / mc1.results.dc, 2.0)
+
+
 def acdc(mc):
     mc.results.ac = mc.results.dc
 

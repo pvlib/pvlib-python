@@ -2626,14 +2626,15 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
 def scale_voltage_current_power(data, voltage=1, current=1):
     """
-    Scales the voltage, current, and power of the DataFrames
-    returned by :py:func:`singlediode` and :py:func:`sapm`.
+    Scales the voltage, current, and power in data by the voltage
+    and current factors.
 
     Parameters
     ----------
-    data: DataFrame
-        Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
-        'i_sc', 'p_mp'`.
+    data: DataFrame or Series
+        May contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
+        'i_sc', 'p_mp'`. If Series, the content must be indicated using
+        one of these keys as the Series name.
     voltage: numeric, default 1
         The amount by which to multiply the voltages.
     current: numeric, default 1
@@ -2641,20 +2642,31 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
     Returns
     -------
-    scaled_data: DataFrame
+    scaled_data: DataFrame or Series
         A scaled copy of the input data.
         `'p_mp'` is scaled by `voltage * current`.
     """
 
     # as written, only works with a DataFrame
     # could make it work with a dict, but it would be more verbose
+    voltage_keys = ['v_mp', 'v_oc']
+    current_keys = ['i_mp', 'i_x', 'i_xx', 'i_sc']
+    power_keys = ['p_mp']
     data = data.copy()
-    voltages = ['v_mp', 'v_oc']
-    currents = ['i_mp', 'i_x', 'i_xx', 'i_sc']
-    data[voltages] *= voltage
-    data[currents] *= current
-    data['p_mp'] *= voltage * current
-
+    if isinstance(data, pd.DataFrame):
+        voltages = voltage_keys and data.columns
+        currents = current_keys and data.columns
+        powers = power_keys and data.columns
+        data[voltages] *= voltage
+        data[currents] *= current
+        data[powers] *= voltage * current
+    else:
+        if data.name in voltage_keys:
+            data *= voltage
+        elif data.name in current_keys:
+            data *= current
+        elif data.name in power_keys:
+            data *= voltage * current
     return data
 
 

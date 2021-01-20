@@ -1000,6 +1000,21 @@ class PVSystem:
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
 
+    def pvwatts_multi(self, p_dc):
+        """Uses :py:func:`pvlib.inverter.pvwatts_multi` to calculate AC power
+        based on ``self.inverter_parameters`` and the input voltage and power.
+
+        The parameter `p_dc` must be a tuple with length equal to
+        ``self.num_arrays`` if the system has more than one array.
+
+        See :py:func:`pvlib.inverter.pvwatts_multi` for details.
+        """
+        p_dc = self._validate_per_array(p_dc)
+        kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
+                               self.inverter_parameters)
+        return inverter.pvwatts_multi(p_dc, self.inverter_parameters['pdc0'],
+                                      **kwargs)
+
     @deprecated('0.8', alternative='PVSystem, Location, and ModelChain',
                 name='PVSystem.localize', removal='0.9')
     def localize(self, location=None, latitude=None, longitude=None,

@@ -41,7 +41,8 @@ Deprecations
 ~~~~~~~~~~~~
 * The following ``ModelChain`` attributes are deprecated. They have been moved
   to the :py:class:`~pvlib.modelchain.ModelChainResult` class that is
-  accessible via ``ModelChain.results``
+  accessible via ``ModelChain.results``:
+
   * ``ModelChain.ac``
   * ``ModelChain.airmass``
   * ``ModelChain.aoi``

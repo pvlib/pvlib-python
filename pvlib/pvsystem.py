@@ -891,7 +891,7 @@ class PVSystem:
         Parameters
         ----------
         data: DataFrame or tuple of DataFrame
-            Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
+            May contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
             'i_sc', 'p_mp'`.
 
         Returns
@@ -2631,10 +2631,9 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
     Parameters
     ----------
-    data: DataFrame or Series
+    data: DataFrame
         May contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
-        'i_sc', 'p_mp'`. If Series, the content must be indicated using
-        one of these keys as the Series name.
+        'i_sc', 'p_mp'`.
     voltage: numeric, default 1
         The amount by which to multiply the voltages.
     current: numeric, default 1
@@ -2642,7 +2641,7 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
     Returns
     -------
-    scaled_data: DataFrame or Series
+    scaled_data: DataFrame
         A scaled copy of the input data.
         `'p_mp'` is scaled by `voltage * current`.
     """
@@ -2653,20 +2652,12 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     current_keys = ['i_mp', 'i_x', 'i_xx', 'i_sc']
     power_keys = ['p_mp']
     data = data.copy()
-    if isinstance(data, pd.DataFrame):
-        voltages = voltage_keys and data.columns
-        currents = current_keys and data.columns
-        powers = power_keys and data.columns
-        data[voltages] *= voltage
-        data[currents] *= current
-        data[powers] *= voltage * current
-    else:
-        if data.name in voltage_keys:
-            data *= voltage
-        elif data.name in current_keys:
-            data *= current
-        elif data.name in power_keys:
-            data *= voltage * current
+    voltages = voltage_keys and data.columns
+    currents = current_keys and data.columns
+    powers = power_keys and data.columns
+    data[voltages] *= voltage
+    data[currents] *= current
+    data[powers] *= voltage * current
     return data
 
 

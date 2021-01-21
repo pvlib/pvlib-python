@@ -747,10 +747,19 @@ class ModelChain:
         """
         self.results.dc = self.system.pvwatts_dc(
             self.results.effective_irradiance, self.results.cell_temperature)
-        self.results.dc = self.system.scale_voltage_current_power(
-            self.results.dc,
+        if isinstance(self.results.dc, tuple):
+            temp = tuple(
+                pd.DataFrame(s, columns=['p_mp']) for s in self.results.dc)
+        else:
+            temp = pd.DataFrame(self.results.dc, columns=['p_mp'])
+        scaled = self.system.scale_voltage_current_power(
+            temp,
             unwrap=False
         )
+        if isinstance(scaled, tuple):
+            self.results.dc = tuple(pd.Series(s) for s in scaled)
+        else:
+            self.results.dc = pd.Series(scaled)
         return self
 
     @property

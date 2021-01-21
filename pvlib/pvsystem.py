@@ -2651,11 +2651,10 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     voltage_keys = ['v_mp', 'v_oc']
     current_keys = ['i_mp', 'i_x', 'i_xx', 'i_sc']
     power_keys = ['p_mp']
-    data = data.copy()
-    data.filter(voltage_keys, axis=1) * voltage
-    data.filter(current_keys, axis=1) * current
-    data.filter(power_keys, axis=1) * voltage * current
-    return data
+    voltage_df = data.filter(voltage_keys, axis=1) * voltage
+    current_df = data.filter(current_keys, axis=1) * current
+    power_df = data.filter(power_keys, axis=1) * voltage * current
+    return pd.concat([voltage_df, current_df, power_df], axis=1)
 
 
 def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):

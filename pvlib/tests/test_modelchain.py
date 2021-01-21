@@ -1188,13 +1188,13 @@ def test_pvwatts_dc_multiple_strings(pvwatts_dc_pvwatts_ac_system, location,
                      aoi_model='no_loss', spectral_model='no_loss')
     mc1.run_model(weather)
     assert m.call_count == 1
-    system.modules_per_string = 2
+    system.arrays[0].modules_per_string = 2
     mc2 = ModelChain(system, location,
                      aoi_model='no_loss', spectral_model='no_loss')
     mc2.run_model(weather)
     assert isinstance(mc2.results.ac, (pd.Series, pd.DataFrame))
     assert not mc2.results.ac.empty
-    assert np.isclose(mc2.results.dc / mc1.results.dc, 2.0)
+    assert np.all(np.isclose(mc2.results.dc / mc1.results.dc, 2.0))
 
 
 def acdc(mc):

@@ -84,8 +84,8 @@ Enhancements
   cell temperature models, when ``'poa_global'`` is not provided in input
   weather or calculated from input weather data.
 * :py:meth:`~pvlib.modelchain.ModelChain.pvwatts_dc` now scales the DC power
-  by `pvsystem.PVSystem.modules_per_strings` and
-  `pvsystem.PVSystem.strings_per_inverter`. Note that both attributes still
+  by ``pvsystem.PVSystem.modules_per_strings`` and
+  ``pvsystem.PVSystem.strings_per_inverter``. Note that both attributes still
   default to 1. (:pull:`1138`)
 
 Bug fixes

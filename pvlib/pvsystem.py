@@ -2654,7 +2654,9 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     voltage_df = data.filter(voltage_keys, axis=1) * voltage
     current_df = data.filter(current_keys, axis=1) * current
     power_df = data.filter(power_keys, axis=1) * voltage * current
-    return pd.concat([voltage_df, current_df, power_df], axis=1)
+    df = pd.concat([voltage_df, current_df, power_df], axis=1)
+    df_sorted = df[data.columns]  # retain original column order
+    return df_sorted
 
 
 def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):

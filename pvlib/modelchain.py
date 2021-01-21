@@ -752,14 +752,11 @@ class ModelChain:
                 pd.DataFrame(s, columns=['p_mp']) for s in self.results.dc)
         else:
             temp = pd.DataFrame(self.results.dc, columns=['p_mp'])
-        scaled = self.system.scale_voltage_current_power(
-            temp,
-            unwrap=False
-        )
+        scaled = self.system.scale_voltage_current_power(temp)
         if isinstance(scaled, tuple):
-            self.results.dc = tuple(pd.Series(s) for s in scaled)
+            self.results.dc = tuple(s['p_mp'] for s in scaled)
         else:
-            self.results.dc = pd.Series(scaled)
+            self.results.dc = scaled['p_mp']
         return self
 
     @property

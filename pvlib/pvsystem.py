@@ -2652,12 +2652,9 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     current_keys = ['i_mp', 'i_x', 'i_xx', 'i_sc']
     power_keys = ['p_mp']
     data = data.copy()
-    voltages = voltage_keys and data.columns
-    currents = current_keys and data.columns
-    powers = power_keys and data.columns
-    data[voltages] *= voltage
-    data[currents] *= current
-    data[powers] *= voltage * current
+    data.filter(voltage_keys, axis=1) * voltage
+    data.filter(current_keys, axis=1) * current
+    data.filter(power_keys, axis=1) * voltage * current
     return data
 
 

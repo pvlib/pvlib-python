@@ -1194,7 +1194,9 @@ def test_pvwatts_dc_multiple_strings(pvwatts_dc_pvwatts_ac_system, location,
     mc2.run_model(weather)
     assert isinstance(mc2.results.ac, (pd.Series, pd.DataFrame))
     assert not mc2.results.ac.empty
-    assert np.all(np.isclose(mc2.results.dc / mc1.results.dc, 2.0))
+    expected = pd.Series(data=[2., np.nan], index=mc2.results.dc.index,
+                         name='p_mp')
+    assert_series_equal(mc2.results.dc / mc1.results.dc, expected)
 
 
 def acdc(mc):

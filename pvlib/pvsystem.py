@@ -891,7 +891,7 @@ class PVSystem:
         Parameters
         ----------
         data: DataFrame or tuple of DataFrame
-            Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
+            May contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
             'i_sc', 'p_mp'`.
 
         Returns
@@ -2626,13 +2626,13 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
 
 def scale_voltage_current_power(data, voltage=1, current=1):
     """
-    Scales the voltage, current, and power of the DataFrames
-    returned by :py:func:`singlediode` and :py:func:`sapm`.
+    Scales the voltage, current, and power in data by the voltage
+    and current factors.
 
     Parameters
     ----------
     data: DataFrame
-        Must contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
+        May contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
         'i_sc', 'p_mp'`.
     voltage: numeric, default 1
         The amount by which to multiply the voltages.
@@ -2648,14 +2648,15 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
     # as written, only works with a DataFrame
     # could make it work with a dict, but it would be more verbose
-    data = data.copy()
-    voltages = ['v_mp', 'v_oc']
-    currents = ['i_mp', 'i_x', 'i_xx', 'i_sc']
-    data[voltages] *= voltage
-    data[currents] *= current
-    data['p_mp'] *= voltage * current
-
-    return data
+    voltage_keys = ['v_mp', 'v_oc']
+    current_keys = ['i_mp', 'i_x', 'i_xx', 'i_sc']
+    power_keys = ['p_mp']
+    voltage_df = data.filter(voltage_keys, axis=1) * voltage
+    current_df = data.filter(current_keys, axis=1) * current
+    power_df = data.filter(power_keys, axis=1) * voltage * current
+    df = pd.concat([voltage_df, current_df, power_df], axis=1)
+    df_sorted = df[data.columns]  # retain original column order
+    return df_sorted
 
 
 def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
@@ -2675,20 +2676,20 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     Parameters
     ----------
     g_poa_effective: numeric
-        Irradiance transmitted to the PV cells in units of W/m**2. To be
+        Irradiance transmitted to the PV cells. To be
         fully consistent with PVWatts, the user must have already
         applied angle of incidence losses, but not soiling, spectral,
-        etc.
+        etc. [W/m^2]
     temp_cell: numeric
-        Cell temperature in degrees C.
+        Cell temperature [C].
     pdc0: numeric
-        Power of the modules at 1000 W/m2 and cell reference temperature.
+        Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
     gamma_pdc: numeric
-        The temperature coefficient in units of 1/C. Typically -0.002 to
-        -0.005 per degree C.
+        The temperature coefficient of power. Typically -0.002 to
+        -0.005 per degree C. [1/C]
     temp_ref: numeric, default 25.0
         Cell reference temperature. PVWatts defines it to be 25 C and
-        is included here for flexibility.
+        is included here for flexibility. [C]
 
     Returns
     -------

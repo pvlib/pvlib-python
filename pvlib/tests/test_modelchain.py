@@ -886,6 +886,20 @@ def test_temperature_models_arrays_multi_weather(
             != mc.results.cell_temperature[1]).all()
 
 
+def test_run_model_solar_position_weather(
+        pvwatts_dc_pvwatts_ac_system, location, weather, mocker):
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    weather['pressure'] = 90000
+    weather['temp_air'] = 25
+    m = mocker.spy(location, 'get_solarposition')
+    mc.run_model(weather)
+    # assert_called_once_with cannot be used with series, so need to use
+    # assert_series_equal on call_args
+    assert_series_equal(m.call_args[1]['temperature'], weather['temp_air'])
+    assert_series_equal(m.call_args[1]['pressure'], weather['pressure'])
+
+
 def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
@@ -907,6 +921,24 @@ def test_run_model_from_poa_arrays(sapm_dc_snl_ac_system_Array, location,
     # because we are the same passing POA irradiance and air
     # temperature.
     assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+
+
+def test_run_model_from_poa_arrays_solar_position_weather(
+        sapm_dc_snl_ac_system_Array, location, weather, total_irrad, mocker):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['pressure'] = 90000
+    data['temp_air'] = 25
+    data2 = data.copy()
+    data2['pressure'] = 95000
+    data2['temp_air'] = 30
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    m = mocker.spy(location, 'get_solarposition')
+    mc.run_model_from_poa((data, data2))
+    # mc uses only the first weather data for solar position corrections
+    assert_series_equal(m.call_args[1]['temperature'], data['temp_air'])
+    assert_series_equal(m.call_args[1]['pressure'], data['pressure'])
 
 
 def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,

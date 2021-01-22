@@ -92,7 +92,7 @@ Bug fixes
 ~~~~~~~~~
 * Pass weather data to solar position calculations in
   :ref:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
-  (:issue:`1065`, :pull:``)
+  (:issue:`1065`, :pull:`1140`)
 
 Testing
 ~~~~~~~

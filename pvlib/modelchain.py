@@ -1210,10 +1210,19 @@ class ModelChain:
                 weather.ghi - weather.dni *
                 tools.cosd(self.results.solar_position.zenith))
 
-    def _prep_inputs_solar_pos(self, kwargs={}):
+    def _prep_inputs_solar_pos(self, weather):
         """
         Assign solar position
         """
+        # build weather kwargs for solar position calculation
+        kwargs = _build_kwargs(['pressure', 'temp_air'],
+                               weather[0] if isinstance(weather, tuple)
+                               else weather)
+        try:
+            kwargs['temperature'] = kwargs.pop('temp_air')
+        except KeyError:
+            pass
+
         self.results.solar_position = self.location.get_solarposition(
             self.times, method=self.solar_position_method,
             **kwargs)
@@ -1363,16 +1372,7 @@ class ModelChain:
         self._assign_weather(weather)
         self._assign_times()
 
-        # build kwargs for solar position calculation
-        try:
-            press_temp = _build_kwargs(['pressure', 'temp_air'],
-                                       weather[0] if isinstance(weather, tuple)
-                                       else weather)
-            press_temp['temperature'] = press_temp.pop('temp_air')
-        except KeyError:
-            pass
-
-        self._prep_inputs_solar_pos(press_temp)
+        self._prep_inputs_solar_pos(weather)
         self._prep_inputs_airmass()
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
@@ -1470,7 +1470,7 @@ class ModelChain:
                                         'poa_diffuse'])
         self._assign_total_irrad(data)
 
-        self._prep_inputs_solar_pos()
+        self._prep_inputs_solar_pos(data)
         self._prep_inputs_airmass()
 
         if isinstance(self.system, SingleAxisTracker):

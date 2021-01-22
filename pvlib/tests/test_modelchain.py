@@ -896,8 +896,8 @@ def test_run_model_solar_position_weather(
     mc.run_model(weather)
     # assert_called_once_with cannot be used with series, so need to use
     # assert_series_equal on call_args
-    assert_series_equal(m.call_args.kwargs['temperature'], weather['temp_air'])
-    assert_series_equal(m.call_args.kwargs['pressure'], weather['pressure'])
+    assert_series_equal(m.call_args[1]['temperature'], weather['temp_air'])
+    assert_series_equal(m.call_args[1]['pressure'], weather['pressure'])
 
 
 def test_run_model_from_poa(sapm_dc_snl_ac_system, location, total_irrad):
@@ -937,8 +937,8 @@ def test_run_model_from_poa_arrays_solar_position_weather(
     m = mocker.spy(location, 'get_solarposition')
     mc.run_model_from_poa((data, data2))
     # mc uses only the first weather data for solar position corrections
-    assert_series_equal(m.call_args.kwargs['temperature'], data['temp_air'])
-    assert_series_equal(m.call_args.kwargs['pressure'], data['pressure'])
+    assert_series_equal(m.call_args[1]['temperature'], data['temp_air'])
+    assert_series_equal(m.call_args[1]['pressure'], data['pressure'])
 
 
 def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,

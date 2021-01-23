@@ -2,11 +2,8 @@ import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind, tand
-from pvlib.pvsystem import _combine_localized_attributes
 from pvlib.pvsystem import PVSystem
-from pvlib.location import Location
 from pvlib import irradiance, atmosphere
-from pvlib._deprecation import deprecated
 
 
 class SingleAxisTracker(PVSystem):
@@ -140,33 +137,6 @@ class SingleAxisTracker(PVSystem):
 
         return tracking_data
 
-    @deprecated('0.8',
-                alternative='SingleAxisTracker, Location, and ModelChain',
-                name='SingleAxisTracker.localize', removal='0.9')
-    def localize(self, location=None, latitude=None, longitude=None,
-                 **kwargs):
-        """
-        Creates a :py:class:`LocalizedSingleAxisTracker` object using
-        this object and location data. Must supply either location
-        object or latitude, longitude, and any location kwargs
-
-        Parameters
-        ----------
-        location : None or Location, default None
-        latitude : None or float, default None
-        longitude : None or float, default None
-        **kwargs : see Location
-
-        Returns
-        -------
-        localized_system : LocalizedSingleAxisTracker
-        """
-
-        if location is None:
-            location = Location(latitude, longitude, **kwargs)
-
-        return LocalizedSingleAxisTracker(pvsystem=self, location=location)
-
     def get_aoi(self, surface_tilt, surface_azimuth, solar_zenith,
                 solar_azimuth):
         """Get the angle of incidence on the system.
@@ -261,42 +231,6 @@ class SingleAxisTracker(PVSystem):
                                                model=model,
                                                albedo=self.albedo,
                                                **kwargs)
-
-
-@deprecated('0.8', alternative='SingleAxisTracker, Location, and ModelChain',
-            name='LocalizedSingleAxisTracker', removal='0.9')
-class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
-    """
-    The :py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` class defines a
-    standard set of installed PV system attributes and modeling functions. This
-    class combines the attributes and methods of the
-    :py:class:`~pvlib.tracking.SingleAxisTracker` (a subclass of
-    :py:class:`~pvlib.pvsystem.PVSystem`) and
-    :py:class:`~pvlib.location.Location` classes.
-
-    The :py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` may have bugs
-    due to the difficulty of robustly implementing multiple inheritance. See
-    :py:class:`~pvlib.modelchain.ModelChain` for an alternative paradigm
-    for modeling PV systems at specific locations.
-    """
-
-    def __init__(self, pvsystem=None, location=None, **kwargs):
-
-        new_kwargs = _combine_localized_attributes(
-            pvsystem=pvsystem,
-            location=location,
-            **kwargs,
-        )
-
-        SingleAxisTracker.__init__(self, **new_kwargs)
-        Location.__init__(self, **new_kwargs)
-
-    def __repr__(self):
-        attrs = ['latitude', 'longitude', 'altitude', 'tz']
-        return ('Localized' +
-                super().__repr__() + '\n  ' +
-                '\n  '.join(
-                    f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,

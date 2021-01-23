@@ -388,7 +388,7 @@ NUTATION_YTERM_ARRAY = np.array([
 ])
 
 
-@jit(nopython=True)
+@jit('float64(int64, int64, int64, int64, int64, int64, int64)', nopython=True)
 def julian_day_dt(year, month, day, hour, minute, second, microsecond):
     """This is the original way to calculate the julian day from the NREL paper.
     However, it is much faster to convert to unix/epoch time and then convert
@@ -406,37 +406,37 @@ def julian_day_dt(year, month, day, hour, minute, second, microsecond):
     return jd
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def julian_day(unixtime):
     jd = unixtime * 1.0 / 86400 + 2440587.5
     return jd
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64)', nopython=True)
 def julian_ephemeris_day(julian_day, delta_t):
     jde = julian_day + delta_t * 1.0 / 86400
     return jde
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def julian_century(julian_day):
     jc = (julian_day - 2451545) * 1.0 / 36525
     return jc
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def julian_ephemeris_century(julian_ephemeris_day):
     jce = (julian_ephemeris_day - 2451545) * 1.0 / 36525
     return jce
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def julian_ephemeris_millennium(julian_ephemeris_century):
     jme = julian_ephemeris_century * 1.0 / 10
     return jme
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def heliocentric_longitude(jme):
     l0 = 0.0
     l1 = 0.0
@@ -477,7 +477,7 @@ def heliocentric_longitude(jme):
     return l % 360
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def heliocentric_latitude(jme):
     b0 = 0.0
     b1 = 0.0
@@ -496,7 +496,7 @@ def heliocentric_latitude(jme):
     return b
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def heliocentric_radius_vector(jme):
     r0 = 0.0
     r1 = 0.0
@@ -529,19 +529,19 @@ def heliocentric_radius_vector(jme):
     return r
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def geocentric_longitude(heliocentric_longitude):
     theta = heliocentric_longitude + 180.0
     return theta % 360
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def geocentric_latitude(heliocentric_latitude):
     beta = -1.0*heliocentric_latitude
     return beta
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def mean_elongation(julian_ephemeris_century):
     x0 = (297.85036
           + 445267.111480 * julian_ephemeris_century
@@ -550,7 +550,7 @@ def mean_elongation(julian_ephemeris_century):
     return x0
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def mean_anomaly_sun(julian_ephemeris_century):
     x1 = (357.52772
           + 35999.050340 * julian_ephemeris_century
@@ -559,7 +559,7 @@ def mean_anomaly_sun(julian_ephemeris_century):
     return x1
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def mean_anomaly_moon(julian_ephemeris_century):
     x2 = (134.96298
           + 477198.867398 * julian_ephemeris_century
@@ -568,7 +568,7 @@ def mean_anomaly_moon(julian_ephemeris_century):
     return x2
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def moon_argument_latitude(julian_ephemeris_century):
     x3 = (93.27191
           + 483202.017538 * julian_ephemeris_century
@@ -577,7 +577,7 @@ def moon_argument_latitude(julian_ephemeris_century):
     return x3
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def moon_ascending_longitude(julian_ephemeris_century):
     x4 = (125.04452
           - 1934.136261 * julian_ephemeris_century
@@ -586,7 +586,7 @@ def moon_ascending_longitude(julian_ephemeris_century):
     return x4
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64, float64, float64, float64)', nopython=True)
 def longitude_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     delta_psi_sum = 0
     for row in range(NUTATION_YTERM_ARRAY.shape[0]):
@@ -603,7 +603,7 @@ def longitude_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     return delta_psi
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64, float64, float64, float64)', nopython=True)
 def obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     delta_eps_sum = 0.0
     for row in range(NUTATION_YTERM_ARRAY.shape[0]):
@@ -620,7 +620,7 @@ def obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     return delta_eps
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def mean_ecliptic_obliquity(julian_ephemeris_millennium):
     U = 1.0*julian_ephemeris_millennium/10
     e0 = (84381.448 - 4680.93 * U - 1.55 * U**2
@@ -630,7 +630,7 @@ def mean_ecliptic_obliquity(julian_ephemeris_millennium):
     return e0
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64)', nopython=True)
 def true_ecliptic_obliquity(mean_ecliptic_obliquity, obliquity_nutation):
     e0 = mean_ecliptic_obliquity
     deleps = obliquity_nutation
@@ -638,27 +638,27 @@ def true_ecliptic_obliquity(mean_ecliptic_obliquity, obliquity_nutation):
     return e
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def aberration_correction(earth_radius_vector):
     deltau = -20.4898 / (3600 * earth_radius_vector)
     return deltau
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64)', nopython=True)
 def apparent_sun_longitude(geocentric_longitude, longitude_nutation,
                            aberration_correction):
     lamd = geocentric_longitude + longitude_nutation + aberration_correction
     return lamd
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64)', nopython=True)
 def mean_sidereal_time(julian_day, julian_century):
     v0 = (280.46061837 + 360.98564736629 * (julian_day - 2451545)
           + 0.000387933 * julian_century**2 - julian_century**3 / 38710000)
     return v0 % 360.0
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64)', nopython=True)
 def apparent_sidereal_time(mean_sidereal_time, longitude_nutation,
                            true_ecliptic_obliquity):
     v = mean_sidereal_time + longitude_nutation * np.cos(
@@ -666,7 +666,7 @@ def apparent_sidereal_time(mean_sidereal_time, longitude_nutation,
     return v
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64)', nopython=True)
 def geocentric_sun_right_ascension(apparent_sun_longitude,
                                    true_ecliptic_obliquity,
                                    geocentric_latitude):
@@ -679,7 +679,7 @@ def geocentric_sun_right_ascension(apparent_sun_longitude,
     return alpha % 360
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64)', nopython=True)
 def geocentric_sun_declination(apparent_sun_longitude, true_ecliptic_obliquity,
                                geocentric_latitude):
     delta = np.degrees(np.arcsin(np.sin(np.radians(geocentric_latitude)) *
@@ -690,7 +690,7 @@ def geocentric_sun_declination(apparent_sun_longitude, true_ecliptic_obliquity,
     return delta
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64)', nopython=True)
 def local_hour_angle(apparent_sidereal_time, observer_longitude,
                      sun_right_ascension):
     """Measured westward from south"""
@@ -698,33 +698,33 @@ def local_hour_angle(apparent_sidereal_time, observer_longitude,
     return H % 360
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def equatorial_horizontal_parallax(earth_radius_vector):
     xi = 8.794 / (3600 * earth_radius_vector)
     return xi
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def uterm(observer_latitude):
     u = np.arctan(0.99664719 * np.tan(np.radians(observer_latitude)))
     return u
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64)', nopython=True)
 def xterm(u, observer_latitude, observer_elevation):
     x = (np.cos(u) + observer_elevation / 6378140
          * np.cos(np.radians(observer_latitude)))
     return x
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64)', nopython=True)
 def yterm(u, observer_latitude, observer_elevation):
     y = (0.99664719 * np.sin(u) + observer_elevation / 6378140
          * np.sin(np.radians(observer_latitude)))
     return y
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64,float64, float64)', nopython=True)
 def parallax_sun_right_ascension(xterm, equatorial_horizontal_parallax,
                                  local_hour_angle, geocentric_sun_declination):
     num = (-xterm * np.sin(np.radians(equatorial_horizontal_parallax))
@@ -736,14 +736,14 @@ def parallax_sun_right_ascension(xterm, equatorial_horizontal_parallax,
     return delta_alpha
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64)', nopython=True)
 def topocentric_sun_right_ascension(geocentric_sun_right_ascension,
                                     parallax_sun_right_ascension):
     alpha_prime = geocentric_sun_right_ascension + parallax_sun_right_ascension
     return alpha_prime
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64, float64, float64, float64)', nopython=True)
 def topocentric_sun_declination(geocentric_sun_declination, xterm, yterm,
                                 equatorial_horizontal_parallax,
                                 parallax_sun_right_ascension,
@@ -758,14 +758,14 @@ def topocentric_sun_declination(geocentric_sun_declination, xterm, yterm,
     return delta
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64)', nopython=True)
 def topocentric_local_hour_angle(local_hour_angle,
                                  parallax_sun_right_ascension):
     H_prime = local_hour_angle - parallax_sun_right_ascension
     return H_prime
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64)', nopython=True)
 def topocentric_elevation_angle_without_atmosphere(observer_latitude,
                                                    topocentric_sun_declination,
                                                    topocentric_local_hour_angle
@@ -779,7 +779,7 @@ def topocentric_elevation_angle_without_atmosphere(observer_latitude,
     return e0
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64, float64)', nopython=True)
 def atmospheric_refraction_correction(local_pressure, local_temp,
                                       topocentric_elevation_angle_wo_atmosphere,
                                       atmos_refract):
@@ -794,7 +794,7 @@ def atmospheric_refraction_correction(local_pressure, local_temp,
     return delta_e
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64)', nopython=True)
 def topocentric_elevation_angle(topocentric_elevation_angle_without_atmosphere,
                                 atmospheric_refraction_correction):
     e = (topocentric_elevation_angle_without_atmosphere
@@ -802,13 +802,13 @@ def topocentric_elevation_angle(topocentric_elevation_angle_without_atmosphere,
     return e
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def topocentric_zenith_angle(topocentric_elevation_angle):
     theta = 90 - topocentric_elevation_angle
     return theta
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64)', nopython=True)
 def topocentric_astronomers_azimuth(topocentric_local_hour_angle,
                                     topocentric_sun_declination,
                                     observer_latitude):
@@ -821,13 +821,13 @@ def topocentric_astronomers_azimuth(topocentric_local_hour_angle,
     return gamma % 360
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def topocentric_azimuth_angle(topocentric_astronomers_azimuth):
     phi = topocentric_astronomers_azimuth + 180
     return phi % 360
 
 
-@jit(nopython=True)
+@jit('float64(float64)', nopython=True)
 def sun_mean_longitude(julian_ephemeris_millennium):
     M = (280.4664567 + 360007.6982779 * julian_ephemeris_millennium
          + 0.03032028 * julian_ephemeris_millennium**2
@@ -837,7 +837,7 @@ def sun_mean_longitude(julian_ephemeris_millennium):
     return M
 
 
-@jit(nopython=True)
+@jit('float64(float64, float64, float64, float64)', nopython=True)
 def equation_of_time(sun_mean_longitude, geocentric_sun_right_ascension,
                      longitude_nutation, true_ecliptic_obliquity):
     E = (sun_mean_longitude - 0.0057183 - geocentric_sun_right_ascension +
@@ -853,7 +853,8 @@ def equation_of_time(sun_mean_longitude, geocentric_sun_right_ascension,
     return E
 
 
-@jit(nopython=True, nogil=True)
+@jit('void(float64[:], float64[:], float64[:,:])', nopython=True,
+     nogil=True)
 def solar_position_loop(unixtime, loc_args, out):
     """Loop through the time array and calculate the solar position"""
     lat = loc_args[0]

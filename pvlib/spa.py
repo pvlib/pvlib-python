@@ -388,7 +388,8 @@ NUTATION_YTERM_ARRAY = np.array([
 ])
 
 
-@jit('float64(int64, int64, int64, int64, int64, int64, int64)', nopython=True)
+@jit('float64(int64, int64, int64, int64, int64, int64, int64)',
+     nopython=True)
 def julian_day_dt(year, month, day, hour, minute, second, microsecond):
     """This is the original way to calculate the julian day from the NREL paper.
     However, it is much faster to convert to unix/epoch time and then convert
@@ -586,7 +587,8 @@ def moon_ascending_longitude(julian_ephemeris_century):
     return x4
 
 
-@jit('float64(float64, float64, float64, float64, float64, float64)', nopython=True)
+@jit('float64(float64, float64, float64, float64, float64, float64)',
+     nopython=True)
 def longitude_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     delta_psi_sum = 0
     for row in range(NUTATION_YTERM_ARRAY.shape[0]):
@@ -603,7 +605,8 @@ def longitude_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     return delta_psi
 
 
-@jit('float64(float64, float64, float64, float64, float64, float64)', nopython=True)
+@jit('float64(float64, float64, float64, float64, float64, float64)',
+     nopython=True)
 def obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     delta_eps_sum = 0.0
     for row in range(NUTATION_YTERM_ARRAY.shape[0]):
@@ -743,7 +746,8 @@ def topocentric_sun_right_ascension(geocentric_sun_right_ascension,
     return alpha_prime
 
 
-@jit('float64(float64, float64, float64, float64, float64, float64)', nopython=True)
+@jit('float64(float64, float64, float64, float64, float64, float64)',
+     nopython=True)
 def topocentric_sun_declination(geocentric_sun_declination, xterm, yterm,
                                 equatorial_horizontal_parallax,
                                 parallax_sun_right_ascension,

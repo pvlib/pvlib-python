@@ -90,7 +90,7 @@ def read_bsrn(filename):
     # Read file and store the starting line number for each each logical record (LR)
     line_no_dict = {}
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
-        with gzip.open(filename,'rt') as f:
+        with gzip.open(filename, 'rt') as f:
             for num, line in enumerate(f):
                 if line.startswith('*'):  # Find start of all logical records
                     line_no_dict[line[2:6]] = num  # key is 4 digit LR number
@@ -113,7 +113,7 @@ def read_bsrn(filename):
                        colspecs=COL_SPECS, na_values=[-999.0,-99.9])
 
     # Assign multi-index and unstack DataFrame, such that each variable has a seperate column
-    data = data.set_index([data.index//2, data.index%2]).unstack(level=1).swaplevel(i=0, j=1, axis='columns')
+    data = data.set_index([data.index // 2, data.index % 2]).unstack(level=1).swaplevel(i=0, j=1, axis='columns')
 
     # Sort columns to match original order and assign column names
     data = data.reindex(sorted(data.columns), axis='columns')

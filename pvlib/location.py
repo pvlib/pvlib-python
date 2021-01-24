@@ -5,12 +5,12 @@ This module contains the Location class.
 # Will Holmgren, University of Arizona, 2014-2016.
 
 import datetime
-import warnings
 
 import pandas as pd
 import pytz
 
 from pvlib import solarposition, clearsky, atmosphere, irradiance
+
 
 class Location:
     """
@@ -357,3 +357,54 @@ class Location:
                              'one of pyephem, spa, geometric'
                              .format(method))
         return result
+
+    def get_aoi(self, times, solar_position=None, **kwargs):
+        """
+        Uses the :py:func:`irradiance.aoi` to calculate the
+        angle of incidence at this location.
+
+        Parameters
+        ----------
+        times : pandas.DatetimeIndex
+            Must be localized or UTC will be assumed.
+
+        solar_position : None or DataFrame, default None
+            DataFrame with columns 'apparent_zenith', 'azimuth'.
+
+        kwargs
+            passed to :py:func:`solarposition.get_solarposition`
+
+        Returns
+        -------
+        results : DataFrame
+            Column names is: ``aoi``.
+
+        See also
+        --------
+        pvlib.irradiance.aoi
+        """
+
+        try:
+            surface_tilt = kwargs.pop('surface_tilt')
+        except KeyError:
+            surface_tilt = 37
+
+        try:
+            surface_azimuth = kwargs.pop('surface_azimuth')
+        except KeyError:
+            surface_azimuth = 180
+
+        if solar_position is None:
+            solar_position = self.get_solarposition(times)
+        apparent_zenith = solar_position["apparent_zenith"]
+        azimuth = solar_position["azimuth"]
+
+        aoi = []
+        for apparent_zenith, azimuth in zip(apparent_zenith, azimuth):
+            aoi.append(irradiance.aoi(surface_tilt=surface_tilt,
+                                      surface_azimuth=surface_azimuth,
+                                      solar_zenith=apparent_zenith,
+                                      solar_azimuth=azimuth))
+
+        results = pd.DataFrame(index=times, data={'aoi': aoi})
+        return results

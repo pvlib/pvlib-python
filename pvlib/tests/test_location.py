@@ -325,6 +325,29 @@ def test_get_sun_rise_set_transit_valueerror(golden):
         golden.get_sun_rise_set_transit(times, method='eyeball')
 
 
+def test_get_aoi_location_supplies_position(times):
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    aoi = tus.get_aoi(times)
+    expected = pd.DataFrame(data=np.array(
+        [[94.38339], [53.13604], [19.34581], [41.00390], [81.79519]]),
+        columns=['aoi'],
+        index=times)
+    assert_frame_equal(expected, aoi)
+
+
+def test_get_aoi(times):
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    solar_position = {'azimuth': pd.Series(80, index=times),
+                      'apparent_zenith': pd.Series(10, index=times)}
+    print(solar_position)
+    aoi = tus.get_aoi(times, solar_position)
+    expected = pd.DataFrame(data=np.array(
+        [[39.79355], [39.79355], [39.79355], [39.79355], [39.79355]]),
+        columns=['aoi'],
+        index=times)
+    assert_frame_equal(expected, aoi)
+
+
 def test_extra_kwargs():
     with pytest.raises(TypeError, match='arbitrary_kwarg'):
         Location(32.2, -111, arbitrary_kwarg='value')

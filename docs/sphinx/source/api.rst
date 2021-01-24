@@ -146,6 +146,7 @@ Decomposing and combining irradiance
 .. autosummary::
    :toctree: generated/
 
+   location.Location.get_aoi
    irradiance.get_extra_radiation
    irradiance.aoi
    irradiance.aoi_projection

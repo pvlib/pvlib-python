@@ -87,6 +87,10 @@ Enhancements
   by ``pvsystem.PVSystem.modules_per_strings`` and
   ``pvsystem.PVSystem.strings_per_inverter``. Note that both attributes still
   default to 1. (:pull:`1138`)
+* In :py:class:`~pvlib.location.Location`, the method
+  :py:meth:`~pvlib.location.Location.get_aoi` has been added, returning the
+  angle of incidence for a time series.
+  (:pull:`1143`)
 
 Bug fixes
 ~~~~~~~~~
@@ -113,3 +117,4 @@ Contributors
 * Mark Mikofski (:ghuser:`mikofski`)
 * Nate Croft (:ghuser:`ncroft-b4`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Dario Cambié (:ghuser:`dcambie`)

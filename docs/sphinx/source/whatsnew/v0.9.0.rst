@@ -27,6 +27,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
+  files. (:pull:`1145`, :issue:`1015`)
 * In :py:class:`~pvlib.modelchain.ModelChain`, attributes which contain
   output of models are now collected into ``ModelChain.results``.
   (:pull:`1076`, :issue:`1067`)
@@ -73,3 +75,4 @@ Contributors
 * Mark Mikofski (:ghuser:`mikofski`)
 * Nate Croft (:ghuser:`ncroft-b4`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

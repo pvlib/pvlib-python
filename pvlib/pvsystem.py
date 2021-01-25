@@ -907,7 +907,7 @@ class PVSystem:
                 inv_fun = inverter.pvwatts
             return inv_fun(p_dc, self.inverter_parameters['pdc0'], **kwargs)
         elif model == 'adr':
-            return inverter.adrinverter(v_dc, p_dc, self.inverter_parameters)
+            return inverter.adr(v_dc, p_dc, self.inverter_parameters)
         else:
             raise ValueError(
                 model + ' is not a valid AC power model.',

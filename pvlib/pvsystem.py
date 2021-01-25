@@ -1588,12 +1588,7 @@ class SingleAxisArray(BaseArray):
             Then angle of incidence.
         """
         tracking = self._singleaxis(solar_zenith, solar_azimuth)
-        return irradiance.aoi(
-            tracking['surface_tilt'],
-            tracking['surface_azimuth'],
-            solar_zenith,
-            solar_azimuth
-        )
+        return tracking['aoi']
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',

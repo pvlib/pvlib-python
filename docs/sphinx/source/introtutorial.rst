@@ -48,11 +48,14 @@ configuration at a handful of sites listed below.
     temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
 
-Let's download the typical meteorological year weather data from PVGIS, which
-includes irradiation, temperature and wind speed.  Note that PVGIS uses
-different naming conventions, so it is required to rename the weather data
-variables before using them. PVGIS weather data is already UTC-localized, so
-conversion to local timezone is optional.
+In order to retrieve meteorological data for the simulation, we can make use of
+the :ref:`iotools` module. In this example we will be using PVGIS, one of the
+data sources available, to retrieve a Typical Meteorological Year (TMY) which
+includes irradiation, temperature and wind speed.
+
+.. note:: PVGIS uses different naming conventions, so it is required to rename
+   the weather data variables before using them. Data is already UTC-localized,
+   so conversion to local timezone is optional.
 
 .. ipython:: python
 

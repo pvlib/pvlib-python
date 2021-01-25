@@ -100,6 +100,9 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 
+* Update intro tutorial to highlight the use of historical meteorological data
+  and to make the procedural and OO results match exactly.
+
 Requirements
 ~~~~~~~~~~~~
 * ``dataclasses`` is required for python 3.6

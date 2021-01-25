@@ -1459,16 +1459,16 @@ def test_PVSystem_sandia_multi_single_array(cec_inverter_parameters):
     idcs = pd.Series(np.linspace(0, 11, 3))
     pdcs = idcs * vdcs
 
-    pacs = system.system.sandia_multi(vdcs, pdcs)
+    pacs = system.sandia_multi(vdcs, pdcs)
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
-    pacs = system.system.sandia_multi((vdcs,), (pdcs,))
+    pacs = system.sandia_multi((vdcs,), (pdcs,))
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
-        system.system.sandia_multi((vdcs, vdcs), pdcs)
+        system.sandia_multi((vdcs, vdcs), pdcs)
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
-        system.system.sandia_multi((vdcs,), (pdcs, pdcs))
+        system.sandia_multi((vdcs,), (pdcs, pdcs))
 
 
 def test_PVSystem_get_ac_pvwatts(pvwatts_system_defaults, mocker):
@@ -1522,7 +1522,7 @@ def test_PVSystem_get_ac_adr(adr_inverter_parameters, mocker):
     )
     vdcs = pd.Series([135, 154, 390, 420, 551])
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
-    pacs = system.get_ac('adr', vdcs, pdcs)
+    pacs = system.get_ac('adr', pdcs, vdcs)
     assert_series_equal(pacs, pd.Series([np.nan, 1161.5745, 1116.4459,
                                          382.6679, np.nan]))
     inverter.adr.assert_called_once_with(vdcs, pdcs,

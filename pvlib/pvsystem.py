@@ -1546,7 +1546,7 @@ class SingleAxisArray(BaseArray):
                  'cross_axis_tilt']
         return self._extend_repr('SingleAxisArray', attrs)
 
-    def _singleaxis(self, apparent_zenith, apparent_azimuth):
+    def singleaxis(self, apparent_zenith, apparent_azimuth):
         """
         Get tracking data. See :py:func:`pvlib.tracking.singleaxis` more
         detail.
@@ -1587,7 +1587,7 @@ class SingleAxisArray(BaseArray):
         aoi : Series
             Then angle of incidence.
         """
-        tracking = self._singleaxis(solar_zenith, solar_azimuth)
+        tracking = self.singleaxis(solar_zenith, solar_azimuth)
         return tracking['aoi']
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
@@ -1636,7 +1636,7 @@ class SingleAxisArray(BaseArray):
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        tracking = self._singleaxis(solar_zenith, solar_azimuth)
+        tracking = self.singleaxis(solar_zenith, solar_azimuth)
 
         return irradiance.get_total_irradiance(
             tracking['surface_tilt'],

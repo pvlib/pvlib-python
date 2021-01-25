@@ -129,9 +129,9 @@ def read_bsrn(filename):
 
     # Set datetime index and localize to UTC
     basename = os.path.basename(filename)  # get month and year from filename
-    data.index = pd.to_datetime(basename[3:7], format='%m%y') \
-                 + pd.to_timedelta(data['day']-1, unit='d') \
-                 + pd.to_timedelta(data['minute'], unit='min')
+    data.index = (pd.to_datetime(basename[3:7], format='%m%y')
+                  + pd.to_timedelta(data['day']-1, unit='d')
+                  + pd.to_timedelta(data['minute'], unit='min'))
 
     try:
         data.index = data.index.tz_localize('UTC')  # BSRN timestamps are UTC

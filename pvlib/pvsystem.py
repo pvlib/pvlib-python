@@ -856,10 +856,37 @@ class PVSystem:
         r"""Calculates AC power from p_dc using the inverter model indicated
         by model and self.inverter_parameters.
 
-        Parameter model must be one of 'sandia', 'adr', or 'pvwatts'.
+        Parameters
+        ----------
+        model : str
+            Must be one of 'sandia', 'adr', or 'pvwatts'.
+        p_dc : numeric, or tuple, list or array of numeric
+            DC power on each MPPT input of the inverter. Use tuple, list or
+            array for inverters with multiple MPPT inputs. If type is array,
+            p_dc must be 2d with axis 0 being the MPPT inputs. [W]
+        v_dc : numeric, or tuple, list or array of numeric
+            DC voltage on each MPPT input of the inverter. Required when
+            model='sandia' or model='adr'. Use tuple, list or
+            array for inverters with multiple MPPT inputs. If type is array,
+            v_dc must be 2d with axis 0 being the MPPT inputs. [V]
 
-        Parameter v_dc is required for model='sandia' or model='adr'.
+        Returns
+        -------
+        power_ac : numeric, or tuple of numeric
+            AC power output for the inverter. [W]
 
+        Raises
+        ------
+        ValueError
+            If model is not one of 'sandia', 'adr' or 'pvwatts'.
+
+        See also
+        --------
+        pvlib.inverter.sandia
+        pvlib.inverter.sandia_multi
+        pvlib.inverter.adr
+        pvlib.inverter.pvwatts
+        pvlib.inverter.pvwatts_multi
         """
         model = model.lower()
         if model == 'sandia':

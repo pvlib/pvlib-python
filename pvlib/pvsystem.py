@@ -2763,6 +2763,71 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     return losses
 
 
+def dc_ohms_from_percent(V_mp_ref, I_mp_ref, dc_ohmic_percent,
+                         modules_per_string=1,
+                         strings_per_inverter=1):
+    """
+    Calculates the equivalent resistance of the wires from a percent
+    ohmic loss at STC.
+
+    Equivalent resistance is calculated with the function:
+
+    .. math::
+        Rw = (L_{stc} / 100) * (Varray / Iarray)
+
+    :math:`L_{stc}` is the input dc loss as a percent, e.g. 1.5% loss is
+    input as 1.5
+
+    Parameters
+    ----------
+    V_mp_ref: numeric
+    I_mp_ref: numeric
+    dc_ohmic_percent: numeric, default 0
+    modules_per_string: numeric, default 1
+    strings_per_inverter: numeric, default 1
+
+    Returns
+    ----------
+    Rw: numeric
+        Equivalent resistance in ohms
+
+    References
+    ----------
+    -- [1] PVsyst 7 Help. "Array ohmic wiring loss".
+            https://www.pvsyst.com/help/ohmic_loss.htm
+    """
+    vmp = modules_per_string * V_mp_ref
+
+    imp = strings_per_inverter * I_mp_ref
+
+    Rw = (dc_ohmic_percent / 100) * (vmp / imp)
+
+    return Rw
+
+
+def dc_ohmic_losses(ohms, current):
+    """
+    Returns ohmic losses in in units of power from the equivalent
+    resistance of of the wires and the operating current.
+
+    Parameters
+    ----------
+    ohms: numeric, float
+    current: numeric, float or array-like
+
+    Returns
+    ----------
+    numeric
+        Single or array-like value of the losses in units of power
+
+    References
+    ----------
+    -- [1] PVsyst 7 Help. "Array ohmic wiring loss".
+            https://www.pvsyst.com/help/ohmic_loss.htm
+    """
+    return ohms * current * current
+
+
 def combine_loss_factors(index, *losses, fill_method='ffill'):
     r"""
     Combines Series loss fractions while setting a common index.

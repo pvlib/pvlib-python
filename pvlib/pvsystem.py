@@ -852,6 +852,40 @@ class PVSystem:
         return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                         saturation_current, photocurrent)
 
+    def get_ac(self, model, p_dc, v_dc=None):
+        r"""Calculates AC power from p_dc using the inverter model indicated
+        by model and self.inverter_parameters.
+
+        Parameter model must be one of 'sandia', 'adr', or 'pvwatts'.
+
+        Parameter v_dc is required for model='sandia' or model='adr'.
+
+        """
+        model = model.lower()
+        if model == 'sandia':
+            if self.num_arrays > 1:
+                p_dc = self._validate_per_array(p_dc)
+                v_dc = self._validate_per_array(v_dc)
+                inv_fun = inverter.sandia_multi
+            else:
+                inv_fun = inverter.sandia
+            return inv_fun(v_dc, p_dc, self.inverter_parameters)
+        elif model == 'pvwatts':
+            kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
+                                   self.inverter_parameters)
+            if self.num_arrays > 1:
+                p_dc = self._validate_per_array(p_dc)
+                inv_fun = inverter.pvwatts_multi
+            else:
+                inv_fun = inverter.pvwatts
+            return inv_fun(p_dc, self.inverter_parameters['pdc0'], **kwargs)
+        elif model == 'adr':
+            return inverter.adrinverter(v_dc, p_dc, self.inverter_parameters)
+        else:
+            raise ValueError(
+                model + ' is not a valid AC power model.',
+                ' model must be one of "sandia", "adr" or "pvwatts"')
+
     # inverter now specified by self.inverter_parameters
     def snlinverter(self, v_dc, p_dc):
         """Uses :py:func:`pvlib.inverter.sandia` to calculate AC power based on

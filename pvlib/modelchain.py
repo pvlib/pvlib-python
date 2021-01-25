@@ -377,7 +377,7 @@ class ModelChain:
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temperature_model=None,
-                 losses_model='no_loss', name=None, **kwargs):
+                 losses_model='no_loss', name=None):
 
         self.name = name
         self.system = system
@@ -402,12 +402,6 @@ class ModelChain:
         self.times = None
 
         self.results = ModelChainResult()
-
-        if kwargs:
-            warnings.warn(
-                'Arbitrary ModelChain kwargs are deprecated and will be '
-                'removed in v0.9', pvlibDeprecationWarning
-            )
 
     def __getattr__(self, key):
         if key in ModelChain._deprecated_attrs:
@@ -736,8 +730,33 @@ class ModelChain:
         return self._singlediode(self.system.calcparams_pvsyst)
 
     def pvwatts_dc(self):
+        """Calculate DC power using the PVWatts model.
+
+        Results are stored in ModelChain.results.dc. DC power is computed
+        from PVSystem.module_parameters['pdc0'] and then scaled by
+        PVSystem.modules_per_string and PVSystem.strings_per_inverter.
+
+        Returns
+        -------
+        self
+
+        See also
+        --------
+        pvlib.pvsystem.PVSystem.pvwatts_dc
+        pvlib.pvsystem.PVSystem.scale_voltage_current_power
+        """
         self.results.dc = self.system.pvwatts_dc(
             self.results.effective_irradiance, self.results.cell_temperature)
+        if isinstance(self.results.dc, tuple):
+            temp = tuple(
+                pd.DataFrame(s, columns=['p_mp']) for s in self.results.dc)
+        else:
+            temp = pd.DataFrame(self.results.dc, columns=['p_mp'])
+        scaled = self.system.scale_voltage_current_power(temp)
+        if isinstance(scaled, tuple):
+            self.results.dc = tuple(s['p_mp'] for s in scaled)
+        else:
+            self.results.dc = scaled['p_mp']
         return self
 
     @property
@@ -750,25 +769,16 @@ class ModelChain:
             self._ac_model = self.infer_ac_model()
         elif isinstance(model, str):
             model = model.lower()
-            # TODO in v0.9: remove 'snlinverter', 'adrinverter'
-            if model in ['sandia', 'snlinverter']:
-                if model == 'snlinverter':
-                    warnings.warn("ac_model = 'snlinverter' is deprecated and"
-                                  " will be removed in v0.9; use"
-                                  " ac_model = 'sandia' instead.",
-                                  pvlibDeprecationWarning)
+            if model == 'sandia':
                 self._ac_model = self.snlinverter
             elif model == 'sandia_multi':
                 self._ac_model = self.sandia_multi_inverter
-            elif model in ['adr', 'adrinverter']:
-                if model == 'adrinverter':
-                    warnings.warn("ac_model = 'adrinverter' is deprecated and"
-                                  " will be removed in v0.9; use"
-                                  " ac_model = 'adr' instead.",
-                                  pvlibDeprecationWarning)
+            elif model in 'adr':
                 self._ac_model = self.adrinverter
             elif model == 'pvwatts':
                 self._ac_model = self.pvwatts_inverter
+            elif model == 'pvwatts_multi':
+                self._ac_model = self.pvwatts_multi_inverter
             else:
                 raise ValueError(model + ' is not a valid AC power model')
         else:
@@ -793,10 +803,11 @@ class ModelChain:
     def _infer_ac_model_multi(self, inverter_params):
         if _snl_params(inverter_params):
             return self.sandia_multi_inverter
+        elif _pvwatts_params(inverter_params):
+            return self.pvwatts_multi_inverter
         raise ValueError('could not infer multi-array AC model from '
-                         'system.inverter_parameters. Not all ac models '
-                         'support systems with mutiple Arrays. '
-                         'Only sandia_multi supports multiple '
+                         'system.inverter_parameters. Only sandia and pvwatts '
+                         'inverter models support multiple '
                          'Arrays. Check system.inverter_parameters or '
                          'explicitly set the model with the ac_model kwarg.')
 
@@ -805,6 +816,10 @@ class ModelChain:
             _tuple_from_dfs(self.results.dc, 'v_mp'),
             _tuple_from_dfs(self.results.dc, 'p_mp')
         )
+        return self
+
+    def pvwatts_multi_inverter(self):
+        self.results.ac = self.system.pvwatts_multi(self.results.dc)
         return self
 
     def snlinverter(self):
@@ -1195,10 +1210,19 @@ class ModelChain:
                 weather.ghi - weather.dni *
                 tools.cosd(self.results.solar_position.zenith))
 
-    def _prep_inputs_solar_pos(self, kwargs={}):
+    def _prep_inputs_solar_pos(self, weather):
         """
         Assign solar position
         """
+        # build weather kwargs for solar position calculation
+        kwargs = _build_kwargs(['pressure', 'temp_air'],
+                               weather[0] if isinstance(weather, tuple)
+                               else weather)
+        try:
+            kwargs['temperature'] = kwargs.pop('temp_air')
+        except KeyError:
+            pass
+
         self.results.solar_position = self.location.get_solarposition(
             self.times, method=self.solar_position_method,
             **kwargs)
@@ -1348,16 +1372,7 @@ class ModelChain:
         self._assign_weather(weather)
         self._assign_times()
 
-        # build kwargs for solar position calculation
-        try:
-            press_temp = _build_kwargs(['pressure', 'temp_air'],
-                                       weather[0] if isinstance(weather, tuple)
-                                       else weather)
-            press_temp['temperature'] = press_temp.pop('temp_air')
-        except KeyError:
-            pass
-
-        self._prep_inputs_solar_pos(press_temp)
+        self._prep_inputs_solar_pos(weather)
         self._prep_inputs_airmass()
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
@@ -1455,7 +1470,7 @@ class ModelChain:
                                         'poa_diffuse'])
         self._assign_total_irrad(data)
 
-        self._prep_inputs_solar_pos()
+        self._prep_inputs_solar_pos(data)
         self._prep_inputs_airmass()
 
         if isinstance(self.system, SingleAxisTracker):

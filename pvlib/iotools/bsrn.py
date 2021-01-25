@@ -76,9 +76,9 @@ def read_bsrn(filename):
 
     References
     ----------
-    .. [1] `World Radiation Monitoring Center - Baseline Surface Radiation Network (BSRN)
-       `BSRN homepage <https:/https://bsrn.awi.de/>`_
-    .. [2] `Update of the Technical Plan for BSRN Data Management, October 2013,
+    .. [1] `World Radiation Monitoring Center - Baseline Surface Radiation
+        Network (BSRN) `BSRN homepage <https:/https://bsrn.awi.de/>`_
+    .. [2] `Update of the Technical Plan for BSRN Data Management, 2013,
        Global Climate Observing System (GCOS) GCOS-172.
        <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_
     .. [3] `BSRN Data Retrieval via FTP
@@ -129,9 +129,9 @@ def read_bsrn(filename):
 
     # Set datetime index and localize to UTC
     basename = os.path.basename(filename)  # get month and year from filename
-    start_date = pd.to_datetime(basename[3:7], format='%m%y')
-    data.index = start_date + pd.to_timedelta(data['day']-1, unit='d') + \
-                 pd.to_timedelta(data['minute'], unit='min')
+    data.index = pd.to_datetime(basename[3:7], format='%m%y') \
+                 + pd.to_timedelta(data['day']-1, unit='d') \
+                 + pd.to_timedelta(data['minute'], unit='min')
 
     try:
         data.index = data.index.tz_localize('UTC')  # BSRN timestamps are UTC

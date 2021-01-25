@@ -852,6 +852,7 @@ class PVSystem:
         return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                         saturation_current, photocurrent)
 
+    @_unwrap_single_value
     def get_ac(self, model, p_dc, v_dc=None):
         r"""Calculates AC power from p_dc using the inverter model indicated
         by model and self.inverter_parameters.
@@ -879,6 +880,8 @@ class PVSystem:
         ------
         ValueError
             If model is not one of 'sandia', 'adr' or 'pvwatts'.
+        ValueError
+            If model='adr' and the PVSystem has more than one array.
 
         See also
         --------
@@ -889,8 +892,9 @@ class PVSystem:
         pvlib.inverter.pvwatts_multi
         """
         model = model.lower()
+        mulitple_arrays = self.num_arrays > 1
         if model == 'sandia':
-            if self.num_arrays > 1:
+            if mulitple_arrays:
                 p_dc = self._validate_per_array(p_dc)
                 v_dc = self._validate_per_array(v_dc)
                 inv_fun = inverter.sandia_multi
@@ -900,14 +904,19 @@ class PVSystem:
         elif model == 'pvwatts':
             kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
                                    self.inverter_parameters)
-            if self.num_arrays > 1:
+            if mulitple_arrays:
                 p_dc = self._validate_per_array(p_dc)
                 inv_fun = inverter.pvwatts_multi
             else:
                 inv_fun = inverter.pvwatts
             return inv_fun(p_dc, self.inverter_parameters['pdc0'], **kwargs)
         elif model == 'adr':
-            return inverter.adr(v_dc, p_dc, self.inverter_parameters)
+            if mulitple_arrays:
+                raise ValueError(
+                    'The adr inverter function cannot be used for an inverter',
+                    'with multiple MPPT inputs')
+            else:
+                return inverter.adr(v_dc, p_dc, self.inverter_parameters)
         else:
             raise ValueError(
                 model + ' is not a valid AC power model.',

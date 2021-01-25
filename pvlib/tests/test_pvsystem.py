@@ -1449,6 +1449,7 @@ def test_PVSystem_sandia_multi(cec_inverter_parameters):
         system.sandia_multi((vdcs, vdcs), (pdcs, pdcs, pdcs))
 
 
+# remove after deprecation period for PVSystem.sandia_multi
 def test_PVSystem_sandia_multi_single_array(cec_inverter_parameters):
     system = pvsystem.PVSystem(
         arrays=[pvsystem.Array()],
@@ -1527,6 +1528,26 @@ def test_PVSystem_get_ac_adr(adr_inverter_parameters, mocker):
                                          382.6679, np.nan]))
     inverter.adr.assert_called_once_with(vdcs, pdcs,
                                          **system.inverter_parameters)
+
+
+def test_PVSystem_get_ac_adr_multi(adr_inverter_parameters):
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array(), pvsystem.Array()],
+        inverter_parameters=adr_inverter_parameters,
+    )
+    pdcs = pd.Series([135, 1232, 1170, 420, 551])
+    with pytest.raises(ValueError,
+                       match="The adr inverter function cannot be used"):
+        system.get_ac(model='adr', p_dc=pdcs)
+
+
+def test_PVSystem_get_ac_invalid(cec_inverter_parameters):
+    system = pvsystem.PVSystem(
+        inverter_parameters=cec_inverter_parameters,
+    )
+    pdcs = pd.Series(np.linspace(0, 50, 3))
+    with pytest.raises(ValueError, match="is not a valid AC power model"):
+        system.get_ac(model='not_a_model', p_dc=pdcs)
 
 
 def test_PVSystem_creation():

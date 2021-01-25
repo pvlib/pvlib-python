@@ -6,13 +6,13 @@ import pandas as pd
 import gzip
 import os
 
-COL_SPECS = [(0,3), (4,9), (10,16), (17,22), (23,27), (28,32), (33,39),
-             (40,45), (46,50), (51,55), (56,64), (65,70), (71,75)]
+COL_SPECS = [(0, 3), (4, 9), (10, 16), (17, 22), (23, 27), (28, 32), (33, 39),
+             (40, 45), (46, 50), (51, 55), (56, 64), (65, 70), (71, 75)]
 
 BSRN_COLUMNS = ['day', 'minute',
                 'ghi', 'ghi_std', 'ghi_min', 'ghi_max',
                 'dni', 'dni_std', 'dni_min', 'dni_max',
-                'empty0', 'empty1', 'empty2', 'empty3', 'empty4',
+                'empty', 'empty', 'empty', 'empty', 'empty',
                 'dhi', 'dhi_std', 'dhi_min', 'dhi_max',
                 'lwd', 'lwd_std', 'lwd_min', 'lwd_max',
                 'air_temperature', 'relative_humidity', 'pressure']
@@ -87,7 +87,7 @@ def read_bsrn(filename):
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
     """
 
-    # Read file and store the starting line number for each each logical record (LR)
+    # Read file and store the starting line number for each logical record (LR)
     line_no_dict = {}
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
         with gzip.open(filename, 'rt') as f:
@@ -100,9 +100,10 @@ def read_bsrn(filename):
                 if line.startswith('*'):  # Find start of all logical records
                     line_no_dict[line[2:6]] = num
 
-    # Determine start and end line of logical recrod 0100 to be parsed
-    start_row = line_no_dict['0100'] + 1  # Start line number of the data (LR0100)
-    if start_row-1 == max(line_no_dict.values()):  # If LR0100 is the last logical record
+    # Determine start and end line of logical record LR0100 to be parsed
+    start_row = line_no_dict['0100'] + 1  # Start line number
+    # If LR0100 is the last logical record, then read rest of file
+    if start_row-1 == max(line_no_dict.values()):
         end_row = num  # then parse rest of the file
     else:  # otherwise parse until the beginning of the next logical record
         end_row = min([i for i in line_no_dict.values() if i > start_row])
@@ -110,26 +111,30 @@ def read_bsrn(filename):
 
     # Read file as a fixed width file (fwf)
     data = pd.read_fwf(filename, skiprows=start_row, nrows=nrows, header=None,
-                       colspecs=COL_SPECS, na_values=[-999.0,-99.9])
+                       colspecs=COL_SPECS, na_values=[-999.0, -99.9])
 
-    # Assign multi-index and unstack DataFrame, such that each variable has a seperate column
-    data = data.set_index([data.index // 2, data.index % 2]).unstack(level=1).swaplevel(i=0, j=1, axis='columns')
+    # Create multi-index and unstack, resulting in one column for each variable
+    data = data.set_index([data.index // 2, data.index % 2])
+    data = data.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
 
     # Sort columns to match original order and assign column names
     data = data.reindex(sorted(data.columns), axis='columns')
     data.columns = BSRN_COLUMNS
+    # Drop empty columns
+    data = data.drop('empty', axis='columns')
 
-    # Change day and minute type to integer and drop empty columns
+    # Change day and minute type to integer
     data['day'] = data['day'].astype('Int64')
     data['minute'] = data['minute'].astype('Int64')
-    data = data.drop(['empty0','empty1','empty2','empty3','empty4'], axis='columns')
 
     # Set datetime index and localize to UTC
     basename = os.path.basename(filename)  # get month and year from filename
-    data.index = pd.to_datetime(basename[3:7], format='%m%y') + pd.to_timedelta(data['day']-1, unit='d') + pd.to_timedelta(data['minute'], unit='min')
+    start_date = pd.to_datetime(basename[3:7], format='%m%y')
+    data.index = start_date + pd.to_timedelta(data['day']-1, unit='d') + \
+                 pd.to_timedelta(data['minute'], unit='min')
 
     try:
-        data.index = data.index.tz_localize('UTC')  # all BSRN timestamps are in UTC
+        data.index = data.index.tz_localize('UTC')  # BSRN timestamps are UTC
     except TypeError:
         pass
 

@@ -6,6 +6,7 @@ from pvlib.pvsystem import PVSystem
 from pvlib import irradiance, atmosphere
 
 
+# add deprecation warning?
 class SingleAxisTracker(PVSystem):
     """
     A class for single-axis trackers that inherits the PV modeling methods from
@@ -75,7 +76,6 @@ class SingleAxisTracker(PVSystem):
 
     def __init__(self, axis_tilt=0, axis_azimuth=0, max_angle=90,
                  backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0.0, **kwargs):
-
         arrays = kwargs.get('arrays', [])
         if len(arrays) > 1:
             raise ValueError("SingleAxisTracker does not support "

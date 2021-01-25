@@ -15,7 +15,7 @@ import pandas as pd
 from pvlib._deprecation import deprecated
 
 from pvlib import (atmosphere, iam, inverter, irradiance,
-                   singlediode as _singlediode, temperature)
+                   singlediode as _singlediode, temperature, tracking)
 from pvlib.tools import _build_kwargs
 from pvlib._deprecation import pvlibDeprecationWarning
 
@@ -96,9 +96,9 @@ class PVSystem:
 
     Parameters
     ----------
-    arrays : iterable of Array, optional
+    arrays : iterable of FixedTiltArray or SingleAxisArray, optional
         List of arrays that are part of the system. If not specified
-        a single array is created from the other parameters (e.g.
+        a single FixedTiltArray is created from the other parameters (e.g.
         `surface_tilt`, `surface_azimuth`). If `arrays` is specified
         the following parameters are ignored:
 
@@ -191,7 +191,7 @@ class PVSystem:
                  racking_model=None, losses_parameters=None, name=None):
 
         if arrays is None:
-            self.arrays = (Array(
+            self.arrays = (FixedTiltArray(
                 surface_tilt,
                 surface_azimuth,
                 albedo,
@@ -1047,9 +1047,9 @@ class PVSystem:
         return len(self.arrays)
 
 
-class Array:
+class BaseArray:
     """
-    An Array is a set of of modules at the same orientation.
+    A set of modules described by common parameters.
 
     Specifically, an array is defined by tilt, azimuth, the
     module parameters, the number of parallel strings of modules
@@ -1057,15 +1057,6 @@ class Array:
 
     Parameters
     ----------
-    surface_tilt: float or array-like, default 0
-        Surface tilt angles in decimal degrees.
-        The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90)
-
-    surface_azimuth: float or array-like, default 180
-        Azimuth angle of the module surface.
-        North=0, East=90, South=180, West=270.
-
     albedo : None or float, default None
         The ground albedo. If ``None``, will attempt to use
         ``surface_type`` to look up an albedo value in
@@ -1105,15 +1096,12 @@ class Array:
     """
 
     def __init__(self,
-                 surface_tilt=0, surface_azimuth=180,
                  albedo=None, surface_type=None,
                  module=None, module_type=None,
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings=1,
                  racking_model=None, name=None):
-        self.surface_tilt = surface_tilt
-        self.surface_azimuth = surface_azimuth
 
         self.surface_type = surface_type
         if albedo is None:
@@ -1142,13 +1130,23 @@ class Array:
         self.name = name
 
     def __repr__(self):
-        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
+        attrs = ['name', 'module',
                  'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters',
                  'strings', 'modules_per_string']
-        return 'Array:\n  ' + '\n  '.join(
+        return 'BaseArray:\n  ' + '\n  '.join(
             f'{attr}: {getattr(self, attr)}' for attr in attrs
         )
+
+    def _extend_repr(self, name, attributes):
+        """refactor into non-cringy super() gymnastics"""
+        this_repr = (f'{name}:\n  ' + '\n  '.join(
+            f'{attr}: {getattr(self, attr)}' for attr in attributes))
+        # get the parent BaseArray info
+        basearray_repr = super().__repr__()
+        # remove the first line (contains 'BaseArray: \n')
+        basearray_repr = '\n'.join(basearray_repr.split('\n')[1:])
+        return this_repr + '\n' + basearray_repr
 
     def _infer_temperature_model_params(self):
         # try to infer temperature model parameters from from racking_model
@@ -1207,6 +1205,142 @@ class Array:
             cell_type = None
 
         return cell_type
+
+    def get_iam(self, aoi, iam_model='physical'):
+        """
+        Determine the incidence angle modifier using the method specified by
+        ``iam_model``.
+
+        Parameters for the selected IAM model are expected to be in
+        ``Array.module_parameters``. Default parameters are available for
+        the 'physical', 'ashrae' and 'martin_ruiz' models.
+
+        Parameters
+        ----------
+        aoi : numeric
+            The angle of incidence in degrees.
+
+        aoi_model : string, default 'physical'
+            The IAM model to be used. Valid strings are 'physical', 'ashrae',
+            'martin_ruiz' and 'sapm'.
+
+        Returns
+        -------
+        iam : numeric
+            The AOI modifier.
+
+        Raises
+        ------
+        ValueError
+            if `iam_model` is not a valid model name.
+        """
+        model = iam_model.lower()
+        if model in ['ashrae', 'physical', 'martin_ruiz']:
+            param_names = iam._IAM_MODEL_PARAMS[model]
+            kwargs = _build_kwargs(param_names, self.module_parameters)
+            func = getattr(iam, model)
+            return func(aoi, **kwargs)
+        elif model == 'sapm':
+            return iam.sapm(aoi, self.module_parameters)
+        elif model == 'interp':
+            raise ValueError(model + ' is not implemented as an IAM model '
+                             'option for Array')
+        else:
+            raise ValueError(model + ' is not a valid IAM model')
+
+
+class FixedTiltArray(BaseArray):
+    """
+    A set of of modules at a fixed orientation.
+
+    Specifically, a FixedTiltArray is defined by tilt, azimuth, the
+    module parameters, the number of parallel strings of modules
+    and the number of modules on each string.
+
+    Parameters
+    ----------
+    surface_tilt: float or array-like, default 0
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth: float or array-like, default 180
+        Azimuth angle of the module surface.
+        North=0, East=90, South=180, West=270.
+
+    albedo : None or float, default None
+        The ground albedo. If ``None``, will attempt to use
+        ``surface_type`` to look up an albedo value in
+        ``irradiance.SURFACE_ALBEDOS``. If a surface albedo
+        cannot be found then 0.25 is used.
+
+    surface_type : None or string, default None
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
+        for valid values.
+
+    module : None or string, default None
+        The model name of the modules.
+        May be used to look up the module_parameters dictionary
+        via some other method.
+
+    module_type : None or string, default None
+         Describes the module's construction. Valid strings are 'glass_polymer'
+         and 'glass_glass'. Used for cell and module temperature calculations.
+
+    module_parameters : None, dict or Series, default None
+        Parameters for the module model, e.g., SAPM, CEC, or other.
+
+    temperature_model_parameters : None, dict or Series, default None.
+        Parameters for the module temperature model, e.g., SAPM, Pvsyst, or
+        other.
+
+    modules_per_string: int, default 1
+        Number of modules per string in the array.
+
+    strings: int, default 1
+        Number of parallel strings in the array.
+
+    racking_model : None or string, default None
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
+
+    """
+
+    def __init__(
+        self,
+        surface_tilt=0,
+        surface_azimuth=180,
+        albedo=None,
+        surface_type=None,
+        module=None,
+        module_type=None,
+        module_parameters=None,
+        temperature_model_parameters=None,
+        modules_per_string=1,
+        strings=1,
+        racking_model=None,
+        name=None
+    ):
+
+        self.surface_tilt = surface_tilt
+        self.surface_azimuth = surface_azimuth
+
+        super().__init__(
+            albedo=albedo,
+            surface_type=surface_type,
+            module=module,
+            module_type=module_type,
+            module_parameters=module_parameters,
+            temperature_model_parameters=temperature_model_parameters,
+            modules_per_string=modules_per_string,
+            strings=strings,
+            racking_model=racking_model,
+            name=name
+        )
+
+    def __repr__(self):
+        attrs = ['surface_tilt', 'surface_azimuth']
+        return self._extend_repr('FixedTiltArray', attrs)
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """
@@ -1283,47 +1417,242 @@ class Array:
                                                albedo=self.albedo,
                                                **kwargs)
 
-    def get_iam(self, aoi, iam_model='physical'):
-        """
-        Determine the incidence angle modifier using the method specified by
-        ``iam_model``.
 
-        Parameters for the selected IAM model are expected to be in
-        ``Array.module_parameters``. Default parameters are available for
-        the 'physical', 'ashrae' and 'martin_ruiz' models.
+class SingleAxisArray(BaseArray):
+    """
+    A set of of modules that track the sun along a single axis.
+
+    Parameters
+    ----------
+    axis_tilt : float, default 0
+        The tilt of the axis of rotation (i.e, the y-axis defined by
+        axis_azimuth) with respect to horizontal, in decimal degrees.
+
+    axis_azimuth : float, default 0
+        A value denoting the compass direction along which the axis of
+        rotation lies. Measured in decimal degrees east of north.
+
+    max_angle : float, default 90
+        A value denoting the maximum rotation angle, in decimal degrees,
+        of the one-axis tracker from its horizontal position (horizontal
+        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
+        to rotate to a vertical position to point the panel towards a
+        horizon. max_angle of 180 degrees allows for full rotation.
+
+    backtrack : bool, default True
+        Controls whether the tracker has the capability to "backtrack"
+        to avoid row-to-row shading. False denotes no backtrack
+        capability. True denotes backtrack capability.
+
+    gcr : float, default 2.0/7.0
+        A value denoting the ground coverage ratio of a tracker system
+        which utilizes backtracking; i.e. the ratio between the PV array
+        surface area to total ground area. A tracker system with modules
+        2 meters wide, centered on the tracking axis, with 6 meters
+        between the tracking axes has a gcr of 2/6=0.333. If gcr is not
+        provided, a gcr of 2/7 is default. gcr must be <=1.
+
+    cross_axis_tilt : float, default 0.0
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. Cross-axis tilt should be specified
+        using a right-handed convention. For example, trackers with axis
+        azimuth of 180 degrees (heading south) will have a negative cross-axis
+        tilt if the tracker axes plane slopes down to the east and positive
+        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        `cross_axis_tilt`. [degrees]
+
+    albedo : None or float, default None
+        The ground albedo. If ``None``, will attempt to use
+        ``surface_type`` to look up an albedo value in
+        ``irradiance.SURFACE_ALBEDOS``. If a surface albedo
+        cannot be found then 0.25 is used.
+
+    surface_type : None or string, default None
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
+        for valid values.
+
+    module : None or string, default None
+        The model name of the modules.
+        May be used to look up the module_parameters dictionary
+        via some other method.
+
+    module_type : None or string, default None
+         Describes the module's construction. Valid strings are 'glass_polymer'
+         and 'glass_glass'. Used for cell and module temperature calculations.
+
+    module_parameters : None, dict or Series, default None
+        Parameters for the module model, e.g., SAPM, CEC, or other.
+
+    temperature_model_parameters : None, dict or Series, default None.
+        Parameters for the module temperature model, e.g., SAPM, Pvsyst, or
+        other.
+
+    modules_per_string: int, default 1
+        Number of modules per string in the array.
+
+    strings: int, default 1
+        Number of parallel strings in the array.
+
+    racking_model : None or string, default None
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
+
+    """
+
+    def __init__(
+        self,
+        axis_tilt=0,
+        axis_azimuth=0,
+        max_angle=90,
+        backtrack=True,
+        gcr=2.0/7.0,
+        cross_axis_tilt=0.0,
+        albedo=None,
+        surface_type=None,
+        module=None,
+        module_type=None,
+        module_parameters=None,
+        temperature_model_parameters=None,
+        modules_per_string=1,
+        strings=1,
+        racking_model=None,
+        name=None
+    ):
+
+        self.axis_tilt = axis_tilt
+        self.axis_azimuth = axis_azimuth
+        self.max_angle = max_angle
+        self.backtrack = backtrack
+        self.gcr = gcr
+        self.cross_axis_tilt = cross_axis_tilt
+
+        super().__init__(
+            albedo=albedo,
+            surface_type=surface_type,
+            module=module,
+            module_type=module_type,
+            module_parameters=module_parameters,
+            temperature_model_parameters=temperature_model_parameters,
+            modules_per_string=modules_per_string,
+            strings=strings,
+            racking_model=racking_model,
+            name=name
+        )
+
+    def __repr__(self):
+        attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr',
+                 'cross_axis_tilt']
+        return self._extend_repr('SingleAxisArray', attrs)
+
+    def _singleaxis(self, apparent_zenith, apparent_azimuth):
+        """
+        Get tracking data. See :py:func:`pvlib.tracking.singleaxis` more
+        detail.
 
         Parameters
         ----------
-        aoi : numeric
-            The angle of incidence in degrees.
+        apparent_zenith : float, 1d array, or Series
+            Solar apparent zenith angles in decimal degrees.
 
-        aoi_model : string, default 'physical'
-            The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz' and 'sapm'.
+        apparent_azimuth : float, 1d array, or Series
+            Solar apparent azimuth angles in decimal degrees.
 
         Returns
         -------
-        iam : numeric
-            The AOI modifier.
-
-        Raises
-        ------
-        ValueError
-            if `iam_model` is not a valid model name.
+        tracking data
         """
-        model = iam_model.lower()
-        if model in ['ashrae', 'physical', 'martin_ruiz']:
-            param_names = iam._IAM_MODEL_PARAMS[model]
-            kwargs = _build_kwargs(param_names, self.module_parameters)
-            func = getattr(iam, model)
-            return func(aoi, **kwargs)
-        elif model == 'sapm':
-            return iam.sapm(aoi, self.module_parameters)
-        elif model == 'interp':
-            raise ValueError(model + ' is not implemented as an IAM model '
-                             'option for Array')
-        else:
-            raise ValueError(model + ' is not a valid IAM model')
+        tracking_data = tracking.singleaxis(
+            apparent_zenith, apparent_azimuth,
+            self.axis_tilt, self.axis_azimuth,
+            self.max_angle, self.backtrack,
+            self.gcr, self.cross_axis_tilt
+        )
+        return tracking_data
+
+    def get_aoi(self, solar_zenith, solar_azimuth):
+        """
+        Get the angle of incidence on the array.
+
+        Parameters
+        ----------
+        solar_zenith : float or Series
+            Solar zenith angle.
+        solar_azimuth : float or Series
+            Solar azimuth angle
+
+        Returns
+        -------
+        aoi : Series
+            Then angle of incidence.
+        """
+        tracking = self._singleaxis(solar_zenith, solar_azimuth)
+        return irradiance.aoi(
+            tracking['surface_tilt'],
+            tracking['surface_azimuth'],
+            solar_zenith,
+            solar_azimuth
+        )
+
+    def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
+                       dni_extra=None, airmass=None, model='haydavies',
+                       **kwargs):
+        """
+        Get plane of array irradiance components.
+
+        Uses the :py:func:`pvlib.irradiance.get_total_irradiance` function to
+        calculate the plane of array irradiance components for a surface
+        defined by ``self.surface_tilt`` and ``self.surface_azimuth`` with
+        albedo ``self.albedo``.
+
+        Parameters
+        ----------
+        solar_zenith : float or Series.
+            Solar zenith angle.
+        solar_azimuth : float or Series.
+            Solar azimuth angle.
+        dni : float or Series
+            Direct Normal Irradiance
+        ghi : float or Series
+            Global horizontal irradiance
+        dhi : float or Series
+            Diffuse horizontal irradiance
+        dni_extra : None, float or Series, default None
+            Extraterrestrial direct normal irradiance
+        airmass : None, float or Series, default None
+            Airmass
+        model : String, default 'haydavies'
+            Irradiance model.
+
+        kwargs
+            Extra parameters passed to
+            :py:func:`pvlib.irradiance.get_total_irradiance`.
+
+        Returns
+        -------
+        poa_irradiance : DataFrame
+            Column names are: ``total, beam, sky, ground``.
+        """
+        # not needed for all models, but this is easier
+        if dni_extra is None:
+            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
+
+        if airmass is None:
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
+
+        tracking = self._singleaxis(solar_zenith, solar_azimuth)
+
+        return irradiance.get_total_irradiance(
+            tracking['surface_tilt'],
+            tracking['surface_azimuth'],
+            solar_zenith, solar_azimuth,
+            dni, ghi, dhi,
+            dni_extra=dni_extra,
+            airmass=airmass,
+            model=model,
+            albedo=self.albedo,
+            **kwargs)
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,

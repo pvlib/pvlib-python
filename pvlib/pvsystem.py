@@ -852,7 +852,6 @@ class PVSystem:
         return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                         saturation_current, photocurrent)
 
-    @_unwrap_single_value
     def get_ac(self, model, p_dc, v_dc=None):
         r"""Calculates AC power from p_dc using the inverter model indicated
         by model and self.inverter_parameters.

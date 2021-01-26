@@ -1527,7 +1527,7 @@ def test_PVSystem_get_ac_adr(adr_inverter_parameters, mocker):
     assert_series_equal(pacs, pd.Series([np.nan, 1161.5745, 1116.4459,
                                          382.6679, np.nan]))
     inverter.adr.assert_called_once_with(vdcs, pdcs,
-                                         **system.inverter_parameters)
+                                         system.inverter_parameters)
 
 
 def test_PVSystem_get_ac_adr_multi(adr_inverter_parameters):

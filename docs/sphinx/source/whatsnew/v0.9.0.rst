@@ -56,15 +56,6 @@ Deprecations
   * ``ModelChain.total_irrad``
   * ``ModelChain.tracking``
 
-* The following ``PVSystem`` methods are deprecated. Use ``PVsystem.get_ac``
-  instead.
-  * ``PVSystem.snlinverter``
-  * ``PVSystem.sandia_multi``
-  * ``PVSystem.adrinverter``
-  * ``PVSystem.pvwatts``
-  * ``PVSystem.pvwatts_multi``
-
-
 Enhancements
 ~~~~~~~~~~~~
 * In :py:class:`~pvlib.modelchain.ModelChain`, attributes which contain

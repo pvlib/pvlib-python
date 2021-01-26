@@ -922,28 +922,33 @@ class PVSystem:
                 ' model must be one of "sandia", "adr" or "pvwatts"')
 
     def snlinverter(self, v_dc, p_dc):
+        """Uses :py:func:`pvlib.inverter.sandia` to calculate AC power based on
+        ``self.inverter_parameters`` and the input voltage and power.
+
+        See :py:func:`pvlib.inverter.sandia` for details
         """
-        Deprecated. Use ``PVSystem.get_ac`` instead.
-        """
-        warnings.warn('PVsystem.sandia_multi is deprecated and will be',
-                      ' removed in v0.10. Use PVSystem.get_ac instead')
-        return self.get_ac('sandia', p_dc, v_dc)
+        return inverter.sandia(v_dc, p_dc, self.inverter_parameters)
 
     def sandia_multi(self, v_dc, p_dc):
+        """Uses :py:func:`pvlib.inverter.sandia_multi` to calculate AC power
+        based on ``self.inverter_parameters`` and the input voltage and power.
+
+        The parameters `v_dc` and `p_dc` must be tuples with length equal to
+        ``self.num_arrays`` if the system has more than one array.
+
+        See :py:func:`pvlib.inverter.sandia_multi` for details.
         """
-        Deprecated. Use ``PVSystem.get_ac`` instead.
-        """
-        warnings.warn('PVsystem.sandia_multi is deprecated and will be',
-                      ' removed in v0.10. Use PVSystem.get_ac instead')
-        return self.get_ac('sandia', p_dc, v_dc)
+        v_dc = self._validate_per_array(v_dc)
+        p_dc = self._validate_per_array(p_dc)
+        return inverter.sandia_multi(v_dc, p_dc, self.inverter_parameters)
 
     def adrinverter(self, v_dc, p_dc):
+        """Uses :py:func:`pvlib.inverter.adr` to calculate AC power based on
+        ``self.inverter_parameters`` and the input voltage and power.
+
+        See :py:func:`pvlib.inverter.adr` for details
         """
-        Deprecated. Use ``PVSystem.get_ac`` instead.
-        """
-        warnings.warn('PVsystem.sandia_multi is deprecated and will be',
-                      ' removed in v0.10. Use PVSystem.get_ac instead')
-        return self.get_ac('adr', p_dc, v_dc)
+        return inverter.adr(v_dc, p_dc, self.inverter_parameters)
 
     @_unwrap_single_value
     def scale_voltage_current_power(self, data):
@@ -1006,20 +1011,32 @@ class PVSystem:
 
     def pvwatts_ac(self, pdc):
         """
-        Deprecated. Use ``PVSystem.get_ac`` instead.
+        Calculates AC power according to the PVWatts model using
+        :py:func:`pvlib.inverter.pvwatts`, `self.module_parameters["pdc0"]`,
+        and `eta_inv_nom=self.inverter_parameters["eta_inv_nom"]`.
+
+        See :py:func:`pvlib.inverter.pvwatts` for details.
         """
-        warnings.warn('PVsystem.sandia_multi is deprecated and will be',
-                      ' removed in v0.10. Use PVSystem.get_ac instead')
-        return self.get_ac('pvwatts', pdc)
+        kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
+                               self.inverter_parameters)
+
+        return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
+                                **kwargs)
 
     def pvwatts_multi(self, p_dc):
-        """
-        Deprecated. Use ``PVSystem.get_ac`` instead.
-        """
-        warnings.warn('PVsystem.sandia_multi is deprecated and will be',
-                      ' removed in v0.10. Use PVSystem.get_ac instead')
-        return self.get_ac('pvwatts', p_dc)
+        """Uses :py:func:`pvlib.inverter.pvwatts_multi` to calculate AC power
+        based on ``self.inverter_parameters`` and the input voltage and power.
 
+        The parameter `p_dc` must be a tuple with length equal to
+        ``self.num_arrays`` if the system has more than one array.
+
+        See :py:func:`pvlib.inverter.pvwatts_multi` for details.
+        """
+        p_dc = self._validate_per_array(p_dc)
+        kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
+                               self.inverter_parameters)
+        return inverter.pvwatts_multi(p_dc, self.inverter_parameters['pdc0'],
+                                      **kwargs)
     @property
     @_unwrap_single_value
     def module_parameters(self):

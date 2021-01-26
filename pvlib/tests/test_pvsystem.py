@@ -2077,33 +2077,3 @@ def test_combine_loss_factors():
 def test_no_extra_kwargs():
     with pytest.raises(TypeError, match="arbitrary_kwarg"):
         pvsystem.PVSystem(arbitrary_kwarg='value')
-
-
-def test_deprecated_inverter_methods(cec_inverter_parameters,
-                                     adr_inverter_parameters,
-                                     pvwatts_system_defaults):
-    system = pvsystem.PVSystem(
-        inverter=cec_inverter_parameters['Name'],
-        inverter_parameters=cec_inverter_parameters,
-    )
-    vdcs = pd.Series(np.linspace(0, 50, 3))
-    idcs = pd.Series(np.linspace(0, 11, 3))
-    pdcs = idcs * vdcs
-    matchtxt = "Use PVSystem.get_ac instead"
-    with pytest.warns(match=matchtxt):
-        system.snlinverter(vdcs, pdcs)
-    with pytest.warns(match=matchtxt):
-        system.sandia_multi((vdcs,), (pdcs,))
-    system = pvsystem.PVSystem(
-        inverter_parameters=adr_inverter_parameters,
-    )
-    with pytest.warns(match=matchtxt):
-        system.adrinverter(vdcs, pdcs)
-    with pytest.warns(match=matchtxt):
-        pvwatts_system_defaults.pvwatts_ac(pdcs)
-    system = pvsystem.PVSystem(
-            arrays=[pvsystem.Array(), pvsystem.Array()],
-            inverter_parameters=pvwatts_system_defaults.inverter_parameters,
-        )
-    with pytest.warns(match=matchtxt):
-        system.pvwatts_ac((pdcs, pdcs))

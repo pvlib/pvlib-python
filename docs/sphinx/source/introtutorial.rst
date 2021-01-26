@@ -31,13 +31,12 @@ configuration at a handful of sites listed below.
     import pandas as pd
     import matplotlib.pyplot as plt
 
-    # very approximate
     # latitude, longitude, name, altitude, timezone
     coordinates = [
-        (30, -110, 'Tucson', 700, 'Etc/GMT+7'),
-        (35, -105, 'Albuquerque', 1500, 'Etc/GMT+7'),
-        (40, -120, 'San Francisco', 10, 'Etc/GMT+8'),
-        (50, 10, 'Berlin', 34, 'Etc/GMT-1'),
+        (32.2, -111.0, 'Tucson', 700, 'Etc/GMT+7'),
+        (35.1, -106.6, 'Albuquerque', 1500, 'Etc/GMT+7'),
+        (37.8, -122.4, 'San Francisco', 10, 'Etc/GMT+8'),
+        (52.5, 13.4, 'Berlin', 34, 'Etc/GMT-1'),
     ]
 
     # get the module and inverter specifications from SAM

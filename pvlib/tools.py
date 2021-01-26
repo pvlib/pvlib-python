@@ -318,3 +318,15 @@ def _golden_sect_DataFrame(params, VL, VH, func):
             raise Exception("EXCEPTION:iterations exceeded maximum (50)")
 
     return func(df, 'V1'), df['V1']
+
+
+def repr(obj, attributes, name=None, level=1):
+    if name is not None:
+        prefix = ' ' * (level - 1)
+        this_repr = f'{prefix}{name}:\n'
+    else:
+        this_repr = ''
+    indent = ' ' * level
+    this_repr += '\n'.join(
+        f'{indent}{attr}: {getattr(obj, attr)}' for attr in attributes)
+    return this_repr

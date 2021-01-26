@@ -15,7 +15,7 @@ import pandas as pd
 from pvlib._deprecation import deprecated
 
 from pvlib import (atmosphere, iam, inverter, irradiance,
-                   singlediode as _singlediode, temperature, tracking)
+                   singlediode as _singlediode, temperature, tools)
 from pvlib.tools import _build_kwargs
 from pvlib._deprecation import pvlibDeprecationWarning
 
@@ -1129,14 +1129,12 @@ class BaseArray:
 
         self.name = name
 
-    def __repr__(self):
+    def __repr__(self, name='BaseArray'):
         attrs = ['name', 'module',
                  'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters',
                  'strings', 'modules_per_string']
-        return 'BaseArray:\n  ' + '\n  '.join(
-            f'{attr}: {getattr(self, attr)}' for attr in attrs
-        )
+        return tools.repr(self, attrs, name=name, level=1)
 
     def _extend_repr(self, name, attributes):
         """refactor into non-cringy super() gymnastics"""
@@ -1321,7 +1319,7 @@ class FixedTiltArray(BaseArray):
         racking_model=None,
         name=None
     ):
-
+        self.name = name
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
 
@@ -1339,8 +1337,10 @@ class FixedTiltArray(BaseArray):
         )
 
     def __repr__(self):
-        attrs = ['surface_tilt', 'surface_azimuth']
-        return self._extend_repr('FixedTiltArray', attrs)
+        parent_repr = super().__repr__(name='FixedArray')
+        attrs = ['name', 'surface_tilt', 'surface_azimuth']
+        this_repr = tools.repr(self, attrs, level=1)
+        return parent_repr + '\n' + this_repr
 
     def get_aoi(self, solar_zenith, solar_azimuth):
         """
@@ -1521,6 +1521,7 @@ class SingleAxisArray(BaseArray):
         name=None
     ):
 
+        self.name = name
         self.axis_tilt = axis_tilt
         self.axis_azimuth = axis_azimuth
         self.max_angle = max_angle
@@ -1542,9 +1543,11 @@ class SingleAxisArray(BaseArray):
         )
 
     def __repr__(self):
-        attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr',
-                 'cross_axis_tilt']
-        return self._extend_repr('SingleAxisArray', attrs)
+        parent_repr = super().__repr__(name='SingleAxisArray')
+        attrs = ['name', 'axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack',
+                 'gcr', 'cross_axis_tilt']
+        this_repr = tools.repr(self, attrs, level=1)
+        return parent_repr + '\n' + this_repr
 
     def singleaxis(self, apparent_zenith, apparent_azimuth):
         """
@@ -1563,6 +1566,7 @@ class SingleAxisArray(BaseArray):
         -------
         tracking data
         """
+        from pvlib import tracking
         tracking_data = tracking.singleaxis(
             apparent_zenith, apparent_azimuth,
             self.axis_tilt, self.axis_azimuth,

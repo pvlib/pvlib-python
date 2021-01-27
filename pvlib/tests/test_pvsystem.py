@@ -1383,9 +1383,9 @@ def test_PVSystem_get_ac_sandia(cec_inverter_parameters, mocker):
     vdcs = pd.Series(np.linspace(0, 50, 3))
     idcs = pd.Series(np.linspace(0, 11, 3))
     pdcs = idcs * vdcs
-    pacs = system.get_ac('sandia', vdcs, pdcs)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    pacs = system.get_ac('sandia', pdcs, v_dc=vdcs)
     inv_fun.assert_called_once()
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
 # remove after deprecation period for PVSystem.snlinverter
@@ -1412,9 +1412,9 @@ def test_PVSystem_get_ac_sandia_multi(cec_inverter_parameters, mocker):
     vdcs = pd.Series(np.linspace(0, 50, 3))
     idcs = pd.Series(np.linspace(0, 11, 3)) / 2
     pdcs = idcs * vdcs
-    pacs = system.get_ac('sandia', (vdcs, vdcs), (pdcs, pdcs))
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    pacs = system.get_ac('sandia', (pdcs, pdcs), v_dc=(vdcs, vdcs))
     inv_fun.assert_called_once()
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
         system.get_ac('sandia', vdcs, (pdcs, pdcs))

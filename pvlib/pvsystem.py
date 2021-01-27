@@ -852,7 +852,75 @@ class PVSystem:
         return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
                         saturation_current, photocurrent)
 
-    # inverter now specified by self.inverter_parameters
+    def get_ac(self, model, p_dc, v_dc=None):
+        r"""Calculates AC power from p_dc using the inverter model indicated
+        by model and self.inverter_parameters.
+
+        Parameters
+        ----------
+        model : str
+            Must be one of 'sandia', 'adr', or 'pvwatts'.
+        p_dc : numeric, or tuple, list or array of numeric
+            DC power on each MPPT input of the inverter. Use tuple, list or
+            array for inverters with multiple MPPT inputs. If type is array,
+            p_dc must be 2d with axis 0 being the MPPT inputs. [W]
+        v_dc : numeric, or tuple, list or array of numeric
+            DC voltage on each MPPT input of the inverter. Required when
+            model='sandia' or model='adr'. Use tuple, list or
+            array for inverters with multiple MPPT inputs. If type is array,
+            v_dc must be 2d with axis 0 being the MPPT inputs. [V]
+
+        Returns
+        -------
+        power_ac : numeric
+            AC power output for the inverter. [W]
+
+        Raises
+        ------
+        ValueError
+            If model is not one of 'sandia', 'adr' or 'pvwatts'.
+        ValueError
+            If model='adr' and the PVSystem has more than one array.
+
+        See also
+        --------
+        pvlib.inverter.sandia
+        pvlib.inverter.sandia_multi
+        pvlib.inverter.adr
+        pvlib.inverter.pvwatts
+        pvlib.inverter.pvwatts_multi
+        """
+        model = model.lower()
+        multiple_arrays = self.num_arrays > 1
+        if model == 'sandia':
+            if multiple_arrays:
+                p_dc = self._validate_per_array(p_dc)
+                v_dc = self._validate_per_array(v_dc)
+                inv_fun = inverter.sandia_multi
+            else:
+                inv_fun = inverter.sandia
+            return inv_fun(v_dc, p_dc, self.inverter_parameters)
+        elif model == 'pvwatts':
+            kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
+                                   self.inverter_parameters)
+            if multiple_arrays:
+                p_dc = self._validate_per_array(p_dc)
+                inv_fun = inverter.pvwatts_multi
+            else:
+                inv_fun = inverter.pvwatts
+            return inv_fun(p_dc, self.inverter_parameters['pdc0'], **kwargs)
+        elif model == 'adr':
+            if multiple_arrays:
+                raise ValueError(
+                    'The adr inverter function cannot be used for an inverter',
+                    ' with multiple MPPT inputs')
+            else:
+                return inverter.adr(v_dc, p_dc, self.inverter_parameters)
+        else:
+            raise ValueError(
+                model + ' is not a valid AC power model.',
+                ' model must be one of "sandia", "adr" or "pvwatts"')
+
     def snlinverter(self, v_dc, p_dc):
         """Uses :py:func:`pvlib.inverter.sandia` to calculate AC power based on
         ``self.inverter_parameters`` and the input voltage and power.
@@ -969,7 +1037,6 @@ class PVSystem:
                                self.inverter_parameters)
         return inverter.pvwatts_multi(p_dc, self.inverter_parameters['pdc0'],
                                       **kwargs)
-
     @property
     @_unwrap_single_value
     def module_parameters(self):

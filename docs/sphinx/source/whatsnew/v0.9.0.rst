@@ -87,6 +87,9 @@ Enhancements
   by ``pvsystem.PVSystem.modules_per_strings`` and
   ``pvsystem.PVSystem.strings_per_inverter``. Note that both attributes still
   default to 1. (:pull:`1138`)
+* :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
+  from DC power. Use parameter 'model' to specify which inverter model to use.
+  (:pull:`1147`, :issue:`998`)
 
 Bug fixes
 ~~~~~~~~~

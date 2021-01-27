@@ -292,6 +292,7 @@ Inverter models (DC to AC conversion)
 .. autosummary::
    :toctree: generated/
 
+   pvsystem.PVSystem.get_ac
    inverter.sandia
    inverter.sandia_multi
    inverter.adr

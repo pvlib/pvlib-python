@@ -1256,8 +1256,14 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
     ac_model = inverter_to_ac_model[inverter_model]
     system = ac_systems[inverter_model]
 
+    mc_inferred = ModelChain(system, location,
+                             aoi_model='no_loss', spectral_model='no_loss')
     mc = ModelChain(system, location, ac_model=ac_model,
                     aoi_model='no_loss', spectral_model='no_loss')
+
+    # tests ModelChain.infer_ac_model
+    assert mc_inferred.ac_model.__name__ == mc.ac_model.__name__
+
     m = mocker.spy(inverter, inverter_model)
     mc.run_model(weather)
     assert m.call_count == 1

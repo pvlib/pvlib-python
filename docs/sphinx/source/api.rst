@@ -630,8 +630,8 @@ ModelChain model definitions.
    modelchain.ModelChain.desoto
    modelchain.ModelChain.pvsyst
    modelchain.ModelChain.pvwatts_dc
-   modelchain.ModelChain.snlinverter
-   modelchain.ModelChain.adrinverter
+   modelchain.ModelChain.sandia_inverter
+   modelchain.ModelChain.adr_inverter
    modelchain.ModelChain.pvwatts_inverter
    modelchain.ModelChain.ashrae_aoi_loss
    modelchain.ModelChain.physical_aoi_loss

@@ -921,6 +921,7 @@ class PVSystem:
                 model + ' is not a valid AC power model.',
                 ' model must be one of "sandia", "adr" or "pvwatts"')
 
+    @deprecated(alternative='PVSystem.get_ac', removal='0.10')
     def snlinverter(self, v_dc, p_dc):
         """Uses :py:func:`pvlib.inverter.sandia` to calculate AC power based on
         ``self.inverter_parameters`` and the input voltage and power.
@@ -942,6 +943,7 @@ class PVSystem:
         p_dc = self._validate_per_array(p_dc)
         return inverter.sandia_multi(v_dc, p_dc, self.inverter_parameters)
 
+    @deprecated(alternative='PVSystem.get_ac', removal='0.10')
     def adrinverter(self, v_dc, p_dc):
         """Uses :py:func:`pvlib.inverter.adr` to calculate AC power based on
         ``self.inverter_parameters`` and the input voltage and power.
@@ -1009,6 +1011,7 @@ class PVSystem:
                                self.losses_parameters)
         return pvwatts_losses(**kwargs)
 
+    @deprecated(alternative='PVSystem.get_ac', removal='0.10')
     def pvwatts_ac(self, pdc):
         """
         Calculates AC power according to the PVWatts model using

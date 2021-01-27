@@ -8,7 +8,6 @@ import functools
 import io
 import os
 from urllib.request import urlopen
-import warnings
 import numpy as np
 import pandas as pd
 
@@ -17,7 +16,6 @@ from pvlib._deprecation import deprecated
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
 from pvlib.tools import _build_kwargs
-from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # a dict of required parameter names for each DC power model

@@ -38,7 +38,7 @@ Breaking changes
 
 * ``ModelChain.snlinverter`` changed to ``ModelChain.sandia_inverter``.
   ``ModelChain.adrinverter`` changed to ``ModelChain.adr_inverter``.
-  (:pull:`1148`)
+  (:pull:`1150`)
 
 
 Deprecations
@@ -82,7 +82,7 @@ Enhancements
   :py:class:`~pvlib.pvsystem.PVSystem` and
   :py:class:`~pvlib.modelchain.ModelChain` (as ``ac_model='sandia'``
   and ``ac_model='pvwatts'``).
-  (:pull:`1076`, :issue:`1067`, :pull:`1132`, :issue:`1117`, :pull:`1148`)
+  (:pull:`1076`, :issue:`1067`, :pull:`1132`, :issue:`1117`, :pull:`1150`)
 * :py:class:`~pvlib.modelchain.ModelChain` 'run_model' methods now
   automatically switch to using ``'effective_irradiance'`` (if available) for
   cell temperature models, when ``'poa_global'`` is not provided in input
@@ -93,7 +93,7 @@ Enhancements
   default to 1. (:pull:`1138`)
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
   from DC power. Use parameter ``model`` to specify which inverter model to use.
-  (:pull:`1147`, :issue:`998`, :pull:`1148`)
+  (:pull:`1147`, :issue:`998`, :pull:`1150`)
 
 Bug fixes
 ~~~~~~~~~

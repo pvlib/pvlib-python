@@ -480,7 +480,7 @@ def test_ModelChain_invalid_inverter_params_arrays(
     sapm_dc_snl_ac_system_same_arrays.inverter_parameters = \
         inverter_params[inverter]
     with pytest.raises(ValueError,
-                       match=r'Only sandia and pvwatts inverter models'):
+                       match=r'adr inverter function cannot'):
         ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
 
 

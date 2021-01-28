@@ -783,29 +783,21 @@ class ModelChain:
     def infer_ac_model(self):
         """Infer AC power model from system attributes."""
         inverter_params = set(self.system.inverter_parameters.keys())
-        if self.system.num_arrays > 1:
-            return self._infer_ac_model_multi(inverter_params)
         if _snl_params(inverter_params):
             return self.sandia_inverter
         if _adr_params(inverter_params):
-            return self.adr_inverter
+            if self.system.num_arrays > 1:
+                raise ValueError(
+                    'The adr inverter function cannot be used for an inverter',
+                    ' with multiple MPPT inputs')
+            else:
+                return self.adr_inverter
         if _pvwatts_params(inverter_params):
             return self.pvwatts_inverter
         raise ValueError('could not infer AC model from '
                          'system.inverter_parameters. Check '
                          'system.inverter_parameters or explicitly '
                          'set the model with the ac_model kwarg.')
-
-    def _infer_ac_model_multi(self, inverter_params):
-        if _snl_params(inverter_params):
-            return self.sandia_inverter
-        elif _pvwatts_params(inverter_params):
-            return self.pvwatts_inverter
-        raise ValueError('could not infer multi-array AC model from '
-                         'system.inverter_parameters. Only sandia and pvwatts '
-                         'inverter models support multiple '
-                         'Arrays. Check system.inverter_parameters or '
-                         'explicitly set the model with the ac_model kwarg.')
 
     def sandia_inverter(self):
         self.results.ac = self.system.get_ac(

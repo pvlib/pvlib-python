@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from pvlib import iam, modelchain, pvsystem, temperature
+from pvlib import iam, modelchain, pvsystem, temperature, inverter
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.tracking import SingleAxisTracker
@@ -480,7 +480,7 @@ def test_ModelChain_invalid_inverter_params_arrays(
     sapm_dc_snl_ac_system_same_arrays.inverter_parameters = \
         inverter_params[inverter]
     with pytest.raises(ValueError,
-                       match=r'Only sandia and pvwatts inverter models'):
+                       match=r'adr inverter function cannot'):
         ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
 
 
@@ -1235,27 +1235,36 @@ def acdc(mc):
     mc.results.ac = mc.results.dc
 
 
-@pytest.mark.parametrize('ac_model', ['sandia', 'adr',
-                                      'pvwatts', 'sandia_multi',
-                                      'pvwatts_multi'])
+@pytest.mark.parametrize('inverter_model', ['sandia', 'adr',
+                                            'pvwatts', 'sandia_multi',
+                                            'pvwatts_multi'])
 def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
-                   pvwatts_dc_pvwatts_ac_system, location, ac_model,
-                   weather, mocker):
+                   pvwatts_dc_pvwatts_ac_system, cec_dc_snl_ac_arrays,
+                   pvwatts_dc_pvwatts_ac_system_arrays,
+                   location, inverter_model, weather, mocker):
     ac_systems = {'sandia': sapm_dc_snl_ac_system,
-                  'sandia_multi': sapm_dc_snl_ac_system,
+                  'sandia_multi': cec_dc_snl_ac_arrays,
                   'adr': cec_dc_adr_ac_system,
                   'pvwatts': pvwatts_dc_pvwatts_ac_system,
-                  'pvwatts_multi': pvwatts_dc_pvwatts_ac_system}
-    ac_method_name = {'sandia': 'snlinverter',
-                      'sandia_multi': 'sandia_multi',
-                      'adr': 'adrinverter',
-                      'pvwatts': 'pvwatts_ac',
-                      'pvwatts_multi': 'pvwatts_multi'}
-    system = ac_systems[ac_model]
+                  'pvwatts_multi': pvwatts_dc_pvwatts_ac_system_arrays}
+    inverter_to_ac_model = {
+        'sandia': 'sandia',
+        'sandia_multi': 'sandia',
+        'adr': 'adr',
+        'pvwatts': 'pvwatts',
+        'pvwatts_multi': 'pvwatts'}
+    ac_model = inverter_to_ac_model[inverter_model]
+    system = ac_systems[inverter_model]
 
+    mc_inferred = ModelChain(system, location,
+                             aoi_model='no_loss', spectral_model='no_loss')
     mc = ModelChain(system, location, ac_model=ac_model,
                     aoi_model='no_loss', spectral_model='no_loss')
-    m = mocker.spy(system, ac_method_name[ac_model])
+
+    # tests ModelChain.infer_ac_model
+    assert mc_inferred.ac_model.__name__ == mc.ac_model.__name__
+
+    m = mocker.spy(inverter, inverter_model)
     mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.results.ac, pd.Series)
@@ -1447,7 +1456,7 @@ def test_losses_models_no_loss(pvwatts_dc_pvwatts_ac_system, location, weather,
 
 def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
                                  pvwatts_dc_pvwatts_ac_system, location):
-    kwargs = {'dc_model': 'sapm', 'ac_model': 'snlinverter',
+    kwargs = {'dc_model': 'sapm', 'ac_model': 'sandia',
               'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
               'temperature_model': 'sapm', 'losses_model': 'no_loss'}
     sapm_dc_snl_ac_system.module_parameters.pop('A0')  # remove a parameter
@@ -1488,9 +1497,9 @@ def test_bad_get_orientation():
 def test_with_sapm_pvsystem_arrays(sapm_dc_snl_ac_system_Array, location,
                                    weather):
     mc = ModelChain.with_sapm(sapm_dc_snl_ac_system_Array, location,
-                              ac_model='sandia_multi')
+                              ac_model='sandia')
     assert mc.dc_model == mc.sapm
-    assert mc.ac_model == mc.sandia_multi_inverter
+    assert mc.ac_model == mc.sandia_inverter
     mc.run_model(weather)
     assert mc.results
 
@@ -1625,7 +1634,7 @@ def test_ModelChain___repr__(sapm_dc_snl_ac_system, location, strategy,
         '  solar_position_method: nrel_numpy',
         '  airmass_model: kastenyoung1989',
         '  dc_model: sapm',
-        '  ac_model: snlinverter',
+        '  ac_model: sandia_inverter',
         '  aoi_model: sapm_aoi_loss',
         '  spectral_model: sapm_spectral_loss',
         '  temperature_model: sapm_temp',
@@ -1778,7 +1787,7 @@ def test_inconsistent_array_params(location,
     )
     with pytest.raises(ValueError, match=temperature_error):
         ModelChain(different_temp_system, location,
-                   ac_model='sandia_multi',
+                   ac_model='sandia',
                    aoi_model='no_loss', spectral_model='no_loss',
                    temperature_model='sapm')
 

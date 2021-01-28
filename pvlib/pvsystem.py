@@ -8,7 +8,6 @@ import functools
 import io
 import os
 from urllib.request import urlopen
-import warnings
 import numpy as np
 import pandas as pd
 
@@ -17,7 +16,6 @@ from pvlib._deprecation import deprecated
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
 from pvlib.tools import _build_kwargs
-from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # a dict of required parameter names for each DC power model
@@ -921,6 +919,7 @@ class PVSystem:
                 model + ' is not a valid AC power model.',
                 ' model must be one of "sandia", "adr" or "pvwatts"')
 
+    @deprecated('0.9', alternative='PVSystem.get_ac', removal='0.10')
     def snlinverter(self, v_dc, p_dc):
         """Uses :py:func:`pvlib.inverter.sandia` to calculate AC power based on
         ``self.inverter_parameters`` and the input voltage and power.
@@ -929,19 +928,7 @@ class PVSystem:
         """
         return inverter.sandia(v_dc, p_dc, self.inverter_parameters)
 
-    def sandia_multi(self, v_dc, p_dc):
-        """Uses :py:func:`pvlib.inverter.sandia_multi` to calculate AC power
-        based on ``self.inverter_parameters`` and the input voltage and power.
-
-        The parameters `v_dc` and `p_dc` must be tuples with length equal to
-        ``self.num_arrays`` if the system has more than one array.
-
-        See :py:func:`pvlib.inverter.sandia_multi` for details.
-        """
-        v_dc = self._validate_per_array(v_dc)
-        p_dc = self._validate_per_array(p_dc)
-        return inverter.sandia_multi(v_dc, p_dc, self.inverter_parameters)
-
+    @deprecated('0.9', alternative='PVSystem.get_ac', removal='0.10')
     def adrinverter(self, v_dc, p_dc):
         """Uses :py:func:`pvlib.inverter.adr` to calculate AC power based on
         ``self.inverter_parameters`` and the input voltage and power.
@@ -1009,6 +996,7 @@ class PVSystem:
                                self.losses_parameters)
         return pvwatts_losses(**kwargs)
 
+    @deprecated('0.9', alternative='PVSystem.get_ac', removal='0.10')
     def pvwatts_ac(self, pdc):
         """
         Calculates AC power according to the PVWatts model using
@@ -1023,20 +1011,6 @@ class PVSystem:
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
 
-    def pvwatts_multi(self, p_dc):
-        """Uses :py:func:`pvlib.inverter.pvwatts_multi` to calculate AC power
-        based on ``self.inverter_parameters`` and the input voltage and power.
-
-        The parameter `p_dc` must be a tuple with length equal to
-        ``self.num_arrays`` if the system has more than one array.
-
-        See :py:func:`pvlib.inverter.pvwatts_multi` for details.
-        """
-        p_dc = self._validate_per_array(p_dc)
-        kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
-                               self.inverter_parameters)
-        return inverter.pvwatts_multi(p_dc, self.inverter_parameters['pdc0'],
-                                      **kwargs)
     @property
     @_unwrap_single_value
     def module_parameters(self):

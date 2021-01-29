@@ -138,9 +138,11 @@ print(df_results)
 # so that solar position is calculated in the middle of the interval
 # instead of the edge reduces the error by one or two orders of magnitude:
 
-df_results[['modeled, no shift', 'modeled, half shift']].plot.bar(rot=0)
+fig, ax = plt.subplots(figsize=(5, 3))
+df_results[['modeled, no shift', 'modeled, half shift']].plot.bar(rot=0, ax=ax)
 plt.ylabel('Mean Absolute Error [W/m$^2$]')
 plt.xlabel('Transposition Timescale [minutes]')
+fig.tight_layout()
 
 # %%
 # We can also plot the underlying time series results of the last
@@ -149,5 +151,7 @@ plt.xlabel('Transposition Timescale [minutes]')
 # In contrast, the half-shift model is nearly identical to the ground
 # truth irradiance.
 
-ax = df.plot()
+fig, ax = plt.subplots(figsize=(5, 3))
+ax = df.plot(ax=ax)
 plt.ylabel('Irradiance [W/m$^2$]')
+fig.tight_layout()

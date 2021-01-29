@@ -888,7 +888,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     term2 = 0.5 * (1 + tools.cosd(surface_tilt))
     with np.errstate(invalid='ignore', divide='ignore'):
        hb_to_ghi = np.where(ghi==0, 0, np.divide(HB, ghi))
-    term3 = 1 + np.sqrt(hb_to_ghi) * (pvlib.tools.sind(0.5 * tilt)**3)
+    term3 = 1 + np.sqrt(hb_to_ghi) * (tools.sind(0.5 * surface_tilt)**3)
     sky_diffuse = dhi * (AI * Rb + term1 * term2 * term3)
     sky_diffuse = np.maximum(sky_diffuse, 0)
 

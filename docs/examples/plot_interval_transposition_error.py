@@ -6,21 +6,23 @@ Transposing interval-averaged irradiance data
 """
 
 # %%
-# This example shows how not accounting for the difference between
+# This example shows how failing to account for the difference between
 # instantaneous and interval-averaged time series data can introduce
 # error in the modeling process. An instantaneous time series
 # represents discrete measurements taken at each timestamp, while
 # an interval-averaged time series represents the average value across
 # each data interval.  For example, the value of an interval-averaged
 # hourly time series at 11:00 represents the average value between
-# 11:00 and 12:00 (if the series is left-labeled), the average value
-# between 10:00 and 11:00 (if the series is right-labeled), or the
-# average value between 10:30 and 11:30 (if the series is
-# center-labeled).  Interval-averaged time series are common in
+# 11:00 (inclusive) and 12:00 (exclusive), assuming the series is left-labeled.
+# For a right-labeled time series it would be the average value
+# between 10:00 (exclusive) and 11:00 (inclusive).  Sometimes timestamps
+# are center-labeled, in which case it would be the
+# average value between 10:30 and 11:30.
+# Interval-averaged time series are common in
 # field data, where the datalogger averages high-frequency measurements
 # into low-frequency averages for archiving purposes.
 #
-# It is important to account for this difference When using
+# It is important to account for this difference when using
 # interval-averaged weather data for modeling.  This example
 # focuses on calculating solar position appropriately for
 # irradiance transposition, but this concept is relevant for
@@ -54,9 +56,12 @@ def transpose(irradiance, timeshift):
     Transpose irradiance components to plane-of-array, incorporating
     a timeshift in the solar position calculation.
 
-    Inputs:
-        irradiance: DataFrame with columns dni, ghi, dhi
-        timeshift: float, minutes to shift for solar position calculation
+    Parameters
+    ----------
+        irradiance: DataFrame
+            Has columns dni, ghi, dhi
+        timeshift: float
+            Number of minutes to shift for solar position calculation
     Outputs:
         Series of POA irradiance
     """
@@ -100,6 +105,8 @@ poa_1s = transpose(clearsky, timeshift=0)  # no shift needed for 1s data
 # To see how the averaging interval affects results, we'll loop over
 # a few common data intervals and accumulate the results.
 
+fig, ax = plt.subplots(figsize=(5, 3))
+
 results = []
 
 for timescale_minutes in [1, 5, 10, 15, 30, 60]:
@@ -118,30 +125,36 @@ for timescale_minutes in [1, 5, 10, 15, 30, 60]:
 
     df = pd.DataFrame({
         'ground truth': poa_avg,
-        'modeled, no shift': poa_avg_noshift,
         'modeled, half shift': poa_avg_halfshift,
+        'modeled, no shift': poa_avg_noshift,
     })
-    # calculate error statistics and save for later
     error = df.subtract(df['ground truth'], axis=0)
-    stats = error.abs().mean()
+    # add another trace to the error plot
+    error['modeled, no shift'].plot(ax=ax, label=timescale_str)
+    # calculate error statistics and save for later
+    stats = error.abs().mean()  # average absolute error across daylight hours
     stats['timescale_minutes'] = timescale_minutes
     results.append(stats)
+
+ax.legend(ncol=2)
+ax.set_ylabel('Transposition Error [W/m$^2$]')
+fig.tight_layout()
 
 df_results = pd.DataFrame(results).set_index('timescale_minutes')
 print(df_results)
 
 # %%
-# The differences shown above are the absolute difference in :math:`W/m^2`.
+# The errors shown above are the average absolute difference in :math:`W/m^2`.
 # In this example, using the timestamps unadjusted creates an error that
-# increases with increasing interval length, up to a ~40% :math:`W/m^2` error
+# increases with increasing interval length, up to a ~40% error
 # at hourly resolution.  In contrast, incorporating a half-interval shift
 # so that solar position is calculated in the middle of the interval
 # instead of the edge reduces the error by one or two orders of magnitude:
 
 fig, ax = plt.subplots(figsize=(5, 3))
 df_results[['modeled, no shift', 'modeled, half shift']].plot.bar(rot=0, ax=ax)
-plt.ylabel('Mean Absolute Error [W/m$^2$]')
-plt.xlabel('Transposition Timescale [minutes]')
+ax.set_ylabel('Mean Absolute Error [W/m$^2$]')
+ax.set_xlabel('Transposition Timescale [minutes]')
 fig.tight_layout()
 
 # %%
@@ -152,6 +165,6 @@ fig.tight_layout()
 # truth irradiance.
 
 fig, ax = plt.subplots(figsize=(5, 3))
-ax = df.plot(ax=ax)
-plt.ylabel('Irradiance [W/m$^2$]')
+ax = df.plot(ax=ax, style=[None, ':', None], lw=3)
+ax.set_ylabel('Irradiance [W/m$^2$]')
 fig.tight_layout()

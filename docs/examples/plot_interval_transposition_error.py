@@ -1,6 +1,6 @@
 """
-Sun path diagram
-================
+Modeling with interval averages
+===============================
 
 Transposing interval-averaged irradiance data
 """

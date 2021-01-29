@@ -101,7 +101,7 @@ Bug fixes
   :ref:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
   (:issue:`1065`, :pull:`1140`)
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
-  (:issue:'1153', :pull:'1154')
+  (:issue:'1153', :pull:'1154', :ghuser:'jsstein')
 Testing
 ~~~~~~~
 

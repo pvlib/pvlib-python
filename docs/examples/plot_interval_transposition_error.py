@@ -131,9 +131,9 @@ df_results = pd.DataFrame(results).set_index('timescale_minutes')
 print(df_results)
 
 # %%
-# The differences shown above are the absolute difference in $W/m^2$.
+# The differences shown above are the absolute difference in :math:`W/m^2`.
 # In this example, using the timestamps unadjusted creates an error that
-# increases with increasing interval length, up to a ~40% $W/m^2$ error
+# increases with increasing interval length, up to a ~40% :math:`W/m^2` error
 # at hourly resolution.  In contrast, incorporating a half-interval shift
 # so that solar position is calculated in the middle of the interval
 # instead of the edge reduces the error by one or two orders of magnitude:

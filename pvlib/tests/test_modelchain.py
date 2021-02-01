@@ -1080,6 +1080,54 @@ def test_run_model_from_effective_irradiance_missing_poa(
             (data_complete, data_incomplete))
 
 
+def test_run_model_singleton_weather_single_array(cec_dc_snl_ac_system,
+                                                  location, weather):
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model="no_loss", spectral_model="no_loss")
+    mc.run_model([weather])
+    assert isinstance(mc.results.total_irrad, tuple)
+    assert isinstance(mc.results.aoi, tuple)
+    assert isinstance(mc.results.aoi_modifier, tuple)
+    assert isinstance(mc.results.spectral_modifier, tuple)
+    assert isinstance(mc.results.effective_irradiance, tuple)
+    assert isinstance(mc.results.dc, tuple)
+    assert isinstance(mc.results.cell_temperature, tuple)
+    assert len(mc.results.cell_temperature) == 1
+    assert isinstance(mc.results.cell_temperature[0], pd.Series)
+
+
+def test_run_model_from_poa_singleton_weather_single_array(
+        sapm_dc_snl_ac_system, location, total_irrad):
+   mc = ModelChain(sapm_dc_snl_ac_system, location,
+                   aoi_model='no_loss', spectral_model='no_loss')
+   ac = mc.run_model_from_poa([total_irrad]).results.ac
+   expected = pd.Series(np.array([149.280238, 96.678385]),
+                        index=total_irrad.index)
+   assert isinstance(mc.results.cell_temperature, tuple)
+   assert len(mc.results.cell_temperature) == 1
+   assert isinstance(mc.results.cell_temperature[0], pd.Series)
+   assert_series_equal(ac, expected)
+
+
+def test_run_model_from_effective_irradiance_weather_single_array(
+        sapm_dc_snl_ac_system, location, weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global']
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_effective_irradiance([data]).results.ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=data.index)
+    assert isinstance(mc.results.cell_temperature, tuple)
+    assert len(mc.results.cell_temperature) == 1
+    assert isinstance(mc.results.cell_temperature[0], pd.Series)
+    assert isinstance(mc.results.dc, tuple)
+    assert len(mc.results.dc) == 1
+    assert isinstance(mc.results.dc[0], pd.DataFrame)
+    assert_series_equal(ac, expected)
+
+
 def poadc(mc):
     mc.results.dc = mc.results.total_irrad['poa_global'] * 0.2
     mc.results.dc.name = None  # assert_series_equal will fail without this

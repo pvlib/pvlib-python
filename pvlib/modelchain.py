@@ -609,6 +609,22 @@ class ModelChain:
         return ('ModelChain: \n  ' + '\n  '.join(
             f'{attr}: {getmcattr(self, attr)}' for attr in attrs))
 
+    def _assign_result(self, field, value):
+        """Assign `value` to self.results.field, taking care to match
+        the type of weather for single-array models.
+
+        Parameters
+        ----------
+        field : str
+            Name of the results field.
+        value : object
+            Value to be assigned.
+        """
+        if self.system.num_arrays == 1 and isinstance(self.weather, tuple):
+            setattr(self.results, field, (value,))
+        else:
+            setattr(self.results, field, value)
+
     @property
     def orientation_strategy(self):
         return self._orientation_strategy
@@ -684,12 +700,9 @@ class ModelChain:
                              'set the model with the dc_model kwarg.')
 
     def sapm(self):
-        self.results.dc = self.system.sapm(self.results.effective_irradiance,
+        dc = self.system.sapm(self.results.effective_irradiance,
                                            self.results.cell_temperature)
-
-        self.results.dc = self.system.scale_voltage_current_power(
-            self.results.dc)
-
+        self._assign_result("dc", self.system.scale_voltage_current_power(dc))
         return self
 
     def _singlediode(self, calcparams_model_function):
@@ -704,6 +717,9 @@ class ModelChain:
         params = calcparams_model_function(self.results.effective_irradiance,
                                            self.results.cell_temperature,
                                            unwrap=False)
+        # We bypass self._assign_result() here since these are initially
+        # all tuples of results. Below we use self._assign_result() to
+        # clean up when there is only one array.
         self.results.diode_params = tuple(itertools.starmap(
             _make_diode_params, params))
         self.results.dc = tuple(itertools.starmap(
@@ -716,8 +732,8 @@ class ModelChain:
         # If the system has one Array, unwrap the single return value
         # to preserve the original behavior of ModelChain
         if self.system.num_arrays == 1:
-            self.results.diode_params = self.results.diode_params[0]
-            self.results.dc = self.results.dc[0]
+            self._assign_result("diode_params", self.results.diode_params[0])
+            self._assign_result("dc", self.results.dc[0])
         return self
 
     def desoto(self):
@@ -745,18 +761,14 @@ class ModelChain:
         pvlib.pvsystem.PVSystem.pvwatts_dc
         pvlib.pvsystem.PVSystem.scale_voltage_current_power
         """
-        self.results.dc = self.system.pvwatts_dc(
-            self.results.effective_irradiance, self.results.cell_temperature)
-        if isinstance(self.results.dc, tuple):
-            temp = tuple(
-                pd.DataFrame(s, columns=['p_mp']) for s in self.results.dc)
-        else:
-            temp = pd.DataFrame(self.results.dc, columns=['p_mp'])
+        dc = self.system.pvwatts_dc(
+            self.results.effective_irradiance,
+            self.results.cell_temperature,
+            unwrap=False
+        )
+        temp = tuple(pd.DataFrame(s, columns=['p_mp']) for s in dc)
         scaled = self.system.scale_voltage_current_power(temp)
-        if isinstance(scaled, tuple):
-            self.results.dc = tuple(s['p_mp'] for s in scaled)
-        else:
-            self.results.dc = scaled['p_mp']
+        self._assign_result("dc", _tuple_from_dfs(scaled, "p_mp"))
         return self
 
     @property
@@ -865,31 +877,41 @@ class ModelChain:
                              'kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
-        self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi, iam_model='ashrae')
+        self._assign_result(
+            "aoi_modifier",
+            self.system.get_iam(self.results.aoi, iam_model='ashrae')
+        )
         return self
 
     def physical_aoi_loss(self):
-        self.results.aoi_modifier = self.system.get_iam(self.results.aoi,
-                                                        iam_model='physical')
+        self._assign_result(
+            "aoi_modifier",
+            self.system.get_iam(self.results.aoi, iam_model='physical')
+        )
         return self
 
     def sapm_aoi_loss(self):
-        self.results.aoi_modifier = self.system.get_iam(self.results.aoi,
-                                                        iam_model='sapm')
+        self._assign_result(
+            "aoi_modifier",
+            self.system.get_iam(self.results.aoi, iam_model='sapm')
+        )
         return self
 
     def martin_ruiz_aoi_loss(self):
-        self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='martin_ruiz')
+        self._assign_result(
+            "aoi_modifier",
+            self.system.get_iam(self.results.aoi, iam_model='martin_ruiz')
+        )
         return self
 
     def no_aoi_loss(self):
         if self.system.num_arrays == 1:
-            self.results.aoi_modifier = 1.0
+            self._assign_result("aoi_modifier", 1.0)
         else:
-            self.results.aoi_modifier = (1.0,) * self.system.num_arrays
+            self._assign_result(
+                "aoi_modifier",
+                (1.0,) * self.system.num_arrays
+            )
         return self
 
     @property
@@ -933,21 +955,37 @@ class ModelChain:
                              'spectral_model="no_loss".')
 
     def first_solar_spectral_loss(self):
-        self.results.spectral_modifier = self.system.first_solar_spectral_loss(
-            self.weather['precipitable_water'],
-            self.results.airmass['airmass_absolute'])
+        self._assign_result(
+            "spectral_modifier",
+            self.system.first_solar_spectral_loss(
+                # TODO Check this with run_model([weather]) and
+                #      spectral_model='first_solar'
+                self.weather['precipitable_water'],
+                # TODO probably need _tuple_from_dfs
+                self.results.airmass['airmass_absolute']
+            )
+        )
         return self
 
     def sapm_spectral_loss(self):
-        self.results.spectral_modifier = self.system.sapm_spectral_loss(
-            self.results.airmass['airmass_absolute'])
+        self._assign_result(
+            "spectral_modifier",
+            # TODO Add test coverage with weather=[weather] and
+            #      spectral_model='sapm'
+            self.system.sapm_spectral_loss(
+                self.results.airmass['airmass_absolute']
+            )
+        )
         return self
 
     def no_spectral_loss(self):
         if self.system.num_arrays == 1:
-            self.results.spectral_modifier = 1
+            self._assign_result("spectral_modifier", 1)
         else:
-            self.results.spectral_modifier = (1,) * self.system.num_arrays
+            self._assign_result(
+                "spectral_modifier",
+                (1,) * self.system.num_arrays
+            )
         return self
 
     @property
@@ -1027,7 +1065,8 @@ class ModelChain:
                                   self.results.effective_irradiance)
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
-        self.results.cell_temperature = model(poa, temp_air, wind_speed)
+        self._assign_result(
+            "cell_temperature", model(poa, temp_air, wind_speed))
         return self
 
     def sapm_temp(self):
@@ -1066,7 +1105,7 @@ class ModelChain:
 
     def pvwatts_losses(self):
         self.losses = (100 - self.system.pvwatts_losses()) / 100.
-        if self.system.num_arrays > 1:
+        if isinstance(self.results.dc, tuple):
             for dc in self.results.dc:
                 dc *= self.losses
         else:
@@ -1082,6 +1121,8 @@ class ModelChain:
             fd = module_parameters.get('FD', 1.)
             return spect_mod * (total_irrad['poa_direct'] * aoi_mod +
                                 fd * total_irrad['poa_diffuse'])
+        # Bypassing self._assign_result since this is based on the type
+        # of self.results.total_irrad as opposed to the number of arrays
         if isinstance(self.results.total_irrad, tuple):
             self.results.effective_irradiance = tuple(
                 _eff_irrad(array.module_parameters, ti, sm, am) for
@@ -1234,6 +1275,8 @@ class ModelChain:
         self.results.tracking['surface_azimuth'] = (
             self.results.tracking['surface_azimuth']
                 .fillna(self.system.axis_azimuth))
+        # Bypass _assign_result because tracking systems do not
+        # support multiple Arrays.
         self.results.aoi = self.results.tracking['aoi']
         return self
 
@@ -1241,9 +1284,9 @@ class ModelChain:
         """
         Calculate AOI for fixed tilt system
         """
-        self.results.aoi = self.system.get_aoi(
+        self._assign_result('aoi', self.system.get_aoi(
             self.results.solar_position['apparent_zenith'],
-            self.results.solar_position['azimuth'])
+            self.results.solar_position['azimuth']))
         return self
 
     def _verify_df(self, data, required):
@@ -1378,12 +1421,16 @@ class ModelChain:
                 self.results.solar_position['apparent_zenith'],
                 self.results.solar_position['azimuth'])
 
-        self.results.total_irrad = get_irradiance(
-            _tuple_from_dfs(self.weather, 'dni'),
-            _tuple_from_dfs(self.weather, 'ghi'),
-            _tuple_from_dfs(self.weather, 'dhi'),
-            airmass=self.results.airmass['airmass_relative'],
-            model=self.transposition_model)
+        self._assign_result(
+            'total_irrad',
+            get_irradiance(
+                _tuple_from_dfs(self.weather, 'dni'),
+                _tuple_from_dfs(self.weather, 'ghi'),
+                _tuple_from_dfs(self.weather, 'dhi'),
+                airmass=self.results.airmass['airmass_relative'],
+                model=self.transposition_model
+            )
+        )
 
         return self
 

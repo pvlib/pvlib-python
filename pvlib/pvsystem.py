@@ -6,6 +6,7 @@ performance of PV modules and inverters.
 from collections import OrderedDict
 import functools
 import io
+import itertools
 import os
 from urllib.request import urlopen
 import numpy as np
@@ -812,6 +813,7 @@ class PVSystem:
             electrical current.
         """
         pw = self._validate_per_array(pw, system_wide=True)
+
         def _spectral_correction(array, pw):
             if 'first_solar_spectral_coefficients' in \
                     array.module_parameters.keys():
@@ -829,8 +831,7 @@ class PVSystem:
                 module_type, coefficients
             )
         return tuple(
-            _spectral_correction(array, pw)
-            for array, pw in zip(self.arrays, pw)
+            itertools.starmap(_spectral_correction, zip(self.arrays, pw))
         )
 
     def singlediode(self, photocurrent, saturation_current,

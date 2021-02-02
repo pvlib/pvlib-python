@@ -15,7 +15,7 @@ BSRN_COLUMNS = ['day', 'minute',
                 'empty', 'empty', 'empty', 'empty', 'empty',
                 'dhi', 'dhi_std', 'dhi_min', 'dhi_max',
                 'lwd', 'lwd_std', 'lwd_min', 'lwd_max',
-                'air_temperature', 'relative_humidity', 'pressure']
+                'temp_air', 'relative_humidity', 'pressure']
 
 
 def read_bsrn(filename):

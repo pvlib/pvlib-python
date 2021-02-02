@@ -958,10 +958,7 @@ class ModelChain:
         self._assign_result(
             "spectral_modifier",
             self.system.first_solar_spectral_loss(
-                # TODO Check this with run_model([weather]) and
-                #      spectral_model='first_solar'
-                self.weather['precipitable_water'],
-                # TODO probably need _tuple_from_dfs
+                _tuple_from_dfs(self.weather, 'precipitable_water'),
                 self.results.airmass['airmass_absolute']
             )
         )
@@ -970,8 +967,6 @@ class ModelChain:
     def sapm_spectral_loss(self):
         self._assign_result(
             "spectral_modifier",
-            # TODO Add test coverage with weather=[weather] and
-            #      spectral_model='sapm'
             self.system.sapm_spectral_loss(
                 self.results.airmass['airmass_absolute']
             )

@@ -811,8 +811,8 @@ class PVSystem:
             effective irradiance, i.e., the irradiance that is converted to
             electrical current.
         """
-
-        def _spectral_correction(array):
+        pw = self._validate_per_array(pw, system_wide=True)
+        def _spectral_correction(array, pw):
             if 'first_solar_spectral_coefficients' in \
                     array.module_parameters.keys():
                 coefficients = \
@@ -828,7 +828,10 @@ class PVSystem:
                 pw, airmass_absolute,
                 module_type, coefficients
             )
-        return tuple(_spectral_correction(array) for array in self.arrays)
+        return tuple(
+            _spectral_correction(array, pw)
+            for array, pw in zip(self.arrays, pw)
+        )
 
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,

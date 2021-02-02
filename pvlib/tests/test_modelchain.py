@@ -1098,15 +1098,15 @@ def test_run_model_singleton_weather_single_array(cec_dc_snl_ac_system,
 
 def test_run_model_from_poa_singleton_weather_single_array(
         sapm_dc_snl_ac_system, location, total_irrad):
-   mc = ModelChain(sapm_dc_snl_ac_system, location,
-                   aoi_model='no_loss', spectral_model='no_loss')
-   ac = mc.run_model_from_poa([total_irrad]).results.ac
-   expected = pd.Series(np.array([149.280238, 96.678385]),
-                        index=total_irrad.index)
-   assert isinstance(mc.results.cell_temperature, tuple)
-   assert len(mc.results.cell_temperature) == 1
-   assert isinstance(mc.results.cell_temperature[0], pd.Series)
-   assert_series_equal(ac, expected)
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    ac = mc.run_model_from_poa([total_irrad]).results.ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=total_irrad.index)
+    assert isinstance(mc.results.cell_temperature, tuple)
+    assert len(mc.results.cell_temperature) == 1
+    assert isinstance(mc.results.cell_temperature[0], pd.Series)
+    assert_series_equal(ac, expected)
 
 
 def test_run_model_from_effective_irradiance_weather_single_array(

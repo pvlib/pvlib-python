@@ -203,7 +203,7 @@ def test_reindl(irrad_data, ephem_data, dni_et):
         40, 180, irrad_data['dhi'], irrad_data['dni'], irrad_data['ghi'],
         dni_et, ephem_data['apparent_zenith'], ephem_data['azimuth'])
     # values from matlab 1.4 code
-    assert_allclose(result, [np.nan, 27.9412, 104.1317, 34.1663], atol=1e-4)
+    assert_allclose(result, [0., 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
 def test_king(irrad_data, ephem_data):

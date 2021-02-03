@@ -280,9 +280,10 @@ class ModelChainResult:
     tracking: Optional[pd.DataFrame] = field(default=None)
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
     aoi: Optional[PerArray[pd.Series]] = field(default=None)
-    aoi_modifier: Optional[PerArray[pd.Series]] = field(default=None)
-    spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] \
-        = field(default=None)
+    aoi_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
+        field(default=None)
+    spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
+        field(default=None)
     cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
     effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
     dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \

@@ -1080,6 +1080,54 @@ def test_run_model_from_effective_irradiance_missing_poa(
             (data_complete, data_incomplete))
 
 
+def test_run_model_singleton_weather_single_array(cec_dc_snl_ac_system,
+                                                  location, weather):
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model="no_loss", spectral_model="no_loss")
+    mc.run_model([weather])
+    assert isinstance(mc.results.total_irrad, tuple)
+    assert isinstance(mc.results.aoi, tuple)
+    assert isinstance(mc.results.aoi_modifier, tuple)
+    assert isinstance(mc.results.spectral_modifier, tuple)
+    assert isinstance(mc.results.effective_irradiance, tuple)
+    assert isinstance(mc.results.dc, tuple)
+    assert isinstance(mc.results.cell_temperature, tuple)
+    assert len(mc.results.cell_temperature) == 1
+    assert isinstance(mc.results.cell_temperature[0], pd.Series)
+
+
+def test_run_model_from_poa_singleton_weather_single_array(
+        sapm_dc_snl_ac_system, location, total_irrad):
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    aoi_model='no_loss', spectral_model='no_loss')
+    ac = mc.run_model_from_poa([total_irrad]).results.ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=total_irrad.index)
+    assert isinstance(mc.results.cell_temperature, tuple)
+    assert len(mc.results.cell_temperature) == 1
+    assert isinstance(mc.results.cell_temperature[0], pd.Series)
+    assert_series_equal(ac, expected)
+
+
+def test_run_model_from_effective_irradiance_weather_single_array(
+        sapm_dc_snl_ac_system, location, weather, total_irrad):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global']
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    ac = mc.run_model_from_effective_irradiance([data]).results.ac
+    expected = pd.Series(np.array([149.280238, 96.678385]),
+                         index=data.index)
+    assert isinstance(mc.results.cell_temperature, tuple)
+    assert len(mc.results.cell_temperature) == 1
+    assert isinstance(mc.results.cell_temperature[0], pd.Series)
+    assert isinstance(mc.results.dc, tuple)
+    assert len(mc.results.dc) == 1
+    assert isinstance(mc.results.dc[0], pd.DataFrame)
+    assert_series_equal(ac, expected)
+
+
 def poadc(mc):
     mc.results.dc = mc.results.total_irrad['poa_global'] * 0.2
     mc.results.dc.name = None  # assert_series_equal will fail without this
@@ -1324,6 +1372,22 @@ def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
     assert mc.results.ac[1] < 1
 
 
+@pytest.mark.parametrize('aoi_model', [
+    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+])
+def test_aoi_models_singleon_weather_single_array(
+        sapm_dc_snl_ac_system, location, aoi_model, weather):
+    mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
+                    aoi_model=aoi_model, spectral_model='no_loss')
+    mc.run_model(weather=[weather])
+    assert isinstance(mc.results.aoi_modifier, tuple)
+    assert len(mc.results.aoi_modifier) == 1
+    assert isinstance(mc.results.ac, pd.Series)
+    assert not mc.results.ac.empty
+    assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200
+    assert mc.results.ac[1] < 1
+
+
 def test_aoi_model_no_loss(sapm_dc_snl_ac_system, location, weather):
     mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
                     aoi_model='no_loss', spectral_model='no_loss')
@@ -1380,6 +1444,21 @@ def test_spectral_models(sapm_dc_snl_ac_system, location, spectral_model,
                     aoi_model='no_loss', spectral_model=spectral_model)
     spectral_modifier = mc.run_model(weather).results.spectral_modifier
     assert isinstance(spectral_modifier, (pd.Series, float, int))
+
+
+@pytest.mark.parametrize('spectral_model', [
+    'sapm', 'first_solar', 'no_loss', constant_spectral_loss
+])
+def test_spectral_models_singleton_weather_single_array(
+        sapm_dc_snl_ac_system, location, spectral_model, weather):
+    # add pw to weather dataframe
+    weather['precipitable_water'] = [0.3, 0.5]
+    mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
+                    aoi_model='no_loss', spectral_model=spectral_model)
+    spectral_modifier = mc.run_model([weather]).results.spectral_modifier
+    assert isinstance(spectral_modifier, tuple)
+    assert len(spectral_modifier) == 1
+    assert isinstance(spectral_modifier[0], (pd.Series, float, int))
 
 
 def constant_losses(mc):

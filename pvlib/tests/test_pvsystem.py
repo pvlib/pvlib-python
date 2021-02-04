@@ -1472,6 +1472,40 @@ def test_PVSystem_get_ac_pvwatts_multi(
         system.get_ac('pvwatts', (pdcs, pdcs, pdcs))
 
 
+@pytest.mark.parametrize('model', ['sandia', 'adr', 'pvwatts'])
+def test_PVSystem_get_ac_single_array_tuple_input(
+        model,
+        pvwatts_system_defaults,
+        cec_inverter_parameters,
+        adr_inverter_parameters):
+    vdcs = {
+        'sandia': pd.Series(np.linspace(0, 50, 3)),
+        'pvwatts': None,
+        'adr': pd.Series([135, 154, 390, 420, 551])
+    }
+    pdcs = {'adr': pd.Series([135, 1232, 1170, 420, 551]),
+            'sandia': pd.Series(np.linspace(0, 11, 3)) * vdcs['sandia'],
+            'pvwatts': 50}
+    inverter_parameters = {
+        'sandia': cec_inverter_parameters,
+        'adr': adr_inverter_parameters,
+        'pvwatts': pvwatts_system_defaults.inverter_parameters
+    }
+    expected = {
+        'adr': pd.Series([np.nan, 1161.5745, 1116.4459, 382.6679, np.nan]),
+        'sandia': pd.Series([-0.020000, 132.004308, 250.000000])
+    }
+    system = pvsystem.PVSystem(
+        arrays=[pvsystem.Array()],
+        inverter_parameters=inverter_parameters[model]
+    )
+    ac = system.get_ac(p_dc=(pdcs[model],), v_dc=(vdcs[model],), model=model)
+    if model == 'pvwatts':
+        assert ac < pdcs['pvwatts']
+    else:
+        assert_series_equal(ac, expected[model])
+
+
 def test_PVSystem_get_ac_adr(adr_inverter_parameters, mocker):
     mocker.spy(inverter, 'adr')
     system = pvsystem.PVSystem(

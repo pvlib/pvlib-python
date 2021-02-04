@@ -268,21 +268,46 @@ class ModelChainResult:
     _T = TypeVar('T')
     PerArray = Union[_T, Tuple[_T, ...]]
     """Type for fields that vary between arrays"""
+
+    # these attributes are used in __setattr__ to determine the correct type.
+    _singleton_tuples: bool = field(default=False)
+    _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
+                         'spectral_modifier', 'cell_temperature',
+                         'effective_irradiance', 'dc', 'diode_params'}
+
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
     airmass: Optional[pd.DataFrame] = field(default=None)
     ac: Optional[pd.Series] = field(default=None)
-    # per DC array information
     tracking: Optional[pd.DataFrame] = field(default=None)
+
+    # per DC array information
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
     aoi: Optional[PerArray[pd.Series]] = field(default=None)
-    aoi_modifier: Optional[PerArray[pd.Series]] = field(default=None)
-    spectral_modifier: Optional[PerArray[pd.Series]] = field(default=None)
+    aoi_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
+        field(default=None)
+    spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
+        field(default=None)
     cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
     effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
     dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \
         field(default=None)
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
+
+    def _result_type(self, value):
+        """Coerce `value` to the correct type according to
+        ``self._singleton_tuples``."""
+        # Allow None to pass through without being wrapped in a tuple
+        if (self._singleton_tuples
+                and not isinstance(value, tuple)
+                and value is not None):
+            return (value,)
+        return value
+
+    def __setattr__(self, key, value):
+        if key in ModelChainResult._per_array_fields:
+            value = self._result_type(value)
+        super().__setattr__(key, value)
 
 
 class ModelChain:
@@ -684,12 +709,9 @@ class ModelChain:
                              'set the model with the dc_model kwarg.')
 
     def sapm(self):
-        self.results.dc = self.system.sapm(self.results.effective_irradiance,
-                                           self.results.cell_temperature)
-
-        self.results.dc = self.system.scale_voltage_current_power(
-            self.results.dc)
-
+        dc = self.system.sapm(self.results.effective_irradiance,
+                              self.results.cell_temperature)
+        self.results.dc = self.system.scale_voltage_current_power(dc)
         return self
 
     def _singlediode(self, calcparams_model_function):
@@ -745,18 +767,14 @@ class ModelChain:
         pvlib.pvsystem.PVSystem.pvwatts_dc
         pvlib.pvsystem.PVSystem.scale_voltage_current_power
         """
-        self.results.dc = self.system.pvwatts_dc(
-            self.results.effective_irradiance, self.results.cell_temperature)
-        if isinstance(self.results.dc, tuple):
-            temp = tuple(
-                pd.DataFrame(s, columns=['p_mp']) for s in self.results.dc)
-        else:
-            temp = pd.DataFrame(self.results.dc, columns=['p_mp'])
-        scaled = self.system.scale_voltage_current_power(temp)
-        if isinstance(scaled, tuple):
-            self.results.dc = tuple(s['p_mp'] for s in scaled)
-        else:
-            self.results.dc = scaled['p_mp']
+        dc = self.system.pvwatts_dc(
+            self.results.effective_irradiance,
+            self.results.cell_temperature,
+            unwrap=False
+        )
+        p_mp = tuple(pd.DataFrame(s, columns=['p_mp']) for s in dc)
+        scaled = self.system.scale_voltage_current_power(p_mp)
+        self.results.dc = _tuple_from_dfs(scaled, "p_mp")
         return self
 
     @property
@@ -866,23 +884,29 @@ class ModelChain:
 
     def ashrae_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi, iam_model='ashrae')
+            self.results.aoi,
+            iam_model='ashrae'
+        )
         return self
 
     def physical_aoi_loss(self):
-        self.results.aoi_modifier = self.system.get_iam(self.results.aoi,
-                                                        iam_model='physical')
+        self.results.aoi_modifier = self.system.get_iam(
+            self.results.aoi,
+            iam_model='physical'
+        )
         return self
 
     def sapm_aoi_loss(self):
-        self.results.aoi_modifier = self.system.get_iam(self.results.aoi,
-                                                        iam_model='sapm')
+        self.results.aoi_modifier = self.system.get_iam(
+            self.results.aoi,
+            iam_model='sapm'
+        )
         return self
 
     def martin_ruiz_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='martin_ruiz')
+            self.results.aoi, iam_model='martin_ruiz'
+        )
         return self
 
     def no_aoi_loss(self):
@@ -934,13 +958,15 @@ class ModelChain:
 
     def first_solar_spectral_loss(self):
         self.results.spectral_modifier = self.system.first_solar_spectral_loss(
-            self.weather['precipitable_water'],
-            self.results.airmass['airmass_absolute'])
+            _tuple_from_dfs(self.weather, 'precipitable_water'),
+            self.results.airmass['airmass_absolute']
+        )
         return self
 
     def sapm_spectral_loss(self):
         self.results.spectral_modifier = self.system.sapm_spectral_loss(
-            self.results.airmass['airmass_absolute'])
+            self.results.airmass['airmass_absolute']
+        )
         return self
 
     def no_spectral_loss(self):
@@ -1066,7 +1092,7 @@ class ModelChain:
 
     def pvwatts_losses(self):
         self.losses = (100 - self.system.pvwatts_losses()) / 100.
-        if self.system.num_arrays > 1:
+        if isinstance(self.results.dc, tuple):
             for dc in self.results.dc:
                 dc *= self.losses
         else:
@@ -1271,6 +1297,17 @@ class ModelChain:
             for (i, array_data) in enumerate(data):
                 _verify(array_data, i)
 
+    def _configure_results(self):
+        """Configure the type used for per-array fields in ModelChainResult.
+
+        Must be called after ``self.weather`` has been assigned. If
+        ``self.weather`` is a tuple and the number of arrays in the system
+        is 1, then per-array results are stored as length-1 tuples.
+        """
+        self.results._singleton_tuples = (
+            self.system.num_arrays == 1 and isinstance(self.weather, tuple)
+        )
+
     def _assign_weather(self, data):
         def _build_weather(data):
             key_list = [k for k in WEATHER_KEYS if k in data]
@@ -1286,6 +1323,7 @@ class ModelChain:
             self.weather = tuple(
                 _build_weather(weather) for weather in data
             )
+        self._configure_results()
         return self
 
     def _assign_total_irrad(self, data):
@@ -1383,7 +1421,8 @@ class ModelChain:
             _tuple_from_dfs(self.weather, 'ghi'),
             _tuple_from_dfs(self.weather, 'dhi'),
             airmass=self.results.airmass['airmass_relative'],
-            model=self.transposition_model)
+            model=self.transposition_model
+        )
 
         return self
 

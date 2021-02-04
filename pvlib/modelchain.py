@@ -267,17 +267,21 @@ def get_orientation(strategy, **kwargs):
 class ModelChainResult:
     _T = TypeVar('T')
     PerArray = Union[_T, Tuple[_T, ...]]
+    """Type for fields that vary between arrays"""
+
+    # these attributes are used in __setattr__ to determine the correct type.
     _singleton_tuples: bool = field(default=False)
     _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
                          'effective_irradiance', 'dc', 'diode_params'}
-    """Type for fields that vary between arrays"""
+
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
     airmass: Optional[pd.DataFrame] = field(default=None)
     ac: Optional[pd.Series] = field(default=None)
-    # per DC array information
     tracking: Optional[pd.DataFrame] = field(default=None)
+
+    # per DC array information
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
     aoi: Optional[PerArray[pd.Series]] = field(default=None)
     aoi_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
@@ -291,6 +295,8 @@ class ModelChainResult:
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
 
     def _result_type(self, value):
+        """Coerce `value` to the correct type according to
+        ``self._singleton_tuples``."""
         # Allow None to pass through without being wrapped in a tuple
         if (self._singleton_tuples
                 and not isinstance(value, tuple)

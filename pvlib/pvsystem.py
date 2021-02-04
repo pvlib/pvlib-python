@@ -6,6 +6,7 @@ performance of PV modules and inverters.
 from collections import OrderedDict
 import functools
 import io
+import itertools
 import os
 from urllib.request import urlopen
 import numpy as np
@@ -811,8 +812,9 @@ class PVSystem:
             effective irradiance, i.e., the irradiance that is converted to
             electrical current.
         """
+        pw = self._validate_per_array(pw, system_wide=True)
 
-        def _spectral_correction(array):
+        def _spectral_correction(array, pw):
             if 'first_solar_spectral_coefficients' in \
                     array.module_parameters.keys():
                 coefficients = \
@@ -828,7 +830,9 @@ class PVSystem:
                 pw, airmass_absolute,
                 module_type, coefficients
             )
-        return tuple(_spectral_correction(array) for array in self.arrays)
+        return tuple(
+            itertools.starmap(_spectral_correction, zip(self.arrays, pw))
+        )
 
     def singlediode(self, photocurrent, saturation_current,
                     resistance_series, resistance_shunt, nNsVth,
@@ -891,29 +895,31 @@ class PVSystem:
         model = model.lower()
         multiple_arrays = self.num_arrays > 1
         if model == 'sandia':
+            p_dc = self._validate_per_array(p_dc)
+            v_dc = self._validate_per_array(v_dc)
             if multiple_arrays:
-                p_dc = self._validate_per_array(p_dc)
-                v_dc = self._validate_per_array(v_dc)
-                inv_fun = inverter.sandia_multi
-            else:
-                inv_fun = inverter.sandia
-            return inv_fun(v_dc, p_dc, self.inverter_parameters)
+                return inverter.sandia_multi(
+                    v_dc, p_dc, self.inverter_parameters)
+            return inverter.sandia(v_dc[0], p_dc[0], self.inverter_parameters)
         elif model == 'pvwatts':
             kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
                                    self.inverter_parameters)
+            p_dc = self._validate_per_array(p_dc)
             if multiple_arrays:
-                p_dc = self._validate_per_array(p_dc)
-                inv_fun = inverter.pvwatts_multi
-            else:
-                inv_fun = inverter.pvwatts
-            return inv_fun(p_dc, self.inverter_parameters['pdc0'], **kwargs)
+                return inverter.pvwatts_multi(
+                    p_dc, self.inverter_parameters['pdc0'], **kwargs)
+            return inverter.pvwatts(
+                p_dc[0], self.inverter_parameters['pdc0'], **kwargs)
         elif model == 'adr':
             if multiple_arrays:
                 raise ValueError(
                     'The adr inverter function cannot be used for an inverter',
                     ' with multiple MPPT inputs')
-            else:
-                return inverter.adr(v_dc, p_dc, self.inverter_parameters)
+            # While this is only used for single-array systems, calling
+            # _validate_per_arry lets us pass in singleton tuples.
+            p_dc = self._validate_per_array(p_dc)
+            v_dc = self._validate_per_array(v_dc)
+            return inverter.adr(v_dc[0], p_dc[0], self.inverter_parameters)
         else:
             raise ValueError(
                 model + ' is not a valid AC power model.',

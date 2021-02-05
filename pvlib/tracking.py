@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind, tand
-from pvlib.pvsystem import PVSystem
+from pvlib.pvsystem import PVSystem, _unwrap_single_value
 from pvlib import irradiance, atmosphere
 
 
@@ -169,6 +169,7 @@ class SingleAxisTracker(PVSystem):
                              solar_zenith, solar_azimuth)
         return aoi
 
+    @_unwrap_single_value
     def get_irradiance(self, surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
@@ -221,16 +222,26 @@ class SingleAxisTracker(PVSystem):
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        return irradiance.get_total_irradiance(surface_tilt,
-                                               surface_azimuth,
-                                               solar_zenith,
-                                               solar_azimuth,
-                                               dni, ghi, dhi,
-                                               dni_extra=dni_extra,
-                                               airmass=airmass,
-                                               model=model,
-                                               albedo=self.albedo,
-                                               **kwargs)
+        dni = self._validate_per_array(dni, system_wide=True)
+        ghi = self._validate_per_array(ghi, system_wide=True)
+        dhi = self._validate_per_array(dhi, system_wide=True)
+
+        return tuple(
+            irradiance.get_total_irradiance(
+                surface_tilt,
+                surface_azimuth,
+                solar_zenith,
+                solar_azimuth,
+                dni, ghi, dhi,
+                dni_extra=dni_extra,
+                airmass=airmass,
+                model=model,
+                albedo=self.albedo,
+                **kwargs)
+            for array, dni, ghi, dhi in zip(
+                self.arrays, dni, ghi, dhi
+            )
+        )
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,

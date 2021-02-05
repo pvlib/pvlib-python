@@ -222,6 +222,9 @@ class SingleAxisTracker(PVSystem):
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
+        # SingleAxisTracker only supports a single Array, but we need the
+        # validate/iterate machinery so that single length tuple input/output
+        # is handled the same as PVSystem.get_irradiance. GH 1159
         dni = self._validate_per_array(dni, system_wide=True)
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)

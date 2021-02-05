@@ -1488,7 +1488,7 @@ class ModelChain:
         data = _to_tuple(data)
         self._check_multiple_input(data)
         self._assign_weather(data)
-
+        self._assign_times()
         self._verify_df(data, required=['poa_global', 'poa_direct',
                                         'poa_diffuse'])
         self._assign_total_irrad(data)

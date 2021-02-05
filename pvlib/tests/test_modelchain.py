@@ -774,6 +774,7 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
     assert_frame_equal(mc.weather, weather_expected)
     # total_irrad attribute
     assert_frame_equal(mc.results.total_irrad, total_irrad)
+    assert not pd.isnull(mc.results.solar_position.index[0])
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])

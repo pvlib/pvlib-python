@@ -1324,6 +1324,7 @@ class ModelChain:
                 _build_weather(weather) for weather in data
             )
         self._configure_results()
+        self._assign_times()
         return self
 
     def _assign_total_irrad(self, data):
@@ -1392,7 +1393,6 @@ class ModelChain:
         self._check_multiple_input(weather, strict=False)
         self._verify_df(weather, required=['ghi', 'dni', 'dhi'])
         self._assign_weather(weather)
-        self._assign_times()
 
         self._prep_inputs_solar_pos(weather)
         self._prep_inputs_airmass()
@@ -1488,7 +1488,7 @@ class ModelChain:
         data = _to_tuple(data)
         self._check_multiple_input(data)
         self._assign_weather(data)
-        self._assign_times()
+
         self._verify_df(data, required=['poa_global', 'poa_direct',
                                         'poa_diffuse'])
         self._assign_total_irrad(data)

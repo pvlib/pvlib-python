@@ -1051,6 +1051,18 @@ class ModelChain:
 
         poa = _irrad_for_celltemp(self.results.total_irrad,
                                   self.results.effective_irradiance)
+        # Because this operates on all Arrays simultaneously, poa must be known
+        # for all arrays.
+        if any(p is None for p in poa):
+            # Provide a more informative error message. Because only
+            # run_model_from_effective_irradiance() can get to this point
+            # without known POA we can suggest a very specific remedy in the
+            # error message.
+            raise ValueError("Incomplete input data. Data must contain "
+                             "'poa_global' for every Array, or must contain "
+                             "'effective_irradiance' for every Array, "
+                             "including Arrays that have a known "
+                             "'cell_temperature' or 'module_temperature'.")
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = model(poa, temp_air, wind_speed)
@@ -1572,11 +1584,13 @@ class ModelChain:
         """
         poa = _irrad_for_celltemp(self.results.total_irrad,
                                   self.results.effective_irradiance)
-        if not isinstance(data, tuple) and self.system.num_arrays > 1:
+        # handle simple case first, single array, data not iterable
+        if not isinstance(data, tuple) and self.system.num_arrays == 1:
+            return self._prepare_temperature_single_array(data, poa)
+        if not isinstance(data, tuple):
             # broadcast data to all arrays
             data = (data,) * self.system.num_arrays
-        elif not isinstance(data, tuple):
-            return self._prepare_temperature_single_array(data, poa)
+        # find where cell or module temperature is specified in input data
         given_cell_temperature = tuple(itertools.starmap(
             self._get_cell_temperature,
             zip(data, poa, self.system.temperature_model_parameters)
@@ -1588,22 +1602,7 @@ class ModelChain:
             return self
         # Calculate cell temperature from weather data. If cell_temperature
         # has not been provided for some arrays then it is computed with
-        # ModelChain.temperature_model(). Because this operates on all Arrays
-        # simultaneously, 'poa_global' must be known for all arrays, including
-        # those that have a known cell temperature.
-        try:
-            self._verify_df(self.results.total_irrad, ['poa_global'])
-        except ValueError:
-            # Provide a more informative error message. Because only
-            # run_model_from_effective_irradiance() can get to this point
-            # without known POA we can suggest a very specific remedy in the
-            # error message.
-            raise ValueError("Incomplete input data. Data must contain "
-                             "'poa_global'. For systems with multiple Arrays "
-                             "if you have provided 'cell_temperature' for "
-                             "only a subset of Arrays you must provide "
-                             "'poa_global' for all Arrays, including those "
-                             "that have a known 'cell_temperature'.")
+        # ModelChain.temperature_model().
         self.temperature_model()
         # replace calculated cell temperature with temperature given in `data`
         # where available.

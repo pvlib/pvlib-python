@@ -1053,7 +1053,7 @@ class ModelChain:
                                   self.results.effective_irradiance)
         # Because this operates on all Arrays simultaneously, poa must be known
         # for all arrays.
-        if any(p is None for p in poa):
+        if poa is None or any(p is None for p in poa):
             # Provide a more informative error message. Because only
             # run_model_from_effective_irradiance() can get to this point
             # without known POA we can suggest a very specific remedy in the

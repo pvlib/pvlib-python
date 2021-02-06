@@ -916,12 +916,12 @@ def test__set_celltemp_missing_poa(
                     aoi_model='no_loss', spectral_model='no_loss')
     data_one = total_irrad
     data_two = total_irrad.copy()
-    data_one['effective_irradiance'] = data_one['poa_global']
     data_two.pop('poa_global')
+    mc._assign_total_irrad((data_one, data_two))
     matchtxt = "Incomplete input data. Data must contain 'poa_global' " \
         "for every Array"
     with pytest.raises(ValueError, match=matchtxt):
-        mc.run_model_from_effective_irradiance((data_one, data_two))
+        mc._set_celltemp('sapm')
 
 
 def test_run_model_solar_position_weather(
@@ -1012,7 +1012,7 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
                          index=data.index)
     assert_series_equal(ac, expected)
     # check with data as an iterable of length 1
-    mc.run_model_from_effective_irradiance(input_type(data))
+    mc.run_model_from_effective_irradiance(input_type((data,)))
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])

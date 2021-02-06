@@ -471,24 +471,24 @@ def calc_fgndpv_zsky(x, gcr, height, tilt, pitch, npoints=100, maxp=MAXP):
     fz_sky = np.append(fz_sky, fz_sky[0])
 
     # increment the ground input segments that are delta wide
-    delta = 1.0 / (npoints - 1)
+    # delta = 1.0 / (npoints - 1)
     # start at the next row, z=1, and go back toward the previous row, z<1
     # z_star = 1 - np.linspace(num_rows-1, 1, 1 + num_rows * (npoints - 1))
     # shift by a half delta
-    halfdelta = delta / 2.0
+    # halfdelta = delta / 2.0
 
     # max angle
     psi_ref = tilt - psi_x_bottom
     # use uniform angles
-    psidelta = psi_ref * halfdelta
-    psi_zuni = np.linspace(psidelta, psi_ref - psidelta, npoints - 1)
+    # psidelta = psi_ref * halfdelta
+    # psi_zuni = np.linspace(psidelta, psi_ref - psidelta, npoints - 1)
     # zuni = np.flip(1-_big_z(tilt-psi_zuni, height, tilt, pitch)/pitch)
 
     # fzuni_sky = np.interp(zuni, z_star, fz_sky, fgnd_sky, fgnd_sky)
-    dfgnd_pv = (np.cos(psi_zuni-psidelta) - np.cos(psi_zuni+psidelta)) / 2
+    # dfgnd_pv = (1 - np.cos(psi_ref)) / 2
     # FIXME: not working for backside
     # fskyz = np.sum(fzuni_sky * dfgnd_pv)
-    fgnd_pv = np.sum(dfgnd_pv)
+    fgnd_pv = (1 - np.cos(psi_ref)) / 2
     fskyz = fgnd_sky * fgnd_pv
     return fskyz, fgnd_pv
 

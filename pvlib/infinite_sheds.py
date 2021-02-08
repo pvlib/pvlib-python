@@ -89,7 +89,8 @@ def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
 
 def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     """
-    Calculate solar projection on YZ-plane, vertical and perpendicular to rows.
+    Calculate tangent of solar projected angle on YZ-plane, vertical and
+    perpendicular to rows.
 
     .. math::
         \\tan \\phi = \\cos\\left(\\text{solar azimuth}-\\text{system azimuth}
@@ -116,7 +117,7 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
 
 def unshaded_ground_fraction(gcr, tilt, tan_phi):
     """
-    Calculate the fraction of the ground with incident direct irradiance
+    Calculate the fraction of the ground with incident direct irradiance.
 
     .. math::
         F_{gnd,sky} &= 1 - \\min{\\left(1, \\text{GCR} \\left|\\cos \\beta +
@@ -167,7 +168,7 @@ def _gcr_prime(gcr, height, tilt, pitch):
 
     #  : \\                      \\
     #  :  \\                      \\
-    #  :   \\ H = module height    \\
+    #  :   \\ H = module length    \\
     #  :    \\                      \\
     #  :.....\\......................\\........ module lower edge
     #  :       \                       \    :
@@ -201,7 +202,23 @@ def ground_sky_angles(f_z, gcr, height, tilt, pitch):
         module tilt in radians, between 0 and 180-degrees
     pitch : numeric
         row spacing
+
+    Assuming the first row is in the front of the array then previous rows are
+    toward the front of the array and next rows are toward the back.
+
     """
+
+    #  : \\*                    |\\             front of array
+    #  :  \\ **                 | \\
+    # next \\   **               | \\ previous row
+    # row   \\     **            |  \\
+    #  :.....\\.......**..........|..\\........ module lower edge
+    #  :       \         **       |    \    :
+    #  :        \           **     |    \   h = height above ground
+    #  :   tilt  \      psi1   **  |psi0 \  :
+    #  +----------\<---------P----*+----->\---- ground
+    #             1<-----1-fz-----><--fz--0---- fraction of ground
+
     gcr_prime = _gcr_prime(gcr, height, tilt, pitch)
     tilt_prime = np.pi - tilt
     opposite_side = np.sin(tilt_prime)
@@ -218,7 +235,8 @@ def ground_sky_angles(f_z, gcr, height, tilt, pitch):
 
 def ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
     """
-    Angles from point z on ground to top and bottom of previous rows beyond.
+    Angles from point z on ground to top and bottom of previous rows beyond the
+    current row.
 
     .. math::
 
@@ -241,13 +259,29 @@ def ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
         module tilt in radians, between 0 and 180-degrees
     pitch : numeric
         row spacing
+
+    The sky is visible between rows beyond the current row. Therefore, we need
+    to calculate the angles :math:`\\psi_0` and :math:`\\psi_1` to the top and
+    bottom of the previous row.
     """
+
+    #  : \\        |            *\\ top of previous row
+    #  :  \\      |          **   \\
+    # prev \\    |         *       \\           front of array
+    # row   \\  |       **          \\
+    # bottom.\\|......*..............\\........ module lower edge
+    #  :      |\   **                  \    :
+    #  psi1  |  \* psi0                 \   h = height above ground
+    #  :    | ** \                       \  :
+    #  +---+*-----\<---------P----------->\---- ground
+    #      <-1+fz-1<---------fz=1---------0---- fraction of ground
+
     gcr_prime = _gcr_prime(gcr, height, tilt, pitch)
     tilt_prime = np.pi - tilt
-    # angle to bottom of panel looking at sky between rows beyond
+    # angle to top of previous panel beyond the current row
     psi_0 = np.arctan2(
         np.sin(tilt_prime), (1+f_z)/gcr_prime + np.cos(tilt_prime))
-    # angle to front edge of row beyond
+    # angle to bottom of previous panel
     z = f_z*pitch
     # other forms raise division by zero errors
     # avoid division by zero errors
@@ -281,7 +315,8 @@ def f_z0_limit(gcr, height, tilt, pitch):
 
 def ground_sky_angles_next(f_z, gcr, height, tilt, pitch):
     """
-    Angles from point z on the ground to top and bottom of next row beyond.
+    Angles from point z on the ground to top and bottom of next row beyond
+    current row.
 
     .. math::
         \\tan \\psi_0 = \\frac{h}{\\frac{h}{\\tan\\beta^\\prime}
@@ -289,16 +324,45 @@ def ground_sky_angles_next(f_z, gcr, height, tilt, pitch):
 
         \\tan{\\psi_1} = \\frac{\\sin{\\beta}}
         {\\frac{F_z^\\prime}{\\text{GCR}^\\prime} + \\cos{\\beta}}
+
+    Parameters
+    ----------
+    f_z : numeric
+        fraction of ground from previous to next row
+    gcr : numeric
+        ground coverage ratio
+    height : numeric
+        height of module lower edge above the ground
+    tilt : numeric
+        module tilt in radians, between 0 and 180-degrees
+    pitch : numeric
+        row spacing
+
+    The sky is visible between rows beyond the current row. Therefore, we need
+    to calculate the angles :math:`\\psi_0` and :math:`\\psi_1` to the top and
+    bottom of the next row.
     """
+
+    #  : \\+                     \\
+    #  :  \\  `*+                 \\
+    # next \\      `*+             \\
+    # row   \\          `*+         \\ next row bottom
+    # top....\\..............`*+.....\\_
+    #  :       \                  `*+  \ -_  psi0
+    #  :        \                psi1  `*+  -_
+    #  :         \                       \  `*+ _
+    #  +----------\<---------P----------->\------*----- ground
+    #             1<---------fz=1---------0-1-fz->----- fraction of ground
+
     gcr_prime = _gcr_prime(gcr, height, tilt, pitch)
     tilt_prime = np.pi - tilt
-    # angle to bottom of panel looking at sky between rows beyond
+    # angle to bottom of next panel
     fzprime = 1-f_z
     zprime = fzprime*pitch
     # other forms raise division by zero errors
     # avoid division by zero errors
     psi_0 = np.arctan2(height, height/np.tan(tilt_prime) - zprime)
-    # angle to front edge of row beyond
+    # angle to top of next panel beyond the current row
     psi_1 = np.arctan2(np.sin(tilt), (1+fzprime)/gcr_prime + np.cos(tilt))
     return psi_0, psi_1
 

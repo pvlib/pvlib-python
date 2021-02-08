@@ -180,13 +180,6 @@ def test_ground_sky_angles_next():
         PSI_TOP_BACK)
 
 
-def test_bigz():
-    _, height, tilt, pitch = ARGS
-    psi_x0_bottom = 0
-    bigz_x0 = pvlib.infinite_sheds._big_z(psi_x0_bottom, height, tilt, pitch)
-    assert np.isinf(bigz_x0)
-
-
 def test_diffuse_fraction():
     df = pvlib.infinite_sheds.diffuse_fraction(GHI, DHI)
     assert np.allclose(df, DF, equal_nan=True)

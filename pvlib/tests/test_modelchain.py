@@ -997,12 +997,10 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
     assert_series_equal(ac, expected)
-    # check with data as an iterable of length 1
-    mc.run_model_from_effective_irradiance(input_type((data,)))
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])
-def test_run_model_from_effective_irradiance_input_type(
+def test_run_model_from_effective_irradiance_multi_array(
         sapm_dc_snl_ac_system_Array, location, weather, total_irrad,
         input_type):
     data = weather.copy()
@@ -1105,7 +1103,6 @@ def test_run_model_from_effective_irradiance_minimal_input(
     mc.run_model_from_effective_irradiance((data, data))
     assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
     assert not mc.results.ac.empty
-
 
 
 def test_run_model_singleton_weather_single_array(cec_dc_snl_ac_system,

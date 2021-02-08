@@ -1589,8 +1589,7 @@ class ModelChain:
             self.results.cell_temperature = given_cell_temperature
             return self
         # Calculate cell temperature from weather data. If cell_temperature
-        # has not been provided for some arrays then it is computed with
-        # ModelChain.temperature_model().
+        # has not been provided for some arrays then it is computed.
         self.temperature_model()
         # replace calculated cell temperature with temperature given in `data`
         # where available.

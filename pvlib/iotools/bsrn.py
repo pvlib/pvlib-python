@@ -28,8 +28,9 @@ def read_bsrn(filename):
     global, diffuse, direct and downwelling long-wave radiation [2]_. Future
     updates may include parsing of additional data and meta-data.
 
-    Required username and password are easily obtainable as described in the
-    BSRN's Data Release Guidelines [4]_.
+    BSRN files are freely avaiable and can be accessed via FTP [3]_. Required
+    username and password are easily obtainable as described in the BSRN's
+    Data Release Guidelines [4]_.
 
 
 

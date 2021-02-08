@@ -910,20 +910,6 @@ def test_temperature_models_arrays_multi_weather(
             != mc.results.cell_temperature[1]).all()
 
 
-def test__set_celltemp_missing_poa(
-        sapm_dc_snl_ac_system_same_arrays, location, weather, total_irrad):
-    mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location,
-                    aoi_model='no_loss', spectral_model='no_loss')
-    data_one = total_irrad
-    data_two = total_irrad.copy()
-    data_two.pop('poa_global')
-    mc._assign_total_irrad((data_one, data_two))
-    matchtxt = "Incomplete input data. Data must contain 'poa_global' " \
-        "for every Array"
-    with pytest.raises(ValueError, match=matchtxt):
-        mc._set_celltemp('sapm')
-
-
 def test_run_model_solar_position_weather(
         pvwatts_dc_pvwatts_ac_system, location, weather, mocker):
     mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location,
@@ -999,7 +985,7 @@ def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
     assert_series_equal(ac, expected)
 
 
-@pytest.mark.parametrize("input_type", [tuple, list])
+@pytest.mark.parametrize("input_type", [lambda x: x[0], tuple, list])
 def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
                                              weather, total_irrad, input_type):
     data = weather.copy()
@@ -1007,7 +993,7 @@ def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
     data['effective_irradiance'] = data['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    ac = mc.run_model_from_effective_irradiance(data).results.ac
+    ac = mc.run_model_from_effective_irradiance(input_type((data,))).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
     assert_series_equal(ac, expected)
@@ -1031,13 +1017,14 @@ def test_run_model_from_effective_irradiance_input_type(
     assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
 
 
+@pytest.mark.parametrize("input_type", [lambda x: x[0], tuple, list])
 def test_run_model_from_effective_irradiance_no_poa_global(
-        sapm_dc_snl_ac_system, location, weather, total_irrad):
+        sapm_dc_snl_ac_system, location, weather, total_irrad, input_type):
     data = weather.copy()
     data['effective_irradiance'] = total_irrad['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    ac = mc.run_model_from_effective_irradiance(data).results.ac
+    ac = mc.run_model_from_effective_irradiance(input_type((data,))).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
     assert_series_equal(ac, expected)

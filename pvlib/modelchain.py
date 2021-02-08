@@ -1813,6 +1813,7 @@ class ModelChain:
         """
         data = _to_tuple(data)
         self._check_multiple_input(data)
+        self._verify_df(data, required=['effective_irradiance'])
         self._assign_weather(data)
         self._assign_total_irrad(data)
         self.results.effective_irradiance = _tuple_from_dfs(

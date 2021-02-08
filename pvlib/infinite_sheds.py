@@ -475,6 +475,7 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
             calc_fz_sky(*psi_z)  # current row
             + np.sum(fz0_sky_next, axis=0)  # sum of all next rows
             + np.sum(fz1_sky_prev, axis=0))  # sum of all previous rows
+    # we just need one row, fz in range [0, 1]
     fz_row = np.linspace(0, 1, npoints)
     return fz_row, np.interp(fz_row, fz, fz_sky)
 
@@ -574,7 +575,7 @@ def diffuse_fraction(ghi, dhi):
 def poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     """
     transposed ground reflected diffuse component adjusted for ground
-    illumination, AND accounting for infinite adjacent rows in both directions
+    illumination AND accounting for infinite adjacent rows in both directions
 
     Parameters
     ----------
@@ -1016,7 +1017,7 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
             ground_angle_1_tangent=tan_psi_bottom_1,
             f_ground_diffuse_pv_shade=f_gnd_pv_shade,
             f_ground_diffuse_pv_noshade=f_gnd_pv_noshade)
-    if isinstance(poa_global_pv, pd.Series):
+    if isinstance(poa_glo_pv, pd.Series):
         output = pd.DataFrame(output)
     return output
 
@@ -1056,8 +1057,8 @@ def get_poa_global_bifacial(solar_zenith, solar_azimuth, system_azimuth, gcr,
         irrad_back['poa_sky_diffuse'], irrad_back['poa_direct'], iam_back)
     # get bifacial
     poa_glo_bifi = poa_global_bifacial(
-        poa_global_front[0], poa_global_back[0], bifaciality, shade_factor,
-        transmission_factor)
+        poa_global_front['poa_global_pv'], poa_global_back['poa_global_pv'],
+        bifaciality, shade_factor, transmission_factor)
     return poa_glo_bifi
 
 
@@ -1079,7 +1080,7 @@ class InfiniteSheds(object):
         self.pitch = pitch
         self.npoints = npoints
         self.is_bifacial = is_bifacial
-        self.bifaciality = bifaciality
+        self.bifaciality = bifaciality if is_bifacial else 0.0
         self.shade_factor = shade_factor
         self.transmission_factor = transmission_factor
         # backside angles
@@ -1103,7 +1104,7 @@ class InfiniteSheds(object):
         self.tan_phi = self.front_side.tan_phi
         self.f_gnd_beam = self.front_side.f_gnd_beam
         self.df = self.front_side.df
-        if self.is_bifacial and self.bifaciality > 0:
+        if self.bifaciality > 0:
             self.back_side = _PVSurface(*get_irradiance(
                 solar_zenith, solar_azimuth, self.backside_sysaz,
                 self.gcr, self.height, self.backside_tilt, self.pitch, ghi,
@@ -1112,6 +1113,9 @@ class InfiniteSheds(object):
             self.poa_global_bifacial = poa_global_bifacial(
                 self.front_side.poa_global_pv, self.back_side.poa_global_pv,
                 self.bifaciality, self.shade_factor, self.transmission_factor)
+            return self.poa_global_bifacial
+        else:
+            return self.front_side.poa_global_pv
 
 
 class _PVSurface(object):

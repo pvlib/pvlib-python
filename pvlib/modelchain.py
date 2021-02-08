@@ -1051,18 +1051,6 @@ class ModelChain:
 
         poa = _irrad_for_celltemp(self.results.total_irrad,
                                   self.results.effective_irradiance)
-        # Because this operates on all Arrays simultaneously, poa must be known
-        # for all arrays.
-        if poa is None or any(p is None for p in poa):
-            # Provide a more informative error message. Because only
-            # run_model_from_effective_irradiance() can get to this point
-            # without known POA we can suggest a very specific remedy in the
-            # error message.
-            raise ValueError("Incomplete input data. Data must contain "
-                             "'poa_global' for every Array, or must contain "
-                             "'effective_irradiance' for every Array, "
-                             "including Arrays that have a known "
-                             "'cell_temperature' or 'module_temperature'.")
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         self.results.cell_temperature = model(poa, temp_air, wind_speed)

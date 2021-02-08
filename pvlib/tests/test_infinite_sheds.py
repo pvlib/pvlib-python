@@ -60,32 +60,24 @@ BACK_TILT_RAD = np.radians(BACKSIDE['tilt'])
 def test_solar_projection_tangent():
     tan_phi_f = pvlib.infinite_sheds.solar_projection_tangent(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, SYSAZ_RAD)
-    backside_sysaz_rad = np.radians(BACKSIDE['sysaz'])
     tan_phi_b = pvlib.infinite_sheds.solar_projection_tangent(
-        SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, backside_sysaz_rad)
+        SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, BACK_SYSAZ_RAD)
     assert np.allclose(tan_phi_f, -tan_phi_b)
+    assert np.allclose(tan_phi_f, TESTDATA.tan_phi_f)
+    assert np.allclose(tan_phi_b, TESTDATA.tan_phi_b)
 
 
 def test_solar_projection():
     # frontside
-    _, tan_phi = pvlib.infinite_sheds.solar_projection(
+    phi_f, tan_phi_f = pvlib.infinite_sheds.solar_projection(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, SYSAZ_RAD)
-    assert np.allclose(tan_phi, TESTDATA.tan_phi_f)
+    assert np.allclose(tan_phi_f, TESTDATA.tan_phi_f)
+    assert np.allclose(np.tan(phi_f), tan_phi_f)
     # backside
-    _, tan_phi = pvlib.infinite_sheds.solar_projection(
+    phi_b, tan_phi_b = pvlib.infinite_sheds.solar_projection(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, BACK_SYSAZ_RAD)
-    assert np.allclose(tan_phi, TESTDATA.tan_phi_b)
-
-
-def test_frontside_solar_projection_tangent():
-    # frontside
-    tan_phi = pvlib.infinite_sheds.solar_projection_tangent(
-        SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, SYSAZ_RAD)
-    assert np.allclose(tan_phi, TESTDATA.tan_phi_f)
-    # backside
-    tan_phi = pvlib.infinite_sheds.solar_projection_tangent(
-        SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, BACK_SYSAZ_RAD)
-    assert np.allclose(tan_phi, TESTDATA.tan_phi_b)
+    assert np.allclose(tan_phi_b, TESTDATA.tan_phi_b)
+    assert np.allclose(np.tan(phi_b), tan_phi_b)
 
 
 def test_unshaded_ground_fraction():

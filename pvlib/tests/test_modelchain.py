@@ -985,26 +985,44 @@ def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
     assert_series_equal(ac, expected)
 
 
+@pytest.mark.parametrize("input_type", [lambda x: x[0], tuple, list])
 def test_run_model_from_effective_irradiance(sapm_dc_snl_ac_system, location,
-                                             weather, total_irrad):
+                                             weather, total_irrad, input_type):
     data = weather.copy()
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     data['effective_irradiance'] = data['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    ac = mc.run_model_from_effective_irradiance(data).results.ac
+    ac = mc.run_model_from_effective_irradiance(input_type((data,))).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
     assert_series_equal(ac, expected)
 
 
+@pytest.mark.parametrize("input_type", [tuple, list])
+def test_run_model_from_effective_irradiance_multi_array(
+        sapm_dc_snl_ac_system_Array, location, weather, total_irrad,
+        input_type):
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data['effective_irradiance'] = data['poa_global']
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    mc.run_model_from_effective_irradiance(input_type((data, data)))
+    # arrays have different orientation, but should give same dc power
+    # because we are the same passing POA irradiance and air
+    # temperature.
+    assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
+
+
+@pytest.mark.parametrize("input_type", [lambda x: x[0], tuple, list])
 def test_run_model_from_effective_irradiance_no_poa_global(
-        sapm_dc_snl_ac_system, location, weather, total_irrad):
+        sapm_dc_snl_ac_system, location, weather, total_irrad, input_type):
     data = weather.copy()
     data['effective_irradiance'] = total_irrad['poa_global']
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    ac = mc.run_model_from_effective_irradiance(data).results.ac
+    ac = mc.run_model_from_effective_irradiance(input_type((data,))).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
     assert_series_equal(ac, expected)
@@ -1085,23 +1103,6 @@ def test_run_model_from_effective_irradiance_minimal_input(
     mc.run_model_from_effective_irradiance((data, data))
     assert_frame_equal(mc.results.dc[0], mc.results.dc[1])
     assert not mc.results.ac.empty
-
-
-def test_run_model_from_effective_irradiance_missing_poa(
-        sapm_dc_snl_ac_system_Array, location, total_irrad):
-    data_incomplete = pd.DataFrame(
-        {'effective_irradiance': total_irrad['poa_global'],
-         'poa_global': total_irrad['poa_global']},
-        index=total_irrad.index)
-    data_complete = pd.DataFrame(
-        {'effective_irradiance': total_irrad['poa_global'],
-         'cell_temperature': 30},
-        index=total_irrad.index)
-    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
-    with pytest.raises(ValueError,
-                       match="you must provide 'poa_global' for all Arrays"):
-        mc.run_model_from_effective_irradiance(
-            (data_complete, data_incomplete))
 
 
 def test_run_model_singleton_weather_single_array(cec_dc_snl_ac_system,

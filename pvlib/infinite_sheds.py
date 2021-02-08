@@ -291,7 +291,7 @@ def ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
 
 def f_z0_limit(gcr, height, tilt, pitch):
     """
-    Limit from :math:`z_0` where sky is visible between previous rows.
+    Limit from the ground where sky is visible between previous rows.
 
     .. math::
         F_{z0,limit} = \\frac{h}{P} \\left(
@@ -307,6 +307,10 @@ def f_z0_limit(gcr, height, tilt, pitch):
         module tilt in radians, between 0 and 180-degrees
     pitch : numeric
         row spacing
+
+    The point on the ground, :math:`z_0`, from which the sky is still visible
+    between previous rows, where the angle :math:`\\psi` is tangent to both the
+    top and bottom of panels.
     """
     tan_psi_t_x0 = sky_angle_0_tangent(gcr, tilt)
     # tan_psi_t_x0 = gcr * np.sin(tilt) / (1.0 - gcr * np.cos(tilt))
@@ -369,7 +373,7 @@ def ground_sky_angles_next(f_z, gcr, height, tilt, pitch):
 
 def f_z1_limit(gcr, height, tilt, pitch):
     """
-    Limit from :math:`z_1^\\prime` where sky is visible between next rows.
+    Limit from the ground where sky is visible between the next rows.
 
     .. math::
         F_{z1,limit} = \\frac{h}{P} \\left(
@@ -385,6 +389,10 @@ def f_z1_limit(gcr, height, tilt, pitch):
         module tilt in radians, between 0 and 180-degrees
     pitch : numeric
         row spacing
+
+    The point on the ground, :math:`z_1^\\prime`, from which the sky is still
+    visible between the next rows, where the angle :math:`\\psi` is tangent to
+    both the top and bottom of panels.
     """
     tan_psi_t_x1 = sky_angle_0_tangent(gcr, np.pi-tilt)
     # tan_psi_t_x1 = gcr * np.sin(pi-tilt) / (1.0 - gcr * np.cos(pi-tilt))

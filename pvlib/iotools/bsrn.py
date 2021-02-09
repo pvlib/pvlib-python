@@ -4,7 +4,6 @@
 
 import pandas as pd
 import gzip
-import os
 
 COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27), (27, 32), (32, 39),
              (39, 45), (45, 50), (50, 55), (55, 64), (64, 70), (70, 75)]
@@ -93,11 +92,17 @@ def read_bsrn(filename):
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
         with gzip.open(filename, 'rt') as f:
             for num, line in enumerate(f):
+                if num==1: # Get month and year from the 2nd line
+                    start_date = pd.Timestamp(year=int(line[7:11]),
+                                              month=int(line[3:6]), day=1)
                 if line.startswith('*'):  # Find start of all logical records
                     line_no_dict[line[2:6]] = num  # key is 4 digit LR number
     else:
         with open(filename, 'r') as f:
             for num, line in enumerate(f):
+                if num==1: # Get month and year from the 2nd line
+                    start_date = pd.Timestamp(year=int(line[7:11]),
+                                              month=int(line[3:6]), day=1)
                 if line.startswith('*'):  # Find start of all logical records
                     line_no_dict[line[2:6]] = num
 
@@ -129,8 +134,7 @@ def read_bsrn(filename):
     data['minute'] = data['minute'].astype('Int64')
 
     # Set datetime index and localize to UTC
-    basename = os.path.basename(filename)  # get month and year from filename
-    data.index = (pd.to_datetime(basename[3:7], format='%m%y')
+    data.index = (start_date
                   + pd.to_timedelta(data['day']-1, unit='d')
                   + pd.to_timedelta(data['minute'], unit='min'))
 

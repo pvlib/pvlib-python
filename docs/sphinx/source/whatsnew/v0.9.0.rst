@@ -5,13 +5,48 @@ v0.9.0 (MONTH DAY YEAR)
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
+* Moved functions related to inverters from ``pvsystem.py`` to ``inverter.py``.
+  Functions are renamed to follow a more consistent pattern, as follows (:pull:`886`, :pull:`1136`):
+
+    - ``pvlib.pvsystem.snlinverter`` is now :py:func:`pvlib.inverter.sandia`
+    - ``pvlib.pvsystem.pvwatts_ac`` is now :py:func:`pvlib.inverter.pvwatts`
+    - ``pvlib.pvsystem.adrinverter`` is now :py:func:`pvlib.inverter.adr`
+
+* Argument ``ac_model`` for :py:class:`pvlib.modelchain.ModelChain` now accepts
+  ``'sandia'``, ``'pvwatts'`` and ``'adr'`` for the inverter models. (:pull:`886`, :pull:`1136`)
+
+* Calling :py:meth:`pvlib.pvsystem.PVSystem.sapm_celltemp` without setting
+  ``PVSystem.temperature_model_parameters``,
+  or a valid combination of ``PVsystem.module_type`` and ``PVsystem.racking_model``, will
+  now raise an exception. (:issue:`1030`, :pull:`1033`, :pull:`1136`)
+
+* Deprecated arbitrary keyword arguments for
+  :py:class:`pvlib.location.Location`, :py:class:`pvlib.pvsystem.PVSystem`,
+  :py:class:`pvlib.tracking.SingleAxisTracker`, and
+  :py:class:`pvlib.modelchain.ModelChain`. Supplying arbitrary keyword
+  to these objects result in TypeErrors in v0.9. (:issue:`1029`, :pull:`1053`, :pull:`1136`)
+
+* ``pvlib.pvsystem.LocalizedPVSystem`` and ``pvlib.pvsystem.LocalizedSingleAxisTracker``
+  have been removed. Use
+  :py:class:`pvlib.location.Location`, :py:class:`pvlib.pvsystem.PVSystem`,
+  :py:class:`pvlib.tracking.SingleAxisTracker`, and
+  :py:class:`pvlib.modelchain.ModelChain` instead.
+  (:issue:`1029`, :pull:`1034`, :pull:`1053`, :pull:`1136`)
+
+* ``irradiance.liujordan`` and ``ForecastModel.cloud_cover_to_irradiance_liujordan``
+  have been removed. (:pull:`1136`)
+
+* ``ModelChain.snlinverter`` changed to ``ModelChain.sandia_inverter``.
+  ``ModelChain.adrinverter`` changed to ``ModelChain.adr_inverter``.
+  (:pull:`1150`)
 
 
 Deprecations
 ~~~~~~~~~~~~
 * The following ``ModelChain`` attributes are deprecated. They have been moved
   to the :py:class:`~pvlib.modelchain.ModelChainResult` class that is
-  accessible via ``ModelChain.results``
+  accessible via ``ModelChain.results``:
+
   * ``ModelChain.ac``
   * ``ModelChain.airmass``
   * ``ModelChain.aoi``
@@ -42,23 +77,39 @@ Enhancements
   :py:class:`~pvlib.modelchain.ModelChain`. This includes substantial API
   enhancements for accepting different weather input for each ``Array`` in the
   system. (:pull:`1076`, :issue:`1067`)
-* Support for :py:func:`~pvlib.inverter.sandia_multi` added to
+* Support for :py:func:`~pvlib.inverter.sandia_multi` and
+  :py:func:`~pvlib.inverter.pvwatts_multi` added to
   :py:class:`~pvlib.pvsystem.PVSystem` and
-  :py:class:`~pvlib.modelchain.ModelChain` (as ``ac_model='sandia_multi'``).
-  (:pull:`1076`, :issue:`1067`)
+  :py:class:`~pvlib.modelchain.ModelChain` (as ``ac_model='sandia'``
+  and ``ac_model='pvwatts'``).
+  (:pull:`1076`, :issue:`1067`, :pull:`1132`, :issue:`1117`, :pull:`1150`)
 * :py:class:`~pvlib.modelchain.ModelChain` 'run_model' methods now
   automatically switch to using ``'effective_irradiance'`` (if available) for
   cell temperature models, when ``'poa_global'`` is not provided in input
   weather or calculated from input weather data.
+* :py:meth:`~pvlib.modelchain.ModelChain.pvwatts_dc` now scales the DC power
+  by ``pvsystem.PVSystem.modules_per_strings`` and
+  ``pvsystem.PVSystem.strings_per_inverter``. Note that both attributes still
+  default to 1. (:pull:`1138`)
+* :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
+  from DC power. Use parameter ``model`` to specify which inverter model to use.
+  (:pull:`1147`, :issue:`998`, :pull:`1150`)
 
 Bug fixes
 ~~~~~~~~~
-
+* Pass weather data to solar position calculations in
+  :ref:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
+  (:issue:`1065`, :pull:`1140`)
+* Reindl model fixed to generate sky_diffuse=0 when GHI=0.
+  (:issue:`1153`, :pull:`1154`)
 Testing
 ~~~~~~~
 
 Documentation
 ~~~~~~~~~~~~~
+
+* Update intro tutorial to highlight the use of historical meteorological data
+  and to make the procedural and OO results match exactly.
 
 Requirements
 ~~~~~~~~~~~~

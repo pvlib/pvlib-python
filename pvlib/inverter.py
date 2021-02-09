@@ -414,7 +414,7 @@ def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
         DC power on each MPPT input of the inverter. If type is array, must
         be 2d with axis 0 being the MPPT inputs. Same unit as ``pdc0``.
     pdc0: numeric
-        DC input limit of the inverter.  Same unit as ``pdc``.
+        Total DC power limit of the inverter.  Same unit as ``pdc``.
     eta_inv_nom: numeric, default 0.96
         Nominal inverter efficiency. [unitless]
     eta_inv_ref: numeric, default 0.9637

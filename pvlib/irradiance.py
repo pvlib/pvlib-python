@@ -13,8 +13,6 @@ import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
 
-from pvlib._deprecation import deprecated
-
 
 # see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
@@ -888,8 +886,9 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     # these are the () and [] sub-terms of the second term of eqn 8
     term1 = 1 - AI
     term2 = 0.5 * (1 + tools.cosd(surface_tilt))
-    term3 = 1 + np.sqrt(HB / ghi) * (tools.sind(0.5 * surface_tilt) ** 3)
-
+    with np.errstate(invalid='ignore', divide='ignore'):
+        hb_to_ghi = np.where(ghi == 0, 0, np.divide(HB, ghi))
+    term3 = 1 + np.sqrt(hb_to_ghi) * (tools.sind(0.5 * surface_tilt)**3)
     sky_diffuse = dhi * (AI * Rb + term1 * term2 * term3)
     sky_diffuse = np.maximum(sky_diffuse, 0)
 
@@ -2297,10 +2296,6 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
         irrads = pd.DataFrame(irrads)
 
     return irrads
-
-
-liujordan = deprecated('0.8', alternative='campbellnormam',
-                       name='liujordan', removal='0.9')(_liujordan)
 
 
 def _get_perez_coefficients(perezmodel):

@@ -9,12 +9,14 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_almost_equal, assert_allclose
 
-from conftest import assert_frame_equal, assert_series_equal
-
 from pvlib import irradiance
 
-from conftest import requires_ephem, requires_numba, fail_on_pvlib_version
-from pvlib._deprecation import pvlibDeprecationWarning
+from conftest import (
+    assert_frame_equal,
+    assert_series_equal,
+    requires_ephem,
+    requires_numba
+)
 
 
 # fixtures create realistic test input data
@@ -201,7 +203,7 @@ def test_reindl(irrad_data, ephem_data, dni_et):
         40, 180, irrad_data['dhi'], irrad_data['dni'], irrad_data['ghi'],
         dni_et, ephem_data['apparent_zenith'], ephem_data['azimuth'])
     # values from matlab 1.4 code
-    assert_allclose(result, [np.nan, 27.9412, 104.1317, 34.1663], atol=1e-4)
+    assert_allclose(result, [0., 27.9412, 104.1317, 34.1663], atol=1e-4)
 
 
 def test_king(irrad_data, ephem_data):
@@ -284,19 +286,6 @@ def test_get_sky_diffuse_invalid():
         irradiance.get_sky_diffuse(
             30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
             model='invalid')
-
-
-@fail_on_pvlib_version('0.9')
-def test_liujordan():
-    expected = pd.DataFrame(np.array(
-        [[863.859736967, 653.123094076, 220.65905025]]),
-        columns=['ghi', 'dni', 'dhi'],
-        index=[0])
-    with pytest.warns(pvlibDeprecationWarning):
-        out = irradiance.liujordan(
-            pd.Series([10]), pd.Series([0.5]), pd.Series([1.1]),
-            dni_extra=1400)
-    assert_frame_equal(out, expected)
 
 
 def test_campbell_norman():

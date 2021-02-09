@@ -77,7 +77,7 @@ def read_bsrn(filename):
     References
     ----------
     .. [1] `World Radiation Monitoring Center - Baseline Surface Radiation
-        Network (BSRN) `BSRN homepage <https:/https://bsrn.awi.de/>`_
+        Network (BSRN) <https:/https://bsrn.awi.de/>`_
     .. [2] `Update of the Technical Plan for BSRN Data Management, 2013,
        Global Climate Observing System (GCOS) GCOS-172.
        <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_

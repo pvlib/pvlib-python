@@ -100,7 +100,7 @@ def read_bsrn(filename):
     else:
         with open(filename, 'r') as f:
             for num, line in enumerate(f):
-                if num == 1: #  Get month and year from the 2nd line
+                if num == 1:  # Get month and year from the 2nd line
                     start_date = pd.Timestamp(year=int(line[7:11]),
                                               month=int(line[3:6]), day=1)
                 if line.startswith('*'):  # Find start of all logical records

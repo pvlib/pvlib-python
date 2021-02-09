@@ -92,7 +92,7 @@ def read_bsrn(filename):
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
         open_func, mode = gzip.open, 'rt'
     else:
-      open_func, mode = open, 'r'
+        open_func, mode = open, 'r'
     with open_func(filename, mode) as f:
         for num, line in enumerate(f):
             if num == 1:  # Get month and year from the 2nd line

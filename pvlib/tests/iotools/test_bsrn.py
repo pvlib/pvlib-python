@@ -25,7 +25,7 @@ def test_read_bsrn_columns():
 
 @pytest.fixture
 def expected_index():
-    start = pd.Timestamp(2016,6,1,0,0)
+    start = pd.Timestamp(2016, 6, 1, 0, 0)
     return pd.date_range(start=start, periods=43200, freq='1min', tz='UTC')
 
 

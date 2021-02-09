@@ -508,15 +508,15 @@ def vf_ground_sky(gcr, height, tilt, pitch, npoints=100):
     return fgnd_sky, fz_sky
 
 
-def calc_fgndpv_zsky(x, gcr, height, tilt, pitch, npoints=100):
+def calc_fgndpv_zsky(fx, gcr, height, tilt, pitch, npoints=100):
     """
     Calculate the fraction of diffuse irradiance from the sky, reflecting from
     the ground, incident at a point "x" on the PV surface.
 
     Parameters
     ----------
-    x : numeric
-        point on PV surface
+    fx : numeric
+        fraction of PV surface from bottom
     gcr : numeric
         ground coverage ratio
     height : numeric
@@ -529,8 +529,6 @@ def calc_fgndpv_zsky(x, gcr, height, tilt, pitch, npoints=100):
         divide the ground into discrete points
     """
     args = gcr, height, tilt, pitch
-    hmod = gcr * pitch  # height of PV surface
-    fx = x / hmod  # = x/gcr/pitch
 
     # calculate the view factor of the diffuse sky from the ground between rows
     # and integrate the view factor for all of the ground between rows

@@ -90,21 +90,17 @@ def read_bsrn(filename):
     # Read file and store the starting line number for each logical record (LR)
     line_no_dict = {}
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
-        with gzip.open(filename, 'rt') as f:
-            for num, line in enumerate(f):
-                if num == 1:  # Get month and year from the 2nd line
-                    start_date = pd.Timestamp(year=int(line[7:11]),
-                                              month=int(line[3:6]), day=1)
-                if line.startswith('*'):  # Find start of all logical records
-                    line_no_dict[line[2:6]] = num  # key is 4 digit LR number
+        open_func, mode = gzip.open, 'rt'
     else:
-        with open(filename, 'r') as f:
-            for num, line in enumerate(f):
-                if num == 1:  # Get month and year from the 2nd line
-                    start_date = pd.Timestamp(year=int(line[7:11]),
-                                              month=int(line[3:6]), day=1)
-                if line.startswith('*'):  # Find start of all logical records
-                    line_no_dict[line[2:6]] = num
+      open_func, mode = open, 'r'
+    with open_func(filename, mode) as f:
+        for num, line in enumerate(f):
+            if num == 1:  # Get month and year from the 2nd line
+                start_date = pd.Timestamp(year=int(line[7:11]),
+                                          month=int(line[3:6]), day=1,
+                                          tz='UTC')  # BSRN timestamps are UTC
+            if line.startswith('*'):  # Find start of all logical records
+                line_no_dict[line[2:6]] = num  # key is 4 digit LR number
 
     # Determine start and end line of logical record LR0100 to be parsed
     start_row = line_no_dict['0100'] + 1  # Start line number
@@ -133,14 +129,9 @@ def read_bsrn(filename):
     data['day'] = data['day'].astype('Int64')
     data['minute'] = data['minute'].astype('Int64')
 
-    # Set datetime index and localize to UTC
+    # Set datetime index
     data.index = (start_date
                   + pd.to_timedelta(data['day']-1, unit='d')
                   + pd.to_timedelta(data['minute'], unit='min'))
-
-    try:
-        data.index = data.index.tz_localize('UTC')  # BSRN timestamps are UTC
-    except TypeError:
-        pass
 
     return data

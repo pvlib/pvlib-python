@@ -69,7 +69,7 @@ def read_bsrn(filename):
     lwd_std                  float   Std. downward long-wave radiation [W/m^2]
     lwd_min                  float   Min. downward long-wave radiation [W/m^2]
     lwd_max                  float   Max. downward long-wave radiation [W/m^2]
-    air_temperature          float   Air temperature [°C]
+    temp_air                 float   Air temperature [°C]
     relative_humidity        float   Relative humidity [%]
     pressure                 float   Atmospheric pressure [hPa]
     =======================  ======  ==========================================

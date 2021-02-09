@@ -11,7 +11,7 @@ from conftest import DATA_DIR
 
 
 # Awaiting permission from BSRN to upload test file
-testfile = DATA_DIR / 'bsrn_xxxxx.dat'
+testfile = DATA_DIR / 'bsrn-pay0616.dat.gz'
 
 
 def test_read_bsrn_columns():
@@ -25,8 +25,8 @@ def test_read_bsrn_columns():
 
 @pytest.fixture
 def expected_index():
-    start = pd.Timestamp(2020,1,1,0,0)
-    return pd.date_range(start=start, periods=1440, freq='1min', tz='UTC')
+    start = pd.Timestamp(2016,6,1,0,0)
+    return pd.date_range(start=start, periods=43200, freq='1min', tz='UTC')
 
 
 def test_format_index():

@@ -101,9 +101,9 @@ def read_bsrn(filename):
         start_date = pd.Timestamp(year=int(date_line[7:11]),
                                   month=int(date_line[3:6]), day=1,
                                   tz='UTC')  # BSRN timestamps are UTC
-        for num, line in enumerate(f):
+        for num, line in enumerate(f, start=2):
             if line.startswith('*'):  # Find start of all logical records
-                line_no_dict[line[2:6]] = num + 2  # key is 4 digit LR number
+                line_no_dict[line[2:6]] = num  # key is 4 digit LR number
 
     # Determine start and end line of logical record LR0100 to be parsed
     start_row = line_no_dict['0100'] + 1  # Start line number
@@ -111,12 +111,13 @@ def read_bsrn(filename):
     if start_row-1 == max(line_no_dict.values()):
         end_row = num  # then parse rest of the file
     else:  # otherwise parse until the beginning of the next logical record
-        end_row = min([i for i in line_no_dict.values() if i > start_row])
-    nrows = end_row-start_row
+        end_row = min([i for i in line_no_dict.values() if i > start_row]) - 1
+    nrows = end_row-start_row+1
 
     # Read file as a fixed width file (fwf)
     data = pd.read_fwf(filename, skiprows=start_row, nrows=nrows, header=None,
-                       colspecs=COL_SPECS, na_values=[-999.0, -99.9])
+                       colspecs=COL_SPECS, na_values=[-999.0, -99.9],
+                       compression='infer')
 
     # Create multi-index and unstack, resulting in one column for each variable
     data = data.set_index([data.index // 2, data.index % 2])

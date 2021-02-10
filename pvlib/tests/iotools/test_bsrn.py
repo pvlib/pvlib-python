@@ -29,6 +29,6 @@ def expected_index():
     return pd.date_range(start=start, periods=43200, freq='1min', tz='UTC')
 
 
-def test_format_index():
+def test_format_index(expected_index):
     actual = bsrn.read_bsrn(testfile)
-    assert actual.index.equals(expected_index())
+    assert actual.index.equals()

@@ -30,4 +30,4 @@ def expected_index():
 
 def test_format_index(expected_index):
     actual = bsrn.read_bsrn(testfile)
-    assert actual.index.equals()
+    assert actual.index.equals(expected_index)

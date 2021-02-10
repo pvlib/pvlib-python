@@ -16,7 +16,6 @@ from conftest import DATA_DIR, assert_index_equal
     ('bsrn-lr0100-pay0616.dat',
      pd.date_range(start='20160601', periods=43200, freq='1min', tz='UTC')),
 ])
-
 def test_read_bsrn(testfile, expected_index):
     data = bsrn.read_bsrn(DATA_DIR / testfile)
     assert_index_equal(expected_index, data.index)

@@ -10,7 +10,6 @@ from pvlib.iotools import bsrn
 from conftest import DATA_DIR
 
 
-# Awaiting permission from BSRN to upload test file
 testfile = DATA_DIR / 'bsrn-pay0616.dat.gz'
 
 

@@ -103,7 +103,7 @@ def read_bsrn(filename):
                                   tz='UTC')  # BSRN timestamps are UTC
         for num, line in enumerate(f):
             if line.startswith('*'):  # Find start of all logical records
-                line_no_dict[line[2:6]] = num  # key is 4 digit LR number
+                line_no_dict[line[2:6]] = num + 2  # key is 4 digit LR number
 
     # Determine start and end line of logical record LR0100 to be parsed
     start_row = line_no_dict['0100'] + 1  # Start line number

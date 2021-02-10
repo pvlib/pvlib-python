@@ -40,13 +40,13 @@ def read_bsrn(filename):
 
     Returns
     -------
-    data: Dataframe
-        A Dataframe with the columns as described below. For more extensive
+    data: DataFrame
+        A DataFrame with the columns as described below. For more extensive
         description of the variables, consult [2]_.
 
     Notes
     -----
-    The data Dataframe includes the following fields:
+    The data DataFrame includes the following fields:
 
     =======================  ======  ==========================================
     Key                      Format  Description
@@ -77,7 +77,8 @@ def read_bsrn(filename):
     References
     ----------
     .. [1] `World Radiation Monitoring Center - Baseline Surface Radiation
-        Network (BSRN) <https:/https://bsrn.awi.de/>`_
+        Network (BSRN)
+        <https://bsrn.awi.de/>`_
     .. [2] `Update of the Technical Plan for BSRN Data Management, 2013,
        Global Climate Observing System (GCOS) GCOS-172.
        <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_

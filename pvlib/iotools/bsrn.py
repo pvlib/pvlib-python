@@ -100,6 +100,7 @@ def read_bsrn(filename):
         start_date = pd.Timestamp(year=int(date_line[7:11]),
                                   month=int(date_line[3:6]), day=1,
                                   tz='UTC')  # BSRN timestamps are UTC
+        for num, line in enumerate(f):
             if line.startswith('*'):  # Find start of all logical records
                 line_no_dict[line[2:6]] = num  # key is 4 digit LR number
 

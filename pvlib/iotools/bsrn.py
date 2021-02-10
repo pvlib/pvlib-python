@@ -136,6 +136,6 @@ def read_bsrn(filename):
     # Set datetime index
     data.index = (start_date
                   + pd.to_timedelta(data['day']-1, unit='d')
-                  + pd.to_timedelta(data['minute'], unit='min'))
+                  + pd.to_timedelta(data['minute'], unit='minute'))
 
     return data

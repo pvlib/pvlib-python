@@ -139,4 +139,3 @@ def read_bsrn(filename):
                   + pd.to_timedelta(data['minute'], unit='T'))
 
     return data
-  

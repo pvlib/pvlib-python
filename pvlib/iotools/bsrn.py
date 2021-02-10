@@ -94,11 +94,12 @@ def read_bsrn(filename):
     else:
         open_func, mode = open, 'r'
     with open_func(filename, mode) as f:
-        for num, line in enumerate(f):
-            if num == 1:  # Get month and year from the 2nd line
-                start_date = pd.Timestamp(year=int(line[7:11]),
-                                          month=int(line[3:6]), day=1,
-                                          tz='UTC')  # BSRN timestamps are UTC
+        f.readline()  # first line should be *U0001, so read it and discard
+        line_no_dict['0001'] = 0
+        date_line = f.readline()  # second line contains the year and month
+        start_date = pd.Timestamp(year=int(date_line[7:11]),
+                                  month=int(date_line[3:6]), day=1,
+                                  tz='UTC')  # BSRN timestamps are UTC
             if line.startswith('*'):  # Find start of all logical records
                 line_no_dict[line[2:6]] = num  # key is 4 digit LR number
 

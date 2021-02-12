@@ -75,7 +75,7 @@ non-editable way, use one of the following commands to install pvlib-python::
 
     # get pvlib and optional dependencies from the Python Package Index
     # another option if you know what you are doing
-    pip install pvlib[optional]
+    pip install "pvlib[optional]"
 
 .. note::
 

@@ -69,7 +69,7 @@ def basic_chain(times, latitude, longitude,
                 surface_tilt=None, surface_azimuth=None,
                 orientation_strategy=None,
                 transposition_model='haydavies',
-                solar_position_method='nrel_numpy',
+                solar_position_method='nrel',
                 airmass_model='kastenyoung1989',
                 altitude=None, pressure=None,
                 **kwargs):
@@ -132,7 +132,7 @@ def basic_chain(times, latitude, longitude,
     transposition_model : str, default 'haydavies'
         Passed to system.get_irradiance.
 
-    solar_position_method : str, default 'nrel_numpy'
+    solar_position_method : str, default 'nrel'
         Passed to solarposition.get_solarposition.
 
     airmass_model : str, default 'kastenyoung1989'
@@ -344,7 +344,7 @@ class ModelChain:
     transposition_model : str, default 'haydavies'
         Passed to system.get_irradiance.
 
-    solar_position_method : str, default 'nrel_numpy'
+    solar_position_method : str, default 'nrel'
         Passed to location.get_solarposition.
 
     airmass_model : str, default 'kastenyoung1989'
@@ -398,7 +398,7 @@ class ModelChain:
                  orientation_strategy=None,
                  clearsky_model='ineichen',
                  transposition_model='haydavies',
-                 solar_position_method='nrel_numpy',
+                 solar_position_method='nrel',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temperature_model=None,
@@ -505,7 +505,7 @@ class ModelChain:
           orientation_strategy: None
           clearsky_model: ineichen
           transposition_model: perez
-          solar_position_method: nrel_numpy
+          solar_position_method: nrel
           airmass_model: kastenyoung1989
           dc_model: pvwatts_dc
           ac_model: pvwatts_inverter
@@ -530,7 +530,7 @@ class ModelChain:
                   orientation_strategy=None,
                   clearsky_model='ineichen',
                   transposition_model='haydavies',
-                  solar_position_method='nrel_numpy',
+                  solar_position_method='nrel',
                   airmass_model='kastenyoung1989',
                   name=None,
                   **kwargs):
@@ -560,7 +560,7 @@ class ModelChain:
         transposition_model : str, default 'haydavies'
             Passed to system.get_irradiance.
 
-        solar_position_method : str, default 'nrel_numpy'
+        solar_position_method : str, default 'nrel'
             Passed to location.get_solarposition.
 
         airmass_model : str, default 'kastenyoung1989'
@@ -592,7 +592,7 @@ class ModelChain:
           orientation_strategy: None
           clearsky_model: ineichen
           transposition_model: haydavies
-          solar_position_method: nrel_numpy
+          solar_position_method: nrel
           airmass_model: kastenyoung1989
           dc_model: sapm
           ac_model: snlinverter

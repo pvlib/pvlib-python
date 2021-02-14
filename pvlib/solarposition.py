@@ -99,7 +99,8 @@ def get_solarposition(time, latitude, longitude,
     elif method in {'nrel', 'nrel_numpy', 'nrel_numba'}:
         if method != 'nrel':
             warnings.warn(f'method={method} is deprecated; Use method="nrel" '
-                          'instead. See (TODO)', pvlibDeprecationWarning)
+                          'instead. Numba will be used automatically if it '
+                          'is available.', pvlibDeprecationWarning)
         ephem_df = spa_python(time, latitude, longitude, altitude,
                               pressure, temperature,
                               **kwargs)
@@ -310,9 +311,7 @@ def spa_python(time, latitude, longitude,
 
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
-    if how is not None:
-        warnings.warn("The 'how' parameter is deprecated; see (TODO)",
-                      pvlibDeprecationWarning)
+    _warn_how_numba(how)
 
     lat = latitude
     lon = longitude
@@ -393,9 +392,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how=None,
     """
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
-    if how is not None:
-        warnings.warn("The 'how' parameter is deprecated; see (TODO)",
-                      pvlibDeprecationWarning)
+    _warn_how_numba(how)
 
     lat = latitude
     lon = longitude
@@ -954,9 +951,7 @@ def nrel_earthsun_distance(time, how=None, delta_t=67.0, numthreads=4):
        USA, http://www.nrel.gov.
     """
 
-    if how is not None:
-        warnings.warn("The 'how' parameter is deprecated; see (TODO)",
-                      pvlibDeprecationWarning)
+    _warn_how_numba(how)
 
     if not isinstance(time, pd.DatetimeIndex):
         try:
@@ -1437,3 +1432,12 @@ def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
     sunset = _local_times_from_hours_since_midnight(times, sunset_hour)
     transit = _local_times_from_hours_since_midnight(times, transit_hour)
     return sunrise, sunset, transit
+
+
+def _warn_how_numba(how):
+    # https://github.com/pvlib/pvlib-python/issues/1060
+    # https://github.com/pvlib/pvlib-python/pull/1098
+    if how is not None:
+        warnings.warn("The 'how' parameter is deprecated; numba is now used "
+                      "automatically if it is available.",
+                      pvlibDeprecationWarning)

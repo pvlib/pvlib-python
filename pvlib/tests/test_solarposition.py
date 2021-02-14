@@ -149,8 +149,7 @@ def test_spa_python_numpy_physical(expected_solpos, golden_mst):
                                           golden_mst.longitude,
                                           pressure=82000,
                                           temperature=11, delta_t=67,
-                                          atmos_refract=0.5667,
-                                          how='numpy')
+                                          atmos_refract=0.5667)
     expected_solpos.index = times
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
@@ -162,8 +161,7 @@ def test_spa_python_numpy_physical_dst(expected_solpos, golden):
                                           golden.longitude,
                                           pressure=82000,
                                           temperature=11, delta_t=67,
-                                          atmos_refract=0.5667,
-                                          how='numpy')
+                                          atmos_refract=0.5667)
     expected_solpos.index = times
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
@@ -516,6 +514,7 @@ def test_get_solarposition_altitude(altitude, expected, golden):
     ])
 def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
                                   golden):
+    # TODO: update this
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
                           periods=2, freq='D', tz=golden.tz)
     with warnings.catch_warnings():

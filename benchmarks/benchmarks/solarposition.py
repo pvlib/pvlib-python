@@ -4,10 +4,14 @@ ASV benchmarks for solarposition.py
 
 import datetime
 import pandas as pd
-import pvlib
-from pvlib import solarposition
-
 from pkg_resources import parse_version
+
+# Numba is installed in the benchmark environments, but we'll disable it here.
+# so pvlib will switch to numpy functions (see NUMBA_ACTIVE in pvlib.tools).
+import numba
+numba.config.DISABLE_JIT = 1
+import pvlib  # NOQA: E402
+from pvlib import solarposition  # NOQA: E402
 
 
 if parse_version(pvlib.__version__) >= parse_version('0.6.1'):

@@ -10,12 +10,8 @@ Try to keep relevant sections in sync with benchmarks/solarposition.py
 from pkg_resources import parse_version
 import pandas as pd
 
-import os
-os.environ['PVLIB_USE_NUMBA'] = '1'
-
-
-import pvlib  # NOQA: E402
-from pvlib import solarposition  # NOQA: E402
+import pvlib
+from pvlib import solarposition
 
 
 if parse_version(pvlib.__version__) >= parse_version('0.6.1'):

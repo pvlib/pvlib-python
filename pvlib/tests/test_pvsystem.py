@@ -1955,3 +1955,55 @@ def test_combine_loss_factors():
 def test_no_extra_kwargs():
     with pytest.raises(TypeError, match="arbitrary_kwarg"):
         pvsystem.PVSystem(arbitrary_kwarg='value')
+
+
+def test_dc_ohms_from_percent():
+    expected = .1425
+    out = pvsystem.dc_ohms_from_percent(38, 8, 3, 1, 1)
+    assert_allclose(out, expected)
+
+
+def test_PVSystem_dc_ohms_from_percent(mocker):
+    mocker.spy(pvsystem, 'dc_ohms_from_percent')
+
+    expected = .1425
+    system = pvsystem.PVSystem(losses_parameters={'dc_ohmic_percent': 3},
+                               module_parameters={'I_mp_ref': 8,
+                                                  'V_mp_ref': 38})
+    out = system.dc_ohms_from_percent()
+
+    pvsystem.dc_ohms_from_percent.assert_called_once_with(
+        dc_ohmic_percent=3,
+        V_mp_ref=38,
+        I_mp_ref=8,
+        modules_per_string=1,
+        strings_per_inverter=1
+    )
+
+    assert_allclose(out, expected)
+
+
+def test_dc_ohmic_losses():
+    expected = 9.12
+    out = pvsystem.dc_ohmic_losses(.1425, 8)
+    assert_allclose(out, expected)
+
+
+def test_Array_dc_ohms_from_percent(mocker):
+    mocker.spy(pvsystem, 'dc_ohms_from_percent')
+
+    expected = .1425
+    array = pvsystem.Array(array_losses_parameters={'dc_ohmic_percent': 3},
+                           module_parameters={'I_mp_ref': 8,
+                                              'V_mp_ref': 38})
+    out = array.dc_ohms_from_percent()
+
+    pvsystem.dc_ohms_from_percent.assert_called_once_with(
+        dc_ohmic_percent=3,
+        V_mp_ref=38,
+        I_mp_ref=8,
+        modules_per_string=1,
+        strings_per_inverter=1
+    )
+
+    assert_allclose(out, expected)

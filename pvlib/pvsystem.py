@@ -191,6 +191,11 @@ class PVSystem:
                  racking_model=None, losses_parameters=None, name=None):
 
         if arrays is None:
+            if losses_parameters is None:
+                array_losses_parameters = {}
+            else:
+                array_losses_parameters = _build_kwargs(['dc_ohmic_percent'],
+                                                        losses_parameters)
             self.arrays = (Array(
                 surface_tilt,
                 surface_azimuth,
@@ -202,7 +207,8 @@ class PVSystem:
                 temperature_model_parameters,
                 modules_per_string,
                 strings_per_inverter,
-                racking_model
+                racking_model,
+                array_losses_parameters,
             ),)
         else:
             self.arrays = tuple(arrays)
@@ -970,6 +976,17 @@ class PVSystem:
         return inverter.pvwatts_multi(p_dc, self.inverter_parameters['pdc0'],
                                       **kwargs)
 
+    @_unwrap_single_value
+    def dc_ohms_from_percent(self):
+        """
+        Calculates the equivalent resistance of the wires for each array using
+        :py:func:`pvlib.pvsystem.dc_ohms_from_percent`
+
+        See :py:func:`pvlib.pvsystem.dc_ohms_from_percent` for details.
+        """
+
+        return tuple(array.dc_ohms_from_percent() for array in self.arrays)
+
     @property
     @_unwrap_single_value
     def module_parameters(self):
@@ -1102,6 +1119,9 @@ class Array:
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
         Used to identify a parameter set for the SAPM cell temperature model.
 
+    array_losses_parameters: None, dict or Series, default None.
+        Supported keys are dc_ohmic_percent.
+
     """
 
     def __init__(self,
@@ -1111,7 +1131,8 @@ class Array:
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings=1,
-                 racking_model=None, name=None):
+                 racking_model=None, array_losses_parameters=None,
+                 name=None):
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
 
@@ -1138,6 +1159,11 @@ class Array:
                 self._infer_temperature_model_params()
         else:
             self.temperature_model_parameters = temperature_model_parameters
+
+        if array_losses_parameters is None:
+            self.array_losses_parameters = {}
+        else:
+            self.array_losses_parameters = array_losses_parameters
 
         self.name = name
 
@@ -1324,6 +1350,28 @@ class Array:
                              'option for Array')
         else:
             raise ValueError(model + ' is not a valid IAM model')
+
+    def dc_ohms_from_percent(self):
+        """
+        Calculates the equivalent resistance of the wires using
+        :py:func:`pvlib.pvsystem.dc_ohms_from_percent`,
+        `self.losses_parameters["dc_ohmic_percent"]`,
+        `self.module_parameters["V_mp_ref"]`,
+        `self.module_parameters["I_mp_ref"]`,
+        `self.modules_per_string`, and `self.strings_per_inverter`.
+        See :py:func:`pvlib.pvsystem.dc_ohms_from_percent` for details.
+        """
+
+        kwargs = _build_kwargs(['dc_ohmic_percent'],
+                               self.array_losses_parameters)
+
+        kwargs.update(_build_kwargs(['V_mp_ref', 'I_mp_ref'],
+                                    self.module_parameters))
+
+        kwargs.update({'modules_per_string': self.modules_per_string,
+                       'strings_per_inverter': self.strings})
+
+        return dc_ohms_from_percent(**kwargs)
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,

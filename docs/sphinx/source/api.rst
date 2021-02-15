@@ -292,6 +292,7 @@ Inverter models (DC to AC conversion)
 .. autosummary::
    :toctree: generated/
 
+   pvsystem.PVSystem.get_ac
    inverter.sandia
    inverter.sandia_multi
    inverter.adr
@@ -482,6 +483,7 @@ relevant to solar energy modeling.
    iotools.parse_psm3
    iotools.get_pvgis_tmy
    iotools.read_pvgis_tmy
+   iotools.read_bsrn
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.
@@ -629,8 +631,8 @@ ModelChain model definitions.
    modelchain.ModelChain.desoto
    modelchain.ModelChain.pvsyst
    modelchain.ModelChain.pvwatts_dc
-   modelchain.ModelChain.snlinverter
-   modelchain.ModelChain.adrinverter
+   modelchain.ModelChain.sandia_inverter
+   modelchain.ModelChain.adr_inverter
    modelchain.ModelChain.pvwatts_inverter
    modelchain.ModelChain.ashrae_aoi_loss
    modelchain.ModelChain.physical_aoi_loss

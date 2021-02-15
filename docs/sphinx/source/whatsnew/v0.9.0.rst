@@ -112,7 +112,8 @@ Documentation
 ~~~~~~~~~~~~~
 
 * Update intro tutorial to highlight the use of historical meteorological data
-  and to make the procedural and OO results match exactly.
+  and to make the procedural and object oriented results match exactly.
+* Update documentation links in :py:func:`pvlib.iotools.get_psm3`
 
 Requirements
 ~~~~~~~~~~~~
@@ -128,3 +129,5 @@ Contributors
 * Nate Croft (:ghuser:`ncroft-b4`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Joshua Stein (:ghuser:`jsstein`)
+* Tony Lorenzo (:ghuser:`alorenzo175`)

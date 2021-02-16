@@ -112,9 +112,9 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
     .. [2] `Physical Solar Model (PSM) v3
-       <https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/>`_
+       <https://developer.nrel.gov/docs/solar/nsrdb/psm3-download/>`_
     .. [3] `Physical Solar Model (PSM) v3 TMY
-       <https://developer.nrel.gov/docs/solar/nsrdb/psm3_tmy_data_download/>`_
+       <https://developer.nrel.gov/docs/solar/nsrdb/psm3-tmy-download/>`_
     .. [4] `Physical Solar Model (PSM) v3 - Five Minute Temporal Resolution
        <https://developer.nrel.gov/docs/solar/nsrdb/psm3-5min-download/>`_
     """

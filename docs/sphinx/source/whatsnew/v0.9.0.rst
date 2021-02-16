@@ -100,10 +100,11 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Pass weather data to solar position calculations in
-  :ref:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
+  :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
   (:issue:`1065`, :pull:`1140`)
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
+
 Testing
 ~~~~~~~
 
@@ -111,7 +112,8 @@ Documentation
 ~~~~~~~~~~~~~
 
 * Update intro tutorial to highlight the use of historical meteorological data
-  and to make the procedural and OO results match exactly.
+  and to make the procedural and object oriented results match exactly.
+* Update documentation links in :py:func:`pvlib.iotools.get_psm3`
 
 Requirements
 ~~~~~~~~~~~~
@@ -127,3 +129,5 @@ Contributors
 * Nate Croft (:ghuser:`ncroft-b4`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Joshua Stein (:ghuser:`jsstein`)
+* Tony Lorenzo (:ghuser:`alorenzo175`)

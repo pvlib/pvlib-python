@@ -484,6 +484,7 @@ relevant to solar energy modeling.
    iotools.get_pvgis_tmy
    iotools.read_pvgis_tmy
    iotools.read_bsrn
+   iotools.get_mcclear
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

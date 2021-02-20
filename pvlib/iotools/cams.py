@@ -33,6 +33,7 @@ TIME_STEPS = {'1min': 'PT01M', '15min': 'PT15M', '1h': 'PT01H', '1d': 'P01D',
 
 TIME_STEPS_HOURS = {'1min': 1/60, '15min': 15/60, '1h': 1, '1d': 24}
 
+
 def get_mcclear(start_date, end_date, latitude, longitude, email,
                 altitude=None, time_step='1h', time_ref='UT',
                 integrated=False, label=None, verbose=False,

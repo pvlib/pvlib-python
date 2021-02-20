@@ -36,6 +36,10 @@ Breaking changes
 * ``irradiance.liujordan`` and ``ForecastModel.cloud_cover_to_irradiance_liujordan``
   have been removed. (:pull:`1136`)
 
+* ``ModelChain.snlinverter`` changed to ``ModelChain.sandia_inverter``.
+  ``ModelChain.adrinverter`` changed to ``ModelChain.adr_inverter``.
+  (:pull:`1150`)
+
 
 Deprecations
 ~~~~~~~~~~~~
@@ -78,9 +82,9 @@ Enhancements
 * Support for :py:func:`~pvlib.inverter.sandia_multi` and
   :py:func:`~pvlib.inverter.pvwatts_multi` added to
   :py:class:`~pvlib.pvsystem.PVSystem` and
-  :py:class:`~pvlib.modelchain.ModelChain` (as ``ac_model='sandia_multi'``
-  and  ``ac_model='pvwatts_multi'``).
-  (:pull:`1076`, :issue:`1067`, :pull:`1132`, :issue:`1117`)
+  :py:class:`~pvlib.modelchain.ModelChain` (as ``ac_model='sandia'``
+  and ``ac_model='pvwatts'``).
+  (:pull:`1076`, :issue:`1067`, :pull:`1132`, :issue:`1117`, :pull:`1150`)
 * :py:class:`~pvlib.modelchain.ModelChain` 'run_model' methods now
   automatically switch to using ``'effective_irradiance'`` (if available) for
   cell temperature models, when ``'poa_global'`` is not provided in input
@@ -89,18 +93,27 @@ Enhancements
   by ``pvsystem.PVSystem.modules_per_strings`` and
   ``pvsystem.PVSystem.strings_per_inverter``. Note that both attributes still
   default to 1. (:pull:`1138`)
+* :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
+  from DC power. Use parameter ``model`` to specify which inverter model to use.
+  (:pull:`1147`, :issue:`998`, :pull:`1150`)
 
 Bug fixes
 ~~~~~~~~~
 * Pass weather data to solar position calculations in
-  :ref:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
+  :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
   (:issue:`1065`, :pull:`1140`)
+* Reindl model fixed to generate sky_diffuse=0 when GHI=0.
+  (:issue:`1153`, :pull:`1154`)
 
 Testing
 ~~~~~~~
 
 Documentation
 ~~~~~~~~~~~~~
+
+* Update intro tutorial to highlight the use of historical meteorological data
+  and to make the procedural and object oriented results match exactly.
+* Update documentation links in :py:func:`pvlib.iotools.get_psm3`
 
 Requirements
 ~~~~~~~~~~~~
@@ -116,3 +129,5 @@ Contributors
 * Nate Croft (:ghuser:`ncroft-b4`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Joshua Stein (:ghuser:`jsstein`)
+* Tony Lorenzo (:ghuser:`alorenzo175`)

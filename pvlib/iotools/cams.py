@@ -96,10 +96,10 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
     --------------------------------------------------------------------------
     Observation period       str     Beginning/end of time period
     TOA, ghi_extra           float   Horizontal radiation at top of atmosphere
-    Clear sky GHI, ghi_clear float   Clear sky global irradiation on horizontal
-    Clear sky BHI, bhi_clear float   Clear sky beam irradiation on horizontal
-    Clear sky DHI, dhi_clear float   Clear sky diffuse irradiation on horizontal
-    Clear sky BNI, dni_clear float   Clear sky beam irradiation normal to sun
+    Clear sky GHI, ghi_clear float   Clear sky global radiation on horizontal
+    Clear sky BHI, bhi_clear float   Clear sky beam radiation on horizontal
+    Clear sky DHI, dhi_clear float   Clear sky diffuse radiation on horizontal
+    Clear sky BNI, dni_clear float   Clear sky beam radiation normal to sun
     =======================  ======  ==========================================
 
     For the returned units see the integrated argument. For description of
@@ -121,13 +121,11 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
        <http://www.soda-pro.com/help/cams-services/cams-mcclear-service/automatic-access>`_
     """
 
-
     if time_step in TIME_STEPS.keys():
         time_step_str = TIME_STEPS[time_step]
     else:
         print('WARNING: time step not recognized, 1 hour time step used!')
         time_step_str = 'PT01H'
-
 
     names = MCCLEAR_COLUMNS
     if verbose:
@@ -137,15 +135,14 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
             verbose = False
             print("Verbose mode only supports 1 min. UT time series!")
 
-
-    if altitude==None:  # Let SoDa get elevation from the NASA SRTM database
+    if altitude is None:  # Let SoDa get elevation from the NASA SRTM database
         altitude = -999
 
     # Start and end date should be in the format: yyyy-mm-dd
     start_date = start_date.strftime('%Y-%m-%d')
     end_date = end_date.strftime('%Y-%m-%d')
 
-    email = email.replace('@','%2540')  # Format email address
+    email = email.replace('@', '%2540')  # Format email address
 
     # Format verbose variable to the required format: {'true', 'false'}
     verbose = str(verbose).lower()
@@ -155,9 +152,9 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
            "Identifier=get_mcclear&version=1.0.0&RawDataOutput=irradiation&"
            "DataInputs=latitude={};longitude={};altitude={};"
            "date_begin={};date_end={};time_ref={};summarization={};"
-           "username={};verbose={}").format(
-           server, latitude, longitude, altitude, start_date, end_date,
-           time_ref, time_step_str, email, verbose)
+           "username={};verbose={}"
+           ).format(server, latitude, longitude, altitude, start_date,
+                    end_date, time_ref, time_step_str, email, verbose)
 
     res = requests.get(url)
 
@@ -169,15 +166,15 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
     # Check if returned file is a csv data file
     elif res.headers['Content-Type'] == 'application/csv':
         data = pd.read_csv(io.StringIO(res.content.decode('utf-8')), sep=';',
-                                     comment='#', header=None, names=names)
-        
+                                       comment='#', header=None, names=names)
+
         obs_period = data['Observation period'].str.split('/')
-        
+
         # Set index as the start observation time (left) and localize to UTC
-        if (label == 'left') | ((label == None) & (time_step != '1M')):
+        if (label == 'left') | ((label is None) & (time_step != '1M')):
             data.index = pd.to_datetime(obs_period.str[0], utc=True)
         # Set index as the stop observation time (right) and localize to UTC
-        elif (label=='right') | ((label == None) & (time_step == '1M')):
+        elif (label =='right') | ((label is None) & (time_step == '1M')):
             data.index = pd.to_datetime(obs_period.str[1], utc=True)
 
         data.index.name = None  # Set index name to None
@@ -185,28 +182,26 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
         # Change index for '1d' and '1M' to be date and not datetime
         if time_step == '1d':
             data.index = data.index.date
-        elif (time_step == '1M') & (label != None):
+        elif (time_step == '1M') & (label is not None):
             data.index = data.index.date
         # For monthly data with 'right' label, the index should be the last
         # date of the month and not the first date of the following month
         elif (time_step == '1M') & (time_step != 'left'):
             data.index = data.index.date - pd.Timestamp(days=1)
 
-
         if not integrated:  # Convert from Wh/m2 to W/m2
             integrated_cols = MCCLEAR_COLUMNS[1:6]
-            
-            if time_step == '1M':    
+
+            if time_step == '1M':
                 time_delta = (pd.to_datetime(obs_period.str[1])
                               - pd.to_datetime(obs_period.str[0]))
                 hours = time_delta.dt.total_seconds()/60/60
                 data[integrated_cols] = data[integrated_cols] / hours
             else:
-                data[integrated_cols] = (data[integrated_cols] / 
+                data[integrated_cols] = (data[integrated_cols] /
                                          TIME_STEPS_HOURS[time_step])
 
         if map_variables:
             data = data.rename(columns=MCCLEAR_VARIABLE_MAP)
-
 
         return data

@@ -23,15 +23,15 @@ MCCLEAR_VARIABLE_MAP = {
     'Clear sky BHI': 'bhi_clear',
     'Clear sky DHI': 'dhi_clear',
     'Clear sky BNI': 'dni_clear',
-    'sza': 'solar_zenith'
+    'sza': 'solar_zenith',
 }
 
 
 # Dictionary mapping Python time steps to CAMS time step format
-TIME_STEPS = {'1min':'PT01M', '15min':'PT15M', '1h':'PT01H', '1d':'P01D',
-              '1M':'P01M'}
+TIME_STEPS = {'1min': 'PT01M', '15min': 'PT15M', '1h': 'PT01H', '1d': 'P01D',
+              '1M': 'P01M'}
 
-TIME_STEPS_HOURS = {'1min':1/60, '15min':15/60, '1h':1, '1d':24}
+TIME_STEPS_HOURS = {'1min': 1/60, '15min': 15/60, '1h': 1, '1d': 24}
 
 def get_mcclear(start_date, end_date, latitude, longitude, email,
                 altitude=None, time_step='1h', time_ref='UT',
@@ -54,29 +54,29 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
         First day of the requested period
     end_date: datetime like
         Last day of the requested period
-    latitude: float or int
+    latitude: float
         in decimal degrees, between -90 and 90, north is positive (ISO 19115)
-    longitude : float or int
+    longitude : float
         in decimal degrees, between -180 and 180, east is positive (ISO 19115)
     altitude: float, default: None
         Altitude in meters. If None, then the altitude is determined from the
         NASA SRTM database
     email: str
         Email address linked to a SoDa account
-    time_reference: str, {'UT', 'TST'}, default: 'UT'
-        'UT' (universal time) or 'TST' (True Solar Time)
     time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
         Time step of the time series, either 1 minute, 15 minute, hourly,
         daily, or monthly.
-    verbose: boolean, default: False
-        Verbose mode outputs additional parameters (aerosols). Only avaiable
-        for 1 minute and universal time. See [1] for parameter description.
+    time_reference: str, {'UT', 'TST'}, default: 'UT'
+        'UT' (universal time) or 'TST' (True Solar Time)
     integrated: boolean, default False
         Whether to return integrated irradiation values (Wh/m^2) from CAMS or
         average irradiance values (W/m^2) as is more commonly used
     label: {‘right’, ‘left’}, default: None
         Which bin edge label to label bucket with. The default is ‘left’ for
         all frequency offsets except for ‘M’ which has a default of ‘right’.
+    verbose: boolean, default: False
+        Verbose mode outputs additional parameters (aerosols). Only avaiable
+        for 1 minute and universal time. See [1] for parameter description.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable MCCLEAR_VARIABLE_MAP.
@@ -101,7 +101,7 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
     Clear sky BNI, dni_clear float   Clear sky beam irradiation normal to sun
     =======================  ======  ==========================================
 
-    For the returned units see the integrated argument and for description of
+    For the returned units see the integrated argument. For description of
     additional output parameters in verbose mode, see [1].
 
     Note that it is recommended to specify the latitude and longitude to at

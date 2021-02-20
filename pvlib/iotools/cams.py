@@ -166,7 +166,7 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
     # Check if returned file is a csv data file
     elif res.headers['Content-Type'] == 'application/csv':
         data = pd.read_csv(io.StringIO(res.content.decode('utf-8')), sep=';',
-                                       comment='#', header=None, names=names)
+                           comment='#', header=None, names=names)
 
         obs_period = data['Observation period'].str.split('/')
 
@@ -174,7 +174,7 @@ def get_mcclear(start_date, end_date, latitude, longitude, email,
         if (label == 'left') | ((label is None) & (time_step != '1M')):
             data.index = pd.to_datetime(obs_period.str[0], utc=True)
         # Set index as the stop observation time (right) and localize to UTC
-        elif (label =='right') | ((label is None) & (time_step == '1M')):
+        elif (label == 'right') | ((label is None) & (time_step == '1M')):
             data.index = pd.to_datetime(obs_period.str[1], utc=True)
 
         data.index.name = None  # Set index name to None

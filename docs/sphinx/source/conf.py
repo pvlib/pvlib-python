@@ -127,20 +127,21 @@ autosummary_generate = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-# on_rtd is whether we are on readthedocs.org
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-else:
-    html_theme = 'default'
+html_theme = "pydata_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    #"external_links": [
+    #    {"url": "https://pandas.pydata.org/pandas-docs/stable/", "name": "Pandas Docs"}
+    #],
+    #"github_url": "https://github.com/pandas-dev/pydata-sphinx-theme",
+    #"twitter_url": "https://twitter.com/pandas_dev",
+    #"use_edit_page_button": True,
+    "show_toc_level": 1,
+    # "navbar_align": "right",  # For testing that the navbar items align properly
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []

@@ -90,21 +90,11 @@ Contents
 .. toctree::
    :maxdepth: 1
 
-   package_overview
-   introtutorial
+   user_guide/index
    auto_examples/index
-   whatsnew
-   installation
-   contributing
-   pvsystem
-   modelchain
-   timetimezones
-   clearsky
-   forecasts
    api
-   comparison_pvlib_matlab
-   variables_style_rules
-   singlediode
+   whatsnew
+   contributing
 
 
 Indices and tables

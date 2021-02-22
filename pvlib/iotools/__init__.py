@@ -16,4 +16,3 @@ from pvlib.iotools.pvgis import get_pvgis_tmy, read_pvgis_tmy  # noqa: F401
 from pvlib.iotools.pvgis import read_pvgis_hourly  # noqa: F401
 from pvlib.iotools.pvgis import get_pvgis_hourly  # noqa: F401
 from pvlib.iotools.bsrn import read_bsrn  # noqa: F401
-from pvlib.iotools.cams import get_cams_radiation  # noqa: F401

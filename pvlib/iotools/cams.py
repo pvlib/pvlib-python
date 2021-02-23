@@ -181,7 +181,6 @@ def parse_cams_mcclear(fbuf, integrated=False, label=None, map_variables=True):
     """
     Parse a CAMS McClear file. CAMS McClear is described in [1]_.
 
-    
     See Also
     --------
     pvlib.iotools.read_cams_mcclear, pvlib.iotools.get_cams_mcclear

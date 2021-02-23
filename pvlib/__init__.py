@@ -12,7 +12,6 @@ from pvlib import (  # noqa: F401
     ivtools,
     location,
     modelchain,
-    mounts,
     pvsystem,
     scaling,
     shading,

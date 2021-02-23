@@ -10,7 +10,7 @@ from conftest import (
 from numpy.testing import assert_allclose
 import unittest.mock as mock
 
-from pvlib import inverter, pvsystem
+from pvlib import inverter, pvsystem, mounts
 from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
@@ -1548,8 +1548,9 @@ def test_PVSystem_creation():
 
 
 def test_PVSystem_multiple_array_creation():
-    array_one = pvsystem.Array(surface_tilt=32)
-    array_two = pvsystem.Array(surface_tilt=15, module_parameters={'pdc0': 1})
+    array_one = pvsystem.Array(mounts.FixedMount(surface_tilt=32))
+    array_two = pvsystem.Array(mounts.FixedMount(surface_tilt=15),
+                               module_parameters={'pdc0': 1})
     pv_system = pvsystem.PVSystem(arrays=[array_one, array_two])
     assert pv_system.surface_tilt == (32, 15)
     assert pv_system.surface_azimuth == (180, 180)
@@ -1567,8 +1568,10 @@ def test_PVSystem_get_aoi():
 
 def test_PVSystem_multiple_array_get_aoi():
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(surface_tilt=15, surface_azimuth=135),
-                pvsystem.Array(surface_tilt=32, surface_azimuth=135)]
+        arrays=[pvsystem.Array(mounts.FixedMount(surface_tilt=15,
+                                                 surface_azimuth=135)),
+                pvsystem.Array(mounts.FixedMount(surface_tilt=32,
+                                                 surface_azimuth=135))]
     )
     aoi_one, aoi_two = system.get_aoi(30, 225)
     assert np.round(aoi_two, 4) == 42.7408
@@ -1629,8 +1632,10 @@ def test_PVSystem_get_irradiance_model(mocker):
 
 
 def test_PVSystem_multi_array_get_irradiance():
-    array_one = pvsystem.Array(surface_tilt=32, surface_azimuth=135)
-    array_two = pvsystem.Array(surface_tilt=5, surface_azimuth=150)
+    array_one = pvsystem.Array(mounts.FixedMount(surface_tilt=32,
+                                                 surface_azimuth=135))
+    array_two = pvsystem.Array(mounts.FixedMount(surface_tilt=5,
+                                                 surface_azimuth=150))
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
     location = Location(latitude=32, longitude=-111)
     times = pd.date_range(start='20160101 1200-0700',
@@ -1778,8 +1783,9 @@ def test_PVSystem___repr__():
   name: pv ftw
   Array:
     name: None
-    surface_tilt: 0
-    surface_azimuth: 180
+    mount: FixedMount:
+      surface_tilt: 0
+      surface_azimuth: 180
     module: blah
     albedo: 0.25
     racking_model: None
@@ -1793,8 +1799,10 @@ def test_PVSystem___repr__():
 
 def test_PVSystem_multi_array___repr__():
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(surface_tilt=30, surface_azimuth=100),
-                pvsystem.Array(surface_tilt=20, surface_azimuth=220,
+        arrays=[pvsystem.Array(mounts.FixedMount(surface_tilt=30,
+                                                 surface_azimuth=100)),
+                pvsystem.Array(mounts.FixedMount(surface_tilt=20,
+                                                 surface_azimuth=220),
                                name='foo')],
         inverter='blarg',
     )
@@ -1802,8 +1810,9 @@ def test_PVSystem_multi_array___repr__():
   name: None
   Array:
     name: None
-    surface_tilt: 30
-    surface_azimuth: 100
+    mount: FixedMount:
+      surface_tilt: 30
+      surface_azimuth: 100
     module: None
     albedo: 0.25
     racking_model: None
@@ -1813,8 +1822,9 @@ def test_PVSystem_multi_array___repr__():
     modules_per_string: 1
   Array:
     name: foo
-    surface_tilt: 20
-    surface_azimuth: 220
+    mount: FixedMount:
+      surface_tilt: 20
+      surface_azimuth: 220
     module: None
     albedo: 0.25
     racking_model: None
@@ -1828,7 +1838,7 @@ def test_PVSystem_multi_array___repr__():
 
 def test_Array___repr__():
     array = pvsystem.Array(
-        surface_tilt=10, surface_azimuth=100,
+        mount=mounts.FixedMount(surface_tilt=10, surface_azimuth=100),
         albedo=0.15, module_type='glass_glass',
         temperature_model_parameters={'a': -3.56},
         racking_model='close_mount',
@@ -1839,8 +1849,9 @@ def test_Array___repr__():
     )
     expected = """Array:
   name: biz
-  surface_tilt: 10
-  surface_azimuth: 100
+  mount: FixedMount:
+    surface_tilt: 10
+    surface_azimuth: 100
   module: baz
   albedo: 0.15
   racking_model: close_mount

@@ -112,6 +112,9 @@ def get_cams_mcclear(start_date, end_date, latitude, longitude, email,
     e.g. `sza` becomes `solar_zenith`. See the
     `pvlib.iotools.cams.MCCLEAR_VARIABLE_MAP` dict for the complete mapping.
 
+    See Also
+    --------
+    pvlib.iotools.read_cams_mcclear, pvlib.iotools.parse_cams_mcclear
 
     References
     ----------
@@ -165,43 +168,122 @@ def get_cams_mcclear(start_date, end_date, latitude, longitude, email,
 
     # Check if returned file is a csv data file
     elif res.headers['Content-Type'] == 'application/csv':
-        data = pd.read_csv(io.StringIO(res.content.decode('utf-8')), sep=';',
-                           comment='#', header=None, names=names)
+        fbuf = io.StringIO(res.content.decode('utf-8'))
+        data, meta = parse_cams_mcclear(fbuf, integrated=integrated,
+                                        label=label,
+                                        map_variables=map_variables)
+        return data, meta
+    else:
+        print('Error in recognizing file content occurred!')
 
-        obs_period = data['Observation period'].str.split('/')
 
-        # Set index as the start observation time (left) and localize to UTC
-        if (label == 'left') | ((label is None) & (time_step != '1M')):
-            data.index = pd.to_datetime(obs_period.str[0], utc=True)
-        # Set index as the stop observation time (right) and localize to UTC
-        elif (label == 'right') | ((label is None) & (time_step == '1M')):
-            data.index = pd.to_datetime(obs_period.str[1], utc=True)
+def parse_cams_mcclear(fbuf, integrated=False, label=None, map_variables=True):
+    """
+    Parse a CAMS McClear file. CAMS McClear is described in [1]_.
 
-        data.index.name = None  # Set index name to None
+    
+    See Also
+    --------
+    pvlib.iotools.read_cams_mcclear, pvlib.iotools.get_cams_mcclear
 
-        # Change index for '1d' and '1M' to be date and not datetime
-        if time_step == '1d':
-            data.index = data.index.date
-        elif (time_step == '1M') & (label is not None):
-            data.index = data.index.date
-        # For monthly data with 'right' label, the index should be the last
-        # date of the month and not the first date of the following month
-        elif (time_step == '1M') & (time_step != 'left'):
-            data.index = data.index.date - pd.Timestamp(days=1)
+    References
+    ----------
+    .. [1] `CAMS McClear Service Info
+       <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
+    """
+    meta = {}
+    # Initial lines of the file contain meta-data, which all start with #
+    while True:
+        line = fbuf.readline().rstrip('\n')
+        if not line.startswith('#'):
+            break
+        elif ': ' in line:
+            meta[line.split(': ')[0].lstrip('# ')] = line.split(': ')[1]
+        # The last line of the meta-data section contains the column names
+        names = line.lstrip('# ').split(';')
 
-        if not integrated:  # Convert from Wh/m2 to W/m2
-            integrated_cols = MCCLEAR_COLUMNS[1:6]
+    # Convert the latitude, longitude, and altitude from strings to floats
+    meta['Latitude (positive North, ISO 19115)'] = \
+        float(meta['Latitude (positive North, ISO 19115)'])
+    meta['Longitude (positive East, ISO 19115)'] = \
+        float(meta['Longitude (positive East, ISO 19115)'])
+    meta['Altitude (m)'] = float(meta['Altitude (m)'])
 
-            if time_step == '1M':
-                time_delta = (pd.to_datetime(obs_period.str[1])
-                              - pd.to_datetime(obs_period.str[0]))
-                hours = time_delta.dt.total_seconds()/60/60
-                data[integrated_cols] = data[integrated_cols] / hours
-            else:
-                data[integrated_cols] = (data[integrated_cols] /
-                                         TIME_STEPS_HOURS[time_step])
+    # Determine the time_step from the meta-data dictionary
+    time_step_dict = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
+                      '0 year 0 month 0 day 0 h 15 min 0 s': '15min',
+                      '0 year 0 month 0 day 1 h 0 min 0 s': '1h',
+                      '0 year 0 month 1 day 0 h 1 min 0 s': '1d',
+                      '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
+    time_step = time_step_dict[meta['Summarization (integration) period']]
 
-        if map_variables:
-            data = data.rename(columns=MCCLEAR_VARIABLE_MAP)
+    data = pd.read_csv(fbuf, sep=';', comment='#', header=None, names=names)
 
-        return data
+    obs_period = data['Observation period'].str.split('/')
+
+    # Set index as the start observation time (left) and localize to UTC
+    if (label == 'left') | ((label is None) & (time_step != '1M')):
+        data.index = pd.to_datetime(obs_period.str[0], utc=True)
+    # Set index as the stop observation time (right) and localize to UTC
+    elif (label == 'right') | ((label is None) & (time_step == '1M')):
+        data.index = pd.to_datetime(obs_period.str[1], utc=True)
+
+    data.index.name = 'time'  # Set index name to None
+
+    # Change index for '1d' and '1M' to be date and not datetime
+    if time_step == '1d':
+        data.index = data.index.date
+    elif (time_step == '1M') & (label is not None):
+        data.index = data.index.date
+    # For monthly data with 'right' label, the index should be the last
+    # date of the month and not the first date of the following month
+    elif (time_step == '1M') & (time_step != 'left'):
+        data.index = data.index.date - pd.Timestamp(days=1)
+
+    if not integrated:  # Convert from Wh/m2 to W/m2
+        integrated_cols = MCCLEAR_COLUMNS[1:6]
+
+        if time_step == '1M':
+            time_delta = (pd.to_datetime(obs_period.str[1])
+                          - pd.to_datetime(obs_period.str[0]))
+            hours = time_delta.dt.total_seconds()/60/60
+            data[integrated_cols] = data[integrated_cols] / hours
+        else:
+            data[integrated_cols] = (data[integrated_cols] /
+                                     TIME_STEPS_HOURS[time_step])
+
+    if map_variables:
+        data = data.rename(columns=MCCLEAR_VARIABLE_MAP)
+
+    return data, meta
+
+
+def read_cams_mcclear(filename):
+    """
+    Read a CAMS McClear file. CAMS McClear is described in [1]_.
+
+    Parameters
+    ----------
+    filename: str
+        Filename of a file containing data to read.
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        timeseries data from CAMS McClear
+    meta : dict
+        metadata from CAMS McClear, see
+        :func:`pvlib.iotools.parse_cams_mcclear` for fields
+
+    See Also
+    --------
+    pvlib.iotools.parse_cams_mcclear, pvlib.iotools.get_cams_mcclear
+
+    References
+    ----------
+    .. [1] `CAMS McClear Service Info
+       <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
+    """
+    with open(str(filename), 'r') as fbuf:
+        content = parse_cams_mcclear(fbuf)
+    return content

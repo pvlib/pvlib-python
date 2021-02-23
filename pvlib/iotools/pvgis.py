@@ -24,6 +24,168 @@ from pvlib.iotools import read_epw, parse_epw
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
 
+def get_pvgis_hourly(lat, lon, angle=0, aspect=0, 
+                     outputformat='json', usehorizon=True,
+                     userhorizon=None, raddatabase=None, 
+                     startyear=None, endyear=None,
+                     pvcalculation=False, peakpower=None,
+                     pvtechchoice='crystSi', mountingplace='free', loss=None,
+                     trackingtype=0,
+                     optimal_inclination=False, optimalangles=False,
+                     components=True, url=URL, timeout=30):
+    """
+    Get hourly solar radiation data and optimal modeled PV power output from
+    PVGIS. For more information see the PVGIS [1]_ TMY tool
+    documentation [2]_.
+    Parameters
+    ----------
+    lat : float
+        Latitude in degrees north
+    lon : float
+        Longitude in degrees east
+    angle: float, default: 0
+        Tilt angle from horizontal plane. Not relevant for 2-axis tracking.
+    aspect: float, default: 0
+        Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
+        -90: east. Not relevant for tracking systems.
+    outputformat : str, default: 'json'
+        Must be in ``['csv', 'basic', 'json']``. See PVGIS TMY tool
+        documentation [2]_ for more info.
+    usehorizon : bool, default: True
+        include effects of horizon
+    userhorizon : list of float, default: None
+        optional user specified elevation of horizon in degrees, at equally
+        spaced azimuth clockwise from north, only valid if `usehorizon` is
+        true, if `usehorizon` is true but `userhorizon` is `None` then PVGIS
+        will calculate the horizon [4]_
+    raddatabase : str, default: None
+        Name of radiation database. Options depend on location, see [3]_.
+    startyear : int, default: None
+        first year of the radiation time series. Defaults to first year avaiable.
+    endyear : int, default: None
+        last year of the radiation time series. Defaults to last year avaiable.
+    pvcalculation : bool, default: False
+        Also return estimate of hourly production.
+    peakpower : float, default: None
+        Nominal power of PV system in kW. Required if pvcalculation=True.
+    pvtechchoice : {'crystSi', 'CIS', 'CdTe', 'Unknown'}, default: 'crystSi'
+        PV technology.
+    mountingplace : {'free', 'building'}, default: free
+        Type of mounting for PV system. Options of 'free' for free-standing
+        and 'building' for building-integrated.
+    loss : float, default: None
+       Sum of PV system losses in percent. Required if pvcalculation=True
+    trackingtype: {0, 1, 2, 3, 4, 5}, default: 0
+        Type of suntracking. 0=fixed, 1=single horizontal axis aligned
+        north-south, 2=two-axis tracking, 3=vertical axis tracking, 4=single
+        horizontal axis aligned east-west, 5=single inclined axis aligned
+        north-south.
+    optimalinclination : bool, default: False
+        Calculate the optimum tilt angle. Not relevant for 2-axis tracking
+    optimalangles : bool, default: False
+        Calculate the optimum tilt and azimuth angles. Not relevant for 2-axis
+        tracking.
+    components : bool, default: True
+        Output solar radiation components (beam, diffuse, and reflected).
+        Otherwise only global irradiance is returned.
+    url : str, default :const:`pvlib.iotools.pvgis.URL`
+        base url of PVGIS API, append ``tmy`` to get TMY endpoint
+    timeout : int, default: 30
+        time in seconds to wait for server response before timeout
+    Returns
+    -------
+    data : pandas.DataFrame
+        the weather data
+    months_selected : list
+        TMY year for each month, ``None`` for basic and EPW
+    inputs : dict
+        the inputs, ``None`` for basic and EPW
+    meta : list or dict
+        meta data, ``None`` for basic
+    Raises
+    ------
+    requests.HTTPError
+        if the request response status is ``HTTP/1.1 400 BAD REQUEST``, then
+        the error message in the response will be raised as an exception,
+        otherwise raise whatever ``HTTP/1.1`` error occurred
+    See also
+    --------
+    read_pvgis_tmy
+    References
+    ----------
+    .. [1] `PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
+    .. [2] `PVGIS hourly radiation data 
+       <https://re.jrc.ec.europa.eu/pvg_tools/en/#HR>`_
+    .. [3] `PVGIS Non-interactive service
+       <https://ec.europa.eu/jrc/en/PVGIS/docs/noninteractive>`
+    .. [3] `PVGIS horizon profile tool
+       <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
+    """
+    # use requests to format the query string by passing params dictionary
+    params = {'lat': lat, 'lon': lon, 'outputformat': outputformat,
+              'angle': angle, 'aspect': aspect,
+              'pvtechchoice': pvtechchoice, 'mountingplace': mountingplace,
+              'trackingtype': trackingtype, 'components': int(components)}
+    # pvgis only likes 0 for False, and 1 for True, not strings, also the
+    # default for usehorizon is already 1 (ie: True), so only set if False
+    # default for pvcalculation, optimalangles, optimalinclination,
+    # is already 0 i.e. False, so only set if True
+    if not usehorizon:
+        params['usehorizon'] = 0
+    if userhorizon is not None:
+        params['userhorizon'] = ','.join(str(x) for x in userhorizon)
+    if raddatabase is not None:
+        params['raddatabase'] = raddatabase
+    if startyear is not None:
+        params['startyear'] = startyear
+    if endyear is not None:
+        params['endyear'] = endyear
+    if pvcalculation:
+        params['pvcalculation'] = 1
+    if peakpower is not None:
+        params['peakpower'] = peakpower
+    if loss is not None:
+        params['loss'] = loss
+    if optimal_inclination:
+        params['optimal_inclination'] = 1
+    if optimalangles:
+        params['optimalangles'] = 1
+
+    # The url endpoint for hourly radiation is 'seriescalc'
+    res = requests.get(url + 'seriescalc', params=params, timeout=timeout)
+
+    # PVGIS returns really well formatted error messages in JSON for HTTP/1.1
+    # 400 BAD REQUEST so try to return that if possible, otherwise raise the
+    # HTTP/1.1 error caught by requests
+    if not res.ok:
+        try:
+            err_msg = res.json()
+        except Exception:
+            res.raise_for_status()
+        else:
+            raise requests.HTTPError(err_msg['message'])
+
+    # initialize data to None in case API fails to respond to bad outputformat
+    data = None, None, None, None
+    if outputformat == 'json':
+        src = res.json()
+        return _parse_pvgis_hourly_json(src)
+    else:
+        # this line is never reached because if outputformat is not valid then
+        # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
+        pass
+    return data
+
+
+def _parse_pvgis_hourly_json(src):
+    inputs = src['inputs']
+    meta = src['meta']
+    data = pd.DataFrame(src['outputs']['hourly'])
+    data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
+    data = data.drop('time', axis=1)
+    return data, inputs, meta
+
+
 def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
                   timeout=30):

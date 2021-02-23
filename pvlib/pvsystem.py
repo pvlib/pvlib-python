@@ -190,9 +190,9 @@ class PVSystem:
                  racking_model=None, losses_parameters=None, name=None):
 
         if arrays is None:
+            from pvlib import mounts
             self.arrays = (Array(
-                surface_tilt,
-                surface_azimuth,
+                mounts.FixedMount(surface_tilt, surface_azimuth),
                 albedo,
                 surface_type,
                 module,
@@ -765,7 +765,10 @@ class PVSystem:
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
 
         def _build_kwargs_fuentes(array):
-            kwargs = {'surface_tilt': array.surface_tilt}
+            # TODO: I think there should be an interface function so that
+            # directly accessing surface_tilt isn't necessary. Doesn't this
+            # break for SAT?
+            kwargs = {'surface_tilt': array.mount.surface_tilt}
             temp_model_kwargs = _build_kwargs([
                 'noct_installed', 'module_height', 'wind_height', 'emissivity',
                 'absorption', 'surface_tilt', 'module_width', 'module_length'],
@@ -1046,22 +1049,26 @@ class PVSystem:
     @property
     @_unwrap_single_value
     def surface_tilt(self):
-        return tuple(array.surface_tilt for array in self.arrays)
+        # TODO: don't access mount attributes directly?
+        return tuple(array.mount.surface_tilt for array in self.arrays)
 
     @surface_tilt.setter
     def surface_tilt(self, value):
+        # TODO: don't access mount attributes directly?
         for array in self.arrays:
-            array.surface_tilt = value
+            array.mount.surface_tilt = value
 
     @property
     @_unwrap_single_value
     def surface_azimuth(self):
-        return tuple(array.surface_azimuth for array in self.arrays)
+        # TODO: don't access mount attributes directly?
+        return tuple(array.mount.surface_azimuth for array in self.arrays)
 
     @surface_azimuth.setter
     def surface_azimuth(self, value):
+        # TODO: don't access mount attributes directly?
         for array in self.arrays:
-            array.surface_azimuth = value
+            array.mount.surface_azimuth = value
 
     @property
     @_unwrap_single_value
@@ -1098,20 +1105,15 @@ class Array:
     """
     An Array is a set of of modules at the same orientation.
 
-    Specifically, an array is defined by tilt, azimuth, the
+    Specifically, an array is defined by its mount, the
     module parameters, the number of parallel strings of modules
     and the number of modules on each string.
 
     Parameters
     ----------
-    surface_tilt: float or array-like, default 0
-        Surface tilt angles in decimal degrees.
-        The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90)
-
-    surface_azimuth: float or array-like, default 180
-        Azimuth angle of the module surface.
-        North=0, East=90, South=180, West=270.
+    mount: FixedMount, SingleAxisTrackerMount, or other, default None
+        Mounting strategy for the array, used to determine module orientation.
+        If not provided, a FixedMount with zero tilt is used.
 
     albedo : None or float, default None
         The ground albedo. If ``None``, will attempt to use
@@ -1152,15 +1154,18 @@ class Array:
     """
 
     def __init__(self,
-                 surface_tilt=0, surface_azimuth=180,
+                 mount=None,
                  albedo=None, surface_type=None,
                  module=None, module_type=None,
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings=1,
                  racking_model=None, name=None):
-        self.surface_tilt = surface_tilt
-        self.surface_azimuth = surface_azimuth
+        if mount is None:
+            from pvlib import mounts  # avoid circular import issue
+            self.mount = mounts.FixedMount(0, 180)
+        else:
+            self.mount = mount
 
         self.surface_type = surface_type
         if albedo is None:
@@ -1189,10 +1194,11 @@ class Array:
         self.name = name
 
     def __repr__(self):
-        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
+        attrs = ['name', 'mount', 'module',
                  'albedo', 'racking_model', 'module_type',
                  'temperature_model_parameters',
                  'strings', 'modules_per_string']
+
         return 'Array:\n  ' + '\n  '.join(
             f'{attr}: {getattr(self, attr)}' for attr in attrs
         )
@@ -1213,7 +1219,6 @@ class Array:
             return {}
 
     def _infer_cell_type(self):
-
         """
         Examines module_parameters and maps the Technology key for the CEC
         database and the Material key for the Sandia database to a common
@@ -1271,7 +1276,9 @@ class Array:
         aoi : Series
             Then angle of incidence.
         """
-        return irradiance.aoi(self.surface_tilt, self.surface_azimuth,
+        orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
+        return irradiance.aoi(orientation['surface_tilt'],
+                              orientation['surface_azimuth'],
                               solar_zenith, solar_azimuth)
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
@@ -1320,8 +1327,9 @@ class Array:
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        return irradiance.get_total_irradiance(self.surface_tilt,
-                                               self.surface_azimuth,
+        orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
+        return irradiance.get_total_irradiance(orientation['surface_tilt'],
+                                               orientation['surface_azimuth'],
                                                solar_zenith, solar_azimuth,
                                                dni, ghi, dhi,
                                                dni_extra=dni_extra,

@@ -1103,8 +1103,19 @@ class ModelChain:
         of the PVsystem.
         """
         Rw = self.system.dc_ohms_from_percent()
-        self.dc_ohmic_losses = pvsystem.dc_ohmic_losses(Rw, self.dc['i_mp'])
-        self.dc['p_mp'] = self.dc['p_mp'] - self.dc_ohmic_losses
+        if isinstance(self.results.dc, tuple):
+            self.dc_ohmic_losses = tuple(
+                pvsystem.dc_ohmic_losses(Rw, df['i_mp'])
+                for Rw, df in zip(Rw, self.results.dc)
+            )
+            for df, loss in zip(self.results.dc, self.dc_ohmic_losses):
+                df['p_mp'] = df['p_mp'] - loss
+        else:
+            self.dc_ohmic_losses = pvsystem.dc_ohmic_losses(
+                Rw, self.results.dc['i_mp']
+            )
+            self.results.dc['p_mp'] = (self.results.dc['p_mp']
+                                       - self.dc_ohmic_losses)
         return self
 
     def no_dc_ohmic_loss(self):

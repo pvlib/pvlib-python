@@ -1496,6 +1496,7 @@ def dc_constant_losses(mc):
 
 
 def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
+                                          cec_dc_snl_ac_arrays,
                                           location,
                                           weather,
                                           mocker):
@@ -1516,6 +1517,22 @@ def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
     assert m.call_count == 1
 
     assert isinstance(mc.dc_ohmic_losses, pd.Series)
+
+    system = cec_dc_snl_ac_arrays
+
+    for array in system.arrays:
+        array.array_losses_parameters = dict(dc_ohmic_percent=3)
+
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='dc_ohms_from_percent')
+    mc.run_model(weather)
+
+    assert m.call_count == 3
+    assert len(mc.dc_ohmic_losses) == len(mc.system.arrays)
+
+    assert isinstance(mc.dc_ohmic_losses, tuple)
 
 
 def test_dc_ohmic_model_no_dc_ohmic_loss(cec_dc_snl_ac_system,

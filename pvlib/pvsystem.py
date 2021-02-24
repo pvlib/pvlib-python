@@ -1167,7 +1167,7 @@ class Array:
         Used to identify a parameter set for the SAPM cell temperature model.
 
     array_losses_parameters: None, dict or Series, default None.
-        Supported keys are dc_ohmic_percent.
+        Supported keys are 'dc_ohmic_percent'.
 
     """
 
@@ -2870,26 +2870,33 @@ def dc_ohms_from_percent(V_mp_ref, I_mp_ref, dc_ohmic_percent,
     .. math::
         Rw = (L_{stc} / 100) * (Varray / Iarray)
 
-    :math:`L_{stc}` is the input dc loss as a percent, e.g. 1.5% loss is
-    input as 1.5
+    :math:`Rw` is the equivalent resistance in ohms
+    :math:`Varray` is the Vmp of the modules times modules per string
+    :math:`Iarray` is the Imp of the modules times strings per array
+    :math:`L_{stc}` is the input dc loss percent
 
     Parameters
     ----------
     V_mp_ref: numeric
+        Voltage at maximum power in reference conditions [V]
     I_mp_ref: numeric
+        Current at maximum power in reference conditions [V]
     dc_ohmic_percent: numeric, default 0
-    modules_per_string: numeric, default 1
-    strings_per_inverter: numeric, default 1
+        input dc loss as a percent, e.g. 1.5% loss is input as 1.5
+    modules_per_string: int, default 1
+        Number of modules per string in the array.
+    strings: int, default 1
+        Number of parallel strings in the array.
 
     Returns
     ----------
     Rw: numeric
-        Equivalent resistance in ohms
+        Equivalent resistance [ohm]
 
     References
     ----------
-    -- [1] PVsyst 7 Help. "Array ohmic wiring loss".
-            https://www.pvsyst.com/help/ohmic_loss.htm
+    .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
+        https://www.pvsyst.com/help/ohmic_loss.htm
     """
     vmp = modules_per_string * V_mp_ref
 
@@ -2900,27 +2907,29 @@ def dc_ohms_from_percent(V_mp_ref, I_mp_ref, dc_ohmic_percent,
     return Rw
 
 
-def dc_ohmic_losses(ohms, current):
+def dc_ohmic_losses(resistance, current):
     """
-    Returns ohmic losses in in units of power from the equivalent
-    resistance of of the wires and the operating current.
+    Returns ohmic losses in units of power from the equivalent
+    resistance of the wires and the operating current.
 
     Parameters
     ----------
-    ohms: numeric, float
+    resistance: numeric
+        Equivalent resistance of wires [ohm]
     current: numeric, float or array-like
+        Operating current [A]
 
     Returns
     ----------
-    numeric
-        Single or array-like value of the losses in units of power
+    loss: numeric
+        Power Loss [W]
 
     References
     ----------
-    -- [1] PVsyst 7 Help. "Array ohmic wiring loss".
-            https://www.pvsyst.com/help/ohmic_loss.htm
+    .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
+        https://www.pvsyst.com/help/ohmic_loss.htm
     """
-    return ohms * current * current
+    return resistance * current * current
 
 
 def combine_loss_factors(index, *losses, fill_method='ffill'):

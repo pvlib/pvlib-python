@@ -55,13 +55,13 @@ def cec_dc_snl_ac_arrays(cec_module_cs5p_220m, cec_inverter_parameters,
     module_parameters['dEgdT'] = -0.0002677
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     array_one = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=180,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=180),
         module=module_parameters['Name'],
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
     )
     array_two = pvsystem.Array(
-        surface_tilt=42.2, surface_azimuth=220,
+        mount=pvsystem.FixedMount(surface_tilt=42.2, surface_azimuth=220),
         module=module_parameters['Name'],
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
@@ -109,13 +109,13 @@ def pvsyst_dc_snl_ac_arrays(pvsyst_module_params, cec_inverter_parameters,
     module_parameters['b'] = 0.05
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     array_one = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=180,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=180),
         module=module,
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
     )
     array_two = pvsystem.Array(
-        surface_tilt=42.2, surface_azimuth=220,
+        mount=pvsystem.FixedMount(surface_tilt=42.2, surface_azimuth=220),
         module=module,
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
@@ -172,12 +172,12 @@ def pvwatts_dc_pvwatts_ac_system_arrays(sapm_temperature_cs5p_220m):
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     array_one = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=180,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=180),
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
     )
     array_two = pvsystem.Array(
-        surface_tilt=42.2, surface_azimuth=220,
+        mount=pvsystem.FixedMount(surface_tilt=42.2, surface_azimuth=220),
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
     )
@@ -276,13 +276,15 @@ def sapm_dc_snl_ac_system_Array(sapm_module_params, cec_inverter_parameters,
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = sapm_module_params.copy()
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    array_one = pvsystem.Array(surface_tilt=32, surface_azimuth=180,
+    array_one = pvsystem.Array(mount=pvsystem.FixedMount(surface_tilt=32,
+                                                         surface_azimuth=180),
                                albedo=0.2, module=module,
                                module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params,
                                modules_per_string=1,
                                strings=1)
-    array_two = pvsystem.Array(surface_tilt=15, surface_azimuth=180,
+    array_two = pvsystem.Array(mount=pvsystem.FixedMount(surface_tilt=15,
+                                                         surface_azimuth=180),
                                albedo=0.2, module=module,
                                module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params,
@@ -300,13 +302,15 @@ def sapm_dc_snl_ac_system_same_arrays(sapm_module_params,
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = sapm_module_params.copy()
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    array_one = pvsystem.Array(surface_tilt=32.2, surface_azimuth=180,
+    array_one = pvsystem.Array(mount=pvsystem.FixedMount(surface_tilt=32.2,
+                                                         surface_azimuth=180),
                                module=module,
                                module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params,
                                modules_per_string=1,
                                strings=1)
-    array_two = pvsystem.Array(surface_tilt=32.2, surface_azimuth=180,
+    array_two = pvsystem.Array(mount=pvsystem.FixedMount(surface_tilt=32.2,
+                                                         surface_azimuth=180),
                                module=module,
                                module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params,
@@ -369,12 +373,12 @@ def multi_array_sapm_dc_snl_ac_system(
     temp_model_parameters = sapm_temperature_cs5p_220m.copy()
     inverter_parameters = cec_inverter_parameters
     array_one = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=180,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=180),
         module_parameters=module_parameters,
         temperature_model_parameters=temp_model_parameters
     )
     array_two = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=220,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=220),
         module_parameters=module_parameters,
         temperature_model_parameters=temp_model_parameters
     )

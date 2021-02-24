@@ -1401,22 +1401,62 @@ class Array:
     def dc_ohms_from_percent(self):
         """
         Calculates the equivalent resistance of the wires using
-        :py:func:`pvlib.pvsystem.dc_ohms_from_percent`,
+        :py:func:`pvlib.pvsystem.dc_ohms_from_percent`
+
+        Makes use of array module parameters according to the
+        following DC models:
+        CEC:
+            `self.module_parameters["V_mp_ref"]`,
+            `self.module_parameters["I_mp_ref"]`,
+        SAPM:
+            `self.module_parameters["Vmpo"]`,
+            `self.module_parameters["Impo"]`,
+        PVsyst-like or other:
+            `self.module_parameters["Vmpp"]`,
+            `self.module_parameters["Impp"]`,
+
+        Other array parameters that are used are:
         `self.losses_parameters["dc_ohmic_percent"]`,
-        `self.module_parameters["V_mp_ref"]`,
-        `self.module_parameters["I_mp_ref"]`,
-        `self.modules_per_string`, and `self.strings_per_inverter`.
-        See :py:func:`pvlib.pvsystem.dc_ohms_from_percent` for details.
+        `self.modules_per_string`, and
+        `self.strings`.
+
+        See :py:func:`pvlib.pvsystem.dc_ohms_from_percent` for more details.
         """
 
         kwargs = _build_kwargs(['dc_ohmic_percent'],
                                self.array_losses_parameters)
 
-        kwargs.update(_build_kwargs(['V_mp_ref', 'I_mp_ref'],
-                                    self.module_parameters))
+        # add relevent Vmp and Imp parameters from CEC parameters
+        if all([elem in self.module_parameters
+                for elem in ['V_mp_ref', 'I_mp_ref']]):
+            kwargs.update({'vmp_ref': self.module_parameters['V_mp_ref'],
+                           'imp_ref': self.module_parameters['I_mp_ref']})
+
+
+        # add relevant Vmp and Imp parameters from SAPM parameters
+        elif all([elem in self.module_parameters
+                  for elem in ['Vmpo', 'Impo']]):
+            kwargs.update({'vmp_ref': self.module_parameters['Vmpo'],
+                           'imp_ref': self.module_parameters['Impo']})
+
+        # add relevant Vmp and Imp parameters if they are PVsyst-like
+        elif all([elem in self.module_parameters
+                  for elem in ['Vmpp', 'Impp']]):
+            kwargs.update({'vmp_ref': self.module_parameters['Vmpp'],
+                           'imp_ref': self.module_parameters['Impp']})
+
+        # raise error if relevant Vmp and Imp parameters are not found
+        else:
+            raise ValueError('Parameters for Vmp and Imp could not be found ',
+                             'in the array module parameters. Module ',
+                             'parameters must include one set of ',
+                             '{"V_mp_ref", "I_mp_Ref"}, '
+                             '{"Vmpo", "Impo"}, or '
+                             '{"Vmpp", "Impp"}, '
+                             )
 
         kwargs.update({'modules_per_string': self.modules_per_string,
-                       'strings_per_inverter': self.strings})
+                       'strings': self.strings})
 
         return dc_ohms_from_percent(**kwargs)
 
@@ -2858,9 +2898,9 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     return losses
 
 
-def dc_ohms_from_percent(V_mp_ref, I_mp_ref, dc_ohmic_percent,
+def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
                          modules_per_string=1,
-                         strings_per_inverter=1):
+                         strings=1):
     """
     Calculates the equivalent resistance of the wires from a percent
     ohmic loss at STC.
@@ -2877,9 +2917,9 @@ def dc_ohms_from_percent(V_mp_ref, I_mp_ref, dc_ohmic_percent,
 
     Parameters
     ----------
-    V_mp_ref: numeric
+    vmp_ref: numeric
         Voltage at maximum power in reference conditions [V]
-    I_mp_ref: numeric
+    imp_ref: numeric
         Current at maximum power in reference conditions [V]
     dc_ohmic_percent: numeric, default 0
         input dc loss as a percent, e.g. 1.5% loss is input as 1.5
@@ -2898,9 +2938,9 @@ def dc_ohms_from_percent(V_mp_ref, I_mp_ref, dc_ohmic_percent,
     .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
         https://www.pvsyst.com/help/ohmic_loss.htm
     """
-    vmp = modules_per_string * V_mp_ref
+    vmp = modules_per_string * vmp_ref
 
-    imp = strings_per_inverter * I_mp_ref
+    imp = strings * imp_ref
 
     Rw = (dc_ohmic_percent / 100) * (vmp / imp)
 

@@ -2063,10 +2063,10 @@ def test_PVSystem_dc_ohms_from_percent(mocker):
 
     pvsystem.dc_ohms_from_percent.assert_called_once_with(
         dc_ohmic_percent=3,
-        V_mp_ref=38,
-        I_mp_ref=8,
+        vmp_ref=38,
+        imp_ref=8,
         modules_per_string=1,
-        strings_per_inverter=1
+        strings=1
     )
 
     assert_allclose(out, expected)
@@ -2089,10 +2089,10 @@ def test_Array_dc_ohms_from_percent(mocker):
 
     pvsystem.dc_ohms_from_percent.assert_called_once_with(
         dc_ohmic_percent=3,
-        V_mp_ref=38,
-        I_mp_ref=8,
+        vmp_ref=38,
+        imp_ref=8,
         modules_per_string=1,
-        strings_per_inverter=1
+        strings=1
     )
 
     assert_allclose(out, expected)

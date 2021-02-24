@@ -2082,17 +2082,53 @@ def test_Array_dc_ohms_from_percent(mocker):
     mocker.spy(pvsystem, 'dc_ohms_from_percent')
 
     expected = .1425
+
     array = pvsystem.Array(array_losses_parameters={'dc_ohmic_percent': 3},
                            module_parameters={'I_mp_ref': 8,
                                               'V_mp_ref': 38})
     out = array.dc_ohms_from_percent()
-
-    pvsystem.dc_ohms_from_percent.assert_called_once_with(
+    pvsystem.dc_ohms_from_percent.assert_called_with(
         dc_ohmic_percent=3,
         vmp_ref=38,
         imp_ref=8,
         modules_per_string=1,
         strings=1
     )
-
     assert_allclose(out, expected)
+
+    array = pvsystem.Array(array_losses_parameters={'dc_ohmic_percent': 3},
+                           module_parameters={'Impo': 8,
+                                              'Vmpo': 38})
+    out = array.dc_ohms_from_percent()
+    pvsystem.dc_ohms_from_percent.assert_called_with(
+        dc_ohmic_percent=3,
+        vmp_ref=38,
+        imp_ref=8,
+        modules_per_string=1,
+        strings=1
+    )
+    assert_allclose(out, expected)
+
+    array = pvsystem.Array(array_losses_parameters={'dc_ohmic_percent': 3},
+                           module_parameters={'Impp': 8,
+                                              'Vmpp': 38})
+    out = array.dc_ohms_from_percent()
+
+    pvsystem.dc_ohms_from_percent.assert_called_with(
+        dc_ohmic_percent=3,
+        vmp_ref=38,
+        imp_ref=8,
+        modules_per_string=1,
+        strings=1
+    )
+    assert_allclose(out, expected)
+
+    with pytest.raises(ValueError,
+                       match=('Parameters for Vmp and Imp could not be found '
+                              'in the array module parameters. Module '
+                              'parameters must include one set of '
+                              '{"V_mp_ref", "I_mp_Ref"}, '
+                              '{"Vmpo", "Impo"}, or '
+                              '{"Vmpp", "Impp"}.')):
+        array = pvsystem.Array(array_losses_parameters={'dc_ohmic_percent': 3})
+        out = array.dc_ohms_from_percent()

@@ -1446,12 +1446,12 @@ class Array:
 
         # raise error if relevant Vmp and Imp parameters are not found
         else:
-            raise ValueError('Parameters for Vmp and Imp could not be found ',
-                             'in the array module parameters. Module ',
-                             'parameters must include one set of ',
+            raise ValueError('Parameters for Vmp and Imp could not be found '
+                             'in the array module parameters. Module '
+                             'parameters must include one set of '
                              '{"V_mp_ref", "I_mp_Ref"}, '
                              '{"Vmpo", "Impo"}, or '
-                             '{"Vmpp", "Impp"}, '
+                             '{"Vmpp", "Impp"}.'
                              )
 
         kwargs.update({'modules_per_string': self.modules_per_string,

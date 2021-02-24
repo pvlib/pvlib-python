@@ -1432,7 +1432,6 @@ class Array:
             kwargs.update({'vmp_ref': self.module_parameters['V_mp_ref'],
                            'imp_ref': self.module_parameters['I_mp_ref']})
 
-
         # add relevant Vmp and Imp parameters from SAPM parameters
         elif all([elem in self.module_parameters
                   for elem in ['Vmpo', 'Impo']]):
@@ -2936,7 +2935,7 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
     References
     ----------
     .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
-        https://www.pvsyst.com/help/ohmic_loss.htm
+       https://www.pvsyst.com/help/ohmic_loss.htm
     """
     vmp = modules_per_string * vmp_ref
 
@@ -2967,7 +2966,7 @@ def dc_ohmic_losses(resistance, current):
     References
     ----------
     .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
-        https://www.pvsyst.com/help/ohmic_loss.htm
+       https://www.pvsyst.com/help/ohmic_loss.htm
     """
     return resistance * current * current
 

@@ -301,35 +301,6 @@ def test_SingleAxisTracker_creation():
     assert system.inverter == 'blarg'
 
 
-def test_SingleAxisTracker_one_array_only():
-    system = tracking.SingleAxisTracker(
-        arrays=[pvsystem.Array(
-            module='foo',
-            surface_tilt=None,
-            surface_azimuth=None
-        )]
-    )
-    assert system.module == 'foo'
-    with pytest.raises(ValueError,
-                       match="SingleAxisTracker does not support "
-                             r"multiple arrays\."):
-        tracking.SingleAxisTracker(
-            arrays=[pvsystem.Array(module='foo'),
-                    pvsystem.Array(module='bar')]
-        )
-    with pytest.raises(ValueError,
-                       match="Array must not have surface_tilt "):
-        tracking.SingleAxisTracker(arrays=[pvsystem.Array(module='foo')])
-    with pytest.raises(ValueError,
-                       match="Array must not have surface_tilt "):
-        tracking.SingleAxisTracker(
-            arrays=[pvsystem.Array(surface_azimuth=None)])
-    with pytest.raises(ValueError,
-                       match="Array must not have surface_tilt "):
-        tracking.SingleAxisTracker(
-            arrays=[pvsystem.Array(surface_tilt=None)])
-
-
 def test_SingleAxisTracker_tracking():
     system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
                                         axis_azimuth=180, gcr=2.0/7.0,
@@ -444,8 +415,13 @@ def test_SingleAxisTracker___repr__():
   name: None
   Array:
     name: None
-    surface_tilt: None
-    surface_azimuth: None
+    mount: SingleAxisTrackerMount:
+      axis_tilt: 0
+      axis_azimuth: 0
+      max_angle: 45
+      backtrack: True
+      gcr: 0.25
+      cross_axis_tilt: 0.0
     module: blah
     albedo: 0.25
     racking_model: None

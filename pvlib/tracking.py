@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind, tand
-from pvlib.pvsystem import PVSystem, _unwrap_single_value
+from pvlib.pvsystem import (
+    PVSystem, Array, SingleAxisTrackerMount, _unwrap_single_value
+)
 from pvlib import irradiance, atmosphere
 
 
@@ -76,20 +78,27 @@ class SingleAxisTracker(PVSystem):
     def __init__(self, axis_tilt=0, axis_azimuth=0, max_angle=90,
                  backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0.0, **kwargs):
 
-        arrays = kwargs.get('arrays', [])
-        if len(arrays) > 1:
-            raise ValueError("SingleAxisTracker does not support "
-                             "multiple arrays.")
-        elif len(arrays) == 1:
-            surface_tilt = arrays[0].surface_tilt
-            surface_azimuth = arrays[0].surface_azimuth
-            if surface_tilt is not None or surface_azimuth is not None:
-                raise ValueError(
-                    "Array must not have surface_tilt or "
-                    "surface_azimuth assigned. You must pass an "
-                    "Array with these fields set to None."
-                )
+        mount = SingleAxisTrackerMount(axis_tilt, axis_azimuth, max_angle,
+                                       backtrack, gcr, cross_axis_tilt)
 
+        array_defaults = {
+            'albedo': None, 'surface_type': None, 'module': None,
+            'module_type': None, 'module_parameters': None,
+            'temperature_model_parameters': None,
+            'modules_per_string': 1,
+            'racking_model': None,
+        }
+        array_kwargs = {
+            key: kwargs.get(key, array_defaults[key]) for key in array_defaults
+        }
+        # strings/strings_per_inverter is a special case
+        array_kwargs['strings'] = kwargs.get('strings_per_inverter', 1)
+
+        array = Array(mount=mount, **array_kwargs)
+        pass_through_kwargs = {  # other args to pass to PVSystem()
+            k: v for k, v in kwargs.items() if k not in array_defaults
+        }
+        # leave these in case someone is using them
         self.axis_tilt = axis_tilt
         self.axis_azimuth = axis_azimuth
         self.max_angle = max_angle
@@ -97,10 +106,10 @@ class SingleAxisTracker(PVSystem):
         self.gcr = gcr
         self.cross_axis_tilt = cross_axis_tilt
 
-        kwargs['surface_tilt'] = None
-        kwargs['surface_azimuth'] = None
+        pass_through_kwargs['surface_tilt'] = None
+        pass_through_kwargs['surface_azimuth'] = None
 
-        super().__init__(**kwargs)
+        super().__init__(arrays=[array], **pass_through_kwargs)
 
     def __repr__(self):
         attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr',

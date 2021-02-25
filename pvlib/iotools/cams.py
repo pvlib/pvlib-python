@@ -28,10 +28,16 @@ MCCLEAR_VARIABLE_MAP = {
 
 
 # Dictionary mapping Python time steps to CAMS time step format
-TIME_STEPS = {'1min': 'PT01M', '15min': 'PT15M', '1h': 'PT01H', '1d': 'P01D',
-              '1M': 'P01M'}
+TIME_STEPS_MAP = {'1min': 'PT01M', '15min': 'PT15M', '1h': 'PT01H', '1d': 'P01D',
+                  '1M': 'P01M'}
 
-TIME_STEPS_HOURS = {'1min': 1/60, '15min': 15/60, '1h': 1, '1d': 24}
+TIME_STEPS_IN_HOURS = {'1min': 1/60, '15min': 15/60, '1h': 1, '1d': 24}
+
+SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
+                                 '0 year 0 month 0 day 0 h 15 min 0 s': '15min',
+                                 '0 year 0 month 0 day 1 h 0 min 0 s': '1h',
+                                 '0 year 0 month 1 day 0 h 1 min 0 s': '1d',
+                                 '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
 
 
 def get_cams_mcclear(start_date, end_date, latitude, longitude, email,
@@ -124,8 +130,8 @@ def get_cams_mcclear(start_date, end_date, latitude, longitude, email,
        <http://www.soda-pro.com/help/cams-services/cams-mcclear-service/automatic-access>`_
     """
 
-    if time_step in TIME_STEPS.keys():
-        time_step_str = TIME_STEPS[time_step]
+    if time_step in TIME_STEPS_MAP.keys():
+        time_step_str = TIME_STEPS_MAP[time_step]
     else:
         print('WARNING: time step not recognized, 1 hour time step used!')
         time_step_str = 'PT01H'
@@ -174,7 +180,7 @@ def get_cams_mcclear(start_date, end_date, latitude, longitude, email,
                                         map_variables=map_variables)
         return data, meta
     else:
-        print('Error in recognizing file content occurred!')
+        print('Error in recognizing the file content occurred!')
 
 
 def parse_cams_mcclear(fbuf, integrated=False, label=None, map_variables=True):
@@ -209,12 +215,9 @@ def parse_cams_mcclear(fbuf, integrated=False, label=None, map_variables=True):
     meta['Altitude (m)'] = float(meta['Altitude (m)'])
 
     # Determine the time_step from the meta-data dictionary
-    time_step_dict = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
-                      '0 year 0 month 0 day 0 h 15 min 0 s': '15min',
-                      '0 year 0 month 0 day 1 h 0 min 0 s': '1h',
-                      '0 year 0 month 1 day 0 h 1 min 0 s': '1d',
-                      '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
-    time_step = time_step_dict[meta['Summarization (integration) period']]
+    time_step = SUMMATION_PERIOD_TO_TIME_STEP[
+        meta['Summarization (integration) period']]
+    meta['time_step'] = time_step
 
     data = pd.read_csv(fbuf, sep=';', comment='#', header=None, names=names)
 
@@ -249,7 +252,7 @@ def parse_cams_mcclear(fbuf, integrated=False, label=None, map_variables=True):
             data[integrated_cols] = data[integrated_cols] / hours
         else:
             data[integrated_cols] = (data[integrated_cols] /
-                                     TIME_STEPS_HOURS[time_step])
+                                     TIME_STEPS_IN_HOURS[time_step])
 
     if map_variables:
         data = data.rename(columns=MCCLEAR_VARIABLE_MAP)

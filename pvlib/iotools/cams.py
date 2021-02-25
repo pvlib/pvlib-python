@@ -36,7 +36,7 @@ TIME_STEPS_IN_HOURS = {'1min': 1/60, '15min': 15/60, '1h': 1, '1d': 24}
 SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
                                  '0 year 0 month 0 day 0 h 15 min 0 s': '15min',
                                  '0 year 0 month 0 day 1 h 0 min 0 s': '1h',
-                                 '0 year 0 month 1 day 0 h 1 min 0 s': '1d',
+                                 '0 year 0 month 1 day 0 h 0 min 0 s': '1d',
                                  '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
 
 
@@ -227,20 +227,19 @@ def parse_cams_mcclear(fbuf, integrated=False, label=None, map_variables=True):
     if (label == 'left') | ((label is None) & (time_step != '1M')):
         data.index = pd.to_datetime(obs_period.str[0], utc=True)
     # Set index as the stop observation time (right) and localize to UTC
+    # default label for monthly data is 'right' following Pandas' convention
     elif (label == 'right') | ((label is None) & (time_step == '1M')):
         data.index = pd.to_datetime(obs_period.str[1], utc=True)
 
     data.index.name = 'time'  # Set index name to None
 
-    # Change index for '1d' and '1M' to be date and not datetime
-    if time_step == '1d':
-        data.index = data.index.date
-    elif (time_step == '1M') & (label is not None):
-        data.index = data.index.date
+    # Change index for time_step '1d' and '1M' to be date and not datetime
+    if (time_step == '1d') | (time_step == '1M'):
+        data.index = pd.DatetimeIndex(data.index.date)
     # For monthly data with 'right' label, the index should be the last
     # date of the month and not the first date of the following month
-    elif (time_step == '1M') & (time_step != 'left'):
-        data.index = data.index.date - pd.Timestamp(days=1)
+    if (time_step == '1M') & (label != 'left'):
+        data.index = data.index - pd.Timedelta(days=1)
 
     if not integrated:  # Convert from Wh/m2 to W/m2
         integrated_cols = MCCLEAR_COLUMNS[1:6]
@@ -249,7 +248,8 @@ def parse_cams_mcclear(fbuf, integrated=False, label=None, map_variables=True):
             time_delta = (pd.to_datetime(obs_period.str[1])
                           - pd.to_datetime(obs_period.str[0]))
             hours = time_delta.dt.total_seconds()/60/60
-            data[integrated_cols] = data[integrated_cols] / hours
+            data[integrated_cols] = data[integrated_cols].\
+                divide(hours.tolist(), axis='rows')
         else:
             data[integrated_cols] = (data[integrated_cols] /
                                      TIME_STEPS_IN_HOURS[time_step])

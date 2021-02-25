@@ -200,12 +200,12 @@ def parse_cams_mcclear(fbuf, integrated=False, label=None, map_variables=True):
     # Initial lines of the file contain meta-data, which all start with #
     while True:
         line = fbuf.readline().rstrip('\n')
-        if not line.startswith('#'):
-            break
+        if line.startswith('# Observation period'):
+            # The last line of the meta-data section contains the column names
+            names = line.lstrip('# ').split(';')
+            break  # End of meta-data section has been reached
         elif ': ' in line:
             meta[line.split(': ')[0].lstrip('# ')] = line.split(': ')[1]
-        # The last line of the meta-data section contains the column names
-        names = line.lstrip('# ').split(';')
 
     # Convert the latitude, longitude, and altitude from strings to floats
     meta['Latitude (positive North, ISO 19115)'] = \
@@ -213,6 +213,7 @@ def parse_cams_mcclear(fbuf, integrated=False, label=None, map_variables=True):
     meta['Longitude (positive East, ISO 19115)'] = \
         float(meta['Longitude (positive East, ISO 19115)'])
     meta['Altitude (m)'] = float(meta['Altitude (m)'])
+    meta['Clear sky radiation unit'] = {True:'Wh/m2', False:'W/m2'}[integrated]
 
     # Determine the time_step from the meta-data dictionary
     time_step = SUMMATION_PERIOD_TO_TIME_STEP[

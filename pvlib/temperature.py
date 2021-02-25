@@ -706,3 +706,78 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         sun0 = sun
 
     return pd.Series(tmod_array - 273.15, index=poa_global.index, name='tmod')
+
+
+def _adj_noct(x):
+    return np.piecewise(x, [x < 0.5, (x >= 0.5) & (x < 1.5),
+                            (x >= 1.5) & (x < 2.5), (x >= 2.5) & (x < 3.5),
+                            x >= 3.5], [18., 11., 6., 2., 0.])
+
+
+def noct(poa_global, temp_air, wind_speed, noct, eta_m_ref,
+         effective_irradiance=None, transmittance_absorbtance=0.9,
+         array_height=1, mount_standoff=3.5):
+    '''
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance. [W/m^2]
+
+    temp_air : numeric
+        Ambient dry bulb temperature. [C]
+
+    wind_speed : numeric, default 1.0
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT. [m/s]
+
+    noct : numeric
+        Nominal operating cell temperature [C], determined at conditions of
+        800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
+
+    effective_irradiance : numeric, default None.
+        The irradiance that is converted to photocurrent. If None,
+        assumed equal to poa_global. [W/m^2]
+
+    eta_m_ref : numeric
+        Module external efficiency at reference conditions of 1000 W/m^2 and
+        20C. Calculate as P_mp (V_mp x I_mp) divided by 1000 W/m^2. [unitless]
+
+    transmittance_absorptance : numeric, default 0.9
+        Coefficient for combined transmittance and absorptance effects.
+        [unitless]
+
+    array_height : int, default 1
+        Height of array above ground in stories (one story is about 3m). Must
+        be either 1 or 2. For systems elevated less than one story, use 1.
+        If system is elevated more than two stories, use 2. [unitless]
+
+    mount_standoff : numeric, default 3.5
+        Distance between array mounting and mounting surface. Use default
+        if system is ground-mounted. [inches]
+
+    Returns
+    -------
+    cell_temperature : numeric
+        Cell temperature. [C]
+
+    '''
+    if effective_irradiance is None:
+        irr_ratio = 1.
+    else:
+        irr_ratio = effective_irradiance / poa_global
+
+    if array_height == 1:
+        wind_adj = 0.51 * wind_speed
+    elif array_height == 2:
+        wind_adj = 0.61 * wind_speed
+    else:
+        raise ValueError()
+
+    noct_adj = noct + _adj_noct(mount_standoff)
+    tau_alpha = transmittance_absorbtance * irr_ratio
+
+    cell_temp_init = ross(poa_global, temp_air, noct_adj)
+    heat_loss = 1 - eta_m_ref / tau_alpha
+    wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)
+    return cell_temp_init * heat_loss * wind_loss

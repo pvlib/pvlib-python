@@ -96,6 +96,10 @@ Enhancements
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
   from DC power. Use parameter ``model`` to specify which inverter model to use.
   (:pull:`1147`, :issue:`998`, :pull:`1150`)
+* :py:meth:`~pvlib.irradiance.boland` is another diffuse fraction, DF,
+  estimation method similar to Erbs but uses a single logistic exponential
+  correlation between DF and clearness index, kt, that is continuously
+  differentiable and bounded between zero and one. (:pull:`1179`)
 
 Bug fixes
 ~~~~~~~~~

@@ -35,7 +35,7 @@ TIME_STEPS_MAP = {'1min': 'PT01M', '15min': 'PT15M', '1h': 'PT01H',
 TIME_STEPS_IN_HOURS = {'1min': 1/60, '15min': 15/60, '1h': 1, '1d': 24}
 
 SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
-                                 '0 year 0 month 0 day 0 h 15 min 0 s': '15min',
+                                 '0 year 0 month 0 day 0 h 15 min 0 s': '15min',  # noqa
                                  '0 year 0 month 0 day 1 h 0 min 0 s': '1h',
                                  '0 year 0 month 1 day 0 h 0 min 0 s': '1d',
                                  '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
@@ -50,7 +50,8 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     diffuse radiation CAMS [2]_ using the WGET service [3]_.
 
 
-    Geographical coverage: -66 to 66 latitude/longitude (radiation) and wordwide (McClear)
+    Geographical coverage: Wordwide for CAMS McClear and -66 to 66 for both
+                           latitude and longitude for CAMS Radiation
     Time coverage: 2004-01-01 to two days ago
     Access: free, but requires registration, see [1]_
     Requests: max. 100 per day
@@ -127,7 +128,7 @@ def get_cams(start_date, end_date, latitude, longitude, email,
 
     The returned units for the radiation parameters depends on the integrated
     argument, i.e. integrated=False returns units of W/m2, whereas
-    integrated=True returns units of Wh/m2. 
+    integrated=True returns units of Wh/m2.
 
     Note that it is recommended to specify the latitude and longitude to at
     least the fourth decimal place.
@@ -252,7 +253,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     meta['Longitude (positive East, ISO 19115)'] = \
         float(meta['Longitude (positive East, ISO 19115)'])
     meta['Altitude (m)'] = float(meta['Altitude (m)'])
-    meta['Unit for radiation'] = {True:'Wh/m2', False:'W/m2'}[integrated]
+    meta['Unit for radiation'] = {True: 'Wh/m2', False: 'W/m2'}[integrated]
 
     # Determine the time_step from the meta-data dictionary
     time_step = SUMMATION_PERIOD_TO_TIME_STEP[
@@ -282,7 +283,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
         data.index = data.index - pd.Timedelta(days=1)
 
     if not integrated:  # Convert radiation values from Wh/m2 to W/m2
-        integrated_cols = [c for c in CAMS_INTEGRATED_COLUMNS if c in data.columns]
+        integrated_cols = [c for c in CAMS_INTEGRATED_COLUMNS if c in data.columns]  # noqa
 
         if time_step == '1M':
             time_delta = (pd.to_datetime(obs_period.str[1])

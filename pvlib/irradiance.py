@@ -2186,6 +2186,101 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     return data
 
 
+def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
+    r"""
+    Estimate DNI and DHI from GHI using the Boland clearness index model.
+
+    The Boland model [1]_, [2]_ estimates the diffuse fraction DF from global
+    horizontal irradiance through an empirical relationship between DF
+    and the ratio of GHI to extraterrestrial irradiance, Kt. The
+    function uses the diffuse fraction to compute DHI as
+
+    .. math::
+
+        DHI = DF \times GHI
+
+    DNI is then estimated as
+
+    .. math::
+
+        DNI = (GHI - DHI)/\cos(Z)
+
+    where Z is the zenith angle.
+
+    Parameters
+    ----------
+    ghi: numeric
+        Global horizontal irradiance in W/m^2.
+    zenith: numeric
+        True (not refraction-corrected) zenith angles in decimal degrees.
+    datetime_or_doy : int, float, array, pd.DatetimeIndex
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
+
+    Returns
+    -------
+    data : OrderedDict or DataFrame
+        Contains the following keys/columns:
+
+            * ``dni``: the modeled direct normal irradiance in W/m^2.
+            * ``dhi``: the modeled diffuse horizontal irradiance in
+              W/m^2.
+            * ``kt``: Ratio of global to extraterrestrial irradiance
+              on a horizontal plane.
+
+    References
+    ----------
+    .. [1] John Boland, Lynne Scott, and Mark Luther, Modelling the diffuse
+       fraction of global solar radiation on a horizontal surface,
+       Environmetrics 12(2), pp 103-116, 2001,
+       :doi:`10.1002/1099-095X(200103)12:2%3C103::AID-ENV447%3E3.0.CO;2-2`
+    .. [2] J. Boland, B. Ridley (2008) Models of Diffuse Solar Fraction. In:
+       Badescu V. (eds) Modeling Solar Radiation at the Earth’s Surface.
+       Springer, Berlin, Heidelberg. :doi:`10.1007/978-3-540-77455-6_8`
+
+    See also
+    --------
+    dirint
+    disc
+    erbs
+    """
+
+    dni_extra = get_extra_radiation(datetime_or_doy)
+
+    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+                         max_clearness_index=1)
+
+    # Boland equation
+    df = 1.0 / (1.0 + np.exp(-5.0 + 8.6 * kt))
+    # NOTE: [1] has different coefficients, for different time intervals
+    # 15-min: df = 1 / (1 + exp(8.645 * (kt - 0.613)))
+    # 1-hour: df = 1 / (1 + exp(7.997 * (kt - 0.586)))
+
+    dhi = df * ghi
+
+    dni = (ghi - dhi) / tools.cosd(zenith)
+    bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
+    # ensure that closure relationship remains valid
+    dhi = np.where(bad_values, ghi, dhi)
+
+    data = OrderedDict()
+    data['dni'] = dni
+    data['dhi'] = dhi
+    data['kt'] = kt
+
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        data = pd.DataFrame(data, index=datetime_or_doy)
+
+    return data
+
+
 def campbell_norman(zenith, transmittance, pressure=101325.0,
                     dni_extra=1367.0):
     '''

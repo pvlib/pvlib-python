@@ -2190,22 +2190,15 @@ def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     r"""
     Estimate DNI and DHI from GHI using the Boland clearness index model.
 
-    The Boland model [1]_, [2]_ estimates the diffuse fraction DF from global
-    horizontal irradiance through an empirical relationship between DF
-    and the ratio of GHI to extraterrestrial irradiance, Kt. The
-    function uses the diffuse fraction to compute DHI as
+    The Boland model [1]_, [2]_ estimates the diffuse fraction, DF, from global
+    horizontal irradiance, GHI, through an empirical relationship between DF
+    and the ratio of GHI to extraterrestrial irradiance or clearness index, kt.
 
     .. math::
 
-        DHI = DF \times GHI
+        \mathit{DF} = \frac{1}{1 + \exp\left(-5 + 8.6 k_t\right)}
 
-    DNI is then estimated as
-
-    .. math::
-
-        DNI = (GHI - DHI)/\cos(Z)
-
-    where Z is the zenith angle.
+    where :math:`k_t` is the clearness index.
 
     Parameters
     ----------

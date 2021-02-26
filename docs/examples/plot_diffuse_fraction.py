@@ -183,4 +183,4 @@ f.tight_layout()
 # Another difference is that DISC & DIRINT return DNI whereas Erbs & Boland
 # calculate the diffuse fraction which is then used to derive DNI from GHI and
 # the solar zenith, which exacerbates errors at low sun elevation due to the
-# relation: DNI = GHI*(1 - DF)/cos(zenith). 
+# relation: DNI = GHI*(1 - DF)/cos(zenith).

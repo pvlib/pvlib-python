@@ -209,7 +209,8 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
         warnings.warn('File content type not recognized.')
 
 
-def parse_cams_radiation(fbuf, integrated=False, label=None, map_variables=True):
+def parse_cams_radiation(fbuf, integrated=False, label=None,
+                         map_variables=True):
     """
     Parse a file-like buffer with data in the format of a CAMS Radiation or
     McClear file. The CAMS servicess are described in [1]_ and [2]_.

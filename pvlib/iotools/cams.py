@@ -6,6 +6,7 @@
 import pandas as pd
 import requests
 import io
+import warnings
 
 
 CAMS_RADIATION_INTEGRATED_COLUMNS = [
@@ -162,12 +163,12 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     if time_step in TIME_STEPS_MAP.keys():
         time_step_str = TIME_STEPS_MAP[time_step]
     else:
-        print('WARNING: time step not recognized, 1 hour time step used!')
+        warnings.warn('Time step not recognized, 1 hour time step used!')
         time_step, time_step_str = '1h', 'PT01H'
 
     if (verbose is True) & ((time_step != '1min') | (time_ref != 'UT')):
         verbose = False
-        print("Verbose mode only supports 1 min. UT time series!")
+        warnings.warn("Verbose mode only supports 1 min. UT time series!")
 
     # Format verbose variable to the required format: {'true', 'false'}
     verbose = str(verbose).lower()
@@ -204,7 +205,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
                                 map_variables=map_variables)
         return data, meta
     else:
-        print('Error! File content type not recognized.')
+        warnings.warn('File content type not recognized.')
 
 
 def parse_cams(fbuf, integrated=False, label=None, map_variables=True):

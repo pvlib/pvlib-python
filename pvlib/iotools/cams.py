@@ -201,8 +201,9 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     # Check if returned file is a csv data file
     elif res.headers['Content-Type'] == 'application/csv':
         fbuf = io.StringIO(res.content.decode('utf-8'))
-        data, meta = parse_cams_radiation(fbuf, integrated=integrated, label=label,
-                                map_variables=map_variables)
+        data, meta = parse_cams_radiation(fbuf, integrated=integrated,
+                                          label=label,
+                                          map_variables=map_variables)
         return data, meta
     else:
         warnings.warn('File content type not recognized.')

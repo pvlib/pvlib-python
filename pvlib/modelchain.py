@@ -644,7 +644,9 @@ class ModelChain:
             strategy = None
 
         if strategy is not None:
-            self.system.surface_tilt, self.system.surface_azimuth = \
+            # TODO: this is probably not what we want to do here
+            (self.system.arrays[0].mount.surface_tilt,
+             self.system.arrays[0].mount.surface_azimuth) = \
                 get_orientation(strategy, latitude=self.location.latitude)
 
         self._orientation_strategy = strategy

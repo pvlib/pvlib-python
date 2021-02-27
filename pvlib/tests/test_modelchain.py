@@ -349,8 +349,8 @@ def test_orientation_strategy(strategy, expected, sapm_dc_snl_ac_system,
     # the || accounts for the coercion of 'None' to None
     assert (mc.orientation_strategy == strategy or
             mc.orientation_strategy is None)
-    assert sapm_dc_snl_ac_system.surface_tilt == expected[0]
-    assert sapm_dc_snl_ac_system.surface_azimuth == expected[1]
+    assert sapm_dc_snl_ac_system.arrays[0].mount.surface_tilt == expected[0]
+    assert sapm_dc_snl_ac_system.arrays[0].mount.surface_azimuth == expected[1]
 
 
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
@@ -1373,6 +1373,7 @@ def test_infer_ac_model_invalid_params(location):
     module_parameters = {'pdc0': 1, 'gamma_pdc': 1}
     system = pvsystem.PVSystem(
         arrays=[pvsystem.Array(
+            mount=pvsystem.FixedMount(0, 180),
             module_parameters=module_parameters
         )],
         inverter_parameters={'foo': 1, 'bar': 2}
@@ -1869,10 +1870,13 @@ def test_inconsistent_array_params(location,
     different_module_system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=sapm_module_params),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params)]
     )
     with pytest.raises(ValueError, match=module_error):
@@ -1880,16 +1884,19 @@ def test_inconsistent_array_params(location,
     different_temp_system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params,
                 temperature_model_parameters={'a': 1,
                                               'b': 1,
                                               'deltaT': 1}),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params,
                 temperature_model_parameters={'a': 2,
                                               'b': 2,
                                               'deltaT': 2}),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params,
                 temperature_model_parameters={'b': 3, 'deltaT': 3})]
     )

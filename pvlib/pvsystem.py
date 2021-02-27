@@ -11,8 +11,10 @@ import os
 from urllib.request import urlopen
 import numpy as np
 import pandas as pd
+from abc import ABC, abstractmethod
 
-from pvlib._deprecation import deprecated
+import warnings
+from pvlib._deprecation import deprecated, pvlibDeprecationWarning
 
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
@@ -248,7 +250,6 @@ class PVSystem:
 
     @_unwrap_single_value
     def _infer_cell_type(self):
-
         """
         Examines module_parameters and maps the Technology key for the CEC
         database and the Material key for the Sandia database to a common
@@ -1046,28 +1047,60 @@ class PVSystem:
             array.temperature_model_parameters = value
 
     @property
-    @_unwrap_single_value
     def surface_tilt(self):
-        # TODO: don't access mount attributes directly?
-        return tuple(array.mount.surface_tilt for array in self.arrays)
+        if len(self.arrays) == 1:
+            msg = (
+                'PVSystem.surface_tilt attribute is deprecated. '
+                'Use PVSystem.arrays[0].mount.surface_tilt.'
+            )
+            warnings.warn(msg, pvlibDeprecationWarning)
+        else:
+            raise AttributeError(
+                'PVSystem.surface_tilt not supported for multi-array systems. '
+                'Use PVSystem.arrays[i].mount.surface_tilt.')
+        return self.arrays[0].mount.surface_tilt
 
     @surface_tilt.setter
     def surface_tilt(self, value):
-        # TODO: don't access mount attributes directly?
-        for array in self.arrays:
-            array.mount.surface_tilt = value
+        if len(self.arrays) == 1:
+            msg = (
+                'PVSystem.surface_tilt attribute is deprecated. '
+                'Use PVSystem.arrays[0].mount.surface_tilt.'
+            )
+            warnings.warn(msg, pvlibDeprecationWarning)
+        else:
+            raise AttributeError(
+                'PVSystem.surface_tilt not supported for multi-array systems. '
+                'Use PVSystem.arrays[i].mount.surface_tilt.')
+        self.arrays[0].mount.surface_tilt = value
 
     @property
-    @_unwrap_single_value
     def surface_azimuth(self):
-        # TODO: don't access mount attributes directly?
-        return tuple(array.mount.surface_azimuth for array in self.arrays)
+        if len(self.arrays) == 1:
+            msg = (
+                'PVSystem.surface_azimuth attribute is deprecated. '
+                'Use PVSystem.arrays[0].mount.surface_azimuth.'
+            )
+            warnings.warn(msg, pvlibDeprecationWarning)
+        else:
+            raise AttributeError(
+                'PVSystem.surface_azimuth not supported for multi-array '
+                'systems. Use PVSystem.arrays[i].mount.surface_azimuth.')
+        return self.arrays[0].mount.surface_azimuth
 
     @surface_azimuth.setter
     def surface_azimuth(self, value):
-        # TODO: don't access mount attributes directly?
-        for array in self.arrays:
-            array.mount.surface_azimuth = value
+        if len(self.arrays) == 1:
+            msg = (
+                'PVSystem.surface_azimuth attribute is deprecated. '
+                'Use PVSystem.arrays[0].mount.surface_azimuth.'
+            )
+            warnings.warn(msg, pvlibDeprecationWarning)
+        else:
+            raise AttributeError(
+                'PVSystem.surface_azimuth not supported for multi-array '
+                'systems. Use PVSystem.arrays[i].mount.surface_azimuth.')
+        self.arrays[0].mount.surface_azimuth = value
 
     @property
     @_unwrap_single_value
@@ -1110,7 +1143,7 @@ class Array:
 
     Parameters
     ----------
-    mount: FixedMount, SingleAxisTrackerMount, or other, default None
+    mount: FixedMount, SingleAxisTrackerMount, or other
         Mounting strategy for the array, used to determine module orientation.
         If not provided, a FixedMount with zero tilt is used.
 
@@ -1152,19 +1185,14 @@ class Array:
 
     """
 
-    def __init__(self,
-                 mount=None,
+    def __init__(self, mount,
                  albedo=None, surface_type=None,
                  module=None, module_type=None,
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings=1,
                  racking_model=None, name=None):
-        if mount is None:
-            self.mount = FixedMount(0, 180)
-        else:
-            self.mount = mount
-
+        self.mount = mount
         self.surface_type = surface_type
         if albedo is None:
             self.albedo = irradiance.SURFACE_ALBEDOS.get(surface_type, 0.25)
@@ -1274,7 +1302,7 @@ class Array:
         aoi : Series
             Then angle of incidence.
         """
-        orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
+        orientation = self.mount.calculate_orientation(solar_zenith, solar_azimuth)
         return irradiance.aoi(orientation['surface_tilt'],
                               orientation['surface_azimuth'],
                               solar_zenith, solar_azimuth)
@@ -1325,7 +1353,7 @@ class Array:
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
+        orientation = self.mount.calculate_orientation(solar_zenith, solar_azimuth)
         return irradiance.get_total_irradiance(orientation['surface_tilt'],
                                                orientation['surface_azimuth'],
                                                solar_zenith, solar_azimuth,
@@ -1379,44 +1407,120 @@ class Array:
             raise ValueError(model + ' is not a valid IAM model')
 
 
-class FixedMount:
+class AbstractMount(ABC):
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return f'{classname}:\n    ' + '\n    '.join(
+            f'{attr}: {getattr(self, attr)}' for attr in self._repr_attrs
+        )
+
+    @abstractmethod
+    def calculate_orientation(self, solar_zenith, solar_azimuth):
+        """
+        Determine module orientation.
+
+        Parameters
+        ----------
+        solar_zenith : numeric
+            Solar apparent zenith angle [degrees]
+        solar_azimuth : numeric
+            Solar azimuth angle [degrees]
+
+        Returns
+        -------
+        orientation : dict-like
+            A dict-like object with keys `'surface_tilt', 'surface_azimuth'`
+        """
+        pass
+
+
+class FixedMount(AbstractMount):
+    """
+    Racking at fixed (static) orientation.
+
+    Parameters
+    ----------
+    surface_tilt : float, default 0
+        Surface tilt angle. The tilt angle is defined as angle from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90) [degrees]
+
+    surface_azimuth : float, default 180
+        Azimuth angle of the module surface. North=0, East=90, South=180,
+        West=270. [degrees]
+    """
+
     def __init__(self, surface_tilt=0, surface_azimuth=180):
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
+        self._repr_attrs = ['surface_tilt', 'surface_azimuth']
 
-    def __repr__(self):
-        return (
-            'FixedMount:'
-            f'\n    surface_tilt: {self.surface_tilt}'
-            f'\n    surface_azimuth: {self.surface_azimuth}'
-        )
-
-    def get_orientation(self, solar_zenith, solar_azimuth):
+    def calculate_orientation(self, solar_zenith, solar_azimuth):
+        # note -- docstring is automatically inherited from AbstractMount
         return {
             'surface_tilt': self.surface_tilt,
             'surface_azimuth': self.surface_azimuth,
         }
 
 
-class SingleAxisTrackerMount:
-    def __init__(self, axis_tilt, axis_azimuth, max_angle, backtrack, gcr,
-                 cross_axis_tilt):
+class SingleAxisTrackerMount(AbstractMount):
+    """
+    Single-axis tracker racking for dynamic solar tracking.
+
+    Parameters
+    ----------
+    axis_tilt : float, default 0
+        The tilt of the axis of rotation (i.e, the y-axis defined by
+        axis_azimuth) with respect to horizontal. [degrees]
+
+    axis_azimuth : float, default 180
+        A value denoting the compass direction along which the axis of
+        rotation lies, measured east of north. [degrees]
+
+    max_angle : float, default 90
+        A value denoting the maximum rotation angle
+        of the one-axis tracker from its horizontal position (horizontal
+        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
+        to rotate to a vertical position to point the panel towards a
+        horizon. max_angle of 180 degrees allows for full rotation. [degrees]
+
+    backtrack : bool, default True
+        Controls whether the tracker has the capability to "backtrack"
+        to avoid row-to-row shading. False denotes no backtrack
+        capability. True denotes backtrack capability.
+
+    gcr : float, default 2.0/7.0
+        A value denoting the ground coverage ratio of a tracker system
+        which utilizes backtracking; i.e. the ratio between the PV array
+        surface area to total ground area. A tracker system with modules
+        2 meters wide, centered on the tracking axis, with 6 meters
+        between the tracking axes has a gcr of 2/6=0.333. If gcr is not
+        provided, a gcr of 2/7 is default. gcr must be <=1. [unitless]
+
+    cross_axis_tilt : float, default 0.0
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. Cross-axis tilt should be specified
+        using a right-handed convention. For example, trackers with axis
+        azimuth of 180 degrees (heading south) will have a negative cross-axis
+        tilt if the tracker axes plane slopes down to the east and positive
+        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        `cross_axis_tilt`. [degrees]
+    """
+
+    def __init__(self, axis_tilt=0, axis_azimuth=180, max_angle=90,
+                 backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
         self.axis_tilt = axis_tilt
         self.axis_azimuth = axis_azimuth
         self.max_angle = max_angle
         self.backtrack = backtrack
         self.gcr = gcr
         self.cross_axis_tilt = cross_axis_tilt
+        self._repr_attrs = ['axis_tilt', 'axis_azimuth', 'max_angle',
+                            'backtrack', 'gcr', 'cross_axis_tilt']
 
-    def __repr__(self):
-        attrs = ['axis_tilt', 'axis_azimuth', 'max_angle',
-                 'backtrack', 'gcr', 'cross_axis_tilt']
-
-        return 'SingleAxisTrackerMount:\n    ' + '\n    '.join(
-            f'{attr}: {getattr(self, attr)}' for attr in attrs
-        )
-
-    def get_orientation(self, solar_zenith, solar_azimuth):
+    def calculate_orientation(self, solar_zenith, solar_azimuth):
+        # note -- docstring is automatically inherited from AbstractMount
         from pvlib import tracking  # avoid circular import issue
         tracking_data = tracking.singleaxis(
             solar_zenith, solar_azimuth,

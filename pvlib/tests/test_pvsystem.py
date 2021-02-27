@@ -36,8 +36,10 @@ def test_PVSystem_get_iam(mocker, iam_model, model_params):
 def test_PVSystem_multi_array_get_iam():
     model_params = {'b': 0.05}
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(module_parameters=model_params),
-                pvsystem.Array(module_parameters=model_params)]
+        arrays=[pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                               module_parameters=model_params),
+                pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                               module_parameters=model_params)]
     )
     iam = system.get_iam((1, 5), iam_model='ashrae')
     assert len(iam) == 2
@@ -226,8 +228,10 @@ def test_PVSystem_sapm(sapm_module_params, mocker):
 
 def test_PVSystem_multi_array_sapm(sapm_module_params):
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(module_parameters=sapm_module_params),
-                pvsystem.Array(module_parameters=sapm_module_params)]
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               module_parameters=sapm_module_params),
+                pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               module_parameters=sapm_module_params)]
     )
     effective_irradiance = (100, 500)
     temp_cell = (15, 25)
@@ -274,8 +278,10 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
 
 def test_PVSystem_multi_array_sapm_spectral_loss(sapm_module_params):
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(module_parameters=sapm_module_params),
-                pvsystem.Array(module_parameters=sapm_module_params)]
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               module_parameters=sapm_module_params),
+                pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               module_parameters=sapm_module_params)]
     )
     loss_one, loss_two = system.sapm_spectral_loss(2)
     assert loss_one == loss_two
@@ -308,10 +314,12 @@ def test_PVSystem_multi_array_first_solar_spectral_loss():
     system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters={'Technology': 'mc-Si'},
                 module_type='multisi'
             ),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters={'Technology': 'mc-Si'},
                 module_type='multisi'
             )
@@ -363,8 +371,10 @@ def test_PVSystem_sapm_effective_irradiance(sapm_module_params, mocker):
 
 def test_PVSystem_multi_array_sapm_effective_irradiance(sapm_module_params):
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(module_parameters=sapm_module_params),
-                pvsystem.Array(module_parameters=sapm_module_params)]
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               module_parameters=sapm_module_params),
+                pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               module_parameters=sapm_module_params)]
     )
     poa_direct = (500, 900)
     poa_diffuse = (50, 100)
@@ -393,10 +403,12 @@ def two_array_system(pvsyst_module_params, cec_module_params):
     return pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 temperature_model_parameters=temperature_model,
                 module_parameters=module_params
             ),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 temperature_model_parameters=temperature_model,
                 module_parameters=module_params
             )
@@ -453,8 +465,10 @@ def test_PVSystem_multi_array_sapm_celltemp_different_arrays():
     temp_model_two = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm'][
         'close_mount_glass_glass']
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(temperature_model_parameters=temp_model_one),
-                pvsystem.Array(temperature_model_parameters=temp_model_two)]
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               temperature_model_parameters=temp_model_one),
+                pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               temperature_model_parameters=temp_model_two)]
     )
     temp_one, temp_two = system.sapm_celltemp(
         (1000, 1000), 25, 1
@@ -672,19 +686,22 @@ def test_PVSystem_fuentes_celltemp_override(mocker):
 
 
 def test_Array__infer_temperature_model_params():
-    array = pvsystem.Array(module_parameters={},
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                           module_parameters={},
                            racking_model='open_rack',
                            module_type='glass_polymer')
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'sapm']['open_rack_glass_polymer']
     assert expected == array._infer_temperature_model_params()
-    array = pvsystem.Array(module_parameters={},
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                           module_parameters={},
                            racking_model='freestanding',
                            module_type='glass_polymer')
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['freestanding']
     assert expected == array._infer_temperature_model_params()
-    array = pvsystem.Array(module_parameters={},
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                           module_parameters={},
                            racking_model='insulated',
                            module_type=None)
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
@@ -693,7 +710,8 @@ def test_Array__infer_temperature_model_params():
 
 
 def test_Array__infer_cell_type():
-    array = pvsystem.Array(module_parameters={})
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+                           module_parameters={})
     assert array._infer_cell_type() is None
 
 
@@ -1359,8 +1377,10 @@ def test_PVSystem_scale_voltage_current_power(mocker):
 def test_PVSystem_multi_scale_voltage_current_power(mocker):
     data = (1, 2)
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(modules_per_string=2, strings=3),
-                pvsystem.Array(modules_per_string=3, strings=5)]
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               modules_per_string=2, strings=3),
+                pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               modules_per_string=3, strings=5)]
     )
     m = mocker.patch(
         'pvlib.pvsystem.scale_voltage_current_power', autospec=True
@@ -1407,7 +1427,8 @@ def test_PVSystem_snlinverter(cec_inverter_parameters):
 def test_PVSystem_get_ac_sandia_multi(cec_inverter_parameters, mocker):
     inv_fun = mocker.spy(inverter, 'sandia_multi')
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(), pvsystem.Array()],
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180)),
+                pvsystem.Array(pvsystem.FixedMount(0, 180))],
         inverter=cec_inverter_parameters['Name'],
         inverter_parameters=cec_inverter_parameters,
     )
@@ -1454,7 +1475,8 @@ def test_PVSystem_get_ac_pvwatts_multi(
     systems = [pvwatts_system_defaults, pvwatts_system_kwargs]
     for base_sys, exp in zip(systems, expected):
         system = pvsystem.PVSystem(
-            arrays=[pvsystem.Array(), pvsystem.Array()],
+            arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180)),
+                    pvsystem.Array(pvsystem.FixedMount(0, 180),)],
             inverter_parameters=base_sys.inverter_parameters,
         )
         pdcs = pd.Series([0., 25., 50.])
@@ -1496,7 +1518,7 @@ def test_PVSystem_get_ac_single_array_tuple_input(
         'sandia': pd.Series([-0.020000, 132.004308, 250.000000])
     }
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array()],
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180))],
         inverter_parameters=inverter_parameters[model]
     )
     ac = system.get_ac(p_dc=(pdcs[model],), v_dc=(vdcs[model],), model=model)
@@ -1522,7 +1544,8 @@ def test_PVSystem_get_ac_adr(adr_inverter_parameters, mocker):
 
 def test_PVSystem_get_ac_adr_multi(adr_inverter_parameters):
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(), pvsystem.Array()],
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180)),
+                pvsystem.Array(pvsystem.FixedMount(0, 180))],
         inverter_parameters=adr_inverter_parameters,
     )
     pdcs = pd.Series([135, 1232, 1170, 420, 551])
@@ -1552,8 +1575,6 @@ def test_PVSystem_multiple_array_creation():
     array_two = pvsystem.Array(pvsystem.FixedMount(surface_tilt=15),
                                module_parameters={'pdc0': 1})
     pv_system = pvsystem.PVSystem(arrays=[array_one, array_two])
-    assert pv_system.surface_tilt == (32, 15)
-    assert pv_system.surface_azimuth == (180, 180)
     assert pv_system.module_parameters == ({}, {'pdc0': 1})
     assert pv_system.arrays == (array_one, array_two)
     with pytest.raises(TypeError):
@@ -1674,8 +1695,8 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad():
     for each array when different GHI/DHI/DNI input is given. For the later
     case we verify that the correct irradiance data is passed to each array.
     """
-    array_one = pvsystem.Array()
-    array_two = pvsystem.Array()
+    array_one = pvsystem.Array(pvsystem.FixedMount(0, 180))
+    array_two = pvsystem.Array(pvsystem.FixedMount(0, 180))
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
     location = Location(latitude=32, longitude=-111)
     times = pd.date_range(start='20160101 1200-0700',
@@ -1744,7 +1765,7 @@ def test_PVSystem_change_surface_azimuth():
 
 def test_PVSystem_get_albedo(two_array_system):
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(albedo=0.5)]
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180), albedo=0.5)]
     )
     assert system.albedo == 0.5
     assert two_array_system.albedo == (0.25, 0.25)
@@ -1752,24 +1773,26 @@ def test_PVSystem_get_albedo(two_array_system):
 
 def test_PVSystem_modules_per_string():
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(modules_per_string=1),
-                pvsystem.Array(modules_per_string=2)]
+        arrays=[
+            pvsystem.Array(pvsystem.FixedMount(0, 180), modules_per_string=1),
+            pvsystem.Array(pvsystem.FixedMount(0, 180), modules_per_string=2)]
     )
     assert system.modules_per_string == (1, 2)
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(modules_per_string=5)]
+        arrays=[
+            pvsystem.Array(pvsystem.FixedMount(0, 180), modules_per_string=5)]
     )
     assert system.modules_per_string == 5
 
 
 def test_PVSystem_strings_per_inverter():
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(strings=2),
-                pvsystem.Array(strings=1)]
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180), strings=2),
+                pvsystem.Array(pvsystem.FixedMount(0, 180), strings=1)]
     )
     assert system.strings_per_inverter == (2, 1)
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(strings=5)]
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180), strings=5)]
     )
     assert system.strings_per_inverter == 5
 
@@ -1952,12 +1975,14 @@ def test_PVSystem_multiple_array_pvwatts_dc():
         'pdc0': 100, 'gamma_pdc': -0.003, 'temp_ref': 20
     }
     array_one = pvsystem.Array(
+        pvsystem.FixedMount(0, 180),
         module_parameters=array_one_module_parameters
     )
     array_two_module_parameters = {
         'pdc0': 150, 'gamma_pdc': -0.002, 'temp_ref': 25
     }
     array_two = pvsystem.Array(
+        pvsystem.FixedMount(0, 180),
         module_parameters=array_two_module_parameters
     )
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
@@ -1977,7 +2002,9 @@ def test_PVSystem_multiple_array_pvwatts_dc():
 
 def test_PVSystem_multiple_array_pvwatts_dc_value_error():
     system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(), pvsystem.Array(), pvsystem.Array()]
+        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180)),
+                pvsystem.Array(pvsystem.FixedMount(0, 180)),
+                pvsystem.Array(pvsystem.FixedMount(0, 180))]
     )
     error_message = 'Length mismatch for per-array parameter'
     with pytest.raises(ValueError, match=error_message):
@@ -2035,7 +2062,9 @@ def test_PVSystem_pvwatts_ac_kwargs(pvwatts_system_kwargs, mocker):
 
 def test_PVSystem_num_arrays():
     system_one = pvsystem.PVSystem()
-    system_two = pvsystem.PVSystem(arrays=[pvsystem.Array(), pvsystem.Array()])
+    system_two = pvsystem.PVSystem(arrays=[
+        pvsystem.Array(pvsystem.FixedMount(0, 180)),
+        pvsystem.Array(pvsystem.FixedMount(0, 180))])
     assert system_one.num_arrays == 1
     assert system_two.num_arrays == 2
 
@@ -2055,3 +2084,19 @@ def test_combine_loss_factors():
 def test_no_extra_kwargs():
     with pytest.raises(TypeError, match="arbitrary_kwarg"):
         pvsystem.PVSystem(arbitrary_kwarg='value')
+
+
+def test_deprecated_attributes_single(pvwatts_system_defaults):
+    match = r"Use PVSystem.arrays\[0\].mount.surface_(tilt|azimuth)"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        pvwatts_system_defaults.surface_tilt
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        pvwatts_system_defaults.surface_azimuth
+
+
+def test_deprecated_attributes_multi(two_array_system):
+    match = "not supported for multi-array systems"
+    with pytest.raises(AttributeError, match=match):
+        two_array_system.surface_tilt
+    with pytest.raises(AttributeError, match=match):
+        two_array_system.surface_azimuth

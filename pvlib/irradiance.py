@@ -1402,24 +1402,22 @@ def _disc_kn(clearness_index, airmass, max_airmass=12):
 
     am = np.minimum(am, max_airmass)  # GH 450
 
-    # powers of kt will be used repeatedly, so compute only once
-    kt2 = kt * kt  # about the same as kt ** 2
-    kt3 = kt2 * kt  # 5-10x faster than kt ** 3
+    # Use Horner's method to compure polynomials efficiently
+    bools = (kt <= 0.6) 
+    a = np.where(bools, 
+              0.512 + kt*(-1.56 + kt*(2.286 - 2.222*kt)),
+              -5.743 + kt*(21.77 + kt*(-27.49 + 11.56*kt)))
+    b = np.where(bools, 
+              0.37 + 0.962*kt,
+              41.4 + kt*(-118.5 + kt*(66.05 + 31.9*kt)))
+    c = np.where(bools, 
+              -0.28 + kt*(0.932 - 2.048*kt),
+              -47.01 + kt*(184.2 + kt*(-222.0 + 73.81*kt)))
 
-    bools = (kt <= 0.6)
-    a = np.where(bools,
-                 0.512 - 1.56*kt + 2.286*kt2 - 2.222*kt3,
-                 -5.743 + 21.77*kt - 27.49*kt2 + 11.56*kt3)
-    b = np.where(bools,
-                 0.37 + 0.962*kt,
-                 41.4 - 118.5*kt + 66.05*kt2 + 31.9*kt3)
-    c = np.where(bools,
-                 -0.28 + 0.932*kt - 2.048*kt2,
-                 -47.01 + 184.2*kt - 222.0*kt2 + 73.81*kt3)
 
     delta_kn = a + b * np.exp(c*am)
 
-    Knc = 0.866 - 0.122*am + 0.0121*am**2 - 0.000653*am**3 + 1.4e-05*am**4
+    Knc = 0.866 + am*(-0.122 + am*(0.0121 + am*(-0.000653 + 1.4e-05*am)))
     Kn = Knc - delta_kn
     return Kn, am
 

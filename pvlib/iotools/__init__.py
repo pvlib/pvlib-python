@@ -14,4 +14,4 @@ from pvlib.iotools.psm3 import read_psm3  # noqa: F401
 from pvlib.iotools.psm3 import parse_psm3  # noqa: F401
 from pvlib.iotools.pvgis import get_pvgis_tmy, read_pvgis_tmy  # noqa: F401
 from pvlib.iotools.bsrn import read_bsrn  # noqa: F401
-from pvlib.iotools.cams import get_cams, read_cams, parse_cams  # noqa: F401
+from pvlib.iotools.cams import get_cams_radiation, read_cams_radiation, parse_cams_radiation  # noqa: F401

@@ -8,13 +8,13 @@ import requests
 import io
 
 
-CAMS_INTEGRATED_COLUMNS = ['TOA', 'Clear sky GHI', 'Clear sky BHI',
-                           'Clear sky DHI', 'Clear sky BNI',
-                           'GHI', 'BHI', 'DHI', 'BNI', 'GHI no corr',
-                           'BHI no corr', 'DHI no corr', 'BNI no corr']
+CAMS_RADIATION_INTEGRATED_COLUMNS = [
+    'TOA', 'Clear sky GHI', 'Clear sky BHI', 'Clear sky DHI', 'Clear sky BNI',
+    'GHI', 'BHI', 'DHI', 'BNI',
+    'GHI no corr', 'BHI no corr', 'DHI no corr', 'BNI no corr']
 
 # Dictionary mapping CAMS McClear and Radiation variables to pvlib names
-CAMS_VARIABLE_MAP = {
+CAMS_RADIATION_VARIABLE_MAP = {
     'TOA': 'ghi_extra',
     'Clear sky GHI': 'ghi_clear',
     'Clear sky BHI': 'bhi_clear',
@@ -41,20 +41,20 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
                                  '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
 
 
-def get_cams(start_date, end_date, latitude, longitude, email,
-             service='mcclear', altitude=None, time_step='1h', time_ref='UT',
-             verbose=False, integrated=False, label=None, map_variables=True,
-             server='www.soda-is.com'):
+def get_cams_radiation(start_date, end_date, latitude, longitude, email,
+                       service='mcclear', altitude=None, time_step='1h',
+                       time_ref='UT', verbose=False, integrated=False,
+                       label=None, map_variables=True,
+                       server='www.soda-is.com'):
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
-    diffuse radiation CAMS [2]_ using the WGET service [3]_.
+    diffuse radiation from CAMS [2]_ using the WGET service [3]_.
 
-
-    Geographical coverage: Wordwide for CAMS McClear and -66 to 66 for both
-                           latitude and longitude for CAMS Radiation
     Time coverage: 2004-01-01 to two days ago
     Access: free, but requires registration, see [1]_
     Requests: max. 100 per day
+    Geographical coverage: Wordwide for CAMS McClear and -66° to 66° in both
+                           latitude and longitude for CAMS Radiation
 
 
     Parameters
@@ -102,11 +102,11 @@ def get_cams(start_date, end_date, latitude, longitude, email,
         Metadata for the requested time-series
 
     Notes
-    ----------
+    -----
     In order to use the CAMS services, users must registre for a free SoDa
     account using an email addres [1]_.
 
-    The returned data Dataframe includes the following fields:
+    The returned data DataFrame includes the following fields:
 
     =======================  ======  ==========================================
     Key, mapped key          Format  Description
@@ -144,6 +144,12 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     --------
     pvlib.iotools.read_cams, pvlib.iotools.parse_cams
 
+    Raises
+    ------
+    requests.HTTPError
+        If the request is invalid, then an XML file is returned by the CAMS
+        service and the error message will be raised as an expcetion.
+
     References
     ----------
     .. [1] `CAMS Radiation Service Info
@@ -153,7 +159,6 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     .. [3] `CAMS McClear Automatic Access
        <http://www.soda-pro.com/help/cams-services/cams-mcclear-service/automatic-access>`_
     """
-
     if time_step in TIME_STEPS_MAP.keys():
         time_step_str = TIME_STEPS_MAP[time_step]
     else:
@@ -204,8 +209,8 @@ def get_cams(start_date, end_date, latitude, longitude, email,
 
 def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     """
-    Parse a CAMS Radiation or McClear file. The CAMS Radiation and McClear
-    services are described in [1]_ and [2]_.
+    Parse a file-like buffer with data in the format of a CAMS Radiation or
+    McClear file. The CAMS servicess are described in [1]_ and [2]_.
 
     Parameters
     ----------
@@ -286,7 +291,8 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
         data.index = data.index - pd.Timedelta(days=1)
 
     if not integrated:  # Convert radiation values from Wh/m2 to W/m2
-        integrated_cols = [c for c in CAMS_INTEGRATED_COLUMNS if c in data.columns]  # noqa
+        integrated_cols = [c for c in CAMS_RADIATION_INTEGRATED_COLUMNS
+                           if c in data.columns]
 
         if time_step == '1M':
             time_delta = (pd.to_datetime(obs_period.str[1])
@@ -299,15 +305,15 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
                                      TIME_STEPS_IN_HOURS[time_step])
 
     if map_variables:
-        data = data.rename(columns=CAMS_VARIABLE_MAP)
+        data = data.rename(columns=CAMS_RADIATION_VARIABLE_MAP)
 
     return data, meta
 
 
 def read_cams(filename, integrated=False, label=None, map_variables=True):
     """
-    Read a CAMS Radiation or McClear file. CAMS radiation and McClear is
-    described in [1]_ and [2]_, respectively.
+    Read a CAMS Radiation or McClear file into a pandas DataFrame. CAMS
+    radiation and McClear is described in [1]_ and [2]_, respectively.
 
     Parameters
     ----------
@@ -327,6 +333,7 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     -------
     data: pandas.DataFrame
         Timeseries data from CAMS Radiation or McClear
+        :func:`pvlib.iotools.get_cams` for fields
     meta: dict
         Metadata avaiable in the file.
 

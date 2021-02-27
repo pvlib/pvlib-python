@@ -14,7 +14,7 @@ CAMS_RADIATION_INTEGRATED_COLUMNS = [
     'GHI', 'BHI', 'DHI', 'BNI',
     'GHI no corr', 'BHI no corr', 'DHI no corr', 'BNI no corr']
 
-# Dictionary mapping CAMS McClear and Radiation variables to pvlib names
+# Dictionary mapping CAMS Radiation and McClear variables to pvlib names
 CAMS_RADIATION_VARIABLE_MAP = {
     'TOA': 'ghi_extra',
     'Clear sky GHI': 'ghi_clear',
@@ -29,7 +29,7 @@ CAMS_RADIATION_VARIABLE_MAP = {
 }
 
 
-# Dictionary mapping Python time steps to CAMS time step format
+# Dictionary mapping time steps to CAMS time step format
 TIME_STEPS_MAP = {'1min': 'PT01M', '15min': 'PT15M', '1h': 'PT01H',
                   '1d': 'P01D', '1M': 'P01M'}
 
@@ -49,13 +49,16 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
                        server='www.soda-is.com'):
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
-    diffuse radiation from CAMS [2]_ using the WGET service [3]_.
+    diffuse radiation from CAMS [1]_, [2]_ using the WGET service [3]_.
 
     Time coverage: 2004-01-01 to two days ago
+
     Access: free, but requires registration, see [1]_
+
     Requests: max. 100 per day
+
     Geographical coverage: Wordwide for CAMS McClear and -66° to 66° in both
-                           latitude and longitude for CAMS Radiation
+    latitude and longitude for CAMS Radiation
 
 
     Parameters
@@ -74,7 +77,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     email: str
         Email address linked to a SoDa account
     service: {'mcclear', 'cams_radiation'}
-        Specify which whether to retrieve CAMS Radiation or McClear parameters
+        Specify whether to retrieve CAMS Radiation or McClear parameters
     time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
         Time step of the time series, either 1 minute, 15 minute, hourly,
         daily, or monthly.
@@ -84,14 +87,14 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
         Verbose mode outputs additional parameters (aerosols). Only avaiable
         for 1 minute and universal time. See [1] for parameter description.
     integrated: boolean, default False
-        Whether to return integrated irradiation values (Wh/m^2) from CAMS or
-        average irradiance values (W/m^2) as is more commonly used
+        Whether to return radiation parameters as integrated values (Wh/m^2)
+        or as average irradiance values (W/m^2) (pvlib preferred units)
     label: {‘right’, ‘left’}, default: None
-        Which bin edge label to label bucket with. The default is ‘left’ for
-        all frequency offsets except for ‘M’ which has a default of ‘right’.
+        Which bin edge label to label time-step with. The default is ‘left’ for
+        all time steps except for ‘1M’ which has a default of ‘right’.
     map_variables: bool, default: True
-        When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable CAMS_VARIABLE_MAP.
+        When true, renames columns of the DataFrame to pvlib variable names
+        where applicable. See variable CAMS_RADIATION_VARIABLE_MAP.
     server: str, default: 'www.soda-is.com'
         Main server (www.soda-is.com) or backup mirror server (pro.soda-is.com)
 
@@ -113,7 +116,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     Key, mapped key          Format  Description
     =======================  ======  ==========================================
     **Mapped field names are returned when the map_variables argument is True**
-    --------------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     Observation period       str     Beginning/end of time period
     TOA, ghi_extra           float   Horizontal radiation at top of atmosphere
     Clear sky GHI, ghi_clear float   Clear sky global radiation on horizontal
@@ -130,16 +133,13 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     *Parameters only returned if service='cams_radiation'. For description of
     additional output parameters in verbose mode, see [1]_ and [2]_.
 
-    The returned units for the radiation parameters depends on the integrated
-    argument, i.e. integrated=False returns units of W/m2, whereas
-    integrated=True returns units of Wh/m2.
-
     Note that it is recommended to specify the latitude and longitude to at
     least the fourth decimal place.
 
     Variables corresponding to standard pvlib variables are renamed,
     e.g. `sza` becomes `solar_zenith`. See the
-    `pvlib.iotools.cams.CAMS_VARIABLE_MAP` dict for the complete mapping.
+    `pvlib.iotools.cams.CAMS_RADIATION_VARIABLE_MAP` dict for the complete
+    mapping.
 
     See Also
     --------
@@ -181,7 +181,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     end_date = end_date.strftime('%Y-%m-%d')
 
     email = email.replace('@', '%2540')  # Format email address
-    service = 'get_{}'.format(service)  # Format CAMS service string
+    service = 'get_{}'.format(service.lower())  # Format CAMS service string
 
     # Manual format the request url, due to uncommon usage of & and ; in url
     url = ("http://{}/service/wps?Service=WPS&Request=Execute&"
@@ -220,14 +220,14 @@ def parse_cams_radiation(fbuf, integrated=False, label=None,
     fbuf: file-like object
         File-like object containing data to read.
     integrated: boolean, default False
-        Whether to return integrated irradiation values (Wh/m^2) from CAMS or
-        average irradiance values (W/m^2) as is more commonly used
+        Whether to return radiation parameters as integrated values (Wh/m^2)
+        or as average irradiance values (W/m^2) (pvlib preferred units)
     label: {‘right’, ‘left’}, default: None
-        Which bin edge label to label bucket with. The default is ‘left’ for
-        all frequency offsets except for ‘M’ which has a default of ‘right’.
+        Which bin edge label to label time-step with. The default is ‘left’ for
+        all time steps except for ‘1M’ which has a default of ‘right’.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable CAMS_VARIABLE_MAP.
+        where applicable. See variable CAMS_RADIATION_VARIABLE_MAP.
 
     Returns
     -------
@@ -317,27 +317,27 @@ def read_cams_radiation(filename, integrated=False, label=None,
                         map_variables=True):
     """
     Read a CAMS Radiation or McClear file into a pandas DataFrame. CAMS
-    radiation and McClear is described in [1]_ and [2]_, respectively.
+    radiation and McClear are described in [1]_ and [2]_, respectively.
 
     Parameters
     ----------
     filename: str
         Filename of a file containing data to read.
     integrated: boolean, default False
-        Whether to return integrated irradiation values (Wh/m^2) from CAMS or
-        average irradiance values (W/m^2) as is more commonly used
+        Whether to return radiation parameters as integrated values (Wh/m^2)
+        or as average irradiance values (W/m^2) (pvlib preferred units)
     label: {‘right’, ‘left’}, default: None
-        Which bin edge label to label bucket with. The default is ‘left’ for
-        all frequency offsets except for ‘M’ which has a default of ‘right’.
+        Which bin edge label to label time-step with. The default is ‘left’ for
+        all time steps except for ‘1M’ which has a default of ‘right’.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable CAMS_VARIABLE_MAP.
+        where applicable. See variable CAMS_RADIATION_VARIABLE_MAP.
 
     Returns
     -------
     data: pandas.DataFrame
         Timeseries data from CAMS Radiation or McClear
-        :func:`pvlib.iotools.get_cams` for fields
+        :func:`pvlib.iotools.get_cams_radiation` for fields
     meta: dict
         Metadata avaiable in the file.
 

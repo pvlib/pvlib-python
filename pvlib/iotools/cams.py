@@ -160,11 +160,10 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     .. [3] `CAMS McClear Automatic Access
        <http://www.soda-pro.com/help/cams-services/cams-mcclear-service/automatic-access>`_
     """
-    if time_step in TIME_STEPS_MAP.keys():
+    try:
         time_step_str = TIME_STEPS_MAP[time_step]
-    else:
-        warnings.warn('Time step not recognized, 1 hour time step used!')
-        time_step, time_step_str = '1h', 'PT01H'
+    except KeyError:
+        raise ValueError(f'Time step not recognized. Must be one of {list(TIME_STEPS_MAP.keys())}')
 
     if (verbose is True) & ((time_step != '1min') | (time_ref != 'UT')):
         verbose = False

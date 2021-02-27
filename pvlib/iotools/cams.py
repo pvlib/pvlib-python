@@ -97,12 +97,15 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     Returns
     -------
     data: pandas.DataFrame
-        timeseries data, see Notes for columns
+        Timeseries data, see Notes for columns
     meta: dict
-        metadata for the requested time-series
+        Metadata for the requested time-series
 
     Notes
     ----------
+    In order to use the CAMS services, users must registre for a free SoDa
+    account using an email addres [1]_.
+
     The returned data Dataframe includes the following fields:
 
     =======================  ======  ==========================================
@@ -221,9 +224,9 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     Returns
     -------
     data: pandas.DataFrame
-        timeseries data from CAMS Radiation or McClear
+        Timeseries data from CAMS Radiation or McClear
     meta: dict
-        metadata of the CAMS Radiation or McClear time-series
+        Metadata avaiable in the file.
 
     See Also
     --------
@@ -323,9 +326,9 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     Returns
     -------
     data: pandas.DataFrame
-        timeseries data from CAMS Radiation or McClear
+        Timeseries data from CAMS Radiation or McClear
     meta: dict
-        metadata from CAMS Radiation or McClear
+        Metadata avaiable in the file.
 
     See Also
     --------

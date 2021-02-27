@@ -143,7 +143,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
 
     See Also
     --------
-    pvlib.iotools.read_cams, pvlib.iotools.parse_cams
+    pvlib.iotools.read_cams_radiation, pvlib.iotools.parse_cams_radiation
 
     Raises
     ------
@@ -201,14 +201,14 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     # Check if returned file is a csv data file
     elif res.headers['Content-Type'] == 'application/csv':
         fbuf = io.StringIO(res.content.decode('utf-8'))
-        data, meta = parse_cams(fbuf, integrated=integrated, label=label,
+        data, meta = parse_cams_radiation(fbuf, integrated=integrated, label=label,
                                 map_variables=map_variables)
         return data, meta
     else:
         warnings.warn('File content type not recognized.')
 
 
-def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
+def parse_cams_radiation(fbuf, integrated=False, label=None, map_variables=True):
     """
     Parse a file-like buffer with data in the format of a CAMS Radiation or
     McClear file. The CAMS servicess are described in [1]_ and [2]_.
@@ -236,7 +236,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
 
     See Also
     --------
-    pvlib.iotools.read_cams, pvlib.iotools.get_cams
+    pvlib.iotools.read_cams_radiation, pvlib.iotools.get_cams_radiation
 
     References
     ----------
@@ -311,7 +311,8 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     return data, meta
 
 
-def read_cams(filename, integrated=False, label=None, map_variables=True):
+def read_cams_radiation(filename, integrated=False, label=None,
+                        map_variables=True):
     """
     Read a CAMS Radiation or McClear file into a pandas DataFrame. CAMS
     radiation and McClear is described in [1]_ and [2]_, respectively.
@@ -340,7 +341,7 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
 
     See Also
     --------
-    pvlib.iotools.parse_cams, pvlib.iotools.get_cams
+    pvlib.iotools.parse_cams_radiation, pvlib.iotools.get_cams_radiation
 
     References
     ----------
@@ -350,5 +351,5 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
        <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
     """
     with open(str(filename), 'r') as fbuf:
-        content = parse_cams(fbuf)
+        content = parse_cams_radiation(fbuf)
     return content

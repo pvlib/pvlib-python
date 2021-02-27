@@ -1302,7 +1302,8 @@ class Array:
         aoi : Series
             Then angle of incidence.
         """
-        orientation = self.mount.calculate_orientation(solar_zenith, solar_azimuth)
+        orientation = self.mount.calculate_orientation(solar_zenith,
+                                                       solar_azimuth)
         return irradiance.aoi(orientation['surface_tilt'],
                               orientation['surface_azimuth'],
                               solar_zenith, solar_azimuth)
@@ -1353,7 +1354,8 @@ class Array:
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        orientation = self.mount.calculate_orientation(solar_zenith, solar_azimuth)
+        orientation = self.mount.calculate_orientation(solar_zenith,
+                                                       solar_azimuth)
         return irradiance.get_total_irradiance(orientation['surface_tilt'],
                                                orientation['surface_azimuth'],
                                                solar_zenith, solar_azimuth,

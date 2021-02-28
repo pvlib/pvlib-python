@@ -90,12 +90,12 @@ def basic_chain(times, latitude, longitude,
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
-    surface_tilt : None, float or Series
+    surface_tilt : numeric
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
-    surface_azimuth : None, float or Series
+    surface_azimuth : numeric
         Surface azimuth angles in decimal degrees.
         The azimuth convention is defined
         as degrees east of north

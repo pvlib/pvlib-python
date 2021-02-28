@@ -175,7 +175,11 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0,
         src = res.json()
         return _parse_pvgis_hourly_json(src)
     elif outputformat == 'csv':
-        return _parse_pvgis_hourly_csv(src)
+        with io.StringIO(res.content.decode('utf-8')) as src:
+            return _parse_pvgis_hourly_csv(src)
+    elif outputformat == 'basic':
+        with io.BytesIO(res.content) as src:
+            return _parse_pvgis_hourly_basic(src)
     else:
         # this line is never reached because if outputformat is not valid then
         # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
@@ -189,8 +193,68 @@ def _parse_pvgis_hourly_json(src):
     data = pd.DataFrame(src['outputs']['hourly'])
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
+    data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
     return data, inputs, meta
 
+
+def _parse_pvgis_hourly_basic(src):
+    # Hourly data with outputformat='basic' does not include header or metadata
+    data = pd.read_csv(src, header=None, skiprows=2)
+    return data, None, None
+
+
+def _parse_pvgis_hourly_csv(src):
+    # The first 4 rows are latitude, longitude, elevation, radiation database
+    inputs = {}
+    # 'Latitude (decimal degrees): 45.000\r\n'
+    inputs['latitude'] = float(src.readline().split(':')[1])
+    # 'Longitude (decimal degrees): 8.000\r\n'
+    inputs['longitude'] = float(src.readline().split(':')[1])
+    # Elevation (m): 1389.0\r\n
+    inputs['elevation'] = float(src.readline().split(':')[1])
+    # 'Radiation database: \tPVGIS-SARAH\r\n'
+    inputs['radiation_database'] = str(src.readline().split(':')[1]
+                                       .replace('\t', '').replace('\n', ''))
+
+    # Parse through the remaining metadata section (the number of lines for
+    # this section depends on the requested parameters)
+    while True:
+        line = src.readline()
+        if line.startswith('time,'):  # The data header starts with 'time,'
+            # The last line of the meta-data section contains the column names
+            names = line.replace('\n', '').replace('\r', '').split(',')
+            break
+        # Only retrieve metadata from non-empty lines
+        elif (line != '\n') & (line != '\r\n'):
+            inputs[line.split(':')[0]] = str(line.split(':')[1]
+                                             .replace('\n', '')
+                                             .replace('\r', '').strip())
+
+    # The data section covers a variable number of lines (depends on requested
+    # years) and ends with a blank line
+    data_lines = []
+    while True:
+        line = src.readline()
+        if (line == '\n') | (line == '\r\n'):
+            break
+        else:
+            data_lines.append(line.replace('\n', '').replace('\r', '')
+                              .split(','))
+
+    data = pd.DataFrame(data_lines, columns=names)
+    data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
+    data = data.drop('time', axis=1)
+    # All columns should have the dtype=float, except 'Int' which should be
+    # integer. It is necessary to convert to float, before converting to int
+    data = data.astype(float).astype(dtype={'Int': 'int'})
+
+    # Generate metadata dictionary containing description of parameters
+    meta = {}
+    for line in src.readlines():
+        if ':' in line:
+            meta[line.split(':')[0]] = line.split(':')[1].strip()
+
+    return data, inputs, meta
 
 def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,

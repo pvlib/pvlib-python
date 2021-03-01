@@ -333,22 +333,6 @@ def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
     mc.run_model(weather)
 
 
-@pytest.mark.parametrize('strategy, expected', [
-    (None, (32.2, 180)), ('None', (32.2, 180)), ('flat', (0, 180)),
-    ('south_at_latitude_tilt', (32.2, 180))
-])
-def test_orientation_strategy(strategy, expected, sapm_dc_snl_ac_system,
-                              location):
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    orientation_strategy=strategy)
-
-    # the || accounts for the coercion of 'None' to None
-    assert (mc.orientation_strategy == strategy or
-            mc.orientation_strategy is None)
-    assert sapm_dc_snl_ac_system.surface_tilt == expected[0]
-    assert sapm_dc_snl_ac_system.surface_azimuth == expected[1]
-
-
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
@@ -1235,8 +1219,7 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
                   'cec': cec_dc_snl_ac_system,
                   'cec_native': cec_dc_native_snl_ac_system}
     system = dc_systems[dc_model]
-    mc = ModelChain(system, location,
-                    orientation_strategy='None', aoi_model='physical')
+    mc = ModelChain(system, location, aoi_model='physical')
     assert isinstance(mc, ModelChain)
 
 
@@ -1252,8 +1235,7 @@ def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                   'faiman_temp': pvwatts_dc_pvwatts_ac_faiman_temp_system,
                   'fuentes_temp': pvwatts_dc_pvwatts_ac_fuentes_temp_system}
     system = dc_systems[temp_model]
-    mc = ModelChain(system, location,
-                    orientation_strategy='None', aoi_model='physical',
+    mc = ModelChain(system, location, aoi_model='physical',
                     spectral_model='no_loss')
     assert temp_model == mc.temperature_model.__name__
     assert isinstance(mc, ModelChain)
@@ -1263,14 +1245,12 @@ def test_infer_temp_model_invalid(location, sapm_dc_snl_ac_system):
     sapm_dc_snl_ac_system.temperature_model_parameters.pop('a')
     with pytest.raises(ValueError):
         ModelChain(sapm_dc_snl_ac_system, location,
-                   orientation_strategy='None', aoi_model='physical',
-                   spectral_model='no_loss')
+                   aoi_model='physical', spectral_model='no_loss')
 
 
 def test_temperature_model_inconsistent(location, sapm_dc_snl_ac_system):
     with pytest.raises(ValueError):
-        ModelChain(sapm_dc_snl_ac_system, location,
-                   orientation_strategy='None', aoi_model='physical',
+        ModelChain(sapm_dc_snl_ac_system, location, aoi_model='physical',
                    spectral_model='no_loss', temperature_model='pvsyst')
 
 
@@ -1441,17 +1421,14 @@ def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
 def test_infer_aoi_model(location, system_no_aoi, aoi_model):
     for k in iam._IAM_MODEL_PARAMS[aoi_model]:
         system_no_aoi.module_parameters.update({k: 1.0})
-    mc = ModelChain(system_no_aoi, location,
-                    orientation_strategy='None',
-                    spectral_model='no_loss')
+    mc = ModelChain(system_no_aoi, location, spectral_model='no_loss')
     assert isinstance(mc, ModelChain)
 
 
 def test_infer_aoi_model_invalid(location, system_no_aoi):
     exc_text = 'could not infer AOI model'
     with pytest.raises(ValueError, match=exc_text):
-        ModelChain(system_no_aoi, location, orientation_strategy='None',
-                   spectral_model='no_loss')
+        ModelChain(system_no_aoi, location, spectral_model='no_loss')
 
 
 def constant_spectral_loss(mc):
@@ -1623,23 +1600,6 @@ def test_ModelChain_attributes_deprecated_10(sapm_dc_snl_ac_system, location):
         mc.aoi = 5
 
 
-def test_basic_chain_required(sam_data, cec_inverter_parameters,
-                              sapm_temperature_cs5p_220m):
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
-    latitude = 32
-    longitude = -111
-    altitude = 700
-    modules = sam_data['sandiamod']
-    module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    temp_model_params = sapm_temperature_cs5p_220m.copy()
-    with pytest.raises(ValueError):
-        dc, ac = modelchain.basic_chain(
-            times, latitude, longitude, module_parameters, temp_model_params,
-            cec_inverter_parameters, altitude=altitude
-        )
-
-
 @requires_tables
 def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                             sapm_temperature_cs5p_220m):
@@ -1653,33 +1613,11 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    module_parameters,  temp_model_params,
-                                    cec_inverter_parameters,
-                                    surface_tilt=surface_tilt,
-                                    surface_azimuth=surface_azimuth)
+                                    surface_tilt, surface_azimuth,
+                                    module_parameters, temp_model_params,
+                                    cec_inverter_parameters)
 
     expected = pd.Series(np.array([111.621405, -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
-
-
-@requires_tables
-def test_basic_chain_strategy(sam_data, cec_inverter_parameters,
-                              sapm_temperature_cs5p_220m):
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
-    latitude = 32.2
-    longitude = -111
-    altitude = 700
-    modules = sam_data['sandiamod']
-    module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    temp_model_params = sapm_temperature_cs5p_220m.copy()
-    dc, ac = modelchain.basic_chain(
-        times, latitude, longitude, module_parameters, temp_model_params,
-        cec_inverter_parameters, orientation_strategy='south_at_latitude_tilt',
-        altitude=altitude)
-
-    expected = pd.Series(np.array([178.382754, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
@@ -1698,10 +1636,9 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                    surface_tilt, surface_azimuth,
                                     module_parameters, temp_model_params,
                                     cec_inverter_parameters,
-                                    surface_tilt=surface_tilt,
-                                    surface_azimuth=surface_azimuth,
                                     pressure=93194)
 
     expected = pd.Series(np.array([113.190045, -2.00000000e-02]),
@@ -1709,43 +1646,14 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
     assert_series_equal(ac, expected)
 
     dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                    surface_tilt, surface_azimuth,
                                     module_parameters, temp_model_params,
                                     cec_inverter_parameters,
-                                    surface_tilt=surface_tilt,
-                                    surface_azimuth=surface_azimuth,
                                     altitude=altitude)
 
     expected = pd.Series(np.array([113.189814, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
-
-
-@pytest.mark.parametrize('strategy, strategy_str', [
-    ('south_at_latitude_tilt', 'south_at_latitude_tilt'),
-    (None, 'None')])  # GitHub issue 352
-def test_ModelChain___repr__(sapm_dc_snl_ac_system, location, strategy,
-                             strategy_str):
-
-    mc = ModelChain(sapm_dc_snl_ac_system, location,
-                    orientation_strategy=strategy, name='my mc')
-
-    expected = '\n'.join([
-        'ModelChain: ',
-        '  name: my mc',
-        '  orientation_strategy: ' + strategy_str,
-        '  clearsky_model: ineichen',
-        '  transposition_model: haydavies',
-        '  solar_position_method: nrel_numpy',
-        '  airmass_model: kastenyoung1989',
-        '  dc_model: sapm',
-        '  ac_model: sandia_inverter',
-        '  aoi_model: sapm_aoi_loss',
-        '  spectral_model: sapm_spectral_loss',
-        '  temperature_model: sapm_temp',
-        '  losses_model: no_extra_losses'
-    ])
-
-    assert mc.__repr__() == expected
 
 
 def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):

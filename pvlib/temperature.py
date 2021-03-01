@@ -718,6 +718,10 @@ def noct(poa_global, temp_air, wind_speed, noct, eta_m_ref,
          effective_irradiance=None, transmittance_absorbtance=0.9,
          array_height=1, mount_standoff=3.5):
     '''
+    Cell temperature model from the System Advisor Model (SAM).
+
+    The model is described in [1], Section 10.6.
+
     Parameters
     ----------
     poa_global : numeric
@@ -750,7 +754,7 @@ def noct(poa_global, temp_air, wind_speed, noct, eta_m_ref,
     array_height : int, default 1
         Height of array above ground in stories (one story is about 3m). Must
         be either 1 or 2. For systems elevated less than one story, use 1.
-        If system is elevated more than two stories, use 2. [unitless]
+        If system is elevated more than two stories, use 2.
 
     mount_standoff : numeric, default 3.5
         Distance between array mounting and mounting surface. Use default
@@ -761,6 +765,17 @@ def noct(poa_global, temp_air, wind_speed, noct, eta_m_ref,
     cell_temperature : numeric
         Cell temperature. [C]
 
+    Raises
+    ------
+    ValueError
+        If array_height is an invalid value (must be 1 or 2).
+
+    References
+    ----------
+    .. [1] Gilman, P., Dobos, A., DiOrio, N., Freeman, J., Janzou, S.,
+           Ryberg, D., 2018, "SAM Photovoltaic Model Technical Reference
+           Update", National Renewable Energy Laboratory Report
+           NREL/TP-6A20-67399.
     '''
     if effective_irradiance is None:
         irr_ratio = 1.
@@ -772,7 +787,8 @@ def noct(poa_global, temp_air, wind_speed, noct, eta_m_ref,
     elif array_height == 2:
         wind_adj = 0.61 * wind_speed
     else:
-        raise ValueError()
+        raise ValueError(
+            f'array_height must be 1 or 2, {array_height} was given')
 
     noct_adj = noct + _adj_noct(mount_standoff)
     tau_alpha = transmittance_absorbtance * irr_ratio

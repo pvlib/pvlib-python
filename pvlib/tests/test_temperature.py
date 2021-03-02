@@ -220,12 +220,12 @@ def test_noct():
     expected = 54.151119403
     result = temperature.noct(poa_global, temp_air, wind_speed, noct,
                               eta_m_ref)
-    assert np.isclose(result, expected)
+    assert assert_allclose(result, expected)
     # test with different types
     result = temperature.noct(np.array(poa_global), np.array(temp_air),
                               np.array(wind_speed), np.array(noct),
                               np.array(eta_m_ref))
-    assert np.isclose(result, expected)
+    assert assert_allclose(result, expected)
     dr = pd.date_range(start='2020-01-01 12:00:00', end='2020-01-01 13:00:00',
                        freq='1H')
     result = temperature.noct(pd.Series(index=dr, data=poa_global),
@@ -248,7 +248,7 @@ def test_noct_options():
                               transmittance_absorbtance, array_height,
                               mount_standoff)
     expected = 60.477703576
-    assert np.isclose(result, expected)
+    assert assert_allclose(result, expected)
 
 
 def test_noct_errors():

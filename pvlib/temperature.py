@@ -724,7 +724,7 @@ def noct(poa_global, temp_air, wind_speed, noct, eta_m_ref,
     '''
     Cell temperature model from the System Advisor Model (SAM).
 
-    The model is described in [1], Section 10.6.
+    The model is described in [1]_, Section 10.6.
 
     Parameters
     ----------

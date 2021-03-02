@@ -190,12 +190,6 @@ by examining the parameters defined for the module.
     from pvlib.location import Location
     from pvlib.modelchain import ModelChain
 
-    system = PVSystem(
-        module_parameters=module,
-        inverter_parameters=inverter,
-        temperature_model_parameters=temperature_model_parameters,
-    )
-
     energies = {}
     for location, weather in zip(coordinates, tmys):
         latitude, longitude, name, altitude, timezone = location
@@ -206,11 +200,15 @@ by examining the parameters defined for the module.
             altitude=altitude,
             tz=timezone,
         )
-        mc = ModelChain(
-            system,
-            location,
-            orientation_strategy='south_at_latitude_tilt',
+        system = PVSystem(
+            surface_tilt=latitude,
+            surface_azimuth=180,
+            module_parameters=module,
+            inverter_parameters=inverter,
+            temperature_model_parameters=temperature_model_parameters,
         )
+
+        mc = ModelChain(system, location)
         results = mc.run_model(weather)
         annual_energy = results.ac.sum()
         energies[name] = annual_energy

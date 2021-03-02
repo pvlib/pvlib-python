@@ -609,7 +609,6 @@ ModelChain properties that are aliases for your specific modeling functions.
 .. autosummary::
    :toctree: generated/
 
-   modelchain.ModelChain.orientation_strategy
    modelchain.ModelChain.dc_model
    modelchain.ModelChain.ac_model
    modelchain.ModelChain.aoi_model

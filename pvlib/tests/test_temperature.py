@@ -214,43 +214,43 @@ def test_fuentes_timezone(tz):
                                        name='tmod'))
 
 
-def test_noct():
+def test_noct_sam():
     poa_global, temp_air, wind_speed, noct, eta_m_ref = (1000., 25., 1., 45.,
                                                          0.2)
-    expected = 54.151119403
-    result = temperature.noct(poa_global, temp_air, wind_speed, noct,
-                              eta_m_ref)
+    expected = 55.230790492
+    result = temperature.noct_sam(poa_global, temp_air, wind_speed, noct,
+                                  eta_m_ref)
     assert assert_allclose(result, expected)
     # test with different types
-    result = temperature.noct(np.array(poa_global), np.array(temp_air),
-                              np.array(wind_speed), np.array(noct),
-                              np.array(eta_m_ref))
+    result = temperature.noct_sam(np.array(poa_global), np.array(temp_air),
+                                  np.array(wind_speed), np.array(noct),
+                                  np.array(eta_m_ref))
     assert assert_allclose(result, expected)
     dr = pd.date_range(start='2020-01-01 12:00:00', end='2020-01-01 13:00:00',
                        freq='1H')
-    result = temperature.noct(pd.Series(index=dr, data=poa_global),
-                              pd.Series(index=dr, data=temp_air),
-                              pd.Series(index=dr, data=wind_speed),
-                              pd.Series(index=dr, data=noct),
-                              eta_m_ref)
+    result = temperature.noct_sam(pd.Series(index=dr, data=poa_global),
+                                  pd.Series(index=dr, data=temp_air),
+                                  pd.Series(index=dr, data=wind_speed),
+                                  pd.Series(index=dr, data=noct),
+                                  eta_m_ref)
     assert_series_equal(result, pd.Series(index=dr, data=expected))
 
 
-def test_noct_options():
+def test_noct_sam_options():
     poa_global, temp_air, wind_speed, noct, eta_m_ref = (1000., 25., 1., 45.,
                                                          0.2)
     effective_irradiance = 1100.
     transmittance_absorbtance = 0.8
     array_height = 2
     mount_standoff = 2.0
-    result = temperature.noct(poa_global, temp_air, wind_speed, noct,
-                              eta_m_ref, effective_irradiance,
-                              transmittance_absorbtance, array_height,
-                              mount_standoff)
+    result = temperature.noct_sam(poa_global, temp_air, wind_speed, noct,
+                                  eta_m_ref, effective_irradiance,
+                                  transmittance_absorbtance, array_height,
+                                  mount_standoff)
     expected = 60.477703576
     assert assert_allclose(result, expected)
 
 
-def test_noct_errors():
+def test_noct_sam_errors():
     with pytest.raises(ValueError):
-        temperature.noct(1000., 25., 1., 34., 0.2, array_height=3)
+        temperature.noct_sam(1000., 25., 1., 34., 0.2, array_height=3)

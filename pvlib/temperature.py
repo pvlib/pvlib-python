@@ -708,15 +708,19 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     return pd.Series(tmod_array - 273.15, index=poa_global.index, name='tmod')
 
 
-def _adj_noct(x):
-    return np.piecewise(x, [x < 0.5, (x >= 0.5) & (x < 1.5),
-                            (x >= 1.5) & (x < 2.5), (x >= 2.5) & (x < 3.5),
-                            x >= 3.5], [18., 11., 6., 2., 0.])
+def _adj_for_mounting_standoff(x):
+    # supports noct cell temperature function. The SAM code and documentation
+    # aren't clear on the precise intervals, the choice of < or <= here is
+    # pvlib's.
+    return np.piecewise(x, [x <= 0, (x > 0) & (x < 0.5),
+                            (x >= 0.5) & (x < 1.5), (x >= 1.5) & (x < 2.5),
+                            (x >= 2.5) & (x <= 3.5), x > 3.5],
+                        [0., 18., 11., 6., 2., 0.])
 
 
 def noct(poa_global, temp_air, wind_speed, noct, eta_m_ref,
          effective_irradiance=None, transmittance_absorbtance=0.9,
-         array_height=1, mount_standoff=3.5):
+         array_height=1, mount_standoff=4):
     '''
     Cell temperature model from the System Advisor Model (SAM).
 
@@ -756,7 +760,7 @@ def noct(poa_global, temp_air, wind_speed, noct, eta_m_ref,
         be either 1 or 2. For systems elevated less than one story, use 1.
         If system is elevated more than two stories, use 2.
 
-    mount_standoff : numeric, default 3.5
+    mount_standoff : numeric, default 4
         Distance between array mounting and mounting surface. Use default
         if system is ground-mounted. [inches]
 
@@ -790,10 +794,12 @@ def noct(poa_global, temp_air, wind_speed, noct, eta_m_ref,
         raise ValueError(
             f'array_height must be 1 or 2, {array_height} was given')
 
-    noct_adj = noct + _adj_noct(mount_standoff)
+    noct_adj = noct + _adj_for_mounting_standoff(mount_standoff)
     tau_alpha = transmittance_absorbtance * irr_ratio
 
-    cell_temp_init = ross(poa_global, temp_air, noct_adj)
+    # [1] Eq. 10.37 isn't clear on exactly what "G" is. SAM SSC code uses
+    # poa_global where G appears
+    cell_temp_init = poa_global / 800. * (noct_adj - 20.)
     heat_loss = 1 - eta_m_ref / tau_alpha
     wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)
-    return cell_temp_init * heat_loss * wind_loss
+    return temp_air + cell_temp_init * heat_loss * wind_loss

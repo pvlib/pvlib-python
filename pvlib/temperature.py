@@ -316,7 +316,8 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
         :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     eta_m : numeric, default 0.1
-        Module external efficiency as a fraction, i.e., DC power / poa_global.
+        Module external efficiency as a fraction, i.e., 
+        (total DC power) / (poa_global * (number of cells * cell area)).
         Parameter :math:`\eta_{m}` in :eq:`pvsyst`.
 
     alpha_absorption : numeric, default 0.9

@@ -1082,9 +1082,9 @@ class ModelChain:
 
     @dc_ohmic_model.setter
     def dc_ohmic_model(self, model):
-        # if model is None:
-        #     self._dc_ohmic_model = self.no_dc_ohmic_loss
-        if isinstance(model, str):
+        if model is None:
+            self._dc_ohmic_model = self.no_dc_ohmic_loss
+        elif isinstance(model, str):
             model = model.lower()
             if model == 'dc_ohms_from_percent':
                 self._dc_ohmic_model = self.dc_ohms_from_percent

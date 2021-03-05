@@ -1547,6 +1547,7 @@ def test_dc_ohmic_model_no_dc_ohmic_loss(cec_dc_snl_ac_system,
                     dc_ohmic_model='no_loss')
     mc.run_model(weather)
 
+    assert mc.dc_ohmic_model == mc.no_dc_ohmic_loss
     assert m.call_count == 1
     assert mc.results.dc_ohmic_losses is None
 
@@ -1561,6 +1562,17 @@ def test_dc_ohmic_ext_def(cec_dc_snl_ac_system, location,
     mc.run_model(weather)
 
     assert m.call_count == 1
+    assert isinstance(mc.results.ac, (pd.Series, pd.DataFrame))
+    assert not mc.results.ac.empty
+
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model=None)
+    mc.run_model(weather)
+
+    assert m.call_count == 1
+    assert mc.dc_ohmic_model == mc.no_dc_ohmic_loss
     assert isinstance(mc.results.ac, (pd.Series, pd.DataFrame))
     assert not mc.results.ac.empty
 

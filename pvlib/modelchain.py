@@ -273,7 +273,8 @@ class ModelChainResult:
     _singleton_tuples: bool = field(default=False)
     _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
-                         'effective_irradiance', 'dc', 'diode_params'}
+                         'effective_irradiance', 'dc', 'diode_params',
+                         'dc_ohmic_losses'}
 
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
@@ -293,6 +294,7 @@ class ModelChainResult:
     dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \
         field(default=None)
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
+    dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
 
     def _result_type(self, value):
         """Coerce `value` to the correct type according to
@@ -407,7 +409,7 @@ class ModelChain:
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temperature_model=None,
-                 dc_ohmic_model=None,
+                 dc_ohmic_model='no_loss',
                  losses_model='no_loss', name=None):
 
         self.name = name
@@ -1080,9 +1082,9 @@ class ModelChain:
 
     @dc_ohmic_model.setter
     def dc_ohmic_model(self, model):
-        if model is None:
-            self._dc_ohmic_model = self.no_dc_ohmic_loss
-        elif isinstance(model, str):
+        # if model is None:
+        #     self._dc_ohmic_model = self.no_dc_ohmic_loss
+        if isinstance(model, str):
             model = model.lower()
             if model == 'dc_ohms_from_percent':
                 self._dc_ohmic_model = self.dc_ohms_from_percent
@@ -1102,18 +1104,18 @@ class ModelChain:
         """
         Rw = self.system.dc_ohms_from_percent()
         if isinstance(self.results.dc, tuple):
-            self.dc_ohmic_losses = tuple(
+            self.results.dc_ohmic_losses = tuple(
                 pvsystem.dc_ohmic_losses(Rw, df['i_mp'])
                 for Rw, df in zip(Rw, self.results.dc)
             )
-            for df, loss in zip(self.results.dc, self.dc_ohmic_losses):
+            for df, loss in zip(self.results.dc, self.results.dc_ohmic_losses):
                 df['p_mp'] = df['p_mp'] - loss
         else:
-            self.dc_ohmic_losses = pvsystem.dc_ohmic_losses(
+            self.results.dc_ohmic_losses = pvsystem.dc_ohmic_losses(
                 Rw, self.results.dc['i_mp']
             )
             self.results.dc['p_mp'] = (self.results.dc['p_mp']
-                                       - self.dc_ohmic_losses)
+                                       - self.results.dc_ohmic_losses)
         return self
 
     def no_dc_ohmic_loss(self):

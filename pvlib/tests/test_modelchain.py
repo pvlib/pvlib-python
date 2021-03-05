@@ -1516,7 +1516,7 @@ def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
 
     assert m.call_count == 1
 
-    assert isinstance(mc.dc_ohmic_losses, pd.Series)
+    assert isinstance(mc.results.dc_ohmic_losses, pd.Series)
 
     system = cec_dc_snl_ac_arrays
 
@@ -1530,9 +1530,9 @@ def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
     mc.run_model(weather)
 
     assert m.call_count == 3
-    assert len(mc.dc_ohmic_losses) == len(mc.system.arrays)
+    assert len(mc.results.dc_ohmic_losses) == len(mc.system.arrays)
 
-    assert isinstance(mc.dc_ohmic_losses, tuple)
+    assert isinstance(mc.results.dc_ohmic_losses, tuple)
 
 
 def test_dc_ohmic_model_no_dc_ohmic_loss(cec_dc_snl_ac_system,
@@ -1548,7 +1548,7 @@ def test_dc_ohmic_model_no_dc_ohmic_loss(cec_dc_snl_ac_system,
     mc.run_model(weather)
 
     assert m.call_count == 1
-    assert hasattr(mc, 'dc_ohmic_losses') is False
+    assert mc.results.dc_ohmic_losses is None
 
 
 def test_dc_ohmic_ext_def(cec_dc_snl_ac_system, location,

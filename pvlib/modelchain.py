@@ -429,8 +429,6 @@ class ModelChain:
         self.dc_ohmic_model = dc_ohmic_model
         self.losses_model = losses_model
 
-        self.orientation_strategy = orientation_strategy
-
         self.weather = None
         self.times = None
 

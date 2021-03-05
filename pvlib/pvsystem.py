@@ -1408,17 +1408,17 @@ class Array:
 
         CEC:
 
-            * `self.module_parameters["V_mp_ref"]`,
+            * `self.module_parameters["V_mp_ref"]`
             * `self.module_parameters["I_mp_ref"]`
 
         SAPM:
 
-            * `self.module_parameters["Vmpo"]`,
+            * `self.module_parameters["Vmpo"]`
             * `self.module_parameters["Impo"]`
 
         PVsyst-like or other:
 
-            * `self.module_parameters["Vmpp"]`,
+            * `self.module_parameters["Vmpp"]`
             * `self.module_parameters["Impp"]`
 
         Other array parameters that are used are:

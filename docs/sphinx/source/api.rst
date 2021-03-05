@@ -332,6 +332,7 @@ Pvsyst model
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode
    pvsystem.dc_ohms_from_percent
+   pvsystem.dc_ohmic_losses
 
 PVWatts model
 ^^^^^^^^^^^^^
@@ -391,7 +392,6 @@ Loss models
 
    pvsystem.combine_loss_factors
    pvsystem.dc_ohms_from_percent
-   modelchain.ModelChain.dc_ohmic_model
 
 Snow
 ----

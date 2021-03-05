@@ -1405,15 +1405,21 @@ class Array:
 
         Makes use of array module parameters according to the
         following DC models:
+
         CEC:
-            `self.module_parameters["V_mp_ref"]`,
-            `self.module_parameters["I_mp_ref"]`,
+
+            * `self.module_parameters["V_mp_ref"]`,
+            * `self.module_parameters["I_mp_ref"]`
+
         SAPM:
-            `self.module_parameters["Vmpo"]`,
-            `self.module_parameters["Impo"]`,
+
+            * `self.module_parameters["Vmpo"]`,
+            * `self.module_parameters["Impo"]`
+
         PVsyst-like or other:
-            `self.module_parameters["Vmpp"]`,
-            `self.module_parameters["Impp"]`,
+
+            * `self.module_parameters["Vmpp"]`,
+            * `self.module_parameters["Impp"]`
 
         Other array parameters that are used are:
         `self.losses_parameters["dc_ohmic_percent"]`,
@@ -1423,26 +1429,23 @@ class Array:
         See :py:func:`pvlib.pvsystem.dc_ohms_from_percent` for more details.
         """
 
-        kwargs = _build_kwargs(['dc_ohmic_percent'],
-                               self.array_losses_parameters)
-
-        # add relevent Vmp and Imp parameters from CEC parameters
+        # get relevent Vmp and Imp parameters from CEC parameters
         if all([elem in self.module_parameters
                 for elem in ['V_mp_ref', 'I_mp_ref']]):
-            kwargs.update({'vmp_ref': self.module_parameters['V_mp_ref'],
-                           'imp_ref': self.module_parameters['I_mp_ref']})
+            vmp_ref = self.module_parameters['V_mp_ref']
+            imp_ref = self.module_parameters['I_mp_ref']
 
-        # add relevant Vmp and Imp parameters from SAPM parameters
+        # get relevant Vmp and Imp parameters from SAPM parameters
         elif all([elem in self.module_parameters
                   for elem in ['Vmpo', 'Impo']]):
-            kwargs.update({'vmp_ref': self.module_parameters['Vmpo'],
-                           'imp_ref': self.module_parameters['Impo']})
+            vmp_ref = self.module_parameters['Vmpo']
+            imp_ref = self.module_parameters['Impo']
 
-        # add relevant Vmp and Imp parameters if they are PVsyst-like
+        # get relevant Vmp and Imp parameters if they are PVsyst-like
         elif all([elem in self.module_parameters
                   for elem in ['Vmpp', 'Impp']]):
-            kwargs.update({'vmp_ref': self.module_parameters['Vmpp'],
-                           'imp_ref': self.module_parameters['Impp']})
+            vmp_ref = self.module_parameters['Vmpp']
+            imp_ref = self.module_parameters['Impp']
 
         # raise error if relevant Vmp and Imp parameters are not found
         else:
@@ -1454,10 +1457,12 @@ class Array:
                              '{"Vmpp", "Impp"}.'
                              )
 
-        kwargs.update({'modules_per_string': self.modules_per_string,
-                       'strings': self.strings})
-
-        return dc_ohms_from_percent(**kwargs)
+        return dc_ohms_from_percent(
+            vmp_ref,
+            imp_ref,
+            self.array_losses_parameters['dc_ohmic_percent'],
+            self.modules_per_string,
+            self.strings)
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,

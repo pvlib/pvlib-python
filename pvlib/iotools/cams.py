@@ -28,7 +28,6 @@ CAMS_RADIATION_VARIABLE_MAP = {
     'sza': 'solar_zenith',
 }
 
-
 # Dictionary mapping time steps to CAMS time step format
 TIME_STEPS_MAP = {'1min': 'PT01M', '15min': 'PT15M', '1h': 'PT01H',
                   '1d': 'P01D', '1M': 'P01M'}
@@ -43,7 +42,7 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
 
 
 def get_cams_radiation(start_date, end_date, latitude, longitude, email,
-                       service='mcclear', altitude=None, time_step='1h',
+                       identifier='mcclear', altitude=None, time_step='1h',
                        time_ref='UT', verbose=False, integrated=False,
                        label=None, map_variables=True,
                        server='www.soda-is.com'):
@@ -76,7 +75,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
         NASA SRTM database
     email: str
         Email address linked to a SoDa account
-    service: {'mcclear', 'cams_radiation'}
+    identifier: {'mcclear', 'cams_radiation'}
         Specify whether to retrieve CAMS Radiation or McClear parameters
     time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
         Time step of the time series, either 1 minute, 15 minute, hourly,
@@ -84,7 +83,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     time_reference: str, {'UT', 'TST'}, default: 'UT'
         'UT' (universal time) or 'TST' (True Solar Time)
     verbose: boolean, default: False
-        Verbose mode outputs additional parameters (aerosols). Only avaiable
+        Verbose mode outputs additional parameters (aerosols). Only available
         for 1 minute and universal time. See [1] for parameter description.
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
@@ -103,35 +102,35 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     data: pandas.DataFrame
         Timeseries data, see Notes for columns
     meta: dict
-        Metadata for the requested time-series
+        Metadata of the requested time-series
 
     Notes
     -----
-    In order to use the CAMS services, users must registre for a free SoDa
-    account using an email addres [1]_.
+    In order to use the CAMS services, users must register for a free SoDa
+    account using an email address [1]_.
 
     The returned data DataFrame includes the following fields:
 
-    =======================  ======  ==========================================
-    Key, mapped key          Format  Description
-    =======================  ======  ==========================================
+    ========================  ======  =========================================
+    Key, mapped key           Format  Description
+    ========================  ======  =========================================
     **Mapped field names are returned when the map_variables argument is True**
     ---------------------------------------------------------------------------
-    Observation period       str     Beginning/end of time period
-    TOA, ghi_extra           float   Horizontal radiation at top of atmosphere
-    Clear sky GHI, ghi_clear float   Clear sky global radiation on horizontal
-    Clear sky BHI, bhi       float   Clear sky beam radiation on horizontal
-    Clear sky DHI, dhi_clear float   Clear sky diffuse radiation on horizontal
-    Clear sky BNI, dni_clear float   Clear sky beam radiation normal to sun
-    GHI, ghi*                float   Global horizontal radiation
-    BHI, bhi*                float   Beam (direct) radiation on horizontal
-    DHI, dhi*                float   Diffuse horizontal radiation
-    BNI, dni*                float   Beam (direct) radiation normal to the sun
-    Reliability*             float   Fraction of reliable data in summarization
-    =======================  ======  ==========================================
+    Observation period        str     Beginning/end of time period
+    TOA, ghi_extra            float   Horizontal radiation at top of atmosphere
+    Clear sky GHI, ghi_clear  float   Clear sky global radiation on horizontal
+    Clear sky BHI, bhi        float   Clear sky beam radiation on horizontal
+    Clear sky DHI, dhi_clear  float   Clear sky diffuse radiation on horizontal
+    Clear sky BNI, dni_clear  float   Clear sky beam radiation normal to sun
+    GHI, ghi*                 float   Global horizontal radiation
+    BHI, bhi*                 float   Beam (direct) radiation on horizontal
+    DHI, dhi*                 float   Diffuse horizontal radiation
+    BNI, dni*                 float   Beam (direct) radiation normal to the sun
+    Reliability*              float   Reliable data fraction in summarization
+    ========================  ======  =========================================
 
-    *Parameters only returned if service='cams_radiation'. For description of
-    additional output parameters in verbose mode, see [1]_ and [2]_.
+    *Parameters only returned if identifier='cams_radiation'. For description
+    of additional output parameters in verbose mode, see [1]_ and [2]_.
 
     Note that it is recommended to specify the latitude and longitude to at
     least the fourth decimal place.
@@ -149,7 +148,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     ------
     requests.HTTPError
         If the request is invalid, then an XML file is returned by the CAMS
-        service and the error message will be raised as an expcetion.
+        service and the error message will be raised as an exception.
 
     References
     ----------
@@ -163,7 +162,8 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     try:
         time_step_str = TIME_STEPS_MAP[time_step]
     except KeyError:
-        raise ValueError(f'Time step not recognized. Must be one of {list(TIME_STEPS_MAP.keys())}')
+        raise ValueError(f'Time step not recognized. Must be one of '
+                         f'{list(TIME_STEPS_MAP.keys())}')
 
     if (verbose is True) & ((time_step != '1min') | (time_ref != 'UT')):
         verbose = False
@@ -180,32 +180,41 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     end_date = end_date.strftime('%Y-%m-%d')
 
     email = email.replace('@', '%2540')  # Format email address
-    service = 'get_{}'.format(service.lower())  # Format CAMS service string
+    identifier = 'get_{}'.format(identifier.lower())  # Format identifier str
 
-    # Manual format the request url, due to uncommon usage of & and ; in url
-    url = ("http://{}/service/wps?Service=WPS&Request=Execute&"
-           "Identifier={}&version=1.0.0&RawDataOutput=irradiation&"
-           "DataInputs=latitude={};longitude={};altitude={};"
-           "date_begin={};date_end={};time_ref={};summarization={};"
-           "username={};verbose={}"
-           ).format(server, service, latitude, longitude, altitude, start_date,
-                    end_date, time_ref, time_step_str, email, verbose)
+    base_url = f"http://{server}/service/wps"
 
-    res = requests.get(url)
+    data_inputs = (
+        f"latitude={latitude};longitude={longitude};altitude={altitude};"
+        f"date_begin={start_date};date_end={end_date};time_ref={time_ref};"
+        f"summarization={time_step_str};username={email};verbose={verbose}")
 
-    # Invalid requests returns helpful XML error message
+    params = {'Service': 'WPS',
+              'Request': 'Execute',
+              'Identifier': identifier,
+              'version': '1.0.0',
+              'RawDataOutput': 'irradiation',
+              }
+
+    # The DataInputs parameter of the URL has to be manually formatted and
+    # added to the base URL as it contains sub-parameters seperated by
+    # semi-colons, which gets incorrectly formatted by the requests function
+    # if passed using the params argument.
+    res = requests.get(base_url + '?DataInputs=' + data_inputs, params=params)
+
+    # Invalid requests returns an XML error message and the HTTP staus code 200
+    # as if the request was successful. Therefore, errors cannot be handled
+    # automatic (e.g. res.raise_for_status()) and errors are handled manually
     if res.headers['Content-Type'] == 'application/xml':
         errors = res.text.split('ows:ExceptionText')[1][1:-2]
         raise requests.HTTPError(errors, response=res)
-    # Check if returned file is a csv data file
+    # Successful requests returns a csv data file
     elif res.headers['Content-Type'] == 'application/csv':
         fbuf = io.StringIO(res.content.decode('utf-8'))
         data, meta = parse_cams_radiation(fbuf, integrated=integrated,
                                           label=label,
                                           map_variables=map_variables)
         return data, meta
-    else:
-        warnings.warn('File content type not recognized.')
 
 
 def parse_cams_radiation(fbuf, integrated=False, label=None,
@@ -257,13 +266,13 @@ def parse_cams_radiation(fbuf, integrated=False, label=None,
         elif ': ' in line:
             meta[line.split(': ')[0].lstrip('# ')] = line.split(': ')[1]
 
-    # Convert the latitude, longitude, and altitude from strings to floats
-    meta['Latitude (positive North, ISO 19115)'] = \
-        float(meta['Latitude (positive North, ISO 19115)'])
-    meta['Longitude (positive East, ISO 19115)'] = \
-        float(meta['Longitude (positive East, ISO 19115)'])
-    meta['Altitude (m)'] = float(meta['Altitude (m)'])
-    meta['Unit for radiation'] = {True: 'Wh/m2', False: 'W/m2'}[integrated]
+    # Convert latitude, longitude, and altitude values from strings to floats
+    for k_old in list(meta.keys()):
+        k_new = k_old.lstrip().split(' ')[0].lower()
+        if k_new in ['latitude', 'longitude', 'altitude']:
+                meta[k_new] = float(meta.pop(k_old))
+                       
+    meta['radiation_unit'] = {True: 'Wh/m2', False: 'W/m2'}[integrated]
 
     # Determine the time_step from the meta-data dictionary
     time_step = SUMMATION_PERIOD_TO_TIME_STEP[

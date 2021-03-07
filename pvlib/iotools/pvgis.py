@@ -131,10 +131,10 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0, outputformat='json',
     **Mapped field names are returned when the map_variables argument is True**
     ---------------------------------------------------------------------------
     P*                       float   PV system power (W)
-    G(i)**                   float   Global irradiance on inclined plane (W/m^2)
-    Gb(i)**                  float   Beam (direct) irradiance on inclined plane (W/m^2)
-    Gd(i)**                  float   Diffuse irradiance on inclined plane (W/m^2)
-    Gr(i)**                  float   Reflected irradiance on inclined plane (W/m^2)
+    G(i)**                   float   Global irradiance on inclined plane (W/m^2)  # noqa
+    Gb(i)**                  float   Beam (direct) irradiance on inclined plane (W/m^2)  # noqa
+    Gd(i)**                  float   Diffuse irradiance on inclined plane (W/m^2)  # noqa
+    Gr(i)**                  float   Reflected irradiance on inclined plane (W/m^2)  # noqa
     H_sun, solar_elevation   float   Sun height/elevation (degrees)
     T2m, temp_air            float   Air temperature at 2  (degrees Celsius)
     WS10m, wind_speed        float   Wind speed at 10 m (m/s)

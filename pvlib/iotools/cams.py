@@ -119,7 +119,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     Observation period        str     Beginning/end of time period
     TOA, ghi_extra            float   Horizontal radiation at top of atmosphere
     Clear sky GHI, ghi_clear  float   Clear sky global radiation on horizontal
-    Clear sky BHI, bhi        float   Clear sky beam radiation on horizontal
+    Clear sky BHI, bhi_clear  float   Clear sky beam radiation on horizontal
     Clear sky DHI, dhi_clear  float   Clear sky diffuse radiation on horizontal
     Clear sky BNI, dni_clear  float   Clear sky beam radiation normal to sun
     GHI, ghi*                 float   Global horizontal radiation
@@ -291,8 +291,6 @@ def parse_cams_radiation(fbuf, integrated=False, label=None,
     elif (label == 'right') | ((label is None) & (time_step == '1M')):
         data.index = pd.to_datetime(obs_period.str[1], utc=True)
 
-    data.index.name = 'time'  # Set index name to None
-
     # Change index for time_step '1d' and '1M' to be date and not datetime
     if (time_step == '1d') | (time_step == '1M'):
         data.index = pd.DatetimeIndex(data.index.date)
@@ -310,10 +308,12 @@ def parse_cams_radiation(fbuf, integrated=False, label=None,
                           - pd.to_datetime(obs_period.str[0]))
             hours = time_delta.dt.total_seconds()/60/60
             data[integrated_cols] = data[integrated_cols].\
-                divide(hours.tolist(), axis='rows')
+                divide(hours.tolist(), axis='rows').round(4)
         else:
             data[integrated_cols] = (data[integrated_cols] /
-                                     TIME_STEPS_IN_HOURS[time_step])
+                                     TIME_STEPS_IN_HOURS[time_step]).round(4)
+
+    data.index.name = 'time'  # Set index name to None
 
     if map_variables:
         data = data.rename(columns=CAMS_RADIATION_VARIABLE_MAP)

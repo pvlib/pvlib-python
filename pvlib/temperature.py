@@ -709,9 +709,9 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
 
 
 def _adj_for_mounting_standoff(x):
-    # supports noct cell temperature function. The SAM code and documentation
-    # aren't clear on the precise intervals, the choice of < or <= here is
-    # pvlib's.
+    # supports noct cell temperature function. Except for x > 3.5, the SAM code
+    # and documentation aren't clear on the precise intervals. The choice of
+    # < or <= here is pvlib's.
     return np.piecewise(x, [x <= 0, (x > 0) & (x < 0.5),
                             (x >= 0.5) & (x < 1.5), (x >= 1.5) & (x < 2.5),
                             (x >= 2.5) & (x <= 3.5), x > 3.5],
@@ -719,7 +719,7 @@ def _adj_for_mounting_standoff(x):
 
 
 def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
-             effective_irradiance=None, transmittance_absorbtance=0.9,
+             effective_irradiance=None, transmittance_absorptance=0.9,
              array_height=1, mount_standoff=4):
     '''
     Cell temperature model from the System Advisor Model (SAM).
@@ -739,7 +739,7 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
         factor was determined.  The default value 1.0 m/s is the wind
         speed at module height used to determine NOCT. [m/s]
 
-    noct : numeric
+    noct : float
         Nominal operating cell temperature [C], determined at conditions of
         800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
 
@@ -747,9 +747,15 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
         The irradiance that is converted to photocurrent. If None,
         assumed equal to poa_global. [W/m^2]
 
-    eta_m_ref : numeric
+    eta_m_ref : float
         Module external efficiency at reference conditions of 1000 W/m^2 and
-        20C. Calculate as P_mp (V_mp x I_mp) divided by 1000 W/m^2. [unitless]
+        20C. Calculate as
+
+        .. math::
+
+            \eta_m = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}
+
+        where A is module area [m^2].
 
     transmittance_absorptance : numeric, default 0.9
         Coefficient for combined transmittance and absorptance effects.
@@ -781,6 +787,13 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
            Update", National Renewable Energy Laboratory Report
            NREL/TP-6A20-67399.
     '''
+    # in [1] the denominator for irr_ratio isn't precisely clear. From
+    # reproducing output of the SAM function noct_celltemp_t, we determined
+    # that:
+    #  - G_total (SAM) is broadband plane-of-array irradiance before
+    #    reflections. Equivalent to pvlib variable poa_global
+    #  - Geff_total (SAM) is POA irradiance after reflections and
+    #    adjustment for spectrum. Equivalent to effective_irradiance
     if effective_irradiance is None:
         irr_ratio = 1.
     else:
@@ -795,7 +808,7 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
             f'array_height must be 1 or 2, {array_height} was given')
 
     noct_adj = noct + _adj_for_mounting_standoff(mount_standoff)
-    tau_alpha = transmittance_absorbtance * irr_ratio
+    tau_alpha = transmittance_absorptance * irr_ratio
 
     # [1] Eq. 10.37 isn't clear on exactly what "G" is. SAM SSC code uses
     # poa_global where G appears

@@ -721,7 +721,7 @@ def _adj_for_mounting_standoff(x):
 def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
              effective_irradiance=None, transmittance_absorptance=0.9,
              array_height=1, mount_standoff=4):
-    '''
+    r'''
     Cell temperature model from the System Advisor Model (SAM).
 
     The model is described in [1]_, Section 10.6.

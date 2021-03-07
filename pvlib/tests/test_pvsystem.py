@@ -1756,11 +1756,33 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad():
     assert not array_irrad[0].equals(array_irrad[1])
 
 
+def test_PVSystem_change_surface_tilt():
+    system = pvsystem.PVSystem(surface_tilt=30)
+    assert system.surface_tilt == 30
+    match = "PVSystem.surface_tilt attribute is deprecated"
+    with pytest.warns(UserWarning, match=match):
+        system.surface_tilt = 10
+    assert system.surface_tilt == 10
+
+
 def test_PVSystem_change_surface_azimuth():
     system = pvsystem.PVSystem(surface_azimuth=180)
     assert system.surface_azimuth == 180
-    system.surface_azimuth = 90
+    match = "PVSystem.surface_azimuth attribute is deprecated"
+    with pytest.warns(UserWarning, match=match):
+        system.surface_azimuth = 90
     assert system.surface_azimuth == 90
+
+
+@pytest.mark.parametrize('attr', ['surface_tilt', 'surface_azimuth'])
+def test_PVSystem_change_surface_tilt_azimuth_multi(attr, two_array_system):
+    # getting fails
+    with pytest.raises(AttributeError, match='not supported for multi-array'):
+        getattr(two_array_system, attr)
+
+    # setting fails
+    with pytest.raises(AttributeError, match='not supported for multi-array'):
+        setattr(two_array_system, attr, 0)
 
 
 def test_PVSystem_get_albedo(two_array_system):

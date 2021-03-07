@@ -21,6 +21,8 @@ corresponding procedural code.
    location.Location
    pvsystem.PVSystem
    pvsystem.Array
+   pvsystem.FixedMount
+   pvsystem.SingleAxisTrackerMount
    tracking.SingleAxisTracker
    modelchain.ModelChain
    modelchain.ModelChainResult

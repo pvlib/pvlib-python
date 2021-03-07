@@ -2092,3 +2092,39 @@ def test_deprecated_attributes_multi(two_array_system):
         two_array_system.surface_tilt
     with pytest.raises(AttributeError, match=match):
         two_array_system.surface_azimuth
+
+
+@pytest.fixture
+def fixed_mount():
+    return pvsystem.FixedMount(20, 180)
+
+
+@pytest.fixture
+def single_axis_tracker_mount():
+    return pvsystem.SingleAxisTrackerMount(axis_tilt=10, axis_azimuth=170,
+                                           max_angle=45, backtrack=False,
+                                           gcr=0.4, cross_axis_tilt=-5)
+
+
+def test_FixedMount_constructor(fixed_mount):
+    assert fixed_mount.surface_tilt == 20
+    assert fixed_mount.surface_azimuth == 180
+
+
+def test_FixedMount_get_orientation(fixed_mount):
+    expected = {'surface_tilt': 20, 'surface_azimuth': 180}
+    assert fixed_mount.calculate_orientation(45, 130) == expected
+
+
+def test_SingleAxisTrackerMount_constructor(single_axis_tracker_mount):
+    expected = dict(axis_tilt=10, axis_azimuth=170, max_angle=45, backtrack=False,
+                    gcr=0.4, cross_axis_tilt=-5)
+    for attr_name, expected_value in expected.items():
+        assert getattr(single_axis_tracker_mount, attr_name) == expected_value
+
+
+def test_SingleAxisTrackerMount_get_orientation(single_axis_tracker_mount):
+    expected = {'surface_tilt': 19.29835284, 'surface_azimuth': 229.7643755}
+    actual = single_axis_tracker_mount.calculate_orientation(45, 190)
+    for key, expected_value in expected.items():
+        assert actual[key] == pytest.approx(expected_value), f"{key} value incorrect"

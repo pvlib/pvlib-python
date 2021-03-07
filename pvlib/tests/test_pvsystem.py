@@ -2116,6 +2116,12 @@ def test_deprecated_attributes_multi(two_array_system):
         two_array_system.surface_azimuth
 
 
+def test_AbstractMount_constructor():
+    match = "Can't instantiate abstract base class AbstractMount"
+    with pytest.raises(TypeError, match=match):
+        _ = pvsystem.AbstractMount()
+
+
 @pytest.fixture
 def fixed_mount():
     return pvsystem.FixedMount(20, 180)

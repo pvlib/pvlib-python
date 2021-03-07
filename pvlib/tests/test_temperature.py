@@ -225,7 +225,7 @@ def test_noct_sam():
     result = temperature.noct_sam(np.array(poa_global), np.array(temp_air),
                                   np.array(wind_speed), np.array(noct),
                                   np.array(eta_m_ref))
-    assert assert_allclose(result, expected)
+    assert_allclose(result, expected)
     dr = pd.date_range(start='2020-01-01 12:00:00', end='2020-01-01 13:00:00',
                        freq='1H')
     result = temperature.noct_sam(pd.Series(index=dr, data=poa_global),
@@ -262,7 +262,7 @@ def test_noct_sam_against_sam():
                                   eta_m_ref, effective_irradiance,
                                   transmittance_absorbtance, array_height,
                                   mount_standoff)
-    expected = 60.477703576
+    expected = 43.0655
     assert assert_allclose(result, expected)
 
 
@@ -278,7 +278,7 @@ def test_noct_sam_options():
                                   transmittance_absorbtance, array_height,
                                   mount_standoff)
     expected = 60.477703576
-    assert assert_allclose(result, expected)
+    assert_allclose(result, expected)
 
 
 def test_noct_sam_errors():

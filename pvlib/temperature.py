@@ -753,7 +753,7 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
 
         .. math::
 
-            \eta_m = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}
+            \eta_m = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}  # noQA: W605
 
         where A is module area [m^2].
 

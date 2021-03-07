@@ -64,7 +64,7 @@ Enhancements
 ~~~~~~~~~~~~
 * Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
   files. (:pull:`1145`, :issue:`1015`)
-* Add :func:`~pvlib.iotools.get_cams_radiatoin` and 
+* Add :func:`~pvlib.iotools.get_cams_radiation` and 
   :func:`~pvlib.iotools.read_cams_radiation`
   for retrieving and reading CAMS Radiation and McClear time-series
   files. (:pull:`1175`)

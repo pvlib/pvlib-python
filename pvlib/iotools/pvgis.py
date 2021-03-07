@@ -298,6 +298,92 @@ def _parse_pvgis_hourly_csv(src, map_variables=True):
     return data, inputs, meta
 
 
+def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
+    """
+    Read a file downloaded from PVGIS.
+
+    Parameters
+    ----------
+    filename : str, pathlib.Path, or file-like buffer
+        Name, path, or buffer of file downloaded from PVGIS.
+    pvgis_format : str, default None
+        Format of PVGIS file or buffer. Equivalent to the ``outputformat``
+        parameter in the PVGIS TMY API. If `filename` is a file and
+        `pvgis_format` is ``None`` then the file extension will be used to
+        determine the PVGIS format to parse. For PVGIS files from the API with
+        ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
+        `filename` is a buffer, then `pvgis_format` is required and must be in
+        ``['csv', 'json', 'basic']``.
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        the weather data
+    inputs : dict
+        the inputs, ``None`` for basic
+    meta : list or dict
+        meta data, ``None`` for basic
+
+    Raises
+    ------
+    ValueError
+        if `pvgis_format` is ``None`` and the file extension is neither
+        ``.csv`` nor ``.json`` or if `pvgis_format` is provided as
+        input but isn't in ``['csv', 'json', 'basic']``
+    TypeError
+        if `pvgis_format` is ``None`` and `filename` is a buffer
+
+    See also
+    --------
+    get_pvgis_hourly
+    """
+    # get the PVGIS outputformat
+    if pvgis_format is None:
+        # get the file extension from suffix, but remove the dot and make sure
+        # it's lower case to compare with csv, or json
+        # NOTE: raises TypeError if filename is a buffer
+        outputformat = Path(filename).suffix[1:].lower()
+    else:
+        outputformat = pvgis_format
+
+    # parse the pvgis file based on the output format, either 'json', 'csv',
+    # or 'basic'
+
+    # NOTE: json, csv, and basic output formats have parsers defined as private
+    # functions in this module
+
+    # JSON: use Python built-in json module to convert file contents to a
+    # Python dictionary, and pass the dictionary to the
+    # _parse_pvgis_hourly_json() function from this module
+    if outputformat == 'json':
+        try:
+            src = json.load(filename)
+        except AttributeError:  # str/path has no .read() attribute
+            with open(str(filename), 'r') as fbuf:
+                src = json.load(fbuf)
+        return _parse_pvgis_hourly_json(src)
+
+    # CSV or basic: use the correct parser from this module
+    # eg: _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
+    if outputformat in ['csv', 'basic']:
+        # get the correct parser function for this output format from globals()
+        pvgis_parser = globals()['_parse_pvgis_hourly_{:s}'.format(outputformat)]  # noqa
+        # NOTE: pvgis_parse() is a pvgis parser function from this module,
+        # either _parse_pvgis_hourly_csv() or _parse_pvgist_hourly_basic()
+        try:
+            pvgis_data = pvgis_parser(filename)
+        except AttributeError:  # str/path has no .read() attribute
+            with open(str(filename), 'r') as fbuf:
+                pvgis_data = pvgis_parser(fbuf)
+        return pvgis_data
+
+    # raise exception if pvgis format isn't in ['csv', 'basic', 'json']
+    err_msg = (
+        "pvgis format '{:s}' was unknown, must be either 'json', 'csv', or"
+        "'basic'").format(outputformat)
+    raise ValueError(err_msg)
+
+
 def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
                   timeout=30):

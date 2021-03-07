@@ -145,3 +145,15 @@ def test_read_cams(testfile, index, columns, values, dtypes):
     out = cams.read_cams_radiation(testfile, integrated=False,
                                    map_variables=True)
     assert_frame_equal(out, expected)
+
+
+def test_read_cams_metadata():
+    _, meta = cams.read_cams_radiation(testfile_mcclear_monthly,
+                                       integrated=False)
+    assert meta['Time reference'] == 'Universal time (UT)'
+    assert meta['noValue'] == 'nan'
+    assert meta['latitude'] == 55.7906
+    assert meta['longitude'] == 12.5251
+    assert meta['altitude'] == 39.0
+    assert meta['radiation_unit'] == 'W/m^2'
+    assert meta['time_step'] == '1M'

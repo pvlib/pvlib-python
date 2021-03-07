@@ -272,7 +272,7 @@ def parse_cams_radiation(fbuf, integrated=False, label=None,
         if k_new in ['latitude', 'longitude', 'altitude']:
             meta[k_new] = float(meta.pop(k_old))
 
-    meta['radiation_unit'] = {True: 'Wh/m2', False: 'W/m2'}[integrated]
+    meta['radiation_unit'] = {True: 'Wh/m^2', False: 'W/m^2'}[integrated]
 
     # Determine the time_step from the meta-data dictionary
     time_step = SUMMATION_PERIOD_TO_TIME_STEP[

@@ -11,6 +11,7 @@ import os
 from urllib.request import urlopen
 import numpy as np
 import pandas as pd
+from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 
 import warnings
@@ -1409,12 +1410,8 @@ class Array:
             raise ValueError(model + ' is not a valid IAM model')
 
 
+@dataclass
 class AbstractMount(ABC):
-    def __repr__(self):
-        classname = self.__class__.__name__
-        return f'{classname}:\n    ' + '\n    '.join(
-            f'{attr}: {getattr(self, attr)}' for attr in self._repr_attrs
-        )
 
     @abstractmethod
     def calculate_orientation(self, solar_zenith, solar_azimuth):
@@ -1436,6 +1433,7 @@ class AbstractMount(ABC):
         pass
 
 
+@dataclass
 class FixedMount(AbstractMount):
     """
     Racking at fixed (static) orientation.
@@ -1451,10 +1449,8 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
     """
 
-    def __init__(self, surface_tilt=0, surface_azimuth=180):
-        self.surface_tilt = surface_tilt
-        self.surface_azimuth = surface_azimuth
-        self._repr_attrs = ['surface_tilt', 'surface_azimuth']
+    surface_tilt: float = field(default=0)
+    surface_azimuth: float = field(default=180)
 
     def calculate_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount
@@ -1464,6 +1460,7 @@ class FixedMount(AbstractMount):
         }
 
 
+@dataclass
 class SingleAxisTrackerMount(AbstractMount):
     """
     Single-axis tracker racking for dynamic solar tracking.
@@ -1509,17 +1506,12 @@ class SingleAxisTrackerMount(AbstractMount):
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
     """
-
-    def __init__(self, axis_tilt=0, axis_azimuth=180, max_angle=90,
-                 backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
-        self.axis_tilt = axis_tilt
-        self.axis_azimuth = axis_azimuth
-        self.max_angle = max_angle
-        self.backtrack = backtrack
-        self.gcr = gcr
-        self.cross_axis_tilt = cross_axis_tilt
-        self._repr_attrs = ['axis_tilt', 'axis_azimuth', 'max_angle',
-                            'backtrack', 'gcr', 'cross_axis_tilt']
+    axis_tilt: float = field(default=0)
+    axis_azimuth: float = field(default=0)
+    max_angle: float = field(default=90)
+    backtrack: bool = field(default=True)
+    gcr: float = field(default=2/7)
+    cross_axis_tilt: float = field(default=0)
 
     def calculate_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount

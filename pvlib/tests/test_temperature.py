@@ -220,7 +220,7 @@ def test_noct_sam():
     expected = 55.230790492
     result = temperature.noct_sam(poa_global, temp_air, wind_speed, noct,
                                   eta_m_ref)
-    assert assert_allclose(result, expected)
+    assert_allclose(result, expected)
     # test with different types
     result = temperature.noct_sam(np.array(poa_global), np.array(temp_air),
                                   np.array(wind_speed), np.array(noct),
@@ -263,7 +263,8 @@ def test_noct_sam_against_sam():
                                   transmittance_absorbtance, array_height,
                                   mount_standoff)
     expected = 43.0655
-    assert assert_allclose(result, expected)
+    # rtol from limited SAM output precision
+    assert_allclose(result, expected, rtol=1e-5)
 
 
 def test_noct_sam_options():

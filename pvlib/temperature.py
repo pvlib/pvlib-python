@@ -750,10 +750,9 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
     eta_m_ref : float
         Module external efficiency at reference conditions of 1000 W/m^2 and
         20C. Calculate as
-
         .. math::
 
-            \eta_m = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}  # noQA: W605
+            \eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}  # noQA: W605
 
         where A is module area [m^2].
 

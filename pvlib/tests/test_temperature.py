@@ -255,12 +255,12 @@ def test_noct_sam_against_sam():
     air_mass *= np.exp(-0.0001184 * elev)
     f1 = np.polyval(a, air_mass)
     effective_irradiance = f1 * poa_total_after_refl
-    transmittance_absorbtance = 0.9
-    array_height = 2
-    mount_standoff = 0.0
+    transmittance_absorptance = 0.9
+    array_height = 1
+    mount_standoff = 4.0
     result = temperature.noct_sam(poa_total, temp_air, wind_speed, noct,
                                   eta_m_ref, effective_irradiance,
-                                  transmittance_absorbtance, array_height,
+                                  transmittance_absorptance, array_height,
                                   mount_standoff)
     expected = 43.0655
     # rtol from limited SAM output precision

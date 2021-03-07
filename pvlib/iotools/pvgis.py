@@ -23,19 +23,33 @@ from pvlib.iotools import read_epw, parse_epw
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
+# Dictionary mapping PVGIS names to pvlib names
+VARIABLE_MAP = {
+    'G(h)': 'ghi',
+    'Gb(n)': 'dni',
+    'Gd(h)': 'dhi',
+    'G(i)': 'poa_global',
+    'Gb(i)': 'poa_direct',
+    'Gd(i)': 'poa_diffuse',
+    'Gr(i)': 'poa_ground_diffuse',
+    'H_sun': 'solar_elevation',
+    'T2m': 'temp_air',
+    'RH': 'relative_humidity',
+    'SP': 'pressure',
+    'WS10m': 'wind_speed',
+    'WD10m': 'wind_direction',
+}
 
-def get_pvgis_hourly(lat, lon, angle=0, aspect=0,
-                     outputformat='json', usehorizon=True,
-                     userhorizon=None, raddatabase=None,
-                     startyear=None, endyear=None,
-                     pvcalculation=False, peakpower=None,
-                     pvtechchoice='crystSi', mountingplace='free', loss=None,
-                     trackingtype=0,
+
+def get_pvgis_hourly(lat, lon, angle=0, aspect=0, outputformat='json',
+                     usehorizon=True, userhorizon=None, raddatabase=None,
+                     startyear=None, endyear=None, pvcalculation=False,
+                     peakpower=None, pvtechchoice='crystSi',
+                     mountingplace='free', loss=None, trackingtype=0,
                      optimal_inclination=False, optimalangles=False,
-                     components=True, url=URL, timeout=30):
+                     components=True, url=URL, map_variables=True, timeout=30):
     """
-    Get hourly solar radiation data and modeled PV power output from PVGIS
-    [1]_.
+    Get hourly solar irradiation and modeled PV power output from PVGIS [1]_.
 
     Parameters
     ----------
@@ -49,8 +63,8 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0,
         Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
         -90: east. Not relevant for tracking systems.
     outputformat: str, default: 'json'
-        Must be in ``['csv', 'json']``. See PVGIS hourly data documentation
-        [2]_ for more info.
+        Must be in ``['json', 'csv', 'basic']``. See PVGIS hourly data
+        documentation [2]_ for more info. Note basic does not include a header.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None
@@ -92,17 +106,45 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0,
     url: str, default:const:`pvlib.iotools.pvgis.URL`
         Base url of PVGIS API, append ``seriescalc`` to get hourly data
         endpoint
+    map_variables: bool, default True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable VARIABLE_MAP.
     timeout: int, default: 30
         Time in seconds to wait for server response before timeout
 
     Returns
     -------
     data : pandas.DataFrame
-        Time-series of hourly data
+        Time-series of hourly data, see Notes for fields
     inputs : dict
-        Dictionary of the request input parameters
+        Dictionary of the request input parameters, ``None`` for basic
     meta : list or dict
-        meta data
+        meta data, ``None`` for basic
+
+    Notes
+    -----
+    data includes the following fields:
+
+    =======================  ======  ==========================================
+    raw, mapped              Format  Description
+    =======================  ======  ==========================================
+    **Mapped field names are returned when the map_variables argument is True**
+    ---------------------------------------------------------------------------
+    P*                       float   PV system power (W)
+    G(i)**                   float   Global irradiance on inclined plane (W/m^2)
+    Gb(i)**                  float   Beam (direct) irradiance on inclined plane (W/m^2)
+    Gd(i)**                  float   Diffuse irradiance on inclined plane (W/m^2)
+    Gr(i)**                  float   Reflected irradiance on inclined plane (W/m^2)
+    H_sun, solar_elevation   float   Sun height/elevation (degrees)
+    T2m, temp_air            float   Air temperature at 2  (degrees Celsius)
+    WS10m, wind_speed        float   Wind speed at 10 m (m/s)
+    Int                      int     Solar radiation reconstructed (1/0)
+    =======================  ======  ==========================================
+
+    *P (PV system power) is only returned when pvcalculation=True.
+
+    **Gb(i), Gd(i), and Gr(i) are returned when components=True, whereas
+    otherwise the sum of the three components, G(i), is returned.
 
     Raises
     ------
@@ -113,7 +155,7 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0,
 
     See also
     --------
-    pvlib.iotools.read_pvgis_hourly
+    pvlib.iotools.read_pvgis_hourly, pvlib.iotools.get_pvgis_tmy
 
     References
     ----------
@@ -173,10 +215,10 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0,
     data = None, None, None, None
     if outputformat == 'json':
         src = res.json()
-        return _parse_pvgis_hourly_json(src)
+        return _parse_pvgis_hourly_json(src, map_variables=map_variables)
     elif outputformat == 'csv':
         with io.StringIO(res.content.decode('utf-8')) as src:
-            return _parse_pvgis_hourly_csv(src)
+            return _parse_pvgis_hourly_csv(src, map_variables=map_variables)
     elif outputformat == 'basic':
         with io.BytesIO(res.content) as src:
             return _parse_pvgis_hourly_basic(src)
@@ -187,13 +229,15 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0,
     return data
 
 
-def _parse_pvgis_hourly_json(src):
+def _parse_pvgis_hourly_json(src, map_variables=True):
     inputs = src['inputs']
     meta = src['meta']
     data = pd.DataFrame(src['outputs']['hourly'])
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
     data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
+    if map_variables:
+        data.rename(columns=VARIABLE_MAP, inplace=True)
     return data, inputs, meta
 
 
@@ -203,7 +247,7 @@ def _parse_pvgis_hourly_basic(src):
     return data, None, None
 
 
-def _parse_pvgis_hourly_csv(src):
+def _parse_pvgis_hourly_csv(src, map_variables=True):
     # The first 4 rows are latitude, longitude, elevation, radiation database
     inputs = {}
     # 'Latitude (decimal degrees): 45.000\r\n'
@@ -215,7 +259,6 @@ def _parse_pvgis_hourly_csv(src):
     # 'Radiation database: \tPVGIS-SARAH\r\n'
     inputs['radiation_database'] = str(src.readline().split(':')[1]
                                        .replace('\t', '').replace('\n', ''))
-
     # Parse through the remaining metadata section (the number of lines for
     # this section depends on the requested parameters)
     while True:
@@ -229,9 +272,8 @@ def _parse_pvgis_hourly_csv(src):
             inputs[line.split(':')[0]] = str(line.split(':')[1]
                                              .replace('\n', '')
                                              .replace('\r', '').strip())
-
-    # The data section covers a variable number of lines (depends on requested
-    # years) and ends with a blank line
+    # Save the entries from the data section to a list, until an empty line is
+    # reached an empty line. The length of the section depends on the request
     data_lines = []
     while True:
         line = src.readline()
@@ -240,21 +282,21 @@ def _parse_pvgis_hourly_csv(src):
         else:
             data_lines.append(line.replace('\n', '').replace('\r', '')
                               .split(','))
-
     data = pd.DataFrame(data_lines, columns=names)
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
+    if map_variables:
+        data.rename(columns=VARIABLE_MAP, inplace=True)
     # All columns should have the dtype=float, except 'Int' which should be
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})
-
     # Generate metadata dictionary containing description of parameters
     meta = {}
     for line in src.readlines():
         if ':' in line:
             meta[line.split(':')[0]] = line.split(':')[1].strip()
-
     return data, inputs, meta
+
 
 def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,

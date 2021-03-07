@@ -1806,9 +1806,7 @@ def test_PVSystem___repr__():
   name: pv ftw
   Array:
     name: None
-    mount: FixedMount:
-      surface_tilt: 0
-      surface_azimuth: 180
+    mount: FixedMount(surface_tilt=0, surface_azimuth=180)
     module: blah
     albedo: 0.25
     racking_model: None
@@ -1833,9 +1831,7 @@ def test_PVSystem_multi_array___repr__():
   name: None
   Array:
     name: None
-    mount: FixedMount:
-      surface_tilt: 30
-      surface_azimuth: 100
+    mount: FixedMount(surface_tilt=30, surface_azimuth=100)
     module: None
     albedo: 0.25
     racking_model: None
@@ -1845,9 +1841,7 @@ def test_PVSystem_multi_array___repr__():
     modules_per_string: 1
   Array:
     name: foo
-    mount: FixedMount:
-      surface_tilt: 20
-      surface_azimuth: 220
+    mount: FixedMount(surface_tilt=20, surface_azimuth=220)
     module: None
     albedo: 0.25
     racking_model: None
@@ -1872,9 +1866,7 @@ def test_Array___repr__():
     )
     expected = """Array:
   name: biz
-  mount: FixedMount:
-    surface_tilt: 10
-    surface_azimuth: 100
+  mount: FixedMount(surface_tilt=10, surface_azimuth=100)
   module: baz
   albedo: 0.15
   racking_model: close_mount

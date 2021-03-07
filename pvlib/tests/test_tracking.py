@@ -6,7 +6,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 import pvlib
-from pvlib import tracking, pvsystem
+from pvlib import tracking
 from conftest import DATA_DIR, assert_frame_equal
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
@@ -415,13 +415,7 @@ def test_SingleAxisTracker___repr__():
   name: None
   Array:
     name: None
-    mount: SingleAxisTrackerMount:
-      axis_tilt: 0
-      axis_azimuth: 0
-      max_angle: 45
-      backtrack: True
-      gcr: 0.25
-      cross_axis_tilt: 0.0
+    mount: SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=45, backtrack=True, gcr=0.25, cross_axis_tilt=0.0)
     module: blah
     albedo: 0.25
     racking_model: None
@@ -429,7 +423,7 @@ def test_SingleAxisTracker___repr__():
     temperature_model_parameters: {'a': -3.56}
     strings: 1
     modules_per_string: 1
-  inverter: blarg"""
+  inverter: blarg"""  # noqa: E501
     assert system.__repr__() == expected
 
 

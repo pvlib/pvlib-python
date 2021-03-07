@@ -2117,7 +2117,7 @@ def test_deprecated_attributes_multi(two_array_system):
 
 
 def test_AbstractMount_constructor():
-    match = "Can't instantiate abstract base class AbstractMount"
+    match = "Can't instantiate abstract class AbstractMount"
     with pytest.raises(TypeError, match=match):
         _ = pvsystem.AbstractMount()
 

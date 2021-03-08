@@ -734,7 +734,7 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
     temp_air : numeric
         Ambient dry bulb temperature. [C]
 
-    wind_speed : numeric, default 1.0
+    wind_speed : numeric
         Wind speed in m/s measured at the same height for which the wind loss
         factor was determined.  The default value 1.0 m/s is the wind
         speed at module height used to determine NOCT. [m/s]
@@ -743,18 +743,15 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
         Nominal operating cell temperature [C], determined at conditions of
         800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
 
+    eta_m_ref : float
+        Module external efficiency [unitless] at reference conditions of
+        1000 W/m^2 and 20C. Calculate as
+        :math:`\eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}`
+        where A is module area [m^2].
+
     effective_irradiance : numeric, default None.
         The irradiance that is converted to photocurrent. If None,
         assumed equal to poa_global. [W/m^2]
-
-    eta_m_ref : float
-        Module external efficiency at reference conditions of 1000 W/m^2 and
-        20C. Calculate as
-        .. math::
-
-            \eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}  # noQA: W605
-
-        where A is module area [m^2].
 
     transmittance_absorptance : numeric, default 0.9
         Coefficient for combined transmittance and absorptance effects.

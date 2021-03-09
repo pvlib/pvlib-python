@@ -63,11 +63,10 @@ SAPM_CONFIG = dict(
 
 
 def basic_chain(times, latitude, longitude,
+                surface_tilt, surface_azimuth,
                 module_parameters, temperature_model_parameters,
                 inverter_parameters,
                 irradiance=None, weather=None,
-                surface_tilt=None, surface_azimuth=None,
-                orientation_strategy=None,
                 transposition_model='haydavies',
                 solar_position_method='nrel_numpy',
                 airmass_model='kastenyoung1989',
@@ -91,6 +90,17 @@ def basic_chain(times, latitude, longitude,
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees.
+        The azimuth convention is defined
+        as degrees east of north
+        (North=0, South=180, East=90, West=270).
+
     module_parameters : None, dict or Series
         Module parameters as defined by the SAPM. See pvsystem.sapm for
         details.
@@ -111,23 +121,6 @@ def basic_chain(times, latitude, longitude,
         If None, assumes air temperature is 20 C and
         wind speed is 0 m/s.
         Columns must be 'wind_speed', 'temp_air'.
-
-    surface_tilt : None, float or Series, default None
-        Surface tilt angles in decimal degrees.
-        The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90)
-
-    surface_azimuth : None, float or Series, default None
-        Surface azimuth angles in decimal degrees.
-        The azimuth convention is defined
-        as degrees east of north
-        (North=0, South=180, East=90, West=270).
-
-    orientation_strategy : None or str, default None
-        The strategy for aligning the modules.
-        If not None, sets the ``surface_azimuth`` and ``surface_tilt``
-        properties of the ``system``. Allowed strategies include 'flat',
-        'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
 
     transposition_model : str, default 'haydavies'
         Passed to system.get_irradiance.
@@ -156,17 +149,6 @@ def basic_chain(times, latitude, longitude,
         Tuple of DC power (with SAPM parameters) (DataFrame) and AC
         power (Series).
     """
-
-    # use surface_tilt and surface_azimuth if provided,
-    # otherwise set them using the orientation_strategy
-    if surface_tilt is not None and surface_azimuth is not None:
-        pass
-    elif orientation_strategy is not None:
-        surface_tilt, surface_azimuth = \
-            get_orientation(orientation_strategy, latitude=latitude)
-    else:
-        raise ValueError('orientation_strategy or surface_tilt and '
-                         'surface_azimuth must be provided')
 
     if altitude is None and pressure is None:
         altitude = 0.
@@ -332,12 +314,6 @@ class ModelChain:
         A :py:class:`~pvlib.location.Location` object that represents
         the physical location at which to evaluate the model.
 
-    orientation_strategy : None or str, default None
-        The strategy for aligning the modules. If not None, sets the
-        ``surface_azimuth`` and ``surface_tilt`` properties of the
-        ``system``. Allowed strategies include 'flat',
-        'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
-
     clearsky_model : str, default 'ineichen'
         Passed to location.get_clearsky.
 
@@ -395,7 +371,6 @@ class ModelChain:
                          'dc', 'ac', 'diode_params', 'tracking']
 
     def __init__(self, system, location,
-                 orientation_strategy=None,
                  clearsky_model='ineichen',
                  transposition_model='haydavies',
                  solar_position_method='nrel_numpy',
@@ -421,7 +396,6 @@ class ModelChain:
         self.temperature_model = temperature_model
 
         self.losses_model = losses_model
-        self.orientation_strategy = orientation_strategy
 
         self.weather = None
         self.times = None
@@ -451,7 +425,6 @@ class ModelChain:
 
     @classmethod
     def with_pvwatts(cls, system, location,
-                     orientation_strategy=None,
                      clearsky_model='ineichen',
                      airmass_model='kastenyoung1989',
                      name=None,
@@ -468,12 +441,6 @@ class ModelChain:
         location : Location
             A :py:class:`~pvlib.location.Location` object that represents
             the physical location at which to evaluate the model.
-
-        orientation_strategy : None or str, default None
-            The strategy for aligning the modules. If not None, sets the
-            ``surface_azimuth`` and ``surface_tilt`` properties of the
-            ``system``. Allowed strategies include 'flat',
-            'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
 
         clearsky_model : str, default 'ineichen'
             Passed to location.get_clearsky.
@@ -502,7 +469,6 @@ class ModelChain:
         >>> ModelChain.with_pvwatts(system, location)
         ModelChain:
           name: None
-          orientation_strategy: None
           clearsky_model: ineichen
           transposition_model: perez
           solar_position_method: nrel_numpy
@@ -518,7 +484,6 @@ class ModelChain:
         config.update(kwargs)
         return ModelChain(
             system, location,
-            orientation_strategy=orientation_strategy,
             clearsky_model=clearsky_model,
             airmass_model=airmass_model,
             name=name,
@@ -527,7 +492,6 @@ class ModelChain:
 
     @classmethod
     def with_sapm(cls, system, location,
-                  orientation_strategy=None,
                   clearsky_model='ineichen',
                   transposition_model='haydavies',
                   solar_position_method='nrel_numpy',
@@ -547,12 +511,6 @@ class ModelChain:
         location : Location
             A :py:class:`~pvlib.location.Location` object that represents
             the physical location at which to evaluate the model.
-
-        orientation_strategy : None or str, default None
-            The strategy for aligning the modules. If not None, sets the
-            ``surface_azimuth`` and ``surface_tilt`` properties of the
-            ``system``. Allowed strategies include 'flat',
-            'south_at_latitude_tilt'. Ignored for SingleAxisTracker systems.
 
         clearsky_model : str, default 'ineichen'
             Passed to location.get_clearsky.
@@ -589,7 +547,6 @@ class ModelChain:
         >>> ModelChain.with_sapm(system, location)
         ModelChain:
           name: None
-          orientation_strategy: None
           clearsky_model: ineichen
           transposition_model: haydavies
           solar_position_method: nrel_numpy
@@ -605,7 +562,6 @@ class ModelChain:
         config.update(kwargs)
         return ModelChain(
             system, location,
-            orientation_strategy=orientation_strategy,
             clearsky_model=clearsky_model,
             transposition_model=transposition_model,
             solar_position_method=solar_position_method,
@@ -616,7 +572,7 @@ class ModelChain:
 
     def __repr__(self):
         attrs = [
-            'name', 'orientation_strategy', 'clearsky_model',
+            'name', 'clearsky_model',
             'transposition_model', 'solar_position_method',
             'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
             'spectral_model', 'temperature_model', 'losses_model'
@@ -633,21 +589,6 @@ class ModelChain:
 
         return ('ModelChain: \n  ' + '\n  '.join(
             f'{attr}: {getmcattr(self, attr)}' for attr in attrs))
-
-    @property
-    def orientation_strategy(self):
-        return self._orientation_strategy
-
-    @orientation_strategy.setter
-    def orientation_strategy(self, strategy):
-        if strategy == 'None':
-            strategy = None
-
-        if strategy is not None:
-            self.system.surface_tilt, self.system.surface_azimuth = \
-                get_orientation(strategy, latitude=self.location.latitude)
-
-        self._orientation_strategy = strategy
 
     @property
     def dc_model(self):

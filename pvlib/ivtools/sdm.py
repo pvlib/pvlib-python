@@ -1,8 +1,12 @@
 """
-The ``sdm`` module contains functions to fit single diode models.
+The ``sdm`` module contains functions to fit a single diode model (sdm),
+and utility functions that support sdm fitting.
 
-Function names should follow the pattern "fit_" + name of model + "_" +
- fitting method.
+For functions that fit a sdm, the function name should follow the pattern
+"fit_" + name of model + "_" + fitting method.
+
+Utility functions should include the name of the model to which the function
+applies.
 
 """
 
@@ -11,8 +15,11 @@ import numpy as np
 import scipy.constants
 from scipy import optimize
 from scipy.special import lambertw
+from scipy.misc import derivative
 
 from pvlib.pvsystem import singlediode, v_from_i
+from pvlib.pvsystem import calcparams_pvsyst
+from pvlib.singlediode import bishop88_mpp
 
 from pvlib.ivtools.utils import rectify_iv_curve, _numdiff
 from pvlib.ivtools.sde import _fit_sandia_cocontent
@@ -1252,3 +1259,90 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
     theta = np.transpose(theta)
 
     return theta, phi
+
+
+
+def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
+                             R_sh_ref, R_sh_0, R_s, cells_in_series,
+                             R_sh_exp=5.5, EgRef=1.121, irrad_ref=1000,
+                             temp_ref=25):
+    r"""
+    Calculates the temperature coefficient of power for a pvsyst single
+    diode model.
+
+    The temperature coefficient is determined as the numerical derivative
+    :math:`\frac{dP}{dT}` at the maximum power point at reference conditions.
+
+    Parameters
+    ----------
+    alpha_sc : float
+        The short-circuit current temperature coefficient of the
+        module in units of A/C.
+
+    gamma_ref : float
+        The diode ideality factor
+
+    mu_gamma : float
+        The temperature coefficient for the diode ideality factor, 1/K
+
+    I_L_ref : float
+        The light-generated current (or photocurrent) at reference conditions,
+        in amperes.
+
+    I_o_ref : float
+        The dark or diode reverse saturation current at reference conditions,
+        in amperes.
+
+    R_sh_ref : float
+        The shunt resistance at reference conditions, in ohms.
+
+    R_sh_0 : float
+        The shunt resistance at zero irradiance conditions, in ohms.
+
+    R_s : float
+        The series resistance at reference conditions, in ohms.
+
+    cells_in_series : integer
+        The number of cells connected in series.
+
+    R_sh_exp : float
+        The exponent in the equation for shunt resistance, unitless. Defaults
+        to 5.5.
+
+    EgRef : float
+        The energy bandgap at reference temperature in units of eV.
+        1.121 eV for crystalline silicon. EgRef must be >0.
+
+    irrad_ref : float (optional, default=1000)
+        Reference irradiance in W/m^2.
+
+    temp_ref : float (optional, default=25)
+        Reference cell temperature in C.
+
+
+    Returns
+    -------
+    gamma_pmp : float
+        Temperature coefficient of power at maximum power point at reference
+        conditions. [%/C]
+
+    p_mp_ref : float
+        Power at the maximum power point at reference conditions. [W]
+    """
+
+    def maxp(temp_cell, irrad_ref, alpha_sc, gamma_ref, mu_gamma, I_L_ref,
+             I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
+             temp_ref):
+        params = calcparams_pvsyst(
+            irrad_ref, temp_cell, alpha_sc, gamma_ref, mu_gamma, I_L_ref,
+            I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
+            irrad_ref, temp_ref)
+        res = bishop88_mpp(*params)
+        return res[2]
+
+    args = (irrad_ref, alpha_sc, gamma_ref, mu_gamma, I_L_ref,
+            I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
+            temp_ref)
+    pmp = maxp(temp_ref, *args)
+    gamma_pmp = derivative(maxp, temp_ref, args=args)
+    return gamma_pmp * 100 / pmp, pmp

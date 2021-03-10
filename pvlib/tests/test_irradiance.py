@@ -792,6 +792,14 @@ def test_aoi_and_aoi_projection(surface_tilt, surface_azimuth, solar_zenith,
     assert_allclose(aoi_projection, aoi_proj_expected, atol=1e-6)
 
 
+def test_aoi_projection_precision():
+    # GH 1185
+    zenith = 89.26778228223463
+    azimuth = 60.932028605997004
+    projection = irradiance.aoi_projection(zenith, azimuth, zenith, azimuth)
+    assert projection == 1
+
+
 @pytest.fixture
 def airmass_kt():
     # disc algorithm stopped at am=12. test am > 12 for out of range behavior

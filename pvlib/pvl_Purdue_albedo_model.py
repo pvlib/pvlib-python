@@ -1,4 +1,4 @@
-from pvlib.tools import cosd, sind, tand, atand
+from pvlib.tools import cosd, sind, tand, atand, acotd, acosd
 from pvlib.irradiance import perez
 from numpy import np
 from scipy.integrate import quad
@@ -287,7 +287,7 @@ def ViewFactor_Cross(b, a, alpha):
     """
     calculate the view factor from a to b (infinite lines with alpha angle)
     """
-    sqrt_term = sqrt(1 - (2 * b) / (a * cosd(alpha)) + (b / a) ** 2)
+    sqrt_term = np.sqrt(1 - (2 * b) / (a * cosd(alpha)) + (b / a) ** 2)
     VF = 1 / 2 * (1 + b / a - sqrt_term)
 
     if (np.isnan(VF)):

@@ -168,7 +168,7 @@ def pvl_Purdue_bifacial_irradiance(SurfTilt, SurfAz, EtoH, Albedo, DHI, DNI,
         # Rloss_Hor_Front = pvl_iam_martinruiz_components(SurfTilt,
         #                                                 AOI_Hor_Front,
         #                                                 Rloss_Para)
-        Rloss_Beam_Front = pvlib.iam.martin_ruiz(AOI_Hor_Front, Rloss_Para[0])
+        Rloss_Hor_Front = pvlib.iam.martin_ruiz(AOI_Hor_Front, Rloss_Para[0])
     else:
         Rloss_Beam_Front = 0
         Rloss_Iso_Front = 0
@@ -180,7 +180,9 @@ def pvl_Purdue_bifacial_irradiance(SurfTilt, SurfAz, EtoH, Albedo, DHI, DNI,
 
     # Sky diffuse
     # Perez Diffuse
-
+    ID_Iso_Front = np.zeros(MaxVectorSize)
+    ID_Cir_Front = np.zeros(MaxVectorSize)
+    ID_Hor_Front = np.zeros(MaxVectorSize)
     for i in range(MaxVectorSize):
         _, ID_Iso_Front[i], ID_Cir_Front[i], ID_Hor_Front[i] = \
             perez(SurfTilt[i],
@@ -258,7 +260,9 @@ def pvl_Purdue_bifacial_irradiance(SurfTilt, SurfAz, EtoH, Albedo, DHI, DNI,
     IB_Rear[IB_Rear < 0] = 0
 
     # Sky diffuse light
-
+    ID_Iso_Rear = np.zeros(MaxVectorSize)
+    ID_Cir_Rear = np.zeros(MaxVectorSize)
+    ID_Hor_Rear = np.zeros(MaxVectorSize)
     for i in range(MaxVectorSize):
         _, ID_Iso_Rear[i], ID_Cir_Rear[i], ID_Hor_Rear[i] = \
             perez(SurfTilt_Rear[i],

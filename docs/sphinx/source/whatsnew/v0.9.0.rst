@@ -101,6 +101,8 @@ Enhancements
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
   from DC power. Use parameter ``model`` to specify which inverter model to use.
   (:pull:`1147`, :issue:`998`, :pull:`1150`)
+* Added :py:func:`~pvlib.temperature.noct_sam`, a cell temperature model
+  implemented in SAM (:pull:`1177`)
 
 Bug fixes
 ~~~~~~~~~

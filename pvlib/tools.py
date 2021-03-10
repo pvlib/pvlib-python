@@ -145,6 +145,7 @@ def acotd(number):
 
     return res
 
+
 def localize_to_utc(time, location):
     """
     Converts or localizes a time series to UTC.

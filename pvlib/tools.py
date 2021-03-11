@@ -138,7 +138,7 @@ def acotd(number):
         arccot result
     """
 
-    if (number != 0):
+    if number != 0:
         res = np.degrees(np.arctan(1.0 / number))
     else:
         warnings.warn("Divide by Zero")

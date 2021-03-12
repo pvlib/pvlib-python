@@ -830,6 +830,38 @@ def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
     assert_series_equal(mc.results.cell_temperature, data['cell_temperature'])
 
 
+def test__prepare_temperature_len1_weather_tuple(
+        sapm_dc_snl_ac_system, location, weather, total_irrad):
+    # GH 1192
+    weather['module_temperature'] = [40., 30.]
+    data = weather.copy()
+
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    mc.run_model([data])
+    expected = pd.Series([42.617244212941394, 30.0], index=data.index)
+    assert_series_equal(mc.results.cell_temperature[0], expected)
+
+    data = weather.copy().rename(
+        columns={
+            "ghi": "poa_global", "dhi": "poa_diffuse", "dni": "poa_direct"}
+    )
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    mc.run_model_from_poa([data])
+    expected = pd.Series([41.5, 30.0], index=data.index)
+    assert_series_equal(mc.results.cell_temperature[0], expected)
+
+    data = weather.copy()[["module_temperature", "ghi"]].rename(
+        columns={"ghi": "effective_irradiance"}
+    )
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    mc.run_model_from_effective_irradiance([data])
+    expected = pd.Series([41.5, 30.0], index=data.index)
+    assert_series_equal(mc.results.cell_temperature[0], expected)
+
+
 def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                                              location, weather,
                                              total_irrad):

@@ -839,7 +839,7 @@ def test__prepare_temperature_len1_weather_tuple(
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
     mc.run_model([data])
-    expected = pd.Series([48.928025, 38.080016], index=data.index)
+    expected = pd.Series([42.617244212941394, 30.0], index=data.index)
     assert_series_equal(mc.results.cell_temperature[0], expected)
 
     data = weather.copy().rename(
@@ -849,16 +849,16 @@ def test__prepare_temperature_len1_weather_tuple(
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
     mc.run_model_from_poa([data])
-    expected = pd.Series([48.928025, 38.080016], index=data.index)
+    expected = pd.Series([41.5, 30.0], index=data.index)
     assert_series_equal(mc.results.cell_temperature[0], expected)
 
-    data = weather.copy()["module_temperature", "poa_global"].rename(
+    data = weather.copy()[["module_temperature", "ghi"]].rename(
         columns={"ghi": "effective_irradiance"}
     )
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
     mc.run_model_from_effective_irradiance([data])
-    expected = pd.Series([48.928025, 38.080016], index=data.index)
+    expected = pd.Series([41.5, 30.0], index=data.index)
     assert_series_equal(mc.results.cell_temperature[0], expected)
 
 

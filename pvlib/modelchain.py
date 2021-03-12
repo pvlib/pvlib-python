@@ -1520,9 +1520,13 @@ class ModelChain:
             # broadcast data to all arrays
             data = (data,) * self.system.num_arrays
         # find where cell or module temperature is specified in input data
+        if self.system.num_arrays == 1:
+            # GH 1192
+            t_mod_params = (self.system.temperature_model_parameters, )
+        else:
+            t_mod_params = self.system.temperature_model_parameters
         given_cell_temperature = tuple(itertools.starmap(
-            self._get_cell_temperature,
-            zip(data, poa, self.system.temperature_model_parameters)
+            self._get_cell_temperature, zip(data, poa, t_mod_params)
         ))
         # If cell temperature has been specified for all arrays return
         # immediately and do not try to compute it.

@@ -1266,7 +1266,8 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
     diode model.
 
     The temperature coefficient is determined as the numerical derivative
-    :math:`\frac{dP}{dT}` at the maximum power point at reference conditions.
+    :math:`\frac{dP}{dT}` at the maximum power point at reference conditions
+    [1]_.
 
     Parameters
     ----------
@@ -1323,6 +1324,12 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
 
     p_mp_ref : float
         Power at the maximum power point at reference conditions. [W]
+
+    References
+    ----------
+    .. [1] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and
+       Temperature Dependence of Photovoltaic Modules in PVsyst, IEEE Journal
+       of Photovoltaics v5(1), January 2015.
     """
 
     def maxp(temp_cell, irrad_ref, alpha_sc, gamma_ref, mu_gamma, I_L_ref,

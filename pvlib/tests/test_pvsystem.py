@@ -495,6 +495,19 @@ def test_PVSystem_faiman_celltemp(mocker):
     assert_allclose(out, 56.4, atol=1)
 
 
+def test_PVSystem_noct_celltemp(mocker):
+    poa_global, temp_air, wind_speed, noct, eta_m_ref = (1000., 25., 1., 45.,
+                                                         0.2)
+    expected = 55.230790492
+    temp_model_params = {'noct': noct, 'eta_m_ref': eta_m_ref}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    mocker.spy(temperature, 'noct_sam')
+    out = system.noct_sam_celltemp(poa_global, temp_air, wind_speed)
+    temperature.noct_sam.assert_called_once_with(poa_global, temp_air,
+                                                 wind_speed, noct, eta_m_ref)
+    assert_allclose(out, expected)
+
+
 @pytest.mark.parametrize("celltemp",
                          [pvsystem.PVSystem.faiman_celltemp,
                           pvsystem.PVSystem.pvsyst_celltemp,

@@ -1519,12 +1519,12 @@ class ModelChain:
         if not isinstance(data, tuple):
             # broadcast data to all arrays
             data = (data,) * self.system.num_arrays
+        # data is tuple, so temperature_model_parameters must also be
+        # tuple. system.temperature_model_parameters is reduced to a dict
+        # if system.num_arrays == 1, so manually access parameters. GH 1192
+        t_mod_params = tuple(array.temperature_model_parameters
+                             for array in self.system.arrays)
         # find where cell or module temperature is specified in input data
-        if self.system.num_arrays == 1:
-            # GH 1192
-            t_mod_params = (self.system.temperature_model_parameters, )
-        else:
-            t_mod_params = self.system.temperature_model_parameters
         given_cell_temperature = tuple(itertools.starmap(
             self._get_cell_temperature, zip(data, poa, t_mod_params)
         ))

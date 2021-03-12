@@ -830,6 +830,24 @@ def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
     assert_series_equal(mc.results.cell_temperature, data['cell_temperature'])
 
 
+def test__prepare_temperature_len1_weather_tuple(
+        sapm_dc_snl_ac_system, location, weather, total_irrad):
+    # GH 1192
+    data = weather.copy()
+    data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
+    data_tuple = (data, )
+    mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
+    # prepare_temperature expects mc.total_irrad and mc.weather to be set
+    mc._assign_weather(data_tuple)
+    mc._assign_total_irrad(data_tuple)
+    mc._prepare_temperature(data_tuple)
+    expected = pd.Series([48.928025, 38.080016], index=data.index)
+    assert_series_equal(mc.results.cell_temperature[0], expected)
+    data['module_temperature'] = [40., 30.]
+    assert_series_equal(mc.results.cell_temperature[0], expected)
+
+
 def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                                              location, weather,
                                              total_irrad):

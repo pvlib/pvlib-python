@@ -1293,6 +1293,7 @@ def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                           pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                           pvwatts_dc_pvwatts_ac_faiman_temp_system,
                           pvwatts_dc_pvwatts_ac_fuentes_temp_system,
+                          pvwatts_dc_pvwatts_ac_noct_sam_temp_system,
                           temp_model):
     dc_systems = {'sapm_temp': sapm_dc_snl_ac_system,
                   'pvsyst_temp': pvwatts_dc_pvwatts_ac_pvsyst_temp_system,

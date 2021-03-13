@@ -739,7 +739,7 @@ class PVSystem:
 
         Returns
         -------
-        temperature_cell : Series or tuple of Series
+        numeric or tuple of numeric
             The modeled cell temperature [C]
 
         Notes
@@ -751,8 +751,6 @@ class PVSystem:
         if you want to match the PVWatts behavior, you can override it by
         including a ``surface_tilt`` value in ``temperature_model_parameters``.
 
-        Notes
-        -----
         The `temp_air` and `wind_speed` parameters may be passed as tuples
         to provide different values for each Array in the system. If not
         passed as a tuple then the same value is used for input to each Array.
@@ -801,11 +799,11 @@ class PVSystem:
 
         effective_irradiance : pandas Series, tuple of Series or None.
             The irradiance that is converted to photocurrent. If None,
-            assumed equal to poa_global. [W/m^2]
+            assumed equal to ``poa_global``. [W/m^2]
 
         Returns
         -------
-        temperature_cell : Series or tuple of Series
+        numeric or tuple of numeric
             The modeled cell temperature [C]
 
         Notes

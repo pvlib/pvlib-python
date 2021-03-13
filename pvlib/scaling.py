@@ -13,8 +13,8 @@ from scipy.spatial.distance import pdist
 def wvm(clearsky_index, positions, cloud_speed, dt=None):
     """
     Compute spatial aggregation time series smoothing on clear sky index based
-    on the Wavelet Variability model of Lave et al [1-2]. Implementation is
-    basically a port of the Matlab version of the code [3].
+    on the Wavelet Variability model of Lave et al [1]_, [2]_. Implementation
+    is basically a port of the Matlab version of the code [3]_.
 
     Parameters
     ----------
@@ -48,16 +48,16 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
 
     References
     ----------
-    [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
-    Model (WVM) for Solar PV Power Plants. IEEE Transactions on Sustainable
-    Energy, vol. 4, no. 2, pp. 501-509, 2013.
+    .. [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
+       Model (WVM) for Solar PV Power Plants. IEEE Transactions on Sustainable
+       Energy, vol. 4, no. 2, pp. 501-509, 2013.
 
-    [2] M. Lave and J. Kleissl. Cloud speed impact on solar variability
-    scaling - Application to the wavelet variability model. Solar Energy,
-    vol. 91, pp. 11-21, 2013.
+    .. [2] M. Lave and J. Kleissl. Cloud speed impact on solar variability
+       scaling - Application to the wavelet variability model. Solar Energy,
+       vol. 91, pp. 11-21, 2013.
 
-    [3] Wavelet Variability Model - Matlab Code:
-    https://pvpmc.sandia.gov/applications/wavelet-variability-model/
+    .. [3] Wavelet Variability Model - Matlab Code:
+       https://pvpmc.sandia.gov/applications/wavelet-variability-model/
     """
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019

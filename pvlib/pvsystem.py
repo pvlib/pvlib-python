@@ -1412,6 +1412,10 @@ class Array:
 
 @dataclass
 class AbstractMount(ABC):
+    """
+    A base class for Mount classes to extend. It is not intended to be
+    instantiated directly.
+    """
 
     @abstractmethod
     def calculate_orientation(self, solar_zenith, solar_azimuth):
@@ -1430,7 +1434,6 @@ class AbstractMount(ABC):
         orientation : dict-like
             A dict-like object with keys `'surface_tilt', 'surface_azimuth'`
         """
-        pass
 
 
 @dataclass

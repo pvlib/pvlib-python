@@ -824,7 +824,7 @@ class PVSystem:
 
         # need effective_irradiance to be an iterable
         if effective_irradiance is None:
-            effective_irradiance = tuple([None for a in self.num_arrays])
+            effective_irradiance = tuple([None] * self.num_arrays)
 
         def _build_kwargs_noct_sam(array):
             temp_model_kwargs = _build_kwargs([

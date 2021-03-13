@@ -160,6 +160,12 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
 
     Input all angles in degrees.
 
+    .. warning::
+
+        For certain inputs, numerical round-off can cause this function
+        to produce values slightly greater than 1.0 when the surface
+        normal and sun position vectors are parallel.
+
     Parameters
     ----------
     surface_tilt : numeric
@@ -181,9 +187,6 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         tools.cosd(surface_tilt) * tools.cosd(solar_zenith) +
         tools.sind(surface_tilt) * tools.sind(solar_zenith) *
         tools.cosd(solar_azimuth - surface_azimuth))
-
-    # GH 1185
-    projection = np.clip(projection, -1, 1)
 
     try:
         projection.name = 'aoi_projection'

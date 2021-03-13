@@ -503,8 +503,9 @@ def test_PVSystem_noct_celltemp(mocker):
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     mocker.spy(temperature, 'noct_sam')
     out = system.noct_sam_celltemp(poa_global, temp_air, wind_speed)
-    temperature.noct_sam.assert_called_once_with(poa_global, temp_air,
-                                                 wind_speed, noct, eta_m_ref)
+    temperature.noct_sam.assert_called_once_with(
+        poa_global, temp_air, wind_speed, effective_irradiance=None, noct=noct,
+        eta_m_ref=eta_m_ref)
     assert_allclose(out, expected)
     # now use optional arguments
     temp_model_params.update({'effective_irradiance': 1100.,

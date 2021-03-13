@@ -822,8 +822,9 @@ class PVSystem:
         temp_air = self._validate_per_array(temp_air, system_wide=True)
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
 
+        # need effective_irradiance to be an iterable
         if effective_irradiance is None:
-            effective_irradiance = poa_global
+            effective_irradiance = tuple([None for a in self.num_arrays])
 
         def _build_kwargs_noct_sam(array):
             temp_model_kwargs = _build_kwargs([

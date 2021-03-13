@@ -1303,8 +1303,7 @@ class Array:
         aoi : Series
             Then angle of incidence.
         """
-        orientation = self.mount.calculate_orientation(solar_zenith,
-                                                       solar_azimuth)
+        orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
         return irradiance.aoi(orientation['surface_tilt'],
                               orientation['surface_azimuth'],
                               solar_zenith, solar_azimuth)
@@ -1355,8 +1354,7 @@ class Array:
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        orientation = self.mount.calculate_orientation(solar_zenith,
-                                                       solar_azimuth)
+        orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
         return irradiance.get_total_irradiance(orientation['surface_tilt'],
                                                orientation['surface_azimuth'],
                                                solar_zenith, solar_azimuth,
@@ -1418,7 +1416,7 @@ class AbstractMount(ABC):
     """
 
     @abstractmethod
-    def calculate_orientation(self, solar_zenith, solar_azimuth):
+    def get_orientation(self, solar_zenith, solar_azimuth):
         """
         Determine module orientation.
 
@@ -1455,7 +1453,7 @@ class FixedMount(AbstractMount):
     surface_tilt: float = 0.0
     surface_azimuth: float = 180.0
 
-    def calculate_orientation(self, solar_zenith, solar_azimuth):
+    def get_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount
         return {
             'surface_tilt': self.surface_tilt,
@@ -1516,7 +1514,7 @@ class SingleAxisTrackerMount(AbstractMount):
     gcr: float = 2/7
     cross_axis_tilt: float = 0.0
 
-    def calculate_orientation(self, solar_zenith, solar_azimuth):
+    def get_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount
         from pvlib import tracking  # avoid circular import issue
         tracking_data = tracking.singleaxis(

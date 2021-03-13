@@ -2141,7 +2141,7 @@ def test_FixedMount_constructor(fixed_mount):
 
 def test_FixedMount_get_orientation(fixed_mount):
     expected = {'surface_tilt': 20, 'surface_azimuth': 180}
-    assert fixed_mount.calculate_orientation(45, 130) == expected
+    assert fixed_mount.get_orientation(45, 130) == expected
 
 
 def test_SingleAxisTrackerMount_constructor(single_axis_tracker_mount):
@@ -2153,7 +2153,7 @@ def test_SingleAxisTrackerMount_constructor(single_axis_tracker_mount):
 
 def test_SingleAxisTrackerMount_get_orientation(single_axis_tracker_mount):
     expected = {'surface_tilt': 19.29835284, 'surface_azimuth': 229.7643755}
-    actual = single_axis_tracker_mount.calculate_orientation(45, 190)
+    actual = single_axis_tracker_mount.get_orientation(45, 190)
     for key, expected_value in expected.items():
         err_msg = f"{key} value incorrect"
         assert actual[key] == pytest.approx(expected_value), err_msg

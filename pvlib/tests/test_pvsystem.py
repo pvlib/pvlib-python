@@ -388,7 +388,11 @@ def two_array_system(pvsyst_module_params, cec_module_params):
     # Need u_v to be non-zero so wind-speed changes cell temperature
     # under the pvsyst model.
     temperature_model['u_v'] = 1.0
+    # parameter for fuentes temperature model
     temperature_model['noct_installed'] = 45
+    # parameters for noct_sam temperature model
+    temperature_model['noct'] = 45.
+    temperature_model['eta_m_ref'] = 0.2
     module_params = {**pvsyst_module_params, **cec_module_params}
     return pvsystem.PVSystem(
         arrays=[

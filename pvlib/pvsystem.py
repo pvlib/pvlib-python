@@ -11,7 +11,7 @@ import os
 from urllib.request import urlopen
 import numpy as np
 import pandas as pd
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
 import warnings
@@ -1452,8 +1452,8 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
     """
 
-    surface_tilt: float = field(default=0)
-    surface_azimuth: float = field(default=180)
+    surface_tilt: float = 0.0
+    surface_azimuth: float = 180.0
 
     def calculate_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount
@@ -1509,12 +1509,12 @@ class SingleAxisTrackerMount(AbstractMount):
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
     """
-    axis_tilt: float = field(default=0)
-    axis_azimuth: float = field(default=0)
-    max_angle: float = field(default=90)
-    backtrack: bool = field(default=True)
-    gcr: float = field(default=2/7)
-    cross_axis_tilt: float = field(default=0)
+    axis_tilt: float = 0.0
+    axis_azimuth: float = 0.0
+    max_angle: float = 90.0
+    backtrack: bool = True
+    gcr: float = 2/7
+    cross_axis_tilt: float = 0.0
 
     def calculate_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount

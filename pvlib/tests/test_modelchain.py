@@ -705,8 +705,8 @@ def test_run_model_with_weather_fuentes_temp(sapm_dc_snl_ac_system, location,
     assert not mc.results.ac.empty
 
 
-def test_run_model_with_weather_noct_temp_temp(sapm_dc_snl_ac_system, location,
-                                               weather, mocker):
+def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
+                                              weather, mocker):
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
     sapm_dc_snl_ac_system.temperature_model_parameters = {

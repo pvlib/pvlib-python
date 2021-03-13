@@ -999,7 +999,7 @@ class ModelChain:
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
         arg_list = [poa, temp_air, wind_speed]
-        if model == 'noct_sam':
+        if model == self.system.noct_sam_celltemp:
             arg_list += [self.results.effective_irradiance]
         self.results.cell_temperature = model(*tuple(arg_list))
         return self

@@ -871,7 +871,8 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
     data_two = data.copy()
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location,
                     aoi_model='no_loss', spectral_model='no_loss')
-    # prepare_temperature expects mc.total_irrad and mc.results.weather to be set
+    # prepare_temperature expects mc.total_irrad and mc.results.weather
+    # to be set
     mc._assign_weather((data, data_two))
     mc._assign_total_irrad((data, data_two))
     mc._prepare_temperature((data, data_two))

@@ -792,12 +792,12 @@ def test_aoi_and_aoi_projection(surface_tilt, surface_azimuth, solar_zenith,
     assert_allclose(aoi_projection, aoi_proj_expected, atol=1e-6)
 
 
-def test_aoi_projection_precision():
+def test_aoi_precision():
     # GH 1185
     zenith = 89.26778228223463
     azimuth = 60.932028605997004
-    projection = irradiance.aoi_projection(zenith, azimuth, zenith, azimuth)
-    assert projection == 1
+    aoi = irradiance.aoi(zenith, azimuth, zenith, azimuth)
+    assert aoi == 0
 
 
 @pytest.fixture

@@ -508,13 +508,13 @@ def test_PVSystem_noct_celltemp(mocker):
         eta_m_ref=eta_m_ref)
     assert_allclose(out, expected)
     # now use optional arguments
-    temp_model_params.update({'effective_irradiance': 1100.,
-                              'transmittance_absorbtance': 0.8,
+    temp_model_params.update({'transmittance_absorptance': 0.8,
                               'array_height': 2,
                               'mount_standoff': 2.0})
     expected = 60.477703576
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
-    out = system.noct_sam_celltemp(poa_global, temp_air, wind_speed)
+    out = system.noct_sam_celltemp(poa_global, temp_air, wind_speed,
+                                   effective_irradiance=1100.)
     assert_allclose(out, expected)
 
 

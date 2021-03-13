@@ -223,7 +223,6 @@ def pvwatts_dc_pvwatts_ac_fuentes_temp_system():
     return system
 
 
-
 @pytest.fixture(scope="function")
 def pvwatts_dc_pvwatts_ac_noct_sam_temp_system():
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
@@ -1288,7 +1287,8 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
 
 
 @pytest.mark.parametrize('temp_model', [
-    'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp', 'noct_sam'])
+    'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp',
+    'noct_sam_temp'])
 def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                           pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                           pvwatts_dc_pvwatts_ac_faiman_temp_system,

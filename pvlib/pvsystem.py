@@ -739,7 +739,7 @@ class PVSystem:
 
         Returns
         -------
-        numeric or tuple of numeric
+        temperature_cell : Series or tuple of Series
             The modeled cell temperature [C]
 
         Notes
@@ -788,22 +788,22 @@ class PVSystem:
 
         Parameters
         ----------
-        poa_global : pandas Series or tuple of Series
-            Total incident irradiance [W/m^2]
+        poa_global : numeric or tuple of numeric
+            Total incident irradiance in W/m^2.
 
-        temp_air : pandas Series or tuple of Series
-            Ambient dry bulb temperature [C]
+        temp_air : numeric or tuple of numeric
+            Ambient dry bulb temperature in degrees C.
 
-        wind_speed : pandas Series or tuple of Series
-            Wind speed [m/s]
+        wind_speed : numeric or tuple of numeric
+            Wind speed in m/s at a height of 10 meters.
 
-        effective_irradiance : pandas Series, tuple of Series or None.
+        effective_irradiance : numeric, tuple of numeric or None.
             The irradiance that is converted to photocurrent. If None,
             assumed equal to ``poa_global``. [W/m^2]
 
         Returns
         -------
-        numeric or tuple of numeric
+        temperature_cell : numeric or tuple of numeric
             The modeled cell temperature [C]
 
         Notes
@@ -829,9 +829,19 @@ class PVSystem:
 
         def _build_kwargs_noct_sam(array):
             temp_model_kwargs = _build_kwargs([
-                'noct', 'eta_m_ref', 'transmittance_absorptance',
+                'transmittance_absorptance',
                 'array_height', 'mount_standoff'],
                 array.temperature_model_parameters)
+            try:
+                temp_model_kwargs['noct'] = \
+                    array.temperature_model_parameters['noct']
+                temp_model_kwargs['eta_m_ref'] = \
+                    array.temperature_model_parameters['eta_m_ref']
+            except KeyError:
+                msg = ('Parameter noct and eta_m_ref are required.'
+                       ' Found {} in temperature_model_parameters.'
+                       .format(array.temperature_model_parameters))
+                raise KeyError(msg)
             return temp_model_kwargs
         return tuple(
             temperature.noct_sam(

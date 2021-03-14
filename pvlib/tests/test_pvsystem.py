@@ -522,6 +522,14 @@ def test_PVSystem_noct_celltemp(mocker):
     assert_allclose(out, expected)
 
 
+def test_PVSystem_noct_celltemp_error():
+    poa_global, temp_air, wind_speed, eta_m_ref = (1000., 25., 1., 0.2)
+    temp_model_params = {'eta_m_ref': eta_m_ref}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    with pytest.raises(KeyError):
+        system.noct_sam_celltemp(poa_global, temp_air, wind_speed)
+
+
 @pytest.mark.parametrize("celltemp",
                          [pvsystem.PVSystem.faiman_celltemp,
                           pvsystem.PVSystem.pvsyst_celltemp,

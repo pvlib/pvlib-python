@@ -1100,7 +1100,7 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``weather``
+        Assigns attributes to ``results``: ``times``, ``weather``
 
         Examples
         --------
@@ -1113,7 +1113,7 @@ class ModelChain:
         >>> # my_weather containing 'dhi' and 'ghi'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
         >>> mc.complete_irradiance(my_weather)  # doctest: +SKIP
-        >>> mc.run_model(mc.weather)  # doctest: +SKIP
+        >>> mc.run_model(mc.results.weather)  # doctest: +SKIP
 
         >>> # my_weather containing 'dhi', 'ghi' and 'dni'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
@@ -1335,8 +1335,8 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``weather``, ``solar_position``, ``airmass``,
-        ``total_irrad``, ``aoi``
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``
 
         See also
         --------
@@ -1431,8 +1431,8 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``weather``, ``total_irrad``, ``solar_position``,
-        ``airmass``, ``aoi``.
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``total_irrad``, ``solar_position``, ``airmass``, ``aoi``.
 
         See also
         --------
@@ -1591,10 +1591,12 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``solar_position``, ``airmass``, ``weather``,
-        ``total_irrad``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
-        and ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
-        ``losses``, ``diode_params`` (if dc_model is a single diode model).
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``,
+        ``aoi_modifier``, ``spectral_modifier``, and
+        ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode
+        model).
 
         See also
         --------
@@ -1650,10 +1652,12 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``solar_position``, ``airmass``, ``weather``,
-        ``total_irrad``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
-        and ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
-        ``losses``, ``diode_params`` (if dc_model is a single diode model).
+        Assigns attributes to results: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``,
+        ``aoi_modifier``, ``spectral_modifier``, and
+        ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode
+        model).
 
         See also
         --------
@@ -1746,7 +1750,7 @@ class ModelChain:
         If optional column ``'poa_global'`` is present, these data are used.
         If ``'poa_global'`` is not present, ``'effective_irradiance'`` is used.
 
-        Assigns attributes: ``weather``, ``total_irrad``,
+        Assigns attributes to results: ``times``, ``weather``, ``total_irrad``,
         ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
         ``losses``, ``diode_params`` (if dc_model is a single diode model).
 

@@ -103,6 +103,8 @@ Enhancements
   (:pull:`1147`, :issue:`998`, :pull:`1150`)
 * Added :py:func:`~pvlib.temperature.noct_sam`, a cell temperature model
   implemented in SAM (:pull:`1177`)
+* Added :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` to calculate
+  the temperature coefficient of power for the pvsyst module model.
 
 Bug fixes
 ~~~~~~~~~

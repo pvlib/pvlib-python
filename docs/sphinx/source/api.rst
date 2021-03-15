@@ -266,6 +266,7 @@ Functions relevant for single diode models.
    pvsystem.singlediode
    pvsystem.v_from_i
    pvsystem.max_power_point
+   ivtools.sdm.pvsyst_temperature_coeff
 
 Low-level functions for solving the single diode equation.
 
@@ -332,6 +333,7 @@ Pvsyst model
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode
+   ivtools.sdm.pvsyst_temperature_coeff
 
 PVWatts model
 ^^^^^^^^^^^^^

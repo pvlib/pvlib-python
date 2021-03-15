@@ -797,7 +797,7 @@ class PVSystem:
         wind_speed : numeric or tuple of numeric
             Wind speed in m/s at a height of 10 meters.
 
-        effective_irradiance : numeric, tuple of numeric or None.
+        effective_irradiance : numeric, tuple of numeric, or None.
             The irradiance that is converted to photocurrent. If None,
             assumed equal to ``poa_global``. [W/m^2]
 
@@ -833,12 +833,14 @@ class PVSystem:
                 'array_height', 'mount_standoff'],
                 array.temperature_model_parameters)
             try:
+                # noct_sam required args
+                # bundled with kwargs for simplicity
                 temp_model_kwargs['noct'] = \
                     array.temperature_model_parameters['noct']
                 temp_model_kwargs['eta_m_ref'] = \
                     array.temperature_model_parameters['eta_m_ref']
             except KeyError:
-                msg = ('Parameter noct and eta_m_ref are required.'
+                msg = ('Parameters noct and eta_m_ref are required.'
                        ' Found {} in temperature_model_parameters.'
                        .format(array.temperature_model_parameters))
                 raise KeyError(msg)

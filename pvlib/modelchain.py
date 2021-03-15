@@ -382,7 +382,7 @@ class ModelChain:
         The ModelChain instance will be passed as the first argument to a
         user-defined function.
 
-    dc_ohmic_model: None, str or function, default None
+    dc_ohmic_model: str or function, default 'no_loss'
         Valid strings are 'dc_ohms_from_percent', 'no_loss'. The ModelChain
         instance will be passed as the first argument to a user-defined
         function.
@@ -1082,9 +1082,7 @@ class ModelChain:
 
     @dc_ohmic_model.setter
     def dc_ohmic_model(self, model):
-        if model is None:
-            self._dc_ohmic_model = self.no_dc_ohmic_loss
-        elif isinstance(model, str):
+        if isinstance(model, str):
             model = model.lower()
             if model == 'dc_ohms_from_percent':
                 self._dc_ohmic_model = self.dc_ohms_from_percent

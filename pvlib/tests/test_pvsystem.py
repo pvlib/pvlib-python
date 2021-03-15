@@ -511,6 +511,16 @@ def test_PVSystem_noct_celltemp(mocker):
         poa_global, temp_air, wind_speed, effective_irradiance=None, noct=noct,
         eta_m_ref=eta_m_ref)
     assert_allclose(out, expected)
+    # dufferent types
+    out = system.noct_sam_celltemp(np.array(poa_global), np.array(temp_air),
+                                   np.array(wind_speed))
+    assert_allclose(out, expected)
+    dr = pd.date_range(start='2020-01-01 12:00:00', end='2020-01-01 13:00:00',
+                       freq='1H')
+    out = system.noct_sam_celltemp(pd.Series(index=dr, data=poa_global),
+                                   pd.Series(index=dr, data=temp_air),
+                                   pd.Series(index=dr, data=wind_speed))
+    assert_series_equal(out, pd.Series(index=dr, data=expected))
     # now use optional arguments
     temp_model_params.update({'transmittance_absorptance': 0.8,
                               'array_height': 2,

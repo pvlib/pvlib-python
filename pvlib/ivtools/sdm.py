@@ -1272,48 +1272,46 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
     Parameters
     ----------
     alpha_sc : float
-        The short-circuit current temperature coefficient of the
-        module in units of A/C.
+        The short-circuit current temperature coefficient of the module. [A/C]
 
     gamma_ref : float
-        The diode ideality factor
+        The diode ideality factor. [unitless]
 
     mu_gamma : float
-        The temperature coefficient for the diode ideality factor, 1/K
+        The temperature coefficient for the diode ideality factor. [1/K]
 
     I_L_ref : float
-        The light-generated current (or photocurrent) at reference conditions,
-        in amperes.
+        The light-generated current (or photocurrent) at reference conditions.
+        [A]
 
     I_o_ref : float
-        The dark or diode reverse saturation current at reference conditions,
-        in amperes.
+        The dark or diode reverse saturation current at reference conditions.
+        [A]
 
     R_sh_ref : float
-        The shunt resistance at reference conditions, in ohms.
+        The shunt resistance at reference conditions. [ohm]
 
     R_sh_0 : float
-        The shunt resistance at zero irradiance conditions, in ohms.
+        The shunt resistance at zero irradiance conditions. [ohm]
 
     R_s : float
-        The series resistance at reference conditions, in ohms.
+        The series resistance at reference conditions. [ohm]
 
-    cells_in_series : integer
+    cells_in_series : int
         The number of cells connected in series.
 
-    R_sh_exp : float
-        The exponent in the equation for shunt resistance, unitless. Defaults
-        to 5.5.
+    R_sh_exp : float, default 5.5
+        The exponent in the equation for shunt resistance. [unitless]
 
-    EgRef : float
-        The energy bandgap at reference temperature in units of eV.
-        1.121 eV for crystalline silicon. EgRef must be >0.
+    EgRef : float, default 1.121
+        The energy bandgap of the module's cells at reference temperature.
+        Default of 1.121 eV is for crystalline silicon. Must be positive. [eV]
 
-    irrad_ref : float (optional, default=1000)
-        Reference irradiance in W/m^2.
+    irrad_ref : float, default 1000
+        Reference irradiance. [W/m^2].
 
-    temp_ref : float (optional, default=25)
-        Reference cell temperature in C.
+    temp_ref : float, default 25
+        Reference cell temperature. [C]
 
 
     Returns

@@ -392,8 +392,8 @@ def test_pvsyst_temperature_coeff():
     params_hiT = pvsystem.calcparams_pvsyst(1000, 26, **params)
     res_lowT = pvsystem.singlediode(*params_lowT)
     res_hiT = pvsystem.singlediode(*params_hiT)
-    expected = (res_hiT['p_mp'] - res_lowT['p_mp']) / 0.2
+    expected = (res_hiT['p_mp'] - res_lowT['p_mp']) / 2.
     # convert to %/C
     expected = expected * 100 / (0.5 * (res_hiT['p_mp'] + res_lowT['p_mp']))
-    gamma_pdc, pdc_0 = pvsystem.pvsyst_temperature_coeff(**params)
-    assert_allclose(gamma_pdc, expected, rtol=0.01)
+    gamma_pdc, pdc_0 = sdm.pvsyst_temperature_coeff(**params)
+    assert_allclose(gamma_pdc, expected, rtol=0.0005)

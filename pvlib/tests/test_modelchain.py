@@ -719,7 +719,9 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
     assert m_noct_sam.call_count == 1
     assert_series_equal(m_noct_sam.call_args[0][1], weather['temp_air'])
     assert_series_equal(m_noct_sam.call_args[0][2], weather['wind_speed'])
-    assert not mc.results.ac.empty
+    # check that effective_irradiance was used
+    assert m_noct_sam.call_args[1] == {
+        'effective_irradiance': mc.results.effective_irradiance}
 
 
 def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):

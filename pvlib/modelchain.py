@@ -998,11 +998,11 @@ class ModelChain:
                                   self.results.effective_irradiance)
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
-        arg_list = [poa, temp_air, wind_speed]
         kwargs = {}
         if model == self.system.noct_sam_celltemp:
             kwargs['effective_irradiance'] = self.results.effective_irradiance
-        self.results.cell_temperature = model(*tuple(arg_list))
+        self.results.cell_temperature = model(poa, temp_air, wind_speed,
+                                              **kwargs)
         return self
 
     def sapm_temp(self):

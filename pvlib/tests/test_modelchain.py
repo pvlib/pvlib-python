@@ -1536,6 +1536,91 @@ def constant_losses(mc):
     mc.results.dc *= mc.losses
 
 
+def dc_constant_losses(mc):
+    mc.results.dc['p_mp'] *= 0.9
+
+
+def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
+                                          cec_dc_snl_ac_arrays,
+                                          location,
+                                          weather,
+                                          mocker):
+
+    m = mocker.spy(pvsystem, 'dc_ohms_from_percent')
+
+    system = cec_dc_snl_ac_system
+
+    for array in system.arrays:
+        array.array_losses_parameters = dict(dc_ohmic_percent=3)
+
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='dc_ohms_from_percent')
+    mc.run_model(weather)
+
+    assert m.call_count == 1
+
+    assert isinstance(mc.results.dc_ohmic_losses, pd.Series)
+
+    system = cec_dc_snl_ac_arrays
+
+    for array in system.arrays:
+        array.array_losses_parameters = dict(dc_ohmic_percent=3)
+
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='dc_ohms_from_percent')
+    mc.run_model(weather)
+
+    assert m.call_count == 3
+    assert len(mc.results.dc_ohmic_losses) == len(mc.system.arrays)
+
+    assert isinstance(mc.results.dc_ohmic_losses, tuple)
+
+
+def test_dc_ohmic_model_no_dc_ohmic_loss(cec_dc_snl_ac_system,
+                                         location,
+                                         weather,
+                                         mocker):
+
+    m = mocker.spy(modelchain.ModelChain, 'no_dc_ohmic_loss')
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='no_loss')
+    mc.run_model(weather)
+
+    assert mc.dc_ohmic_model == mc.no_dc_ohmic_loss
+    assert m.call_count == 1
+    assert mc.results.dc_ohmic_losses is None
+
+
+def test_dc_ohmic_ext_def(cec_dc_snl_ac_system, location,
+                          weather, mocker):
+    m = mocker.spy(sys.modules[__name__], 'dc_constant_losses')
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model=dc_constant_losses)
+    mc.run_model(weather)
+
+    assert m.call_count == 1
+    assert isinstance(mc.results.ac, (pd.Series, pd.DataFrame))
+    assert not mc.results.ac.empty
+
+
+def test_dc_ohmic_not_a_model(cec_dc_snl_ac_system, location,
+                              weather, mocker):
+    exc_text = 'not_a_dc_model is not a valid losses model'
+    with pytest.raises(ValueError, match=exc_text):
+        ModelChain(cec_dc_snl_ac_system, location,
+                   aoi_model='no_loss',
+                   spectral_model='no_loss',
+                   dc_ohmic_model='not_a_dc_model')
+
+
 def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
                                mocker):
     age = 1

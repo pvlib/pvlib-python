@@ -255,7 +255,8 @@ class ModelChainResult:
     _singleton_tuples: bool = field(default=False)
     _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
-                         'effective_irradiance', 'dc', 'diode_params'}
+                         'effective_irradiance', 'dc', 'diode_params',
+                         'dc_ohmic_losses'}
 
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
@@ -275,6 +276,7 @@ class ModelChainResult:
     dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \
         field(default=None)
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
+    dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
 
     def _result_type(self, value):
         """Coerce `value` to the correct type according to
@@ -356,6 +358,11 @@ class ModelChain:
         The ModelChain instance will be passed as the first argument to a
         user-defined function.
 
+    dc_ohmic_model: str or function, default 'no_loss'
+        Valid strings are 'dc_ohms_from_percent', 'no_loss'. The ModelChain
+        instance will be passed as the first argument to a user-defined
+        function.
+
     losses_model: str or function, default 'no_loss'
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
         will be passed as the first argument to a user-defined function.
@@ -377,6 +384,7 @@ class ModelChain:
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temperature_model=None,
+                 dc_ohmic_model='no_loss',
                  losses_model='no_loss', name=None):
 
         self.name = name
@@ -395,6 +403,7 @@ class ModelChain:
         self.spectral_model = spectral_model
         self.temperature_model = temperature_model
 
+        self.dc_ohmic_model = dc_ohmic_model
         self.losses_model = losses_model
 
         self.weather = None
@@ -1019,6 +1028,49 @@ class ModelChain:
 
     def noct_sam_temp(self):
         return self._set_celltemp(self.system.noct_sam_celltemp)
+
+    @property
+    def dc_ohmic_model(self):
+        return self._dc_ohmic_model
+
+    @dc_ohmic_model.setter
+    def dc_ohmic_model(self, model):
+        if isinstance(model, str):
+            model = model.lower()
+            if model == 'dc_ohms_from_percent':
+                self._dc_ohmic_model = self.dc_ohms_from_percent
+            elif model == 'no_loss':
+                self._dc_ohmic_model = self.no_dc_ohmic_loss
+            else:
+                raise ValueError(model + ' is not a valid losses model')
+        else:
+            self._dc_ohmic_model = partial(model, self)
+
+    def dc_ohms_from_percent(self):
+        """
+        Calculate time series of ohmic losses and apply those to the mpp power
+        output of the `dc_model` based on the pvsyst equivalent resistance
+        method. Uses a `dc_ohmic_percent` parameter in the `losses_parameters`
+        of the PVsystem.
+        """
+        Rw = self.system.dc_ohms_from_percent()
+        if isinstance(self.results.dc, tuple):
+            self.results.dc_ohmic_losses = tuple(
+                pvsystem.dc_ohmic_losses(Rw, df['i_mp'])
+                for Rw, df in zip(Rw, self.results.dc)
+            )
+            for df, loss in zip(self.results.dc, self.results.dc_ohmic_losses):
+                df['p_mp'] = df['p_mp'] - loss
+        else:
+            self.results.dc_ohmic_losses = pvsystem.dc_ohmic_losses(
+                Rw, self.results.dc['i_mp']
+            )
+            self.results.dc['p_mp'] = (self.results.dc['p_mp']
+                                       - self.results.dc_ohmic_losses)
+        return self
+
+    def no_dc_ohmic_loss(self):
+        return self
 
     @property
     def losses_model(self):
@@ -1693,6 +1745,7 @@ class ModelChain:
         """
         self._prepare_temperature(data)
         self.dc_model()
+        self.dc_ohmic_model()
         self.losses_model()
         self.ac_model()
 

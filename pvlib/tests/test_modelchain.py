@@ -720,7 +720,7 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
     assert_series_equal(m_noct_sam.call_args[0][1], weather['temp_air'])
     assert_series_equal(m_noct_sam.call_args[0][2], weather['wind_speed'])
     # check that effective_irradiance was used
-    assert m_noct_sam.call_args.kwargs == {
+    assert m_noct_sam.call_args[1] == {
         'effective_irradiance': mc.results.effective_irradiance}
 
 

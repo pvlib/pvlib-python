@@ -388,12 +388,15 @@ def test_pvsyst_temperature_coeff():
     params = {'alpha_sc': 0., 'gamma_ref': 1.1, 'mu_gamma': 0.,
               'I_L_ref': 6., 'I_o_ref': 5.e-9, 'R_sh_ref': 200.,
               'R_sh_0': 2000., 'R_s': 0.5, 'cells_in_series': 60}
-    params_lowT = pvsystem.calcparams_pvsyst(1000, 24, **params)
-    params_hiT = pvsystem.calcparams_pvsyst(1000, 26, **params)
-    res_lowT = pvsystem.singlediode(*params_lowT)
-    res_hiT = pvsystem.singlediode(*params_hiT)
-    expected = (res_hiT['p_mp'] - res_lowT['p_mp']) / 2.
-    # convert to %/C
-    expected = expected * 100 / (0.5 * (res_hiT['p_mp'] + res_lowT['p_mp']))
-    gamma_pdc, pdc_0 = sdm.pvsyst_temperature_coeff(**params)
+    expected = -0.7489980887568493
+    # params defines a Pvsyst model for a notional module.
+    # expected value is created by calculating power at 1000 W/m2, and cell
+    # temperature of 24 and 26C, using pvsystem.calcparams_pvsyst and
+    # pvsystem.singlediode. The derivative (value for expected) is estimated
+    # as the slope (p_mp at 26C - p_mp at 24C) / 2
+    # using the secant rule for derivatives.
+    gamma_pdc = sdm.pvsyst_temperature_coeff(
+        params['alpha_sc'], params['gamma_ref'], params['mu_gamma'],
+        params['I_L_ref'], params['I_o_ref'], params['R_sh_ref'],
+        params['R_sh_0'], params['R_s'], params['cells_in_series'])
     assert_allclose(gamma_pdc, expected, rtol=0.0005)

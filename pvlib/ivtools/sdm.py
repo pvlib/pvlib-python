@@ -1339,5 +1339,6 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
     args = (irrad_ref, alpha_sc, gamma_ref, mu_gamma, I_L_ref,
             I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
             temp_ref)
+    pmp = maxp(temp_ref, *args)
     gamma_pdc = derivative(maxp, temp_ref, args=args)
-    return gamma_pdc
+    return gamma_pdc / pmp

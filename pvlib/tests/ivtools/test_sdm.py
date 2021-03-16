@@ -388,7 +388,7 @@ def test_pvsyst_temperature_coeff():
     params = {'alpha_sc': 0., 'gamma_ref': 1.1, 'mu_gamma': 0.,
               'I_L_ref': 6., 'I_o_ref': 5.e-9, 'R_sh_ref': 200.,
               'R_sh_0': 2000., 'R_s': 0.5, 'cells_in_series': 60}
-    expected = -0.7489980887568493
+    expected = -0.004886706494879083
     # params defines a Pvsyst model for a notional module.
     # expected value is created by calculating power at 1000 W/m2, and cell
     # temperature of 24 and 26C, using pvsystem.calcparams_pvsyst and

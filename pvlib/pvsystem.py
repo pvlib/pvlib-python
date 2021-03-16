@@ -143,7 +143,8 @@ class PVSystem:
         Module parameters as defined by the SAPM, CEC, or other.
 
     temperature_model_parameters : None, dict or Series, default None.
-        Temperature model parameters as defined by the SAPM, Pvsyst, or other.
+        Temperature model parameters as required by one of the models in
+        pvlib.temperature (excluding poa_global, temp_air and wind_speed).
 
     modules_per_string: int or float, default 1
         See system topology discussion above.
@@ -750,8 +751,6 @@ class PVSystem:
         if you want to match the PVWatts behavior, you can override it by
         including a ``surface_tilt`` value in ``temperature_model_parameters``.
 
-        Notes
-        -----
         The `temp_air` and `wind_speed` parameters may be passed as tuples
         to provide different values for each Array in the system. If not
         passed as a tuple then the same value is used for input to each Array.
@@ -778,6 +777,82 @@ class PVSystem:
                 **_build_kwargs_fuentes(array))
             for array, poa_global, temp_air, wind_speed in zip(
                 self.arrays, poa_global, temp_air, wind_speed
+            )
+        )
+
+    @_unwrap_single_value
+    def noct_sam_celltemp(self, poa_global, temp_air, wind_speed,
+                          effective_irradiance=None):
+        """
+        Use :py:func:`temperature.noct_sam` to calculate cell temperature.
+
+        Parameters
+        ----------
+        poa_global : numeric or tuple of numeric
+            Total incident irradiance in W/m^2.
+
+        temp_air : numeric or tuple of numeric
+            Ambient dry bulb temperature in degrees C.
+
+        wind_speed : numeric or tuple of numeric
+            Wind speed in m/s at a height of 10 meters.
+
+        effective_irradiance : numeric, tuple of numeric, or None.
+            The irradiance that is converted to photocurrent. If None,
+            assumed equal to ``poa_global``. [W/m^2]
+
+        Returns
+        -------
+        temperature_cell : numeric or tuple of numeric
+            The modeled cell temperature [C]
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
+        """
+        # default to using the Array attribute, but allow user to
+        # override with a custom surface_tilt value
+        poa_global = self._validate_per_array(poa_global)
+        temp_air = self._validate_per_array(temp_air, system_wide=True)
+        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
+
+        # need effective_irradiance to be an iterable
+        if effective_irradiance is None:
+            effective_irradiance = tuple([None] * self.num_arrays)
+        else:
+            effective_irradiance = self._validate_per_array(
+                effective_irradiance)
+
+        def _build_kwargs_noct_sam(array):
+            temp_model_kwargs = _build_kwargs([
+                'transmittance_absorptance',
+                'array_height', 'mount_standoff'],
+                array.temperature_model_parameters)
+            try:
+                # noct_sam required args
+                # bundled with kwargs for simplicity
+                temp_model_kwargs['noct'] = \
+                    array.temperature_model_parameters['noct']
+                temp_model_kwargs['eta_m_ref'] = \
+                    array.temperature_model_parameters['eta_m_ref']
+            except KeyError:
+                msg = ('Parameters noct and eta_m_ref are required.'
+                       ' Found {} in temperature_model_parameters.'
+                       .format(array.temperature_model_parameters))
+                raise KeyError(msg)
+            return temp_model_kwargs
+        return tuple(
+            temperature.noct_sam(
+                poa_global, temp_air, wind_speed,
+                effective_irradiance=eff_irrad,
+                **_build_kwargs_noct_sam(array))
+            for array, poa_global, temp_air, wind_speed, eff_irrad in zip(
+                self.arrays, poa_global, temp_air, wind_speed,
+                effective_irradiance
             )
         )
 

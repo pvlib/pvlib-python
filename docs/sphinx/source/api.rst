@@ -242,6 +242,8 @@ PV temperature models
    pvsystem.PVSystem.sapm_celltemp
    pvsystem.PVSystem.pvsyst_celltemp
    pvsystem.PVSystem.faiman_celltemp
+   pvsystem.PVSystem.fuentes_celltemp
+   pvsystem.PVSystem.noct_sam_celltemp
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

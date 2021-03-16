@@ -352,7 +352,7 @@ class ModelChain:
         as the first argument to a user-defined function.
 
     temperature_model: None, str or function, default None
-        Valid strings are 'sapm', 'pvsyst', 'faiman', and 'fuentes'.
+        Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
         The ModelChain instance will be passed as the first argument to a
         user-defined function.
 
@@ -935,6 +935,8 @@ class ModelChain:
                 self._temperature_model = self.faiman_temp
             elif model == 'fuentes':
                 self._temperature_model = self.fuentes_temp
+            elif model == 'noct_sam':
+                self._temperature_model = self.noct_sam_temp
             else:
                 raise ValueError(model + ' is not a valid temperature model')
             # check system.temperature_model_parameters for consistency
@@ -965,6 +967,8 @@ class ModelChain:
             return self.faiman_temp
         elif {'noct_installed'} <= params:
             return self.fuentes_temp
+        elif {'noct', 'eta_m_ref'} <= params:
+            return self.noct_sam_temp
         else:
             raise ValueError(f'could not infer temperature model from '
                              f'system.temperature_model_parameters. Check '
@@ -994,7 +998,11 @@ class ModelChain:
                                   self.results.effective_irradiance)
         temp_air = _tuple_from_dfs(self.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
-        self.results.cell_temperature = model(poa, temp_air, wind_speed)
+        kwargs = {}
+        if model == self.system.noct_sam_celltemp:
+            kwargs['effective_irradiance'] = self.results.effective_irradiance
+        self.results.cell_temperature = model(poa, temp_air, wind_speed,
+                                              **kwargs)
         return self
 
     def sapm_temp(self):
@@ -1008,6 +1016,9 @@ class ModelChain:
 
     def fuentes_temp(self):
         return self._set_celltemp(self.system.fuentes_celltemp)
+
+    def noct_sam_temp(self):
+        return self._set_celltemp(self.system.noct_sam_celltemp)
 
     @property
     def losses_model(self):

@@ -224,6 +224,18 @@ def pvwatts_dc_pvwatts_ac_fuentes_temp_system():
 
 
 @pytest.fixture(scope="function")
+def pvwatts_dc_pvwatts_ac_noct_sam_temp_system():
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_params = {'noct': 45, 'eta_m_ref': 0.2}
+    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
+                      inverter_parameters=inverter_parameters)
+    return system
+
+
+@pytest.fixture(scope="function")
 def system_no_aoi(cec_module_cs5p_220m, sapm_temperature_cs5p_220m,
                   cec_inverter_parameters):
     module_parameters = cec_module_cs5p_220m.copy()
@@ -693,6 +705,25 @@ def test_run_model_with_weather_fuentes_temp(sapm_dc_snl_ac_system, location,
     assert not mc.results.ac.empty
 
 
+def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
+                                              weather, mocker):
+    weather['wind_speed'] = 5
+    weather['temp_air'] = 10
+    sapm_dc_snl_ac_system.temperature_model_parameters = {
+        'noct': 45, 'eta_m_ref': 0.2
+    }
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.temperature_model = 'noct_sam'
+    m_noct_sam = mocker.spy(sapm_dc_snl_ac_system, 'noct_sam_celltemp')
+    mc.run_model(weather)
+    assert m_noct_sam.call_count == 1
+    assert_series_equal(m_noct_sam.call_args[0][1], weather['temp_air'])
+    assert_series_equal(m_noct_sam.call_args[0][2], weather['wind_speed'])
+    # check that effective_irradiance was used
+    assert m_noct_sam.call_args[1] == {
+        'effective_irradiance': mc.results.effective_irradiance}
+
+
 def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
     system = SingleAxisTracker(
         module_parameters=sapm_dc_snl_ac_system.module_parameters,
@@ -907,7 +938,9 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                           ({'u0': 25.0, 'u1': 6.84},
                            ModelChain.faiman_temp),
                           ({'noct_installed': 45},
-                           ModelChain.fuentes_temp)])
+                           ModelChain.fuentes_temp),
+                          ({'noct': 45, 'eta_m_ref': 0.2},
+                           ModelChain.noct_sam_temp)])
 def test_temperature_models_arrays_multi_weather(
         temp_params, temp_model,
         sapm_dc_snl_ac_system_same_arrays,
@@ -1256,16 +1289,19 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
 
 
 @pytest.mark.parametrize('temp_model', [
-    'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp'])
+    'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp',
+    'noct_sam_temp'])
 def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                           pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                           pvwatts_dc_pvwatts_ac_faiman_temp_system,
                           pvwatts_dc_pvwatts_ac_fuentes_temp_system,
+                          pvwatts_dc_pvwatts_ac_noct_sam_temp_system,
                           temp_model):
     dc_systems = {'sapm_temp': sapm_dc_snl_ac_system,
                   'pvsyst_temp': pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                   'faiman_temp': pvwatts_dc_pvwatts_ac_faiman_temp_system,
-                  'fuentes_temp': pvwatts_dc_pvwatts_ac_fuentes_temp_system}
+                  'fuentes_temp': pvwatts_dc_pvwatts_ac_fuentes_temp_system,
+                  'noct_sam_temp': pvwatts_dc_pvwatts_ac_noct_sam_temp_system}
     system = dc_systems[temp_model]
     mc = ModelChain(system, location, aoi_model='physical',
                     spectral_model='no_loss')

@@ -104,7 +104,7 @@ Enhancements
   from DC power. Use parameter ``model`` to specify which inverter model to use.
   (:pull:`1147`, :issue:`998`, :pull:`1150`)
 * Added :py:func:`~pvlib.temperature.noct_sam`, a cell temperature model
-  implemented in SAM (:pull:`1177`)
+  implemented in SAM (:pull:`1177`, :pull:`1195`)
 
 Bug fixes
 ~~~~~~~~~

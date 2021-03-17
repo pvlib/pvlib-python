@@ -244,7 +244,7 @@ def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     for arg in [surface_tilt, surface_azimuth, solar_zenith, solar_azimuth]:
         if hasattr(arg, 'index'):
             aoi_value = pd.Series(aoi_value, index=arg.index)
-            aoi_value.name = 'aoi'
+            break
 
     return aoi_value
 

@@ -256,7 +256,7 @@ class ModelChainResult:
     _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
                          'effective_irradiance', 'dc', 'diode_params',
-                         'dc_ohmic_losses'}
+                         'dc_ohmic_losses', 'weather'}
 
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
@@ -277,6 +277,9 @@ class ModelChainResult:
         field(default=None)
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
     dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
+
+    weather: Optional[PerArray[pd.DataFrame]] = None
+    times: Optional[pd.DatetimeIndex] = None
 
     def _result_type(self, value):
         """Coerce `value` to the correct type according to
@@ -375,7 +378,8 @@ class ModelChain:
     _deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
                          'aoi', 'aoi_modifier', 'spectral_modifier',
                          'cell_temperature', 'effective_irradiance',
-                         'dc', 'ac', 'diode_params', 'tracking']
+                         'dc', 'ac', 'diode_params', 'tracking',
+                         'weather', 'times']
 
     def __init__(self, system, location,
                  clearsky_model='ineichen',
@@ -405,9 +409,6 @@ class ModelChain:
 
         self.dc_ohmic_model = dc_ohmic_model
         self.losses_model = losses_model
-
-        self.weather = None
-        self.times = None
 
         self.results = ModelChainResult()
 
@@ -908,7 +909,7 @@ class ModelChain:
 
     def first_solar_spectral_loss(self):
         self.results.spectral_modifier = self.system.first_solar_spectral_loss(
-            _tuple_from_dfs(self.weather, 'precipitable_water'),
+            _tuple_from_dfs(self.results.weather, 'precipitable_water'),
             self.results.airmass['airmass_absolute']
         )
         return self
@@ -1005,8 +1006,8 @@ class ModelChain:
 
         poa = _irrad_for_celltemp(self.results.total_irrad,
                                   self.results.effective_irradiance)
-        temp_air = _tuple_from_dfs(self.weather, 'temp_air')
-        wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
+        temp_air = _tuple_from_dfs(self.results.weather, 'temp_air')
+        wind_speed = _tuple_from_dfs(self.results.weather, 'wind_speed')
         kwargs = {}
         if model == self.system.noct_sam_celltemp:
             kwargs['effective_irradiance'] = self.results.effective_irradiance
@@ -1161,7 +1162,7 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``weather``
+        Assigns attributes to ``results``: ``times``, ``weather``
 
         Examples
         --------
@@ -1174,7 +1175,7 @@ class ModelChain:
         >>> # my_weather containing 'dhi' and 'ghi'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
         >>> mc.complete_irradiance(my_weather)  # doctest: +SKIP
-        >>> mc.run_model(mc.weather)  # doctest: +SKIP
+        >>> mc.run_model(mc.results.weather)  # doctest: +SKIP
 
         >>> # my_weather containing 'dhi', 'ghi' and 'dni'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
@@ -1184,16 +1185,16 @@ class ModelChain:
         self._check_multiple_input(weather)
         # Don't use ModelChain._assign_weather() here because it adds
         # temperature and wind-speed columns which we do not need here.
-        self.weather = _copy(weather)
+        self.results.weather = _copy(weather)
         self._assign_times()
         self.results.solar_position = self.location.get_solarposition(
-            self.times, method=self.solar_position_method)
+            self.results.times, method=self.solar_position_method)
 
         if isinstance(weather, tuple):
-            for w in self.weather:
+            for w in self.results.weather:
                 self._complete_irradiance(w)
         else:
-            self._complete_irradiance(self.weather)
+            self._complete_irradiance(self.results.weather)
 
         return self
 
@@ -1238,7 +1239,7 @@ class ModelChain:
             pass
 
         self.results.solar_position = self.location.get_solarposition(
-            self.times, method=self.solar_position_method,
+            self.results.times, method=self.solar_position_method,
             **kwargs)
         return self
 
@@ -1301,15 +1302,23 @@ class ModelChain:
             for (i, array_data) in enumerate(data):
                 _verify(array_data, i)
 
-    def _configure_results(self):
-        """Configure the type used for per-array fields in ModelChainResult.
+    def _configure_results(self, per_array_data):
+        """Configure the type used for per-array fields in
+        ModelChainResult.
 
-        Must be called after ``self.weather`` has been assigned. If
-        ``self.weather`` is a tuple and the number of arrays in the system
-        is 1, then per-array results are stored as length-1 tuples.
+        If ``per_array_data`` is True and the number of arrays in the
+        system is 1, then per-array results are stored as length-1
+        tuples. This overrides the PVSystem defaults of unpacking a 1
+        length tuple into a singleton.
+
+        Parameters
+        ----------
+        per_array_data : bool
+            If input data is provided for each array, pass True. If a
+            single input data is provided for all arrays, pass False.
         """
         self.results._singleton_tuples = (
-            self.system.num_arrays == 1 and isinstance(self.weather, tuple)
+            self.system.num_arrays == 1 and per_array_data
         )
 
     def _assign_weather(self, data):
@@ -1321,13 +1330,13 @@ class ModelChain:
             if weather.get('temp_air') is None:
                 weather['temp_air'] = 20
             return weather
-        if not isinstance(data, tuple):
-            self.weather = _build_weather(data)
+        if isinstance(data, tuple):
+            weather = tuple(_build_weather(wx) for wx in data)
+            self._configure_results(per_array_data=True)
         else:
-            self.weather = tuple(
-                _build_weather(weather) for weather in data
-            )
-        self._configure_results()
+            weather = _build_weather(data)
+            self._configure_results(per_array_data=False)
+        self.results.weather = weather
         self._assign_times()
         return self
 
@@ -1344,18 +1353,20 @@ class ModelChain:
         return self
 
     def _assign_times(self):
-        """Assign self.times according the the index of self.weather.
+        """Assign self.results.times according the the index of
+        self.results.weather.
 
-        If there are multiple DataFrames in self.weather then the index
-        of the first one is assigned. It is assumed that the indices of
-        each data frame in `weather` are the same. This can be verified
-        by calling :py:func:`_all_same_index` or
-        :py:meth:`self._check_multiple_weather` before calling this method.
+        If there are multiple DataFrames in self.results.weather then
+        the index of the first one is assigned. It is assumed that the
+        indices of each DataFrame in self.results.weather are the same.
+        This can be verified by calling :py:func:`_all_same_index` or
+        :py:meth:`self._check_multiple_weather` before calling this
+        method.
         """
-        if isinstance(self.weather, tuple):
-            self.times = self.weather[0].index
+        if isinstance(self.results.weather, tuple):
+            self.results.times = self.results.weather[0].index
         else:
-            self.times = self.weather.index
+            self.results.times = self.results.weather.index
 
     def prepare_inputs(self, weather):
         """
@@ -1386,8 +1397,8 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``weather``, ``solar_position``, ``airmass``,
-        ``total_irrad``, ``aoi``
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``
 
         See also
         --------
@@ -1421,9 +1432,9 @@ class ModelChain:
                 self.results.solar_position['azimuth'])
 
         self.results.total_irrad = get_irradiance(
-            _tuple_from_dfs(self.weather, 'dni'),
-            _tuple_from_dfs(self.weather, 'ghi'),
-            _tuple_from_dfs(self.weather, 'dhi'),
+            _tuple_from_dfs(self.results.weather, 'dni'),
+            _tuple_from_dfs(self.results.weather, 'ghi'),
+            _tuple_from_dfs(self.results.weather, 'dhi'),
             airmass=self.results.airmass['airmass_relative'],
             model=self.transposition_model
         )
@@ -1482,8 +1493,8 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``weather``, ``total_irrad``, ``solar_position``,
-        ``airmass``, ``aoi``.
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``total_irrad``, ``solar_position``, ``airmass``, ``aoi``.
 
         See also
         --------
@@ -1642,10 +1653,12 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``solar_position``, ``airmass``, ``weather``,
-        ``total_irrad``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
-        and ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
-        ``losses``, ``diode_params`` (if dc_model is a single diode model).
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``,
+        ``aoi_modifier``, ``spectral_modifier``, and
+        ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode
+        model).
 
         See also
         --------
@@ -1701,10 +1714,12 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``solar_position``, ``airmass``, ``weather``,
-        ``total_irrad``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
-        and ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
-        ``losses``, ``diode_params`` (if dc_model is a single diode model).
+        Assigns attributes to results: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``,
+        ``aoi_modifier``, ``spectral_modifier``, and
+        ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode
+        model).
 
         See also
         --------
@@ -1798,7 +1813,7 @@ class ModelChain:
         If optional column ``'poa_global'`` is present, these data are used.
         If ``'poa_global'`` is not present, ``'effective_irradiance'`` is used.
 
-        Assigns attributes: ``weather``, ``total_irrad``,
+        Assigns attributes to results: ``times``, ``weather``, ``total_irrad``,
         ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
         ``losses``, ``diode_params`` (if dc_model is a single diode model).
 

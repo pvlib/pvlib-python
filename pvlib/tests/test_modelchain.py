@@ -569,10 +569,10 @@ def test_ModelChain_times_arrays(sapm_dc_snl_ac_system_Array, location):
     weather_one = pd.DataFrame(irradiance_one, index=times)
     weather_two = pd.DataFrame(irradiance_two, index=times)
     mc.prepare_inputs((weather_one, weather_two))
-    assert mc.times.equals(times)
+    assert mc.results.times.equals(times)
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     mc.prepare_inputs(weather_one)
-    assert mc.times.equals(times)
+    assert mc.results.times.equals(times)
 
 
 @pytest.mark.parametrize("missing", ['dhi', 'ghi', 'dni'])
@@ -786,7 +786,7 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
     weather_expected = weather_expected[
         ['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air']]
     # weather attribute
-    assert_frame_equal(mc.weather, weather_expected)
+    assert_frame_equal(mc.results.weather, weather_expected)
     # total_irrad attribute
     assert_frame_equal(mc.results.total_irrad, total_irrad)
     assert not pd.isnull(mc.results.solar_position.index[0])
@@ -846,7 +846,8 @@ def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    # prepare_temperature expects mc.total_irrad and mc.weather to be set
+    # prepare_temperature expects mc.total_irrad and mc.results.weather
+    # to be set
     mc._assign_weather(data)
     mc._assign_total_irrad(data)
     mc._prepare_temperature(data)
@@ -901,7 +902,8 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
     data_two = data.copy()
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location,
                     aoi_model='no_loss', spectral_model='no_loss')
-    # prepare_temperature expects mc.total_irrad and mc.weather to be set
+    # prepare_temperature expects mc.results.total_irrad and mc.results.weather
+    # to be set
     mc._assign_weather((data, data_two))
     mc._assign_total_irrad((data, data_two))
     mc._prepare_temperature((data, data_two))
@@ -1159,6 +1161,7 @@ def test_run_model_singleton_weather_single_array(cec_dc_snl_ac_system,
     mc = ModelChain(cec_dc_snl_ac_system, location,
                     aoi_model="no_loss", spectral_model="no_loss")
     mc.run_model([weather])
+    assert isinstance(mc.results.weather, tuple)
     assert isinstance(mc.results.total_irrad, tuple)
     assert isinstance(mc.results.aoi, tuple)
     assert isinstance(mc.results.aoi_modifier, tuple)
@@ -1177,6 +1180,7 @@ def test_run_model_from_poa_singleton_weather_single_array(
     ac = mc.run_model_from_poa([total_irrad]).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=total_irrad.index)
+    assert isinstance(mc.results.weather, tuple)
     assert isinstance(mc.results.cell_temperature, tuple)
     assert len(mc.results.cell_temperature) == 1
     assert isinstance(mc.results.cell_temperature[0], pd.Series)
@@ -1193,6 +1197,7 @@ def test_run_model_from_effective_irradiance_weather_single_array(
     ac = mc.run_model_from_effective_irradiance([data]).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
+    assert isinstance(mc.results.weather, tuple)
     assert isinstance(mc.results.cell_temperature, tuple)
     assert len(mc.results.cell_temperature) == 1
     assert isinstance(mc.results.cell_temperature[0], pd.Series)
@@ -1818,11 +1823,11 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
 
     mc.complete_irradiance(i)
 
-    assert_series_equal(mc.weather['dni'],
+    assert_series_equal(mc.results.weather['dni'],
                         pd.Series([2, 3], index=times, name='dni'))
-    assert_series_equal(mc.weather['dhi'],
+    assert_series_equal(mc.results.weather['dhi'],
                         pd.Series([4, 6], index=times, name='dhi'))
-    assert_series_equal(mc.weather['ghi'],
+    assert_series_equal(mc.results.weather['ghi'],
                         pd.Series([9, 5], index=times, name='ghi'))
 
 
@@ -1837,18 +1842,18 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
 
     with pytest.warns(UserWarning):
         mc.complete_irradiance(i[['ghi', 'dni']])
-    assert_series_equal(mc.weather['dhi'],
+    assert_series_equal(mc.results.weather['dhi'],
                         pd.Series([356.543700, 465.44400],
                                   index=times, name='dhi'))
 
     with pytest.warns(UserWarning):
         mc.complete_irradiance(i[['dhi', 'dni']])
-    assert_series_equal(mc.weather['ghi'],
+    assert_series_equal(mc.results.weather['ghi'],
                         pd.Series([372.103976116, 497.087579068],
                                   index=times, name='ghi'))
 
     mc.complete_irradiance(i[['dhi', 'ghi']])
-    assert_series_equal(mc.weather['dni'],
+    assert_series_equal(mc.results.weather['dni'],
                         pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))
 
@@ -1869,7 +1874,7 @@ def test_complete_irradiance_arrays(
                        match=r"Input DataFrames must have same index\."):
         mc.complete_irradiance(input_type((weather, weather[1:])))
     mc.complete_irradiance(input_type((weather, weather)))
-    for mc_weather in mc.weather:
+    for mc_weather in mc.results.weather:
         assert_series_equal(mc_weather['dni'],
                             pd.Series([2, 3], index=times, name='dni'))
         assert_series_equal(mc_weather['dhi'],
@@ -1879,16 +1884,16 @@ def test_complete_irradiance_arrays(
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
     mc.complete_irradiance(input_type((weather[['ghi', 'dhi']],
                                        weather[['dhi', 'dni']])))
-    assert 'dni' in mc.weather[0].columns
-    assert 'ghi' in mc.weather[1].columns
+    assert 'dni' in mc.results.weather[0].columns
+    assert 'ghi' in mc.results.weather[1].columns
     mc.complete_irradiance(input_type((weather, weather[['ghi', 'dni']])))
-    assert_series_equal(mc.weather[0]['dhi'],
+    assert_series_equal(mc.results.weather[0]['dhi'],
                         pd.Series([4, 6], index=times, name='dhi'))
-    assert_series_equal(mc.weather[0]['ghi'],
+    assert_series_equal(mc.results.weather[0]['ghi'],
                         pd.Series([9, 5], index=times, name='ghi'))
-    assert_series_equal(mc.weather[0]['dni'],
+    assert_series_equal(mc.results.weather[0]['dni'],
                         pd.Series([2, 3], index=times, name='dni'))
-    assert 'dhi' in mc.weather[1].columns
+    assert 'dhi' in mc.results.weather[1].columns
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])

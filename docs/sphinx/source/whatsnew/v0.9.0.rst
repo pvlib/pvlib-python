@@ -64,6 +64,8 @@ Deprecations
   * ``ModelChain.spectral_modifier``
   * ``ModelChain.total_irrad``
   * ``ModelChain.tracking``
+  * ``ModelChain.weather``
+  * ``ModelChain.times``
 
 Enhancements
 ~~~~~~~~~~~~

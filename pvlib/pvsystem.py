@@ -1237,7 +1237,8 @@ class Array:
     Parameters
     ----------
     mount: FixedMount, SingleAxisTrackerMount, or other
-        Mounting strategy for the array, used to determine module orientation.
+        Mounting for the array, either on fixed-tilt racking or horizontal single axis
+        tracker. Mounting is used to determine module orientation.
         If not provided, a FixedMount with zero tilt is used.
 
     albedo : None or float, default None

@@ -2211,6 +2211,7 @@ def test_SingleAxisTrackerMount_get_orientation(single_axis_tracker_mount):
         err_msg = f"{key} value incorrect"
         assert actual[key] == pytest.approx(expected_value), err_msg
 
+
 def test_dc_ohms_from_percent():
     expected = .1425
     out = pvsystem.dc_ohms_from_percent(38, 8, 3, 1, 1)
@@ -2248,7 +2249,8 @@ def test_Array_dc_ohms_from_percent(mocker):
 
     expected = .1425
 
-    array = pvsystem.Array(array_losses_parameters={'dc_ohmic_percent': 3},
+    array = pvsystem.Array(pvsystem.FixedMount(0, 180),
+                           array_losses_parameters={'dc_ohmic_percent': 3},
                            module_parameters={'I_mp_ref': 8,
                                               'V_mp_ref': 38})
     out = array.dc_ohms_from_percent()
@@ -2261,7 +2263,8 @@ def test_Array_dc_ohms_from_percent(mocker):
     )
     assert_allclose(out, expected)
 
-    array = pvsystem.Array(array_losses_parameters={'dc_ohmic_percent': 3},
+    array = pvsystem.Array(pvsystem.FixedMount(0, 180),
+                           array_losses_parameters={'dc_ohmic_percent': 3},
                            module_parameters={'Impo': 8,
                                               'Vmpo': 38})
     out = array.dc_ohms_from_percent()
@@ -2274,7 +2277,8 @@ def test_Array_dc_ohms_from_percent(mocker):
     )
     assert_allclose(out, expected)
 
-    array = pvsystem.Array(array_losses_parameters={'dc_ohmic_percent': 3},
+    array = pvsystem.Array(pvsystem.FixedMount(0, 180),
+                           array_losses_parameters={'dc_ohmic_percent': 3},
                            module_parameters={'Impp': 8,
                                               'Vmpp': 38})
     out = array.dc_ohms_from_percent()
@@ -2295,5 +2299,6 @@ def test_Array_dc_ohms_from_percent(mocker):
                               '{"V_mp_ref", "I_mp_Ref"}, '
                               '{"Vmpo", "Impo"}, or '
                               '{"Vmpp", "Impp"}.')):
-        array = pvsystem.Array(array_losses_parameters={'dc_ohmic_percent': 3})
+        array = pvsystem.Array(pvsystem.FixedMount(0, 180),
+                               array_losses_parameters={'dc_ohmic_percent': 3})
         out = array.dc_ohms_from_percent()

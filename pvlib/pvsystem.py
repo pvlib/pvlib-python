@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import warnings
 from pvlib._deprecation import deprecated, pvlibDeprecationWarning
@@ -200,7 +201,7 @@ class PVSystem:
                 array_losses_parameters = _build_kwargs(['dc_ohmic_percent'],
                                                         losses_parameters)
             self.arrays = (Array(
-                FixedMount(surface_tilt, surface_azimuth),
+                FixedMount(surface_tilt, surface_azimuth, racking_model),
                 albedo,
                 surface_type,
                 module,
@@ -209,7 +210,6 @@ class PVSystem:
                 temperature_model_parameters,
                 modules_per_string,
                 strings_per_inverter,
-                racking_model,
                 array_losses_parameters,
             ),)
         else:
@@ -775,15 +775,22 @@ class PVSystem:
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
-        surface_tilt = self._validate_per_array(wind_speed, system_wide=True)
+        surface_tilt = self._validate_per_array(surface_tilt, system_wide=True)
 
         def _build_kwargs_fuentes(array, user_tilt):
             kwargs = {'surface_tilt': user_tilt}
+            if array.mount.module_height is not None:
+                kwargs['module_height'] = array.mount.module_height
             temp_model_kwargs = _build_kwargs([
-                'noct_installed', 'module_height', 'wind_height', 'emissivity',
+                'noct_installed', 'wind_height', 'emissivity',
                 'absorption', 'surface_tilt', 'module_width', 'module_length'],
                 array.temperature_model_parameters)
             kwargs.update(temp_model_kwargs)
+            if kwargs['surface_tilt'] is None:
+                raise ValueError(
+                    "surface_tilt must be specified in "
+                    "PVSystem.fuentes_celltemp if not providing a "
+                    "default in the Array's temperature_model_parameters")
             return kwargs
         return tuple(
             temperature.fuentes(
@@ -1145,6 +1152,7 @@ class PVSystem:
 
     @property
     def surface_tilt(self):
+        # TODO: make sure this is merged correctly with #1196
         if len(self.arrays) == 1:
             msg = (
                 'PVSystem.surface_tilt attribute is deprecated. '
@@ -1159,6 +1167,7 @@ class PVSystem:
 
     @surface_tilt.setter
     def surface_tilt(self, value):
+        # TODO: make sure this is merged correctly with #1196
         if len(self.arrays) == 1:
             msg = (
                 'PVSystem.surface_tilt attribute is deprecated. '
@@ -1173,6 +1182,7 @@ class PVSystem:
 
     @property
     def surface_azimuth(self):
+        # TODO: make sure this is merged correctly with #1196
         if len(self.arrays) == 1:
             msg = (
                 'PVSystem.surface_azimuth attribute is deprecated. '
@@ -1187,6 +1197,7 @@ class PVSystem:
 
     @surface_azimuth.setter
     def surface_azimuth(self, value):
+        # TODO: make sure this is merged correctly with #1196
         if len(self.arrays) == 1:
             msg = (
                 'PVSystem.surface_azimuth attribute is deprecated. '
@@ -1207,12 +1218,14 @@ class PVSystem:
     @property
     @_unwrap_single_value
     def racking_model(self):
-        return tuple(array.racking_model for array in self.arrays)
+        # TODO: make sure this is merged correctly with #1196
+        return tuple(array.mount.racking_model for array in self.arrays)
 
     @racking_model.setter
     def racking_model(self, value):
+        # TODO: make sure this is merged correctly with #1196
         for array in self.arrays:
-            array.racking_model = value
+            array.mount.racking_model = value
 
     @property
     @_unwrap_single_value
@@ -1277,13 +1290,11 @@ class Array:
     strings: int, default 1
         Number of parallel strings in the array.
 
-    racking_model : None or string, default None
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
-
     array_losses_parameters: None, dict or Series, default None.
         Supported keys are 'dc_ohmic_percent'.
 
+    name: None or str, default None
+        Name of Array instance.
     """
 
     def __init__(self, mount,
@@ -1292,7 +1303,7 @@ class Array:
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings=1,
-                 racking_model=None, array_losses_parameters=None,
+                 array_losses_parameters=None,
                  name=None):
         self.mount = mount
 
@@ -1309,7 +1320,6 @@ class Array:
             self.module_parameters = module_parameters
 
         self.module_type = module_type
-        self.racking_model = racking_model
 
         self.strings = strings
         self.modules_per_string = modules_per_string
@@ -1329,7 +1339,7 @@ class Array:
 
     def __repr__(self):
         attrs = ['name', 'mount', 'module',
-                 'albedo', 'racking_model', 'module_type',
+                 'albedo', 'module_type',
                  'temperature_model_parameters',
                  'strings', 'modules_per_string']
 
@@ -1340,7 +1350,7 @@ class Array:
     def _infer_temperature_model_params(self):
         # try to infer temperature model parameters from from racking_model
         # and module_type
-        param_set = f'{self.racking_model}_{self.module_type}'
+        param_set = f'{self.mount.racking_model}_{self.module_type}'
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
             return temperature._temperature_model_params('sapm', param_set)
         elif 'freestanding' in param_set:
@@ -1625,6 +1635,8 @@ class FixedMount(AbstractMount):
 
     surface_tilt: float = 0.0
     surface_azimuth: float = 180.0
+    racking_model: Optional[str] = None
+    module_height: Optional[float] = None
 
     def get_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount
@@ -1686,6 +1698,8 @@ class SingleAxisTrackerMount(AbstractMount):
     backtrack: bool = True
     gcr: float = 2/7
     cross_axis_tilt: float = 0.0
+    racking_model: Optional[str] = None
+    module_height: Optional[float] = None
 
     def get_orientation(self, solar_zenith, solar_azimuth):
         # note -- docstring is automatically inherited from AbstractMount

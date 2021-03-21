@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind, tand
+from pvlib.tools import _build_kwargs
 from pvlib.pvsystem import (
     PVSystem, Array, SingleAxisTrackerMount, _unwrap_single_value
 )
@@ -78,15 +79,19 @@ class SingleAxisTracker(PVSystem):
     def __init__(self, axis_tilt=0, axis_azimuth=0, max_angle=90,
                  backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0.0, **kwargs):
 
+        mount_kwargs = {
+            k: kwargs.pop(k) for k in ['racking_model', 'module_height']
+            if k in kwargs
+        }
         mount = SingleAxisTrackerMount(axis_tilt, axis_azimuth, max_angle,
-                                       backtrack, gcr, cross_axis_tilt)
+                                       backtrack, gcr, cross_axis_tilt,
+                                       **mount_kwargs)
 
         array_defaults = {
             'albedo': None, 'surface_type': None, 'module': None,
             'module_type': None, 'module_parameters': None,
             'temperature_model_parameters': None,
             'modules_per_string': 1,
-            'racking_model': None,
         }
         array_kwargs = {
             key: kwargs.get(key, array_defaults[key]) for key in array_defaults

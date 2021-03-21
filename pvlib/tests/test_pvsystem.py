@@ -566,8 +566,13 @@ def test_PVSystem_multi_array_celltemp_functions(celltemp, two_array_system):
     irrad_two = pd.Series(500, index=times)
     temp_air = pd.Series(25, index=times)
     wind_speed = pd.Series(1, index=times)
+    kwargs = {}
+    if celltemp == pvsystem.PVSystem.fuentes_celltemp:
+        kwargs['surface_tilt'] = 30
+
     temp_one, temp_two = celltemp(
-        two_array_system, (irrad_one, irrad_two), temp_air, wind_speed)
+        two_array_system, (irrad_one, irrad_two), temp_air, wind_speed,
+        **kwargs)
     assert (temp_one != temp_two).all()
 
 
@@ -583,18 +588,24 @@ def test_PVSystem_multi_array_celltemp_multi_temp(celltemp, two_array_system):
     temp_air_one = pd.Series(25, index=times)
     temp_air_two = pd.Series(5, index=times)
     wind_speed = pd.Series(1, index=times)
+    kwargs = {}
+    if celltemp == pvsystem.PVSystem.fuentes_celltemp:
+        kwargs['surface_tilt'] = 30
+
     temp_one, temp_two = celltemp(
         two_array_system,
         (irrad, irrad),
         (temp_air_one, temp_air_two),
-        wind_speed
+        wind_speed,
+        **kwargs
     )
     assert (temp_one != temp_two).all()
     temp_one_swtich, temp_two_switch = celltemp(
         two_array_system,
         (irrad, irrad),
         (temp_air_two, temp_air_one),
-        wind_speed
+        wind_speed,
+        **kwargs
     )
     assert_series_equal(temp_one, temp_two_switch)
     assert_series_equal(temp_two, temp_one_swtich)
@@ -612,18 +623,24 @@ def test_PVSystem_multi_array_celltemp_multi_wind(celltemp, two_array_system):
     temp_air = pd.Series(25, index=times)
     wind_speed_one = pd.Series(1, index=times)
     wind_speed_two = pd.Series(5, index=times)
+    kwargs = {}
+    if celltemp == pvsystem.PVSystem.fuentes_celltemp:
+        kwargs['surface_tilt'] = 30
+
     temp_one, temp_two = celltemp(
         two_array_system,
         (irrad, irrad),
         temp_air,
-        (wind_speed_one, wind_speed_two)
+        (wind_speed_one, wind_speed_two),
+        **kwargs
     )
     assert (temp_one != temp_two).all()
     temp_one_swtich, temp_two_switch = celltemp(
         two_array_system,
         (irrad, irrad),
         temp_air,
-        (wind_speed_two, wind_speed_one)
+        (wind_speed_two, wind_speed_one),
+        **kwargs
     )
     assert_series_equal(temp_one, temp_two_switch)
     assert_series_equal(temp_two, temp_one_swtich)
@@ -703,10 +720,12 @@ def test_PVSystem_fuentes_celltemp(mocker):
     temps = pd.Series(25, index)
     irrads = pd.Series(1000, index)
     winds = pd.Series(1, index)
-    out = system.fuentes_celltemp(irrads, temps, winds)
+
+    out = system.fuentes_celltemp(irrads, temps, winds, surface_tilt=0)
     assert_series_equal(spy.call_args[0][0], irrads)
     assert_series_equal(spy.call_args[0][1], temps)
     assert_series_equal(spy.call_args[0][2], winds)
+    assert spy.call_args[1]['surface_tilt'] == 0
     assert spy.call_args[1]['noct_installed'] == noct_installed
     assert_series_equal(out, pd.Series([52.85, 55.85, 55.85], index,
                                        name='tmod'))
@@ -714,7 +733,8 @@ def test_PVSystem_fuentes_celltemp(mocker):
 
 def test_PVSystem_fuentes_celltemp_override(mocker):
     # test that the surface_tilt value in the cell temp calculation can be
-    # overridden but defaults to the surface_tilt attribute of the PVSystem
+    # overridden but defaults to the surface_tilt value in
+    # array.temperature_model_parameters
     spy = mocker.spy(temperature, 'fuentes')
 
     noct_installed = 45
@@ -724,38 +744,33 @@ def test_PVSystem_fuentes_celltemp_override(mocker):
     winds = pd.Series(1, index)
 
     # uses default value
-    temp_model_params = {'noct_installed': noct_installed}
-    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params,
-                               surface_tilt=20)
+    temp_model_params = {'noct_installed': noct_installed, 'surface_tilt': 20}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     system.fuentes_celltemp(irrads, temps, winds)
     assert spy.call_args[1]['surface_tilt'] == 20
 
-    # can be overridden
-    temp_model_params = {'noct_installed': noct_installed, 'surface_tilt': 30}
-    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params,
-                               surface_tilt=20)
-    system.fuentes_celltemp(irrads, temps, winds)
-    assert spy.call_args[1]['surface_tilt'] == 30
+    # if no default, uses the user-specified values
+    temp_model_params = {'noct_installed': noct_installed}
+    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
+    system.fuentes_celltemp(irrads, temps, winds, surface_tilt=40)
+    assert spy.call_args[1]['surface_tilt'] == 40
 
 
 def test_Array__infer_temperature_model_params():
-    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180, racking_model='open_rack'),
                            module_parameters={},
-                           racking_model='open_rack',
                            module_type='glass_polymer')
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'sapm']['open_rack_glass_polymer']
     assert expected == array._infer_temperature_model_params()
-    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180, racking_model='freestanding'),
                            module_parameters={},
-                           racking_model='freestanding',
                            module_type='glass_polymer')
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['freestanding']
     assert expected == array._infer_temperature_model_params()
-    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
+    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180, racking_model='insulated'),
                            module_parameters={},
-                           racking_model='insulated',
                            module_type=None)
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['insulated']
@@ -1881,10 +1896,9 @@ def test_PVSystem___repr__():
   name: pv ftw
   Array:
     name: None
-    mount: FixedMount(surface_tilt=0, surface_azimuth=180)
+    mount: FixedMount(surface_tilt=0, surface_azimuth=180, racking_model=None, module_height=None)
     module: blah
     albedo: 0.25
-    racking_model: None
     module_type: None
     temperature_model_parameters: {'a': -3.56}
     strings: 1
@@ -1906,34 +1920,32 @@ def test_PVSystem_multi_array___repr__():
   name: None
   Array:
     name: None
-    mount: FixedMount(surface_tilt=30, surface_azimuth=100)
+    mount: FixedMount(surface_tilt=30, surface_azimuth=100, racking_model=None, module_height=None)
     module: None
     albedo: 0.25
-    racking_model: None
     module_type: None
     temperature_model_parameters: {}
     strings: 1
     modules_per_string: 1
   Array:
     name: foo
-    mount: FixedMount(surface_tilt=20, surface_azimuth=220)
+    mount: FixedMount(surface_tilt=20, surface_azimuth=220, racking_model=None, module_height=None)
     module: None
     albedo: 0.25
-    racking_model: None
     module_type: None
     temperature_model_parameters: {}
     strings: 1
     modules_per_string: 1
-  inverter: blarg"""
+  inverter: blarg"""  # noqa: E501
     assert expected == system.__repr__()
 
 
 def test_Array___repr__():
     array = pvsystem.Array(
-        mount=pvsystem.FixedMount(surface_tilt=10, surface_azimuth=100),
+        mount=pvsystem.FixedMount(surface_tilt=10, surface_azimuth=100,
+                                  racking_model='close_mount'),
         albedo=0.15, module_type='glass_glass',
         temperature_model_parameters={'a': -3.56},
-        racking_model='close_mount',
         module_parameters={'foo': 'bar'},
         modules_per_string=100,
         strings=10, module='baz',
@@ -1941,14 +1953,13 @@ def test_Array___repr__():
     )
     expected = """Array:
   name: biz
-  mount: FixedMount(surface_tilt=10, surface_azimuth=100)
+  mount: FixedMount(surface_tilt=10, surface_azimuth=100, racking_model='close_mount', module_height=None)
   module: baz
   albedo: 0.15
-  racking_model: close_mount
   module_type: glass_glass
   temperature_model_parameters: {'a': -3.56}
   strings: 10
-  modules_per_string: 100"""
+  modules_per_string: 100"""  # noqa: E501
     assert array.__repr__() == expected
 
 

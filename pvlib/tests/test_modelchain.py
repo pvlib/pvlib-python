@@ -697,7 +697,7 @@ def test_run_model_with_weather_fuentes_temp(sapm_dc_snl_ac_system, location,
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
     sapm_dc_snl_ac_system.temperature_model_parameters = {
-        'noct_installed': 45
+        'noct_installed': 45, 'surface_tilt': 30,
     }
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.temperature_model = 'fuentes'

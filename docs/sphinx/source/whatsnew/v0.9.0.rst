@@ -64,6 +64,8 @@ Deprecations
   * ``ModelChain.spectral_modifier``
   * ``ModelChain.total_irrad``
   * ``ModelChain.tracking``
+  * ``ModelChain.weather``
+  * ``ModelChain.times``
 
 Enhancements
 ~~~~~~~~~~~~
@@ -104,6 +106,11 @@ Enhancements
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
   from DC power. Use parameter ``model`` to specify which inverter model to use.
   (:pull:`1147`, :issue:`998`, :pull:`1150`)
+* Added :py:func:`~pvlib.temperature.noct_sam`, a cell temperature model
+  implemented in SAM. (:pull:`1177`, :pull:`1195`)
+* Added :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` to calculate
+  the temperature coefficient of power for the pvsyst module model.
+   (:pull:`1190`)
 
 Bug fixes
 ~~~~~~~~~

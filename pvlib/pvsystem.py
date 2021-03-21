@@ -729,7 +729,8 @@ class PVSystem:
         )
 
     @_unwrap_single_value
-    def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
+    def fuentes_celltemp(self, poa_global, temp_air, wind_speed,
+                         surface_tilt=None):
         """
         Use :py:func:`temperature.fuentes` to calculate cell temperature.
 
@@ -744,6 +745,11 @@ class PVSystem:
         wind_speed : pandas Series or tuple of Series
             Wind speed [m/s]
 
+        surface_tilt : pandas Series or tuple of Series, optional
+            Panel tilt from horizontal. Superseded by ``surface_tilt``
+            values in ``self.arrays[i].temperature_model_parameters``
+            (see Notes). [degrees]
+
         Returns
         -------
         temperature_cell : Series or tuple of Series
@@ -754,11 +760,11 @@ class PVSystem:
         The Fuentes thermal model uses the module surface tilt for convection
         modeling. The SAM implementation of PVWatts hardcodes the surface tilt
         value at 30 degrees, ignoring whatever value is used for irradiance
-        transposition. This method defaults to using ``self.surface_tilt``, but
-        if you want to match the PVWatts behavior, you can override it by
-        including a ``surface_tilt`` value in ``temperature_model_parameters``.
+        transposition.  If you want to match the PVWatts behavior, specify a
+        ``surface_tilt`` value in the Array's ``temperature_model_parameters``.
 
-        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        The `temp_air`, `wind_speed`, and `surface_tilt` parameters may be
+        passed as tuples
         to provide different values for each Array in the system. If not
         passed as a tuple then the same value is used for input to each Array.
         If passed as a tuple the length must be the same as the number of
@@ -769,12 +775,10 @@ class PVSystem:
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
+        surface_tilt = self._validate_per_array(wind_speed, system_wide=True)
 
-        def _build_kwargs_fuentes(array):
-            # TODO: I think there should be an interface function so that
-            # directly accessing surface_tilt isn't necessary. Doesn't this
-            # break for SAT?
-            kwargs = {'surface_tilt': array.mount.surface_tilt}
+        def _build_kwargs_fuentes(array, user_tilt):
+            kwargs = {'surface_tilt': user_tilt}
             temp_model_kwargs = _build_kwargs([
                 'noct_installed', 'module_height', 'wind_height', 'emissivity',
                 'absorption', 'surface_tilt', 'module_width', 'module_length'],
@@ -784,9 +788,9 @@ class PVSystem:
         return tuple(
             temperature.fuentes(
                 poa_global, temp_air, wind_speed,
-                **_build_kwargs_fuentes(array))
-            for array, poa_global, temp_air, wind_speed in zip(
-                self.arrays, poa_global, temp_air, wind_speed
+                **_build_kwargs_fuentes(array, user_tilt))
+            for array, poa_global, temp_air, wind_speed, user_tilt in zip(
+                self.arrays, poa_global, temp_air, wind_speed, surface_tilt
             )
         )
 

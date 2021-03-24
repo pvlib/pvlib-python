@@ -30,6 +30,72 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'dirty steel': 0.08,
                    'sea': 0.06}
 
+def cloud_opacity_factor(I_diff_clouds:np.ndarray,
+                         I_dir_clouds:np.ndarray,
+                         I_ghi_clouds:np.ndarray,
+                         spectra:np.ndarray) -> np.ndarray:
+    """
+        Calculate the effect of "cloud opacity factor" on spectral irradiance under clear sky.
+
+        First we calculate the rho fraction based on campbell_norman irradiance
+        with clouds converted to POA irradiance. In the paper [1] these
+        values are obtained from observations. The equations used for calculating cloud opacity factor
+        to scale the clear sky spectral estimates using spectrl2. Results can be compared with sun calculator:
+        https://www2.pvlighthouse.com.au/calculators/solar%20spectrum%20calculator/solar%20spectrum%20calculator.aspx
+
+        Parameters
+        ----------
+        I_diff_clouds:np.ndarray
+            Total diffuse irradiance (poa_diffuse) estimated using pvlib.irradiance.get_total_irradiance and
+            pvlib.irradiance.campbell_norman irradiance with clouds (transmittance)
+
+        I_dir_clouds:np.ndarray
+            Total direct irradiance (poa_direct) estimated using pvlib.irradiance.get_total_irradiance and
+            pvlib.irradiance.campbell_norman irradiance with clouds (transmittance)
+
+        I_ghi_clouds:np.ndarray
+            Total direct irradiance (poa_global) estimated using pvlib.irradiance.get_total_irradiance and
+            pvlib.irradiance.campbell_norman irradiance with clouds (transmittance)
+
+        spectra:np.ndarray
+            Spectral irradiance output from pvlib.spectrum.spectrl2 under clear-sky conditions
+
+
+        Returns
+        -------
+            F_dir, F_diff spectral direct and diffuse irradiance scaled for cloudiness
+
+        References
+        ----------
+        .. [1] Ref: Marco Ernst, Hendrik Holst, Matthias Winter, Pietro P. Altermatt,
+            SunCalculator: A program to calculate the angular and spectral distribution of direct and
+            diffuse solar radiation, Solar Energy Materials and Solar Cells, Volume 157, 2016,
+            Pages 913-922,
+        """
+
+    rho = I_diff_clouds / I_ghi_clouds
+
+    I_diff_s = np.trapz(y=spectra['poa_sky_diffuse'][:, 0], x=spectra['wavelength'])
+    I_dir_s = np.trapz(y=spectra['poa_direct'][:, 0], x=spectra['wavelength'])
+    I_glob_s = np.trapz(y=spectra['poa_global'][:, 0], x=spectra['wavelength'])
+
+    rho_spectra = I_diff_s / I_glob_s
+
+    N_rho = (rho - rho_spectra) / (1 - rho_spectra)
+
+    # Direct light. Equation 6 Ernst et al. 2016
+    F_diff_s = spectra['poa_sky_diffuse'][:, :]
+    F_dir_s = spectra['poa_direct'][:, :]
+
+    F_dir = (F_dir_s / I_dir_s) * I_dir_clouds
+
+    # Diffuse light scaling factor. Equation 7 Ernst et al. 2016
+    s_diff = (1 - N_rho) * (F_diff_s / I_diff_s) + N_rho * ((F_dir_s + F_diff_s) / I_glob_s)
+
+    # Equation 8 Ernst et al. 2016
+    F_diff = s_diff * I_diff_clouds
+
+    return F_dir, F_diff
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
                         method='spencer', epoch_year=2014, **kwargs):

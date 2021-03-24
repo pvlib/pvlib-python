@@ -82,49 +82,13 @@ def show_info(latitude, irradiance):
     """
     Simple function to show the integrated results of the spectral distributions
     """
-    print("Latitude {}".format(latitude))
     print("{}: campbell_norman clouds: dni: {:3.2f} dhi: {:3.2f} ghi: {:3.2f}".format(latitude,
                                                                                       float(irradiance['poa_direct']),
                                                                                       float(irradiance['poa_diffuse']),
                                                                                       float(irradiance['poa_global'])))
 
 
-def cloud_opacity_factor(I_diff_clouds, I_dir_clouds, I_ghi_clouds, spectra):
-    # Calculate the effect of "cloud opacity factor" on the spectral distributions under clear sky.
-    #
-    # First we calculate the rho fraction based on campbell_norman irradiance
-    # with clouds converted to POA irradiance. In the paper these
-    # values are obtained from observations. The equations used for calculating cloud opacity factor
-    # to scale the clear sky spectral estimates using spectrl2. Results can be compared with sun calculator:
-    # https://www2.pvlighthouse.com.au/calculators/solar%20spectrum%20calculator/solar%20spectrum%20calculator.aspx
-    #
-    # Ref: Marco Ernst, Hendrik Holst, Matthias Winter, Pietro P. Altermatt,
-    # SunCalculator: A program to calculate the angular and spectral distribution of direct and diffuse solar radiation,
-    # Solar Energy Materials and Solar Cells, Volume 157, 2016, Pages 913-922,
 
-    rho = I_diff_clouds / I_ghi_clouds
-
-    I_diff_s = np.trapz(y=spectra['poa_sky_diffuse'][:, 0], x=spectra['wavelength'])
-    I_dir_s = np.trapz(y=spectra['poa_direct'][:, 0], x=spectra['wavelength'])
-    I_glob_s = np.trapz(y=spectra['poa_global'][:, 0], x=spectra['wavelength'])
-
-    rho_spectra = I_diff_s / I_glob_s
-
-    N_rho = (rho - rho_spectra) / (1 - rho_spectra)
-
-    # Direct light. Equation 6 Ernst et al. 2016
-    F_diff_s = spectra['poa_sky_diffuse'][:, :]
-    F_dir_s = spectra['poa_direct'][:, :]
-
-    F_dir = (F_dir_s / I_dir_s) * I_dir_clouds
-
-    # Diffuse light scaling factor. Equation 7 Ernst et al. 2016
-    s_diff = (1 - N_rho) * (F_diff_s / I_diff_s) + N_rho * ((F_dir_s + F_diff_s) / I_glob_s)
-
-    # Equation 8 Ernst et al. 2016
-    F_diff = s_diff * I_diff_clouds
-
-    return F_dir, F_diff
 
 def calculate_overcast_spectrl2():
 
@@ -215,7 +179,7 @@ def calculate_overcast_spectrl2():
 
             show_info(latitude, POA_irradiance_clearsky)
 
-            F_dir, F_diff = cloud_opacity_factor(POA_irradiance_clouds['poa_direct'].values,
+            F_dir, F_diff = pvlib.irradiance.cloud_opacity_factor(POA_irradiance_clouds['poa_direct'].values,
                                                  POA_irradiance_clouds['poa_diffuse'].values,
                                                  POA_irradiance_clouds['poa_global'].values,
                                                  spectra)

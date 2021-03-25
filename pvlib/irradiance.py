@@ -268,11 +268,11 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     """
 
     projection = ((tools.cosd(surface_tilt) *
-                  tools.cosd(solar_zenith) +
-                  tools.sind(surface_tilt) *
-                  tools.sind(solar_zenith) *
-                  tools.cosd(solar_azimuth -
-                  surface_azimuth)))
+                   tools.cosd(solar_zenith) +
+                   tools.sind(surface_tilt) *
+                   tools.sind(solar_zenith) *
+                   tools.cosd(solar_azimuth -
+                              surface_azimuth)))
 
     try:
         projection.name = 'aoi_projection'
@@ -2127,12 +2127,11 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
     cos_surface_tilt = tools.cosd(surface_tilt)
 
     # isotropic sky plus ground diffuse
-    dhi_gte_90 = ((
-            (2 * poa_global - dni_gte_90_proj
-             * albedo
-             * (1 - cos_surface_tilt)) /
-            (1 + cos_surface_tilt + albedo
-             * (1 - cos_surface_tilt))))
+    dhi_gte_90 = (((2 * poa_global - dni_gte_90_proj
+                    * albedo
+                    * (1 - cos_surface_tilt)) /
+                   (1 + cos_surface_tilt + albedo
+                    * (1 - cos_surface_tilt))))
 
     ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
 

@@ -105,8 +105,8 @@ def cloud_opacity_factor(irr_dif_clouds: np.ndarray,
     f_dir = (f_dir_s / irr_dir_s) * irr_dir_clouds
 
     # Diffuse light scaling factor. Equation 7 Ernst et al. 2016
-    s_diff = (1 - n_rho) * (f_diff_s / irr_diff_s) + n_rho \
-              * ((f_dir_s + f_diff_s) / irr_glob_s)
+    s_diff = ((1 - n_rho) * (f_diff_s / irr_diff_s) + n_rho
+              * ((f_dir_s + f_diff_s) / irr_glob_s))
 
     # Equation 8 Ernst et al. 2016
     f_diff = s_diff * irr_dif_clouds
@@ -267,10 +267,12 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         Dot product of panel normal and solar angle.
     """
 
-    projection = (
-            tools.cosd(surface_tilt) * tools.cosd(solar_zenith) +
-            tools.sind(surface_tilt) * tools.sind(solar_zenith) *
-            tools.cosd(solar_azimuth - surface_azimuth))
+    projection = ((tools.cosd(surface_tilt) *
+                  tools.cosd(solar_zenith) +
+                  tools.sind(surface_tilt) *
+                  tools.sind(solar_zenith) *
+                  tools.cosd(solar_azimuth -
+                  surface_azimuth)))
 
     try:
         projection.name = 'aoi_projection'
@@ -1509,7 +1511,8 @@ def _disc_kn(clearness_index, airmass, max_airmass=12):
 
     delta_kn = a + b * np.exp(c * am)
 
-    Knc = 0.866 - 0.122 * am + 0.0121 * am ** 2 - 0.000653 * am ** 3 + 1.4e-05 * am ** 4
+    Knc = ((0.866 - 0.122 * am + 0.0121 *
+            am ** 2 - 0.000653 * am ** 3 + 1.4e-05 * am ** 4))
     Kn = Knc - delta_kn
     return Kn, am
 
@@ -2124,9 +2127,11 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
     cos_surface_tilt = tools.cosd(surface_tilt)
 
     # isotropic sky plus ground diffuse
-    dhi_gte_90 = (
-            (2 * poa_global - dni_gte_90_proj * albedo * (1 - cos_surface_tilt)) /
-            (1 + cos_surface_tilt + albedo * (1 - cos_surface_tilt)))
+    dhi_gte_90 = ((
+            (2 * poa_global - dni_gte_90_proj * albedo
+             * (1 - cos_surface_tilt)) /
+            (1 + cos_surface_tilt + albedo
+             * (1 - cos_surface_tilt))))
 
     ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
 

@@ -35,42 +35,56 @@ def cloud_opacity_factor(irr_dif_clouds: np.ndarray,
                          irr_ghi_clouds: np.ndarray,
                          spectra: dict) -> (np.ndarray, np.ndarray):
     """
-        Calculate the effect of "cloud opacity factor" on spectral irradiance under clear sky.
+        Calculate the effect of "cloud opacity factor" on spectral
+        irradiance under clear sky.
 
-        First we calculate the rho fraction based on campbell_norman irradiance
-        with clouds converted to POA irradiance. In the paper [1] these
-        values are obtained from observations. The equations used for calculating cloud opacity factor
-        to scale the clear sky spectral estimates using spectrl2. Results can be compared with sun calculator:
-        https://www2.pvlighthouse.com.au/calculators/solar%20spectrum%20calculator/solar%20spectrum%20calculator.aspx
+        First we calculate the rho fraction based on campbell_norman
+        irradiance with clouds converted to POA irradiance. In the
+        paper [1] these values are obtained from observations. The equations
+        used for calculating cloud opacity factor to scale the clear sky
+        spectral estimates using spectrl2. Results can be compared
+        with sun calculator:
+        https://www2.pvlighthouse.com.au/calculators/solar%20
+        spectrum%20calculator/solar%20spectrum%20calculator.aspx
 
         Parameters
         ----------
         irr_dif_clouds:np.ndarray
-            Total diffuse irradiance (poa_diffuse) estimated using pvlib.irradiance.get_total_irradiance and
-            pvlib.irradiance.campbell_norman irradiance with clouds (transmittance)
+            Total diffuse irradiance (poa_diffuse) estimated using
+            `pvlib.irradiance.get_total_irradiance` and
+            `pvlib.irradiance.campbell_norman` irradiance with clouds
+            (transmittance)
 
         irr_dir_clouds:np.ndarray
-            Total direct irradiance (poa_direct) estimated using pvlib.irradiance.get_total_irradiance and
-            pvlib.irradiance.campbell_norman irradiance with clouds (transmittance)
+            Total direct irradiance (poa_direct) estimated using
+            `pvlib.irradiance.get_total_irradiance` and
+            `pvlib.irradiance.campbell_norman` irradiance with
+            clouds (transmittance)
 
         irr_ghi_clouds:np.ndarray
-            Total direct irradiance (poa_global) estimated using pvlib.irradiance.get_total_irradiance and
-            pvlib.irradiance.campbell_norman irradiance with clouds (transmittance)
+            Total direct irradiance (poa_global) estimated
+            using `pvlib.irradiance.get_total_irradiance` and
+            `pvlib.irradiance.campbell_norman irradiance
+            with clouds (transmittance)
 
         spectra:np.ndarray
-            Spectral irradiance output from pvlib.spectrum.spectrl2 under clear-sky conditions
+            Spectral irradiance output from `pvlib.spectrum.spectrl2`
+            under clear-sky conditions
 
 
         Returns
         -------
-            f_dir, f_diff spectral direct and diffuse irradiance scaled for cloudiness
+            f_dir, f_diff spectral direct and diffuse irradiance
+            scaled for cloudiness
 
         References
         ----------
-        .. [1] Ref: Marco Ernst, Hendrik Holst, Matthias Winter, Pietro P. Altermatt,
-            SunCalculator: A program to calculate the angular and spectral distribution of direct and
-            diffuse solar radiation, Solar Energy Materials and Solar Cells, Volume 157, 2016,
-            Pages 913-922,
+        .. [1] Ref: Marco Ernst, Hendrik Holst, Matthias Winter,
+        Pietro P. Altermatt,
+        SunCalculator: A program to calculate the angular and spectral
+        distribution of direct and diffuse solar radiation, Solar Energy
+        Materials and Solar Cells, Volume 157, 2016,
+        Pages 913-922,
         """
 
     rho = irr_dif_clouds / irr_ghi_clouds

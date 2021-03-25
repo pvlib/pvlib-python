@@ -33,7 +33,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 def cloud_opacity_factor(irr_dif_clouds: np.ndarray,
                          irr_dir_clouds: np.ndarray,
                          irr_ghi_clouds: np.ndarray,
-                         spectra: np.ndarray) -> (np.ndarray, np.ndarray):
+                         spectra: dict) -> (np.ndarray, np.ndarray):
     """
         Calculate the effect of "cloud opacity factor" on spectral irradiance under clear sky.
 

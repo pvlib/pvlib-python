@@ -105,8 +105,8 @@ def cloud_opacity_factor(irr_dif_clouds: np.ndarray,
     f_dir = (f_dir_s / irr_dir_s) * irr_dir_clouds
 
     # Diffuse light scaling factor. Equation 7 Ernst et al. 2016
-    s_diff = (1 - n_rho) * (f_diff_s / irr_diff_s) + \
-             n_rho * ((f_dir_s + f_diff_s) / irr_glob_s)
+    s_diff = (1 - n_rho) * (f_diff_s / irr_diff_s) + n_rho \
+              * ((f_dir_s + f_diff_s) / irr_glob_s)
 
     # Equation 8 Ernst et al. 2016
     f_diff = s_diff * irr_dif_clouds

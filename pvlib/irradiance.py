@@ -89,11 +89,12 @@ def cloud_opacity_factor(irr_dif_clouds: np.ndarray,
 
     rho = irr_dif_clouds / irr_ghi_clouds
 
-    I_diff_s = np.trapz(y=spectra['poa_sky_diffuse'][:, 0], x=spectra['wavelength'])
-    I_dir_s = np.trapz(y=spectra['poa_direct'][:, 0], x=spectra['wavelength'])
-    I_glob_s = np.trapz(y=spectra['poa_global'][:, 0], x=spectra['wavelength'])
+    wl = spectra['wavelength']
+    irr_diff_s = np.trapz(y=spectra['poa_sky_diffuse'][:, 0], x=wl)
+    irr_dir_s = np.trapz(y=spectra['poa_direct'][:, 0], x=wl)
+    irr_glob_s = np.trapz(y=spectra['poa_global'][:, 0], x=wl)
 
-    rho_spectra = I_diff_s / I_glob_s
+    rho_spectra = irr_diff_s / irr_glob_s
 
     n_rho = (rho - rho_spectra) / (1 - rho_spectra)
 
@@ -101,10 +102,11 @@ def cloud_opacity_factor(irr_dif_clouds: np.ndarray,
     f_diff_s = spectra['poa_sky_diffuse'][:, :]
     f_dir_s = spectra['poa_direct'][:, :]
 
-    f_dir = (f_dir_s / I_dir_s) * irr_dir_clouds
+    f_dir = (f_dir_s / irr_dir_s) * irr_dir_clouds
 
     # Diffuse light scaling factor. Equation 7 Ernst et al. 2016
-    s_diff = (1 - n_rho) * (f_diff_s / I_diff_s) + n_rho * ((f_dir_s + f_diff_s) / I_glob_s)
+    s_diff = (1 - n_rho) * (f_diff_s / irr_diff_s) + \
+             n_rho * ((f_dir_s + f_diff_s) / irr_glob_s)
 
     # Equation 8 Ernst et al. 2016
     f_diff = s_diff * irr_dif_clouds

@@ -70,16 +70,18 @@ def plot_spectral_irr(spectra, f_dir, f_diff, lat, doy, year, clouds):
     without the effects of clouds
     """
     fig, ax = plt.subplots()
-    ax.plot(spectra['wavelength'], spectra["poa_sky_diffuse"][:, 0], c="r")
-    ax.plot(spectra['wavelength'], spectra["poa_direct"][:, 0], c="g")
-    ax.plot(spectra['wavelength'], spectra["poa_global"][:, 0], c="m")
+    wl = spectra['wavelength']
+    ax.plot(wl, spectra["poa_sky_diffuse"][:, 0], c="r")
+    ax.plot(wl, spectra["poa_direct"][:, 0], c="g")
+    ax.plot(wl, spectra["poa_global"][:, 0], c="m")
 
-    ax.plot(spectra['wavelength'], f_dir[:, 0], c="r", linestyle='dashed')
-    ax.plot(spectra['wavelength'], f_diff[:, 0], c="y", linestyle='dashed')
+    ax.plot(wl, f_dir[:, 0], c="r", linestyle='dashed')
+    ax.plot(wl, f_diff[:, 0], c="y", linestyle='dashed')
 
     plt.xlim(200, 2700)
     plt.ylim(0, 1.8)
-    plt.title(r"Day {} {} lat {} cloud cover {}".format(doy, year, lat, clouds))
+    plt.title(r"Day {} {} lat {} clouds {}".format(doy, year,
+                                                   lat, clouds))
     plt.ylabel(r"Irradiance ($W m^{-2} nm^{-1}$)")
     plt.xlabel(r"Wavelength ($nm$)")
     labels = ["poa_sky_diffuse", "poa_direct", "poa_global",

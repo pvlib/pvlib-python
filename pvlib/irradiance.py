@@ -2128,7 +2128,8 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
 
     # isotropic sky plus ground diffuse
     dhi_gte_90 = ((
-            (2 * poa_global - dni_gte_90_proj * albedo
+            (2 * poa_global - dni_gte_90_proj
+             * albedo
              * (1 - cos_surface_tilt)) /
             (1 + cos_surface_tilt + albedo
              * (1 - cos_surface_tilt))))

@@ -31,7 +31,6 @@ import pandas as pd
 import pvlib
 from pvlib.atmosphere import get_relative_airmass
 from pvlib.irradiance import campbell_norman
-from pvlib.irradiance import get_total_irradiance
 from pvlib.solarposition import get_solarposition
 from pvlib.irradiance import cloud_opacity_factor
 from pvlib.irradiance import get_total_irradiance
@@ -152,18 +151,18 @@ def calculate_overcast_spectrl2():
             airmass_relative = get_relative_airmass(az,
                                                     model='kastenyoung1989')
             pressure = pvlib.atmosphere.alt2pres(altitude)
-            apparent_zenith = sol['apparent_zenith'].to_numpy()
+            az = sol['apparent_zenith'].to_numpy()
             azimuth = sol['azimuth'].to_numpy()
             surface_azimuth = pv_system['surface_azimuth']
 
             transmittance = (1.0 - cloud_cover) * 0.75
-            calc_aoi = aoi(surface_tilt, surface_azimuth, apparent_zenith, azimuth)
+            calc_aoi = aoi(surface_tilt, surface_azimuth, az, azimuth)
 
             # day of year is an int64index array so access first item
             day_of_year = ctime.dayofyear[0]
 
             spectra = pvlib.spectrum.spectrl2(
-                apparent_zenith=apparent_zenith,
+                apparent_zenith=az,
                 aoi=calc_aoi,
                 surface_tilt=surface_tilt,
                 ground_albedo=ground_albedo,
@@ -206,10 +205,12 @@ def calculate_overcast_spectrl2():
                 solar_azimuth=sol['azimuth'])
 
             show_info(latitude, poa_irr_clearsky)
-
-            f_dir, f_diff = cloud_opacity_factor(poa_irr_clouds['poa_direct'].values,
-                                                 poa_irr_clouds['poa_diffuse'].values,
-                                                 poa_irr_clouds['poa_global'].values,
+            poa_dr = poa_irr_clouds['poa_direct'].values
+            poa_diff = poa_irr_clouds['poa_diffuse'].values
+            poa_global = poa_irr_clouds['poa_global'].values
+            f_dir, f_diff = cloud_opacity_factor(poa_dr,
+                                                 poa_diff,
+                                                 poa_global,
                                                  spectra)
 
             plot_spectral_irr(spectra,

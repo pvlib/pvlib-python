@@ -116,7 +116,7 @@ Bug fixes
   (:issue:`1065`, :pull:`1140`)
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
-
+* Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
 Testing
 ~~~~~~~
 
@@ -143,3 +143,4 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
+* Damjan Postolovski (:ghuser:`dpostolovski`)

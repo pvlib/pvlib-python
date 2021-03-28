@@ -1739,7 +1739,7 @@ def test_PVSystem_change_surface_azimuth():
         assert system.surface_azimuth == 90
 
 
-def test_PVSystem_get_albedo(two_array_system):
+def test_PVSystem_get_albedo():
     system = pvsystem.PVSystem(
         arrays=[pvsystem.Array(albedo=0.5)]
     )

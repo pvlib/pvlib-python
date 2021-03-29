@@ -117,6 +117,7 @@ Bug fixes
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
 * Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
+
 Testing
 ~~~~~~~
 

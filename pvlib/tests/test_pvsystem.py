@@ -1853,7 +1853,7 @@ def test_PVSystem_change_surface_tilt_azimuth_multi(attr, two_array_system):
         setattr(two_array_system, attr, 0)
 
 
-def test_PVSystem_get_albedo():
+def test_PVSystem_get_albedo(two_array_system):
     system = pvsystem.PVSystem(
         arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180), albedo=0.5)]
     )

@@ -3,7 +3,7 @@ import pytest
 import pytz
 
 from pvlib.iotools import midc
-from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
+from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 
 @pytest.fixture

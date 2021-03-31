@@ -5,14 +5,14 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from conftest import assert_frame_equal, assert_series_equal
+from .conftest import assert_frame_equal, assert_series_equal
 from numpy.testing import assert_allclose
 import pytest
 
 from pvlib.location import Location
 from pvlib import solarposition, spa
 
-from conftest import requires_ephem, requires_spa_c, requires_numba
+from .conftest import requires_ephem, requires_spa_c, requires_numba
 
 
 # setup times and locations to be tested.

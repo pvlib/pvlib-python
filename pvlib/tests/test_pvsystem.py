@@ -5,7 +5,7 @@ from numpy import nan, array
 import pandas as pd
 
 import pytest
-from conftest import (
+from .conftest import (
     assert_series_equal, assert_frame_equal, fail_on_pvlib_version)
 from numpy.testing import assert_allclose
 import unittest.mock as mock

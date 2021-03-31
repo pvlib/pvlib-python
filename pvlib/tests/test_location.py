@@ -15,8 +15,7 @@ import pvlib
 from pvlib.location import Location
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
-from pvlib.tests.test_solarposition import expected_solpos, golden, golden_mst
-from .conftest import requires_ephem, requires_tables, fail_on_pvlib_version
+from .conftest import requires_ephem, requires_tables
 
 
 def test_location_required():

@@ -9,7 +9,7 @@ from pvlib import pvsystem
 
 from pvlib.tests.conftest import requires_pysam, requires_statsmodels
 
-from conftest import DATA_DIR
+from ..conftest import DATA_DIR
 
 
 @pytest.fixture

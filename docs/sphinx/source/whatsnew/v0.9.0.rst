@@ -120,6 +120,9 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Added ``__init__.py`` to ``pvlib/tests`` and subdirectories. This follows
+  pytest recommendations for package layout and imports from ``conftest.py``.
+  Solves issue with test discovery in vscode. (:pull:`1204`)
 
 Documentation
 ~~~~~~~~~~~~~

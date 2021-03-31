@@ -1,7 +1,7 @@
 import pytest
 
 from pvlib.iotools import epw
-from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
+from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 epw_testfile = DATA_DIR / 'NLD_Amsterdam062400_IWEC.epw'
 

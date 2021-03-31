@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 import pytest
-from conftest import DATA_DIR, assert_series_equal
+from .conftest import DATA_DIR, assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import temperature, tools

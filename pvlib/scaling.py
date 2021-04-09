@@ -159,7 +159,12 @@ def latlon_to_xy(coordinates):
 
 def _compute_wavelet(clearsky_index, dt=None):
     """
-    Compute the wavelet transform on the input clear_sky time series.
+    Compute the wavelet transform on the input clear_sky time series. Uses a
+    Haar wavelet based on moving average. Output resembles a Stationary Wavelet
+    Transform (SWT), but has shifted time positions on the averages relative to
+    output from other wavelet codes. Returns one level of approximation
+    coefficient (CAn) and n levels of detail coefficients (CD1, CD2, ...,
+    CDn-1, CDn). Maximum scale is 4096 s (12 levels at a signal dt of 1s).
 
     Parameters
     ----------
@@ -174,7 +179,8 @@ def _compute_wavelet(clearsky_index, dt=None):
     Returns
     -------
     wavelet: numeric
-        The individual wavelets for the time series
+        The individual wavelets for the time series. Format follows increasing
+        scale (decreasing frequency): [CD1, CD2, ..., CDn, CAn]
 
     tmscales: numeric
         The timescales associated with the wavelets in seconds [s]
@@ -211,29 +217,31 @@ def _compute_wavelet(clearsky_index, dt=None):
     min_tmscale = np.ceil(np.log(dt)/np.log(2))  # Minimum wavelet timescale
     max_tmscale = int(12 - min_tmscale)  # maximum wavelet timescale
 
-    tmscales = np.zeros(max_tmscale)
-    csi_mean = np.zeros([max_tmscale, len(cs_long)])
-    # Loop for all time scales we will consider
-    for i in np.arange(0, max_tmscale):
-        j = i+1
-        tmscales[i] = 2**j * dt  # Wavelet integration time scale
-        intvlen = 2**j  # Wavelet integration time series interval
+    # Compute approximation coefficients via moving average (Haar wavelet)
+    csi_mean = np.zeros([max_tmscale+1, len(cs_long)])
+    csi_mean[0, :] = cs_long.values.flatten()  # CA0, the original signal
+    for i in np.arange(1, max_tmscale+1):
+        intvlen = 2**i  # Wavelet integration time series interval
         # Rolling average, retains only lower frequencies than interval
         df = cs_long.rolling(window=intvlen, center=True, min_periods=1).mean()
         # Fill nan's in both directions
         df = df.fillna(method='bfill').fillna(method='ffill')
         # Pop values back out of the dataframe and store
-        csi_mean[i, :] = df.values.flatten()
+        csi_mean[i, :] = df.values.flatten()  # Approximation Coeffs CA0,CA1,...
 
-    # Calculate the wavelets by isolating the rolling mean frequency ranges
+    # Calculate detail coeffs by difference between approximation levels
     wavelet_long = np.zeros(csi_mean.shape)
-    for i in np.arange(0, max_tmscale-1):
+    tmscales = np.zeros(max_tmscale+1)
+    for i in np.arange(0, max_tmscale):
+        # Compute detail coeffs, beginning with CD1 through CDn
         wavelet_long[i, :] = csi_mean[i, :] - csi_mean[i+1, :]
-    wavelet_long[max_tmscale-1, :] = csi_mean[max_tmscale-1, :]  # Lowest freq
+        tmscales[i] = 2**(i+1) * dt  # Wavelet integration time scale
+    wavelet_long[max_tmscale, :] = csi_mean[max_tmscale, :]  # Lowest freq (CAn)
+    tmscales[max_tmscale] = tmscales[max_tmscale-1]  # CAn and CDn share scale
 
     # Clip off the padding and just return the original time window
-    wavelet = np.zeros([max_tmscale, len(vals)])
-    for i in np.arange(0, max_tmscale):
-        wavelet[i, :] = wavelet_long[i, len(vals)+1: 2*len(vals)+1]
+    wavelet = np.zeros([max_tmscale+1, len(vals)])
+    for i in np.arange(0, max_tmscale+1):
+        wavelet[i, :] = wavelet_long[i, len(vals): 2*len(vals)]
 
     return wavelet, tmscales

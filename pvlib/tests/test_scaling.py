@@ -97,6 +97,14 @@ def test_compute_wavelet_series(clear_sky_index, time,
     assert_almost_equal(wavelet[0:3, 5000:5005], expect_wavelet)
 
 
+def test_compute_wavelet_dwttheory(clear_sky_index, time,
+                                   expect_tmscale, expect_wavelet):
+    # Confirm detail coeffs sum to original signal
+    csi_series = pd.Series(clear_sky_index, index=time)
+    wavelet, tmscale = scaling._compute_wavelet(csi_series)
+    assert_almost_equal(np.sum(wavelet, 0), csi_series)
+
+
 def test_compute_wavelet_series_numindex(clear_sky_index, time,
                                          expect_tmscale, expect_wavelet):
     dtindex = pd.to_datetime(time, unit='s')

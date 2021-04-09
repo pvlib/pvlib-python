@@ -48,21 +48,21 @@ def positions():
 @pytest.fixture
 def expect_tmscale():
     # Expected timescales for dt = 1
-    return [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+    return [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 4096]
 
 
 @pytest.fixture
 def expect_wavelet():
-    # Expected wavelet for indices 5000:5004 for clear_sky_index above (Matlab)
-    return np.array([[-0.025, 0.05, 0., -0.05, 0.025],
-                     [0.025, 0., 0., 0., -0.025],
-                     [0., 0., 0., 0., 0.]])
+    # Expected wavelet for indices 5000:5004 for clear_sky_index above (Manual)
+    return np.array([[0., 0., 0.05, -0.1, 0.05],
+                     [0., -0.025, 0.05, 0., -0.05],
+                     [0., 0.025, 0., 0., 0.]])
 
 
 @pytest.fixture
 def expect_cs_smooth():
     # Expected smoothed clear sky index for indices 5000:5004 (Matlab)
-    return np.array([1., 1.0289, 1., 0.9711, 1.])
+    return np.array([1., 1., 1.0577, 0.9423, 1.])
 
 
 def test_latlon_to_xy_zero():

@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from pvlib.iotools import bsrn
-from conftest import DATA_DIR, assert_index_equal
+from ..conftest import DATA_DIR, assert_index_equal
 
 
 @pytest.mark.parametrize('testfile,expected_index', [

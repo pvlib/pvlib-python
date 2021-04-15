@@ -420,7 +420,10 @@ function if you wanted to.
 
     def pvusa_mc_wrapper(mc):
         # calculate the dc power and assign it to mc.dc
-        mc.dc = pvusa(mc.total_irrad['poa_global'], mc.weather['wind_speed'], mc.weather['temp_air'],
+        # in the future, need to explicitly iterate over system.arrays
+        # https://github.com/pvlib/pvlib-python/issues/1115
+        mc.dc = pvusa(mc.results.total_irrad['poa_global'],
+                      mc.results.weather['wind_speed'], mc.results.weather['temp_air'],
                       mc.system.module_parameters['a'], mc.system.module_parameters['b'],
                       mc.system.module_parameters['c'], mc.system.module_parameters['d'])
 
@@ -436,7 +439,7 @@ function if you wanted to.
 
     def no_loss_temperature(mc):
         # keep it simple
-        mc.cell_temperature = mc.weather['temp_air']
+        mc.cell_temperature = mc.results.weather['temp_air']
         return mc
 
 

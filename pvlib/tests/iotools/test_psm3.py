@@ -4,7 +4,7 @@ test iotools for PSM3
 
 import os
 from pvlib.iotools import psm3
-from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
+from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 import numpy as np
 import pandas as pd
 import pytest

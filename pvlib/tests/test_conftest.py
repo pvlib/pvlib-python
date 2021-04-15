@@ -1,8 +1,8 @@
 import pytest
 import pandas
 
-import conftest
-from conftest import fail_on_pvlib_version
+from pvlib.tests import conftest
+from pvlib.tests.conftest import fail_on_pvlib_version
 
 from pvlib._deprecation import pvlibDeprecationWarning, deprecated
 

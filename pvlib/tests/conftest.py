@@ -8,6 +8,7 @@ import pytest
 from functools import wraps
 
 import pvlib
+from pvlib.location import Location
 
 pvlib_base_version = \
     parse_version(parse_version(pvlib.__version__).base_version)
@@ -185,6 +186,25 @@ except ImportError:
 requires_recent_cftime = pytest.mark.skipif(
     not has_recent_cftime, reason="requires cftime > 1.1.0"
 )
+
+
+@pytest.fixture()
+def golden():
+    return Location(39.742476, -105.1786, 'America/Denver', 1830.14)
+
+
+@pytest.fixture()
+def golden_mst():
+    return Location(39.742476, -105.1786, 'MST', 1830.14)
+
+
+@pytest.fixture()
+def expected_solpos():
+    return pd.DataFrame({'elevation': 39.872046,
+                         'apparent_zenith': 50.111622,
+                         'azimuth': 194.340241,
+                         'apparent_elevation': 39.888378},
+                        index=['2003-10-17T12:30:30Z'])
 
 
 @pytest.fixture(scope="session")

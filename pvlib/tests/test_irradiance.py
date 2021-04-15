@@ -11,7 +11,7 @@ from numpy.testing import assert_almost_equal, assert_allclose
 
 from pvlib import irradiance
 
-from conftest import (
+from .conftest import (
     assert_frame_equal,
     assert_series_equal,
     requires_ephem,

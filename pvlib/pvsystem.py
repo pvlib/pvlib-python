@@ -143,7 +143,8 @@ class PVSystem:
         Module parameters as defined by the SAPM, CEC, or other.
 
     temperature_model_parameters : None, dict or Series, default None.
-        Temperature model parameters as defined by the SAPM, Pvsyst, or other.
+        Temperature model parameters as required by one of the models in
+        pvlib.temperature (excluding poa_global, temp_air and wind_speed).
 
     modules_per_string: int or float, default 1
         See system topology discussion above.
@@ -190,6 +191,11 @@ class PVSystem:
                  racking_model=None, losses_parameters=None, name=None):
 
         if arrays is None:
+            if losses_parameters is None:
+                array_losses_parameters = {}
+            else:
+                array_losses_parameters = _build_kwargs(['dc_ohmic_percent'],
+                                                        losses_parameters)
             self.arrays = (Array(
                 surface_tilt,
                 surface_azimuth,
@@ -201,7 +207,8 @@ class PVSystem:
                 temperature_model_parameters,
                 modules_per_string,
                 strings_per_inverter,
-                racking_model
+                racking_model,
+                array_losses_parameters,
             ),)
         else:
             self.arrays = tuple(arrays)
@@ -750,8 +757,6 @@ class PVSystem:
         if you want to match the PVWatts behavior, you can override it by
         including a ``surface_tilt`` value in ``temperature_model_parameters``.
 
-        Notes
-        -----
         The `temp_air` and `wind_speed` parameters may be passed as tuples
         to provide different values for each Array in the system. If not
         passed as a tuple then the same value is used for input to each Array.
@@ -778,6 +783,82 @@ class PVSystem:
                 **_build_kwargs_fuentes(array))
             for array, poa_global, temp_air, wind_speed in zip(
                 self.arrays, poa_global, temp_air, wind_speed
+            )
+        )
+
+    @_unwrap_single_value
+    def noct_sam_celltemp(self, poa_global, temp_air, wind_speed,
+                          effective_irradiance=None):
+        """
+        Use :py:func:`temperature.noct_sam` to calculate cell temperature.
+
+        Parameters
+        ----------
+        poa_global : numeric or tuple of numeric
+            Total incident irradiance in W/m^2.
+
+        temp_air : numeric or tuple of numeric
+            Ambient dry bulb temperature in degrees C.
+
+        wind_speed : numeric or tuple of numeric
+            Wind speed in m/s at a height of 10 meters.
+
+        effective_irradiance : numeric, tuple of numeric, or None.
+            The irradiance that is converted to photocurrent. If None,
+            assumed equal to ``poa_global``. [W/m^2]
+
+        Returns
+        -------
+        temperature_cell : numeric or tuple of numeric
+            The modeled cell temperature [C]
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If not
+        passed as a tuple then the same value is used for input to each Array.
+        If passed as a tuple the length must be the same as the number of
+        Arrays.
+        """
+        # default to using the Array attribute, but allow user to
+        # override with a custom surface_tilt value
+        poa_global = self._validate_per_array(poa_global)
+        temp_air = self._validate_per_array(temp_air, system_wide=True)
+        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
+
+        # need effective_irradiance to be an iterable
+        if effective_irradiance is None:
+            effective_irradiance = tuple([None] * self.num_arrays)
+        else:
+            effective_irradiance = self._validate_per_array(
+                effective_irradiance)
+
+        def _build_kwargs_noct_sam(array):
+            temp_model_kwargs = _build_kwargs([
+                'transmittance_absorptance',
+                'array_height', 'mount_standoff'],
+                array.temperature_model_parameters)
+            try:
+                # noct_sam required args
+                # bundled with kwargs for simplicity
+                temp_model_kwargs['noct'] = \
+                    array.temperature_model_parameters['noct']
+                temp_model_kwargs['eta_m_ref'] = \
+                    array.temperature_model_parameters['eta_m_ref']
+            except KeyError:
+                msg = ('Parameters noct and eta_m_ref are required.'
+                       ' Found {} in temperature_model_parameters.'
+                       .format(array.temperature_model_parameters))
+                raise KeyError(msg)
+            return temp_model_kwargs
+        return tuple(
+            temperature.noct_sam(
+                poa_global, temp_air, wind_speed,
+                effective_irradiance=eff_irrad,
+                **_build_kwargs_noct_sam(array))
+            for array, poa_global, temp_air, wind_speed, eff_irrad in zip(
+                self.arrays, poa_global, temp_air, wind_speed,
+                effective_irradiance
             )
         )
 
@@ -1017,6 +1098,17 @@ class PVSystem:
         return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
                                 **kwargs)
 
+    @_unwrap_single_value
+    def dc_ohms_from_percent(self):
+        """
+        Calculates the equivalent resistance of the wires for each array using
+        :py:func:`pvlib.pvsystem.dc_ohms_from_percent`
+
+        See :py:func:`pvlib.pvsystem.dc_ohms_from_percent` for details.
+        """
+
+        return tuple(array.dc_ohms_from_percent() for array in self.arrays)
+
     @property
     @_unwrap_single_value
     def module_parameters(self):
@@ -1149,6 +1241,9 @@ class Array:
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
         Used to identify a parameter set for the SAPM cell temperature model.
 
+    array_losses_parameters: None, dict or Series, default None.
+        Supported keys are 'dc_ohmic_percent'.
+
     """
 
     def __init__(self,
@@ -1158,7 +1253,8 @@ class Array:
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings=1,
-                 racking_model=None, name=None):
+                 racking_model=None, array_losses_parameters=None,
+                 name=None):
         self.surface_tilt = surface_tilt
         self.surface_azimuth = surface_azimuth
 
@@ -1185,6 +1281,11 @@ class Array:
                 self._infer_temperature_model_params()
         else:
             self.temperature_model_parameters = temperature_model_parameters
+
+        if array_losses_parameters is None:
+            self.array_losses_parameters = {}
+        else:
+            self.array_losses_parameters = array_losses_parameters
 
         self.name = name
 
@@ -1371,6 +1472,72 @@ class Array:
                              'option for Array')
         else:
             raise ValueError(model + ' is not a valid IAM model')
+
+    def dc_ohms_from_percent(self):
+        """
+        Calculates the equivalent resistance of the wires using
+        :py:func:`pvlib.pvsystem.dc_ohms_from_percent`
+
+        Makes use of array module parameters according to the
+        following DC models:
+
+        CEC:
+
+            * `self.module_parameters["V_mp_ref"]`
+            * `self.module_parameters["I_mp_ref"]`
+
+        SAPM:
+
+            * `self.module_parameters["Vmpo"]`
+            * `self.module_parameters["Impo"]`
+
+        PVsyst-like or other:
+
+            * `self.module_parameters["Vmpp"]`
+            * `self.module_parameters["Impp"]`
+
+        Other array parameters that are used are:
+        `self.losses_parameters["dc_ohmic_percent"]`,
+        `self.modules_per_string`, and
+        `self.strings`.
+
+        See :py:func:`pvlib.pvsystem.dc_ohms_from_percent` for more details.
+        """
+
+        # get relevent Vmp and Imp parameters from CEC parameters
+        if all([elem in self.module_parameters
+                for elem in ['V_mp_ref', 'I_mp_ref']]):
+            vmp_ref = self.module_parameters['V_mp_ref']
+            imp_ref = self.module_parameters['I_mp_ref']
+
+        # get relevant Vmp and Imp parameters from SAPM parameters
+        elif all([elem in self.module_parameters
+                  for elem in ['Vmpo', 'Impo']]):
+            vmp_ref = self.module_parameters['Vmpo']
+            imp_ref = self.module_parameters['Impo']
+
+        # get relevant Vmp and Imp parameters if they are PVsyst-like
+        elif all([elem in self.module_parameters
+                  for elem in ['Vmpp', 'Impp']]):
+            vmp_ref = self.module_parameters['Vmpp']
+            imp_ref = self.module_parameters['Impp']
+
+        # raise error if relevant Vmp and Imp parameters are not found
+        else:
+            raise ValueError('Parameters for Vmp and Imp could not be found '
+                             'in the array module parameters. Module '
+                             'parameters must include one set of '
+                             '{"V_mp_ref", "I_mp_Ref"}, '
+                             '{"Vmpo", "Impo"}, or '
+                             '{"Vmpp", "Impp"}.'
+                             )
+
+        return dc_ohms_from_percent(
+            vmp_ref,
+            imp_ref,
+            self.array_losses_parameters['dc_ohmic_percent'],
+            self.modules_per_string,
+            self.strings)
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,
@@ -2808,6 +2975,80 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     losses = (1 - perf) * 100.
 
     return losses
+
+
+def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
+                         modules_per_string=1,
+                         strings=1):
+    """
+    Calculates the equivalent resistance of the wires from a percent
+    ohmic loss at STC.
+
+    Equivalent resistance is calculated with the function:
+
+    .. math::
+        Rw = (L_{stc} / 100) * (Varray / Iarray)
+
+    :math:`Rw` is the equivalent resistance in ohms
+    :math:`Varray` is the Vmp of the modules times modules per string
+    :math:`Iarray` is the Imp of the modules times strings per array
+    :math:`L_{stc}` is the input dc loss percent
+
+    Parameters
+    ----------
+    vmp_ref: numeric
+        Voltage at maximum power in reference conditions [V]
+    imp_ref: numeric
+        Current at maximum power in reference conditions [V]
+    dc_ohmic_percent: numeric, default 0
+        input dc loss as a percent, e.g. 1.5% loss is input as 1.5
+    modules_per_string: int, default 1
+        Number of modules per string in the array.
+    strings: int, default 1
+        Number of parallel strings in the array.
+
+    Returns
+    ----------
+    Rw: numeric
+        Equivalent resistance [ohm]
+
+    References
+    ----------
+    .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
+       https://www.pvsyst.com/help/ohmic_loss.htm
+    """
+    vmp = modules_per_string * vmp_ref
+
+    imp = strings * imp_ref
+
+    Rw = (dc_ohmic_percent / 100) * (vmp / imp)
+
+    return Rw
+
+
+def dc_ohmic_losses(resistance, current):
+    """
+    Returns ohmic losses in units of power from the equivalent
+    resistance of the wires and the operating current.
+
+    Parameters
+    ----------
+    resistance: numeric
+        Equivalent resistance of wires [ohm]
+    current: numeric, float or array-like
+        Operating current [A]
+
+    Returns
+    ----------
+    loss: numeric
+        Power Loss [W]
+
+    References
+    ----------
+    .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
+       https://www.pvsyst.com/help/ohmic_loss.htm
+    """
+    return resistance * current * current
 
 
 def combine_loss_factors(index, *losses, fill_method='ffill'):

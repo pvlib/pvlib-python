@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 import pytest
-from conftest import DATA_DIR, assert_series_equal
+from .conftest import DATA_DIR, assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import temperature, tools
@@ -271,12 +271,12 @@ def test_noct_sam_options():
     poa_global, temp_air, wind_speed, noct, eta_m_ref = (1000., 25., 1., 45.,
                                                          0.2)
     effective_irradiance = 1100.
-    transmittance_absorbtance = 0.8
+    transmittance_absorptance = 0.8
     array_height = 2
     mount_standoff = 2.0
     result = temperature.noct_sam(poa_global, temp_air, wind_speed, noct,
                                   eta_m_ref, effective_irradiance,
-                                  transmittance_absorbtance, array_height,
+                                  transmittance_absorptance, array_height,
                                   mount_standoff)
     expected = 60.477703576
     assert_allclose(result, expected)

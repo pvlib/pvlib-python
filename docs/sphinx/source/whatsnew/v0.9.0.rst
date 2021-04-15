@@ -67,6 +67,17 @@ Deprecations
   * ``ModelChain.weather``
   * ``ModelChain.times``
 
+* The following ``PVSystem`` cell temperature functions have been deprecated
+  and replaced with the wrapper method
+  :py:meth:`~pvlib.pvsystem.PVSystem.get_cell_temperature`:
+
+  * :py:meth:`~pvlist.pvsystem.PVSystem.sapm_celltemp`
+  * :py:meth:`~pvlist.pvsystem.PVSystem.pvsystem.PVSystem.pvsyst_celltemp`
+  * :py:meth:`~pvlist.pvsystem.PVSystem.pvsystem.PVSystem.faiman_celltemp`
+  * :py:meth:`~pvlist.pvsystem.PVSystem.pvsystem.PVSystem.fuentes_celltemp`
+  * :py:meth:`~pvlist.pvsystem.PVSystem.pvsystem.PVSystem.noct_sam_celltemp`
+
+
 Enhancements
 ~~~~~~~~~~~~
 * Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data

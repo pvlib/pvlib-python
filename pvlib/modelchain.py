@@ -1009,26 +1009,26 @@ class ModelChain:
         temp_air = _tuple_from_dfs(self.results.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.results.weather, 'wind_speed')
         kwargs = {}
-        if model == self.system.noct_sam_celltemp:
+        if model == 'noct_sam':
             kwargs['effective_irradiance'] = self.results.effective_irradiance
-        self.results.cell_temperature = model(poa, temp_air, wind_speed,
-                                              **kwargs)
+        self.results.cell_temperature = self.system.get_cell_temperature(
+                poa, temp_air, wind_speed, model=model, **kwargs)
         return self
 
     def sapm_temp(self):
-        return self._set_celltemp(self.system.sapm_celltemp)
+        return self._set_celltemp('sapm')
 
     def pvsyst_temp(self):
-        return self._set_celltemp(self.system.pvsyst_celltemp)
+        return self._set_celltemp('pvsyst')
 
     def faiman_temp(self):
-        return self._set_celltemp(self.system.faiman_celltemp)
+        return self._set_celltemp('faiman')
 
     def fuentes_temp(self):
-        return self._set_celltemp(self.system.fuentes_celltemp)
+        return self._set_celltemp('fuentes')
 
     def noct_sam_temp(self):
-        return self._set_celltemp(self.system.noct_sam_celltemp)
+        return self._set_celltemp('noct_sam')
 
     @property
     def dc_ohmic_model(self):

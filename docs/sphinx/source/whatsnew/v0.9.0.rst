@@ -69,7 +69,7 @@ Deprecations
 
 * The following ``PVSystem`` cell temperature functions have been deprecated
   and replaced with the wrapper method
-  :py:meth:`~pvlib.pvsystem.PVSystem.get_cell_temperature`:
+  :py:meth:`~pvlib.pvsystem.PVSystem.get_cell_temperature` (:pull:`1211`):
 
   * :py:meth:`~pvlist.pvsystem.PVSystem.sapm_celltemp`
   * :py:meth:`~pvlist.pvsystem.PVSystem.pvsystem.PVSystem.pvsyst_celltemp`

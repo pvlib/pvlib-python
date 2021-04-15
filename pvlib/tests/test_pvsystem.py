@@ -553,7 +553,7 @@ def test_PVSystem_multi_array_celltemp_functions(model, two_array_system):
     temp_air = pd.Series(25, index=times)
     wind_speed = pd.Series(1, index=times)
     temp_one, temp_two = two_array_system.get_cell_temperature(
-            (irrad_one, irrad_two), temp_air, wind_speed, model=model)
+        (irrad_one, irrad_two), temp_air, wind_speed, model=model)
     assert (temp_one != temp_two).all()
 
 

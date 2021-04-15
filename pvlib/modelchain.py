@@ -1012,7 +1012,7 @@ class ModelChain:
         if model == 'noct_sam':
             kwargs['effective_irradiance'] = self.results.effective_irradiance
         self.results.cell_temperature = self.system.get_cell_temperature(
-                poa, temp_air, wind_speed, model=model, **kwargs)
+            poa, temp_air, wind_speed, model=model, **kwargs)
         return self
 
     def sapm_temp(self):

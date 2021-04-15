@@ -395,10 +395,21 @@ class PVSystem:
         wind_speed : numeric or tuple of numeric
             Wind speed in m/s.
 
+        model : str
+            Supported models include ``'sapm'``, ``'pvsyst'``,
+            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+
+        **kwargs
+            Extra arguments passed to the model function.
+
         Returns
         -------
         numeric or tuple of numeric
             values in degrees C.
+
+        See Also
+        --------
+        Array.get_cell_temperature
 
         Notes
         -----

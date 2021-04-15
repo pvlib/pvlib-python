@@ -67,8 +67,8 @@ Deprecations
   * ``ModelChain.weather``
   * ``ModelChain.times``
 
-* The following ``PVSystem`` cell temperature functions have been deprecated
-  and replaced with the wrapper method
+* The following ``PVSystem`` cell temperature methods have been deprecated
+  and consolidated into the new wrapper method
   :py:meth:`~pvlib.pvsystem.PVSystem.get_cell_temperature` (:pull:`1211`):
 
   * :py:meth:`~pvlist.pvsystem.PVSystem.sapm_celltemp`

@@ -607,6 +607,12 @@ def test_PVSystem_multi_array_celltemp_multi_wind(model, two_array_system):
     assert_series_equal(temp_two, temp_one_swtich)
 
 
+def test_PVSystem_get_cell_temperature_invalid():
+    system = pvsystem.PVSystem()
+    with pytest.raises(ValueError, match='not a valid'):
+        system.get_cell_temperature(1000, 25, 1, 'not_a_model')
+
+
 @pytest.mark.parametrize("model",
                          ['faiman', 'pvsyst', 'sapm', 'fuentes', 'noct_sam'])
 def test_PVSystem_multi_array_celltemp_temp_too_short(

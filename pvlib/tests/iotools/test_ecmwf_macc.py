@@ -6,7 +6,7 @@ import os
 import datetime
 import numpy as np
 import pytest
-from conftest import requires_netCDF4, DATA_DIR
+from ..conftest import requires_netCDF4, DATA_DIR
 from pvlib.iotools import ecmwf_macc
 
 TESTDATA = 'aod550_tcwv_20121101_test.nc'

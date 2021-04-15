@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from conftest import assert_series_equal
+from .conftest import assert_series_equal
 
 from pvlib import snow
 from pvlib.tools import sind

@@ -40,6 +40,11 @@ Breaking changes
   ``ModelChain.adrinverter`` changed to ``ModelChain.adr_inverter``.
   (:pull:`1150`)
 
+* The ``orientation_strategy`` parameter has been removed from the various
+  :py:class:`pvlib.modelchain.ModelChain` constructors and ``surface_tilt``,
+  ``surface_azimuth`` are now required parameters for
+  :py:func:`pvlib.modelchain.basic_chain` (:issue:`1028`, :pull:`1181`)
+
 
 Deprecations
 ~~~~~~~~~~~~
@@ -59,6 +64,8 @@ Deprecations
   * ``ModelChain.spectral_modifier``
   * ``ModelChain.total_irrad``
   * ``ModelChain.tracking``
+  * ``ModelChain.weather``
+  * ``ModelChain.times``
 
 Enhancements
 ~~~~~~~~~~~~
@@ -96,6 +103,11 @@ Enhancements
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
   from DC power. Use parameter ``model`` to specify which inverter model to use.
   (:pull:`1147`, :issue:`998`, :pull:`1150`)
+* Added :py:func:`~pvlib.temperature.noct_sam`, a cell temperature model
+  implemented in SAM. (:pull:`1177`, :pull:`1195`)
+* Added :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` to calculate
+  the temperature coefficient of power for the pvsyst module model.
+   (:pull:`1190`)
 
 Bug fixes
 ~~~~~~~~~
@@ -104,9 +116,13 @@ Bug fixes
   (:issue:`1065`, :pull:`1140`)
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
+* Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
 
 Testing
 ~~~~~~~
+* Added ``__init__.py`` to ``pvlib/tests`` and subdirectories. This follows
+  pytest recommendations for package layout and imports from ``conftest.py``.
+  Solves issue with test discovery in vscode. (:pull:`1204`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -131,3 +147,4 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
+* Damjan Postolovski (:ghuser:`dpostolovski`)

@@ -133,12 +133,12 @@ html_theme = "pydata_sphinx_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    #"external_links": [
+    # "external_links": [
     #    {"url": "https://pandas.pydata.org/pandas-docs/stable/", "name": "Pandas Docs"}
-    #],
-    #"github_url": "https://github.com/pandas-dev/pydata-sphinx-theme",
-    #"twitter_url": "https://twitter.com/pandas_dev",
-    #"use_edit_page_button": True,
+    # ],
+    # "github_url": "https://github.com/pandas-dev/pydata-sphinx-theme",
+    # "twitter_url": "https://twitter.com/pandas_dev",
+    # "use_edit_page_button": True,
     "show_toc_level": 1,
     # "navbar_align": "right",  # For testing that the navbar items align properly
 }

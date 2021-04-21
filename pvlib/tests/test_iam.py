@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import pytest
-from conftest import assert_series_equal
+from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import iam as _iam

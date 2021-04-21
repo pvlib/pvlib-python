@@ -1,12 +1,11 @@
 import pandas as pd
-from conftest import assert_frame_equal
 import numpy as np
 from numpy import nan
 
 import pytest
 
 from pvlib.iotools import solrad
-from conftest import DATA_DIR
+from ..conftest import DATA_DIR, assert_frame_equal
 
 
 testfile = DATA_DIR / 'abq19056.dat'

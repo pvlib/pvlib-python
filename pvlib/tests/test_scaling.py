@@ -118,6 +118,14 @@ def test_compute_wavelet_array_invalid(clear_sky_index):
         scaling._compute_wavelet(clear_sky_index)
 
 
+def test_compute_wavelet_dwttheory(clear_sky_index, time,
+                                   expect_tmscale, expect_wavelet):
+    # Confirm detail coeffs sum to original signal
+    csi_series = pd.Series(clear_sky_index, index=time)
+    wavelet, tmscale = scaling._compute_wavelet(csi_series)
+    assert_almost_equal(np.sum(wavelet, 0), csi_series)
+
+
 def test_wvm_series(clear_sky_index, time, positions, expect_cs_smooth):
     csi_series = pd.Series(clear_sky_index, index=time)
     cs_sm, _, _ = scaling.wvm(csi_series, positions, cloud_speed)

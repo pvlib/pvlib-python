@@ -117,6 +117,8 @@ Bug fixes
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
 * Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
+* Corrected methodology error in scaling.py WVM. Tracks with fix in MATLAB ver.
+  (:issue:`1206`, :pull:`1213`)
 
 Testing
 ~~~~~~~
@@ -148,3 +150,4 @@ Contributors
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
 * Damjan Postolovski (:ghuser:`dpostolovski`)
+* Joe Ranalli (:ghuser:`jranalli`)

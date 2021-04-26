@@ -48,16 +48,16 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
 
     References
     ----------
-    [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
-    Model (WVM) for Solar PV Power Plants. IEEE Transactions on Sustainable
-    Energy, vol. 4, no. 2, pp. 501-509, 2013.
+    .. [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
+       Model (WVM) for Solar PV Power Plants. IEEE Transactions on Sustainable
+       Energy, vol. 4, no. 2, pp. 501-509, 2013.
 
-    [2] M. Lave and J. Kleissl. Cloud speed impact on solar variability
-    scaling - Application to the wavelet variability model. Solar Energy,
-    vol. 91, pp. 11-21, 2013.
+    .. [2] M. Lave and J. Kleissl. Cloud speed impact on solar variability
+       scaling - Application to the wavelet variability model. Solar Energy,
+       vol. 91, pp. 11-21, 2013.
 
-    [3] Wavelet Variability Model - Matlab Code:
-    https://pvpmc.sandia.gov/applications/wavelet-variability-model/
+    .. [3] Wavelet Variability Model - Matlab Code:
+       https://github.com/sandialabs/wvm
     """
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019
@@ -128,13 +128,13 @@ def latlon_to_xy(coordinates):
 
     References
     ----------
-    [1] H. Moritz. Geodetic Reference System 1980, Journal of Geodesy, vol. 74,
-    no. 1, pp 128–133, 2000.
+    .. [1] H. Moritz. Geodetic Reference System 1980, Journal of Geodesy, vol.
+       74, no. 1, pp 128–133, 2000.
 
-    [2] https://pypi.org/project/pyproj/
+    .. [2] https://pypi.org/project/pyproj/
 
-    [3] Wavelet Variability Model - Matlab Code:
-    https://pvpmc.sandia.gov/applications/wavelet-variability-model/
+    .. [3] Wavelet Variability Model - Matlab Code:
+       https://github.com/sandialabs/wvm
     """
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019
@@ -187,12 +187,12 @@ def _compute_wavelet(clearsky_index, dt=None):
 
     References
     ----------
-    [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
-    Model (WVM) for Solar PV Power Plants. IEEE Transactions on Sustainable
-    Energy, vol. 4, no. 2, pp. 501-509, 2013.
+    .. [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
+       Model (WVM) for Solar PV Power Plants. IEEE Transactions on
+       Sustainable Energy, vol. 4, no. 2, pp. 501-509, 2013.
 
-    [2] Wavelet Variability Model - Matlab Code:
-    https://pvpmc.sandia.gov/applications/wavelet-variability-model/
+    .. [2] Wavelet Variability Model - Matlab Code:
+       https://github.com/sandialabs/wvm
     """
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019

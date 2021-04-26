@@ -71,11 +71,11 @@ Deprecations
   and consolidated into the new wrapper method
   :py:meth:`~pvlib.pvsystem.PVSystem.get_cell_temperature` (:pull:`1211`):
 
-  * :py:meth:`~pvlist.pvsystem.PVSystem.sapm_celltemp`
-  * :py:meth:`~pvlist.pvsystem.PVSystem.pvsystem.PVSystem.pvsyst_celltemp`
-  * :py:meth:`~pvlist.pvsystem.PVSystem.pvsystem.PVSystem.faiman_celltemp`
-  * :py:meth:`~pvlist.pvsystem.PVSystem.pvsystem.PVSystem.fuentes_celltemp`
-  * :py:meth:`~pvlist.pvsystem.PVSystem.pvsystem.PVSystem.noct_sam_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.sapm_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.pvsyst_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.faiman_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.fuentes_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.noct_sam_celltemp`
 
 
 Enhancements

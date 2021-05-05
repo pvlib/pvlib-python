@@ -117,6 +117,9 @@ Bug fixes
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
 * Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
+* Take into account ``EgRef``, ``dEgdT``, ``irrad_ref`` and ``temp_ref`` when
+  calling :py:func:`~pvlib.pvsystem.calcparams_cec`.
+  (:issue:`1215`, :pull:`1216`)
 
 Testing
 ~~~~~~~
@@ -150,3 +153,4 @@ Contributors
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
 * Damjan Postolovski (:ghuser:`dpostolovski`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)

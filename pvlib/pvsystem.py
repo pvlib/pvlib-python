@@ -1851,8 +1851,8 @@ def calcparams_cec(effective_irradiance, temp_cell,
                              alpha_sc*(1.0 - Adjust/100),
                              a_ref, I_L_ref, I_o_ref,
                              R_sh_ref, R_s,
-                             EgRef=1.121, dEgdT=-0.0002677,
-                             irrad_ref=1000, temp_ref=25)
+                             EgRef=EgRef, dEgdT=dEgdT,
+                             irrad_ref=irrad_ref, temp_ref=temp_ref)
 
 
 def calcparams_pvsyst(effective_irradiance, temp_cell,

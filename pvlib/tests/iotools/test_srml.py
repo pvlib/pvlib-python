@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from pvlib.iotools import srml
-from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
+from ..conftest import DATA_DIR  # , RERUNS, RERUNS_DELAY
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 
@@ -13,7 +13,8 @@ def test_read_srml():
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+# @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+@pytest.mark.xfail(strict=True)
 def test_read_srml_remote():
     srml.read_srml('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt')
 
@@ -41,7 +42,8 @@ def test_read_srml_nans_exist():
      2016, 12),
 ])
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+# @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+@pytest.mark.xfail(strict=True)
 def test_read_srml_dt_index(url, year, month):
     data = srml.read_srml(url)
     start = pd.Timestamp(f'{year:04d}{month:02d}01 00:00')
@@ -65,7 +67,8 @@ def test_map_columns(column, expected):
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+# @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+@pytest.mark.xfail(strict=True)
 def test_read_srml_month_from_solardat():
     url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
     file_data = srml.read_srml(url)
@@ -74,7 +77,8 @@ def test_read_srml_month_from_solardat():
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+# @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+@pytest.mark.xfail(strict=True)
 def test_15_minute_dt_index():
     data = srml.read_srml_month_from_solardat('TW', 2019, 4, 'RQ')
     start = pd.Timestamp('20190401 00:00')
@@ -87,7 +91,8 @@ def test_15_minute_dt_index():
 
 
 @pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+# @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+@pytest.mark.xfail(strict=True)
 def test_hourly_dt_index():
     data = srml.read_srml_month_from_solardat('CD', 1986, 4, 'PH')
     start = pd.Timestamp('19860401 00:00')

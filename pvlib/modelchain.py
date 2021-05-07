@@ -977,7 +977,7 @@ class ModelChain:
             return self.faiman_temp
         elif {'noct_installed'} <= params:
             return self.fuentes_temp
-        elif {'noct', 'eta_m_ref'} <= params:
+        elif {'noct', 'module_efficiency'} <= params:
             return self.noct_sam_temp
         else:
             raise ValueError(f'could not infer temperature model from '

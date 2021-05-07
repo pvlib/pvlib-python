@@ -68,8 +68,7 @@ Deprecations
   * ``ModelChain.times``
 
 * The ``eta_m`` parameter for :py:func:`~pvlib.temperature.pvsyst_cell` is
-  replaced by the ``module_efficiency`` parameter.
-
+  replaced by parameter ``module_efficiency``. (:issue:`1188`, :pull:`1218`)
 
 Enhancements
 ~~~~~~~~~~~~

@@ -215,8 +215,8 @@ def test_fuentes_timezone(tz):
 
 
 def test_noct_sam():
-    poa_global, temp_air, wind_speed, noct, module_efficiency = (1000., 25., 1., 45.,
-                                                         0.2)
+    poa_global, temp_air, wind_speed = (1000., 25., 1.)
+    noct, module_efficiency = (45., 0.2)
     expected = 55.230790492
     result = temperature.noct_sam(poa_global, temp_air, wind_speed, noct,
                                   module_efficiency)
@@ -268,8 +268,8 @@ def test_noct_sam_against_sam():
 
 
 def test_noct_sam_options():
-    poa_global, temp_air, wind_speed, noct, module_efficiency = (1000., 25., 1., 45.,
-                                                         0.2)
+    poa_global, temp_air, wind_speed = (1000., 25., 1.)
+    noct, module_efficiency = (45., 0.2)
     effective_irradiance = 1100.
     transmittance_absorptance = 0.8
     array_height = 2

@@ -117,6 +117,8 @@ Bug fixes
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
 * Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
+* Corrected methodology error in :py:func:`~pvlib.scaling.wvm`. Tracks with
+  fix in PVLib for MATLAB. (:issue:`1206`, :pull:`1213`)
 
 Testing
 ~~~~~~~
@@ -126,7 +128,6 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
 * Update intro tutorial to highlight the use of historical meteorological data
   and to make the procedural and OO results match exactly. (:issue:`1116`, :pull:`1144`)
 * Add a gallery example showing how to appropriately use interval-averaged
@@ -150,3 +151,4 @@ Contributors
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
 * Damjan Postolovski (:ghuser:`dpostolovski`)
+* Joe Ranalli (:ghuser:`jranalli`)

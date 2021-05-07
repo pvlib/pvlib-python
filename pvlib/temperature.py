@@ -286,7 +286,7 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
 
 
 def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
-                eta_m=0.1, module_efficiency=0.1, alpha_absorption=0.9):
+                eta_m=None, module_efficiency=0.1, alpha_absorption=0.9):
     r"""
     Calculate cell temperature using an empirical heat loss factor model
     as implemented in PVsyst.
@@ -316,15 +316,12 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
         in :eq:`pvsyst`.
         :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
 
-    eta_m : numeric, default 0.1 (deprecated, use module_efficiency instead)
-        Module external efficiency as a fraction, i.e.,
-        :math:`DC\ power / (POA\ irradiance \times module\ area)`.
-        Parameter :math:`\eta_{m}` in :eq:`pvsyst`.
+    eta_m : numeric, default None (deprecated, use module_efficiency instead)
 
     module_efficiency : numeric, default 0.1
         Module external efficiency as a fraction. Parameter :math:`\eta_{m}`
         in :eq:`pvsyst`. Calculate as
-        :math:`DC\ power / (POA\ irradiance \times module\ area)`.
+        :math:`\eta_{m} = DC\ power / (POA\ irradiance \times module\ area)`.
 
     alpha_absorption : numeric, default 0.9
         Absorption coefficient. Parameter :math:`\alpha` in :eq:`pvsyst`.
@@ -377,10 +374,10 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     """
 
     if eta_m:
-        warn_deprecated(since='v0.9', name='eta_m',
-                        alternative='module_efficiency', removal='v0.10')
-        if not module_efficiency:
-            module_efficiency = eta_m
+        warn_deprecated(
+            since='v0.9', message='eta_m overwriting module_efficiency',
+            name='eta_m', alternative='module_efficiency', removal='v0.10')
+        module_efficiency = eta_m
     total_loss_factor = u_c + u_v * wind_speed
     heat_input = poa_global * alpha_absorption * (1 - module_efficiency)
     temp_difference = heat_input / total_loss_factor

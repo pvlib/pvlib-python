@@ -392,7 +392,7 @@ def two_array_system(pvsyst_module_params, cec_module_params):
     temperature_model['noct_installed'] = 45
     # parameters for noct_sam temperature model
     temperature_model['noct'] = 45.
-    temperature_model['eta_m_ref'] = 0.2
+    temperature_model['module_efficiency'] = 0.2
     module_params = {**pvsyst_module_params, **cec_module_params}
     return pvsystem.PVSystem(
         arrays=[
@@ -471,8 +471,9 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     temp_model_params = temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst'][
         parameter_set]
     alpha_absorption = 0.85
-    eta_m = 0.17
-    module_parameters = {'alpha_absorption': alpha_absorption, 'eta_m': eta_m}
+    module_efficiency = 0.17
+    module_parameters = {'alpha_absorption': alpha_absorption,
+                         'module_efficiency': module_efficiency}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params)
     mocker.spy(temperature, 'pvsyst_cell')
@@ -481,8 +482,9 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     wind = 0.5
     out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
     temperature.pvsyst_cell.assert_called_once_with(
-        irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
-        eta_m, alpha_absorption)
+        irrad, temp, wind_speed=wind, u_c=temp_model_params['u_c'],
+        u_v=temp_model_params['u_v'], module_efficiency=module_efficiency,
+        alpha_absorption=alpha_absorption)
     assert (out < 90) and (out > 70)
 
 
@@ -500,16 +502,16 @@ def test_PVSystem_faiman_celltemp(mocker):
 
 
 def test_PVSystem_noct_celltemp(mocker):
-    poa_global, temp_air, wind_speed, noct, eta_m_ref = (1000., 25., 1., 45.,
-                                                         0.2)
+    poa_global, temp_air, wind_speed, noct, module_efficiency = (
+        1000., 25., 1., 45., 0.2)
     expected = 55.230790492
-    temp_model_params = {'noct': noct, 'eta_m_ref': eta_m_ref}
+    temp_model_params = {'noct': noct, 'module_efficiency': module_efficiency}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     mocker.spy(temperature, 'noct_sam')
     out = system.noct_sam_celltemp(poa_global, temp_air, wind_speed)
     temperature.noct_sam.assert_called_once_with(
         poa_global, temp_air, wind_speed, effective_irradiance=None, noct=noct,
-        eta_m_ref=eta_m_ref)
+        module_efficiency=module_efficiency)
     assert_allclose(out, expected)
     # dufferent types
     out = system.noct_sam_celltemp(np.array(poa_global), np.array(temp_air),
@@ -533,8 +535,8 @@ def test_PVSystem_noct_celltemp(mocker):
 
 
 def test_PVSystem_noct_celltemp_error():
-    poa_global, temp_air, wind_speed, eta_m_ref = (1000., 25., 1., 0.2)
-    temp_model_params = {'eta_m_ref': eta_m_ref}
+    poa_global, temp_air, wind_speed, module_efficiency = (1000., 25., 1., 0.2)
+    temp_model_params = {'module_efficiency': module_efficiency}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     with pytest.raises(KeyError):
         system.noct_sam_celltemp(poa_global, temp_air, wind_speed)

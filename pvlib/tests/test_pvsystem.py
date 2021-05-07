@@ -472,7 +472,7 @@ def test_PVSystem_pvsyst_celltemp(mocker):
         parameter_set]
     alpha_absorption = 0.85
     module_efficiency = 0.17
-    module_parameters = {'alpha_absorption': alpha_absorption, 
+    module_parameters = {'alpha_absorption': alpha_absorption,
                          'module_efficiency': module_efficiency}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params)
@@ -504,7 +504,7 @@ def test_PVSystem_noct_celltemp(mocker):
     poa_global, temp_air, wind_speed = (1000., 25., 1.)
     noct, module_efficiency = (45., 0.2)
     expected = 55.230790492
-    temp_model_params = {'noct': noct, 
+    temp_model_params = {'noct': noct,
                          'module_efficiency': module_efficiency}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     mocker.spy(temperature, 'noct_sam')

@@ -482,8 +482,9 @@ def test_PVSystem_pvsyst_celltemp(mocker):
     wind = 0.5
     out = system.pvsyst_celltemp(irrad, temp, wind_speed=wind)
     temperature.pvsyst_cell.assert_called_once_with(
-        irrad, temp, wind, temp_model_params['u_c'], temp_model_params['u_v'],
-        module_efficiency, alpha_absorption)
+        irrad, temp, wind_speed=wind, u_c=temp_model_params['u_c'],
+        u_v=temp_model_params['u_v'], module_efficiency=module_efficiency,
+        alpha_absorption=alpha_absorption)
     assert (out < 90) and (out > 70)
 
 

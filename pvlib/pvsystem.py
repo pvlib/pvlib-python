@@ -671,7 +671,7 @@ class PVSystem:
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
 
         def build_celltemp_kwargs(array):
-            return {**_build_kwargs(['eta_m', 'alpha_absorption'],
+            return {**_build_kwargs(['module_efficiency', 'alpha_absorption'],
                                     array.module_parameters),
                     **_build_kwargs(['u_c', 'u_v'],
                                     array.temperature_model_parameters)}
@@ -843,10 +843,10 @@ class PVSystem:
                 # bundled with kwargs for simplicity
                 temp_model_kwargs['noct'] = \
                     array.temperature_model_parameters['noct']
-                temp_model_kwargs['eta_m_ref'] = \
-                    array.temperature_model_parameters['eta_m_ref']
+                temp_model_kwargs['module_efficiency'] = \
+                    array.temperature_model_parameters['module_efficiency']
             except KeyError:
-                msg = ('Parameters noct and eta_m_ref are required.'
+                msg = ('Parameters noct and module_efficiency are required.'
                        ' Found {} in temperature_model_parameters.'
                        .format(array.temperature_model_parameters))
                 raise KeyError(msg)

@@ -285,7 +285,7 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
 
 
 def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
-                eta_m=0.1, alpha_absorption=0.9):
+                module_efficiency=0.1, alpha_absorption=0.9):
     r"""
     Calculate cell temperature using an empirical heat loss factor model
     as implemented in PVsyst.
@@ -315,7 +315,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
         in :eq:`pvsyst`.
         :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
-    eta_m : numeric, default 0.1
+    module_efficiency : numeric, default 0.1
         Module external efficiency as a fraction, i.e.,
         :math:`DC\ power / (POA\ irradiance \times module\ area)`.
         Parameter :math:`\eta_{m}` in :eq:`pvsyst`.
@@ -371,7 +371,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     """
 
     total_loss_factor = u_c + u_v * wind_speed
-    heat_input = poa_global * alpha_absorption * (1 - eta_m)
+    heat_input = poa_global * alpha_absorption * (1 - module_efficiency)
     temp_difference = heat_input / total_loss_factor
     return temp_air + temp_difference
 
@@ -719,7 +719,7 @@ def _adj_for_mounting_standoff(x):
                         [0., 18., 11., 6., 2., 0.])
 
 
-def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
+def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
              effective_irradiance=None, transmittance_absorptance=0.9,
              array_height=1, mount_standoff=4):
     r'''
@@ -744,7 +744,7 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
         Nominal operating cell temperature [C], determined at conditions of
         800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
 
-    eta_m_ref : float
+    module_efficiency : float
         Module external efficiency [unitless] at reference conditions of
         1000 W/m^2 and 20C. Calculate as
         :math:`\eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}`
@@ -810,6 +810,6 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, eta_m_ref,
     # [1] Eq. 10.37 isn't clear on exactly what "G" is. SAM SSC code uses
     # poa_global where G appears
     cell_temp_init = poa_global / 800. * (noct_adj - 20.)
-    heat_loss = 1 - eta_m_ref / tau_alpha
+    heat_loss = 1 - module_efficiency / tau_alpha
     wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)
     return temp_air + cell_temp_init * heat_loss * wind_loss

@@ -121,7 +121,7 @@ Bug fixes
   fix in PVLib for MATLAB. (:issue:`1206`, :pull:`1213`)
 * Removed the **kwargs parameters from :py:meth:`~pvlib.pvsystem.sapm` and
   :py:meth:`~pvlib.pvsystem.calcparams_desoto` and 
-  :py:meth:`~pvlib.pvsystem.calcparams_cec` (:issue:`1118`, :pull:`xxxx`)
+  :py:meth:`~pvlib.pvsystem.calcparams_cec` (:issue:`1118`, :pull:`1222`)
 
 Testing
 ~~~~~~~

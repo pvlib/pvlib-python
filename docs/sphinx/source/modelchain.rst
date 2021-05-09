@@ -4,28 +4,25 @@ ModelChain
 
 The :py:class:`~.modelchain.ModelChain` class provides a high-level
 interface for standardized PV modeling. The class aims to automate much
-of the modeling process while providing user-control and remaining
+of the modeling process while providing flexibility and remaining
 extensible. This guide aims to build users' understanding of the
 ModelChain class. It assumes some familiarity with object-oriented
 code in Python, but most information should be understandable even
 without a solid understanding of classes.
 
-A :py:class:`~.modelchain.ModelChain` is composed of a
-:py:class:`~.pvsystem.PVSystem` object and a
-:py:class:`~.location.Location` object. A PVSystem object represents an
-assembled collection of modules, inverters, etc., a Location object
-represents a particular place on the planet, and a ModelChain object
-describes the modeling chain used to calculate a system's output at that
-location. The PVSystem and Location objects will be described in detail
-in another guide.
+A :py:class:`~.modelchain.ModelChain` has three components:
+
+* a :py:class:`~.pvsystem.PVSystem` object, representin a collection of modules and inverters
+* a :py:class:`~.location.Location` object, representing a location on the planet
+* values for attributes that specify the model to be used for for each step in the PV modeling
+  process.
 
 Modeling with a :py:class:`~.ModelChain` typically involves 3 steps:
 
-1. Creating the :py:class:`~.ModelChain`.
-2. Executing the :py:meth:`ModelChain.run_model() <.ModelChain.run_model>`
-   method with prepared weather data.
-3. Examining the model results that are stored in the ModelChain attribute
-   ``results`` as an instance of :py:class:`~.ModelChainResults`.
+1. Creating an instance of :py:class:`~pvlib.modelchain.ModelChain`.
+2. Executing a ModelChain.run_model method with weather data as input.
+3. Examining the model results that are stored in the ModelChain's ``results``
+   attribute.
 
 A simple ModelChain example
 ---------------------------
@@ -204,7 +201,14 @@ functions for a PVSystem that contains SAPM-specific parameters.
 
 Of course, these choices can also lead to failure when executing
 :py:meth:`~pvlib.modelchain.ModelChain.run_model` if your system objects
-do not contain the required parameters for running the model.
+do not contain the required parameters for running the model chain.
+
+As a convenience, ModelChain includes two class methods that return a ModelChain
+with models selected to be consistent with named PV system models:
+
+* :py:meth:`~pvlib.modelchain.ModelChain.with_pvwatts`
+* :py:meth:`~pvlib.modelchain.ModelChain.with_sapm`
+
 
 Demystifying ModelChain internals
 ---------------------------------
@@ -214,10 +218,10 @@ users' code as simple as possible.
 
 The key parts of ModelChain are:
 
-    1. The :py:meth:`ModelChain.run_model() <.ModelChain.run_model>` method
+    1. The ModelChain.run_model methods.
     2. A set of methods that wrap and call the PVSystem methods.
-    3. A set of methods that inspect user-supplied objects to determine
-       the appropriate default models.
+    3. A set of methods that can inspect user-supplied objects to infer
+       the appropriate model when a models isn't specified by the user.
 
 run_model methods
 ~~~~~~~~~~~~~~~~~
@@ -318,19 +322,19 @@ below shows a simple example of this.
     mc.pvwatts_dc();
     mc.results.dc
 
-The ModelChain.sapm method works similarly to the ModelChain.pvwatts_dc
+The ModelChain.sapm method works in a manner similar to the ModelChain.pvwatts_dc
 method. It calls the PVSystem.sapm method using stored data, then
 assigns the result to the ``dc`` attribute of ModelChain.results.
 The ModelChain.sapm method differs from the ModelChain.pvwatts_dc method in
 a notable way: the PVSystem.sapm method returns a DataFrame with current,
 voltage, and power results, rather than a simple Series
 of power. The ModelChain methods for single diode models (e.g.,
-:py:meth:`~pvlib.modelchain.ModelChain.desoto` also return a DataFrame with
+:py:meth:`~pvlib.modelchain.ModelChain.desoto`) also return a DataFrame with
 current, voltage and power, and a second DataFrame with the single diode
 equation parameter values.
 
 All ModelChain methods for DC output use the
-:py:meth`~pvlib.pvsystem.PVSystem.scale_voltage_current_power` method to scale
+:py:meth:`~pvlib.pvsystem.PVSystem.scale_voltage_current_power` method to scale
 DC quantities to the output of the full PVSystem.
 
 .. ipython:: python
@@ -430,11 +434,11 @@ are in the same order as the PVSystem.arrays.
     array_one = Array(surface_tilt=20, surface_azimuth=200,
                       module_parameters=module_parameters,
                       temperature_model_parameters=temperature_model_parameters,
-                      modules_per_string=10, strings_per_inverter=2)
+                      modules_per_string=10, strings=2)
     array_two = Array(surface_tilt=20, surface_azimuth=160,
                       module_parameters=module_parameters,
                       temperature_model_parameters=temperature_model_parameters,
-                      modules_per_string=10, strings_per_inverter=2)
+                      modules_per_string=10, strings=2)
     system_two_arrays = PVSystem(arrays=[array_one, array_two],
                                  inverter_parameters=cec_inverter,
                                  aoi_model='no_loss', spectral_model='no_loss')

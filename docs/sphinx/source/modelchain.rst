@@ -93,15 +93,15 @@ examples of attributes of :py:class:`~ModelChainResult` are shown below.
 
 .. ipython:: python
 
-    mc.result.cell_temperature
+    mc.results.cell_temperature
 
 .. ipython:: python
 
-    mc.result.dc
+    mc.results.dc
 
 .. ipython:: python
 
-    mc.result.ac
+    mc.results.ac
 
 The remainder of this guide examines the ModelChain functionality and
 explores common pitfalls.
@@ -226,11 +226,14 @@ ModelChain provides three methods for executing the chain of models. The
 methods allow for simulating the output of the PVSystem with different
 input irradiance data:
 
-| ModelChain method          | Input data                     |
-| :--------------------------| :------------------------------|
-| :py:meth:`~pvlib.modelchain.ModelChain.run_model` | GHI, DHI and DNI |
-| :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_poa` | Broadband direct, diffuse and total irradiance in plane of array |
-| :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_effective_irradiance poa` | Spectrally- and reflection-adjusted total irradiance in plane of array |
+* :py:meth:`~pvlib.modelchain.ModelChain.run_model`, use when ``weather``
+  contains global horizontal, direct and diffuse horizontal irradiance ('ghi', 'dni' and 'dhi')
+* :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_poa`, use when
+  ``weather`` broadband direct, diffuse and total irradiance in the plane of array
+  ('poa_global', 'poa_direct', 'poa_diffuse')
+* :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_effective_irradiance poa`,
+  use when ``weather`` contains spectrally- and reflection-adjusted total
+  irradiance in the plane of array ('effective_irradiance')
 
 To illustrate the use of a `run_model` method, assume that a user has GHI, DHI
 and DNI. The :py:meth:`~pvlib.modelchain.ModelChain.run_model` method, shown below,
@@ -420,17 +423,18 @@ are in the same order as the PVSystem.arrays.
 
 .. ipython:: python
 
+    from pvlib.pvsystem import Array
     location = Location(latitude=32.2, longitude=-110.9)
     inverter_parameters = {'pdc0': 10000, 'eta_inv_nom': 0.96}
     module_parameters = {'pdc0': 250, 'gamma_pdc': -0.004}
-    array_one = pvsystem.Array(surface_tilt=20, surface_azimuth=200,
-                               module_parameters=module_parameters,
-                               temperature_model_parameters=temperature_model_parameters,
-                               modules_per_string=10, strings_per_inverter=2)
-    array_two = pvsystem.Array(surface_tilt=20, surface_azimuth=160,
-                               module_parameters=module_parameters,
-                               temperature_model_parameters=temperature_model_parameters,
-                               modules_per_string=10, strings_per_inverter=2)
+    array_one = Array(surface_tilt=20, surface_azimuth=200,
+                      module_parameters=module_parameters,
+                      temperature_model_parameters=temperature_model_parameters,
+                      modules_per_string=10, strings_per_inverter=2)
+    array_two = Array(surface_tilt=20, surface_azimuth=160,
+                      module_parameters=module_parameters,
+                      temperature_model_parameters=temperature_model_parameters,
+                      modules_per_string=10, strings_per_inverter=2)
     system_two_arrays = PVSystem(arrays=[array_one, array_two],
                                  inverter_parameters=cec_inverter,
                                  aoi_model='no_loss', spectral_model='no_loss')
@@ -439,6 +443,7 @@ are in the same order as the PVSystem.arrays.
     mc.run_model(weather)
 
     mc.results.dc
+    mc.results.dc[0]
 
 When ``weather`` is a single DataFrame, these data are broadcast and used
 for all arrays. To specify data separately for each array, provide a tuple
@@ -449,18 +454,17 @@ Air, module and cell temperatures
 
 The different run_model methods allow the ModelChain to be run starting with
 different irradiance data. Similarly, ModelChain run_model methods can be used
-with different temperature data as long as cell temperature can be determined:
+with different temperature data as long as cell temperature can be determined.
+Temperatuer data are passed in the ``weather`` DataFrame and can include:
 
-* ambient air temperature (``'temp_air'``)
-* module temperature, typically measured on the rear surface (``'module_temperature'``)
-* cell temperature (``'cell_temperature'``)
-
-If ``'cell_temperature'`` is provided in the input ``weather``, these data
-are used directly. If ``module_temperature`` is provided and
-``ModelChain.temperature model='sapm'`` (either set directly or inferred), the
-:py:meth:`~pvlib.modelchain.ModelChain.sapm_temp` method calculates cell
-temperature. Otherwise, `ModelChain.temperature_model` is used, in which case
-air temperature is used, if provided.
+* cell temperature (``'cell_temperature'``). If passed in ``weather`` no
+  cell temperature model is run.
+* module temperature, typically measured on the rear surface (``'module_temperature'``).
+  If found in ``weather`` and ``ModelChain.temperature model='sapm'`` 
+  (either set directly or inferred), the :py:meth:`~pvlib.modelchain.ModelChain.sapm_temp`
+  method is used to calculate cell temperature.
+* ambient air temperature (``'temp_air'``). In this case `ModelChain.temperature_model`
+  is used to calcualte cell temeprature.
 
 Cell temperature models also can use irradiance as input. All cell
 temperature models expect POA irradiance (``'poa_global'``) as  input. When

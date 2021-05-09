@@ -440,9 +440,9 @@ are in the same order as the PVSystem.arrays.
                       temperature_model_parameters=temperature_model_parameters,
                       modules_per_string=10, strings=2)
     system_two_arrays = PVSystem(arrays=[array_one, array_two],
-                                 inverter_parameters=cec_inverter,
-                                 aoi_model='no_loss', spectral_model='no_loss')
-    mc = ModelChain(system, location)
+                                 inverter_parameters=cec_inverter)
+    mc = ModelChain(system, location, aoi_model='no_loss',
+                    spectral_model='no_loss')
 
     mc.run_model(weather)
 

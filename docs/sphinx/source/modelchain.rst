@@ -24,8 +24,8 @@ Modeling with a :py:class:`~.ModelChain` typically involves 3 steps:
 1. Creating the :py:class:`~.ModelChain`.
 2. Executing the :py:meth:`ModelChain.run_model() <.ModelChain.run_model>`
    method with prepared weather data.
-3. Examining the model results that :py:meth:`~.ModelChain.run_model`
-   stored in attributes of the :py:class:`~.ModelChain`.
+3. Examining the model results that are stored in the ModelChain attribute
+   ``results`` as an instance of :py:class:`~.ModelChainResults`.
 
 A simple ModelChain example
 ---------------------------
@@ -81,26 +81,27 @@ Next, we run a model with some simple weather data.
                            columns=['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed'],
                            index=[pd.Timestamp('20170401 1200', tz='US/Arizona')])
 
-    mc.run_model(weather);
+    mc.run_model(weather)
 
-ModelChain stores the modeling results on a series of attributes. A few
-examples are shown below.
-
-.. ipython:: python
-
-    mc.aoi
+ModelChain stores the modeling results in the ``results`` attribute. The
+``results`` attribute is an instance of :py:class:`~ModelChainResult`. A few
+examples of attributes of :py:class:`~ModelChainResult` are shown below.
 
 .. ipython:: python
 
-    mc.cell_temperature
+    mc.results.aoi
 
 .. ipython:: python
 
-    mc.dc
+    mc.result.cell_temperature
 
 .. ipython:: python
 
-    mc.ac
+    mc.result.dc
+
+.. ipython:: python
+
+    mc.result.ac
 
 The remainder of this guide examines the ModelChain functionality and
 explores common pitfalls.
@@ -161,9 +162,9 @@ model, AC model, AOI loss model, and spectral loss model.
     mc.ac
 
 Alternatively, we could have specified single diode or PVWatts related
-information in the PVSystem construction. Here we pass PVWatts data to
-the PVSystem. ModelChain will automatically determine that it should
-choose PVWatts DC and AC models. ModelChain still needs us to specify
+information in the PVSystem construction. Here we assign parameters for
+PVWatts models to the PVSystem. ModelChain will automatically determine that
+it should choose PVWatts DC and AC models. ModelChain still needs us to specify
 ``aoi_model`` and ``spectral_model`` keyword arguments because the
 ``system.module_parameters`` dictionary does not contain enough
 information to determine which of those models to choose.
@@ -218,12 +219,21 @@ The key parts of ModelChain are:
     3. A set of methods that inspect user-supplied objects to determine
        the appropriate default models.
 
-run_model
-~~~~~~~~~
+run_model methods
+~~~~~~~~~~~~~~~~~
 
-Most users will only interact with the
-:py:meth:`~pvlib.modelchain.ModelChain.run_model` method. The
-:py:meth:`~pvlib.modelchain.ModelChain.run_model` method, shown below,
+ModelChain provides three methods for executing the chain of models. The
+methods allow for simulating the output of the PVSystem with different
+input irradiance data:
+
+| ModelChain method          | Input data                     |
+| :--------------------------| :------------------------------|
+| :py:meth:`~pvlib.modelchain.ModelChain.run_model` | GHI, DHI and DNI |
+| :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_poa` | Broadband direct, diffuse and total irradiance in plane of array |
+| :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_effective_irradiance poa` | Spectrally- and reflection-adjusted total irradiance in plane of array |
+
+To illustrate the use of a `run_model` method, assume that a user has GHI, DHI
+and DNI. The :py:meth:`~pvlib.modelchain.ModelChain.run_model` method, shown below,
 calls a series of methods to complete the modeling steps. The first
 method, :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs`, computes
 parameters such as solar position, airmass, angle of incidence, and
@@ -232,30 +242,31 @@ plane of array irradiance. The
 assigns default values for temperature (20 C)
 and wind speed (0 m/s) if these inputs are not provided.
 :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs` requires all irradiance
-components (GHI, DNI, and DHI). See
-:py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance` and
+components (GHI, DNI, and DHI). The
+:py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
+method is available for calculating the full set of GHI, DNI, or DHI if
+only two of these three series are provided. See also
 :ref:`dniestmodels` for methods and functions that can help fully define
 the irradiance inputs.
 
 Next, :py:meth:`~pvlib.modelchain.ModelChain.run_model` calls the
 wrapper methods for AOI loss, spectral loss, effective irradiance, cell
 temperature, DC power, AC power, and other losses. These methods are
-assigned to standard names, as described in the next section.
+assigned to generic names, as described in the next section.
 
 The methods called by :py:meth:`~pvlib.modelchain.ModelChain.run_model`
-store their results in a series of ModelChain attributes: ``times``,
-``solar_position``, ``airmass``, ``irradiance``, ``total_irrad``,
-``effective_irradiance``, ``weather``, ``temps``, ``aoi``,
-``aoi_modifier``, ``spectral_modifier``, ``dc``, ``ac``, ``losses``.
+store their results in the ``results`` attribute, which is an instance of
+:py:class:`~ModelChainResult`. :py:class:`~ModelChainResult` has the following
+attributes: 
+``weather``, ``times``, ``solar_position``, ``airmass``, ``total_irrad``,
+``aoi``, ``aoi_modifier``, ``spectral_modifier``,``effective_irradiance``,
+``cell_temperature``,  ``dc``, ``ac``, ``losses``, ``tracking``,
+``diode_params``.
 
 .. ipython:: python
 
     mc.run_model??
 
-Finally, the :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
-method is available for calculating the full set of GHI, DNI, or DHI if
-only two of these three series are provided. The completed dataset can
-then be passed to :py:meth:`~pvlib.modelchain.ModelChain.run_model`.
 
 Wrapping methods into a unified API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -263,7 +274,7 @@ Wrapping methods into a unified API
 Readers may notice that the source code of the ModelChain.run_model
 method is model-agnostic. ModelChain.run_model calls generic methods
 such as ``self.dc_model`` rather than a specific model such as
-``singlediode``. So how does the ModelChain.run_model know what models
+``pvwatts_dc``. So how does the ModelChain.run_model know what models
 it’s supposed to run? The answer comes in two parts, and allows us to
 explore more of the ModelChain API along the way.
 
@@ -279,10 +290,11 @@ the ModelChain.pvwatts_dc method is shown below. Its only argument is
     mc.pvwatts_dc??
 
 The ModelChain.pvwatts_dc method calls the pvwatts_dc method of the
-PVSystem object that we supplied using data that is stored in its own
-``effective_irradiance`` and ``cell_temperature`` attributes. Then it assigns the
-result to the ``dc`` attribute of the ModelChain object. The code below
-shows a simple example of this.
+PVSystem object that we supplied when we created the ModelChain instance,
+using data that is stored in the ModelChain ``effective_irradiance`` and
+``cell_temperature`` attributes. The ModelChain.pvwatts_dc method assigns its
+result to the ``dc`` attribute of the ModelChain's results object. The code
+below shows a simple example of this.
 
 .. ipython:: python
 
@@ -301,20 +313,22 @@ shows a simple example of this.
 
     # run ModelChain.pvwatts_dc and look at the result
     mc.pvwatts_dc();
-    mc.dc
+    mc.results.dc
 
 The ModelChain.sapm method works similarly to the ModelChain.pvwatts_dc
 method. It calls the PVSystem.sapm method using stored data, then
-assigns the result to the ``dc`` attribute. The ModelChain.sapm method
-differs from the ModelChain.pvwatts_dc method in three notable ways.
-First, the PVSystem.sapm method expects different units for effective
-irradiance, so ModelChain handles the conversion for us. Second, the
-PVSystem.sapm method (and the PVSystem.singlediode method) returns a
-DataFrame with current, voltage, and power parameters rather than a
-simple Series of power. Finally, this current and voltage information
-allows the SAPM and single diode model paths to support the concept of
-modules in series and parallel, which is handled by the
-PVSystem.scale_voltage_current_power method.
+assigns the result to the ``dc`` attribute of ModelChain.results.
+The ModelChain.sapm method differs from the ModelChain.pvwatts_dc method in
+a notable way: the PVSystem.sapm method returns a DataFrame with current,
+voltage, and power results, rather than a simple Series
+of power. The ModelChain methods for single diode models (e.g.,
+:py:meth:`~pvlib.modelchain.ModelChain.desoto` also return a DataFrame with
+current, voltage and power, and a second DataFrame with the single diode
+equation parameter values.
+
+All ModelChain methods for DC output use the
+:py:meth`~pvlib.pvsystem.PVSystem.scale_voltage_current_power` method to scale
+DC quantities to the output of the full PVSystem.
 
 .. ipython:: python
 
@@ -336,7 +350,7 @@ PVSystem.scale_voltage_current_power method.
 
     # run ModelChain.sapm and look at the result
     mc.sapm();
-    mc.dc
+    mc.results.dc
 
 We’ve established that the ``ModelChain.pvwatts_dc`` and
 ``ModelChain.sapm`` have the same API: they take the same arugments
@@ -375,11 +389,11 @@ Inferring models
 ~~~~~~~~~~~~~~~~
 
 How does ModelChain infer the appropriate model types? ModelChain uses a
-series of methods (ModelChain.infer_dc_model, ModelChain.infer_ac_model,
-etc.) that examine the user-supplied PVSystem object. The inference
-methods use set logic to assign one of the model-specific methods, such
-as ModelChain.sapm or ModelChain.snlinverter, to the universal method
-names ModelChain.dc_model and ModelChain.ac_model. A few examples are
+set of methods (ModelChain.infer_dc_model, ModelChain.infer_ac_model,
+etc.) that examine the parameters assigned to the user-supplied PVSystem
+object. The inference methods use set logic to assign one of the model-specific
+methods, such as ModelChain.sapm or ModelChain.snlinverter, to the universal
+method names ModelChain.dc_model and ModelChain.ac_model. A few examples are
 shown below.
 
 .. ipython:: python
@@ -389,6 +403,71 @@ shown below.
 .. ipython:: python
 
     mc.infer_ac_model??
+
+
+ModelChain for a PVSystem with multiple Arrays
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The PVSystem can represent a PV system with a single array of modules, or
+with [multiple arrays](#PVSystem and Arrays). The same models are applied to
+all PVSystem.array objects, so each Array must contain the appropriate model
+parameters. For example, if ``ModelChain.dc_model='pvwatts'``, then each 
+``Array.module_parameters`` must contain 'pdc0'.
+
+When the PVSystem contains multiple arrays, ModelChain.results attributes
+are tuples with length equal to the number of Arrays. Each tuple's elements
+are in the same order as the PVSystem.arrays.
+
+.. ipython:: python
+
+    location = Location(latitude=32.2, longitude=-110.9)
+    inverter_parameters = {'pdc0': 10000, 'eta_inv_nom': 0.96}
+    module_parameters = {'pdc0': 250, 'gamma_pdc': -0.004}
+    array_one = pvsystem.Array(surface_tilt=20, surface_azimuth=200,
+                               module_parameters=module_parameters,
+                               temperature_model_parameters=temperature_model_parameters,
+                               modules_per_string=10, strings_per_inverter=2)
+    array_two = pvsystem.Array(surface_tilt=20, surface_azimuth=160,
+                               module_parameters=module_parameters,
+                               temperature_model_parameters=temperature_model_parameters,
+                               modules_per_string=10, strings_per_inverter=2)
+    system_two_arrays = PVSystem(arrays=[array_one, array_two],
+                                 inverter_parameters=cec_inverter,
+                                 aoi_model='no_loss', spectral_model='no_loss')
+    mc = ModelChain(system, location)
+
+    mc.run_model(weather)
+
+    mc.results.dc
+
+When ``weather`` is a single DataFrame, these data are broadcast and used
+for all arrays. To specify data separately for each array, provide a tuple
+for ``weather`` where each element is a DataFrame containing the required data.
+
+Air, module and cell temperatures
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The different run_model methods allow the ModelChain to be run starting with
+different irradiance data. Similarly, ModelChain run_model methods can be used
+with different temperature data as long as cell temperature can be determined:
+
+* ambient air temperature (``'temp_air'``)
+* module temperature, typically measured on the rear surface (``'module_temperature'``)
+* cell temperature (``'cell_temperature'``)
+
+If ``'cell_temperature'`` is provided in the input ``weather``, these data
+are used directly. If ``module_temperature`` is provided and
+``ModelChain.temperature model='sapm'`` (either set directly or inferred), the
+:py:meth:`~pvlib.modelchain.ModelChain.sapm_temp` method calculates cell
+temperature. Otherwise, `ModelChain.temperature_model` is used, in which case
+air temperature is used, if provided.
+
+Cell temperature models also can use irradiance as input. All cell
+temperature models expect POA irradiance (``'poa_global'``) as  input. When
+``weather`` contains ``'effectiveand effective'`` irradiance but not
+``'poa_global'``, ``'effective_irradiance'`` is substituted for calculating
+cell temperature.
+
 
 User-defined models
 -------------------
@@ -465,4 +544,4 @@ The end result is that ModelChain.run_model works as expected!
 .. ipython:: python
 
     mc.run_model(weather);
-    mc.dc
+    mc.results.dc

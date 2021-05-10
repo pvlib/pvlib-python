@@ -416,7 +416,7 @@ ModelChain for a PVSystem with multiple Arrays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The PVSystem can represent a PV system with a single array of modules, or
-with [multiple arrays](#PVSystem and Arrays). The same models are applied to
+with multiple arrays (see :ref:`_multiarray`). The same models are applied to
 all PVSystem.array objects, so each Array must contain the appropriate model
 parameters. For example, if ``ModelChain.dc_model='pvwatts'``, then each 
 ``Array.module_parameters`` must contain 'pdc0'.

@@ -572,6 +572,8 @@ Creating a ModelChain object.
    modelchain.ModelChain.with_pvwatts
    modelchain.ModelChain.with_sapm
 
+.. _modelchain_runmodel:
+
 Running
 -------
 

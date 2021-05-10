@@ -12,7 +12,7 @@ without a solid understanding of classes.
 
 A :py:class:`~.modelchain.ModelChain` has three components:
 
-* a :py:class:`~.pvsystem.PVSystem` object, representin a collection of modules and inverters
+* a :py:class:`~.pvsystem.PVSystem` object, representing a collection of modules and inverters
 * a :py:class:`~.location.Location` object, representing a location on the planet
 * values for attributes that specify the model to be used for for each step in the PV modeling
   process.
@@ -20,9 +20,10 @@ A :py:class:`~.modelchain.ModelChain` has three components:
 Modeling with a :py:class:`~.ModelChain` typically involves 3 steps:
 
 1. Creating an instance of :py:class:`~pvlib.modelchain.ModelChain`.
-2. Executing a ModelChain.run_model method with weather data as input.
-3. Examining the model results that are stored in the ModelChain's ``results``
-   attribute.
+2. Executing a ModelChain.run_model method with weather data as input. See
+   :ref:`_modelchain_runmodel` for a list of run_model methods.
+3. Examining the model results that are stored in the ModelChain's
+   :py:class:`ModelChain.results <.ModelChain.ModelChainResult>` attribute.
 
 A simple ModelChain example
 ---------------------------
@@ -159,7 +160,7 @@ model, AC model, AOI loss model, and spectral loss model.
     mc.ac
 
 Alternatively, we could have specified single diode or PVWatts related
-information in the PVSystem construction. Here we assign parameters for
+information in the PVSystem construction. Here we pass parameters for
 PVWatts models to the PVSystem. ModelChain will automatically determine that
 it should choose PVWatts DC and AC models. ModelChain still needs us to specify
 ``aoi_model`` and ``spectral_model`` keyword arguments because the
@@ -263,8 +264,8 @@ assigned to generic names, as described in the next section.
 
 The methods called by :py:meth:`~pvlib.modelchain.ModelChain.run_model`
 store their results in the ``results`` attribute, which is an instance of
-:py:class:`~ModelChainResult`. :py:class:`~ModelChainResult` has the following
-attributes: 
+:py:class:`~.ModelChainResult`. :py:class:`~.ModelChainResult` has the
+following attributes:
 ``weather``, ``times``, ``solar_position``, ``airmass``, ``total_irrad``,
 ``aoi``, ``aoi_modifier``, ``spectral_modifier``,``effective_irradiance``,
 ``cell_temperature``,  ``dc``, ``ac``, ``losses``, ``tracking``,
@@ -413,7 +414,7 @@ shown below.
 
 
 ModelChain for a PVSystem with multiple Arrays
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The PVSystem can represent a PV system with a single array of modules, or
 with multiple arrays (see :ref:`_multiarray`). The same models are applied to

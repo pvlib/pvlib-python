@@ -236,7 +236,7 @@ input irradiance data:
 * :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_poa`, use when
   ``weather`` broadband direct, diffuse and total irradiance in the plane of array
   ('poa_global', 'poa_direct', 'poa_diffuse')
-* :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_effective_irradiance poa`,
+* :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`,
   use when ``weather`` contains spectrally- and reflection-adjusted total
   irradiance in the plane of array ('effective_irradiance')
 
@@ -267,7 +267,7 @@ store their results in the ``results`` attribute, which is an instance of
 :py:class:`~.ModelChainResult`. :py:class:`~.ModelChainResult` has the
 following attributes:
 ``weather``, ``times``, ``solar_position``, ``airmass``, ``total_irrad``,
-``aoi``, ``aoi_modifier``, ``spectral_modifier``,``effective_irradiance``,
+``aoi``, ``aoi_modifier``, ``spectral_modifier``, ``effective_irradiance``,
 ``cell_temperature``,  ``dc``, ``ac``, ``losses``, ``tracking``,
 ``diode_params``.
 
@@ -279,10 +279,10 @@ following attributes:
 Wrapping methods into a unified API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Readers may notice that the source code of the ModelChain.run_model
-method is model-agnostic. ModelChain.run_model calls generic methods
+Readers may notice that the source code of the :py:meth:`~pvlib.modelchain.ModelChain.run_model`
+method is model-agnostic. :py:meth:`~pvlib.modelchain.`ModelChain.run_model` calls generic methods
 such as ``self.dc_model`` rather than a specific model such as
-``pvwatts_dc``. So how does the ModelChain.run_model know what models
+``pvwatts_dc``. So how does :py:meth:`~pvlib.modelchain.ModelChain.run_model` know what models
 it’s supposed to run? The answer comes in two parts, and allows us to
 explore more of the ModelChain API along the way.
 
@@ -290,18 +290,18 @@ First, ModelChain has a set of methods that wrap the PVSystem methods
 that perform the calculations (or further wrap the pvsystem.py module’s
 functions). Each of these methods takes the same arguments (``self``)
 and sets the same attributes, thus creating a uniform API. For example,
-the ModelChain.pvwatts_dc method is shown below. Its only argument is
+the :py:meth:`~pvlib.modelchain.ModelChain.pvwatts_dc` method is shown below. Its only argument is
 ``self``, and it sets the ``dc`` attribute.
 
 .. ipython:: python
 
     mc.pvwatts_dc??
 
-The ModelChain.pvwatts_dc method calls the pvwatts_dc method of the
+The :py:meth:`~pvlib.modelchain.ModelChain.pvwatts_dc` method calls the pvwatts_dc method of the
 PVSystem object that we supplied when we created the ModelChain instance,
 using data that is stored in the ModelChain ``effective_irradiance`` and
-``cell_temperature`` attributes. The ModelChain.pvwatts_dc method assigns its
-result to the ``dc`` attribute of the ModelChain's results object. The code
+``cell_temperature`` attributes. The :py:meth:`~pvlib.modelchain.ModelChain.pvwatts_dc` method assigns its
+result to the ``dc`` attribute of the ModelChain's ``results`` object. The code
 below shows a simple example of this.
 
 .. ipython:: python
@@ -323,10 +323,12 @@ below shows a simple example of this.
     mc.pvwatts_dc();
     mc.results.dc
 
-The ModelChain.sapm method works in a manner similar to the ModelChain.pvwatts_dc
-method. It calls the PVSystem.sapm method using stored data, then
-assigns the result to the ``dc`` attribute of ModelChain.results.
-The ModelChain.sapm method differs from the ModelChain.pvwatts_dc method in
+The :py:meth:`~pvlib.modelchain.ModelChain.sapm` method works in a manner similar
+to the :py:meth:`~pvlib.modelchain.ModelChain.pvwatts_dc`
+method. It calls the :py:meth:`~pvlib.pvsystem.PVSystem.sapm` method using stored data, then
+assigns the result to the ``dc`` attribute of ``ModelChain.results``.
+The :py:meth:`~pvlib.modelchain.ModelChain.sapm` method differs from the
+:py:meth:`~pvlib.modelchain.ModelChain.pvwatts_dc` method in
 a notable way: the PVSystem.sapm method returns a DataFrame with current,
 voltage, and power results, rather than a simple Series
 of power. The ModelChain methods for single diode models (e.g.,
@@ -367,12 +369,13 @@ have the same API, we can call them in the same way. ModelChain includes
 a large number of methods that perform the same API-unification roles
 for each modeling step.
 
-Again, so how does the ModelChain.run_model know which models it’s
+Again, so how does :py:meth:`~pvlib.modelchain. ModelChain.run_model` know which models it’s
 supposed to run?
 
 At object construction, ModelChain assigns the desired model’s method
 (e.g. ``ModelChain.pvwatts_dc``) to the corresponding generic attribute
-(e.g. ``ModelChain.dc_model``) using a method described in the next
+(e.g. ``ModelChain.dc_model``) either with the value assigned to the ``dc_model``
+parameter at construction, or by inference as described in the next
 section.
 
 .. ipython:: python
@@ -396,13 +399,17 @@ vs. DataFrame)!
 Inferring models
 ~~~~~~~~~~~~~~~~
 
-How does ModelChain infer the appropriate model types? ModelChain uses a
-set of methods (ModelChain.infer_dc_model, ModelChain.infer_ac_model,
-etc.) that examine the parameters assigned to the user-supplied PVSystem
-object. The inference methods use set logic to assign one of the model-specific
-methods, such as ModelChain.sapm or ModelChain.snlinverter, to the universal
-method names ModelChain.dc_model and ModelChain.ac_model. A few examples are
-shown below.
+When ModelChain's attributes are not assigned when the instance is created,
+ModelChain can infer the appropriate model from data stored on the ``PVSystem``
+object. ModelChain uses a set of methods (e.g., :py:meth:`~pvlib.modelchain.ModelChain.infer_dc_model`,
+:py:meth:`~pvlib.modelchain.ModelChain.infer_ac_model`, etc.) that examine the
+parameters on the user-supplied PVSystem object. The inference methods use set
+logic to assign one of the model-specific methods, such as
+:py:meth:`~pvlib.modelchain.ModelChain.sapm` or :py:meth:`~pvlib.modelchain.ModelChain.snlinverter`,
+to the universal method names ``ModelChain.dc_model`` and ``ModelChain.ac_model``,
+respectively. A few examples are shown below. Inferrence methods generally work
+by inspecting the parameters for all required parameters for a corresponding
+method.
 
 .. ipython:: python
 
@@ -417,14 +424,14 @@ ModelChain for a PVSystem with multiple Arrays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The PVSystem can represent a PV system with a single array of modules, or
-with multiple arrays (see :ref:`_multiarray`). The same models are applied to
-all PVSystem.array objects, so each Array must contain the appropriate model
+with multiple arrays (see :ref:`multiarray`). The same models are applied to
+all ``PVSystem.array`` objects, so each ``Array`` must contain the appropriate model
 parameters. For example, if ``ModelChain.dc_model='pvwatts'``, then each 
-``Array.module_parameters`` must contain 'pdc0'.
+``Array.module_parameters`` must contain ``'pdc0'``.
 
-When the PVSystem contains multiple arrays, ModelChain.results attributes
+When the PVSystem contains multiple arrays, ``ModelChain.results`` attributes
 are tuples with length equal to the number of Arrays. Each tuple's elements
-are in the same order as the PVSystem.arrays.
+are in the same order as in ``PVSystem.arrays``.
 
 .. ipython:: python
 
@@ -468,7 +475,7 @@ Temperatuer data are passed in the ``weather`` DataFrame and can include:
   If found in ``weather`` and ``ModelChain.temperature model='sapm'`` 
   (either set directly or inferred), the :py:meth:`~pvlib.modelchain.ModelChain.sapm_temp`
   method is used to calculate cell temperature.
-* ambient air temperature (``'temp_air'``). In this case `ModelChain.temperature_model`
+* ambient air temperature (``'temp_air'``). In this case ``ModelChain.temperature_model``
   is used to calcualte cell temeprature.
 
 Cell temperature models also can use irradiance as input. All cell

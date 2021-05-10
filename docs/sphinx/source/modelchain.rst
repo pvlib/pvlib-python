@@ -23,7 +23,7 @@ Modeling with a :py:class:`~.ModelChain` typically involves 3 steps:
 2. Executing a ModelChain.run_model method with weather data as input. See
    :ref:`_modelchain_runmodel` for a list of run_model methods.
 3. Examining the model results that are stored in the ModelChain's
-   :py:class:`ModelChain.results <pvlib.modelchain.ModelChain.ModelChainResult>` attribute.
+   :py:class:`ModelChain.results <pvlib.modelchain.ModelChainResult>` attribute.
 
 A simple ModelChain example
 ---------------------------

@@ -157,7 +157,7 @@ model, AC model, AOI loss model, and spectral loss model.
 .. ipython:: python
 
     mc.run_model(weather);
-    mc.ac
+    mc.results.ac
 
 Alternatively, we could have specified single diode or PVWatts related
 information in the PVSystem construction. Here we pass parameters for
@@ -180,7 +180,7 @@ information to determine which of those models to choose.
 .. ipython:: python
 
     mc.run_model(weather);
-    mc.ac
+    mc.results.ac
 
 User-supplied keyword arguments override ModelChain’s inspection
 methods. For example, we can tell ModelChain to use different loss
@@ -198,7 +198,7 @@ functions for a PVSystem that contains SAPM-specific parameters.
 .. ipython:: python
 
     mc.run_model(weather);
-    mc.ac
+    mc.results.ac
 
 Of course, these choices can also lead to failure when executing
 :py:meth:`~pvlib.modelchain.ModelChain.run_model` if your system objects
@@ -528,13 +528,13 @@ function if you wanted to.
 
     def pvusa_ac_mc(mc):
         # keep it simple
-        mc.ac = mc.dc
+        mc.results.ac = mc.results.dc
         return mc
 
 
     def no_loss_temperature(mc):
         # keep it simple
-        mc.cell_temperature = mc.results.weather['temp_air']
+        mc.results.cell_temperature = mc.results.weather['temp_air']
         return mc
 
 

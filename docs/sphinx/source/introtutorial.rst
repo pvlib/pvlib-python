@@ -209,8 +209,8 @@ by examining the parameters defined for the module.
         )
 
         mc = ModelChain(system, location)
-        results = mc.run_model(weather)
-        annual_energy = results.ac.sum()
+        mc.run_model(weather)
+        annual_energy = mc.results.ac.sum()
         energies[name] = annual_energy
 
     energies = pd.Series(energies)

@@ -418,9 +418,9 @@ method.
 .. ipython:: python
 
     mc.infer_ac_model??
-    mc._snl_params??
-    mc._adr_params??
-    mc._pvwatts_params??
+    pvlib.modelchain._snl_params??
+    pvlib.modelchain._adr_params??
+    pvlib.modelchain._pvwatts_params??
 
 ModelChain for a PVSystem with multiple Arrays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

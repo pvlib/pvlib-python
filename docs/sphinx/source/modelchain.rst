@@ -316,8 +316,8 @@ below shows a simple example of this.
 
     # manually assign data to the attributes that ModelChain.pvwatts_dc will need.
     # for standard workflows, run_model would assign these attributes.
-    mc.effective_irradiance = pd.Series(1000, index=[pd.Timestamp('20170401 1200-0700')])
-    mc.cell_temperature = pd.Series(50, index=[pd.Timestamp('20170401 1200-0700')])
+    mc.results.effective_irradiance = pd.Series(1000, index=[pd.Timestamp('20170401 1200-0700')])
+    mc.results.cell_temperature = pd.Series(50, index=[pd.Timestamp('20170401 1200-0700')])
 
     # run ModelChain.pvwatts_dc and look at the result
     mc.pvwatts_dc();
@@ -418,7 +418,9 @@ method.
 .. ipython:: python
 
     mc.infer_ac_model??
-
+    mc._snl_params??
+    mc._adr_params??
+    mc._pvwatts_params??
 
 ModelChain for a PVSystem with multiple Arrays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

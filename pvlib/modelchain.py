@@ -995,6 +995,7 @@ class ModelChain:
         model : str
             A cell temperature model name to pass to
             :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature`.
+            Valid names are 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'
 
         Returns
         -------

@@ -45,6 +45,10 @@ Breaking changes
   ``surface_azimuth`` are now required parameters for
   :py:func:`pvlib.modelchain.basic_chain` (:issue:`1028`, :pull:`1181`)
 
+* Removed the ``**kwargs`` parameters from :py:meth:`~pvlib.pvsystem.PVSystem.sapm` and
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and 
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_cec` (:issue:`1118`, :pull:`1222`)
+
 
 Deprecations
 ~~~~~~~~~~~~

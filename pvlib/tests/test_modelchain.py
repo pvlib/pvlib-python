@@ -201,7 +201,7 @@ def pvwatts_dc_pvwatts_ac_faiman_temp_system():
 @pytest.fixture(scope="function")
 def pvwatts_dc_pvwatts_ac_pvsyst_temp_system():
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
-    temp_model_params = {'u_c': 29.0, 'u_v': 0.0, 'eta_m': 0.1,
+    temp_model_params = {'u_c': 29.0, 'u_v': 0.0, 'module_efficiency': 0.1,
                          'alpha_absorption': 0.9}
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
@@ -226,7 +226,7 @@ def pvwatts_dc_pvwatts_ac_fuentes_temp_system():
 @pytest.fixture(scope="function")
 def pvwatts_dc_pvwatts_ac_noct_sam_temp_system():
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
-    temp_model_params = {'noct': 45, 'eta_m_ref': 0.2}
+    temp_model_params = {'noct': 45, 'module_efficiency': 0.2}
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
@@ -714,7 +714,7 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
     sapm_dc_snl_ac_system.temperature_model_parameters = {
-        'noct': 45, 'eta_m_ref': 0.2
+        'noct': 45, 'module_efficiency': 0.2
     }
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.temperature_model = 'noct_sam'
@@ -946,7 +946,7 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                            ModelChain.faiman_temp),
                           ({'noct_installed': 45},
                            ModelChain.fuentes_temp),
-                          ({'noct': 45, 'eta_m_ref': 0.2},
+                          ({'noct': 45, 'module_efficiency': 0.2},
                            ModelChain.noct_sam_temp)])
 def test_temperature_models_arrays_multi_weather(
         temp_params, temp_model,

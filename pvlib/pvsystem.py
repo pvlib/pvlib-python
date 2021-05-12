@@ -1502,7 +1502,9 @@ class Array:
             func = temperature.pvsyst_cell
             required = tuple()
             optional = {
-                **_build_kwargs(['eta_m', 'alpha_absorption'],
+                # TODO remove 'eta_m' after deprecation of this parameter
+                **_build_kwargs(['eta_m', 'module_efficiency',
+                                 'alpha_absorption'],
                                 self.module_parameters),
                 **_build_kwargs(['u_c', 'u_v'],
                                 self.temperature_model_parameters)

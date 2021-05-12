@@ -414,10 +414,9 @@ class PVSystem:
         Notes
         -----
         The `temp_air` and `wind_speed` parameters may be passed as tuples
-        to provide different values for each Array in the system. If not
-        passed as a tuple then the same value is used for input to each Array.
-        If passed as a tuple the length must be the same as the number of
-        Arrays.
+        to provide different values for each Array in the system. If passed as a
+        tuple the length must be the same as the number of Arrays. If not
+        passed as a tuple then the same value is used for each Array.
         """
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)

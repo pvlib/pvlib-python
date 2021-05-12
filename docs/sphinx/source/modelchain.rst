@@ -517,14 +517,20 @@ function if you wanted to.
 
 
     def pvusa_mc_wrapper(mc):
-        # calculate the dc power and assign it to mc.results.dc
-        # Set up to iterate over arrays and total_irrad. mc.system.arrays is
-        # always a tuple. However, when there is a single array
-        # mc.results.total_irrad will be a Series (if multiple arrays,
-        # total_irrad will be a tuple). In this case we put total_irrad
-        # in a list so that we can iterate. If we didn't put total_irrad
-        # in a list, iteration will access each value of the Series, one
-        # at a time.
+        """
+        Calculate the dc power and assign it to mc.results.dc
+        Set up to iterate over arrays and total_irrad. mc.system.arrays is
+        always a tuple. However, when there is a single array
+        mc.results.total_irrad will be a Series (if multiple arrays,
+        total_irrad will be a tuple). In this case we put total_irrad
+        in a list so that we can iterate. If we didn't put total_irrad
+        in a list, iteration will access each value of the Series, one
+        at a time.
+        The iteration returns a tuple. If there is a single array, pvlib
+        unwraps the tuple of length 1. Unwrap the tuple here for consistency
+        with the rest of pvlib.
+        Returning mc is optional, but enables method chaining.
+        """
         if mc.system.num_arrays == 1:
             total_irrads = [mc.results.total_irrad]
         else:
@@ -536,13 +542,8 @@ function if you wanted to.
                   array.module_parameters['d'])
             for total_irrad, array
             in zip(total_irrads, mc.system.arrays))
-        # The iteration returns a tuple. If there is a single array, pvlib
-        # unwraps the tuple of length 1. Unwrap here for consistency with the
-        # rest of pvlib.
         if mc.system.num_arrays == 1:
             mc.results.dc = mc.results.dc[0]
-
-        # returning mc is optional, but enables method chaining
         return mc
 
 

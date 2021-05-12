@@ -522,7 +522,7 @@ function if you wanted to.
         # https://github.com/pvlib/pvlib-python/issues/1115
         if mc.system.num_arrays == 1:
             mc.results.dc = pvusa(
-                total_irrad['poa_global'], mc.results.weather['wind_speed'],
+                mc.results.total_irrad['poa_global'], mc.results.weather['wind_speed'],
                 mc.results.weather['temp_air'], mc.system.array.module_parameters['a'],
                 mc.system.array.module_parameters['b'], mc.system.array.module_parameters['c'],
                 mc.system.array.module_parameters['d'])
@@ -572,5 +572,5 @@ The end result is that ModelChain.run_model works as expected!
 
 .. ipython:: python
 
-    mc.run_model(weather);
+    mc.run_model(weather)
     mc.results.dc

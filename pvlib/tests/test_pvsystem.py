@@ -512,8 +512,7 @@ def test_PVSystem_noct_celltemp(mocker):
     out = system.get_cell_temperature(poa_global, temp_air, wind_speed,
                                       model='noct_sam')
     temperature.noct_sam.assert_called_once_with(
-        poa_global, temp_air, wind_speed, effective_irradiance=None, noct=noct,
-        module_efficiency=module_efficiency)
+        poa_global, temp_air, wind_speed, noct, module_efficiency)
     assert_allclose(out, expected)
     # different types
     out = system.get_cell_temperature(np.array(poa_global), np.array(temp_air),
@@ -678,7 +677,7 @@ def test_PVSystem_fuentes_celltemp(mocker):
     assert_series_equal(spy.call_args[0][0], irrads)
     assert_series_equal(spy.call_args[0][1], temps)
     assert_series_equal(spy.call_args[0][2], winds)
-    assert spy.call_args[1]['noct_installed'] == noct_installed
+    assert spy.call_args[0][3] == noct_installed
     assert_series_equal(out, pd.Series([52.85, 55.85, 55.85], index,
                                        name='tmod'))
 
@@ -2179,7 +2178,7 @@ def test_PVSystem_temperature_deprecated(funcname):
     temp_model_params = {
         'a': -3.47, 'b': -0.0594, 'deltaT': 3,  # sapm
         'noct_installed': 45,  # fuentes
-        'eta_m_ref': 0.2, 'noct': 45,  # noct_sam
+        'module_efficiency': 0.2, 'noct': 45,  # noct_sam
     }
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     func = getattr(system, funcname)

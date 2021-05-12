@@ -1523,8 +1523,8 @@ class Array:
                 self.temperature_model_parameters)
             # default to using the Array attribute, but allow user to override
             # with a custom surface_tilt value in temperature_model_parameters
-            if 'surface_tilt' not in kwargs:
-                kwargs['surface_tilt'] = self.surface_tilt
+            if 'surface_tilt' not in optional:
+                optional['surface_tilt'] = self.surface_tilt
         elif model == 'noct_sam':
             func = temperature.noct_sam
             required = _build_args(['noct', 'module_efficiency'])

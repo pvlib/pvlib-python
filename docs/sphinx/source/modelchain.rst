@@ -21,7 +21,7 @@ Modeling with a :py:class:`~.ModelChain` typically involves 3 steps:
 
 1. Creating an instance of :py:class:`~pvlib.modelchain.ModelChain`.
 2. Executing a ModelChain.run_model method with weather data as input. See
-   :ref:`_modelchain_runmodel` for a list of run_model methods.
+   :ref:`modelchain_runmodel` for a list of run_model methods.
 3. Examining the model results that are stored in the ModelChain's
    :py:class:`ModelChain.results <pvlib.modelchain.ModelChainResult>` attribute.
 
@@ -82,8 +82,9 @@ Next, we run a model with some simple weather data.
     mc.run_model(weather)
 
 ModelChain stores the modeling results in the ``results`` attribute. The
-``results`` attribute is an instance of :py:class:`~ModelChainResult`. A few
-examples of attributes of :py:class:`~ModelChainResult` are shown below.
+``results`` attribute is an instance of :py:class:`~pvlib.modelchain.ModelChainResult`.
+A few examples of attributes of :py:class:`~pvlib.modelchain.ModelChainResult`
+are shown below.
 
 .. ipython:: python
 
@@ -280,7 +281,7 @@ Wrapping methods into a unified API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Readers may notice that the source code of the :py:meth:`~pvlib.modelchain.ModelChain.run_model`
-method is model-agnostic. :py:meth:`~pvlib.modelchain.`ModelChain.run_model` calls generic methods
+method is model-agnostic. :py:meth:`~pvlib.modelchain.ModelChain.run_model` calls generic methods
 such as ``self.dc_model`` rather than a specific model such as
 ``pvwatts_dc``. So how does :py:meth:`~pvlib.modelchain.ModelChain.run_model` know what models
 it’s supposed to run? The answer comes in two parts, and allows us to
@@ -355,8 +356,8 @@ DC quantities to the output of the full PVSystem.
 
     # manually assign data to the attributes that ModelChain.sapm will need.
     # for standard workflows, run_model would assign these attributes.
-    mc.effective_irradiance = pd.Series(1000, index=[pd.Timestamp('20170401 1200-0700')])
-    mc.cell_temperature = pd.Series(50, index=[pd.Timestamp('20170401 1200-0700')])
+    mc.results.effective_irradiance = pd.Series(1000, index=[pd.Timestamp('20170401 1200-0700')])
+    mc.results.cell_temperature = pd.Series(50, index=[pd.Timestamp('20170401 1200-0700')])
 
     # run ModelChain.sapm and look at the result
     mc.sapm();
@@ -369,8 +370,8 @@ have the same API, we can call them in the same way. ModelChain includes
 a large number of methods that perform the same API-unification roles
 for each modeling step.
 
-Again, so how does :py:meth:`~pvlib.modelchain. ModelChain.run_model` know which models it’s
-supposed to run?
+Again, so how does :py:meth:`~pvlib.modelchain.ModelChain.run_model` know which
+models it’s supposed to run?
 
 At object construction, ModelChain assigns the desired model’s method
 (e.g. ``ModelChain.pvwatts_dc``) to the corresponding generic attribute
@@ -405,7 +406,7 @@ object. ModelChain uses a set of methods (e.g., :py:meth:`~pvlib.modelchain.Mode
 :py:meth:`~pvlib.modelchain.ModelChain.infer_ac_model`, etc.) that examine the
 parameters on the user-supplied PVSystem object. The inference methods use set
 logic to assign one of the model-specific methods, such as
-:py:meth:`~pvlib.modelchain.ModelChain.sapm` or :py:meth:`~pvlib.modelchain.ModelChain.snlinverter`,
+:py:meth:`~pvlib.modelchain.ModelChain.sapm` or :py:meth:`~pvlib.modelchain.ModelChain.sandia_inverter`,
 to the universal method names ``ModelChain.dc_model`` and ``ModelChain.ac_model``,
 respectively. A few examples are shown below. Inferrence methods generally work
 by inspecting the parameters for all required parameters for a corresponding
@@ -469,20 +470,20 @@ Air, module and cell temperatures
 The different run_model methods allow the ModelChain to be run starting with
 different irradiance data. Similarly, ModelChain run_model methods can be used
 with different temperature data as long as cell temperature can be determined.
-Temperatuer data are passed in the ``weather`` DataFrame and can include:
+Temperature data are passed in the ``weather`` DataFrame and can include:
 
 * cell temperature (``'cell_temperature'``). If passed in ``weather`` no
   cell temperature model is run.
 * module temperature, typically measured on the rear surface (``'module_temperature'``).
-  If found in ``weather`` and ``ModelChain.temperature model='sapm'`` 
+  If found in ``weather`` and ``ModelChain.temperature_model='sapm'`` 
   (either set directly or inferred), the :py:meth:`~pvlib.modelchain.ModelChain.sapm_temp`
   method is used to calculate cell temperature.
 * ambient air temperature (``'temp_air'``). In this case ``ModelChain.temperature_model``
-  is used to calcualte cell temeprature.
+  is used to calculate cell temeprature.
 
 Cell temperature models also can use irradiance as input. All cell
 temperature models expect POA irradiance (``'poa_global'``) as  input. When
-``weather`` contains ``'effectiveand effective'`` irradiance but not
+``weather`` contains ``'effective_irradiance'`` but not
 ``'poa_global'``, ``'effective_irradiance'`` is substituted for calculating
 cell temperature.
 
@@ -516,14 +517,17 @@ function if you wanted to.
 
 
     def pvusa_mc_wrapper(mc):
-        # calculate the dc power and assign it to mc.dc
-        # in the future, need to explicitly iterate over system.arrays
+        # calculate the dc power and assign it to mc.results.dc
+        # The wrapper should iterate over system.arrays
         # https://github.com/pvlib/pvlib-python/issues/1115
-        mc.dc = pvusa(mc.results.total_irrad['poa_global'],
-                      mc.results.weather['wind_speed'], mc.results.weather['temp_air'],
-                      mc.system.module_parameters['a'], mc.system.module_parameters['b'],
-                      mc.system.module_parameters['c'], mc.system.module_parameters['d'])
-
+            mc.results.dc = tuple(
+                pvusa(total_irrad['poa_global'], mc.results.weather['wind_speed'],
+                      mc.results.weather['temp_air'], array.module_parameters['a'],
+                      array.module_parameters['b'], array.module_parameters['c'],
+                      array.module_parameters['d'])
+                for total_irrad, array
+                in zip(mc.results.total_irrad, mc.system.arrays)
+                )
         # returning mc is optional, but enables method chaining
         return mc
 

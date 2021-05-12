@@ -328,7 +328,9 @@ class ModelChain:
 
     dc_model: None, str, or function, default None
         If None, the model will be inferred from the contents of
-        system.arrays[i].module_parameters. Valid strings are 'sapm',
+        If None, the model will be inferred from the parameters that
+        are common to all of system.arrays[i].module_parameters. 
+        Valid strings are 'sapm',
         'desoto', 'cec', 'pvsyst', 'pvwatts'. The ModelChain instance will
         be passed as the first argument to a user-defined function.
 

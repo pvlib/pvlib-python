@@ -529,16 +529,13 @@ function if you wanted to.
             total_irrads = [mc.results.total_irrad]
         else:
             total_irrads = mc.results.total_irrad
-
         mc.results.dc = tuple(
             pvusa(total_irrad['poa_global'], mc.results.weather['wind_speed'],
                   mc.results.weather['temp_air'], array.module_parameters['a'],
                   array.module_parameters['b'], array.module_parameters['c'],
                   array.module_parameters['d'])
             for total_irrad, array
-            in zip(total_irrads, mc.system.arrays)
-        )
-
+            in zip(total_irrads, mc.system.arrays))
         # The iteration returns a tuple. If there is a single array, pvlib
         # unwraps the tuple of length 1. Unwrap here for consistency with the
         # rest of pvlib.

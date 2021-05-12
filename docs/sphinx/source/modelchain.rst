@@ -523,9 +523,9 @@ function if you wanted to.
         if mc.system.num_arrays == 1:
             mc.results.dc = pvusa(
                 mc.results.total_irrad['poa_global'], mc.results.weather['wind_speed'],
-                mc.results.weather['temp_air'], mc.system.array.module_parameters['a'],
-                mc.system.array.module_parameters['b'], mc.system.array.module_parameters['c'],
-                mc.system.array.module_parameters['d'])
+                mc.results.weather['temp_air'], mc.system.arrays[0].module_parameters['a'],
+                mc.system.arrays[0].module_parameters['b'], mc.system.arrays[0].module_parameters['c'],
+                mc.system.arrays[0].module_parameters['d'])
         else:
             mc.results.dc = tuple(
                 pvusa(total_irrad['poa_global'], mc.results.weather['wind_speed'],

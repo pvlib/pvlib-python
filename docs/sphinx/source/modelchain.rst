@@ -518,23 +518,33 @@ function if you wanted to.
 
     def pvusa_mc_wrapper(mc):
         # calculate the dc power and assign it to mc.results.dc
-        # The wrapper should iterate over system.arrays if num_arrays > 1
-        # https://github.com/pvlib/pvlib-python/issues/1115
+        # Set up to iterate over arrays and total_irrad. mc.system.arrays is
+        # always a tuple. However, when there is a single array
+        # mc.results.total_irrad will be a Series (if multiple arrays,
+        # total_irrad will be a tuple). In this case we put total_irrad
+        # in a list so that we can iterate. If we didn't put total_irrad
+        # in a list, iteration will access each value of the Series, one
+        # at a time.
         if mc.system.num_arrays == 1:
-            mc.results.dc = pvusa(
-                mc.results.total_irrad['poa_global'], mc.results.weather['wind_speed'],
-                mc.results.weather['temp_air'], mc.system.arrays[0].module_parameters['a'],
-                mc.system.arrays[0].module_parameters['b'], mc.system.arrays[0].module_parameters['c'],
-                mc.system.arrays[0].module_parameters['d'])
-        else:
-            mc.results.dc = tuple(
-                pvusa(total_irrad['poa_global'], mc.results.weather['wind_speed'],
-                      mc.results.weather['temp_air'], array.module_parameters['a'],
-                      array.module_parameters['b'], array.module_parameters['c'],
-                      array.module_parameters['d'])
-                for total_irrad, array
-                in zip(mc.results.total_irrad, mc.system.arrays)
-            )
+            total_irrads = [mc.results.total_irrad]
+        else
+            total_irrads = mc.results.total_irrad
+
+        mc.results.dc = tuple(
+            pvusa(total_irrad['poa_global'], mc.results.weather['wind_speed'],
+                  mc.results.weather['temp_air'], array.module_parameters['a'],
+                  array.module_parameters['b'], array.module_parameters['c'],
+                  array.module_parameters['d'])
+            for total_irrad, array
+            in zip(total_irrads, mc.system.arrays)
+        )
+
+        # The iteration returns a tuple. If there is a single array, pvlib
+        # unwraps the tuple of length 1. Unwrap here for consistency with the
+        # rest of pvlib.
+        if mc.system.num_arrays == 1:
+            mc.results.dc = mc.results.dc[0]
+
         # returning mc is optional, but enables method chaining
         return mc
 

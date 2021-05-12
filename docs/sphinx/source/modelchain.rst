@@ -518,8 +518,16 @@ function if you wanted to.
 
     def pvusa_mc_wrapper(mc):
         # calculate the dc power and assign it to mc.results.dc
-        # The wrapper should iterate over system.arrays
+        # The wrapper should iterate over system.arrays if num_arrays > 1
         # https://github.com/pvlib/pvlib-python/issues/1115
+        if mc.system.num_arrays == 1:
+            mc.results.dc = pvusa(
+                total_irrad['poa_global'], mc.results.weather['wind_speed'],
+                mc.results.weather['temp_air'], mc.system.array.module_parameters['a'],
+                mc.system.array.module_parameters['b'], mc.system.array.module_parameters['c'],
+                mc.system.array.module_parameters['d'])
+                )
+        else:
             mc.results.dc = tuple(
                 pvusa(total_irrad['poa_global'], mc.results.weather['wind_speed'],
                       mc.results.weather['temp_air'], array.module_parameters['a'],

@@ -572,5 +572,5 @@ The end result is that ModelChain.run_model works as expected!
 
 .. ipython:: python
 
-    mc.run_model(weather)
+    mc = mc.run_model(weather)
     mc.results.dc

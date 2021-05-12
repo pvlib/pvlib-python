@@ -1482,13 +1482,26 @@ class Array:
         Some temperature models have requirements for the input types;
         see the documentation of the underlying model function for details.
         """
+        def _build_args(keys):
+            try:
+                args = (self.temperature_model_parameters[key] for key in keys)
+            except KeyError as e:
+                missing_key = e.args[0]
+                msg = (f"Missing required parameter '{missing_key}'. Found "
+                       f"{self.temperature_model_parameters} in "
+                       "temperature_model_parameters.")
+                raise KeyError(msg)
+            return args
+
         if model == 'sapm':
             func = temperature.sapm_cell
-            params = _build_kwargs(['a', 'b', 'deltaT'],
-                                   self.temperature_model_parameters)
+            required = _build_args(['a', 'b', 'deltaT'])
+            optional = _build_kwargs(['irrad_ref'],
+                                     self.temperature_model_parameters)
         elif model == 'pvsyst':
             func = temperature.pvsyst_cell
-            params = {
+            required = tuple()
+            optional = {
                 **_build_kwargs(['eta_m', 'alpha_absorption'],
                                 self.module_parameters),
                 **_build_kwargs(['u_c', 'u_v'],
@@ -1496,34 +1509,33 @@ class Array:
             }
         elif model == 'faiman':
             func = temperature.faiman
-            params = _build_kwargs(['u0', 'u1'],
-                                   self.temperature_model_parameters)
+            required = tuple()
+            optional = _build_kwargs(['u0', 'u1'],
+                                     self.temperature_model_parameters)
         elif model == 'fuentes':
             func = temperature.fuentes
+            required = _build_args(['noct_installed'])
+            optional = _build_kwargs([
+                'module_height', 'wind_height', 'emissivity', 'absorption',
+                'surface_tilt', 'module_width', 'module_length'],
+                self.temperature_model_parameters)
             # default to using the Array attribute, but allow user to override
             # with a custom surface_tilt value in temperature_model_parameters
-            params = _build_kwargs([
-                'noct_installed', 'module_height', 'wind_height', 'emissivity',
-                'absorption', 'surface_tilt', 'module_width', 'module_length'],
-                self.temperature_model_parameters)
-            if 'surface_tilt' not in params:
-                params['surface_tilt'] = self.surface_tilt
+            if 'surface_tilt' not in kwargs:
+                kwargs['surface_tilt'] = self.surface_tilt
         elif model == 'noct_sam':
             func = temperature.noct_sam
-            params = _build_kwargs(['transmittance_absorptance', 'eta_m_ref',
-                                    'noct', 'array_height', 'mount_standoff'],
-                                   self.temperature_model_parameters)
-            if not {'noct', 'eta_m_ref'}.issubset(params):
-                msg = ('Parameters noct and eta_m_ref are required.'
-                       ' Found {} in temperature_model_parameters.'
-                       .format(self.temperature_model_parameters))
-                raise KeyError(msg)
+            required = _build_args(['noct', 'module_efficiency'])
+            optional = _build_kwargs(['transmittance_absorptance',
+                                      'array_height', 'mount_standoff'],
+                                     self.temperature_model_parameters)
         else:
             raise ValueError(f'{model} is not a valid cell temperature model')
 
         # allow kwargs to override
-        params.update(kwargs)
-        temperature_cell = func(poa_global, temp_air, wind_speed, **params)
+        optional.update(kwargs)
+        temperature_cell = func(poa_global, temp_air, wind_speed,
+                                *required, **optional)
         return temperature_cell
 
     def dc_ohms_from_percent(self):

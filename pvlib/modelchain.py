@@ -327,12 +327,11 @@ class ModelChain:
         Passed to location.get_airmass.
 
     dc_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
         If None, the model will be inferred from the parameters that
-        are common to all of system.arrays[i].module_parameters. 
-        Valid strings are 'sapm',
-        'desoto', 'cec', 'pvsyst', 'pvwatts'. The ModelChain instance will
-        be passed as the first argument to a user-defined function.
+        are common to all of system.arrays[i].module_parameters.
+        Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'.
+        The ModelChain instance will be passed as the first argument
+        to a user-defined function.
 
     ac_model: None, str, or function, default None
         If None, the model will be inferred from the contents of

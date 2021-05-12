@@ -526,7 +526,6 @@ function if you wanted to.
                 mc.results.weather['temp_air'], mc.system.array.module_parameters['a'],
                 mc.system.array.module_parameters['b'], mc.system.array.module_parameters['c'],
                 mc.system.array.module_parameters['d'])
-                )
         else:
             mc.results.dc = tuple(
                 pvusa(total_irrad['poa_global'], mc.results.weather['wind_speed'],
@@ -535,7 +534,7 @@ function if you wanted to.
                       array.module_parameters['d'])
                 for total_irrad, array
                 in zip(mc.results.total_irrad, mc.system.arrays)
-                )
+            )
         # returning mc is optional, but enables method chaining
         return mc
 

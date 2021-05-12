@@ -1484,7 +1484,7 @@ class Array:
         """
         def _build_args(keys):
             try:
-                args = (self.temperature_model_parameters[key] for key in keys)
+                args = [self.temperature_model_parameters[key] for key in keys]
             except KeyError as e:
                 missing_key = e.args[0]
                 msg = (f"Missing required parameter '{missing_key}'. Found "

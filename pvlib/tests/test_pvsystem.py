@@ -2189,3 +2189,25 @@ def test_PVSystem_temperature_deprecated(funcname):
 
     with pytest.warns(pvlibDeprecationWarning):
         func(irrads, temps, winds)
+
+
+@pytest.mark.parametrize('model,keys', [
+    ('sapm', ('a', 'b', 'deltaT')),
+    ('fuentes', ('noct_installed',)),
+    ('noct_sam', ('noct', 'module_efficiency'))
+])
+def test_Array_temperature_missing_parameters(model, keys):
+    # test that a nice error is raised when required temp params are missing
+    array = pvsystem.Array()
+    index = pd.date_range('2019-01-01', freq='h', periods=5)
+    temps = pd.Series(25, index)
+    irrads = pd.Series(1000, index)
+    winds = pd.Series(1, index)
+
+    for key in keys:
+        match = f"Missing required parameter '{key}'"
+        params = {k: 1 for k in keys}  # dummy values
+        params.pop(key)  # remove each key in turn
+        array.temperature_model_parameters = params
+        with pytest.raises(KeyError, match=match):
+            array.get_cell_temperature(irrads, temps, winds, model)

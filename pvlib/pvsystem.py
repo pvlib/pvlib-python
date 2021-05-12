@@ -444,7 +444,7 @@ class PVSystem:
         )
 
     @_unwrap_single_value
-    def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
+    def calcparams_desoto(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`calcparams_desoto` function, the input
         parameters and ``self.module_parameters`` to calculate the
@@ -457,9 +457,6 @@ class PVSystem:
 
         temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
-
-        **kwargs
-            See pvsystem.calcparams_desoto for details
 
         Returns
         -------
@@ -485,7 +482,7 @@ class PVSystem:
         )
 
     @_unwrap_single_value
-    def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
+    def calcparams_cec(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`calcparams_cec` function, the input
         parameters and ``self.module_parameters`` to calculate the
@@ -498,9 +495,6 @@ class PVSystem:
 
         temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
-
-        **kwargs
-            See pvsystem.calcparams_cec for details
 
         Returns
         -------
@@ -566,7 +560,7 @@ class PVSystem:
         )
 
     @_unwrap_single_value
-    def sapm(self, effective_irradiance, temp_cell, **kwargs):
+    def sapm(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`sapm` function, the input parameters,
         and ``self.module_parameters`` to calculate
@@ -579,9 +573,6 @@ class PVSystem:
 
         temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
-
-        kwargs
-            See pvsystem.sapm for details
 
         Returns
         -------

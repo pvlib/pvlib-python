@@ -527,7 +527,7 @@ function if you wanted to.
         # at a time.
         if mc.system.num_arrays == 1:
             total_irrads = [mc.results.total_irrad]
-        else
+        else:
             total_irrads = mc.results.total_irrad
 
         mc.results.dc = tuple(

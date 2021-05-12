@@ -992,12 +992,9 @@ class ModelChain:
 
         Parameters
         ----------
-        model : function
-            A function that takes POA irradiance, air temperature, and
-            wind speed and returns cell temperature. `model` must accept
-            tuples or single values for each parameter where each element of
-            the tuple is the value for a different array in the system
-            (see :py:class:`pvlib.pvsystem.PVSystem` for more information).
+        model : str
+            A cell temperature model name to pass to
+            :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature`.
 
         Returns
         -------

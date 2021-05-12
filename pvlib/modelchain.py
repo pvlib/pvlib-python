@@ -334,23 +334,25 @@ class ModelChain:
         to a user-defined function.
 
     ac_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.inverter_parameters and system.arrays[i].module_parameters.
+        If None, the model will be inferred from the parameters that
+        are common to all of system.inverter_parameters.
         Valid strings are 'sandia', 'adr', 'pvwatts'. The
         ModelChain instance will be passed as the first argument to a
         user-defined function.
 
     aoi_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.arrays[i].module_parameters. Valid strings are 'physical',
-        'ashrae', 'sapm', 'martin_ruiz', 'no_loss'. The ModelChain instance
-        will be passed as the first argument to a user-defined function.
+        If None, the model will be inferred from the parameters that
+        are common to all of system.arrays[i].module_parameters.
+        Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
+        'no_loss'. The ModelChain instance will be passed as the
+        first argument to a user-defined function.
 
     spectral_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.arrays[i].module_parameters. Valid strings are 'sapm',
-        'first_solar', 'no_loss'. The ModelChain instance will be passed
-        as the first argument to a user-defined function.
+        If None, the model will be inferred from the parameters that
+        are common to all of system.arrays[i].module_parameters.
+        Valid strings are 'sapm', 'first_solar', 'no_loss'.
+        The ModelChain instance will be passed as the first argument to
+        a user-defined function.
 
     temperature_model: None, str or function, default None
         Valid strings are 'sapm', 'pvsyst', 'faiman', and 'fuentes'.

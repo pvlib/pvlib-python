@@ -211,6 +211,18 @@ with models selected to be consistent with named PV system models:
 * :py:meth:`~pvlib.modelchain.ModelChain.with_pvwatts`
 * :py:meth:`~pvlib.modelchain.ModelChain.with_sapm`
 
+Each "with" method returns a ModelChain using a location and system. Parameters
+used to define the system need to be consistent with the models specified by
+the "with" method. Using location and system defined above:
+
+.. ipython:: python
+
+    mc = mc.with_sapm(sapm_system, location)
+    print(mc)
+
+    mc.run_model(weather)
+    mc.results.dc
+
 
 Demystifying ModelChain internals
 ---------------------------------
@@ -223,58 +235,52 @@ The key parts of ModelChain are:
     1. The ModelChain.run_model methods.
     2. A set of methods that wrap and call the PVSystem methods.
     3. A set of methods that can inspect user-supplied objects to infer
-       the appropriate model when a models isn't specified by the user.
+       the appropriate model when a model isn't specified by the user.
 
 run_model methods
 ~~~~~~~~~~~~~~~~~
 
 ModelChain provides three methods for executing the chain of models. The
 methods allow for simulating the output of the PVSystem with different
-input irradiance data:
+input data:
 
 * :py:meth:`~pvlib.modelchain.ModelChain.run_model`, use when ``weather``
-  contains global horizontal, direct and diffuse horizontal irradiance ('ghi', 'dni' and 'dhi')
+  contains global horizontal, direct and diffuse horizontal irradiance
+  (``'ghi'``, ``'dni'`` and ``'dhi'``).
 * :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_poa`, use when
   ``weather`` broadband direct, diffuse and total irradiance in the plane of array
-  ('poa_global', 'poa_direct', 'poa_diffuse')
+  (``'poa_global'``, ``'poa_direct'``, ``'poa_diffuse'``).
 * :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`,
   use when ``weather`` contains spectrally- and reflection-adjusted total
-  irradiance in the plane of array ('effective_irradiance')
+  irradiance in the plane of array ('effective_irradiance').
 
-To illustrate the use of a `run_model` method, assume that a user has GHI, DHI
-and DNI. The :py:meth:`~pvlib.modelchain.ModelChain.run_model` method, shown below,
+To illustrate the use of the `run_model` method, assume that a user has GHI and DHI.
+:py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs`
+ requires all three irradiance components (GHI, DNI, and DHI). The user needs to
+calculate DNI before using `run_model`. The :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
+method is available for calculating the full set of GHI, DNI, or DHI if
+only two of these three series are provided. See also :ref:`dniestmodels`
+for methods and functions that can help fully define the irradiance inputs.
+
+The :py:meth:`~pvlib.modelchain.ModelChain.run_model` method, shown below,
 calls a series of methods to complete the modeling steps. The first
 method, :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs`, computes
 parameters such as solar position, airmass, angle of incidence, and
-plane of array irradiance. The
-:py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs` method also
-assigns default values for temperature (20 C)
-and wind speed (0 m/s) if these inputs are not provided.
-:py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs` requires all irradiance
-components (GHI, DNI, and DHI). The
-:py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
-method is available for calculating the full set of GHI, DNI, or DHI if
-only two of these three series are provided. See also
-:ref:`dniestmodels` for methods and functions that can help fully define
-the irradiance inputs.
-
-Next, :py:meth:`~pvlib.modelchain.ModelChain.run_model` calls the
+plane of array irradiance. Next, :py:meth:`~pvlib.modelchain.ModelChain.run_model` calls the
 wrapper methods for AOI loss, spectral loss, effective irradiance, cell
 temperature, DC power, AC power, and other losses. These methods are
 assigned to generic names, as described in the next section.
 
-The methods called by :py:meth:`~pvlib.modelchain.ModelChain.run_model`
-store their results in the ``results`` attribute, which is an instance of
-:py:class:`~.ModelChainResult`. :py:class:`~.ModelChainResult` has the
-following attributes:
-``weather``, ``times``, ``solar_position``, ``airmass``, ``total_irrad``,
-``aoi``, ``aoi_modifier``, ``spectral_modifier``, ``effective_irradiance``,
-``cell_temperature``,  ``dc``, ``ac``, ``losses``, ``tracking``,
-``diode_params``.
-
 .. ipython:: python
 
     mc.run_model??
+
+The methods called by :py:meth:`~pvlib.modelchain.ModelChain.run_model`
+store their results in the ``results`` attribute, which is an instance of
+:py:class:`~pvlib.modelchain.ModelChainResult`. For example, :py:class:`~.ModelChainResult`
+includes the following attributes: ``solar_position``, ``effective_irradiance``,
+``cell_temperature``,  ``dc``, ``ac``. See :py:class:`~pvlib.modelchain.ModelChainResult`
+for a full list of results attributes.
 
 
 Wrapping methods into a unified API
@@ -461,7 +467,9 @@ are in the same order as in ``PVSystem.arrays``.
     mc.results.dc[0]
 
 When ``weather`` is a single DataFrame, these data are broadcast and used
-for all arrays. To specify data separately for each array, provide a tuple
+for all arrays. Weather data can be specified for each array, in which case
+``weather`` needs to be a tuple or list of DataFrames in the same order as
+the arrays of the PVSystem. To specify data separately for each array, provide a tuple
 for ``weather`` where each element is a DataFrame containing the required data.
 
 Air, module and cell temperatures
@@ -526,9 +534,9 @@ function if you wanted to.
         in a list so that we can iterate. If we didn't put total_irrad
         in a list, iteration will access each value of the Series, one
         at a time.
-        The iteration returns a tuple. If there is a single array, pvlib
-        unwraps the tuple of length 1. Unwrap the tuple here for consistency
-        with the rest of pvlib.
+        The iteration returns a tuple. If there is a single array, the
+        tuple is of length 1. As a convenience, pvlib unwraps tuples of length 1
+        that are assigned to ModelChain.results attributes.
         Returning mc is optional, but enables method chaining.
         """
         if mc.system.num_arrays == 1:

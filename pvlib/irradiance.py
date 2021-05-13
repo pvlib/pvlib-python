@@ -323,7 +323,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from horizontal.[degree]
+        Panel tilt from horizontal. [degree]
     surface_azimuth : numeric
         Panel azimuth from north. [degree]
     solar_zenith : numeric
@@ -342,14 +342,14 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
         Surface albedo. [unitless]
-    surface_type : None or String, default None
-        Surface type. See :py:func:`~pvlib.irradiance.grounddiffuse` for
+    surface_type : None or str, default None
+        Surface type. See :py:func:`~pvlib.irradiance.get_ground_diffuse` for
         the list of accepted values.
-    model : String, default 'isotropic'
-        Irradiance model. Can be one of 'isotropic', 'klucher', 'haydavies',
-        'reindl', 'king', 'perez'.
-    model_perez : String, default 'allsitescomposite1990'
-        Used only if model='perez'. See :py:func:`~pvlib.irradiance.perez`.
+    model : str, default 'isotropic'
+        Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
+        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``.
+    model_perez : str, default 'allsitescomposite1990'
+        Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
 
     Returns
     -------
@@ -362,9 +362,9 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     Models 'haydavies', 'reindl', or 'perez' require 'dni_extra'. Values can
     be calculated using :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
-    The 'perez' model requires relative airmass ('airmass') as input. If
-    'airmass' is not provided, it is calculated usign the defaults in
-    :py:func:`~pvlib.irradiance.get_relative_airmass`.
+    The ``'perez'`` model requires relative airmass (``airmass``) as input. If
+    ``airmass`` is not provided, it is calculated using the defaults in
+    :py:func:`~pvlib.atmosphere.get_relative_airmass`.
     """
 
     poa_sky_diffuse = get_sky_diffuse(
@@ -399,7 +399,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from horizontal.[degree]
+        Panel tilt from horizontal. [degree]
     surface_azimuth : numeric
         Panel azimuth from north. [degree]
     solar_zenith : numeric
@@ -416,11 +416,11 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         Extraterrestrial direct normal irradiance. [W/m2]
     airmass : None or numeric, default None
         Relative airmass (not adjusted for pressure). [unitless]
-    model : String, default 'isotropic'
-        Irradiance model. Can be one of 'isotropic', 'klucher', 'haydavies',
-        'reindl', 'king', 'perez'.
-    model_perez : String, default 'allsitescomposite1990'
-        Used only if model='perez'. See :py:func:`~pvlib.irradiance.perez`.
+    model : str, default 'isotropic'
+        Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
+        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``.
+    model_perez : str, default 'allsitescomposite1990'
+        Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
 
     Returns
     -------
@@ -430,16 +430,17 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     Raises
     ------
     ValueError
-        If model is one of 'haydavies', 'reindl', or 'perez' and dni_extra
-        is None.
+        If model is one of ``'haydavies'``, ``'reindl'``, or ``'perez'`` and
+        ``dni_extra`` is ``None``.
 
     Notes
     -----
-    Models 'haydavies', 'reindl', or 'perez' require 'dni_extra'. Values can
-    be calculated using :py:func:`~pvlib.irradiance.get_extra_radiation`.
+    Models ``'haydavies'``, ``'reindl'``, and ``'perez``` require 'dni_extra'.
+    Values can be calculated using
+    :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
-    The 'perez' model requires relative airmass ('airmass') as input. If
-    'airmass' is not provided, it is calculated usign the defaults in
+    The ``'perez'`` model requires relative airmass (``airmass``) as input. If
+    ``airmass`` is not provided, it is calculated using the defaults in
     :py:func:`~pvlib.irradiance.get_relative_airmass`.
     """
 
@@ -566,7 +567,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Returns
     -------
     grounddiffuse : numeric
-        Ground reflected irradiances in W/m^2.
+        Ground reflected irradiance. [W/m^2]
 
 
     References

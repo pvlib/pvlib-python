@@ -13,7 +13,6 @@ import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
 
-
 # see References section of grounddiffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
                    'grass': 0.20,
@@ -29,6 +28,90 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'fresh steel': 0.35,
                    'dirty steel': 0.08,
                    'sea': 0.06}
+
+
+def cloud_opacity_factor(irr_dif_clouds: np.ndarray,
+                         irr_dir_clouds: np.ndarray,
+                         irr_ghi_clouds: np.ndarray,
+                         spectra: dict) -> (np.ndarray, np.ndarray):
+    """
+        Calculate the effect of "cloud opacity factor" on spectral
+        irradiance under clear sky.
+
+        First we calculate the rho fraction based on campbell_norman
+        irradiance with clouds converted to POA irradiance. In the
+        paper [1] these values are obtained from observations. The equations
+        used for calculating cloud opacity factor to scale the clear sky
+        spectral estimates using spectrl2. Results can be compared
+        with sun calculator:
+        https://www2.pvlighthouse.com.au/calculators/solar%20
+        spectrum%20calculator/solar%20spectrum%20calculator.aspx
+
+        Parameters
+        ----------
+        irr_dif_clouds:np.ndarray
+            Total diffuse irradiance (poa_diffuse) estimated using
+            `pvlib.irradiance.get_total_irradiance` and
+            `pvlib.irradiance.campbell_norman` irradiance with clouds
+            (transmittance)
+
+        irr_dir_clouds:np.ndarray
+            Total direct irradiance (poa_direct) estimated using
+            `pvlib.irradiance.get_total_irradiance` and
+            `pvlib.irradiance.campbell_norman` irradiance with
+            clouds (transmittance)
+
+        irr_ghi_clouds:np.ndarray
+            Total direct irradiance (poa_global) estimated
+            using `pvlib.irradiance.get_total_irradiance` and
+            `pvlib.irradiance.campbell_norman irradiance
+            with clouds (transmittance)
+
+        spectra:np.ndarray
+            Spectral irradiance output from `pvlib.spectrum.spectrl2`
+            under clear-sky conditions
+
+
+        Returns
+        -------
+            f_dir, f_diff spectral direct and diffuse irradiance
+            scaled for cloudiness
+
+        References
+        ----------
+        .. [1] Ref: Marco Ernst, Hendrik Holst, Matthias Winter,
+        Pietro P. Altermatt,
+        SunCalculator: A program to calculate the angular and spectral
+        distribution of direct and diffuse solar radiation, Solar Energy
+        Materials and Solar Cells, Volume 157, 2016,
+        Pages 913-922,
+        """
+
+    rho = irr_dif_clouds / irr_ghi_clouds
+
+    wl = spectra['wavelength']
+    irr_diff_s = np.trapz(y=spectra['poa_sky_diffuse'][:, 0], x=wl)
+    irr_dir_s = np.trapz(y=spectra['poa_direct'][:, 0], x=wl)
+    irr_glob_s = np.trapz(y=spectra['poa_global'][:, 0], x=wl)
+
+    rho_spectra = irr_diff_s / irr_glob_s
+
+    n_rho = (rho - rho_spectra) / (1 - rho_spectra)
+
+    # Direct light. Equation 6 Ernst et al. 2016
+    f_diff_s = spectra['poa_sky_diffuse'][:, :]
+    f_dir_s = spectra['poa_direct'][:, :]
+
+    f_dir = (f_dir_s / irr_dir_s) * irr_dir_clouds
+
+    # Diffuse light scaling factor. Equation 7 Ernst et al. 2016
+    s_diff = ((1 - n_rho) * (f_diff_s / irr_diff_s) + n_rho
+              * ((f_dir_s + f_diff_s) / irr_glob_s))
+
+    # Equation 8 Ernst et al. 2016
+    f_diff = s_diff * irr_dif_clouds
+
+    return f_dir, f_diff
 
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
@@ -123,7 +206,10 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
     # a better way to do it.
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
-        def to_datetimeindex(x): return x                       # noqa: E306
+
+        def to_datetimeindex(x):
+            return x  # noqa: E306
+
         to_output = partial(pd.Series, index=datetime_or_doy)
     elif isinstance(datetime_or_doy, pd.Timestamp):
         to_doy = tools._pandas_to_doy
@@ -137,12 +223,16 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
             tools._datetimelike_scalar_to_datetimeindex
         to_output = tools._scalar_out
     elif np.isscalar(datetime_or_doy):  # ints and floats of various types
-        def to_doy(x): return x                                 # noqa: E306
+        def to_doy(x):
+            return x  # noqa: E306
+
         to_datetimeindex = partial(tools._doy_to_datetimeindex,
                                    epoch_year=epoch_year)
         to_output = tools._scalar_out
     else:  # assume that we have an array-like object of doy
-        def to_doy(x): return x                                 # noqa: E306
+        def to_doy(x):
+            return x  # noqa: E306
+
         to_datetimeindex = partial(tools._doy_to_datetimeindex,
                                    epoch_year=epoch_year)
         to_output = tools._array_out
@@ -177,10 +267,12 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         Dot product of panel normal and solar angle.
     """
 
-    projection = (
-        tools.cosd(surface_tilt) * tools.cosd(solar_zenith) +
-        tools.sind(surface_tilt) * tools.sind(solar_zenith) *
-        tools.cosd(solar_azimuth - surface_azimuth))
+    projection = ((tools.cosd(surface_tilt) *
+                   tools.cosd(solar_zenith) +
+                   tools.sind(surface_tilt) *
+                   tools.sind(solar_zenith) *
+                   tools.cosd(solar_azimuth -
+                              surface_azimuth)))
 
     try:
         projection.name = 'aoi_projection'
@@ -888,7 +980,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     term2 = 0.5 * (1 + tools.cosd(surface_tilt))
     with np.errstate(invalid='ignore', divide='ignore'):
         hb_to_ghi = np.where(ghi == 0, 0, np.divide(HB, ghi))
-    term3 = 1 + np.sqrt(hb_to_ghi) * (tools.sind(0.5 * surface_tilt)**3)
+    term3 = 1 + np.sqrt(hb_to_ghi) * (tools.sind(0.5 * surface_tilt) ** 3)
     sky_diffuse = dhi * (AI * Rb + term1 * term2 * term3)
     sky_diffuse = np.maximum(sky_diffuse, 0)
 
@@ -1408,18 +1500,19 @@ def _disc_kn(clearness_index, airmass, max_airmass=12):
 
     bools = (kt <= 0.6)
     a = np.where(bools,
-                 0.512 - 1.56*kt + 2.286*kt2 - 2.222*kt3,
-                 -5.743 + 21.77*kt - 27.49*kt2 + 11.56*kt3)
+                 0.512 - 1.56 * kt + 2.286 * kt2 - 2.222 * kt3,
+                 -5.743 + 21.77 * kt - 27.49 * kt2 + 11.56 * kt3)
     b = np.where(bools,
-                 0.37 + 0.962*kt,
-                 41.4 - 118.5*kt + 66.05*kt2 + 31.9*kt3)
+                 0.37 + 0.962 * kt,
+                 41.4 - 118.5 * kt + 66.05 * kt2 + 31.9 * kt3)
     c = np.where(bools,
-                 -0.28 + 0.932*kt - 2.048*kt2,
-                 -47.01 + 184.2*kt - 222.0*kt2 + 73.81*kt3)
+                 -0.28 + 0.932 * kt - 2.048 * kt2,
+                 -47.01 + 184.2 * kt - 222.0 * kt2 + 73.81 * kt3)
 
-    delta_kn = a + b * np.exp(c*am)
+    delta_kn = a + b * np.exp(c * am)
 
-    Knc = 0.866 - 0.122*am + 0.0121*am**2 - 0.000653*am**3 + 1.4e-05*am**4
+    Knc = ((0.866 - 0.122 * am + 0.0121 *
+            am ** 2 - 0.000653 * am ** 3 + 1.4e-05 * am ** 4))
     Kn = Knc - delta_kn
     return Kn, am
 
@@ -1550,8 +1643,8 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
         kt_next.iloc[-1] = kt_previous.iloc[-1]
         kt_previous.iloc[0] = kt_next.iloc[0]
         delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(
-                                (kt_prime - kt_previous).abs(),
-                                fill_value=0))
+            (kt_prime - kt_previous).abs(),
+            fill_value=0))
     else:
         # do not change unless also modifying _dirint_bins
         delta_kt_prime = pd.Series(-1, index=times)
@@ -1598,8 +1691,8 @@ def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
 
     # subtract 1 to account for difference between MATLAB-style bin
     # assignment and Python-style array lookup.
-    dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
-                           delta_kt_prime_bin-1, w_bin-1]
+    dirint_coeffs = coeffs[kt_prime_bin - 1, zenith_bin - 1,
+                           delta_kt_prime_bin - 1, w_bin - 1]
 
     # convert unassigned bins to nan
     dirint_coeffs = np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
@@ -1950,8 +2043,8 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
 
         # calculate DHI using Marion eqn 3 (identify 1st term on RHS as GHI)
         # I0h has a minimum zenith projection, but multiplier of DNI does not
-        ghi = kt * I0h                  # Kt * I0 * max(0.065, cos(zen))
-        dhi = ghi - dni * cos_zenith    # no cos(zen) restriction here
+        ghi = kt * I0h  # Kt * I0 * max(0.065, cos(zen))
+        dhi = ghi - dni * cos_zenith  # no cos(zen) restriction here
 
         # following SSC code
         dni = np.maximum(dni, 0)
@@ -2034,9 +2127,11 @@ def _gti_dirint_gte_90(poa_global, aoi, solar_zenith, solar_azimuth,
     cos_surface_tilt = tools.cosd(surface_tilt)
 
     # isotropic sky plus ground diffuse
-    dhi_gte_90 = (
-        (2 * poa_global - dni_gte_90_proj * albedo * (1 - cos_surface_tilt)) /
-        (1 + cos_surface_tilt + albedo * (1 - cos_surface_tilt)))
+    dhi_gte_90 = (((2 * poa_global - dni_gte_90_proj
+                    * albedo
+                    * (1 - cos_surface_tilt)) /
+                   (1 + cos_surface_tilt + albedo
+                    * (1 - cos_surface_tilt))))
 
     ghi_gte_90 = dni_gte_90_proj + dhi_gte_90
 
@@ -2156,12 +2251,12 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
                          max_clearness_index=1)
 
     # For Kt <= 0.22, set the diffuse fraction
-    df = 1 - 0.09*kt
+    df = 1 - 0.09 * kt
 
     # For Kt > 0.22 and Kt <= 0.8, set the diffuse fraction
     df = np.where((kt > 0.22) & (kt <= 0.8),
-                  0.9511 - 0.1604*kt + 4.388*kt**2 -
-                  16.638*kt**3 + 12.336*kt**4,
+                  0.9511 - 0.1604 * kt + 4.388 * kt ** 2 -
+                  16.638 * kt ** 3 + 12.336 * kt ** 4,
                   df)
 
     # For Kt > 0.8, set the diffuse fraction
@@ -2224,9 +2319,9 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
 
     airmass = atmosphere.get_relative_airmass(zenith, model='simple')
     airmass = atmosphere.get_absolute_airmass(airmass, pressure=pressure)
-    dni = dni_extra*tau**airmass
+    dni = dni_extra * tau ** airmass
     cos_zen = tools.cosd(zenith)
-    dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * cos_zen
+    dhi = 0.3 * (1.0 - tau ** airmass) * dni_extra * cos_zen
     ghi = dhi + dni * cos_zen
 
     irrads = OrderedDict()
@@ -2283,8 +2378,8 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
 
     tau = transmittance
 
-    dni = dni_extra*tau**airmass
-    dhi = 0.3 * (1.0 - tau**airmass) * dni_extra * np.cos(np.radians(zenith))
+    dni = dni_extra * tau ** airmass
+    dhi = 0.3 * (1.0 - tau ** airmass) * dni_extra * np.cos(np.radians(zenith))
     ghi = dhi + dni * np.cos(np.radians(zenith))
 
     irrads = OrderedDict()
@@ -2351,104 +2446,104 @@ def _get_perez_coefficients(perezmodel):
     '''
     coeffdict = {
         'allsitescomposite1990': [
-            [-0.0080,    0.5880,   -0.0620,   -0.0600,    0.0720,   -0.0220],
-            [0.1300,    0.6830,   -0.1510,   -0.0190,    0.0660,   -0.0290],
-            [0.3300,    0.4870,   -0.2210,    0.0550,   -0.0640,   -0.0260],
-            [0.5680,    0.1870,   -0.2950,    0.1090,   -0.1520,   -0.0140],
-            [0.8730,   -0.3920,   -0.3620,    0.2260,   -0.4620,    0.0010],
-            [1.1320,   -1.2370,   -0.4120,    0.2880,   -0.8230,    0.0560],
-            [1.0600,   -1.6000,   -0.3590,    0.2640,   -1.1270,    0.1310],
-            [0.6780,   -0.3270,   -0.2500,    0.1560,   -1.3770,    0.2510]],
+            [-0.0080, 0.5880, -0.0620, -0.0600, 0.0720, -0.0220],
+            [0.1300, 0.6830, -0.1510, -0.0190, 0.0660, -0.0290],
+            [0.3300, 0.4870, -0.2210, 0.0550, -0.0640, -0.0260],
+            [0.5680, 0.1870, -0.2950, 0.1090, -0.1520, -0.0140],
+            [0.8730, -0.3920, -0.3620, 0.2260, -0.4620, 0.0010],
+            [1.1320, -1.2370, -0.4120, 0.2880, -0.8230, 0.0560],
+            [1.0600, -1.6000, -0.3590, 0.2640, -1.1270, 0.1310],
+            [0.6780, -0.3270, -0.2500, 0.1560, -1.3770, 0.2510]],
         'allsitescomposite1988': [
-            [-0.0180,    0.7050,   -0.071,   -0.0580,    0.1020,   -0.0260],
-            [0.1910,    0.6450,   -0.1710,    0.0120,    0.0090,   -0.0270],
-            [0.4400,    0.3780,   -0.2560,    0.0870,   -0.1040,   -0.0250],
-            [0.7560,   -0.1210,   -0.3460,    0.1790,   -0.3210,   -0.0080],
-            [0.9960,   -0.6450,   -0.4050,    0.2600,   -0.5900,    0.0170],
-            [1.0980,   -1.2900,   -0.3930,    0.2690,   -0.8320,    0.0750],
-            [0.9730,   -1.1350,   -0.3780,    0.1240,   -0.2580,    0.1490],
-            [0.6890,   -0.4120,   -0.2730,    0.1990,   -1.6750,    0.2370]],
+            [-0.0180, 0.7050, -0.071, -0.0580, 0.1020, -0.0260],
+            [0.1910, 0.6450, -0.1710, 0.0120, 0.0090, -0.0270],
+            [0.4400, 0.3780, -0.2560, 0.0870, -0.1040, -0.0250],
+            [0.7560, -0.1210, -0.3460, 0.1790, -0.3210, -0.0080],
+            [0.9960, -0.6450, -0.4050, 0.2600, -0.5900, 0.0170],
+            [1.0980, -1.2900, -0.3930, 0.2690, -0.8320, 0.0750],
+            [0.9730, -1.1350, -0.3780, 0.1240, -0.2580, 0.1490],
+            [0.6890, -0.4120, -0.2730, 0.1990, -1.6750, 0.2370]],
         'sandiacomposite1988': [
-            [-0.1960,    1.0840,   -0.0060,   -0.1140,    0.1800,   -0.0190],
-            [0.2360,    0.5190,   -0.1800,   -0.0110,    0.0200,   -0.0380],
-            [0.4540,    0.3210,   -0.2550,    0.0720,   -0.0980,   -0.0460],
-            [0.8660,   -0.3810,   -0.3750,    0.2030,   -0.4030,   -0.0490],
-            [1.0260,   -0.7110,   -0.4260,    0.2730,   -0.6020,   -0.0610],
-            [0.9780,   -0.9860,   -0.3500,    0.2800,   -0.9150,   -0.0240],
-            [0.7480,   -0.9130,   -0.2360,    0.1730,   -1.0450,    0.0650],
-            [0.3180,   -0.7570,    0.1030,    0.0620,   -1.6980,    0.2360]],
+            [-0.1960, 1.0840, -0.0060, -0.1140, 0.1800, -0.0190],
+            [0.2360, 0.5190, -0.1800, -0.0110, 0.0200, -0.0380],
+            [0.4540, 0.3210, -0.2550, 0.0720, -0.0980, -0.0460],
+            [0.8660, -0.3810, -0.3750, 0.2030, -0.4030, -0.0490],
+            [1.0260, -0.7110, -0.4260, 0.2730, -0.6020, -0.0610],
+            [0.9780, -0.9860, -0.3500, 0.2800, -0.9150, -0.0240],
+            [0.7480, -0.9130, -0.2360, 0.1730, -1.0450, 0.0650],
+            [0.3180, -0.7570, 0.1030, 0.0620, -1.6980, 0.2360]],
         'usacomposite1988': [
-            [-0.0340,    0.6710,   -0.0590,   -0.0590,    0.0860,   -0.0280],
-            [0.2550,    0.4740,   -0.1910,    0.0180,   -0.0140,   -0.0330],
-            [0.4270,    0.3490,   -0.2450,    0.0930,   -0.1210,   -0.0390],
-            [0.7560,   -0.2130,   -0.3280,    0.1750,   -0.3040,   -0.0270],
-            [1.0200,   -0.8570,   -0.3850,    0.2800,   -0.6380,   -0.0190],
-            [1.0500,   -1.3440,   -0.3480,    0.2800,   -0.8930,    0.0370],
-            [0.9740,   -1.5070,   -0.3700,    0.1540,   -0.5680,    0.1090],
-            [0.7440,   -1.8170,   -0.2560,    0.2460,   -2.6180,    0.2300]],
+            [-0.0340, 0.6710, -0.0590, -0.0590, 0.0860, -0.0280],
+            [0.2550, 0.4740, -0.1910, 0.0180, -0.0140, -0.0330],
+            [0.4270, 0.3490, -0.2450, 0.0930, -0.1210, -0.0390],
+            [0.7560, -0.2130, -0.3280, 0.1750, -0.3040, -0.0270],
+            [1.0200, -0.8570, -0.3850, 0.2800, -0.6380, -0.0190],
+            [1.0500, -1.3440, -0.3480, 0.2800, -0.8930, 0.0370],
+            [0.9740, -1.5070, -0.3700, 0.1540, -0.5680, 0.1090],
+            [0.7440, -1.8170, -0.2560, 0.2460, -2.6180, 0.2300]],
         'france1988': [
-            [0.0130,    0.7640,   -0.1000,   -0.0580,    0.1270,   -0.0230],
-            [0.0950,    0.9200,   -0.1520,         0,    0.0510,   -0.0200],
-            [0.4640,    0.4210,   -0.2800,    0.0640,   -0.0510,   -0.0020],
-            [0.7590,   -0.0090,   -0.3730,    0.2010,   -0.3820,    0.0100],
-            [0.9760,   -0.4000,   -0.4360,    0.2710,   -0.6380,    0.0510],
-            [1.1760,   -1.2540,   -0.4620,    0.2950,   -0.9750,    0.1290],
-            [1.1060,   -1.5630,   -0.3980,    0.3010,   -1.4420,    0.2120],
-            [0.9340,   -1.5010,   -0.2710,    0.4200,   -2.9170,    0.2490]],
+            [0.0130, 0.7640, -0.1000, -0.0580, 0.1270, -0.0230],
+            [0.0950, 0.9200, -0.1520, 0, 0.0510, -0.0200],
+            [0.4640, 0.4210, -0.2800, 0.0640, -0.0510, -0.0020],
+            [0.7590, -0.0090, -0.3730, 0.2010, -0.3820, 0.0100],
+            [0.9760, -0.4000, -0.4360, 0.2710, -0.6380, 0.0510],
+            [1.1760, -1.2540, -0.4620, 0.2950, -0.9750, 0.1290],
+            [1.1060, -1.5630, -0.3980, 0.3010, -1.4420, 0.2120],
+            [0.9340, -1.5010, -0.2710, 0.4200, -2.9170, 0.2490]],
         'phoenix1988': [
-            [-0.0030,    0.7280,   -0.0970,   -0.0750,    0.1420,   -0.0430],
-            [0.2790,    0.3540,   -0.1760,    0.0300,   -0.0550,   -0.0540],
-            [0.4690,    0.1680,   -0.2460,    0.0480,   -0.0420,   -0.0570],
-            [0.8560,   -0.5190,   -0.3400,    0.1760,   -0.3800,   -0.0310],
-            [0.9410,   -0.6250,   -0.3910,    0.1880,   -0.3600,   -0.0490],
-            [1.0560,   -1.1340,   -0.4100,    0.2810,   -0.7940,   -0.0650],
-            [0.9010,   -2.1390,   -0.2690,    0.1180,   -0.6650,    0.0460],
-            [0.1070,    0.4810,    0.1430,   -0.1110,   -0.1370,    0.2340]],
+            [-0.0030, 0.7280, -0.0970, -0.0750, 0.1420, -0.0430],
+            [0.2790, 0.3540, -0.1760, 0.0300, -0.0550, -0.0540],
+            [0.4690, 0.1680, -0.2460, 0.0480, -0.0420, -0.0570],
+            [0.8560, -0.5190, -0.3400, 0.1760, -0.3800, -0.0310],
+            [0.9410, -0.6250, -0.3910, 0.1880, -0.3600, -0.0490],
+            [1.0560, -1.1340, -0.4100, 0.2810, -0.7940, -0.0650],
+            [0.9010, -2.1390, -0.2690, 0.1180, -0.6650, 0.0460],
+            [0.1070, 0.4810, 0.1430, -0.1110, -0.1370, 0.2340]],
         'elmonte1988': [
-            [0.0270,    0.7010,   -0.1190,   -0.0580,    0.1070,  -0.0600],
-            [0.1810,    0.6710,   -0.1780,   -0.0790,    0.1940,  -0.0350],
-            [0.4760,    0.4070,   -0.2880,    0.0540,   -0.0320,  -0.0550],
-            [0.8750,   -0.2180,   -0.4030,    0.1870,   -0.3090,  -0.0610],
-            [1.1660,   -1.0140,   -0.4540,    0.2110,   -0.4100,  -0.0440],
-            [1.1430,   -2.0640,   -0.2910,    0.0970,   -0.3190,   0.0530],
-            [1.0940,   -2.6320,   -0.2590,    0.0290,   -0.4220,   0.1470],
-            [0.1550,    1.7230,    0.1630,   -0.1310,   -0.0190,   0.2770]],
+            [0.0270, 0.7010, -0.1190, -0.0580, 0.1070, -0.0600],
+            [0.1810, 0.6710, -0.1780, -0.0790, 0.1940, -0.0350],
+            [0.4760, 0.4070, -0.2880, 0.0540, -0.0320, -0.0550],
+            [0.8750, -0.2180, -0.4030, 0.1870, -0.3090, -0.0610],
+            [1.1660, -1.0140, -0.4540, 0.2110, -0.4100, -0.0440],
+            [1.1430, -2.0640, -0.2910, 0.0970, -0.3190, 0.0530],
+            [1.0940, -2.6320, -0.2590, 0.0290, -0.4220, 0.1470],
+            [0.1550, 1.7230, 0.1630, -0.1310, -0.0190, 0.2770]],
         'osage1988': [
-            [-0.3530,    1.4740,   0.0570,   -0.1750,    0.3120,   0.0090],
-            [0.3630,    0.2180,  -0.2120,    0.0190,   -0.0340,  -0.0590],
-            [-0.0310,    1.2620,  -0.0840,   -0.0820,    0.2310,  -0.0170],
-            [0.6910,    0.0390,  -0.2950,    0.0910,   -0.1310,  -0.0350],
-            [1.1820,   -1.3500,  -0.3210,    0.4080,   -0.9850,  -0.0880],
-            [0.7640,    0.0190,  -0.2030,    0.2170,   -0.2940,  -0.1030],
-            [0.2190,    1.4120,   0.2440,    0.4710,   -2.9880,   0.0340],
-            [3.5780,   22.2310, -10.7450,    2.4260,    4.8920,  -5.6870]],
+            [-0.3530, 1.4740, 0.0570, -0.1750, 0.3120, 0.0090],
+            [0.3630, 0.2180, -0.2120, 0.0190, -0.0340, -0.0590],
+            [-0.0310, 1.2620, -0.0840, -0.0820, 0.2310, -0.0170],
+            [0.6910, 0.0390, -0.2950, 0.0910, -0.1310, -0.0350],
+            [1.1820, -1.3500, -0.3210, 0.4080, -0.9850, -0.0880],
+            [0.7640, 0.0190, -0.2030, 0.2170, -0.2940, -0.1030],
+            [0.2190, 1.4120, 0.2440, 0.4710, -2.9880, 0.0340],
+            [3.5780, 22.2310, -10.7450, 2.4260, 4.8920, -5.6870]],
         'albuquerque1988': [
-            [0.0340,    0.5010,  -0.0940,   -0.0630,    0.1060,  -0.0440],
-            [0.2290,    0.4670,  -0.1560,   -0.0050,   -0.0190,  -0.0230],
-            [0.4860,    0.2410,  -0.2530,    0.0530,   -0.0640,  -0.0220],
-            [0.8740,   -0.3930,  -0.3970,    0.1810,   -0.3270,  -0.0370],
-            [1.1930,   -1.2960,  -0.5010,    0.2810,   -0.6560,  -0.0450],
-            [1.0560,   -1.7580,  -0.3740,    0.2260,   -0.7590,   0.0340],
-            [0.9010,   -4.7830,  -0.1090,    0.0630,   -0.9700,   0.1960],
-            [0.8510,   -7.0550,  -0.0530,    0.0600,   -2.8330,   0.3300]],
+            [0.0340, 0.5010, -0.0940, -0.0630, 0.1060, -0.0440],
+            [0.2290, 0.4670, -0.1560, -0.0050, -0.0190, -0.0230],
+            [0.4860, 0.2410, -0.2530, 0.0530, -0.0640, -0.0220],
+            [0.8740, -0.3930, -0.3970, 0.1810, -0.3270, -0.0370],
+            [1.1930, -1.2960, -0.5010, 0.2810, -0.6560, -0.0450],
+            [1.0560, -1.7580, -0.3740, 0.2260, -0.7590, 0.0340],
+            [0.9010, -4.7830, -0.1090, 0.0630, -0.9700, 0.1960],
+            [0.8510, -7.0550, -0.0530, 0.0600, -2.8330, 0.3300]],
         'capecanaveral1988': [
-            [0.0750,    0.5330,   -0.1240,  -0.0670,   0.0420,  -0.0200],
-            [0.2950,    0.4970,   -0.2180,  -0.0080,   0.0030,  -0.0290],
-            [0.5140,    0.0810,   -0.2610,   0.0750,  -0.1600,  -0.0290],
-            [0.7470,   -0.3290,   -0.3250,   0.1810,  -0.4160,  -0.0300],
-            [0.9010,   -0.8830,   -0.2970,   0.1780,  -0.4890,   0.0080],
-            [0.5910,   -0.0440,   -0.1160,   0.2350,  -0.9990,   0.0980],
-            [0.5370,   -2.4020,    0.3200,   0.1690,  -1.9710,   0.3100],
-            [-0.8050,    4.5460,    1.0720,  -0.2580,  -0.9500,    0.7530]],
+            [0.0750, 0.5330, -0.1240, -0.0670, 0.0420, -0.0200],
+            [0.2950, 0.4970, -0.2180, -0.0080, 0.0030, -0.0290],
+            [0.5140, 0.0810, -0.2610, 0.0750, -0.1600, -0.0290],
+            [0.7470, -0.3290, -0.3250, 0.1810, -0.4160, -0.0300],
+            [0.9010, -0.8830, -0.2970, 0.1780, -0.4890, 0.0080],
+            [0.5910, -0.0440, -0.1160, 0.2350, -0.9990, 0.0980],
+            [0.5370, -2.4020, 0.3200, 0.1690, -1.9710, 0.3100],
+            [-0.8050, 4.5460, 1.0720, -0.2580, -0.9500, 0.7530]],
         'albany1988': [
-            [0.0120,    0.5540,   -0.0760, -0.0520,   0.0840,  -0.0290],
-            [0.2670,    0.4370,   -0.1940,  0.0160,   0.0220,  -0.0360],
-            [0.4200,    0.3360,   -0.2370,  0.0740,  -0.0520,  -0.0320],
-            [0.6380,   -0.0010,   -0.2810,  0.1380,  -0.1890,  -0.0120],
-            [1.0190,   -1.0270,   -0.3420,  0.2710,  -0.6280,   0.0140],
-            [1.1490,   -1.9400,   -0.3310,  0.3220,  -1.0970,   0.0800],
-            [1.4340,   -3.9940,   -0.4920,  0.4530,  -2.3760,   0.1170],
-            [1.0070,   -2.2920,   -0.4820,  0.3900,  -3.3680,   0.2290]], }
+            [0.0120, 0.5540, -0.0760, -0.0520, 0.0840, -0.0290],
+            [0.2670, 0.4370, -0.1940, 0.0160, 0.0220, -0.0360],
+            [0.4200, 0.3360, -0.2370, 0.0740, -0.0520, -0.0320],
+            [0.6380, -0.0010, -0.2810, 0.1380, -0.1890, -0.0120],
+            [1.0190, -1.0270, -0.3420, 0.2710, -0.6280, 0.0140],
+            [1.1490, -1.9400, -0.3310, 0.3220, -1.0970, 0.0800],
+            [1.4340, -3.9940, -0.4920, 0.4530, -2.3760, 0.1170],
+            [1.0070, -2.2920, -0.4820, 0.3900, -3.3680, 0.2290]], }
 
     array = np.array(coeffdict[perezmodel])
 

@@ -211,9 +211,9 @@ with models selected to be consistent with named PV system models:
 * :py:meth:`~pvlib.modelchain.ModelChain.with_pvwatts`
 * :py:meth:`~pvlib.modelchain.ModelChain.with_sapm`
 
-Each "with" method returns a ModelChain using a location and system. Parameters
-used to define the system need to be consistent with the models specified by
-the "with" method. Using location and system defined above:
+Each "with" method returns a ModelChain using a Location and PVSystem. Parameters
+used to define the PVSystem need to be consistent with the models specified by
+the "with" method. Using location and sapm_system defined above:
 
 .. ipython:: python
 
@@ -255,9 +255,9 @@ input data:
   irradiance in the plane of array ('effective_irradiance').
 
 To illustrate the use of the `run_model` method, assume that a user has GHI and DHI.
-:py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs`
- requires all three irradiance components (GHI, DNI, and DHI). The user needs to
-calculate DNI before using `run_model`. The :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
+:py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs` requires all three
+irradiance components (GHI, DNI, and DHI). In this case, the user needs
+to calculate DNI before using `run_model`. The :py:meth:`~pvlib.modelchain.ModelChain.complete_irradiance`
 method is available for calculating the full set of GHI, DNI, or DHI if
 only two of these three series are provided. See also :ref:`dniestmodels`
 for methods and functions that can help fully define the irradiance inputs.
@@ -482,10 +482,11 @@ Temperature data are passed in the ``weather`` DataFrame and can include:
 
 * cell temperature (``'cell_temperature'``). If passed in ``weather`` no
   cell temperature model is run.
-* module temperature, typically measured on the rear surface (``'module_temperature'``).
+* module temperature (``'module_temperature'``), typically measured on the rear surface.
   If found in ``weather`` and ``ModelChain.temperature_model='sapm'`` 
   (either set directly or inferred), the :py:meth:`~pvlib.modelchain.ModelChain.sapm_temp`
-  method is used to calculate cell temperature.
+  method is used to calculate cell temperature. If ``ModelChain.temperature_model``
+  is set to any other model, ``'module_temperature'`` is ignored.
 * ambient air temperature (``'temp_air'``). In this case ``ModelChain.temperature_model``
   is used to calculate cell temeprature.
 

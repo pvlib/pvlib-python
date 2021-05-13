@@ -551,8 +551,6 @@ function if you wanted to.
                   array.module_parameters['d'])
             for total_irrad, array
             in zip(total_irrads, mc.system.arrays))
-        if mc.system.num_arrays == 1:
-            mc.results.dc = mc.results.dc[0]
         return mc
 
 

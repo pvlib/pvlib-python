@@ -414,7 +414,7 @@ parameters on the user-supplied PVSystem object. The inference methods use set
 logic to assign one of the model-specific methods, such as
 :py:meth:`~pvlib.modelchain.ModelChain.sapm` or :py:meth:`~pvlib.modelchain.ModelChain.sandia_inverter`,
 to the universal method names ``ModelChain.dc_model`` and ``ModelChain.ac_model``,
-respectively. A few examples are shown below. Inferrence methods generally work
+respectively. A few examples are shown below. Inference methods generally work
 by inspecting the parameters for all required parameters for a corresponding
 method.
 

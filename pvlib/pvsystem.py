@@ -16,7 +16,7 @@ from pvlib._deprecation import deprecated
 
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
-from pvlib.tools import _build_kwargs
+from pvlib.tools import _build_kwargs, _build_args
 
 
 # a dict of required parameter names for each DC power model
@@ -1472,20 +1472,13 @@ class Array:
         Some temperature models have requirements for the input types;
         see the documentation of the underlying model function for details.
         """
-        def _build_args(keys):
-            try:
-                args = [self.temperature_model_parameters[key] for key in keys]
-            except KeyError as e:
-                missing_key = e.args[0]
-                msg = (f"Missing required parameter '{missing_key}'. Found "
-                       f"{self.temperature_model_parameters} in "
-                       "temperature_model_parameters.")
-                raise KeyError(msg)
-            return args
-
+        def _build_tcell_args(keys):
+            # convenience wrapper to avoid passing args 2 and 3 every call
+            return _build_args(keys, self.temperature_model_parameters,
+                               'temperature_model_parameters')
         if model == 'sapm':
             func = temperature.sapm_cell
-            required = _build_args(['a', 'b', 'deltaT'])
+            required = _build_tcell_args(['a', 'b', 'deltaT'])
             optional = _build_kwargs(['irrad_ref'],
                                      self.temperature_model_parameters)
         elif model == 'pvsyst':
@@ -1506,7 +1499,7 @@ class Array:
                                      self.temperature_model_parameters)
         elif model == 'fuentes':
             func = temperature.fuentes
-            required = _build_args(['noct_installed'])
+            required = _build_tcell_args(['noct_installed'])
             optional = _build_kwargs([
                 'module_height', 'wind_height', 'emissivity', 'absorption',
                 'surface_tilt', 'module_width', 'module_length'],
@@ -1517,7 +1510,7 @@ class Array:
                 optional['surface_tilt'] = self.surface_tilt
         elif model == 'noct_sam':
             func = temperature.noct_sam
-            required = _build_args(['noct', 'module_efficiency'])
+            required = _build_tcell_args(['noct', 'module_efficiency'])
             optional = _build_kwargs(['transmittance_absorptance',
                                       'array_height', 'mount_standoff'],
                                      self.temperature_model_parameters)

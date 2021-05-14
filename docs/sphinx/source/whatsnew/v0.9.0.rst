@@ -125,6 +125,10 @@ Enhancements
 * Added :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` to calculate
   the temperature coefficient of power for the pvsyst module model.
    (:pull:`1190`)
+* :py:func:`~pvlib.irradiance.get_total_irradiance` and
+  :py:func:`~pvlib.irradiance.get_sky_diffuse` now fill in ``airmass``
+  if required and not provided. These functions now raise a ``ValueError``
+  if ``dni_extra`` is required and not provided. (:issue:`949`, :pull:`1225`)
 
 Bug fixes
 ~~~~~~~~~

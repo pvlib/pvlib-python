@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind, tand
-from pvlib.tools import _build_kwargs
 from pvlib.pvsystem import (
     PVSystem, Array, SingleAxisTrackerMount, _unwrap_single_value
 )

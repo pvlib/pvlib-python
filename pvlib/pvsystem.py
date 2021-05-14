@@ -1469,8 +1469,9 @@ class Array:
 
         See Also
         --------
-        temperature.sapm_cell, temperature.pvsyst_cell, temperature.faiman,
-        temperature.fuentes, temperature.noct_sam
+        pvlib.temperature.sapm_cell, pvlib.temperature.pvsyst_cell,
+        pvlib.temperature.faiman, pvlib.temperature.fuentes,
+        pvlib.temperature.noct_sam
 
         Notes
         -----

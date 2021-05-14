@@ -746,8 +746,7 @@ class PVSystem:
 
     @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
                 removal='0.10.0')
-    def fuentes_celltemp(self, poa_global, temp_air, wind_speed,
-                         surface_tilt=None):
+    def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
         """
         Use :py:func:`temperature.fuentes` to calculate cell temperature.
 
@@ -761,11 +760,6 @@ class PVSystem:
 
         wind_speed : pandas Series or tuple of Series
             Wind speed [m/s]
-
-        surface_tilt : pandas Series or tuple of Series, optional
-            Panel tilt from horizontal. Superseded by ``surface_tilt``
-            values in ``self.arrays[i].temperature_model_parameters``
-            (see Notes). [degrees]
 
         Returns
         -------

@@ -827,7 +827,6 @@ class PVSystem:
 
     @_unwrap_single_value
     def first_solar_spectral_loss(self, pw, airmass_absolute):
-
         """
         Use the :py:func:`first_solar_spectral_correction` function to
         calculate the spectral loss modifier. The model coefficients are
@@ -1547,10 +1546,19 @@ class Array:
                 self.temperature_model_parameters)
             # use surface_tilt from temp_model_params if available, otherwise
             # fall back to the mount value.
-            # TODO: should this use mount.get_orientation?  we don't have
-            # solar position available here...
+            # TODO: this logic is probably not what we want.
             if 'surface_tilt' not in optional:
-                optional['surface_tilt'] = self.mount.surface_tilt
+                # should this use mount.get_orientation?  we don't have
+                # solar position available here...
+                try:
+                    optional['surface_tilt'] = self.mount.surface_tilt
+                except AttributeError:
+                    msg = (
+                        "surface_tilt is required for the fuentes model; "
+                        "specify it as a key in temperature_model_parameters "
+                        "or as an attribute of the Array's Mount."
+                    )
+                    raise ValueError(msg)
         elif model == 'noct_sam':
             func = functools.partial(temperature.noct_sam,
                                      effective_irradiance=effective_irradiance)

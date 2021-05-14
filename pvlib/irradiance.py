@@ -182,6 +182,9 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         tools.sind(surface_tilt) * tools.sind(solar_zenith) *
         tools.cosd(solar_azimuth - surface_azimuth))
 
+    # GH 1185
+    projection = np.clip(projection, -1, 1)
+
     try:
         projection.name = 'aoi_projection'
     except AttributeError:

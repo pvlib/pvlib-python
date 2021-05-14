@@ -110,7 +110,7 @@ Bug fixes
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
 * Fix floating point round-off issue in
-  :py:func:`~pvlib.irradiance.aoi` (:issue:`1185`, :pull:`1191`)
+  :py:func:`~pvlib.irradiance.aoi_projection` (:issue:`1185`, :pull:`1191`)
 
 Testing
 ~~~~~~~

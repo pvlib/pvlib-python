@@ -160,12 +160,6 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
 
     Input all angles in degrees.
 
-    .. warning::
-
-        For certain inputs, numerical round-off can cause this function
-        to produce values slightly greater than 1.0 when the surface
-        normal and sun position vectors are parallel.
-
     Parameters
     ----------
     surface_tilt : numeric
@@ -188,6 +182,9 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         tools.sind(surface_tilt) * tools.sind(solar_zenith) *
         tools.cosd(solar_azimuth - surface_azimuth))
 
+    # GH 1185
+    projection = np.clip(projection, -1, 1)
+
     try:
         projection.name = 'aoi_projection'
     except AttributeError:
@@ -196,23 +193,12 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     return projection
 
 
-def _spherical_to_cartesian(zenith, azimuth):
-    sin_zen = tools.sind(zenith)
-    return np.array([sin_zen*tools.cosd(azimuth),
-                     sin_zen*tools.sind(azimuth),
-                     tools.cosd(zenith)]).T
-
-
 def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     """
     Calculates the angle of incidence of the solar vector on a surface.
     This is the angle between the solar vector and the surface normal.
 
     Input all angles in degrees.
-
-    .. versionchanged:: 0.9.0
-       Updated to a slower but more reliable formula that correctly handles
-       cases where the surface normal and solar position vectors are parallel.
 
     Parameters
     ----------
@@ -230,21 +216,15 @@ def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     aoi : numeric
         Angle of incidence in degrees.
     """
-    # see discussion in https://github.com/pvlib/pvlib-python/issues/1185
-    solar_vec = _spherical_to_cartesian(solar_zenith, solar_azimuth)
-    surface_vec = _spherical_to_cartesian(surface_tilt, surface_azimuth)
 
-    c_vec = solar_vec - surface_vec
-    c_sqrd = np.sum((c_vec*c_vec).T, axis=0)
-    c = np.sqrt(c_sqrd)
+    projection = aoi_projection(surface_tilt, surface_azimuth,
+                                solar_zenith, solar_azimuth)
+    aoi_value = np.rad2deg(np.arccos(projection))
 
-    aoi = 2 * np.arctan(c / np.sqrt((1+(1+c))*((1-c)+1)))
-    aoi_value = np.rad2deg(aoi)
-
-    for arg in [surface_tilt, surface_azimuth, solar_zenith, solar_azimuth]:
-        if hasattr(arg, 'index'):
-            aoi_value = pd.Series(aoi_value, index=arg.index)
-            break
+    try:
+        aoi_value.name = 'aoi'
+    except AttributeError:
+        pass
 
     return aoi_value
 

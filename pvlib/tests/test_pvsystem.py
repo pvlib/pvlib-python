@@ -2311,7 +2311,7 @@ def test_PVSystem_temperature_deprecated(funcname):
 ])
 def test_Array_temperature_missing_parameters(model, keys):
     # test that a nice error is raised when required temp params are missing
-    array = pvsystem.Array()
+    array = pvsystem.Array(pvsystem.FixedMount(0, 180))
     index = pd.date_range('2019-01-01', freq='h', periods=5)
     temps = pd.Series(25, index)
     irrads = pd.Series(1000, index)

@@ -380,7 +380,7 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             **kwargs):
+                             effective_irradiance=None):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -399,8 +399,9 @@ class PVSystem:
             Supported models include ``'sapm'``, ``'pvsyst'``,
             ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
 
-        **kwargs
-            Extra arguments passed to the model function.
+        effective_irradiance : numeric or tuple of numeric, optional
+            The irradiance that is converted to photocurrent in W/m^2.
+            Only used for some models.
 
         Returns
         -------
@@ -421,25 +422,17 @@ class PVSystem:
         poa_global = self._validate_per_array(poa_global)
         temp_air = self._validate_per_array(temp_air, system_wide=True)
         wind_speed = self._validate_per_array(wind_speed, system_wide=True)
-
-        # additional model-specific (and array-specific) inputs
-        extra_inputs = [{}] * self.num_arrays
-
-        if 'effective_irradiance' in kwargs:
-            effective_irradiance = kwargs.pop('effective_irradiance')
-            if effective_irradiance is None:
-                effective_irradiance = tuple([None] * self.num_arrays)
-            else:
-                effective_irradiance = self._validate_per_array(
-                    effective_irradiance)
-            for inputs, value in zip(extra_inputs, effective_irradiance):
-                inputs['effective_irradiance'] = value
+        # Not used for all models, but Array.get_cell_temperature handles it
+        effective_irradiance = self._validate_per_array(effective_irradiance,
+                                                        system_wide=True)
 
         return tuple(
             array.get_cell_temperature(poa_global, temp_air, wind_speed,
-                                       model, **extra, **kwargs)
-            for array, poa_global, temp_air, wind_speed, extra in zip(
-                self.arrays, poa_global, temp_air, wind_speed, extra_inputs
+                                       model, effective_irradiance)
+            for array, poa_global, temp_air, wind_speed, effective_irradiance
+            in zip(
+                self.arrays, poa_global, temp_air, wind_speed,
+                effective_irradiance
             )
         )
 
@@ -1440,7 +1433,7 @@ class Array:
             raise ValueError(model + ' is not a valid IAM model')
 
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
-                             **kwargs):
+                             effective_irradiance=None):
         """
         Determine cell temperature using the method specified by ``model``.
 
@@ -1459,8 +1452,9 @@ class Array:
             Supported models include ``'sapm'``, ``'pvsyst'``,
             ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
 
-        **kwargs
-            Extra arguments passed to the model function.
+        effective_irradiance : numeric, optional
+            The irradiance that is converted to photocurrent in W/m^2.
+            Only used for some models.
 
         Returns
         -------
@@ -1516,7 +1510,8 @@ class Array:
             if 'surface_tilt' not in optional:
                 optional['surface_tilt'] = self.surface_tilt
         elif model == 'noct_sam':
-            func = temperature.noct_sam
+            func = functools.partial(temperature.noct_sam,
+                                     effective_irradiance=effective_irradiance)
             required = _build_tcell_args(['noct', 'module_efficiency'])
             optional = _build_kwargs(['transmittance_absorptance',
                                       'array_height', 'mount_standoff'],
@@ -1524,8 +1519,6 @@ class Array:
         else:
             raise ValueError(f'{model} is not a valid cell temperature model')
 
-        # allow kwargs to override
-        optional.update(kwargs)
         temperature_cell = func(poa_global, temp_air, wind_speed,
                                 *required, **optional)
         return temperature_cell

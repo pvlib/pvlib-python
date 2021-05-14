@@ -512,7 +512,8 @@ def test_PVSystem_noct_celltemp(mocker):
     out = system.get_cell_temperature(poa_global, temp_air, wind_speed,
                                       model='noct_sam')
     temperature.noct_sam.assert_called_once_with(
-        poa_global, temp_air, wind_speed, noct, module_efficiency)
+        poa_global, temp_air, wind_speed, noct, module_efficiency,
+        effective_irradiance=None)
     assert_allclose(out, expected)
     # different types
     out = system.get_cell_temperature(np.array(poa_global), np.array(temp_air),

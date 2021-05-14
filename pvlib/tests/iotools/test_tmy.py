@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from pvlib.iotools import tmy
-from conftest import DATA_DIR
+from ..conftest import DATA_DIR
 
 # test the API works
 from pvlib.iotools import read_tmy3

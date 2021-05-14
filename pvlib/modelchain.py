@@ -977,7 +977,7 @@ class ModelChain:
             return self.faiman_temp
         elif {'noct_installed'} <= params:
             return self.fuentes_temp
-        elif {'noct', 'eta_m_ref'} <= params:
+        elif {'noct', 'module_efficiency'} <= params:
             return self.noct_sam_temp
         else:
             raise ValueError(f'could not infer temperature model from '
@@ -992,12 +992,10 @@ class ModelChain:
 
         Parameters
         ----------
-        model : function
-            A function that takes POA irradiance, air temperature, and
-            wind speed and returns cell temperature. `model` must accept
-            tuples or single values for each parameter where each element of
-            the tuple is the value for a different array in the system
-            (see :py:class:`pvlib.pvsystem.PVSystem` for more information).
+        model : str
+            A cell temperature model name to pass to
+            :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature`.
+            Valid names are 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'
 
         Returns
         -------
@@ -1009,26 +1007,26 @@ class ModelChain:
         temp_air = _tuple_from_dfs(self.results.weather, 'temp_air')
         wind_speed = _tuple_from_dfs(self.results.weather, 'wind_speed')
         kwargs = {}
-        if model == self.system.noct_sam_celltemp:
+        if model == 'noct_sam':
             kwargs['effective_irradiance'] = self.results.effective_irradiance
-        self.results.cell_temperature = model(poa, temp_air, wind_speed,
-                                              **kwargs)
+        self.results.cell_temperature = self.system.get_cell_temperature(
+            poa, temp_air, wind_speed, model=model, **kwargs)
         return self
 
     def sapm_temp(self):
-        return self._set_celltemp(self.system.sapm_celltemp)
+        return self._set_celltemp('sapm')
 
     def pvsyst_temp(self):
-        return self._set_celltemp(self.system.pvsyst_celltemp)
+        return self._set_celltemp('pvsyst')
 
     def faiman_temp(self):
-        return self._set_celltemp(self.system.faiman_celltemp)
+        return self._set_celltemp('faiman')
 
     def fuentes_temp(self):
-        return self._set_celltemp(self.system.fuentes_celltemp)
+        return self._set_celltemp('fuentes')
 
     def noct_sam_temp(self):
-        return self._set_celltemp(self.system.noct_sam_celltemp)
+        return self._set_celltemp('noct_sam')
 
     @property
     def dc_ohmic_model(self):

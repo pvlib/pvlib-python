@@ -2,10 +2,11 @@ import pandas as pd
 import numpy as np
 
 import pytest
-from conftest import DATA_DIR, assert_series_equal
+from .conftest import DATA_DIR, assert_series_equal
 from numpy.testing import assert_allclose
 
 from pvlib import temperature, tools
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 @pytest.fixture
@@ -72,7 +73,7 @@ def test_pvsyst_cell_default():
 
 def test_pvsyst_cell_kwargs():
     result = temperature.pvsyst_cell(900, 20, wind_speed=5.0, u_c=23.5,
-                                     u_v=6.25, eta_m=0.1)
+                                     u_v=6.25, module_efficiency=0.1)
     assert_allclose(result, 33.315, 0.001)
 
 
@@ -94,6 +95,13 @@ def test_pvsyst_cell_series():
     result = temperature.pvsyst_cell(irrads, temps, wind_speed=winds)
     expected = pd.Series([0.0, 23.96551, 5.0], index=times)
     assert_series_equal(expected, result)
+
+
+def test_pvsyst_cell_eta_m_deprecated():
+    with pytest.warns(pvlibDeprecationWarning):
+        result = temperature.pvsyst_cell(900, 20, wind_speed=5.0, u_c=23.5,
+                                         u_v=6.25, eta_m=0.1)
+        assert_allclose(result, 33.315, 0.001)
 
 
 def test_faiman_default():
@@ -215,16 +223,16 @@ def test_fuentes_timezone(tz):
 
 
 def test_noct_sam():
-    poa_global, temp_air, wind_speed, noct, eta_m_ref = (1000., 25., 1., 45.,
-                                                         0.2)
+    poa_global, temp_air, wind_speed, noct, module_efficiency = (
+        1000., 25., 1., 45., 0.2)
     expected = 55.230790492
     result = temperature.noct_sam(poa_global, temp_air, wind_speed, noct,
-                                  eta_m_ref)
+                                  module_efficiency)
     assert_allclose(result, expected)
     # test with different types
     result = temperature.noct_sam(np.array(poa_global), np.array(temp_air),
                                   np.array(wind_speed), np.array(noct),
-                                  np.array(eta_m_ref))
+                                  np.array(module_efficiency))
     assert_allclose(result, expected)
     dr = pd.date_range(start='2020-01-01 12:00:00', end='2020-01-01 13:00:00',
                        freq='1H')
@@ -232,7 +240,7 @@ def test_noct_sam():
                                   pd.Series(index=dr, data=temp_air),
                                   pd.Series(index=dr, data=wind_speed),
                                   pd.Series(index=dr, data=noct),
-                                  eta_m_ref)
+                                  module_efficiency)
     assert_series_equal(result, pd.Series(index=dr, data=expected))
 
 
@@ -242,7 +250,7 @@ def test_noct_sam_against_sam():
     # NOCT cell temperature model), with the only change being the soiling
     # loss is set to 0. Weather input is TMY3 for Phoenix AZ.
     # Values are taken from the Jan 1 12:00:00 timestamp.
-    poa_total, temp_air, wind_speed, noct, eta_m_ref = (
+    poa_total, temp_air, wind_speed, noct, module_efficiency = (
         860.673, 25, 3, 46.4, 0.20551)
     poa_total_after_refl = 851.458  # from SAM output
     # compute effective irradiance
@@ -259,7 +267,7 @@ def test_noct_sam_against_sam():
     array_height = 1
     mount_standoff = 4.0
     result = temperature.noct_sam(poa_total, temp_air, wind_speed, noct,
-                                  eta_m_ref, effective_irradiance,
+                                  module_efficiency, effective_irradiance,
                                   transmittance_absorptance, array_height,
                                   mount_standoff)
     expected = 43.0655
@@ -268,14 +276,14 @@ def test_noct_sam_against_sam():
 
 
 def test_noct_sam_options():
-    poa_global, temp_air, wind_speed, noct, eta_m_ref = (1000., 25., 1., 45.,
-                                                         0.2)
+    poa_global, temp_air, wind_speed, noct, module_efficiency = (
+        1000., 25., 1., 45., 0.2)
     effective_irradiance = 1100.
     transmittance_absorptance = 0.8
     array_height = 2
     mount_standoff = 2.0
     result = temperature.noct_sam(poa_global, temp_air, wind_speed, noct,
-                                  eta_m_ref, effective_irradiance,
+                                  module_efficiency, effective_irradiance,
                                   transmittance_absorptance, array_height,
                                   mount_standoff)
     expected = 60.477703576

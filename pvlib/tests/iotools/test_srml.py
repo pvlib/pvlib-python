@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from pvlib.iotools import srml
-from conftest import DATA_DIR, RERUNS, RERUNS_DELAY
+from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 

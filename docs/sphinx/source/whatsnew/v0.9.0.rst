@@ -45,6 +45,10 @@ Breaking changes
   ``surface_azimuth`` are now required parameters for
   :py:func:`pvlib.modelchain.basic_chain` (:issue:`1028`, :pull:`1181`)
 
+* Removed the ``**kwargs`` parameters from :py:meth:`~pvlib.pvsystem.PVSystem.sapm` and
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and 
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_cec` (:issue:`1118`, :pull:`1222`)
+
 
 Deprecations
 ~~~~~~~~~~~~
@@ -66,6 +70,19 @@ Deprecations
   * ``ModelChain.tracking``
   * ``ModelChain.weather``
   * ``ModelChain.times``
+
+* The following ``PVSystem`` cell temperature methods have been deprecated
+  and consolidated into the new wrapper method
+  :py:meth:`~pvlib.pvsystem.PVSystem.get_cell_temperature` (:pull:`1211`):
+
+  * :py:meth:`~pvlib.pvsystem.PVSystem.sapm_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.pvsyst_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.faiman_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.fuentes_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.noct_sam_celltemp`
+
+* The ``eta_m`` parameter for :py:func:`~pvlib.temperature.pvsyst_cell` is
+  replaced by parameter ``module_efficiency``. (:issue:`1188`, :pull:`1218`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -119,15 +136,24 @@ Bug fixes
   (:issue:`1065`, :pull:`1140`)
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
+* Fix floating point round-off issue in
+  :py:func:`~pvlib.irradiance.aoi_projection` (:issue:`1185`, :pull:`1191`)
+* Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
+* Corrected methodology error in :py:func:`~pvlib.scaling.wvm`. Tracks with
+  fix in PVLib for MATLAB. (:issue:`1206`, :pull:`1213`)
 
 Testing
 ~~~~~~~
+* Added ``__init__.py`` to ``pvlib/tests`` and subdirectories. This follows
+  pytest recommendations for package layout and imports from ``conftest.py``.
+  Solves issue with test discovery in vscode. (:pull:`1204`)
 
 Documentation
 ~~~~~~~~~~~~~
-
 * Update intro tutorial to highlight the use of historical meteorological data
-  and to make the procedural and object oriented results match exactly.
+  and to make the procedural and OO results match exactly. (:issue:`1116`, :pull:`1144`)
+* Add a gallery example showing how to appropriately use interval-averaged
+  weather data for modeling. (:pull:`1152`)
 * Update documentation links in :py:func:`pvlib.iotools.get_psm3`
 
 Requirements
@@ -146,3 +172,5 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
+* Damjan Postolovski (:ghuser:`dpostolovski`)
+* Joe Ranalli (:ghuser:`jranalli`)

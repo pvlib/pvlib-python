@@ -1,10 +1,9 @@
 import pandas as pd
-from conftest import assert_frame_equal
 import numpy as np
 from numpy import dtype, nan
 import pytest
 from pvlib.iotools import crn
-from conftest import DATA_DIR
+from ..conftest import DATA_DIR, assert_frame_equal
 
 
 @pytest.fixture

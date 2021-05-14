@@ -359,8 +359,9 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
 
     Notes
     -----
-    Models 'haydavies', 'reindl', or 'perez' require 'dni_extra'. Values can
-    be calculated using :py:func:`~pvlib.irradiance.get_extra_radiation`.
+    Models ``'haydavies'``, ``'reindl'``, or ``'perez'`` require
+    ``'dni_extra'``. Values can be calculated using
+    :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
     The ``'perez'`` model requires relative airmass (``airmass``) as input. If
     ``airmass`` is not provided, it is calculated using the defaults in
@@ -441,7 +442,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     The ``'perez'`` model requires relative airmass (``airmass``) as input. If
     ``airmass`` is not provided, it is calculated using the defaults in
-    :py:func:`~pvlib.irradiance.get_relative_airmass`.
+    :py:func:`~pvlib.atmosphere.get_relative_airmass`.
     """
 
     model = model.lower()

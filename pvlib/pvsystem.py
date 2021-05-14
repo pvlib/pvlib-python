@@ -405,7 +405,7 @@ class PVSystem:
         Returns
         -------
         numeric or tuple of numeric
-            values in degrees C.
+            Values in degrees C.
 
         See Also
         --------
@@ -1465,7 +1465,12 @@ class Array:
         Returns
         -------
         numeric
-            values in degrees C.
+            Values in degrees C.
+
+        See Also
+        --------
+        temperature.sapm_cell, temperature.pvsyst_cell, temperature.faiman,
+        temperature.fuentes, temperature.noct_sam
 
         Notes
         -----

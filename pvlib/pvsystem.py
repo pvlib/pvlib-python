@@ -1472,10 +1472,11 @@ class Array:
         Some temperature models have requirements for the input types;
         see the documentation of the underlying model function for details.
         """
-        def _build_tcell_args(keys):
-            # convenience wrapper to avoid passing args 2 and 3 every call
-            return _build_args(keys, self.temperature_model_parameters,
-                               'temperature_model_parameters')
+        # convenience wrapper to avoid passing args 2 and 3 every call
+        _build_tcell_args = functools.partial(
+            _build_args, input_dict=self.temperature_model_parameters,
+            dict_name='temperature_model_parameters')
+
         if model == 'sapm':
             func = temperature.sapm_cell
             required = _build_tcell_args(['a', 'b', 'deltaT'])

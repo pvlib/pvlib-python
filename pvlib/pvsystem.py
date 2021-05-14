@@ -1551,10 +1551,12 @@ class Array:
                 'module_height', 'wind_height', 'emissivity', 'absorption',
                 'surface_tilt', 'module_width', 'module_length'],
                 self.temperature_model_parameters)
-            # default to using the Array attribute, but allow user to override
-            # with a custom surface_tilt value in temperature_model_parameters
+            # use surface_tilt from temp_model_params if available, otherwise
+            # fall back to the mount value.
+            # TODO: should this use mount.get_orientation?  we don't have
+            # solar position available here...
             if 'surface_tilt' not in optional:
-                optional['surface_tilt'] = self.surface_tilt
+                optional['surface_tilt'] = self.mount.surface_tilt
         elif model == 'noct_sam':
             func = functools.partial(temperature.noct_sam,
                                      effective_irradiance=effective_irradiance)

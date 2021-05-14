@@ -297,7 +297,7 @@ def test_get_sky_diffuse_missing_dni_extra():
 
 
 def test_get_sky_diffuse_missing_airmass(irrad_data, ephem_data, dni_et):
-    # test assumes location is Tuscon, AZ
+    # test assumes location is Tucson, AZ
     # calculated airmass should be the equivalent to fixture airmass
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan

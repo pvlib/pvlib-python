@@ -240,11 +240,6 @@ PV temperature models
    temperature.ross
    temperature.noct_sam
    pvsystem.PVSystem.get_cell_temperature
-   pvsystem.PVSystem.sapm_celltemp
-   pvsystem.PVSystem.pvsyst_celltemp
-   pvsystem.PVSystem.faiman_celltemp
-   pvsystem.PVSystem.fuentes_celltemp
-   pvsystem.PVSystem.noct_sam_celltemp
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

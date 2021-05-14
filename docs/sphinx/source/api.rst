@@ -238,9 +238,12 @@ PV temperature models
    temperature.faiman
    temperature.fuentes
    temperature.ross
+   temperature.noct_sam
    pvsystem.PVSystem.sapm_celltemp
    pvsystem.PVSystem.pvsyst_celltemp
    pvsystem.PVSystem.faiman_celltemp
+   pvsystem.PVSystem.fuentes_celltemp
+   pvsystem.PVSystem.noct_sam_celltemp
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -265,6 +268,7 @@ Functions relevant for single diode models.
    pvsystem.singlediode
    pvsystem.v_from_i
    pvsystem.max_power_point
+   ivtools.sdm.pvsyst_temperature_coeff
 
 Low-level functions for solving the single diode equation.
 
@@ -331,6 +335,9 @@ Pvsyst model
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode
+   ivtools.sdm.pvsyst_temperature_coeff
+   pvsystem.dc_ohms_from_percent
+   pvsystem.dc_ohmic_losses
 
 PVWatts model
 ^^^^^^^^^^^^^
@@ -389,6 +396,7 @@ Loss models
    :toctree: generated/
 
    pvsystem.combine_loss_factors
+   pvsystem.dc_ohms_from_percent
 
 Snow
 ----
@@ -614,6 +622,7 @@ ModelChain properties that are aliases for your specific modeling functions.
    modelchain.ModelChain.aoi_model
    modelchain.ModelChain.spectral_model
    modelchain.ModelChain.temperature_model
+   modelchain.ModelChain.dc_ohmic_model
    modelchain.ModelChain.losses_model
    modelchain.ModelChain.effective_irradiance_model
 
@@ -644,6 +653,8 @@ ModelChain model definitions.
    modelchain.ModelChain.pvsyst_temp
    modelchain.ModelChain.faiman_temp
    modelchain.ModelChain.fuentes_temp
+   modelchain.ModelChain.dc_ohmic_model
+   modelchain.ModelChain.no_dc_ohmic_loss
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 

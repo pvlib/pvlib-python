@@ -277,6 +277,7 @@ class ModelChainResult:
         field(default=None)
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
     dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
+    losses: Optional[Union[pd.Series, float]] = field(default=None)
 
     weather: Optional[PerArray[pd.DataFrame]] = None
     times: Optional[pd.DatetimeIndex] = None
@@ -379,7 +380,7 @@ class ModelChain:
                          'aoi', 'aoi_modifier', 'spectral_modifier',
                          'cell_temperature', 'effective_irradiance',
                          'dc', 'ac', 'diode_params', 'tracking',
-                         'weather', 'times']
+                         'weather', 'times', 'losses']
 
     def __init__(self, system, location,
                  clearsky_model='ineichen',
@@ -1094,16 +1095,16 @@ class ModelChain:
         raise NotImplementedError
 
     def pvwatts_losses(self):
-        self.losses = (100 - self.system.pvwatts_losses()) / 100.
+        self.results.losses = (100 - self.system.pvwatts_losses()) / 100.
         if isinstance(self.results.dc, tuple):
             for dc in self.results.dc:
-                dc *= self.losses
+                dc *= self.results.losses
         else:
-            self.results.dc *= self.losses
+            self.results.dc *= self.results.losses
         return self
 
     def no_extra_losses(self):
-        self.losses = 1
+        self.results.losses = 1
         return self
 
     def effective_irradiance_model(self):

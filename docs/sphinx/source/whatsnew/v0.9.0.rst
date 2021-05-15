@@ -46,7 +46,7 @@ Breaking changes
   :py:func:`pvlib.modelchain.basic_chain` (:issue:`1028`, :pull:`1181`)
 
 * Removed the ``**kwargs`` parameters from :py:meth:`~pvlib.pvsystem.PVSystem.sapm` and
-  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and 
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and
   :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_cec` (:issue:`1118`, :pull:`1222`)
 
 
@@ -64,6 +64,7 @@ Deprecations
   * ``ModelChain.dc``
   * ``ModelChain.diode_params``
   * ``ModelChain.effective_irradiance``
+  * ``ModelChain.losses``
   * ``ModelChain.solar_position``
   * ``ModelChain.spectral_modifier``
   * ``ModelChain.total_irrad``

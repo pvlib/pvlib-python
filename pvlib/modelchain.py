@@ -261,8 +261,8 @@ class ModelChainResult:
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
     """Solar position in a DataFrame containing columns ``'apparent_zenith'``,
-    ``'zenith'``, ``'apparent_elevation'``, ``'elevation'``, ``'azimuth'``.
-    Other columns may be present depending on the method chosen. See
+    ``'zenith'``, ``'apparent_elevation'``, ``'elevation'``, ``'azimuth'`` and
+    possibly other columns depending on the solar position method; see
     :py:meth:`~pvlib.solarposition.get_solarposition` for details."""
 
     airmass: Optional[pd.DataFrame] = field(default=None)

@@ -1542,8 +1542,8 @@ def test_spectral_models_singleton_weather_single_array(
 
 
 def constant_losses(mc):
-    mc.losses = 0.9
-    mc.results.dc *= mc.losses
+    mc.results.losses = 0.9
+    mc.results.dc *= mc.results.losses
 
 
 def dc_constant_losses(mc):
@@ -1682,7 +1682,7 @@ def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,
     mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.results.ac, (pd.Series, pd.DataFrame))
-    assert mc.losses == 0.9
+    assert mc.results.losses == 0.9
     assert not mc.results.ac.empty
 
 
@@ -1695,7 +1695,7 @@ def test_losses_models_no_loss(pvwatts_dc_pvwatts_ac_system, location, weather,
     assert mc.losses_model == mc.no_extra_losses
     mc.run_model(weather)
     assert m.call_count == 0
-    assert mc.losses == 1
+    assert mc.results.losses == 1
 
 
 def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,

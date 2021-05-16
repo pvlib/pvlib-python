@@ -340,18 +340,18 @@ class ModelChainResult:
     """
 
     losses: Optional[Union[pd.Series, float]] = field(default=None)
-    """Series (or tuple of Series, one for each array) containing DC loss
-    as a fraction of DC power, as calculated by ``ModelChain.losses_model``.
+    """Series containing DC loss as a fraction of total DC power, as
+    calculated by ``ModelChain.losses_model``.
     """
 
+    # copies of input data, for user convenience
     weather: Optional[PerArray[pd.DataFrame]] = None
     """DataFrame (or tuple of DataFrame, one for each array) contains a
     copy of the input weather data.
     """
 
     times: Optional[pd.DatetimeIndex] = None
-    """DatetimeIndex (or tuple of DatetimeIndex, one for each array) contains
-    a copy of the index of the input weather data.
+    """DatetimeIndex containing a copy of the index of the input weather data.
     """
 
     def _result_type(self, value):

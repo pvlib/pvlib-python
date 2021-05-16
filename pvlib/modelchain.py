@@ -261,13 +261,24 @@ class ModelChainResult:
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
     """Solar position in a DataFrame containing columns ``'apparent_zenith'``,
-    ``'zenith'``, ``'apparent_elevation'``, ``'elevation'``, ``'azimuth'`` and
-    possibly other columns depending on the solar position method; see
-    :py:meth:`~pvlib.solarposition.get_solarposition` for details."""
+    ``'zenith'``, ``'apparent_elevation'``, ``'elevation'``, ``'azimuth'`` 
+    (all in degrees), with possibly other columns depending on the solar
+    position method; see :py:meth:`~pvlib.solarposition.get_solarposition`
+    for details."""
 
     airmass: Optional[pd.DataFrame] = field(default=None)
+    """Air mass in a DataFrame containing columns ``'airmass_relative'``,
+    ``'airmass_absolute'`` (unitless); see
+    :py:meth:`~pvlib.location.get_airmass` for details."""
+
     ac: Optional[pd.Series] = field(default=None)
+    """AC power from the PV system, in a Series [W]"""
+
     tracking: Optional[pd.DataFrame] = field(default=None)
+    """Orientation of modules on a single axis tracker, in a DataFrame with
+    columns``'surface_tilt'``, ``'surface_azimuth'``, ``'aoi'``; see
+    :py:func:`~pvlib.tracking.singleaxis` for detals.
+    """
 
     # per DC array information
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)

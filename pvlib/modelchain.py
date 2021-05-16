@@ -261,7 +261,7 @@ class ModelChainResult:
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
     """Solar position in a DataFrame containing columns ``'apparent_zenith'``,
-    ``'zenith'``, ``'apparent_elevation'``, ``'elevation'``, ``'azimuth'`` 
+    ``'zenith'``, ``'apparent_elevation'``, ``'elevation'``, ``'azimuth'``
     (all in degrees), with possibly other columns depending on the solar
     position method; see :py:meth:`~pvlib.solarposition.get_solarposition`
     for details."""
@@ -276,7 +276,7 @@ class ModelChainResult:
 
     tracking: Optional[pd.DataFrame] = field(default=None)
     """Orientation of modules on a single axis tracker, in a DataFrame with
-    columns``'surface_tilt'``, ``'surface_azimuth'``, ``'aoi'``; see
+    columns ``'surface_tilt'``, ``'surface_azimuth'``, ``'aoi'``; see
     :py:func:`~pvlib.tracking.singleaxis` for detals.
     """
 
@@ -297,16 +297,16 @@ class ModelChainResult:
     aoi_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
         field(default=None)
     """Series (or tuple of Series, one for each array) containing angle of
-    incidence modifier calculated by ModelChain.aoi_model which reduces direct
-    irradiance for reflections (unitless);
+    incidence modifier (unitless) calculated by ``ModelChain.aoi_model``,
+    which reduces direct irradiance for reflections;
     see :py:meth:`~pvlib.pvsystem.PVSystem.get_iam` for details.
     """
 
     spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
         field(default=None)
     """Series (or tuple of Series, one for each array) containing spectral
-    modifier calculated by ModelChain.spectral_model which adjusts broadband
-    plane-of-array irradiance for spectral content (unitless).
+    modifier (unitless) calculated by ``ModelChain.spectral_model``, which
+    adjusts broadband plane-of-array irradiance for spectral content.
     """
 
     cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
@@ -324,7 +324,7 @@ class ModelChainResult:
         field(default=None)
     """Series or DataFrame (or tuple of Series or DataFrame, one for
     each array) containing DC power (W) for each array, calculated by
-    ModelChain.dc_model.
+    ``ModelChain.dc_model``.
     """
 
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
@@ -336,21 +336,21 @@ class ModelChainResult:
 
     dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
     """Series (or tuple of Series, one for each array) containing DC ohmic
-    loss (W) calculated by ModelChain.dc_ohmic_model.
+    loss (W) calculated by ``ModelChain.dc_ohmic_model``.
     """
 
     losses: Optional[Union[pd.Series, float]] = field(default=None)
     """Series (or tuple of Series, one for each array) containing DC loss
-    as a fraction of DC power, as calculated by ModelChain.losses_model.
+    as a fraction of DC power, as calculated by ``ModelChain.losses_model``.
     """
 
     weather: Optional[PerArray[pd.DataFrame]] = None
-    """DataFrame (or tuple of DataFrame, one for each array) containing a
+    """DataFrame (or tuple of DataFrame, one for each array) contains a
     copy of the input weather data.
     """
 
     times: Optional[pd.DatetimeIndex] = None
-    """DatetimeIndex (or tuple of DatetimeIndex, one for each array) containing
+    """DatetimeIndex (or tuple of DatetimeIndex, one for each array) contains
     a copy of the index of the input weather data.
     """
 

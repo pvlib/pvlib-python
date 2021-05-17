@@ -2067,6 +2067,12 @@ def test_PVSystem_num_arrays():
     assert system_two.num_arrays == 2
 
 
+def test_PVSystem_at_least_one_array():
+    with pytest.raises(ValueError,
+                       match="PVSystem must have at least one Array"):
+        pvsystem.PVSystem(arrays=[])
+
+
 def test_combine_loss_factors():
     test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='D')
     loss_1 = pd.Series(.10, index=test_index)

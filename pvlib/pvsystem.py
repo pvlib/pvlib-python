@@ -98,8 +98,9 @@ class PVSystem:
     arrays : iterable of Array, optional
         List of arrays that are part of the system. If not specified
         a single array is created from the other parameters (e.g.
-        `surface_tilt`, `surface_azimuth`). If `arrays` is specified
-        the following parameters are ignored:
+        `surface_tilt`, `surface_azimuth`). Must contain at least one Array,
+        if length of arrays is 0 a ValueError is raised. If `arrays` is
+        specified the following parameters are ignored:
 
         - `surface_tilt`
         - `surface_azimuth`
@@ -173,6 +174,11 @@ class PVSystem:
         Arbitrary keyword arguments.
         Included for compatibility, but not used.
 
+    Raises
+    ------
+    ValueError
+        If `arrays` is not None and has length 0.
+
     See also
     --------
     pvlib.location.Location
@@ -210,6 +216,12 @@ class PVSystem:
                 racking_model,
                 array_losses_parameters,
             ),)
+        elif len(arrays) == 0:
+            raise ValueError("PVSystem must have at least one Array. "
+                             "If you want to create a PVSystem instance "
+                             "with a single Array pass `arrays=None` and pass "
+                             "values directly to PVSystem attributes, e.g., "
+                             "`surface_tilt=30`")
         else:
             self.arrays = tuple(arrays)
 

@@ -245,11 +245,16 @@ def get_orientation(strategy, **kwargs):
     return surface_tilt, surface_azimuth
 
 
+# Type for fields that vary between arrays
+_T = TypeVar('T')
+
+
+_PerArray = Union[_T, Tuple[_T, ...]]
+
+
 @dataclass
 class ModelChainResult:
-    _T = TypeVar('T')
-    PerArray = Union[_T, Tuple[_T, ...]]
-    """Type for fields that vary between arrays"""
+
 
     # these attributes are used in __setattr__ to determine the correct type.
     _singleton_tuples: bool = field(default=False)
@@ -280,21 +285,26 @@ class ModelChainResult:
     :py:func:`~pvlib.tracking.singleaxis` for details.
     """
 
+    losses: Optional[Union[pd.Series, float]] = field(default=None)
+    """Series containing DC loss as a fraction of total DC power, as
+    calculated by ``ModelChain.losses_model``.
+    """
+
     # per DC array information
-    total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
+    total_irrad: Optional[_PerArray[pd.DataFrame]] = field(default=None)
     """ DataFrame (or tuple of DataFrame, one for each array) containing
     columns ``'poa_global'``, ``'poa_direct'`` ``'poa_diffuse'``,
     ``poa_sky_diffuse'``, ``'poa_ground_diffuse'`` (W/m2); see
     :py:func:`~pvlib.irradiance.get_total_irradiance` for details.
     """
 
-    aoi: Optional[PerArray[pd.Series]] = field(default=None)
+    aoi: Optional[_PerArray[pd.Series]] = field(default=None)
     """
     Series (or tuple of Series, one for each array) containing angle of
     incidence (degrees); see :py:func:`~pvlib.irradiance.aoi` for details.
     """
 
-    aoi_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
+    aoi_modifier: Optional[_PerArray[Union[pd.Series, float]]] = \
         field(default=None)
     """Series (or tuple of Series, one for each array) containing angle of
     incidence modifier (unitless) calculated by ``ModelChain.aoi_model``,
@@ -302,50 +312,45 @@ class ModelChainResult:
     see :py:meth:`~pvlib.pvsystem.PVSystem.get_iam` for details.
     """
 
-    spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
+    spectral_modifier: Optional[_PerArray[Union[pd.Series, float]]] = \
         field(default=None)
     """Series (or tuple of Series, one for each array) containing spectral
     modifier (unitless) calculated by ``ModelChain.spectral_model``, which
     adjusts broadband plane-of-array irradiance for spectral content.
     """
 
-    cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
+    cell_temperature: Optional[_PerArray[pd.Series]] = field(default=None)
     """Series (or tuple of Series, one for each array) containing cell
     temperature (C).
     """
 
-    effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
+    effective_irradiance: Optional[_PerArray[pd.Series]] = field(default=None)
     """Series (or tuple of Series, one for each array) containing effective
     irradiance (W/m2) which is total plane-of-array irradiance adjusted for
     reflections and spectral content.
     """
 
-    dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \
+    dc: Optional[_PerArray[Union[pd.Series, pd.DataFrame]]] = \
         field(default=None)
     """Series or DataFrame (or tuple of Series or DataFrame, one for
     each array) containing DC power (W) for each array, calculated by
     ``ModelChain.dc_model``.
     """
 
-    diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
+    diode_params: Optional[_PerArray[pd.DataFrame]] = field(default=None)
     """DataFrame (or tuple of DataFrame, one for each array) containing diode
     equation parameters (columns ``'I_L'``, ``'I_o'``, ``'R_s'``, ``'R_sh'``,
     ``'nNsVth'``, present when ModelChain.dc_model is a single diode model;
     see :py:func:`~pvlib.pvsystem.singlediode` for details.
     """
 
-    dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
+    dc_ohmic_losses: Optional[_PerArray[pd.Series]] = field(default=None)
     """Series (or tuple of Series, one for each array) containing DC ohmic
     loss (W) calculated by ``ModelChain.dc_ohmic_model``.
     """
 
-    losses: Optional[Union[pd.Series, float]] = field(default=None)
-    """Series containing DC loss as a fraction of total DC power, as
-    calculated by ``ModelChain.losses_model``.
-    """
-
     # copies of input data, for user convenience
-    weather: Optional[PerArray[pd.DataFrame]] = None
+    weather: Optional[_PerArray[pd.DataFrame]] = None
     """DataFrame (or tuple of DataFrame, one for each array) contains a
     copy of the input weather data.
     """

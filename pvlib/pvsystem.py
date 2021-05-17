@@ -99,8 +99,8 @@ class PVSystem:
         List of arrays that are part of the system. If not specified
         a single array is created from the other parameters (e.g.
         `surface_tilt`, `surface_azimuth`). Must contain at least one Array,
-        if empty a ValueError is raised. If `arrays` is specified
-        the following parameters are ignored:
+        if length of arrays is 0 a ValueError is raised. If `arrays` is
+        specified the following parameters are ignored:
 
         - `surface_tilt`
         - `surface_azimuth`

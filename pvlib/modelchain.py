@@ -254,7 +254,28 @@ _PerArray = Union[_T, Tuple[_T, ...]]
 
 @dataclass
 class ModelChainResult:
+    """ Contains results of models in the ModelChain along with a copy of
+    input data.
 
+    Attributes
+    ----------
+        weather: DataFrame or tuple of DataFrame
+        times: Series
+        solar_position: DataFrame
+        airmass: DataFrame
+        tracking: DataFrame or tuple of DataFrame
+        aoi: Series or tuple of Series
+        aoi_modifier: Series of tuple of Series
+        total_irrad: DataFrame or tuple of DataFrame
+        spectral_modifier: Series of tuple of Series
+        effective_irradiance: Series of tuple of Series
+        cell_temperature: Series of tuple of Series
+        dc: Series of tuple of Series
+        diode_params: DataFrame or tuple of DataFrame
+        dc_ohmic_losses: Series of tuple of Series
+        losses: Series
+        ac: Series
+    """
 
     # these attributes are used in __setattr__ to determine the correct type.
     _singleton_tuples: bool = field(default=False)

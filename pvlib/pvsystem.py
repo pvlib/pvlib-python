@@ -214,8 +214,9 @@ class PVSystem:
         elif len(arrays) == 0:
             raise ValueError("PVSystem must have at least one Array. "
                              "If you want to create a PVSystem instance "
-                             "with a single arbitrary default Array pass "
-                             "`arrays=None`.")
+                             "with a single Array pass `arrays=None` and pass "
+                             "values directly to PVSystem attributes, e.g., "
+                             "`surface_tilt=30`")
         else:
             self.arrays = tuple(arrays)
 

@@ -3062,6 +3062,10 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
     Rw: numeric
         Equivalent resistance [ohm]
 
+    See Also
+    --------
+    :py:func:`~pvlib.pvsystem.dc_ohmic_losses`
+
     References
     ----------
     .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
@@ -3092,6 +3096,10 @@ def dc_ohmic_losses(resistance, current):
     ----------
     loss: numeric
         Power Loss [W]
+
+    See Also
+    --------
+    :py:func:`~pvlib.pvsystem.dc_ohms_from_percent`
 
     References
     ----------

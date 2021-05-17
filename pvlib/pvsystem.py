@@ -174,6 +174,11 @@ class PVSystem:
         Arbitrary keyword arguments.
         Included for compatibility, but not used.
 
+    Raises
+    ------
+    ValueError
+        If `arrays` is not None and has length 0.
+
     See also
     --------
     pvlib.location.Location

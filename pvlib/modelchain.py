@@ -245,6 +245,18 @@ def get_orientation(strategy, **kwargs):
     return surface_tilt, surface_azimuth
 
 
+def _getmcattr(self, attr):
+    """
+    Helper for __repr__ methods, needed to avoid recursion in property
+    lookups
+    """
+    out = getattr(self, attr)
+    try:
+        out = out.__name__
+    except AttributeError:
+        pass
+    return out
+
 # Type for fields that vary between arrays
 T = TypeVar('T')
 
@@ -371,6 +383,32 @@ class ModelChainResult:
         if key in ModelChainResult._per_array_fields:
             value = self._result_type(value)
         super().__setattr__(key, value)
+
+
+    def __repr__(self):
+        system_front_attrs = ['weather', 'solar_position', 'airmass']
+        per_array_attrs = ['tracking', 'aoi', 'aoi_modifier', 'total_irrad',
+            'spectral_modifier', 'effective_irradiance', 'cell_temperature',
+            'dc', 'dc_ohmic_losses'
+            ]
+        system_back_attrs = ['losses', 'ac']
+
+        if type(self.dc) is tuple:
+            num_arrays = len(self.dc)
+        else:
+            num_arrays = 1
+        desc1 = ('ModelChainResult: \n  ' + '\n  '.join(
+            f'{attr} \n {_getmcattr(self, attr)} \n'
+            for attr in system_front_attrs)) + '\n'
+        desc2 = ('\n'.join(
+            f'--------------- \n  Array {j} \n' + '\n'.join(
+                f'  {attr} \n {_getmcattr(self, attr)} \n'
+                for attr in per_array_attrs) + '--------------- \n'
+            for j in range(num_arrays)))
+        desc3 = ('\n  ' + '\n  '.join(
+            f'{attr} \n {_getmcattr(self, attr)} \n'
+            for attr in system_back_attrs))
+        return(desc1 + desc2 + desc3)
 
 
 class ModelChain:
@@ -663,18 +701,8 @@ class ModelChain:
             'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
             'spectral_model', 'temperature_model', 'losses_model'
         ]
-
-        def getmcattr(self, attr):
-            """needed to avoid recursion in property lookups"""
-            out = getattr(self, attr)
-            try:
-                out = out.__name__
-            except AttributeError:
-                pass
-            return out
-
         return ('ModelChain: \n  ' + '\n  '.join(
-            f'{attr}: {getmcattr(self, attr)}' for attr in attrs))
+            f'{attr}: {_getmcattr(self, attr)}' for attr in attrs))
 
     @property
     def dc_model(self):

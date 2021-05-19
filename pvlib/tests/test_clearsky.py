@@ -8,7 +8,7 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from conftest import assert_frame_equal, assert_series_equal
+from .conftest import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
 from pvlib import clearsky
@@ -16,7 +16,7 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-from conftest import requires_tables, DATA_DIR
+from .conftest import requires_tables, DATA_DIR
 
 
 def test_ineichen_series():

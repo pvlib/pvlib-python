@@ -230,7 +230,7 @@ def _build_kwargs(keys, input_dict):
     ----------
     keys : iterable
         Typically a list of strings.
-    adict : dict-like
+    input_dict : dict-like
         A dictionary from which to attempt to pull each key.
 
     Returns
@@ -247,6 +247,32 @@ def _build_kwargs(keys, input_dict):
             pass
 
     return kwargs
+
+
+def _build_args(keys, input_dict, dict_name):
+    """
+    Parameters
+    ----------
+    keys : iterable
+        Typically a list of strings.
+    input_dict : dict-like
+        A dictionary from which to pull each key.
+    dict_name : str
+        A variable name to include in an error message for missing keys
+
+    Returns
+    -------
+    kwargs : list
+        A list with values corresponding to keys
+    """
+    try:
+        args = [input_dict[key] for key in keys]
+    except KeyError as e:
+        missing_key = e.args[0]
+        msg = (f"Missing required parameter '{missing_key}'. Found "
+               f"{input_dict} in {dict_name}.")
+        raise KeyError(msg)
+    return args
 
 
 # Created April,2014

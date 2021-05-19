@@ -10,10 +10,10 @@ from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from conftest import assert_series_equal, assert_frame_equal
+from .conftest import assert_series_equal, assert_frame_equal
 import pytest
 
-from conftest import fail_on_pvlib_version, requires_tables
+from .conftest import fail_on_pvlib_version, requires_tables
 
 
 @pytest.fixture(scope='function')
@@ -201,7 +201,7 @@ def pvwatts_dc_pvwatts_ac_faiman_temp_system():
 @pytest.fixture(scope="function")
 def pvwatts_dc_pvwatts_ac_pvsyst_temp_system():
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
-    temp_model_params = {'u_c': 29.0, 'u_v': 0.0, 'eta_m': 0.1,
+    temp_model_params = {'u_c': 29.0, 'u_v': 0.0, 'module_efficiency': 0.1,
                          'alpha_absorption': 0.9}
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
@@ -215,6 +215,18 @@ def pvwatts_dc_pvwatts_ac_pvsyst_temp_system():
 def pvwatts_dc_pvwatts_ac_fuentes_temp_system():
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     temp_model_params = {'noct_installed': 45}
+    inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
+    system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
+                      module_parameters=module_parameters,
+                      temperature_model_parameters=temp_model_params,
+                      inverter_parameters=inverter_parameters)
+    return system
+
+
+@pytest.fixture(scope="function")
+def pvwatts_dc_pvwatts_ac_noct_sam_temp_system():
+    module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
+    temp_model_params = {'noct': 45, 'module_efficiency': 0.2}
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     system = PVSystem(surface_tilt=32.2, surface_azimuth=180,
                       module_parameters=module_parameters,
@@ -557,10 +569,10 @@ def test_ModelChain_times_arrays(sapm_dc_snl_ac_system_Array, location):
     weather_one = pd.DataFrame(irradiance_one, index=times)
     weather_two = pd.DataFrame(irradiance_two, index=times)
     mc.prepare_inputs((weather_one, weather_two))
-    assert mc.times.equals(times)
+    assert mc.results.times.equals(times)
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     mc.prepare_inputs(weather_one)
-    assert mc.times.equals(times)
+    assert mc.results.times.equals(times)
 
 
 @pytest.mark.parametrize("missing", ['dhi', 'ghi', 'dni'])
@@ -630,13 +642,14 @@ def test_run_model_with_weather_sapm_temp(sapm_dc_snl_ac_system, location,
     weather['temp_air'] = 10
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.temperature_model = 'sapm'
-    m_sapm = mocker.spy(sapm_dc_snl_ac_system, 'sapm_celltemp')
+    m_sapm = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_sapm.call_count == 1
     # assert_called_once_with cannot be used with series, so need to use
     # assert_series_equal on call_args
     assert_series_equal(m_sapm.call_args[0][1], weather['temp_air'])  # temp
     assert_series_equal(m_sapm.call_args[0][2], weather['wind_speed'])  # wind
+    assert m_sapm.call_args[1]['model'] == 'sapm'
     assert not mc.results.ac.empty
 
 
@@ -650,11 +663,12 @@ def test_run_model_with_weather_pvsyst_temp(sapm_dc_snl_ac_system, location,
         temperature._temperature_model_params('pvsyst', 'freestanding')
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.temperature_model = 'pvsyst'
-    m_pvsyst = mocker.spy(sapm_dc_snl_ac_system, 'pvsyst_celltemp')
+    m_pvsyst = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_pvsyst.call_count == 1
     assert_series_equal(m_pvsyst.call_args[0][1], weather['temp_air'])
     assert_series_equal(m_pvsyst.call_args[0][2], weather['wind_speed'])
+    assert m_pvsyst.call_args[1]['model'] == 'pvsyst'
     assert not mc.results.ac.empty
 
 
@@ -668,11 +682,12 @@ def test_run_model_with_weather_faiman_temp(sapm_dc_snl_ac_system, location,
     }
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.temperature_model = 'faiman'
-    m_faiman = mocker.spy(sapm_dc_snl_ac_system, 'faiman_celltemp')
+    m_faiman = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_faiman.call_count == 1
     assert_series_equal(m_faiman.call_args[0][1], weather['temp_air'])
     assert_series_equal(m_faiman.call_args[0][2], weather['wind_speed'])
+    assert m_faiman.call_args[1]['model'] == 'faiman'
     assert not mc.results.ac.empty
 
 
@@ -685,12 +700,33 @@ def test_run_model_with_weather_fuentes_temp(sapm_dc_snl_ac_system, location,
     }
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.temperature_model = 'fuentes'
-    m_fuentes = mocker.spy(sapm_dc_snl_ac_system, 'fuentes_celltemp')
+    m_fuentes = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_fuentes.call_count == 1
     assert_series_equal(m_fuentes.call_args[0][1], weather['temp_air'])
     assert_series_equal(m_fuentes.call_args[0][2], weather['wind_speed'])
+    assert m_fuentes.call_args[1]['model'] == 'fuentes'
     assert not mc.results.ac.empty
+
+
+def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
+                                              weather, mocker):
+    weather['wind_speed'] = 5
+    weather['temp_air'] = 10
+    sapm_dc_snl_ac_system.temperature_model_parameters = {
+        'noct': 45, 'module_efficiency': 0.2
+    }
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.temperature_model = 'noct_sam'
+    m_noct_sam = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
+    mc.run_model(weather)
+    assert m_noct_sam.call_count == 1
+    assert_series_equal(m_noct_sam.call_args[0][1], weather['temp_air'])
+    assert_series_equal(m_noct_sam.call_args[0][2], weather['wind_speed'])
+    # check that effective_irradiance was used
+    assert m_noct_sam.call_args[1] == {
+        'effective_irradiance': mc.results.effective_irradiance,
+        'model': 'noct_sam'}
 
 
 def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
@@ -755,7 +791,7 @@ def test_prepare_inputs_from_poa(sapm_dc_snl_ac_system, location,
     weather_expected = weather_expected[
         ['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air']]
     # weather attribute
-    assert_frame_equal(mc.weather, weather_expected)
+    assert_frame_equal(mc.results.weather, weather_expected)
     # total_irrad attribute
     assert_frame_equal(mc.results.total_irrad, total_irrad)
     assert not pd.isnull(mc.results.solar_position.index[0])
@@ -815,7 +851,8 @@ def test__prepare_temperature(sapm_dc_snl_ac_system, location, weather,
     data[['poa_global', 'poa_diffuse', 'poa_direct']] = total_irrad
     mc = ModelChain(sapm_dc_snl_ac_system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    # prepare_temperature expects mc.total_irrad and mc.weather to be set
+    # prepare_temperature expects mc.total_irrad and mc.results.weather
+    # to be set
     mc._assign_weather(data)
     mc._assign_total_irrad(data)
     mc._prepare_temperature(data)
@@ -870,7 +907,8 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
     data_two = data.copy()
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location,
                     aoi_model='no_loss', spectral_model='no_loss')
-    # prepare_temperature expects mc.total_irrad and mc.weather to be set
+    # prepare_temperature expects mc.results.total_irrad and mc.results.weather
+    # to be set
     mc._assign_weather((data, data_two))
     mc._assign_total_irrad((data, data_two))
     mc._prepare_temperature((data, data_two))
@@ -907,7 +945,9 @@ def test__prepare_temperature_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                           ({'u0': 25.0, 'u1': 6.84},
                            ModelChain.faiman_temp),
                           ({'noct_installed': 45},
-                           ModelChain.fuentes_temp)])
+                           ModelChain.fuentes_temp),
+                          ({'noct': 45, 'module_efficiency': 0.2},
+                           ModelChain.noct_sam_temp)])
 def test_temperature_models_arrays_multi_weather(
         temp_params, temp_model,
         sapm_dc_snl_ac_system_same_arrays,
@@ -1126,6 +1166,7 @@ def test_run_model_singleton_weather_single_array(cec_dc_snl_ac_system,
     mc = ModelChain(cec_dc_snl_ac_system, location,
                     aoi_model="no_loss", spectral_model="no_loss")
     mc.run_model([weather])
+    assert isinstance(mc.results.weather, tuple)
     assert isinstance(mc.results.total_irrad, tuple)
     assert isinstance(mc.results.aoi, tuple)
     assert isinstance(mc.results.aoi_modifier, tuple)
@@ -1144,6 +1185,7 @@ def test_run_model_from_poa_singleton_weather_single_array(
     ac = mc.run_model_from_poa([total_irrad]).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=total_irrad.index)
+    assert isinstance(mc.results.weather, tuple)
     assert isinstance(mc.results.cell_temperature, tuple)
     assert len(mc.results.cell_temperature) == 1
     assert isinstance(mc.results.cell_temperature[0], pd.Series)
@@ -1160,6 +1202,7 @@ def test_run_model_from_effective_irradiance_weather_single_array(
     ac = mc.run_model_from_effective_irradiance([data]).results.ac
     expected = pd.Series(np.array([149.280238, 96.678385]),
                          index=data.index)
+    assert isinstance(mc.results.weather, tuple)
     assert isinstance(mc.results.cell_temperature, tuple)
     assert len(mc.results.cell_temperature) == 1
     assert isinstance(mc.results.cell_temperature[0], pd.Series)
@@ -1259,16 +1302,19 @@ def test_infer_spectral_model(location, sapm_dc_snl_ac_system,
 
 
 @pytest.mark.parametrize('temp_model', [
-    'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp'])
+    'sapm_temp', 'faiman_temp', 'pvsyst_temp', 'fuentes_temp',
+    'noct_sam_temp'])
 def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                           pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                           pvwatts_dc_pvwatts_ac_faiman_temp_system,
                           pvwatts_dc_pvwatts_ac_fuentes_temp_system,
+                          pvwatts_dc_pvwatts_ac_noct_sam_temp_system,
                           temp_model):
     dc_systems = {'sapm_temp': sapm_dc_snl_ac_system,
                   'pvsyst_temp': pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                   'faiman_temp': pvwatts_dc_pvwatts_ac_faiman_temp_system,
-                  'fuentes_temp': pvwatts_dc_pvwatts_ac_fuentes_temp_system}
+                  'fuentes_temp': pvwatts_dc_pvwatts_ac_fuentes_temp_system,
+                  'noct_sam_temp': pvwatts_dc_pvwatts_ac_noct_sam_temp_system}
     system = dc_systems[temp_model]
     mc = ModelChain(system, location, aoi_model='physical',
                     spectral_model='no_loss')
@@ -1499,8 +1545,93 @@ def test_spectral_models_singleton_weather_single_array(
 
 
 def constant_losses(mc):
-    mc.losses = 0.9
-    mc.results.dc *= mc.losses
+    mc.results.losses = 0.9
+    mc.results.dc *= mc.results.losses
+
+
+def dc_constant_losses(mc):
+    mc.results.dc['p_mp'] *= 0.9
+
+
+def test_dc_ohmic_model_ohms_from_percent(cec_dc_snl_ac_system,
+                                          cec_dc_snl_ac_arrays,
+                                          location,
+                                          weather,
+                                          mocker):
+
+    m = mocker.spy(pvsystem, 'dc_ohms_from_percent')
+
+    system = cec_dc_snl_ac_system
+
+    for array in system.arrays:
+        array.array_losses_parameters = dict(dc_ohmic_percent=3)
+
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='dc_ohms_from_percent')
+    mc.run_model(weather)
+
+    assert m.call_count == 1
+
+    assert isinstance(mc.results.dc_ohmic_losses, pd.Series)
+
+    system = cec_dc_snl_ac_arrays
+
+    for array in system.arrays:
+        array.array_losses_parameters = dict(dc_ohmic_percent=3)
+
+    mc = ModelChain(system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='dc_ohms_from_percent')
+    mc.run_model(weather)
+
+    assert m.call_count == 3
+    assert len(mc.results.dc_ohmic_losses) == len(mc.system.arrays)
+
+    assert isinstance(mc.results.dc_ohmic_losses, tuple)
+
+
+def test_dc_ohmic_model_no_dc_ohmic_loss(cec_dc_snl_ac_system,
+                                         location,
+                                         weather,
+                                         mocker):
+
+    m = mocker.spy(modelchain.ModelChain, 'no_dc_ohmic_loss')
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model='no_loss')
+    mc.run_model(weather)
+
+    assert mc.dc_ohmic_model == mc.no_dc_ohmic_loss
+    assert m.call_count == 1
+    assert mc.results.dc_ohmic_losses is None
+
+
+def test_dc_ohmic_ext_def(cec_dc_snl_ac_system, location,
+                          weather, mocker):
+    m = mocker.spy(sys.modules[__name__], 'dc_constant_losses')
+    mc = ModelChain(cec_dc_snl_ac_system, location,
+                    aoi_model='no_loss',
+                    spectral_model='no_loss',
+                    dc_ohmic_model=dc_constant_losses)
+    mc.run_model(weather)
+
+    assert m.call_count == 1
+    assert isinstance(mc.results.ac, (pd.Series, pd.DataFrame))
+    assert not mc.results.ac.empty
+
+
+def test_dc_ohmic_not_a_model(cec_dc_snl_ac_system, location,
+                              weather, mocker):
+    exc_text = 'not_a_dc_model is not a valid losses model'
+    with pytest.raises(ValueError, match=exc_text):
+        ModelChain(cec_dc_snl_ac_system, location,
+                   aoi_model='no_loss',
+                   spectral_model='no_loss',
+                   dc_ohmic_model='not_a_dc_model')
 
 
 def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -1554,7 +1685,7 @@ def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,
     mc.run_model(weather)
     assert m.call_count == 1
     assert isinstance(mc.results.ac, (pd.Series, pd.DataFrame))
-    assert mc.losses == 0.9
+    assert mc.results.losses == 0.9
     assert not mc.results.ac.empty
 
 
@@ -1567,7 +1698,7 @@ def test_losses_models_no_loss(pvwatts_dc_pvwatts_ac_system, location, weather,
     assert mc.losses_model == mc.no_extra_losses
     mc.run_model(weather)
     assert m.call_count == 0
-    assert mc.losses == 1
+    assert mc.results.losses == 1
 
 
 def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
@@ -1703,11 +1834,11 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
 
     mc.complete_irradiance(i)
 
-    assert_series_equal(mc.weather['dni'],
+    assert_series_equal(mc.results.weather['dni'],
                         pd.Series([2, 3], index=times, name='dni'))
-    assert_series_equal(mc.weather['dhi'],
+    assert_series_equal(mc.results.weather['dhi'],
                         pd.Series([4, 6], index=times, name='dhi'))
-    assert_series_equal(mc.weather['ghi'],
+    assert_series_equal(mc.results.weather['ghi'],
                         pd.Series([9, 5], index=times, name='ghi'))
 
 
@@ -1722,18 +1853,18 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
 
     with pytest.warns(UserWarning):
         mc.complete_irradiance(i[['ghi', 'dni']])
-    assert_series_equal(mc.weather['dhi'],
+    assert_series_equal(mc.results.weather['dhi'],
                         pd.Series([356.543700, 465.44400],
                                   index=times, name='dhi'))
 
     with pytest.warns(UserWarning):
         mc.complete_irradiance(i[['dhi', 'dni']])
-    assert_series_equal(mc.weather['ghi'],
+    assert_series_equal(mc.results.weather['ghi'],
                         pd.Series([372.103976116, 497.087579068],
                                   index=times, name='ghi'))
 
     mc.complete_irradiance(i[['dhi', 'ghi']])
-    assert_series_equal(mc.weather['dni'],
+    assert_series_equal(mc.results.weather['dni'],
                         pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))
 
@@ -1754,7 +1885,7 @@ def test_complete_irradiance_arrays(
                        match=r"Input DataFrames must have same index\."):
         mc.complete_irradiance(input_type((weather, weather[1:])))
     mc.complete_irradiance(input_type((weather, weather)))
-    for mc_weather in mc.weather:
+    for mc_weather in mc.results.weather:
         assert_series_equal(mc_weather['dni'],
                             pd.Series([2, 3], index=times, name='dni'))
         assert_series_equal(mc_weather['dhi'],
@@ -1764,16 +1895,16 @@ def test_complete_irradiance_arrays(
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
     mc.complete_irradiance(input_type((weather[['ghi', 'dhi']],
                                        weather[['dhi', 'dni']])))
-    assert 'dni' in mc.weather[0].columns
-    assert 'ghi' in mc.weather[1].columns
+    assert 'dni' in mc.results.weather[0].columns
+    assert 'ghi' in mc.results.weather[1].columns
     mc.complete_irradiance(input_type((weather, weather[['ghi', 'dni']])))
-    assert_series_equal(mc.weather[0]['dhi'],
+    assert_series_equal(mc.results.weather[0]['dhi'],
                         pd.Series([4, 6], index=times, name='dhi'))
-    assert_series_equal(mc.weather[0]['ghi'],
+    assert_series_equal(mc.results.weather[0]['ghi'],
                         pd.Series([9, 5], index=times, name='ghi'))
-    assert_series_equal(mc.weather[0]['dni'],
+    assert_series_equal(mc.results.weather[0]['dni'],
                         pd.Series([2, 3], index=times, name='dni'))
-    assert 'dhi' in mc.weather[1].columns
+    assert 'dhi' in mc.results.weather[1].columns
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])

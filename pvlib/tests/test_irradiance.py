@@ -11,7 +11,7 @@ from numpy.testing import assert_almost_equal, assert_allclose
 
 from pvlib import irradiance
 
-from conftest import (
+from .conftest import (
     assert_frame_equal,
     assert_series_equal,
     requires_ephem,
@@ -281,11 +281,33 @@ def test_sky_diffuse_zenith_close_to_90(model):
     assert sky_diffuse < 100
 
 
-def test_get_sky_diffuse_invalid():
+def test_get_sky_diffuse_model_invalid():
     with pytest.raises(ValueError):
         irradiance.get_sky_diffuse(
             30, 180, 0, 180, 1000, 1100, 100, dni_extra=1360, airmass=1,
             model='invalid')
+
+
+def test_get_sky_diffuse_missing_dni_extra():
+    msg = 'dni_extra is required'
+    with pytest.raises(ValueError, match=msg):
+        irradiance.get_sky_diffuse(
+            30, 180, 0, 180, 1000, 1100, 100, airmass=1,
+            model='haydavies')
+
+
+def test_get_sky_diffuse_missing_airmass(irrad_data, ephem_data, dni_et):
+    # test assumes location is Tucson, AZ
+    # calculated airmass should be the equivalent to fixture airmass
+    dni = irrad_data['dni'].copy()
+    dni.iloc[2] = np.nan
+    out = irradiance.get_sky_diffuse(
+        40, 180, ephem_data['apparent_zenith'], ephem_data['azimuth'], dni,
+        irrad_data['ghi'], irrad_data['dhi'], dni_et,  model='perez')
+    expected = pd.Series(np.array(
+        [0., 31.46046871, np.nan, 45.45539877]),
+        index=irrad_data.index)
+    assert_series_equal(out, expected, check_less_precise=2)
 
 
 def test_campbell_norman():
@@ -299,7 +321,8 @@ def test_campbell_norman():
     assert_frame_equal(out, expected)
 
 
-def test_get_total_irradiance(irrad_data, ephem_data, dni_et, relative_airmass):
+def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
+                              relative_airmass):
     models = ['isotropic', 'klucher',
               'haydavies', 'reindl', 'king', 'perez']
 
@@ -335,6 +358,30 @@ def test_get_total_irradiance_scalars(model):
                                   'poa_ground_diffuse']
     # test that none of the values are nan
     assert np.isnan(np.array(list(total.values()))).sum() == 0
+
+
+def test_get_total_irradiance_missing_dni_extra():
+    msg = 'dni_extra is required'
+    with pytest.raises(ValueError, match=msg):
+        irradiance.get_total_irradiance(
+            32, 180,
+            10, 180,
+            dni=1000, ghi=1100,
+            dhi=100,
+            model='haydavies')
+
+
+def test_get_total_irradiance_missing_airmass():
+    total = irradiance.get_total_irradiance(
+        32, 180,
+        10, 180,
+        dni=1000, ghi=1100,
+        dhi=100,
+        dni_extra=1400,
+        model='perez')
+    assert list(total.keys()) == ['poa_global', 'poa_direct',
+                                  'poa_diffuse', 'poa_sky_diffuse',
+                                  'poa_ground_diffuse']
 
 
 def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
@@ -790,6 +837,27 @@ def test_aoi_and_aoi_projection(surface_tilt, surface_azimuth, solar_zenith,
     aoi_projection = irradiance.aoi_projection(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     assert_allclose(aoi_projection, aoi_proj_expected, atol=1e-6)
+
+
+def test_aoi_projection_precision():
+    # GH 1185 -- test that aoi_projection does not exceed 1.0, and when
+    # given identical inputs, the returned projection is very close to 1.0
+
+    # scalars
+    zenith = 89.26778228223463
+    azimuth = 60.932028605997004
+    projection = irradiance.aoi_projection(zenith, azimuth, zenith, azimuth)
+    assert projection <= 1
+    assert np.isclose(projection, 1)
+
+    # arrays
+    zeniths = np.array([zenith])
+    azimuths = np.array([azimuth])
+    projections = irradiance.aoi_projection(zeniths, azimuths,
+                                            zeniths, azimuths)
+    assert all(projections <= 1)
+    assert all(np.isclose(projections, 1))
+    assert projections.dtype == np.dtype('float64')
 
 
 @pytest.fixture

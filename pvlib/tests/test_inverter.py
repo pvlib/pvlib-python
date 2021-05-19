@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from conftest import assert_series_equal
+from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
-from conftest import DATA_DIR
+from .conftest import DATA_DIR
 import pytest
 
 from pvlib import inverter

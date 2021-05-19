@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose
 
 import pvlib
 from pvlib import tracking, pvsystem
-from conftest import DATA_DIR, assert_frame_equal
+from .conftest import DATA_DIR, assert_frame_equal
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']

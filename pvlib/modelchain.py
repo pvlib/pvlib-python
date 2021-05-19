@@ -245,36 +245,117 @@ def get_orientation(strategy, **kwargs):
     return surface_tilt, surface_azimuth
 
 
+# Type for fields that vary between arrays
+T = TypeVar('T')
+
+
+PerArray = Union[T, Tuple[T, ...]]
+
+
 @dataclass
 class ModelChainResult:
-    _T = TypeVar('T')
-    PerArray = Union[_T, Tuple[_T, ...]]
-    """Type for fields that vary between arrays"""
-
     # these attributes are used in __setattr__ to determine the correct type.
     _singleton_tuples: bool = field(default=False)
     _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
-                         'effective_irradiance', 'dc', 'diode_params'}
+                         'effective_irradiance', 'dc', 'diode_params',
+                         'dc_ohmic_losses', 'weather'}
 
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
+    """Solar position in a DataFrame containing columns ``'apparent_zenith'``,
+    ``'zenith'``, ``'apparent_elevation'``, ``'elevation'``, ``'azimuth'``
+    (all in degrees), with possibly other columns depending on the solar
+    position method; see :py:func:`~pvlib.solarposition.get_solarposition`
+    for details."""
+
     airmass: Optional[pd.DataFrame] = field(default=None)
+    """Air mass in a DataFrame containing columns ``'airmass_relative'``,
+    ``'airmass_absolute'`` (unitless); see
+    :py:meth:`~pvlib.location.Location.get_airmass` for details."""
+
     ac: Optional[pd.Series] = field(default=None)
+    """AC power from the PV system, in a Series [W]"""
+
     tracking: Optional[pd.DataFrame] = field(default=None)
+    """Orientation of modules on a single axis tracker, in a DataFrame with
+    columns ``'surface_tilt'``, ``'surface_azimuth'``, ``'aoi'``; see
+    :py:func:`~pvlib.tracking.singleaxis` for details.
+    """
+
+    losses: Optional[Union[pd.Series, float]] = field(default=None)
+    """Series containing DC loss as a fraction of total DC power, as
+    calculated by ``ModelChain.losses_model``.
+    """
 
     # per DC array information
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
+    """ DataFrame (or tuple of DataFrame, one for each array) containing
+    columns ``'poa_global'``, ``'poa_direct'`` ``'poa_diffuse'``,
+    ``poa_sky_diffuse'``, ``'poa_ground_diffuse'`` (W/m2); see
+    :py:func:`~pvlib.irradiance.get_total_irradiance` for details.
+    """
+
     aoi: Optional[PerArray[pd.Series]] = field(default=None)
+    """
+    Series (or tuple of Series, one for each array) containing angle of
+    incidence (degrees); see :py:func:`~pvlib.irradiance.aoi` for details.
+    """
+
     aoi_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
         field(default=None)
+    """Series (or tuple of Series, one for each array) containing angle of
+    incidence modifier (unitless) calculated by ``ModelChain.aoi_model``,
+    which reduces direct irradiance for reflections;
+    see :py:meth:`~pvlib.pvsystem.PVSystem.get_iam` for details.
+    """
+
     spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
         field(default=None)
+    """Series (or tuple of Series, one for each array) containing spectral
+    modifier (unitless) calculated by ``ModelChain.spectral_model``, which
+    adjusts broadband plane-of-array irradiance for spectral content.
+    """
+
     cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
+    """Series (or tuple of Series, one for each array) containing cell
+    temperature (C).
+    """
+
     effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
+    """Series (or tuple of Series, one for each array) containing effective
+    irradiance (W/m2) which is total plane-of-array irradiance adjusted for
+    reflections and spectral content.
+    """
+
     dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \
         field(default=None)
+    """Series or DataFrame (or tuple of Series or DataFrame, one for
+    each array) containing DC power (W) for each array, calculated by
+    ``ModelChain.dc_model``.
+    """
+
     diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
+    """DataFrame (or tuple of DataFrame, one for each array) containing diode
+    equation parameters (columns ``'I_L'``, ``'I_o'``, ``'R_s'``, ``'R_sh'``,
+    ``'nNsVth'``, present when ModelChain.dc_model is a single diode model;
+    see :py:func:`~pvlib.pvsystem.singlediode` for details.
+    """
+
+    dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
+    """Series (or tuple of Series, one for each array) containing DC ohmic
+    loss (W) calculated by ``ModelChain.dc_ohmic_model``.
+    """
+
+    # copies of input data, for user convenience
+    weather: Optional[PerArray[pd.DataFrame]] = None
+    """DataFrame (or tuple of DataFrame, one for each array) contains a
+    copy of the input weather data.
+    """
+
+    times: Optional[pd.DatetimeIndex] = None
+    """DatetimeIndex containing a copy of the index of the input weather data.
+    """
 
     def _result_type(self, value):
         """Coerce `value` to the correct type according to
@@ -355,9 +436,14 @@ class ModelChain:
         a user-defined function.
 
     temperature_model: None, str or function, default None
-        Valid strings are 'sapm', 'pvsyst', 'faiman', and 'fuentes'.
+        Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
         The ModelChain instance will be passed as the first argument to a
         user-defined function.
+
+    dc_ohmic_model: str or function, default 'no_loss'
+        Valid strings are 'dc_ohms_from_percent', 'no_loss'. The ModelChain
+        instance will be passed as the first argument to a user-defined
+        function.
 
     losses_model: str or function, default 'no_loss'
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
@@ -371,7 +457,8 @@ class ModelChain:
     _deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
                          'aoi', 'aoi_modifier', 'spectral_modifier',
                          'cell_temperature', 'effective_irradiance',
-                         'dc', 'ac', 'diode_params', 'tracking']
+                         'dc', 'ac', 'diode_params', 'tracking',
+                         'weather', 'times', 'losses']
 
     def __init__(self, system, location,
                  clearsky_model='ineichen',
@@ -380,6 +467,7 @@ class ModelChain:
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
                  spectral_model=None, temperature_model=None,
+                 dc_ohmic_model='no_loss',
                  losses_model='no_loss', name=None):
 
         self.name = name
@@ -398,10 +486,8 @@ class ModelChain:
         self.spectral_model = spectral_model
         self.temperature_model = temperature_model
 
+        self.dc_ohmic_model = dc_ohmic_model
         self.losses_model = losses_model
-
-        self.weather = None
-        self.times = None
 
         self.results = ModelChainResult()
 
@@ -909,7 +995,7 @@ class ModelChain:
 
     def first_solar_spectral_loss(self):
         self.results.spectral_modifier = self.system.first_solar_spectral_loss(
-            _tuple_from_dfs(self.weather, 'precipitable_water'),
+            _tuple_from_dfs(self.results.weather, 'precipitable_water'),
             self.results.airmass['airmass_absolute']
         )
         return self
@@ -945,6 +1031,8 @@ class ModelChain:
                 self._temperature_model = self.faiman_temp
             elif model == 'fuentes':
                 self._temperature_model = self.fuentes_temp
+            elif model == 'noct_sam':
+                self._temperature_model = self.noct_sam_temp
             else:
                 raise ValueError(model + ' is not a valid temperature model')
             # check system.temperature_model_parameters for consistency
@@ -979,6 +1067,8 @@ class ModelChain:
             return self.faiman_temp
         elif {'noct_installed'} <= params:
             return self.fuentes_temp
+        elif {'noct', 'module_efficiency'} <= params:
+            return self.noct_sam_temp
         else:
             raise ValueError(f'could not infer temperature model from '
                              f'system.temperature_model_parameters. Check '
@@ -992,12 +1082,10 @@ class ModelChain:
 
         Parameters
         ----------
-        model : function
-            A function that takes POA irradiance, air temperature, and
-            wind speed and returns cell temperature. `model` must accept
-            tuples or single values for each parameter where each element of
-            the tuple is the value for a different array in the system
-            (see :py:class:`pvlib.pvsystem.PVSystem` for more information).
+        model : str
+            A cell temperature model name to pass to
+            :py:meth:`pvlib.pvsystem.PVSystem.get_cell_temperature`.
+            Valid names are 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'
 
         Returns
         -------
@@ -1006,22 +1094,72 @@ class ModelChain:
 
         poa = _irrad_for_celltemp(self.results.total_irrad,
                                   self.results.effective_irradiance)
-        temp_air = _tuple_from_dfs(self.weather, 'temp_air')
-        wind_speed = _tuple_from_dfs(self.weather, 'wind_speed')
-        self.results.cell_temperature = model(poa, temp_air, wind_speed)
+        temp_air = _tuple_from_dfs(self.results.weather, 'temp_air')
+        wind_speed = _tuple_from_dfs(self.results.weather, 'wind_speed')
+        kwargs = {}
+        if model == 'noct_sam':
+            kwargs['effective_irradiance'] = self.results.effective_irradiance
+        self.results.cell_temperature = self.system.get_cell_temperature(
+            poa, temp_air, wind_speed, model=model, **kwargs)
         return self
 
     def sapm_temp(self):
-        return self._set_celltemp(self.system.sapm_celltemp)
+        return self._set_celltemp('sapm')
 
     def pvsyst_temp(self):
-        return self._set_celltemp(self.system.pvsyst_celltemp)
+        return self._set_celltemp('pvsyst')
 
     def faiman_temp(self):
-        return self._set_celltemp(self.system.faiman_celltemp)
+        return self._set_celltemp('faiman')
 
     def fuentes_temp(self):
-        return self._set_celltemp(self.system.fuentes_celltemp)
+        return self._set_celltemp('fuentes')
+
+    def noct_sam_temp(self):
+        return self._set_celltemp('noct_sam')
+
+    @property
+    def dc_ohmic_model(self):
+        return self._dc_ohmic_model
+
+    @dc_ohmic_model.setter
+    def dc_ohmic_model(self, model):
+        if isinstance(model, str):
+            model = model.lower()
+            if model == 'dc_ohms_from_percent':
+                self._dc_ohmic_model = self.dc_ohms_from_percent
+            elif model == 'no_loss':
+                self._dc_ohmic_model = self.no_dc_ohmic_loss
+            else:
+                raise ValueError(model + ' is not a valid losses model')
+        else:
+            self._dc_ohmic_model = partial(model, self)
+
+    def dc_ohms_from_percent(self):
+        """
+        Calculate time series of ohmic losses and apply those to the mpp power
+        output of the `dc_model` based on the pvsyst equivalent resistance
+        method. Uses a `dc_ohmic_percent` parameter in the `losses_parameters`
+        of the PVsystem.
+        """
+        Rw = self.system.dc_ohms_from_percent()
+        if isinstance(self.results.dc, tuple):
+            self.results.dc_ohmic_losses = tuple(
+                pvsystem.dc_ohmic_losses(Rw, df['i_mp'])
+                for Rw, df in zip(Rw, self.results.dc)
+            )
+            for df, loss in zip(self.results.dc, self.results.dc_ohmic_losses):
+                df['p_mp'] = df['p_mp'] - loss
+        else:
+            self.results.dc_ohmic_losses = pvsystem.dc_ohmic_losses(
+                Rw, self.results.dc['i_mp']
+            )
+            self.results.dc['p_mp'] = (self.results.dc['p_mp']
+                                       - self.results.dc_ohmic_losses)
+        return self
+
+    def no_dc_ohmic_loss(self):
+        return self
 
     @property
     def losses_model(self):
@@ -1046,16 +1184,16 @@ class ModelChain:
         raise NotImplementedError
 
     def pvwatts_losses(self):
-        self.losses = (100 - self.system.pvwatts_losses()) / 100.
+        self.results.losses = (100 - self.system.pvwatts_losses()) / 100.
         if isinstance(self.results.dc, tuple):
             for dc in self.results.dc:
-                dc *= self.losses
+                dc *= self.results.losses
         else:
-            self.results.dc *= self.losses
+            self.results.dc *= self.results.losses
         return self
 
     def no_extra_losses(self):
-        self.losses = 1
+        self.results.losses = 1
         return self
 
     def effective_irradiance_model(self):
@@ -1112,7 +1250,7 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``weather``
+        Assigns attributes to ``results``: ``times``, ``weather``
 
         Examples
         --------
@@ -1125,7 +1263,7 @@ class ModelChain:
         >>> # my_weather containing 'dhi' and 'ghi'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
         >>> mc.complete_irradiance(my_weather)  # doctest: +SKIP
-        >>> mc.run_model(mc.weather)  # doctest: +SKIP
+        >>> mc.run_model(mc.results.weather)  # doctest: +SKIP
 
         >>> # my_weather containing 'dhi', 'ghi' and 'dni'.
         >>> mc = ModelChain(my_system, my_location)  # doctest: +SKIP
@@ -1135,16 +1273,16 @@ class ModelChain:
         self._check_multiple_input(weather)
         # Don't use ModelChain._assign_weather() here because it adds
         # temperature and wind-speed columns which we do not need here.
-        self.weather = _copy(weather)
+        self.results.weather = _copy(weather)
         self._assign_times()
         self.results.solar_position = self.location.get_solarposition(
-            self.times, method=self.solar_position_method)
+            self.results.times, method=self.solar_position_method)
 
         if isinstance(weather, tuple):
-            for w in self.weather:
+            for w in self.results.weather:
                 self._complete_irradiance(w)
         else:
-            self._complete_irradiance(self.weather)
+            self._complete_irradiance(self.results.weather)
 
         return self
 
@@ -1189,7 +1327,7 @@ class ModelChain:
             pass
 
         self.results.solar_position = self.location.get_solarposition(
-            self.times, method=self.solar_position_method,
+            self.results.times, method=self.solar_position_method,
             **kwargs)
         return self
 
@@ -1252,15 +1390,23 @@ class ModelChain:
             for (i, array_data) in enumerate(data):
                 _verify(array_data, i)
 
-    def _configure_results(self):
-        """Configure the type used for per-array fields in ModelChainResult.
+    def _configure_results(self, per_array_data):
+        """Configure the type used for per-array fields in
+        ModelChainResult.
 
-        Must be called after ``self.weather`` has been assigned. If
-        ``self.weather`` is a tuple and the number of arrays in the system
-        is 1, then per-array results are stored as length-1 tuples.
+        If ``per_array_data`` is True and the number of arrays in the
+        system is 1, then per-array results are stored as length-1
+        tuples. This overrides the PVSystem defaults of unpacking a 1
+        length tuple into a singleton.
+
+        Parameters
+        ----------
+        per_array_data : bool
+            If input data is provided for each array, pass True. If a
+            single input data is provided for all arrays, pass False.
         """
         self.results._singleton_tuples = (
-            self.system.num_arrays == 1 and isinstance(self.weather, tuple)
+            self.system.num_arrays == 1 and per_array_data
         )
 
     def _assign_weather(self, data):
@@ -1272,13 +1418,13 @@ class ModelChain:
             if weather.get('temp_air') is None:
                 weather['temp_air'] = 20
             return weather
-        if not isinstance(data, tuple):
-            self.weather = _build_weather(data)
+        if isinstance(data, tuple):
+            weather = tuple(_build_weather(wx) for wx in data)
+            self._configure_results(per_array_data=True)
         else:
-            self.weather = tuple(
-                _build_weather(weather) for weather in data
-            )
-        self._configure_results()
+            weather = _build_weather(data)
+            self._configure_results(per_array_data=False)
+        self.results.weather = weather
         self._assign_times()
         return self
 
@@ -1295,18 +1441,20 @@ class ModelChain:
         return self
 
     def _assign_times(self):
-        """Assign self.times according the the index of self.weather.
+        """Assign self.results.times according the the index of
+        self.results.weather.
 
-        If there are multiple DataFrames in self.weather then the index
-        of the first one is assigned. It is assumed that the indices of
-        each data frame in `weather` are the same. This can be verified
-        by calling :py:func:`_all_same_index` or
-        :py:meth:`self._check_multiple_weather` before calling this method.
+        If there are multiple DataFrames in self.results.weather then
+        the index of the first one is assigned. It is assumed that the
+        indices of each DataFrame in self.results.weather are the same.
+        This can be verified by calling :py:func:`_all_same_index` or
+        :py:meth:`self._check_multiple_weather` before calling this
+        method.
         """
-        if isinstance(self.weather, tuple):
-            self.times = self.weather[0].index
+        if isinstance(self.results.weather, tuple):
+            self.results.times = self.results.weather[0].index
         else:
-            self.times = self.weather.index
+            self.results.times = self.results.weather.index
 
     def prepare_inputs(self, weather):
         """
@@ -1337,8 +1485,8 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``weather``, ``solar_position``, ``airmass``,
-        ``total_irrad``, ``aoi``
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``
 
         See also
         --------
@@ -1372,9 +1520,9 @@ class ModelChain:
                 self.results.solar_position['azimuth'])
 
         self.results.total_irrad = get_irradiance(
-            _tuple_from_dfs(self.weather, 'dni'),
-            _tuple_from_dfs(self.weather, 'ghi'),
-            _tuple_from_dfs(self.weather, 'dhi'),
+            _tuple_from_dfs(self.results.weather, 'dni'),
+            _tuple_from_dfs(self.results.weather, 'ghi'),
+            _tuple_from_dfs(self.results.weather, 'dhi'),
             airmass=self.results.airmass['airmass_relative'],
             model=self.transposition_model
         )
@@ -1433,8 +1581,8 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``weather``, ``total_irrad``, ``solar_position``,
-        ``airmass``, ``aoi``.
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``total_irrad``, ``solar_position``, ``airmass``, ``aoi``.
 
         See also
         --------
@@ -1593,10 +1741,12 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``solar_position``, ``airmass``, ``weather``,
-        ``total_irrad``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
-        and ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
-        ``losses``, ``diode_params`` (if dc_model is a single diode model).
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``,
+        ``aoi_modifier``, ``spectral_modifier``, and
+        ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode
+        model).
 
         See also
         --------
@@ -1652,10 +1802,12 @@ class ModelChain:
 
         Notes
         -----
-        Assigns attributes: ``solar_position``, ``airmass``, ``weather``,
-        ``total_irrad``, ``aoi``, ``aoi_modifier``, ``spectral_modifier``,
-        and ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
-        ``losses``, ``diode_params`` (if dc_model is a single diode model).
+        Assigns attributes to results: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``,
+        ``aoi_modifier``, ``spectral_modifier``, and
+        ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode
+        model).
 
         See also
         --------
@@ -1696,6 +1848,7 @@ class ModelChain:
         """
         self._prepare_temperature(data)
         self.dc_model()
+        self.dc_ohmic_model()
         self.losses_model()
         self.ac_model()
 
@@ -1748,7 +1901,7 @@ class ModelChain:
         If optional column ``'poa_global'`` is present, these data are used.
         If ``'poa_global'`` is not present, ``'effective_irradiance'`` is used.
 
-        Assigns attributes: ``weather``, ``total_irrad``,
+        Assigns attributes to results: ``times``, ``weather``, ``total_irrad``,
         ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
         ``losses``, ``diode_params`` (if dc_model is a single diode model).
 

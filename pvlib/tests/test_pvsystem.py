@@ -1814,9 +1814,15 @@ def test_PVSystem_multi_array_attributes(attr):
     with pytest.raises(AttributeError):
         getattr(system, attr)
 
+    with pytest.raises(AttributeError):
+        setattr(system, attr, 'dummy')
+
     system = pvsystem.PVSystem()
     with pytest.warns(pvlibDeprecationWarning):
         getattr(system, attr)
+
+    with pytest.warns(pvlibDeprecationWarning):
+        setattr(system, attr, 'dummy')
 
 
 def test_PVSystem___repr__():

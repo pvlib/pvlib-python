@@ -735,11 +735,11 @@ class ModelChain:
         elif {'pdc0', 'gamma_pdc'} <= params:
             return self.pvwatts_dc, 'pvwatts'
         else:
-            raise ValueError('could not infer DC model from '
-                             'system.arrays[i].module_parameters. Check '
-                             'system.arrays[i].module_parameters or '
-                             'explicitly set the model with the dc_model '
-                             'kwarg.')
+            raise ValueError(
+                'Could not infer DC model from the module_parameters '
+                'attributes of system.arrays. Check the module_parameters '
+                'attributes or explicitly set the model with the dc_model '
+                'keyword argument.')
 
     def sapm(self):
         dc = self.system.sapm(self.results.effective_irradiance,

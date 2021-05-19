@@ -85,7 +85,8 @@ def _check_deprecated_passthrough(func):
         if len(self.arrays) > 1:
             raise AttributeError(
                 f'{class_name}.{pvsystem_attr} not supported for multi-array '
-                f'systems. Use {alternative} instead.')
+                f'systems. Set {array_attr} for each Array in '
+                f'{class_name}.arrays instead.')
 
         wrapped = deprecated('0.9', alternative=alternative, removal='0.10',
                              name=f"{class_name}.{pvsystem_attr}")(func)

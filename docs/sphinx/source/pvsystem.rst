@@ -199,7 +199,7 @@ for each array using the attributes `Array.surface_tilt` and `Array.surface_azim
     array_two = pvsystem.Array(surface_tilt=30, surface_azimuth=220)
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
     system.num_arrays
-    [array.surface_tilt, array.surface_azimuth for array in system.arrays]
+    [(array.surface_tilt, array.surface_azimuth) for array in system.arrays]
 
 
 The `surface_tilt` and `surface_azimuth` attributes are used in PVSystem

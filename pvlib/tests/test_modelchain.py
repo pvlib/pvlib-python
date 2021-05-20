@@ -1259,6 +1259,15 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     assert isinstance(mc.results.dc, (pd.Series, pd.DataFrame))
 
 
+def test_infer_dc_model_incomplete(multi_array_sapm_dc_snl_ac_system,
+                                   location):
+    match = 'Could not infer DC model from the module_parameters attributes '
+    system = multi_array_sapm_dc_snl_ac_system['two_array_system']
+    system.arrays[0].module_parameters.pop('A0')
+    with pytest.raises(ValueError, match=match):
+        ModelChain(system, location)
+
+
 @pytest.mark.parametrize('dc_model', ['cec', 'desoto', 'pvsyst'])
 def test_singlediode_dc_arrays(location, dc_model,
                                cec_dc_snl_ac_arrays,
@@ -1721,7 +1730,9 @@ def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     kwargs['ac_model'] = 'pvwatts'
     for array in pvwatts_dc_pvwatts_ac_system.arrays:
         array.module_parameters.pop('pdc0')
-    with pytest.raises(ValueError):
+
+    match = 'one or more Arrays are missing one or more required parameters'
+    with pytest.raises(ValueError, match=match):
         ModelChain(pvwatts_dc_pvwatts_ac_system, location, **kwargs)
 
 

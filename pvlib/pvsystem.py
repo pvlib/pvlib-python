@@ -64,6 +64,37 @@ def _unwrap_single_value(func):
     return f
 
 
+def _check_deprecated_passthrough(func):
+    """
+    Decorator to warn or error when getting and setting the "pass-through"
+    PVSystem properties that have been moved to Array.  Emits a warning for
+    PVSystems with only one Array and raises an error for PVSystems with
+    more than one Array.
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        pvsystem_attr = func.__name__
+        class_name = self.__class__.__name__  # PVSystem or SingleAxisTracker
+        overrides = {  # some Array attrs aren't the same as PVSystem
+            'strings_per_inverter': 'strings',
+        }
+        array_attr = overrides.get(pvsystem_attr, pvsystem_attr)
+        alternative = f'{class_name}.arrays[i].{array_attr}'
+
+        if len(self.arrays) > 1:
+            raise AttributeError(
+                f'{class_name}.{pvsystem_attr} not supported for multi-array '
+                f'systems. Set {array_attr} for each Array in '
+                f'{class_name}.arrays instead.')
+
+        wrapped = deprecated('0.9', alternative=alternative, removal='0.10',
+                             name=f"{class_name}.{pvsystem_attr}")(func)
+        return wrapped(self, *args, **kwargs)
+
+    return wrapper
+
+
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.
@@ -1083,74 +1114,124 @@ class PVSystem:
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def module_parameters(self):
         return tuple(array.module_parameters for array in self.arrays)
 
+    @module_parameters.setter
+    @_check_deprecated_passthrough
+    def module_parameters(self, value):
+        for array in self.arrays:
+            array.module_parameters = value
+
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def module(self):
         return tuple(array.module for array in self.arrays)
 
-    @property
-    @_unwrap_single_value
-    def module_type(self):
-        return tuple(array.module_type for array in self.arrays)
+    @module.setter
+    @_check_deprecated_passthrough
+    def module(self, value):
+        for array in self.arrays:
+            array.module = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
+    def module_type(self):
+        return tuple(array.module_type for array in self.arrays)
+
+    @module_type.setter
+    @_check_deprecated_passthrough
+    def module_type(self, value):
+        for array in self.arrays:
+            array.module_type = value
+
+    @property
+    @_unwrap_single_value
+    @_check_deprecated_passthrough
     def temperature_model_parameters(self):
         return tuple(array.temperature_model_parameters
                      for array in self.arrays)
 
     @temperature_model_parameters.setter
+    @_check_deprecated_passthrough
     def temperature_model_parameters(self, value):
         for array in self.arrays:
             array.temperature_model_parameters = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def surface_tilt(self):
         return tuple(array.surface_tilt for array in self.arrays)
 
     @surface_tilt.setter
+    @_check_deprecated_passthrough
     def surface_tilt(self, value):
         for array in self.arrays:
             array.surface_tilt = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def surface_azimuth(self):
         return tuple(array.surface_azimuth for array in self.arrays)
 
     @surface_azimuth.setter
+    @_check_deprecated_passthrough
     def surface_azimuth(self, value):
         for array in self.arrays:
             array.surface_azimuth = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def albedo(self):
         return tuple(array.albedo for array in self.arrays)
 
+    @albedo.setter
+    @_check_deprecated_passthrough
+    def albedo(self, value):
+        for array in self.arrays:
+            array.albedo = value
+
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def racking_model(self):
         return tuple(array.racking_model for array in self.arrays)
 
     @racking_model.setter
+    @_check_deprecated_passthrough
     def racking_model(self, value):
         for array in self.arrays:
             array.racking_model = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def modules_per_string(self):
         return tuple(array.modules_per_string for array in self.arrays)
 
+    @modules_per_string.setter
+    @_check_deprecated_passthrough
+    def modules_per_string(self, value):
+        for array in self.arrays:
+            array.modules_per_string = value
+
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def strings_per_inverter(self):
         return tuple(array.strings for array in self.arrays)
+
+    @strings_per_inverter.setter
+    @_check_deprecated_passthrough
+    def strings_per_inverter(self, value):
+        for array in self.arrays:
+            array.strings = value
 
     @property
     def num_arrays(self):

@@ -85,6 +85,22 @@ Deprecations
 * The ``eta_m`` parameter for :py:func:`~pvlib.temperature.pvsyst_cell` is
   replaced by parameter ``module_efficiency``. (:issue:`1188`, :pull:`1218`)
 
+* The following attributes of :py:class:`pvlib.pvsystem.PVSystem` and
+  :py:class:`pvlib.tracking.SingleAxisTracker` have been deprecated in
+  favor of the corresponding :py:class:`pvlib.pvsystem.Array` attributes:
+
+  * ``PVSystem.albedo``
+  * ``PVSystem.module``
+  * ``PVSystem.module_parameters``
+  * ``PVSystem.module_type``
+  * ``PVSystem.modules_per_string``
+  * ``PVSystem.racking_model``
+  * ``PVSystem.strings_per_inverter``
+  * ``PVSystem.surface_tilt``
+  * ``PVSystem.surface_azimuth``
+  * ``PVSystem.temperature_model_parameters``
+
+
 Enhancements
 ~~~~~~~~~~~~
 * Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data

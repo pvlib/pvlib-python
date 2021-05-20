@@ -408,29 +408,32 @@ class ModelChain:
         Passed to location.get_airmass.
 
     dc_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.module_parameters. Valid strings are 'sapm',
-        'desoto', 'cec', 'pvsyst', 'pvwatts'. The ModelChain instance will
-        be passed as the first argument to a user-defined function.
+        If None, the model will be inferred from the parameters that
+        are common to all of system.arrays[i].module_parameters.
+        Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'.
+        The ModelChain instance will be passed as the first argument
+        to a user-defined function.
 
     ac_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.inverter_parameters and system.module_parameters. Valid
-        strings are 'sandia', 'adr', 'pvwatts'. The
+        If None, the model will be inferred from the parameters that
+        are common to all of system.inverter_parameters.
+        Valid strings are 'sandia', 'adr', 'pvwatts'. The
         ModelChain instance will be passed as the first argument to a
         user-defined function.
 
     aoi_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.module_parameters. Valid strings are 'physical',
-        'ashrae', 'sapm', 'martin_ruiz', 'no_loss'. The ModelChain instance
-        will be passed as the first argument to a user-defined function.
+        If None, the model will be inferred from the parameters that
+        are common to all of system.arrays[i].module_parameters.
+        Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
+        'no_loss'. The ModelChain instance will be passed as the
+        first argument to a user-defined function.
 
     spectral_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.module_parameters. Valid strings are 'sapm',
-        'first_solar', 'no_loss'. The ModelChain instance will be passed
-        as the first argument to a user-defined function.
+        If None, the model will be inferred from the parameters that
+        are common to all of system.arrays[i].module_parameters.
+        Valid strings are 'sapm', 'first_solar', 'no_loss'.
+        The ModelChain instance will be passed as the first argument to
+        a user-defined function.
 
     temperature_model: None, str or function, default None
         Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
@@ -691,9 +694,10 @@ class ModelChain:
             model = model.lower()
             if model in _DC_MODEL_PARAMS.keys():
                 # validate module parameters
+                module_parameters = tuple(
+                    array.module_parameters for array in self.system.arrays)
                 missing_params = (
-                    _DC_MODEL_PARAMS[model] -
-                    _common_keys(self.system.module_parameters))
+                    _DC_MODEL_PARAMS[model] - _common_keys(module_parameters))
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
                                      'one or more Arrays are missing '
@@ -716,7 +720,8 @@ class ModelChain:
 
     def infer_dc_model(self):
         """Infer DC power model from Array module parameters."""
-        params = _common_keys(self.system.module_parameters)
+        params = _common_keys(
+            tuple(array.module_parameters for array in self.system.arrays))
         if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
         elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s',
@@ -730,10 +735,11 @@ class ModelChain:
         elif {'pdc0', 'gamma_pdc'} <= params:
             return self.pvwatts_dc, 'pvwatts'
         else:
-            raise ValueError('could not infer DC model from '
-                             'system.module_parameters. Check '
-                             'system.module_parameters or explicitly '
-                             'set the model with the dc_model kwarg.')
+            raise ValueError(
+                'Could not infer DC model from the module_parameters '
+                'attributes of system.arrays. Check the module_parameters '
+                'attributes or explicitly set the model with the dc_model '
+                'keyword argument.')
 
     def sapm(self):
         dc = self.system.sapm(self.results.effective_irradiance,
@@ -782,7 +788,7 @@ class ModelChain:
         """Calculate DC power using the PVWatts model.
 
         Results are stored in ModelChain.results.dc. DC power is computed
-        from PVSystem.module_parameters['pdc0'] and then scaled by
+        from PVSystem.arrays[i].module_parameters['pdc0'] and then scaled by
         PVSystem.modules_per_string and PVSystem.strings_per_inverter.
 
         Returns
@@ -891,7 +897,9 @@ class ModelChain:
             self._aoi_model = partial(model, self)
 
     def infer_aoi_model(self):
-        params = _common_keys(self.system.module_parameters)
+        module_parameters = tuple(
+            array.module_parameters for array in self.system.arrays)
+        params = _common_keys(module_parameters)
         if {'K', 'L', 'n'} <= params:
             return self.physical_aoi_loss
         elif {'B5', 'B4', 'B3', 'B2', 'B1', 'B0'} <= params:
@@ -902,8 +910,8 @@ class ModelChain:
             return self.martin_ruiz_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
-                             'system.module_parameters. Check that the '
-                             'module_parameters for all Arrays in '
+                             'system.arrays[i].module_parameters. Check that '
+                             'the module_parameters for all Arrays in '
                              'system.arrays contain parameters for '
                              'the physical, aoi, ashrae or martin_ruiz model; '
                              'explicitly set the model with the aoi_model '
@@ -966,7 +974,9 @@ class ModelChain:
 
     def infer_spectral_model(self):
         """Infer spectral model from system attributes."""
-        params = _common_keys(self.system.module_parameters)
+        module_parameters = tuple(
+            array.module_parameters for array in self.system.arrays)
+        params = _common_keys(module_parameters)
         if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
             return self.sapm_spectral_loss
         elif ((('Technology' in params or
@@ -976,8 +986,8 @@ class ModelChain:
             return self.first_solar_spectral_loss
         else:
             raise ValueError('could not infer spectral model from '
-                             'system.module_parameters. Check that the '
-                             'module_parameters for all Arrays in '
+                             'system.arrays[i].module_parameters. Check that '
+                             'the module_parameters for all Arrays in '
                              'system.arrays contain valid '
                              'first_solar_spectral_coefficients, a valid '
                              'Material or Technology value, or set '
@@ -1028,20 +1038,24 @@ class ModelChain:
             # check system.temperature_model_parameters for consistency
             name_from_params = self.infer_temperature_model().__name__
             if self._temperature_model.__name__ != name_from_params:
+                common_params = _common_keys(tuple(
+                    array.temperature_model_parameters
+                    for array in self.system.arrays))
                 raise ValueError(
                     f'Temperature model {self._temperature_model.__name__} is '
                     f'inconsistent with PVSystem temperature model '
                     f'parameters. All Arrays in system.arrays must have '
                     f'consistent parameters. Common temperature model '
-                    f'parameters: '
-                    f'{_common_keys(self.system.temperature_model_parameters)}'
+                    f'parameters: {common_params}'
                 )
         else:
             self._temperature_model = partial(model, self)
 
     def infer_temperature_model(self):
         """Infer temperature model from system attributes."""
-        params = _common_keys(self.system.temperature_model_parameters)
+        temperature_model_parameters = tuple(
+            array.temperature_model_parameters for array in self.system.arrays)
+        params = _common_keys(temperature_model_parameters)
         # remove or statement in v0.9
         if {'a', 'b', 'deltaT'} <= params or (
                 not params and self.system.racking_model is None
@@ -1195,7 +1209,7 @@ class ModelChain:
                     self.results.spectral_modifier, self.results.aoi_modifier))
         else:
             self.results.effective_irradiance = _eff_irrad(
-                self.system.module_parameters,
+                self.system.arrays[0].module_parameters,
                 self.results.total_irrad,
                 self.results.spectral_modifier,
                 self.results.aoi_modifier
@@ -1629,7 +1643,7 @@ class ModelChain:
         self.results.cell_temperature = self._get_cell_temperature(
             data,
             poa,
-            self.system.temperature_model_parameters
+            self.system.arrays[0].temperature_model_parameters
         )
         if self.results.cell_temperature is None:
             self.temperature_model()

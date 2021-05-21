@@ -249,33 +249,41 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
 
 
 def test_perez_negative_horizon():
-    times = pd.date_range(start='20190101 11:30:00', freq='1H', periods=5, tz='US/Central')
+    times = pd.date_range(start='20190101 11:30:00', freq='1H', 
+                          periods=5, tz='US/Central')
 
-    # Avoid test dependencies on functionality not being tested by hard-coding the inputs.
-    # This data corresponds to Goodwin Creek in the afternoon on 1/1/2019.
+    # Avoid test dependencies on functionality not being tested by hard-coding 
+    # the inputs. This data corresponds to Goodwin Creek in the afternoon on 
+    # 1/1/2019.
+    # dni_e is slightly rounded from irradiance.get_extra_radiation
+    # airmass from atmosphere.get_relative_airmas 
     inputs = pd.DataFrame(np.array(
-        [[ 158       ,  19       ,   1       ,   0       ,   0       ],  # DNI on a cloudy day, approaching dusk
-         [ 249       , 165       , 136       ,  93       ,  50       ],  # DHI for the same periods
-         [  57.746951,  57.564205,  60.813841,  66.989435,  75.353368],  # apparent zenith
-         [ 171.003315, 187.346924, 202.974357, 216.725599, 228.317233],  # solar azimuth
-         [1414       ,1414       ,1414       ,1414       ,1414       ],  # slightly rounded from irradiance.get_extra_radiation
-         [   1.869315,   1.859981,   2.044429,   2.544943,   3.900136]   # from atmosphere.get_relative_airmass
-        ]).T,
-        columns = ['dni', 'dhi', 'solar_zenith', 'solar_azimuth', 'dni_extra', 'airmass'],
-        index = times
+        [[ 158,         19,          1,          0,         0],
+         [ 249,        165,        136,         93,        50],
+         [  57.746951,  57.564205,  60.813841,  66.989435,  75.353368],
+         [ 171.003315, 187.346924, 202.974357, 216.725599, 228.317233],
+         [1414,       1414,       1414,       1414,       1414],
+         [   1.869315,   1.859981,   2.044429,   2.544943,   3.900136]]).T,
+        columns=['dni', 'dhi', 'solar_zenith', 
+                   'solar_azimuth', 'dni_extra', 'airmass'],
+        index=times
     )
 
-    out = irradiance.perez(34, 180, inputs['dhi'], inputs['dni'], 
-                        inputs['dni_extra'], inputs['solar_zenith'], inputs['solar_azimuth'], inputs['airmass'],
-                        model='allsitescomposite1990', return_components=True)
+    out = irradiance.perez(34, 180, inputs['dhi'], inputs['dni'],
+                           inputs['dni_extra'], inputs['solar_zenith'],
+                           inputs['solar_azimuth'], inputs['airmass'],
+                           model='allsitescomposite1990', 
+                           return_components=True)
 
+    # sky_diffuse can be less than isotropic under certain conditions as 
+    # horizon goes negative
     expected = pd.DataFrame(np.array(
-        [[281.410185, 152.20879, 123.867898, 82.836412, 43.517015],      # sky_diffuse can be less than isotropic under certain conditions
-         [166.785419, 142.24475, 119.173875, 83.525150, 45.725931],      # isotropic
-         [113.548755,  16.09757,   9.956174,  3.142467,  0       ],      # circumsolar
-         [  1.076010,  -6.13353,  -5.262151, -3.831230, -2.208923]]).T,  # horizon can be negative
+        [[281.410185, 152.20879, 123.867898, 82.836412, 43.517015],
+         [166.785419, 142.24475, 119.173875, 83.525150, 45.725931],
+         [113.548755,  16.09757,   9.956174,  3.142467,  0],
+         [  1.076010,  -6.13353,  -5.262151, -3.831230, -2.208923]]).T,
         columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
-        index = times
+        index=times
     )
 
     expected_for_sum = expected['sky_diffuse'].copy()
@@ -698,7 +706,7 @@ def test_gti_dirint():
 
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
-         [ 295.06070190,   38.20346345,  268.0467738 ],
+         [ 295.06070190,   38.20346345,  268.0467738],
          [ 931.79627208,  689.81549269,  283.5817439]]),
         columns=expected_col_order, index=times)
 

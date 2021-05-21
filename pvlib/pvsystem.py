@@ -68,6 +68,37 @@ def _unwrap_single_value(func):
     return f
 
 
+def _check_deprecated_passthrough(func):
+    """
+    Decorator to warn or error when getting and setting the "pass-through"
+    PVSystem properties that have been moved to Array.  Emits a warning for
+    PVSystems with only one Array and raises an error for PVSystems with
+    more than one Array.
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        pvsystem_attr = func.__name__
+        class_name = self.__class__.__name__  # PVSystem or SingleAxisTracker
+        overrides = {  # some Array attrs aren't the same as PVSystem
+            'strings_per_inverter': 'strings',
+        }
+        array_attr = overrides.get(pvsystem_attr, pvsystem_attr)
+        alternative = f'{class_name}.arrays[i].{array_attr}'
+
+        if len(self.arrays) > 1:
+            raise AttributeError(
+                f'{class_name}.{pvsystem_attr} not supported for multi-array '
+                f'systems. Set {array_attr} for each Array in '
+                f'{class_name}.arrays instead.')
+
+        wrapped = deprecated('0.9', alternative=alternative, removal='0.10',
+                             name=f"{class_name}.{pvsystem_attr}")(func)
+        return wrapped(self, *args, **kwargs)
+
+    return wrapper
+
+
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.
@@ -102,8 +133,9 @@ class PVSystem:
     arrays : iterable of Array, optional
         List of arrays that are part of the system. If not specified
         a single array is created from the other parameters (e.g.
-        `surface_tilt`, `surface_azimuth`). If `arrays` is specified
-        the following parameters are ignored:
+        `surface_tilt`, `surface_azimuth`). Must contain at least one Array,
+        if length of arrays is 0 a ValueError is raised. If `arrays` is
+        specified the following parameters are ignored:
 
         - `surface_tilt`
         - `surface_azimuth`
@@ -177,6 +209,11 @@ class PVSystem:
         Arbitrary keyword arguments.
         Included for compatibility, but not used.
 
+    Raises
+    ------
+    ValueError
+        If `arrays` is not None and has length 0.
+
     See also
     --------
     pvlib.location.Location
@@ -212,6 +249,12 @@ class PVSystem:
                 strings_per_inverter,
                 array_losses_parameters,
             ),)
+        elif len(arrays) == 0:
+            raise ValueError("PVSystem must have at least one Array. "
+                             "If you want to create a PVSystem instance "
+                             "with a single Array pass `arrays=None` and pass "
+                             "values directly to PVSystem attributes, e.g., "
+                             "`surface_tilt=30`")
         else:
             self.arrays = tuple(arrays)
 
@@ -1073,116 +1116,124 @@ class PVSystem:
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def module_parameters(self):
         return tuple(array.module_parameters for array in self.arrays)
 
+    @module_parameters.setter
+    @_check_deprecated_passthrough
+    def module_parameters(self, value):
+        for array in self.arrays:
+            array.module_parameters = value
+
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def module(self):
         return tuple(array.module for array in self.arrays)
 
-    @property
-    @_unwrap_single_value
-    def module_type(self):
-        return tuple(array.module_type for array in self.arrays)
+    @module.setter
+    @_check_deprecated_passthrough
+    def module(self, value):
+        for array in self.arrays:
+            array.module = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
+    def module_type(self):
+        return tuple(array.module_type for array in self.arrays)
+
+    @module_type.setter
+    @_check_deprecated_passthrough
+    def module_type(self, value):
+        for array in self.arrays:
+            array.module_type = value
+
+    @property
+    @_unwrap_single_value
+    @_check_deprecated_passthrough
     def temperature_model_parameters(self):
         return tuple(array.temperature_model_parameters
                      for array in self.arrays)
 
     @temperature_model_parameters.setter
+    @_check_deprecated_passthrough
     def temperature_model_parameters(self, value):
         for array in self.arrays:
             array.temperature_model_parameters = value
 
     @property
+    @_unwrap_single_value
+    @_check_deprecated_passthrough
     def surface_tilt(self):
-        # TODO: make sure this is merged correctly with #1196
-        if len(self.arrays) == 1:
-            msg = (
-                'PVSystem.surface_tilt attribute is deprecated. '
-                'Use PVSystem.arrays[0].mount.surface_tilt.'
-            )
-            warnings.warn(msg, pvlibDeprecationWarning)
-        else:
-            raise AttributeError(
-                'PVSystem.surface_tilt not supported for multi-array systems. '
-                'Use PVSystem.arrays[i].mount.surface_tilt.')
-        return self.arrays[0].mount.surface_tilt
+        return tuple(array.mount.surface_tilt for array in self.arrays)
 
     @surface_tilt.setter
+    @_check_deprecated_passthrough
     def surface_tilt(self, value):
-        # TODO: make sure this is merged correctly with #1196
-        if len(self.arrays) == 1:
-            msg = (
-                'PVSystem.surface_tilt attribute is deprecated. '
-                'Use PVSystem.arrays[0].mount.surface_tilt.'
-            )
-            warnings.warn(msg, pvlibDeprecationWarning)
-        else:
-            raise AttributeError(
-                'PVSystem.surface_tilt not supported for multi-array systems. '
-                'Use PVSystem.arrays[i].mount.surface_tilt.')
-        self.arrays[0].mount.surface_tilt = value
-
-    @property
-    def surface_azimuth(self):
-        # TODO: make sure this is merged correctly with #1196
-        if len(self.arrays) == 1:
-            msg = (
-                'PVSystem.surface_azimuth attribute is deprecated. '
-                'Use PVSystem.arrays[0].mount.surface_azimuth.'
-            )
-            warnings.warn(msg, pvlibDeprecationWarning)
-        else:
-            raise AttributeError(
-                'PVSystem.surface_azimuth not supported for multi-array '
-                'systems. Use PVSystem.arrays[i].mount.surface_azimuth.')
-        return self.arrays[0].mount.surface_azimuth
-
-    @surface_azimuth.setter
-    def surface_azimuth(self, value):
-        # TODO: make sure this is merged correctly with #1196
-        if len(self.arrays) == 1:
-            msg = (
-                'PVSystem.surface_azimuth attribute is deprecated. '
-                'Use PVSystem.arrays[0].mount.surface_azimuth.'
-            )
-            warnings.warn(msg, pvlibDeprecationWarning)
-        else:
-            raise AttributeError(
-                'PVSystem.surface_azimuth not supported for multi-array '
-                'systems. Use PVSystem.arrays[i].mount.surface_azimuth.')
-        self.arrays[0].mount.surface_azimuth = value
+        for array in self.arrays:
+            array.mount.surface_tilt = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
+    def surface_azimuth(self):
+        return tuple(array.mount.surface_azimuth for array in self.arrays)
+
+    @surface_azimuth.setter
+    @_check_deprecated_passthrough
+    def surface_azimuth(self, value):
+        for array in self.arrays:
+            array.mount.surface_azimuth = value
+
+    @property
+    @_unwrap_single_value
+    @_check_deprecated_passthrough
     def albedo(self):
         return tuple(array.albedo for array in self.arrays)
 
+    @albedo.setter
+    @_check_deprecated_passthrough
+    def albedo(self, value):
+        for array in self.arrays:
+            array.albedo = value
+
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def racking_model(self):
-        # TODO: make sure this is merged correctly with #1196
         return tuple(array.mount.racking_model for array in self.arrays)
 
     @racking_model.setter
+    @_check_deprecated_passthrough
     def racking_model(self, value):
-        # TODO: make sure this is merged correctly with #1196
         for array in self.arrays:
             array.mount.racking_model = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def modules_per_string(self):
         return tuple(array.modules_per_string for array in self.arrays)
 
+    @modules_per_string.setter
+    @_check_deprecated_passthrough
+    def modules_per_string(self, value):
+        for array in self.arrays:
+            array.modules_per_string = value
+
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def strings_per_inverter(self):
         return tuple(array.strings for array in self.arrays)
+
+    @strings_per_inverter.setter
+    @_check_deprecated_passthrough
+    def strings_per_inverter(self, value):
+        for array in self.arrays:
+            array.strings = value
 
     @property
     def num_arrays(self):
@@ -3234,6 +3285,10 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
     Rw: numeric
         Equivalent resistance [ohm]
 
+    See Also
+    --------
+    :py:func:`~pvlib.pvsystem.dc_ohmic_losses`
+
     References
     ----------
     .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
@@ -3264,6 +3319,10 @@ def dc_ohmic_losses(resistance, current):
     ----------
     loss: numeric
         Power Loss [W]
+
+    See Also
+    --------
+    :py:func:`~pvlib.pvsystem.dc_ohms_from_percent`
 
     References
     ----------

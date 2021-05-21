@@ -252,7 +252,7 @@ class SingleAxisTracker(PVSystem):
                 dni_extra=dni_extra,
                 airmass=airmass,
                 model=model,
-                albedo=self.albedo,
+                albedo=self.arrays[0].albedo,
                 **kwargs)
             for array, dni, ghi, dhi in zip(
                 self.arrays, dni, ghi, dhi

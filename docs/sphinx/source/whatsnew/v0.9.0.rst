@@ -46,7 +46,7 @@ Breaking changes
   :py:func:`pvlib.modelchain.basic_chain` (:issue:`1028`, :pull:`1181`)
 
 * Removed the ``**kwargs`` parameters from :py:meth:`~pvlib.pvsystem.PVSystem.sapm` and
-  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and 
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and
   :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_cec` (:issue:`1118`, :pull:`1222`)
 
 
@@ -64,6 +64,7 @@ Deprecations
   * ``ModelChain.dc``
   * ``ModelChain.diode_params``
   * ``ModelChain.effective_irradiance``
+  * ``ModelChain.losses``
   * ``ModelChain.solar_position``
   * ``ModelChain.spectral_modifier``
   * ``ModelChain.total_irrad``
@@ -83,6 +84,22 @@ Deprecations
 
 * The ``eta_m`` parameter for :py:func:`~pvlib.temperature.pvsyst_cell` is
   replaced by parameter ``module_efficiency``. (:issue:`1188`, :pull:`1218`)
+
+* The following attributes of :py:class:`pvlib.pvsystem.PVSystem` and
+  :py:class:`pvlib.tracking.SingleAxisTracker` have been deprecated in
+  favor of the corresponding :py:class:`pvlib.pvsystem.Array` attributes:
+
+  * ``PVSystem.albedo``
+  * ``PVSystem.module``
+  * ``PVSystem.module_parameters``
+  * ``PVSystem.module_type``
+  * ``PVSystem.modules_per_string``
+  * ``PVSystem.racking_model``
+  * ``PVSystem.strings_per_inverter``
+  * ``PVSystem.surface_tilt``
+  * ``PVSystem.surface_azimuth``
+  * ``PVSystem.temperature_model_parameters``
+
 
 Enhancements
 ~~~~~~~~~~~~
@@ -128,6 +145,10 @@ Enhancements
 * Added :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` to calculate
   the temperature coefficient of power for the pvsyst module model.
    (:pull:`1190`)
+* :py:func:`~pvlib.irradiance.get_total_irradiance` and
+  :py:func:`~pvlib.irradiance.get_sky_diffuse` now fill in ``airmass``
+  if required and not provided. These functions now raise a ``ValueError``
+  if ``dni_extra`` is required and not provided. (:issue:`949`, :pull:`1225`)
 
 Bug fixes
 ~~~~~~~~~

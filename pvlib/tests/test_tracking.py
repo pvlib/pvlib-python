@@ -297,8 +297,37 @@ def test_SingleAxisTracker_creation():
 
     assert system.max_angle == 45
     assert system.gcr == .25
-    assert system.module == 'blah'
+    assert system.arrays[0].module == 'blah'
     assert system.inverter == 'blarg'
+
+
+def test_SingleAxisTracker_one_array_only():
+    system = tracking.SingleAxisTracker(
+        arrays=[pvsystem.Array(
+            module='foo',
+            surface_tilt=None,
+            surface_azimuth=None
+        )]
+    )
+    assert system.arrays[0].module == 'foo'
+    with pytest.raises(ValueError,
+                       match="SingleAxisTracker does not support "
+                             r"multiple arrays\."):
+        tracking.SingleAxisTracker(
+            arrays=[pvsystem.Array(module='foo'),
+                    pvsystem.Array(module='bar')]
+        )
+    with pytest.raises(ValueError,
+                       match="Array must not have surface_tilt "):
+        tracking.SingleAxisTracker(arrays=[pvsystem.Array(module='foo')])
+    with pytest.raises(ValueError,
+                       match="Array must not have surface_tilt "):
+        tracking.SingleAxisTracker(
+            arrays=[pvsystem.Array(surface_azimuth=None)])
+    with pytest.raises(ValueError,
+                       match="Array must not have surface_tilt "):
+        tracking.SingleAxisTracker(
+            arrays=[pvsystem.Array(surface_tilt=None)])
 
 
 def test_SingleAxisTracker_tracking():

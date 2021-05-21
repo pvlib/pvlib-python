@@ -245,12 +245,15 @@ def get_orientation(strategy, **kwargs):
     return surface_tilt, surface_azimuth
 
 
+# Type for fields that vary between arrays
+T = TypeVar('T')
+
+
+PerArray = Union[T, Tuple[T, ...]]
+
+
 @dataclass
 class ModelChainResult:
-    _T = TypeVar('T')
-    PerArray = Union[_T, Tuple[_T, ...]]
-    """Type for fields that vary between arrays"""
-
     # these attributes are used in __setattr__ to determine the correct type.
     _singleton_tuples: bool = field(default=False)
     _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
@@ -260,26 +263,99 @@ class ModelChainResult:
 
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
+    """Solar position in a DataFrame containing columns ``'apparent_zenith'``,
+    ``'zenith'``, ``'apparent_elevation'``, ``'elevation'``, ``'azimuth'``
+    (all in degrees), with possibly other columns depending on the solar
+    position method; see :py:func:`~pvlib.solarposition.get_solarposition`
+    for details."""
+
     airmass: Optional[pd.DataFrame] = field(default=None)
+    """Air mass in a DataFrame containing columns ``'airmass_relative'``,
+    ``'airmass_absolute'`` (unitless); see
+    :py:meth:`~pvlib.location.Location.get_airmass` for details."""
+
     ac: Optional[pd.Series] = field(default=None)
+    """AC power from the PV system, in a Series [W]"""
+
     tracking: Optional[pd.DataFrame] = field(default=None)
+    """Orientation of modules on a single axis tracker, in a DataFrame with
+    columns ``'surface_tilt'``, ``'surface_azimuth'``, ``'aoi'``; see
+    :py:func:`~pvlib.tracking.singleaxis` for details.
+    """
+
+    losses: Optional[Union[pd.Series, float]] = field(default=None)
+    """Series containing DC loss as a fraction of total DC power, as
+    calculated by ``ModelChain.losses_model``.
+    """
 
     # per DC array information
     total_irrad: Optional[PerArray[pd.DataFrame]] = field(default=None)
+    """ DataFrame (or tuple of DataFrame, one for each array) containing
+    columns ``'poa_global'``, ``'poa_direct'`` ``'poa_diffuse'``,
+    ``poa_sky_diffuse'``, ``'poa_ground_diffuse'`` (W/m2); see
+    :py:func:`~pvlib.irradiance.get_total_irradiance` for details.
+    """
+
     aoi: Optional[PerArray[pd.Series]] = field(default=None)
+    """
+    Series (or tuple of Series, one for each array) containing angle of
+    incidence (degrees); see :py:func:`~pvlib.irradiance.aoi` for details.
+    """
+
     aoi_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
         field(default=None)
+    """Series (or tuple of Series, one for each array) containing angle of
+    incidence modifier (unitless) calculated by ``ModelChain.aoi_model``,
+    which reduces direct irradiance for reflections;
+    see :py:meth:`~pvlib.pvsystem.PVSystem.get_iam` for details.
+    """
+
     spectral_modifier: Optional[PerArray[Union[pd.Series, float]]] = \
         field(default=None)
+    """Series (or tuple of Series, one for each array) containing spectral
+    modifier (unitless) calculated by ``ModelChain.spectral_model``, which
+    adjusts broadband plane-of-array irradiance for spectral content.
+    """
+
     cell_temperature: Optional[PerArray[pd.Series]] = field(default=None)
+    """Series (or tuple of Series, one for each array) containing cell
+    temperature (C).
+    """
+
     effective_irradiance: Optional[PerArray[pd.Series]] = field(default=None)
+    """Series (or tuple of Series, one for each array) containing effective
+    irradiance (W/m2) which is total plane-of-array irradiance adjusted for
+    reflections and spectral content.
+    """
+
     dc: Optional[PerArray[Union[pd.Series, pd.DataFrame]]] = \
         field(default=None)
-    diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
-    dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
+    """Series or DataFrame (or tuple of Series or DataFrame, one for
+    each array) containing DC power (W) for each array, calculated by
+    ``ModelChain.dc_model``.
+    """
 
+    diode_params: Optional[PerArray[pd.DataFrame]] = field(default=None)
+    """DataFrame (or tuple of DataFrame, one for each array) containing diode
+    equation parameters (columns ``'I_L'``, ``'I_o'``, ``'R_s'``, ``'R_sh'``,
+    ``'nNsVth'``, present when ModelChain.dc_model is a single diode model;
+    see :py:func:`~pvlib.pvsystem.singlediode` for details.
+    """
+
+    dc_ohmic_losses: Optional[PerArray[pd.Series]] = field(default=None)
+    """Series (or tuple of Series, one for each array) containing DC ohmic
+    loss (W) calculated by ``ModelChain.dc_ohmic_model``.
+    """
+
+    # copies of input data, for user convenience
     weather: Optional[PerArray[pd.DataFrame]] = None
+    """DataFrame (or tuple of DataFrame, one for each array) contains a
+    copy of the input weather data.
+    """
+
     times: Optional[pd.DatetimeIndex] = None
+    """DatetimeIndex containing a copy of the index of the input weather data.
+    """
 
     def _result_type(self, value):
         """Coerce `value` to the correct type according to
@@ -332,29 +408,32 @@ class ModelChain:
         Passed to location.get_airmass.
 
     dc_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.module_parameters. Valid strings are 'sapm',
-        'desoto', 'cec', 'pvsyst', 'pvwatts'. The ModelChain instance will
-        be passed as the first argument to a user-defined function.
+        If None, the model will be inferred from the parameters that
+        are common to all of system.arrays[i].module_parameters.
+        Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'.
+        The ModelChain instance will be passed as the first argument
+        to a user-defined function.
 
     ac_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.inverter_parameters and system.module_parameters. Valid
-        strings are 'sandia', 'adr', 'pvwatts'. The
+        If None, the model will be inferred from the parameters that
+        are common to all of system.inverter_parameters.
+        Valid strings are 'sandia', 'adr', 'pvwatts'. The
         ModelChain instance will be passed as the first argument to a
         user-defined function.
 
     aoi_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.module_parameters. Valid strings are 'physical',
-        'ashrae', 'sapm', 'martin_ruiz', 'no_loss'. The ModelChain instance
-        will be passed as the first argument to a user-defined function.
+        If None, the model will be inferred from the parameters that
+        are common to all of system.arrays[i].module_parameters.
+        Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
+        'no_loss'. The ModelChain instance will be passed as the
+        first argument to a user-defined function.
 
     spectral_model: None, str, or function, default None
-        If None, the model will be inferred from the contents of
-        system.module_parameters. Valid strings are 'sapm',
-        'first_solar', 'no_loss'. The ModelChain instance will be passed
-        as the first argument to a user-defined function.
+        If None, the model will be inferred from the parameters that
+        are common to all of system.arrays[i].module_parameters.
+        Valid strings are 'sapm', 'first_solar', 'no_loss'.
+        The ModelChain instance will be passed as the first argument to
+        a user-defined function.
 
     temperature_model: None, str or function, default None
         Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
@@ -379,7 +458,7 @@ class ModelChain:
                          'aoi', 'aoi_modifier', 'spectral_modifier',
                          'cell_temperature', 'effective_irradiance',
                          'dc', 'ac', 'diode_params', 'tracking',
-                         'weather', 'times']
+                         'weather', 'times', 'losses']
 
     def __init__(self, system, location,
                  clearsky_model='ineichen',
@@ -615,9 +694,10 @@ class ModelChain:
             model = model.lower()
             if model in _DC_MODEL_PARAMS.keys():
                 # validate module parameters
+                module_parameters = tuple(
+                    array.module_parameters for array in self.system.arrays)
                 missing_params = (
-                    _DC_MODEL_PARAMS[model] -
-                    _common_keys(self.system.module_parameters))
+                    _DC_MODEL_PARAMS[model] - _common_keys(module_parameters))
                 if missing_params:  # some parameters are not in module.keys()
                     raise ValueError(model + ' selected for the DC model but '
                                      'one or more Arrays are missing '
@@ -640,7 +720,8 @@ class ModelChain:
 
     def infer_dc_model(self):
         """Infer DC power model from Array module parameters."""
-        params = _common_keys(self.system.module_parameters)
+        params = _common_keys(
+            tuple(array.module_parameters for array in self.system.arrays))
         if {'A0', 'A1', 'C7'} <= params:
             return self.sapm, 'sapm'
         elif {'a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref', 'R_s',
@@ -654,10 +735,11 @@ class ModelChain:
         elif {'pdc0', 'gamma_pdc'} <= params:
             return self.pvwatts_dc, 'pvwatts'
         else:
-            raise ValueError('could not infer DC model from '
-                             'system.module_parameters. Check '
-                             'system.module_parameters or explicitly '
-                             'set the model with the dc_model kwarg.')
+            raise ValueError(
+                'Could not infer DC model from the module_parameters '
+                'attributes of system.arrays. Check the module_parameters '
+                'attributes or explicitly set the model with the dc_model '
+                'keyword argument.')
 
     def sapm(self):
         dc = self.system.sapm(self.results.effective_irradiance,
@@ -706,7 +788,7 @@ class ModelChain:
         """Calculate DC power using the PVWatts model.
 
         Results are stored in ModelChain.results.dc. DC power is computed
-        from PVSystem.module_parameters['pdc0'] and then scaled by
+        from PVSystem.arrays[i].module_parameters['pdc0'] and then scaled by
         PVSystem.modules_per_string and PVSystem.strings_per_inverter.
 
         Returns
@@ -815,7 +897,9 @@ class ModelChain:
             self._aoi_model = partial(model, self)
 
     def infer_aoi_model(self):
-        params = _common_keys(self.system.module_parameters)
+        module_parameters = tuple(
+            array.module_parameters for array in self.system.arrays)
+        params = _common_keys(module_parameters)
         if {'K', 'L', 'n'} <= params:
             return self.physical_aoi_loss
         elif {'B5', 'B4', 'B3', 'B2', 'B1', 'B0'} <= params:
@@ -826,8 +910,8 @@ class ModelChain:
             return self.martin_ruiz_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
-                             'system.module_parameters. Check that the '
-                             'module_parameters for all Arrays in '
+                             'system.arrays[i].module_parameters. Check that '
+                             'the module_parameters for all Arrays in '
                              'system.arrays contain parameters for '
                              'the physical, aoi, ashrae or martin_ruiz model; '
                              'explicitly set the model with the aoi_model '
@@ -890,7 +974,9 @@ class ModelChain:
 
     def infer_spectral_model(self):
         """Infer spectral model from system attributes."""
-        params = _common_keys(self.system.module_parameters)
+        module_parameters = tuple(
+            array.module_parameters for array in self.system.arrays)
+        params = _common_keys(module_parameters)
         if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
             return self.sapm_spectral_loss
         elif ((('Technology' in params or
@@ -900,8 +986,8 @@ class ModelChain:
             return self.first_solar_spectral_loss
         else:
             raise ValueError('could not infer spectral model from '
-                             'system.module_parameters. Check that the '
-                             'module_parameters for all Arrays in '
+                             'system.arrays[i].module_parameters. Check that '
+                             'the module_parameters for all Arrays in '
                              'system.arrays contain valid '
                              'first_solar_spectral_coefficients, a valid '
                              'Material or Technology value, or set '
@@ -952,20 +1038,24 @@ class ModelChain:
             # check system.temperature_model_parameters for consistency
             name_from_params = self.infer_temperature_model().__name__
             if self._temperature_model.__name__ != name_from_params:
+                common_params = _common_keys(tuple(
+                    array.temperature_model_parameters
+                    for array in self.system.arrays))
                 raise ValueError(
                     f'Temperature model {self._temperature_model.__name__} is '
                     f'inconsistent with PVSystem temperature model '
                     f'parameters. All Arrays in system.arrays must have '
                     f'consistent parameters. Common temperature model '
-                    f'parameters: '
-                    f'{_common_keys(self.system.temperature_model_parameters)}'
+                    f'parameters: {common_params}'
                 )
         else:
             self._temperature_model = partial(model, self)
 
     def infer_temperature_model(self):
         """Infer temperature model from system attributes."""
-        params = _common_keys(self.system.temperature_model_parameters)
+        temperature_model_parameters = tuple(
+            array.temperature_model_parameters for array in self.system.arrays)
+        params = _common_keys(temperature_model_parameters)
         # remove or statement in v0.9
         if {'a', 'b', 'deltaT'} <= params or (
                 not params and self.system.racking_model is None
@@ -1094,16 +1184,16 @@ class ModelChain:
         raise NotImplementedError
 
     def pvwatts_losses(self):
-        self.losses = (100 - self.system.pvwatts_losses()) / 100.
+        self.results.losses = (100 - self.system.pvwatts_losses()) / 100.
         if isinstance(self.results.dc, tuple):
             for dc in self.results.dc:
-                dc *= self.losses
+                dc *= self.results.losses
         else:
-            self.results.dc *= self.losses
+            self.results.dc *= self.results.losses
         return self
 
     def no_extra_losses(self):
-        self.losses = 1
+        self.results.losses = 1
         return self
 
     def effective_irradiance_model(self):
@@ -1119,7 +1209,7 @@ class ModelChain:
                     self.results.spectral_modifier, self.results.aoi_modifier))
         else:
             self.results.effective_irradiance = _eff_irrad(
-                self.system.module_parameters,
+                self.system.arrays[0].module_parameters,
                 self.results.total_irrad,
                 self.results.spectral_modifier,
                 self.results.aoi_modifier
@@ -1553,7 +1643,7 @@ class ModelChain:
         self.results.cell_temperature = self._get_cell_temperature(
             data,
             poa,
-            self.system.temperature_model_parameters
+            self.system.arrays[0].temperature_model_parameters
         )
         if self.results.cell_temperature is None:
             self.temperature_model()

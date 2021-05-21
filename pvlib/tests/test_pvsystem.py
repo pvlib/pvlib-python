@@ -1603,7 +1603,9 @@ def test_PVSystem_get_ac_invalid(cec_inverter_parameters):
 def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
     # ensure that parameter attributes are dict-like. GH 294
-    pv_system.module_parameters['pdc0'] = 1
+    with pytest.warns(pvlibDeprecationWarning):
+        pv_system.module_parameters['pdc0'] = 1
+
     pv_system.inverter_parameters['Paco'] = 1
 
 
@@ -1793,67 +1795,28 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad():
     assert not array_irrad[0].equals(array_irrad[1])
 
 
-def test_PVSystem_change_surface_tilt():
-    system = pvsystem.PVSystem(surface_tilt=30)
-    assert system.surface_tilt == 30
-    match = "PVSystem.surface_tilt attribute is deprecated"
-    with pytest.warns(UserWarning, match=match):
-        system.surface_tilt = 10
-    assert system.surface_tilt == 10
+@fail_on_pvlib_version('0.10')
+@pytest.mark.parametrize('attr', ['module_parameters', 'module', 'module_type',
+                                  'temperature_model_parameters', 'albedo',
+                                  'surface_tilt', 'surface_azimuth',
+                                  'racking_model', 'modules_per_string',
+                                  'strings_per_inverter'])
+def test_PVSystem_multi_array_attributes(attr):
+    array_one = pvsystem.Array()
+    array_two = pvsystem.Array()
+    system = pvsystem.PVSystem(arrays=[array_one, array_two])
+    with pytest.raises(AttributeError):
+        getattr(system, attr)
 
+    with pytest.raises(AttributeError):
+        setattr(system, attr, 'dummy')
 
-def test_PVSystem_change_surface_azimuth():
-    system = pvsystem.PVSystem(surface_azimuth=180)
-    assert system.surface_azimuth == 180
-    match = "PVSystem.surface_azimuth attribute is deprecated"
-    with pytest.warns(UserWarning, match=match):
-        system.surface_azimuth = 90
-    assert system.surface_azimuth == 90
+    system = pvsystem.PVSystem()
+    with pytest.warns(pvlibDeprecationWarning):
+        getattr(system, attr)
 
-
-@pytest.mark.parametrize('attr', ['surface_tilt', 'surface_azimuth'])
-def test_PVSystem_change_surface_tilt_azimuth_multi(attr, two_array_system):
-    # getting fails
-    with pytest.raises(AttributeError, match='not supported for multi-array'):
-        getattr(two_array_system, attr)
-
-    # setting fails
-    with pytest.raises(AttributeError, match='not supported for multi-array'):
-        setattr(two_array_system, attr, 0)
-
-
-def test_PVSystem_get_albedo(two_array_system):
-    system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180), albedo=0.5)]
-    )
-    assert system.albedo == 0.5
-    assert two_array_system.albedo == (0.25, 0.25)
-
-
-def test_PVSystem_modules_per_string():
-    system = pvsystem.PVSystem(
-        arrays=[
-            pvsystem.Array(pvsystem.FixedMount(0, 180), modules_per_string=1),
-            pvsystem.Array(pvsystem.FixedMount(0, 180), modules_per_string=2)]
-    )
-    assert system.modules_per_string == (1, 2)
-    system = pvsystem.PVSystem(
-        arrays=[
-            pvsystem.Array(pvsystem.FixedMount(0, 180), modules_per_string=5)]
-    )
-    assert system.modules_per_string == 5
-
-
-def test_PVSystem_strings_per_inverter():
-    system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180), strings=2),
-                pvsystem.Array(pvsystem.FixedMount(0, 180), strings=1)]
-    )
-    assert system.strings_per_inverter == (2, 1)
-    system = pvsystem.PVSystem(
-        arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180), strings=5)]
-    )
-    assert system.strings_per_inverter == 5
+    with pytest.warns(pvlibDeprecationWarning):
+        setattr(system, attr, 'dummy')
 
 
 def test_PVSystem___repr__():
@@ -2002,7 +1965,8 @@ def test_PVSystem_pvwatts_dc(pvwatts_system_defaults, mocker):
     expected = 90
     out = pvwatts_system_defaults.pvwatts_dc(irrad, temp_cell)
     pvsystem.pvwatts_dc.assert_called_once_with(
-        irrad, temp_cell, **pvwatts_system_defaults.module_parameters)
+        irrad, temp_cell,
+        **pvwatts_system_defaults.arrays[0].module_parameters)
     assert_allclose(expected, out, atol=10)
 
 
@@ -2013,7 +1977,7 @@ def test_PVSystem_pvwatts_dc_kwargs(pvwatts_system_kwargs, mocker):
     expected = 90
     out = pvwatts_system_kwargs.pvwatts_dc(irrad, temp_cell)
     pvsystem.pvwatts_dc.assert_called_once_with(
-        irrad, temp_cell, **pvwatts_system_kwargs.module_parameters)
+        irrad, temp_cell, **pvwatts_system_kwargs.arrays[0].module_parameters)
     assert_allclose(expected, out, atol=10)
 
 
@@ -2114,6 +2078,12 @@ def test_PVSystem_num_arrays():
         pvsystem.Array(pvsystem.FixedMount(0, 180))])
     assert system_one.num_arrays == 1
     assert system_two.num_arrays == 2
+
+
+def test_PVSystem_at_least_one_array():
+    with pytest.raises(ValueError,
+                       match="PVSystem must have at least one Array"):
+        pvsystem.PVSystem(arrays=[])
 
 
 def test_combine_loss_factors():

@@ -1614,7 +1614,8 @@ def test_PVSystem_multiple_array_creation():
     array_two = pvsystem.Array(pvsystem.FixedMount(surface_tilt=15),
                                module_parameters={'pdc0': 1})
     pv_system = pvsystem.PVSystem(arrays=[array_one, array_two])
-    assert pv_system.module_parameters == ({}, {'pdc0': 1})
+    assert pv_system.arrays[0].module_parameters == {}
+    assert pv_system.arrays[1].module_parameters == {'pdc0': 1}
     assert pv_system.arrays == (array_one, array_two)
     with pytest.raises(TypeError):
         pvsystem.PVSystem(arrays=array_one)
@@ -1802,8 +1803,8 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad():
                                   'racking_model', 'modules_per_string',
                                   'strings_per_inverter'])
 def test_PVSystem_multi_array_attributes(attr):
-    array_one = pvsystem.Array()
-    array_two = pvsystem.Array()
+    array_one = pvsystem.Array(pvsystem.FixedMount())
+    array_two = pvsystem.Array(pvsystem.FixedMount())
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
     with pytest.raises(AttributeError):
         getattr(system, attr)
@@ -2101,22 +2102,6 @@ def test_combine_loss_factors():
 def test_no_extra_kwargs():
     with pytest.raises(TypeError, match="arbitrary_kwarg"):
         pvsystem.PVSystem(arbitrary_kwarg='value')
-
-
-def test_deprecated_attributes_single(pvwatts_system_defaults):
-    match = r"Use PVSystem.arrays\[0\].mount.surface_(tilt|azimuth)"
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        pvwatts_system_defaults.surface_tilt
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        pvwatts_system_defaults.surface_azimuth
-
-
-def test_deprecated_attributes_multi(two_array_system):
-    match = "not supported for multi-array systems"
-    with pytest.raises(AttributeError, match=match):
-        two_array_system.surface_tilt
-    with pytest.raises(AttributeError, match=match):
-        two_array_system.surface_azimuth
 
 
 def test_AbstractMount_constructor():

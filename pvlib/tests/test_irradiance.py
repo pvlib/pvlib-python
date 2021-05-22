@@ -249,33 +249,33 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
 
 
 def test_perez_negative_horizon():
-    times = pd.date_range(start='20190101 11:30:00', freq='1H', 
+    times = pd.date_range(start='20190101 11:30:00', freq='1H',
                           periods=5, tz='US/Central')
 
-    # Avoid test dependencies on functionality not being tested by hard-coding 
-    # the inputs. This data corresponds to Goodwin Creek in the afternoon on 
+    # Avoid test dependencies on functionality not being tested by hard-coding
+    # the inputs. This data corresponds to Goodwin Creek in the afternoon on
     # 1/1/2019.
     # dni_e is slightly rounded from irradiance.get_extra_radiation
-    # airmass from atmosphere.get_relative_airmas 
+    # airmass from atmosphere.get_relative_airmas
     inputs = pd.DataFrame(np.array(
-        [[ 158,         19,          1,          0,         0],
-         [ 249,        165,        136,         93,        50],
+        [[ 158,         19,          1,          0,          0],
+         [ 249,        165,        136,         93,         50],
          [  57.746951,  57.564205,  60.813841,  66.989435,  75.353368],
          [ 171.003315, 187.346924, 202.974357, 216.725599, 228.317233],
          [1414,       1414,       1414,       1414,       1414],
          [   1.869315,   1.859981,   2.044429,   2.544943,   3.900136]]).T,
-        columns=['dni', 'dhi', 'solar_zenith', 
-                   'solar_azimuth', 'dni_extra', 'airmass'],
+        columns=['dni', 'dhi', 'solar_zenith',
+                 'solar_azimuth', 'dni_extra', 'airmass'],
         index=times
     )
 
     out = irradiance.perez(34, 180, inputs['dhi'], inputs['dni'],
                            inputs['dni_extra'], inputs['solar_zenith'],
                            inputs['solar_azimuth'], inputs['airmass'],
-                           model='allsitescomposite1990', 
+                           model='allsitescomposite1990',
                            return_components=True)
 
-    # sky_diffuse can be less than isotropic under certain conditions as 
+    # sky_diffuse can be less than isotropic under certain conditions as
     # horizon goes negative
     expected = pd.DataFrame(np.array(
         [[281.410185, 152.20879, 123.867898, 82.836412, 43.517015],
@@ -705,7 +705,7 @@ def test_gti_dirint():
         temp_dew=temp_dew)
 
     expected = pd.DataFrame(array(
-        [[  21.05796198,    0.        ,   21.05796198],
+        [[  21.05796198,    0.,           21.05796198],
          [ 295.06070190,   38.20346345,  268.0467738],
          [ 931.79627208,  689.81549269,  283.5817439]]),
         columns=expected_col_order, index=times)

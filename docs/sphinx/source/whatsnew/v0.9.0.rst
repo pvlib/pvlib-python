@@ -133,6 +133,12 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Corrected an error in :py:func:`~pvlib.irradiance.perez` where the horizon
+  irradiance component was prevented from taking negative values. Negative 
+  values are intentional according to the original publication. Changes in 
+  output are expected to be small and primarily occur at low irradiance 
+  conditions.
+  (:issue:`1238`, :pull:`1239`)
 * Pass weather data to solar position calculations in
   :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
   (:issue:`1065`, :pull:`1140`)
@@ -176,3 +182,4 @@ Contributors
 * Tony Lorenzo (:ghuser:`alorenzo175`)
 * Damjan Postolovski (:ghuser:`dpostolovski`)
 * Joe Ranalli (:ghuser:`jranalli`)
+* Chas Schweizer (:ghuser:`cpr-chas`)

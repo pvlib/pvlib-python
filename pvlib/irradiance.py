@@ -1126,7 +1126,6 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     F1 = np.maximum(F1, 0)
 
     F2 = (F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z)
-    F2 = np.maximum(F2, 0)
 
     A = aoi_projection(surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth)

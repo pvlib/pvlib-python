@@ -792,6 +792,43 @@ def test_calcparams_cec(cec_module_params):
                         check_less_precise=3)
 
 
+def test_calcparams_cec_extra_params_propagation(cec_module_params, mocker):
+    """
+    See bug #1215.
+
+    When calling `calcparams_cec`, the parameters `EgRef`, `dEgdT`, `irrad_ref`
+    and `temp_ref` must not be ignored.
+
+    Since, internally, this function is calling `calcparams_desoto`, this test
+    checks that the latter is called with the expected parameters instead of
+    some default values.
+    """
+    times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
+    effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
+    temp_cell = pd.Series([25, 25, 50], index=times)
+    extra_parameters = dict(
+        EgRef=1.123,
+        dEgdT=-0.0002688,
+        irrad_ref=1100,
+        temp_ref=23,
+    )
+    m = mocker.spy(pvsystem, 'calcparams_desoto')
+    pvsystem.calcparams_cec(
+        effective_irradiance=effective_irradiance,
+        temp_cell=temp_cell,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        Adjust=cec_module_params['Adjust'],
+        **extra_parameters,
+    )
+    assert m.call_count == 1
+    assert m.call_args[1] == extra_parameters
+
+
 def test_calcparams_pvsyst(pvsyst_module_params):
     times = pd.date_range(start='2015-01-01', periods=2, freq='12H')
     effective_irradiance = pd.Series([0.0, 800.0], index=times)

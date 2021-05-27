@@ -163,6 +163,8 @@ Bug fixes
 * Fix floating point round-off issue in
   :py:func:`~pvlib.irradiance.aoi_projection` (:issue:`1185`, :pull:`1191`)
 * Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
+* Take into account ``EgRef``, ``dEgdT``, ``irrad_ref`` and ``temp_ref`` when
+  calling :py:func:`~pvlib.pvsystem.calcparams_cec`. (:issue:`1215`, :pull:`1216`)
 * Corrected methodology error in :py:func:`~pvlib.scaling.wvm`. Tracks with
   fix in PVLib for MATLAB. (:issue:`1206`, :pull:`1213`)
 
@@ -197,5 +199,6 @@ Contributors
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
 * Damjan Postolovski (:ghuser:`dpostolovski`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Joe Ranalli (:ghuser:`jranalli`)
 * Chas Schweizer (:ghuser:`cpr-chas`)

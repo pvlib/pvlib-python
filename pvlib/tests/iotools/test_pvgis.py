@@ -159,8 +159,9 @@ def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
     for meta_value in meta:
         if not meta_value:
             continue
-        # don't check end year because it changes every year
-        if meta_value[:-4] == 'PVGIS (c) European Communities, 2001-':
+        # this copyright text tends to change (copyright year range increments
+        # annually, e.g.), so just check the beginning of it:
+        if meta_value.startswith('PVGIS (c) European'):
             continue
         assert meta_value in csv_meta
 

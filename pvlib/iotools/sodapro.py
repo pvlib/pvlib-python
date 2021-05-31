@@ -9,13 +9,13 @@ import io
 import warnings
 
 
-CAMS_RADIATION_INTEGRATED_COLUMNS = [
+CAMS_INTEGRATED_COLUMNS = [
     'TOA', 'Clear sky GHI', 'Clear sky BHI', 'Clear sky DHI', 'Clear sky BNI',
     'GHI', 'BHI', 'DHI', 'BNI',
     'GHI no corr', 'BHI no corr', 'DHI no corr', 'BNI no corr']
 
 # Dictionary mapping CAMS Radiation and McClear variables to pvlib names
-CAMS_RADIATION_VARIABLE_MAP = {
+CAMS_VARIABLE_MAP = {
     'TOA': 'ghi_extra',
     'Clear sky GHI': 'ghi_clear',
     'Clear sky BHI': 'bhi_clear',
@@ -41,11 +41,10 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
                                  '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
 
 
-def get_cams_radiation(start_date, end_date, latitude, longitude, email,
-                       identifier='mcclear', altitude=None, time_step='1h',
-                       time_ref='UT', verbose=False, integrated=False,
-                       label=None, map_variables=True,
-                       server='www.soda-is.com'):
+def get_cams(start_date, end_date, latitude, longitude, email,
+             identifier='mcclear', altitude=None, time_step='1h',
+             time_ref='UT', verbose=False, integrated=False, label=None,
+             map_variables=True, server='www.soda-is.com'):
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
     diffuse radiation from CAMS [1]_, [2]_ using the WGET service [3]_.
@@ -70,13 +69,13 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
         in decimal degrees, between -90 and 90, north is positive (ISO 19115)
     longitude : float
         in decimal degrees, between -180 and 180, east is positive (ISO 19115)
-    altitude: float, default: None
-        Altitude in meters. If None, then the altitude is determined from the
-        NASA SRTM database
     email: str
         Email address linked to a SoDa account
     identifier: {'mcclear', 'cams_radiation'}
         Specify whether to retrieve CAMS Radiation or McClear parameters
+    altitude: float, default: None
+        Altitude in meters. If None, then the altitude is determined from the
+        NASA SRTM database
     time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
         Time step of the time series, either 1 minute, 15 minute, hourly,
         daily, or monthly.
@@ -93,7 +92,7 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
         all time steps except for ‘1M’ which has a default of ‘right’.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable CAMS_RADIATION_VARIABLE_MAP.
+        where applicable. See variable CAMS_VARIABLE_MAP.
     server: str, default: 'www.soda-is.com'
         Main server (www.soda-is.com) or backup mirror server (pro.soda-is.com)
 
@@ -137,12 +136,12 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
 
     Variables corresponding to standard pvlib variables are renamed,
     e.g. `sza` becomes `solar_zenith`. See the
-    `pvlib.iotools.cams.CAMS_RADIATION_VARIABLE_MAP` dict for the complete
+    `pvlib.iotools.cams.CAMS_VARIABLE_MAP` dict for the complete
     mapping.
 
     See Also
     --------
-    pvlib.iotools.read_cams_radiation, pvlib.iotools.parse_cams_radiation
+    pvlib.iotools.read_cams, pvlib.iotools.parse_cams
 
     Raises
     ------
@@ -211,17 +210,15 @@ def get_cams_radiation(start_date, end_date, latitude, longitude, email,
     # Successful requests returns a csv data file
     elif res.headers['Content-Type'] == 'application/csv':
         fbuf = io.StringIO(res.content.decode('utf-8'))
-        data, meta = parse_cams_radiation(fbuf, integrated=integrated,
-                                          label=label,
-                                          map_variables=map_variables)
+        data, meta = parse_cams(fbuf, integrated=integrated, label=label,
+                                map_variables=map_variables)
         return data, meta
 
 
-def parse_cams_radiation(fbuf, integrated=False, label=None,
-                         map_variables=True):
+def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     """
     Parse a file-like buffer with data in the format of a CAMS Radiation or
-    McClear file. The CAMS servicess are described in [1]_ and [2]_.
+    McClear file. The CAMS services are described in [1]_ and [2]_.
 
     Parameters
     ----------
@@ -235,7 +232,7 @@ def parse_cams_radiation(fbuf, integrated=False, label=None,
         all time steps except for ‘1M’ which has a default of ‘right’.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable CAMS_RADIATION_VARIABLE_MAP.
+        where applicable. See variable CAMS_VARIABLE_MAP.
 
     Returns
     -------
@@ -246,7 +243,7 @@ def parse_cams_radiation(fbuf, integrated=False, label=None,
 
     See Also
     --------
-    pvlib.iotools.read_cams_radiation, pvlib.iotools.get_cams_radiation
+    pvlib.iotools.read_cams, pvlib.iotools.get_cams
 
     References
     ----------
@@ -300,7 +297,7 @@ def parse_cams_radiation(fbuf, integrated=False, label=None,
         data.index = data.index - pd.Timedelta(days=1)
 
     if not integrated:  # Convert radiation values from Wh/m2 to W/m2
-        integrated_cols = [c for c in CAMS_RADIATION_INTEGRATED_COLUMNS
+        integrated_cols = [c for c in CAMS_INTEGRATED_COLUMNS
                            if c in data.columns]
 
         if time_step == '1M':
@@ -316,13 +313,12 @@ def parse_cams_radiation(fbuf, integrated=False, label=None,
     data.index.name = 'time'  # Set index name to None
 
     if map_variables:
-        data = data.rename(columns=CAMS_RADIATION_VARIABLE_MAP)
+        data = data.rename(columns=CAMS_VARIABLE_MAP)
 
     return data, meta
 
 
-def read_cams_radiation(filename, integrated=False, label=None,
-                        map_variables=True):
+def read_cams(filename, integrated=False, label=None, map_variables=True):
     """
     Read a CAMS Radiation or McClear file into a pandas DataFrame. CAMS
     radiation and McClear are described in [1]_ and [2]_, respectively.
@@ -339,19 +335,19 @@ def read_cams_radiation(filename, integrated=False, label=None,
         all time steps except for ‘1M’ which has a default of ‘right’.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable CAMS_RADIATION_VARIABLE_MAP.
+        where applicable. See variable CAMS_VARIABLE_MAP.
 
     Returns
     -------
     data: pandas.DataFrame
         Timeseries data from CAMS Radiation or McClear
-        :func:`pvlib.iotools.get_cams_radiation` for fields
+        :func:`pvlib.iotools.get_cams` for fields
     meta: dict
-        Metadata avaiable in the file.
+        Metadata available in the file.
 
     See Also
     --------
-    pvlib.iotools.parse_cams_radiation, pvlib.iotools.get_cams_radiation
+    pvlib.iotools.parse_cams, pvlib.iotools.get_cams
 
     References
     ----------
@@ -361,5 +357,5 @@ def read_cams_radiation(filename, integrated=False, label=None,
        <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
     """
     with open(str(filename), 'r') as fbuf:
-        content = parse_cams_radiation(fbuf)
+        content = parse_cams(fbuf)
     return content

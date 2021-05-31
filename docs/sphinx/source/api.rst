@@ -484,9 +484,9 @@ relevant to solar energy modeling.
    iotools.get_pvgis_tmy
    iotools.read_pvgis_tmy
    iotools.read_bsrn
-   iotools.get_cams_radiation
-   iotools.read_cams_radiation
-   iotools.parse_cams_radiation
+   iotools.get_cams
+   iotools.read_cams
+   iotools.parse_cams
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

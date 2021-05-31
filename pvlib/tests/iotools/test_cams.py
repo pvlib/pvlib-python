@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import pytest
 
-from pvlib.iotools import cams
+from pvlib.iotools import sodapro
 from conftest import DATA_DIR, assert_frame_equal
 
 
@@ -142,14 +142,12 @@ def test_read_cams(testfile, index, columns, values, dtypes):
     expected.index.freq = None
     for (col, _dtype) in zip(expected.columns, dtypes):
         expected[col] = expected[col].astype(_dtype)
-    out = cams.read_cams_radiation(testfile, integrated=False,
-                                   map_variables=True)
+    out = sodapro.read_cams(testfile, integrated=False, map_variables=True)
     assert_frame_equal(out, expected)
 
 
 def test_read_cams_metadata():
-    _, meta = cams.read_cams_radiation(testfile_mcclear_monthly,
-                                       integrated=False)
+    _, meta = sodapro.read_cams(testfile_mcclear_monthly, integrated=False)
     assert meta['Time reference'] == 'Universal time (UT)'
     assert meta['noValue'] == 'nan'
     assert meta['latitude'] == 55.7906

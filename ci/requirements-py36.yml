@@ -16,7 +16,6 @@ dependencies:
     - pytest
     - pytest-cov
     - pytest-mock
-    - requests-mock
     - pytest-rerunfailures
     - pytest-remotedata
     - pytest-timeout
@@ -31,3 +30,4 @@ dependencies:
         - dataclasses
         - nrel-pysam>=2.0
         - pvfactors==1.4.1
+        - requests-mock

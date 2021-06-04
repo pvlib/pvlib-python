@@ -603,11 +603,11 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
     """ Calculates statistics for each window, used by Reno-style clear
     sky detection functions. Does not return the line length statistic
     which is provided by _calc_windowed_stat and _line_length.
-    
+
     Calculations are done on a sliding window defined by the Hankel matrix H.
     Columns in H define the indices for each window. Each window contains
     samples_per_window index values. The first window starts with index 0;
-    the last window ends at the last index position in data. 
+    the last window ends at the last index position in data.
 
     In the calculation of data_slope_nstd, a choice is made here where [1]_ is
     ambiguous. data_slope_nstd is the standard deviation of slopes divided by

@@ -80,7 +80,7 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
         Time step of the time series, either 1 minute, 15 minute, hourly,
         daily, or monthly.
-    time_reference: str, {'UT', 'TST'}, default: 'UT'
+    time_ref: str, {'UT', 'TST'}, default: 'UT'
         'UT' (universal time) or 'TST' (True Solar Time)
     verbose: boolean, default: False
         Verbose mode outputs additional parameters (aerosols). Only available
@@ -168,6 +168,9 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     if (verbose is True) & ((time_step != '1min') | (time_ref != 'UT')):
         verbose = False
         warnings.warn("Verbose mode only supports 1 min. UT time series!")
+        
+    if identifier not in ['mcclear', 'cams_radiation']:
+        raise ValueError('Identifier must be either mcclear or cams_radiation')
 
     # Format verbose variable to the required format: {'true', 'false'}
     verbose = str(verbose).lower()

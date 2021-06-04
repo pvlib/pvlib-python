@@ -4,6 +4,7 @@ test iotools for CAMS
 
 import pandas as pd
 import numpy as np
+import requests
 import pytest
 
 from pvlib.iotools import sodapro
@@ -127,6 +128,19 @@ values_radiation_monthly = np.array([
      0.9897]])
 
 
+# @pytest.fixture()  # scope=?
+def generate_expected_dataframe(values, columns, index, dtypes):
+    """Create dataframe from arrays of values, columns and index, in order to 
+    use this dataframe to compare to.
+    """
+    expected = pd.DataFrame(values, columns=columns, index=index)
+    expected.index.name = 'time'
+    expected.index.freq = None
+    for (col, _dtype) in zip(expected.columns, dtypes):
+        expected[col] = expected[col].astype(_dtype)
+    return expected
+
+
 @pytest.mark.parametrize('testfile,index,columns,values,dtypes', [
     (testfile_mcclear_verbose, index_verbose, columns_mcclear_verbose,
      values_mcclear_verbose, dtypes_mcclear_verbose),
@@ -137,12 +151,8 @@ values_radiation_monthly = np.array([
     (testfile_radiation_monthly, index_monthly, columns_radiation,
      values_radiation_monthly, dtypes_radiation)])
 def test_read_cams(testfile, index, columns, values, dtypes):
-    expected = pd.DataFrame(values, columns=columns, index=index)
-    expected.index.name = 'time'
-    expected.index.freq = None
-    for (col, _dtype) in zip(expected.columns, dtypes):
-        expected[col] = expected[col].astype(_dtype)
-    out = sodapro.read_cams(testfile, integrated=False, map_variables=True)
+    expected = generate_expected_dataframe(values, columns, index, dtypes)
+    out, meta = sodapro.read_cams(testfile, integrated=False, map_variables=True)
     assert_frame_equal(out, expected)
 
 
@@ -155,3 +165,58 @@ def test_read_cams_metadata():
     assert meta['altitude'] == 39.0
     assert meta['radiation_unit'] == 'W/m^2'
     assert meta['time_step'] == '1M'
+
+
+def test_get_cams(requests_mock):
+
+    with open(testfile_mcclear_monthly, 'r') as test_file:
+        mock_response = test_file.read()
+
+    url_mcclear_monthly = 'http://www.soda-is.com/service/wps?DataInputs=latitude=55.7906;longitude=12.5251;altitude=80;date_begin=2020-01-01;date_end=2020-05-04;time_ref=UT;summarization=P01M;username=arajen%2540byg.dtu.dk;verbose=false&Service=WPS&Request=Execute&Identifier=get_mcclear&version=1.0.0&RawDataOutput=irradiation'  # noqa: E501
+
+    requests_mock.get(url_mcclear_monthly, text=mock_response,
+                      headers={'Content-Type': 'application/csv'})
+
+    out, meta = sodapro.get_cams(
+        start_date=pd.Timestamp('2020-01-01'),
+        end_date=pd.Timestamp('2020-05-04'),
+        latitude=55.7906,
+        longitude=12.5251,
+        altitude=80,
+        email='arajen@byg.dtu.dk',
+        time_step='1M',
+        integrated=False)
+
+    expected = generate_expected_dataframe(
+        values_mcclear_monthly,columns_mcclear, index_monthly, dtypes_mcclear)
+
+    assert_frame_equal(out, expected)
+
+
+def test_get_cams_bad_request(requests_mock):
+    """Test that a HTTP error is raised for invalid requests"""
+
+    # Subset of an xml file returned for errornous requests
+    mock_response_bad = """<?xml version="1.0" encoding="utf-8"?>
+    <ows:Exception exceptionCode="NoApplicableCode" locator="None">
+    <ows:ExceptionText>Failed to execute WPS process [get_mcclear]:
+        Please, register yourself at www.soda-pro.com
+    </ows:ExceptionText>"""
+
+    url_cams_bad_request = 'http://pro.soda-is.com/service/wps?DataInputs=latitude=55.7906;longitude=12.5251;altitude=-999;date_begin=2020-01-01;date_end=2020-05-04;time_ref=TST;summarization=PT01H;username=test%2540test.com;verbose=false&Service=WPS&Request=Execute&Identifier=get_mcclear&version=1.0.0&RawDataOutput=irradiation'  # noqa: E501
+
+    requests_mock.get(url_cams_bad_request, text=mock_response_bad,
+                      headers={'Content-Type': 'application/xml'})
+
+    with pytest.raises(requests.HTTPError):
+        assert sodapro.get_cams(
+                start_date=pd.Timestamp('2020-01-01'),
+                end_date=pd.Timestamp('2020-05-04'),
+                latitude=55.7906,
+                longitude=12.5251,
+                identifier='mcclear',
+                time_ref='TST',
+                verbose=True,
+                time_step='1h',
+                email='test@test.com',  # fake email
+                server='pro.soda-is.com')

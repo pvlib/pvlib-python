@@ -47,7 +47,8 @@ def get_cams(start_date, end_date, latitude, longitude, email,
              map_variables=True, server='www.soda-is.com'):
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
-    diffuse radiation from CAMS [1]_, [2]_ using the WGET service [3]_.
+    diffuse radiation from CAMS. Data from CAMS Radiation [1]_ and CAMS McClear
+    [2]_ are retrieved using the WGET service [3]_.
 
     Time coverage: 2004-01-01 to two days ago
 
@@ -87,9 +88,9 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label: {‘right’, ‘left’}, default: None
-        Which bin edge label to label time-step with. The default is ‘left’ for
-        all time steps except for ‘1M’ which has a default of ‘right’.
+    label: {'right', 'left'}, default: None
+        Which bin edge label to label time-step with. The default is 'left for
+        all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable CAMS_VARIABLE_MAP.
@@ -227,9 +228,9 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label: {‘right’, ‘left’}, default: None
-        Which bin edge label to label time-step with. The default is ‘left’ for
-        all time steps except for ‘1M’ which has a default of ‘right’.
+    label: {'right', 'left'}, default: None
+        Which bin edge label to label time-step with. The default is 'left' for
+        all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable CAMS_VARIABLE_MAP.
@@ -330,9 +331,9 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label: {‘right’, ‘left’}, default: None
-        Which bin edge label to label time-step with. The default is ‘left’ for
-        all time steps except for ‘1M’ which has a default of ‘right’.
+    label: {'right', 'left}, default: None
+        Which bin edge label to label time-step with. The default is 'left' for
+        all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable CAMS_VARIABLE_MAP.

@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from pvlib.iotools import sodapro
-from conftest import DATA_DIR, assert_frame_equal
+from ..conftest import DATA_DIR, assert_frame_equal
 
 
 testfile_mcclear_verbose = DATA_DIR / 'cams_mcclear_1min_verbose.csv'

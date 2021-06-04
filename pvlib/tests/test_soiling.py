@@ -3,10 +3,10 @@
 import datetime
 import numpy as np
 import pandas as pd
-from conftest import assert_series_equal
+from .conftest import assert_series_equal
 from pvlib.soiling import hsu, kimber
 from pvlib.iotools import read_tmy3
-from conftest import DATA_DIR
+from .conftest import DATA_DIR
 import pytest
 
 

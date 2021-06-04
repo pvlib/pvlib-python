@@ -40,6 +40,15 @@ Breaking changes
   ``ModelChain.adrinverter`` changed to ``ModelChain.adr_inverter``.
   (:pull:`1150`)
 
+* The ``orientation_strategy`` parameter has been removed from the various
+  :py:class:`pvlib.modelchain.ModelChain` constructors and ``surface_tilt``,
+  ``surface_azimuth`` are now required parameters for
+  :py:func:`pvlib.modelchain.basic_chain` (:issue:`1028`, :pull:`1181`)
+
+* Removed the ``**kwargs`` parameters from :py:meth:`~pvlib.pvsystem.PVSystem.sapm` and
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_cec` (:issue:`1118`, :pull:`1222`)
+
 
 Deprecations
 ~~~~~~~~~~~~
@@ -55,10 +64,42 @@ Deprecations
   * ``ModelChain.dc``
   * ``ModelChain.diode_params``
   * ``ModelChain.effective_irradiance``
+  * ``ModelChain.losses``
   * ``ModelChain.solar_position``
   * ``ModelChain.spectral_modifier``
   * ``ModelChain.total_irrad``
   * ``ModelChain.tracking``
+  * ``ModelChain.weather``
+  * ``ModelChain.times``
+
+* The following ``PVSystem`` cell temperature methods have been deprecated
+  and consolidated into the new wrapper method
+  :py:meth:`~pvlib.pvsystem.PVSystem.get_cell_temperature` (:pull:`1211`):
+
+  * :py:meth:`~pvlib.pvsystem.PVSystem.sapm_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.pvsyst_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.faiman_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.fuentes_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.noct_sam_celltemp`
+
+* The ``eta_m`` parameter for :py:func:`~pvlib.temperature.pvsyst_cell` is
+  replaced by parameter ``module_efficiency``. (:issue:`1188`, :pull:`1218`)
+
+* The following attributes of :py:class:`pvlib.pvsystem.PVSystem` and
+  :py:class:`pvlib.tracking.SingleAxisTracker` have been deprecated in
+  favor of the corresponding :py:class:`pvlib.pvsystem.Array` attributes:
+
+  * ``PVSystem.albedo``
+  * ``PVSystem.module``
+  * ``PVSystem.module_parameters``
+  * ``PVSystem.module_type``
+  * ``PVSystem.modules_per_string``
+  * ``PVSystem.racking_model``
+  * ``PVSystem.strings_per_inverter``
+  * ``PVSystem.surface_tilt``
+  * ``PVSystem.surface_azimuth``
+  * ``PVSystem.temperature_model_parameters``
+
 
 Enhancements
 ~~~~~~~~~~~~
@@ -101,23 +142,49 @@ Enhancements
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
   from DC power. Use parameter ``model`` to specify which inverter model to use.
   (:pull:`1147`, :issue:`998`, :pull:`1150`)
+* Added :py:func:`~pvlib.temperature.noct_sam`, a cell temperature model
+  implemented in SAM. (:pull:`1177`, :pull:`1195`)
+* Added :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` to calculate
+  the temperature coefficient of power for the pvsyst module model.
+   (:pull:`1190`)
+* :py:func:`~pvlib.irradiance.get_total_irradiance` and
+  :py:func:`~pvlib.irradiance.get_sky_diffuse` now fill in ``airmass``
+  if required and not provided. These functions now raise a ``ValueError``
+  if ``dni_extra`` is required and not provided. (:issue:`949`, :pull:`1225`)
 
 Bug fixes
 ~~~~~~~~~
+* Corrected an error in :py:func:`~pvlib.irradiance.perez` where the horizon
+  irradiance component was prevented from taking negative values. Negative 
+  values are intentional according to the original publication. Changes in 
+  output are expected to be small and primarily occur at low irradiance 
+  conditions.
+  (:issue:`1238`, :pull:`1239`)
 * Pass weather data to solar position calculations in
   :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
   (:issue:`1065`, :pull:`1140`)
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
+* Fix floating point round-off issue in
+  :py:func:`~pvlib.irradiance.aoi_projection` (:issue:`1185`, :pull:`1191`)
+* Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
+* Take into account ``EgRef``, ``dEgdT``, ``irrad_ref`` and ``temp_ref`` when
+  calling :py:func:`~pvlib.pvsystem.calcparams_cec`. (:issue:`1215`, :pull:`1216`)
+* Corrected methodology error in :py:func:`~pvlib.scaling.wvm`. Tracks with
+  fix in PVLib for MATLAB. (:issue:`1206`, :pull:`1213`)
 
 Testing
 ~~~~~~~
+* Added ``__init__.py`` to ``pvlib/tests`` and subdirectories. This follows
+  pytest recommendations for package layout and imports from ``conftest.py``.
+  Solves issue with test discovery in vscode. (:pull:`1204`)
 
 Documentation
 ~~~~~~~~~~~~~
-
 * Update intro tutorial to highlight the use of historical meteorological data
-  and to make the procedural and object oriented results match exactly.
+  and to make the procedural and OO results match exactly. (:issue:`1116`, :pull:`1144`)
+* Add a gallery example showing how to appropriately use interval-averaged
+  weather data for modeling. (:pull:`1152`)
 * Update documentation links in :py:func:`pvlib.iotools.get_psm3`
 
 Requirements
@@ -136,3 +203,7 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
+* Damjan Postolovski (:ghuser:`dpostolovski`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Joe Ranalli (:ghuser:`jranalli`)
+* Chas Schweizer (:ghuser:`cpr-chas`)

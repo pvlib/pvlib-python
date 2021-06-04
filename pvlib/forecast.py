@@ -725,11 +725,11 @@ class GFS(ForecastModel):
             'total_clouds':
                 'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
             'low_clouds':
-                'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
+                'Low_cloud_cover_low_cloud_Mixed_intervals_Average',
             'mid_clouds':
-                'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
+                'Medium_cloud_cover_middle_cloud_Mixed_intervals_Average',
             'high_clouds':
-                'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
+                'High_cloud_cover_high_cloud_Mixed_intervals_Average',
             'boundary_clouds': ('Total_cloud_cover_boundary_layer_cloud_'
                                 'Mixed_intervals_Average'),
             'convect_clouds': 'Total_cloud_cover_convective_cloud',

@@ -4,7 +4,7 @@ import pytest
 from pvlib.ivtools.utils import _numdiff, rectify_iv_curve
 from pvlib.ivtools.utils import _schumaker_qspline
 
-from conftest import DATA_DIR
+from ..conftest import DATA_DIR
 
 
 @pytest.fixture

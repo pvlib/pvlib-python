@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose
 
 import pvlib
 from pvlib import tracking, pvsystem
-from conftest import DATA_DIR, assert_frame_equal
+from .conftest import DATA_DIR, assert_frame_equal
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']
@@ -297,7 +297,7 @@ def test_SingleAxisTracker_creation():
 
     assert system.max_angle == 45
     assert system.gcr == .25
-    assert system.module == 'blah'
+    assert system.arrays[0].module == 'blah'
     assert system.inverter == 'blarg'
 
 
@@ -309,7 +309,7 @@ def test_SingleAxisTracker_one_array_only():
             surface_azimuth=None
         )]
     )
-    assert system.module == 'foo'
+    assert system.arrays[0].module == 'foo'
     with pytest.raises(ValueError,
                        match="SingleAxisTracker does not support "
                              r"multiple arrays\."):

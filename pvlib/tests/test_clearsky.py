@@ -614,8 +614,6 @@ def test_detect_clearsky_time_interval(detect_clearsky_data):
     expected2 = expected.iloc[u]
     clear_samples = clearsky.detect_clearsky(
         expected2['GHI'], cs2['ghi'], window_length=6)
-    expected = expected['Clear or not'].copy()
-    expected.iloc[-3:] = True
     assert_series_equal(expected2['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 

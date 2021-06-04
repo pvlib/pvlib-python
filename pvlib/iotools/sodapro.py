@@ -361,5 +361,5 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
        <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
     """
     with open(str(filename), 'r') as fbuf:
-        content = parse_cams(fbuf)
+        content = parse_cams(fbuf, integrated, label, map_variables)
     return content

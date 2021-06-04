@@ -48,7 +48,7 @@ INSTALL_REQUIRES = ['numpy >= 1.12.0',
 if sys.version_info.major == 3 and sys.version_info.minor == 6:
     INSTALL_REQUIRES.append('dataclasses')
 
-TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
+TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock', 'requests-mock',
                  'pytest-timeout', 'pytest-rerunfailures', 'pytest-remotedata']
 EXTRAS_REQUIRE = {
     'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',

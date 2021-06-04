@@ -607,6 +607,19 @@ def test_detect_clearsky_window(detect_clearsky_data):
                         check_dtype=False, check_names=False)
 
 
+def test_detect_clearsky_time_interval(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    u = np.arange(0, len(cs), 2)
+    cs2 = cs.iloc[u]
+    expected2 = expected.iloc[u]
+    clear_samples = clearsky.detect_clearsky(
+        expected2['GHI'], cs2['ghi'], window_length=6)
+    expected = expected['Clear or not'].copy()
+    expected.iloc[-3:] = True
+    assert_series_equal(expected2['Clear or not'], clear_samples,
+                        check_dtype=False, check_names=False)
+
+
 def test_detect_clearsky_arrays(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(

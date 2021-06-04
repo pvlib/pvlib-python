@@ -122,14 +122,14 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     Clear sky BHI, bhi_clear  float   Clear sky beam radiation on horizontal
     Clear sky DHI, dhi_clear  float   Clear sky diffuse radiation on horizontal
     Clear sky BNI, dni_clear  float   Clear sky beam radiation normal to sun
-    GHI, ghi*                 float   Global horizontal radiation
-    BHI, bhi*                 float   Beam (direct) radiation on horizontal
-    DHI, dhi*                 float   Diffuse horizontal radiation
-    BNI, dni*                 float   Beam (direct) radiation normal to the sun
-    Reliability*              float   Reliable data fraction in summarization
+    GHI, ghi†                 float   Global horizontal radiation
+    BHI, bhi†                 float   Beam (direct) radiation on horizontal
+    DHI, dhi†                 float   Diffuse horizontal radiation
+    BNI, dni†                 float   Beam (direct) radiation normal to the sun
+    Reliability†              float   Reliable data fraction in summarization
     ========================  ======  =========================================
 
-    *Parameters only returned if identifier='cams_radiation'. For description
+    †Parameters only returned if identifier='cams_radiation'. For description
     of additional output parameters in verbose mode, see [1]_ and [2]_.
 
     Note that it is recommended to specify the latitude and longitude to at

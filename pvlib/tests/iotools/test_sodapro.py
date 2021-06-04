@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 import requests
 import pytest
-import requests_mock
 
 from pvlib.iotools import sodapro
 from ..conftest import DATA_DIR, assert_frame_equal
@@ -218,7 +217,7 @@ def test_get_cams_bad_request(requests_mock):
             longitude=12.5251,
             identifier='mcclear',
             time_ref='TST',
-            verbose=True,
+            verbose=False,
             time_step='1h',
             email='test@test.com',  # fake email
             server='pro.soda-is.com')

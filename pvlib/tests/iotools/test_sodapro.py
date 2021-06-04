@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import requests
 import pytest
+import requests_mock
 
 from pvlib.iotools import sodapro
 from ..conftest import DATA_DIR, assert_frame_equal
@@ -130,7 +131,7 @@ values_radiation_monthly = np.array([
 
 # @pytest.fixture()  # scope=?
 def generate_expected_dataframe(values, columns, index, dtypes):
-    """Create dataframe from arrays of values, columns and index, in order to 
+    """Create dataframe from arrays of values, columns and index, in order to
     use this dataframe to compare to.
     """
     expected = pd.DataFrame(values, columns=columns, index=index)
@@ -152,7 +153,8 @@ def generate_expected_dataframe(values, columns, index, dtypes):
      values_radiation_monthly, dtypes_radiation)])
 def test_read_cams(testfile, index, columns, values, dtypes):
     expected = generate_expected_dataframe(values, columns, index, dtypes)
-    out, meta = sodapro.read_cams(testfile, integrated=False, map_variables=True)
+    out, meta = sodapro.read_cams(testfile, integrated=False,
+                                  map_variables=True)
     assert_frame_equal(out, expected)
 
 
@@ -188,7 +190,7 @@ def test_get_cams(requests_mock):
         integrated=False)
 
     expected = generate_expected_dataframe(
-        values_mcclear_monthly,columns_mcclear, index_monthly, dtypes_mcclear)
+        values_mcclear_monthly, columns_mcclear, index_monthly, dtypes_mcclear)
 
     assert_frame_equal(out, expected)
 
@@ -210,13 +212,13 @@ def test_get_cams_bad_request(requests_mock):
 
     with pytest.raises(requests.HTTPError):
         assert sodapro.get_cams(
-                start_date=pd.Timestamp('2020-01-01'),
-                end_date=pd.Timestamp('2020-05-04'),
-                latitude=55.7906,
-                longitude=12.5251,
-                identifier='mcclear',
-                time_ref='TST',
-                verbose=True,
-                time_step='1h',
-                email='test@test.com',  # fake email
-                server='pro.soda-is.com')
+            start_date=pd.Timestamp('2020-01-01'),
+            end_date=pd.Timestamp('2020-05-04'),
+            latitude=55.7906,
+            longitude=12.5251,
+            identifier='mcclear',
+            time_ref='TST',
+            verbose=True,
+            time_step='1h',
+            email='test@test.com',  # fake email
+            server='pro.soda-is.com')

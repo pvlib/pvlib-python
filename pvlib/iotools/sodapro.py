@@ -168,7 +168,7 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     if (verbose is True) & ((time_step != '1min') | (time_ref != 'UT')):
         verbose = False
         warnings.warn("Verbose mode only supports 1 min. UT time series!")
-        
+
     if identifier not in ['mcclear', 'cams_radiation']:
         raise ValueError('Identifier must be either mcclear or cams_radiation')
 

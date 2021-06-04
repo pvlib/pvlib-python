@@ -201,7 +201,7 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     # semi-colons, which gets incorrectly formatted by the requests function
     # if passed using the params argument.
     res = requests.get(base_url + '?DataInputs=' + data_inputs, params=params)
-
+    print(res.url)
     # Invalid requests returns an XML error message and the HTTP staus code 200
     # as if the request was successful. Therefore, errors cannot be handled
     # automatic (e.g. res.raise_for_status()) and errors are handled manually

@@ -172,8 +172,7 @@ def test_read_cams_metadata():
     (testfile_mcclear_monthly, index_monthly, columns_mcclear,
      values_mcclear_monthly, dtypes_mcclear, 'mcclear'),
     (testfile_radiation_monthly, index_monthly, columns_radiation,
-     values_radiation_monthly, dtypes_radiation, 'cams_radiation')
-     ])
+     values_radiation_monthly, dtypes_radiation, 'cams_radiation')])
 def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
                   identifier):
     """Test that get_cams generates the correct URI request and that parse_cams
@@ -182,7 +181,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
     with open(testfile, 'r') as test_file:
         mock_response = test_file.read()
     # Specify the full URI of a specific example, this ensures that all of the
-    # inputs are passing on correctly    
+    # inputs are passing on correctly
     url_test_cams = f'http://www.soda-is.com/service/wps?DataInputs=latitude=55.7906;longitude=12.5251;altitude=80;date_begin=2020-01-01;date_end=2020-05-04;time_ref=UT;summarization=P01M;username=arajen%2540byg.dtu.dk;verbose=false&Service=WPS&Request=Execute&Identifier=get_{identifier}&version=1.0.0&RawDataOutput=irradiation'  # noqa: E501
 
     requests_mock.get(url_test_cams, text=mock_response, complete_qs=False,
@@ -266,5 +265,4 @@ def test_get_cams_bad_request(requests_mock):
             longitude=12.5251,
             email='test@test.com',
             identifier='mcclear',
-            time_step = 'test')  # incorrect time step
-
+            time_step='test')  # incorrect time step

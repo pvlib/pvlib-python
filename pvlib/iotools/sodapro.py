@@ -89,7 +89,7 @@ def get_cams(start_date, end_date, latitude, longitude, email,
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
     label: {'right', 'left'}, default: None
-        Which bin edge label to label time-step with. The default is 'left for
+        Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names

@@ -44,7 +44,7 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
 def get_cams(start_date, end_date, latitude, longitude, email,
              identifier='mcclear', altitude=None, time_step='1h',
              time_ref='UT', verbose=False, integrated=False, label=None,
-             map_variables=True, server='www.soda-is.com'):
+             map_variables=True, server='www.soda-is.com', timeout=30):
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
     diffuse radiation from CAMS. Data from CAMS Radiation [1]_ and CAMS McClear
@@ -96,6 +96,8 @@ def get_cams(start_date, end_date, latitude, longitude, email,
         where applicable. See variable CAMS_VARIABLE_MAP.
     server: str, default: 'www.soda-is.com'
         Main server (www.soda-is.com) or backup mirror server (pro.soda-is.com)
+    timeout : int, default 30
+        Time in seconds to wait for server response before timeout
 
     Returns
     -------
@@ -203,7 +205,8 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     # added to the base URL as it contains sub-parameters seperated by
     # semi-colons, which gets incorrectly formatted by the requests function
     # if passed using the params argument.
-    res = requests.get(base_url + '?DataInputs=' + data_inputs, params=params)
+    res = requests.get(base_url + '?DataInputs=' + data_inputs, params=params,
+                       timeout=timeout)
 
     # Invalid requests returns an XML error message and the HTTP staus code 200
     # as if the request was successful. Therefore, errors cannot be handled

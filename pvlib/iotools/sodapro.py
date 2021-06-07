@@ -325,7 +325,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
                 divide(hours.tolist(), axis='rows')
         else:
             data[integrated_cols] = (data[integrated_cols] /
-                                     TIME_STEPS_IN_HOURS[time_step]).round(4)
+                                     TIME_STEPS_IN_HOURS[time_step])
     data.index.name = None  # Set index name to None
     if map_variables:
         data = data.rename(columns=CAMS_VARIABLE_MAP)

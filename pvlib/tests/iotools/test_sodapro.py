@@ -143,7 +143,7 @@ values_radiation_monthly = np.array([
      0.9897]])
 
 
-# @pytest.fixture()  # scope=?
+# @pytest.fixture
 def generate_expected_dataframe(values, columns, index, dtypes):
     """Create dataframe from arrays of values, columns and index, in order to
     use this dataframe to compare to.
@@ -208,35 +208,34 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
         mock_response = test_file.read()
     # Specify the full URI of a specific example, this ensures that all of the
     # inputs are passing on correctly
-    url_test_cams = f'http://www.soda-is.com/service/wps?DataInputs=latitude=55.7906;longitude=12.5251;altitude=80;date_begin=2020-01-01;date_end=2020-05-04;time_ref=UT;summarization=P01M;username=arajen%2540byg.dtu.dk;verbose=false&Service=WPS&Request=Execute&Identifier=get_{identifier}&version=1.0.0&RawDataOutput=irradiation'  # noqa: E501
+    url_test_cams = f'http://www.soda-is.com/service/wps?DataInputs=latitude=55.7906;longitude=12.5251;altitude=80;date_begin=2020-01-01;date_end=2020-05-04;time_ref=UT;summarization=P01M;username=pvlib-admin%2540googlegroups.com;verbose=false&Service=WPS&Request=Execute&Identifier=get_{identifier}&version=1.0.0&RawDataOutput=irradiation'  # noqa: E501
 
-    requests_mock.get(url_test_cams, text=mock_response, complete_qs=False,
+    requests_mock.get(url_test_cams, text=mock_response,
                       headers={'Content-Type': 'application/csv'})
+
     # Make API call - an error is raised if requested URI does not match
     out, meta = sodapro.get_cams(
         start_date=pd.Timestamp('2020-01-01'),
         end_date=pd.Timestamp('2020-05-04'),
         latitude=55.7906,
         longitude=12.5251,
-        email='arajen@byg.dtu.dk',
+        email='pvlib-admin@googlegroups.com',
         identifier=identifier,
         altitude=80,
         time_step='1M',
         verbose=False,
         integrated=False)
-
     expected = generate_expected_dataframe(values, columns, index, dtypes)
-
     assert_frame_equal(out, expected, check_less_precise=True)
 
     # Test if Warning is raised if verbose mode is True and time_step != '1min'
-    with pytest.warns(UserWarning):
-        assert sodapro.get_cams(
+    with pytest.warns(UserWarning, match='Verbose mode only supports'):
+        _ = sodapro.get_cams(
             start_date=pd.Timestamp('2020-01-01'),
             end_date=pd.Timestamp('2020-05-04'),
             latitude=55.7906,
             longitude=12.5251,
-            email='arajen@byg.dtu.dk',
+            email='pvlib-admin@googlegroups.com',
             identifier=identifier,
             altitude=80,
             time_step='1M',
@@ -245,7 +244,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
 
 def test_get_cams_bad_request(requests_mock):
     """Test that a the correct errors/warnings ares raised for invalid
-    requests inputs"""
+    requests inputs. Also tests if the specified server url gets used"""
 
     # Subset of an xml file returned for errornous requests
     mock_response_bad = """<?xml version="1.0" encoding="utf-8"?>
@@ -259,36 +258,38 @@ def test_get_cams_bad_request(requests_mock):
     requests_mock.get(url_cams_bad_request, text=mock_response_bad,
                       headers={'Content-Type': 'application/xml'})
 
-    # Test if HTTPError is raised if incorrect input is given
-    # in this example the end_date is errornously before the start_date
-    with pytest.raises(requests.HTTPError):
-        assert sodapro.get_cams(
+    # Test if HTTPError is raised if incorrect input is specified
+    # In the below example a non-registrered email is specified
+    with pytest.raises(requests.HTTPError, match='Failed to execute WPS'):
+        _ = sodapro.get_cams(
             start_date=pd.Timestamp('2020-01-01'),
             end_date=pd.Timestamp('2020-05-04'),
             latitude=55.7906,
             longitude=12.5251,
-            email='test@test.com',  # fake email
+            email='test@test.com',  # a non-registrered email
             identifier='mcclear',
             time_ref='TST',
             verbose=False,
             time_step='1h',
             server='pro.soda-is.com')
     # Test if value error is raised if incorrect identifier is specified
-    with pytest.raises(ValueError):
-        assert sodapro.get_cams(
+    with pytest.raises(ValueError, match='Identifier must be either'):
+        _ = sodapro.get_cams(
             start_date=pd.Timestamp('2020-01-01'),
             end_date=pd.Timestamp('2020-05-04'),
             latitude=55.7906,
             longitude=12.5251,
             email='test@test.com',
-            identifier='test')  # incorrect identifier
+            identifier='test',  # incorrect identifier
+            server='pro.soda-is.com')
     # Test if value error is raised if incorrect time step is specified
-    with pytest.raises(ValueError):
-        assert sodapro.get_cams(
+    with pytest.raises(ValueError, match='Time step not recognized'):
+        _ = sodapro.get_cams(
             start_date=pd.Timestamp('2020-01-01'),
             end_date=pd.Timestamp('2020-05-04'),
             latitude=55.7906,
             longitude=12.5251,
             email='test@test.com',
             identifier='mcclear',
-            time_step='test')  # incorrect time step
+            time_step='test',  # incorrect time step
+            server='pro.soda-is.com')

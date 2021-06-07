@@ -63,9 +63,12 @@ columns_radiation_verbose = [
 
 columns_radiation_verbose_unmapped = [
     'Observation period', 'TOA', 'Clear sky GHI', 'Clear sky BHI',
-    'Clear sky DHI', 'Clear sky BNI', 'sza', 'summer/winter split', 'tco3',
-    'tcwv', 'AOD BC', 'AOD DU', 'AOD SS', 'AOD OR', 'AOD SU', 'AOD NI',
-    'AOD AM', 'alpha', 'Aerosol type', 'fiso', 'fvol', 'fgeo', 'albedo']
+    'Clear sky DHI', 'Clear sky BNI', 'GHI', 'BHI', 'DHI', 'BNI',
+    'Reliability', 'sza', 'summer/winter split', 'tco3', 'tcwv', 'AOD BC',
+    'AOD DU', 'AOD SS', 'AOD OR', 'AOD SU', 'AOD NI', 'AOD AM', 'alpha',
+    'Aerosol type', 'fiso', 'fvol', 'fgeo', 'albedo', 'Cloud optical depth',
+    'Cloud coverage', 'Cloud type', 'GHI no corr', 'BHI no corr',
+    'DHI no corr', 'BNI no corr']
 
 columns_radiation = [
     'Observation period', 'ghi_extra', 'ghi_clear', 'bhi_clear', 'dhi_clear',
@@ -122,6 +125,12 @@ values_radiation_verbose = np.array([
      np.nan, -1, 0.1668, 0.0912, 0.0267, 0.1359, 0.0, 0, 5, 846.564, 751.554,
      95.01, 919.614]])
 
+values_radiation_verbose_integrated = np.copy(values_radiation_verbose)
+values_radiation_verbose_integrated[:,1:10] = \
+    values_radiation_verbose_integrated[:,1:10].astype(float)/60
+values_radiation_verbose_integrated[:,31:35] = \
+    values_radiation_verbose_integrated[:,31:35].astype(float)/60
+
 values_radiation_monthly = np.array([
     ['2020-01-01T00:00:00.0/2020-02-01T00:00:00.0', 67.4317, 39.5496,
      26.2, 13.3496, 142.1567, 20.8763, 3.4526, 17.4357, 16.7595, 0.997],
@@ -163,14 +172,16 @@ def test_read_cams(testfile, index, columns, values, dtypes):
     assert_frame_equal(out, expected)
 
 
-# def test_read_cams_integrated_rename_label():
-#     expected = generate_expected_dataframe(
-#         values_radiation_verbose, index_monthly,
-#         columns_radiation_verbose_unmapped, values_mcclear_monthly,
-#         dtypes_mcclear)
-#     out, meta = sodapro.read_cams(testfile_radiation_verbose, integrated=True,
-#                                   label='right', map_variables=True)
-#     assert_frame_equal(out, expected)
+def test_read_cams_integrated_unmapped_label():
+    # Default label is 'left' for 1 minute time resolution, hence 1 minute is
+    # added for label='right'
+    expected = generate_expected_dataframe(
+        values_radiation_verbose_integrated,
+        columns_radiation_verbose_unmapped,
+        index_verbose+pd.Timedelta(minutes=1), dtypes=dtypes_radiation_verbose)
+    out, meta = sodapro.read_cams(testfile_radiation_verbose, integrated=True,
+                                  label='right', map_variables=False)
+    assert_frame_equal(out, expected)
 
 
 def test_read_cams_metadata():

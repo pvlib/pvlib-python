@@ -84,7 +84,7 @@ def get_cams(start_date, end_date, latitude, longitude, email,
         'UT' (universal time) or 'TST' (True Solar Time)
     verbose: boolean, default: False
         Verbose mode outputs additional parameters (aerosols). Only available
-        for 1 minute and universal time. See [1] for parameter description.
+        for 1 minute and universal time. See [1]_ for parameter description.
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)

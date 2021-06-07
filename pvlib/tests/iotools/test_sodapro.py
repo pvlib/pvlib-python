@@ -126,10 +126,10 @@ values_radiation_verbose = np.array([
      95.01, 919.614]])
 
 values_radiation_verbose_integrated = np.copy(values_radiation_verbose)
-values_radiation_verbose_integrated[:,1:10] = \
-    values_radiation_verbose_integrated[:,1:10].astype(float)/60
-values_radiation_verbose_integrated[:,31:35] = \
-    values_radiation_verbose_integrated[:,31:35].astype(float)/60
+values_radiation_verbose_integrated[:, 1:10] = \
+    values_radiation_verbose_integrated[:, 1:10].astype(float)/60
+values_radiation_verbose_integrated[:, 31:35] = \
+    values_radiation_verbose_integrated[:, 31:35].astype(float)/60
 
 values_radiation_monthly = np.array([
     ['2020-01-01T00:00:00.0/2020-02-01T00:00:00.0', 67.4317, 39.5496,

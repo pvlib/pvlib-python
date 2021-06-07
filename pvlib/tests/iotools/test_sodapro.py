@@ -168,7 +168,7 @@ def test_read_cams(testfile, index, columns, values, dtypes):
     expected = generate_expected_dataframe(values, columns, index, dtypes)
     out, meta = sodapro.read_cams(testfile, integrated=False,
                                   map_variables=True)
-    assert_frame_equal(out, expected)
+    assert_frame_equal(out, expected, check_less_precise=True)
 
 
 def test_read_cams_integrated_unmapped_label():
@@ -180,7 +180,7 @@ def test_read_cams_integrated_unmapped_label():
         index_verbose+pd.Timedelta(minutes=1), dtypes=dtypes_radiation_verbose)
     out, meta = sodapro.read_cams(testfile_radiation_verbose, integrated=True,
                                   label='right', map_variables=False)
-    assert_frame_equal(out, expected)
+    assert_frame_equal(out, expected, check_less_precise=True)
 
 
 def test_read_cams_metadata():
@@ -227,7 +227,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
 
     expected = generate_expected_dataframe(values, columns, index, dtypes)
 
-    assert_frame_equal(out, expected)
+    assert_frame_equal(out, expected, check_less_precise=True)
 
     # Test if Warning is raised if verbose mode is True and time_step != '1min'
     with pytest.warns(UserWarning):

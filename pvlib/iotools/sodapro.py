@@ -322,7 +322,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
                           - pd.to_datetime(obs_period.str[0]))
             hours = time_delta.dt.total_seconds()/60/60
             data[integrated_cols] = data[integrated_cols].\
-                divide(hours.tolist(), axis='rows').round(4)
+                divide(hours.tolist(), axis='rows')
         else:
             data[integrated_cols] = (data[integrated_cols] /
                                      TIME_STEPS_IN_HOURS[time_step]).round(4)

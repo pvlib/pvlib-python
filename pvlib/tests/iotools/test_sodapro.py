@@ -61,6 +61,12 @@ columns_radiation_verbose = [
     'fvol', 'fgeo', 'albedo', 'Cloud optical depth', 'Cloud coverage',
     'Cloud type', 'GHI no corr', 'BHI no corr', 'DHI no corr', 'BNI no corr']
 
+columns_radiation_verbose_unmapped = [
+    'Observation period', 'TOA', 'Clear sky GHI', 'Clear sky BHI',
+    'Clear sky DHI', 'Clear sky BNI', 'sza', 'summer/winter split', 'tco3',
+    'tcwv', 'AOD BC', 'AOD DU', 'AOD SS', 'AOD OR', 'AOD SU', 'AOD NI',
+    'AOD AM', 'alpha', 'Aerosol type', 'fiso', 'fvol', 'fgeo', 'albedo']
+
 columns_radiation = [
     'Observation period', 'ghi_extra', 'ghi_clear', 'bhi_clear', 'dhi_clear',
     'dni_clear', 'ghi', 'bhi', 'dhi', 'dni', 'Reliability']
@@ -157,6 +163,16 @@ def test_read_cams(testfile, index, columns, values, dtypes):
     assert_frame_equal(out, expected)
 
 
+# def test_read_cams_integrated_rename_label():
+#     expected = generate_expected_dataframe(
+#         values_radiation_verbose, index_monthly,
+#         columns_radiation_verbose_unmapped, values_mcclear_monthly,
+#         dtypes_mcclear)
+#     out, meta = sodapro.read_cams(testfile_radiation_verbose, integrated=True,
+#                                   label='right', map_variables=True)
+#     assert_frame_equal(out, expected)
+
+
 def test_read_cams_metadata():
     _, meta = sodapro.read_cams(testfile_mcclear_monthly, integrated=False)
     assert meta['Time reference'] == 'Universal time (UT)'
@@ -186,7 +202,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
 
     requests_mock.get(url_test_cams, text=mock_response, complete_qs=False,
                       headers={'Content-Type': 'application/csv'})
-    # Make API call - an error is raised if the request does not match exactly
+    # Make API call - an error is raised if requested URI does not match
     out, meta = sodapro.get_cams(
         start_date=pd.Timestamp('2020-01-01'),
         end_date=pd.Timestamp('2020-05-04'),

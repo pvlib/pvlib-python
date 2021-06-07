@@ -149,7 +149,6 @@ def generate_expected_dataframe(values, columns, index, dtypes):
     use this dataframe to compare to.
     """
     expected = pd.DataFrame(values, columns=columns, index=index)
-    expected.index.name = 'time'
     expected.index.freq = None
     for (col, _dtype) in zip(expected.columns, dtypes):
         expected[col] = expected[col].astype(_dtype)

@@ -48,7 +48,7 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
     diffuse radiation from CAMS. Data from CAMS Radiation [1]_ and CAMS McClear
-    [2]_ are retrieved using the WGET service [3]_.
+    [2]_ are retrieved from SoDa [3]_.
 
     Time coverage: 2004-01-01 to two days ago
 
@@ -167,7 +167,7 @@ def get_cams(start_date, end_date, latitude, longitude, email,
         raise ValueError(f'Time step not recognized. Must be one of '
                          f'{list(TIME_STEPS_MAP.keys())}')
 
-    if (verbose is True) & ((time_step != '1min') | (time_ref != 'UT')):
+    if (verbose) and ((time_step != '1min') or (time_ref != 'UT')):
         verbose = False
         warnings.warn("Verbose mode only supports 1 min. UT time series!")
 
@@ -189,10 +189,20 @@ def get_cams(start_date, end_date, latitude, longitude, email,
 
     base_url = f"http://{server}/service/wps"
 
-    data_inputs = (
-        f"latitude={latitude};longitude={longitude};altitude={altitude};"
-        f"date_begin={start_date};date_end={end_date};time_ref={time_ref};"
-        f"summarization={time_step_str};username={email};verbose={verbose}")
+    data_inputs_dict = {
+        'latitude': latitude,
+        'longitude': longitude,
+        'altitude': altitude,
+        'date_begin': start_date,
+        'date_end': end_date,
+        'time_ref': time_ref,
+        'summarization': time_step_str,
+        'username': email,
+        'verbose': verbose}
+
+    # Manual formatting of the input parameters seperating each by a semicolon
+    data_inputs = ";".join([f"{key}={value}" for key, value in
+                            data_inputs_dict.items()])
 
     params = {'Service': 'WPS',
               'Request': 'Execute',
@@ -246,7 +256,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     data: pandas.DataFrame
         Timeseries data from CAMS Radiation or McClear
     meta: dict
-        Metadata avaiable in the file.
+        Metadata available in the file.
 
     See Also
     --------
@@ -295,7 +305,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     elif (label == 'right') | ((label is None) & (time_step == '1M')):
         data.index = pd.to_datetime(obs_period.str[1], utc=True)
 
-    # Change index for time_step '1d' and '1M' to be date and not datetime
+    # For time_steps '1d' and '1M', drop timezone and round to nearest midnight
     if (time_step == '1d') | (time_step == '1M'):
         data.index = pd.DatetimeIndex(data.index.date)
     # For monthly data with 'right' label, the index should be the last
@@ -316,9 +326,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
         else:
             data[integrated_cols] = (data[integrated_cols] /
                                      TIME_STEPS_IN_HOURS[time_step]).round(4)
-
-    data.index.name = 'time'  # Set index name to None
-
+    data.index.name = None  # Set index name to None
     if map_variables:
         data = data.rename(columns=CAMS_VARIABLE_MAP)
 

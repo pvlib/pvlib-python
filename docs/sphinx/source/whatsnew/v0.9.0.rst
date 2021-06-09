@@ -182,7 +182,7 @@ Documentation
   weather data for modeling. (:pull:`1152`)
 * Update documentation links in :py:func:`pvlib.iotools.get_psm3`
 * Clarified how statistics are calculated for :py:func:`pvlib.clearsky.detect_clearsky`
-  (:issue`1070`, :pull:`1243`)
+  (:issue:`1070`, :pull:`1243`)
 
 Requirements
 ~~~~~~~~~~~~

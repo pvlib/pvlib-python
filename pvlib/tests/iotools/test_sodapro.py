@@ -167,7 +167,7 @@ def generate_expected_dataframe(values, columns, index, dtypes):
 def test_read_cams(testfile, index, columns, values, dtypes):
     expected = generate_expected_dataframe(values, columns, index, dtypes)
     out, metadata = sodapro.read_cams(testfile, integrated=False,
-                                  map_variables=True)
+                                      map_variables=True)
     assert_frame_equal(out, expected, check_less_precise=True)
 
 

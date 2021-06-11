@@ -166,7 +166,7 @@ def generate_expected_dataframe(values, columns, index, dtypes):
      values_radiation_monthly, dtypes_radiation)])
 def test_read_cams(testfile, index, columns, values, dtypes):
     expected = generate_expected_dataframe(values, columns, index, dtypes)
-    out, meta = sodapro.read_cams(testfile, integrated=False,
+    out, metadata = sodapro.read_cams(testfile, integrated=False,
                                   map_variables=True)
     assert_frame_equal(out, expected, check_less_precise=True)
 
@@ -178,20 +178,21 @@ def test_read_cams_integrated_unmapped_label():
         values_radiation_verbose_integrated,
         columns_radiation_verbose_unmapped,
         index_verbose+pd.Timedelta(minutes=1), dtypes=dtypes_radiation_verbose)
-    out, meta = sodapro.read_cams(testfile_radiation_verbose, integrated=True,
-                                  label='right', map_variables=False)
+    out, metadata = sodapro.read_cams(testfile_radiation_verbose,
+                                      integrated=True, label='right',
+                                      map_variables=False)
     assert_frame_equal(out, expected, check_less_precise=True)
 
 
 def test_read_cams_metadata():
-    _, meta = sodapro.read_cams(testfile_mcclear_monthly, integrated=False)
-    assert meta['Time reference'] == 'Universal time (UT)'
-    assert meta['noValue'] == 'nan'
-    assert meta['latitude'] == 55.7906
-    assert meta['longitude'] == 12.5251
-    assert meta['altitude'] == 39.0
-    assert meta['radiation_unit'] == 'W/m^2'
-    assert meta['time_step'] == '1M'
+    _, metadata = sodapro.read_cams(testfile_mcclear_monthly, integrated=False)
+    assert metadata['Time reference'] == 'Universal time (UT)'
+    assert metadata['noValue'] == 'nan'
+    assert metadata['latitude'] == 55.7906
+    assert metadata['longitude'] == 12.5251
+    assert metadata['altitude'] == 39.0
+    assert metadata['radiation_unit'] == 'W/m^2'
+    assert metadata['time_step'] == '1M'
 
 
 @pytest.mark.parametrize('testfile,index,columns,values,dtypes,identifier', [
@@ -214,7 +215,7 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
                       headers={'Content-Type': 'application/csv'})
 
     # Make API call - an error is raised if requested URI does not match
-    out, meta = sodapro.get_cams(
+    out, metadata = sodapro.get_cams(
         start_date=pd.Timestamp('2020-01-01'),
         end_date=pd.Timestamp('2020-05-04'),
         latitude=55.7906,

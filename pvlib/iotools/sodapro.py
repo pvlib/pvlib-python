@@ -103,7 +103,7 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     -------
     data: pandas.DataFrame
         Timeseries data, see Notes for columns
-    meta: dict
+    metadata: dict
         Metadata of the requested time-series
 
     Notes
@@ -227,9 +227,9 @@ def get_cams(start_date, end_date, latitude, longitude, email,
     # Successful requests returns a csv data file
     elif res.headers['Content-Type'] == 'application/csv':
         fbuf = io.StringIO(res.content.decode('utf-8'))
-        data, meta = parse_cams(fbuf, integrated=integrated, label=label,
+        data, metadata = parse_cams(fbuf, integrated=integrated, label=label,
                                 map_variables=map_variables)
-        return data, meta
+        return data, metadata
 
 
 def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
@@ -255,7 +255,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     -------
     data: pandas.DataFrame
         Timeseries data from CAMS Radiation or McClear
-    meta: dict
+    metadata: dict
         Metadata available in the file.
 
     See Also
@@ -269,29 +269,30 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     .. [2] `CAMS McClear Service Info
        <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
     """
-    meta = {}
-    # Initial lines starting with # contain meta-data
+    metadata = {}
+    # Initial lines starting with # contain metadata
     while True:
         line = fbuf.readline().rstrip('\n')
         if line.startswith('# Observation period'):
-            # The last line of the meta-data section contains the column names
+            # The last line of the metadata section contains the column names
             names = line.lstrip('# ').split(';')
-            break  # End of meta-data section has been reached
+            break  # End of metadata section has been reached
         elif ': ' in line:
-            meta[line.split(': ')[0].lstrip('# ')] = line.split(': ')[1]
+            metadata[line.split(': ')[0].lstrip('# ')] = line.split(': ')[1]
 
     # Convert latitude, longitude, and altitude values from strings to floats
-    for k_old in list(meta.keys()):
+    for k_old in list(metadata.keys()):
         k_new = k_old.lstrip().split(' ')[0].lower()
         if k_new in ['latitude', 'longitude', 'altitude']:
-            meta[k_new] = float(meta.pop(k_old))
+            metadata[k_new] = float(metadata.pop(k_old))
 
-    meta['radiation_unit'] = {True: 'Wh/m^2', False: 'W/m^2'}[integrated]
+    mmetadataeta['radiation_unit'] = \
+        {True: 'Wh/m^2', False: 'W/m^2'}[integrated]
 
-    # Determine the time_step from the meta-data dictionary
+    # Determine the time_step from the metadata dictionary
     time_step = SUMMATION_PERIOD_TO_TIME_STEP[
-        meta['Summarization (integration) period']]
-    meta['time_step'] = time_step
+        metadata['Summarization (integration) period']]
+    mmetadataeta['time_step'] = time_step
 
     data = pd.read_csv(fbuf, sep=';', comment='#', header=None, names=names)
 
@@ -330,7 +331,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     if map_variables:
         data = data.rename(columns=CAMS_VARIABLE_MAP)
 
-    return data, meta
+    return data, metadata
 
 
 def read_cams(filename, integrated=False, label=None, map_variables=True):
@@ -357,7 +358,7 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     data: pandas.DataFrame
         Timeseries data from CAMS Radiation or McClear
         :func:`pvlib.iotools.get_cams` for fields
-    meta: dict
+    metadata: dict
         Metadata available in the file.
 
     See Also

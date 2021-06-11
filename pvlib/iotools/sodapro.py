@@ -41,10 +41,10 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
                                  '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
 
 
-def get_cams(start_date, end_date, latitude, longitude, email,
-             identifier='mcclear', altitude=None, time_step='1h',
-             time_ref='UT', verbose=False, integrated=False, label=None,
-             map_variables=True, server='www.soda-is.com', timeout=30):
+def get_cams(start, end, latitude, longitude, email, identifier='mcclear',
+             altitude=None, time_step='1h', time_ref='UT', verbose=False,
+             integrated=False, label=None, map_variables=True,
+             server='www.soda-is.com', timeout=30):
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
     diffuse radiation from CAMS. Data from CAMS Radiation [1]_ and CAMS McClear
@@ -62,9 +62,9 @@ def get_cams(start_date, end_date, latitude, longitude, email,
 
     Parameters
     ----------
-    start_date: datetime like
+    start: datetime like
         First day of the requested period
-    end_date: datetime like
+    end: datetime like
         Last day of the requested period
     latitude: float
         in decimal degrees, between -90 and 90, north is positive (ISO 19115)
@@ -181,8 +181,8 @@ def get_cams(start_date, end_date, latitude, longitude, email,
         altitude = -999
 
     # Start and end date should be in the format: yyyy-mm-dd
-    start_date = start_date.strftime('%Y-%m-%d')
-    end_date = end_date.strftime('%Y-%m-%d')
+    start = start.strftime('%Y-%m-%d')
+    end = end.strftime('%Y-%m-%d')
 
     email = email.replace('@', '%2540')  # Format email address
     identifier = 'get_{}'.format(identifier.lower())  # Format identifier str
@@ -193,8 +193,8 @@ def get_cams(start_date, end_date, latitude, longitude, email,
         'latitude': latitude,
         'longitude': longitude,
         'altitude': altitude,
-        'date_begin': start_date,
-        'date_end': end_date,
+        'date_begin': start,
+        'date_end': end,
         'time_ref': time_ref,
         'summarization': time_step_str,
         'username': email,
@@ -286,13 +286,13 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
         if k_new in ['latitude', 'longitude', 'altitude']:
             metadata[k_new] = float(metadata.pop(k_old))
 
-    mmetadataeta['radiation_unit'] = \
+    metadata['radiation_unit'] = \
         {True: 'Wh/m^2', False: 'W/m^2'}[integrated]
 
     # Determine the time_step from the metadata dictionary
     time_step = SUMMATION_PERIOD_TO_TIME_STEP[
         metadata['Summarization (integration) period']]
-    mmetadataeta['time_step'] = time_step
+    metadata['time_step'] = time_step
 
     data = pd.read_csv(fbuf, sep=';', comment='#', header=None, names=names)
 

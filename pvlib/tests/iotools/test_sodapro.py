@@ -216,8 +216,8 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
 
     # Make API call - an error is raised if requested URI does not match
     out, metadata = sodapro.get_cams(
-        start_date=pd.Timestamp('2020-01-01'),
-        end_date=pd.Timestamp('2020-05-04'),
+        start=pd.Timestamp('2020-01-01'),
+        end=pd.Timestamp('2020-05-04'),
         latitude=55.7906,
         longitude=12.5251,
         email='pvlib-admin@googlegroups.com',
@@ -232,8 +232,8 @@ def test_get_cams(requests_mock, testfile, index, columns, values, dtypes,
     # Test if Warning is raised if verbose mode is True and time_step != '1min'
     with pytest.warns(UserWarning, match='Verbose mode only supports'):
         _ = sodapro.get_cams(
-            start_date=pd.Timestamp('2020-01-01'),
-            end_date=pd.Timestamp('2020-05-04'),
+            start=pd.Timestamp('2020-01-01'),
+            end=pd.Timestamp('2020-05-04'),
             latitude=55.7906,
             longitude=12.5251,
             email='pvlib-admin@googlegroups.com',
@@ -263,8 +263,8 @@ def test_get_cams_bad_request(requests_mock):
     # In the below example a non-registrered email is specified
     with pytest.raises(requests.HTTPError, match='Failed to execute WPS'):
         _ = sodapro.get_cams(
-            start_date=pd.Timestamp('2020-01-01'),
-            end_date=pd.Timestamp('2020-05-04'),
+            start=pd.Timestamp('2020-01-01'),
+            end=pd.Timestamp('2020-05-04'),
             latitude=55.7906,
             longitude=12.5251,
             email='test@test.com',  # a non-registrered email
@@ -276,8 +276,8 @@ def test_get_cams_bad_request(requests_mock):
     # Test if value error is raised if incorrect identifier is specified
     with pytest.raises(ValueError, match='Identifier must be either'):
         _ = sodapro.get_cams(
-            start_date=pd.Timestamp('2020-01-01'),
-            end_date=pd.Timestamp('2020-05-04'),
+            start=pd.Timestamp('2020-01-01'),
+            end=pd.Timestamp('2020-05-04'),
             latitude=55.7906,
             longitude=12.5251,
             email='test@test.com',
@@ -286,8 +286,8 @@ def test_get_cams_bad_request(requests_mock):
     # Test if value error is raised if incorrect time step is specified
     with pytest.raises(ValueError, match='Time step not recognized'):
         _ = sodapro.get_cams(
-            start_date=pd.Timestamp('2020-01-01'),
-            end_date=pd.Timestamp('2020-05-04'),
+            start=pd.Timestamp('2020-01-01'),
+            end=pd.Timestamp('2020-05-04'),
             latitude=55.7906,
             longitude=12.5251,
             email='test@test.com',

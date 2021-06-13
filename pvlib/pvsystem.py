@@ -16,7 +16,7 @@ from pvlib._deprecation import deprecated
 
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
-from pvlib.tools import _build_kwargs
+from pvlib.tools import _build_kwargs, _build_args
 
 
 # a dict of required parameter names for each DC power model
@@ -64,6 +64,37 @@ def _unwrap_single_value(func):
     return f
 
 
+def _check_deprecated_passthrough(func):
+    """
+    Decorator to warn or error when getting and setting the "pass-through"
+    PVSystem properties that have been moved to Array.  Emits a warning for
+    PVSystems with only one Array and raises an error for PVSystems with
+    more than one Array.
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        pvsystem_attr = func.__name__
+        class_name = self.__class__.__name__  # PVSystem or SingleAxisTracker
+        overrides = {  # some Array attrs aren't the same as PVSystem
+            'strings_per_inverter': 'strings',
+        }
+        array_attr = overrides.get(pvsystem_attr, pvsystem_attr)
+        alternative = f'{class_name}.arrays[i].{array_attr}'
+
+        if len(self.arrays) > 1:
+            raise AttributeError(
+                f'{class_name}.{pvsystem_attr} not supported for multi-array '
+                f'systems. Set {array_attr} for each Array in '
+                f'{class_name}.arrays instead.')
+
+        wrapped = deprecated('0.9', alternative=alternative, removal='0.10',
+                             name=f"{class_name}.{pvsystem_attr}")(func)
+        return wrapped(self, *args, **kwargs)
+
+    return wrapper
+
+
 # not sure if this belongs in the pvsystem module.
 # maybe something more like core.py? It may eventually grow to
 # import a lot more functionality from other modules.
@@ -98,8 +129,9 @@ class PVSystem:
     arrays : iterable of Array, optional
         List of arrays that are part of the system. If not specified
         a single array is created from the other parameters (e.g.
-        `surface_tilt`, `surface_azimuth`). If `arrays` is specified
-        the following parameters are ignored:
+        `surface_tilt`, `surface_azimuth`). Must contain at least one Array,
+        if length of arrays is 0 a ValueError is raised. If `arrays` is
+        specified the following parameters are ignored:
 
         - `surface_tilt`
         - `surface_azimuth`
@@ -173,6 +205,11 @@ class PVSystem:
         Arbitrary keyword arguments.
         Included for compatibility, but not used.
 
+    Raises
+    ------
+    ValueError
+        If `arrays` is not None and has length 0.
+
     See also
     --------
     pvlib.location.Location
@@ -210,6 +247,12 @@ class PVSystem:
                 racking_model,
                 array_losses_parameters,
             ),)
+        elif len(arrays) == 0:
+            raise ValueError("PVSystem must have at least one Array. "
+                             "If you want to create a PVSystem instance "
+                             "with a single Array pass `arrays=None` and pass "
+                             "values directly to PVSystem attributes, e.g., "
+                             "`surface_tilt=30`")
         else:
             self.arrays = tuple(arrays)
 
@@ -379,7 +422,65 @@ class PVSystem:
                      for array, aoi in zip(self.arrays, aoi))
 
     @_unwrap_single_value
-    def calcparams_desoto(self, effective_irradiance, temp_cell, **kwargs):
+    def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
+                             effective_irradiance=None):
+        """
+        Determine cell temperature using the method specified by ``model``.
+
+        Parameters
+        ----------
+        poa_global : numeric or tuple of numeric
+            Total incident irradiance in W/m^2.
+
+        temp_air : numeric or tuple of numeric
+            Ambient dry bulb temperature in degrees C.
+
+        wind_speed : numeric or tuple of numeric
+            Wind speed in m/s.
+
+        model : str
+            Supported models include ``'sapm'``, ``'pvsyst'``,
+            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+
+        effective_irradiance : numeric or tuple of numeric, optional
+            The irradiance that is converted to photocurrent in W/m^2.
+            Only used for some models.
+
+        Returns
+        -------
+        numeric or tuple of numeric
+            Values in degrees C.
+
+        See Also
+        --------
+        Array.get_cell_temperature
+
+        Notes
+        -----
+        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        to provide different values for each Array in the system. If passed as
+        a tuple the length must be the same as the number of Arrays. If not
+        passed as a tuple then the same value is used for each Array.
+        """
+        poa_global = self._validate_per_array(poa_global)
+        temp_air = self._validate_per_array(temp_air, system_wide=True)
+        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
+        # Not used for all models, but Array.get_cell_temperature handles it
+        effective_irradiance = self._validate_per_array(effective_irradiance,
+                                                        system_wide=True)
+
+        return tuple(
+            array.get_cell_temperature(poa_global, temp_air, wind_speed,
+                                       model, effective_irradiance)
+            for array, poa_global, temp_air, wind_speed, effective_irradiance
+            in zip(
+                self.arrays, poa_global, temp_air, wind_speed,
+                effective_irradiance
+            )
+        )
+
+    @_unwrap_single_value
+    def calcparams_desoto(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`calcparams_desoto` function, the input
         parameters and ``self.module_parameters`` to calculate the
@@ -392,9 +493,6 @@ class PVSystem:
 
         temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
-
-        **kwargs
-            See pvsystem.calcparams_desoto for details
 
         Returns
         -------
@@ -420,7 +518,7 @@ class PVSystem:
         )
 
     @_unwrap_single_value
-    def calcparams_cec(self, effective_irradiance, temp_cell, **kwargs):
+    def calcparams_cec(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`calcparams_cec` function, the input
         parameters and ``self.module_parameters`` to calculate the
@@ -433,9 +531,6 @@ class PVSystem:
 
         temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
-
-        **kwargs
-            See pvsystem.calcparams_cec for details
 
         Returns
         -------
@@ -501,7 +596,7 @@ class PVSystem:
         )
 
     @_unwrap_single_value
-    def sapm(self, effective_irradiance, temp_cell, **kwargs):
+    def sapm(self, effective_irradiance, temp_cell):
         """
         Use the :py:func:`sapm` function, the input parameters,
         and ``self.module_parameters`` to calculate
@@ -514,9 +609,6 @@ class PVSystem:
 
         temp_cell : float or Series or tuple of float or Series
             The average cell temperature of cells within a module in C.
-
-        kwargs
-            See pvsystem.sapm for details
 
         Returns
         -------
@@ -531,7 +623,8 @@ class PVSystem:
             in zip(self.arrays, effective_irradiance, temp_cell)
         )
 
-    @_unwrap_single_value
+    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
+                removal='0.10.0')
     def sapm_celltemp(self, poa_global, temp_air, wind_speed):
         """Uses :py:func:`temperature.sapm_cell` to calculate cell
         temperatures.
@@ -560,20 +653,8 @@ class PVSystem:
         If passed as a tuple the length must be the same as the number of
         Arrays.
         """
-        poa_global = self._validate_per_array(poa_global)
-        temp_air = self._validate_per_array(temp_air, system_wide=True)
-        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
-
-        build_kwargs = functools.partial(_build_kwargs, ['a', 'b', 'deltaT'])
-        return tuple(
-            temperature.sapm_cell(
-                poa_global, temp_air, wind_speed,
-                **build_kwargs(array.temperature_model_parameters)
-            )
-            for array, poa_global, temp_air, wind_speed in zip(
-                self.arrays, poa_global, temp_air, wind_speed
-            )
-        )
+        return self.get_cell_temperature(poa_global, temp_air, wind_speed,
+                                         model='sapm')
 
     @_unwrap_single_value
     def sapm_spectral_loss(self, airmass_absolute):
@@ -635,7 +716,8 @@ class PVSystem:
             in zip(self.arrays, poa_direct, poa_diffuse, aoi)
         )
 
-    @_unwrap_single_value
+    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
+                removal='0.10.0')
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
         temperature.
@@ -666,26 +748,11 @@ class PVSystem:
         If passed as a tuple the length must be the same as the number of
         Arrays.
         """
-        poa_global = self._validate_per_array(poa_global)
-        temp_air = self._validate_per_array(temp_air, system_wide=True)
-        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
+        return self.get_cell_temperature(poa_global, temp_air, wind_speed,
+                                         model='pvsyst')
 
-        def build_celltemp_kwargs(array):
-            # TODO remove 'eta_m' after deprecation of this parameter
-            return {**_build_kwargs(['eta_m', 'module_efficiency',
-                                     'alpha_absorption'],
-                                    array.module_parameters),
-                    **_build_kwargs(['u_c', 'u_v'],
-                                    array.temperature_model_parameters)}
-        return tuple(
-            temperature.pvsyst_cell(poa_global, temp_air, wind_speed,
-                                    **build_celltemp_kwargs(array))
-            for array, poa_global, temp_air, wind_speed in zip(
-                self.arrays, poa_global, temp_air, wind_speed
-            )
-        )
-
-    @_unwrap_single_value
+    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
+                removal='0.10.0')
     def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """
         Use :py:func:`temperature.faiman` to calculate cell temperature.
@@ -716,20 +783,11 @@ class PVSystem:
         If passed as a tuple the length must be the same as the number of
         Arrays.
         """
-        poa_global = self._validate_per_array(poa_global)
-        temp_air = self._validate_per_array(temp_air, system_wide=True)
-        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
-        return tuple(
-            temperature.faiman(
-                poa_global, temp_air, wind_speed,
-                **_build_kwargs(
-                    ['u0', 'u1'], array.temperature_model_parameters))
-            for array, poa_global, temp_air, wind_speed in zip(
-                self.arrays, poa_global, temp_air, wind_speed
-            )
-        )
+        return self.get_cell_temperature(poa_global, temp_air, wind_speed,
+                                         model='faiman')
 
-    @_unwrap_single_value
+    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
+                removal='0.10.0')
     def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
         """
         Use :py:func:`temperature.fuentes` to calculate cell temperature.
@@ -765,30 +823,11 @@ class PVSystem:
         If passed as a tuple the length must be the same as the number of
         Arrays.
         """
-        # default to using the Array attribute, but allow user to
-        # override with a custom surface_tilt value
-        poa_global = self._validate_per_array(poa_global)
-        temp_air = self._validate_per_array(temp_air, system_wide=True)
-        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
+        return self.get_cell_temperature(poa_global, temp_air, wind_speed,
+                                         model='fuentes')
 
-        def _build_kwargs_fuentes(array):
-            kwargs = {'surface_tilt': array.surface_tilt}
-            temp_model_kwargs = _build_kwargs([
-                'noct_installed', 'module_height', 'wind_height', 'emissivity',
-                'absorption', 'surface_tilt', 'module_width', 'module_length'],
-                array.temperature_model_parameters)
-            kwargs.update(temp_model_kwargs)
-            return kwargs
-        return tuple(
-            temperature.fuentes(
-                poa_global, temp_air, wind_speed,
-                **_build_kwargs_fuentes(array))
-            for array, poa_global, temp_air, wind_speed in zip(
-                self.arrays, poa_global, temp_air, wind_speed
-            )
-        )
-
-    @_unwrap_single_value
+    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
+                removal='0.10.0')
     def noct_sam_celltemp(self, poa_global, temp_air, wind_speed,
                           effective_irradiance=None):
         """
@@ -822,47 +861,9 @@ class PVSystem:
         If passed as a tuple the length must be the same as the number of
         Arrays.
         """
-        # default to using the Array attribute, but allow user to
-        # override with a custom surface_tilt value
-        poa_global = self._validate_per_array(poa_global)
-        temp_air = self._validate_per_array(temp_air, system_wide=True)
-        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
-
-        # need effective_irradiance to be an iterable
-        if effective_irradiance is None:
-            effective_irradiance = tuple([None] * self.num_arrays)
-        else:
-            effective_irradiance = self._validate_per_array(
-                effective_irradiance)
-
-        def _build_kwargs_noct_sam(array):
-            temp_model_kwargs = _build_kwargs([
-                'transmittance_absorptance',
-                'array_height', 'mount_standoff'],
-                array.temperature_model_parameters)
-            try:
-                # noct_sam required args
-                # bundled with kwargs for simplicity
-                temp_model_kwargs['noct'] = \
-                    array.temperature_model_parameters['noct']
-                temp_model_kwargs['module_efficiency'] = \
-                    array.temperature_model_parameters['module_efficiency']
-            except KeyError:
-                msg = ('Parameters noct and module_efficiency are required.'
-                       ' Found {} in temperature_model_parameters.'
-                       .format(array.temperature_model_parameters))
-                raise KeyError(msg)
-            return temp_model_kwargs
-        return tuple(
-            temperature.noct_sam(
-                poa_global, temp_air, wind_speed,
-                effective_irradiance=eff_irrad,
-                **_build_kwargs_noct_sam(array))
-            for array, poa_global, temp_air, wind_speed, eff_irrad in zip(
-                self.arrays, poa_global, temp_air, wind_speed,
-                effective_irradiance
-            )
-        )
+        return self.get_cell_temperature(
+            poa_global, temp_air, wind_speed, model='noct_sam',
+            effective_irradiance=effective_irradiance)
 
     @_unwrap_single_value
     def first_solar_spectral_loss(self, pw, airmass_absolute):
@@ -1113,74 +1114,124 @@ class PVSystem:
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def module_parameters(self):
         return tuple(array.module_parameters for array in self.arrays)
 
+    @module_parameters.setter
+    @_check_deprecated_passthrough
+    def module_parameters(self, value):
+        for array in self.arrays:
+            array.module_parameters = value
+
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def module(self):
         return tuple(array.module for array in self.arrays)
 
-    @property
-    @_unwrap_single_value
-    def module_type(self):
-        return tuple(array.module_type for array in self.arrays)
+    @module.setter
+    @_check_deprecated_passthrough
+    def module(self, value):
+        for array in self.arrays:
+            array.module = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
+    def module_type(self):
+        return tuple(array.module_type for array in self.arrays)
+
+    @module_type.setter
+    @_check_deprecated_passthrough
+    def module_type(self, value):
+        for array in self.arrays:
+            array.module_type = value
+
+    @property
+    @_unwrap_single_value
+    @_check_deprecated_passthrough
     def temperature_model_parameters(self):
         return tuple(array.temperature_model_parameters
                      for array in self.arrays)
 
     @temperature_model_parameters.setter
+    @_check_deprecated_passthrough
     def temperature_model_parameters(self, value):
         for array in self.arrays:
             array.temperature_model_parameters = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def surface_tilt(self):
         return tuple(array.surface_tilt for array in self.arrays)
 
     @surface_tilt.setter
+    @_check_deprecated_passthrough
     def surface_tilt(self, value):
         for array in self.arrays:
             array.surface_tilt = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def surface_azimuth(self):
         return tuple(array.surface_azimuth for array in self.arrays)
 
     @surface_azimuth.setter
+    @_check_deprecated_passthrough
     def surface_azimuth(self, value):
         for array in self.arrays:
             array.surface_azimuth = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def albedo(self):
         return tuple(array.albedo for array in self.arrays)
 
+    @albedo.setter
+    @_check_deprecated_passthrough
+    def albedo(self, value):
+        for array in self.arrays:
+            array.albedo = value
+
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def racking_model(self):
         return tuple(array.racking_model for array in self.arrays)
 
     @racking_model.setter
+    @_check_deprecated_passthrough
     def racking_model(self, value):
         for array in self.arrays:
             array.racking_model = value
 
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def modules_per_string(self):
         return tuple(array.modules_per_string for array in self.arrays)
 
+    @modules_per_string.setter
+    @_check_deprecated_passthrough
+    def modules_per_string(self, value):
+        for array in self.arrays:
+            array.modules_per_string = value
+
     @property
     @_unwrap_single_value
+    @_check_deprecated_passthrough
     def strings_per_inverter(self):
         return tuple(array.strings for array in self.arrays)
+
+    @strings_per_inverter.setter
+    @_check_deprecated_passthrough
+    def strings_per_inverter(self, value):
+        for array in self.arrays:
+            array.strings = value
 
     @property
     def num_arrays(self):
@@ -1316,7 +1367,6 @@ class Array:
             return {}
 
     def _infer_cell_type(self):
-
         """
         Examines module_parameters and maps the Technology key for the CEC
         database and the Material key for the Sandia database to a common
@@ -1474,6 +1524,97 @@ class Array:
                              'option for Array')
         else:
             raise ValueError(model + ' is not a valid IAM model')
+
+    def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
+                             effective_irradiance=None):
+        """
+        Determine cell temperature using the method specified by ``model``.
+
+        Parameters
+        ----------
+        poa_global : numeric
+            Total incident irradiance [W/m^2]
+
+        temp_air : numeric
+            Ambient dry bulb temperature [C]
+
+        wind_speed : numeric
+            Wind speed [m/s]
+
+        model : str
+            Supported models include ``'sapm'``, ``'pvsyst'``,
+            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+
+        effective_irradiance : numeric, optional
+            The irradiance that is converted to photocurrent in W/m^2.
+            Only used for some models.
+
+        Returns
+        -------
+        numeric
+            Values in degrees C.
+
+        See Also
+        --------
+        pvlib.temperature.sapm_cell, pvlib.temperature.pvsyst_cell,
+        pvlib.temperature.faiman, pvlib.temperature.fuentes,
+        pvlib.temperature.noct_sam
+
+        Notes
+        -----
+        Some temperature models have requirements for the input types;
+        see the documentation of the underlying model function for details.
+        """
+        # convenience wrapper to avoid passing args 2 and 3 every call
+        _build_tcell_args = functools.partial(
+            _build_args, input_dict=self.temperature_model_parameters,
+            dict_name='temperature_model_parameters')
+
+        if model == 'sapm':
+            func = temperature.sapm_cell
+            required = _build_tcell_args(['a', 'b', 'deltaT'])
+            optional = _build_kwargs(['irrad_ref'],
+                                     self.temperature_model_parameters)
+        elif model == 'pvsyst':
+            func = temperature.pvsyst_cell
+            required = tuple()
+            optional = {
+                # TODO remove 'eta_m' after deprecation of this parameter
+                **_build_kwargs(['eta_m', 'module_efficiency',
+                                 'alpha_absorption'],
+                                self.module_parameters),
+                **_build_kwargs(['u_c', 'u_v'],
+                                self.temperature_model_parameters)
+            }
+        elif model == 'faiman':
+            func = temperature.faiman
+            required = tuple()
+            optional = _build_kwargs(['u0', 'u1'],
+                                     self.temperature_model_parameters)
+        elif model == 'fuentes':
+            func = temperature.fuentes
+            required = _build_tcell_args(['noct_installed'])
+            optional = _build_kwargs([
+                'module_height', 'wind_height', 'emissivity', 'absorption',
+                'surface_tilt', 'module_width', 'module_length'],
+                self.temperature_model_parameters)
+            # default to using the Array attribute, but allow user to override
+            # with a custom surface_tilt value in temperature_model_parameters
+            if 'surface_tilt' not in optional:
+                optional['surface_tilt'] = self.surface_tilt
+        elif model == 'noct_sam':
+            func = functools.partial(temperature.noct_sam,
+                                     effective_irradiance=effective_irradiance)
+            required = _build_tcell_args(['noct', 'module_efficiency'])
+            optional = _build_kwargs(['transmittance_absorptance',
+                                      'array_height', 'mount_standoff'],
+                                     self.temperature_model_parameters)
+        else:
+            raise ValueError(f'{model} is not a valid cell temperature model')
+
+        temperature_cell = func(poa_global, temp_air, wind_speed,
+                                *required, **optional)
+        return temperature_cell
 
     def dc_ohms_from_percent(self):
         """
@@ -1853,8 +1994,8 @@ def calcparams_cec(effective_irradiance, temp_cell,
                              alpha_sc*(1.0 - Adjust/100),
                              a_ref, I_L_ref, I_o_ref,
                              R_sh_ref, R_s,
-                             EgRef=1.121, dEgdT=-0.0002677,
-                             irrad_ref=1000, temp_ref=25)
+                             EgRef=EgRef, dEgdT=dEgdT,
+                             irrad_ref=irrad_ref, temp_ref=temp_ref)
 
 
 def calcparams_pvsyst(effective_irradiance, temp_cell,
@@ -3014,6 +3155,10 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
     Rw: numeric
         Equivalent resistance [ohm]
 
+    See Also
+    --------
+    :py:func:`~pvlib.pvsystem.dc_ohmic_losses`
+
     References
     ----------
     .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
@@ -3044,6 +3189,10 @@ def dc_ohmic_losses(resistance, current):
     ----------
     loss: numeric
         Power Loss [W]
+
+    See Also
+    --------
+    :py:func:`~pvlib.pvsystem.dc_ohms_from_percent`
 
     References
     ----------

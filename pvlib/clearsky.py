@@ -602,7 +602,20 @@ def _calc_d(aod700, p):
 def _calc_stats(data, samples_per_window, sample_interval, H):
     """ Calculates statistics for each window, used by Reno-style clear
     sky detection functions. Does not return the line length statistic
-    which is provided by _calc_windowed_stat and _line_length
+    which is provided by _calc_windowed_stat and _line_length.
+
+    Calculations are done on a sliding window defined by the Hankel matrix H.
+    Columns in H define the indices for each window. Each window contains
+    samples_per_window index values. The first window starts with index 0;
+    the last window ends at the last index position in data.
+
+    In the calculation of data_slope_nstd, a choice is made here where [1]_ is
+    ambiguous. data_slope_nstd is the standard deviation of slopes divided by
+    the mean GHI for each interval; see [1]_ Eq. 11. For intervals containing
+    e.g. 10 values, there are 9 slope values in the standard deviation, and the
+    mean is calculated using all 10 values. Eq. 11 in [1]_ is ambiguous if
+    the mean should be calculated using 9 points (left ends of each slope)
+    or all 10 points.
 
     Parameters
     ----------
@@ -624,6 +637,12 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
         standard deviation of difference between data points in each window
     data_slope : Series
         difference between successive data points
+
+    References
+    ----------
+    .. [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+       sky irradiance in time series of GHI measurements" Renewable Energy,
+       v90, p. 520-531, 2016.
     """
 
     data_mean = data.values[H].mean(axis=0)

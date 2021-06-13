@@ -41,9 +41,10 @@ VARIABLE_MAP = {
 }
 
 
-def get_pvgis_hourly(lat, lon, angle=0, aspect=0, outputformat='json',
+def get_pvgis_hourly(latitude, longitude, angle=0, aspect=0,
+                     outputformat='json',
                      usehorizon=True, userhorizon=None, raddatabase=None,
-                     startyear=None, endyear=None, pvcalculation=False,
+                     start=None, end=None, pvcalculation=False,
                      peakpower=None, pvtechchoice='crystSi',
                      mountingplace='free', loss=None, trackingtype=0,
                      optimal_inclination=False, optimalangles=False,
@@ -53,9 +54,9 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0, outputformat='json',
 
     Parameters
     ----------
-    lat: float
+    latitude: float
         Latitude in degrees north
-    lon: float
+    longitude: float
         Longitude in degrees east
     angle: float, default: 0
         Tilt angle from horizontal plane. Not relevant for 2-axis tracking.
@@ -74,10 +75,10 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0, outputformat='json',
         will calculate the horizon [4]_
     raddatabase: str, default: None
         Name of radiation database. Options depend on location, see [3]_.
-    startyear: int, default: None
+    start: int, default: None
         First year of the radiation time series. Defaults to first year
         avaiable.
-    endyear: int, default: None
+    end: int, default: None
         Last year of the radiation time series. Defaults to last year avaiable.
     pvcalculation: bool, default: False
         Also return estimate of hourly production.
@@ -118,8 +119,8 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0, outputformat='json',
         Time-series of hourly data, see Notes for fields
     inputs : dict
         Dictionary of the request input parameters, ``None`` for basic
-    meta : list or dict
-        meta data, ``None`` for basic
+    metadata : list or dict
+        metadata, ``None`` for basic
 
     Notes
     -----
@@ -168,7 +169,7 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0, outputformat='json',
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
     """
     # use requests to format the query string by passing params dictionary
-    params = {'lat': lat, 'lon': lon, 'outputformat': outputformat,
+    params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
               'angle': angle, 'aspect': aspect,
               'pvtechchoice': pvtechchoice, 'mountingplace': mountingplace,
               'trackingtype': trackingtype, 'components': int(components)}
@@ -182,10 +183,10 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0, outputformat='json',
         params['userhorizon'] = ','.join(str(x) for x in userhorizon)
     if raddatabase is not None:
         params['raddatabase'] = raddatabase
-    if startyear is not None:
-        params['startyear'] = startyear
-    if endyear is not None:
-        params['endyear'] = endyear
+    if start is not None:
+        params['startyear'] = start
+    if end is not None:
+        params['endyear'] = end
     if pvcalculation:
         params['pvcalculation'] = 1
     if peakpower is not None:
@@ -229,16 +230,16 @@ def get_pvgis_hourly(lat, lon, angle=0, aspect=0, outputformat='json',
     return data
 
 
-def _parse_pvgis_hourly_json(src, map_variables=True):
+def _parse_pvgis_hourly_json(src, map_variables):
     inputs = src['inputs']
-    meta = src['meta']
+    metadata = src['meta']
     data = pd.DataFrame(src['outputs']['hourly'])
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
     data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
     if map_variables:
         data.rename(columns=VARIABLE_MAP, inplace=True)
-    return data, inputs, meta
+    return data, inputs, metadata
 
 
 def _parse_pvgis_hourly_basic(src):
@@ -264,7 +265,7 @@ def _parse_pvgis_hourly_csv(src, map_variables=True):
     while True:
         line = src.readline()
         if line.startswith('time,'):  # The data header starts with 'time,'
-            # The last line of the meta-data section contains the column names
+            # The last line of the metadata section contains the column names
             names = line.replace('\n', '').replace('\r', '').split(',')
             break
         # Only retrieve metadata from non-empty lines
@@ -291,11 +292,11 @@ def _parse_pvgis_hourly_csv(src, map_variables=True):
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})
     # Generate metadata dictionary containing description of parameters
-    meta = {}
+    metadata = {}
     for line in src.readlines():
         if ':' in line:
-            meta[line.split(':')[0]] = line.split(':')[1].strip()
-    return data, inputs, meta
+            metadata[line.split(':')[0]] = line.split(':')[1].strip()
+    return data, inputs, metadata
 
 
 def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
@@ -308,7 +309,7 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
         Name, path, or buffer of file downloaded from PVGIS.
     pvgis_format : str, default None
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
-        parameter in the PVGIS TMY API. If `filename` is a file and
+        parameter in the PVGIS API. If `filename` is a file and
         `pvgis_format` is ``None`` then the file extension will be used to
         determine the PVGIS format to parse. For PVGIS files from the API with
         ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
@@ -321,8 +322,8 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
         the weather data
     inputs : dict
         the inputs, ``None`` for basic
-    meta : list or dict
-        meta data, ``None`` for basic
+    metadata : list or dict
+        metadata, ``None`` for basic
 
     Raises
     ------
@@ -364,7 +365,7 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
         return _parse_pvgis_hourly_json(src)
 
     # CSV or basic: use the correct parser from this module
-    # eg: _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
+    # eg: _parse_pvgis_hourly_csv() or _parse_pvgis_hourly_basic()
     if outputformat in ['csv', 'basic']:
         # get the correct parser function for this output format from globals()
         pvgis_parser = globals()['_parse_pvgis_hourly_{:s}'.format(outputformat)]  # noqa

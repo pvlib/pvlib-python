@@ -490,6 +490,9 @@ of sources and file formats relevant to solar energy modeling.
    iotools.get_pvgis_hourly
    iotools.read_pvgis_hourly
    iotools.read_bsrn
+   iotools.get_cams
+   iotools.read_cams
+   iotools.parse_cams
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

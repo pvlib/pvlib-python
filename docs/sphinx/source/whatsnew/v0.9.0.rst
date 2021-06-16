@@ -109,6 +109,11 @@ Enhancements
   files. (:pull:`1186`, :issue:`849`)
 * Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
   files. (:pull:`1145`, :issue:`1015`)
+* Add :func:`~pvlib.iotools.get_cams`,
+  :func:`~pvlib.iotools.parse_cams`, and 
+  :func:`~pvlib.iotools.read_cams`
+  for retrieving, parsing, and reading CAMS Radiation and McClear time-series
+  files. (:pull:`1175`)
 * In :py:class:`~pvlib.modelchain.ModelChain`, attributes which contain
   output of models are now collected into ``ModelChain.results``.
   (:pull:`1076`, :issue:`1067`)

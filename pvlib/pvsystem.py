@@ -15,8 +15,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional
 
-import warnings
-from pvlib._deprecation import deprecated, pvlibDeprecationWarning
+from pvlib._deprecation import deprecated
 
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)

@@ -1,4 +1,4 @@
-"""Functions to access and read data from Copernicus Climate Data Store (CDS).
+"""Functions to retreive and read ERA5 data from the CDS.
 .. codeauthor:: Adam R. Jensen<adam-r-j@hotmail.com>
 """
 
@@ -51,15 +51,18 @@ ERA5_VARIABLE_MAP = {
     }
 
 
-def get_era5(start, end, latitude, longitude, grid=[0.25, 0.25],
-             variables=DEFAULT_VARIABLES, map_variables=True,
-             dataset='reanalysis-era5-single-levels',
-             product_type='reanalysis', cds_client=None, file_format='netcdf'):
+def get_era5(start, end, latitude, longitude,
+             dataset_name='reanalysis-era5-single-levels',
+             product_type='reanalysis', variables=DEFAULT_VARIABLES,
+             grid=[0.25, 0.25], file_format='netcdf', cds_client=None,
+             map_variables=True):
     """
-    Retrieve time-series of XXfrom ERA5 reanalysis [1]_.
+    Retrieve ERA5 reanalysis data from the Copernicus Data Store (CDS).
+    
+    [1]_.
 
-    Access requires user registration [2]_ and creating a local file with your
-    personal API key, see [3]_ for instructions.
+    Access requires user registration [3]_ and creating a local file with your
+    personal API key, see [4]_ for instructions.
 
     Temporal coverage: 1979 to present
     Temporal resolution: hourly
@@ -76,14 +79,20 @@ def get_era5(start, end, latitude, longitude, grid=[0.25, 0.25],
         First timestamp of the requested period
     end: datetime like
         Last timestamp of the requested period
-    latitude: float
+    latitude: float or list
         in decimal degrees, between -90 and 90, north is positive (ISO 19115)
-    longitude : float
+    longitude : float or list
         in decimal degrees, between -180 and 180, east is positive (ISO 19115)
-    file_format: {grib, netcdf}, default netcdf
-        File format of retrieved data. Note NetCDF is experimental.
+    dataset_name: str, default: 
+        Name of the dataset. Options are 'reanalysis-era5-single-levels',
+        'reanalysis-era5-single-levels-monthly-means',
+        'reanalysis-era5-land', or 'reanalysis-era5-land-monthly-means'
     product_type: str, {'reanalysis', 'ensemble_members', 'ensemble_mean',
                    'ensemble_spread'}, default: 'reanalysis'
+    variables
+    grid
+    file_format: {grib, netcdf}, default netcdf
+        File format of retrieved data. Note NetCDF is experimental.
     cds_client: CDS API client object
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
@@ -114,38 +123,48 @@ def get_era5(start, end, latitude, longitude, grid=[0.25, 0.25],
     ----------
     .. [1] `ERA5 hourly data on single levels from 1979 to present
        <https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview>`
-    .. [2] `How to use the CDS API
+    .. [2] `ERA5 hourly data on single levels from 1979 to present
+       <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`
+    .. [3] `How to use the CDS API
        <https://cds.climate.copernicus.eu/api-how-to>`
-    .. [3] `Climate Data Storage user registration
+    .. [4] `Climate Data Storage user registration
        <https://cds.climate.copernicus.eu/user/register>`
     """
     if cds_client is None:
         cds_client = cdsapi.Client()
 
     # Area is selected by a box made by the four coordinates: [N,W,S,E]
-    if type(lat) == list:
+    if type(latitude) == list:
         area = latitude + longitude
     else:
-        area = [lat, lon, lat, lon]
+        area = [latitude, longitude, latitude+0.001, longitude+0.001]
 
-    c.retrieve(dataset,
-               {'product_type': product_type,
-                'format': file_format,
-                'variable': variables,
-                'date': start.strftime('%Y-%m-%d %H:%M') + '/' \
-                    + end.strftime('%Y-%m-%d %H:%M'),
-                'grid': grid,
-                'area': area,
-                },
-               f'ERA5_test_data.{file_format}')
-
-# Add grid
-# Other product type is 'monthly_averaged_reanalysis'
-
-# Other datasets are: 'reanalysis-era5-single-levels-monthly-means', 'reanalysis-era5-land', 'reanalysis-era5-land-monthly-means'
+    cds_client.retrieve(dataset_name,
+                        {'product_type': product_type,
+                         'format': file_format,
+                         'variable': variables,
+                         'date': start.strftime('%Y-%m-%d %H:%M') + '/' \
+                             + end.strftime('%Y-%m-%d %H:%M'),
+                             'grid': grid,
+                             'area': area,
+                             },
+                            f'ERA5_test_data.{file_format}')
 
 # Use simpler variable names, e.g., 2t
 
+
+# %%
+
+start = pd.Timestamp(2020,1,1)
+end = pd.Timestamp(2020,1,2)
+latitude = 55
+longitude = 10
+
+get_era5(start, end, latitude, longitude,
+             dataset_name='reanalysis-era5-single-levels',
+             product_type='reanalysis', variables=DEFAULT_VARIABLES,
+             grid=[0.25, 0.25], file_format='netcdf', cds_client=None,
+             map_variables=True)
 
 # %% Example official
 
@@ -162,23 +181,4 @@ c.retrieve("reanalysis-era5-single-levels",
            "download.grib")
 
 # %%
-
-c = cdsapi.Client()
-c.retrieve("reanalysis-era5-single-levels",
-           {"variable": variables,
-            "product_type": "reanalysis",
-            "year": ['2018'],
-            "month": ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
-            "day": ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'],
-            "time": ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'],
-            "format": "grib"
-            },
-           "download.grib")
-
-# %%
-
-import pvlib
-import pandas as pd
-df, meta = pvlib.iotools.get_cams(latitude=10, longitude=55, start=pd.Timestamp(2019,1,1), end=pd.Timestamp(2020,1,1), email='arajen@byg.dtu.dk', time_step='1h')
-
 

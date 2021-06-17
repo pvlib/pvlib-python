@@ -167,6 +167,9 @@ Bug fixes
   calling :py:func:`~pvlib.pvsystem.calcparams_cec`. (:issue:`1215`, :pull:`1216`)
 * Corrected methodology error in :py:func:`~pvlib.scaling.wvm`. Tracks with
   fix in PVLib for MATLAB. (:issue:`1206`, :pull:`1213`)
+* Corrected an error affecting :py:func:`~pvlib.clearsky.detect_clearsky`
+  when data time step is not one minute. Error was introduced in v0.8.1.
+  (:issue:`1241`, :pull:`1242`)
 
 Testing
 ~~~~~~~

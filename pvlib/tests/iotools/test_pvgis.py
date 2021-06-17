@@ -11,6 +11,7 @@ from pvlib.iotools import read_pvgis_hourly  # get_pvgis_hourly,
 from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal
 
 
+# PVGIS Hourly tests
 testfile_radiation_csv = DATA_DIR / \
     'pvgis_hourly_Timeseries_45.000_8.000_SA_30deg_0deg_2016_2016.csv'
 testfile_pv_json = DATA_DIR / \
@@ -120,27 +121,32 @@ metadata_pv_json = {'inputs': {'location': {'description': 'Selected location',
     'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}
 
 
+# Test read_pvgis_hourly function using two different files with different
+# input arguments (to test variable mapping and pvgis_format)
 @pytest.mark.parametrize('testfile,index,columns,values,metadata_exp,'
                          'inputs_exp,map_variables,pvgis_format', [
     (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv,
-     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, False, None),
+     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, False, None),  # noqa: F401
     (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv_mapped,
-     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, True, 'csv'),
+     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, True, 'csv'),  # noqa: F401
     (testfile_pv_json, index_pv_json, columns_pv_json,
      data_pv_json, metadata_pv_json, inputs_pv_json, False, None),
     (testfile_pv_json, index_pv_json, columns_pv_json_mapped,
      data_pv_json, metadata_pv_json, inputs_pv_json, True, 'json')])
 def test_read_pvgis_hourly(testfile, index, columns, values, metadata_exp,
                            inputs_exp, map_variables, pvgis_format):
+    # Create expected dataframe
     expected = pd.DataFrame(index=index, data=values, columns=columns)
     expected['Int'] = expected['Int'].astype(int)
     expected.index.name = 'time'
     expected.index.freq = None
+    # Read data from file
     out, inputs, metadata = read_pvgis_hourly(
         testfile, map_variables=map_variables, pvgis_format=pvgis_format)
+    # Assert whether dataframe, metadata, and inputs are as expected
     assert_frame_equal(out, expected)
     assert inputs == inputs_exp
-
+    assert metadata == metadata_exp
 
 
 # PVGIS TMY tests

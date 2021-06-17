@@ -7,12 +7,14 @@ import pandas as pd
 import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
-from pvlib.iotools import get_pvgis_hourly, read_pvgis_hourly
+from pvlib.iotools import read_pvgis_hourly  # get_pvgis_hourly, 
 from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal
 
 
-testfile_radiation_csv = DATA_DIR / 'pvgis_hourly_Timeseries_45.000_8.000_SA_30deg_0deg_2016_2016.csv'
-testfile_pv_json = DATA_DIR / 'pvgis_hourly_Timeseries_45.000_8.000_CM_10kWp_CIS_5_2a_2013_2014.json'
+testfile_radiation_csv = DATA_DIR / \
+    'pvgis_hourly_Timeseries_45.000_8.000_SA_30deg_0deg_2016_2016.csv'
+testfile_pv_json = DATA_DIR / \
+    'pvgis_hourly_Timeseries_45.000_8.000_CM_10kWp_CIS_5_2a_2013_2014.json'
 
 index_radiation_csv = \
     pd.date_range('20160101 00:10', freq='1h', periods=14, tz='UTC')
@@ -21,7 +23,7 @@ index_pv_json = \
     pd.date_range('2013-01-01 00:55', freq='1h', periods=10, tz='UTC')
 
 columns_radiation_csv = [
-    'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m','Int']
+    'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
 
 columns_pv_json = [
     'P', 'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
@@ -58,14 +60,16 @@ data_pv_json = [
     [1586.9, 80.76, 83.95, 9.04, 13.28, 2.79, 1.36, 0.0],
     [713.3, 5.18, 70.57, 7.31, 18.56, 3.66, 1.27, 0.0]]
 
+
 @pytest.fixture
 def expected_radiation_csv():
     expected = pd.DataFrame(index=index_radiation_csv, data=data_radiation_csv,
-                        columns=columns_radiation_csv)
+                            columns=columns_radiation_csv)
     expected['Int'] = expected['Int'].astype(int)
     expected.index.name = 'time'
     expected.index.freq = None
     return expected
+
 
 def test_read_pvgis_hourly_csv(expected_radiation_csv):
     out, inputs, metadata = read_pvgis_hourly(testfile_radiation_csv,
@@ -76,13 +80,11 @@ def test_read_pvgis_hourly_csv(expected_radiation_csv):
 @pytest.fixture
 def expected_pv_json():
     expected = pd.DataFrame(index=index_pv_json, data=data_pv_json,
-                        columns=columns_pv_json)
+                            columns=columns_pv_json)
     expected['Int'] = expected['Int'].astype(int)
     expected.index.name = 'time'
     expected.index.freq = None
     return expected
-
-
 
 
 def test_read_pvgis_hourly_json(expected_pv_json):
@@ -90,10 +92,11 @@ def test_read_pvgis_hourly_json(expected_pv_json):
                                               map_variables=False)
     assert_frame_equal(out, expected_pv_json)
 
+
 @pytest.fixture
 def expected_pv_json_mapped():
     expected = pd.DataFrame(index=index_pv_json, data=data_pv_json,
-                        columns=columns_pv_json_mapped)
+                            columns=columns_pv_json_mapped)
     expected['Int'] = expected['Int'].astype(int)
     expected.index.name = 'time'
     expected.index.freq = None

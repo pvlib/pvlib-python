@@ -248,6 +248,52 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
 
 
+def test_perez_negative_horizon():
+    times = pd.date_range(start='20190101 11:30:00', freq='1H',
+                          periods=5, tz='US/Central')
+
+    # Avoid test dependencies on functionality not being tested by hard-coding
+    # the inputs. This data corresponds to Goodwin Creek in the afternoon on
+    # 1/1/2019.
+    # dni_e is slightly rounded from irradiance.get_extra_radiation
+    # airmass from atmosphere.get_relative_airmas
+    inputs = pd.DataFrame(np.array(
+        [[ 158,         19,          1,          0,          0],
+         [ 249,        165,        136,         93,         50],
+         [  57.746951,  57.564205,  60.813841,  66.989435,  75.353368],
+         [ 171.003315, 187.346924, 202.974357, 216.725599, 228.317233],
+         [1414,       1414,       1414,       1414,       1414],
+         [   1.869315,   1.859981,   2.044429,   2.544943,   3.900136]]).T,
+        columns=['dni', 'dhi', 'solar_zenith',
+                 'solar_azimuth', 'dni_extra', 'airmass'],
+        index=times
+    )
+
+    out = irradiance.perez(34, 180, inputs['dhi'], inputs['dni'],
+                           inputs['dni_extra'], inputs['solar_zenith'],
+                           inputs['solar_azimuth'], inputs['airmass'],
+                           model='allsitescomposite1990',
+                           return_components=True)
+
+    # sky_diffuse can be less than isotropic under certain conditions as
+    # horizon goes negative
+    expected = pd.DataFrame(np.array(
+        [[281.410185, 152.20879, 123.867898, 82.836412, 43.517015],
+         [166.785419, 142.24475, 119.173875, 83.525150, 45.725931],
+         [113.548755,  16.09757,   9.956174,  3.142467,  0],
+         [  1.076010,  -6.13353,  -5.262151, -3.831230, -2.208923]]).T,
+        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        index=times
+    )
+
+    expected_for_sum = expected['sky_diffuse'].copy()
+    sum_components = out.iloc[:, 1:].sum(axis=1)
+    sum_components.name = 'sky_diffuse'
+
+    assert_frame_equal(out, expected, check_less_precise=2)
+    assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
+
+
 def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
@@ -608,7 +654,7 @@ def test_gti_dirint():
     expected_col_order = ['ghi', 'dni', 'dhi']
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
-         [ 288.22574368,   60.59964218,  245.37532576],
+         [ 291.40037163,   63.41290679,  246.56067523],
          [ 931.04078010,  695.94965324,  277.06172442]]),
         columns=expected_col_order, index=times)
 
@@ -632,7 +678,7 @@ def test_gti_dirint():
 
     expected = pd.DataFrame(array(
         [[  21.05796198,    0.        ,   21.05796198],
-         [ 289.81109139,   60.52460392,  247.01373353],
+         [ 293.21310935,   63.27500913,  248.47092131],
          [ 932.46756378,  648.05001357,  323.49974813]]),
         columns=expected_col_order, index=times)
 
@@ -646,8 +692,8 @@ def test_gti_dirint():
 
     expected = pd.DataFrame(array(
         [[  21.3592591,    0.        ,   21.3592591 ],
-         [ 292.5162373,   64.42628826,  246.95997198],
-         [ 941.6753031,  727.16311901,  258.36548605]]),
+         [ 294.4985420,   66.25848451,  247.64671830],
+         [ 941.7943404,  727.50552952,  258.16276278]]),
         columns=expected_col_order, index=times)
 
     assert_frame_equal(output, expected)
@@ -659,8 +705,8 @@ def test_gti_dirint():
         temp_dew=temp_dew)
 
     expected = pd.DataFrame(array(
-        [[  21.05796198,    0.        ,   21.05796198],
-         [ 292.40468994,   36.79559287,  266.3862767 ],
+        [[  21.05796198,    0.,           21.05796198],
+         [ 295.06070190,   38.20346345,  268.0467738],
          [ 931.79627208,  689.81549269,  283.5817439]]),
         columns=expected_col_order, index=times)
 

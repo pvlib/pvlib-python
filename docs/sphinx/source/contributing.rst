@@ -343,11 +343,11 @@ pvlib directory::
 
 or, for a single module::
 
-    pytest pvlib/test/test_clearsky.py
+    pytest pvlib/tests/test_clearsky.py
 
 or, for a single test::
 
-    pytest pvlib/test/test_clearsky.py::test_ineichen_nans
+    pytest pvlib/tests/test_clearsky.py::test_ineichen_nans
 
 We suggest using pytest's ``--pdb`` flag to debug test failures rather
 than using ``print`` or ``logging`` calls. For example::

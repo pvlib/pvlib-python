@@ -465,8 +465,8 @@ Functions
 IO Tools
 ========
 
-Functions for reading and writing data from a variety of file formats
-relevant to solar energy modeling.
+Functions for retrieving, reading, and writing data from a variety
+of sources and file formats relevant to solar energy modeling.
 
 .. autosummary::
    :toctree: generated/
@@ -490,6 +490,9 @@ relevant to solar energy modeling.
    iotools.get_pvgis_tmy
    iotools.read_pvgis_tmy
    iotools.read_bsrn
+   iotools.get_cams
+   iotools.read_cams
+   iotools.parse_cams
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

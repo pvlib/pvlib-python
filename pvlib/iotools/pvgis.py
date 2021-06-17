@@ -56,9 +56,9 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     Parameters
     ----------
     latitude: float
-        Latitude in degrees north
+        in decimal degrees, between -90 and 90, north is positive (ISO 19115)
     longitude: float
-        Longitude in degrees east
+        in decimal degrees, between -180 and 180, east is positive (ISO 19115)
     surface_tilt: float, default: 0
         Tilt angle from horizontal plane. Not relevant for 2-axis tracking.
     surface_azimuth: float, default: 0
@@ -82,7 +82,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     end: int, default: None
         Last year of the radiation time series. Defaults to last year avaiable.
     pvcalculation: bool, default: False
-        Return estimate of hourly production.
+        Return estimate of hourly PV production.
     peakpower: float, default: None
         Nominal power of PV system in kW. Required if pvcalculation=True.
     pvtechchoice: {'crystSi', 'CIS', 'CdTe', 'Unknown'}, default: 'crystSi'

@@ -232,7 +232,12 @@ def test_get_pvgis_hourly(requests_mock, testfile, index, columns, values,
 
 def test_get_pvgis_hourly_bad_status_code(requests_mock):
     # Test if a HTTPError is raised if a bad request is returned
-    requests_mock.get(url_pv_json, status_code=400)  # text=mock_response)
+    requests_mock.get(url_pv_json, status_code=400)
+    with pytest.raises(requests.HTTPError):
+        get_pvgis_hourly(latitude=45, longitude=8, **args_pv_json)
+    # Test if HTTPError is raised and error message is returned if avaiable
+    requests_mock.get(url_pv_json, status_code=400,
+                      json={'message': 'peakpower Mandatory'})
     with pytest.raises(requests.HTTPError):
         get_pvgis_hourly(latitude=45, longitude=8, **args_pv_json)
 

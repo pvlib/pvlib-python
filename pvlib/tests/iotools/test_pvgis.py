@@ -7,9 +7,107 @@ import pandas as pd
 import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
-from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
+from pvlib.iotools import get_pvgis_hourly, read_pvgis_hourly
+from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal
 
 
+testfile_radiation_csv = DATA_DIR / 'pvgis_hourly_Timeseries_45.000_8.000_SA_30deg_0deg_2016_2016.csv'
+testfile_pv_json = DATA_DIR / 'pvgis_hourly_Timeseries_45.000_8.000_CM_10kWp_CIS_5_2a_2013_2014.json'
+
+index_radiation_csv = \
+    pd.date_range('20160101 00:10', freq='1h', periods=14, tz='UTC')
+
+index_pv_json = \
+    pd.date_range('2013-01-01 00:55', freq='1h', periods=10, tz='UTC')
+
+columns_radiation_csv = [
+    'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m','Int']
+
+columns_pv_json = [
+    'P', 'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
+
+columns_pv_json_mapped = [
+    'P', 'poa_direct', 'poa_diffuse', 'poa_ground_diffuse', 'solar_elevation',
+    'temp_air', 'wind_speed', 'Int']
+
+data_radiation_csv = [
+    [0.0, 0.0, 0.0, 0.0, 3.44, 1.43, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 2.94, 1.47, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 2.43, 1.51, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 1.93, 1.54, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 2.03, 1.62, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 2.14, 1.69, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 2.25, 1.77, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 3.06, 1.49, 0.0],
+    [26.71, 8.28, 0.21, 8.06, 3.87, 1.22, 1.0],
+    [14.69, 5.76, 0.16, 14.8, 4.67, 0.95, 1.0],
+    [2.19, 0.94, 0.03, 19.54, 5.73, 0.77, 1.0],
+    [2.11, 0.94, 0.03, 21.82, 6.79, 0.58, 1.0],
+    [4.25, 1.88, 0.05, 21.41, 7.84, 0.4, 1.0],
+    [0.0, 0.0, 0.0, 0.0, 7.43, 0.72, 0.0]]
+
+data_pv_json = [
+    [0.0, 0.0, 0.0, 0.0, 0.0, 3.01, 1.23, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 0.0, 2.22, 1.46, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 0.0, 1.43, 1.7, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 0.0, 0.64, 1.93, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 0.0, 0.77, 1.8, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 0.0, 0.91, 1.66, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 0.0, 1.05, 1.53, 0.0],
+    [3464.5, 270.35, 91.27, 6.09, 6.12, 1.92, 1.44, 0.0],
+    [1586.9, 80.76, 83.95, 9.04, 13.28, 2.79, 1.36, 0.0],
+    [713.3, 5.18, 70.57, 7.31, 18.56, 3.66, 1.27, 0.0]]
+
+@pytest.fixture
+def expected_radiation_csv():
+    expected = pd.DataFrame(index=index_radiation_csv, data=data_radiation_csv,
+                        columns=columns_radiation_csv)
+    expected['Int'] = expected['Int'].astype(int)
+    expected.index.name = 'time'
+    expected.index.freq = None
+    return expected
+
+def test_read_pvgis_hourly_csv(expected_radiation_csv):
+    out, inputs, metadata = read_pvgis_hourly(testfile_radiation_csv,
+                                              map_variables=False)
+    assert_frame_equal(out, expected_radiation_csv)
+
+
+@pytest.fixture
+def expected_pv_json():
+    expected = pd.DataFrame(index=index_pv_json, data=data_pv_json,
+                        columns=columns_pv_json)
+    expected['Int'] = expected['Int'].astype(int)
+    expected.index.name = 'time'
+    expected.index.freq = None
+    return expected
+
+
+
+
+def test_read_pvgis_hourly_json(expected_pv_json):
+    out, inputs, metadata = read_pvgis_hourly(testfile_pv_json,
+                                              map_variables=False)
+    assert_frame_equal(out, expected_pv_json)
+
+@pytest.fixture
+def expected_pv_json_mapped():
+    expected = pd.DataFrame(index=index_pv_json, data=data_pv_json,
+                        columns=columns_pv_json_mapped)
+    expected['Int'] = expected['Int'].astype(int)
+    expected.index.name = 'time'
+    expected.index.freq = None
+    return expected
+
+
+def test_read_pvgis_hourly_json_mapped(expected_pv_json_mapped):
+    out, inputs, metadata = read_pvgis_hourly(testfile_pv_json,
+                                              map_variables=True,
+                                              pvgis_format='json')
+    assert_frame_equal(out, expected_pv_json_mapped)
+
+
+# PVGIS TMY tests
 @pytest.fixture
 def expected():
     return pd.read_csv(DATA_DIR / 'pvgis_tmy_test.dat', index_col='time(UTC)')

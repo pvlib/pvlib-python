@@ -41,13 +41,13 @@ VARIABLE_MAP = {
 }
 
 
-def get_pvgis_hourly(latitude, longitude, angle=0, aspect=0,
+def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
                      outputformat='json',
                      usehorizon=True, userhorizon=None, raddatabase=None,
                      start=None, end=None, pvcalculation=False,
                      peakpower=None, pvtechchoice='crystSi',
                      mountingplace='free', loss=None, trackingtype=0,
-                     optimal_inclination=False, optimalangles=False,
+                     optimalinclination=False, optimalangles=False,
                      components=True, url=URL, map_variables=True, timeout=30):
     """
     Get hourly solar irradiation and modeled PV power output from PVGIS [1]_.
@@ -58,9 +58,9 @@ def get_pvgis_hourly(latitude, longitude, angle=0, aspect=0,
         Latitude in degrees north
     longitude: float
         Longitude in degrees east
-    angle: float, default: 0
+    surface_tilt: float, default: 0
         Tilt angle from horizontal plane. Not relevant for 2-axis tracking.
-    aspect: float, default: 0
+    surface_azimuth: float, default: 0
         Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
         -90: east. Not relevant for tracking systems.
     outputformat: str, default: 'json'
@@ -170,7 +170,7 @@ def get_pvgis_hourly(latitude, longitude, angle=0, aspect=0,
     """
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
-              'angle': angle, 'aspect': aspect,
+              'angle': surface_tilt, 'aspect': surface_azimuth,
               'pvtechchoice': pvtechchoice, 'mountingplace': mountingplace,
               'trackingtype': trackingtype, 'components': int(components)}
     # pvgis only likes 0 for False, and 1 for True, not strings, also the
@@ -193,8 +193,8 @@ def get_pvgis_hourly(latitude, longitude, angle=0, aspect=0,
         params['peakpower'] = peakpower
     if loss is not None:
         params['loss'] = loss
-    if optimal_inclination:
-        params['optimal_inclination'] = 1
+    if optimalinclination:
+        params['optimalinclination'] = 1
     if optimalangles:
         params['optimalangles'] = 1
 
@@ -242,13 +242,13 @@ def _parse_pvgis_hourly_json(src, map_variables):
     return data, inputs, metadata
 
 
-def _parse_pvgis_hourly_basic(src):
+def _parse_pvgis_hourly_basic(src, map_variables):
     # Hourly data with outputformat='basic' does not include header or metadata
     data = pd.read_csv(src, header=None, skiprows=2)
     return data, None, None
 
 
-def _parse_pvgis_hourly_csv(src, map_variables=True):
+def _parse_pvgis_hourly_csv(src, map_variables):
     # The first 4 rows are latitude, longitude, elevation, radiation database
     inputs = {}
     # 'Latitude (decimal degrees): 45.000\r\n'
@@ -362,7 +362,7 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'r') as fbuf:
                 src = json.load(fbuf)
-        return _parse_pvgis_hourly_json(src)
+        return _parse_pvgis_hourly_json(src, map_variables=map_variables)
 
     # CSV or basic: use the correct parser from this module
     # eg: _parse_pvgis_hourly_csv() or _parse_pvgis_hourly_basic()
@@ -372,10 +372,10 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
         # NOTE: pvgis_parse() is a pvgis parser function from this module,
         # either _parse_pvgis_hourly_csv() or _parse_pvgist_hourly_basic()
         try:
-            pvgis_data = pvgis_parser(filename)
+            pvgis_data = pvgis_parser(filename, map_variables=map_variables)
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'r') as fbuf:
-                pvgis_data = pvgis_parser(fbuf)
+                pvgis_data = pvgis_parser(fbuf, map_variables=map_variables)
         return pvgis_data
 
     # raise exception if pvgis format isn't in ['csv', 'basic', 'json']

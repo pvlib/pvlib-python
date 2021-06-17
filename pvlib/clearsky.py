@@ -633,18 +633,18 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
     # shift to get forward difference, .diff() is backward difference instead
     data_diff = data.diff().shift(-1)
     data_slope = data_diff / sample_interval
-    data_slope_nstd = _slope_nstd_windowed(data, H, samples_per_window,
-                                           sample_interval)
+    data_slope_nstd = _slope_nstd_windowed(data_slope.values[:-1], data, H,
+                                           samples_per_window, sample_interval)
     data_slope_nstd = data_slope_nstd
 
     return data_mean, data_max, data_slope_nstd, data_slope
 
 
-def _slope_nstd_windowed(data, H, samples_per_window, sample_interval):
+def _slope_nstd_windowed(slopes, data, H, samples_per_window, sample_interval):
     with np.errstate(divide='ignore', invalid='ignore'):
-        raw = np.diff(data) / sample_interval
-        raw = raw[H[:-1, ]].std(ddof=1, axis=0) / data.values[H].mean(axis=0)
-    return _to_centered_series(raw, data.index, samples_per_window)
+        nstd = slopes[H[:-1, ]].std(ddof=1, axis=0) \
+            / data.values[H].mean(axis=0)
+    return _to_centered_series(nstd, data.index, samples_per_window)
 
 
 def _max_diff_windowed(data, H, samples_per_window):

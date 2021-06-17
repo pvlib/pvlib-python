@@ -66,9 +66,9 @@ inputs_radiation_csv = {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0,
                         'Slope': '30 deg.', 'Azimuth': '0 deg.'}
 
 metadata_radiation_csv = {
-    'Gb(i)': 'Beam (direct) irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F501
-    'Gd(i)': 'Diffuse irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F501
-    'Gr(i)': 'Reflected irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F501
+    'Gb(i)': 'Beam (direct) irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: E501
+    'Gd(i)': 'Diffuse irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: E501
+    'Gr(i)': 'Reflected irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: E501
     'H_sun': 'Sun height (degree)',
     'T2m': '2-m air temperature (degree Celsius)',
     'WS10m': '10-m total wind speed (m/s)',
@@ -84,42 +84,45 @@ inputs_pv_json = {
         'azimuth': {'value': '-', 'optimal': '-'}}},
     'pv_module': {'technology': 'CIS', 'peak_power': 10.0, 'system_loss': 5.0}}
 
-metadata_pv_json = {'inputs': {'location': {'description': 'Selected location',
-    'variables': {'latitude': {'description': 'Latitude',
-                               'units': 'decimal degree'},
-    'longitude': {'description': 'Longitude', 'units': 'decimal degree'},
-    'elevation': {'description': 'Elevation', 'units': 'm'}}},
-  'meteo_data': {'description': 'Sources of meteorological data',
-   'variables': {'radiation_db': {'description': 'Solar radiation database'},
-    'meteo_db': {'description': 'Database used for meteorological variables other than solar radiation'},  # noqa: F501
-    'year_min': {'description': 'First year of the calculations'},
-    'year_max': {'description': 'Last year of the calculations'},
-    'use_horizon': {'description': 'Include horizon shadows'},
-    'horizon_db': {'description': 'Source of horizon data'}}},
-  'mounting_system': {'description': 'Mounting system',
-   'choices': 'fixed, vertical_axis, inclined_axis, two_axis',
-   'fields': {'slope': {'description': 'Inclination angle from the horizontal plane',  # noqa: F501
-     'units': 'degree'},
-    'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)',  # noqa: F501
-     'units': 'degree'}}},
-  'pv_module': {'description': 'PV module parameters',
-   'variables': {'technology': {'description': 'PV technology'},
-    'peak_power': {'description': 'Nominal (peak) power of the PV module',
-     'units': 'kW'},
-    'system_loss': {'description': 'Sum of system losses', 'units': '%'}}}},
- 'outputs': {'hourly': {'type': 'time series',
-   'timestamp': 'hourly averages',
-   'variables': {'P': {'description': 'PV system power', 'units': 'W'},
-    'Gb(i)': {'description': 'Beam (direct) irradiance on the inclined plane (plane of the array)',  # noqa: F501
-     'units': 'W/m2'},
-    'Gd(i)': {'description': 'Diffuse irradiance on the inclined plane (plane of the array)',  # noqa: F501
-     'units': 'W/m2'},
-    'Gr(i)': {'description': 'Reflected irradiance on the inclined plane (plane of the array)',  # noqa: F501
-     'units': 'W/m2'},
-    'H_sun': {'description': 'Sun height', 'units': 'degree'},
-    'T2m': {'description': '2-m air temperature', 'units': 'degree Celsius'},
-    'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},
-    'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: F501
+metadata_pv_json = {
+    'inputs': {
+        'location': {'description': 'Selected location', 'variables': {
+            'latitude': {'description': 'Latitude', 'units': 'decimal degree'},
+            'longitude': {'description': 'Longitude', 'units': 'decimal degree'},  # noqa: E501
+            'elevation': {'description': 'Elevation', 'units': 'm'}}},
+            'meteo_data': {
+                'description': 'Sources of meteorological data',
+                'variables': {
+                    'radiation_db': {'description': 'Solar radiation database'},  # noqa: E501
+                    'meteo_db': {'description': 'Database used for meteorological variables other than solar radiation'},  # noqa: E501
+                    'year_min': {'description': 'First year of the calculations'},  # noqa: E501
+                    'year_max': {'description': 'Last year of the calculations'},  # noqa: E501
+                    'use_horizon': {'description': 'Include horizon shadows'},
+                    'horizon_db': {'description': 'Source of horizon data'}}},
+            'mounting_system': {
+                'description': 'Mounting system',
+                'choices': 'fixed, vertical_axis, inclined_axis, two_axis',
+                'fields': {
+                    'slope': {'description': 'Inclination angle from the horizontal plane', 'units': 'degree'},  # noqa: E501
+                    'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)', 'units': 'degree'}}},   # noqa: E5011
+            'pv_module': {
+                'description': 'PV module parameters',
+                'variables': {
+                    'technology': {'description': 'PV technology'},
+                    'peak_power': {'description': 'Nominal (peak) power of the PV module', 'units': 'kW'},  # noqa: E501
+                    'system_loss': {'description': 'Sum of system losses', 'units': '%'}}}},  # noqa: E501
+    'outputs': {
+        'hourly': {
+            'type': 'time series', 'timestamp': 'hourly averages',
+            'variables': {
+                'P': {'description': 'PV system power', 'units': 'W'},
+                'Gb(i)': {'description': 'Beam (direct) irradiance on the inclined plane (plane of the array)', 'units': 'W/m2'},  # noqa: E501
+                'Gd(i)': {'description': 'Diffuse irradiance on the inclined plane (plane of the array)', 'units': 'W/m2'},  # noqa: E501
+                'Gr(i)': {'description': 'Reflected irradiance on the inclined plane (plane of the array)', 'units': 'W/m2'},  # noqa: E501
+                'H_sun': {'description': 'Sun height', 'units': 'degree'},
+                'T2m': {'description': '2-m air temperature', 'units': 'degree Celsius'},  # noqa: E501
+                'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},  # noqa: E501
+                'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: E501
 
 
 # Test read_pvgis_hourly function using two different files with different

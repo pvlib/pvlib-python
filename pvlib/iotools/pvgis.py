@@ -81,7 +81,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     end: int, default: None
         Last year of the radiation time series. Defaults to last year avaiable.
     pvcalculation: bool, default: False
-        Also return estimate of hourly production.
+        Return estimate of hourly production.
     peakpower: float, default: None
         Nominal power of PV system in kW. Required if pvcalculation=True.
     pvtechchoice: {'crystSi', 'CIS', 'CdTe', 'Unknown'}, default: 'crystSi'
@@ -120,7 +120,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     inputs : dict
         Dictionary of the request input parameters
     metadata : list or dict
-        metadata
+        Dictionary containing metadata
 
     Notes
     -----
@@ -131,20 +131,20 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     =======================  ======  ==========================================
     **Mapped field names are returned when the map_variables argument is True**
     ---------------------------------------------------------------------------
-    P*                       float   PV system power (W)
-    G(i)**                   float   Global irradiance on inclined plane (W/m^2)  # noqa
-    Gb(i)**                  float   Beam (direct) irradiance on inclined plane (W/m^2)  # noqa
-    Gd(i)**                  float   Diffuse irradiance on inclined plane (W/m^2)  # noqa
-    Gr(i)**                  float   Reflected irradiance on inclined plane (W/m^2)  # noqa
+    P\*                      float   PV system power (W)
+    G(i)\**                  float   Global irradiance on inclined plane (W/m^2)  # noqa
+    Gb(i)\*                  float   Beam (direct) irradiance on inclined plane (W/m^2)  # noqa
+    Gd(i)\**                 float   Diffuse irradiance on inclined plane (W/m^2)  # noqa
+    Gr(i)\**                 float   Reflected irradiance on inclined plane (W/m^2)  # noqa
     H_sun, solar_elevation   float   Sun height/elevation (degrees)
-    T2m, temp_air            float   Air temperature at 2  (degrees Celsius)
+    T2m, temp_air            float   Air temperature at 2 m (degrees Celsius)
     WS10m, wind_speed        float   Wind speed at 10 m (m/s)
     Int                      int     Solar radiation reconstructed (1/0)
     =======================  ======  ==========================================
 
-    *P (PV system power) is only returned when pvcalculation=True.
+    \*P (PV system power) is only returned when pvcalculation=True.
 
-    **Gb(i), Gd(i), and Gr(i) are returned when components=True, whereas
+    v**Gb(i), Gd(i), and Gr(i) are returned when components=True, whereas
     otherwise the sum of the three components, G(i), is returned.
 
     Raises
@@ -165,7 +165,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
        <https://ec.europa.eu/jrc/en/PVGIS/tools/hourly-radiation>`_
     .. [3] `PVGIS Non-interactive service
        <https://ec.europa.eu/jrc/en/PVGIS/docs/noninteractive>`
-    .. [3] `PVGIS horizon profile tool
+    .. [4] `PVGIS horizon profile tool
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
     """
     # use requests to format the query string by passing params dictionary
@@ -357,7 +357,7 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
     if outputformat == 'csv':
         try:
             pvgis_data = _parse_pvgis_hourly_csv(
-                filename,map_variables=map_variables)
+                filename, map_variables=map_variables)
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'r') as fbuf:
                 pvgis_data = _parse_pvgis_hourly_csv(

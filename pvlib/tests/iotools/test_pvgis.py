@@ -4,6 +4,7 @@ test the pvgis IO tools
 import json
 import numpy as np
 import pandas as pd
+import io
 import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
@@ -90,16 +91,16 @@ metadata_pv_json = {'inputs': {'location': {'description': 'Selected location',
     'elevation': {'description': 'Elevation', 'units': 'm'}}},
   'meteo_data': {'description': 'Sources of meteorological data',
    'variables': {'radiation_db': {'description': 'Solar radiation database'},
-    'meteo_db': {'description': 'Database used for meteorological variables other than solar radiation'},
+    'meteo_db': {'description': 'Database used for meteorological variables other than solar radiation'},  # noqa: F501
     'year_min': {'description': 'First year of the calculations'},
     'year_max': {'description': 'Last year of the calculations'},
     'use_horizon': {'description': 'Include horizon shadows'},
     'horizon_db': {'description': 'Source of horizon data'}}},
   'mounting_system': {'description': 'Mounting system',
    'choices': 'fixed, vertical_axis, inclined_axis, two_axis',
-   'fields': {'slope': {'description': 'Inclination angle from the horizontal plane',
+   'fields': {'slope': {'description': 'Inclination angle from the horizontal plane',  # noqa: F501
      'units': 'degree'},
-    'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)',
+    'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)',  # noqa: F501
      'units': 'degree'}}},
   'pv_module': {'description': 'PV module parameters',
    'variables': {'technology': {'description': 'PV technology'},
@@ -109,30 +110,36 @@ metadata_pv_json = {'inputs': {'location': {'description': 'Selected location',
  'outputs': {'hourly': {'type': 'time series',
    'timestamp': 'hourly averages',
    'variables': {'P': {'description': 'PV system power', 'units': 'W'},
-    'Gb(i)': {'description': 'Beam (direct) irradiance on the inclined plane (plane of the array)',
+    'Gb(i)': {'description': 'Beam (direct) irradiance on the inclined plane (plane of the array)',  # noqa: F501
      'units': 'W/m2'},
-    'Gd(i)': {'description': 'Diffuse irradiance on the inclined plane (plane of the array)',
+    'Gd(i)': {'description': 'Diffuse irradiance on the inclined plane (plane of the array)',  # noqa: F501
      'units': 'W/m2'},
-    'Gr(i)': {'description': 'Reflected irradiance on the inclined plane (plane of the array)',
+    'Gr(i)': {'description': 'Reflected irradiance on the inclined plane (plane of the array)',  # noqa: F501
      'units': 'W/m2'},
     'H_sun': {'description': 'Sun height', 'units': 'degree'},
     'T2m': {'description': '2-m air temperature', 'units': 'degree Celsius'},
     'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},
-    'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}
+    'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: F501
 
 
 # Test read_pvgis_hourly function using two different files with different
 # input arguments (to test variable mapping and pvgis_format)
 @pytest.mark.parametrize('testfile,index,columns,values,metadata_exp,'
                          'inputs_exp,map_variables,pvgis_format', [
-    (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv,
-     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, False, None),  # noqa: F501
-    (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv_mapped,
-     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, True, 'csv'),  # noqa: E501
-    (testfile_pv_json, index_pv_json, columns_pv_json,
-     data_pv_json, metadata_pv_json, inputs_pv_json, False, None),
-    (testfile_pv_json, index_pv_json, columns_pv_json_mapped,
-     data_pv_json, metadata_pv_json, inputs_pv_json, True, 'json')])
+                             (testfile_radiation_csv, index_radiation_csv,
+                              columns_radiation_csv, data_radiation_csv,
+                              metadata_radiation_csv, inputs_radiation_csv,
+                              False, None),
+                             (testfile_radiation_csv, index_radiation_csv,
+                              columns_radiation_csv_mapped, data_radiation_csv,
+                              metadata_radiation_csv, inputs_radiation_csv,
+                              True, 'csv'),
+                             (testfile_pv_json, index_pv_json, columns_pv_json,
+                              data_pv_json, metadata_pv_json, inputs_pv_json,
+                              False, None),
+                             (testfile_pv_json, index_pv_json,
+                              columns_pv_json_mapped, data_pv_json,
+                              metadata_pv_json, inputs_pv_json, True, 'json')])
 def test_read_pvgis_hourly(testfile, index, columns, values, metadata_exp,
                            inputs_exp, map_variables, pvgis_format):
     # Create expected dataframe
@@ -153,11 +160,13 @@ def test_read_pvgis_hourly_bad_extension():
     # Test if ValueError is raised if file extension cannot be recognized and
     # pvgis_format is not specified
     with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
-        read_pvgis_hourly('testfile.txt')
+        read_pvgis_hourly('filename.txt')
     # Test if ValueError is raised if an unkonwn pvgis_format is specified
     with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
         read_pvgis_hourly(testfile_pv_json, pvgis_format='txt')
-
+    # Test if TypeError is raised if input is a buffer and pvgis_format=None
+    with pytest.raises(TypeError, match="expected str, bytes or os.PathLike"):
+        read_pvgis_hourly(io.StringIO())
 
 
 # PVGIS TMY tests

@@ -49,8 +49,9 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
                      mountingplace='free', loss=None, trackingtype=0,
                      optimal_surface_tilt=False, optimalangles=False,
                      components=True, url=URL, map_variables=True, timeout=30):
-    """
-    Get hourly solar irradiation and modeled PV power output from PVGIS [1]_.
+    """Get hourly solar irradiation and modeled PV power output from PVGIS.
+
+    PVGIS is avaiable at [1]_.
 
     Parameters
     ----------

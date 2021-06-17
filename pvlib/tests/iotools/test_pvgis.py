@@ -8,11 +8,13 @@ import io
 import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
-from pvlib.iotools import read_pvgis_hourly  # get_pvgis_hourly,
+from pvlib.iotools import get_pvgis_hourly, read_pvgis_hourly
 from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal
 
 
 # PVGIS Hourly tests
+# The test files are actual files from PVGIS where the data section have been
+# reduced to only a few lines
 testfile_radiation_csv = DATA_DIR / \
     'pvgis_hourly_Timeseries_45.000_8.000_SA_30deg_0deg_2016_2016.csv'
 testfile_pv_json = DATA_DIR / \
@@ -104,7 +106,7 @@ metadata_pv_json = {
             'choices': 'fixed, vertical_axis, inclined_axis, two_axis',
             'fields': {
                 'slope': {'description': 'Inclination angle from the horizontal plane', 'units': 'degree'},  # noqa: E501
-                'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)', 'units': 'degree'}}},  # noqa: E5011
+                'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)', 'units': 'degree'}}},  # noqa: E501
         'pv_module': {
             'description': 'PV module parameters',
             'variables': {
@@ -170,6 +172,69 @@ def test_read_pvgis_hourly_bad_extension():
     # Test if TypeError is raised if input is a buffer and pvgis_format=None
     with pytest.raises(TypeError, match="expected str, bytes or os.PathLike"):
         read_pvgis_hourly(io.StringIO())
+
+
+args_radiation_csv = {
+    'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'csv',
+    'usehorizon': True, 'userhorizon': None, 'raddatabase': 'PVGIS-SARAH',
+    'start': 2016, 'end': 2016, 'pvcalculation': False, 'components': True}
+
+url_hourly_radiation_csv = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=csv&angle=30&aspect=0&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&raddatabase=PVGIS-SARAH&startyear=2016&endyear=2016'  # noqa: E501
+
+args_pv_json = {
+    'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'json',
+    'usehorizon': True, 'userhorizon': None, 'raddatabase': 'PVGIS-CMSAF',
+    'start': 2013, 'end': 2014, 'pvcalculation': True, 'peakpower': 10,
+    'pvtechchoice': 'CIS', 'loss': 5, 'trackingtype': 2, 'optimalangles': True,
+    'components': True}
+
+url_pv_json = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=json&angle=30&aspect=0&pvtechchoice=CIS&mountingplace=free&trackingtype=2&components=1&raddatabase=PVGIS-CMSAF&startyear=2013&endyear=2014&pvcalculation=1&peakpower=10&loss=5&optimalangles=1'  # noqa: E501
+
+
+@pytest.mark.parametrize('testfile,index,columns,values,args,map_variables,'
+                         'url_test', [
+                             (testfile_radiation_csv, index_radiation_csv,
+                              columns_radiation_csv, data_radiation_csv,
+                              args_radiation_csv, False,
+                              url_hourly_radiation_csv),
+                             (testfile_radiation_csv, index_radiation_csv,
+                              columns_radiation_csv_mapped, data_radiation_csv,
+                              args_radiation_csv, True,
+                              url_hourly_radiation_csv),
+                             (testfile_pv_json, index_pv_json, columns_pv_json,
+                              data_pv_json, args_pv_json, False, url_pv_json),
+                             (testfile_pv_json, index_pv_json,
+                              columns_pv_json_mapped, data_pv_json,
+                              args_pv_json, True, url_pv_json)])
+def test_get_pvgis_hourly(requests_mock, testfile, index, columns, values,
+                          args, map_variables, url_test):
+    """Test that get_pvgis_hourly generates the correct URI request and that
+    _parse_pvgis_hourly_json and _parse_pvgis_hourly_csv is called correctly"""
+    # Open local test file containing McClear mothly data
+    with open(testfile, 'r') as test_file:
+        mock_response = test_file.read()
+    # Specify the full URI of a specific example, this ensures that all of the
+    # inputs are passing on correctly
+
+    requests_mock.get(url_test, text=mock_response)
+
+    # Make API call - an error is raised if requested URI does not match
+    out, inputs, metadata = get_pvgis_hourly(
+        latitude=45, longitude=8, map_variables=map_variables, **args)
+    # Create expected dataframe
+    expected = pd.DataFrame(index=index, data=values, columns=columns)
+    expected['Int'] = expected['Int'].astype(int)
+    expected.index.name = 'time'
+    expected.index.freq = None
+    # Compare out and expected dataframes
+    assert_frame_equal(out, expected)
+
+
+def test_get_pvgis_hourly_bad_status_code(requests_mock):
+    # Test if a HTTPError is raised if a bad request is returned
+    requests_mock.get(url_pv_json, status_code=400)  # text=mock_response)
+    with pytest.raises(requests.HTTPError):
+        get_pvgis_hourly(latitude=45, longitude=8, **args_pv_json)
 
 
 # PVGIS TMY tests

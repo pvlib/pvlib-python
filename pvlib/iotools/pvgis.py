@@ -47,7 +47,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
                      start=None, end=None, pvcalculation=False,
                      peakpower=None, pvtechchoice='crystSi',
                      mountingplace='free', loss=None, trackingtype=0,
-                     optimalinclination=False, optimalangles=False,
+                     optimal_surface_tilt=False, optimalangles=False,
                      components=True, url=URL, map_variables=True, timeout=30):
     """
     Get hourly solar irradiation and modeled PV power output from PVGIS [1]_.
@@ -64,8 +64,8 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
         -90: east. Not relevant for tracking systems.
     outputformat: str, default: 'json'
-        Must be in ``['json', 'csv', 'basic']``. See PVGIS hourly data
-        documentation [2]_ for more info. Note basic does not include a header.
+        Must be in ``['json', 'csv']``. See PVGIS hourly data
+        documentation [2]_ for more info.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None
@@ -96,7 +96,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         north-south, 2=two-axis tracking, 3=vertical axis tracking, 4=single
         horizontal axis aligned east-west, 5=single inclined axis aligned
         north-south.
-    optimalinclination: bool, default: False
+    optimal_surface_tilt: bool, default: False
         Calculate the optimum tilt angle. Not relevant for 2-axis tracking
     optimalangles: bool, default: False
         Calculate the optimum tilt and azimuth angles. Not relevant for 2-axis
@@ -118,9 +118,9 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     data : pandas.DataFrame
         Time-series of hourly data, see Notes for fields
     inputs : dict
-        Dictionary of the request input parameters, ``None`` for basic
+        Dictionary of the request input parameters
     metadata : list or dict
-        metadata, ``None`` for basic
+        metadata
 
     Notes
     -----
@@ -193,7 +193,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         params['peakpower'] = peakpower
     if loss is not None:
         params['loss'] = loss
-    if optimalinclination:
+    if optimal_surface_tilt:
         params['optimalinclination'] = 1
     if optimalangles:
         params['optimalangles'] = 1
@@ -220,9 +220,6 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     elif outputformat == 'csv':
         with io.StringIO(res.content.decode('utf-8')) as src:
             return _parse_pvgis_hourly_csv(src, map_variables=map_variables)
-    elif outputformat == 'basic':
-        with io.BytesIO(res.content) as src:
-            return _parse_pvgis_hourly_basic(src)
     else:
         # this line is never reached because if outputformat is not valid then
         # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
@@ -240,12 +237,6 @@ def _parse_pvgis_hourly_json(src, map_variables):
     if map_variables:
         data.rename(columns=VARIABLE_MAP, inplace=True)
     return data, inputs, metadata
-
-
-def _parse_pvgis_hourly_basic(src, map_variables):
-    # Hourly data with outputformat='basic' does not include header or metadata
-    data = pd.read_csv(src, header=None, skiprows=2)
-    return data, None, None
 
 
 def _parse_pvgis_hourly_csv(src, map_variables):
@@ -311,46 +302,44 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS API. If `filename` is a file and
         `pvgis_format` is ``None`` then the file extension will be used to
-        determine the PVGIS format to parse. For PVGIS files from the API with
-        ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
-        `filename` is a buffer, then `pvgis_format` is required and must be in
-        ``['csv', 'json', 'basic']``.
+        determine the PVGIS format to parse. If `filename` is a buffer, then
+        `pvgis_format` is required and must be in ``['csv', 'json']``.
 
     Returns
     -------
     data : pandas.DataFrame
         the weather data
     inputs : dict
-        the inputs, ``None`` for basic
+        the inputs
     metadata : list or dict
-        metadata, ``None`` for basic
+        metadata
 
     Raises
     ------
     ValueError
         if `pvgis_format` is ``None`` and the file extension is neither
         ``.csv`` nor ``.json`` or if `pvgis_format` is provided as
-        input but isn't in ``['csv', 'json', 'basic']``
+        input but isn't in ``['csv', 'json']``
     TypeError
         if `pvgis_format` is ``None`` and `filename` is a buffer
 
     See also
     --------
-    get_pvgis_hourly
+    get_pvgis_hourly, get_pvgis_tmy
     """
     # get the PVGIS outputformat
     if pvgis_format is None:
         # get the file extension from suffix, but remove the dot and make sure
         # it's lower case to compare with csv, or json
+        # NOTE: basic format is not supported for PVGIS Hourly as the data
+        # format does not include a header
         # NOTE: raises TypeError if filename is a buffer
         outputformat = Path(filename).suffix[1:].lower()
     else:
         outputformat = pvgis_format
 
-    # parse the pvgis file based on the output format, either 'json', 'csv',
-    # or 'basic'
-
-    # NOTE: json, csv, and basic output formats have parsers defined as private
+    # parse the pvgis file based on the output format, either 'json' or 'csv'
+    # NOTE: json and csv output formats have parsers defined as private
     # functions in this module
 
     # JSON: use Python built-in json module to convert file contents to a
@@ -364,24 +353,21 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
                 src = json.load(fbuf)
         return _parse_pvgis_hourly_json(src, map_variables=map_variables)
 
-    # CSV or basic: use the correct parser from this module
-    # eg: _parse_pvgis_hourly_csv() or _parse_pvgis_hourly_basic()
-    if outputformat in ['csv', 'basic']:
-        # get the correct parser function for this output format from globals()
-        pvgis_parser = globals()['_parse_pvgis_hourly_{:s}'.format(outputformat)]  # noqa
-        # NOTE: pvgis_parse() is a pvgis parser function from this module,
-        # either _parse_pvgis_hourly_csv() or _parse_pvgist_hourly_basic()
+    # CSV: use _parse_pvgis_hourly_csv()
+    if outputformat == 'csv':
         try:
-            pvgis_data = pvgis_parser(filename, map_variables=map_variables)
+            pvgis_data = _parse_pvgis_hourly_csv(
+                filename,map_variables=map_variables)
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'r') as fbuf:
-                pvgis_data = pvgis_parser(fbuf, map_variables=map_variables)
+                pvgis_data = _parse_pvgis_hourly_csv(
+                    fbuf, map_variables=map_variables)
         return pvgis_data
 
-    # raise exception if pvgis format isn't in ['csv', 'basic', 'json']
+    # raise exception if pvgis format isn't in ['csv', 'json']
     err_msg = (
-        "pvgis format '{:s}' was unknown, must be either 'json', 'csv', or"
-        "'basic'").format(outputformat)
+        "pvgis format '{:s}' was unknown, must be either 'json' or 'csv'")\
+        .format(outputformat)
     raise ValueError(err_msg)
 
 

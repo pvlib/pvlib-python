@@ -149,6 +149,17 @@ def test_read_pvgis_hourly(testfile, index, columns, values, metadata_exp,
     assert metadata == metadata_exp
 
 
+def test_read_pvgis_hourly_bad_extension():
+    # Test if ValueError is raised if file extension cannot be recognized and
+    # pvgis_format is not specified
+    with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
+        read_pvgis_hourly('testfile.txt')
+    # Test if ValueError is raised if an unkonwn pvgis_format is specified
+    with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
+        read_pvgis_hourly(testfile_pv_json, pvgis_format='txt')
+
+
+
 # PVGIS TMY tests
 @pytest.fixture
 def expected():

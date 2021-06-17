@@ -59,19 +59,79 @@ data_pv_json = [
     [1586.9, 80.76, 83.95, 9.04, 13.28, 2.79, 1.36, 0.0],
     [713.3, 5.18, 70.57, 7.31, 18.56, 3.66, 1.27, 0.0]]
 
+inputs_radiation_csv = {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0,
+                        'radiation_database': 'PVGIS-SARAH',
+                        'Slope': '30 deg.', 'Azimuth': '0 deg.'}
 
-@pytest.mark.parametrize('testfile,index,columns,values,map_variables,'
-                         'pvgis_format', [
+metadata_radiation_csv = {
+    'Gb(i)': 'Beam (direct) irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F401
+    'Gd(i)': 'Diffuse irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F401
+    'Gr(i)': 'Reflected irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F401
+    'H_sun': 'Sun height (degree)',
+    'T2m': '2-m air temperature (degree Celsius)',
+    'WS10m': '10-m total wind speed (m/s)',
+    'Int': '1 means solar radiation values are reconstructed'}
+
+inputs_pv_json = {
+    'location': {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0},
+    'meteo_data': {'radiation_db': 'PVGIS-CMSAF', 'meteo_db': 'ERA-Interim',
+                   'year_min': 2013, 'year_max': 2014, 'use_horizon': True,
+                   'horizon_db': None, 'horizon_data': 'DEM-calculated'},
+    'mounting_system': {'two_axis': {
+        'slope': {'value': '-', 'optimal': '-'},
+        'azimuth': {'value': '-', 'optimal': '-'}}},
+    'pv_module': {'technology': 'CIS', 'peak_power': 10.0, 'system_loss': 5.0}}
+
+metadata_pv_json = {'inputs': {'location': {'description': 'Selected location',
+    'variables': {'latitude': {'description': 'Latitude',
+                               'units': 'decimal degree'},
+    'longitude': {'description': 'Longitude', 'units': 'decimal degree'},
+    'elevation': {'description': 'Elevation', 'units': 'm'}}},
+  'meteo_data': {'description': 'Sources of meteorological data',
+   'variables': {'radiation_db': {'description': 'Solar radiation database'},
+    'meteo_db': {'description': 'Database used for meteorological variables other than solar radiation'},
+    'year_min': {'description': 'First year of the calculations'},
+    'year_max': {'description': 'Last year of the calculations'},
+    'use_horizon': {'description': 'Include horizon shadows'},
+    'horizon_db': {'description': 'Source of horizon data'}}},
+  'mounting_system': {'description': 'Mounting system',
+   'choices': 'fixed, vertical_axis, inclined_axis, two_axis',
+   'fields': {'slope': {'description': 'Inclination angle from the horizontal plane',
+     'units': 'degree'},
+    'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)',
+     'units': 'degree'}}},
+  'pv_module': {'description': 'PV module parameters',
+   'variables': {'technology': {'description': 'PV technology'},
+    'peak_power': {'description': 'Nominal (peak) power of the PV module',
+     'units': 'kW'},
+    'system_loss': {'description': 'Sum of system losses', 'units': '%'}}}},
+ 'outputs': {'hourly': {'type': 'time series',
+   'timestamp': 'hourly averages',
+   'variables': {'P': {'description': 'PV system power', 'units': 'W'},
+    'Gb(i)': {'description': 'Beam (direct) irradiance on the inclined plane (plane of the array)',
+     'units': 'W/m2'},
+    'Gd(i)': {'description': 'Diffuse irradiance on the inclined plane (plane of the array)',
+     'units': 'W/m2'},
+    'Gr(i)': {'description': 'Reflected irradiance on the inclined plane (plane of the array)',
+     'units': 'W/m2'},
+    'H_sun': {'description': 'Sun height', 'units': 'degree'},
+    'T2m': {'description': '2-m air temperature', 'units': 'degree Celsius'},
+    'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},
+    'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}
+
+
+@pytest.mark.parametrize('testfile,index,columns,values,metadata_exp,'
+                         'inputs_exp,map_variables,pvgis_format', [
     (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv,
-     data_radiation_csv, False, None),
+     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, False, None),
     (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv_mapped,
-     data_radiation_csv, True, 'csv'),
+     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, True, 'csv'),
     (testfile_pv_json, index_pv_json, columns_pv_json,
-     data_pv_json, False, None),
+     data_pv_json, metadata_pv_json, inputs_pv_json, False, None),
     (testfile_pv_json, index_pv_json, columns_pv_json_mapped,
-     data_pv_json, True, 'json')])
-def test_read_pvgis_hourly(testfile, index, columns, values, map_variables,
-                           pvgis_format):
+     data_pv_json, metadata_pv_json, inputs_pv_json, True, 'json')])
+def test_read_pvgis_hourly(testfile, index, columns, values, metadata_exp,
+                           inputs_exp, map_variables, pvgis_format):
     expected = pd.DataFrame(index=index, data=values, columns=columns)
     expected['Int'] = expected['Int'].astype(int)
     expected.index.name = 'time'
@@ -79,6 +139,8 @@ def test_read_pvgis_hourly(testfile, index, columns, values, map_variables,
     out, inputs, metadata = read_pvgis_hourly(
         testfile, map_variables=map_variables, pvgis_format=pvgis_format)
     assert_frame_equal(out, expected)
+    assert inputs == inputs_exp
+
 
 
 # PVGIS TMY tests

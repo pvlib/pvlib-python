@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
-from pvlib.iotools import read_pvgis_hourly  # get_pvgis_hourly, 
+from pvlib.iotools import read_pvgis_hourly  # get_pvgis_hourly,
 from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal
 
 
@@ -18,16 +18,16 @@ testfile_pv_json = DATA_DIR / \
 
 index_radiation_csv = \
     pd.date_range('20160101 00:10', freq='1h', periods=14, tz='UTC')
-
 index_pv_json = \
     pd.date_range('2013-01-01 00:55', freq='1h', periods=10, tz='UTC')
 
 columns_radiation_csv = [
     'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
-
+columns_radiation_csv_mapped = [
+    'poa_direct', 'poa_diffuse', 'poa_ground_diffuse', 'solar_elevation',
+    'temp_air', 'wind_speed', 'Int']
 columns_pv_json = [
     'P', 'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
-
 columns_pv_json_mapped = [
     'P', 'poa_direct', 'poa_diffuse', 'poa_ground_diffuse', 'solar_elevation',
     'temp_air', 'wind_speed', 'Int']
@@ -47,7 +47,6 @@ data_radiation_csv = [
     [2.11, 0.94, 0.03, 21.82, 6.79, 0.58, 1.0],
     [4.25, 1.88, 0.05, 21.41, 7.84, 0.4, 1.0],
     [0.0, 0.0, 0.0, 0.0, 7.43, 0.72, 0.0]]
-
 data_pv_json = [
     [0.0, 0.0, 0.0, 0.0, 0.0, 3.01, 1.23, 0.0],
     [0.0, 0.0, 0.0, 0.0, 0.0, 2.22, 1.46, 0.0],
@@ -61,53 +60,25 @@ data_pv_json = [
     [713.3, 5.18, 70.57, 7.31, 18.56, 3.66, 1.27, 0.0]]
 
 
-@pytest.fixture
-def expected_radiation_csv():
-    expected = pd.DataFrame(index=index_radiation_csv, data=data_radiation_csv,
-                            columns=columns_radiation_csv)
+@pytest.mark.parametrize('testfile,index,columns,values,map_variables,'
+                         'pvgis_format', [
+    (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv,
+     data_radiation_csv, False, None),
+    (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv_mapped,
+     data_radiation_csv, True, 'csv'),
+    (testfile_pv_json, index_pv_json, columns_pv_json,
+     data_pv_json, False, None),
+    (testfile_pv_json, index_pv_json, columns_pv_json_mapped,
+     data_pv_json, True, 'json')])
+def test_read_pvgis_hourly(testfile, index, columns, values, map_variables,
+                           pvgis_format):
+    expected = pd.DataFrame(index=index, data=values, columns=columns)
     expected['Int'] = expected['Int'].astype(int)
     expected.index.name = 'time'
     expected.index.freq = None
-    return expected
-
-
-def test_read_pvgis_hourly_csv(expected_radiation_csv):
-    out, inputs, metadata = read_pvgis_hourly(testfile_radiation_csv,
-                                              map_variables=False)
-    assert_frame_equal(out, expected_radiation_csv)
-
-
-@pytest.fixture
-def expected_pv_json():
-    expected = pd.DataFrame(index=index_pv_json, data=data_pv_json,
-                            columns=columns_pv_json)
-    expected['Int'] = expected['Int'].astype(int)
-    expected.index.name = 'time'
-    expected.index.freq = None
-    return expected
-
-
-def test_read_pvgis_hourly_json(expected_pv_json):
-    out, inputs, metadata = read_pvgis_hourly(testfile_pv_json,
-                                              map_variables=False)
-    assert_frame_equal(out, expected_pv_json)
-
-
-@pytest.fixture
-def expected_pv_json_mapped():
-    expected = pd.DataFrame(index=index_pv_json, data=data_pv_json,
-                            columns=columns_pv_json_mapped)
-    expected['Int'] = expected['Int'].astype(int)
-    expected.index.name = 'time'
-    expected.index.freq = None
-    return expected
-
-
-def test_read_pvgis_hourly_json_mapped(expected_pv_json_mapped):
-    out, inputs, metadata = read_pvgis_hourly(testfile_pv_json,
-                                              map_variables=True,
-                                              pvgis_format='json')
-    assert_frame_equal(out, expected_pv_json_mapped)
+    out, inputs, metadata = read_pvgis_hourly(
+        testfile, map_variables=map_variables, pvgis_format=pvgis_format)
+    assert_frame_equal(out, expected)
 
 
 # PVGIS TMY tests

@@ -65,9 +65,9 @@ inputs_radiation_csv = {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0,
                         'Slope': '30 deg.', 'Azimuth': '0 deg.'}
 
 metadata_radiation_csv = {
-    'Gb(i)': 'Beam (direct) irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F401
-    'Gd(i)': 'Diffuse irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F401
-    'Gr(i)': 'Reflected irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F401
+    'Gb(i)': 'Beam (direct) irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F501
+    'Gd(i)': 'Diffuse irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F501
+    'Gr(i)': 'Reflected irradiance on the inclined plane (plane of the array) (W/m2)',  # noqa: F501
     'H_sun': 'Sun height (degree)',
     'T2m': '2-m air temperature (degree Celsius)',
     'WS10m': '10-m total wind speed (m/s)',
@@ -126,9 +126,9 @@ metadata_pv_json = {'inputs': {'location': {'description': 'Selected location',
 @pytest.mark.parametrize('testfile,index,columns,values,metadata_exp,'
                          'inputs_exp,map_variables,pvgis_format', [
     (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv,
-     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, False, None),  # noqa: F401
+     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, False, None),  # noqa: F501
     (testfile_radiation_csv, index_radiation_csv, columns_radiation_csv_mapped,
-     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, True, 'csv'),  # noqa: F401
+     data_radiation_csv, metadata_radiation_csv, inputs_radiation_csv, True, 'csv'),  # noqa: E501
     (testfile_pv_json, index_pv_json, columns_pv_json,
      data_pv_json, metadata_pv_json, inputs_pv_json, False, None),
     (testfile_pv_json, index_pv_json, columns_pv_json_mapped,

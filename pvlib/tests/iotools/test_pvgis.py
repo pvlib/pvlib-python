@@ -90,27 +90,27 @@ metadata_pv_json = {
             'latitude': {'description': 'Latitude', 'units': 'decimal degree'},
             'longitude': {'description': 'Longitude', 'units': 'decimal degree'},  # noqa: E501
             'elevation': {'description': 'Elevation', 'units': 'm'}}},
-            'meteo_data': {
-                'description': 'Sources of meteorological data',
-                'variables': {
-                    'radiation_db': {'description': 'Solar radiation database'},  # noqa: E501
-                    'meteo_db': {'description': 'Database used for meteorological variables other than solar radiation'},  # noqa: E501
-                    'year_min': {'description': 'First year of the calculations'},  # noqa: E501
-                    'year_max': {'description': 'Last year of the calculations'},  # noqa: E501
-                    'use_horizon': {'description': 'Include horizon shadows'},
-                    'horizon_db': {'description': 'Source of horizon data'}}},
-            'mounting_system': {
-                'description': 'Mounting system',
-                'choices': 'fixed, vertical_axis, inclined_axis, two_axis',
-                'fields': {
-                    'slope': {'description': 'Inclination angle from the horizontal plane', 'units': 'degree'},  # noqa: E501
-                    'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)', 'units': 'degree'}}},   # noqa: E5011
-            'pv_module': {
-                'description': 'PV module parameters',
-                'variables': {
-                    'technology': {'description': 'PV technology'},
-                    'peak_power': {'description': 'Nominal (peak) power of the PV module', 'units': 'kW'},  # noqa: E501
-                    'system_loss': {'description': 'Sum of system losses', 'units': '%'}}}},  # noqa: E501
+        'meteo_data': {
+            'description': 'Sources of meteorological data',
+            'variables': {
+                'radiation_db': {'description': 'Solar radiation database'},
+                'meteo_db': {'description': 'Database used for meteorological variables other than solar radiation'},  # noqa: E501
+                'year_min': {'description': 'First year of the calculations'},
+                'year_max': {'description': 'Last year of the calculations'},
+                'use_horizon': {'description': 'Include horizon shadows'},
+                'horizon_db': {'description': 'Source of horizon data'}}},
+        'mounting_system': {
+            'description': 'Mounting system',
+            'choices': 'fixed, vertical_axis, inclined_axis, two_axis',
+            'fields': {
+                'slope': {'description': 'Inclination angle from the horizontal plane', 'units': 'degree'},  # noqa: E501
+                'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)', 'units': 'degree'}}},  # noqa: E5011
+        'pv_module': {
+            'description': 'PV module parameters',
+            'variables': {
+                'technology': {'description': 'PV technology'},
+                'peak_power': {'description': 'Nominal (peak) power of the PV module', 'units': 'kW'},  # noqa: E501
+                'system_loss': {'description': 'Sum of system losses', 'units': '%'}}}},  # noqa: E501
     'outputs': {
         'hourly': {
             'type': 'time series', 'timestamp': 'hourly averages',

@@ -127,21 +127,21 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     -----
     data includes the following fields:
 
-    ==========================  ======  =======================================
-    raw, mapped                 Format  Description
-    ==========================  ======  =======================================
+    ===========================  ======  ======================================
+    raw, mapped                  Format  Description
+    ===========================  ======  ======================================
     **Mapped field names are returned when the map_variables argument is True**
     ---------------------------------------------------------------------------
-    P\**                        float   PV system power (W)
-    G(i), poa_global\*          float   Global irradiance on inclined plane (W/m^2)
-    Gb(i), poa_direct\*         float   Beam (direct) irradiance on inclined plane (W/m^2)
-    Gd(i), poa_diffuse\*        float   Diffuse irradiance on inclined plane (W/m^2)
-    Gr(i), poa_ground_diffuse\* float   Reflected irradiance on inclined plane (W/m^2)
-    H_sun, solar_elevation      float   Sun height/elevation (degrees)
-    T2m, temp_air               float   Air temperature at 2 m (degrees Celsius)
-    WS10m, wind_speed           float   Wind speed at 10 m (m/s)
-    Int                         int     Solar radiation reconstructed (1/0)
-    ==========================  ======  =======================================
+    P\*\*                        float   PV system power (W)
+    G(i), poa_global \*          float   Global irradiance on inclined plane (W/m^2)
+    Gb(i), poa_direct \*         float   Beam (direct) irradiance on inclined plane (W/m^2)
+    Gd(i), poa_diffuse\*         float   Diffuse irradiance on inclined plane (W/m^2)
+    Gr(i), poa_ground_diffuse\*  float   Reflected irradiance on inclined plane (W/m^2)
+    H_sun, solar_elevation       float   Sun height/elevation (degrees)
+    T2m, temp_air                float   Air temperature at 2 m (degrees Celsius)
+    WS10m, wind_speed            float   Wind speed at 10 m (m/s)
+    Int                          int     Solar radiation reconstructed (1/0)
+    ===========================  ======  ======================================
 
     \*Gb(i), Gd(i), and Gr(i) are returned when components=True, whereas
     otherwise the sum of the three components, G(i), is returned.

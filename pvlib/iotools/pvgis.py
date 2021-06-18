@@ -127,26 +127,26 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     -----
     data includes the following fields:
 
-    =======================  ======  ==========================================
-    raw, mapped              Format  Description
-    =======================  ======  ==========================================
+    ==========================  ======  =======================================
+    raw, mapped                 Format  Description
+    ==========================  ======  =======================================
     **Mapped field names are returned when the map_variables argument is True**
     ---------------------------------------------------------------------------
-    P\*                      float   PV system power (W)
-    G(i)\**                  float   Global irradiance on inclined plane (W/m^2)  # noqa
-    Gb(i)\*                  float   Beam (direct) irradiance on inclined plane (W/m^2)  # noqa
-    Gd(i)\**                 float   Diffuse irradiance on inclined plane (W/m^2)  # noqa
-    Gr(i)\**                 float   Reflected irradiance on inclined plane (W/m^2)  # noqa
-    H_sun, solar_elevation   float   Sun height/elevation (degrees)
-    T2m, temp_air            float   Air temperature at 2 m (degrees Celsius)
-    WS10m, wind_speed        float   Wind speed at 10 m (m/s)
-    Int                      int     Solar radiation reconstructed (1/0)
-    =======================  ======  ==========================================
+    P\**                        float   PV system power (W)
+    G(i), poa_global\*          float   Global irradiance on inclined plane (W/m^2)
+    Gb(i), poa_direct\*         float   Beam (direct) irradiance on inclined plane (W/m^2)
+    Gd(i), poa_diffuse\*        float   Diffuse irradiance on inclined plane (W/m^2)
+    Gr(i), poa_ground_diffuse\* float   Reflected irradiance on inclined plane (W/m^2)
+    H_sun, solar_elevation      float   Sun height/elevation (degrees)
+    T2m, temp_air               float   Air temperature at 2 m (degrees Celsius)
+    WS10m, wind_speed           float   Wind speed at 10 m (m/s)
+    Int                         int     Solar radiation reconstructed (1/0)
+    ==========================  ======  =======================================
 
-    \*P (PV system power) is only returned when pvcalculation=True.
-
-    v**Gb(i), Gd(i), and Gr(i) are returned when components=True, whereas
+    \*Gb(i), Gd(i), and Gr(i) are returned when components=True, whereas
     otherwise the sum of the three components, G(i), is returned.
+
+    \**P (PV system power) is only returned when pvcalculation=True.
 
     Raises
     ------
@@ -155,7 +155,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 
-    See also
+    See Also
     --------
     pvlib.iotools.read_pvgis_hourly, pvlib.iotools.get_pvgis_tmy
 
@@ -165,7 +165,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     .. [2] `PVGIS Hourly Radiation
        <https://ec.europa.eu/jrc/en/PVGIS/tools/hourly-radiation>`_
     .. [3] `PVGIS Non-interactive service
-       <https://ec.europa.eu/jrc/en/PVGIS/docs/noninteractive>`
+       <https://ec.europa.eu/jrc/en/PVGIS/docs/noninteractive>`_
     .. [4] `PVGIS horizon profile tool
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
     """
@@ -292,8 +292,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
 
 
 def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
-    """
-    Read a file downloaded from PVGIS.
+    """Read a PVGIS hourly file.
 
     Parameters
     ----------
@@ -324,7 +323,7 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
     TypeError
         if `pvgis_format` is ``None`` and `filename` is a buffer
 
-    See also
+    See Also
     --------
     get_pvgis_hourly, get_pvgis_tmy
     """

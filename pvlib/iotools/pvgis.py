@@ -130,23 +130,23 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     ===========================  ======  ======================================
     raw, mapped                  Format  Description
     ===========================  ======  ======================================
-    **Mapped field names are returned when the map_variables argument is True**
+    *Mapped field names are returned when the map_variables argument is True*
     ---------------------------------------------------------------------------
-    P\*\*                        float   PV system power (W)
-    G(i), poa_global \*          float   Global irradiance on inclined plane (W/m^2)
-    Gb(i), poa_direct \*         float   Beam (direct) irradiance on inclined plane (W/m^2)
-    Gd(i), poa_diffuse\*         float   Diffuse irradiance on inclined plane (W/m^2)
-    Gr(i), poa_ground_diffuse\*  float   Reflected irradiance on inclined plane (W/m^2)
+    P†                           float   PV system power (W)
+    G(i), poa_global‡            float   Global irradiance on inclined plane (W/m^2)  # noqa: E501
+    Gb(i), poa_direct‡           float   Beam (direct) irradiance on inclined plane (W/m^2)  # noqa: E501
+    Gd(i), poa_diffuse‡          float   Diffuse irradiance on inclined plane (W/m^2)  # noqa: E501
+    Gr(i), poa_ground_diffuse‡   float   Reflected irradiance on inclined plane (W/m^2)  # noqa: E501
     H_sun, solar_elevation       float   Sun height/elevation (degrees)
-    T2m, temp_air                float   Air temperature at 2 m (degrees Celsius)
+    T2m, temp_air                float   Air temperature at 2 m (degrees Celsius)  # noqa: E501
     WS10m, wind_speed            float   Wind speed at 10 m (m/s)
     Int                          int     Solar radiation reconstructed (1/0)
     ===========================  ======  ======================================
 
-    \*Gb(i), Gd(i), and Gr(i) are returned when components=True, whereas
-    otherwise the sum of the three components, G(i), is returned.
+    †P (PV system power) is only returned when pvcalculation=True.
 
-    \**P (PV system power) is only returned when pvcalculation=True.
+    ‡Gb(i), Gd(i), and Gr(i) are returned when components=True, otherwise the
+    sum of the three components, G(i), is returned.
 
     Raises
     ------

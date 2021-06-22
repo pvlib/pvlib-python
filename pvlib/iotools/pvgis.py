@@ -30,7 +30,7 @@ VARIABLE_MAP = {
     'Gd(h)': 'dhi',
     'G(i)': 'poa_global',
     'Gb(i)': 'poa_direct',
-    'Gd(i)': 'poa_diffuse',
+    'Gd(i)': 'poa_sky_diffuse',
     'Gr(i)': 'poa_ground_diffuse',
     'H_sun': 'solar_elevation',
     'T2m': 'temp_air',
@@ -120,7 +120,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         Time-series of hourly data, see Notes for fields
     inputs : dict
         Dictionary of the request input parameters
-    metadata : list or dict
+    metadata : dict
         Dictionary containing metadata
 
     Notes
@@ -258,7 +258,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
         line = src.readline()
         if line.startswith('time,'):  # The data header starts with 'time,'
             # The last line of the metadata section contains the column names
-            names = line.replace('\n', '').replace('\r', '').split(',')
+            names = line.strip().split(',')
             break
         # Only retrieve metadata from non-empty lines
         elif (line != '\n') & (line != '\r\n'):
@@ -273,8 +273,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
         if (line == '\n') | (line == '\r\n'):
             break
         else:
-            data_lines.append(line.replace('\n', '').replace('\r', '')
-                              .split(','))
+            data_lines.append(line.strip().split(','))
     data = pd.DataFrame(data_lines, columns=names)
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
@@ -291,7 +290,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     return data, inputs, metadata
 
 
-def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
+def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     """Read a PVGIS hourly file.
 
     Parameters
@@ -304,6 +303,9 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
         `pvgis_format` is ``None`` then the file extension will be used to
         determine the PVGIS format to parse. If `filename` is a buffer, then
         `pvgis_format` is required and must be in ``['csv', 'json']``.
+    map_variables: bool, default True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable VARIABLE_MAP.
 
     Returns
     -------
@@ -311,7 +313,7 @@ def read_pvgis_hourly(filename, map_variables=True, pvgis_format=None):
         the weather data
     inputs : dict
         the inputs
-    metadata : list or dict
+    metadata : dict
         metadata
 
     Raises

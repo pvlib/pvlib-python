@@ -28,12 +28,12 @@ index_pv_json = \
 columns_radiation_csv = [
     'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
 columns_radiation_csv_mapped = [
-    'poa_direct', 'poa_diffuse', 'poa_ground_diffuse', 'solar_elevation',
+    'poa_direct', 'poa_sky_diffuse', 'poa_ground_diffuse', 'solar_elevation',
     'temp_air', 'wind_speed', 'Int']
 columns_pv_json = [
     'P', 'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
 columns_pv_json_mapped = [
-    'P', 'poa_direct', 'poa_diffuse', 'poa_ground_diffuse', 'solar_elevation',
+    'P', 'poa_direct', 'poa_sky_diffuse', 'poa_ground_diffuse', 'solar_elevation',
     'temp_air', 'wind_speed', 'Int']
 
 data_radiation_csv = [

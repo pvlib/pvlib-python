@@ -682,7 +682,7 @@ def test_PVSystem_multi_array_celltemp_poa_length_mismatch(
 
 def test_PVSystem_fuentes_celltemp(mocker):
     noct_installed = 45
-    temp_model_params = {'noct_installed': noct_installed}
+    temp_model_params = {'noct_installed': noct_installed, 'surface_tilt': 0}
     system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
     spy = mocker.spy(temperature, 'fuentes')
     index = pd.date_range('2019-01-01 11:00', freq='h', periods=3)
@@ -696,33 +696,6 @@ def test_PVSystem_fuentes_celltemp(mocker):
     assert spy.call_args[0][3] == noct_installed
     assert_series_equal(out, pd.Series([52.85, 55.85, 55.85], index,
                                        name='tmod'))
-
-
-def test_PVSystem_fuentes_celltemp_override(mocker):
-    # test that the surface_tilt value in the cell temp calculation can be
-    # overridden but defaults to the surface_tilt value in
-    # array.temperature_model_parameters
-    spy = mocker.spy(temperature, 'fuentes')
-
-    noct_installed = 45
-    index = pd.date_range('2019-01-01 11:00', freq='h', periods=3)
-    temps = pd.Series(25, index)
-    irrads = pd.Series(1000, index)
-    winds = pd.Series(1, index)
-
-    # uses default value
-    temp_model_params = {'noct_installed': noct_installed}
-    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params,
-                               surface_tilt=20)
-    system.get_cell_temperature(irrads, temps, winds, model='fuentes')
-    assert spy.call_args[1]['surface_tilt'] == 20
-
-    # can be overridden
-    temp_model_params = {'noct_installed': noct_installed, 'surface_tilt': 30}
-    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params,
-                               surface_tilt=20)
-    system.get_cell_temperature(irrads, temps, winds, model='fuentes')
-    assert spy.call_args[1]['surface_tilt'] == 30
 
 
 def test_Array__infer_temperature_model_params():

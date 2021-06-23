@@ -1594,21 +1594,6 @@ class Array:
                 'module_height', 'wind_height', 'emissivity', 'absorption',
                 'surface_tilt', 'module_width', 'module_length'],
                 self.temperature_model_parameters)
-            # use surface_tilt from temp_model_params if available, otherwise
-            # fall back to the mount value.
-            # TODO: this logic is probably not what we want.
-            if 'surface_tilt' not in optional:
-                # should this use mount.get_orientation?  we don't have
-                # solar position available here...
-                try:
-                    optional['surface_tilt'] = self.mount.surface_tilt
-                except AttributeError:
-                    msg = (
-                        "surface_tilt is required for the fuentes model; "
-                        "specify it as a key in temperature_model_parameters "
-                        "or as an attribute of the Array's Mount."
-                    )
-                    raise ValueError(msg)
         elif model == 'noct_sam':
             func = functools.partial(temperature.noct_sam,
                                      effective_irradiance=effective_irradiance)

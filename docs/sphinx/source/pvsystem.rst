@@ -189,8 +189,6 @@ at the specified tilt and azimuth:
     # single south-facing array at 20 deg tilt
     system_one_array = pvsystem.PVSystem(surface_tilt=20, surface_azimuth=180)
     print(system_one_array.arrays[0].mount)
-    print(system_one_array.arrays[0].surface_tilt,
-          system_one_array.arrays[0].surface_azimuth)
 
 
 In the case of a PV system with several arrays, the parameters are specified

@@ -40,7 +40,7 @@ objects, module data, and inverter data.
     # pvlib imports
     import pvlib
 
-    from pvlib.pvsystem import PVSystem
+    from pvlib.pvsystem import PVSystem, FixedMount
     from pvlib.location import Location
     from pvlib.modelchain import ModelChain
     from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
@@ -53,13 +53,14 @@ objects, module data, and inverter data.
     sandia_module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
     cec_inverter = cec_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
 
-Now we create a Location object, a PVSystem object, and a ModelChain
-object.
+Now we create a Location object, a Mount object, a PVSystem object, and a
+ModelChain object.
 
 .. ipython:: python
 
     location = Location(latitude=32.2, longitude=-110.9)
-    system = PVSystem(surface_tilt=20, surface_azimuth=200,
+    mount = FixedMount(surface_tilt=20, surface_azimuth=200)
+    system = PVSystem(mount=mount,
                       module_parameters=sandia_module,
                       inverter_parameters=cec_inverter,
                       temperature_model_parameters=temperature_model_parameters)
@@ -448,11 +449,11 @@ are in the same order as in ``PVSystem.arrays``.
     location = Location(latitude=32.2, longitude=-110.9)
     inverter_parameters = {'pdc0': 10000, 'eta_inv_nom': 0.96}
     module_parameters = {'pdc0': 250, 'gamma_pdc': -0.004}
-    array_one = Array(surface_tilt=20, surface_azimuth=200,
+    array_one = Array(mount=FixedMount(surface_tilt=20, surface_azimuth=200),
                       module_parameters=module_parameters,
                       temperature_model_parameters=temperature_model_parameters,
                       modules_per_string=10, strings=2)
-    array_two = Array(surface_tilt=20, surface_azimuth=160,
+    array_two = Array(mount=FixedMount(surface_tilt=20, surface_azimuth=160),
                       module_parameters=module_parameters,
                       temperature_model_parameters=temperature_model_parameters,
                       modules_per_string=10, strings=2)

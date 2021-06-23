@@ -15,6 +15,7 @@ from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
 from pvlib.location import Location
+from pvlib.pvsystem import FixedMount
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 
@@ -699,19 +700,22 @@ def test_PVSystem_fuentes_celltemp(mocker):
 
 
 def test_Array__infer_temperature_model_params():
-    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180, racking_model='open_rack'),
+    array = pvsystem.Array(mount=FixedMount(0, 180,
+                                            racking_model='open_rack'),
                            module_parameters={},
                            module_type='glass_polymer')
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'sapm']['open_rack_glass_polymer']
     assert expected == array._infer_temperature_model_params()
-    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180, racking_model='freestanding'),
+    array = pvsystem.Array(mount=FixedMount(0, 180,
+                                            racking_model='freestanding'),
                            module_parameters={},
                            module_type='glass_polymer')
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
         'pvsyst']['freestanding']
     assert expected == array._infer_temperature_model_params()
-    array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180, racking_model='insulated'),
+    array = pvsystem.Array(mount=FixedMount(0, 180,
+                                            racking_model='insulated'),
                            module_parameters={},
                            module_type=None)
     expected = temperature.TEMPERATURE_MODEL_PARAMETERS[
@@ -1846,7 +1850,7 @@ def test_PVSystem___repr__():
     temperature_model_parameters: {'a': -3.56}
     strings: 1
     modules_per_string: 1
-  inverter: blarg"""
+  inverter: blarg"""  # noqa: E501
     assert system.__repr__() == expected
 
 

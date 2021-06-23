@@ -59,8 +59,7 @@ ModelChain object.
 .. ipython:: python
 
     location = Location(latitude=32.2, longitude=-110.9)
-    mount = FixedMount(surface_tilt=20, surface_azimuth=200)
-    system = PVSystem(mount=mount,
+    system = PVSystem(surface_tilt=20, surface_azimuth=200,
                       module_parameters=sandia_module,
                       inverter_parameters=cec_inverter,
                       temperature_model_parameters=temperature_model_parameters)

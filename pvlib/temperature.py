@@ -719,8 +719,8 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     return pd.Series(tmod_array - 273.15, index=poa_global.index, name='tmod')
 
 
-def _calculate_radiative_heat(module_area, view_factor, emissivity,
-                              temperature1, temperature2):
+def _calculate_radiative_heat(module_area, view_factor, emissivity1,
+                              emissivity2, temperature1, temperature2):
     """
     Calculate radiative heat transfer between two objects.
 
@@ -732,16 +732,18 @@ def _calculate_radiative_heat(module_area, view_factor, emissivity,
     view_factor : float
         View factor of object 1 with respect to object 2 [unitless]
 
-    emissivity : float
-        # TODO there are probably 2 of these values
-        Thermal emissivity [unitless]. Must be between 0 and 1.
+    emissivity1 : float
+        Thermal emissivity of object 1 [unitless]. Must be between 0 and 1.
+
+    emissivity2 : float
+        Thermal emissivity of object 2 [unitless]. Must be between 0 and 1.
 
     temperature1 : float
         Temperature of object 1 [K]
 
     temperature2 : float
-
         Temperature of object 2 [K]
+
     Returns
     -------
     q : float
@@ -749,16 +751,16 @@ def _calculate_radiative_heat(module_area, view_factor, emissivity,
     """
     # Stefan-Boltzmann constant
     sigma = 5.670374419E-8      # W m^-2 K^-4
-    q = sigma * module_area * view_factor * emissivity * \
-        (temperature1 ** 4 - temperature2 ** 4)
+    q = sigma * module_area * view_factor * \
+        (emissivity1 * temperature1 ** 4 - emissivity2 * temperature2 ** 4)
 
     return q
 
 
 def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
-          module_weight, module_tilt, mod_heat_capacity=840, t_mod_init=None,
-          emissivity_sky=0.95, emissivity_ground=0.85, k_c=12.7, k_v=2.0,
-          wind_sensor_height=2.5, z0=0.25):
+          module_weight, surface_tilt, emissivity_module, emissivity_sky=0.95,
+          emissivity_ground=0.85, heat_capacity=840, t_mod_init=None, k_c=12.7,
+          k_v=2.0, wind_sensor_height=2.5, z0=0.25):
     """
     Calculate module temperature at sub-hourly resolution for fixed tilt
     systems per the Hayes model.
@@ -770,15 +772,21 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     utility-scale PV systems with CdTe modules. It is more accurate for
     time intervals less than 5 minutes.
 
+    .. warning::
+        This model was validated using data from systems built prior to 2012.
+        Using module parameters (area, efficiency, weight) for more recent
+        First Solar modules may not produce realistic temperature estimates.
+
+
     Parameters
     ----------
-    poa_effective : pandas Series
+    poa_effective : pandas.Series
         Total incident irradiance adjusted for optical (IAM) losses [W/m^2]
 
-    temp_air : pandas Series
+    temp_air : pandas.Series
         Ambient dry bulb temperature [C]
 
-    wind_speed : pandas Series
+    wind_speed : pandas.Series
         Wind speed [m/s]
 
     module_efficiency : float
@@ -790,17 +798,11 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     module_weight : float
         Weight of PV module [kg]
 
-    module_tilt : float
+    surface_tilt : float
         Tilt angle of fixed tilt array [deg]
 
-    mod_heat_capacity : float, default 840
-        Specific heat capacity of PV module [J / kg-K].
-
-    t_mod_init : float, default None
-        Initial condition for module temperature [C]. If left as default,
-        will be set to first value in temp_air (based on the assumption
-        that if the first timestamp is in the middle of the night, the
-        module would be in steady-state equilibrium with the environment
+    emissivity_module : float
+        Thermal emissivity of the module [unitless]. Must be between 0 and 1.
 
     emissivity_sky : float, default 0.95
         Thermal emissivity of sky [unitless]. Must be between 0 and 1.
@@ -809,6 +811,16 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
         Thermal emissivity of ground [unitless]. Default value is suggested
         value for sand. Suggested value for grass is 0.9. Must be between
         0 and 1.
+
+    heat_capacity : float, default 840
+        Specific heat capacity of PV module [J / kg-K].
+        The default value is that of glass.
+
+    t_mod_init : float, default None
+        Initial condition for module temperature [C]. If left as default,
+        will be set to first value in temp_air based on the assumption
+        that if the first timestamp is in the middle of the night, the
+        module would be in steady-state equilibrium with the environment.
 
     k_c : float, default 12.7
         Free convective heat coefficient. Defaults to value for "hot"
@@ -831,7 +843,7 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
 
     Returns
     -------
-    tmod : pandas Series
+    tmod : pandas.Series
         The modeled module temperature [C]
 
     References
@@ -854,55 +866,62 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     dt = pd.to_timedelta(to_offset(freq)).seconds
 
     # radiation (from sun)
-    q_short_wave_radiation = poa_effective      # module_area * poa_effective
+    q_short_wave_radiation = module_area * poa_effective
 
     # converted electrical energy
-    p_out = module_efficiency * module_area * poa_effective
+    p_out = module_efficiency * q_short_wave_radiation
 
     # adjust wind speed if sensor height not at 2.5 meters
     wind_speed_adj = wind_speed * (math.log(2.5 / z0) /
                                    math.log(wind_sensor_height / z0))
 
+    # convert C to K for convenience
+    temp_air = temp_air + 273.15
+
+    # sky temperature assumed to be constant offset from ambient (see Table 1)
+    t_sky = temp_air - 20
+
     # calculate view factors (simplified calculations)
-    view_factor_mod_sky = (1 + math.cos(math.radians(module_tilt))) / 2
-    view_factor_mod_ground = (1 - math.cos(math.radians(module_tilt))) / 2
+    view_factor_mod_sky = (1 + math.cos(math.radians(surface_tilt))) / 2
+    view_factor_mod_ground = (1 - math.cos(math.radians(surface_tilt))) / 2
 
     t_mod = np.zeros_like(poa_effective)
-    t_mod_i = (t_mod_init if t_mod_init is not None else temp_air[0]) + 273.15
+    t_mod_i = t_mod_init + 273.15 if t_mod_init is not None else temp_air[0]
     t_mod[0] = t_mod_i
     # calculate successive module temperatures for each time stamp
     for i in range(len(t_mod) - 1):
         # calculate long wave radiation (radiative interactions between module
         # and objects within Earth's atmosphere)
-        t_sky = temp_air[i] - 20 + 273.15
         q_mod_sky = _calculate_radiative_heat(
             module_area=module_area,
             view_factor=view_factor_mod_sky,
-            emissivity=emissivity_sky,
+            emissivity1=emissivity_module,
+            emissivity2=emissivity_sky,
             temperature1=t_mod_i,
-            temperature2=t_sky
+            temperature2=t_sky[i],
         )
-        # TODO paper indicates temps equal, but that yields zero q
         q_mod_ground = _calculate_radiative_heat(
             module_area=module_area,
             view_factor=view_factor_mod_ground,
-            emissivity=emissivity_ground,
+            emissivity1=emissivity_module,
+            emissivity2=emissivity_ground,
             temperature1=t_mod_i,
             temperature2=t_mod_i
         )
         q_mod_mod = 0   # current assumption is that it is negligible
-        q_long_wave_radiation = -1*(q_mod_sky + q_mod_ground + q_mod_mod)
+        # Eq 4
+        q_long_wave_radiation = q_mod_sky + q_mod_ground + q_mod_mod
 
-        # calculation convective heat transfer
-        q_convection = (k_c + k_v * wind_speed_adj[i]) * \
-                       ((t_mod_i - 273.15) - temp_air[i])
+        # calculation convective heat transfer (Eq 6)
+        q_convection = (k_c + k_v*wind_speed_adj[i]) * (t_mod_i - temp_air[i])
 
-        # calculate delta in module temp, add to the current module temp
-        total_heat_transfer = (q_long_wave_radiation +
-                               q_short_wave_radiation[i] -
-                               q_convection - p_out[i])
-        t_mod_delta = (dt / mod_heat_capacity) * \
-                      (1/module_weight) * total_heat_transfer
+        # calculate delta in module temp, add to the current module temp.
+        # Eq 2 seems to get the sign wrong for some terms; corrected here
+        total_heat_transfer = (
+            - q_long_wave_radiation + q_short_wave_radiation[i]
+            - q_convection - p_out[i]
+        )
+        t_mod_delta = dt / (module_weight*heat_capacity) * total_heat_transfer
 
         t_mod_i += t_mod_delta
         t_mod[i + 1] = t_mod_i

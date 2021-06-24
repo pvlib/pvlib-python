@@ -48,6 +48,9 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -rf source/generated
+	rm -rf source/auto_examples
+	rm -rf source/savefig
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from pvlib import pvsystem
 from pvlib.singlediode import bishop88, estimate_voc
-from conftest import DATA_DIR
+from .conftest import DATA_DIR
 
 logging.basicConfig()
 LOGGER = logging.getLogger(__name__)

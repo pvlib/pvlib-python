@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
 from pvlib.tools import sind
+from pvlib._deprecation import warn_deprecated
 
 TEMPERATURE_MODEL_PARAMETERS = {
     'sapm': {
@@ -51,7 +52,7 @@ def _temperature_model_params(model, parameter_set):
 
 
 def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
-              irrad_ref=1000):
+              irrad_ref=1000.):
     r'''
     Calculate cell temperature per the Sandia Array Performance Model.
 
@@ -217,7 +218,7 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
 
 
 def sapm_cell_from_module(module_temperature, poa_global, deltaT,
-                          irrad_ref=1000):
+                          irrad_ref=1000.):
     r'''
     Calculate cell temperature from module temperature using the Sandia Array
     Performance Model.
@@ -287,7 +288,7 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
 
 
 def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
-                eta_m=0.1, alpha_absorption=0.9):
+                eta_m=None, module_efficiency=0.1, alpha_absorption=0.9):
     r"""
     Calculate cell temperature using an empirical heat loss factor model
     as implemented in PVsyst.
@@ -315,11 +316,14 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
         in :eq:`pvsyst`.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
 
-    eta_m : numeric, default 0.1
-        Module external efficiency as a fraction, i.e., DC power / poa_global.
-        Parameter :math:`\eta_{m}` in :eq:`pvsyst`.
+    eta_m : numeric, default None (deprecated, use module_efficiency instead)
+
+    module_efficiency : numeric, default 0.1
+        Module external efficiency as a fraction. Parameter :math:`\eta_{m}`
+        in :eq:`pvsyst`. Calculate as
+        :math:`\eta_{m} = DC\ power / (POA\ irradiance \times module\ area)`.
 
     alpha_absorption : numeric, default 0.9
         Absorption coefficient. Parameter :math:`\alpha` in :eq:`pvsyst`.
@@ -371,17 +375,23 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     37.93103448275862
     """
 
+    if eta_m:
+        warn_deprecated(
+            since='v0.9', message='eta_m overwriting module_efficiency',
+            name='eta_m', alternative='module_efficiency', removal='v0.10')
+        module_efficiency = eta_m
     total_loss_factor = u_c + u_v * wind_speed
-    heat_input = poa_global * alpha_absorption * (1 - eta_m)
+    heat_input = poa_global * alpha_absorption * (1 - module_efficiency)
     temp_difference = heat_input / total_loss_factor
     return temp_air + temp_difference
 
 
 def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     r'''
-    Calculate cell or module temperature using the Faiman model.  The Faiman
-    model uses an empirical heat loss factor model [1]_ and is adopted in the
-    IEC 61853 standards [2]_ and [3]_.
+    Calculate cell or module temperature using the Faiman model.
+
+    The Faiman model uses an empirical heat loss factor model [1]_ and is
+    adopted in the IEC 61853 standards [2]_ and [3]_.
 
     Usage of this model in the IEC 61853 standard does not distinguish
     between cell and module temperature.
@@ -443,6 +453,53 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     heat_input = poa_global
     temp_difference = heat_input / total_loss_factor
     return temp_air + temp_difference
+
+
+def ross(poa_global, temp_air, noct):
+    r'''
+    Calculate cell temperature using the Ross model.
+
+    The Ross model [1]_ assumes the difference between cell temperature
+    and ambient temperature is proportional to the plane of array irradiance,
+    and assumes wind speed of 1 m/s. The model implicitly assumes steady or
+    slowly changing irradiance conditions.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance. [W/m^2]
+
+    temp_air : numeric
+        Ambient dry bulb temperature. [C]
+
+    noct : numeric
+        Nominal operating cell temperature [C], determined at conditions of
+        800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
+
+    Returns
+    -------
+    cell_temperature : numeric
+        Cell temperature. [C]
+
+    Notes
+    -----
+    The Ross model for cell temperature :math:`T_{C}` is given in [1]_ as
+
+    .. math::
+
+        T_{C} = T_{a} + \frac{NOCT - 20}{80} S
+
+    where :math:`S` is the plane of array irradiance in :math:`mW/{cm}^2`.
+    This function expects irradiance in :math:`W/m^2`.
+
+    References
+    ----------
+    .. [1] Ross, R. G. Jr., (1981). "Design Techniques for Flat-Plate
+       Photovoltaic Arrays". 15th IEEE Photovoltaic Specialist Conference,
+       Orlando, FL.
+    '''
+    # factor of 0.1 converts irradiance from W/m2 to mW/cm2
+    return temp_air + (noct - 20.) / 80. * poa_global * 0.1
 
 
 def _fuentes_hconv(tave, windmod, tinoct, temp_delta, xlen, tilt,
@@ -601,8 +658,9 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     # n.b. the way Fuentes calculates the first timedelta makes it seem like
     # the value doesn't matter -- rather than recreate it here, just assume
     # it's the same as the second timedelta:
-    timedelta_hours = np.diff(poa_global.index).astype(float) / 1e9 / 60 / 60
-    timedelta_hours = np.append([timedelta_hours[0]], timedelta_hours)
+    timedelta_seconds = poa_global.index.to_series().diff().dt.total_seconds()
+    timedelta_hours = timedelta_seconds / 3600
+    timedelta_hours.iloc[0] = timedelta_hours.iloc[1]
 
     tamb_array = temp_air + 273.15
     sun_array = poa_global * absorp
@@ -850,3 +908,109 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
         t_mod[i + 1] = t_mod_i
 
     return pd.Series(t_mod - 273.15, index=poa_effective.index, name='tmod')
+
+
+def _adj_for_mounting_standoff(x):
+    # supports noct cell temperature function. Except for x > 3.5, the SAM code
+    # and documentation aren't clear on the precise intervals. The choice of
+    # < or <= here is pvlib's.
+    return np.piecewise(x, [x <= 0, (x > 0) & (x < 0.5),
+                            (x >= 0.5) & (x < 1.5), (x >= 1.5) & (x < 2.5),
+                            (x >= 2.5) & (x <= 3.5), x > 3.5],
+                        [0., 18., 11., 6., 2., 0.])
+
+
+def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
+             effective_irradiance=None, transmittance_absorptance=0.9,
+             array_height=1, mount_standoff=4):
+    r'''
+    Cell temperature model from the System Advisor Model (SAM).
+
+    The model is described in [1]_, Section 10.6.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance. [W/m^2]
+
+    temp_air : numeric
+        Ambient dry bulb temperature. [C]
+
+    wind_speed : numeric
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT. [m/s]
+
+    noct : float
+        Nominal operating cell temperature [C], determined at conditions of
+        800 W/m^2 irradiance, 20 C ambient air temperature and 1 m/s wind.
+
+    module_efficiency : float
+        Module external efficiency [unitless] at reference conditions of
+        1000 W/m^2 and 20C. Denoted as :math:`eta_{m}` in [1]_. Calculate as
+        :math:`\eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}`
+        where A is module area [m^2].
+
+    effective_irradiance : numeric, default None.
+        The irradiance that is converted to photocurrent. If None,
+        assumed equal to poa_global. [W/m^2]
+
+    transmittance_absorptance : numeric, default 0.9
+        Coefficient for combined transmittance and absorptance effects.
+        [unitless]
+
+    array_height : int, default 1
+        Height of array above ground in stories (one story is about 3m). Must
+        be either 1 or 2. For systems elevated less than one story, use 1.
+        If system is elevated more than two stories, use 2.
+
+    mount_standoff : numeric, default 4
+        Distance between array mounting and mounting surface. Use default
+        if system is ground-mounted. [inches]
+
+    Returns
+    -------
+    cell_temperature : numeric
+        Cell temperature. [C]
+
+    Raises
+    ------
+    ValueError
+        If array_height is an invalid value (must be 1 or 2).
+
+    References
+    ----------
+    .. [1] Gilman, P., Dobos, A., DiOrio, N., Freeman, J., Janzou, S.,
+           Ryberg, D., 2018, "SAM Photovoltaic Model Technical Reference
+           Update", National Renewable Energy Laboratory Report
+           NREL/TP-6A20-67399.
+    '''
+    # in [1] the denominator for irr_ratio isn't precisely clear. From
+    # reproducing output of the SAM function noct_celltemp_t, we determined
+    # that:
+    #  - G_total (SAM) is broadband plane-of-array irradiance before
+    #    reflections. Equivalent to pvlib variable poa_global
+    #  - Geff_total (SAM) is POA irradiance after reflections and
+    #    adjustment for spectrum. Equivalent to effective_irradiance
+    if effective_irradiance is None:
+        irr_ratio = 1.
+    else:
+        irr_ratio = effective_irradiance / poa_global
+
+    if array_height == 1:
+        wind_adj = 0.51 * wind_speed
+    elif array_height == 2:
+        wind_adj = 0.61 * wind_speed
+    else:
+        raise ValueError(
+            f'array_height must be 1 or 2, {array_height} was given')
+
+    noct_adj = noct + _adj_for_mounting_standoff(mount_standoff)
+    tau_alpha = transmittance_absorptance * irr_ratio
+
+    # [1] Eq. 10.37 isn't clear on exactly what "G" is. SAM SSC code uses
+    # poa_global where G appears
+    cell_temp_init = poa_global / 800. * (noct_adj - 20.)
+    heat_loss = 1 - module_efficiency / tau_alpha
+    wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)
+    return temp_air + cell_temp_init * heat_loss * wind_loss

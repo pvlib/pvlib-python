@@ -20,9 +20,10 @@ corresponding procedural code.
 
    location.Location
    pvsystem.PVSystem
+   pvsystem.Array
    tracking.SingleAxisTracker
    modelchain.ModelChain
-
+   modelchain.ModelChainResult
 
 Solar Position
 ==============
@@ -88,7 +89,6 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
-   solarposition.sun_rise_set_transit_geometric
 
 
 Clear sky
@@ -181,7 +181,7 @@ DNI estimation models
    irradiance.dirint
    irradiance.dirindex
    irradiance.erbs
-   irradiance.liujordan
+   irradiance.campbell_norman
    irradiance.gti_dirint
 
 Clearness index models
@@ -237,7 +237,9 @@ PV temperature models
    temperature.faiman
    temperature.fuentes
    temperature.hayes
-   pvsystem.PVSystem.sapm_celltemp
+   temperature.ross
+   temperature.noct_sam
+   pvsystem.PVSystem.get_cell_temperature
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -262,6 +264,7 @@ Functions relevant for single diode models.
    pvsystem.singlediode
    pvsystem.v_from_i
    pvsystem.max_power_point
+   ivtools.sdm.pvsyst_temperature_coeff
 
 Low-level functions for solving the single diode equation.
 
@@ -289,9 +292,12 @@ Inverter models (DC to AC conversion)
 .. autosummary::
    :toctree: generated/
 
+   pvsystem.PVSystem.get_ac
    inverter.sandia
+   inverter.sandia_multi
    inverter.adr
    inverter.pvwatts
+   inverter.pvwatts_multi
 
 Functions for fitting inverter models
 
@@ -322,10 +328,12 @@ Pvsyst model
 .. autosummary::
    :toctree: generated/
 
-   pvsystem.calcparams_pvsyst
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst
    pvsystem.singlediode
+   ivtools.sdm.pvsyst_temperature_coeff
+   pvsystem.dc_ohms_from_percent
+   pvsystem.dc_ohmic_losses
 
 PVWatts model
 ^^^^^^^^^^^^^
@@ -384,6 +392,7 @@ Loss models
    :toctree: generated/
 
    pvsystem.combine_loss_factors
+   pvsystem.dc_ohms_from_percent
 
 Snow
 ----
@@ -414,6 +423,13 @@ Shading
    shading.masking_angle_passias
    shading.sky_diffuse_passias
 
+Spectrum
+--------
+
+.. autosummary::
+   :toctree: generated/
+
+   spectrum.spectrl2
 
 Tracking
 ========
@@ -447,8 +463,8 @@ Functions
 IO Tools
 ========
 
-Functions for reading and writing data from a variety of file formats
-relevant to solar energy modeling.
+Functions for retrieving, reading, and writing data from a variety
+of sources and file formats relevant to solar energy modeling.
 
 .. autosummary::
    :toctree: generated/
@@ -471,6 +487,10 @@ relevant to solar energy modeling.
    iotools.parse_psm3
    iotools.get_pvgis_tmy
    iotools.read_pvgis_tmy
+   iotools.read_bsrn
+   iotools.get_cams
+   iotools.read_cams
+   iotools.parse_cams
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.
@@ -518,7 +538,7 @@ Processing data
    forecast.ForecastModel.cloud_cover_to_ghi_linear
    forecast.ForecastModel.cloud_cover_to_irradiance_clearsky_scaling
    forecast.ForecastModel.cloud_cover_to_transmittance_linear
-   forecast.ForecastModel.cloud_cover_to_irradiance_liujordan
+   forecast.ForecastModel.cloud_cover_to_irradiance_campbell_norman
    forecast.ForecastModel.cloud_cover_to_irradiance
    forecast.ForecastModel.kelvin_to_celsius
    forecast.ForecastModel.isobaric_to_ambient_temperature
@@ -551,6 +571,8 @@ Creating a ModelChain object.
    modelchain.ModelChain.with_pvwatts
    modelchain.ModelChain.with_sapm
 
+.. _modelchain_runmodel:
+
 Running
 -------
 
@@ -573,6 +595,12 @@ Functions to assist with setting up ModelChains to run
    modelchain.ModelChain.prepare_inputs
    modelchain.ModelChain.prepare_inputs_from_poa
 
+Results
+-------
+
+Output from the running the ModelChain is stored in the
+:py:attr:`modelchain.ModelChain.results` attribute. For more
+information see :py:class:`modelchain.ModelChainResult`.
 
 Attributes
 ----------
@@ -590,12 +618,12 @@ ModelChain properties that are aliases for your specific modeling functions.
 .. autosummary::
    :toctree: generated/
 
-   modelchain.ModelChain.orientation_strategy
    modelchain.ModelChain.dc_model
    modelchain.ModelChain.ac_model
    modelchain.ModelChain.aoi_model
    modelchain.ModelChain.spectral_model
    modelchain.ModelChain.temperature_model
+   modelchain.ModelChain.dc_ohmic_model
    modelchain.ModelChain.losses_model
    modelchain.ModelChain.effective_irradiance_model
 
@@ -612,8 +640,8 @@ ModelChain model definitions.
    modelchain.ModelChain.desoto
    modelchain.ModelChain.pvsyst
    modelchain.ModelChain.pvwatts_dc
-   modelchain.ModelChain.snlinverter
-   modelchain.ModelChain.adrinverter
+   modelchain.ModelChain.sandia_inverter
+   modelchain.ModelChain.adr_inverter
    modelchain.ModelChain.pvwatts_inverter
    modelchain.ModelChain.ashrae_aoi_loss
    modelchain.ModelChain.physical_aoi_loss
@@ -625,6 +653,9 @@ ModelChain model definitions.
    modelchain.ModelChain.sapm_temp
    modelchain.ModelChain.pvsyst_temp
    modelchain.ModelChain.faiman_temp
+   modelchain.ModelChain.fuentes_temp
+   modelchain.ModelChain.dc_ohmic_model
+   modelchain.ModelChain.no_dc_ohmic_loss
    modelchain.ModelChain.pvwatts_losses
    modelchain.ModelChain.no_extra_losses
 

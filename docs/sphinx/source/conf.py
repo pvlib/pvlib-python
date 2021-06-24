@@ -50,6 +50,7 @@ extensions = [
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx_gallery.gen_gallery',
+    'sphinx_toggleprompt',
 ]
 
 napoleon_use_rtype = False  # group rtype on same line together with return
@@ -218,9 +219,10 @@ htmlhelp_basename = 'pvlib_pythondoc'
 # custom CSS workarounds
 def setup(app):
     # A workaround for the responsive tables always having annoying scrollbars.
-    app.add_stylesheet("no_scrollbars.css")
+    app.add_css_file("no_scrollbars.css")
     # Override footnote callout CSS to be normal text instead of superscript
-    app.add_stylesheet("no_reference_superscript.css")
+    # In-line links to references as numbers in brackets.
+    app.add_css_file("reference_format.css")
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -312,9 +314,11 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.8/', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'python': ('https://docs.python.org/3/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
+    'matplotlib': ('https://matplotlib.org/stable', None),
 }
 
 nbsphinx_allow_errors = True
@@ -385,6 +389,10 @@ def get_linenos(obj):
     try:
         lines, start = inspect.getsourcelines(obj)
     except TypeError:  # obj is an attribute or None
+        return None, None
+    except OSError:  # obj listing cannot be found
+        # This happens for methods that are not explicitly defined
+        # such as the __init__ method for a dataclass
         return None, None
     else:
         return start, start + len(lines) - 1

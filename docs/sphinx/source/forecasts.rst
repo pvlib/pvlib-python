@@ -4,17 +4,17 @@
 Forecasting
 ***********
 
-pvlib-python provides a set of functions and classes that make it easy
+pvlib python provides a set of functions and classes that make it easy
 to obtain weather forecast data and convert that data into a PV power
 forecast. Users can retrieve standardized weather forecast data relevant
 to PV power modeling from NOAA/NCEP/NWS models including the GFS, NAM,
 RAP, HRRR, and the NDFD. A PV power forecast can then be obtained using
 the weather data as inputs to the comprehensive modeling capabilities of
-PVLIB-Python. Standardized, open source, reference implementations of
+pvlib python. Standardized, open source, reference implementations of
 forecast methods using publicly available data may help advance the
 state-of-the-art of solar power forecasting.
 
-pvlib-python uses Unidata's `Siphon
+pvlib python uses Unidata's `Siphon
 <http://siphon.readthedocs.org/en/latest/>`_ library to simplify access
 to real-time forecast data hosted on the Unidata `THREDDS catalog
 <http://thredds.ucar.edu/thredds/catalog.html>`_. Siphon is great for
@@ -24,7 +24,7 @@ to easily browse the catalog and become more familiar with its contents.
 
 We do not know of a similarly easy way to access archives of forecast data.
 
-This document demonstrates how to use pvlib-python to create a PV power
+This document demonstrates how to use pvlib python to create a PV power
 forecast using these tools. The `forecast
 <http://nbviewer.jupyter.org/github/pvlib/pvlib-python/blob/
 master/docs/tutorials/forecast.ipynb>`_ and `forecast_to_power
@@ -62,8 +62,8 @@ while the NAM has a field named
 similar field in the HRRR is named
 ``Total_cloud_cover_entire_atmosphere``.
 
-PVLIB-Python aims to simplify the access of the model fields relevant
-for solar power forecasts. Model data accessed with PVLIB-Python is
+pvlib python aims to simplify the access of the model fields relevant
+for solar power forecasts. Model data accessed with pvlib python is
 returned as a pandas DataFrame with consistent column names:
 ``temp_air, wind_speed, total_clouds, low_clouds, mid_clouds,
 high_clouds, dni, dhi, ghi``. To accomplish this, we use an
@@ -77,7 +77,7 @@ child model-specific classes (:py:class:`~pvlib.forecast.GFS`,
 map and process that specific model's data to the standardized fields.
 
 The code below demonstrates how simple it is to access and plot forecast
-data using PVLIB-Python. First, we set up make the basic imports and
+data using pvlib python. First, we set up make the basic imports and
 then set the location and time range data.
 
 .. ipython:: python
@@ -204,13 +204,13 @@ poor solar position or radiative transfer algorithms. It is often more
 accurate to create empirically derived radiation forecasts from the
 weather models' cloud cover forecasts.
 
-PVLIB-Python provides two basic ways to convert cloud cover forecasts to
+pvlib python provides two basic ways to convert cloud cover forecasts to
 irradiance forecasts. One method assumes a linear relationship between
 cloud cover and GHI, applies the scaling to a clear sky climatology, and
 then uses the DISC model to calculate DNI. The second method assumes a
 linear relationship between cloud cover and atmospheric transmittance,
-and then uses the Liu-Jordan [Liu60]_ model to calculate GHI, DNI, and
-DHI.
+and then uses the Campbell-Norman model to calculate GHI, DNI, and
+DHI [Cam98]_. Campbell-Norman is an approximation of Liu-Jordan [Liu60]_.
 
 *Caveat emptor*: these algorithms are not rigorously verified! The
 purpose of the forecast module is to provide a few exceedingly simple
@@ -251,7 +251,7 @@ irradiance conversion using the clear sky scaling algorithm.
     plt.close();
 
 
-The essential parts of the Liu-Jordan cloud cover to irradiance algorithm
+The essential parts of the Campbell-Norman cloud cover to irradiance algorithm
 are as follows.
 
 .. code-block:: python
@@ -259,19 +259,19 @@ are as follows.
     # cloud cover in percentage units here
     transmittance = ((100.0 - cloud_cover) / 100.0) * 0.75
     # irrads is a DataFrame containing ghi, dni, dhi
-    irrads = liujordan(apparent_zenith, transmittance, airmass_absolute)
+    irrads = campbell_norman(apparent_zenith, transmittance)
 
-The figure below shows the result of the Liu-Jordan total cloud cover to
+The figure below shows the result of the Campbell-Norman total cloud cover to
 irradiance conversion.
 
 .. ipython:: python
 
     # plot irradiance data
-    irrads = model.cloud_cover_to_irradiance(data['total_clouds'], how='liujordan')
+    irrads = model.cloud_cover_to_irradiance(data['total_clouds'], how='campbell_norman')
     irrads.plot();
     plt.ylabel('Irradiance ($W/m^2$)');
     plt.xlabel('Forecast Time ({})'.format(tz));
-    plt.title('GFS 0.5 deg forecast for lat={}, lon={} using "liujordan"'
+    plt.title('GFS 0.5 deg forecast for lat={}, lon={} using "campbell_norman"'
               .format(latitude, longitude));
     @savefig gfs_irrad_lj.png width=6in
     plt.legend();
@@ -308,6 +308,9 @@ model processing to their liking.
 .. [Lar16] Larson et. al. "Day-ahead forecasting of solar power output
     from photovoltaic plants in the American Southwest" Renewable
     Energy 91, 11-20 (2016).
+
+.. [Cam98] Campbell, G. S., J. M. Norman (1998) An Introduction to
+    Environmental Biophysics. 2nd Ed. New York: Springer.
 
 .. [Liu60] B. Y. Liu and R. C. Jordan, The interrelationship and
     characteristic distribution of direct, diffuse, and total solar
@@ -468,7 +471,7 @@ Here's the forecast plane of array irradiance...
 
 .. ipython:: python
 
-    mc.total_irrad.plot();
+    mc.results.total_irrad.plot();
     @savefig poa_irrad.png width=6in
     plt.ylabel('Plane of array irradiance ($W/m^2$)');
     plt.legend(loc='best');
@@ -479,7 +482,7 @@ Here's the forecast plane of array irradiance...
 
 .. ipython:: python
 
-    mc.cell_temperature.plot();
+    mc.results.cell_temperature.plot();
     @savefig pv_temps.png width=6in
     plt.ylabel('Cell Temperature (C)');
     @suppress
@@ -489,7 +492,7 @@ Here's the forecast plane of array irradiance...
 
 .. ipython:: python
 
-    mc.ac.fillna(0).plot();
+    mc.results.ac.fillna(0).plot();
     plt.ylim(0, None);
     @savefig ac_power.png width=6in
     plt.ylabel('AC Power (W)');

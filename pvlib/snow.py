@@ -185,3 +185,71 @@ def dc_loss_nrel(snow_coverage, num_strings):
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
     '''
     return np.ceil(snow_coverage * num_strings) / num_strings
+
+def townsend_Se(S, N):
+    '''
+    Calculates effective snow for a given month based upon the total snowfall
+    received in a month in inches and the number of events where snowfall is greater
+    than 1 inch
+
+    Parameters
+    ----------
+    S : numeric
+        Snowfall in inches received in a month
+
+    N: numeric
+        Number of snowfall events with snowfall > 1"
+
+    Returns
+    -------
+    effective_snowfall : numeric
+        Effective snowfall as defined in the townsend model 
+
+    References
+    ----------
+    .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An 
+            update from two winters of measurements in the SIERRA. Conference 
+            Record of the IEEE Photovoltaic Specialists Conference. 
+            003231-003236. 10.1109/PVSC.2011.6186627. 
+       Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
+
+    '''
+    return (0.5 * S * (1 + 1/N))
+
+def townsend_snow_loss_model(x):
+    '''
+    Loss, % = C1 x Se’ x cos2
+    (tilt) x GIT x RH / TAIR2
+    / POA0.67Eqn. 3
+
+    Parameters
+    ----------
+    snow_coverage : numeric
+        The fraction of row slant height covered by snow at each time step.
+
+    num_strings: int
+        The number of parallel-connected strings along a row slant height.
+
+    Returns
+    -------
+    loss : numeric
+        fraction of DC capacity loss due to snow coverage at each time step.
+
+    References
+    ----------
+    .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An 
+            update from two winters of measurements in the SIERRA. Conference 
+            Record of the IEEE Photovoltaic Specialists Conference. 
+            003231-003236. 10.1109/PVSC.2011.6186627. 
+       Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
+    '''
+    C1 = 5.7e04
+    C2 = 0.51
+
+
+    gamma = [R*Se’*cos(tilt)]/[(H2 – Se’2)/2*tan(P)] 
+    
+    GIT = 1 - C2 * np.exp(-gamma)
+    loss = C1 * Se_ * (np.cos(tilt))**2 * GIT * RH / T_air**2 / POA**0.67
+    
+    return x**2

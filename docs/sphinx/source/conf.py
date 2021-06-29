@@ -141,6 +141,7 @@ html_theme_options = {
     "use_edit_page_button": True,
     "show_toc_level": 1,
     # "navbar_align": "right",  # For testing that the navbar items align properly
+    # "icon_links": [],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -155,7 +156,7 @@ html_theme_options = {
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = '_images/pvlib_logo_horiz.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32

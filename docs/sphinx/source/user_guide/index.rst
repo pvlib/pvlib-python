@@ -5,7 +5,6 @@ User Guide
 
 .. toctree::
    :maxdepth: 2
-   :caption: Demo Documentation
 
    package_overview
    installation

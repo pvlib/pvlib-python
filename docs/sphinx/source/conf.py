@@ -136,9 +136,9 @@ html_theme_options = {
     # "external_links": [
     #    {"url": "https://pandas.pydata.org/pandas-docs/stable/", "name": "Pandas Docs"}
     # ],
-    # "github_url": "https://github.com/pandas-dev/pydata-sphinx-theme",
+    "github_url": "https://github.com/pvlib/pvlib-python",
     # "twitter_url": "https://twitter.com/pandas_dev",
-    # "use_edit_page_button": True,
+    "use_edit_page_button": True,
     "show_toc_level": 1,
     # "navbar_align": "right",  # For testing that the navbar items align properly
 }
@@ -399,32 +399,30 @@ def get_linenos(obj):
         return start, start + len(lines) - 1
 
 
-def make_github_url(pagename):
+def make_github_url(file_name):
     """
     Generate the appropriate GH link for a given docs page.  This function
     is intended for use in sphinx template files.
 
-    The target URL is built differently based on the type of page.  Sphinx
-    provides templates with a built-in `pagename` variable that is the path
-    at the end of the URL, without the extension.  For instance,
-    https://pvlib-python.rtfd.org/en/stable/auto_examples/plot_singlediode.html
-    will have pagename = "auto_examples/plot_singlediode".
+    The target URL is built differently based on the type of page.  The pydata
+    sphinx theme has a built-in `file_name` variable that looks like
+    "/docs/sphinx/source/api.rst" or "generated/pvlib.atmosphere.alt2pres.rst"
     """
 
     URL_BASE = "https://github.com/pvlib/pvlib-python/blob/master/"
 
     # is it a gallery page?
-    if any(d in pagename for d in sphinx_gallery_conf['gallery_dirs']):
-        if pagename.split("/")[-1] == "index":
+    if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):
+        if file_name.split("/")[-1] == "index":
             example_file = "README.rst"
         else:
-            example_file = pagename.split("/")[-1] + ".py"
+            example_file = file_name.split("/")[-1].replace('.rst', '.py')
         target_url = URL_BASE + "docs/examples/" + example_file
 
     # is it an API autogen page?
-    elif "generated" in pagename:
-        # pagename looks like "generated/pvlib.location.Location"
-        qualname = pagename.split("/")[-1]
+    elif "generated" in file_name:
+        # pagename looks like "generated/pvlib.atmosphere.alt2pres.rst"
+        qualname = file_name.split("/")[-1].replace('.rst', '')
         obj, module = get_obj_module(qualname)
         path = module.__name__.replace(".", "/") + ".py"
         target_url = URL_BASE + path
@@ -435,7 +433,7 @@ def make_github_url(pagename):
 
     # Just a normal source RST page
     else:
-        target_url = URL_BASE + "docs/sphinx/source/" + pagename + ".rst"
+        target_url = URL_BASE + "docs/sphinx/source/" + file_name
 
     return target_url
 
@@ -444,4 +442,5 @@ def make_github_url(pagename):
 # _templates/breadcrumbs.html
 html_context = {
     'make_github_url': make_github_url,
+    'edit_page_url_template': '{{ make_github_url(file_name) }}',
 }

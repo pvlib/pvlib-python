@@ -76,11 +76,12 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         will calculate the horizon [4]_
     raddatabase: str, default: None
         Name of radiation database. Options depend on location, see [3]_.
-    start: int, default: None
+    start: int or datetime like, default: None
         First year of the radiation time series. Defaults to first year
         available.
-    end: int, default: None
-        Last year of the radiation time series. Defaults to last year available.
+    end: int or datetime like, default: None
+        Last year of the radiation time series. Defaults to last year
+        available.
     pvcalculation: bool, default: False
         Return estimate of hourly PV production.
     peakpower: float, default: None
@@ -168,7 +169,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
        <https://ec.europa.eu/jrc/en/PVGIS/docs/noninteractive>`_
     .. [4] `PVGIS horizon profile tool
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
-    """
+    """  # noqa: E501
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
               'angle': surface_tilt, 'aspect': surface_azimuth,
@@ -184,10 +185,14 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         params['userhorizon'] = ','.join(str(x) for x in userhorizon)
     if raddatabase is not None:
         params['raddatabase'] = raddatabase
-    if start is not None:
+    if (start is not None) & (type(start) is int):
         params['startyear'] = start
-    if end is not None:
+    elif (start is not None) & (type(start) is not int):
+        params['startyear'] = start.year
+    if (end is not None) & (type(end) is int):
         params['endyear'] = end
+    elif (end is not None) & (type(end) is not int):
+        params['endyear'] = end.year
     if pvcalculation:
         params['pvcalculation'] = 1
     if peakpower is not None:

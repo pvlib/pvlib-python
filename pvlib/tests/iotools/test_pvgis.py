@@ -126,32 +126,61 @@ metadata_pv_json = {
                 'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},  # noqa: E501
                 'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: E501
 
-
-# Test read_pvgis_hourly function using two different files with different
-# input arguments (to test variable mapping and pvgis_format)
-@pytest.mark.parametrize('testfile,index,columns,values,metadata_exp,'
-                         'inputs_exp,map_variables,pvgis_format', [
-                             (testfile_radiation_csv, index_radiation_csv,
-                              columns_radiation_csv, data_radiation_csv,
-                              metadata_radiation_csv, inputs_radiation_csv,
-                              False, None),
-                             (testfile_radiation_csv, index_radiation_csv,
-                              columns_radiation_csv_mapped, data_radiation_csv,
-                              metadata_radiation_csv, inputs_radiation_csv,
-                              True, 'csv'),
-                             (testfile_pv_json, index_pv_json, columns_pv_json,
-                              data_pv_json, metadata_pv_json, inputs_pv_json,
-                              False, None),
-                             (testfile_pv_json, index_pv_json,
-                              columns_pv_json_mapped, data_pv_json,
-                              metadata_pv_json, inputs_pv_json, True, 'json')])
-def test_read_pvgis_hourly(testfile, index, columns, values, metadata_exp,
-                           inputs_exp, map_variables, pvgis_format):
-    # Create expected dataframe
+def generate_expected_dataframe(values, columns, index):
+    """Create dataframe from arrays of values, columns and index, in order to
+    use this dataframe to compare to.
+    """
     expected = pd.DataFrame(index=index, data=values, columns=columns)
     expected['Int'] = expected['Int'].astype(int)
     expected.index.name = 'time'
     expected.index.freq = None
+    return expected
+
+
+@pytest.fixture
+def expected_radiation_csv():
+    expected = generate_expected_dataframe(
+        data_radiation_csv, columns_radiation_csv, index_radiation_csv)
+    return expected
+
+@pytest.fixture
+def expected_radiation_csv_mapped():
+    expected = generate_expected_dataframe(
+        data_radiation_csv, columns_radiation_csv_mapped, index_radiation_csv)
+    return expected
+
+@pytest.fixture
+def expected_pv_json():
+    expected = generate_expected_dataframe(
+        data_pv_json, columns_pv_json, index_pv_json)
+    return expected
+
+@pytest.fixture
+def expected_pv_json_mapped():
+    expected = generate_expected_dataframe(
+        data_pv_json, columns_pv_json_mapped, index_pv_json)
+    return expected
+
+
+# Test read_pvgis_hourly function using two different files with different
+# input arguments (to test variable mapping and pvgis_format)
+@pytest.mark.parametrize('testfile,expected_name,metadata_exp,inputs_exp,'
+                         'map_variables,pvgis_format', [
+                             (testfile_radiation_csv, 'expected_radiation_csv',
+                              metadata_radiation_csv, inputs_radiation_csv,
+                              False, None),
+                             (testfile_radiation_csv,
+                              'expected_radiation_csv_mapped',
+                              metadata_radiation_csv, inputs_radiation_csv,
+                              True, 'csv'),
+                             (testfile_pv_json, 'expected_pv_json',
+                              metadata_pv_json, inputs_pv_json, False, None),
+                             (testfile_pv_json, 'expected_pv_json_mapped',
+                              metadata_pv_json, inputs_pv_json, True, 'json')])
+def test_read_pvgis_hourly(testfile, expected_name, metadata_exp,
+                           inputs_exp, map_variables, pvgis_format, request):
+    # Get expected dataframe from fixture
+    expected = request.getfixturevalue(expected_name)
     # Read data from file
     out, inputs, metadata = read_pvgis_hourly(
         testfile, map_variables=map_variables, pvgis_format=pvgis_format)

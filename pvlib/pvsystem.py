@@ -1591,9 +1591,11 @@ class Array:
             func = temperature.fuentes
             required = _build_tcell_args(['noct_installed'])
             optional = _build_kwargs([
-                'module_height', 'wind_height', 'emissivity', 'absorption',
+                'wind_height', 'emissivity', 'absorption',
                 'surface_tilt', 'module_width', 'module_length'],
                 self.temperature_model_parameters)
+            if self.mount.module_height is not None:
+                optional['module_height'] = self.mount.module_height
         elif model == 'noct_sam':
             func = functools.partial(temperature.noct_sam,
                                      effective_irradiance=effective_irradiance)

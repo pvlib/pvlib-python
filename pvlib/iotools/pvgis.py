@@ -107,8 +107,8 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         Output solar radiation components (beam, diffuse, and reflected).
         Otherwise only global irradiance is returned.
     url: str, default:const:`pvlib.iotools.pvgis.URL`
-        Base url of PVGIS API, append ``seriescalc`` to get hourly data
-        endpoint
+        Base url of PVGIS API. ``seriescalc`` is appended to get hourly data
+        endpoint.
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable PVGIS_VARIABLE_MAP.
@@ -173,9 +173,10 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
               'angle': surface_tilt, 'aspect': surface_azimuth,
-              'pvcalculation': int(pvcalculation), 'pvtechchoice': pvtechchoice,
-              'mountingplace': mountingplace, 'trackingtype': trackingtype,
-              'components': int(components), 'usehorizon': int(usehorizon),
+              'pvcalculation': int(pvcalculation),
+              'pvtechchoice': pvtechchoice, 'mountingplace': mountingplace,
+              'trackingtype': trackingtype, 'components': int(components),
+              'usehorizon': int(usehorizon),
               'optimalangles': int(optimalangles),
               'optimalinclination': int(optimalangles), 'loss': loss}
     # pvgis only takes 0 for False, and 1 for True, not strings, also the
@@ -291,7 +292,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     Parameters
     ----------
     filename : str, pathlib.Path, or file-like buffer
-        Name, path, or buffer of file downloaded from PVGIS.
+        Name, path, or buffer of hourly data file downloaded from PVGIS.
     pvgis_format : str, default None
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS API. If `filename` is a file and
@@ -299,13 +300,13 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         determine the PVGIS format to parse. If `filename` is a buffer, then
         `pvgis_format` is required and must be in ``['csv', 'json']``.
     map_variables: bool, default True
-        When true, renames columns of the Dataframe to pvlib variable names
+        When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable PVGIS_VARIABLE_MAP.
 
     Returns
     -------
     data : pandas.DataFrame
-        the weather data
+        the time series data
     inputs : dict
         the inputs
     metadata : dict

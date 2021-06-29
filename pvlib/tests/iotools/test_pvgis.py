@@ -214,7 +214,7 @@ url_hourly_radiation_csv = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lo
 args_pv_json = {
     'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'json',
     'usehorizon': True, 'userhorizon': None, 'raddatabase': 'PVGIS-CMSAF',
-    'start': pd.Timestamp(2013,1,1), 'end': pd.Timestamp(2014,5,1),
+    'start': pd.Timestamp(2013, 1, 1), 'end': pd.Timestamp(2014, 5, 1),
     'pvcalculation': True, 'peakpower': 10, 'pvtechchoice': 'CIS', 'loss': 5,
     'trackingtype': 2, 'optimalangles': True, 'components': True}
 
@@ -261,6 +261,7 @@ def test_get_pvgis_hourly_bad_status_code(requests_mock):
 
 
 url_additional_inputs = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=55.6814&lon=12.5758&outputformat=csv&angle=0&aspect=0&pvcalculation=1&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&usehorizon=1&optimalangles=1&optimalinclination=1&loss=2&userhorizon=10%2C15%2C20%2C10&peakpower=5'  # noqa: E501
+
 
 def test_get_pvgis_hourly_additional_inputs(requests_mock):
     # Test additional inputs, including userhorizons

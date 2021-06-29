@@ -51,7 +51,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
                      components=True, url=URL, map_variables=True, timeout=30):
     """Get hourly solar irradiation and modeled PV power output from PVGIS.
 
-    PVGIS is avaiable at [1]_.
+    PVGIS is available at [1]_.
 
     Parameters
     ----------
@@ -78,9 +78,9 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         Name of radiation database. Options depend on location, see [3]_.
     start: int, default: None
         First year of the radiation time series. Defaults to first year
-        avaiable.
+        available.
     end: int, default: None
-        Last year of the radiation time series. Defaults to last year avaiable.
+        Last year of the radiation time series. Defaults to last year available.
     pvcalculation: bool, default: False
         Return estimate of hourly PV production.
     peakpower: float, default: None

@@ -89,7 +89,6 @@ calculations.
    solarposition.equation_of_time_spencer71
    solarposition.equation_of_time_pvcdrom
    solarposition.hour_angle
-   solarposition.sun_rise_set_transit_geometric
 
 
 Clear sky
@@ -239,11 +238,7 @@ PV temperature models
    temperature.fuentes
    temperature.ross
    temperature.noct_sam
-   pvsystem.PVSystem.sapm_celltemp
-   pvsystem.PVSystem.pvsyst_celltemp
-   pvsystem.PVSystem.faiman_celltemp
-   pvsystem.PVSystem.fuentes_celltemp
-   pvsystem.PVSystem.noct_sam_celltemp
+   pvsystem.PVSystem.get_cell_temperature
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -467,8 +462,8 @@ Functions
 IO Tools
 ========
 
-Functions for reading and writing data from a variety of file formats
-relevant to solar energy modeling.
+Functions for retrieving, reading, and writing data from a variety
+of sources and file formats relevant to solar energy modeling.
 
 .. autosummary::
    :toctree: generated/
@@ -492,6 +487,9 @@ relevant to solar energy modeling.
    iotools.get_pvgis_tmy
    iotools.read_pvgis_tmy
    iotools.read_bsrn
+   iotools.get_cams
+   iotools.read_cams
+   iotools.parse_cams
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.
@@ -571,6 +569,8 @@ Creating a ModelChain object.
    modelchain.ModelChain
    modelchain.ModelChain.with_pvwatts
    modelchain.ModelChain.with_sapm
+
+.. _modelchain_runmodel:
 
 Running
 -------

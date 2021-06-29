@@ -16,6 +16,7 @@ dependencies:
     - pytest
     - pytest-cov
     - pytest-mock
+    - requests-mock
     - pytest-timeout
     - pytest-rerunfailures
     - pytest-remotedata

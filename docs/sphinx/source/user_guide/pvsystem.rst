@@ -97,7 +97,7 @@ default value may be overridden by specifying the `temp_ref` key in the
 
 .. ipython:: python
 
-    system.module_parameters['temp_ref'] = 0
+    system.arrays[0].module_parameters['temp_ref'] = 0
     # lower temp_ref should lead to lower DC power than calculated above
     pdc = system.pvwatts_dc(1000, 30)
     print(pdc)
@@ -124,7 +124,7 @@ passed to `PVSystem.module_parameters`:
     inverter_parameters = {'pdc0': 5000, 'eta_inv_nom': 0.96}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
-    print(system.module_parameters)
+    print(system.arrays[0].module_parameters)
     print(system.inverter_parameters)
 
 
@@ -142,12 +142,9 @@ provided for each array, and the arrays are provided to
     array_two = pvsystem.Array(module_parameters=module_parameters)
     system_two_arrays = pvsystem.PVSystem(arrays=[array_one, array_two],
                                           inverter_parameters=inverter_parameters)
-    print(system_two_arrays.module_parameters)
+    print([array.module_parameters for array in system_two_arrays.arrays])
     print(system_two_arrays.inverter_parameters)
 
-Note that in the case of a PV system with multiple arrays, the
-:py:class:`~pvlib.pvsystem.PVSystem` attribute `module_parameters` contains
-a tuple with the `module_parameters` for each array.
 
 The :py:class:`~pvlib.pvsystem.Array` class includes those 
 :py:class:`~pvlib.pvsystem.PVSystem` attributes that may vary from array
@@ -188,7 +185,8 @@ these parameters can be specified using the `PVSystem.surface_tilt` and
 
     # single south-facing array at 20 deg tilt
     system_one_array = pvsystem.PVSystem(surface_tilt=20, surface_azimuth=180)
-    print(system_one_array.surface_tilt, system_one_array.surface_azimuth)
+    print(system_one_array.arrays[0].surface_tilt,
+          system_one_array.arrays[0].surface_azimuth)
 
 
 In the case of a PV system with several arrays, the parameters are specified
@@ -201,8 +199,7 @@ for each array using the attributes `Array.surface_tilt` and `Array.surface_azim
     array_two = pvsystem.Array(surface_tilt=30, surface_azimuth=220)
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
     system.num_arrays
-    system.surface_tilt
-    system.surface_azimuth
+    [(array.surface_tilt, array.surface_azimuth) for array in system.arrays]
 
 
 The `surface_tilt` and `surface_azimuth` attributes are used in PVSystem
@@ -218,7 +215,8 @@ and `solar_azimuth` as arguments.
 
     # single south-facing array at 20 deg tilt
     system_one_array = pvsystem.PVSystem(surface_tilt=20, surface_azimuth=180)
-    print(system_one_array.surface_tilt, system_one_array.surface_azimuth)
+    print(system_one_array.arrays[0].surface_tilt,
+          system_one_array.arrays[0].surface_azimuth)
 
     # call get_aoi with solar_zenith, solar_azimuth
     aoi = system_one_array.get_aoi(solar_zenith=30, solar_azimuth=180)

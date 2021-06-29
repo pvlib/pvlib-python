@@ -13,8 +13,8 @@ from scipy.spatial.distance import pdist
 def wvm(clearsky_index, positions, cloud_speed, dt=None):
     """
     Compute spatial aggregation time series smoothing on clear sky index based
-    on the Wavelet Variability model of Lave et al [1-2]. Implementation is
-    basically a port of the Matlab version of the code [3].
+    on the Wavelet Variability model of Lave et al. [1]_, [2]_. Implementation
+    is basically a port of the Matlab version of the code [3]_.
 
     Parameters
     ----------
@@ -48,16 +48,16 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
 
     References
     ----------
-    [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
-    Model (WVM) for Solar PV Power Plants. IEEE Transactions on Sustainable
-    Energy, vol. 4, no. 2, pp. 501-509, 2013.
+    .. [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
+       Model (WVM) for Solar PV Power Plants. IEEE Transactions on Sustainable
+       Energy, vol. 4, no. 2, pp. 501-509, 2013.
 
-    [2] M. Lave and J. Kleissl. Cloud speed impact on solar variability
-    scaling - Application to the wavelet variability model. Solar Energy,
-    vol. 91, pp. 11-21, 2013.
+    .. [2] M. Lave and J. Kleissl. Cloud speed impact on solar variability
+       scaling - Application to the wavelet variability model. Solar Energy,
+       vol. 91, pp. 11-21, 2013.
 
-    [3] Wavelet Variability Model - Matlab Code:
-    https://pvpmc.sandia.gov/applications/wavelet-variability-model/
+    .. [3] Wavelet Variability Model - Matlab Code:
+       https://github.com/sandialabs/wvm
     """
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019
@@ -128,13 +128,13 @@ def latlon_to_xy(coordinates):
 
     References
     ----------
-    [1] H. Moritz. Geodetic Reference System 1980, Journal of Geodesy, vol. 74,
-    no. 1, pp 128–133, 2000.
+    .. [1] H. Moritz. Geodetic Reference System 1980, Journal of Geodesy, vol.
+       74, no. 1, pp 128–133, 2000.
 
-    [2] https://pypi.org/project/pyproj/
+    .. [2] https://pypi.org/project/pyproj/
 
-    [3] Wavelet Variability Model - Matlab Code:
-    https://pvpmc.sandia.gov/applications/wavelet-variability-model/
+    .. [3] Wavelet Variability Model - Matlab Code:
+       https://github.com/sandialabs/wvm
     """
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019
@@ -159,7 +159,12 @@ def latlon_to_xy(coordinates):
 
 def _compute_wavelet(clearsky_index, dt=None):
     """
-    Compute the wavelet transform on the input clear_sky time series.
+    Compute the wavelet transform on the input clear_sky time series. Uses a
+    top hat wavelet [-1,1,1,-1] shape, based on the difference of successive
+    centered moving averages. Smallest scale (filter size of 2) is a degenerate
+    case that resembles a Haar wavelet. Returns one level of approximation
+    coefficient (CAn) and n levels of detail coefficients (CD1, CD2, ...,
+    CDn-1, CDn).
 
     Parameters
     ----------
@@ -174,19 +179,20 @@ def _compute_wavelet(clearsky_index, dt=None):
     Returns
     -------
     wavelet: numeric
-        The individual wavelets for the time series
+        The individual wavelets for the time series. Format follows increasing
+        scale (decreasing frequency): [CD1, CD2, ..., CDn, CAn]
 
     tmscales: numeric
         The timescales associated with the wavelets in seconds [s]
 
     References
     ----------
-    [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
-    Model (WVM) for Solar PV Power Plants. IEEE Transactions on Sustainable
-    Energy, vol. 4, no. 2, pp. 501-509, 2013.
+    .. [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
+       Model (WVM) for Solar PV Power Plants. IEEE Transactions on
+       Sustainable Energy, vol. 4, no. 2, pp. 501-509, 2013.
 
-    [3] Wavelet Variability Model - Matlab Code:
-    https://pvpmc.sandia.gov/applications/wavelet-variability-model/
+    .. [2] Wavelet Variability Model - Matlab Code:
+       https://github.com/sandialabs/wvm
     """
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019
@@ -209,31 +215,37 @@ def _compute_wavelet(clearsky_index, dt=None):
 
     # Compute wavelet time scales
     min_tmscale = np.ceil(np.log(dt)/np.log(2))  # Minimum wavelet timescale
-    max_tmscale = int(12 - min_tmscale)  # maximum wavelet timescale
+    max_tmscale = int(13 - min_tmscale)  # maximum wavelet timescale
 
     tmscales = np.zeros(max_tmscale)
     csi_mean = np.zeros([max_tmscale, len(cs_long)])
+    # Skip averaging for the 0th scale
+    csi_mean[0, :] = cs_long.values.flatten()
+    tmscales[0] = 1
     # Loop for all time scales we will consider
-    for i in np.arange(0, max_tmscale):
-        j = i+1
-        tmscales[i] = 2**j * dt  # Wavelet integration time scale
-        intvlen = 2**j  # Wavelet integration time series interval
+    for i in np.arange(1, max_tmscale):
+        tmscales[i] = 2**i * dt  # Wavelet integration time scale
+        intvlen = 2**i  # Wavelet integration time series interval
         # Rolling average, retains only lower frequencies than interval
+        # Produces slightly different end effects than the MATLAB version
         df = cs_long.rolling(window=intvlen, center=True, min_periods=1).mean()
         # Fill nan's in both directions
         df = df.fillna(method='bfill').fillna(method='ffill')
         # Pop values back out of the dataframe and store
         csi_mean[i, :] = df.values.flatten()
+        # Shift to account for different indexing in MATLAB moving average
+        csi_mean[i, :] = np.roll(csi_mean[i, :], -1)
+        csi_mean[i, -1] = csi_mean[i, -2]
 
-    # Calculate the wavelets by isolating the rolling mean frequency ranges
+    # Calculate detail coefficients by difference between successive averages
     wavelet_long = np.zeros(csi_mean.shape)
     for i in np.arange(0, max_tmscale-1):
         wavelet_long[i, :] = csi_mean[i, :] - csi_mean[i+1, :]
-    wavelet_long[max_tmscale-1, :] = csi_mean[max_tmscale-1, :]  # Lowest freq
+    wavelet_long[-1, :] = csi_mean[-1, :]  # Lowest freq (CAn)
 
     # Clip off the padding and just return the original time window
     wavelet = np.zeros([max_tmscale, len(vals)])
     for i in np.arange(0, max_tmscale):
-        wavelet[i, :] = wavelet_long[i, len(vals)+1: 2*len(vals)+1]
+        wavelet[i, :] = wavelet_long[i, len(vals): 2*len(vals)]
 
     return wavelet, tmscales

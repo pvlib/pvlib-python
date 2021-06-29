@@ -33,8 +33,8 @@ columns_radiation_csv_mapped = [
 columns_pv_json = [
     'P', 'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
 columns_pv_json_mapped = [
-    'P', 'poa_direct', 'poa_sky_diffuse', 'poa_ground_diffuse', 'solar_elevation',
-    'temp_air', 'wind_speed', 'Int']
+    'P', 'poa_direct', 'poa_sky_diffuse', 'poa_ground_diffuse',
+    'solar_elevation', 'temp_air', 'wind_speed', 'Int']
 
 data_radiation_csv = [
     [0.0, 0.0, 0.0, 0.0, 3.44, 1.43, 0.0],
@@ -126,6 +126,7 @@ metadata_pv_json = {
                 'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},  # noqa: E501
                 'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: E501
 
+
 def generate_expected_dataframe(values, columns, index):
     """Create dataframe from arrays of values, columns and index, in order to
     use this dataframe to compare to.
@@ -143,17 +144,20 @@ def expected_radiation_csv():
         data_radiation_csv, columns_radiation_csv, index_radiation_csv)
     return expected
 
+
 @pytest.fixture
 def expected_radiation_csv_mapped():
     expected = generate_expected_dataframe(
         data_radiation_csv, columns_radiation_csv_mapped, index_radiation_csv)
     return expected
 
+
 @pytest.fixture
 def expected_pv_json():
     expected = generate_expected_dataframe(
         data_pv_json, columns_pv_json, index_pv_json)
     return expected
+
 
 @pytest.fixture
 def expected_pv_json_mapped():
@@ -164,19 +168,16 @@ def expected_pv_json_mapped():
 
 # Test read_pvgis_hourly function using two different files with different
 # input arguments (to test variable mapping and pvgis_format)
-@pytest.mark.parametrize('testfile,expected_name,metadata_exp,inputs_exp,'
-                         'map_variables,pvgis_format', [
-                             (testfile_radiation_csv, 'expected_radiation_csv',
-                              metadata_radiation_csv, inputs_radiation_csv,
-                              False, None),
-                             (testfile_radiation_csv,
-                              'expected_radiation_csv_mapped',
-                              metadata_radiation_csv, inputs_radiation_csv,
-                              True, 'csv'),
-                             (testfile_pv_json, 'expected_pv_json',
-                              metadata_pv_json, inputs_pv_json, False, None),
-                             (testfile_pv_json, 'expected_pv_json_mapped',
-                              metadata_pv_json, inputs_pv_json, True, 'json')])
+# pytest request.getfixturevalue is used to simplify the input arguments
+@pytest.mark.parametrize('testfile,expected_name,metadata_exp,inputs_exp,map_variables,pvgis_format', [  # noqa: E501
+    (testfile_radiation_csv, 'expected_radiation_csv', metadata_radiation_csv,
+     inputs_radiation_csv, False, None),
+    (testfile_radiation_csv, 'expected_radiation_csv_mapped',
+     metadata_radiation_csv, inputs_radiation_csv, True, 'csv'),
+    (testfile_pv_json, 'expected_pv_json', metadata_pv_json, inputs_pv_json,
+     False, None),
+    (testfile_pv_json, 'expected_pv_json_mapped', metadata_pv_json,
+     inputs_pv_json, True, 'json')])
 def test_read_pvgis_hourly(testfile, expected_name, metadata_exp,
                            inputs_exp, map_variables, pvgis_format, request):
     # Get expected dataframe from fixture
@@ -205,10 +206,10 @@ def test_read_pvgis_hourly_bad_extension():
 
 args_radiation_csv = {
     'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'csv',
-    'usehorizon': True, 'userhorizon': None, 'raddatabase': 'PVGIS-SARAH',
+    'usehorizon': False, 'userhorizon': None, 'raddatabase': 'PVGIS-SARAH',
     'start': 2016, 'end': 2016, 'pvcalculation': False, 'components': True}
 
-url_hourly_radiation_csv = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=csv&angle=30&aspect=0&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&raddatabase=PVGIS-SARAH&startyear=2016&endyear=2016'  # noqa: E501
+url_hourly_radiation_csv = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=csv&angle=30&aspect=0&usehorizon=0&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&raddatabase=PVGIS-SARAH&startyear=2016&endyear=2016'  # noqa: E501
 
 args_pv_json = {
     'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'json',
@@ -217,26 +218,18 @@ args_pv_json = {
     'pvtechchoice': 'CIS', 'loss': 5, 'trackingtype': 2, 'optimalangles': True,
     'components': True}
 
-url_pv_json = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=json&angle=30&aspect=0&pvtechchoice=CIS&mountingplace=free&trackingtype=2&components=1&raddatabase=PVGIS-CMSAF&startyear=2013&endyear=2014&pvcalculation=1&peakpower=10&loss=5&optimalangles=1'  # noqa: E501
+url_pv_json = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=json&angle=30&aspect=0&pvtechchoice=CIS&mountingplace=free&trackingtype=2&components=1&usehorizon=1&raddatabase=PVGIS-CMSAF&startyear=2013&endyear=2014&pvcalculation=1&peakpower=10&loss=5&optimalangles=1'  # noqa: E501
 
-
-@pytest.mark.parametrize('testfile,index,columns,values,args,map_variables,'
-                         'url_test', [
-                             (testfile_radiation_csv, index_radiation_csv,
-                              columns_radiation_csv, data_radiation_csv,
-                              args_radiation_csv, False,
-                              url_hourly_radiation_csv),
-                             (testfile_radiation_csv, index_radiation_csv,
-                              columns_radiation_csv_mapped, data_radiation_csv,
-                              args_radiation_csv, True,
-                              url_hourly_radiation_csv),
-                             (testfile_pv_json, index_pv_json, columns_pv_json,
-                              data_pv_json, args_pv_json, False, url_pv_json),
-                             (testfile_pv_json, index_pv_json,
-                              columns_pv_json_mapped, data_pv_json,
-                              args_pv_json, True, url_pv_json)])
-def test_get_pvgis_hourly(requests_mock, testfile, index, columns, values,
-                          args, map_variables, url_test):
+@pytest.mark.parametrize('testfile,expected_name,args,map_variables,url_test', [  # noqa: E501
+    (testfile_radiation_csv, 'expected_radiation_csv',
+     args_radiation_csv, False, url_hourly_radiation_csv),
+    (testfile_radiation_csv, 'expected_radiation_csv_mapped',
+     args_radiation_csv, True, url_hourly_radiation_csv),
+    (testfile_pv_json, 'expected_pv_json', args_pv_json, False, url_pv_json),
+    (testfile_pv_json, 'expected_pv_json_mapped', args_pv_json, True,
+     url_pv_json)])
+def test_get_pvgis_hourly(requests_mock, testfile, expected_name, args,
+                          map_variables, url_test, request):
     """Test that get_pvgis_hourly generates the correct URI request and that
     _parse_pvgis_hourly_json and _parse_pvgis_hourly_csv is called correctly"""
     # Open local test file containing McClear mothly data
@@ -244,17 +237,12 @@ def test_get_pvgis_hourly(requests_mock, testfile, index, columns, values,
         mock_response = test_file.read()
     # Specify the full URI of a specific example, this ensures that all of the
     # inputs are passing on correctly
-
     requests_mock.get(url_test, text=mock_response)
-
     # Make API call - an error is raised if requested URI does not match
     out, inputs, metadata = get_pvgis_hourly(
         latitude=45, longitude=8, map_variables=map_variables, **args)
-    # Create expected dataframe
-    expected = pd.DataFrame(index=index, data=values, columns=columns)
-    expected['Int'] = expected['Int'].astype(int)
-    expected.index.name = 'time'
-    expected.index.freq = None
+    # Get expected dataframe from fixture
+    expected = request.getfixturevalue(expected_name)
     # Compare out and expected dataframes
     assert_frame_equal(out, expected)
 
@@ -269,6 +257,30 @@ def test_get_pvgis_hourly_bad_status_code(requests_mock):
                       json={'message': 'peakpower Mandatory'})
     with pytest.raises(requests.HTTPError):
         get_pvgis_hourly(latitude=45, longitude=8, **args_pv_json)
+
+
+url_additional_inputs = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=55.6814&lon=12.5758&outputformat=csv&angle=0&aspect=0&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&usehorizon=1&userhorizon=10%2C15%2C20%2C10&pvcalculation=1&peakpower=5&loss=2&optimalinclination=0&optimalangles=1'  # noqa: E501
+
+
+def test_get_pvgis_hourly_additional_inputs(requests_mock):
+    # Test additional inputs, including userhorizons
+    # Necessary to pass a test file in order for the parser not to fail
+    with open(testfile_radiation_csv, 'r') as test_file:
+        mock_response = test_file.read()
+    requests_mock.get(url_additional_inputs, text=mock_response)
+    # Make request with userhorizon specified
+    get_pvgis_hourly(
+        latitude=55.6814,
+        longitude=12.5758,
+        outputformat='csv',
+        usehorizon=True,
+        userhorizon=[10, 15, 20, 10],
+        pvcalculation=True,
+        peakpower=5,
+        loss=2,
+        trackingtype=0,
+        components=True,
+        optimalangles=True)
 
 
 # PVGIS TMY tests

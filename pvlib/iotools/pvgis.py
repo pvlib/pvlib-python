@@ -24,7 +24,7 @@ from pvlib.iotools import read_epw, parse_epw
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
 # Dictionary mapping PVGIS names to pvlib names
-VARIABLE_MAP = {
+PVGIS_VARIABLE_MAP = {
     'G(h)': 'ghi',
     'Gb(n)': 'dni',
     'Gd(h)': 'dhi',
@@ -46,12 +46,12 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
                      usehorizon=True, userhorizon=None, raddatabase=None,
                      start=None, end=None, pvcalculation=False,
                      peakpower=None, pvtechchoice='crystSi',
-                     mountingplace='free', loss=None, trackingtype=0,
+                     mountingplace='free', loss=0, trackingtype=0,
                      optimal_surface_tilt=False, optimalangles=False,
                      components=True, url=URL, map_variables=True, timeout=30):
     """Get hourly solar irradiation and modeled PV power output from PVGIS.
 
-    PVGIS is available at [1]_.
+    PVGIS data is freely available at [1]_.
 
     Parameters
     ----------
@@ -91,7 +91,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     mountingplace: {'free', 'building'}, default: free
         Type of mounting for PV system. Options of 'free' for free-standing
         and 'building' for building-integrated.
-    loss: float, default: None
+    loss: float, default: 0
         Sum of PV system losses in percent. Required if pvcalculation=True
     trackingtype: {0, 1, 2, 3, 4, 5}, default: 0
         Type of suntracking. 0=fixed, 1=single horizontal axis aligned
@@ -111,7 +111,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         endpoint
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable VARIABLE_MAP.
+        where applicable. See variable PVGIS_VARIABLE_MAP.
     timeout: int, default: 30
         Time in seconds to wait for server response before timeout
 
@@ -179,8 +179,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     # default for usehorizon is already 1 (ie: True), so only set if False
     # default for pvcalculation, optimalangles, optimalinclination,
     # is already 0 i.e. False, so only set if True
-    if not usehorizon:
-        params['usehorizon'] = 0
+    params['usehorizon'] = int(usehorizon)
     if userhorizon is not None:
         params['userhorizon'] = ','.join(str(x) for x in userhorizon)
     if raddatabase is not None:
@@ -193,20 +192,16 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         params['endyear'] = end
     elif (end is not None) & (type(end) is not int):
         params['endyear'] = end.year
-    if pvcalculation:
-        params['pvcalculation'] = 1
+    params['pvcalculation'] = int(pvcalculation)
     if peakpower is not None:
         params['peakpower'] = peakpower
-    if loss is not None:
-        params['loss'] = loss
-    if optimal_surface_tilt:
-        params['optimalinclination'] = 1
-    if optimalangles:
-        params['optimalangles'] = 1
+    params['loss'] = loss
+    params['optimalinclination'] = int(optimal_surface_tilt)
+    params['optimalangles'] = int(optimalangles)
 
     # The url endpoint for hourly radiation is 'seriescalc'
     res = requests.get(url + 'seriescalc', params=params, timeout=timeout)
-
+    print(res.url)
     # PVGIS returns really well formatted error messages in JSON for HTTP/1.1
     # 400 BAD REQUEST so try to return that if possible, otherwise raise the
     # HTTP/1.1 error caught by requests
@@ -241,7 +236,7 @@ def _parse_pvgis_hourly_json(src, map_variables):
     data = data.drop('time', axis=1)
     data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
     if map_variables:
-        data.rename(columns=VARIABLE_MAP, inplace=True)
+        data.rename(columns=PVGIS_VARIABLE_MAP, inplace=True)
     return data, inputs, metadata
 
 
@@ -283,7 +278,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
     if map_variables:
-        data.rename(columns=VARIABLE_MAP, inplace=True)
+        data.rename(columns=PVGIS_VARIABLE_MAP, inplace=True)
     # All columns should have the dtype=float, except 'Int' which should be
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})
@@ -310,7 +305,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         `pvgis_format` is required and must be in ``['csv', 'json']``.
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable VARIABLE_MAP.
+        where applicable. See variable PVGIS_VARIABLE_MAP.
 
     Returns
     -------

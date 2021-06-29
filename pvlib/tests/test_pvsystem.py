@@ -699,6 +699,20 @@ def test_PVSystem_fuentes_celltemp(mocker):
                                        name='tmod'))
 
 
+def test_PVSystem_fuentes_module_height(mocker):
+    # check that fuentes picks up Array.mount.module_height correctly
+    # (temperature.fuentes defaults to 5 for module_height)
+    array = pvsystem.Array(mount=FixedMount(module_height=3),
+                           temperature_model_parameters={'noct_installed': 45})
+    spy = mocker.spy(temperature, 'fuentes')
+    index = pd.date_range('2019-01-01 11:00', freq='h', periods=3)
+    temps = pd.Series(25, index)
+    irrads = pd.Series(1000, index)
+    winds = pd.Series(1, index)
+    _ = array.get_cell_temperature(irrads, temps, winds, model='fuentes')
+    assert spy.call_args[1]['module_height'] == 3
+
+
 def test_Array__infer_temperature_model_params():
     array = pvsystem.Array(mount=FixedMount(0, 180,
                                             racking_model='open_rack'),

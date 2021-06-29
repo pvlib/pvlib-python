@@ -173,13 +173,12 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
               'angle': surface_tilt, 'aspect': surface_azimuth,
-              'pvtechchoice': pvtechchoice, 'mountingplace': mountingplace,
-              'trackingtype': trackingtype, 'components': int(components)}
-    # pvgis only likes 0 for False, and 1 for True, not strings, also the
-    # default for usehorizon is already 1 (ie: True), so only set if False
-    # default for pvcalculation, optimalangles, optimalinclination,
-    # is already 0 i.e. False, so only set if True
-    params['usehorizon'] = int(usehorizon)
+              'pvcalculation': int(pvcalculation), 'pvtechchoice': pvtechchoice,
+              'mountingplace': mountingplace, 'trackingtype': trackingtype,
+              'components': int(components), 'usehorizon': int(usehorizon),
+              'optimalangles': int(optimalangles),
+              'optimalinclination': int(optimalangles), 'loss': loss}
+    # pvgis only takes 0 for False, and 1 for True, not strings, also the
     if userhorizon is not None:
         params['userhorizon'] = ','.join(str(x) for x in userhorizon)
     if raddatabase is not None:
@@ -192,12 +191,8 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         params['endyear'] = end
     elif (end is not None) & (type(end) is not int):
         params['endyear'] = end.year
-    params['pvcalculation'] = int(pvcalculation)
     if peakpower is not None:
         params['peakpower'] = peakpower
-    params['loss'] = loss
-    params['optimalinclination'] = int(optimal_surface_tilt)
-    params['optimalangles'] = int(optimalangles)
 
     # The url endpoint for hourly radiation is 'seriescalc'
     res = requests.get(url + 'seriescalc', params=params, timeout=timeout)

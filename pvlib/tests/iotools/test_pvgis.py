@@ -214,11 +214,12 @@ url_hourly_radiation_csv = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lo
 args_pv_json = {
     'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'json',
     'usehorizon': True, 'userhorizon': None, 'raddatabase': 'PVGIS-CMSAF',
-    'start': 2013, 'end': 2014, 'pvcalculation': True, 'peakpower': 10,
-    'pvtechchoice': 'CIS', 'loss': 5, 'trackingtype': 2, 'optimalangles': True,
-    'components': True}
+    'start': pd.Timestamp(2013,1,1), 'end': pd.Timestamp(2014,5,1),
+    'pvcalculation': True, 'peakpower': 10, 'pvtechchoice': 'CIS', 'loss': 5,
+    'trackingtype': 2, 'optimalangles': True, 'components': True}
 
 url_pv_json = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=json&angle=30&aspect=0&pvtechchoice=CIS&mountingplace=free&trackingtype=2&components=1&usehorizon=1&raddatabase=PVGIS-CMSAF&startyear=2013&endyear=2014&pvcalculation=1&peakpower=10&loss=5&optimalangles=1'  # noqa: E501
+
 
 @pytest.mark.parametrize('testfile,expected_name,args,map_variables,url_test', [  # noqa: E501
     (testfile_radiation_csv, 'expected_radiation_csv',
@@ -259,8 +260,7 @@ def test_get_pvgis_hourly_bad_status_code(requests_mock):
         get_pvgis_hourly(latitude=45, longitude=8, **args_pv_json)
 
 
-url_additional_inputs = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=55.6814&lon=12.5758&outputformat=csv&angle=0&aspect=0&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&usehorizon=1&userhorizon=10%2C15%2C20%2C10&pvcalculation=1&peakpower=5&loss=2&optimalinclination=0&optimalangles=1'  # noqa: E501
-
+url_additional_inputs = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=55.6814&lon=12.5758&outputformat=csv&angle=0&aspect=0&pvcalculation=1&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&usehorizon=1&optimalangles=1&optimalinclination=1&loss=2&userhorizon=10%2C15%2C20%2C10&peakpower=5'  # noqa: E501
 
 def test_get_pvgis_hourly_additional_inputs(requests_mock):
     # Test additional inputs, including userhorizons
@@ -270,16 +270,9 @@ def test_get_pvgis_hourly_additional_inputs(requests_mock):
     requests_mock.get(url_additional_inputs, text=mock_response)
     # Make request with userhorizon specified
     get_pvgis_hourly(
-        latitude=55.6814,
-        longitude=12.5758,
-        outputformat='csv',
-        usehorizon=True,
-        userhorizon=[10, 15, 20, 10],
-        pvcalculation=True,
-        peakpower=5,
-        loss=2,
-        trackingtype=0,
-        components=True,
+        latitude=55.6814, longitude=12.5758, outputformat='csv',
+        usehorizon=True, userhorizon=[10, 15, 20, 10], pvcalculation=True,
+        peakpower=5, loss=2, trackingtype=0, components=True,
         optimalangles=True)
 
 

@@ -1698,6 +1698,7 @@ class AbstractMount(ABC):
         -------
         orientation : dict-like
             A dict-like object with keys `'surface_tilt', 'surface_azimuth'`
+            (typically a dict or pandas.DataFrame)
         """
 
 
@@ -1715,6 +1716,14 @@ class FixedMount(AbstractMount):
     surface_azimuth : float, default 180
         Azimuth angle of the module surface. North=0, East=90, South=180,
         West=270. [degrees]
+
+    racking_model : str, optional
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
+
+    module_height : float, optional
+       The height above ground of the center of the module [m]. Used for
+       the Fuentes cell temperature model.
     """
 
     surface_tilt: float = 0.0
@@ -1775,12 +1784,20 @@ class SingleAxisTrackerMount(AbstractMount):
         cross-axis tilt if the tracker axes plane slopes up to the east. Use
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
+
+    racking_model : str, optional
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
+
+    module_height : float, optional
+       The height above ground of the center of the module [m]. Used for
+       the Fuentes cell temperature model.
     """
     axis_tilt: float = 0.0
     axis_azimuth: float = 0.0
     max_angle: float = 90.0
     backtrack: bool = True
-    gcr: float = 2/7
+    gcr: float = 2.0/7.0
     cross_axis_tilt: float = 0.0
     racking_model: Optional[str] = None
     module_height: Optional[float] = None

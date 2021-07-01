@@ -136,7 +136,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     P†                           float   PV system power (W)
     G(i), poa_global‡            float   Global irradiance on inclined plane (W/m^2)
     Gb(i), poa_direct‡           float   Beam (direct) irradiance on inclined plane (W/m^2)
-    Gd(i), poa_diffuse‡          float   Diffuse irradiance on inclined plane (W/m^2)
+    Gd(i), poa_sky_diffuse‡      float   Diffuse irradiance on inclined plane (W/m^2)
     Gr(i), poa_ground_diffuse‡   float   Reflected irradiance on inclined plane (W/m^2)
     H_sun, solar_elevation       float   Sun height/elevation (degrees)
     T2m, temp_air                float   Air temperature at 2 m (degrees Celsius)
@@ -186,18 +186,15 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         params['raddatabase'] = raddatabase
     if (start is not None) & (type(start) is int):
         params['startyear'] = start
-    elif (start is not None) & (type(start) is not int):
-        params['startyear'] = start.year
-    if (end is not None) & (type(end) is int):
-        params['endyear'] = end
-    elif (end is not None) & (type(end) is not int):
-        params['endyear'] = end.year
+    elif start is not None:
+        params['startyear'] = start if isinstance(start, int) else start.year
+    if end is not None:
+        params['endyear'] = end if isinstance(end, int) else end.year
     if peakpower is not None:
         params['peakpower'] = peakpower
 
     # The url endpoint for hourly radiation is 'seriescalc'
     res = requests.get(url + 'seriescalc', params=params, timeout=timeout)
-    print(res.url)
     # PVGIS returns really well formatted error messages in JSON for HTTP/1.1
     # 400 BAD REQUEST so try to return that if possible, otherwise raise the
     # HTTP/1.1 error caught by requests
@@ -210,7 +207,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
             raise requests.HTTPError(err_msg['message'])
 
     # initialize data to None in case API fails to respond to bad outputformat
-    data = None, None, None, None
+    data = None, None, None
     if outputformat == 'json':
         src = res.json()
         return _parse_pvgis_hourly_json(src, map_variables=map_variables)

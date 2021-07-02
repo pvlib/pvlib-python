@@ -95,3 +95,26 @@ def test_dc_loss_nrel():
     expected = pd.Series([1, 1, .5, .625, .25, .5, 0])
     actual = snow.dc_loss_nrel(snow_coverage, num_strings)
     assert_series_equal(expected, actual)
+
+def test_townsend_Se():
+    S = np.array([10, 10, 5, 1, 0, 0, 0, 0, 0, 0, 5, 10])
+    N = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
+    expected = np.array([7.5, 7.5, 5, 0, 0, 0, 0, 0, 0, 0, 3.75, 6.66666667])
+    actual = snow.townsend_Se(S, N)
+    np.testing.assert_allclose(expected, actual, rtol=1e-07)
+
+def test_townsend_snow_loss_model():
+    S = np.array([10, 10, 5, 1, 0, 0, 0, 0, 0, 0, 5, 10])
+    N = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
+    tilt = 20
+    RH = np.array([80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80])
+    T_air = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    POA = np.array([350, 350, 350, 350, 350, 350, 350, 350, 350, 350, 350, 350])
+    P = 40
+    R = 100
+    H = 10
+    expected = np.array([7.7, 7.99, 6.22, 1.72, 0, 0, 0, 0, 0, 0, 2.64, 6.07])
+    actual = snow.townsend_snow_loss_model(S,N,tilt,RH,T_air,POA,R,
+                                            H,P)
+    np.testing.assert_allclose(expected, actual, rtol=1e-07)
+

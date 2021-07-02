@@ -214,26 +214,52 @@ def townsend_Se(S, N):
        Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
 
     '''
-    return (0.5 * S * (1 + 1/N))
+    return(np.where(N>0, 0.5 * S * (1 + 1/N), 0))
 
-def townsend_snow_loss_model(x):
+def townsend_snow_loss_model(S, N, tilt, RH, T_air, POA, R, H, P=40):
     '''
-    Loss, % = C1 x Se’ x cos2
-    (tilt) x GIT x RH / TAIR2
-    / POA0.67Eqn. 3
+    Calculates monthly snow loss based on a generalized monthly snow loss model discussed in [1]_.
 
     Parameters
     ----------
-    snow_coverage : numeric
-        The fraction of row slant height covered by snow at each time step.
+    S : numeric
+        Inches of snow received in the current month
 
-    num_strings: int
-        The number of parallel-connected strings along a row slant height.
+    N : numeric
+        Number of snowfall events with snowfall > 1"
+
+    tilt : numeric
+        Array tilt in degrees
+
+    RH : numeric
+        Relative humidity in percentage
+
+    T_air : numeric
+        Ambient temperature in celcius
+
+    POA : numeric
+        Plane of array irradiance in kWh/m2/month
+
+    R : numeric
+        Row length in the slanted plane of array dimension in inches
+
+    H : numeric
+        Drop height from array edge to ground in inches
+
+    P : numeric
+        piled snow angle, assumed to stabilize at 40° , the midpoint of 
+        25°-55° avalanching slope angles
+
+    S_prev : numeric
+        Inches of snow received in the previous month
+
+    N_prev : numeric
+        Number of 1" or greater snow events in the previous month
 
     Returns
     -------
     loss : numeric
-        fraction of DC capacity loss due to snow coverage at each time step.
+        Average monthly DC capacity loss in percentage due to snow coverage
 
     References
     ----------
@@ -243,13 +269,20 @@ def townsend_snow_loss_model(x):
             003231-003236. 10.1109/PVSC.2011.6186627. 
        Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
     '''
+
     C1 = 5.7e04
     C2 = 0.51
-
-
-    gamma = [R*Se’*cos(tilt)]/[(H2 – Se’2)/2*tan(P)] 
+    
+    S_prev = np.roll(S,1)
+    N_prev = np.roll(N,1)
+    
+    Se = townsend_Se(S, N)
+    Se_prev = townsend_Se(S_prev, N_prev)
+    
+    Se_weighted = 1/3 * Se_prev + 2/3 * Se
+    gamma = (R * Se_weighted * np.cos(np.deg2rad(tilt)))/(np.clip((H**2 - Se_weighted**2),a_min=0.01,a_max=None)/2/np.tan(np.deg2rad(P)))
     
     GIT = 1 - C2 * np.exp(-gamma)
-    loss = C1 * Se_ * (np.cos(tilt))**2 * GIT * RH / T_air**2 / POA**0.67
+    loss = C1 * Se_weighted * (np.cos(np.deg2rad(tilt)))**2 * GIT * RH / (T_air+273.15)**2 / POA**0.67
     
-    return x**2
+    return (np.round(loss,2))

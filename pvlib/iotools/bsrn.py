@@ -1,4 +1,4 @@
-dat"""Functions to read data from the Baseline Surface Radiation Network (BSRN).
+"""Functions to read data from the Baseline Surface Radiation Network (BSRN).
 .. codeauthor:: Adam R. Jensen<adam-r-j@hotmail.com>
 """
 

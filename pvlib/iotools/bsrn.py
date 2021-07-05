@@ -1,9 +1,11 @@
-"""Functions to read data from the Baseline Surface Radiation Network (BSRN).
+dat"""Functions to read data from the Baseline Surface Radiation Network (BSRN).
 .. codeauthor:: Adam R. Jensen<adam-r-j@hotmail.com>
 """
 
 import pandas as pd
 import gzip
+import ftplib
+import io
 
 COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27), (27, 32), (32, 39),
              (39, 45), (45, 50), (50, 55), (55, 64), (64, 70), (70, 75)]
@@ -17,6 +19,128 @@ BSRN_COLUMNS = ['day', 'minute',
                 'temp_air', 'relative_humidity', 'pressure']
 
 
+def get_bsrn(start, end, station, username, password,
+             path=None, ftp_url='ftp.bsrn.awi.de'):
+    """
+    Retrieve ground measured irradiance data from the BSRN FTP server.
+
+    The BSRN (Baseline Surface Radiation Network) is a world wide network
+    of high-quality solar radiation monitoring stations as described in [1]_.
+    Data is retrieved from the BSRN FTP server [2]_.
+    
+    Currently only the basic measurements (LR0100) are parsed, which include
+    global, diffuse, direct and downwelling long-wave radiation [3]_. Future
+    updates may include parsing of additional data and metadata. 
+
+    Parameters
+    ----------
+    start: datetime-like
+        First day of the requested period
+    end: datetime-like
+        Last day of the requested period
+    station: str
+        3-letter BSRN station abbreviation
+    username: str
+        username for accessing the BSRN ftp server
+    password: str
+        password for accessing the BSRN ftp server
+    path: str or path-like, default None
+        if specified, path (local or abs.) of where to save files
+    ftp_url: str, default 'ftp.bsrn.awi.de'
+        URL of the BSRN ftp server.
+
+    Returns
+    -------
+    data: DataFrame
+        timeseries data from the BSRN archive, see
+        :func:`pvlib.iotools.read_bsrn` for fields
+    metadata: dict
+        metadata for the last available monthly file
+
+    Notes
+    -----
+    Required username and password can be obtained for free as described in the
+    BSRN's Data Release Guidelines [4]_.
+
+    Raises
+    ------
+    ValueError
+        if the specified station does not exist on the FTP server or if no
+        files match the specified station and timeframe.
+    UserWarning
+        if a requested file is missing a UserWarning is returned with the
+        filename.
+
+    Examples
+    --------
+    >>> # Retrieve two months irradiance data from the Cabauw BSRN station
+    >>> data, metadata = pvlib.iotools.get_bsrn(  # doctest: +SKIP
+    >>>     start=pd.Timestamp(2020,1,1), end=pd.Timestamp(2020,12,1),   # doctest: +SKIP
+    >>>     station='cab', username='yourusername', password='yourpassword')  # doctest: +SKIP
+
+    See also
+    --------
+    pvlib.iotools.read_bsrn
+
+    References
+    ----------
+    .. [1] `World Radiation Monitoring Center - Baseline Surface Radiation
+        Network (BSRN)
+        <https://bsrn.awi.de/>`_
+    .. [2] `BSRN Data Retrieval via FTP
+       <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_
+    .. [3] `Update of the Technical Plan for BSRN Data Management, 2013,
+       Global Climate Observing System (GCOS) GCOS-172.
+       <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_
+    .. [4] `BSRN Data Release Guidelines
+       <https://bsrn.awi.de/data/conditions-of-data-release/>`_
+    """  # noqa: E501
+    # The ftp server uses lowercase station abbreviations
+    station = station.lower()
+
+    # Generate list files to download based on start/end (SSSMMYY.dat.gz)
+    filenames = pd.date_range(start, end + pd.DateOffset(months=1), freq='1M')\
+        .strftime(f"{station}%m%y.dat.gz").tolist()
+
+    # Create FTP connection
+    with ftplib.FTP(ftp_url, username, password) as ftp:
+        # Change to station sub-directory.
+        # Serves as a check that the station exists.
+        try:
+            ftp.cwd(f'/{station}')
+        except ftplib.error_perm:
+            raise ValueError('Station sub-directory does not exist. Specified '
+                             'station is probably not a proper three letter '
+                             'station abbreviation.')
+        dfs = []  # Initialize list for monthly dataframes
+        for filename in filenames:
+            try:
+                bio = io.BytesIO()  # Initialize BytesIO object
+                # Retrieve binary file from server and write to BytesIO object
+                res = ftp.retrbinary(f'RETR {filename}', bio.write)
+                # Decompress/unzip and decode the binary file
+                text = gzip.decompress(bio.getvalue()).decode('utf-8')
+                dfi, metadata = read_bsrn(text)  # parse file
+                dfs.append(dfi)
+                # Save local file
+                if path is not None:
+                    # Create local file
+                    with open(os.path.join(path, filename), 'wb') as f:
+                        f.write(bio.getbuffer())  # Write local file
+            # FTP client raises an error if the file does not exist on server
+            except ftplib.error_perm:
+                UserWarning(f'{filename} does not exist')
+        ftp.close()  # Close FTP connection
+
+    # Concatenate monthly dataframes to one dataframe
+    if len(dfs) > 0:
+        data = pd.concat(dfs, axis='rows')
+    else:
+        raise ValueError('No files for the specified station and timeframe')
+    # Return dataframe and the metadata for the last available file
+    return data, metadata
+
+
 def read_bsrn(filename):
     """
     Read a BSRN station-to-archive file into a DataFrame.
@@ -28,10 +152,8 @@ def read_bsrn(filename):
     updates may include parsing of additional data and meta-data.
 
     BSRN files are freely available and can be accessed via FTP [3]_. Required
-
     username and password are easily obtainable as described in the BSRN's
     Data Release Guidelines [4]_.
-
 
 
     Parameters
@@ -75,6 +197,10 @@ def read_bsrn(filename):
     pressure                 float   Atmospheric pressure [hPa]
     =======================  ======  ==========================================
 
+    See also
+    --------
+    pvlib.iotools.get_bsrn
+
     References
     ----------
     .. [1] `World Radiation Monitoring Center - Baseline Surface Radiation
@@ -91,7 +217,9 @@ def read_bsrn(filename):
 
     # Read file and store the starting line number for each logical record (LR)
     line_no_dict = {}
-    if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
+    if isinstance(filename, str):
+        open_func, mode = io.StringIO, None
+    elif str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
         open_func, mode = gzip.open, 'rt'
     else:
         open_func, mode = open, 'r'
@@ -114,6 +242,10 @@ def read_bsrn(filename):
     else:  # otherwise parse until the beginning of the next logical record
         end_row = min([i for i in line_no_dict.values() if i > start_row]) - 1
     nrows = end_row-start_row+1
+
+    # Necessary to pass text to pd.read_fwf
+    if isinstance(filename, str):
+        filename = io.StringIO(filename)
 
     # Read file as a fixed width file (fwf)
     data = pd.read_fwf(filename, skiprows=start_row, nrows=nrows, header=None,
@@ -139,4 +271,5 @@ def read_bsrn(filename):
                   + pd.to_timedelta(data['day']-1, unit='d')
                   + pd.to_timedelta(data['minute'], unit='T'))
 
-    return data
+    metadata = {}
+    return data, metadata

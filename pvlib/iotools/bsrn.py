@@ -6,6 +6,7 @@ import pandas as pd
 import gzip
 import ftplib
 import io
+import os
 
 COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27), (27, 32), (32, 39),
              (39, 45), (45, 50), (50, 55), (55, 64), (64, 70), (70, 75)]
@@ -27,7 +28,7 @@ def get_bsrn(start, end, station, username, password,
     The BSRN (Baseline Surface Radiation Network) is a world wide network
     of high-quality solar radiation monitoring stations as described in [1]_.
     Data is retrieved from the BSRN FTP server [2]_.
-    
+
     Currently only the basic measurements (LR0100) are parsed, which include
     global, diffuse, direct and downwelling long-wave radiation [3]_. Future
     updates may include parsing of additional data and metadata. 
@@ -219,7 +220,7 @@ def read_bsrn(filename):
     line_no_dict = {}
     if isinstance(filename, str):
         open_func, mode = io.StringIO, None
-    elif str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
+    elif str(filename).endswith('.gz'):  # check if file is gzipped (.gz)
         open_func, mode = gzip.open, 'rt'
     else:
         open_func, mode = open, 'r'

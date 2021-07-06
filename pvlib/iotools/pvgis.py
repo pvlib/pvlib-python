@@ -41,14 +41,16 @@ PVGIS_VARIABLE_MAP = {
 }
 
 
-def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
+def get_pvgis_hourly(latitude, longitude, start=None, end=None,
+                     raddatabase=None, components=True,
+                     surface_tilt=0, surface_azimuth=0,
                      outputformat='json',
-                     usehorizon=True, userhorizon=None, raddatabase=None,
-                     start=None, end=None, pvcalculation=False,
+                     usehorizon=True, userhorizon=None,
+                     pvcalculation=False,
                      peakpower=None, pvtechchoice='crystSi',
                      mountingplace='free', loss=0, trackingtype=0,
                      optimal_surface_tilt=False, optimalangles=False,
-                     components=True, url=URL, map_variables=True, timeout=30):
+                     url=URL, map_variables=True, timeout=30):
     """Get hourly solar irradiation and modeled PV power output from PVGIS.
 
     PVGIS data is freely available at [1]_.
@@ -56,17 +58,25 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     Parameters
     ----------
     latitude: float
-        in decimal degrees, between -90 and 90, north is positive (ISO 19115)
+        In decimal degrees, between -90 and 90, north is positive (ISO 19115)
     longitude: float
-        in decimal degrees, between -180 and 180, east is positive (ISO 19115)
+        In decimal degrees, between -180 and 180, east is positive (ISO 19115)
+    start: int or datetime like, default: None
+        First year of the radiation time series. Defaults to first year
+        available.
+    end: int or datetime like, default: None
+        Last year of the radiation time series. Defaults to last year
+        available.
+    raddatabase: str, default: None
+        Name of radiation database. Options depend on location, see [3]_.
+    components: bool, default: True
+        Output solar radiation components (beam, diffuse, and reflected).
+        Otherwise only global irradiance is returned.
     surface_tilt: float, default: 0
         Tilt angle from horizontal plane. Not relevant for 2-axis tracking.
     surface_azimuth: float, default: 0
         Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
         -90: east. Not relevant for tracking systems.
-    outputformat: str, default: 'json'
-        Must be in ``['json', 'csv']``. See PVGIS hourly data
-        documentation [2]_ for more info.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None
@@ -74,14 +84,6 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
         spaced azimuth clockwise from north, only valid if `usehorizon` is
         true, if `usehorizon` is true but `userhorizon` is `None` then PVGIS
         will calculate the horizon [4]_
-    raddatabase: str, default: None
-        Name of radiation database. Options depend on location, see [3]_.
-    start: int or datetime like, default: None
-        First year of the radiation time series. Defaults to first year
-        available.
-    end: int or datetime like, default: None
-        Last year of the radiation time series. Defaults to last year
-        available.
     pvcalculation: bool, default: False
         Return estimate of hourly PV production.
     peakpower: float, default: None
@@ -103,9 +105,9 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     optimalangles: bool, default: False
         Calculate the optimum tilt and azimuth angles. Not relevant for 2-axis
         tracking.
-    components: bool, default: True
-        Output solar radiation components (beam, diffuse, and reflected).
-        Otherwise only global irradiance is returned.
+    outputformat: str, default: 'json'
+        Must be in ``['json', 'csv']``. See PVGIS hourly data
+        documentation [2]_ for more info.
     url: str, default:const:`pvlib.iotools.pvgis.URL`
         Base url of PVGIS API. ``seriescalc`` is appended to get hourly data
         endpoint.
@@ -152,7 +154,7 @@ def get_pvgis_hourly(latitude, longitude, surface_tilt=0, surface_azimuth=0,
     Raises
     ------
     requests.HTTPError
-        if the request response status is ``HTTP/1.1 400 BAD REQUEST``, then
+        If the request response status is ``HTTP/1.1 400 BAD REQUEST``, then
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 

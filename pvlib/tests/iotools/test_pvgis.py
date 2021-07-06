@@ -270,6 +270,8 @@ def test_get_pvgis_hourly_additional_inputs(requests_mock):
         mock_response = test_file.read()
     requests_mock.get(url_additional_inputs, text=mock_response)
     # Make request with userhorizon specified
+    # Test passes if the request made by get_pvgis_hourly matches exactly the
+    # url passed to the mock request (url_additional_inputs)
     get_pvgis_hourly(
         latitude=55.6814, longitude=12.5758, outputformat='csv',
         usehorizon=True, userhorizon=[10, 15, 20, 10], pvcalculation=True,

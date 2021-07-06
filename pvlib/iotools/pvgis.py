@@ -249,23 +249,25 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     # Parse through the remaining metadata section (the number of lines for
     # this section depends on the requested parameters)
     while True:
-        line = src.readline().strip()
+        line = src.readline()
         if line.startswith('time,'):  # The data header starts with 'time,'
             # The last line of the metadata section contains the column names
-            names = line.split(',')
+            names = line.strip().split(',')
             break
         # Only retrieve metadata from non-empty lines
-        elif line != '':
-            inputs[line.split(':')[0]] = line.split(':')[1]
+        elif line.strip() != '':
+            inputs[line.split(':')[0]] = line.split(':')[1].strip()
+        elif line == '':  # If end of file is reached
+            break
     # Save the entries from the data section to a list, until an empty line is
     # reached an empty line. The length of the section depends on the request
     data_lines = []
     while True:
-        line = src.readline().strip()
-        if line == '':
+        line = src.readline()
+        if line.strip() == '':
             break
         else:
-            data_lines.append(line.split(','))
+            data_lines.append(line.strip().split(','))
     data = pd.DataFrame(data_lines, columns=names)
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)

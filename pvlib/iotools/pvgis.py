@@ -231,7 +231,7 @@ def _parse_pvgis_hourly_json(src, map_variables):
     data = data.drop('time', axis=1)
     data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
     if map_variables:
-        data.rename(columns=PVGIS_VARIABLE_MAP, inplace=True)
+        data = data.rename(columns=PVGIS_VARIABLE_MAP)
     return data, inputs, metadata
 
 
@@ -245,35 +245,32 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     # Elevation (m): 1389.0\r\n
     inputs['elevation'] = float(src.readline().split(':')[1])
     # 'Radiation database: \tPVGIS-SARAH\r\n'
-    inputs['radiation_database'] = str(src.readline().split(':')[1]
-                                       .replace('\t', '').replace('\n', ''))
+    inputs['radiation_database'] = src.readline().split(':')[1].strip()
     # Parse through the remaining metadata section (the number of lines for
     # this section depends on the requested parameters)
     while True:
-        line = src.readline()
+        line = src.readline().strip()
         if line.startswith('time,'):  # The data header starts with 'time,'
             # The last line of the metadata section contains the column names
-            names = line.strip().split(',')
+            names = line.split(',')
             break
         # Only retrieve metadata from non-empty lines
-        elif (line != '\n') & (line != '\r\n'):
-            inputs[line.split(':')[0]] = str(line.split(':')[1]
-                                             .replace('\n', '')
-                                             .replace('\r', '').strip())
+        elif line != '':
+            inputs[line.split(':')[0]] = line.split(':')[1]
     # Save the entries from the data section to a list, until an empty line is
     # reached an empty line. The length of the section depends on the request
     data_lines = []
     while True:
-        line = src.readline()
-        if (line == '\n') | (line == '\r\n'):
+        line = src.readline().strip()
+        if line == '':
             break
         else:
-            data_lines.append(line.strip().split(','))
+            data_lines.append(line.split(','))
     data = pd.DataFrame(data_lines, columns=names)
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
     if map_variables:
-        data.rename(columns=PVGIS_VARIABLE_MAP, inplace=True)
+        data = data.rename(columns=PVGIS_VARIABLE_MAP)
     # All columns should have the dtype=float, except 'Int' which should be
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})

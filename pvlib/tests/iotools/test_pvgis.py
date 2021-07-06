@@ -233,7 +233,7 @@ def test_get_pvgis_hourly(requests_mock, testfile, expected_name, args,
                           map_variables, url_test, request):
     """Test that get_pvgis_hourly generates the correct URI request and that
     _parse_pvgis_hourly_json and _parse_pvgis_hourly_csv is called correctly"""
-    # Open local test file containing McClear mothly data
+    # Open local test file containing McClear monthly data
     with open(testfile, 'r') as test_file:
         mock_response = test_file.read()
     # Specify the full URI of a specific example, this ensures that all of the

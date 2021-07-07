@@ -9,6 +9,7 @@ import pytest
 from pvlib.iotools import read_bsrn, get_bsrn
 from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal
 
+
 @pytest.fixture
 def expected_index():
     return pd.date_range(start='20160601', periods=43200, freq='1min',

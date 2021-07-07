@@ -250,7 +250,7 @@ def read_bsrn(filename):
         if start_row-1 == max(line_no_dict.values()):
             end_row = num  # then parse rest of the file
         else:  # otherwise parse until the beginning of the next logical record
-            end_row = min([i for i in line_no_dict.values() if i > start_row]) - 1  # noqa: E501 
+            end_row = min([i for i in line_no_dict.values() if i > start_row]) - 1  # noqa: E501
         nrows = end_row-start_row+1
 
         # Read file as a fixed width file (fwf)

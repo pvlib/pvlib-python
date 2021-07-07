@@ -108,10 +108,10 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     outputformat: str, default: 'json'
         Must be in ``['json', 'csv']``. See PVGIS hourly data
         documentation [2]_ for more info.
-    url: str, default:const:`pvlib.iotools.pvgis.URL`
+    url: str, default: const:`pvlib.iotools.pvgis.URL`
         Base url of PVGIS API. ``seriescalc`` is appended to get hourly data
         endpoint.
-    map_variables: bool, default True
+    map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable PVGIS_VARIABLE_MAP.
     timeout: int, default: 30
@@ -318,7 +318,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
 
     See Also
     --------
-    get_pvgis_hourly, get_pvgis_tmy
+    get_pvgis_hourly, read_pvgis_tmy
     """
     # get the PVGIS outputformat
     if pvgis_format is None:

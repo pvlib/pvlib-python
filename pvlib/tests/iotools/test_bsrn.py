@@ -54,12 +54,13 @@ def test_get_bsrn(expected_index):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_bsrn_bad_station():
     # Test if ValueError is raised if a bad station name is passed
-    data, metadata = get_bsrn(
-        start=pd.Timestamp(2016, 6, 1),
-        end=pd.Timestamp(2016, 6, 29),
-        station='not_a_station_name',
-        username='bsrnftp',
-        password='bsrn1')
+    with pytest.raises(KeyError, match='sub-directory does not exist'):
+        get_bsrn(
+            start=pd.Timestamp(2016, 6, 1),
+            end=pd.Timestamp(2016, 6, 29),
+            station='not_a_station_name',
+            username='bsrnftp',
+            password='bsrn1')
 
 
 @pytest.mark.remote_data

@@ -126,6 +126,13 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     metadata : dict
         Dictionary containing metadata
 
+    Raises
+    ------
+    requests.HTTPError
+        If the request response status is ``HTTP/1.1 400 BAD REQUEST``, then
+        the error message in the response will be raised as an exception,
+        otherwise raise whatever ``HTTP/1.1`` error occurred
+
     Notes
     -----
     data includes the following fields:
@@ -150,13 +157,6 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
 
     ‡Gb(i), Gd(i), and Gr(i) are returned when components=True, otherwise the
     sum of the three components, G(i), is returned.
-
-    Raises
-    ------
-    requests.HTTPError
-        If the request response status is ``HTTP/1.1 400 BAD REQUEST``, then
-        the error message in the response will be raised as an exception,
-        otherwise raise whatever ``HTTP/1.1`` error occurred
 
     See Also
     --------
@@ -247,7 +247,8 @@ def _parse_pvgis_hourly_csv(src, map_variables):
         elif line.strip() != '':
             inputs[line.split(':')[0]] = line.split(':')[1].strip()
         elif line == '':  # If end of file is reached
-            break
+            raise ValueError('No data section was detected. File has probably '
+                             'been modified since being downloaded from PVGIS')
     # Save the entries from the data section to a list, until an empty line is
     # reached an empty line. The length of the section depends on the request
     data_lines = []

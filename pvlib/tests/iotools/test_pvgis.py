@@ -260,6 +260,17 @@ def test_get_pvgis_hourly_bad_status_code(requests_mock):
         get_pvgis_hourly(latitude=45, longitude=8, **args_pv_json)
 
 
+url_bad_outputformat = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=basic&angle=0&aspect=0&pvcalculation=0&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&usehorizon=1&optimalangles=0&optimalinclination=0&loss=0'  # noqa: E501
+
+
+def test_get_pvgis_hourly_bad_outputformat(requests_mock):
+    # Test if a ValueError is raised if an unsupported outputformat is used
+    # E.g. 'basic' is a valid PVGIS format, but is not supported by pvlib
+    requests_mock.get(url_bad_outputformat)
+    with pytest.raises(ValueError):
+        get_pvgis_hourly(latitude=45, longitude=8, outputformat='basic')
+    
+
 url_additional_inputs = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=55.6814&lon=12.5758&outputformat=csv&angle=0&aspect=0&pvcalculation=1&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&usehorizon=1&optimalangles=1&optimalinclination=1&loss=2&userhorizon=10%2C15%2C20%2C10&peakpower=5'  # noqa: E501
 
 

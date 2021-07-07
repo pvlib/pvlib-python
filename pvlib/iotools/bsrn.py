@@ -5,8 +5,11 @@
 import pandas as pd
 import gzip
 import ftplib
+import warnings
 import io
 import os
+
+BSRN_FTP_URL = "ftp.bsrn.awi.de"
 
 COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27), (27, 32), (32, 39),
              (39, 45), (45, 50), (50, 55), (55, 64), (64, 70), (70, 75)]
@@ -21,7 +24,7 @@ BSRN_COLUMNS = ['day', 'minute',
 
 
 def get_bsrn(start, end, station, username, password,
-             path=None, ftp_url='ftp.bsrn.awi.de'):
+             local_path=None):
     """
     Retrieve ground measured irradiance data from the BSRN FTP server.
 
@@ -30,8 +33,8 @@ def get_bsrn(start, end, station, username, password,
     Data is retrieved from the BSRN FTP server [2]_.
 
     Currently only the basic measurements (LR0100) are parsed, which include
-    global, diffuse, direct and downwelling long-wave radiation [3]_. Future
-    updates may include parsing of additional data and metadata. 
+    global, diffuse, direct, and downwelling long-wave radiation [3]_. Future
+    updates may include parsing of additional data and metadata.
 
     Parameters
     ----------
@@ -45,10 +48,8 @@ def get_bsrn(start, end, station, username, password,
         username for accessing the BSRN ftp server
     password: str
         password for accessing the BSRN ftp server
-    path: str or path-like, default None
-        if specified, path (local or abs.) of where to save files
-    ftp_url: str, default 'ftp.bsrn.awi.de'
-        URL of the BSRN ftp server.
+    local_path: str or path-like, default: None, optional
+        If specified, path (abs. or relative) of where to save files
 
     Returns
     -------
@@ -66,10 +67,10 @@ def get_bsrn(start, end, station, username, password,
     Raises
     ------
     ValueError
-        if the specified station does not exist on the FTP server or if no
+        If the specified station does not exist on the FTP server or if no
         files match the specified station and timeframe.
     UserWarning
-        if a requested file is missing a UserWarning is returned with the
+        If a requested file is missing a UserWarning is returned with the
         filename.
 
     Examples
@@ -104,41 +105,49 @@ def get_bsrn(start, end, station, username, password,
         .strftime(f"{station}%m%y.dat.gz").tolist()
 
     # Create FTP connection
-    with ftplib.FTP(ftp_url, username, password) as ftp:
-        # Change to station sub-directory.
-        # Serves as a check that the station exists.
+    with ftplib.FTP(BSRN_FTP_URL, username, password) as ftp:
+        # Change to station sub-directory (checks that the station exists)
         try:
             ftp.cwd(f'/{station}')
-        except ftplib.error_perm:
-            raise ValueError('Station sub-directory does not exist. Specified '
-                             'station is probably not a proper three letter '
-                             'station abbreviation.')
+        except ftplib.error_perm as e:
+            raise KeyError('Station sub-directory does not exist. Specified '
+                           'station is probably not a proper three letter '
+                           'station abbreviation.') from e
         dfs = []  # Initialize list for monthly dataframes
         for filename in filenames:
             try:
                 bio = io.BytesIO()  # Initialize BytesIO object
                 # Retrieve binary file from server and write to BytesIO object
-                res = ftp.retrbinary(f'RETR {filename}', bio.write)
+                response = ftp.retrbinary(f'RETR {filename}', bio.write)
+                # Check that transfer was successfull
+                if not response.startswith('226 Transfer complete'):
+                    raise ftplib.Error(response)
                 # Decompress/unzip and decode the binary file
                 text = gzip.decompress(bio.getvalue()).decode('utf-8')
-                dfi, metadata = read_bsrn(text)  # parse file
+                # Convert string to StrinIO and parse data
+                dfi, metadata = read_bsrn(io.StringIO(text))
                 dfs.append(dfi)
-                # Save local file
-                if path is not None:
+                # Save local file if local_path is specified
+                if local_path is not None:
                     # Create local file
-                    with open(os.path.join(path, filename), 'wb') as f:
+                    with open(os.path.join(local_path, filename), 'wb') as f:
                         f.write(bio.getbuffer())  # Write local file
             # FTP client raises an error if the file does not exist on server
-            except ftplib.error_perm:
-                UserWarning(f'{filename} does not exist')
+            except ftplib.error_perm as e:
+                if str(e) == '550 Failed to open file.':        
+                    warnings.warn(f'File: {filename} does not exist')
+                else:
+                    raise ValueError(f'Error perm: {filename}') from e
         ftp.close()  # Close FTP connection
 
     # Concatenate monthly dataframes to one dataframe
     if len(dfs) > 0:
         data = pd.concat(dfs, axis='rows')
-    else:
-        raise ValueError('No files for the specified station and timeframe')
-    # Return dataframe and the metadata for the last available file
+    else:  # Return empty dataframe
+        data = pd.DataFrame(columns=BSRN_COLUMNS)
+        metadata = {}
+        warnings.warn('No files were avaiable for the specified timeframe.')
+    # Return dataframe and metadata (metadata belongs to last available file)
     return data, metadata
 
 
@@ -149,7 +158,7 @@ def read_bsrn(filename):
     The BSRN (Baseline Surface Radiation Network) is a world wide network
     of high-quality solar radiation monitoring stations as described in [1]_.
     The function only parses the basic measurements (LR0100), which include
-    global, diffuse, direct and downwelling long-wave radiation [2]_. Future
+    global, diffuse, direct, and downwelling long-wave radiation [2]_. Future
     updates may include parsing of additional data and meta-data.
 
     BSRN files are freely available and can be accessed via FTP [3]_. Required
@@ -159,8 +168,8 @@ def read_bsrn(filename):
 
     Parameters
     ----------
-    filename: str
-        A relative or absolute file path.
+    filename: str, path-like or file-like object
+        Name, path, or buffer of a BSRN station-to-archive data file
 
     Returns
     -------
@@ -218,13 +227,13 @@ def read_bsrn(filename):
 
     # Read file and store the starting line number for each logical record (LR)
     line_no_dict = {}
-    if isinstance(filename, str):
-        open_func, mode = io.StringIO, None
+    if isinstance(filename, io.StringIO):
+        f = filename
     elif str(filename).endswith('.gz'):  # check if file is gzipped (.gz)
-        open_func, mode = gzip.open, 'rt'
+        f = gzip.open(filename, 'rt')
     else:
-        open_func, mode = open, 'r'
-    with open_func(filename, mode) as f:
+        f = open(filename, 'r')
+    if True:
         f.readline()  # first line should be *U0001, so read it and discard
         line_no_dict['0001'] = 0
         date_line = f.readline()  # second line contains the year and month
@@ -235,23 +244,21 @@ def read_bsrn(filename):
             if line.startswith('*'):  # Find start of all logical records
                 line_no_dict[line[2:6]] = num  # key is 4 digit LR number
 
-    # Determine start and end line of logical record LR0100 to be parsed
-    start_row = line_no_dict['0100'] + 1  # Start line number
-    # If LR0100 is the last logical record, then read rest of file
-    if start_row-1 == max(line_no_dict.values()):
-        end_row = num  # then parse rest of the file
-    else:  # otherwise parse until the beginning of the next logical record
-        end_row = min([i for i in line_no_dict.values() if i > start_row]) - 1
-    nrows = end_row-start_row+1
+        # Determine start and end line of logical record LR0100 to be parsed
+        start_row = line_no_dict['0100'] + 1  # Start line number
+        # If LR0100 is the last logical record, then read rest of file
+        if start_row-1 == max(line_no_dict.values()):
+            end_row = num  # then parse rest of the file
+        else:  # otherwise parse until the beginning of the next logical record
+            end_row = min([i for i in line_no_dict.values() if i > start_row]) - 1
+        nrows = end_row-start_row+1
 
-    # Necessary to pass text to pd.read_fwf
-    if isinstance(filename, str):
-        filename = io.StringIO(filename)
-
-    # Read file as a fixed width file (fwf)
-    data = pd.read_fwf(filename, skiprows=start_row, nrows=nrows, header=None,
-                       colspecs=COL_SPECS, na_values=[-999.0, -99.9],
-                       compression='infer')
+        # Read file as a fixed width file (fwf)
+        f.seek(0)  # reset buffer to start of file
+        data = pd.read_fwf(f, skiprows=start_row, nrows=nrows, header=None,
+                           colspecs=COL_SPECS, na_values=[-999.0, -99.9],
+                           compression='infer')
+    f.close()
 
     # Create multi-index and unstack, resulting in one column for each variable
     data = data.set_index([data.index // 2, data.index % 2])

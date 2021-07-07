@@ -208,8 +208,6 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         else:
             raise requests.HTTPError(err_msg['message'])
 
-    # initialize data to None in case API fails to respond to bad outputformat
-    data = None, None, None
     if outputformat == 'json':
         src = res.json()
         return _parse_pvgis_hourly_json(src, map_variables=map_variables)
@@ -219,8 +217,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     else:
         # this line is never reached because if outputformat is not valid then
         # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
-        pass
-    return data
+        raise ValueError('Invalid outputformat.')
 
 
 def _parse_pvgis_hourly_json(src, map_variables):

@@ -290,6 +290,14 @@ def test_get_pvgis_hourly_additional_inputs(requests_mock):
         optimalangles=True)
 
 
+def test_read_pvgis_hourly_empty_file():
+    # Check if a IOError is raised if file does not contain a data section
+    with pytest.raises(ValueError, match='No data section'):
+        read_pvgis_hourly(
+            io.StringIO('1:1\n2:2\n3:3\n4:4\n5:5\n'),
+            pvgis_format='csv')
+
+
 # PVGIS TMY tests
 @pytest.fixture
 def expected():

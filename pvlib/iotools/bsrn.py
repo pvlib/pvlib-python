@@ -134,10 +134,10 @@ def get_bsrn(start, end, station, username, password,
                         f.write(bio.getbuffer())  # Write local file
             # FTP client raises an error if the file does not exist on server
             except ftplib.error_perm as e:
-                if str(e) == '550 Failed to open file.':        
+                if str(e) == '550 Failed to open file.':
                     warnings.warn(f'File: {filename} does not exist')
                 else:
-                    raise ValueError(f'Error perm: {filename}') from e
+                    raise ftplib.error_perm(e)
         ftp.close()  # Close FTP connection
 
     # Concatenate monthly dataframes to one dataframe
@@ -250,7 +250,7 @@ def read_bsrn(filename):
         if start_row-1 == max(line_no_dict.values()):
             end_row = num  # then parse rest of the file
         else:  # otherwise parse until the beginning of the next logical record
-            end_row = min([i for i in line_no_dict.values() if i > start_row]) - 1
+            end_row = min([i for i in line_no_dict.values() if i > start_row]) - 1  # noqa: E501 
         nrows = end_row-start_row+1
 
         # Read file as a fixed width file (fwf)

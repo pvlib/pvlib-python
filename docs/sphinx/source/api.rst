@@ -486,6 +486,7 @@ of sources and file formats relevant to solar energy modeling.
    iotools.parse_psm3
    iotools.get_pvgis_tmy
    iotools.read_pvgis_tmy
+   iotools.get_bsrn
    iotools.read_bsrn
    iotools.get_cams
    iotools.read_cams

@@ -135,7 +135,8 @@ def get_bsrn(start, end, station, username, password,
             # FTP client raises an error if the file does not exist on server
             except ftplib.error_perm as e:
                 if str(e) == '550 Failed to open file.':
-                    warnings.warn(f'File: {filename} does not exist')
+                    warnings.warn(f'File: {filename} does not exist',
+                                  category=UserWarning)
                 else:
                     raise ftplib.error_perm(e)
         ftp.close()  # Close FTP connection
@@ -146,7 +147,8 @@ def get_bsrn(start, end, station, username, password,
     else:  # Return empty dataframe
         data = pd.DataFrame(columns=BSRN_COLUMNS)
         metadata = {}
-        warnings.warn('No files were avaiable for the specified timeframe.')
+        warnings.warn('No files were avaiable for the specified timeframe.',
+                      category=UserWarning)
     # Return dataframe and metadata (metadata belongs to last available file)
     return data, metadata
 

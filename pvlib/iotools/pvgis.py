@@ -73,10 +73,10 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         Output solar radiation components (beam, diffuse, and reflected).
         Otherwise only global irradiance is returned.
     surface_tilt: float, default: 0
-        Tilt angle from horizontal plane. Not relevant for 2-axis tracking.
+        Tilt angle from horizontal plane. Ignored for two-axis tracking.
     surface_azimuth: float, default: 0
         Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
-        -90: east. Not relevant for tracking systems.
+        -90: east. Ignored for tracking systems.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None
@@ -101,9 +101,9 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         horizontal axis aligned east-west, 5=single inclined axis aligned
         north-south.
     optimal_surface_tilt: bool, default: False
-        Calculate the optimum tilt angle. Not relevant for 2-axis tracking
+        Calculate the optimum tilt angle. Ignored for 2-axis tracking
     optimalangles: bool, default: False
-        Calculate the optimum tilt and azimuth angles. Not relevant for 2-axis
+        Calculate the optimum tilt and azimuth angles. Ignored for two-axis
         tracking.
     outputformat: str, default: 'json'
         Must be in ``['json', 'csv']``. See PVGIS hourly data

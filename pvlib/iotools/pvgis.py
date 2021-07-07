@@ -101,7 +101,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         horizontal axis aligned east-west, 5=single inclined axis aligned
         north-south.
     optimal_surface_tilt: bool, default: False
-        Calculate the optimum tilt angle. Ignored for 2-axis tracking
+        Calculate the optimum tilt angle. Ignored for two-axis tracking
     optimalangles: bool, default: False
         Calculate the optimum tilt and azimuth angles. Ignored for two-axis
         tracking.
@@ -208,16 +208,8 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         else:
             raise requests.HTTPError(err_msg['message'])
 
-    if outputformat == 'json':
-        src = res.json()
-        return _parse_pvgis_hourly_json(src, map_variables=map_variables)
-    elif outputformat == 'csv':
-        with io.StringIO(res.content.decode('utf-8')) as src:
-            return _parse_pvgis_hourly_csv(src, map_variables=map_variables)
-    else:
-        # this line is never reached because if outputformat is not valid then
-        # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
-        raise ValueError('Invalid outputformat.')
+    return read_pvgis_hourly(io.StringIO(res.text), pvgis_format=outputformat,
+                             map_variables=map_variables)
 
 
 def _parse_pvgis_hourly_json(src, map_variables):

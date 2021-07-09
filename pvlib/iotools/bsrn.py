@@ -32,10 +32,6 @@ def get_bsrn(start, end, station, username, password,
     of high-quality solar radiation monitoring stations as described in [1]_.
     Data is retrieved from the BSRN FTP server [2]_.
 
-    Currently only the basic measurements (LR0100) are parsed, which include
-    global, diffuse, direct, and downwelling long-wave radiation [3]_. Future
-    updates may include parsing of additional data and metadata.
-
     Parameters
     ----------
     start: datetime-like
@@ -61,17 +57,20 @@ def get_bsrn(start, end, station, username, password,
 
     Raises
     ------
-    ValueError
-        If the specified station does not exist on the FTP server or if no
-        files match the specified station and timeframe.
+    KeyError
+        If the specified station does not exist on the FTP server.
     UserWarning
         If a requested file is missing a UserWarning is returned with the
-        filename.
+        filename. Also, if no files match the specified station and timeframe.
 
     Notes
     -----
     Required username and password can be obtained for free as described in the
     BSRN's Data Release Guidelines [4]_.
+
+    Currently only the basic measurements (LR0100) are parsed, which include
+    global, diffuse, direct, and downwelling long-wave radiation [3]_. Future
+    updates may include parsing of additional data and metadata.
 
     Examples
     --------
@@ -92,7 +91,7 @@ def get_bsrn(start, end, station, username, password,
     .. [2] `BSRN Data Retrieval via FTP
        <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_
     .. [3] `Update of the Technical Plan for BSRN Data Management, 2013,
-       Global Climate Observing System (GCOS) GCOS-172.
+       Global Climate Observing System (GCOS) GCOS-174.
        <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_
     .. [4] `BSRN Data Release Guidelines
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
@@ -178,6 +177,9 @@ def read_bsrn(filename):
     data: DataFrame
         A DataFrame with the columns as described below. For more extensive
         description of the variables, consult [2]_.
+    metadata: dict
+        Dictionary containing metadata. Currently the dict is empty as no
+        metadata is parsed.
 
     Notes
     -----
@@ -219,7 +221,7 @@ def read_bsrn(filename):
         Network (BSRN)
         <https://bsrn.awi.de/>`_
     .. [2] `Update of the Technical Plan for BSRN Data Management, 2013,
-       Global Climate Observing System (GCOS) GCOS-172.
+       Global Climate Observing System (GCOS) GCOS-174.
        <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_
     .. [3] `BSRN Data Retrieval via FTP
        <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_

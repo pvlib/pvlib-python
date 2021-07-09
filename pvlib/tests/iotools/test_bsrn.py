@@ -69,8 +69,8 @@ def test_get_bsrn_no_files():
     # Test if Warning is given if no files are found for the entire time frame
     with pytest.warns(UserWarning, match='No files'):
         get_bsrn(
-            start=pd.Timestamp(1800, 6, 1),
-            end=pd.Timestamp(1800, 6, 29),
+            start=pd.Timestamp(1990, 6, 1),
+            end=pd.Timestamp(1990, 6, 29),
             station='tam',
             username='bsrnftp',
             password='bsrn1')

@@ -59,11 +59,6 @@ def get_bsrn(start, end, station, username, password,
     metadata: dict
         metadata for the last available monthly file
 
-    Notes
-    -----
-    Required username and password can be obtained for free as described in the
-    BSRN's Data Release Guidelines [4]_.
-
     Raises
     ------
     ValueError
@@ -72,6 +67,11 @@ def get_bsrn(start, end, station, username, password,
     UserWarning
         If a requested file is missing a UserWarning is returned with the
         filename.
+
+    Notes
+    -----
+    Required username and password can be obtained for free as described in the
+    BSRN's Data Release Guidelines [4]_.
 
     Examples
     --------
@@ -124,10 +124,10 @@ def get_bsrn(start, end, station, username, password,
                     raise ftplib.Error(response)
                 # Decompress/unzip and decode the binary file
                 text = gzip.decompress(bio.getvalue()).decode('utf-8')
-                # Convert string to StrinIO and parse data
+                # Convert string to StringIO and parse data
                 dfi, metadata = read_bsrn(io.StringIO(text))
                 dfs.append(dfi)
-                # Save local file if local_path is specified
+                # Save file locally if local_path is specified
                 if local_path is not None:
                     # Create local file
                     with open(os.path.join(local_path, filename), 'wb') as f:
@@ -142,12 +142,12 @@ def get_bsrn(start, end, station, username, password,
         ftp.close()  # Close FTP connection
 
     # Concatenate monthly dataframes to one dataframe
-    if len(dfs) > 0:
+    if len(dfs):
         data = pd.concat(dfs, axis='rows')
     else:  # Return empty dataframe
         data = pd.DataFrame(columns=BSRN_COLUMNS)
         metadata = {}
-        warnings.warn('No files were avaiable for the specified timeframe.',
+        warnings.warn('No files were available for the specified timeframe.',
                       category=UserWarning)
     # Return dataframe and metadata (metadata belongs to last available file)
     return data, metadata

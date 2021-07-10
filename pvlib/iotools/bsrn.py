@@ -229,8 +229,6 @@ def read_bsrn(filename):
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
     """
 
-    # Read file and store the starting line number for each logical record (LR)
-    line_no_dict = {}
     if isinstance(filename, io.StringIO):
         f = filename
     elif str(filename).endswith('.gz'):  # check if file is gzipped (.gz)
@@ -238,6 +236,8 @@ def read_bsrn(filename):
     else:
         f = open(filename, 'r')
     if True:
+        # Read file and store the starting line number for each logical record (LR)
+        line_no_dict = {}
         f.readline()  # first line should be *U0001, so read it and discard
         line_no_dict['0001'] = 0
         date_line = f.readline()  # second line contains the year and month

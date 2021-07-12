@@ -6,7 +6,8 @@ import pandas as pd
 import pytest
 import os
 from pvlib.iotools import read_bsrn, get_bsrn
-from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal
+from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
+                        requires_bsrn_credentials)
 
 
 @pytest.fixture(scope="module")
@@ -40,12 +41,13 @@ def test_read_bsrn(testfile, expected_index):
     assert 'relative_humidity' in data.columns
 
 
+@requires_bsrn_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_bsrn(expected_index, bsrn_credentials):
     # Retrieve irradiance data from the BSRN FTP server
     # the TAM station is chosen due to its small file sizes
-    username, password = bsrn_ftp_credentials
+    username, password = bsrn_credentials
     data, metadata = get_bsrn(
         start=pd.Timestamp(2016, 6, 1),
         end=pd.Timestamp(2016, 6, 29),
@@ -61,6 +63,7 @@ def test_get_bsrn(expected_index, bsrn_credentials):
     assert 'relative_humidity' in data.columns
 
 
+@requires_bsrn_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_bsrn_bad_station(bsrn_credentials):
@@ -75,6 +78,7 @@ def test_get_bsrn_bad_station(bsrn_credentials):
             password='bsrn1')
 
 
+@requires_bsrn_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_bsrn_no_files(bsrn_credentials):

@@ -134,12 +134,12 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 
      .. Hint::
-         PVGIS provides access to a number of different solar radiation
-         datasets, including satellite-based (SARAH, CMSAF, and NSRDB PSM3) and
-         re-analysis products (ERA5 and COSMO). Each data source has a
-         different geographical coverage and time stamp convention, e.g., SARAH
-         and CMSAF provide instantaneous values, whereas values from ERA5 are
-         averages for the hour.
+        PVGIS provides access to a number of different solar radiation
+        datasets, including satellite-based (SARAH, CMSAF, and NSRDB PSM3) and
+        re-analysis products (ERA5 and COSMO). Each data source has a
+        different geographical coverage and time stamp convention, e.g., SARAH
+        and CMSAF provide instantaneous values, whereas values from ERA5 are
+        averages for the hour.
 
     Notes
     -----

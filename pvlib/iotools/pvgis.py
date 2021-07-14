@@ -189,14 +189,12 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
               'usehorizon': int(usehorizon),
               'optimalangles': int(optimalangles),
               'optimalinclination': int(optimalangles), 'loss': loss}
-    # pvgis only takes 0 for False, and 1 for True, not strings, also the
+    # pvgis only takes 0 for False, and 1 for True, not strings
     if userhorizon is not None:
         params['userhorizon'] = ','.join(str(x) for x in userhorizon)
     if raddatabase is not None:
         params['raddatabase'] = raddatabase
-    if (start is not None) & (type(start) is int):
-        params['startyear'] = start
-    elif start is not None:
+    if start is not None:
         params['startyear'] = start if isinstance(start, int) else start.year
     if end is not None:
         params['endyear'] = end if isinstance(end, int) else end.year

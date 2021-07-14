@@ -103,6 +103,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added :func:`~pvlib.iotools.read_pvgis_hourly` and
+  :func:`~pvlib.iotools.get_pvgis_hourly` for reading and retrieving hourly
+  solar radiation data and PV power output from PVGIS. (:pull:`1186`,
+  :issue:`849`)
 * Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
   files. (:pull:`1145`, :issue:`1015`)
 * Add :func:`~pvlib.iotools.get_cams`,

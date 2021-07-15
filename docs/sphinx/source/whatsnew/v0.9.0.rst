@@ -180,6 +180,8 @@ Bug fixes
   when data time step is not one minute. Error was introduced in v0.8.1.
   (:issue:`1241`, :pull:`1242`)
 * Corrected :py:func:`~pvlib.solarposition.spa_python` to avoid a future warning. (:pull:`1256`)
+* Changed deprecated use of ``.astype()`` to ``.view()`` in :py:mod:`~pvlib.solarposition`.
+  (:issue:`1261`, :pull:`1262`)
 
 Testing
 ~~~~~~~
@@ -218,3 +220,4 @@ Contributors
 * Joe Ranalli (:ghuser:`jranalli`)
 * Chas Schweizer (:ghuser:`cpr-chas`)
 * Yoann Louvet (:ghuser:`YoannUniKS`)
+* Brandon Carpenter (:ghuser:`hashstat`)

@@ -216,45 +216,39 @@ def townsend_Se(S, N):
     '''
     return(np.where(N>0, 0.5 * S * (1 + 1/N), 0))
 
-def townsend_snow_loss_model(S, N, tilt, RH, T_air, POA, R, H, P=40):
+def loss_townsend(snow_total, snow_events, tilt, relative_humidity, temp_air, poa_global, row_len, H, P=40):
     '''
     Calculates monthly snow loss based on a generalized monthly snow loss model discussed in [1]_.
 
     Parameters
     ----------
-    S : numeric
-        Inches of snow received in the current month
+    snow_total : numeric
+        Inches of snow received in the current month. Referred as S in the paper
 
-    N : numeric
-        Number of snowfall events with snowfall > 1"
+    snow_events : numeric
+        Number of snowfall events with snowfall > 1". Referred as N in the paper
 
     tilt : numeric
         Array tilt in degrees
 
-    RH : numeric
+    relative_humidity : numeric
         Relative humidity in percentage
 
-    T_air : numeric
+    temp_air : numeric
         Ambient temperature in celcius
 
-    POA : numeric
+    poa_global : numeric
         Plane of array irradiance in kWh/m2/month
 
-    R : numeric
+    row_len : float
         Row length in the slanted plane of array dimension in inches
 
-    H : numeric
+    H : float
         Drop height from array edge to ground in inches
 
-    P : numeric
+    P : float
         piled snow angle, assumed to stabilize at 40° , the midpoint of 
         25°-55° avalanching slope angles
-
-    S_prev : numeric
-        Inches of snow received in the previous month
-
-    N_prev : numeric
-        Number of 1" or greater snow events in the previous month
 
     Returns
     -------
@@ -273,16 +267,18 @@ def townsend_snow_loss_model(S, N, tilt, RH, T_air, POA, R, H, P=40):
     C1 = 5.7e04
     C2 = 0.51
     
-    S_prev = np.roll(S,1)
-    N_prev = np.roll(N,1)
+    snow_total_prev = np.roll(snow_total,1)
+    snow_events_prev = np.roll(snow_events,1)
     
-    Se = townsend_Se(S, N)
-    Se_prev = townsend_Se(S_prev, N_prev)
+    Se = townsend_Se(snow_total, snow_events)
+    Se_prev = townsend_Se(snow_total_prev, snow_events_prev)
     
     Se_weighted = 1/3 * Se_prev + 2/3 * Se
-    gamma = (R * Se_weighted * np.cos(np.deg2rad(tilt)))/(np.clip((H**2 - Se_weighted**2),a_min=0.01,a_max=None)/2/np.tan(np.deg2rad(P)))
+    gamma = (row_len * Se_weighted * np.cos(np.deg2rad(tilt)))/ \
+        (np.clip((H**2 - Se_weighted**2),a_min=0.01,a_max=None)/2/np.tan(np.deg2rad(P)))
     
     GIT = 1 - C2 * np.exp(-gamma)
-    loss = C1 * Se_weighted * (np.cos(np.deg2rad(tilt)))**2 * GIT * RH / (T_air+273.15)**2 / POA**0.67
+    loss = C1 * Se_weighted * (np.cos(np.deg2rad(tilt)))**2 * GIT * relative_humidity / \
+        (temp_air+273.15)**2 / poa_global**0.67
     
     return (np.round(loss,2))

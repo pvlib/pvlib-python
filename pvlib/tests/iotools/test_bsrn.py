@@ -10,10 +10,6 @@ from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
                         requires_bsrn_credentials)
 
 
-def test_os_variables():
-    raise ValueError(os.environ)
-
-
 @pytest.fixture(scope="module")
 def bsrn_credentials():
     """Supplies the BSRN FTP credentials for testing purposes.

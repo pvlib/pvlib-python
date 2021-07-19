@@ -365,7 +365,7 @@ def spa_python(time, latitude, longitude,
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = np.array(time.astype(np.int64)/10**9)
+    unixtime = np.array(time.view(np.int64)/10**9)
 
     spa = _spa_python_import(how)
 

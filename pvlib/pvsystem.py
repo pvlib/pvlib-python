@@ -374,7 +374,8 @@ class PVSystem:
         Returns
         -------
         poa_irradiance : DataFrame or tuple of DataFrame
-            Column names are: ``total, beam, sky, ground``.
+            Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
+            'poa_sky_diffuse', 'poa_ground_diffuse'``.
         """
         dni = self._validate_per_array(dni, system_wide=True)
         ghi = self._validate_per_array(ghi, system_wide=True)
@@ -1464,7 +1465,8 @@ class Array:
         Returns
         -------
         poa_irradiance : DataFrame
-            Column names are: ``total, beam, sky, ground``.
+            Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
+            'poa_sky_diffuse', 'poa_ground_diffuse'``.
         """
         # not needed for all models, but this is easier
         if dni_extra is None:

@@ -106,6 +106,12 @@ Enhancements
 * Add :func:`~pvlib.iotools.get_bsrn` and :func:`~pvlib.iotools.read_bsrn`
   for retrieving and reading BSRN solar radiation data files.
   (:pull:`1254`, :pull:`1145`, :issue:`1015`)
+* Added :func:`~pvlib.iotools.read_pvgis_hourly` and
+  :func:`~pvlib.iotools.get_pvgis_hourly` for reading and retrieving hourly
+  solar radiation data and PV power output from PVGIS. (:pull:`1186`,
+  :issue:`849`)
+* Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
+  files. (:pull:`1145`, :issue:`1015`)
 * Add :func:`~pvlib.iotools.get_cams`,
   :func:`~pvlib.iotools.parse_cams`, and 
   :func:`~pvlib.iotools.read_cams`
@@ -176,6 +182,7 @@ Bug fixes
 * Corrected an error affecting :py:func:`~pvlib.clearsky.detect_clearsky`
   when data time step is not one minute. Error was introduced in v0.8.1.
   (:issue:`1241`, :pull:`1242`)
+* Corrected :py:func:`~pvlib.solarposition.spa_python` to avoid a future warning. (:pull:`1256`)
 
 Testing
 ~~~~~~~
@@ -213,3 +220,4 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Joe Ranalli (:ghuser:`jranalli`)
 * Chas Schweizer (:ghuser:`cpr-chas`)
+* Yoann Louvet (:ghuser:`YoannUniKS`)

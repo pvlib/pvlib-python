@@ -11,17 +11,37 @@ import os
 
 BSRN_FTP_URL = "ftp.bsrn.awi.de"
 
-COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27), (27, 32), (32, 39),
-             (39, 45), (45, 50), (50, 55), (55, 64), (64, 70), (70, 75)]
+COL_SPECS_LR0100 = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27), (27, 32),
+                    (32, 39), (39, 45), (45, 50), (50, 55), (55, 64), (64, 70),
+                    (70, 75)]
 
-BSRN_COLUMNS = ['day', 'minute',
-                'ghi', 'ghi_std', 'ghi_min', 'ghi_max',
-                'dni', 'dni_std', 'dni_min', 'dni_max',
-                'empty', 'empty', 'empty', 'empty', 'empty',
-                'dhi', 'dhi_std', 'dhi_min', 'dhi_max',
-                'lwd', 'lwd_std', 'lwd_min', 'lwd_max',
-                'temp_air', 'relative_humidity', 'pressure']
+COL_SPECS_LR0300 = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27)]
 
+COL_SPECS_LR0500 = [(0, 3), (3, 8), (8, 14), (14, 20), (20, 26), (26, 32),
+                    (32, 38), (38, 44), (44, 50), (50, 56), (56, 62), (62, 68),
+                    (68, 74), (74, 80)]
+
+BSRN_LR0100_COLUMNS = ['day', 'minute',
+                       'ghi', 'ghi_std', 'ghi_min', 'ghi_max',
+                       'dni', 'dni_std', 'dni_min', 'dni_max',
+                       'empty', 'empty', 'empty', 'empty', 'empty',
+                       'dhi', 'dhi_std', 'dhi_min', 'dhi_max',
+                       'lwd', 'lwd_std', 'lwd_min', 'lwd_max',
+                       'temp_air', 'relative_humidity', 'pressure']
+
+BSRN_LR0300_COLUMNS = ['day', 'minute', 'upward short-wave reflected',
+                       'upward long-wave', 'net radiation']
+
+BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global_mean', 'uva_global_std',
+                       'uva_global_min', 'uva_global_max', 'uvb_direct_mean',
+                       'uvb_direct_std', 'uvb_direct_min', 'uvb_direct_max',
+                       'empty', 'empty', 'empty', 'empty',
+                       'uvb_global_mean', 'uvb_global_std', 'uvb_global_min',
+                       'uvb_global_max', 'uvb_diffuse_mean', 'uvb_diffuse_std',
+                       'uvb_diffuse_mean', 'uvb_diffuse_std',
+                       'uvb_diffuse_min', 'uvb_diffuse_max',
+                       'uvb_reflect_mean', 'uvb_reflect_std',
+                       'uvb_reflect_min', 'uvb_reflect_max']
 
 def get_bsrn(start, end, station, username, password,
              local_path=None):
@@ -59,6 +79,9 @@ def get_bsrn(start, end, station, username, password,
     ------
     KeyError
         If the specified station does not exist on the FTP server.
+    
+    Warning
+    -------
     UserWarning
         If a requested file is missing a UserWarning is returned with the
         filename. Also, if no files match the specified station and timeframe.
@@ -71,6 +94,11 @@ def get_bsrn(start, end, station, username, password,
     Currently only the basic measurements (LR0100) are parsed, which include
     global, diffuse, direct, and downwelling long-wave radiation [3]_. Future
     updates may include parsing of additional data and metadata.
+
+    Important
+    ---------
+    While data from the BSRN is generally of high-quality, measurement data
+    should always be quality controlled before usage!
 
     Examples
     --------
@@ -134,20 +162,18 @@ def get_bsrn(start, end, station, username, password,
             # FTP client raises an error if the file does not exist on server
             except ftplib.error_perm as e:
                 if str(e) == '550 Failed to open file.':
-                    warnings.warn(f'File: {filename} does not exist',
-                                  category=UserWarning)
+                    warnings.warn(f'File: {filename} does not exist')
                 else:
                     raise ftplib.error_perm(e)
-        ftp.close()  # Close FTP connection
+        ftp.quit()  # Close and exit FTP connection
 
     # Concatenate monthly dataframes to one dataframe
     if len(dfs):
         data = pd.concat(dfs, axis='rows')
     else:  # Return empty dataframe
-        data = pd.DataFrame(columns=BSRN_COLUMNS)
+        data = pd.DataFrame(columns=BSRN_LR0100_COLUMNS)
         metadata = {}
-        warnings.warn('No files were available for the specified timeframe.',
-                      category=UserWarning)
+        warnings.warn('No files were available for the specified timeframe.')
     # Return dataframe and metadata (metadata belongs to last available file)
     return data, metadata
 
@@ -178,8 +204,7 @@ def read_bsrn(filename):
         A DataFrame with the columns as described below. For more extensive
         description of the variables, consult [2]_.
     metadata: dict
-        Dictionary containing metadata. Currently the dict is empty as no
-        metadata is parsed.
+        Dictionary containing metadata (primarily from LR0004).
 
     Notes
     -----
@@ -236,52 +261,118 @@ def read_bsrn(filename):
     else:
         f = open(filename, 'r')
     if True:
-        # Read file and store the starting line number for each logical record (LR)
-        line_no_dict = {}
+        
+        # Parse metadata
         f.readline()  # first line should be *U0001, so read it and discard
-        line_no_dict['0001'] = 0
-        date_line = f.readline()  # second line contains the year and month
+        date_line = f.readline()  # second line contains important metadata
         start_date = pd.Timestamp(year=int(date_line[7:11]),
                                   month=int(date_line[3:6]), day=1,
                                   tz='UTC')  # BSRN timestamps are UTC
-        for num, line in enumerate(f, start=2):
+
+        metadata = {}  # Initilize dictionary containing metadata
+        metadata['start date'] = start_date
+        metadata['station identification number'] = int(date_line[::3])
+        metadata['version of data'] = int(date_line.split()[-1])
+        for line in f:
+            if line[2:6] == '0004':  # stop once LR0004 has been reached
+                break
+            elif line == '':
+                    raise ValueError('Mandatatory record LR0004 not found.')
+        metadata['date when station description changed'] = f.readline().strip()  # noqa: E501
+        metadata['surface type'] = int(f.readline(3))
+        metadata['topography type'] = int(f.readline())
+        metadata['address'] = f.readline().strip().strip()
+        metadata['telephone no of station'] =  f.readline(20).strip()
+        metadata['FAX no. of station'] = f.readline().strip()
+        metadata['TCP/IP no. of station'] = f.readline(15).strip()
+        metadata['e-mail address of station'] = f.readline().strip()
+        metadata['latitude'] = float(f.readline(8))
+        metadata['longitude'] = float(f.readline(8))
+        metadata['altitude'] = int(f.readline(5))
+        metadata['identification of "SYNOP" station'] = f.readline().strip()
+        metadata['date when horizon changed'] = f.readline().strip()
+        horizon = []  # list for raw horizon elevation data
+        while True:
+            line = f.readline()
+            if ('*' in line) | (line == ''):
+                break
+            else:
+                horizon +=  [int(i) for i in line.split()]        
+        metadata['horizon'] = pd.Series(horizon[1::2],horizon[::2])\
+            .sort_index().drop(-1)
+
+        # Read file and store the starting line number and number of lines for
+        # each logical record (LR)
+        f.seek(0) # reset buffer to start of file
+        lr_startrow = {}  # Dictionary of starting line number for each LR
+        lr_nrows = {}  # Dictionary of end line number for each LR
+        for num, line in enumerate(f):
             if line.startswith('*'):  # Find start of all logical records
-                line_no_dict[line[2:6]] = num  # key is 4 digit LR number
+                if len(lr_startrow) >= 1:
+                    lr_nrows[lr] = num - max(lr_startrow.values()) - 1
+                lr = line[2:6]  # string of 4 digit LR number
+                lr_startrow[lr] = num
+        lr_nrows[lr] = num - lr_startrow[lr]
 
-        # Determine start and end line of logical record LR0100 to be parsed
-        start_row = line_no_dict['0100'] + 1  # Start line number
-        # If LR0100 is the last logical record, then read rest of file
-        if start_row-1 == max(line_no_dict.values()):
-            end_row = num  # then parse rest of the file
-        else:  # otherwise parse until the beginning of the next logical record
-            end_row = min([i for i in line_no_dict.values() if i > start_row]) - 1  # noqa: E501
-        nrows = end_row-start_row+1
-
-        # Read file as a fixed width file (fwf)
+        # Read LR01000 as a fixed width file (fwf)
         f.seek(0)  # reset buffer to start of file
-        data = pd.read_fwf(f, skiprows=start_row, nrows=nrows, header=None,
-                           colspecs=COL_SPECS, na_values=[-999.0, -99.9],
-                           compression='infer')
+        data_0100 = pd.read_fwf(f, skiprows=lr_startrow['0100'] + 1,
+                                nrows=lr_nrows['0100'], header=None,
+                                colspecs=COL_SPECS_LR0100,
+                                na_values=[-999.0, -99.9])
+        # Create multi-index and unstack, resulting in one column for each variable
+        data_0100 = data_0100.set_index([data_0100.index // 2, data_0100.index % 2])
+        data_0100 = data_0100.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
+        # Sort columns to match original order and assign column names
+        data_0100 = data_0100.reindex(sorted(data_0100.columns), axis='columns')
+        data_0100.columns = BSRN_LR0100_COLUMNS
+        # Drop empty columns
+        data_0100 = data_0100.drop('empty', axis='columns')
+        # Change day and minute type to integer
+        data_0100['day'] = data_0100['day'].astype('Int64')
+        data_0100['minute'] = data_0100['minute'].astype('Int64')
+
+        # Set datetime index
+        data_0100.index = (start_date
+                           + pd.to_timedelta(data_0100['day']-1, unit='d')
+                           + pd.to_timedelta(data_0100['minute'], unit='T'))
+        dfs = [data_0100]
+
+        f.seek(0)
+        if '0300' in lr_startrow.keys():
+            data_0300 = pd.read_fwf(f, skiprows=lr_startrow['0300']+1,
+                                    nrows=lr_nrows['0300'], header=None,
+                                    na_values=[-999.0, -99.9],
+                                    colspecs=COL_SPECS_LR0300,
+                                    names=BSRN_LR0300_COLUMNS,
+                                    dtypes=[int, int, float, float, float])
+            data_0300.index = (start_date
+                               + pd.to_timedelta(data_0300['day']-1, unit='d')
+                               + pd.to_timedelta(data_0300['minute'], unit='T'))
+            data_0300 = data_0300.drop(columns=['day', 'minute'])
+            dfs.append(data_0300)
+
+        f.seek(0)
+        if '0500' in lr_startrow.keys():
+            data_0500 = pd.read_fwf(f, skiprows=lr_startrow['0500']+1,
+                                    nrows=lr_nrows['0500'], header=None,
+                                    na_values=[-99.9],
+                                    colspecs=COL_SPECS_LR0500)
+            # Create multi-index and unstack, resulting in one column for each variable
+            data_0500 = data_0500.set_index([data_0500.index // 2, data_0500.index % 2])
+            data_0500 = data_0500.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
+            # Sort columns to match original order and assign column names
+            data_0500 = data_0500.reindex(sorted(data_0500.columns), axis='columns')
+            data_0500.columns = BSRN_LR0500_COLUMNS
+            data_0500 = data_0500.drop('empty', axis='columns')
+            data_0500.index = (start_date
+                               + pd.to_timedelta(data_0500['day']-1, unit='d')
+                               + pd.to_timedelta(data_0500['minute'], unit='T'))
+            data_0500 = data_0500.drop(columns=['day', 'minute'])
+            dfs.append(data_0500)
+
     f.close()
 
-    # Create multi-index and unstack, resulting in one column for each variable
-    data = data.set_index([data.index // 2, data.index % 2])
-    data = data.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
+    data = pd.concat(dfs, axis='columns')
 
-    # Sort columns to match original order and assign column names
-    data = data.reindex(sorted(data.columns), axis='columns')
-    data.columns = BSRN_COLUMNS
-    # Drop empty columns
-    data = data.drop('empty', axis='columns')
-
-    # Change day and minute type to integer
-    data['day'] = data['day'].astype('Int64')
-    data['minute'] = data['minute'].astype('Int64')
-
-    # Set datetime index
-    data.index = (start_date
-                  + pd.to_timedelta(data['day']-1, unit='d')
-                  + pd.to_timedelta(data['minute'], unit='T'))
-
-    metadata = {}
     return data, metadata

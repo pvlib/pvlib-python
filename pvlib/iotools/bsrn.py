@@ -11,15 +11,15 @@ import os
 
 BSRN_FTP_URL = "ftp.bsrn.awi.de"
 
-COL_SPECS_LR0100 = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27), (27, 32),
-                    (32, 39), (39, 45), (45, 50), (50, 55), (55, 64), (64, 70),
-                    (70, 75)]
+BSRN_LR0100_COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27),
+                         (27, 32), (32, 39), (39, 45), (45, 50), (50, 55),
+                         (55, 64), (64, 70), (70, 75)]
 
-COL_SPECS_LR0300 = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27)]
+BSRN_LR0300_COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27)]
 
-COL_SPECS_LR0500 = [(0, 3), (3, 8), (8, 14), (14, 20), (20, 26), (26, 32),
-                    (32, 38), (38, 44), (44, 50), (50, 56), (56, 62), (62, 68),
-                    (68, 74), (74, 80)]
+BSRN_LR0500_COL_SPECS = [(0, 3), (3, 8), (8, 14), (14, 20), (20, 26), (26, 32),
+                         (32, 38), (38, 44), (44, 50), (50, 56), (56, 62),
+                         (62, 68), (68, 74), (74, 80)]
 
 BSRN_LR0100_COLUMNS = ['day', 'minute',
                        'ghi', 'ghi_std', 'ghi_min', 'ghi_max',
@@ -43,7 +43,8 @@ BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global_mean', 'uva_global_std',
                        'uvb_reflect_mean', 'uvb_reflect_std',
                        'uvb_reflect_min', 'uvb_reflect_max']
 
-def get_bsrn(start, end, station, username, password,
+
+def get_bsrn(start, end, station, username, password, logical_records=['0100'],
              local_path=None):
     """
     Retrieve ground measured irradiance data from the BSRN FTP server.
@@ -64,6 +65,9 @@ def get_bsrn(start, end, station, username, password,
         username for accessing the BSRN ftp server
     password: str
         password for accessing the BSRN ftp server
+    logical_records: list, default: ['0100']
+        List of the logical records (LR) to parse. Options are: 0100, 0300,
+        and 0500.
     local_path: str or path-like, default: None, optional
         If specified, path (abs. or relative) of where to save files
 
@@ -107,7 +111,7 @@ def get_bsrn(start, end, station, username, password,
     >>>     start=pd.Timestamp(2020,1,1), end=pd.Timestamp(2020,12,1),   # doctest: +SKIP
     >>>     station='cab', username='yourusername', password='yourpassword')  # doctest: +SKIP
 
-    See also
+    See Also
     --------
     pvlib.iotools.read_bsrn
 
@@ -152,7 +156,7 @@ def get_bsrn(start, end, station, username, password,
                 # Decompress/unzip and decode the binary file
                 text = gzip.decompress(bio.getvalue()).decode('utf-8')
                 # Convert string to StringIO and parse data
-                dfi, metadata = read_bsrn(io.StringIO(text))
+                dfi, metadata = parse_bsrn(io.StringIO(text))
                 dfs.append(dfi)
                 # Save file locally if local_path is specified
                 if local_path is not None:
@@ -178,7 +182,150 @@ def get_bsrn(start, end, station, username, password,
     return data, metadata
 
 
-def read_bsrn(filename):
+def parse_bsrn(fbuf, logical_records='0100'):
+    """
+    Parse a file-like buffer of BSRN station-to-archive file into a DataFrame.
+
+    Parameters
+    ----------
+    fbuf: file-like buffer
+        Buffer of a BSRN station-to-archive data file
+    logical_records: list, default: ['0100']
+        List of the logical records (LR) to parse. Options are: 0100, 0300,
+        and 0500.
+
+    Returns
+    -------
+    data: DataFrame
+        A DataFrame with the columns as described below. See
+        pvlib.iotools.read_bsrn for fields.
+    metadata: dict
+        Dictionary containing metadata (primarily from LR0004).
+
+    See Also
+    --------
+    pvlib.iotools.read_bsrn, pvlib.iotools.get_bsrn
+
+    """
+    # Parse metadata
+    fbuf.readline()  # first line should be *U0001, so read it and discard
+    date_line = fbuf.readline()  # second line contains important metadata
+    start_date = pd.Timestamp(year=int(date_line[7:11]),
+                              month=int(date_line[3:6]), day=1,
+                              tz='UTC')  # BSRN timestamps are UTC
+
+    metadata = {}  # Initilize dictionary containing metadata
+    metadata['start date'] = start_date
+    metadata['station identification number'] = int(date_line[:3])
+    metadata['version of data'] = int(date_line.split()[-1])
+    for line in fbuf:
+        if line[2:6] == '0004':  # stop once LR0004 has been reached
+            break
+        elif line == '':
+            raise ValueError('Mandatatory record LR0004 not found.')
+    metadata['date when station description changed'] = fbuf.readline().strip()
+    metadata['surface type'] = int(fbuf.readline(3))
+    metadata['topography type'] = int(fbuf.readline())
+    metadata['address'] = fbuf.readline().strip().strip()
+    metadata['telephone no. of station'] = fbuf.readline(20).strip()
+    metadata['FAX no. of station'] = fbuf.readline().strip()
+    metadata['TCP/IP no. of station'] = fbuf.readline(15).strip()
+    metadata['e-mail address of station'] = fbuf.readline().strip()
+    metadata['latitude'] = float(fbuf.readline(8))
+    metadata['longitude'] = float(fbuf.readline(8))
+    metadata['altitude'] = int(fbuf.readline(5))
+    metadata['identification of "SYNOP" station'] = fbuf.readline().strip()
+    metadata['date when horizon changed'] = fbuf.readline().strip()
+    # Pass last section of LR0004 containing the horizon elevation data
+    horizon = []  # list for raw horizon elevation data
+    while True:
+        line = fbuf.readline()
+        if ('*' in line) | (line == ''):
+            break
+        else:
+            horizon += [int(i) for i in line.split()]
+    metadata['horizon'] = pd.Series(horizon[1::2], horizon[::2]).sort_index().drop(-1)  # noqa: E501
+
+    # Read file and store the starting line number and number of lines for
+    # each logical record (LR)
+    fbuf.seek(0)  # reset buffer to start of file
+    lr_startrow = {}  # Dictionary of starting line number for each LR
+    lr_nrows = {}  # Dictionary of end line number for each LR
+    for num, line in enumerate(fbuf):
+        if line.startswith('*'):  # Find start of all logical records
+            if len(lr_startrow) >= 1:
+                lr_nrows[lr] = num - max(lr_startrow.values()) - 1
+            lr = line[2:6]  # string of 4 digit LR number
+            lr_startrow[lr] = num
+    lr_nrows[lr] = num - lr_startrow[lr]
+
+    for lr in logical_records:
+        if lr not in ['0100', '0300', '0500']:
+            raise ValueError(f"Logical record {lr} not in "
+                             f"{['0100', '0300','0500']}.")
+    dfs = []  # Initialize empty list for dataframe
+
+    # Parse LR0100 - basic measurements including GHI, DNI, DHI and temperature
+    if ('0100' in lr_startrow.keys()) & ('0100' in logical_records):
+        fbuf.seek(0)  # reset buffer to start of file
+        LR_0100 = pd.read_fwf(fbuf, skiprows=lr_startrow['0100'] + 1,
+                              nrows=lr_nrows['0100'], header=None,
+                              colspecs=BSRN_LR0100_COL_SPECS,
+                              na_values=[-999.0, -99.9])
+        # Create multi-index and unstack, resulting in 1 col for each variable
+        LR_0100 = LR_0100.set_index([LR_0100.index // 2, LR_0100.index % 2])
+        LR_0100 = LR_0100.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
+        # Sort columns to match original order and assign column names
+        LR_0100 = LR_0100.reindex(sorted(LR_0100.columns), axis='columns')
+        LR_0100.columns = BSRN_LR0100_COLUMNS
+        # Drop empty columns
+        LR_0100 = LR_0100.drop('empty', axis='columns')
+        # Change day and minute type to integer
+        LR_0100['day'] = LR_0100['day'].astype('Int64')
+        LR_0100['minute'] = LR_0100['minute'].astype('Int64')
+
+        # Set datetime index
+        LR_0100.index = (start_date + pd.to_timedelta(LR_0100['day']-1, unit='d')  # noqa: E501
+                         + pd.to_timedelta(LR_0100['minute'], unit='T'))
+        dfs.append(LR_0100)
+
+    # Parse LR0300 - other time series data, including upward and net radiation
+    if ('0300' in lr_startrow.keys()) & ('0300' in logical_records):
+        fbuf.seek(0)  # reset buffer to start of file
+        LR_0300 = pd.read_fwf(fbuf, skiprows=lr_startrow['0300']+1,
+                              nrows=lr_nrows['0300'], header=None,
+                              na_values=[-999.0, -99.9],
+                              colspecs=BSRN_LR0300_COL_SPECS,
+                              names=BSRN_LR0300_COLUMNS)
+        LR_0300.index = (start_date
+                         + pd.to_timedelta(LR_0300['day']-1, unit='d')
+                         + pd.to_timedelta(LR_0300['minute'], unit='T'))
+        LR_0300 = LR_0300.drop(columns=['day', 'minute']).astype(float)
+        dfs.append(LR_0300)
+
+    # Parse LR0500 - UV measurements
+    if ('0500' in lr_startrow.keys()) & ('0500' in logical_records):
+        fbuf.seek(0)  # reset buffer to start of file
+        LR_0500 = pd.read_fwf(fbuf, skiprows=lr_startrow['0500']+1,
+                              nrows=lr_nrows['0500'], na_values=[-99.9],
+                              header=None, colspecs=BSRN_LR0500_COL_SPECS)
+        # Create multi-index and unstack, resulting in 1 col for each variable
+        LR_0500 = LR_0500.set_index([LR_0500.index // 2, LR_0500.index % 2])
+        LR_0500 = LR_0500.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
+        # Sort columns to match original order and assign column names
+        LR_0500 = LR_0500.reindex(sorted(LR_0500.columns), axis='columns')
+        LR_0500.columns = BSRN_LR0500_COLUMNS
+        LR_0500.index = (start_date
+                         + pd.to_timedelta(LR_0500['day']-1, unit='d')
+                         + pd.to_timedelta(LR_0500['minute'], unit='T'))
+        LR_0500 = LR_0500.drop(columns=['empty', 'day', 'minute'])
+        dfs.append(LR_0500)
+
+    data = pd.concat(dfs, axis='columns')
+    return data, metadata
+
+
+def read_bsrn(filename, logical_records=['0100']):
     """
     Read a BSRN station-to-archive file into a DataFrame.
 
@@ -195,8 +342,11 @@ def read_bsrn(filename):
 
     Parameters
     ----------
-    filename: str, path-like or file-like object
-        Name, path, or buffer of a BSRN station-to-archive data file
+    filename: str or path-like
+        Name or path of a BSRN station-to-archive data file
+    logical_records: list, default: ['0100']
+        List of the logical records (LR) to parse. Options are: 0100, 0300,
+        and 0500.
 
     Returns
     -------
@@ -236,9 +386,9 @@ def read_bsrn(filename):
     pressure                 float   Atmospheric pressure [hPa]
     =======================  ======  ==========================================
 
-    See also
+    See Also
     --------
-    pvlib.iotools.get_bsrn
+    pvlib.iotools.parse_bsrn, pvlib.iotools.get_bsrn
 
     References
     ----------
@@ -253,126 +403,9 @@ def read_bsrn(filename):
     .. [4] `BSRN Data Release Guidelines
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
     """
-
-    if isinstance(filename, io.StringIO):
-        f = filename
-    elif str(filename).endswith('.gz'):  # check if file is gzipped (.gz)
-        f = gzip.open(filename, 'rt')
+    if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
+        open_func, mode = gzip.open, 'rt'
     else:
-        f = open(filename, 'r')
-    if True:
-        
-        # Parse metadata
-        f.readline()  # first line should be *U0001, so read it and discard
-        date_line = f.readline()  # second line contains important metadata
-        start_date = pd.Timestamp(year=int(date_line[7:11]),
-                                  month=int(date_line[3:6]), day=1,
-                                  tz='UTC')  # BSRN timestamps are UTC
-
-        metadata = {}  # Initilize dictionary containing metadata
-        metadata['start date'] = start_date
-        metadata['station identification number'] = int(date_line[::3])
-        metadata['version of data'] = int(date_line.split()[-1])
-        for line in f:
-            if line[2:6] == '0004':  # stop once LR0004 has been reached
-                break
-            elif line == '':
-                    raise ValueError('Mandatatory record LR0004 not found.')
-        metadata['date when station description changed'] = f.readline().strip()  # noqa: E501
-        metadata['surface type'] = int(f.readline(3))
-        metadata['topography type'] = int(f.readline())
-        metadata['address'] = f.readline().strip().strip()
-        metadata['telephone no of station'] =  f.readline(20).strip()
-        metadata['FAX no. of station'] = f.readline().strip()
-        metadata['TCP/IP no. of station'] = f.readline(15).strip()
-        metadata['e-mail address of station'] = f.readline().strip()
-        metadata['latitude'] = float(f.readline(8))
-        metadata['longitude'] = float(f.readline(8))
-        metadata['altitude'] = int(f.readline(5))
-        metadata['identification of "SYNOP" station'] = f.readline().strip()
-        metadata['date when horizon changed'] = f.readline().strip()
-        horizon = []  # list for raw horizon elevation data
-        while True:
-            line = f.readline()
-            if ('*' in line) | (line == ''):
-                break
-            else:
-                horizon +=  [int(i) for i in line.split()]        
-        metadata['horizon'] = pd.Series(horizon[1::2],horizon[::2])\
-            .sort_index().drop(-1)
-
-        # Read file and store the starting line number and number of lines for
-        # each logical record (LR)
-        f.seek(0) # reset buffer to start of file
-        lr_startrow = {}  # Dictionary of starting line number for each LR
-        lr_nrows = {}  # Dictionary of end line number for each LR
-        for num, line in enumerate(f):
-            if line.startswith('*'):  # Find start of all logical records
-                if len(lr_startrow) >= 1:
-                    lr_nrows[lr] = num - max(lr_startrow.values()) - 1
-                lr = line[2:6]  # string of 4 digit LR number
-                lr_startrow[lr] = num
-        lr_nrows[lr] = num - lr_startrow[lr]
-
-        # Read LR01000 as a fixed width file (fwf)
-        f.seek(0)  # reset buffer to start of file
-        data_0100 = pd.read_fwf(f, skiprows=lr_startrow['0100'] + 1,
-                                nrows=lr_nrows['0100'], header=None,
-                                colspecs=COL_SPECS_LR0100,
-                                na_values=[-999.0, -99.9])
-        # Create multi-index and unstack, resulting in one column for each variable
-        data_0100 = data_0100.set_index([data_0100.index // 2, data_0100.index % 2])
-        data_0100 = data_0100.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
-        # Sort columns to match original order and assign column names
-        data_0100 = data_0100.reindex(sorted(data_0100.columns), axis='columns')
-        data_0100.columns = BSRN_LR0100_COLUMNS
-        # Drop empty columns
-        data_0100 = data_0100.drop('empty', axis='columns')
-        # Change day and minute type to integer
-        data_0100['day'] = data_0100['day'].astype('Int64')
-        data_0100['minute'] = data_0100['minute'].astype('Int64')
-
-        # Set datetime index
-        data_0100.index = (start_date
-                           + pd.to_timedelta(data_0100['day']-1, unit='d')
-                           + pd.to_timedelta(data_0100['minute'], unit='T'))
-        dfs = [data_0100]
-
-        f.seek(0)
-        if '0300' in lr_startrow.keys():
-            data_0300 = pd.read_fwf(f, skiprows=lr_startrow['0300']+1,
-                                    nrows=lr_nrows['0300'], header=None,
-                                    na_values=[-999.0, -99.9],
-                                    colspecs=COL_SPECS_LR0300,
-                                    names=BSRN_LR0300_COLUMNS,
-                                    dtypes=[int, int, float, float, float])
-            data_0300.index = (start_date
-                               + pd.to_timedelta(data_0300['day']-1, unit='d')
-                               + pd.to_timedelta(data_0300['minute'], unit='T'))
-            data_0300 = data_0300.drop(columns=['day', 'minute'])
-            dfs.append(data_0300)
-
-        f.seek(0)
-        if '0500' in lr_startrow.keys():
-            data_0500 = pd.read_fwf(f, skiprows=lr_startrow['0500']+1,
-                                    nrows=lr_nrows['0500'], header=None,
-                                    na_values=[-99.9],
-                                    colspecs=COL_SPECS_LR0500)
-            # Create multi-index and unstack, resulting in one column for each variable
-            data_0500 = data_0500.set_index([data_0500.index // 2, data_0500.index % 2])
-            data_0500 = data_0500.unstack(level=1).swaplevel(i=0, j=1, axis='columns')
-            # Sort columns to match original order and assign column names
-            data_0500 = data_0500.reindex(sorted(data_0500.columns), axis='columns')
-            data_0500.columns = BSRN_LR0500_COLUMNS
-            data_0500 = data_0500.drop('empty', axis='columns')
-            data_0500.index = (start_date
-                               + pd.to_timedelta(data_0500['day']-1, unit='d')
-                               + pd.to_timedelta(data_0500['minute'], unit='T'))
-            data_0500 = data_0500.drop(columns=['day', 'minute'])
-            dfs.append(data_0500)
-
-    f.close()
-
-    data = pd.concat(dfs, axis='columns')
-
-    return data, metadata
+        open_func, mode = open, 'r'
+    with open_func(filename, mode) as f:
+        return parse_bsrn(f, logical_records)

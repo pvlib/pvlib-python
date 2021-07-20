@@ -13,7 +13,7 @@ from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
 @pytest.fixture(scope="module")
 def bsrn_credentials():
     """Supplies the BSRN FTP credentials for testing purposes.
-    
+
     Users should obtain there own credentials as described in the `read_bsrn`
     documentation."""
     bsrn_username = os.environ["BSRN_FTP_USERNAME"]

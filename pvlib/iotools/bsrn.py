@@ -84,19 +84,20 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     KeyError
         If the specified station does not exist on the FTP server.
 
-    Warning
-    -------
+    Warns
+    -----
     UserWarning
         If a requested file is missing a UserWarning is returned with the
         filename. Also, if no files match the specified station and timeframe.
 
     Notes
     -----
-    Required username and password can be obtained for free as described in the
-    BSRN's Data Release Guidelines [3]_.
+    The username and password for the BSRN FTP server can be obtained for free
+    as described in the BSRN's Data Release Guidelines [3]_.
 
-    Currently only parsing of LR0100, LR0300, and LR0500 is supported. LR0100
-    is contains the basic irradiance and auxillary measurements. See
+    Currently only parsing of LR0100, LR0300, and LR0500 is supported. Note
+    not all stations measure LR0300 and LR0500. However, LR0100 is mandatory as
+    it contains the basic irradiance and auxillary measurements. See
     [4]_ for a description of the different logical records. Future updates may
     include parsing of additional data and metadata.
 
@@ -386,6 +387,11 @@ def read_bsrn(filename, logical_records=['0100']):
     =======================  ======  ==========================================
 
     For fields for other logical records, see [2]_.
+
+    Hint
+    ----
+    According to [2]_ ""All time labels in the station-to-archive files denote
+    the start of a time interval." This corresponds to left bin edge labeling.
 
     See Also
     --------

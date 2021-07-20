@@ -96,11 +96,11 @@ def test_dc_loss_nrel():
     actual = snow.dc_loss_nrel(snow_coverage, num_strings)
     assert_series_equal(expected, actual)
 
-def test_townsend_Se():
+def test__townsend_Se():
     S = np.array([10, 10, 5, 1, 0, 0, 0, 0, 0, 0, 5, 10])
     N = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
     expected = np.array([7.5, 7.5, 5, 0, 0, 0, 0, 0, 0, 0, 3.75, 6.66666667])
-    actual = snow.townsend_Se(S, N)
+    actual = snow._townsend_Se(S, N)
     np.testing.assert_allclose(expected, actual, rtol=1e-07)
 
 def test_loss_townsend():

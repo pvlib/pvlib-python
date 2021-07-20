@@ -41,6 +41,25 @@ def test_read_bsrn(testfile, expected_index):
     assert 'relative_humidity' in data.columns
 
 
+def test_read_bsrn_logical_records(expected_index):
+    # Test if logical records 0300 and 0500 are correct parsed
+    # and that 0100 is not passed when not specified
+    data, metadata = read_bsrn(DATA_DIR / 'bsrn-pay0616.dat.gz',
+                               logical_records=['0300', '0500'])
+    assert_index_equal(expected_index, data.index)
+    assert 'ghi' not in data.columns
+    assert 'upward long-wave' in data.columns
+    assert 'uva_global_mean' in data.columns
+    assert 'uvb_reflect_std' in data.columns
+
+
+def test_read_bsrn_bad_logical_record():
+    # Test if ValueError is raised if an unsupported logical record is passed
+    with pytest.raises(ValueError, match='not in'):
+        read_bsrn(DATA_DIR / 'bsrn-lr0100-pay0616.dat',
+                  logical_records=['dummy'])
+
+
 @requires_bsrn_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
@@ -67,15 +86,15 @@ def test_get_bsrn(expected_index, bsrn_credentials):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_bsrn_bad_station(bsrn_credentials):
-    # Test if ValueError is raised if a bad station name is passed
+    # Test if KeyError is raised if a bad station name is passed
     username, password = bsrn_credentials
     with pytest.raises(KeyError, match='sub-directory does not exist'):
         get_bsrn(
             start=pd.Timestamp(2016, 6, 1),
             end=pd.Timestamp(2016, 6, 29),
             station='not_a_station_name',
-            username='bsrnftp',
-            password='bsrn1')
+            username=username,
+            password=password)
 
 
 @requires_bsrn_credentials
@@ -89,5 +108,5 @@ def test_get_bsrn_no_files(bsrn_credentials):
             start=pd.Timestamp(1990, 6, 1),
             end=pd.Timestamp(1990, 6, 29),
             station='tam',
-            username='bsrnftp',
-            password='bsrn1')
+            username=username,
+            password=password)

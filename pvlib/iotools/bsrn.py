@@ -93,11 +93,12 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     Notes
     -----
     Required username and password can be obtained for free as described in the
-    BSRN's Data Release Guidelines [4]_.
+    BSRN's Data Release Guidelines [3]_.
 
-    Currently only LR0100, LR0300, and LR0500 can be parsed, which include
-    global, diffuse, direct, and downwelling long-wave radiation [3]_. Future
-    updates may include parsing of additional data and metadata.
+    Currently only parsing of LR0100, LR0300, and LR0500 is supported. LR0100
+    is contains the basic irradiance and auxillary measurements. See
+    [4]_ for a description of the different logical records. Future updates may
+    include parsing of additional data and metadata.
 
     Important
     ---------
@@ -122,11 +123,11 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
         <https://bsrn.awi.de/>`_
     .. [2] `BSRN Data Retrieval via FTP
        <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_
+    .. [4] `BSRN Data Release Guidelines
+       <https://bsrn.awi.de/data/conditions-of-data-release/>`_
     .. [3] `Update of the Technical Plan for BSRN Data Management, 2013,
        Global Climate Observing System (GCOS) GCOS-174.
        <https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf>`_
-    .. [4] `BSRN Data Release Guidelines
-       <https://bsrn.awi.de/data/conditions-of-data-release/>`_
     """  # noqa: E501
     # The FTP server uses lowercase station abbreviations
     station = station.lower()
@@ -184,7 +185,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
 
 def parse_bsrn(fbuf, logical_records=['0100']):
     """
-    Parse a file-like buffer of BSRN station-to-archive file into a DataFrame.
+    Parse a file-like buffer of a BSRN station-to-archive file.
 
     Parameters
     ----------
@@ -197,7 +198,7 @@ def parse_bsrn(fbuf, logical_records=['0100']):
     Returns
     -------
     data: DataFrame
-        A DataFrame with the columns as described below. See
+        A DataFrame containing time-series measurement data. See
         pvlib.iotools.read_bsrn for fields.
     metadata: dict
         Dictionary containing metadata (primarily from LR0004).
@@ -327,10 +328,10 @@ def read_bsrn(filename, logical_records=['0100']):
 
     The BSRN (Baseline Surface Radiation Network) is a world wide network
     of high-quality solar radiation monitoring stations as described in [1]_.
-    The function is able to parse LR0100, LR0300, and LR0500. LR0100 include
-    the basic measurements (LR0100), which include global, diffuse, direct, and
-    downwelling long-wave radiation [2]_. Future updates may include parsing of
-    additional data and metadata.
+    The function is able to parse LR0100, LR0300, and LR0500. LR0100 contains
+    the basic measurements, which include global, diffuse, and direct
+    irradiance, as well as downwelling long-wave radiation [2]_. Future updates
+    may include parsing of additional data and metadata.
 
     BSRN files are freely available and can be accessed via FTP [3]_. Required
     username and password are easily obtainable as described in the BSRN's

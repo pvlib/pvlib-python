@@ -65,9 +65,9 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
         username for accessing the BSRN FTP server
     password: str
         password for accessing the BSRN FTP server
-    logical_records: list, default: ['0100']
-        List of the logical records (LR) to parse. Options are: 0100, 0300,
-        and 0500.
+    logical_records: str or list, default: ['0100']
+        List of the logical records (LR) to parse. Options are: '0100', '0300',
+        and '0500'.
     local_path: str or path-like, default: None, optional
         If specified, path (abs. or relative) of where to save files
 
@@ -146,6 +146,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
                            'station is probably not a proper three letter '
                            'station abbreviation.') from e
         dfs = []  # Initialize list for monthly dataframes
+        non_existing_files = []  # Initilize list of files that were not found
         for filename in filenames:
             try:
                 bio = io.BytesIO()  # Initialize BytesIO object
@@ -167,10 +168,16 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
             # FTP client raises an error if the file does not exist on server
             except ftplib.error_perm as e:
                 if str(e) == '550 Failed to open file.':
-                    warnings.warn(f'File: {filename} does not exist')
+                    non_existing_files.append(filename)
                 else:
                     raise ftplib.error_perm(e)
         ftp.quit()  # Close and exit FTP connection
+
+    # Raise user warnings
+    if not dfs:  # If no files were found
+        warnings.warn('No files were available for the specified timeframe.')
+    elif non_existing_files:  # If only some files were missing
+        warnings.warn(f'The following files were not found: {non_existing_files}')  # noqa: E501
 
     # Concatenate monthly dataframes to one dataframe
     if len(dfs):
@@ -178,7 +185,6 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     else:  # Return empty dataframe
         data = pd.DataFrame(columns=BSRN_LR0100_COLUMNS)
         metadata = {}
-        warnings.warn('No files were available for the specified timeframe.')
     # Return dataframe and metadata (metadata belongs to last available file)
     return data, metadata
 
@@ -191,7 +197,7 @@ def parse_bsrn(fbuf, logical_records=['0100']):
     ----------
     fbuf: file-like buffer
         Buffer of a BSRN station-to-archive data file
-    logical_records: list, default: ['0100']
+    logical_records: str or list, default: ['0100']
         List of the logical records (LR) to parse. Options are: 0100, 0300,
         and 0500.
 
@@ -280,7 +286,7 @@ def parse_bsrn(fbuf, logical_records=['0100']):
         LR_0100 = LR_0100.reindex(sorted(LR_0100.columns), axis='columns')
         LR_0100.columns = BSRN_LR0100_COLUMNS
         # Set datetime index
-        LR_0100.index = (start_date + pd.to_timedelta(LR_0100['day']-1, unit='d')  # noqa: E501
+        LR_0100.index = (start_date+pd.to_timedelta(LR_0100['day']-1, unit='d')
                          + pd.to_timedelta(LR_0100['minute'], unit='T'))
         # Drop empty, minute, and day columns
         LR_0100 = LR_0100.drop(columns=['empty', 'day', 'minute'])
@@ -294,8 +300,7 @@ def parse_bsrn(fbuf, logical_records=['0100']):
                               na_values=[-999.0, -99.9],
                               colspecs=BSRN_LR0300_COL_SPECS,
                               names=BSRN_LR0300_COLUMNS)
-        LR_0300.index = (start_date
-                         + pd.to_timedelta(LR_0300['day']-1, unit='d')
+        LR_0300.index = (start_date+pd.to_timedelta(LR_0300['day']-1, unit='d')
                          + pd.to_timedelta(LR_0300['minute'], unit='T'))
         LR_0300 = LR_0300.drop(columns=['day', 'minute']).astype(float)
         dfs.append(LR_0300)
@@ -312,8 +317,7 @@ def parse_bsrn(fbuf, logical_records=['0100']):
         # Sort columns to match original order and assign column names
         LR_0500 = LR_0500.reindex(sorted(LR_0500.columns), axis='columns')
         LR_0500.columns = BSRN_LR0500_COLUMNS
-        LR_0500.index = (start_date
-                         + pd.to_timedelta(LR_0500['day']-1, unit='d')
+        LR_0500.index = (start_date+pd.to_timedelta(LR_0500['day']-1, unit='d')
                          + pd.to_timedelta(LR_0500['minute'], unit='T'))
         LR_0500 = LR_0500.drop(columns=['empty', 'day', 'minute'])
         dfs.append(LR_0500)
@@ -341,7 +345,7 @@ def read_bsrn(filename, logical_records=['0100']):
     ----------
     filename: str or path-like
         Name or path of a BSRN station-to-archive data file
-    logical_records: list, default: ['0100']
+    logical_records: str or list, default: ['0100']
         List of the logical records (LR) to parse. Options are: 0100, 0300,
         and 0500.
 
@@ -405,4 +409,5 @@ def read_bsrn(filename, logical_records=['0100']):
     else:
         open_func, mode = open, 'r'
     with open_func(filename, mode) as f:
-        return parse_bsrn(f, logical_records)
+        content = parse_bsrn(f, logical_records)
+    return content

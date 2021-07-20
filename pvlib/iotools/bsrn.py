@@ -62,9 +62,9 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     station: str
         3-letter BSRN station abbreviation
     username: str
-        username for accessing the BSRN ftp server
+        username for accessing the BSRN FTP server
     password: str
-        password for accessing the BSRN ftp server
+        password for accessing the BSRN FTP server
     logical_records: list, default: ['0100']
         List of the logical records (LR) to parse. Options are: 0100, 0300,
         and 0500.
@@ -83,7 +83,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     ------
     KeyError
         If the specified station does not exist on the FTP server.
-    
+
     Warning
     -------
     UserWarning
@@ -95,7 +95,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     Required username and password can be obtained for free as described in the
     BSRN's Data Release Guidelines [4]_.
 
-    Currently only the basic measurements (LR0100) are parsed, which include
+    Currently only LR0100, LR0300, and LR0500 can be parsed, which include
     global, diffuse, direct, and downwelling long-wave radiation [3]_. Future
     updates may include parsing of additional data and metadata.
 
@@ -113,7 +113,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
 
     See Also
     --------
-    pvlib.iotools.read_bsrn
+    pvlib.iotools.read_bsrn, pvlib.iotools.parse_bsrn
 
     References
     ----------
@@ -128,7 +128,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     .. [4] `BSRN Data Release Guidelines
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
     """  # noqa: E501
-    # The ftp server uses lowercase station abbreviations
+    # The FTP server uses lowercase station abbreviations
     station = station.lower()
 
     # Generate list files to download based on start/end (SSSMMYY.dat.gz)
@@ -156,7 +156,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
                 # Decompress/unzip and decode the binary file
                 text = gzip.decompress(bio.getvalue()).decode('utf-8')
                 # Convert string to StringIO and parse data
-                dfi, metadata = parse_bsrn(io.StringIO(text))
+                dfi, metadata = parse_bsrn(io.StringIO(text), logical_records)
                 dfs.append(dfi)
                 # Save file locally if local_path is specified
                 if local_path is not None:
@@ -182,7 +182,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     return data, metadata
 
 
-def parse_bsrn(fbuf, logical_records='0100'):
+def parse_bsrn(fbuf, logical_records=['0100']):
     """
     Parse a file-like buffer of BSRN station-to-archive file into a DataFrame.
 
@@ -254,12 +254,12 @@ def parse_bsrn(fbuf, logical_records='0100'):
     for num, line in enumerate(fbuf):
         if line.startswith('*'):  # Find start of all logical records
             if len(lr_startrow) >= 1:
-                lr_nrows[lr] = num - max(lr_startrow.values()) - 1
+                lr_nrows[lr] = num - max(lr_startrow.values())-1  # noqa: F821
             lr = line[2:6]  # string of 4 digit LR number
             lr_startrow[lr] = num
     lr_nrows[lr] = num - lr_startrow[lr]
 
-    for lr in logical_records:
+    for lr in list(logical_records):
         if lr not in ['0100', '0300', '0500']:
             raise ValueError(f"Logical record {lr} not in "
                              f"{['0100', '0300','0500']}.")
@@ -278,15 +278,11 @@ def parse_bsrn(fbuf, logical_records='0100'):
         # Sort columns to match original order and assign column names
         LR_0100 = LR_0100.reindex(sorted(LR_0100.columns), axis='columns')
         LR_0100.columns = BSRN_LR0100_COLUMNS
-        # Drop empty columns
-        LR_0100 = LR_0100.drop('empty', axis='columns')
-        # Change day and minute type to integer
-        LR_0100['day'] = LR_0100['day'].astype('Int64')
-        LR_0100['minute'] = LR_0100['minute'].astype('Int64')
-
         # Set datetime index
         LR_0100.index = (start_date + pd.to_timedelta(LR_0100['day']-1, unit='d')  # noqa: E501
                          + pd.to_timedelta(LR_0100['minute'], unit='T'))
+        # Drop empty, minute, and day columns
+        LR_0100 = LR_0100.drop(columns=['empty', 'day', 'minute'])
         dfs.append(LR_0100)
 
     # Parse LR0300 - other time series data, including upward and net radiation
@@ -331,14 +327,14 @@ def read_bsrn(filename, logical_records=['0100']):
 
     The BSRN (Baseline Surface Radiation Network) is a world wide network
     of high-quality solar radiation monitoring stations as described in [1]_.
-    The function only parses the basic measurements (LR0100), which include
-    global, diffuse, direct, and downwelling long-wave radiation [2]_. Future
-    updates may include parsing of additional data and meta-data.
+    The function is able to parse LR0100, LR0300, and LR0500. LR0100 include
+    the basic measurements (LR0100), which include global, diffuse, direct, and
+    downwelling long-wave radiation [2]_. Future updates may include parsing of
+    additional data and metadata.
 
     BSRN files are freely available and can be accessed via FTP [3]_. Required
     username and password are easily obtainable as described in the BSRN's
     Data Release Guidelines [4]_.
-
 
     Parameters
     ----------
@@ -358,13 +354,11 @@ def read_bsrn(filename, logical_records=['0100']):
 
     Notes
     -----
-    The data DataFrame includes the following fields:
+    The data DataFrame for LR0100 includes the following fields:
 
     =======================  ======  ==========================================
     Key                      Format  Description
     =======================  ======  ==========================================
-    day                      int     Day of the month 1-31
-    minute                   int     Minute of the day 0-1439
     ghi                      float   Mean global horizontal irradiance [W/m^2]
     ghi_std                  float   Std. global horizontal irradiance [W/m^2]
     ghi_min                  float   Min. global horizontal irradiance [W/m^2]
@@ -385,6 +379,8 @@ def read_bsrn(filename, logical_records=['0100']):
     relative_humidity        float   Relative humidity [%]
     pressure                 float   Atmospheric pressure [hPa]
     =======================  ======  ==========================================
+
+    For fields for other logical records, see [2]_.
 
     See Also
     --------

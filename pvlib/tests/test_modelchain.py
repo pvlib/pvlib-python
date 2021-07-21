@@ -734,12 +734,13 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
 
 
 def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
-    system = SingleAxisTracker(
-        module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
-        temperature_model_parameters=(
-            sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-        ),
-        inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
+    with pytest.warns(pvlibDeprecationWarning):
+        system = SingleAxisTracker(
+            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
+            temperature_model_parameters=(
+                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
+            ),
+            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
     mocker.spy(system, 'singleaxis')
     mc = ModelChain(system, location)
     mc.run_model(weather)
@@ -755,12 +756,13 @@ def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
 
 def test_run_model_tracker_list(
         sapm_dc_snl_ac_system, location, weather, mocker):
-    system = SingleAxisTracker(
-        module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
-        temperature_model_parameters=(
-            sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-        ),
-        inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
+    with pytest.warns(pvlibDeprecationWarning):
+        system = SingleAxisTracker(
+            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
+            temperature_model_parameters=(
+                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
+            ),
+            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
     mocker.spy(system, 'singleaxis')
     mc = ModelChain(system, location)
     mc.run_model([weather])
@@ -1027,12 +1029,13 @@ def test_run_model_from_poa_arrays_solar_position_weather(
 
 def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
                                      total_irrad):
-    system = SingleAxisTracker(
-        module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
-        temperature_model_parameters=(
-            sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-        ),
-        inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
+    with pytest.warns(pvlibDeprecationWarning):
+        system = SingleAxisTracker(
+            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
+            temperature_model_parameters=(
+                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
+            ),
+            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
     mc = ModelChain(system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
     ac = mc.run_model_from_poa(total_irrad).results.ac

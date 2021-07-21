@@ -6,8 +6,10 @@ from pvlib.pvsystem import (
     PVSystem, Array, SingleAxisTrackerMount, _unwrap_single_value
 )
 from pvlib import irradiance, atmosphere
+from pvlib._deprecation import deprecated
 
 
+@deprecated('0.9.0', alternative='PVSystem with SingleAxisTrackingMount')
 class SingleAxisTracker(PVSystem):
     """
     A class for single-axis trackers that inherits the PV modeling methods from

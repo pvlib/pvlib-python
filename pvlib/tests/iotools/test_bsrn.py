@@ -14,7 +14,7 @@ from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
 def bsrn_credentials():
     """Supplies the BSRN FTP credentials for testing purposes.
 
-    Users should obtain there own credentials as described in the `read_bsrn`
+    Users should obtain their own credentials as described in the `read_bsrn`
     documentation."""
     bsrn_username = os.environ["BSRN_FTP_USERNAME"]
     bsrn_password = os.environ["BSRN_FTP_PASSWORD"]
@@ -64,7 +64,7 @@ def test_read_bsrn_logical_records_not_found():
     # Test if an empty dataframe is returned if specified LRs are not present
     data, metadata = read_bsrn(DATA_DIR / 'bsrn-lr0100-pay0616.dat',
                                logical_records=['0300', '0500'])
-    assert_index_equal(pd.DataFrame().index, data.index)
+    assert data.empty  # assert that the dataframe is empty
     assert 'uva_global' in data.columns
     assert 'uvb_reflected_std' in data.columns
     assert 'uva_global_max' in data.columns

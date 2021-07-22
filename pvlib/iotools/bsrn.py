@@ -60,8 +60,8 @@ def _empty_dataframe_from_logical_records(logical_records):
     return pd.DataFrame(columns=columns)
 
 
-def get_bsrn(start, end, station, username, password, logical_records=['0100'],
-             local_path=None):
+def get_bsrn(start, end, station, username, password,
+             logical_records=('0100',), local_path=None):
     """
     Retrieve ground measured irradiance data from the BSRN FTP server.
 
@@ -83,9 +83,9 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
         username for accessing the BSRN FTP server
     password: str
         password for accessing the BSRN FTP server
-    logical_records: str or list, default: ['0100']
-        List of the logical records (LR) to parse. Options are: '0100', '0300',
-        and '0500'.
+    logical_records: list or tuple, default: ('0100',)
+        List of the logical records (LR) to parse. Options include: '0100',
+        '0300', and '0500'.
     local_path: str or path-like, optional
         If specified, path (abs. or relative) of where to save files
 
@@ -93,8 +93,8 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     -------
     data: DataFrame
         timeseries data from the BSRN archive, see
-        :func:`pvlib.iotools.read_bsrn` for fields. Empty DataFrame if data is
-        not available for the specified period.
+        :func:`pvlib.iotools.read_bsrn` for fields. An empty DataFrame is
+        returned if no data was found for the time period.
     metadata: dict
         metadata for the last available monthly file.
 
@@ -106,19 +106,20 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     Warns
     -----
     UserWarning
-        If a requested file is missing a UserWarning is returned with the
-        filename. Also, if no files match the specified station and timeframe.
+        If one or more requested files are missing a UserWarning is returned
+        with a list of the filenames missing. If no files match the specified
+        station and timeframe a seperate UserWarning is given.
 
     Notes
     -----
     The username and password for the BSRN FTP server can be obtained for free
     as described in the BSRN's Data Release Guidelines [3]_.
 
-    Currently only parsing of LR0100, LR0300, and LR0500 is supported. Note
-    not all stations measure LR0300 and LR0500. However, LR0100 is mandatory as
-    it contains the basic irradiance and auxillary measurements. See
-    [4]_ for a description of the different logical records. Future updates may
-    include parsing of additional data and metadata.
+    Currently only parsing of logical records 0100, 0300 and 0500 is supported.
+    Note not all stations measure LR0300 and LR0500. However, LR0100 is
+    mandatory as it contains the basic irradiance and auxillary measurements.
+    See [4]_ for a description of the different logical records. Future updates
+    may include parsing of additional data and metadata.
 
     Important
     ---------
@@ -153,7 +154,8 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     station = station.lower()
 
     # Generate list files to download based on start/end (SSSMMYY.dat.gz)
-    filenames = pd.date_range(start, end + pd.DateOffset(months=1), freq='1M')\
+    filenames = pd.date_range(
+        start, end.replace(day=1) + pd.DateOffset(months=1), freq='1M')\
         .strftime(f"{station}%m%y.dat.gz").tolist()
 
     # Create FTP connection
@@ -180,10 +182,10 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
                     # Create local file
                     with open(os.path.join(local_path, filename), 'wb') as f:
                         f.write(bio.getbuffer())  # Write local file
-                # Decompress/unzip and decode the binary file
-                text = gzip.decompress(bio.getvalue()).decode('latin1')
-                # Convert string to StringIO and parse data
-                dfi, metadata = parse_bsrn(io.StringIO(text), logical_records)
+                # Open gzip file and convert to StringIO
+                gzip_file = io.TextIOWrapper(gzip.GzipFile(fileobj=bio),
+                                             encoding='latin1')
+                dfi, metadata = parse_bsrn(gzip_file, logical_records)
                 dfs.append(dfi)
             # FTP client raises an error if the file does not exist on server
             except ftplib.error_perm as e:
@@ -209,7 +211,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     return data, metadata
 
 
-def parse_bsrn(fbuf, logical_records=['0100']):
+def parse_bsrn(fbuf, logical_records=('0100',)):
     """
     Parse a file-like buffer of a BSRN station-to-archive file.
 
@@ -217,15 +219,16 @@ def parse_bsrn(fbuf, logical_records=['0100']):
     ----------
     fbuf: file-like buffer
         Buffer of a BSRN station-to-archive data file
-    logical_records: str or list, default: ['0100']
-        List of the logical records (LR) to parse. Options are: '0100', '0300',
-        and '0500'.
+    logical_records: list or tuple, default: ('0100',)
+        List of the logical records (LR) to parse. Options include: '0100',
+        '0300', and '0500'.
 
     Returns
     -------
     data: DataFrame
         timeseries data from the BSRN archive, see
-        :func:`pvlib.iotools.read_bsrn` for fields.
+        :func:`pvlib.iotools.read_bsrn` for fields. An empty DataFrame is
+        returned if the specified logical records were not found.
     metadata: dict
         Dictionary containing metadata (primarily from LR0004).
 
@@ -253,7 +256,7 @@ def parse_bsrn(fbuf, logical_records=['0100']):
     metadata['date when station description changed'] = fbuf.readline().strip()
     metadata['surface type'] = int(fbuf.readline(3))
     metadata['topography type'] = int(fbuf.readline())
-    metadata['address'] = fbuf.readline().strip().strip()
+    metadata['address'] = fbuf.readline().strip()
     metadata['telephone no. of station'] = fbuf.readline(20).strip()
     metadata['FAX no. of station'] = fbuf.readline().strip()
     metadata['TCP/IP no. of station'] = fbuf.readline(15).strip()
@@ -284,15 +287,15 @@ def parse_bsrn(fbuf, logical_records=['0100']):
     for num, line in enumerate(fbuf):
         if line.startswith('*'):  # Find start of all logical records
             if len(lr_startrow) >= 1:
-                lr_nrows[lr] = num - max(lr_startrow.values())-1  # noqa: F821
+                lr_nrows[lr] =  num - lr_startrow[lr] - 1  # noqa: F821
             lr = line[2:6]  # string of 4 digit LR number
             lr_startrow[lr] = num
     lr_nrows[lr] = num - lr_startrow[lr]
 
-    for lr in list(logical_records):
+    for lr in logical_records:
         if lr not in ['0100', '0300', '0500']:
             raise ValueError(f"Logical record {lr} not in "
-                             f"{['0100', '0300','0500']}.")
+                             "['0100', '0300','0500'].")
     dfs = []  # Initialize empty list for dataframe
 
     # Parse LR0100 - basic measurements including GHI, DNI, DHI and temperature
@@ -353,7 +356,7 @@ def parse_bsrn(fbuf, logical_records=['0100']):
     return data, metadata
 
 
-def read_bsrn(filename, logical_records=['0100']):
+def read_bsrn(filename, logical_records=('0100',)):
     """
     Read a BSRN station-to-archive file into a DataFrame.
 
@@ -372,16 +375,16 @@ def read_bsrn(filename, logical_records=['0100']):
     ----------
     filename: str or path-like
         Name or path of a BSRN station-to-archive data file
-    logical_records: str or list, default: ['0100']
-        List of the logical records (LR) to parse. Options are: '0100', '0300',
-        and '0500'.
+    logical_records: list or tuple, default: ('0100',)
+        List of the logical records (LR) to parse. Options include: '0100',
+        '0300', and '0500'.
 
     Returns
     -------
     data: DataFrame
-        A DataFrame with the columns as described below. For more extensive
+        A DataFrame with the columns as described below. For a more extensive
         description of the variables, consult [2]_. An empty DataFrame is
-        returned if the specificed logical records were not found.
+        returned if the specified logical records were not found.
     metadata: dict
         Dictionary containing metadata (primarily from LR0004).
 
@@ -405,7 +408,7 @@ def read_bsrn(filename, logical_records=['0100']):
     **Logical record 0300**
     ---------------------------------------------------------------------------
     gri†                     float   Mean ground-reflected irradiance [W/m^2]
-    lwu†                     float   Mean lowng-wave upwelling irradiance [W/m^2]
+    lwu†                     float   Mean long-wave upwelling irradiance [W/m^2]
     net_radiation†           float   Mean net radiation (net radiometer) [W/m^2]
     -----------------------  ------  ------------------------------------------
     **Logical record 0500**
@@ -418,12 +421,12 @@ def read_bsrn(filename, logical_records=['0100']):
     =======================  ======  ==========================================
 
     † Marked variables have corresponding columns for the standard deviation
-    (_std), minimum (_min), and maximum (_max) based on the 60 samples made
-    for each minute.
+    (_std), minimum (_min), and maximum (_max) calculated from the 60 samples
+    that are average into each 1-minute measurement.
 
     Hint
     ----
-    According to [2]_ ""All time labels in the station-to-archive files denote
+    According to [2]_ "All time labels in the station-to-archive files denote
     the start of a time interval." This corresponds to left bin edge labeling.
 
     See Also

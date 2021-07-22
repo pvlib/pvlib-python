@@ -736,7 +736,7 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
 def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
     with pytest.warns(pvlibDeprecationWarning):
         system = SingleAxisTracker(
-            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
+            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
             temperature_model_parameters=(
                 sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
             ),
@@ -758,7 +758,7 @@ def test_run_model_tracker_list(
         sapm_dc_snl_ac_system, location, weather, mocker):
     with pytest.warns(pvlibDeprecationWarning):
         system = SingleAxisTracker(
-            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
+            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
             temperature_model_parameters=(
                 sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
             ),
@@ -1031,7 +1031,7 @@ def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
                                      total_irrad):
     with pytest.warns(pvlibDeprecationWarning):
         system = SingleAxisTracker(
-            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
+            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
             temperature_model_parameters=(
                 sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
             ),

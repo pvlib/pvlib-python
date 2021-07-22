@@ -15,9 +15,9 @@ BSRN_LR0100_COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27),
                          (27, 32), (32, 39), (39, 45), (45, 50), (50, 55),
                          (55, 64), (64, 70), (70, 75)]
 
-BSRN_LR0300_COL_SPECS = [(1, 3), (4, 9), (10, 16), (16, 22), (22, 27), (27,31),
-                         (31, 38), (38, 44), (44, 49), (49, 54), (54, 61),
-                         (61, 67), (67, 72), (72, 78)]
+BSRN_LR0300_COL_SPECS = [(1, 3), (4, 9), (10, 16), (16, 22), (22, 27),
+                         (27, 31), (31, 38), (38, 44), (44, 49), (49, 54),
+                         (54, 61), (61, 67), (67, 72), (72, 78)]
 
 BSRN_LR0500_COL_SPECS = [(0, 3), (3, 8), (8, 14), (14, 20), (20, 26), (26, 32),
                          (32, 38), (38, 44), (44, 50), (50, 56), (56, 62),
@@ -47,7 +47,7 @@ BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global_mean', 'uva_global_std',
                        'uvb_reflect_mean', 'uvb_reflect_std',
                        'uvb_reflect_min', 'uvb_reflect_max']
 
-BSRN_COLUMNS = {'0100': BSRN_LR0100_COLUMNS, '0500': BSRN_LR0500_COLUMNS,
+BSRN_COLUMNS = {'0100': BSRN_LR0100_COLUMNS, '0300': BSRN_LR0300_COLUMNS,
                 '0500': BSRN_LR0500_COLUMNS}
 
 
@@ -68,7 +68,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     The BSRN (Baseline Surface Radiation Network) is a world wide network
     of high-quality solar radiation monitoring stations as described in [1]_.
     Data is retrieved from the BSRN FTP server [2]_.
-    
+
     Data is returned for the entire months between and including start and end.
 
     Parameters
@@ -392,7 +392,7 @@ def read_bsrn(filename, logical_records=['0100']):
     =======================  ======  ==========================================
     Key                      Format  Description
     =======================  ======  ==========================================
-    *Logical record 0100*
+    **Logical record 0100**
     ---------------------------------------------------------------------------
     ghi†                     float   Mean global horizontal irradiance [W/m^2]
     dni†                     float   Mean direct normal irradiance [W/m^2]
@@ -402,13 +402,13 @@ def read_bsrn(filename, logical_records=['0100']):
     relative_humidity        float   Relative humidity [%]
     pressure                 float   Atmospheric pressure [hPa]
     ---------------------------------------------------------------------------
-    *Logical record 0300*
+    **Logical record 0300**
     ---------------------------------------------------------------------------
-    gri†                     float   
+    gri†                     float   Ground-reflected irradiance [W/m^2]
     lwu†                     float   Lowng-wave upwelling irradiance [W/m^2]
     net_radiation†           float   Net radiation (net radiometer) [W/m^2]
     ---------------------------------------------------------------------------
-    *Logical record 0500*
+    **Logical record 0500**
     ---------------------------------------------------------------------------
     uva_global†              float   UV-A global irradiance [W/m^2]
     uvb_direct†              float   UV-B direct irradiance [W/m^2]

@@ -183,6 +183,7 @@ def get_bsrn(start, end, station, username, password,
                     with open(os.path.join(local_path, filename), 'wb') as f:
                         f.write(bio.getbuffer())  # Write local file
                 # Open gzip file and convert to StringIO
+                bio.seek(0)  # reset buffer to start of file
                 gzip_file = io.TextIOWrapper(gzip.GzipFile(fileobj=bio),
                                              encoding='latin1')
                 dfi, metadata = parse_bsrn(gzip_file, logical_records)

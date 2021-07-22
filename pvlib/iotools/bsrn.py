@@ -36,16 +36,16 @@ BSRN_LR0300_COLUMNS = ['day', 'minute', 'gri', 'gri_std', 'gri_min', 'gri_max',
                        'net_radiation_std', 'net_radiation_min',
                        'net_radiation_max']
 
-BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global_mean', 'uva_global_std',
-                       'uva_global_min', 'uva_global_max', 'uvb_direct_mean',
+BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global', 'uva_global_std',
+                       'uva_global_min', 'uva_global_max', 'uvb_direct',
                        'uvb_direct_std', 'uvb_direct_min', 'uvb_direct_max',
                        'empty', 'empty', 'empty', 'empty',
-                       'uvb_global_mean', 'uvb_global_std', 'uvb_global_min',
-                       'uvb_global_max', 'uvb_diffuse_mean', 'uvb_diffuse_std',
-                       'uvb_diffuse_mean', 'uvb_diffuse_std',
+                       'uvb_global', 'uvb_global_std', 'uvb_global_min',
+                       'uvb_global_max', 'uvb_diffuse', 'uvb_diffuse_std',
+                       'uvb_diffuse', 'uvb_diffuse_std',
                        'uvb_diffuse_min', 'uvb_diffuse_max',
-                       'uvb_reflect_mean', 'uvb_reflect_std',
-                       'uvb_reflect_min', 'uvb_reflect_max']
+                       'uvb_reflected', 'uvb_reflected_std',
+                       'uvb_reflected_min', 'uvb_reflected_max']
 
 BSRN_COLUMNS = {'0100': BSRN_LR0100_COLUMNS, '0300': BSRN_LR0300_COLUMNS,
                 '0500': BSRN_LR0500_COLUMNS}
@@ -404,17 +404,17 @@ def read_bsrn(filename, logical_records=['0100']):
     ---------------------------------------------------------------------------
     **Logical record 0300**
     ---------------------------------------------------------------------------
-    gri†                     float   Ground-reflected irradiance [W/m^2]
-    lwu†                     float   Lowng-wave upwelling irradiance [W/m^2]
-    net_radiation†           float   Net radiation (net radiometer) [W/m^2]
+    gri†                     float   Mean ground-reflected irradiance [W/m^2]
+    lwu†                     float   Mean lowng-wave upwelling irradiance [W/m^2]
+    net_radiation†           float   Mean net radiation (net radiometer) [W/m^2]
     ---------------------------------------------------------------------------
     **Logical record 0500**
     ---------------------------------------------------------------------------
-    uva_global†              float   UV-A global irradiance [W/m^2]
-    uvb_direct†              float   UV-B direct irradiance [W/m^2]
-    uvb_global†              float   UV-B global irradiance [W/m^2]
-    uvb_diffuse†             float   UV-B diffuse irradiance [W/m^2]
-    uvb_reflected†           float   UV-B reflected irradiance [W/m^2]
+    uva_global†              float   Mean UV-A global irradiance [W/m^2]
+    uvb_direct†              float   Mean UV-B direct irradiance [W/m^2]
+    uvb_global†              float   Mean UV-B global irradiance [W/m^2]
+    uvb_diffuse†             float   Mean UV-B diffuse irradiance [W/m^2]
+    uvb_reflected†           float   Mean UV-B reflected irradiance [W/m^2]
     =======================  ======  ==========================================
 
     † Marked variables have corresponding columns for the standard devaiation

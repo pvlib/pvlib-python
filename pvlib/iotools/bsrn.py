@@ -261,8 +261,10 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
     metadata['FAX no. of station'] = fbuf.readline().strip()
     metadata['TCP/IP no. of station'] = fbuf.readline(15).strip()
     metadata['e-mail address of station'] = fbuf.readline().strip()
-    metadata['latitude'] = float(fbuf.readline(8))
-    metadata['longitude'] = float(fbuf.readline(8))
+    metadata['latitude_bsrn'] = float(fbuf.readline(8))  # BSRN convention
+    metadata['latitude'] = metadata['latitude_bsrn'] - 90  # ISO 19115
+    metadata['longitude_bsrn'] = float(fbuf.readline(8))  # BSRN convention
+    metadata['longitude'] = metadata['longitude_bsrn'] - 180  # ISO 19115
     metadata['altitude'] = int(fbuf.readline(5))
     metadata['identification of "SYNOP" station'] = fbuf.readline().strip()
     metadata['date when horizon changed'] = fbuf.readline().strip()
@@ -287,7 +289,7 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
     for num, line in enumerate(fbuf):
         if line.startswith('*'):  # Find start of all logical records
             if len(lr_startrow) >= 1:
-                lr_nrows[lr] =  num - lr_startrow[lr] - 1  # noqa: F821
+                lr_nrows[lr] = num - lr_startrow[lr] - 1  # noqa: F821
             lr = line[2:6]  # string of 4 digit LR number
             lr_startrow[lr] = num
     lr_nrows[lr] = num - lr_startrow[lr]

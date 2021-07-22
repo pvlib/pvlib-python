@@ -15,7 +15,9 @@ BSRN_LR0100_COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27),
                          (27, 32), (32, 39), (39, 45), (45, 50), (50, 55),
                          (55, 64), (64, 70), (70, 75)]
 
-BSRN_LR0300_COL_SPECS = [(0, 3), (4, 9), (10, 16), (16, 22), (22, 27)]
+BSRN_LR0300_COL_SPECS = [(1, 3), (4, 9), (10, 16), (16, 22), (22, 27), (27,31),
+                         (31, 38), (38, 44), (44, 49), (49, 54), (54, 61),
+                         (61, 67), (67, 72), (72, 78)]
 
 BSRN_LR0500_COL_SPECS = [(0, 3), (3, 8), (8, 14), (14, 20), (20, 26), (26, 32),
                          (32, 38), (38, 44), (44, 50), (50, 56), (56, 62),
@@ -29,8 +31,10 @@ BSRN_LR0100_COLUMNS = ['day', 'minute',
                        'lwd', 'lwd_std', 'lwd_min', 'lwd_max',
                        'temp_air', 'relative_humidity', 'pressure']
 
-BSRN_LR0300_COLUMNS = ['day', 'minute', 'upward short-wave reflected',
-                       'upward long-wave', 'net radiation']
+BSRN_LR0300_COLUMNS = ['day', 'minute', 'gri', 'gri_std', 'gri_min', 'gri_max',
+                       'lwu', 'lwu_std', 'lwu_min', 'lwu_max', 'net_radiation',
+                       'net_radiation_std', 'net_radiation_min',
+                       'net_radiation_max']
 
 BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global_mean', 'uva_global_std',
                        'uva_global_min', 'uva_global_max', 'uvb_direct_mean',
@@ -43,6 +47,18 @@ BSRN_LR0500_COLUMNS = ['day', 'minute', 'uva_global_mean', 'uva_global_std',
                        'uvb_reflect_mean', 'uvb_reflect_std',
                        'uvb_reflect_min', 'uvb_reflect_max']
 
+BSRN_COLUMNS = {'0100': BSRN_LR0100_COLUMNS, '0500': BSRN_LR0500_COLUMNS,
+                '0500': BSRN_LR0500_COLUMNS}
+
+
+def _empty_dataframe_from_logical_records(logical_records):
+    # Create an empty DataFrame with the column names corresponding to the
+    # requested logical records
+    columns = []
+    for lr in logical_records:
+        columns += BSRN_COLUMNS[lr][2:]
+    return pd.DataFrame(columns=columns)
+
 
 def get_bsrn(start, end, station, username, password, logical_records=['0100'],
              local_path=None):
@@ -52,6 +68,8 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     The BSRN (Baseline Surface Radiation Network) is a world wide network
     of high-quality solar radiation monitoring stations as described in [1]_.
     Data is retrieved from the BSRN FTP server [2]_.
+    
+    Data is returned for the entire months between and including start and end.
 
     Parameters
     ----------
@@ -68,16 +86,17 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     logical_records: str or list, default: ['0100']
         List of the logical records (LR) to parse. Options are: '0100', '0300',
         and '0500'.
-    local_path: str or path-like, default: None, optional
+    local_path: str or path-like, optional
         If specified, path (abs. or relative) of where to save files
 
     Returns
     -------
     data: DataFrame
         timeseries data from the BSRN archive, see
-        :func:`pvlib.iotools.read_bsrn` for fields
+        :func:`pvlib.iotools.read_bsrn` for fields. Empty DataFrame if data is
+        not available for the specified period.
     metadata: dict
-        metadata for the last available monthly file
+        metadata for the last available monthly file.
 
     Raises
     ------
@@ -156,16 +175,16 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
                 # Check that transfer was successfull
                 if not response.startswith('226 Transfer complete'):
                     raise ftplib.Error(response)
-                # Decompress/unzip and decode the binary file
-                text = gzip.decompress(bio.getvalue()).decode('utf-8')
-                # Convert string to StringIO and parse data
-                dfi, metadata = parse_bsrn(io.StringIO(text), logical_records)
-                dfs.append(dfi)
                 # Save file locally if local_path is specified
                 if local_path is not None:
                     # Create local file
                     with open(os.path.join(local_path, filename), 'wb') as f:
                         f.write(bio.getbuffer())  # Write local file
+                # Decompress/unzip and decode the binary file
+                text = gzip.decompress(bio.getvalue()).decode('latin1')
+                # Convert string to StringIO and parse data
+                dfi, metadata = parse_bsrn(io.StringIO(text), logical_records)
+                dfs.append(dfi)
             # FTP client raises an error if the file does not exist on server
             except ftplib.error_perm as e:
                 if str(e) == '550 Failed to open file.':
@@ -184,7 +203,7 @@ def get_bsrn(start, end, station, username, password, logical_records=['0100'],
     if len(dfs):
         data = pd.concat(dfs, axis='rows')
     else:  # Return empty dataframe
-        data = pd.DataFrame(columns=BSRN_LR0100_COLUMNS)
+        data = _empty_dataframe_from_logical_records(logical_records)
         metadata = {}
     # Return dataframe and metadata (metadata belongs to last available file)
     return data, metadata
@@ -199,14 +218,14 @@ def parse_bsrn(fbuf, logical_records=['0100']):
     fbuf: file-like buffer
         Buffer of a BSRN station-to-archive data file
     logical_records: str or list, default: ['0100']
-        List of the logical records (LR) to parse. Options are: 0100, 0300,
-        and 0500.
+        List of the logical records (LR) to parse. Options are: '0100', '0300',
+        and '0500'.
 
     Returns
     -------
     data: DataFrame
-        A DataFrame containing time-series measurement data. See
-        pvlib.iotools.read_bsrn for fields.
+        timeseries data from the BSRN archive, see
+        :func:`pvlib.iotools.read_bsrn` for fields.
     metadata: dict
         Dictionary containing metadata (primarily from LR0004).
 
@@ -230,7 +249,7 @@ def parse_bsrn(fbuf, logical_records=['0100']):
         if line[2:6] == '0004':  # stop once LR0004 has been reached
             break
         elif line == '':
-            raise ValueError('Mandatatory record LR0004 not found.')
+            raise ValueError('Mandatory record LR0004 not found.')
     metadata['date when station description changed'] = fbuf.readline().strip()
     metadata['surface type'] = int(fbuf.readline(3))
     metadata['topography type'] = int(fbuf.readline())
@@ -252,7 +271,10 @@ def parse_bsrn(fbuf, logical_records=['0100']):
             break
         else:
             horizon += [int(i) for i in line.split()]
-    metadata['horizon'] = pd.Series(horizon[1::2], horizon[::2]).sort_index().drop(-1)  # noqa: E501
+    horizon = pd.Series(horizon[1::2], horizon[::2], name='horizon_elevation',
+                        dtype=int).drop(-1, errors='ignore').sort_index()
+    horizon.index.name = 'azimuth'
+    metadata['horizon'] = horizon
 
     # Read file and store the starting line number and number of lines for
     # each logical record (LR)
@@ -323,7 +345,11 @@ def parse_bsrn(fbuf, logical_records=['0100']):
         LR_0500 = LR_0500.drop(columns=['empty', 'day', 'minute'])
         dfs.append(LR_0500)
 
-    data = pd.concat(dfs, axis='columns')
+    if len(dfs):
+        data = pd.concat(dfs, axis='columns')
+    else:
+        data = _empty_dataframe_from_logical_records(logical_records)
+        metadata = {}
     return data, metadata
 
 
@@ -333,28 +359,29 @@ def read_bsrn(filename, logical_records=['0100']):
 
     The BSRN (Baseline Surface Radiation Network) is a world wide network
     of high-quality solar radiation monitoring stations as described in [1]_.
-    The function is able to parse LR0100, LR0300, and LR0500. LR0100 contains
-    the basic measurements, which include global, diffuse, and direct
-    irradiance, as well as downwelling long-wave radiation [2]_. Future updates
-    may include parsing of additional data and metadata.
+    The function is able to parse logical records (LR) 0100, 0300, and 0500.
+    LR0100 contains the basic measurements, which include global, diffuse, and
+    direct irradiance, as well as downwelling long-wave radiation [2]_. Future
+    updates may include parsing of additional data and metadata.
 
-    BSRN files are freely available and can be accessed via FTP [3]_. Required
-    username and password are easily obtainable as described in the BSRN's
-    Data Release Guidelines [4]_.
+    BSRN files are freely available and can be accessed via FTP [3]_. The
+    username and password for the BSRN FTP server can be obtained for free as
+    described in the BSRN's Data Release Guidelines [3]_.
 
     Parameters
     ----------
     filename: str or path-like
         Name or path of a BSRN station-to-archive data file
     logical_records: str or list, default: ['0100']
-        List of the logical records (LR) to parse. Options are: 0100, 0300,
-        and 0500.
+        List of the logical records (LR) to parse. Options are: '0100', '0300',
+        and '0500'.
 
     Returns
     -------
     data: DataFrame
         A DataFrame with the columns as described below. For more extensive
-        description of the variables, consult [2]_.
+        description of the variables, consult [2]_. An empty DataFrame is
+        returned if the specificed logical records were not found.
     metadata: dict
         Dictionary containing metadata (primarily from LR0004).
 
@@ -365,28 +392,34 @@ def read_bsrn(filename, logical_records=['0100']):
     =======================  ======  ==========================================
     Key                      Format  Description
     =======================  ======  ==========================================
-    ghi                      float   Mean global horizontal irradiance [W/m^2]
-    ghi_std                  float   Std. global horizontal irradiance [W/m^2]
-    ghi_min                  float   Min. global horizontal irradiance [W/m^2]
-    ghi_max                  float   Max. global horizontal irradiance [W/m^2]
-    dni                      float   Mean direct normal irradiance [W/m^2]
-    dni_std                  float   Std. direct normal irradiance [W/m^2]
-    dni_min                  float   Min. direct normal irradiance [W/m^2]
-    dni_max                  float   Max. direct normal irradiance [W/m^2]
-    dhi                      float   Mean diffuse horizontal irradiance [W/m^2]
-    dhi_std                  float   Std. diffuse horizontal irradiance [W/m^2]
-    dhi_min                  float   Min. diffuse horizontal irradiance [W/m^2]
-    dhi_max                  float   Max. diffuse horizontal irradiance [W/m^2]
-    lwd                      float   Mean. downward long-wave radiation [W/m^2]
-    lwd_std                  float   Std. downward long-wave radiation [W/m^2]
-    lwd_min                  float   Min. downward long-wave radiation [W/m^2]
-    lwd_max                  float   Max. downward long-wave radiation [W/m^2]
+    *Logical record 0100*
+    ---------------------------------------------------------------------------
+    ghi†                     float   Mean global horizontal irradiance [W/m^2]
+    dni†                     float   Mean direct normal irradiance [W/m^2]
+    dhi†                     float   Mean diffuse horizontal irradiance [W/m^2]
+    lwd†                     float   Mean. downward long-wave radiation [W/m^2]
     temp_air                 float   Air temperature [°C]
     relative_humidity        float   Relative humidity [%]
     pressure                 float   Atmospheric pressure [hPa]
+    ---------------------------------------------------------------------------
+    *Logical record 0300*
+    ---------------------------------------------------------------------------
+    gri†                     float   
+    lwu†                     float   Lowng-wave upwelling irradiance [W/m^2]
+    net_radiation†           float   Net radiation (net radiometer) [W/m^2]
+    ---------------------------------------------------------------------------
+    *Logical record 0500*
+    ---------------------------------------------------------------------------
+    uva_global†              float   UV-A global irradiance [W/m^2]
+    uvb_direct†              float   UV-B direct irradiance [W/m^2]
+    uvb_global†              float   UV-B global irradiance [W/m^2]
+    uvb_diffuse†             float   UV-B diffuse irradiance [W/m^2]
+    uvb_reflected†           float   UV-B reflected irradiance [W/m^2]
     =======================  ======  ==========================================
 
-    For fields for other logical records, see [2]_.
+    † Marked variables have corresponding columns for the standard devaiation
+    (_std), minimum (_min), and maximum (_max) based on the 60 samples made
+    for each minute.
 
     Hint
     ----

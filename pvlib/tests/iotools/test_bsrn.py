@@ -47,10 +47,10 @@ def test_read_bsrn_logical_records(expected_index):
     data, metadata = read_bsrn(DATA_DIR / 'bsrn-pay0616.dat.gz',
                                logical_records=['0300', '0500'])
     assert_index_equal(expected_index, data.index)
+    assert 'lwu' in data.columns
+    assert 'uva_global' in data.columns
+    assert 'uvb_reflected_std' in data.columns
     assert 'ghi' not in data.columns
-    assert 'upward long-wave' in data.columns
-    assert 'uva_global_mean' in data.columns
-    assert 'uvb_reflect_std' in data.columns
 
 
 def test_read_bsrn_bad_logical_record():
@@ -58,6 +58,18 @@ def test_read_bsrn_bad_logical_record():
     with pytest.raises(ValueError, match='not in'):
         read_bsrn(DATA_DIR / 'bsrn-lr0100-pay0616.dat',
                   logical_records=['dummy'])
+
+
+def test_read_bsrn_logical_records_not_found():
+    # Test if an empty dataframe is returned if specified LRs are not present
+    data, metadata = read_bsrn(DATA_DIR / 'bsrn-lr0100-pay0616.dat',
+                               logical_records=['0300', '0500'])
+    assert_index_equal(pd.DataFrame().index, data.index)
+    assert 'uva_global' in data.columns
+    assert 'uvb_reflected_std' in data.columns
+    assert 'uva_global_max' in data.columns
+    assert 'dni' not in data.columns
+    assert 'day' not in data.columns
 
 
 @requires_bsrn_credentials

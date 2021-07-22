@@ -401,13 +401,13 @@ def read_bsrn(filename, logical_records=['0100']):
     temp_air                 float   Air temperature [°C]
     relative_humidity        float   Relative humidity [%]
     pressure                 float   Atmospheric pressure [hPa]
-    ---------------------------------------------------------------------------
+    -----------------------  ------  ------------------------------------------
     **Logical record 0300**
     ---------------------------------------------------------------------------
     gri†                     float   Mean ground-reflected irradiance [W/m^2]
     lwu†                     float   Mean lowng-wave upwelling irradiance [W/m^2]
     net_radiation†           float   Mean net radiation (net radiometer) [W/m^2]
-    ---------------------------------------------------------------------------
+    -----------------------  ------  ------------------------------------------
     **Logical record 0500**
     ---------------------------------------------------------------------------
     uva_global†              float   Mean UV-A global irradiance [W/m^2]
@@ -417,7 +417,7 @@ def read_bsrn(filename, logical_records=['0100']):
     uvb_reflected†           float   Mean UV-B reflected irradiance [W/m^2]
     =======================  ======  ==========================================
 
-    † Marked variables have corresponding columns for the standard devaiation
+    † Marked variables have corresponding columns for the standard deviation
     (_std), minimum (_min), and maximum (_max) based on the 60 samples made
     for each minute.
 
@@ -442,7 +442,7 @@ def read_bsrn(filename, logical_records=['0100']):
        <https://bsrn.awi.de/data/data-retrieval-via-ftp/>`_
     .. [4] `BSRN Data Release Guidelines
        <https://bsrn.awi.de/data/conditions-of-data-release/>`_
-    """
+    """  # noqa: E501
     if str(filename).endswith('.gz'):  # check if file is a gzipped (.gz) file
         open_func, mode = gzip.open, 'rt'
     else:

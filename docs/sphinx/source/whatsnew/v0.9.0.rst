@@ -179,9 +179,8 @@ Bug fixes
 * Corrected an error affecting :py:func:`~pvlib.clearsky.detect_clearsky`
   when data time step is not one minute. Error was introduced in v0.8.1.
   (:issue:`1241`, :pull:`1242`)
-* Corrected :py:func:`~pvlib.solarposition.spa_python` to avoid a future warning. (:pull:`1256`)
 * Changed deprecated use of ``.astype()`` to ``.view()`` in :py:mod:`~pvlib.solarposition`.
-  (:issue:`1261`, :pull:`1262`)
+  (:pull:`1256`, :issue:`1261`, :pull:`1262`)
 
 Testing
 ~~~~~~~

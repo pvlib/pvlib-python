@@ -41,8 +41,7 @@ ERA5_DEFAULT_VARIABLES = [
     'mean_surface_downward_short_wave_radiation_flux_clear_sky',
     'mean_surface_direct_short_wave_radiation_flux',
     'mean_surface_direct_short_wave_radiation_flux_clear_sky',
-    'mean_top_downward_short_wave_radiation_flux'
-    ]
+    'mean_top_downward_short_wave_radiation_flux']
 
 
 ERA5_VARIABLE_MAP = {
@@ -52,14 +51,12 @@ ERA5_VARIABLE_MAP = {
     'mean_surface_downward_short_wave_radiation_flux_clear_sky': 'ghi_clear',
     'mean_surface_direct_short_wave_radiation_flux': 'bhi',
     'mean_surface_direct_short_wave_radiation_flux_clear_sky': 'bhi_clear',
-    'mean_top_downward_short_wave_radiation_flux': 'ghi_extra',
-    }
+    'mean_top_downward_short_wave_radiation_flux': 'ghi_extra'}
 
 
 ERA5_EXTENSIONS = {
     'netcdf': '.nc',
-    'grib': '.grib',
-    }
+    'grib': '.grib'}
 
 ERA5_HOURS = [
     '00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00',
@@ -95,7 +92,7 @@ def get_era5(latitude, longitude, start, end,
 
     Also, access requires user registration [3]_ and creating a local file with
     your personal API key, see [4]_ for instructions.
-    
+
     Important
     ---------
     Retrieving data from the CDS data store is significanlty slower than
@@ -104,7 +101,7 @@ def get_era5(latitude, longitude, start, end,
 
     You can check the status of your api at
     https://cds.climate.copernicus.eu/cdsapp#!/yourrequests
-    
+
     The status of all queued requests can be seen at
     https://cds.climate.copernicus.eu/live/queue
 
@@ -185,18 +182,17 @@ def get_era5(latitude, longitude, start, end,
         'date': start.strftime('%Y-%m-%d') + '/' + end.strftime('%Y-%m-%d'),
         'time': ERA5_HOURS,
         'grid': grid,
-        'area': area,
-        }
+        'area': area}
 
     # Retrieve path to the file
     file_location = cds_client.retrieve(dataset_name, params)
-    
+
     if file_format not in list(ERA5_EXTENSIONS):
         raise ValueError(f"File format must be in {list(ERA5_EXTENSIONS)}")
 
     # Load file into memory
     with requests.get(file_location.location) as res:
-        if file_format=='netcdf':  # open netcdf files using xarray
+        if file_format == 'netcdf':  # open netcdf files using xarray
             ds = xr.open_dataset(res.content)
 
         # Save the file locally if local_path has been specified
@@ -204,7 +200,7 @@ def get_era5(latitude, longitude, start, end,
             with open(local_path, 'wb') as f:
                 f.write(res.content)
 
-    if (file_format=='grib') & (local_path is not None):
+    if (file_format == 'grib') & (local_path is not None):
         warnings.warn('Parsing of grib files is not supported.')
         ds = xr.open_dataset(local_path, engine='cfgrib')
     elif (file_format == 'grib') & (local_path is None):
@@ -222,12 +218,12 @@ def read_era5(filename, map_variables=True):
     The ERA5 time stamp convention is to label data periods by the right edge,
     e.g., the time stamp 12:00 for hourly data refers to the period from 11.00
     to 12:00.
-    
+
     """
     # load into memory
-    #with urlopen(filename) as f:
-    #    ds = xr.open_dataset(f.read())
+    # with urlopen(filename) as f:
+    #     ds = xr.open_dataset(f.read())
 
-    ds = xr.open_dataset(filename)  #, chunks=chunks)
+    ds = xr.open_dataset(filename)  # chunks=chunks)
 
     return ds

@@ -13,7 +13,8 @@ object-oriented programming. These classes can help users keep track of
 data in a more organized way, and can help to simplify the modeling
 process. The classes do not add any functionality beyond the procedural
 code. Most of the object methods are simple wrappers around the
-corresponding procedural code.
+corresponding procedural code. For examples of using these classes, see
+the :ref:`pvsystemdoc` and :ref:`modelchaindoc` pages.
 
 .. autosummary::
    :toctree: generated/
@@ -21,6 +22,8 @@ corresponding procedural code.
    location.Location
    pvsystem.PVSystem
    pvsystem.Array
+   pvsystem.FixedMount
+   pvsystem.SingleAxisTrackerMount
    tracking.SingleAxisTracker
    modelchain.ModelChain
    modelchain.ModelChainResult
@@ -486,6 +489,8 @@ of sources and file formats relevant to solar energy modeling.
    iotools.parse_psm3
    iotools.get_pvgis_tmy
    iotools.read_pvgis_tmy
+   iotools.get_pvgis_hourly
+   iotools.read_pvgis_hourly
    iotools.read_bsrn
    iotools.get_cams
    iotools.read_cams

@@ -100,9 +100,17 @@ Deprecations
   * ``PVSystem.surface_azimuth``
   * ``PVSystem.temperature_model_parameters``
 
+* The :py:class:`pvlib.tracking.SingleAxisTracker` class is deprecated and
+  replaced by using :py:class:`pvlib.pvsystem.PVSystem` with the new
+  :py:class:`pvlib.pvsystem.SingleAxisTrackerMount` (:pull:`1176`)
+
 
 Enhancements
 ~~~~~~~~~~~~
+* Added :func:`~pvlib.iotools.read_pvgis_hourly` and
+  :func:`~pvlib.iotools.get_pvgis_hourly` for reading and retrieving hourly
+  solar radiation data and PV power output from PVGIS. (:pull:`1186`,
+  :issue:`849`)
 * Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
   files. (:pull:`1145`, :issue:`1015`)
 * Add :func:`~pvlib.iotools.get_cams`,
@@ -116,6 +124,9 @@ Enhancements
 * Added :py:class:`~pvlib.pvsystem.Array` class to represent an array of
   modules separately from a :py:class:`~pvlib.pvsystem.PVSystem`.
   (:pull:`1076`, :issue:`1067`)
+* Added :py:class:`~pvlib.pvsystem.FixedMount` and
+  :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount` classes to use with
+  the new :py:class:`~pvlib.pvsystem.Array` class (:pull:`1176`)
 * Added capability for modeling a PV system with multiple arrays in
   :py:class:`~pvlib.pvsystem.PVSystem`. Updates the ``PVSystem`` API
   to operate on and return tuples where each element of the tuple corresponds
@@ -175,6 +186,8 @@ Bug fixes
 * Corrected an error affecting :py:func:`~pvlib.clearsky.detect_clearsky`
   when data time step is not one minute. Error was introduced in v0.8.1.
   (:issue:`1241`, :pull:`1242`)
+* Changed deprecated use of ``.astype()`` to ``.view()`` in :py:mod:`~pvlib.solarposition`.
+  (:pull:`1256`, :issue:`1261`, :pull:`1262`)
 
 Testing
 ~~~~~~~
@@ -212,3 +225,5 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Joe Ranalli (:ghuser:`jranalli`)
 * Chas Schweizer (:ghuser:`cpr-chas`)
+* Yoann Louvet (:ghuser:`YoannUniKS`)
+* Brandon Carpenter (:ghuser:`hashstat`)

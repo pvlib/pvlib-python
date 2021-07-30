@@ -363,7 +363,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     raise ValueError(err_msg)
 
 
-def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
+def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
                   timeout=30):
     """
@@ -372,9 +372,9 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
 
     Parameters
     ----------
-    lat : float
+    latitude : float
         Latitude in degrees north
-    lon : float
+    longitude : float
         Longitude in dgrees east
     outputformat : str, default 'json'
         Must be in ``['csv', 'basic', 'epw', 'json']``. See PVGIS TMY tool
@@ -403,8 +403,8 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
         TMY year for each month, ``None`` for basic and EPW
     inputs : dict
         the inputs, ``None`` for basic and EPW
-    meta : list or dict
-        meta data, ``None`` for basic
+    metadata : list or dict
+        file metadata, ``None`` for basic
 
     Raises
     ------
@@ -426,7 +426,7 @@ def get_pvgis_tmy(lat, lon, outputformat='json', usehorizon=True,
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
     """
     # use requests to format the query string by passing params dictionary
-    params = {'lat': lat, 'lon': lon, 'outputformat': outputformat}
+    params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat}
     # pvgis only likes 0 for False, and 1 for True, not strings, also the
     # default for usehorizon is already 1 (ie: True), so only set if False
     if not usehorizon:
@@ -546,8 +546,8 @@ def read_pvgis_tmy(filename, pvgis_format=None):
         TMY year for each month, ``None`` for basic and EPW
     inputs : dict
         the inputs, ``None`` for basic and EPW
-    meta : list or dict
-        meta data, ``None`` for basic
+    metadata : list or dict
+        file metadata, ``None`` for basic
 
     Raises
     ------

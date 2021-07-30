@@ -61,7 +61,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     Returns
     -------
-    headers : dict
+    metadata : dict
         metadata from NREL PSM3 about the record, see
         :func:`pvlib.iotools.parse_psm3` for fields
     data : pandas.DataFrame
@@ -177,14 +177,14 @@ def parse_psm3(fbuf):
 
     Returns
     -------
-    headers : dict
+    metadata : dict
         metadata from NREL PSM3 about the record, see notes for fields
     data : pandas.DataFrame
         timeseries data from NREL PSM3
 
     Notes
     -----
-    The return is a tuple with two items. The first item is a header with
+    The return is a tuple with two items. The first item is a dictionary with
     metadata from NREL PSM3 about the record containing the following fields:
 
     * Source
@@ -254,17 +254,17 @@ def parse_psm3(fbuf):
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
     """
     # The first 2 lines of the response are headers with metadata
-    header_fields = fbuf.readline().split(',')
-    header_fields[-1] = header_fields[-1].strip()  # strip trailing newline
-    header_values = fbuf.readline().split(',')
-    header_values[-1] = header_values[-1].strip()  # strip trailing newline
-    header = dict(zip(header_fields, header_values))
-    # the response is all strings, so set some header types to numbers
-    header['Local Time Zone'] = int(header['Local Time Zone'])
-    header['Time Zone'] = int(header['Time Zone'])
-    header['Latitude'] = float(header['Latitude'])
-    header['Longitude'] = float(header['Longitude'])
-    header['Elevation'] = int(header['Elevation'])
+    metadata_fields = fbuf.readline().split(',')
+    metadata_fields[-1] = metadata_fields[-1].strip()  # strip trailing newline
+    metadata_values = fbuf.readline().split(',')
+    metadata_values[-1] = metadata_values[-1].strip()  # strip trailing newline
+    metadata = dict(zip(metadata_fields, metadata_values))
+    # the response is all strings, so set some metadata types to numbers
+    metadata['Local Time Zone'] = int(metadata['Local Time Zone'])
+    metadata['Time Zone'] = int(metadata['Time Zone'])
+    metadata['Latitude'] = float(metadata['Latitude'])
+    metadata['Longitude'] = float(metadata['Longitude'])
+    metadata['Elevation'] = int(metadata['Elevation'])
     # get the column names so we can set the dtypes
     columns = fbuf.readline().split(',')
     columns[-1] = columns[-1].strip()  # strip trailing newline
@@ -282,10 +282,10 @@ def parse_psm3(fbuf):
     dtidx = pd.to_datetime(
         data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
     # in USA all timezones are integers
-    tz = 'Etc/GMT%+d' % -header['Time Zone']
+    tz = 'Etc/GMT%+d' % -metadata['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
 
-    return header, data
+    return metadata, data
 
 
 def read_psm3(filename):
@@ -300,7 +300,7 @@ def read_psm3(filename):
 
     Returns
     -------
-    headers : dict
+    metadata : dict
         metadata from NREL PSM3 about the record, see
         :func:`pvlib.iotools.parse_psm3` for fields
     data : pandas.DataFrame

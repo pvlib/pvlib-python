@@ -54,7 +54,8 @@ weather = pd.DataFrame({
 loc = location.Location.from_tmy(metadata)
 solpos = loc.get_solarposition(weather.index)
 # same default monthly tilts as SAM:
-mount = SeasonalTiltMount(monthly_tilts=[40, 40, 40, 20, 20, 20, 20, 20, 20, 40, 40, 40])
+tilts = [40, 40, 40, 20, 20, 20, 20, 20, 20, 40, 40, 40]
+mount = SeasonalTiltMount(monthly_tilts=tilts)
 orientation = mount.get_orientation(solpos.apparent_zenith, solpos.azimuth)
 orientation['surface_tilt'].plot()
 plt.ylabel('Surface Tilt [degrees]')

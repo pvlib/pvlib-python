@@ -60,7 +60,7 @@ def _empty_dataframe_from_logical_records(logical_records):
     return pd.DataFrame(columns=columns)
 
 
-def get_bsrn(start, end, station, username, password,
+def get_bsrn(station, start, end, username, password,
              logical_records=('0100',), local_path=None):
     """
     Retrieve ground measured irradiance data from the BSRN FTP server.

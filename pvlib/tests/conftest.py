@@ -3,6 +3,7 @@ import platform
 import warnings
 
 import pandas as pd
+import os
 from pkg_resources import parse_version
 import pytest
 from functools import wraps
@@ -80,6 +81,18 @@ RERUNS_DELAY = 2
 platform_is_windows = platform.system() == 'Windows'
 skip_windows = pytest.mark.skipif(platform_is_windows,
                                   reason='does not run on windows')
+
+
+try:
+    # Attempt to load BSRN credentials used for testing pvlib.iotools.get_bsrn
+    bsrn_username = os.environ["BSRN_FTP_USERNAME"]
+    bsrn_password = os.environ["BSRN_FTP_PASSWORD"]
+    has_bsrn_credentials = True
+except KeyError:
+    has_bsrn_credentials = False
+
+requires_bsrn_credentials = pytest.mark.skipif(
+    not has_bsrn_credentials, reason='requires bsrn credentials')
 
 
 try:

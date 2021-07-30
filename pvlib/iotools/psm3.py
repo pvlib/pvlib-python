@@ -61,11 +61,11 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     Returns
     -------
+    data : pandas.DataFrame
+        timeseries data from NREL PSM3
     metadata : dict
         metadata from NREL PSM3 about the record, see
         :func:`pvlib.iotools.parse_psm3` for fields
-    data : pandas.DataFrame
-        timeseries data from NREL PSM3
 
     Raises
     ------
@@ -177,10 +177,10 @@ def parse_psm3(fbuf):
 
     Returns
     -------
-    metadata : dict
-        metadata from NREL PSM3 about the record, see notes for fields
     data : pandas.DataFrame
         timeseries data from NREL PSM3
+    metadata : dict
+        metadata from NREL PSM3 about the record, see notes for fields
 
     Notes
     -----
@@ -240,7 +240,7 @@ def parse_psm3(fbuf):
     --------
     >>> # Read a local PSM3 file:
     >>> with open(filename, 'r') as f:  # doctest: +SKIP
-    ...     metadata, df = iotools.parse_psm3(f)  # doctest: +SKIP
+    ...     df, metadata = iotools.parse_psm3(f)  # doctest: +SKIP
 
     See Also
     --------
@@ -285,7 +285,7 @@ def parse_psm3(fbuf):
     tz = 'Etc/GMT%+d' % -metadata['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
 
-    return metadata, data
+    return data, metadata
 
 
 def read_psm3(filename):
@@ -300,11 +300,11 @@ def read_psm3(filename):
 
     Returns
     -------
+    data : pandas.DataFrame
+        timeseries data from NREL PSM3
     metadata : dict
         metadata from NREL PSM3 about the record, see
         :func:`pvlib.iotools.parse_psm3` for fields
-    data : pandas.DataFrame
-        timeseries data from NREL PSM3
 
     See Also
     --------

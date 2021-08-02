@@ -177,6 +177,7 @@ def parse_psm3(fbuf):
 
     Returns
     -------
+    .. versionchanged:: 0.9.0
     data : pandas.DataFrame
         timeseries data from NREL PSM3
     metadata : dict

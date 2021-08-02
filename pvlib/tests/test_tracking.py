@@ -6,8 +6,9 @@ import pytest
 from numpy.testing import assert_allclose
 
 import pvlib
-from pvlib import tracking, pvsystem
+from pvlib import tracking
 from .conftest import DATA_DIR, assert_frame_equal
+from pvlib._deprecation import pvlibDeprecationWarning
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']
@@ -289,51 +290,11 @@ def test_low_sun_angles():
         assert_allclose(expected[k], v)
 
 
-def test_SingleAxisTracker_creation():
-    system = tracking.SingleAxisTracker(max_angle=45,
-                                        gcr=.25,
-                                        module='blah',
-                                        inverter='blarg')
-
-    assert system.max_angle == 45
-    assert system.gcr == .25
-    assert system.arrays[0].module == 'blah'
-    assert system.inverter == 'blarg'
-
-
-def test_SingleAxisTracker_one_array_only():
-    system = tracking.SingleAxisTracker(
-        arrays=[pvsystem.Array(
-            module='foo',
-            surface_tilt=None,
-            surface_azimuth=None
-        )]
-    )
-    assert system.arrays[0].module == 'foo'
-    with pytest.raises(ValueError,
-                       match="SingleAxisTracker does not support "
-                             r"multiple arrays\."):
-        tracking.SingleAxisTracker(
-            arrays=[pvsystem.Array(module='foo'),
-                    pvsystem.Array(module='bar')]
-        )
-    with pytest.raises(ValueError,
-                       match="Array must not have surface_tilt "):
-        tracking.SingleAxisTracker(arrays=[pvsystem.Array(module='foo')])
-    with pytest.raises(ValueError,
-                       match="Array must not have surface_tilt "):
-        tracking.SingleAxisTracker(
-            arrays=[pvsystem.Array(surface_azimuth=None)])
-    with pytest.raises(ValueError,
-                       match="Array must not have surface_tilt "):
-        tracking.SingleAxisTracker(
-            arrays=[pvsystem.Array(surface_tilt=None)])
-
-
 def test_SingleAxisTracker_tracking():
-    system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
-                                        axis_azimuth=180, gcr=2.0/7.0,
-                                        backtrack=True)
+    with pytest.warns(pvlibDeprecationWarning):
+        system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
+                                            axis_azimuth=180, gcr=2.0/7.0,
+                                            backtrack=True)
 
     apparent_zenith = pd.Series([30])
     apparent_azimuth = pd.Series([135])
@@ -353,9 +314,10 @@ def test_SingleAxisTracker_tracking():
     pvsyst_solar_height = 27.315
     pvsyst_axis_tilt = 20.
     pvsyst_axis_azimuth = 20.
-    pvsyst_system = tracking.SingleAxisTracker(
-        max_angle=60., axis_tilt=pvsyst_axis_tilt,
-        axis_azimuth=180+pvsyst_axis_azimuth, backtrack=False)
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsyst_system = tracking.SingleAxisTracker(
+            max_angle=60., axis_tilt=pvsyst_axis_tilt,
+            axis_azimuth=180+pvsyst_axis_azimuth, backtrack=False)
     # the definition of azimuth is different from PYsyst
     apparent_azimuth = pd.Series([180+pvsyst_solar_azimuth])
     apparent_zenith = pd.Series([90-pvsyst_solar_height])
@@ -371,9 +333,10 @@ def test_SingleAxisTracker_tracking():
 
 # see test_irradiance for more thorough testing
 def test_get_aoi():
-    system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
-                                        axis_azimuth=180, gcr=2.0/7.0,
-                                        backtrack=True)
+    with pytest.warns(pvlibDeprecationWarning):
+        system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
+                                            axis_azimuth=180, gcr=2.0/7.0,
+                                            backtrack=True)
     surface_tilt = np.array([30, 0])
     surface_azimuth = np.array([90, 270])
     solar_zenith = np.array([70, 10])
@@ -385,9 +348,10 @@ def test_get_aoi():
 
 
 def test_get_irradiance():
-    system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
-                                        axis_azimuth=180, gcr=2.0/7.0,
-                                        backtrack=True)
+    with pytest.warns(pvlibDeprecationWarning):
+        system = tracking.SingleAxisTracker(max_angle=90, axis_tilt=30,
+                                            axis_azimuth=180, gcr=2.0/7.0,
+                                            backtrack=True)
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     # latitude=32, longitude=-111
@@ -431,9 +395,10 @@ def test_get_irradiance():
 
 
 def test_SingleAxisTracker___repr__():
-    system = tracking.SingleAxisTracker(
-        max_angle=45, gcr=.25, module='blah', inverter='blarg',
-        temperature_model_parameters={'a': -3.56})
+    with pytest.warns(pvlibDeprecationWarning):
+        system = tracking.SingleAxisTracker(
+            max_angle=45, gcr=.25, module='blah', inverter='blarg',
+            temperature_model_parameters={'a': -3.56})
     expected = """SingleAxisTracker:
   axis_tilt: 0
   axis_azimuth: 0
@@ -444,16 +409,14 @@ def test_SingleAxisTracker___repr__():
   name: None
   Array:
     name: None
-    surface_tilt: None
-    surface_azimuth: None
+    mount: SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=45, backtrack=True, gcr=0.25, cross_axis_tilt=0.0, racking_model=None, module_height=None)
     module: blah
     albedo: 0.25
-    racking_model: None
     module_type: None
     temperature_model_parameters: {'a': -3.56}
     strings: 1
     modules_per_string: 1
-  inverter: blarg"""
+  inverter: blarg"""  # noqa: E501
     assert system.__repr__() == expected
 
 

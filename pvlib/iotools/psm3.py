@@ -175,9 +175,13 @@ def parse_psm3(fbuf):
     fbuf: file-like object
         File-like object containing data to read.
 
+    .. versionchanged:: 0.9.0
+       In version v0.9 and forward the output is data, metadata in order to
+       match the general iotools pattern. The order of the output were switched
+       in previous versions of the psm3 functions.
+
     Returns
     -------
-    .. versionchanged:: 0.9.0
     data : pandas.DataFrame
         timeseries data from NREL PSM3
     metadata : dict
@@ -185,8 +189,11 @@ def parse_psm3(fbuf):
 
     Notes
     -----
-    The return is a tuple with two items. The first item is a dictionary with
-    metadata from NREL PSM3 about the record containing the following fields:
+    The return is a tuple with two items. The first item is a dataframe with
+    the PSM3 timeseries data.
+
+    The second item is a dictionary with metadata from NREL PSM3 about the
+    record containing the following fields:
 
     * Source
     * Location ID
@@ -234,8 +241,6 @@ def parse_psm3(fbuf):
     * Fill Flag 5
     * Surface Albedo Units
     * Version
-
-    The second item is a dataframe with the PSM3 timeseries data.
 
     Examples
     --------

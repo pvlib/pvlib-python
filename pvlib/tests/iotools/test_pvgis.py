@@ -356,6 +356,12 @@ def csv_meta(meta_expected):
         in meta_expected['outputs']['tmy_hourly']['variables'].items()]
 
 
+@pytest.fixture
+def pvgis_tmy_mapped_columns():
+    return ['temp_air', 'relative_humidity', 'ghi', 'dni', 'dhi', 'IR(h)',
+            'wind_speed', 'wind_direction', 'pressure']
+
+
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
@@ -479,6 +485,13 @@ def test_get_pvgis_tmy_error():
         get_pvgis_tmy(45, 8, outputformat='bad')
     with pytest.raises(requests.HTTPError, match='404 Client Error'):
         get_pvgis_tmy(45, 8, url='https://re.jrc.ec.europa.eu/')
+
+
+def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
+    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
+    actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)
+    assert all([a == e for a, e in
+                zip(actual.columns, pvgis_tmy_mapped_columns)])
 
 
 def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,

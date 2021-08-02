@@ -175,11 +175,6 @@ def parse_psm3(fbuf):
     fbuf: file-like object
         File-like object containing data to read.
 
-    .. versionchanged:: 0.9.0
-       In version v0.9 and forward the output is data, metadata in order to
-       match the general iotools pattern. The order of the output were switched
-       in previous versions of the psm3 functions.
-
     Returns
     -------
     data : pandas.DataFrame
@@ -258,6 +253,11 @@ def parse_psm3(fbuf):
        <https://nsrdb.nrel.gov/>`_
     .. [2] `Standard Time Series Data File Format
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
+
+    .. versionchanged:: 0.9.0
+       In version v0.9 and forward the output is data, metadata in order to
+       match the general iotools pattern. The order of the output were switched
+       in previous versions of the psm3 functions.
     """
     # The first 2 lines of the response are headers with metadata
     metadata_fields = fbuf.readline().split(',')

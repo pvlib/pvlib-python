@@ -20,6 +20,8 @@ from pathlib import Path
 import requests
 import pandas as pd
 from pvlib.iotools import read_epw, parse_epw
+import warnings
+from pvlib._deprecation import pvlibDeprecationWarning
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
@@ -365,7 +367,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
 
 def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
-                  timeout=30):
+                  map_variables=None, timeout=30):
     """
     Get TMY data from PVGIS. For more information see the PVGIS [1]_ TMY tool
     documentation [2]_.
@@ -392,6 +394,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         last year to calculate TMY, must be at least 10 years from first year
     url : str, default :const:`pvlib.iotools.pvgis.URL`
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
+    map_variables: bool, default: True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable PVGIS_VARIABLE_MAP.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 
@@ -452,7 +457,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     data = None, None, None, None
     if outputformat == 'json':
         src = res.json()
-        return _parse_pvgis_tmy_json(src)
+        data = _parse_pvgis_tmy_json(src)
     elif outputformat == 'csv':
         with io.BytesIO(res.content) as src:
             data = _parse_pvgis_tmy_csv(src)
@@ -467,6 +472,18 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         # this line is never reached because if outputformat is not valid then
         # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
         pass
+
+    if map_variables is None:
+        warnings.warn(
+                'PVGIS variable names will be renamed to pvlib conventions by '
+                'default starting in pvlib 0.10.0. Specify map_variables=True '
+                'to enable that behavior now, or specify map_variables=False '
+                'to hide this warning.', pvlibDeprecationWarning
+        )
+        map_variables = False
+    if map_variables:
+        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+
     return data
 
 
@@ -521,7 +538,7 @@ def _parse_pvgis_tmy_basic(src):
     return data, None, None, None
 
 
-def read_pvgis_tmy(filename, pvgis_format=None):
+def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     """
     Read a file downloaded from PVGIS.
 
@@ -537,6 +554,10 @@ def read_pvgis_tmy(filename, pvgis_format=None):
         ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
         `filename` is a buffer, then `pvgis_format` is required and must be in
         ``['csv', 'epw', 'json', 'basic']``.
+    map_variables: bool, default: True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable PVGIS_VARIABLE_MAP.
+
 
     Returns
     -------
@@ -580,6 +601,16 @@ def read_pvgis_tmy(filename, pvgis_format=None):
             data, meta = parse_epw(filename)
         except AttributeError:  # str/path has no .read() attribute
             data, meta = read_epw(filename)
+        if map_variables is None:
+            warnings.warn(
+                'PVGIS variable names will be renamed to pvlib conventions by '
+                'default starting in pvlib 0.10.0. Specify map_variables=True '
+                'to enable that behavior now, or specify map_variables=False '
+                'to hide this warning.', pvlibDeprecationWarning
+            )
+            map_variables = False
+        if map_variables:
+            data = data.rename(columns=PVGIS_VARIABLE_MAP)
         return data, None, None, meta
 
     # NOTE: json, csv, and basic output formats have parsers defined as private
@@ -594,7 +625,18 @@ def read_pvgis_tmy(filename, pvgis_format=None):
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'r') as fbuf:
                 src = json.load(fbuf)
-        return _parse_pvgis_tmy_json(src)
+        data = _parse_pvgis_tmy_json(src)
+        if map_variables is None:
+            warnings.warn(
+                'PVGIS variable names will be renamed to pvlib conventions by '
+                'default starting in pvlib 0.10.0. Specify map_variables=True '
+                'to enable that behavior now, or specify map_variables=False '
+                'to hide this warning.', pvlibDeprecationWarning
+            )
+            map_variables = False
+        if map_variables:
+            data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        return data
 
     # CSV or basic: use the correct parser from this module
     # eg: _parse_pvgis_tmy_csv() or _parse_pvgist_tmy_basic()
@@ -608,6 +650,16 @@ def read_pvgis_tmy(filename, pvgis_format=None):
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'rb') as fbuf:
                 pvgis_data = pvgis_parser(fbuf)
+        if map_variables is None:
+            warnings.warn(
+                'PVGIS variable names will be renamed to pvlib conventions by '
+                'default starting in pvlib 0.10.0. Specify map_variables=True '
+                'to enable that behavior now, or specify map_variables=False '
+                'to hide this warning.', pvlibDeprecationWarning
+            )
+            map_variables = False
+        if map_variables:
+            data = data.rename(columns=PVGIS_VARIABLE_MAP)
         return pvgis_data
 
     # raise exception if pvgis format isn't in ['csv', 'basic', 'epw', 'json']

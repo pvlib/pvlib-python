@@ -154,21 +154,25 @@ to accomplish our system modeling goal:
 
 .. _object-oriented:
 
-Object oriented (Location, PVSystem, ModelChain)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Object oriented (Location, Mount, Array, PVSystem, ModelChain)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The first object oriented paradigm uses a model where a
-:py:class:`~pvlib.pvsystem.PVSystem` object represents an assembled
-collection of modules, inverters, etc., a
-:py:class:`~pvlib.location.Location` object represents a particular
-place on the planet, and a :py:class:`~pvlib.modelchain.ModelChain`
-object describes the modeling chain used to calculate PV output at that
-Location. This can be a useful paradigm if you prefer to think about the
+The object oriented paradigm uses a model with three main concepts:
+
+1. System design (modules, inverters etc.) is represented by
+   :py:class:`~pvlib.pvsystem.PVSystem`, :py:class:`~pvlib.pvsystem.Array`,
+   and :py:class:`~pvlib.pvsystem.FixedMount`
+   /:py:class:`~pvlib.pvsystem.SingleAxisTrackerMount` objects.
+2. A particular place on the planet is represented by a
+   :py:class:`~pvlib.location.Location` object.
+3. The modeling chain used to calculate power output for a particular
+   system and location is represented by a
+   :py:class:`~pvlib.modelchain.ModelChain` object.
+
+This can be a useful paradigm if you prefer to think about the
 PV system and its location as separate concepts or if you develop your
 own ModelChain subclasses. It can also be helpful if you make extensive
-use of Location-specific methods for other calculations. pvlib-python
-also includes a :py:class:`~pvlib.tracking.SingleAxisTracker` class that
-is a subclass of :py:class:`~pvlib.pvsystem.PVSystem`.
+use of Location-specific methods for other calculations.
 
 The following code demonstrates how to use
 :py:class:`~pvlib.location.Location`,
@@ -179,14 +183,14 @@ that can provide default selections for models and can also fill
 necessary input with modeled data. For example, no air temperature
 or wind speed data is provided in the input *weather* DataFrame,
 so the ModelChain object defaults to 20 C and 0 m/s. Also, no irradiance
-transposition model is specified (keyword argument `transposition` for
+transposition model is specified (keyword argument `transposition_model` for
 ModelChain) so the ModelChain defaults to the `haydavies` model. In this
 example, ModelChain infers the DC power model from the module provided
 by examining the parameters defined for the module.
 
 .. ipython:: python
 
-    from pvlib.pvsystem import PVSystem
+    from pvlib.pvsystem import PVSystem, Array, FixedMount
     from pvlib.location import Location
     from pvlib.modelchain import ModelChain
 
@@ -200,14 +204,13 @@ by examining the parameters defined for the module.
             altitude=altitude,
             tz=timezone,
         )
-        system = PVSystem(
-            surface_tilt=latitude,
-            surface_azimuth=180,
+        mount = FixedMount(surface_tilt=latitude, surface_azimuth=180)
+        array = Array(
+            mount=mount,
             module_parameters=module,
-            inverter_parameters=inverter,
             temperature_model_parameters=temperature_model_parameters,
         )
-
+        system = PVSystem(arrays=[array], inverter_parameters=inverter)
         mc = ModelChain(system, location)
         mc.run_model(weather)
         annual_energy = mc.results.ac.sum()

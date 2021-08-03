@@ -14,7 +14,7 @@ import pvlib
 from pvlib import tracking, pvsystem, location, modelchain, iotools
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
 import matplotlib.pyplot as plt
-import pathlib
+import pandas as pd
 
 
 # %%
@@ -51,15 +51,10 @@ class DiscontinuousTrackerMount(pvsystem.SingleAxisTrackerMount):
 # %%
 # Let's take a look at the tracker rotation curve it produces:
 
-# a simple weather dataset for illustration -- one day of 1-minute weather
-DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
-weather = iotools.read_bsrn(DATA_DIR / 'bsrn-lr0100-pay0616.dat')
-weather = weather.fillna(0)
-weather = weather.loc['2016-06-23']  # an example clear-sky day
-loc = location.Location(46.8150, 6.9440)  # BSRN Payerne station
-
+times = pd.date_range('2019-06-01', '2019-06-02', freq='1min', tz='US/Eastern')
+loc = location.Location(40, -80)
+solpos = loc.get_solarposition(times)
 mount = DiscontinuousTrackerMount(axis_azimuth=180, gcr=0.4)
-solpos = loc.get_solarposition(weather.index)
 tracker_data = mount.get_orientation(solpos.apparent_zenith, solpos.azimuth)
 tracker_data['tracker_theta'].plot()
 plt.ylabel('Tracker Rotation [degree]')
@@ -76,6 +71,10 @@ array = pvsystem.Array(mount=mount, module_parameters=module_parameters,
 system = pvsystem.PVSystem(arrays=[array], inverter_parameters={'pdc0': 1})
 mc = modelchain.ModelChain(system, loc, spectral_model='no_loss')
 
+# simple simulated weather, just to show the effect of discrete tracking
+weather = loc.get_clearsky(times)
+weather['temp_air'] = 25
+weather['wind_speed'] = 1
 mc.run_model(weather)
 
 fig, axes = plt.subplots(2, 1, sharex=True)

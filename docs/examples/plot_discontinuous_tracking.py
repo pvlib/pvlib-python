@@ -10,8 +10,7 @@ Example of a custom Mount class.
 # rather than through continuous movement. This example shows how to model
 # this discontinuous tracking by implementing a custom Mount class.
 
-import pvlib
-from pvlib import tracking, pvsystem, location, modelchain, iotools
+from pvlib import tracking, pvsystem, location, modelchain
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
 import matplotlib.pyplot as plt
 import pandas as pd

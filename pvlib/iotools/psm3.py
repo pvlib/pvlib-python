@@ -117,6 +117,11 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
        <https://developer.nrel.gov/docs/solar/nsrdb/psm3-tmy-download/>`_
     .. [4] `Physical Solar Model (PSM) v3 - Five Minute Temporal Resolution
        <https://developer.nrel.gov/docs/solar/nsrdb/psm3-5min-download/>`_
+
+    .. versionchanged:: 0.9.0
+       The function now returns a tuple where the first element is a dataframe
+       and the second element is a dictionary containing metadata. Previous
+       versions of this function had the return values switched.
     """
     # The well know text (WKT) representation of geometry notation is strict.
     # A POINT object is a string with longitude first, then the latitude, with
@@ -255,9 +260,9 @@ def parse_psm3(fbuf):
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
 
     .. versionchanged:: 0.9.0
-       In version v0.9 and forward the output is data, metadata in order to
-       match the general iotools pattern. The order of the output were switched
-       in previous versions of the psm3 functions.
+       The function now returns a tuple where the first element is a dataframe
+       and the second element is a dictionary containing metadata. Previous
+       versions of this function had the return values switched.
     """
     # The first 2 lines of the response are headers with metadata
     metadata_fields = fbuf.readline().split(',')
@@ -322,6 +327,11 @@ def read_psm3(filename):
        <https://nsrdb.nrel.gov/>`_
     .. [2] `Standard Time Series Data File Format
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
+
+    .. versionchanged:: 0.9.0
+       The function now returns a tuple where the first element is a dataframe
+       and the second element is a dictionary containing metadata. Previous
+       versions of this function had the return values switched.
     """
     with open(str(filename), 'r') as fbuf:
         content = parse_psm3(fbuf)

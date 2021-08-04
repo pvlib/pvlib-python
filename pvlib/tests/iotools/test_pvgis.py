@@ -490,8 +490,7 @@ def test_get_pvgis_tmy_error():
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
     actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)
-    assert all([a == e for a, e in
-                zip(actual.columns, pvgis_tmy_mapped_columns)])
+    assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
 
 
 def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,

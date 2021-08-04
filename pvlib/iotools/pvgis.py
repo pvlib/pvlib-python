@@ -467,7 +467,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     elif outputformat == 'epw':
         with io.StringIO(res.content.decode('utf-8')) as src:
             data, meta = parse_epw(src)
-            data = (data, None, None, meta)
+            months_selected, inputs = None, None
     else:
         # this line is never reached because if outputformat is not valid then
         # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier

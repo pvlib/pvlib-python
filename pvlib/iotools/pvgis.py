@@ -377,7 +377,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     latitude : float
         Latitude in degrees north
     longitude : float
-        Longitude in dgrees east
+        Longitude in degrees east
     outputformat : str, default 'json'
         Must be in ``['csv', 'basic', 'epw', 'json']``. See PVGIS TMY tool
         documentation [2]_ for more info.

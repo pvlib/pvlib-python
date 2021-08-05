@@ -592,6 +592,15 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     else:
         outputformat = pvgis_format
 
+    if map_variables is None:
+        warnings.warn(
+            'PVGIS variable names will be renamed to pvlib conventions by '
+            'default starting in pvlib 0.10.0. Specify map_variables=True '
+            'to enable that behavior now, or specify map_variables=False '
+            'to hide this warning.', pvlibDeprecationWarning
+        )
+        map_variables = False
+
     # parse the pvgis file based on the output format, either 'epw', 'json',
     # 'csv', or 'basic'
 
@@ -601,14 +610,6 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
             data, meta = parse_epw(filename)
         except AttributeError:  # str/path has no .read() attribute
             data, meta = read_epw(filename)
-        if map_variables is None:
-            warnings.warn(
-                'PVGIS variable names will be renamed to pvlib conventions by '
-                'default starting in pvlib 0.10.0. Specify map_variables=True '
-                'to enable that behavior now, or specify map_variables=False '
-                'to hide this warning.', pvlibDeprecationWarning
-            )
-            map_variables = False
         if map_variables:
             data = data.rename(columns=PVGIS_VARIABLE_MAP)
         return data, None, None, meta
@@ -626,14 +627,6 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
             with open(str(filename), 'r') as fbuf:
                 src = json.load(fbuf)
         data, months_selected, inputs, meta = _parse_pvgis_tmy_json(src)
-        if map_variables is None:
-            warnings.warn(
-                'PVGIS variable names will be renamed to pvlib conventions by '
-                'default starting in pvlib 0.10.0. Specify map_variables=True '
-                'to enable that behavior now, or specify map_variables=False '
-                'to hide this warning.', pvlibDeprecationWarning
-            )
-            map_variables = False
         if map_variables:
             data = data.rename(columns=PVGIS_VARIABLE_MAP)
         return data, months_selected, inputs, meta
@@ -650,17 +643,8 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         except AttributeError:  # str/path has no .read() attribute
             with open(str(filename), 'rb') as fbuf:
                 data, months_selected, inputs, meta = pvgis_parser(fbuf)
-        if map_variables is None:
-            warnings.warn(
-                'PVGIS variable names will be renamed to pvlib conventions by '
-                'default starting in pvlib 0.10.0. Specify map_variables=True '
-                'to enable that behavior now, or specify map_variables=False '
-                'to hide this warning.', pvlibDeprecationWarning
-            )
-            map_variables = False
         if map_variables:
-            data, months_selected, inputs, meta = \
-                data.rename(columns=PVGIS_VARIABLE_MAP)
+            data = data.rename(columns=PVGIS_VARIABLE_MAP)
         return data, months_selected, inputs, meta
 
     # raise exception if pvgis format isn't in ['csv', 'basic', 'epw', 'json']

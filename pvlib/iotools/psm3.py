@@ -28,6 +28,11 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API.  The NSRDB
     is described in [1]_ and the PSM3 API is described in [2]_, [3]_, and [4]_.
 
+    .. versionchanged:: 0.9.0
+       The function now returns a tuple where the first element is a dataframe
+       and the second element is a dictionary containing metadata. Previous
+       versions of this function had the return values switched.
+
     Parameters
     ----------
     latitude : float or int
@@ -117,11 +122,6 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
        <https://developer.nrel.gov/docs/solar/nsrdb/psm3-tmy-download/>`_
     .. [4] `Physical Solar Model (PSM) v3 - Five Minute Temporal Resolution
        <https://developer.nrel.gov/docs/solar/nsrdb/psm3-5min-download/>`_
-
-    .. versionchanged:: 0.9.0
-       The function now returns a tuple where the first element is a dataframe
-       and the second element is a dictionary containing metadata. Previous
-       versions of this function had the return values switched.
     """
     # The well know text (WKT) representation of geometry notation is strict.
     # A POINT object is a string with longitude first, then the latitude, with
@@ -174,6 +174,11 @@ def parse_psm3(fbuf):
     """
     Parse an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
+
+    .. versionchanged:: 0.9.0
+       The function now returns a tuple where the first element is a dataframe
+       and the second element is a dictionary containing metadata. Previous
+       versions of this function had the return values switched.
 
     Parameters
     ----------
@@ -258,11 +263,6 @@ def parse_psm3(fbuf):
        <https://nsrdb.nrel.gov/>`_
     .. [2] `Standard Time Series Data File Format
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
-
-    .. versionchanged:: 0.9.0
-       The function now returns a tuple where the first element is a dataframe
-       and the second element is a dictionary containing metadata. Previous
-       versions of this function had the return values switched.
     """
     # The first 2 lines of the response are headers with metadata
     metadata_fields = fbuf.readline().split(',')
@@ -304,6 +304,11 @@ def read_psm3(filename):
     Read an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
 
+    .. versionchanged:: 0.9.0
+       The function now returns a tuple where the first element is a dataframe
+       and the second element is a dictionary containing metadata. Previous
+       versions of this function had the return values switched.
+
     Parameters
     ----------
     filename: str
@@ -327,11 +332,6 @@ def read_psm3(filename):
        <https://nsrdb.nrel.gov/>`_
     .. [2] `Standard Time Series Data File Format
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
-
-    .. versionchanged:: 0.9.0
-       The function now returns a tuple where the first element is a dataframe
-       and the second element is a dictionary containing metadata. Previous
-       versions of this function had the return values switched.
     """
     with open(str(filename), 'r') as fbuf:
         content = parse_psm3(fbuf)

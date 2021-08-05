@@ -53,7 +53,7 @@ Breaking changes
   :py:func:`~pvlib.iotools.get_psm3` and :py:func:`~pvlib.iotools.read_psm3`
   (:issues:`1245`, :pull`1268`)
 
-* Changed the naming of the inputs `stardate`/`enddate` to `start`/end` in
+* Changed the naming of the inputs `startdate`/`enddate` to `start`/end` in
   :py:func:`~pvlib.iotools.get_ecmwf_macc`
   (:issues:`1245`, :pull`1268`)
 
@@ -123,7 +123,7 @@ Enhancements
   solar radiation data and PV power output from PVGIS. (:pull:`1186`,
   :issue:`849`)
 * Added `map_variables` option to :func:`~pvlib.iotools.get_pvgis_tmy` and
-  :func:`~pvlib.iotools.read_pvgis_tmy` (:issues:`1245`, :pull`1268`)
+  :func:`~pvlib.iotools.read_pvgis_tmy` (:issue:`1250`, :pull:`1268`)
 * Add :func:`~pvlib.iotools.get_bsrn` and :func:`~pvlib.iotools.read_bsrn`
   for retrieving and reading BSRN solar radiation data files.
   (:pull:`1254`, :pull:`1145`, :issue:`1015`)

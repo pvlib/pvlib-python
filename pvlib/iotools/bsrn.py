@@ -57,6 +57,7 @@ def _empty_dataframe_from_logical_records(logical_records):
     columns = []
     for lr in logical_records:
         columns += BSRN_COLUMNS[lr][2:]
+    columns = [c for c in columns if c != 'empty']
     return pd.DataFrame(columns=columns)
 
 

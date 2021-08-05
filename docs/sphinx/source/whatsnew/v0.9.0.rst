@@ -59,7 +59,7 @@ Breaking changes
 
 * Change the naming of the inputs `lat`/`lon` to `latitude`/`longitude` in
   :py:func:`~pvlib.iotools.get_pvgis_tmy` and :py:func:`~pvlib.iotools.read_pvgis_tmy`
-  (:issues:`1245`, :pull`1268`)
+  (:issue:`1245`, :pull:`1268`)
 
 Deprecations
 ~~~~~~~~~~~~

@@ -52,10 +52,6 @@ the :ref:`iotools` module. In this example we will be using PVGIS, one of the
 data sources available, to retrieve a Typical Meteorological Year (TMY) which
 includes irradiation, temperature and wind speed.
 
-.. note:: PVGIS uses different naming conventions, so it is required to rename
-   the weather data variables before using them. Data is already UTC-localized,
-   so conversion to local timezone is optional.
-
 .. ipython:: python
 
     tmys = []

@@ -51,11 +51,11 @@ Breaking changes
 
 * Switched the order of the outputs from the PSM3 iotools, notably
   :py:func:`~pvlib.iotools.get_psm3` and :py:func:`~pvlib.iotools.read_psm3`
-  (:issues:`1245`, :pull`1268`)
+  (:issue:`1245`, :pull:`1268`)
 
 * Changed the naming of the inputs `startdate`/`enddate` to `start`/end` in
   :py:func:`~pvlib.iotools.get_ecmwf_macc`
-  (:issues:`1245`, :pull`1268`)
+  (:issue:`1245`, :pull:`1268`)
 
 * Change the naming of the inputs `lat`/`lon` to `latitude`/`longitude` in
   :py:func:`~pvlib.iotools.get_pvgis_tmy` and :py:func:`~pvlib.iotools.read_pvgis_tmy`

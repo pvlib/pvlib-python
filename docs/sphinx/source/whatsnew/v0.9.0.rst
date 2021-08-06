@@ -53,13 +53,12 @@ Breaking changes
   :py:func:`~pvlib.iotools.get_psm3` and :py:func:`~pvlib.iotools.read_psm3`
   (:issue:`1245`, :pull:`1268`)
 
-* Changed the naming of the inputs `startdate`/`enddate` to `start`/end` in
+* Changed the naming of the inputs `startdate`/`enddate` to `start`/`end` in
   :py:func:`~pvlib.iotools.get_ecmwf_macc`
   (:issue:`1245`, :pull:`1268`)
 
 * Change the naming of the inputs `lat`/`lon` to `latitude`/`longitude` in
-  :py:func:`~pvlib.iotools.get_pvgis_tmy` and :py:func:`~pvlib.iotools.read_pvgis_tmy`
-  (:issue:`1245`, :pull:`1268`)
+  :py:func:`~pvlib.iotools.get_pvgis_tmy` (:issue:`1245`, :pull:`1268`)
 
 Deprecations
 ~~~~~~~~~~~~

@@ -489,6 +489,13 @@ def test_get_pvgis_tmy_error():
         get_pvgis_tmy(45, 8, url='https://re.jrc.ec.europa.eu/')
 
 
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
+    actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
+    assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
+
+
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
     actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)

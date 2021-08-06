@@ -630,10 +630,10 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
                 data, months_selected, inputs, meta = pvgis_parser(fbuf)
 
     else:
-        # raise exception if pvgis format isn't in ['csv', 'basic', 'epw', 'json']
+        # raise exception if pvgis format isn't in ['csv','basic','epw','json']
         err_msg = (
-            "pvgis format '{:s}' was unknown, must be either 'epw', 'json', 'csv'"
-            ", or 'basic'").format(outputformat)
+            "pvgis format '{:s}' was unknown, must be either 'epw', 'json', "
+            "'csv', or 'basic'").format(outputformat)
         raise ValueError(err_msg)
 
     if map_variables is None:

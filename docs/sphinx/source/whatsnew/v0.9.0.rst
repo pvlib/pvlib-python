@@ -206,6 +206,7 @@ Documentation
 * Use ``Mount`` classes in ``introtutorial`` and ``pvsystem`` docs pages (:pull:`1267`)
 * Clarified how statistics are calculated for :py:func:`pvlib.clearsky.detect_clearsky`
   (:issue:`1070`, :pull:`1243`)
+* Add gallery examples using the new ``Mount`` classes (:pull:`1266`)
 
 Requirements
 ~~~~~~~~~~~~

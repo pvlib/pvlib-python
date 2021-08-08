@@ -189,6 +189,8 @@ Bug fixes
   (:issue:`1241`, :pull:`1242`)
 * Changed deprecated use of ``.astype()`` to ``.view()`` in :py:mod:`~pvlib.solarposition`.
   (:pull:`1256`, :issue:`1261`, :pull:`1262`)
+* Fix :py:func:`~pvlib.tracking.singleaxis` AOI wrong when sun behind module.
+  (:pull:`1273`, :issue:`1221`) 
 
 Testing
 ~~~~~~~

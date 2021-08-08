@@ -513,7 +513,7 @@ def test_singleaxis_aoi_gh1221():
     sp = loc.get_solarposition(dr)
     tr = pvlib.tracking.singleaxis(
         sp['apparent_zenith'], sp['azimuth'], axis_tilt=90, axis_azimuth=180,
-        max_angle=0.01, backtrack=False)
+        max_angle=0.001, backtrack=False)
     fixed = pvlib.irradiance.aoi(90, 180, sp['apparent_zenith'], sp['azimuth'])
-    fixed[fixed>90] = np.nan
+    fixed[np.isnan(tr['aoi'])] = np.nan
     assert np.allclose(tr['aoi'], fixed, equal_nan=True)

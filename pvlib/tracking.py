@@ -458,7 +458,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     sun_vec = np.array([xp, yp, zp])
 
     # calculate angle-of-incidence on panel
-    aoi = np.degrees(np.arccos(np.abs(np.sum(sun_vec*panel_norm, axis=0))))
+    # TODO: use irradiance.aoi if can pass projection instead of solpos & surface
+    aoi = np.degrees(np.arccos(np.clip(np.sum(sun_vec*panel_norm, axis=0), -1, 1)))
 
     # Calculate panel tilt and azimuth in a coordinate system where the panel
     # tilt is the angle from horizontal, and the panel azimuth is the compass

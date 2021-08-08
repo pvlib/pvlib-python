@@ -515,4 +515,4 @@ def test_singleaxis_aoi_gh1221():
         sp['apparent_zenith'], sp['azimuth'], axis_tilt=90, axis_azimuth=180,
         max_angle=0.01, backtrack=False)
     fixed = pvlib.irradiance.aoi(90, 180, sp['apparent_zenith'], sp['azimuth'])
-    assert np.allclose(trtr['aoi'], fixed)
+    assert np.allclose(tr['aoi'], fixed)

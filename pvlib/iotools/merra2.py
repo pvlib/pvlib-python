@@ -11,7 +11,7 @@ MERRA2_BASE_URL = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/dods'
 def get_merra2(latitude, longitude, start, end, dataset, variables, username,
                password, local_path=None):
     """
-    Retrieve MERRA2 reanalysis data from the NASA GESDISC repository.
+    Retrieve MERRA2 reanalysis data from the NASA GES DISC repository.
 
     Regular latitude-longitude grid of 0.5° x 0.625°.
 

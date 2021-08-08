@@ -12,6 +12,7 @@ dependencies:
     - python=3.6
     - pytz
     - requests
+    - xarray
     - pip:
         - dataclasses
         - numpy==1.12.0

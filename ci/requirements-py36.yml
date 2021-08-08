@@ -27,6 +27,7 @@ dependencies:
     - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - statsmodels
+    - xarray
     - pip:
         - dataclasses
         - nrel-pysam>=2.0

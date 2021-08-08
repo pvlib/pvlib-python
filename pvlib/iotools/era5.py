@@ -4,16 +4,6 @@
 
 import requests
 
-# Can probably remove the netCDF4 dependency
-try:
-    import netCDF4
-except ImportError:
-    class netCDF4:
-        @staticmethod
-        def Dataset(*a, **kw):
-            raise ImportError(
-                'Reading ERA5 data requires netCDF4 to be installed.')
-
 try:
     import xarray as xr
 except ImportError:
@@ -42,9 +32,9 @@ ERA5_DEFAULT_VARIABLES = [
     'surface_pressure',  # sp
     'mean_surface_downward_short_wave_radiation_flux',  # msdwswrf
     'mean_surface_downward_short_wave_radiation_flux_clear_sky',  # msdwswrfcs
-    'mean_surface_direct_short_wave_radiation_flux', # msdrswrf
+    'mean_surface_direct_short_wave_radiation_flux',  # msdrswrf
     'mean_surface_direct_short_wave_radiation_flux_clear_sky',  # msdrswrfcs
-    ]
+]
 
 # The returned data uses short-names, whereas the request requires CDS variable
 # names - passing short-names results in an "Ambiguous" error being raised
@@ -91,7 +81,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
 
     Note the variables specified should be the variable names used by in the
     CDS. The returned data contains the short-name versions of the variables.
-    See [4]_ for a list of variables names and units. 
+    See [4]_ for a list of variables names and units.
 
     Hint
     ----
@@ -225,7 +215,7 @@ def read_era5(filename, map_variables=True):
             {k: v for k, v in ERA5_VARIABLE_MAP.items() if k in list(ds)})
 
     if (ds['latitude'].size == 1) & (ds['longitude'].size == 1):
-        data = ds.to_dataframe().droplevel(['latitude','longitude'])
+        data = ds.to_dataframe().droplevel(['latitude', 'longitude'])
         return data, metadata
     else:
         return ds, metadata

@@ -1,9 +1,9 @@
 name: test_env
 channels:
     - defaults
-    - cdsapi
     - conda-forge
 dependencies:
+    - cdsapi
     - coveralls
     - cython
     - ephem

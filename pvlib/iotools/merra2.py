@@ -4,7 +4,24 @@
 
 import xarray as xr  # Make funky import
 from pydap.cas.urs import setup_session
+import os
 
+MERRA2_VARIABLE_MAP = {
+    # Variables from the 'M2T1NXRAD' dataset
+    # Hourly,Time-Averaged,Single-Level,Assimilation,Radiation Diagnostics
+    'ALBEDO': 'albedo',
+    #'surface_incoming_shortwave_flux': ,
+    #'surface_incoming_shortwave_flux_assuming_clear_sky': ,
+    #'surface_net_downward_longwave_flux': ,
+    'SWGDN': 'ghi',
+    'SWTDN': '_extra',
+    'PS': 'pressure',
+    'T2M': 'temp_air',
+    'T2MDEW': 'temp_dew',
+    
+    }
+
+# goldsmr4 contains the single-level 2D MERRA-2 data files
 MERRA2_BASE_URL = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/dods'
 
 
@@ -36,6 +53,16 @@ def get_merra2(latitude, longitude, start, end, dataset, variables, username,
     In order to obtain MERRA2 data, it is necessary to registre for an
     Earthdata account and link it to the GES DISC as described in [2]_.
 
+    MERRA-2 contains 14 single-level 2D datasets with an hourly resolution. The
+    most important ones are 'M2T1NXAER' which contains aerosol data, 'M2T1NXRAD'
+    which contains radiation related parameters, and 'M2T1NXSLV' which contains
+    general variables (e.g., temperature and wind speed).
+
+    Warning
+    -------
+    Known error in calculation of radiation, hence it is strongly adviced that
+    radiation from MERRA-2 should not be used. Users interested in radiation
+    from reanalysis datasets are referred to pvlib.iotools.get_era5.
 
     See Also
     --------
@@ -61,10 +88,25 @@ def get_merra2(latitude, longitude, start, end, dataset, variables, username,
          'times': slice(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d')),
          })
 
-    data = ds[[variables]].to_dataframe()
+    data = ds[variables].to_dataframe()
 
-    metadata = {}
+    metadata = ds.attrs  # Gives overall metadata but not variable stuff
+
+    if local_path is not None:
+        ds.to_netcdf(os.path.join(local_path, metadata['Filename']))
 
     return data, metadata
 
 
+# Shoudl read_merra2 use open_mfdataset?
+def read_merra2(filenames, latitude, longitude, variables, map_variables=True):
+    """Reading a MERRA-2 file into a pandas dataframe.
+    
+    """
+    ds = xr.open_dataset(filenames).sel(lat=latitude, lon=longitude,
+                                        method='nearest')
+
+    data = ds[variables].to_dataframe().drop(columns=['lon', 'lat'])
+    metadata = ds.attrs  # Gives overall metadata but not variable stuff
+
+    return data, metadata

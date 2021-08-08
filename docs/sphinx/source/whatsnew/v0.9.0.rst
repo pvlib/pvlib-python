@@ -187,6 +187,9 @@ Bug fixes
 * Corrected an error affecting :py:func:`~pvlib.clearsky.detect_clearsky`
   when data time step is not one minute. Error was introduced in v0.8.1.
   (:issue:`1241`, :pull:`1242`)
+* Corrected error affecting :py:func:`~pvlib.scaling._compute_wavelet` when
+  passing a pandas time series with a sampling rate faster than 1 second.
+  (:issue:`1257`, :pull:`1258`)
 * Changed deprecated use of ``.astype()`` to ``.view()`` in :py:mod:`~pvlib.solarposition`.
   (:pull:`1256`, :issue:`1261`, :pull:`1262`)
 

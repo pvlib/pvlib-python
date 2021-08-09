@@ -100,6 +100,10 @@ Deprecations
   * ``PVSystem.surface_azimuth``
   * ``PVSystem.temperature_model_parameters``
 
+* The :py:class:`pvlib.tracking.SingleAxisTracker` class is deprecated and
+  replaced by using :py:class:`pvlib.pvsystem.PVSystem` with the new
+  :py:class:`pvlib.pvsystem.SingleAxisTrackerMount` (:pull:`1176`)
+
 
 Enhancements
 ~~~~~~~~~~~~
@@ -109,6 +113,13 @@ Enhancements
   files. (:pull:`1264`)
 * Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
   files. (:pull:`1145`, :issue:`1015`)
+* Added :func:`~pvlib.iotools.read_pvgis_hourly` and
+  :func:`~pvlib.iotools.get_pvgis_hourly` for reading and retrieving hourly
+  solar radiation data and PV power output from PVGIS. (:pull:`1186`,
+  :issue:`849`)
+* Add :func:`~pvlib.iotools.get_bsrn` and :func:`~pvlib.iotools.read_bsrn`
+  for retrieving and reading BSRN solar radiation data files.
+  (:pull:`1254`, :pull:`1145`, :issue:`1015`)
 * Add :func:`~pvlib.iotools.get_cams`,
   :func:`~pvlib.iotools.parse_cams`, and 
   :func:`~pvlib.iotools.read_cams`
@@ -120,6 +131,9 @@ Enhancements
 * Added :py:class:`~pvlib.pvsystem.Array` class to represent an array of
   modules separately from a :py:class:`~pvlib.pvsystem.PVSystem`.
   (:pull:`1076`, :issue:`1067`)
+* Added :py:class:`~pvlib.pvsystem.FixedMount` and
+  :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount` classes to use with
+  the new :py:class:`~pvlib.pvsystem.Array` class (:pull:`1176`)
 * Added capability for modeling a PV system with multiple arrays in
   :py:class:`~pvlib.pvsystem.PVSystem`. Updates the ``PVSystem`` API
   to operate on and return tuples where each element of the tuple corresponds
@@ -150,7 +164,7 @@ Enhancements
   implemented in SAM. (:pull:`1177`, :pull:`1195`)
 * Added :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` to calculate
   the temperature coefficient of power for the pvsyst module model.
-   (:pull:`1190`)
+  (:pull:`1190`)
 * :py:func:`~pvlib.irradiance.get_total_irradiance` and
   :py:func:`~pvlib.irradiance.get_sky_diffuse` now fill in ``airmass``
   if required and not provided. These functions now raise a ``ValueError``
@@ -176,6 +190,14 @@ Bug fixes
   calling :py:func:`~pvlib.pvsystem.calcparams_cec`. (:issue:`1215`, :pull:`1216`)
 * Corrected methodology error in :py:func:`~pvlib.scaling.wvm`. Tracks with
   fix in PVLib for MATLAB. (:issue:`1206`, :pull:`1213`)
+* Corrected an error affecting :py:func:`~pvlib.clearsky.detect_clearsky`
+  when data time step is not one minute. Error was introduced in v0.8.1.
+  (:issue:`1241`, :pull:`1242`)
+* Corrected error affecting :py:func:`~pvlib.scaling._compute_wavelet` when
+  passing a pandas time series with a sampling rate faster than 1 second.
+  (:issue:`1257`, :pull:`1258`)
+* Changed deprecated use of ``.astype()`` to ``.view()`` in :py:mod:`~pvlib.solarposition`.
+  (:pull:`1256`, :issue:`1261`, :pull:`1262`)
 
 Testing
 ~~~~~~~
@@ -189,9 +211,11 @@ Documentation
   and to make the procedural and OO results match exactly. (:issue:`1116`, :pull:`1144`)
 * Add a gallery example showing how to appropriately use interval-averaged
   weather data for modeling. (:pull:`1152`)
-* Update documentation links in :py:func:`pvlib.iotools.get_psm3`
+* Update documentation links in :py:func:`pvlib.iotools.get_psm3` (:pull:`1169`)
+* Use ``Mount`` classes in ``introtutorial`` and ``pvsystem`` docs pages (:pull:`1267`)
 * Clarified how statistics are calculated for :py:func:`pvlib.clearsky.detect_clearsky`
   (:issue:`1070`, :pull:`1243`)
+* Add gallery examples using the new ``Mount`` classes (:pull:`1266`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -213,3 +237,5 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Joe Ranalli (:ghuser:`jranalli`)
 * Chas Schweizer (:ghuser:`cpr-chas`)
+* Yoann Louvet (:ghuser:`YoannUniKS`)
+* Brandon Carpenter (:ghuser:`hashstat`)

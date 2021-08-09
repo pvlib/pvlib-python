@@ -49,6 +49,16 @@ Breaking changes
   :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and
   :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_cec` (:issue:`1118`, :pull:`1222`)
 
+* Switched the order of the outputs from the PSM3 iotools, notably
+  :py:func:`~pvlib.iotools.get_psm3` and :py:func:`~pvlib.iotools.read_psm3`
+  (:issue:`1245`, :pull:`1268`)
+
+* Changed the naming of the inputs ``startdate``/``enddate`` to ``start``/``end`` in
+  :py:func:`~pvlib.iotools.get_ecmwf_macc`
+  (:issue:`1245`, :pull:`1268`)
+
+* Change the naming of the inputs ``lat``/``lon`` to ``latitude``/``longitude`` in
+  :py:func:`~pvlib.iotools.get_pvgis_tmy` (:issue:`1245`, :pull:`1268`)
 
 Deprecations
 ~~~~~~~~~~~~
@@ -111,6 +121,8 @@ Enhancements
   :func:`~pvlib.iotools.get_pvgis_hourly` for reading and retrieving hourly
   solar radiation data and PV power output from PVGIS. (:pull:`1186`,
   :issue:`849`)
+* Added ``map_variables`` option to :func:`~pvlib.iotools.get_pvgis_tmy` and
+  :func:`~pvlib.iotools.read_pvgis_tmy` (:issue:`1250`, :pull:`1268`)
 * Add :func:`~pvlib.iotools.get_bsrn` and :func:`~pvlib.iotools.read_bsrn`
   for retrieving and reading BSRN solar radiation data files.
   (:pull:`1254`, :pull:`1145`, :issue:`1015`)

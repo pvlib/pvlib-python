@@ -1778,7 +1778,7 @@ def test_ModelChain_no_extra_kwargs(sapm_dc_snl_ac_system, location):
         ModelChain(sapm_dc_snl_ac_system, location, arbitrary_kwarg='value')
 
 
-@fail_on_pvlib_version('1.0')
+@fail_on_pvlib_version('0.10')
 def test_ModelChain_attributes_deprecated_10(sapm_dc_snl_ac_system, location):
     match = 'Use ModelChain.results'
     mc = ModelChain(sapm_dc_snl_ac_system, location)

@@ -58,7 +58,7 @@ includes irradiation, temperature and wind speed.
     for location in coordinates:
         latitude, longitude, name, altitude, timezone = location
         weather = pvlib.iotools.get_pvgis_tmy(latitude, longitude,
-		                              map_variables=True)[0]
+                                              map_variables=True)[0]
         weather.index.name = "utc_time"
         tmys.append(weather)
 

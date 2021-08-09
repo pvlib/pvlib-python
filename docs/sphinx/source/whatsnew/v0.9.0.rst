@@ -57,7 +57,7 @@ Breaking changes
   :py:func:`~pvlib.iotools.get_ecmwf_macc`
   (:issue:`1245`, :pull:`1268`)
 
-* Change the naming of the inputs `lat`/`lon` to `latitude`/`longitude` in
+* Change the naming of the inputs ``lat``/``lon`` to ``latitude``/``longitude`` in
   :py:func:`~pvlib.iotools.get_pvgis_tmy` (:issue:`1245`, :pull:`1268`)
 
 Deprecations

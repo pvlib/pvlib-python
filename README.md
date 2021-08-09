@@ -117,6 +117,7 @@ License
 BSD 3-clause.
 
 If you use pvlib-python in a commercial or publicly-avaiable application, please consider displaying one of the "powered by pvlib" logos:
+
 <img src="docs/sphinx/source/_images/pvlib_powered_logo_horiz.png" width="300">
 <img src="docs/sphinx/source/_images/pvlib_powered_logo_vert.png" width="300">
 

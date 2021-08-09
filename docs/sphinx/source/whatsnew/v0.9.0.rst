@@ -53,7 +53,7 @@ Breaking changes
   :py:func:`~pvlib.iotools.get_psm3` and :py:func:`~pvlib.iotools.read_psm3`
   (:issue:`1245`, :pull:`1268`)
 
-* Changed the naming of the inputs `startdate`/`enddate` to `start`/`end` in
+* Changed the naming of the inputs ``startdate``/``enddate`` to ``start``/``end`` in
   :py:func:`~pvlib.iotools.get_ecmwf_macc`
   (:issue:`1245`, :pull:`1268`)
 

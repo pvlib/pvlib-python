@@ -68,43 +68,43 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     """
     Retrieve ERA5 reanalysis data from the Copernicus Data Store (CDS).
 
-    An overview of ERA5 is given in [1]_. Data is retrieved using the CDSAPI
-    [3]_.
+    An overview of ERA5 is given in [1]_ and [2]_. Data is retrieved using the
+    CDSAPI [3]_.
 
-    Temporal coverage: 1979 to present
-    Temporal resolution: hourly
-    Spatial resolution: 0.25° by 0.25°
-    Spatial coverage: global
+    * Temporal coverage: 1979 to present
+    * Temporal resolution: hourly
+    * Spatial resolution: 0.25° by 0.25°
+    * Spatial coverage: global
 
     Time-stamp: from the previous time stamp and backwards, i.e. end of period
     For the reanalysis, the accumulation period is over the 1 hour up to the validity date and time.
 
-    Note the variables specified should be the variable names used by in the
-    CDS. The returned data contains the short-name versions of the variables.
-    See [4]_ for a list of variables names and units.
+    Variables should be specified according to the naming convention used by
+    the CDS. The returned data contains the short-name versions of the
+    variables. See [4]_ for a list of variables names and units.
 
     Hint
     ----
     In order to use the this function the package
-    [cdsapi](https://github.com/ecmwf/cdsapi) needs to be installed [3]_.
+    `cdsapi <https://github.com/ecmwf/cdsapi>`_ needs to be installed [3]_.
 
     Access requires user registration [3]_. The obtaining API key can either be
     passed directly to the function or be saved in a local file as described in
     [4]_.
 
     You can check the status of your requests
-    [here](https://cds.climate.copernicus.eu/cdsapp#!/yourrequests) and the
+    `here <https://cds.climate.copernicus.eu/cdsapp#!/yourrequests>`_ and the
     status of all queued requests
-    [here](https://cds.climate.copernicus.eu/live/queue),
+    `here <https://cds.climate.copernicus.eu/live/queue>`_,
 
     Parameters
     ----------
     latitude: float or list
-        in decimal degrees, between -90 and 90, north is positive (ISO 19115)
+        in decimal degrees, between -90 and 90, north is positive (ISO 19115).
         If latitude is a list, it should have the format [S, N] and
         latitudes within the range are selected according to the grid.
     longitude: float or list
-        in decimal degrees, between -180 and 180, east is positive (ISO 19115)
+        in decimal degrees, between -180 and 180, east is positive (ISO 19115).
         If longitude is a list, it should have the format [W, E] and
         longitudes within the range are selected according to the grid.
     start: datetime like
@@ -114,11 +114,12 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     api_key: str, optional
         Personal API key for the CDS
     variables: list, default: ERA5_DEFAULT_VARIABLES
-        List of variables to retrieve (requires CDS variable names)
-    dataset: str, default: {'reanalysis-era5-single-levels', 'reanalysis-era5-land'}
-        Name of the dataset
+        List of variables to retrieve (according to CDS naming convention)
+    dataset: str, default: {'reanalysis-era5-single-levels',
+                            'reanalysis-era5-land'}
+        Name of the dataset to retrieve the variables from
     product_type: str, {'reanalysis', 'ensemble_members', 'ensemble_mean',
-                   'ensemble_spread'}, default: 'reanalysis'
+                        'ensemble_spread'}, default: 'reanalysis'
         ERA5 product type
     grid: list or tuple, default: (0.25, 0.25)
         User specified grid resolution
@@ -150,13 +151,13 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     References
     ----------
     .. [1] `ERA5 hourly data on single levels from 1979 to present
-       <https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview>`
+       <https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview>`_
     .. [2] `ERA5: data documentation
-       <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`
+       <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`_
     .. [3] `How to use the CDS API
-       <https://cds.climate.copernicus.eu/api-how-to>`
+       <https://cds.climate.copernicus.eu/api-how-to>`_
     .. [4] `Climate Data Storage user registration
-       <https://cds.climate.copernicus.eu/user/register>`
+       <https://cds.climate.copernicus.eu/user/register>`_
     """  # noqa: E501
     if cds_client is None:
         cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key)

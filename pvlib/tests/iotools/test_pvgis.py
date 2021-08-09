@@ -9,7 +9,9 @@ import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
 from pvlib.iotools import get_pvgis_hourly, read_pvgis_hourly
-from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal
+from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal,
+                        fail_on_pvlib_version)
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 # PVGIS Hourly tests
@@ -360,6 +362,17 @@ def csv_meta(meta_expected):
 def pvgis_tmy_mapped_columns():
     return ['temp_air', 'relative_humidity', 'ghi', 'dni', 'dhi', 'IR(h)',
             'wind_speed', 'wind_direction', 'pressure']
+
+
+@fail_on_pvlib_version('0.10')
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_pvgis_tmy_variable_map_deprecating_warning_0_10():
+    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'): 
+        _ = get_pvgis_tmy(45, 8)
+    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'): 
+        fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.epw'
+        _ = read_pvgis_tmy(fn)
 
 
 @pytest.mark.remote_data

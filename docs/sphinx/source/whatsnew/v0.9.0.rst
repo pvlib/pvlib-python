@@ -103,6 +103,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add :func:`~pvlib.iotools.get_era5` and
+  :func:`~pvlib.iotools.read_era5` for retrieving and reading
+  ERA5 reanalysis netcdf files from the Climate Data Store (CDS)
+  files. (:pull:`1264`)
 * Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
   files. (:pull:`1145`, :issue:`1015`)
 * Add :func:`~pvlib.iotools.get_cams`,

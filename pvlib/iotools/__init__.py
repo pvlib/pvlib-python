@@ -17,3 +17,5 @@ from pvlib.iotools.bsrn import read_bsrn  # noqa: F401
 from pvlib.iotools.sodapro import get_cams  # noqa: F401
 from pvlib.iotools.sodapro import read_cams  # noqa: F401
 from pvlib.iotools.sodapro import parse_cams  # noqa: F401
+from pvlib.iotools.sodapro import get_era5  # noqa: F401
+from pvlib.iotools.sodapro import parse_era5  # noqa: F401

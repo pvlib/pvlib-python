@@ -16,7 +16,7 @@ def cds_api_key():
 
     Users should obtain their own credentials as described in the `get_bsrn`
     documentation."""
-    return os.environ["CDSAPI_KEY"]
+    return '98568:' + os.environ["CDSAPI_KEY"]
 
 
 @pytest.fixture

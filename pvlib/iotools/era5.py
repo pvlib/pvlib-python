@@ -1,6 +1,8 @@
 """Functions to retreive and read ERA5 data from the CDS.
 .. codeauthor:: Adam R. Jensen<adam-r-j@hotmail.com>
 """
+# The functions only support single-level 2D data and not 3D / pressure-level
+# data. Also, monthly datasets and grib files are no supported.
 
 import requests
 
@@ -25,6 +27,9 @@ except ImportError:
 CDSAPI_URL = 'https://cds.climate.copernicus.eu/api/v2'
 
 
+# The returned data uses shortNames, whereas the request requires variable
+# names according to the CDS convention - passing shortNames results in an
+# "Ambiguous" error being raised
 ERA5_DEFAULT_VARIABLES = [
     '2m_temperature',  # t2m
     '10m_u_component_of_wind',  # u10
@@ -36,8 +41,6 @@ ERA5_DEFAULT_VARIABLES = [
     'mean_surface_direct_short_wave_radiation_flux_clear_sky',  # msdrswrfcs
 ]
 
-# The returned data uses short-names, whereas the request requires CDS variable
-# names - passing short-names results in an "Ambiguous" error being raised
 ERA5_VARIABLE_MAP = {
     't2m': 'temp_air',
     'd2m': 'temp_dew',
@@ -46,13 +49,9 @@ ERA5_VARIABLE_MAP = {
     'msdwswrfcs': 'ghi_clear',
     'msdwlwrf': 'lwd',
     'msdwlwrfcs': 'lwd_clear',
-    'msdrswrf': 'bhi',  # check this
-    'msdrswrfcs': 'bhi_clear',  # check this
+    'msdrswrf': 'bhi',
+    'msdrswrfcs': 'bhi_clear',
     'mtdwswrf': 'ghi_extra'}
-
-ERA5_EXTENSIONS = {
-    'netcdf': '.nc',
-    'grib': '.grib'}
 
 ERA5_HOURS = [
     '00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00',
@@ -63,39 +62,39 @@ ERA5_HOURS = [
 def get_era5(latitude, longitude, start, end, api_key=None,
              variables=ERA5_DEFAULT_VARIABLES,
              dataset_name='reanalysis-era5-single-levels',
-             product_type='reanalysis', grid=(0.25, 0.25), local_path=None,
+             product_type='reanalysis', grid=(0.25, 0.25), local_filename=None,
              cds_client=None, map_variables=True):
     """
     Retrieve ERA5 reanalysis data from the Copernicus Data Store (CDS).
-
-    An overview of ERA5 is given in [1]_ and [2]_. Data is retrieved using the
-    CDSAPI [3]_.
 
     * Temporal coverage: 1979 to present
     * Temporal resolution: hourly
     * Spatial resolution: 0.25° by 0.25°
     * Spatial coverage: global
 
+    An overview of ERA5 is given in [1]_ and [2]_. Data is retrieved using the
+    CDSAPI [3]_.
+
     Time-stamp: from the previous time stamp and backwards, i.e. end of period
-    For the reanalysis, the accumulation period is over the 1 hour up to the validity date and time.
+    For the reanalysis, the accumulation period is over the 1 hour up to the
+    validity date and time.
 
     Variables should be specified according to the naming convention used by
     the CDS. The returned data contains the short-name versions of the
-    variables. See [4]_ for a list of variables names and units.
+    variables. See [2]_ for a list of variables names and units.
 
     Hint
     ----
-    In order to use the this function the package
-    `cdsapi <https://github.com/ecmwf/cdsapi>`_ needs to be installed [3]_.
+    In order to use the this function the package cdsapi [5]__ needs to be
+    installed [3]_. The CDSAPI keywords are described in [6]_.
 
-    Access requires user registration [3]_. The obtaining API key can either be
-    passed directly to the function or be saved in a local file as described in
-    [4]_.
+    Access requires user registration, see [4]_. The obtaining API key can
+    either be passed directly to the function or be saved in a local file as
+    described in [3]_.
 
-    You can check the status of your requests
-    `here <https://cds.climate.copernicus.eu/cdsapp#!/yourrequests>`_ and the
-    status of all queued requests
-    `here <https://cds.climate.copernicus.eu/live/queue>`_,
+    It is possible to check your
+    `request status <https://cds.climate.copernicus.eu/cdsapp#!/yourrequests>`_
+    and the `status of all queued requests <https://cds.climate.copernicus.eu/live/queue>`_.
 
     Parameters
     ----------
@@ -123,20 +122,22 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         ERA5 product type
     grid: list or tuple, default: (0.25, 0.25)
         User specified grid resolution
+    local_filename: str or path-like, optional
+        Filename of where to save data. Should have ".nc" extension.
     cds_client: CDS API client object, optional
         CDS API client
     map_variables : bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable ERA5_VARIABLE_MAP.
 
-    Notes
+    Notes # Requirements and user registration
     -----
     The returned data includes the following fields by default:
 
     ========================  ======  =========================================
     Key, mapped key           Format  Description
     ========================  ======  =========================================
-    **Mapped field names are returned when the map_variables argument is True**
+    *Mapped field names are returned when the map_variables argument is True*
     ---------------------------------------------------------------------------
     2tm, temp_air             float   Air temperature at 2 m above ground (K)
     u10                       float   Horizontal air speed towards east at 10 m [m/s]
@@ -148,16 +149,29 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     msdrswrfcs, bhi_clear     float   Mean surface direct short-wave radiation flux, clear sky [W/m^2]
     ========================  ======  =========================================
 
+    Returns
+    -------
+    data: DataFrame
+        ERA5 timeseries data, fields depend on the requested data. data is a
+        pandas DataFrame if a single latitude and longitude is requested and
+        an xarray DataSet for multi-location requests.
+    metadata: dict
+        metadata for the time-series
+
     References
     ----------
     .. [1] `ERA5 hourly data on single levels from 1979 to present
        <https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview>`_
-    .. [2] `ERA5: data documentation
+    .. [2] `ERA5 data documentation
        <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`_
     .. [3] `How to use the CDS API
        <https://cds.climate.copernicus.eu/api-how-to>`_
     .. [4] `Climate Data Storage user registration
        <https://cds.climate.copernicus.eu/user/register>`_
+    .. [5] `cdsapi source code
+       <https://github.com/ecmwf/cdsapi/tree/master/cdsapi>`_
+    .. [6] `Climate Data Store (CDS) API Keywords
+       <https://confluence.ecmwf.int/display/CKB/Climate+Data+Store+%28CDS%29+API+Keywords>`_
     """  # noqa: E501
     if cds_client is None:
         cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key)
@@ -185,8 +199,8 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     with requests.get(file_location.location) as res:
 
         # Save the file locally if local_path has been specified
-        if local_path is not None:
-            with open(local_path, 'wb') as f:
+        if local_filename is not None:
+            with open(local_filename, 'wb') as f:
                 f.write(res.content)
 
         return read_era5(res.content, map_variables=map_variables)
@@ -195,18 +209,40 @@ def get_era5(latitude, longitude, start, end, api_key=None,
 def read_era5(filename, map_variables=True):
     """Read an ERA5 netcdf file.
 
+    Parameters
+    ----------
+    filename: str or path-like or list
+        Filename of a netcdf file containing ERA5 data or list of filenames.
+    map_variables : bool, default: True
+        When true, renames columns of the DataFrame to pvlib variable names
+        where applicable. See variable ERA5_VARIABLE_MAP.
+
     Hint
     ----
     The ERA5 time stamp convention is to label data periods by the right edge,
     e.g., the time stamp 12:00 for hourly data refers to the period from 11.00
     to 12:00.
 
+    Returns
+    -------
+    data: DataFrame
+        ERA5 timeseries data, fields depend on the requested data. A pandas
+        DataFrame is returned if the file contains a single location and
+        otherwise an xarray DataSet is returned.
+    metadata: dict
+        metadata for the time-series
 
-    If the file contains only one location, then a DataFrame is returned,
-    otherwise a xarray dataset is returned.
-
+    References
+    ----------
+    .. [1] `ERA5 hourly data on single levels from 1979 to present
+       <https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview>`_
+    .. [2] `ERA5 data documentation
+       <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`_
     """
-    ds = xr.open_dataset(filename)
+    if isinstance(filename, (list, tuple)):  # open multiple-files (mf)
+        ds = xr.open_mfdataset(filename)
+    else:
+        ds = xr.open_dataset(filename)
 
     metadata = ds.attrs
 

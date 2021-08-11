@@ -139,6 +139,23 @@ html_theme_options = {
         {"rel": "icon", "sizes": "16x16", "href": "favicon-16x16.png"},
         {"rel": "icon", "sizes": "32x32", "href": "favicon-32x32.png"},
     ],
+    "icon_links": [
+        {
+            "name": "StackOverflow",
+            "url": "https://stackoverflow.com/questions/tagged/pvlib",
+            "icon": "fab fa-stack-overflow",
+        },
+        {
+            "name": "Google Group",
+            "url": "https://groups.google.com/g/pvlib-python",
+            "icon": "fab fa-google",
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/pvlib/",
+            "icon": "fab fa-python",
+        },
+    ],
     "use_edit_page_button": True,
     "show_toc_level": 1,
 }

@@ -40,6 +40,7 @@ jobs:
       export NREL_API_KEY=$(nrelApiKey)
       export BSRN_FTP_USERNAME=$(BSRN_FTP_USERNAME)
       export BSRN_FTP_PASSWORD=$(BSRN_FTP_PASSWORD)
+      export CDSAPI_KEY=$(CDSAPI_KEY)
       pytest pvlib --remote-data --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
     displayName: 'pytest'
   - task: PublishTestResults@2

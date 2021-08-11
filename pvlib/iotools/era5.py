@@ -14,6 +14,7 @@ except ImportError:
         def open_dataset(*a, **kw):
             raise ImportError(
                 'Reading ERA5 data requires xarray to be installed.')
+
         @staticmethod
         def open_mfdataset(*a, **kw):
             raise ImportError(
@@ -210,7 +211,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         return read_era5(res.content, map_variables=map_variables)
 
 
-def read_era5(filename, map_variables=True):
+def read_era5(filename, output_format=None, map_variables=True):
     """Read an ERA5 netcdf file.
 
     Parameters

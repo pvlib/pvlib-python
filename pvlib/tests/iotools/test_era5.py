@@ -66,7 +66,7 @@ def test_get_era5(cds_api_key, expected_index):
         variables=['mean_surface_downward_short_wave_radiation_flux_clear_sky',
                    '2m_temperature'],
         api_key=cds_api_key,
-        local_filename='era5_test_data.nc',  # save file
+        save_path='era5_test_data.nc',
         map_variables=True)
     assert 'temp_air' in data.columns
     assert 'ghi_clear' in data.columns

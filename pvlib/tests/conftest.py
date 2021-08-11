@@ -122,7 +122,7 @@ except ImportError:
     has_xarray = False
 
 requires_xarray = pytest.mark.skipif(
-    not has_xarray reason='requires xarray
+    not has_xarray, reason='requires xarray')
 
 
 try:

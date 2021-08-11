@@ -14,6 +14,10 @@ except ImportError:
         def open_dataset(*a, **kw):
             raise ImportError(
                 'Reading ERA5 data requires xarray to be installed.')
+        @staticmethod
+        def open_mfdataset(*a, **kw):
+            raise ImportError(
+                'Reading ERA5 data requires xarray to be installed.')
 
 try:
     import cdsapi
@@ -61,8 +65,8 @@ ERA5_HOURS = [
 
 def get_era5(latitude, longitude, start, end, api_key=None,
              variables=ERA5_DEFAULT_VARIABLES,
-             dataset_name='reanalysis-era5-single-levels',
-             product_type='reanalysis', grid=(0.25, 0.25), local_filename=None,
+             dataset='reanalysis-era5-single-levels',
+             product_type='reanalysis', grid=(0.25, 0.25), save_path=None,
              cds_client=None, map_variables=True):
     """
     Retrieve ERA5 reanalysis data from the Copernicus Data Store (CDS).
@@ -122,7 +126,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         ERA5 product type
     grid: list or tuple, default: (0.25, 0.25)
         User specified grid resolution
-    local_filename: str or path-like, optional
+    save_path: str or path-like, optional
         Filename of where to save data. Should have ".nc" extension.
     cds_client: CDS API client object, optional
         CDS API client
@@ -193,14 +197,14 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         'area': area}
 
     # Retrieve path to the file
-    file_location = cds_client.retrieve(dataset_name, params)
+    file_location = cds_client.retrieve(dataset, params)
 
     # Load file into memory
     with requests.get(file_location.location) as res:
 
         # Save the file locally if local_path has been specified
-        if local_filename is not None:
-            with open(local_filename, 'wb') as f:
+        if save_path is not None:
+            with open(save_path, 'wb') as f:
                 f.write(res.content)
 
         return read_era5(res.content, map_variables=map_variables)

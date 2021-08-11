@@ -9,7 +9,7 @@ import requests
 try:
     import xarray as xr
 except ImportError:
-    class xarray:
+    class xr:
         @staticmethod
         def open_dataset(*a, **kw):
             raise ImportError(

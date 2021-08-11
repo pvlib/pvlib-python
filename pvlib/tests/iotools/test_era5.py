@@ -38,7 +38,7 @@ def expected_columns_mapped():
             'bhi_clear']
 
 
-def test_read_era5_variable(expected_index, expected_columns):
+def test_read_era5(expected_index, expected_columns):
     data, meta = read_era5(DATA_DIR / 'era5_testfile.nc', map_variables=False)
     assert (expected_columns == data.columns).all()
     assert_index_equal(data.index, expected_index)
@@ -50,6 +50,7 @@ def test_read_era5_variable_mapped(expected_index, expected_columns_mapped):
     assert_index_equal(data.index, expected_index)
     assert data.notna().all().all()
 
+
 @requires_cds_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
@@ -57,14 +58,13 @@ def test_get_era5(cds_api_key, expected_index):
     data, meta = get_era5(
         latitude=55.7,
         longitude=12.5,
-        start=pd.Timestamp(2020,1,1),
-        end=pd.Timestamp(2020,1,1),
+        start=pd.Timestamp(2020, 1, 1),
+        end=pd.Timestamp(2020, 1, 1),
         variables=['mean_surface_downward_short_wave_radiation_flux_clear_sky',
                    '2m_temperature'],
         api_key=cds_api_key,
         local_filename='era5_test_data.nc',  # save file
-        map_variables=True,
-        )
+        map_variables=True)
     assert 'temp_air' in data.columns
     assert 'ghi_clear' in data.columns
     assert_index_equal(data.index, expected_index[:24])

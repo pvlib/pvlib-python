@@ -94,6 +94,16 @@ except KeyError:
 requires_bsrn_credentials = pytest.mark.skipif(
     not has_bsrn_credentials, reason='requires bsrn credentials')
 
+try:
+    # Attempt to load CDS credentials used for testing pvlib.iotools.get_era5
+    CDSAPI_KEY = os.environ["CDSAPI_KEY"]
+    has_cds_credentials = True
+except KeyError:
+    has_cds_credentials = False
+
+requires_cds_credentials = pytest.mark.skipif(
+    not has_cds_credentials, reason='requires CDS credentials')
+
 
 try:
     import statsmodels  # noqa: F401

@@ -7,7 +7,7 @@ import pytest
 import os
 from pvlib.iotools import read_era5, get_era5
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
-                        requires_cds_credentials)
+                        requires_cds_credentials, requires_xarray)
 
 
 @pytest.fixture(scope="module")
@@ -38,12 +38,14 @@ def expected_columns_mapped():
             'bhi_clear']
 
 
+@requires_xarray
 def test_read_era5(expected_index, expected_columns):
     data, meta = read_era5(DATA_DIR / 'era5_testfile.nc', map_variables=False)
     assert (expected_columns == data.columns).all()
     assert_index_equal(data.index, expected_index)
 
 
+@requires_xarray
 def test_read_era5_variable_mapped(expected_index, expected_columns_mapped):
     data, meta = read_era5(DATA_DIR / 'era5_testfile.nc')
     assert (expected_columns_mapped == data.columns).all()
@@ -51,6 +53,7 @@ def test_read_era5_variable_mapped(expected_index, expected_columns_mapped):
     assert data.notna().all().all()
 
 
+@requires_xarray
 @requires_cds_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)

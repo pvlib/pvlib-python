@@ -116,6 +116,16 @@ requires_statsmodels = pytest.mark.skipif(
 
 
 try:
+    import xarray as xr  # noqa: F401
+    has_xarray = True
+except ImportError:
+    has_xarray = False
+
+requires_xarray = pytest.mark.skipif(
+    not has_xarray reason='requires xarray
+
+
+try:
     import tables
     has_tables = True
 except ImportError:

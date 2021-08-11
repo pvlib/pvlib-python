@@ -3,6 +3,7 @@ tests for :mod:`pvlib.iotools.era5`
 """
 
 import pandas as pd
+import numpy as np
 import pytest
 import os
 from pvlib.iotools import read_era5, get_era5
@@ -21,7 +22,7 @@ def cds_api_key():
 
 @pytest.fixture
 def expected_index():
-    index = pd.date_range('2020-1-1', freq='1h', periods=8784)
+    index = pd.date_range('2020-1-1', freq='1h', periods=8832)
     index.name = 'time'
     return index
 
@@ -42,15 +43,23 @@ def expected_columns_mapped():
 def test_read_era5(expected_index, expected_columns):
     data, meta = read_era5(DATA_DIR / 'era5_testfile.nc', map_variables=False)
     assert (expected_columns == data.columns).all()
-    assert_index_equal(data.index, expected_index)
+    assert_index_equal(data.index, expected_index[:8784])
 
 
 @requires_xarray
 def test_read_era5_variable_mapped(expected_index, expected_columns_mapped):
     data, meta = read_era5(DATA_DIR / 'era5_testfile.nc')
     assert (expected_columns_mapped == data.columns).all()
-    assert_index_equal(data.index, expected_index)
+    assert_index_equal(data.index, expected_index[:8784])
     assert data.notna().all().all()
+
+
+@requires_xarray
+def test_read_era5_multiple_files(expected_index):
+    filenames = \
+        [DATA_DIR / f for f in ['era5_testfile.nc', 'era5_testfile_1day.nc']]
+    data, meta = read_era5(filenames)
+    assert_index_equal(data.index, expected_index)
 
 
 @requires_xarray
@@ -72,3 +81,26 @@ def test_get_era5(cds_api_key, expected_index):
     assert 'ghi_clear' in data.columns
     assert_index_equal(data.index, expected_index[:24])
     assert data.notna().all().all()
+
+
+@requires_xarray
+@requires_cds_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_era5_area(cds_api_key, expected_index):
+    data, meta = get_era5(
+        latitude=[55.7, 55.7+0.25*2],
+        longitude=[12.5, 55.7+0.25*2],
+        start=pd.Timestamp(2020, 1, 1),
+        end=pd.Timestamp(2020, 1, 1),
+        variables=['mean_surface_downward_short_wave_radiation_flux_clear_sky',
+                   '2m_temperature'],
+        api_key=cds_api_key,
+        save_path='era5_test_data.nc',
+        map_variables=True)
+    assert 'temp_air' in data.variables.mapping.keys()
+    assert 'time' in data.variables.mapping.keys()
+    assert 'longitude' in data.variables.mapping.keys()
+    assert np.isclose(data.latitude.values, [56.2 , 55.95, 55.7]).all()
+    assert (data.time.values ==
+            expected_index[:24].to_pydatetime().astype('datetime64[ns]')).all()

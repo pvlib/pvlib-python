@@ -132,16 +132,11 @@ html_theme = "pydata_sphinx_theme"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
+# https://pydata-sphinx-theme.rtfd.io/en/latest/user_guide/configuring.html
 html_theme_options = {
-    # "external_links": [
-    #    {"url": "https://pandas.pydata.org/pandas-docs/stable/", "name": "Pandas Docs"}
-    # ],
     "github_url": "https://github.com/pvlib/pvlib-python",
-    # "twitter_url": "https://twitter.com/pandas_dev",
     "use_edit_page_button": True,
     "show_toc_level": 1,
-    # "navbar_align": "right",  # For testing that the navbar items align properly
-    # "icon_links": [],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

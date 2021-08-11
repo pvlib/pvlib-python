@@ -34,12 +34,12 @@ PARAMS = {
 }
 
 
-def _ecmwf(server, startdate, stopdate, params, targetname):
+def _ecmwf(server, startdate, enddate, params, targetname):
     # see http://apps.ecmwf.int/datasets/data/macc-reanalysis/levtype=sfc/
     server.retrieve({
         "class": "mc",
         "dataset": "macc",
-        "date": "%s/to/%s" % (startdate, stopdate),
+        "date": "%s/to/%s" % (startdate, enddate),
         "expver": "rean",
         "grid": "0.75/0.75",
         "levtype": "sfc",
@@ -53,7 +53,7 @@ def _ecmwf(server, startdate, stopdate, params, targetname):
     })
 
 
-def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
+def get_ecmwf_macc(filename, params, start, end, lookup_params=True,
                    server=None, target=_ecmwf):
     """
     Download data from ECMWF MACC Reanalysis API.
@@ -64,9 +64,9 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
         full path of file where to save data, ``.nc`` appended if not given
     params : str or sequence of str
         keynames of parameter[s] to download
-    startdate : datetime.datetime or datetime.date
+    start : datetime.datetime or datetime.date
         UTC date
-    stopdate : datetime.datetime or datetime.date
+    end : datetime.datetime or datetime.date
         UTC date
     lookup_params : bool, default True
         optional flag, if ``False``, then codes are already formatted
@@ -137,7 +137,7 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
     :func:`pvlib.iotools.get_ecmwf_macc`. ::
 
 
-        target(server, startdate, stopdate, params, filename) -> None
+        target(server, startdate, enddate, params, filename) -> None
 
     Examples
     --------
@@ -161,12 +161,12 @@ def get_ecmwf_macc(filename, params, startdate, stopdate, lookup_params=True,
             params = '/'.join(PARAMS.get(p) for p in params)
         except TypeError:
             params = PARAMS.get(params)
-    startdate = startdate.strftime('%Y-%m-%d')
-    stopdate = stopdate.strftime('%Y-%m-%d')
+    startdate = start.strftime('%Y-%m-%d')
+    enddate = end.strftime('%Y-%m-%d')
     if not server:
         server = ECMWFDataServer()
     t = threading.Thread(target=target, daemon=True,
-                         args=(server, startdate, stopdate, params, filename))
+                         args=(server, startdate, enddate, params, filename))
     t.start()
     return t
 
@@ -191,8 +191,8 @@ class ECMWF_MACC(object):
         # time resolution in hours
         self.time_size = self.data.dimensions['time'].size
         self.start_time = self.data['time'][0]
-        self.stop_time = self.data['time'][-1]
-        self.time_range = self.stop_time - self.start_time
+        self.end_time = self.data['time'][-1]
+        self.time_range = self.end_time - self.start_time
         self.delta_time = self.time_range / (self.time_size - 1)
 
     def get_nearest_indices(self, latitude, longitude):
@@ -281,7 +281,7 @@ def read_ecmwf_macc(filename, latitude, longitude, utc_time_range=None):
     longitude : float
         longitude in degrees
     utc_time_range : sequence of datetime.datetime
-        pair of start and stop naive or UTC date-times
+        pair of start and end naive or UTC date-times
 
     Returns
     -------
@@ -295,9 +295,9 @@ def read_ecmwf_macc(filename, latitude, longitude, utc_time_range=None):
         if utc_time_range:
             start_idx = netCDF4.date2index(
                 utc_time_range[0], nctime, select='before')
-            stop_idx = netCDF4.date2index(
+            end_idx = netCDF4.date2index(
                 utc_time_range[-1], nctime, select='after')
-            time_slice = slice(start_idx, stop_idx + 1)
+            time_slice = slice(start_idx, end_idx + 1)
         else:
             time_slice = slice(0, ecmwf_macc.time_size)
         times = netCDF4.num2date(nctime[time_slice], nctime.units)

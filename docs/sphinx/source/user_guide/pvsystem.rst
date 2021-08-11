@@ -19,11 +19,13 @@ PV modules in the :py:class:`~pvlib.pvsystem.PVSystem`. An instance of
 multiple instances of :py:class:`~pvlib.pvsystem.Array`. An instance of the
 Array class represents a group of modules with the same orientation and
 module type. Different instances of Array can have different tilt, orientation,
-and number or type of modules.
+and number or type of modules, where the orientation is defined by the
+Array's mount (a :py:class:`~pvlib.pvsystem.FixedMount`,
+:py:class:`~pvlib.pvsystem.SingleAxisTrackerMount`, or other).
 
 The :py:class:`~pvlib.pvsystem.PVSystem` class methods wrap many of the
-functions in the :py:mod:`~pvlib.pvsystem` module. Similarly,
-:py:class:`~pvlib.pvsystem.Array` wraps several functions with its class
+functions in the :py:mod:`~pvlib.pvsystem` module. Similarly, the Mount classes
+and :py:class:`~pvlib.pvsystem.Array` wrap several functions with their class
 methods.  Methods that wrap functions have similar names as the wrapped functions.
 This practice simplifies the API for :py:class:`~pvlib.pvsystem.PVSystem`
 and :py:class:`~pvlib.pvsystem.Array` methods by eliminating the need to specify

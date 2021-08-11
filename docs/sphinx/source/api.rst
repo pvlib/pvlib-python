@@ -491,7 +491,9 @@ of sources and file formats relevant to solar energy modeling.
    iotools.read_pvgis_tmy
    iotools.get_pvgis_hourly
    iotools.read_pvgis_hourly
+   iotools.get_bsrn
    iotools.read_bsrn
+   iotools.parse_bsrn
    iotools.get_cams
    iotools.read_cams
    iotools.parse_cams

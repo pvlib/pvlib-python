@@ -91,7 +91,7 @@ Contents
    :maxdepth: 1
 
    user_guide/index
-   auto_examples/index
+   gallery/index
    reference/index
    whatsnew
    contributing

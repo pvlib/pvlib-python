@@ -49,7 +49,7 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 	rm -rf source/reference/generated
-	rm -rf source/auto_examples
+	rm -rf source/gallery
 	rm -rf source/savefig
 
 html:

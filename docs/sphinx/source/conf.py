@@ -355,7 +355,7 @@ sphinx_gallery_conf = {
     # 'filename_pattern': '*.py',
 
     # directory where function/class granular galleries are stored
-    'backreferences_dir': 'generated/gallery_backreferences',
+    'backreferences_dir': 'reference/generated/gallery_backreferences',
 
     # Modules for which function/class level galleries are created. In
     # this case only pvlib, could include others though.  must be tuple of str

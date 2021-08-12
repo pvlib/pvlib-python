@@ -92,7 +92,7 @@ Contents
 
    user_guide/index
    auto_examples/index
-   api
+   reference/index
    whatsnew
    contributing
 

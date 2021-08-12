@@ -48,7 +48,7 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
-	rm -rf source/generated
+	rm -rf source/reference/generated
 	rm -rf source/auto_examples
 	rm -rf source/savefig
 

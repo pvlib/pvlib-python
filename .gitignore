@@ -41,7 +41,7 @@ pvlib/spa_c_files/spa_tester.c
 # generated documentation
 docs/sphinx/source/reference/generated
 docs/sphinx/source/savefig
-docs/sphinx/source/auto_examples
+docs/sphinx/source/gallery
 
 # Installer logs
 pip-log.txt

@@ -85,7 +85,7 @@ def test_get_bsrn(expected_index, bsrn_credentials):
         station='tam',
         username=username,
         password=password,
-        local_path='')
+        save_path='')
     assert_index_equal(expected_index, data.index)
     assert 'ghi' in data.columns
     assert 'dni_std' in data.columns

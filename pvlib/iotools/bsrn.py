@@ -88,7 +88,7 @@ def get_bsrn(station, start, end, username, password,
         List of the logical records (LR) to parse. Options include: '0100',
         '0300', and '0500'.
     save_path: str or path-like, optional
-        If specified, a direcotry path of where to save files
+        If specified, a directory path of where to save files.
 
     Returns
     -------

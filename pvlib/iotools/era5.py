@@ -29,6 +29,19 @@ except ImportError:
             raise ImportError(
                 'Retrieving ERA5 data requires cdsapi to be installed.')
 
+
+def extra_metadata_from_dataset(ds):
+    meta = {}
+    for v in list(ds.variables):
+        meta[v] = {
+            'name': ds[v].name,
+            'long_name': ds[v].long_name}
+        if v.lower() != 'time':
+            meta[v].update({'units': ds[v].units})
+    meta.update(ds.attrs)
+    return meta
+
+
 # The returned data uses shortNames, whereas the request requires variable
 # names according to the CDS convention - passing shortNames results in an
 # "Ambiguous" error being raised
@@ -67,7 +80,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
              variables=ERA5_DEFAULT_VARIABLES,
              dataset='reanalysis-era5-single-levels',
              product_type='reanalysis', grid=(0.25, 0.25), save_path=None,
-             cds_client=None, outputformat=None, map_variables=True):
+             cds_client=None, output_format=None, map_variables=True):
     """
     Retrieve ERA5 reanalysis data from the Copernicus Data Store (CDS).
 
@@ -79,15 +92,14 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     An overview of ERA5 is given in [1]_ and [2]_. Data is retrieved using the
     CDSAPI [3]_.
 
-    ERA5 time stamps are always in UTC and refer to the period from the
-    timestamp and to the previous time stamp, i.e. timestamp corresponds to the
-    end of the period (right label).
+
 
     .. admonition:: Time reference
 
-        The ERA5 time stamp convention is to label data periods by the right
-        edge, e.g., the time stamp 12:00 for hourly data refers to the period
-        from 11.00 to 12:00.
+        ERA5 time stamps are in UTC and refer to the period from the timestamp
+        and to the previous time stamp, i.e. timestamp corresponds to the
+        end of the period (right label). E.g., the time stamp 12:00 for hourly
+        data refers to the period from 11.00 to 12:00.
 
     .. admonition:: Usage notes
 
@@ -136,10 +148,10 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         Filename of where to save data. Should have ".nc" extension.
     cds_client: CDS API client object, optional
         CDS API client
-    outputformat: {'dataframe', 'dataset'}, optional
+    output_format: {'dataframe', 'dataset'}, optional
         Type of data object to return. Default is to return a pandas DataFrame
         if file only contains one location and otherwise return an xarray
-        dataset.
+        Dataset.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable ERA5_VARIABLE_MAP.
@@ -166,11 +178,11 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     Returns
     -------
     data: DataFrame
-        ERA5 time-series data, fields depend on the requested data. data is a
-        pandas DataFrame if a single latitude and longitude is requested and
-        an xarray DataSet for multi-location requests.
+        ERA5 time-series data, fields depend on the requested data. The
+        returned object is either a pandas DataFrame or an xarray dataset, see
+        the output_format parameter.
     metadata: dict
-        metadata for the time-series
+        Metadata for the time-series.
 
     See Also
     --------
@@ -184,8 +196,8 @@ def get_era5(latitude, longitude, start, end, api_key=None,
        <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`_
     .. [3] `How to use the CDS API
        <https://cds.climate.copernicus.eu/api-how-to>`_
-    .. [4] `cdsapi source code
-       <https://github.com/ecmwf/cdsapi/tree/master/cdsapi>`_
+    .. [4] `CDSAPI source code
+       <https://github.com/ecmwf/cdsapi>`_
     .. [5] `Climate Data Store (CDS) API Keywords
        <https://confluence.ecmwf.int/display/CKB/Climate+Data+Store+%28CDS%29+API+Keywords>`_
     .. [6] `Climate Data Storage user registration
@@ -222,7 +234,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
                 f.write(res.content)
 
         return read_era5(res.content, map_variables=map_variables,
-                         outputformat=outputformat)
+                         output_format=output_format)
 
 
 def read_era5(filename, output_format=None, map_variables=True):
@@ -231,8 +243,8 @@ def read_era5(filename, output_format=None, map_variables=True):
     Parameters
     ----------
     filename: str or path-like or list
-        Filename of a netcdf file containing ERA5 data or list of filenames.
-    outputformat: {'dataframe', 'dataset'}, optional
+        Filename of a netcdf file containing ERA5 data or a list of filenames.
+    output_format: {'dataframe', 'dataset'}, optional
         Type of data object to return. Default is to return a pandas DataFrame
         if file only contains one location and otherwise return an xarray
         dataset.
@@ -242,9 +254,10 @@ def read_era5(filename, output_format=None, map_variables=True):
 
     Returns
     -------
-    data: DataFrame or dataset
-        ERA5 timeseries data, fields depend on the available data. A pandas
-        Object type depends on outputformat.
+    data: DataFrame
+        ERA5 time-series data, fields depend on the requested data. The
+        returned object is either a pandas DataFrame or an xarray Dataset, see
+        the output_format parameter.
     metadata: dict
         Metadata for the time-series.
 
@@ -265,14 +278,16 @@ def read_era5(filename, output_format=None, map_variables=True):
     else:
         ds = xr.open_dataset(filename)
 
-    metadata = ds.attrs
+    metadata = {}#extra_metadata_from_dataset(ds)
 
     if map_variables:
         # Renaming of xarray datasets throws an error if keys are missing
         ds = ds.rename_vars(
             {k: v for k, v in ERA5_VARIABLE_MAP.items() if k in list(ds)})
 
-    if (ds['latitude'].size == 1) & (ds['longitude'].size == 1):
+    if (output_format == 'dataframe') or (
+            (output_format is None) & (ds['latitude'].size == 1) &
+            (ds['longitude'].size == 1)):
         data = ds.to_dataframe().droplevel(['latitude', 'longitude'])
         return data, metadata
     else:

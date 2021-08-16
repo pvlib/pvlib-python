@@ -30,16 +30,17 @@ except ImportError:
                 'Retrieving ERA5 data requires cdsapi to be installed.')
 
 
-def extra_metadata_from_dataset(ds):
-    meta = {}
+def extract_metadata_from_dataset(ds):
+    metadata = {}
     for v in list(ds.variables):
-        meta[v] = {
+        metadata[v] = {
             'name': ds[v].name,
             'long_name': ds[v].long_name}
         if v.lower() != 'time':
-            meta[v].update({'units': ds[v].units})
-    meta.update(ds.attrs)
-    return meta
+            metadata[v].update({'units': ds[v].units})
+    metadata['dims'] = dict(ds.dims)
+    metadata.update(ds.attrs)  # add arbitrary metadata
+    return metadata
 
 
 # The returned data uses shortNames, whereas the request requires variable
@@ -84,7 +85,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     """
     Retrieve ERA5 reanalysis data from the Copernicus Data Store (CDS).
 
-    * Temporal coverage: 1979 to present
+    * Temporal coverage: 1979 to present (latency of ~5 days)
     * Temporal resolution: hourly
     * Spatial coverage: global
     * Spatial resolution: 0.25° by 0.25°
@@ -92,27 +93,25 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     An overview of ERA5 is given in [1]_ and [2]_. Data is retrieved using the
     CDSAPI [3]_.
 
-
-
     .. admonition:: Time reference
 
-        ERA5 time stamps are in UTC and refer to the period from the timestamp
-        and to the previous time stamp, i.e. timestamp corresponds to the
-        end of the period (right label). E.g., the time stamp 12:00 for hourly
-        data refers to the period from 11.00 to 12:00.
+        ERA5 time stamps are in UTC and corresponds to the end of the period
+        (right labeled). E.g., the time stamp 12:00 for hourly data refers to
+        the period from 11.00 to 12:00.
 
     .. admonition:: Usage notes
 
-        To use this function the package cdsapi [4]_ needs to be installed
+        To use this function the package CDSAPI [4]_ needs to be installed
         [3]_. The CDSAPI keywords are described in [5]_.
 
-        Variables should be specified according to the naming convention used
-        by the CDS. The returned data contains the short-name versions of the
-        variables. See [2]_ for a list of variables names and units.
+        Requested variables should be specified according to the naming
+        convention used by the CDS. The returned data contains the short-name
+        versions of the variables. See [2]_ for a list of variables names and
+        units.
 
-        Access requires user registration, see [6]_. The obtaining API key can
-        either be passed directly to the function or be saved in a local file
-        as described in [3]_.
+        Access to the CDS requires user registration, see [6]_. The obtaining
+        API key can either be passed directly to the function or be saved in a
+        local file as described in [3]_.
 
         It is possible to check your
         `request status <https://cds.climate.copernicus.eu/cdsapp#!/yourrequests>`_
@@ -278,7 +277,7 @@ def read_era5(filename, output_format=None, map_variables=True):
     else:
         ds = xr.open_dataset(filename)
 
-    metadata = {}#extra_metadata_from_dataset(ds)
+    metadata = extract_metadata_from_dataset(ds)
 
     if map_variables:
         # Renaming of xarray datasets throws an error if keys are missing
@@ -286,9 +285,10 @@ def read_era5(filename, output_format=None, map_variables=True):
             {k: v for k, v in ERA5_VARIABLE_MAP.items() if k in list(ds)})
 
     if (output_format == 'dataframe') or (
-            (output_format is None) & (ds['latitude'].size == 1) &
+            (output_format == None) & (ds['latitude'].size == 1) &
             (ds['longitude'].size == 1)):
-        data = ds.to_dataframe().droplevel(['latitude', 'longitude'])
+        if (ds['latitude'].size == 1) & (ds['longitude'].size == 1):
+            data = ds.to_dataframe().droplevel(['latitude', 'longitude'])
         return data, metadata
     else:
         return ds, metadata

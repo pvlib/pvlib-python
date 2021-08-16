@@ -44,7 +44,12 @@ def test_read_era5(expected_index, expected_columns):
     data, meta = read_era5(DATA_DIR / 'era5_testfile.nc', map_variables=False)
     assert (expected_columns == data.columns).all()
     assert_index_equal(data.index, expected_index[:8784])
-
+    # Test meta
+    assert meta['msdwswrf'] == {
+        'name': 'msdwswrf',
+        'long_name': 'Mean surface downward short-wave radiation flux',
+        'units': 'W m**-2'}
+    assert 'dims' in meta.keys()
 
 @requires_xarray
 def test_read_era5_variable_mapped(expected_index, expected_columns_mapped):
@@ -52,6 +57,14 @@ def test_read_era5_variable_mapped(expected_index, expected_columns_mapped):
     assert (expected_columns_mapped == data.columns).all()
     assert_index_equal(data.index, expected_index[:8784])
     assert data.notna().all().all()
+
+
+@requires_xarray
+def test_read_era5_output_format(expected_index, expected_columns_mapped):
+    import xarray as xr
+    data, meta = read_era5(DATA_DIR / 'era5_testfile.nc',
+                           output_format='dataset')
+    assert isinstance(data, xr.Dataset)
 
 
 @requires_xarray

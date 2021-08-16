@@ -30,14 +30,14 @@ except ImportError:
                 'Retrieving ERA5 data requires cdsapi to be installed.')
 
 
-def extract_metadata_from_dataset(ds):
+def _extract_metadata_from_dataset(ds):
     metadata = {}
     for v in list(ds.variables):
         metadata[v] = {
             'name': ds[v].name,
             'long_name': ds[v].long_name}
         if v.lower() != 'time':
-            metadata[v].update({'units': ds[v].units})
+            metadata[v]['units'] = ds[v].units
     metadata['dims'] = dict(ds.dims)
     metadata.update(ds.attrs)  # add arbitrary metadata
     return metadata
@@ -97,7 +97,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
 
         ERA5 time stamps are in UTC and corresponds to the end of the period
         (right labeled). E.g., the time stamp 12:00 for hourly data refers to
-        the period from 11.00 to 12:00.
+        the period from 11:00 to 12:00.
 
     .. admonition:: Usage notes
 
@@ -132,14 +132,14 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     end: datetime like
         Last day of the requested period
     api_key: str, optional
-        Personal API key for the CDS
+        Personal API key for the CDS with the format "uid:key" e.g.
+        '00000:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
     variables: list, default: ERA5_DEFAULT_VARIABLES
         List of variables to retrieve (according to CDS naming convention)
     dataset: str, default 'reanalysis-era5-single-levels'
         Name of the dataset to retrieve the variables from. Can be either
         'reanalysis-era5-single-levels' or 'reanalysis-era5-land'.
-    product_type: str, {'reanalysis', 'ensemble_members', 'ensemble_mean',
-                        'ensemble_spread'}, default: 'reanalysis'
+    product_type: str, {'reanalysis', 'ensemble_members', 'ensemble_mean', 'ensemble_spread'}, default: 'reanalysis'
         ERA5 product type
     grid: list or tuple, default: (0.25, 0.25)
         User specified grid resolution
@@ -164,10 +164,10 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     ========================  ======  =========================================
     *Mapped field names are returned when the map_variables argument is True*
     ---------------------------------------------------------------------------
-    2tm, temp_air             float   Air temperature at 2 m above ground (K)
+    2tm, temp_air             float   Air temperature at 2 m above ground [K]
     u10                       float   Horizontal airspeed towards east at 10 m [m/s]
     v10                       float   Horizontal airspeed towards north at 10 m [m/s]
-    sp, pressure              float   Atmospheric pressure at the ground (Pa)
+    sp, pressure              float   Atmospheric pressure at the ground [Pa]
     msdwswrf, ghi             float   Mean surface downward short-wave radiation flux [W/m^2]
     msdwswrfcs, ghi_clear     float   Mean surface downward short-wave radiation flux, clear sky [W/m^2]
     msdrswrf, bhi             float   Mean surface direct short-wave radiation flux [W/m^2]
@@ -206,9 +206,9 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key)
 
     # Area is selected by a box made by the four coordinates: [N, W, S, E]
-    if type(latitude) == list:
+    try:
         area = [latitude[1], longitude[0], latitude[0], longitude[1]]
-    else:
+    except TypeError:
         area = [latitude+0.005, longitude-0.005,
                 latitude-0.005, longitude+0.005]
 
@@ -227,7 +227,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     # Load file into memory
     with requests.get(file_location.location) as res:
 
-        # Save the file locally if local_path has been specified
+        # Save the file locally if save_path  has been specified
         if save_path is not None:
             with open(save_path, 'wb') as f:
                 f.write(res.content)
@@ -271,13 +271,13 @@ def read_era5(filename, output_format=None, map_variables=True):
     .. [2] `ERA5 data documentation
        <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`_
     """
-    # open multiple-files - requires dask
+    # open multiple-files (mf) requires dask
     if isinstance(filename, (list, tuple)):
         ds = xr.open_mfdataset(filename)
     else:
         ds = xr.open_dataset(filename)
 
-    metadata = extract_metadata_from_dataset(ds)
+    metadata = _extract_metadata_from_dataset(ds)
 
     if map_variables:
         # Renaming of xarray datasets throws an error if keys are missing
@@ -287,8 +287,9 @@ def read_era5(filename, output_format=None, map_variables=True):
     if (output_format == 'dataframe') or (
             (output_format is None) & (ds['latitude'].size == 1) &
             (ds['longitude'].size == 1)):
+        data = ds.to_dataframe()
         if (ds['latitude'].size == 1) & (ds['longitude'].size == 1):
-            data = ds.to_dataframe().droplevel(['latitude', 'longitude'])
+            data.droplevel(['latitude', 'longitude'])
         return data, metadata
     else:
         return ds, metadata

@@ -15,7 +15,7 @@ from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
 def cds_api_key():
     """Supplies pvlib-python's CDS API key.
 
-    Users should obtain their own credentials as described in the `get_bsrn`
+    Users should obtain their own credentials as described in the `get_era5`
     documentation."""
     return os.environ["CDSAPI_KEY"]
 

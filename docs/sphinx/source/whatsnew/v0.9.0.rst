@@ -111,8 +111,6 @@ Enhancements
   :func:`~pvlib.iotools.read_era5` for retrieving and reading
   ERA5 reanalysis netcdf files from the Climate Data Store (CDS)
   files. (:pull:`1264`)
-* Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
-  files. (:pull:`1145`, :issue:`1015`)
 * Added :func:`~pvlib.iotools.read_pvgis_hourly` and
   :func:`~pvlib.iotools.get_pvgis_hourly` for reading and retrieving hourly
   solar radiation data and PV power output from PVGIS. (:pull:`1186`,

@@ -79,25 +79,26 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     An overview of ERA5 is given in [1]_ and [2]_. Data is retrieved using the
     CDSAPI [3]_.
 
-    ERA5 time stamps are always in UTC and
-    Time-stamp: from the previous time stamp and backwards, i.e. end of period
-    For the reanalysis, the accumulation period is over the 1 hour up to the
-    validity date and time.
+    ERA5 time stamps are always in UTC and refer to the period from the
+    timestamp and to the previous time stamp, i.e. timestamp corresponds to the
+    end of the period (right label).
 
     .. admonition:: Time reference
+
         The ERA5 time stamp convention is to label data periods by the right
         edge, e.g., the time stamp 12:00 for hourly data refers to the period
         from 11.00 to 12:00.
 
     .. admonition:: Usage notes
-        To use this function the package cdsapi [5]_ needs to be installed
-        [3]_. The CDSAPI keywords are described in [6]_.
+
+        To use this function the package cdsapi [4]_ needs to be installed
+        [3]_. The CDSAPI keywords are described in [5]_.
 
         Variables should be specified according to the naming convention used
         by the CDS. The returned data contains the short-name versions of the
         variables. See [2]_ for a list of variables names and units.
 
-        Access requires user registration, see [4]_. The obtaining API key can
+        Access requires user registration, see [6]_. The obtaining API key can
         either be passed directly to the function or be saved in a local file
         as described in [3]_.
 
@@ -123,9 +124,9 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         Personal API key for the CDS
     variables: list, default: ERA5_DEFAULT_VARIABLES
         List of variables to retrieve (according to CDS naming convention)
-    dataset: str, default: {'reanalysis-era5-single-levels',
-                            'reanalysis-era5-land'}
-        Name of the dataset to retrieve the variables from
+    dataset: str, default 'reanalysis-era5-single-levels'
+        Name of the dataset to retrieve the variables from. Can be either
+        'reanalysis-era5-single-levels' or 'reanalysis-era5-land'.
     product_type: str, {'reanalysis', 'ensemble_members', 'ensemble_mean',
                         'ensemble_spread'}, default: 'reanalysis'
         ERA5 product type
@@ -183,12 +184,12 @@ def get_era5(latitude, longitude, start, end, api_key=None,
        <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`_
     .. [3] `How to use the CDS API
        <https://cds.climate.copernicus.eu/api-how-to>`_
-    .. [4] `Climate Data Storage user registration
-       <https://cds.climate.copernicus.eu/user/register>`_
-    .. [5] `cdsapi source code
+    .. [4] `cdsapi source code
        <https://github.com/ecmwf/cdsapi/tree/master/cdsapi>`_
-    .. [6] `Climate Data Store (CDS) API Keywords
+    .. [5] `Climate Data Store (CDS) API Keywords
        <https://confluence.ecmwf.int/display/CKB/Climate+Data+Store+%28CDS%29+API+Keywords>`_
+    .. [6] `Climate Data Storage user registration
+       <https://cds.climate.copernicus.eu/user/register>`_
     """  # noqa: E501
     if cds_client is None:
         cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key)
@@ -225,7 +226,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
 
 
 def read_era5(filename, output_format=None, map_variables=True):
-    """Read an ERA5 netcdf file.
+    """Read one or more ERA5 netcdf files.
 
     Parameters
     ----------
@@ -236,17 +237,16 @@ def read_era5(filename, output_format=None, map_variables=True):
         if file only contains one location and otherwise return an xarray
         dataset.
     map_variables: bool, default: True
-        When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable ERA5_VARIABLE_MAP.
+        When true, renames columns to pvlib variable names where applicable.
+        See variable ERA5_VARIABLE_MAP.
 
     Returns
     -------
-    data: DataFrame
+    data: DataFrame or dataset
         ERA5 timeseries data, fields depend on the available data. A pandas
-        DataFrame is returned if the file contains a single location and
-        otherwise an xarray DataSet is returned.
+        Object type depends on outputformat.
     metadata: dict
-        metadata for the time-series
+        Metadata for the time-series.
 
     See Also
     --------
@@ -259,7 +259,8 @@ def read_era5(filename, output_format=None, map_variables=True):
     .. [2] `ERA5 data documentation
        <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`_
     """
-    if isinstance(filename, (list, tuple)):  # open multiple-files (mf)
+    # open multiple-files - requires dask
+    if isinstance(filename, (list, tuple)):
         ds = xr.open_mfdataset(filename)
     else:
         ds = xr.open_dataset(filename)

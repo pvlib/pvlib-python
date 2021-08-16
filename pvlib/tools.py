@@ -6,6 +6,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import pytz
+import importlib
 
 
 def cosd(angle):
@@ -344,3 +345,39 @@ def _golden_sect_DataFrame(params, VL, VH, func):
             raise Exception("EXCEPTION:iterations exceeded maximum (50)")
 
     return func(df, 'V1'), df['V1']
+
+
+def _optional_import(module_name, message):
+    """
+    Import a module, deferring import errors.
+
+    If the module cannot be imported, don't raise an error, but instead return
+    a dummy object that raises an error when the module actually gets used
+    for something.
+
+    Parameters
+    ----------
+    module_name: str
+        Name of the module to import, e.g. 'pandas'
+    message: str
+        Deferred error message, e.g. 'pandas must be installed for read_csv'
+    """
+    try:
+        return importlib.import_module(module_name)
+    except ImportError:
+        return _DeferredImportError(message)
+
+
+class _DeferredImportError:
+    """
+    Defer import errors until an imported package actually gets used.
+
+    Useful for importing optional dependencies at the top of a file
+    instead of hiding them inside the functions that use them.
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+    def __getattr__(self, attrname):
+        raise ImportError(self.message)

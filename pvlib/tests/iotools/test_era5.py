@@ -101,6 +101,6 @@ def test_get_era5_area(cds_api_key, expected_index):
     assert 'temp_air' in data.variables.mapping.keys()
     assert 'time' in data.variables.mapping.keys()
     assert 'longitude' in data.variables.mapping.keys()
-    assert np.isclose(data.latitude.values, [56.2 , 55.95, 55.7]).all()
+    assert np.isclose(data.latitude.values, [56.2, 55.95, 55.7]).all()
     assert (data.time.values ==
             expected_index[:24].to_pydatetime().astype('datetime64[ns]')).all()

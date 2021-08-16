@@ -29,9 +29,6 @@ except ImportError:
             raise ImportError(
                 'Retrieving ERA5 data requires cdsapi to be installed.')
 
-CDSAPI_URL = 'https://cds.climate.copernicus.eu/api/v2'
-
-
 # The returned data uses shortNames, whereas the request requires variable
 # names according to the CDS convention - passing shortNames results in an
 # "Ambiguous" error being raised
@@ -63,43 +60,50 @@ ERA5_HOURS = [
     '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00',
     '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
 
+CDSAPI_URL = 'https://cds.climate.copernicus.eu/api/v2'
+
 
 def get_era5(latitude, longitude, start, end, api_key=None,
              variables=ERA5_DEFAULT_VARIABLES,
              dataset='reanalysis-era5-single-levels',
              product_type='reanalysis', grid=(0.25, 0.25), save_path=None,
-             cds_client=None, map_variables=True):
+             cds_client=None, outputformat=None, map_variables=True):
     """
     Retrieve ERA5 reanalysis data from the Copernicus Data Store (CDS).
 
     * Temporal coverage: 1979 to present
     * Temporal resolution: hourly
-    * Spatial resolution: 0.25° by 0.25°
     * Spatial coverage: global
+    * Spatial resolution: 0.25° by 0.25°
 
     An overview of ERA5 is given in [1]_ and [2]_. Data is retrieved using the
     CDSAPI [3]_.
 
+    ERA5 time stamps are always in UTC and
     Time-stamp: from the previous time stamp and backwards, i.e. end of period
     For the reanalysis, the accumulation period is over the 1 hour up to the
     validity date and time.
 
-    Variables should be specified according to the naming convention used by
-    the CDS. The returned data contains the short-name versions of the
-    variables. See [2]_ for a list of variables names and units.
+    .. admonition:: Time reference
+        The ERA5 time stamp convention is to label data periods by the right
+        edge, e.g., the time stamp 12:00 for hourly data refers to the period
+        from 11.00 to 12:00.
 
-    Hint
-    ----
-    In order to use the this function the package cdsapi [5]__ needs to be
-    installed [3]_. The CDSAPI keywords are described in [6]_.
+    .. admonition:: Usage notes
+        To use this function the package cdsapi [5]_ needs to be installed
+        [3]_. The CDSAPI keywords are described in [6]_.
 
-    Access requires user registration, see [4]_. The obtaining API key can
-    either be passed directly to the function or be saved in a local file as
-    described in [3]_.
+        Variables should be specified according to the naming convention used
+        by the CDS. The returned data contains the short-name versions of the
+        variables. See [2]_ for a list of variables names and units.
 
-    It is possible to check your
-    `request status <https://cds.climate.copernicus.eu/cdsapp#!/yourrequests>`_
-    and the `status of all queued requests <https://cds.climate.copernicus.eu/live/queue>`_.
+        Access requires user registration, see [4]_. The obtaining API key can
+        either be passed directly to the function or be saved in a local file
+        as described in [3]_.
+
+        It is possible to check your
+        `request status <https://cds.climate.copernicus.eu/cdsapp#!/yourrequests>`_
+        and the `status of all queued requests <https://cds.climate.copernicus.eu/live/queue>`_.
 
     Parameters
     ----------
@@ -131,11 +135,15 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         Filename of where to save data. Should have ".nc" extension.
     cds_client: CDS API client object, optional
         CDS API client
-    map_variables : bool, default: True
+    outputformat: {'dataframe', 'dataset'}, optional
+        Type of data object to return. Default is to return a pandas DataFrame
+        if file only contains one location and otherwise return an xarray
+        dataset.
+    map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable ERA5_VARIABLE_MAP.
 
-    Notes # Requirements and user registration
+    Notes
     -----
     The returned data includes the following fields by default:
 
@@ -145,8 +153,8 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     *Mapped field names are returned when the map_variables argument is True*
     ---------------------------------------------------------------------------
     2tm, temp_air             float   Air temperature at 2 m above ground (K)
-    u10                       float   Horizontal air speed towards east at 10 m [m/s]
-    v10                       float   Horizontal air speed towards north at 10 m [m/s]
+    u10                       float   Horizontal airspeed towards east at 10 m [m/s]
+    v10                       float   Horizontal airspeed towards north at 10 m [m/s]
     sp, pressure              float   Atmospheric pressure at the ground (Pa)
     msdwswrf, ghi             float   Mean surface downward short-wave radiation flux [W/m^2]
     msdwswrfcs, ghi_clear     float   Mean surface downward short-wave radiation flux, clear sky [W/m^2]
@@ -157,11 +165,15 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     Returns
     -------
     data: DataFrame
-        ERA5 timeseries data, fields depend on the requested data. data is a
+        ERA5 time-series data, fields depend on the requested data. data is a
         pandas DataFrame if a single latitude and longitude is requested and
         an xarray DataSet for multi-location requests.
     metadata: dict
         metadata for the time-series
+
+    See Also
+    --------
+    pvlib.iotools.read_era5
 
     References
     ----------
@@ -208,7 +220,8 @@ def get_era5(latitude, longitude, start, end, api_key=None,
             with open(save_path, 'wb') as f:
                 f.write(res.content)
 
-        return read_era5(res.content, map_variables=map_variables)
+        return read_era5(res.content, map_variables=map_variables,
+                         outputformat=outputformat)
 
 
 def read_era5(filename, output_format=None, map_variables=True):
@@ -218,24 +231,26 @@ def read_era5(filename, output_format=None, map_variables=True):
     ----------
     filename: str or path-like or list
         Filename of a netcdf file containing ERA5 data or list of filenames.
-    map_variables : bool, default: True
+    outputformat: {'dataframe', 'dataset'}, optional
+        Type of data object to return. Default is to return a pandas DataFrame
+        if file only contains one location and otherwise return an xarray
+        dataset.
+    map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable ERA5_VARIABLE_MAP.
-
-    Hint
-    ----
-    The ERA5 time stamp convention is to label data periods by the right edge,
-    e.g., the time stamp 12:00 for hourly data refers to the period from 11.00
-    to 12:00.
 
     Returns
     -------
     data: DataFrame
-        ERA5 timeseries data, fields depend on the requested data. A pandas
+        ERA5 timeseries data, fields depend on the available data. A pandas
         DataFrame is returned if the file contains a single location and
         otherwise an xarray DataSet is returned.
     metadata: dict
         metadata for the time-series
+
+    See Also
+    --------
+    pvlib.iotools.get_era5
 
     References
     ----------

@@ -24,7 +24,8 @@ import scipy.optimize as so
 import warnings
 
 from pvlib import atmosphere
-from pvlib.tools import datetime_to_djd, djd_to_datetime
+from pvlib.tools import datetime_to_djd, djd_to_datetime, _optional_import
+ephem = _optional_import('ephem', 'PyEphem must be installed')
 
 
 NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
@@ -487,7 +488,6 @@ def _ephem_to_timezone(date, tzinfo):
 
 def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
                  horizon):
-    import ephem
     # initialize a PyEphem observer
     obs = ephem.Observer()
     obs.lat = str(latitude)
@@ -543,11 +543,6 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
     --------
     pyephem
     """
-
-    try:
-        import ephem
-    except ImportError:
-        raise ImportError('PyEphem must be installed')
 
     # times must be localized
     if times.tz:
@@ -630,10 +625,6 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     """
 
     # Written by Will Holmgren (@wholmgren), University of Arizona, 2014
-    try:
-        import ephem
-    except ImportError:
-        raise ImportError('PyEphem must be installed')
 
     # if localized, convert to UTC. otherwise, assume UTC.
     try:
@@ -942,8 +933,6 @@ def pyephem_earthsun_distance(time):
     -------
     pd.Series. Earth-sun distance in AU.
     """
-
-    import ephem
 
     sun = ephem.Sun()
     earthsun = []

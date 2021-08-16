@@ -4,24 +4,14 @@ Read data from ECMWF MACC Reanalysis.
 
 import threading
 import pandas as pd
+from pvlib.tools import _optional_import
 
-try:
-    import netCDF4
-except ImportError:
-    class netCDF4:
-        @staticmethod
-        def Dataset(*a, **kw):
-            raise ImportError(
-                'Reading ECMWF data requires netCDF4 to be installed.')
+netCDF4 = _optional_import('netCDF4', (
+    'Reading ECMWF data requires netCDF4 to be installed.'))
+ecmwfapi = _optional_import('ecmwfapi', (
+    'To download data from ECMWF requires the API client.\nSee https:/'
+    '/confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets'))
 
-try:
-    from ecmwfapi import ECMWFDataServer
-except ImportError:
-    def ECMWFDataServer(*a, **kw):
-        raise ImportError(
-            'To download data from ECMWF requires the API client.\nSee https:/'
-            '/confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets'
-        )
 
 #: map of ECMWF MACC parameter keynames and codes used in API
 PARAMS = {
@@ -164,7 +154,7 @@ def get_ecmwf_macc(filename, params, start, end, lookup_params=True,
     startdate = start.strftime('%Y-%m-%d')
     enddate = end.strftime('%Y-%m-%d')
     if not server:
-        server = ECMWFDataServer()
+        server = ecmwfapi.ECMWFDataServer()
     t = threading.Thread(target=target, daemon=True,
                          args=(server, startdate, enddate, params, filename))
     t.start()

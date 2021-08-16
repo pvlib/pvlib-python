@@ -6,6 +6,7 @@ dependencies:
     - cdsapi
     - coveralls
     - cython
+    - dask
     - ephem
     - netcdf4
     - nose

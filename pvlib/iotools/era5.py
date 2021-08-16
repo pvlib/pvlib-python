@@ -285,7 +285,7 @@ def read_era5(filename, output_format=None, map_variables=True):
             {k: v for k, v in ERA5_VARIABLE_MAP.items() if k in list(ds)})
 
     if (output_format == 'dataframe') or (
-            (output_format == None) & (ds['latitude'].size == 1) &
+            (output_format is None) & (ds['latitude'].size == 1) &
             (ds['longitude'].size == 1)):
         if (ds['latitude'].size == 1) & (ds['longitude'].size == 1):
             data = ds.to_dataframe().droplevel(['latitude', 'longitude'])

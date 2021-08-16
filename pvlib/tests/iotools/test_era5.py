@@ -51,6 +51,7 @@ def test_read_era5(expected_index, expected_columns):
         'units': 'W m**-2'}
     assert 'dims' in meta.keys()
 
+
 @requires_xarray
 def test_read_era5_variable_mapped(expected_index, expected_columns_mapped):
     data, meta = read_era5(DATA_DIR / 'era5_testfile.nc')

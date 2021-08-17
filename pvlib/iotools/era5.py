@@ -5,6 +5,8 @@
 # data. Also, monthly datasets and grib files are no supported.
 
 import requests
+from pvlib.tools import (_extract_metadata_from_dataset,
+                         _convert_C_to_K_in_dataset)
 
 try:
     import xarray as xr
@@ -28,19 +30,6 @@ except ImportError:
         def Client(*a, **kw):
             raise ImportError(
                 'Retrieving ERA5 data requires cdsapi to be installed.')
-
-
-def _extract_metadata_from_dataset(ds):
-    metadata = {}
-    for v in list(ds.variables):
-        metadata[v] = {
-            'name': ds[v].name,
-            'long_name': ds[v].long_name}
-        if v.lower() != 'time':
-            metadata[v]['units'] = ds[v].units
-    metadata['dims'] = dict(ds.dims)
-    metadata.update(ds.attrs)  # add arbitrary metadata
-    return metadata
 
 
 # The returned data uses shortNames, whereas the request requires variable
@@ -200,7 +189,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     .. [6] `Climate Data Storage user registration
        <https://cds.climate.copernicus.eu/user/register>`_
     """  # noqa: E501
-    cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key)
+    cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key, verify=1)
 
     # Area is selected by a box made by the four coordinates: [N, W, S, E]
     try:
@@ -274,6 +263,7 @@ def read_era5(filename, output_format=None, map_variables=True):
     else:
         ds = xr.open_dataset(filename)
 
+    ds = _convert_C_to_K_in_dataset(ds)
     metadata = _extract_metadata_from_dataset(ds)
 
     if map_variables:
@@ -285,8 +275,10 @@ def read_era5(filename, output_format=None, map_variables=True):
             (output_format is None) & (ds['latitude'].size == 1) &
             (ds['longitude'].size == 1)):
         data = ds.to_dataframe()
+        # Localize timezone to UTC
+        data.index = data.index.set_levels(data.index.get_level_values('time').tz_localize('utc'), 'time')  # noqa: E501
         if (ds['latitude'].size == 1) & (ds['longitude'].size == 1):
-            data.droplevel(['latitude', 'longitude'])
+            data = data.droplevel(['latitude', 'longitude'])
         return data, metadata
     else:
         return ds, metadata

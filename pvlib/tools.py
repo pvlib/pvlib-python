@@ -344,3 +344,52 @@ def _golden_sect_DataFrame(params, VL, VH, func):
             raise Exception("EXCEPTION:iterations exceeded maximum (50)")
 
     return func(df, 'V1'), df['V1']
+
+
+def _extract_metadata_from_dataset(ds):
+    """
+    Generate a dictionary of metadata from an xarray dataset.
+
+    Parameters
+    ----------
+    ds : dataset
+        dataset containing time series data.
+
+    Returns
+    -------
+    metadata : dict
+        Dictionary containing metadata.
+    """
+    metadata = {}
+    for v in list(ds.variables):
+        metadata[v] = {
+            'name': ds[v].name,
+            'long_name': ds[v].long_name}
+        if 'units' in ds[v].attrs:
+            metadata[v]['units'] = ds[v].units
+    metadata['dims'] = dict(ds.dims)
+    metadata.update(ds.attrs)  # add arbitrary metadata
+    return metadata
+
+
+def _convert_C_to_K_in_dataset(ds):
+    """
+    Convert all variables in an xarray dataset that have the unit Kelvin to
+    degrees Celsius.
+
+    Parameters
+    ----------
+    ds : dataset
+        dataset containing time series data.
+
+    Returns
+    -------
+    ds : dataset
+        dataset where variables with temperature variables in Celsius
+    """
+    for v in list(ds.variables):
+        if 'units' in ds[v].attrs:
+            if 'K' == ds[v].attrs['units']:
+                ds[v].data = ds[v].data - 273.15
+                ds[v].attrs['units'] = 'C'
+    return ds

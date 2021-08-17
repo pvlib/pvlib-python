@@ -22,7 +22,7 @@ def cds_api_key():
 
 @pytest.fixture
 def expected_index():
-    index = pd.date_range('2020-1-1', freq='1h', periods=8832)
+    index = pd.date_range('2020-1-1', freq='1h', periods=8832, tz='UTC')
     index.name = 'time'
     return index
 
@@ -50,6 +50,9 @@ def test_read_era5(expected_index, expected_columns):
         'long_name': 'Mean surface downward short-wave radiation flux',
         'units': 'W m**-2'}
     assert 'dims' in meta.keys()
+    # Test conversion of K to C
+    assert meta['t2m']['units'] == 'C'
+    assert np.isclose(data['t2m'].iloc[0], 2.8150635)  # temperature in deg C
 
 
 @requires_xarray
@@ -61,7 +64,7 @@ def test_read_era5_variable_mapped(expected_index, expected_columns_mapped):
 
 
 @requires_xarray
-def test_read_era5_output_format(expected_index, expected_columns_mapped):
+def test_read_era5_output_format():
     import xarray as xr
     data, meta = read_era5(DATA_DIR / 'era5_testfile.nc',
                            output_format='dataset')

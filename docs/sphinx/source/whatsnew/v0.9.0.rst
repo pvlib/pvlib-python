@@ -207,7 +207,7 @@ Bug fixes
 * Fix :py:func:`~pvlib.tracking.singleaxis` AOI wrong when sun behind module.
   (:pull:`1273`, :issue:`1221`)
 * Fix :py:meth:`~pvlib.forecast.ForecastModel.get_data` failure to correct for
-  non-UTC timezones. (:issue:`1237`, :pull:``)
+  non-UTC timezones. (:issue:`1237`, :pull:`1285`)
 
 Testing
 ~~~~~~~

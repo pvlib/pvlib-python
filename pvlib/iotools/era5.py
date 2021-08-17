@@ -81,7 +81,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
              variables=ERA5_DEFAULT_VARIABLES,
              dataset='reanalysis-era5-single-levels',
              product_type='reanalysis', grid=(0.25, 0.25), save_path=None,
-             cds_client=None, output_format=None, map_variables=True):
+             output_format=None, map_variables=True):
     """
     Retrieve ERA5 reanalysis data from the Copernicus Data Store (CDS).
 
@@ -145,8 +145,6 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         User specified grid resolution
     save_path: str or path-like, optional
         Filename of where to save data. Should have ".nc" extension.
-    cds_client: CDS API client object, optional
-        CDS API client
     output_format: {'dataframe', 'dataset'}, optional
         Type of data object to return. Default is to return a pandas DataFrame
         if file only contains one location and otherwise return an xarray
@@ -202,8 +200,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     .. [6] `Climate Data Storage user registration
        <https://cds.climate.copernicus.eu/user/register>`_
     """  # noqa: E501
-    if cds_client is None:
-        cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key)
+    cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key)
 
     # Area is selected by a box made by the four coordinates: [N, W, S, E]
     try:
@@ -214,20 +211,20 @@ def get_era5(latitude, longitude, start, end, api_key=None,
 
     params = {
         'product_type': product_type,
-        'format': 'netcdf',
         'variable': variables,
         'date': start.strftime('%Y-%m-%d') + '/' + end.strftime('%Y-%m-%d'),
         'time': ERA5_HOURS,
         'grid': grid,
-        'area': area}
+        'area': area,
+        'format': 'netcdf'}
 
-    # Retrieve path to the file
+    # Retrieve remote path to the file
     file_location = cds_client.retrieve(dataset, params)
 
     # Load file into memory
     with requests.get(file_location.location) as res:
 
-        # Save the file locally if save_path  has been specified
+        # Save the file locally if save_path has been specified
         if save_path is not None:
             with open(save_path, 'wb') as f:
                 f.write(res.content)

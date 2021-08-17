@@ -183,7 +183,12 @@ class ForecastModel:
         self.end = pd.Timestamp(end)
         if self.start.tz is None or self.end.tz is None:
             raise TypeError('start and end must be tz-localized')
-        self.query.time_range(self.start, self.end)
+        # don't assume that siphon or the server can handle anything other
+        # than UTC
+        self.query.time_range(
+            self.start.tz_convert('UTC'),
+            self.end.tz_convert('UTC')
+        )
 
     def set_query_latlon(self):
         '''
@@ -412,10 +417,14 @@ class ForecastModel:
         -------
         pandas.DatetimeIndex
         '''
+        # np.masked_array with elements like real_datetime(2021, 8, 17, 16, 0)
+        # and dtype=object
         times = num2date(time[:].squeeze(), time.units,
                          only_use_cftime_datetimes=False,
                          only_use_python_datetimes=True)
-        self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
+        # convert to pandas, localize to UTC, convert to desired timezone
+        self.time = pd.DatetimeIndex(
+            times, tz='UTC').tz_convert(self.location.tz)
 
     def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=35,
                                   **kwargs):

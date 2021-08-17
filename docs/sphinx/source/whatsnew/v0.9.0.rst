@@ -127,7 +127,7 @@ Enhancements
   for retrieving and reading BSRN solar radiation data files.
   (:pull:`1254`, :pull:`1145`, :issue:`1015`)
 * Add :func:`~pvlib.iotools.get_cams`,
-  :func:`~pvlib.iotools.parse_cams`, and 
+  :func:`~pvlib.iotools.parse_cams`, and
   :func:`~pvlib.iotools.read_cams`
   for retrieving, parsing, and reading CAMS Radiation and McClear time-series
   files. (:pull:`1175`)
@@ -179,9 +179,9 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Corrected an error in :py:func:`~pvlib.irradiance.perez` where the horizon
-  irradiance component was prevented from taking negative values. Negative 
-  values are intentional according to the original publication. Changes in 
-  output are expected to be small and primarily occur at low irradiance 
+  irradiance component was prevented from taking negative values. Negative
+  values are intentional according to the original publication. Changes in
+  output are expected to be small and primarily occur at low irradiance
   conditions.
   (:issue:`1238`, :pull:`1239`)
 * Pass weather data to solar position calculations in
@@ -205,7 +205,9 @@ Bug fixes
 * Changed deprecated use of ``.astype()`` to ``.view()`` in :py:mod:`~pvlib.solarposition`.
   (:pull:`1256`, :issue:`1261`, :pull:`1262`)
 * Fix :py:func:`~pvlib.tracking.singleaxis` AOI wrong when sun behind module.
-  (:pull:`1273`, :issue:`1221`) 
+  (:pull:`1273`, :issue:`1221`)
+* Fix :py:meth:`~pvlib.forecast.ForecastModel.get_data` failure to correct for
+  non-UTC timezones. (:issue:`1237`, :pull:`1285`)
 
 Testing
 ~~~~~~~

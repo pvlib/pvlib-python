@@ -16,7 +16,7 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-from .conftest import requires_tables, DATA_DIR
+from .conftest import DATA_DIR
 
 
 def test_ineichen_series():
@@ -189,7 +189,6 @@ def test_ineichen_altitude():
     assert_frame_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -202,7 +201,6 @@ def test_lookup_linke_turbidity():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_leapyear():
     times = pd.date_range(start='2016-06-24', end='2016-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -215,7 +213,6 @@ def test_lookup_linke_turbidity_leapyear():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_nointerp():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -226,7 +223,6 @@ def test_lookup_linke_turbidity_nointerp():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
                           freq='1M', tz='America/Phoenix')
@@ -237,7 +233,6 @@ def test_lookup_linke_turbidity_months():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_months_leapyear():
     times = pd.date_range(start='2016-04-01', end='2016-07-01',
                           freq='1M', tz='America/Phoenix')
@@ -248,7 +243,6 @@ def test_lookup_linke_turbidity_months_leapyear():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_nointerp_months():
     times = pd.date_range(start='2014-04-10', end='2014-07-10',
                           freq='1M', tz='America/Phoenix')
@@ -480,7 +474,6 @@ def test_simplified_solis_nans_series():
     assert_frame_equal(expected, out)
 
 
-@requires_tables
 def test_linke_turbidity_corners():
     """Test Linke turbidity corners out of bounds."""
     months = pd.DatetimeIndex('%d/1/2016' % (m + 1) for m in range(12))

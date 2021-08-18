@@ -229,7 +229,8 @@ Documentation
 
 Requirements
 ~~~~~~~~~~~~
-* ``dataclasses`` is required for python 3.6
+* ``dataclasses`` is required for python 3.6 (:pull:`1076`)
+* ``tables`` is now required instead of optional (:issue:`1286`, :pull:`1287`)
 
 Contributors
 ~~~~~~~~~~~~

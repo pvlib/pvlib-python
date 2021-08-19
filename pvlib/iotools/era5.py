@@ -9,28 +9,14 @@ from pvlib.tools import (_extract_metadata_from_dataset,
                          _convert_C_to_K_in_dataset)
 
 try:
-    import xarray as xr
-except ImportError:
-    class xr:
-        @staticmethod
-        def open_dataset(*a, **kw):
-            raise ImportError(
-                'Reading ERA5 data requires xarray to be installed.')
-
-        @staticmethod
-        def open_mfdataset(*a, **kw):
-            raise ImportError(
-                'Reading ERA5 data requires xarray to be installed.')
-
-try:
     import cdsapi
 except ImportError:
-    class cdsapi:
-        @staticmethod
-        def Client(*a, **kw):
-            raise ImportError(
-                'Retrieving ERA5 data requires cdsapi to be installed.')
+    cdsapi = None
 
+try:
+    import xarray as xr
+except ImportError:
+    xr = None
 
 # The returned data uses shortNames, whereas the request requires variable
 # names according to the CDS convention - passing shortNames results in an
@@ -165,8 +151,8 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     -------
     data: DataFrame
         ERA5 time-series data, fields depend on the requested data. The
-        returned object is either a pandas DataFrame or an xarray dataset, see
-        the output_format parameter.
+        returned object is either a pandas DataFrame or an xarray dataset,
+        depending on the output_format parameter.
     metadata: dict
         Metadata for the time-series.
 
@@ -189,6 +175,9 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     .. [6] `Climate Data Storage user registration
        <https://cds.climate.copernicus.eu/user/register>`_
     """  # noqa: E501
+    if cdsapi is None:
+        raise ImportError('Retrieving ERA5 data requires cdsapi to be installed.')  # noqa: E501
+
     cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key, verify=1)
 
     # Area is selected by a box made by the four coordinates: [N, W, S, E]
@@ -241,8 +230,8 @@ def read_era5(filename, output_format=None, map_variables=True):
     -------
     data: DataFrame
         ERA5 time-series data, fields depend on the requested data. The
-        returned object is either a pandas DataFrame or an xarray Dataset, see
-        the output_format parameter.
+        returned object is either a pandas DataFrame or an xarray dataset,
+        depending on the output_format parameter.
     metadata: dict
         Metadata for the time-series.
 
@@ -257,6 +246,9 @@ def read_era5(filename, output_format=None, map_variables=True):
     .. [2] `ERA5 data documentation
        <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`_
     """
+    if xr is None:
+        raise ImportError('Reading ERA5 data requires xarray to be installed.')
+
     # open multiple-files (mf) requires dask
     if isinstance(filename, (list, tuple)):
         ds = xr.open_mfdataset(filename)

@@ -33,19 +33,6 @@ application.
 There is a :ref:`variable naming convention <variables_style_rules>` to
 ensure consistency throughout the library.
 
-License
-=======
-
-`BSD 3-clause <https://github.com/pvlib/pvlib-python/LICENSE>`_.
-
-If you use pvlib-python in a commercial or publicly-avaiable application, please consider displaying one of the "powered by pvlib" logos:
-
-.. image:: _images/pvlib_powered_logo_horiz.png
-  :width: 300
-
-.. image:: _images/pvlib_powered_logo_vert.png
-  :width: 300
-
 Citing pvlib python
 ===================
 
@@ -61,6 +48,16 @@ use pvlib python in a published work, please cite:
 Please also cite the DOI corresponding to the specific version of
 pvlib python that you used. pvlib python DOIs are listed at
 `Zenodo.org <https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version>`_
+
+If you use pvlib-python in a commercial or publicly-avaiable
+application, please consider displaying one of the "powered by pvlib"
+logos:
+
+.. image:: _images/pvlib_powered_logo_horiz.png
+  :width: 300
+
+.. image:: _images/pvlib_powered_logo_vert.png
+  :width: 300
 
 Additional pvlib python publications include:
 
@@ -85,6 +82,10 @@ Additional pvlib python publications include:
   "An Open Source Solar Power Forecasting Tool Using PVLIB-Python,"
   in 43rd Photovoltaic Specialists Conference, 2016.
 
+License
+=======
+
+`BSD 3-clause <https://github.com/pvlib/pvlib-python/LICENSE>`_.
 
 NumFOCUS
 ========
@@ -94,7 +95,6 @@ pvlib python is a `NumFOCUS Affiliated Project <https://numfocus.org/sponsored-p
 .. image:: https://i0.wp.com/numfocus.org/wp-content/uploads/2019/06/AffiliatedProject.png
   :target: https://numfocus.org/sponsored-projects/affiliated-projects
   :alt: NumFocus Affliated Projects
-
 
 Contents
 ========

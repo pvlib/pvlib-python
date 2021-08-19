@@ -49,7 +49,7 @@ Please also cite the DOI corresponding to the specific version of
 pvlib python that you used. pvlib python DOIs are listed at
 `Zenodo.org <https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version>`_
 
-If you use pvlib-python in a commercial or publicly-avaiable
+If you use pvlib-python in a commercial or publicly-available
 application, please consider displaying one of the "powered by pvlib"
 logos:
 

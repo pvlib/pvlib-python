@@ -125,7 +125,7 @@ Please also cite the DOI corresponding to the specific version of
 pvlib-python that you used. pvlib-python DOIs are listed at
 [Zenodo.org](https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version)
 
-If you use pvlib-python in a commercial or publicly-avaiable application, please
+If you use pvlib-python in a commercial or publicly-available application, please
 consider displaying one of the "powered by pvlib" logos:
 
 <img src="docs/sphinx/source/_images/pvlib_powered_logo_vert.png" width="300"><img src="docs/sphinx/source/_images/pvlib_powered_logo_horiz.png" width="300">

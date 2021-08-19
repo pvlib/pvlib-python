@@ -226,6 +226,7 @@ Documentation
 * Clarified how statistics are calculated for :py:func:`pvlib.clearsky.detect_clearsky`
   (:issue:`1070`, :pull:`1243`)
 * Add gallery examples using the new ``Mount`` classes (:pull:`1266`)
+* Add "powered by pvlib" logos (:pull:`1277`)
 
 Requirements
 ~~~~~~~~~~~~

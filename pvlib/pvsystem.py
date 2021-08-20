@@ -834,7 +834,8 @@ class PVSystem:
     def noct_sam_celltemp(self, poa_global, temp_air, wind_speed,
                           effective_irradiance=None):
         """
-        Use :py:func:`pvlib.temperature.noct_sam` to calculate cell temperature.
+        Use :py:func:`pvlib.temperature.noct_sam` to calculate cell
+        temperature.
 
         Parameters
         ----------

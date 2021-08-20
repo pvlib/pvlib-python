@@ -61,6 +61,8 @@ def test_read_era5_variable_mapped(expected_index, expected_columns_mapped):
     assert (expected_columns_mapped == data.columns).all()
     assert_index_equal(data.index, expected_index[:8784])
     assert data.notna().all().all()
+    assert meta['temp_air'] == {
+        'name': 'temp_air', 'long_name': '2 metre temperature', 'units': 'C'}
 
 
 @requires_xarray

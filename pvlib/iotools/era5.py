@@ -256,20 +256,20 @@ def read_era5(filename, output_format=None, map_variables=True):
     else:
         ds = xr.open_dataset(filename)
 
-    ds = _convert_C_to_K_in_dataset(ds)
-    metadata = _extract_metadata_from_dataset(ds)
-
     if map_variables:
         # Renaming of xarray datasets throws an error if keys are missing
         ds = ds.rename_vars(
             {k: v for k, v in ERA5_VARIABLE_MAP.items() if k in list(ds)})
+
+    ds = _convert_C_to_K_in_dataset(ds)
+    metadata = _extract_metadata_from_dataset(ds)
 
     if (output_format == 'dataframe') or (
             (output_format is None) & (ds['latitude'].size == 1) &
             (ds['longitude'].size == 1)):
         data = ds.to_dataframe()
         # Localize timezone to UTC
-        data.index = data.index.set_levels(data.index.get_level_values('time').tz_localize('utc'), 'time')  # noqa: E501
+        data.index = data.index.set_levels(data.index.get_level_values('time').tz_localize('utc'), level='time')  # noqa: E501
         if (ds['latitude'].size == 1) & (ds['longitude'].size == 1):
             data = data.droplevel(['latitude', 'longitude'])
         return data, metadata

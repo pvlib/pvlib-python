@@ -31,11 +31,10 @@ jobs:
     condition: not(and(eq(${{ variables['python.version'] }}, '3.9'), eq(${{ parameters.name }}, 'Test_bare_macOS)))
 
   - task: PublishTestResults@2
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), not(and(eq(${{ variables['python.version'] }}, '3.9'), eq(${{ parameters.name }}, 'Test_bare_macOS))))
     inputs:
       testResultsFiles: '**/test-*.xml'
       testRunTitle: 'Publish test results for Python $(python.version)'
-    condition: not(and(eq(${{ variables['python.version'] }}, '3.9'), eq(${{ parameters.name }}, 'Test_bare_macOS)))
 
   - task: PublishCodeCoverageResults@1
     inputs:

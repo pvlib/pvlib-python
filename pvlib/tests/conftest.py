@@ -96,6 +96,18 @@ requires_bsrn_credentials = pytest.mark.skipif(
 
 
 try:
+    # Attempt to load NASA EarthData login credentials used for testing pvlib.iotools.get_merra2
+    MERRA2_USERNAME = os.environ["MERRA2_USERNAME"]
+    MERRA2_PASSWORD = os.environ["MERRA2_PASSWORD"]
+    has_merra2_credentials = True
+except KeyError:
+    has_merra2_credentials = False
+
+requires_merra2_credentials = pytest.mark.skipif(
+    not has_merra2_credentials, reason='requires merra2 credentials')
+
+
+try:
     import statsmodels  # noqa: F401
     has_statsmodels = True
 except ImportError:
@@ -103,6 +115,16 @@ except ImportError:
 
 requires_statsmodels = pytest.mark.skipif(
     not has_statsmodels, reason='requires statsmodels')
+
+
+try:
+    import xarray as xr  # noqa: F401
+    has_xarray = True
+except ImportError:
+    has_xarray = False
+
+requires_xarray = pytest.mark.skipif(
+    not has_xarray, reason='requires xarray')
 
 
 try:

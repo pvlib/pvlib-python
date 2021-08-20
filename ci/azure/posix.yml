@@ -21,21 +21,25 @@ jobs:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
+    condition: not(and(eq(${{ variables['python.version'] }}, '3.9'), eq(${{ parameters.name }}, 'Test_bare_macOS)))
 
   - script: |
       pip install pytest pytest-cov pytest-mock requests-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
       pip install -e .
       pytest pvlib --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
+    condition: not(and(eq(${{ variables['python.version'] }}, '3.9'), eq(${{ parameters.name }}, 'Test_bare_macOS)))
 
   - task: PublishTestResults@2
     condition: succeededOrFailed()
     inputs:
       testResultsFiles: '**/test-*.xml'
       testRunTitle: 'Publish test results for Python $(python.version)'
+    condition: not(and(eq(${{ variables['python.version'] }}, '3.9'), eq(${{ parameters.name }}, 'Test_bare_macOS)))
 
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
       reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+    condition: not(and(eq(${{ variables['python.version'] }}, '3.9'), eq(${{ parameters.name }}, 'Test_bare_macOS)))

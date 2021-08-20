@@ -884,7 +884,7 @@ class PVSystem:
 
         Parameters
         ----------
-        pw : array-likedef
+        pw : array-like
             atmospheric precipitable water (cm).
 
         airmass_absolute : array-like

@@ -13,7 +13,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 from .conftest import assert_series_equal, assert_frame_equal
 import pytest
 
-from .conftest import fail_on_pvlib_version
+from .conftest import fail_on_pvlib_version, requires_tables
 
 
 @pytest.fixture(scope='function')
@@ -1788,6 +1788,7 @@ def test_ModelChain_attributes_deprecated_10(sapm_dc_snl_ac_system, location):
         mc.aoi = 5
 
 
+@requires_tables
 def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                             sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -1809,6 +1810,7 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
     assert_series_equal(ac, expected)
 
 
+@requires_tables
 def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                        sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -1859,6 +1861,7 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
                         pd.Series([9, 5], index=times, name='ghi'))
 
 
+@requires_tables
 def test_complete_irradiance(sapm_dc_snl_ac_system, location):
     """Check calculations"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)
@@ -1887,6 +1890,7 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
 
 @pytest.mark.filterwarnings("ignore:This function is not safe at the moment")
 @pytest.mark.parametrize("input_type", [tuple, list])
+@requires_tables
 def test_complete_irradiance_arrays(
         sapm_dc_snl_ac_system_same_arrays, location, input_type):
     """ModelChain.complete_irradiance can accept a tuple of weather

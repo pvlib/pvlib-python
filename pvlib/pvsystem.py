@@ -627,7 +627,7 @@ class PVSystem:
     @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
                 removal='0.10.0')
     def sapm_celltemp(self, poa_global, temp_air, wind_speed):
-        """Uses :py:func:`temperature.sapm_cell` to calculate cell
+        """Uses :py:func:`pvlib.temperature.sapm_cell` to calculate cell
         temperatures.
 
         Parameters
@@ -720,7 +720,7 @@ class PVSystem:
     @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
                 removal='0.10.0')
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
-        """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
+        """Uses :py:func:`pvlib.temperature.pvsyst_cell` to calculate cell
         temperature.
 
         Parameters
@@ -756,7 +756,7 @@ class PVSystem:
                 removal='0.10.0')
     def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """
-        Use :py:func:`temperature.faiman` to calculate cell temperature.
+        Use :py:func:`pvlib.temperature.faiman` to calculate cell temperature.
 
         Parameters
         ----------
@@ -791,7 +791,7 @@ class PVSystem:
                 removal='0.10.0')
     def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
         """
-        Use :py:func:`temperature.fuentes` to calculate cell temperature.
+        Use :py:func:`pvlib.temperature.fuentes` to calculate cell temperature.
 
         Parameters
         ----------
@@ -834,7 +834,7 @@ class PVSystem:
     def noct_sam_celltemp(self, poa_global, temp_air, wind_speed,
                           effective_irradiance=None):
         """
-        Use :py:func:`temperature.noct_sam` to calculate cell temperature.
+        Use :py:func:`pvlib.temperature.noct_sam` to calculate cell temperature.
 
         Parameters
         ----------
@@ -871,7 +871,7 @@ class PVSystem:
     @_unwrap_single_value
     def first_solar_spectral_loss(self, pw, airmass_absolute):
         """
-        Use the :py:func:`first_solar_spectral_correction` function to
+        Use :py:func:`pvlib.atmosphere.first_solar_spectral_correction` to
         calculate the spectral loss modifier. The model coefficients are
         specific to the module's cell type, and are determined by searching
         for one of the following keys in self.module_parameters (in order):
@@ -884,7 +884,7 @@ class PVSystem:
 
         Parameters
         ----------
-        pw : array-like
+        pw : array-likedef
             atmospheric precipitable water (cm).
 
         airmass_absolute : array-like

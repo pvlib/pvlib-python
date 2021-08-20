@@ -204,21 +204,18 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     expected = pd.DataFrame(index=times,
                             columns=['sunrise', 'sunset'],
                             dtype='datetime64[ns]')
-    expected['sunrise'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
-    expected['sunset'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunset']])
-    expected['transit'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
+    idx_sunrise = pd.to_datetime(['2015-01-02', '2015-01-03', '2015-01-03',
+                                  '2015-01-03']).tz_localize('MST')
+    expected['sunrise'] = \
+        expected_rise_set_ephem.loc[idx_sunrise, 'sunrise'].tolist()
+    idx_sunset = pd.to_datetime(['2015-01-02', '2015-01-02', '2015-01-02',
+                                 '2015-01-03']).tz_localize('MST')
+    expected['sunset'] = \
+        expected_rise_set_ephem.loc[idx_sunset, 'sunset'].tolist()
+    idx_transit = pd.to_datetime(['2015-01-02', '2015-01-02', '2015-01-03',
+                                  '2015-01-03']).tz_localize('MST')
+    expected['transit'] = \
+        expected_rise_set_ephem.loc[idx_transit, 'transit'].tolist()
 
     result = solarposition.sun_rise_set_transit_ephem(times,
                                                       golden.latitude,
@@ -243,21 +240,18 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     expected = pd.DataFrame(index=times,
                             columns=['sunrise', 'sunset'],
                             dtype='datetime64[ns]')
-    expected['sunrise'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
-    expected['sunset'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset']])
-    expected['transit'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
+    idx_sunrise = pd.to_datetime(['2015-01-01', '2015-01-02', '2015-01-02',
+                                  '2015-01-03']).tz_localize('MST')
+    expected['sunrise'] = \
+        expected_rise_set_ephem.loc[idx_sunrise, 'sunrise'].tolist()
+    idx_sunset = pd.to_datetime(['2015-01-01', '2015-01-01', '2015-01-02',
+                                 '2015-01-02']).tz_localize('MST')
+    expected['sunset'] = \
+        expected_rise_set_ephem.loc[idx_sunset, 'sunset'].tolist()
+    idx_transit = pd.to_datetime(['2015-01-01', '2015-01-01', '2015-01-02',
+                                  '2015-01-03']).tz_localize('MST')
+    expected['transit'] = \
+        expected_rise_set_ephem.loc[idx_transit, 'transit'].tolist()
 
     result = solarposition.sun_rise_set_transit_ephem(
         times,

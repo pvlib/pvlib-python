@@ -43,18 +43,24 @@ INSTALL_REQUIRES = ['numpy >= 1.12.0',
                     'pytz',
                     'requests',
                     'scipy >= 1.2.0',
-                    'tables']
+                    ]
 
 # include dataclasses as a dependency only on python 3.6
 if sys.version_info.major == 3 and sys.version_info.minor == 6:
     INSTALL_REQUIRES.append('dataclasses')
+
+# python 3.9 OS X wheels are not available on pypi yet
+# https://github.com/pvlib/pvlib-python/pull/1287
+if not (sys.version_info.major == 3 and sys.version_info.major >= 9):
+    INSTALL_REQUIRES.append('tables')
+
 
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
                  'pytest-remotedata']
 EXTRAS_REQUIRE = {
     'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
-                 'pvfactors', 'siphon', 'statsmodels',
+                 'pvfactors', 'siphon', 'statsmodels', 'tables',
                  'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2',
             'sphinx_rtd_theme==0.5.0', 'sphinx-gallery', 'docutils == 0.15.2',

@@ -5,7 +5,6 @@ dependencies:
     - coveralls
     - nose
     - pip
-    # - pytables  # tables when using pip+PyPI
     - pytest
     - pytest-cov
     - pytest-mock

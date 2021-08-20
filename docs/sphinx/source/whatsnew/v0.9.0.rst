@@ -107,8 +107,11 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Added :func:`~pvlib.iotools.read_pvgis_hourly` and
-  :func:`~pvlib.iotools.get_pvgis_hourly` for reading and retrieving hourly
+* Added :func:`~pvlib.iotools.get_merra2` and
+  :func:`~pvlib.iotools.read_merra2` for retrieving and reading hourly
+  reanalysis data from MERRA-2. (:pull:`1247`)
+* Added :func:`~pvlib.iotools.get_pvgis_hourly` and
+  :func:`~pvlib.iotools.read_pvgis_hourly` for retrieving and reading hourly
   solar radiation data and PV power output from PVGIS. (:pull:`1186`,
   :issue:`849`)
 * Add :func:`~pvlib.iotools.get_bsrn` and :func:`~pvlib.iotools.read_bsrn`

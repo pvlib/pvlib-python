@@ -1,7 +1,6 @@
 """Functions to read and retrieve MERRA2 reanalysis data from NASA.
 .. codeauthor:: Adam R. Jensen<adam-r-j@hotmail.com>
 """
-import cftime
 from pvlib.tools import (_extract_metadata_from_dataset,
                          _convert_C_to_K_in_dataset)
 
@@ -15,8 +14,22 @@ try:
 except ImportError:
     setup_session = None
 
+try:
+    import cftime
+except ImportError:
+    cftime = None
+
 MERRA2_VARIABLE_MAP = {
-    }
+    # Variables from M2T1NXRAD - radiation diagnostics
+    'LWGEM': 'lwu',  # longwave flux emitted from surface [W/m^2]
+    'SWGDN': 'ghi',  # surface incoming shortwave flux [W/m^2]
+    'SWGDNCLR': 'ghi_clear',  # SWGDN assuming clear sky [W/m^2]
+    'SWTDN': 'toa',  # toa incoming shortwave flux [W/m^2]
+    # Variables from M2T1NXSLV - single-level diagnostics
+    'PS': 'pressure',  # surface pressure [Pa]
+    'T2M': 'temp_air',  # 2-meter air temperature [K converted to C]
+    'T2MDEW': 'temp_dew',  # dew point temperature at 2 m [K converted to C]
+}
 
 # goldsmr4 contains the single-level 2D hourly MERRA-2 data files
 MERRA2_BASE_URL = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/dods'
@@ -28,8 +41,9 @@ def get_merra2(latitude, longitude, start, end, dataset, variables, username,
     """
     Retrieve MERRA-2 reanalysis data from the NASA GES DISC repository.
 
-    The function supports downloading of MERRA-2 Hourly 2-Dimensional
-    Time-Averaged Variables (M2T1NXSLV)
+    The function supports downloading of MERRA-2 [1]_ hourly 2-dimensional
+    time-averaged variables. An list of the available datasets and parameters
+    are given in [2]_.
 
     * Temporal coverage: 1980 to present (latency of 2-7 weeks)
     * Temporal resolution: hourly
@@ -51,28 +65,29 @@ def get_merra2(latitude, longitude, start, end, dataset, variables, username,
     end: datetime-like
         Last day of the requested period
     variables: list
-        List of variables to retrieve
+        List of variables to retrieve, e.g., ['TAUHGH', 'SWGNT'].
     dataset: str
-        Name of the dataset to retrieve the variables from, e.g.,
+        Name of the dataset to retrieve the variables from, e.g., 'M2T1NXRAD'
+        for radiation parameters and 'M2T1NXAER' for aerosol parameters.
     output_format: {'dataframe', 'dataset'}, optional
         Type of data object to return. Default is to return a pandas DataFrame
         if file only contains one location and otherwise return an xarray
         dataset.
     map_variables: bool, default: True
         When true, renames columns to pvlib variable names where applicable.
-        See variable MERRRA2_VARIABLE_MAP.
+        See variable MERRA2_VARIABLE_MAP.
 
     Returns
     -------
     data: DataFrame
-        Dataframe containing MERRA2 timeseries data, see [3]_ for variable units.
+        Dataframe containing MERRA2 timeseries data, see [2]_ for variable units.
     metadata: dict
         metadata
 
     Notes
     -----
     In order to obtain MERRA2 data, it is necessary to registre for an
-    Earthdata account and link it to the GES DISC as described in [2]_.
+    EarthData account and link it to the GES DISC as described in [3]_.
 
     MERRA-2 contains 14 single-level 2D datasets with an hourly resolution. The
     most important ones are 'M2T1NXAER' which contains aerosol data, 'M2T1NXRAD'
@@ -93,16 +108,17 @@ def get_merra2(latitude, longitude, start, end, dataset, variables, username,
     ----------
     .. [1] `NASA MERRA-2 Project overview
         <https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/>`_
-    .. [2] `Account registration and data access to NASA's GES DISC
-        <https://disc.gsfc.nasa.gov/data-access>`
-    .. [3] `MERRa-2 File specification
+    .. [2] `MERRa-2 File specification
         <https://gmao.gsfc.nasa.gov/pubs/docs/Bosilovich785.pdf>`
-
+    .. [3] `Account registration and data access to NASA's GES DISC
+        <https://disc.gsfc.nasa.gov/data-access>`
     """  # noqa: E501
     if xr is None:
         raise ImportError('Retrieving MERRA-2 data requires xarray')
     if setup_session is None:
         raise ImportError('Retrieving MERRA-2 data requires PyDap')
+    if cftime is None:
+        raise ImportError('Retrieving MERRA-2 data requires cftime')
 
     url = MERRA2_BASE_URL + '/' + dataset
 
@@ -130,22 +146,22 @@ def get_merra2(latitude, longitude, start, end, dataset, variables, username,
 
     ds = xr.decode_cf(ds)  # Decode timestamps
 
-    ds = _convert_C_to_K_in_dataset(ds)
-    metadata = _extract_metadata_from_dataset(ds)
-
     if map_variables:
         # Renaming of xarray datasets throws an error if keys are missing
         ds = ds.rename_vars(
             {k: v for k, v in MERRA2_VARIABLE_MAP.items() if k in list(ds)})
 
+    ds = _convert_C_to_K_in_dataset(ds)
+    metadata = _extract_metadata_from_dataset(ds)
+
     if (output_format == 'dataframe') or (
-            (output_format is None) & (ds['latitude'].size == 1) &
-            (ds['longitude'].size == 1)):
+            (output_format is None) & (ds['lat'].size == 1) &
+            (ds['lon'].size == 1)):
         data = ds.to_dataframe()
         # Localize timezone to UTC
-        data.index = data.index.set_levels(data.index.get_level_values('time').tz_localize('utc'), 'time')  # noqa: E501
-        if (ds['latitude'].size == 1) & (ds['longitude'].size == 1):
-            data = data.droplevel(['latitude', 'longitude'])
+        data.index = data.index.set_levels(data.index.get_level_values('time').tz_localize('utc'), level='time')  # noqa: E501
+        if (ds['lat'].size == 1) & (ds['lon'].size == 1):
+            data = data.droplevel(['lat', 'lon'])
         return data, metadata
     else:
         return ds, metadata
@@ -167,7 +183,7 @@ def read_merra2(filename, output_format=None, map_variables=True):
         dataset.
     map_variables: bool, default: True
         When true, renames columns to pvlib variable names where applicable.
-        See variable MERRRA2_VARIABLE_MAP.
+        See variable MERRA2_VARIABLE_MAP.
 
     Returns
     -------
@@ -198,22 +214,22 @@ def read_merra2(filename, output_format=None, map_variables=True):
     else:
         ds = xr.open_dataset(filename)
 
-    ds = _convert_C_to_K_in_dataset(ds)
-    metadata = _extract_metadata_from_dataset(ds)
-
     if map_variables:
         # Renaming of xarray datasets throws an error if keys are missing
         ds = ds.rename_vars(
             {k: v for k, v in MERRA2_VARIABLE_MAP.items() if k in list(ds)})
 
+    ds = _convert_C_to_K_in_dataset(ds)
+    metadata = _extract_metadata_from_dataset(ds)
+
     if (output_format == 'dataframe') or (
-            (output_format is None) & (ds['latitude'].size == 1) &
-            (ds['longitude'].size == 1)):
+            (output_format is None) & (ds['lat'].size == 1) &
+            (ds['lon'].size == 1)):
         data = ds.to_dataframe()
         # Localize timezone to UTC
-        data.index = data.index.set_levels(data.index.get_level_values('time').tz_localize('utc'), 'time')  # noqa: E501
-        if (ds['latitude'].size == 1) & (ds['longitude'].size == 1):
-            data = data.droplevel(['latitude', 'longitude'])
+        data.index = data.index.set_levels(data.index.get_level_values('time').tz_localize('utc'), level='time')  # noqa: E501
+        if (ds['lat'].size == 1) & (ds['lon'].size == 1):
+            data = data.droplevel(['lat', 'lon'])
         return data, metadata
     else:
         return ds, metadata

@@ -213,6 +213,7 @@ Documentation
 Requirements
 ~~~~~~~~~~~~
 * ``dataclasses`` is required for python 3.6
+* xarray, dask, and pydap are now optional requirements. (:pull:`1264`, :pull:`1274`)
 
 Contributors
 ~~~~~~~~~~~~

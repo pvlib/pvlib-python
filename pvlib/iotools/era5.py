@@ -178,7 +178,8 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     if cdsapi is None:
         raise ImportError('Retrieving ERA5 data requires cdsapi to be installed.')  # noqa: E501
 
-    cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key, verify=1)
+    cds_client = cdsapi.Client(url=CDSAPI_URL, key=api_key,
+                               verify=1, quiet=True)
 
     # Area is selected by a box made by the four coordinates: [N, W, S, E]
     try:

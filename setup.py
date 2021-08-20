@@ -52,7 +52,7 @@ if sys.version_info.major == 3 and sys.version_info.minor == 6:
 # python 3.9 OS X wheels are not available on pypi yet
 # https://github.com/pvlib/pvlib-python/pull/1287
 if not (sys.version_info.major == 3 and
-        sys.version_info.major >= 9 and
+        sys.version_info.minor >= 9 and
         sys.platform == 'darwin'):
     INSTALL_REQUIRES.append('tables')
 

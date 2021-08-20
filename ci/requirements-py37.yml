@@ -5,6 +5,7 @@ channels:
 dependencies:
     - coveralls
     - cython
+    - dask
     - ephem
     - netcdf4
     - nose
@@ -31,3 +32,4 @@ dependencies:
     - pip:
         - nrel-pysam>=2.0
         - pvfactors==1.4.1
+        - git+https://github.com/pydap/pydap#egg=pydap

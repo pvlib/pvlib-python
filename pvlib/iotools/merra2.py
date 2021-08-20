@@ -1,7 +1,6 @@
 """Functions to read and retrieve MERRA2 reanalysis data from NASA.
 .. codeauthor:: Adam R. Jensen<adam-r-j@hotmail.com>
 """
-import os
 import cftime
 from pvlib.tools import (_extract_metadata_from_dataset,
                          _convert_C_to_K_in_dataset)
@@ -113,19 +112,19 @@ def get_merra2(latitude, longitude, start, end, dataset, variables, username,
     start_float = cftime.date2num(start, units='days since 1-1-1 00:00:0.0')
     end_float = cftime.date2num(end, units='days since 1-1-1 00:00:0.0')
 
-    #try:
-    #    latitude = slice(latitude[0], latitude[1])
-    #    longitude = slice(longitude[0], longitude[1])
-    #    method = None
-    #except TypeError:
-    #    method = 'nearest'
+    # try:
+    #     latitude = slice(latitude[0], latitude[1])
+    #     longitude = slice(longitude[0], longitude[1])
+    #     method = None
+    # except TypeError:
+    #     method = 'nearest'
 
     # Setting decode_times=False results in a time saving of up to some minutes
     ds = xr.open_dataset(store, decode_times=False).sel(
         {'lat': latitude,
          'lon': longitude,
          'time': slice(start_float, end_float)},
-        )
+    )
 
     variables = [v.lower() for v in variables]  # Make all variables lower-case
 

@@ -96,7 +96,8 @@ requires_bsrn_credentials = pytest.mark.skipif(
 
 
 try:
-    # Attempt to load NASA EarthData login credentials used for testing pvlib.iotools.get_merra2
+    # Attempt to load NASA EarthData login credentials used for testing
+    # pvlib.iotools.get_merra2
     MERRA2_USERNAME = os.environ["MERRA2_USERNAME"]
     MERRA2_PASSWORD = os.environ["MERRA2_PASSWORD"]
     has_merra2_credentials = True

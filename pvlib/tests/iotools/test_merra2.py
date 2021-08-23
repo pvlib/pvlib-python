@@ -35,7 +35,7 @@ def test_read_merra2(expected_index):
     data, meta = read_merra2(filenames, map_variables=False)
     assert_index_equal(data.index, expected_index)
     assert meta['lat'] == {'name': 'lat', 'long_name': 'latitude',
-                          'units': 'degrees_north'}
+                           'units': 'degrees_north'}
     assert np.isclose(data.loc['2020-01-01 12:30:00+00:00', 'SWGDN'], 130.4375)
 
 
@@ -49,9 +49,9 @@ def test_read_merra2_dataset(expected_index):
     import xarray as xr
     assert isinstance(data, xr.Dataset)
     assert meta['lat'] == {'name': 'lat', 'long_name': 'latitude',
-                          'units': 'degrees_north'}
+                           'units': 'degrees_north'}
     assert np.all([v in ['time', 'lon', 'lat', 'ALBEDO', 'EMIS', 'SWGDN',
-                        'SWGDNCLR', 'SWTDN'] for v in list(data.variables)])
+                         'SWGDNCLR', 'SWTDN'] for v in list(data.variables)])
 
 
 @requires_xarray
@@ -68,9 +68,13 @@ def test_read_merra2_map_variables():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_merra2(merra2_credentials):
-    username, password = merra2_credentials()
+    username, password = merra2_credentials
     data, meta = get_merra2(
-        55, 15, dt.datetime(2020,1,1), dt.datetime(2020,1,2),
+        latitude=55, longitude=15,
+        start=dt.datetime(2020, 1, 1), end=dt.datetime(2020, 1, 2),
         dataset='M2T1NXRAD', variables=['TAUHGH', 'SWGNT'],
         username=username, password=password, map_variables=True)
-    assert True
+    assert_index_equal(data.index, expected_index)
+    assert meta['lat'] == {'name': 'lat', 'long_name': 'latitude',
+                           'units': 'degrees_north'}
+    assert np.all([v in ['tauhgh', 'swgnt'] for v in data.columns])

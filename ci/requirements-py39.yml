@@ -8,6 +8,7 @@ dependencies:
     - cython
     - dask
     - ephem
+    - lxml
     # - netcdf4  # pulls in a different version of numpy with ImportError
     - nose
     # - numba  # python 3.9 compat in early 2021

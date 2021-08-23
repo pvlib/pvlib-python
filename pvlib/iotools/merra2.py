@@ -168,7 +168,7 @@ def get_merra2(latitude, longitude, start, end, dataset, variables, username,
             data.index = data.index.set_levels(data.index.get_level_values('time').tz_localize('utc'), level='time')  # noqa: E501
         else:  # for single location dataframes (only time as index)
             data.index = data.index.tz_localize('UTC')
-            data = data.drop(columns = ['lat', 'lon'])
+            data = data.drop(columns=['lat', 'lon'])
         return data, metadata
     else:
         return ds, metadata

@@ -8,6 +8,7 @@ dependencies:
     - cython
     - dask
     - ephem
+    - lxml
     - netcdf4
     - nose
     - numba

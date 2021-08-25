@@ -92,6 +92,10 @@ def test_get_bsrn(expected_index, bsrn_credentials):
     assert 'dhi_min' in data.columns
     assert 'lwd_max' in data.columns
     assert 'relative_humidity' in data.columns
+    # test that a local file was saved and is read correctly
+    data2, metadata2 = read_bsrn('tam0616.dat.gz')
+    assert_index_equal(expected_index, data2.index)
+    assert 'ghi' in data2.columns
 
 
 @requires_bsrn_credentials

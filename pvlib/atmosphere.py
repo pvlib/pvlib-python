@@ -683,3 +683,206 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
     pvlib.atmosphere.angstrom_aod_at_lambda
     """
     return - np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
+
+def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
+                                    module_type=None, coefficients=None,
+                                    min_aod500=0.05, max_aod500=0.6,
+                                    min_pw=0.25, max_pw=4):
+    
+    r"""
+    Spectral mismatch modifier based on absolute (pressure-adjusted) airmass (AM), 
+    aerosol optical depth (AOD) at 500 nm and precipitable water (PW).
+
+    Estimates a spectral mismatch modifier :math:`M` representing the effect on
+    module short circuit current of variation in the spectral
+    irradiance, :math:`MM` is estimated from absolute (pressure-adjusted) AM,
+    :math:`ama`, AOD at 500 nm, :math:`aod500` and PW, :math:`pw`.
+
+    The best fit polynomial for each atmospheric parameter (AM, AOD, PW) and
+    PV technology under study has been obtained from synthetic spectra generated with
+    SMARTS [1], considering the following boundary conditions:
+
+       * :math:`1.0 <= ama <= 5.0`
+       * :math:`0.05 <= aod500 <= 0.6`
+       * :math:`0.25 \textrm{cm} <= pw <= 4 \textrm{cm}`
+       * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
+       * All other parameters fixed at G173 standard
+
+    Elevation (deg), AOD and PW data were recorded in the city of Jaén, Spain for one year
+    synchronously with both, broadband and spectroradiometric measurements of 30º tilted
+    global irradiance logged in 5-min intervals. AM was estimated through elevation data.
+    
+    Finally, the spectral mismatch factor was calculated for each of the PV technologies
+    and a multivariable regression adjustment as a function of AM, AOD and PW was performed 
+    according to [2] and [3]. As such, the polynomial adjustment coefficients
+    included in [3] were obtained.
+
+
+    Parameters
+    ----------
+    airmass_absolute : array-like
+    absolute (pressure-adjusted) airmass. [unitless]
+    
+    aod500 : array-like
+    atmospheric aerosol optical depth at 500 nm. [unitless]   
+    
+    pw : array-like
+        atmospheric precipitable water. [cm]
+        
+    min_aod500 : float, default 0.05
+    minimum atmospheric aerosol optical depth at 500 nm. Any aod500 value lower than min_aod500
+    is set to min_aod500 to avoid model divergence. [unitless]
+    
+    max_aod500 : float, default 0.6
+    maximum atmospheric aerosol optical depth at 500 nm. Any aod500 value higher than max_aod500
+    is set to NaN to avoid model divergence. [unitless]
+       
+    min_pw : float, default 0.25
+        minimum atmospheric precipitable water. Any pw value lower than min_pw
+        is set to min_pw to avoid model divergence. [cm]
+
+    max_pw : float, default 4
+        maximum atmospheric precipitable water. Any pw value higher than max_pw
+        is set to NaN to avoid model divergence. [cm]
+        
+    module_type : None or string, default None
+        a string specifying a cell type. Values of 'cdte', 'monosi', 'cigs',
+        'multisi','asi' and 'pervovskite'. If provided,
+        module_type selects default coefficients for the following modules:
+
+            * 'cdte' - anonymous CdTe module.
+            * 'monosi', - anonymous sc-si module.
+            * 'multisi', - anonymous mc-si- module.
+            * 'cigs' - anonymous copper indium gallium selenide module.
+            * 'asi' - anonymous amorphous silicon module.
+            * 'perovskite' - anonymous pervoskite module.
+
+
+    coefficients : None or array-like, default None
+        the coefficients employed have been obtained with experimental
+        data in the city of Jaén, Spain. It is pending to verify if such
+        coefficients vary in places with extreme climates where AOD and pw values
+        are frequently high.
+
+    Returns
+    -------
+    modifier: array-like
+        spectral mismatch factor (unitless) which is can be multiplied
+        with broadband irradiance reaching a module's cells to estimate
+        effective irradiance, i.e., the irradiance that is converted to
+        electrical current.
+
+    References
+    ----------
+    .. [1] Gueymard, Christian. SMARTS2: a simple model of the atmospheric
+       radiative transfer of sunshine: algorithms and performance
+       assessment. Cocoa, FL: Florida Solar Energy Center, 1995.
+    .. [2] Theristis, M., Fernández, E., Almonacid, F., and Pérez-Higueras, Pedro. 
+        "Spectral Corrections Based on Air Mass, Aerosol Optical Depth
+        and Precipitable Water for CPV Performance Modeling.
+        " IEEE Journal of Photovoltaics 2016, 6(6), 1598-1604.      
+        https://doi.org/10.1109/jphotov.2016.2606702
+    .. [3] Caballero, J.A., Fernández, E., Theristis, M.,
+        Almonacid, F., and Nofuentes, G. 
+        "Spectral Corrections Based on Air Mass, Aerosol Optical Depth
+        and Precipitable Water for PV Performance Modeling.
+        " IEEE Journal of Photovoltaics 2018, 8(2), 552-558.
+        https://doi.org/10.1109/jphotov.2017.2787019
+        
+        """
+
+    # --- Screen Input Data ---
+
+    # *** ama ***
+    # Replace Extremely High ama with ama 10 to prevent model divergence
+    # ama > 10 will only occur very close to sunset
+    if np.max(airmass_absolute) > 10:
+        airmass_absolute = np.minimum(airmass_absolute, 10)
+
+    # Warn user about ama data that is exceptionally low
+
+    if np.min(airmass_absolute) < 0.58:
+        warn('Exceptionally low air mass: ' +
+             'model not intended for extra-terrestrial use')
+        # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
+        # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
+        # population over 50,000.
+
+    # *** aod500 ***
+    # Replace aod500 Values below 0.05  with 0.05 to prevent model from
+    # diverging"
+    aod500 = np.atleast_1d(aod500)
+    aod500 = aod500.astype('float64')
+    if np.min(aod500) < min_aod500:
+        aod500 = np.maximum(aod500, min_aod500)
+        warn(f'Exceptionally low aod values replaced with {min_aod500} to '
+             'prevent model divergence')
+
+    # Warn user about aod500 data that is exceptionally high
+    if np.max(aod500) > max_aod500:
+        aod500[aod500 > max_aod500] = np.nan
+        warn('Exceptionally high aod values replaced by np.nan: '
+             'check input data.')
+
+    # *** pw ***
+    # Replace pw Values below 0.25 cm with 0.25 cm to prevent model from
+    # diverging"
+    pw = np.atleast_1d(pw)
+    pw = pw.astype('float64')
+    if np.min(pw) < min_pw:
+        pw = np.maximum(pw, min_pw)
+        warn(f'Exceptionally low pw values replaced with {min_pw} cm to '
+             'prevent model divergence')
+
+    # Warn user about pw data that is exceptionally high
+    if np.max(pw) > max_pw:
+        pw[pw > max_pw] = np.nan
+        warn('Exceptionally high pw values replaced by np.nan: '
+             'check input data.')
+        
+
+
+
+ # Experimental coefficients
+
+    _coefficients = {}
+    _coefficients['cdte'] = (
+        1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046, -0.0182, 0, 0.0095, 0.0068, 0 , 1)
+    _coefficients['monosi'] = (
+        0.9706, 0.0377, -0.0123, 0.0025, -0.0002, 0.0159, -0.0165, 0, -0.0016, -0.0027, 1, 0)
+    _coefficients['multisi'] = (
+        0.9836, 0.0254, -0.0085, 0.0016, -0.0001, 0.0094, -0.0132, 0, -0.0002, -0.0011, 1 , 0)
+    _coefficients['cigs'] = (
+        0.9801, 0.0283, -0.0092, 0.0019, -0.0001, 0.0117, -0.0126, 0, -0.0011, -0.0019, 1 , 0)
+    _coefficients['asi'] = (
+        1.1060, -0.0848, 0.0302, -0.0076, 0.0006, -0.12838, 0.0986, -0.0254, 0.0156, 0.0146, 1 , 0)
+    _coefficients['perovskite'] = (
+        1.0637, -0.0491, 0.0180, -0.0047, 0.0004, -0.0773, 0.0583, -0.0159, 0.01251, 0.0109, 1 , 0)
+
+    if module_type is not None and coefficients is None:
+        coefficients = _coefficients[module_type.lower()]
+    elif module_type is None and coefficients is not None:
+        pass
+    elif module_type is None and coefficients is None:
+        raise TypeError('No valid input provided, both module_type and ' +
+                        'coefficients are None')
+    else:
+        raise TypeError('Cannot resolve input, must supply only one of ' +
+                        'module_type and coefficients')
+
+    # Evaluate Spectral Shift
+    coeff = coefficients
+    ama = airmass_absolute
+    aod500_ref=0.84;
+    pw_ref=1.42;
+    
+    modifier = (
+        coeff[0] + (ama) *coeff[1] + (ama*ama) * coeff[2]
+        +(ama*ama*ama) * coeff[3] + (ama*ama*ama*ama) * coeff[4] 
+        + (aod500-aod500_ref) * coeff[5] + ((aod500-aod500_ref) * (ama) * coeff[6]) * coeff[10]
+        + ((aod500-aod500_ref) * (np.log(ama)) * coeff[6]) * coeff[11]
+        +(aod500-aod500_ref) + (ama * ama) * coeff[7]  +
+        (pw-pw_ref) * coeff[8] + (pw-pw_ref) * (np.log(ama)) * coeff[9]    
+        )
+
+    return modifier

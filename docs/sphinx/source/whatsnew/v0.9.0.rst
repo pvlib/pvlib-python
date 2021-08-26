@@ -208,6 +208,8 @@ Bug fixes
   (:pull:`1273`, :issue:`1221`)
 * Fix :py:meth:`~pvlib.forecast.ForecastModel.get_data` failure to correct for
   non-UTC timezones. (:issue:`1237`, :pull:`1285`)
+* Fixed :py:class:`~pvlib.forecast.HRRR` by changing model name to reflect change on the server. (:issue:`1291`,
+  :pull:`1292`)
 
 Testing
 ~~~~~~~

@@ -185,8 +185,7 @@ def get_era5(latitude, longitude, start, end, api_key=None,
     try:
         area = [latitude[1], longitude[0], latitude[0], longitude[1]]
     except TypeError:
-        area = [latitude+0.005, longitude-0.005,
-                latitude-0.005, longitude+0.005]
+        area = [latitude, longitude, latitude, longitude]
 
     params = {
         'product_type': product_type,
@@ -197,11 +196,12 @@ def get_era5(latitude, longitude, start, end, api_key=None,
         'area': area,
         'format': 'netcdf'}
 
-    # Retrieve remote path to the file
-    file_location = cds_client.retrieve(dataset, params)
+    # Retrieve request url
+    request = cds_client.retrieve(dataset, params)
+    file_url = request.location
 
     # Load file into memory
-    with requests.get(file_location.location) as res:
+    with requests.get(file_url) as res:
 
         # Save the file locally if save_path has been specified
         if save_path is not None:

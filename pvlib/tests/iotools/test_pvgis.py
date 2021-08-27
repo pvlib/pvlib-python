@@ -9,9 +9,7 @@ import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
 from pvlib.iotools import get_pvgis_hourly, read_pvgis_hourly
-from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal,
-                        fail_on_pvlib_version)
-from pvlib._deprecation import pvlibDeprecationWarning
+from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal
 
 
 # PVGIS Hourly tests
@@ -358,28 +356,11 @@ def csv_meta(meta_expected):
         in meta_expected['outputs']['tmy_hourly']['variables'].items()]
 
 
-@pytest.fixture
-def pvgis_tmy_mapped_columns():
-    return ['temp_air', 'relative_humidity', 'ghi', 'dni', 'dhi', 'IR(h)',
-            'wind_speed', 'wind_direction', 'pressure']
-
-
-@fail_on_pvlib_version('0.10')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_pvgis_tmy_variable_map_deprecating_warning_0_10():
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        _ = get_pvgis_tmy(45, 8)
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.epw'
-        _ = read_pvgis_tmy(fn)
-
-
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
                        meta_expected):
-    pvgis_data = get_pvgis_tmy(45, 8, map_variables=False)
+    pvgis_data = get_pvgis_tmy(45, 8)
     _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                             meta_expected, pvgis_data)
 
@@ -412,28 +393,26 @@ def _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_kwargs(userhorizon_expected):
-    _, _, inputs, _ = get_pvgis_tmy(45, 8, usehorizon=False,
-                                    map_variables=False)
+    _, _, inputs, _ = get_pvgis_tmy(45, 8, usehorizon=False)
     assert inputs['meteo_data']['use_horizon'] is False
     data, _, _, _ = get_pvgis_tmy(
-        45, 8, userhorizon=[0, 10, 20, 30, 40, 15, 25, 5], map_variables=False)
+        45, 8, userhorizon=[0, 10, 20, 30, 40, 15, 25, 5])
     assert np.allclose(
         data['G(h)'], userhorizon_expected['G(h)'].values)
     assert np.allclose(
         data['Gb(n)'], userhorizon_expected['Gb(n)'].values)
     assert np.allclose(
         data['Gd(h)'], userhorizon_expected['Gd(h)'].values)
-    _, _, inputs, _ = get_pvgis_tmy(45, 8, startyear=2005, map_variables=False)
+    _, _, inputs, _ = get_pvgis_tmy(45, 8, startyear=2005)
     assert inputs['meteo_data']['year_min'] == 2005
-    _, _, inputs, _ = get_pvgis_tmy(45, 8, endyear=2016, map_variables=False)
+    _, _, inputs, _ = get_pvgis_tmy(45, 8, endyear=2016)
     assert inputs['meteo_data']['year_max'] == 2016
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_basic(expected, meta_expected):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='basic',
-                               map_variables=False)
+    pvgis_data = get_pvgis_tmy(45, 8, outputformat='basic')
     _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
 
 
@@ -448,7 +427,7 @@ def _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv', map_variables=False)
+    pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv')
     _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta, pvgis_data)
 
@@ -479,7 +458,7 @@ def _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_epw(expected, epw_meta):
-    pvgis_data = get_pvgis_tmy(45, 8, outputformat='epw', map_variables=False)
+    pvgis_data = get_pvgis_tmy(45, 8, outputformat='epw')
     _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
 
 
@@ -502,33 +481,19 @@ def test_get_pvgis_tmy_error():
         get_pvgis_tmy(45, 8, url='https://re.jrc.ec.europa.eu/')
 
 
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
-    actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
-    assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
-
-
-def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
-    fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
-    actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)
-    assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
-
-
 def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                              meta_expected):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
     # infer outputformat from file extensions
-    pvgis_data = read_pvgis_tmy(fn, map_variables=False)
+    pvgis_data = read_pvgis_tmy(fn)
     _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                             meta_expected, pvgis_data)
     # explicit pvgis outputformat
-    pvgis_data = read_pvgis_tmy(fn, pvgis_format='json', map_variables=False)
+    pvgis_data = read_pvgis_tmy(fn, pvgis_format='json')
     _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                             meta_expected, pvgis_data)
     with fn.open('r') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='json',
-                                    map_variables=False)
+        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='json')
         _compare_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
                                 meta_expected, pvgis_data)
 
@@ -536,14 +501,13 @@ def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,
 def test_read_pvgis_tmy_epw(expected, epw_meta):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.epw'
     # infer outputformat from file extensions
-    pvgis_data = read_pvgis_tmy(fn, map_variables=False)
+    pvgis_data = read_pvgis_tmy(fn)
     _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
     # explicit pvgis outputformat
-    pvgis_data = read_pvgis_tmy(fn, pvgis_format='epw', map_variables=False)
+    pvgis_data = read_pvgis_tmy(fn, pvgis_format='epw')
     _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
     with fn.open('r') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='epw',
-                                    map_variables=False)
+        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='epw')
         _compare_pvgis_tmy_epw(expected, epw_meta, pvgis_data)
 
 
@@ -551,16 +515,15 @@ def test_read_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                             meta_expected, csv_meta):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.csv'
     # infer outputformat from file extensions
-    pvgis_data = read_pvgis_tmy(fn, map_variables=False)
+    pvgis_data = read_pvgis_tmy(fn)
     _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta, pvgis_data)
     # explicit pvgis outputformat
-    pvgis_data = read_pvgis_tmy(fn, pvgis_format='csv', map_variables=False)
+    pvgis_data = read_pvgis_tmy(fn, pvgis_format='csv')
     _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta, pvgis_data)
     with fn.open('rb') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='csv',
-                                    map_variables=False)
+        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='csv')
         _compare_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                                meta_expected, csv_meta, pvgis_data)
 
@@ -569,22 +532,20 @@ def test_read_pvgis_tmy_basic(expected, meta_expected):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.txt'
     # XXX: can't infer outputformat from file extensions for basic
     with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
-        read_pvgis_tmy(fn, map_variables=False)
+        read_pvgis_tmy(fn)
     # explicit pvgis outputformat
-    pvgis_data = read_pvgis_tmy(fn, pvgis_format='basic', map_variables=False)
+    pvgis_data = read_pvgis_tmy(fn, pvgis_format='basic')
     _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
     with fn.open('rb') as fbuf:
-        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='basic',
-                                    map_variables=False)
+        pvgis_data = read_pvgis_tmy(fbuf, pvgis_format='basic')
         _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data)
         # file buffer raises TypeError if passed to pathlib.Path()
         with pytest.raises(TypeError):
-            read_pvgis_tmy(fbuf, map_variables=False)
+            read_pvgis_tmy(fbuf)
 
 
 def test_read_pvgis_tmy_exception():
     bad_outputformat = 'bad'
     err_msg = f"pvgis format '{bad_outputformat:s}' was unknown"
     with pytest.raises(ValueError, match=err_msg):
-        read_pvgis_tmy('filename', pvgis_format=bad_outputformat,
-                       map_variables=False)
+        read_pvgis_tmy('filename', pvgis_format=bad_outputformat)

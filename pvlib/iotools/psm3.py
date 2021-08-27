@@ -28,11 +28,6 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API.  The NSRDB
     is described in [1]_ and the PSM3 API is described in [2]_, [3]_, and [4]_.
 
-    .. versionchanged:: 0.9.0
-       The function now returns a tuple where the first element is a dataframe
-       and the second element is a dictionary containing metadata. Previous
-       versions of this function had the return values switched.
-
     Parameters
     ----------
     latitude : float or int
@@ -66,11 +61,11 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     Returns
     -------
-    data : pandas.DataFrame
-        timeseries data from NREL PSM3
-    metadata : dict
+    headers : dict
         metadata from NREL PSM3 about the record, see
         :func:`pvlib.iotools.parse_psm3` for fields
+    data : pandas.DataFrame
+        timeseries data from NREL PSM3
 
     Raises
     ------
@@ -175,11 +170,6 @@ def parse_psm3(fbuf):
     Parse an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
 
-    .. versionchanged:: 0.9.0
-       The function now returns a tuple where the first element is a dataframe
-       and the second element is a dictionary containing metadata. Previous
-       versions of this function had the return values switched.
-
     Parameters
     ----------
     fbuf: file-like object
@@ -187,18 +177,15 @@ def parse_psm3(fbuf):
 
     Returns
     -------
+    headers : dict
+        metadata from NREL PSM3 about the record, see notes for fields
     data : pandas.DataFrame
         timeseries data from NREL PSM3
-    metadata : dict
-        metadata from NREL PSM3 about the record, see notes for fields
 
     Notes
     -----
-    The return is a tuple with two items. The first item is a dataframe with
-    the PSM3 timeseries data.
-
-    The second item is a dictionary with metadata from NREL PSM3 about the
-    record containing the following fields:
+    The return is a tuple with two items. The first item is a header with
+    metadata from NREL PSM3 about the record containing the following fields:
 
     * Source
     * Location ID
@@ -247,11 +234,13 @@ def parse_psm3(fbuf):
     * Surface Albedo Units
     * Version
 
+    The second item is a dataframe with the PSM3 timeseries data.
+
     Examples
     --------
     >>> # Read a local PSM3 file:
     >>> with open(filename, 'r') as f:  # doctest: +SKIP
-    ...     df, metadata = iotools.parse_psm3(f)  # doctest: +SKIP
+    ...     metadata, df = iotools.parse_psm3(f)  # doctest: +SKIP
 
     See Also
     --------
@@ -265,17 +254,17 @@ def parse_psm3(fbuf):
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
     """
     # The first 2 lines of the response are headers with metadata
-    metadata_fields = fbuf.readline().split(',')
-    metadata_fields[-1] = metadata_fields[-1].strip()  # strip trailing newline
-    metadata_values = fbuf.readline().split(',')
-    metadata_values[-1] = metadata_values[-1].strip()  # strip trailing newline
-    metadata = dict(zip(metadata_fields, metadata_values))
-    # the response is all strings, so set some metadata types to numbers
-    metadata['Local Time Zone'] = int(metadata['Local Time Zone'])
-    metadata['Time Zone'] = int(metadata['Time Zone'])
-    metadata['Latitude'] = float(metadata['Latitude'])
-    metadata['Longitude'] = float(metadata['Longitude'])
-    metadata['Elevation'] = int(metadata['Elevation'])
+    header_fields = fbuf.readline().split(',')
+    header_fields[-1] = header_fields[-1].strip()  # strip trailing newline
+    header_values = fbuf.readline().split(',')
+    header_values[-1] = header_values[-1].strip()  # strip trailing newline
+    header = dict(zip(header_fields, header_values))
+    # the response is all strings, so set some header types to numbers
+    header['Local Time Zone'] = int(header['Local Time Zone'])
+    header['Time Zone'] = int(header['Time Zone'])
+    header['Latitude'] = float(header['Latitude'])
+    header['Longitude'] = float(header['Longitude'])
+    header['Elevation'] = int(header['Elevation'])
     # get the column names so we can set the dtypes
     columns = fbuf.readline().split(',')
     columns[-1] = columns[-1].strip()  # strip trailing newline
@@ -293,21 +282,16 @@ def parse_psm3(fbuf):
     dtidx = pd.to_datetime(
         data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
     # in USA all timezones are integers
-    tz = 'Etc/GMT%+d' % -metadata['Time Zone']
+    tz = 'Etc/GMT%+d' % -header['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
 
-    return data, metadata
+    return header, data
 
 
 def read_psm3(filename):
     """
     Read an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
-
-    .. versionchanged:: 0.9.0
-       The function now returns a tuple where the first element is a dataframe
-       and the second element is a dictionary containing metadata. Previous
-       versions of this function had the return values switched.
 
     Parameters
     ----------
@@ -316,11 +300,11 @@ def read_psm3(filename):
 
     Returns
     -------
-    data : pandas.DataFrame
-        timeseries data from NREL PSM3
-    metadata : dict
+    headers : dict
         metadata from NREL PSM3 about the record, see
         :func:`pvlib.iotools.parse_psm3` for fields
+    data : pandas.DataFrame
+        timeseries data from NREL PSM3
 
     See Also
     --------

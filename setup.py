@@ -42,8 +42,7 @@ INSTALL_REQUIRES = ['numpy >= 1.12.0',
                     'pandas >= 0.22.0',
                     'pytz',
                     'requests',
-                    'scipy >= 1.2.0',
-                    'tables']
+                    'scipy >= 1.2.0']
 
 # include dataclasses as a dependency only on python 3.6
 if sys.version_info.major == 3 and sys.version_info.minor == 6:
@@ -54,8 +53,7 @@ TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'pytest-remotedata']
 EXTRAS_REQUIRE = {
     'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
-
-                 'pvfactors', 'siphon', 'statsmodels',
+                 'pvfactors', 'siphon', 'statsmodels', 'tables',
                  'cftime >= 1.1.1', 'xarray', 'dask', 'cdsapi'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2',
             'sphinx_rtd_theme==0.5.0', 'sphinx-gallery', 'docutils == 0.15.2',

@@ -3,7 +3,6 @@ channels:
     - defaults
     - conda-forge
 dependencies:
-    - blosc=1.14.3  # newest version breaks tables (pytables) on windows
     - cdsapi
     - coveralls
     - cython

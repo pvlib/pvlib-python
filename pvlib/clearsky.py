@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
-import tables
 
 from pvlib import atmosphere, tools
 
@@ -186,6 +185,13 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # http://www.meteonorm.com/images/uploads/downloads/ieashc36_report_TL_AOD_climatologies.pdf
     # 1st row: 89.9583 S, 2nd row: 89.875 S
     # 1st column: 179.9583 W, 2nd column: 179.875 W
+
+    try:
+        import tables
+    except ImportError:
+        raise ImportError('The Linke turbidity lookup table requires tables. '
+                          'You can still use clearsky.ineichen if you '
+                          'supply your own turbidities.')
 
     if filepath is None:
         pvlib_path = os.path.dirname(os.path.abspath(__file__))

@@ -278,7 +278,7 @@ Let's first examine how pvlib handles time when it imports a TMY3 file.
 
 The metadata has a ``'TZ'`` key with a value of ``-9.0``. This is the
 UTC offset in hours in which the data has been recorded. The
-:py:func:`~pvlib.iotools.read_tmy3` function read the data in the file,
+:py:func:`~pvlib.tmy.readtmy3` function read the data in the file,
 created a :py:class:`~pandas.DataFrame` with that data, and then
 localized the DataFrame's index to have this fixed offset. Here, we
 print just a few of the rows and columns of the large dataframe.
@@ -289,7 +289,7 @@ print just a few of the rows and columns of the large dataframe.
 
     tmy3_data.loc[tmy3_data.index[0:3], ['GHI', 'DNI', 'AOD']]
 
-The :py:func:`~pvlib.iotools.read_tmy2` function also returns a DataFrame
+The :py:func:`~pvlib.tmy.readtmy2` function also returns a DataFrame
 with a localized DatetimeIndex.
 
 Solar position

@@ -90,7 +90,7 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
         I = I_{L} - I_{0} (\exp \frac{V + I R_{s}}{nNsVth} - 1)
         - \frac{V + I R_{s}}{R_{sh}}
 
-    See :py:func:`pvsystem.singlediode` for definition of the parameters.
+    See :py:func:`pvlib.pvsystem.singlediode` for definition of the parameters.
 
     The extraction method [2]_ proceeds in six steps.
 

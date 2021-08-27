@@ -52,24 +52,13 @@ the :ref:`iotools` module. In this example we will be using PVGIS, one of the
 data sources available, to retrieve a Typical Meteorological Year (TMY) which
 includes irradiation, temperature and wind speed.
 
-.. note:: PVGIS uses different naming conventions, so it is required to rename
-   the weather data variables before using them. Data is already UTC-localized,
-   so conversion to local timezone is optional.
-
 .. ipython:: python
 
-    variables_translation = {
-        "Gb(n)": "dni",
-        "G(h)": "ghi",
-        "Gd(h)": "dhi",
-        "T2m": "temp_air",
-        "WS10m": "wind_speed",
-    }
     tmys = []
     for location in coordinates:
         latitude, longitude, name, altitude, timezone = location
-        weather = pvlib.iotools.get_pvgis_tmy(latitude, longitude)[0]
-        weather = weather.rename(columns=variables_translation)
+        weather = pvlib.iotools.get_pvgis_tmy(latitude, longitude,
+                                              map_variables=True)[0]
         weather.index.name = "utc_time"
         tmys.append(weather)
 

@@ -12,7 +12,7 @@ jobs:
     vmImage: ubuntu-16.04
 
 
-- template: ci/azure/posix.yml
+- template: ci/azure/posix_no_39.yml
   parameters:
     name: Test_bare_macOS
     vmImage: macOS-10.14

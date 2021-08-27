@@ -17,7 +17,7 @@ YEAR_TEST_DATA = DATA_DIR / 'test_psm3_2017.csv'
 YEAR_TEST_DATA_5MIN = DATA_DIR / 'test_psm3_2019_5min.csv'
 MANUAL_TEST_DATA = DATA_DIR / 'test_read_psm3.csv'
 LATITUDE, LONGITUDE = 40.5137, -108.5449
-HEADER_FIELDS = [
+METADATA_FIELDS = [
     'Source', 'Location ID', 'City', 'State', 'Country', 'Latitude',
     'Longitude', 'Time Zone', 'Elevation', 'Local Time Zone',
     'Dew Point Units', 'DHI Units', 'DNI Units', 'GHI Units',
@@ -46,7 +46,7 @@ def nrel_api_key():
     return demo_key
 
 
-def assert_psm3_equal(header, data, expected):
+def assert_psm3_equal(data, metadata, expected):
     """check consistency of PSM3 data"""
     # check datevec columns
     assert np.allclose(data.Year, expected.Year)
@@ -65,48 +65,48 @@ def assert_psm3_equal(header, data, expected):
     assert np.allclose(data['Wind Speed'], expected['Wind Speed'])
     assert np.allclose(data['Wind Direction'], expected['Wind Direction'])
     # check header
-    for hf in HEADER_FIELDS:
-        assert hf in header
+    for mf in METADATA_FIELDS:
+        assert mf in metadata
     # check timezone
-    assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -header['Time Zone'])
+    assert (data.index.tzinfo.zone == 'Etc/GMT%+d' % -metadata['Time Zone'])
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_psm3_tmy(nrel_api_key):
     """test get_psm3 with a TMY"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
-                                 PVLIB_EMAIL, names='tmy-2017')
+    data, metadata = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
+                                   PVLIB_EMAIL, names='tmy-2017')
     expected = pd.read_csv(TMY_TEST_DATA)
-    assert_psm3_equal(header, data, expected)
+    assert_psm3_equal(data, metadata, expected)
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_psm3_singleyear(nrel_api_key):
     """test get_psm3 with a single year"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
-                                 PVLIB_EMAIL, names='2017', interval=30)
+    data, metadata = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
+                                   PVLIB_EMAIL, names='2017', interval=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
-    assert_psm3_equal(header, data, expected)
+    assert_psm3_equal(data, metadata, expected)
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_psm3_5min(nrel_api_key):
     """test get_psm3 for 5-minute data"""
-    header, data = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
-                                 PVLIB_EMAIL, names='2019', interval=5)
+    data, metadata = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
+                                   PVLIB_EMAIL, names='2019', interval=5)
     assert len(data) == 525600/5
     first_day = data.loc['2019-01-01']
     expected = pd.read_csv(YEAR_TEST_DATA_5MIN)
-    assert_psm3_equal(header, first_day, expected)
+    assert_psm3_equal(first_day, metadata, expected)
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_psm3_check_leap_day(nrel_api_key):
-    _, data_2012 = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
+    data_2012, _ = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
                                  PVLIB_EMAIL, names="2012", interval=60,
                                  leap_day=True)
     assert len(data_2012) == (8760 + 24)
@@ -149,13 +149,13 @@ def io_input(request):
 
 def test_parse_psm3(io_input):
     """test parse_psm3"""
-    header, data = psm3.parse_psm3(io_input)
+    data, metadata = psm3.parse_psm3(io_input)
     expected = pd.read_csv(YEAR_TEST_DATA)
-    assert_psm3_equal(header, data, expected)
+    assert_psm3_equal(data, metadata, expected)
 
 
 def test_read_psm3():
     """test read_psm3"""
-    header, data = psm3.read_psm3(MANUAL_TEST_DATA)
+    data, metadata = psm3.read_psm3(MANUAL_TEST_DATA)
     expected = pd.read_csv(YEAR_TEST_DATA)
-    assert_psm3_equal(header, data, expected)
+    assert_psm3_equal(data, metadata, expected)

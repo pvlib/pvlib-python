@@ -164,7 +164,7 @@ class Location:
     def get_solarposition(self, times, pressure=None, temperature=12,
                           **kwargs):
         """
-        Uses the :py:func:`solarposition.get_solarposition` function
+        Uses the :py:func:`pvlib.solarposition.get_solarposition` function
         to calculate the solar zenith, azimuth, etc. at this location.
 
         Parameters
@@ -173,11 +173,11 @@ class Location:
             Must be localized or UTC will be assumed.
         pressure : None, float, or array-like, default None
             If None, pressure will be calculated using
-            :py:func:`atmosphere.alt2pres` and ``self.altitude``.
+            :py:func:`pvlib.atmosphere.alt2pres` and ``self.altitude``.
         temperature : None, float, or array-like, default 12
 
         kwargs
-            passed to :py:func:`solarposition.get_solarposition`
+            passed to :py:func:`pvlib.solarposition.get_solarposition`
 
         Returns
         -------

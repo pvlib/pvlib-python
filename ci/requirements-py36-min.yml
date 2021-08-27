@@ -5,6 +5,7 @@ dependencies:
     - coveralls
     - nose
     - pip
+    - pytables  # tables when using pip+PyPI
     - pytest
     - pytest-cov
     - pytest-mock
@@ -20,3 +21,4 @@ dependencies:
         - pytest-rerunfailures # conda version is >3.6
         - pytest-remotedata # conda package is 0.3.0, needs > 0.3.1
         - requests-mock
+        - numexpr==2.6.2 # needed for tables, but newest version is not compatible with numpy 1.12

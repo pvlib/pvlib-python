@@ -57,10 +57,11 @@ def _empty_dataframe_from_logical_records(logical_records):
     columns = []
     for lr in logical_records:
         columns += BSRN_COLUMNS[lr][2:]
+    columns = [c for c in columns if c != 'empty']
     return pd.DataFrame(columns=columns)
 
 
-def get_bsrn(start, end, station, username, password,
+def get_bsrn(station, start, end, username, password,
              logical_records=('0100',), local_path=None):
     """
     Retrieve ground measured irradiance data from the BSRN FTP server.
@@ -73,12 +74,12 @@ def get_bsrn(start, end, station, username, password,
 
     Parameters
     ----------
+    station: str
+        3-letter BSRN station abbreviation
     start: datetime-like
         First day of the requested period
     end: datetime-like
         Last day of the requested period
-    station: str
-        3-letter BSRN station abbreviation
     username: str
         username for accessing the BSRN FTP server
     password: str

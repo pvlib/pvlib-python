@@ -111,11 +111,24 @@ Please see the [Contributing page](http://pvlib-python.readthedocs.io/en/stable/
 The long-term success of pvlib-python requires substantial community support.
 
 
-License
-=======
+Citing
+======
 
-BSD 3-clause
+If you use pvlib-python in a published work, please cite:
 
+  William F. Holmgren, Clifford W. Hansen, and Mark A. Mikofski.
+  "pvlib python: a python package for modeling solar energy systems."
+  Journal of Open Source Software, 3(29), 884, (2018).
+  https://doi.org/10.21105/joss.00884
+
+Please also cite the DOI corresponding to the specific version of
+pvlib-python that you used. pvlib-python DOIs are listed at
+[Zenodo.org](https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version)
+
+If you use pvlib-python in a commercial or publicly-available application, please
+consider displaying one of the "powered by pvlib" logos:
+
+<img src="docs/sphinx/source/_images/pvlib_powered_logo_vert.png" width="300"><img src="docs/sphinx/source/_images/pvlib_powered_logo_horiz.png" width="300">
 
 Getting support
 ===============
@@ -133,19 +146,12 @@ change something about pvlib, then please make an issue on our
 [GitHub issues page](https://github.com/pvlib/pvlib-python/issues).
 
 
-Citing
-======
 
-If you use pvlib-python in a published work, please cite:
+License
+=======
 
-  William F. Holmgren, Clifford W. Hansen, and Mark A. Mikofski.
-  "pvlib python: a python package for modeling solar energy systems."
-  Journal of Open Source Software, 3(29), 884, (2018).
-  https://doi.org/10.21105/joss.00884
+BSD 3-clause.
 
-Please also cite the DOI corresponding to the specific version of
-pvlib-python that you used. pvlib-python DOIs are listed at
-[Zenodo.org](https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version)
 
 NumFOCUS
 ========

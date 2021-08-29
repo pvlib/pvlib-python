@@ -3,7 +3,6 @@ channels:
     - defaults
 dependencies:
     - coveralls
-    - h5py
     - nose
     - pip
     - pytest
@@ -15,6 +14,7 @@ dependencies:
     - requests
     - pip:
         - dataclasses
+        - h5py==3.1.0
         - numpy==1.12.0
         - pandas==0.22.0
         - scipy==1.2.0

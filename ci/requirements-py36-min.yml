@@ -3,6 +3,7 @@ channels:
     - defaults
 dependencies:
     - coveralls
+    - h5py
     - nose
     - pip
     - pytest

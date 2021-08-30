@@ -233,7 +233,8 @@ Documentation
 Requirements
 ~~~~~~~~~~~~
 * ``dataclasses`` is required for python 3.6 (:pull:`1076`)
-* ``tables`` is now required instead of optional (:issue:`1286`, :pull:`1287`)
+* ``h5py`` is now a required dependency.  This replaces ``tables``, which was formerly
+  an optional dependency.  (:pull:`1299`, :issue:`1252`, :issue:`1286`)
 
 Contributors
 ~~~~~~~~~~~~

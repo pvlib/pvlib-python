@@ -62,7 +62,7 @@ def _empty_dataframe_from_logical_records(logical_records):
 
 
 def get_bsrn(station, start, end, username, password,
-             logical_records=('0100',), local_path=None):
+             logical_records=('0100',), save_path=None):
     """
     Retrieve ground measured irradiance data from the BSRN FTP server.
 
@@ -87,8 +87,8 @@ def get_bsrn(station, start, end, username, password,
     logical_records: list or tuple, default: ('0100',)
         List of the logical records (LR) to parse. Options include: '0100',
         '0300', and '0500'.
-    local_path: str or path-like, optional
-        If specified, path (abs. or relative) of where to save files
+    save_path: str or path-like, optional
+        If specified, a directory path of where to save each monthly file.
 
     Returns
     -------
@@ -178,10 +178,10 @@ def get_bsrn(station, start, end, username, password,
                 # Check that transfer was successfull
                 if not response.startswith('226 Transfer complete'):
                     raise ftplib.Error(response)
-                # Save file locally if local_path is specified
-                if local_path is not None:
+                # Save file locally if save_path is specified
+                if save_path is not None:
                     # Create local file
-                    with open(os.path.join(local_path, filename), 'wb') as f:
+                    with open(os.path.join(save_path, filename), 'wb') as f:
                         f.write(bio.getbuffer())  # Write local file
                 # Open gzip file and convert to StringIO
                 bio.seek(0)  # reset buffer to start of file

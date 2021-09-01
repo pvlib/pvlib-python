@@ -1,7 +1,7 @@
 .. _whatsnew_0900:
 
-v0.9.0 (MONTH DAY YEAR)
------------------------
+v0.9.0 (September 1, 2021)
+--------------------------
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
@@ -254,3 +254,10 @@ Contributors
 * Chas Schweizer (:ghuser:`cpr-chas`)
 * Yoann Louvet (:ghuser:`YoannUniKS`)
 * Brandon Carpenter (:ghuser:`hashstat`)
+* :ghuser:`kahemker`
+* :ghuser:`zhammond147`
+* :ghuser:`PeterGrant`
+* :ghuser:`rockstaedt`
+* :ghuser:`MichaelHopwood`
+* :ghuser:`EricDuminil`
+* :ghuser:`FeiYao-Edinburgh`

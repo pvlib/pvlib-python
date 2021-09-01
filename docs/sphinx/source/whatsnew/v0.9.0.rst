@@ -254,3 +254,10 @@ Contributors
 * Chas Schweizer (:ghuser:`cpr-chas`)
 * Yoann Louvet (:ghuser:`YoannUniKS`)
 * Brandon Carpenter (:ghuser:`hashstat`)
+* :ghuser:`kahemker`
+* :ghuser:`zhammond147`
+* :ghuser:`PeterGrant`
+* :ghuser:`rockstaedt`
+* :ghuser:`MichaelHopwood`
+* :ghuser:`EricDuminil`
+* :ghuser:`FeiYao-Edinburgh`

@@ -1,7 +1,7 @@
 .. _whatsnew_0900:
 
-v0.9.0 (MONTH DAY YEAR)
------------------------
+v0.9.0 (September 1, 2021)
+--------------------------
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
@@ -127,7 +127,7 @@ Enhancements
   for retrieving and reading BSRN solar radiation data files.
   (:pull:`1254`, :pull:`1145`, :issue:`1015`)
 * Add :func:`~pvlib.iotools.get_cams`,
-  :func:`~pvlib.iotools.parse_cams`, and 
+  :func:`~pvlib.iotools.parse_cams`, and
   :func:`~pvlib.iotools.read_cams`
   for retrieving, parsing, and reading CAMS Radiation and McClear time-series
   files. (:pull:`1175`)
@@ -179,9 +179,9 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Corrected an error in :py:func:`~pvlib.irradiance.perez` where the horizon
-  irradiance component was prevented from taking negative values. Negative 
-  values are intentional according to the original publication. Changes in 
-  output are expected to be small and primarily occur at low irradiance 
+  irradiance component was prevented from taking negative values. Negative
+  values are intentional according to the original publication. Changes in
+  output are expected to be small and primarily occur at low irradiance
   conditions.
   (:issue:`1238`, :pull:`1239`)
 * Pass weather data to solar position calculations in
@@ -205,7 +205,11 @@ Bug fixes
 * Changed deprecated use of ``.astype()`` to ``.view()`` in :py:mod:`~pvlib.solarposition`.
   (:pull:`1256`, :issue:`1261`, :pull:`1262`)
 * Fix :py:func:`~pvlib.tracking.singleaxis` AOI wrong when sun behind module.
-  (:pull:`1273`, :issue:`1221`) 
+  (:pull:`1273`, :issue:`1221`)
+* Fix :py:meth:`~pvlib.forecast.ForecastModel.get_data` failure to correct for
+  non-UTC timezones. (:issue:`1237`, :pull:`1285`)
+* Fixed :py:class:`~pvlib.forecast.HRRR` by changing model name to reflect change on the server. (:issue:`1291`,
+  :pull:`1292`)
 
 Testing
 ~~~~~~~
@@ -224,10 +228,13 @@ Documentation
 * Clarified how statistics are calculated for :py:func:`pvlib.clearsky.detect_clearsky`
   (:issue:`1070`, :pull:`1243`)
 * Add gallery examples using the new ``Mount`` classes (:pull:`1266`)
+* Add "powered by pvlib" logos (:pull:`1277`)
 
 Requirements
 ~~~~~~~~~~~~
-* ``dataclasses`` is required for python 3.6
+* ``dataclasses`` is required for python 3.6 (:pull:`1076`)
+* ``h5py`` is now a required dependency.  This replaces ``tables``, which was formerly
+  an optional dependency.  (:pull:`1299`, :issue:`1252`, :issue:`1286`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -247,3 +254,10 @@ Contributors
 * Chas Schweizer (:ghuser:`cpr-chas`)
 * Yoann Louvet (:ghuser:`YoannUniKS`)
 * Brandon Carpenter (:ghuser:`hashstat`)
+* :ghuser:`kahemker`
+* :ghuser:`zhammond147`
+* :ghuser:`PeterGrant`
+* :ghuser:`rockstaedt`
+* :ghuser:`MichaelHopwood`
+* :ghuser:`EricDuminil`
+* :ghuser:`FeiYao-Edinburgh`

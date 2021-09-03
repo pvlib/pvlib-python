@@ -235,7 +235,6 @@ A handful of pvlib-python features require additional packages that must
 be installed separately using pip or conda. These packages/features
 include:
 
-* pytables (tables on PyPI): Linke turbidity look up for clear sky models
 * statsmodels: parameter fitting
 * numba: fastest solar position calculations
 * pyephem: solar positions calculations using an astronomical library

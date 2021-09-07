@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
-import tables
+import h5py
 
 from pvlib import atmosphere, tools
 
@@ -194,9 +194,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
-    with tables.open_file(filepath) as lt_h5_file:
-        lts = lt_h5_file.root.LinkeTurbidity[latitude_index,
-                                             longitude_index, :]
+    with h5py.File(filepath, 'r') as lt_h5_file:
+        lts = lt_h5_file['LinkeTurbidity'][latitude_index, longitude_index]
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)

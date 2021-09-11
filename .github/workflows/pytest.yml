@@ -1,0 +1,70 @@
+name: pytest
+
+on: [pull_request, push]
+
+jobs:
+  test:
+    env:
+      VERSIONMAP: '{"3.6": "36", "3.7": "37", "3.8": "38", "3.9": "39"}'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.6, 3.7, 3.8, 3.9]
+        environment-type: [conda, bare]
+        suffix: ['']
+        include:
+          - os: ubuntu-latest
+            python-version: 3.6
+            environment-type: conda
+            suffix: -min
+        exclude:
+          - os: macos-latest
+            environment-type: conda
+          - os: windows-latest
+            environment-type: bare
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}${{ matrix.suffix }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up conda environment
+        if: matrix.environment-type == 'conda'
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test_env
+          environment-file: ${{ env.REQUIREMENTS }}
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: false
+        env:
+          REQUIREMENTS: ci/requirements-py${{ fromJSON(env.VERSIONMAP)[matrix.python-version] }}${{ matrix.suffix }}.yml
+
+      - name: Create bare environment
+        if: matrix.environment-type == 'bare'
+        env:
+          REQUIREMENTS: pip install pytest pytest-cov pytest-mock requests-mock pytest-timeout pytest-rerunfailures pytest-remotedata
+        run: |
+          pip install $REQUIREMENTS
+          pip install .
+
+      - name: Run tests
+        shell: bash -l {0}  # necessary for conda env to be active
+        env:
+          ARGS: "${{ (matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda') && '--remote-data' || '' }}"
+          NREL_API_KEY: ${{ secrets.NREL_API_KEY }}
+          BSRN_FTP_USERNAME: ${{ secrets.BSRN_FTP_USERNAME }}
+          BSRN_FTP_PASSWORD: ${{ secrets.BSRN_FTP_PASSWORD }}
+        run: pytest pvlib --cov=./ --cov-report=xml $ARGS
+
+      # - name: Upload coverage to Codecov
+      #   if: matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     directory: ./coverage/reports/
+      #     fail_ci_if_error: true
+      #     verbose: true

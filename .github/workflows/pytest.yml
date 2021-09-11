@@ -5,13 +5,17 @@ on: [pull_request, push]
 jobs:
   test:
     env:
+      # we need to turn "3.6" into 36 to build the conda requirement filename,
+      # but there's no good way to do that via string manipulation.  So set up
+      # a map that will be parsed as JSON later:
       VERSIONMAP: '{"3.6": "36", "3.7": "37", "3.8": "38", "3.9": "39"}'
+
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: [3.6, 3.7, 3.8, 3.9]
         environment-type: [conda, bare]
-        suffix: ['']
+        suffix: ['']  # placeholder as an alternative to "-min"
         include:
           - os: ubuntu-latest
             python-version: 3.6
@@ -42,6 +46,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
           auto-activate-base: false
         env:
+          # build requirement filename.  First replacement is for the python
+          # version, mapping from "3.7" to "37", second is to add "-min" if needed
           REQUIREMENTS: ci/requirements-py${{ fromJSON(env.VERSIONMAP)[matrix.python-version] }}${{ matrix.suffix }}.yml
 
       - name: Create bare environment
@@ -55,6 +61,7 @@ jobs:
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active
         env:
+          # we want --remote-data only on conda+linux, so use this short-circuiting logic:
           ARGS: "${{ (matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda') && '--remote-data' || '' }}"
           NREL_API_KEY: ${{ secrets.NREL_API_KEY }}
           BSRN_FTP_USERNAME: ${{ secrets.BSRN_FTP_USERNAME }}

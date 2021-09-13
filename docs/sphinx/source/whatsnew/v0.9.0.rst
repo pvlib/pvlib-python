@@ -1,7 +1,7 @@
 .. _whatsnew_0900:
 
-v0.9.0 (MONTH DAY YEAR)
------------------------
+v0.9.0 (September 1, 2021)
+--------------------------
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
@@ -239,6 +239,8 @@ Requirements
 * ``dataclasses`` is required for python 3.6 (:pull:`1076`)
 * ``tables`` is now required instead of optional (:issue:`1286`, :pull:`1287`)
 * xarray, dask, and cdsapi are now optional requirements. (:pull:`1264`)
+* ``h5py`` is now a required dependency.  This replaces ``tables``, which was formerly
+  an optional dependency.  (:pull:`1299`, :issue:`1252`, :issue:`1286`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -258,3 +260,10 @@ Contributors
 * Chas Schweizer (:ghuser:`cpr-chas`)
 * Yoann Louvet (:ghuser:`YoannUniKS`)
 * Brandon Carpenter (:ghuser:`hashstat`)
+* :ghuser:`kahemker`
+* :ghuser:`zhammond147`
+* :ghuser:`PeterGrant`
+* :ghuser:`rockstaedt`
+* :ghuser:`MichaelHopwood`
+* :ghuser:`EricDuminil`
+* :ghuser:`FeiYao-Edinburgh`

@@ -67,7 +67,7 @@ def test_gh865_read_tmy3_feb_leapyear_hr24():
     assert all(data.index[:-1].year == 1990)
     assert data.index[-1].year == 1991
     # let's do a quick sanity check, are the indices monotonically increasing?
-    assert all(np.diff(data.index.astype(int)) == 3600000000000)
+    assert all(np.diff(data.index.view(np.int64)) == 3600000000000)
     # according to the TMY3 manual, each record corresponds to the previous
     # hour so check that the 1st hour is 1AM and the last hour is midnite
     assert data.index[0].hour == 1

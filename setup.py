@@ -43,7 +43,7 @@ INSTALL_REQUIRES = ['numpy >= 1.12.0',
                     'pytz',
                     'requests',
                     'scipy >= 1.2.0',
-                    'tables']
+                    'h5py']
 
 # include dataclasses as a dependency only on python 3.6
 if sys.version_info.major == 3 and sys.version_info.minor == 6:
@@ -59,7 +59,7 @@ EXTRAS_REQUIRE = {
                  'cftime >= 1.1.1', 'xarray', 'dask', 'cdsapi'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2',
             'sphinx_rtd_theme==0.5.0', 'sphinx-gallery', 'docutils == 0.15.2',
-            'pillow', 'netcdf4', 'siphon', 'tables',
+            'pillow', 'netcdf4', 'siphon',
             'sphinx-toggleprompt >= 0.0.5'],
     'test': TESTS_REQUIRE
 }

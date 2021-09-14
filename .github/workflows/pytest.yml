@@ -11,6 +11,7 @@ jobs:
       VERSIONMAP: '{"3.6": "36", "3.7": "37", "3.8": "38", "3.9": "39"}'
 
     strategy:
+      fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: [3.6, 3.7, 3.8, 3.9]

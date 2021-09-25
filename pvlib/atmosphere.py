@@ -891,12 +891,12 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
 
     modifier = (
         coeff[0] + (ama) * coeff[1] + (ama * ama) * coeff[2]
-        + (ama * ama * ama) * coeff[3] + (ama * ama * ama * ama) * coeff[4] 
+        + (ama * ama * ama) * coeff[3] + (ama * ama * ama * ama) * coeff[4]
         + (aod500 - aod500_ref) * coeff[5]
         + ((aod500 - aod500_ref) * (ama) * coeff[6]) * coeff[10]
         + ((aod500 - aod500_ref) * (np.log(ama)) * coeff[6]) * coeff[11]
         + (aod500 - aod500_ref) + (ama * ama) * coeff[7]
-        + (pw - pw_ref) * coeff[8] + (pw - pw_ref) * (np.log(ama)) * coeff[9]    
-        )
+        + (pw - pw_ref) * coeff[8] + (pw - pw_ref) * (np.log(ama)) * coeff[9]
+               )
 
     return modifier

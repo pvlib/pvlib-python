@@ -691,7 +691,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
                                   min_pw=0.25, max_pw=4):
     r"""
     Spectral mismatch modifier based on absolute (pressure-adjusted)
-    airmass (AM), aerosol optical depth (AOD) at 500 nm and 
+    airmass (AM), aerosol optical depth (AOD) at 500 nm and
     precipitable water (PW).
 
     Estimates a spectral mismatch modifier :math:`M` representing
@@ -712,38 +712,38 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
        * All other parameters fixed at G173 standard
 
     Elevation (deg), AOD and PW data were recorded in the city of Jaén,
-    Spain for one year synchronously with both, broadband and 
+    Spain for one year synchronously with both, broadband and
     spectroradiometric measurements of 30º tilted global irradiance
     south-facing logged in 5-min intervals. AM was estimated through
     elevation data.
-    
-    Finally, the spectral mismatch factor was calculated for each 
-    of the PV technologies and a multivariable regression adjustment 
+
+    Finally, the spectral mismatch factor was calculated for each
+    of the PV technologies and a multivariable regression adjustment
     as a function of AM, AOD and PW was performed according to [2] and [3].
-    As such, the polynomial adjustment coefficients included in [3] 
+    As such, the polynomial adjustment coefficients included in [3]
     were obtained.
 
 
     Parameters
     ----------
     airmass_absolute : array-like
-    absolute (pressure-adjusted) airmass. [unitless]
-    
+        absolute (pressure-adjusted) airmass. [unitless]
+
     aod500 : array-like
-    atmospheric aerosol optical depth at 500 nm. [unitless]   
-    
+        atmospheric aerosol optical depth at 500 nm. [unitless]
+
     pw : array-like
         atmospheric precipitable water. [cm]
         
     min_aod500 : float, default 0.05
-    minimum atmospheric aerosol optical depth at 500 nm. Any aod500 value
-    lower than min_aod500 is set to min_aod500 to avoid model 
-    divergence. [unitless]
-    
+        minimum atmospheric aerosol optical depth at 500 nm. Any aod500 value
+        lower than min_aod500 is set to min_aod500 to avoid model
+        divergence. [unitless]
+
     max_aod500 : float, default 0.6
-    maximum atmospheric aerosol optical depth at 500 nm. Any aod500 value
-    higher than max_aod500 is set to NaN to avoid model divergence. [unitless]
-       
+        maximum atmospheric aerosol optical depth at 500 nm. Any aod500 value
+        higher than max_aod500 is set to NaN to avoid model divergence. [unitless]
+
     min_pw : float, default 0.25
         minimum atmospheric precipitable water. Any pw value lower than min_pw
         is set to min_pw to avoid model divergence. [cm]
@@ -751,7 +751,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
     max_pw : float, default 4
         maximum atmospheric precipitable water. Any pw value higher than max_pw
         is set to NaN to avoid model divergence. [cm]
-        
+
     module_type : None or string, default None
         a string specifying a cell type. Values of 'cdte', 'monosi', 'cigs',
         'multisi','asi' and 'pervovskite'. If provided,
@@ -768,7 +768,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
     coefficients : None or array-like, default None
         the coefficients employed have been obtained with experimental
         data in the city of Jaén, Spain. It is pending to verify if such
-        coefficients vary in places with extreme climates where AOD and 
+        coefficients vary in places with extreme climates where AOD and
         pw values are frequently high.
 
     Returns
@@ -781,15 +781,15 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
 
     References
     ----------
-    .. [1] Gueymard, Christian. SMARTS2: a simple model of the 
+    .. [1] Gueymard, Christian. SMARTS2: a simple model of the
         atmospheric radiative transfer of sunshine: algorithms
-        and performance assessment. Cocoa, FL: 
+        and performance assessment. Cocoa, FL:
         Florida Solar Energy Center, 1995.
-    .. [2] Theristis, M., Fernández, E., Almonacid, F., and 
-            Pérez-Higueras, Pedro. "Spectral Corrections Based 
+    .. [2] Theristis, M., Fernández, E., Almonacid, F., and
+            Pérez-Higueras, Pedro. "Spectral Corrections Based
             on Air Mass, Aerosol Optical Depth and Precipitable
-            Water for CPV Performance Modeling. 
-            "IEEE Journal of Photovoltaics 2016, 6(6), 1598-1604.      
+            Water for CPV Performance Modeling.
+            "IEEE Journal of Photovoltaics 2016, 6(6), 1598-1604.
             https://doi.org/10.1109/jphotov.2016.2606702
     .. [3] Caballero, J.A., Fernández, E., Theristis, M.,
         Almonacid, F., and Nofuentes, G. "Spectral Corrections Based on
@@ -797,7 +797,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
         for PV Performance Modeling.
         " IEEE Journal of Photovoltaics 2018, 8(2), 552-558.
         https://doi.org/10.1109/jphotov.2017.2787019
-        
+
         """
 
     # --- Screen Input Data ---

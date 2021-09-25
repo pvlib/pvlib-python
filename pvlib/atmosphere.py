@@ -685,10 +685,9 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
     return - np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
 
 
-def AM_AOD_PW_spectral_correction   (airmass_absolute, aod500, pw,
-                                    module_type=None, coefficients=None,
-                                    min_aod500=0.05, max_aod500=0.6,
-                                    min_pw=0.25, max_pw=4):
+def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
+    module_type=None, coefficients=None, min_aod500=0.05,
+    max_aod500=0.6, min_pw=0.25, max_pw=4):
     r"""
     Spectral mismatch modifier based on absolute (pressure-adjusted)
     airmass (AM), aerosol optical depth (AOD) at 500 nm and 

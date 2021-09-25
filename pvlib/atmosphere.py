@@ -886,8 +886,8 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
     # Evaluate Spectral Shift
     coeff = coefficients
     ama = airmass_absolute
-    aod500_ref=0.84
-    pw_ref=1.42
+    aod500_ref = 0.84
+    pw_ref = 1.42
 
     modifier = (
         coeff[0] + (ama) *coeff[1] + (ama*ama) * coeff[2]

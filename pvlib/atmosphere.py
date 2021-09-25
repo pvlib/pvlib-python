@@ -684,7 +684,11 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
     """
     return - np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
 
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> b5d7fecad82e83212381f4efda3ccfe457d2bdfb
 def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
                                     module_type=None, coefficients=None,
                                     min_aod500=0.05, max_aod500=0.6,

@@ -684,11 +684,8 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
     """
     return - np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
 
-<<<<<<< HEAD
 
-=======
   
->>>>>>> b5d7fecad82e83212381f4efda3ccfe457d2bdfb
 def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
                                     module_type=None, coefficients=None,
                                     min_aod500=0.05, max_aod500=0.6,
@@ -715,7 +712,8 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
 
     Elevation (deg), AOD and PW data were recorded in the city of Jaén, Spain for one year
     synchronously with both, broadband and spectroradiometric measurements of 30º tilted
-    global irradiance logged in 5-min intervals. AM was estimated through elevation data.
+    global irradiance south-facing logged in 5-min intervals.
+    AM was estimated through elevation data.
     
     Finally, the spectral mismatch factor was calculated for each of the PV technologies
     and a multivariable regression adjustment as a function of AM, AOD and PW was performed 

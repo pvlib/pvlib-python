@@ -734,7 +734,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
 
     pw : array-like
         atmospheric precipitable water. [cm]
-        
+
     min_aod500 : float, default 0.05
         minimum atmospheric aerosol optical depth at 500 nm. Any aod500 value
         lower than min_aod500 is set to min_aod500 to avoid model
@@ -742,7 +742,8 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
 
     max_aod500 : float, default 0.6
         maximum atmospheric aerosol optical depth at 500 nm. Any aod500 value
-        higher than max_aod500 is set to NaN to avoid model divergence. [unitless]
+        higher than max_aod500 is set to NaN to avoid model
+        divergence. [unitless]
 
     min_pw : float, default 0.25
         minimum atmospheric precipitable water. Any pw value lower than min_pw
@@ -848,9 +849,6 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
         pw[pw > max_pw] = np.nan
         warn('Exceptionally high pw values replaced by np.nan: '
              'check input data.')
-        
-
-
 
  # Experimental coefficients
 

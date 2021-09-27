@@ -312,6 +312,11 @@ def _schumaker_qspline(x, y):
 
     aa = s[:-1] - delta
     b = s[1:] - delta
+    
+    # Since the above two lines can lead to numerical errors, aa and b
+    # are rounded to 0.0 is their absolute value is small enough.
+    aa[np.isclose(aa, 0., atol=EPS)] = 0.
+    b[np.isclose(b, 0., atol=EPS)] = 0.
 
     sbar = np.zeros(k)
     eta = np.zeros(k)

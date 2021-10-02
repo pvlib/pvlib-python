@@ -56,9 +56,9 @@ class Location:
     def __init__(self, latitude, longitude, tz='UTC', altitude=0, name=None):
 
         if not isinstance(latitude, (float, int)):
-            raise TypeError("latitude should be a float")
+            raise TypeError("Invalid latitude specification")
         if not isinstance(longitude, (float, int)):
-            raise TypeError("longitude should be a float")
+            raise TypeError("Invalid longitude specification")
         self.latitude = latitude
         self.longitude = longitude
 

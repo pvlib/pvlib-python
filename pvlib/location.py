@@ -57,6 +57,8 @@ class Location:
 
         if not isinstance(latitude, (float, int)):
             raise TypeError("latitude should be a float")
+        if not isinstance(longitude, (float, int)):
+            raise TypeError("longitude should be a float")
         self.latitude = latitude
         self.longitude = longitude
 

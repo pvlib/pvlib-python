@@ -49,6 +49,11 @@ def test_location_invalid_latitude_type():
         Location('32.2', -111)
 
 
+def test_location_invalid_longitude_type():
+    with pytest.raises(TypeError):
+        Location(32.2, '-111')
+
+
 def test_location_print_all():
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     expected_str = '\n'.join([

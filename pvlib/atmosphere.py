@@ -735,6 +735,24 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
     pw : array-like
         atmospheric precipitable water. [cm]
 
+    module_type : None or string, default None
+        a string specifying a cell type. Values of 'cdte', 'monosi', 'cigs',
+        'multisi','asi' and 'pervovskite'. If provided,
+        module_type selects default coefficients for the following modules:
+
+            * 'cdte' - anonymous CdTe module.
+            * 'monosi', - anonymous sc-si module.
+            * 'multisi', - anonymous mc-si- module.
+            * 'cigs' - anonymous copper indium gallium selenide module.
+            * 'asi' - anonymous amorphous silicon module.
+            * 'perovskite' - anonymous pervoskite module.
+
+    coefficients : None or array-like, default None
+        the coefficients employed have been obtained with experimental
+        data in the city of Jaén, Spain. It is pending to verify if such
+        coefficients vary in places with extreme climates where AOD and
+        pw values are frequently high.
+
     min_aod500 : float, default 0.05
         minimum atmospheric aerosol optical depth at 500 nm. Any aod500 value
         lower than min_aod500 is set to min_aod500 to avoid model
@@ -753,24 +771,6 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
         maximum atmospheric precipitable water. Any pw value higher than max_pw
         is set to NaN to avoid model divergence. [cm]
 
-    module_type : None or string, default None
-        a string specifying a cell type. Values of 'cdte', 'monosi', 'cigs',
-        'multisi','asi' and 'pervovskite'. If provided,
-        module_type selects default coefficients for the following modules:
-
-            * 'cdte' - anonymous CdTe module.
-            * 'monosi', - anonymous sc-si module.
-            * 'multisi', - anonymous mc-si- module.
-            * 'cigs' - anonymous copper indium gallium selenide module.
-            * 'asi' - anonymous amorphous silicon module.
-            * 'perovskite' - anonymous pervoskite module.
-
-
-    coefficients : None or array-like, default None
-        the coefficients employed have been obtained with experimental
-        data in the city of Jaén, Spain. It is pending to verify if such
-        coefficients vary in places with extreme climates where AOD and
-        pw values are frequently high.
 
     Returns
     -------

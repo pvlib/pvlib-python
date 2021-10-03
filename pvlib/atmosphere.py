@@ -763,7 +763,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
             * 'multisi', - anonymous mc-si- module.
             * 'cigs' - anonymous copper indium gallium selenide module.
             * 'asi' - anonymous amorphous silicon module.
-            * 'perovskite' - anonymous pervoskite module.
+            * 'perovskite' - anonymous perovskite module.
 
 
     coefficients : None or array-like, default None

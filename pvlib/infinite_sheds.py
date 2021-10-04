@@ -51,7 +51,7 @@ IEEE PVSC 2017
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-from pvlib import irradiance, pvsystem, iam
+from pvlib import irradiance, iam
 
 
 def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
@@ -472,9 +472,9 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
         next_row += 1.0
     # calculate the view factor of the sky from the ground at point z
     fz_sky = (
-            calc_fz_sky(*psi_z)  # current row
-            + np.sum(fz0_sky_next, axis=0)  # sum of all next rows
-            + np.sum(fz1_sky_prev, axis=0))  # sum of all previous rows
+        calc_fz_sky(*psi_z)  # current row
+        + np.sum(fz0_sky_next, axis=0)  # sum of all next rows
+        + np.sum(fz1_sky_prev, axis=0))  # sum of all previous rows
     # we just need one row, fz in range [0, 1]
     fz_row = np.linspace(0, 1, npoints)
     return fz_row, np.interp(fz_row, fz, fz_sky)

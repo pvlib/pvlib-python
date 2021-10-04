@@ -6,13 +6,13 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
-from conftest import (
+from .conftest import (
     requires_siphon,
     has_siphon,
     skip_windows,
     requires_recent_cftime
 )
-from conftest import RERUNS, RERUNS_DELAY
+from .conftest import RERUNS, RERUNS_DELAY
 
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 

@@ -183,7 +183,12 @@ class ForecastModel:
         self.end = pd.Timestamp(end)
         if self.start.tz is None or self.end.tz is None:
             raise TypeError('start and end must be tz-localized')
-        self.query.time_range(self.start, self.end)
+        # don't assume that siphon or the server can handle anything other
+        # than UTC
+        self.query.time_range(
+            self.start.tz_convert('UTC'),
+            self.end.tz_convert('UTC')
+        )
 
     def set_query_latlon(self):
         '''
@@ -412,10 +417,14 @@ class ForecastModel:
         -------
         pandas.DatetimeIndex
         '''
+        # np.masked_array with elements like real_datetime(2021, 8, 17, 16, 0)
+        # and dtype=object
         times = num2date(time[:].squeeze(), time.units,
                          only_use_cftime_datetimes=False,
                          only_use_python_datetimes=True)
-        self.time = pd.DatetimeIndex(pd.Series(times), tz=self.location.tz)
+        # convert to pandas, localize to UTC, convert to desired timezone
+        self.time = pd.DatetimeIndex(
+            times, tz='UTC').tz_convert(self.location.tz)
 
     def cloud_cover_to_ghi_linear(self, cloud_cover, ghi_clear, offset=35,
                                   **kwargs):
@@ -725,11 +734,11 @@ class GFS(ForecastModel):
             'total_clouds':
                 'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
             'low_clouds':
-                'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
+                'Low_cloud_cover_low_cloud_Mixed_intervals_Average',
             'mid_clouds':
-                'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
+                'Medium_cloud_cover_middle_cloud_Mixed_intervals_Average',
             'high_clouds':
-                'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
+                'High_cloud_cover_high_cloud_Mixed_intervals_Average',
             'boundary_clouds': ('Total_cloud_cover_boundary_layer_cloud_'
                                 'Mixed_intervals_Average'),
             'convect_clouds': 'Total_cloud_cover_convective_cloud',
@@ -977,7 +986,7 @@ class HRRR(ForecastModel):
 
     def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
-        model = 'NCEP HRRR CONUS 2.5km'
+        model = 'HRRR CONUS 2.5km Forecasts'
 
         self.variables = {
             'temp_air': 'Temperature_height_above_ground',

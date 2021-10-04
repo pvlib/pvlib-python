@@ -2,13 +2,14 @@ import numpy as np
 import pandas as pd
 
 import pytest
+from numpy.testing import assert_allclose
 
 from pvlib.ivtools import sdm
 from pvlib import pvsystem
 
 from pvlib.tests.conftest import requires_pysam, requires_statsmodels
 
-from conftest import DATA_DIR
+from ..conftest import DATA_DIR
 
 
 @pytest.fixture
@@ -306,7 +307,7 @@ def test__update_rsh_fixed_pt_nans(vmp, imp, iph, io, rs, rsh, nnsvth,
 def test__update_rsh_fixed_pt_vmp0():
     outrsh = sdm._update_rsh_fixed_pt(vmp=0., imp=2., iph=2., io=2., rs=2.,
                                       rsh=2., nnsvth=2.)
-    np.testing.assert_allclose(outrsh, np.array([502.]), atol=.0001)
+    assert_allclose(outrsh, np.array([502.]), atol=.0001)
 
 
 def test__update_rsh_fixed_pt_vector():
@@ -318,7 +319,7 @@ def test__update_rsh_fixed_pt_vector():
                                       imp=np.array([.2, .2, -1., 2.]),
                                       vmp=np.array([0., -1, 0., 0.]))
     assert np.all(np.isnan(outrsh[0:3]))
-    np.testing.assert_allclose(outrsh[3], np.array([502.]), atol=.0001)
+    assert_allclose(outrsh[3], np.array([502.]), atol=.0001)
 
 
 @pytest.mark.parametrize('voc, iph, io, rs, rsh, nnsvth, expected', [
@@ -329,7 +330,7 @@ def test__update_rsh_fixed_pt_vector():
     (0., 2., 2., 2., 2., 2., 17.9436)])
 def test__update_io(voc, iph, io, rs, rsh, nnsvth, expected):
     outio = sdm._update_io(voc, iph, io, rs, rsh, nnsvth)
-    np.testing.assert_allclose(outio, expected, atol=.0001)
+    assert_allclose(outio, expected, atol=.0001)
 
 
 @pytest.mark.parametrize('voc, iph, io, rs, rsh, nnsvth', [
@@ -347,8 +348,8 @@ def test__update_io_nan(voc, iph, io, rs, rsh, nnsvth):
     (0., 2., 2., 2., 2., 2., 2., (1.5571, 2.))])
 def test__calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth, expected):
     theta, phi = sdm._calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth)
-    np.testing.assert_allclose(theta, expected[0], atol=.0001)
-    np.testing.assert_allclose(phi, expected[1], atol=.0001)
+    assert_allclose(theta, expected[0], atol=.0001)
+    assert_allclose(phi, expected[1], atol=.0001)
 
 
 @pytest.mark.parametrize('vmp, imp, iph, io, rs, rsh, nnsvth', [
@@ -365,7 +366,7 @@ def test__calc_theta_phi_exact_one_nan():
     theta, phi = sdm._calc_theta_phi_exact(imp=2., iph=2., vmp=2., io=2.,
                                            nnsvth=2., rs=0., rsh=2.)
     assert np.isnan(theta)
-    np.testing.assert_allclose(phi, 2., atol=.0001)
+    assert_allclose(phi, 2., atol=.0001)
 
 
 def test__calc_theta_phi_exact_vector():
@@ -379,4 +380,23 @@ def test__calc_theta_phi_exact_vector():
     assert np.isnan(theta[0])
     assert np.isnan(theta[1])
     assert np.isnan(phi[0])
-    np.testing.assert_allclose(phi[1], 2.2079, atol=.0001)
+    assert_allclose(phi[1], 2.2079, atol=.0001)
+
+
+def test_pvsyst_temperature_coeff():
+    # test for consistency with dP/dT estimated with secant rule
+    params = {'alpha_sc': 0., 'gamma_ref': 1.1, 'mu_gamma': 0.,
+              'I_L_ref': 6., 'I_o_ref': 5.e-9, 'R_sh_ref': 200.,
+              'R_sh_0': 2000., 'R_s': 0.5, 'cells_in_series': 60}
+    expected = -0.004886706494879083
+    # params defines a Pvsyst model for a notional module.
+    # expected value is created by calculating power at 1000 W/m2, and cell
+    # temperature of 24 and 26C, using pvsystem.calcparams_pvsyst and
+    # pvsystem.singlediode. The derivative (value for expected) is estimated
+    # as the slope (p_mp at 26C - p_mp at 24C) / 2
+    # using the secant rule for derivatives.
+    gamma_pdc = sdm.pvsyst_temperature_coeff(
+        params['alpha_sc'], params['gamma_ref'], params['mu_gamma'],
+        params['I_L_ref'], params['I_o_ref'], params['R_sh_ref'],
+        params['R_sh_0'], params['R_s'], params['cells_in_series'])
+    assert_allclose(gamma_pdc, expected, rtol=0.0005)

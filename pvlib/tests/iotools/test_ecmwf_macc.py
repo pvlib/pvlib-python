@@ -6,7 +6,7 @@ import os
 import datetime
 import numpy as np
 import pytest
-from conftest import requires_netCDF4, DATA_DIR
+from ..conftest import requires_netCDF4, DATA_DIR
 from pvlib.iotools import ecmwf_macc
 
 TESTDATA = 'aod550_tcwv_20121101_test.nc'
@@ -57,7 +57,7 @@ def test_read_ecmwf_macc(expected_test_data):
     expected_times = [
         1351738800, 1351749600, 1351760400, 1351771200, 1351782000, 1351792800,
         1351803600, 1351814400]
-    assert np.allclose(data.index.astype(int) // 1000000000, expected_times)
+    assert np.allclose(data.index.view(np.int64) // 1000000000, expected_times)
     expected_aod = np.array([
         0.39531226, 0.22371339, 0.18373083, 0.15010143, 0.130809, 0.11172834,
         0.09741255, 0.0921606])

@@ -5,7 +5,9 @@ longitude;longitude
 dni;direct normal irradiance
 dni_extra;direct normal irradiance at top of atmosphere (extraterrestrial)
 dhi;diffuse horizontal irradiance
+bhi;beam/direct horizontal irradiance
 ghi;global horizontal irradiance
+gri;ground-reflected irradiance
 aoi;angle of incidence between :math:`90\deg` and :math:`90\deg`
 aoi_projection;cos(aoi)
 airmass;airmass
@@ -27,6 +29,9 @@ temp_module;temperature of the module
 temp_air;temperature of the air
 temp_dew;dewpoint temperature
 relative_humidity;relative humidity
+wind_speed;wind speed
+wind_direction;wind direction
+pressure;atmospheric pressure
 v_mp, i_mp, p_mp;module voltage, current, power at the maximum power point
 v_oc;open circuit module voltage
 i_sc;short circuit module current

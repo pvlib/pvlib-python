@@ -4,7 +4,7 @@ from unittest.mock import ANY
 import numpy as np
 from numpy import nan
 import pandas as pd
-from conftest import assert_frame_equal, assert_index_equal
+from .conftest import assert_frame_equal, assert_index_equal
 
 import pytest
 
@@ -15,8 +15,7 @@ import pvlib
 from pvlib.location import Location
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
-from test_solarposition import expected_solpos, golden, golden_mst
-from conftest import requires_ephem, requires_tables, fail_on_pvlib_version
+from .conftest import requires_ephem
 
 
 def test_location_required():
@@ -78,7 +77,6 @@ def times():
                          freq='3H')
 
 
-@requires_tables
 def test_get_clearsky(mocker, times):
     tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
     m = mocker.spy(pvlib.clearsky, 'ineichen')
@@ -212,7 +210,7 @@ def test_get_clearsky_valueerror(times):
 
 
 def test_from_tmy_3():
-    from test_tmy import TMY3_TESTFILE
+    from pvlib.tests.iotools.test_tmy import TMY3_TESTFILE
     from pvlib.iotools import read_tmy3
     data, meta = read_tmy3(TMY3_TESTFILE)
     loc = Location.from_tmy(meta, data)
@@ -223,7 +221,7 @@ def test_from_tmy_3():
 
 
 def test_from_tmy_2():
-    from test_tmy import TMY2_TESTFILE
+    from pvlib.tests.iotools.test_tmy import TMY2_TESTFILE
     from pvlib.iotools import read_tmy2
     data, meta = read_tmy2(TMY2_TESTFILE)
     loc = Location.from_tmy(meta, data)
@@ -234,7 +232,7 @@ def test_from_tmy_2():
 
 
 def test_from_epw():
-    from test_epw import epw_testfile
+    from pvlib.tests.iotools.test_epw import epw_testfile
     from pvlib.iotools import read_epw
     data, meta = read_epw(epw_testfile)
     loc = Location.from_epw(meta, data)

@@ -3,11 +3,13 @@ import platform
 import warnings
 
 import pandas as pd
+import os
 from pkg_resources import parse_version
 import pytest
 from functools import wraps
 
 import pvlib
+from pvlib.location import Location
 
 pvlib_base_version = \
     parse_version(parse_version(pvlib.__version__).base_version)
@@ -82,6 +84,18 @@ skip_windows = pytest.mark.skipif(platform_is_windows,
 
 
 try:
+    # Attempt to load BSRN credentials used for testing pvlib.iotools.get_bsrn
+    bsrn_username = os.environ["BSRN_FTP_USERNAME"]
+    bsrn_password = os.environ["BSRN_FTP_PASSWORD"]
+    has_bsrn_credentials = True
+except KeyError:
+    has_bsrn_credentials = False
+
+requires_bsrn_credentials = pytest.mark.skipif(
+    not has_bsrn_credentials, reason='requires bsrn credentials')
+
+
+try:
     import statsmodels  # noqa: F401
     has_statsmodels = True
 except ImportError:
@@ -89,15 +103,6 @@ except ImportError:
 
 requires_statsmodels = pytest.mark.skipif(
     not has_statsmodels, reason='requires statsmodels')
-
-
-try:
-    import tables
-    has_tables = True
-except ImportError:
-    has_tables = False
-
-requires_tables = pytest.mark.skipif(not has_tables, reason='requires tables')
 
 
 try:
@@ -185,6 +190,25 @@ except ImportError:
 requires_recent_cftime = pytest.mark.skipif(
     not has_recent_cftime, reason="requires cftime > 1.1.0"
 )
+
+
+@pytest.fixture()
+def golden():
+    return Location(39.742476, -105.1786, 'America/Denver', 1830.14)
+
+
+@pytest.fixture()
+def golden_mst():
+    return Location(39.742476, -105.1786, 'MST', 1830.14)
+
+
+@pytest.fixture()
+def expected_solpos():
+    return pd.DataFrame({'elevation': 39.872046,
+                         'apparent_zenith': 50.111622,
+                         'azimuth': 194.340241,
+                         'apparent_elevation': 39.888378},
+                        index=['2003-10-17T12:30:30Z'])
 
 
 @pytest.fixture(scope="session")

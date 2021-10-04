@@ -19,11 +19,13 @@ PV modules in the :py:class:`~pvlib.pvsystem.PVSystem`. An instance of
 multiple instances of :py:class:`~pvlib.pvsystem.Array`. An instance of the
 Array class represents a group of modules with the same orientation and
 module type. Different instances of Array can have different tilt, orientation,
-and number or type of modules.
+and number or type of modules, where the orientation is defined by the
+Array's mount (a :py:class:`~pvlib.pvsystem.FixedMount`,
+:py:class:`~pvlib.pvsystem.SingleAxisTrackerMount`, or other).
 
 The :py:class:`~pvlib.pvsystem.PVSystem` class methods wrap many of the
-functions in the :py:mod:`~pvlib.pvsystem` module. Similarly,
-:py:class:`~pvlib.pvsystem.Array` wraps several functions with its class
+functions in the :py:mod:`~pvlib.pvsystem` module. Similarly, the Mount classes
+and :py:class:`~pvlib.pvsystem.Array` wrap several functions with their class
 methods.  Methods that wrap functions have similar names as the wrapped functions.
 This practice simplifies the API for :py:class:`~pvlib.pvsystem.PVSystem`
 and :py:class:`~pvlib.pvsystem.Array` methods by eliminating the need to specify
@@ -97,7 +99,7 @@ default value may be overridden by specifying the `temp_ref` key in the
 
 .. ipython:: python
 
-    system.module_parameters['temp_ref'] = 0
+    system.arrays[0].module_parameters['temp_ref'] = 0
     # lower temp_ref should lead to lower DC power than calculated above
     pdc = system.pvwatts_dc(1000, 30)
     print(pdc)
@@ -124,7 +126,7 @@ passed to `PVSystem.module_parameters`:
     inverter_parameters = {'pdc0': 5000, 'eta_inv_nom': 0.96}
     system = pvsystem.PVSystem(module_parameters=module_parameters,
                                inverter_parameters=inverter_parameters)
-    print(system.module_parameters)
+    print(system.arrays[0].module_parameters)
     print(system.inverter_parameters)
 
 
@@ -138,20 +140,18 @@ provided for each array, and the arrays are provided to
 .. ipython:: python
 
     module_parameters = {'pdc0': 5000, 'gamma_pdc': -0.004}
-    array_one = pvsystem.Array(module_parameters=module_parameters)
-    array_two = pvsystem.Array(module_parameters=module_parameters)
+    mount = pvsystem.FixedMount(surface_tilt=20, surface_azimuth=180)
+    array_one = pvsystem.Array(mount=mount, module_parameters=module_parameters)
+    array_two = pvsystem.Array(mount=mount, module_parameters=module_parameters)
     system_two_arrays = pvsystem.PVSystem(arrays=[array_one, array_two],
                                           inverter_parameters=inverter_parameters)
-    print(system_two_arrays.module_parameters)
+    print([array.module_parameters for array in system_two_arrays.arrays])
     print(system_two_arrays.inverter_parameters)
 
-Note that in the case of a PV system with multiple arrays, the
-:py:class:`~pvlib.pvsystem.PVSystem` attribute `module_parameters` contains
-a tuple with the `module_parameters` for each array.
 
 The :py:class:`~pvlib.pvsystem.Array` class includes those 
 :py:class:`~pvlib.pvsystem.PVSystem` attributes that may vary from array
-to array. These attributes include `surface_tilt`, `surface_azimuth`,
+to array. These attributes include
 `module_parameters`, `temperature_model_parameters`, `modules_per_string`,
 `strings_per_inverter`, `albedo`, `surface_type`, `module_type`, and
 `racking_model`.
@@ -182,27 +182,30 @@ Tilt and azimuth
 The first parameters which describe the DC part of a PV system are the tilt
 and azimuth of the modules. In the case of a PV system with a single array,
 these parameters can be specified using the `PVSystem.surface_tilt` and
-`PVSystem.surface_azimuth` attributes.
+`PVSystem.surface_azimuth` attributes.  This will automatically create
+an :py:class:`~pvlib.pvsystem.Array` with a :py:class:`~pvlib.pvsystem.FixedMount`
+at the specified tilt and azimuth:
 
 .. ipython:: python
 
     # single south-facing array at 20 deg tilt
     system_one_array = pvsystem.PVSystem(surface_tilt=20, surface_azimuth=180)
-    print(system_one_array.surface_tilt, system_one_array.surface_azimuth)
+    print(system_one_array.arrays[0].mount)
 
 
 In the case of a PV system with several arrays, the parameters are specified
-for each array using the attributes `Array.surface_tilt` and `Array.surface_azimuth`.
+for each array by passing a different :py:class:`~pvlib.pvsystem.FixedMount`
+(or another `Mount` class):
 
 .. ipython:: python
 
-    array_one = pvsystem.Array(surface_tilt=30, surface_azimuth=90)
-    print(array_one.surface_tilt, array_one.surface_azimuth)
-    array_two = pvsystem.Array(surface_tilt=30, surface_azimuth=220)
+    array_one = pvsystem.Array(pvsystem.FixedMount(surface_tilt=30, surface_azimuth=90))
+    print(array_one.mount.surface_tilt, array_one.mount.surface_azimuth)
+    array_two = pvsystem.Array(pvsystem.FixedMount(surface_tilt=30, surface_azimuth=220))
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
     system.num_arrays
-    system.surface_tilt
-    system.surface_azimuth
+    for array in system.arrays:
+        print(array.mount)
 
 
 The `surface_tilt` and `surface_azimuth` attributes are used in PVSystem
@@ -218,7 +221,7 @@ and `solar_azimuth` as arguments.
 
     # single south-facing array at 20 deg tilt
     system_one_array = pvsystem.PVSystem(surface_tilt=20, surface_azimuth=180)
-    print(system_one_array.surface_tilt, system_one_array.surface_azimuth)
+    print(system_one_array.arrays[0].mount)
 
     # call get_aoi with solar_zenith, solar_azimuth
     aoi = system_one_array.get_aoi(solar_zenith=30, solar_azimuth=180)
@@ -231,7 +234,7 @@ operates in a similar manner.
 .. ipython:: python
 
     # two arrays each at 30 deg tilt with different facing
-    array_one = pvsystem.Array(surface_tilt=30, surface_azimuth=90)
+    array_one = pvsystem.Array(pvsystem.FixedMount(surface_tilt=30, surface_azimuth=90))
     array_one_aoi = array_one.get_aoi(solar_zenith=30, solar_azimuth=180)
     print(array_one_aoi)
 
@@ -242,7 +245,7 @@ operates on all `Array` instances in the `PVSystem`, whereas the the
 
 .. ipython:: python
 
-    array_two = pvsystem.Array(surface_tilt=30, surface_azimuth=220)
+    array_two = pvsystem.Array(pvsystem.FixedMount(surface_tilt=30, surface_azimuth=220))
     system_multiarray = pvsystem.PVSystem(arrays=[array_one, array_two])
     print(system_multiarray.num_arrays)
     # call get_aoi with solar_zenith, solar_azimuth
@@ -317,8 +320,8 @@ Losses
 
 The `losses_parameters` attribute contains data that may be used with
 methods that calculate system losses. At present, these methods include
-only :py:meth:`PVSystem.pvwatts_losses` and
-:py:func:`pvsystem.pvwatts_losses`, but we hope to add more related functions
+only :py:meth:`pvlib.pvsystem.PVSystem.pvwatts_losses` and
+:py:func:`pvlib.pvsystem.pvwatts_losses`, but we hope to add more related functions
 and methods in the future.
 
 

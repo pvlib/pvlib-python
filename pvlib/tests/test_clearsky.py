@@ -8,7 +8,7 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from conftest import assert_frame_equal, assert_series_equal
+from .conftest import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
 from pvlib import clearsky
@@ -16,7 +16,7 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-from conftest import requires_tables, DATA_DIR
+from .conftest import DATA_DIR
 
 
 def test_ineichen_series():
@@ -189,7 +189,6 @@ def test_ineichen_altitude():
     assert_frame_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -202,7 +201,6 @@ def test_lookup_linke_turbidity():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_leapyear():
     times = pd.date_range(start='2016-06-24', end='2016-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -215,7 +213,6 @@ def test_lookup_linke_turbidity_leapyear():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_nointerp():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -226,7 +223,6 @@ def test_lookup_linke_turbidity_nointerp():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
                           freq='1M', tz='America/Phoenix')
@@ -237,7 +233,6 @@ def test_lookup_linke_turbidity_months():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_months_leapyear():
     times = pd.date_range(start='2016-04-01', end='2016-07-01',
                           freq='1M', tz='America/Phoenix')
@@ -248,7 +243,6 @@ def test_lookup_linke_turbidity_months_leapyear():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_nointerp_months():
     times = pd.date_range(start='2014-04-10', end='2014-07-10',
                           freq='1M', tz='America/Phoenix')
@@ -480,7 +474,6 @@ def test_simplified_solis_nans_series():
     assert_frame_equal(expected, out)
 
 
-@requires_tables
 def test_linke_turbidity_corners():
     """Test Linke turbidity corners out of bounds."""
     months = pd.DatetimeIndex('%d/1/2016' % (m + 1) for m in range(12))
@@ -604,6 +597,17 @@ def test_detect_clearsky_window(detect_clearsky_data):
     expected = expected['Clear or not'].copy()
     expected.iloc[-3:] = True
     assert_series_equal(expected, clear_samples,
+                        check_dtype=False, check_names=False)
+
+
+def test_detect_clearsky_time_interval(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    u = np.arange(0, len(cs), 2)
+    cs2 = cs.iloc[u]
+    expected2 = expected.iloc[u]
+    clear_samples = clearsky.detect_clearsky(
+        expected2['GHI'], cs2['ghi'], window_length=6)
+    assert_series_equal(expected2['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 
 

@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
+import h5py
 
 from pvlib import atmosphere, tools
 
@@ -186,13 +187,6 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # 1st row: 89.9583 S, 2nd row: 89.875 S
     # 1st column: 179.9583 W, 2nd column: 179.875 W
 
-    try:
-        import tables
-    except ImportError:
-        raise ImportError('The Linke turbidity lookup table requires tables. '
-                          'You can still use clearsky.ineichen if you '
-                          'supply your own turbidities.')
-
     if filepath is None:
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
@@ -200,9 +194,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
-    with tables.open_file(filepath) as lt_h5_file:
-        lts = lt_h5_file.root.LinkeTurbidity[latitude_index,
-                                             longitude_index, :]
+    with h5py.File(filepath, 'r') as lt_h5_file:
+        lts = lt_h5_file['LinkeTurbidity'][latitude_index, longitude_index]
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
@@ -565,7 +558,7 @@ def _calc_taud(w, aod700, p):
     # set up nan-tolerant masks
     aod700_lt_0p05 = np.full_like(aod700, False, dtype='bool')
     np.less(aod700, 0.05, where=~np.isnan(aod700), out=aod700_lt_0p05)
-    aod700_mask = np.array([aod700_lt_0p05, ~aod700_lt_0p05], dtype=np.int)
+    aod700_mask = np.array([aod700_lt_0p05, ~aod700_lt_0p05], dtype=int)
 
     # create tuples of coefficients for
     # aod700 < 0.05, aod700 >= 0.05
@@ -602,7 +595,20 @@ def _calc_d(aod700, p):
 def _calc_stats(data, samples_per_window, sample_interval, H):
     """ Calculates statistics for each window, used by Reno-style clear
     sky detection functions. Does not return the line length statistic
-    which is provided by _calc_windowed_stat and _line_length
+    which is provided by _calc_windowed_stat and _line_length.
+
+    Calculations are done on a sliding window defined by the Hankel matrix H.
+    Columns in H define the indices for each window. Each window contains
+    samples_per_window index values. The first window starts with index 0;
+    the last window ends at the last index position in data.
+
+    In the calculation of data_slope_nstd, a choice is made here where [1]_ is
+    ambiguous. data_slope_nstd is the standard deviation of slopes divided by
+    the mean GHI for each interval; see [1]_ Eq. 11. For intervals containing
+    e.g. 10 values, there are 9 slope values in the standard deviation, and the
+    mean is calculated using all 10 values. Eq. 11 in [1]_ is ambiguous if
+    the mean should be calculated using 9 points (left ends of each slope)
+    or all 10 points.
 
     Parameters
     ----------
@@ -624,6 +630,12 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
         standard deviation of difference between data points in each window
     data_slope : Series
         difference between successive data points
+
+    References
+    ----------
+    .. [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
+       sky irradiance in time series of GHI measurements" Renewable Energy,
+       v90, p. 520-531, 2016.
     """
 
     data_mean = data.values[H].mean(axis=0)
@@ -633,17 +645,18 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
     # shift to get forward difference, .diff() is backward difference instead
     data_diff = data.diff().shift(-1)
     data_slope = data_diff / sample_interval
-    data_slope_nstd = _slope_nstd_windowed(data, H, samples_per_window)
+    data_slope_nstd = _slope_nstd_windowed(data_slope.values[:-1], data, H,
+                                           samples_per_window, sample_interval)
     data_slope_nstd = data_slope_nstd
 
     return data_mean, data_max, data_slope_nstd, data_slope
 
 
-def _slope_nstd_windowed(data, H, samples_per_window):
+def _slope_nstd_windowed(slopes, data, H, samples_per_window, sample_interval):
     with np.errstate(divide='ignore', invalid='ignore'):
-        raw = np.diff(data)
-        raw = raw[H[:-1, ]].std(ddof=1, axis=0) / data.values[H].mean(axis=0)
-    return _to_centered_series(raw, data.index, samples_per_window)
+        nstd = slopes[H[:-1, ]].std(ddof=1, axis=0) \
+            / data.values[H].mean(axis=0)
+    return _to_centered_series(nstd, data.index, samples_per_window)
 
 
 def _max_diff_windowed(data, H, samples_per_window):

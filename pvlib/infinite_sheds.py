@@ -54,6 +54,7 @@ import pandas as pd
 from pvlib import irradiance, iam
 
 
+#TODO: not used
 def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
     """
     Calculate solar projection on YZ-plane, vertical and perpendicular to rows.
@@ -87,10 +88,12 @@ def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
     return phi, tan_phi
 
 
+#TODO: why radians here
+#TODO: make private?
 def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     """
-    Calculate tangent of solar projected angle on YZ-plane, vertical and
-    perpendicular to rows.
+    Calculate tangent of angle between sun vector projected to the YZ-plane
+    (vertical and perpendicular to rows) and zenith vector.
 
     .. math::
         \\tan \\phi = \\cos\\left(\\text{solar azimuth}-\\text{system azimuth}
@@ -111,10 +114,13 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
         tangent of the solar projection
     """
     rotation = solar_azimuth - system_azimuth
+    #TODO: I don't think tan_phi should ever be negative, but it could be if
+    # rotation > 90 (e.g. sun north of along-row azimuth)
     tan_phi = np.cos(rotation) * np.tan(solar_zenith)
     return tan_phi
 
 
+#TODO: use azimuths as inputs, move to util
 def unshaded_ground_fraction(gcr, tilt, tan_phi):
     """
     Calculate the fraction of the ground with incident direct irradiance.
@@ -128,8 +134,9 @@ def unshaded_ground_fraction(gcr, tilt, tan_phi):
     Parameters
     ----------
     gcr : numeric
-        ratio of module length to row spacing
+        ground coverage ratio, ratio of row slant length to row spacing
     tilt : numeric
+#TODO: use same definition of tilt as pvlib
         angle of module normal from vertical in radians, if bifacial use front
     tan_phi : numeric
         solar projection tangent
@@ -139,6 +146,7 @@ def unshaded_ground_fraction(gcr, tilt, tan_phi):
     f_gnd_beam : numeric
         fraction of ground illuminated (unshaded)
     """
+    #TODO: why np.abs? All angles should be <=90
     f_gnd_beam = 1.0 - np.minimum(
         1.0, gcr * np.abs(np.cos(tilt) + np.sin(tilt) * tan_phi))
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
@@ -146,13 +154,12 @@ def unshaded_ground_fraction(gcr, tilt, tan_phi):
 
 def _gcr_prime(gcr, height, tilt, pitch):
     """
-    A parameter that includes the distance from the module lower edge to the
-    point where the module tilt angle intersects the ground in the GCR.
+    Ratio of slant height above ground of the top of a row to the row pitch.
 
     Parameters
     ----------
     gcr : numeric
-        ground coverage ratio
+        ground coverage ratio, ratio of row slant length to row spacing
     height : numeric
         height of module lower edge above the ground
     tilt : numeric
@@ -179,6 +186,10 @@ def _gcr_prime(gcr, height, tilt, pitch):
     return gcr + height / np.sin(tilt) / pitch
 
 
+# TODO: move to util, overlaps with ground_sky_angles_prev in that both return
+# angle to top of previous row. Could the three ground_sky_angle_xxx functions
+# be combined and handle the cases of points behind the "previous" row or ahead
+# of the next row?
 def ground_sky_angles(f_z, gcr, height, tilt, pitch):
     """
     Angles from point z on ground to tops of next and previous rows.
@@ -195,7 +206,7 @@ def ground_sky_angles(f_z, gcr, height, tilt, pitch):
     f_z : numeric
         fraction of ground from previous to next row
     gcr : numeric
-        ground coverage ratio
+        ground coverage ratio, ratio of row slant length to row spacing
     height : numeric
         height of module lower edge above the ground
     tilt : numeric
@@ -203,6 +214,11 @@ def ground_sky_angles(f_z, gcr, height, tilt, pitch):
     pitch : numeric
         row spacing
 
+    Returns
+    -------
+    
+    Notes
+    -----
     Assuming the first row is in the front of the array then previous rows are
     toward the front of the array and next rows are toward the back.
 
@@ -233,6 +249,7 @@ def ground_sky_angles(f_z, gcr, height, tilt, pitch):
     return psi_0, psi_1
 
 
+# move to util
 def ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
     """
     Angles from point z on ground to top and bottom of previous rows beyond the
@@ -402,7 +419,7 @@ def f_z1_limit(gcr, height, tilt, pitch):
 def calc_fz_sky(psi_0, psi_1):
     """
     Calculate the view factor for point "z" on the ground to the visible
-    diffuse sky subtende by the angles :math:`\\psi_0` and :math:`\\psi_1`.
+    diffuse sky subtended by the angles :math:`\\psi_0` and :math:`\\psi_1`.
 
     Parameters
     ----------
@@ -422,6 +439,7 @@ def calc_fz_sky(psi_0, psi_1):
 
 # TODO: add argument to set number of rows, default is infinite
 # TODO: add option for first or last row, default is middle row
+# TODO: possibly move to pvlib.shading?
 def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     """
     Calculate the fraction of diffuse irradiance from the sky incident on the
@@ -439,6 +457,10 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
         row spacing
     npoints : int
         divide the ground into discrete points
+
+    Returns
+    -------
+
     """
     args = gcr, height, tilt, pitch
     fz0_limit = f_z0_limit(*args)
@@ -480,6 +502,7 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     return fz_row, np.interp(fz_row, fz, fz_sky)
 
 
+# TODO: move to util
 def vf_ground_sky(gcr, height, tilt, pitch, npoints=100):
     """
     Integrated view factor from the ground in between central rows of the sky.
@@ -608,6 +631,7 @@ def poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     return poa_ground * (f_gnd_beam*(1 - df) + df*vf_gnd_sky)
 
 
+#TODO: move to pvlib.shading?
 def shade_line(gcr, tilt, tan_phi):
     """
     calculate fraction of module shaded from the bottom
@@ -959,14 +983,24 @@ def poa_global_pv(poa_dir_pv, poa_dif_pv):
 def poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
                         shade_factor=-0.02, transmission_factor=0):
     """total global incident on bifacial PV surfaces"""
-    effects = (1+shade_factor)*(1+transmission_factor)
+    effects = (1 + shade_factor) * (1 + transmission_factor)
     return poa_global_front + poa_global_back * bifaciality * effects
 
 
+#TODO: rename to pvlib.bifacial.infinite_sheds?
 def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
                    tilt, pitch, ghi, dhi, poa_ground, poa_sky_diffuse,
                    poa_direct, iam, npoints=100, all_output=False):
-    """Get irradiance from infinite sheds model."""
+    r"""
+    Get irradiance from infinite sheds model.
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    
+    """
     # calculate solar projection
     tan_phi = solar_projection_tangent(
         solar_zenith, solar_azimuth, system_azimuth)
@@ -974,7 +1008,8 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     f_gnd_beam = unshaded_ground_fraction(gcr, tilt, tan_phi)
     # diffuse fraction
     df = diffuse_fraction(ghi, dhi)
-    # view factor from the ground in between infinited central rows of the sky
+#TODO: move to bifacial.util
+    # view factor from the ground in between infinite central rows to the sky
     vf_gnd_sky, _ = vf_ground_sky(gcr, height, tilt, pitch, npoints)
     # diffuse from sky reflected from ground accounting from shade from panels
     # considering the fraction of ground blocked by infinite adjacent rows

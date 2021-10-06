@@ -54,7 +54,7 @@ jobs:
       - name: Create bare environment
         if: matrix.environment-type == 'bare'
         env:
-          REQUIREMENTS: pip install pytest pytest-cov pytest-mock requests-mock pytest-timeout pytest-rerunfailures pytest-remotedata
+          REQUIREMENTS: pytest pytest-cov pytest-mock requests-mock pytest-timeout pytest-rerunfailures pytest-remotedata
         run: |
           pip install $REQUIREMENTS
           pip install .
@@ -64,7 +64,7 @@ jobs:
         env:
           # we want --remote-data only on conda+linux, so use this short-circuiting logic:
           ARGS: "${{ (matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda') && '--remote-data' || '' }}"
-          NREL_API_KEY: ${{ secrets.NREL_API_KEY }}
+          NREL_API_KEY: ${{ secrets.NRELAPIKEY }}
           BSRN_FTP_USERNAME: ${{ secrets.BSRN_FTP_USERNAME }}
           BSRN_FTP_PASSWORD: ${{ secrets.BSRN_FTP_PASSWORD }}
         run: pytest pvlib --cov=./ --cov-report=xml $ARGS

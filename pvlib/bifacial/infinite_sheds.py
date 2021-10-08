@@ -37,6 +37,10 @@ front and back surfaces with the following steps:
 7. Treat the first and last row differently, because they aren't blocked on the
    front side for 1st row, or the backside for last row.
 
+#TODO: explain geometry: primary axes and orientation, what is meant by
+"previous" and "next rows", etc.
+
+
 That's it folks! This model is influenced by the 2D model published by Marion,
 *et al.* in [1].
 
@@ -52,6 +56,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 from pvlib import irradiance, iam
+from pvlib.tools import cosd, sind, tand
 
 
 #TODO: not used
@@ -88,8 +93,7 @@ def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
     return phi, tan_phi
 
 
-#TODO: why radians here
-#TODO: make private?
+#TODO: moved to utils, remove here
 def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     """
     Calculate tangent of angle between sun vector projected to the YZ-plane
@@ -102,26 +106,27 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     Parameters
     ----------
     solar_zenith : numeric
-        apparent zenith in radians
+        apparent zenith in degrees
     solar_azimuth : numeric
-        azimuth in radians
+        azimuth in degrees
     system_azimuth : numeric
-        system rotation from north in radians
+        system rotation from north in degrees
 
     Returns
     -------
     tan_phi : numeric
-        tangent of the solar projection
+        Tangent of the angle between vertical and the projection of the 
+        sun direction onto the YZ plane.
     """
     rotation = solar_azimuth - system_azimuth
     #TODO: I don't think tan_phi should ever be negative, but it could be if
     # rotation > 90 (e.g. sun north of along-row azimuth)
-    tan_phi = np.cos(rotation) * np.tan(solar_zenith)
+    tan_phi = cosd(rotation) * tand(solar_zenith)
     return tan_phi
 
 
-#TODO: use azimuths as inputs, move to util
-def unshaded_ground_fraction(gcr, tilt, tan_phi):
+#TODO: moved to utils, changed signature. remove here
+def unshaded_ground_fraction(gcr, surface_tilt, tan_phi):
     """
     Calculate the fraction of the ground with incident direct irradiance.
 
@@ -134,12 +139,15 @@ def unshaded_ground_fraction(gcr, tilt, tan_phi):
     Parameters
     ----------
     gcr : numeric
-        ground coverage ratio, ratio of row slant length to row spacing
-    tilt : numeric
-#TODO: use same definition of tilt as pvlib
-        angle of module normal from vertical in radians, if bifacial use front
+        Ground coverage ratio, which is the ratio of row slant length to row
+        spacing (pitch).
+    surface_tilt: numeric
+        Surface tilt angle in decimal degrees. The tilt angle is defined as
+        degrees from horizontal, e.g., surface facing up = 0, surface facing
+        horizon = 90.
     tan_phi : numeric
-        solar projection tangent
+        Tangent of the angle between vertical and the projection of the 
+        sun direction onto the YZ plane.
 
     Returns
     -------
@@ -148,22 +156,25 @@ def unshaded_ground_fraction(gcr, tilt, tan_phi):
     """
     #TODO: why np.abs? All angles should be <=90
     f_gnd_beam = 1.0 - np.minimum(
-        1.0, gcr * np.abs(np.cos(tilt) + np.sin(tilt) * tan_phi))
+        1.0, gcr * np.abs(sind(surface_tilt) + cosd(surface_tilt) * tan_phi))
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 
-def _gcr_prime(gcr, height, tilt, pitch):
+def _gcr_prime(gcr, height, surface_tilt, pitch):
     """
-    Ratio of slant height above ground of the top of a row to the row pitch.
+    Slant length from the ground to the top of a row divided by the row pitch.
 
     Parameters
     ----------
     gcr : numeric
-        ground coverage ratio, ratio of row slant length to row spacing
+        Ground coverage ratio, which is the ratio of row slant length to row
+        spacing (pitch).
     height : numeric
         height of module lower edge above the ground
-    tilt : numeric
-        module tilt in radians, between 0 and 180-degrees
+    surface_tilt : numeric
+        Surface tilt angle in decimal degrees. The tilt angle is defined as
+        degrees from horizontal, e.g., surface facing up = 0, surface facing
+        horizon = 90.
     pitch : numeric
         row spacing
 
@@ -183,7 +194,7 @@ def _gcr_prime(gcr, height, tilt, pitch):
     #  :         \                 tilt  \  :
     #  +----------\<---------P----------->\---- ground
 
-    return gcr + height / np.sin(tilt) / pitch
+    return gcr + height / np.sind(surface_tilt) / pitch
 
 
 # TODO: move to util, overlaps with ground_sky_angles_prev in that both return

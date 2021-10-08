@@ -6,7 +6,6 @@ from pvlib import (  # noqa: F401
     clearsky,
     # forecast
     iam,
-    infinite_sheds,
     inverter,
     iotools,
     irradiance,

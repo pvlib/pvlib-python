@@ -4,7 +4,7 @@ Infinite Sheds
 
 The "infinite sheds" model is a 2-dimensional model of an array that assumes
 rows are long enough that edge effects are negligible and therefore can be
-treated as infinite. The infinte sheds model considers an array of adjacent
+treated as infinite. The infinite sheds model considers an array of adjacent
 rows of PV modules versus just a single row. It is also capable of considering
 both mono and bifacial modules. Sheds are defined as either fixed tilt or
 trackers with uniform GCR on a horizontal plane. To consider arrays on an

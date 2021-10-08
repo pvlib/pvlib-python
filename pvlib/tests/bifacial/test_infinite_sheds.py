@@ -7,10 +7,8 @@ import numpy as np
 import pandas as pd
 import pvlib
 
-BASEDIR = os.path.dirname(__file__)
-PROJDIR = os.path.dirname(BASEDIR)
-DATADIR = os.path.join(PROJDIR, 'data')
-TESTDATA = os.path.join(DATADIR, 'infinite_sheds.csv')
+from ..conftest import DATA_DIR
+TESTDATA = os.path.join(DATA_DIR, 'infinite_sheds.csv')
 
 # location and irradiance
 LAT, LON, TZ = 37.85, -122.25, -8  # global coordinates

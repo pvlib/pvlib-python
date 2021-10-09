@@ -6,6 +6,8 @@ import os
 import numpy as np
 import pandas as pd
 import pvlib
+from pvlib.bifacial import infinite_sheds, utils
+
 
 from ..conftest import DATA_DIR
 TESTDATA = os.path.join(DATA_DIR, 'infinite_sheds.csv')
@@ -57,9 +59,9 @@ BACK_TILT_RAD = np.radians(BACKSIDE['tilt'])
 
 #TODO: moved to utils,
 def test_solar_projection_tangent():
-    tan_phi_f = pvlib.infinite_sheds.solar_projection_tangent(
+    tan_phi_f = infinite_sheds.solar_projection_tangent(
         TESTDATA.apparent_zenith, TESTDATA.azimuth, SYSAZ)
-    tan_phi_b = pvlib.infinite_sheds.solar_projection_tangent(
+    tan_phi_b = infinite_sheds.solar_projection_tangent(
         TESTDATA.apparent_zenith, TESTDATA.azimuth, BACKSIDE['sysaz'])
     assert np.allclose(tan_phi_f, -tan_phi_b)
     assert np.allclose(tan_phi_f, TESTDATA.tan_phi_f)
@@ -68,39 +70,39 @@ def test_solar_projection_tangent():
 
 def test_solar_projection():
     # frontside
-    phi_f, tan_phi_f = pvlib.infinite_sheds.solar_projection(
+    phi_f, tan_phi_f = infinite_sheds.solar_projection(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, SYSAZ_RAD)
     assert np.allclose(tan_phi_f, TESTDATA.tan_phi_f)
     assert np.allclose(np.tan(phi_f), tan_phi_f)
     # backside
-    phi_b, tan_phi_b = pvlib.infinite_sheds.solar_projection(
+    phi_b, tan_phi_b = infinite_sheds.solar_projection(
         SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, BACK_SYSAZ_RAD)
     assert np.allclose(tan_phi_b, TESTDATA.tan_phi_b)
     assert np.allclose(np.tan(phi_b), tan_phi_b)
 
 
 #TODO: moved to utils,
-def test_unshaded_ground_fraction():
-    # frontside, same for both sides
-    f_sky_beam_f = pvlib.infinite_sheds.unshaded_ground_fraction(
-        GCR, TILT, TESTDATA.tan_phi_f)
-    assert np.allclose(f_sky_beam_f, F_GND_BEAM)
-    # backside, should be the same as frontside
-    f_sky_beam_b = pvlib.infinite_sheds.unshaded_ground_fraction(
-        GCR, BACKSIDE['tilt'], TESTDATA.tan_phi_b)
-    assert np.allclose(f_sky_beam_b, F_GND_BEAM)
+# def test_unshaded_ground_fraction():
+#     # frontside, same for both sides
+#     f_sky_beam_f = infinite_sheds.unshaded_ground_fraction(
+#         GCR, TILT, TESTDATA.tan_phi_f)
+#     assert np.allclose(f_sky_beam_f, F_GND_BEAM)
+#     # backside, should be the same as frontside
+#     f_sky_beam_b = infinite_sheds.unshaded_ground_fraction(
+#         GCR, BACKSIDE['tilt'], TESTDATA.tan_phi_b)
+#     assert np.allclose(f_sky_beam_b, F_GND_BEAM)
 
 
-ARGS = (GCR, HEIGHT, TILT, PITCH)
+ARGS = (GCR, HEIGHT, np.radians(TILT), PITCH)
 
 
 def test__gcr_prime():
-    assert np.isclose(pvlib.infinite_sheds._gcr_prime(*ARGS),
+    assert np.isclose(infinite_sheds._gcr_prime(*ARGS),
                       1.2309511000407718)
 
 
 # calculated ground-sky angles at panel edges
-# gcr_prime = pvlib.infinite_sheds._gcr_prime(*ARGS)
+# gcr_prime = infinite_sheds._gcr_prime(*ARGS)
 # back_tilt_rad = np.pi - tilt_rad
 # psi_0_x0 = back_tilt_rad
 # psi_1_x0 = np.arctan2(
@@ -116,12 +118,12 @@ def test_ground_sky_angles():
     assert np.isclose(PSI_0_X0, np.pi - PSI_1_X1)
     # check limit at x=0, these are the same as the back edge of the row beyond
     assert np.allclose(
-        pvlib.infinite_sheds.ground_sky_angles(0, *ARGS), (PSI_0_X0, PSI_1_X0))
+        infinite_sheds.ground_sky_angles(0, *ARGS), (PSI_0_X0, PSI_1_X0))
     assert np.allclose(
-        pvlib.infinite_sheds.ground_sky_angles(1, *ARGS), (PSI_0_X1, PSI_1_X1))
+        infinite_sheds.ground_sky_angles(1, *ARGS), (PSI_0_X1, PSI_1_X1))
 
 
-FZ0_LIMIT = 1.4619022000815438  # pvlib.infinite_sheds.f_z0_limit(*ARGS)
+FZ0_LIMIT = 1.4619022000815438  # infinite_sheds.f_z0_limit(*ARGS)
 # np.arctan2(GCR * np.sin(TILT_RAD), (1.0 - GCR * np.cos(TILT_RAD)))
 PSI_TOP = 0.3120297392978313
 
@@ -130,24 +132,24 @@ def test_ground_sky_angles_prev():
     if HEIGHT > 0:
         # check limit at z=0, these are the same as z=1 of the previous row
         assert np.allclose(
-            pvlib.infinite_sheds.ground_sky_angles_prev(0, *ARGS),
+            infinite_sheds.ground_sky_angles_prev(0, *ARGS),
             (PSI_0_X1, PSI_1_X1))
         # check limit at z=z0_limit, angles must sum to 180
         assert np.isclose(
-            sum(pvlib.infinite_sheds.ground_sky_angles_prev(FZ0_LIMIT, *ARGS)),
+            sum(infinite_sheds.ground_sky_angles_prev(FZ0_LIMIT, *ARGS)),
             np.pi)
         # directly under panel, angle should be 90 straight upward!
         z_panel = HEIGHT / PITCH / np.tan(TILT_RAD)
         assert np.isclose(
-            pvlib.infinite_sheds.ground_sky_angles_prev(z_panel, *ARGS)[1],
+            infinite_sheds.ground_sky_angles_prev(z_panel, *ARGS)[1],
             np.pi / 2.)
     # angles must be the same as psi_top
     assert np.isclose(
-        pvlib.infinite_sheds.ground_sky_angles_prev(FZ0_LIMIT, *ARGS)[0],
+        infinite_sheds.ground_sky_angles_prev(FZ0_LIMIT, *ARGS)[0],
         PSI_TOP)
 
 
-FZ1_LIMIT = 1.4619022000815427  # pvlib.infinite_sheds.f_z1_limit(*ARGS)
+FZ1_LIMIT = 1.4619022000815427  # infinite_sheds.f_z1_limit(*ARGS)
 # np.arctan2(GCR * np.sin(BACK_TILT_RAD), (1.0 - GCR * np.cos(BACK_TILT_RAD)))
 PSI_TOP_BACK = 0.11582480672702507
 
@@ -156,25 +158,25 @@ def test_ground_sky_angles_next():
     if HEIGHT > 0:
         # check limit at z=1, these are the same as z=0 of the next row beyond
         assert np.allclose(
-            pvlib.infinite_sheds.ground_sky_angles_next(1, *ARGS),
+            infinite_sheds.ground_sky_angles_next(1, *ARGS),
             (PSI_0_X0, PSI_1_X0))
         # check limit at zprime=z1_limit, angles must sum to 180
         sum_angles_z1_limit = sum(
-            pvlib.infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS))
+            infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS))
         assert np.isclose(sum_angles_z1_limit, np.pi)
         # directly under panel, angle should be 90 straight upward!
         z_panel = 1 + HEIGHT / PITCH / np.tan(TILT_RAD)
         assert np.isclose(
-            pvlib.infinite_sheds.ground_sky_angles_next(z_panel, *ARGS)[0],
+            infinite_sheds.ground_sky_angles_next(z_panel, *ARGS)[0],
             np.pi / 2.)
     # angles must be the same as psi_top
     assert np.isclose(
-        pvlib.infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS)[1],
+        infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS)[1],
         PSI_TOP_BACK)
 
 
 def test_diffuse_fraction():
-    df = pvlib.infinite_sheds.diffuse_fraction(GHI, DHI)
+    df = infinite_sheds.diffuse_fraction(GHI, DHI)
     assert np.allclose(df, DF, equal_nan=True)
 
 
@@ -203,42 +205,42 @@ FZ_SKY = np.array([
 
 
 def test_vf_ground_sky():
-    vf_gnd_sky, fz_sky = pvlib.infinite_sheds.vf_ground_sky(*ARGS)
+    vf_gnd_sky, fz_sky = infinite_sheds.vf_ground_sky(*ARGS)
     assert np.isclose(vf_gnd_sky, VF_GND_SKY)
     assert np.allclose(fz_sky, FZ_SKY)
 
 
 def test_poa_ground_sky():
     # front side
-    poa_gnd_sky_f = pvlib.infinite_sheds.poa_ground_sky(
+    poa_gnd_sky_f = infinite_sheds.poa_ground_sky(
         TESTDATA.poa_ground_diffuse_f, F_GND_BEAM, DF, 1.0)
     # CSV file decimals are truncated
     assert np.allclose(
         poa_gnd_sky_f, FRONT_POA_GND_SKY, equal_nan=True, atol=1e-6)
     # backside
-    poa_gnd_sky_b = pvlib.infinite_sheds.poa_ground_sky(
+    poa_gnd_sky_b = infinite_sheds.poa_ground_sky(
         TESTDATA.poa_ground_diffuse_b, F_GND_BEAM, DF, 1.0)
     assert np.allclose(poa_gnd_sky_b, BACK_POA_GND_SKY, equal_nan=True)
 
 
 def test_shade_line():
     # front side
-    fx_f = pvlib.infinite_sheds.shade_line(GCR, TILT_RAD, TESTDATA.tan_phi_f)
+    fx_f = infinite_sheds.shade_line(GCR, TILT_RAD, TESTDATA.tan_phi_f)
     assert np.allclose(fx_f, TESTDATA.Fx_f)
     # backside
-    fx_b = pvlib.infinite_sheds.shade_line(
+    fx_b = infinite_sheds.shade_line(
         GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
     assert np.allclose(fx_b, TESTDATA.Fx_b)
 
 
 def test_sky_angles():
     # frontside
-    psi_top_f, tan_psi_top_f = pvlib.infinite_sheds.sky_angle(
+    psi_top_f, tan_psi_top_f = infinite_sheds.sky_angle(
         GCR, TILT_RAD, TESTDATA.Fx_f)
     assert np.allclose(psi_top_f, TESTDATA.psi_top_f)
     assert np.allclose(tan_psi_top_f, FRONT_TAN_PSI_TOP)
     # backside
-    psi_top_b, tan_psi_top_b = pvlib.infinite_sheds.sky_angle(
+    psi_top_b, tan_psi_top_b = infinite_sheds.sky_angle(
         GCR, BACK_TILT_RAD, TESTDATA.Fx_b)
     assert np.allclose(psi_top_b, TESTDATA.psi_top_b)
     assert np.allclose(tan_psi_top_b, BACK_TAN_PSI_TOP)
@@ -246,21 +248,21 @@ def test_sky_angles():
 
 def test_sky_angle_tangent():
     # frontside
-    tan_psi_top_f = pvlib.infinite_sheds.sky_angle_tangent(
+    tan_psi_top_f = infinite_sheds.sky_angle_tangent(
         GCR, TILT_RAD, TESTDATA.Fx_f)
     assert np.allclose(tan_psi_top_f, FRONT_TAN_PSI_TOP)
     # backside
-    tan_psi_top_b = pvlib.infinite_sheds.sky_angle_tangent(
+    tan_psi_top_b = infinite_sheds.sky_angle_tangent(
         GCR, BACK_TILT_RAD, TESTDATA.Fx_b)
     assert np.allclose(tan_psi_top_b, BACK_TAN_PSI_TOP)
 
 
 def test_sky_angle_0_tangent():
     # frontside
-    tan_psi_top_f = pvlib.infinite_sheds.sky_angle_0_tangent(GCR, TILT_RAD)
+    tan_psi_top_f = infinite_sheds.sky_angle_0_tangent(GCR, TILT_RAD)
     assert np.allclose(tan_psi_top_f, TAN_PSI_TOP0_F)
     # backside
-    tan_psi_top_b = pvlib.infinite_sheds.sky_angle_0_tangent(
+    tan_psi_top_b = infinite_sheds.sky_angle_0_tangent(
         GCR, BACK_TILT_RAD)
     assert np.allclose(tan_psi_top_b, TAN_PSI_TOP0_B)
 
@@ -268,7 +270,7 @@ def test_sky_angle_0_tangent():
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
     plt.ion()
-    plt.plot(*pvlib.infinite_sheds.ground_sky_diffuse_view_factor(*ARGS))
+    plt.plot(*infinite_sheds.ground_sky_diffuse_view_factor(*ARGS))
     plt.title(
         'combined sky view factor, not including horizon and first/last row')
     plt.xlabel('fraction of pitch from front to back')
@@ -276,7 +278,7 @@ if __name__ == '__main__':
     plt.grid()
     fig, ax = plt.subplots(2, 1, figsize=(6, 8))
     fx = np.linspace(0, 1, 100)
-    fskyz = [pvlib.infinite_sheds.calc_fgndpv_zsky(x, *ARGS) for x in fx]
+    fskyz = [infinite_sheds.calc_fgndpv_zsky(x, *ARGS) for x in fx]
     fskyz, fgnd_pv = zip(*fskyz)
     ax[0].plot(fx, fskyz/(1-np.cos(TILT_RAD))*2)
     ax[0].plot(fx, fgnd_pv/(1-np.cos(TILT_RAD))*2)
@@ -286,7 +288,7 @@ if __name__ == '__main__':
     ax[0].set_ylabel('adjustment to $\\frac{1-\\cos(\\beta)}{2}$')
     ax[0].legend(('blocked', 'all sky'))
     fskyz = [
-        pvlib.infinite_sheds.calc_fgndpv_zsky(
+        infinite_sheds.calc_fgndpv_zsky(
             x, GCR, HEIGHT, BACK_TILT_RAD, PITCH) for x in fx]
     fskyz, fgnd_pv = zip(*fskyz)
     ax[1].plot(fx, fskyz/(1-np.cos(BACK_TILT_RAD))*2)

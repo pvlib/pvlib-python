@@ -1,8 +1,7 @@
 import pandas as pd
 from datetime import datetime
-from pvlib.bifacial import pvfactors_timeseries
+from pvlib.bifacial.pvfactors import pvfactors_timeseries
 from .conftest import requires_pvfactors, assert_series_equal
-import pytest
 
 
 @requires_pvfactors

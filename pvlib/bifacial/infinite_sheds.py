@@ -57,6 +57,7 @@ import numpy as np
 import pandas as pd
 from pvlib import irradiance, iam
 from pvlib.tools import cosd, sind, tand
+from pvlib.bifacial.utils import unshaded_ground_fraction
 
 
 #TODO: not used
@@ -126,38 +127,38 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
 
 
 #TODO: moved to utils, changed signature. remove here
-def unshaded_ground_fraction(gcr, surface_tilt, tan_phi):
-    """
-    Calculate the fraction of the ground with incident direct irradiance.
+# def unshaded_ground_fraction(gcr, surface_tilt, tan_phi):
+#     """
+#     Calculate the fraction of the ground with incident direct irradiance.
 
-    .. math::
-        F_{gnd,sky} &= 1 - \\min{\\left(1, \\text{GCR} \\left|\\cos \\beta +
-        \\sin \\beta \\tan \\phi \\right|\\right)} \\newline
+#     .. math::
+#         F_{gnd,sky} &= 1 - \\min{\\left(1, \\text{GCR} \\left|\\cos \\beta +
+#         \\sin \\beta \\tan \\phi \\right|\\right)} \\newline
 
-        \\beta &= \\text{tilt}
+#         \\beta &= \\text{tilt}
 
-    Parameters
-    ----------
-    gcr : numeric
-        Ground coverage ratio, which is the ratio of row slant length to row
-        spacing (pitch).
-    surface_tilt: numeric
-        Surface tilt angle in decimal degrees. The tilt angle is defined as
-        degrees from horizontal, e.g., surface facing up = 0, surface facing
-        horizon = 90.
-    tan_phi : numeric
-        Tangent of the angle between vertical and the projection of the 
-        sun direction onto the YZ plane.
+#     Parameters
+#     ----------
+#     gcr : numeric
+#         Ground coverage ratio, which is the ratio of row slant length to row
+#         spacing (pitch).
+#     surface_tilt: numeric
+#         Surface tilt angle in decimal degrees. The tilt angle is defined as
+#         degrees from horizontal, e.g., surface facing up = 0, surface facing
+#         horizon = 90.
+#     tan_phi : numeric
+#         Tangent of the angle between vertical and the projection of the 
+#         sun direction onto the YZ plane.
 
-    Returns
-    -------
-    f_gnd_beam : numeric
-        fraction of ground illuminated (unshaded)
-    """
-    #TODO: why np.abs? All angles should be <=90
-    f_gnd_beam = 1.0 - np.minimum(
-        1.0, gcr * np.abs(sind(surface_tilt) + cosd(surface_tilt) * tan_phi))
-    return f_gnd_beam  # 1 - min(1, abs()) < 1 always
+#     Returns
+#     -------
+#     f_gnd_beam : numeric
+#         fraction of ground illuminated (unshaded)
+#     """
+#     #TODO: why np.abs? All angles should be <=90
+#     f_gnd_beam = 1.0 - np.minimum(
+#         1.0, gcr * np.abs(sind(surface_tilt) + cosd(surface_tilt) * tan_phi))
+#     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 
 def _gcr_prime(gcr, height, surface_tilt, pitch):
@@ -193,8 +194,8 @@ def _gcr_prime(gcr, height, surface_tilt, pitch):
     #  :        \                       \   h = height above ground
     #  :         \                 tilt  \  :
     #  +----------\<---------P----------->\---- ground
-
-    return gcr + height / np.sind(surface_tilt) / pitch
+#TODO convert to degrees
+    return gcr + height / np.sin(surface_tilt) / pitch
 
 
 # TODO: move to util, overlaps with ground_sky_angles_prev in that both return
@@ -1016,7 +1017,8 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     tan_phi = solar_projection_tangent(
         solar_zenith, solar_azimuth, system_azimuth)
     # fraction of ground illuminated accounting from shade from panels
-    f_gnd_beam = unshaded_ground_fraction(gcr, tilt, tan_phi)
+    f_gnd_beam = unshaded_ground_fraction(gcr, tilt, system_azimuth,
+                                          solar_zenith, solar_azimuth)
     # diffuse fraction
     df = diffuse_fraction(ghi, dhi)
 #TODO: move to bifacial.util

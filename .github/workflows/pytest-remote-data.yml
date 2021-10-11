@@ -1,6 +1,8 @@
-name: pytest
+name: pytest-remote-data
 
-on: [pull_request, push]
+on:
+  pull_request_target:
+    types: [labeled]
 
 jobs:
   test:
@@ -13,25 +15,21 @@ jobs:
     strategy:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: [3.6, 3.7, 3.8, 3.9]
-        environment-type: [conda, bare]
         suffix: ['']  # placeholder as an alternative to "-min"
         include:
-          - os: ubuntu-latest
-            python-version: 3.6
-            environment-type: conda
+          - python-version: 3.6
             suffix: -min
-        exclude:
-          - os: macos-latest
-            environment-type: conda
-          - os: windows-latest
-            environment-type: bare
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'remote-data')
 
     steps:
       - uses: actions/checkout@v2
+        # pull_request_target runs in the context of the target branch (pvlib/master), not the
+        # PR head, so specify the PR head explicitly:
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up Python ${{ matrix.python-version }}${{ matrix.suffix }}
         uses: actions/setup-python@v1
@@ -39,7 +37,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Set up conda environment
-        if: matrix.environment-type == 'conda'
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: test_env
@@ -51,14 +48,6 @@ jobs:
           # version, mapping from "3.7" to "37", second is to add "-min" if needed
           REQUIREMENTS: ci/requirements-py${{ fromJSON(env.VERSIONMAP)[matrix.python-version] }}${{ matrix.suffix }}.yml
 
-      - name: Create bare environment
-        if: matrix.environment-type == 'bare'
-        env:
-          REQUIREMENTS: pytest pytest-cov pytest-mock requests-mock pytest-timeout pytest-rerunfailures pytest-remotedata
-        run: |
-          pip install $REQUIREMENTS
-          pip install .
-
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active
         env:
@@ -66,7 +55,7 @@ jobs:
           NREL_API_KEY: ${{ secrets.NRELAPIKEY }}
           BSRN_FTP_USERNAME: ${{ secrets.BSRN_FTP_USERNAME }}
           BSRN_FTP_PASSWORD: ${{ secrets.BSRN_FTP_PASSWORD }}
-        run: pytest pvlib --cov=./ --cov-report=xml
+        run: pytest pvlib --cov=./ --cov-report=xml --remote-data
 
       # - name: Upload coverage to Codecov
       #   if: matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'

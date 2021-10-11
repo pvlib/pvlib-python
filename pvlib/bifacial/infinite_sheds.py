@@ -341,7 +341,7 @@ def f_z0_limit(gcr, height, tilt, pitch):
     between previous rows, where the angle :math:`\\psi` is tangent to both the
     top and bottom of panels.
     """
-    tan_psi_t_x0 = sky_angle_0_tangent(gcr, tilt)
+    tan_psi_t_x0 = sky_angle_tangent(gcr, tilt, 0.0)
     # tan_psi_t_x0 = gcr * np.sin(tilt) / (1.0 - gcr * np.cos(tilt))
     return height/pitch * (1/np.tan(tilt) + 1/tan_psi_t_x0)
 
@@ -423,7 +423,7 @@ def f_z1_limit(gcr, height, tilt, pitch):
     visible between the next rows, where the angle :math:`\\psi` is tangent to
     both the top and bottom of panels.
     """
-    tan_psi_t_x1 = sky_angle_0_tangent(gcr, np.pi-tilt)
+    tan_psi_t_x1 =sky_angle_tangent(gcr, np.pi - tilt, 0.0)
     # tan_psi_t_x1 = gcr * np.sin(pi-tilt) / (1.0 - gcr * np.cos(pi-tilt))
     return height/pitch * (1/tan_psi_t_x1 - 1/np.tan(tilt))
 
@@ -698,60 +698,71 @@ def sky_angle(gcr, tilt, f_x):
     return psi_top, tan_psi_top
 
 
-def sky_angle_tangent(gcr, tilt, f_x):
+def sky_angle_tangent(gcr, tilt, x):
     """
-    tangent of angle from shade line to top of next row
+    tangent of angle from a point x along the module slant height to the
+    top of the previous row.
 
     .. math::
 
-        \\tan{\\psi_t} &= \\frac{F_y \\text{GCR} \\sin{\\beta}}{1 - F_y
+        \\tan{\\psi_{top}} &= \\frac{y \\text{GCR} \\sin{\\beta}}{1 - y
         \\text{GCR} \\cos{\\beta}} \\newline
 
-        F_y &= 1 - F_x
+        y &= 1 - x
 
     Parameters
     ----------
     gcr : numeric
-        ratio of module length versus row spacing
+        ratio of row slant length to row spacing (pitch)
     tilt : numeric
         angle of surface normal from vertical in radians
-    f_x : numeric
-        fraction of module shaded from bottom
+    x : numeric
+        fraction of module slant length from module bottom edge
 
     Returns
     -------
     tan_psi_top : numeric
-        tangent of angle from shade line to top of next row
+        tangent of angle from x to top of previous row
     """
-    f_y = 1.0 - f_x
-    return f_y * np.sin(tilt) / (1/gcr - f_y * np.cos(tilt))
+    #  : \\                    .*\\
+    #  :  \\               .-*    \\
+    #  :   \\          .-*         \\
+    #  :    \\   . .*+  psi_t       \\  previous row
+    #  :     \\.-*__________________ \\
+    #  :       \  ^                    \
+    #  :        \  x                    \
+    #  :         \  v                    \
+    #  :          \<---------P----------->\
 
+    y = 1.0 - x
+    return y * np.sin(tilt) / (1/gcr - y * np.cos(tilt))
 
-def sky_angle_0_tangent(gcr, tilt):
-    """
-    tangent of angle to top of next row with no shade (shade line at bottom) so
-    :math:`F_x = 0`
+#TODO: delete, replaced by sky_angle_tangent
+# def sky_angle_0_tangent(gcr, tilt):
+#     """
+#     tangent of angle to top of next row with no shade (shade line at bottom) so
+#     :math:`F_x = 0`
 
-    .. math::
+#     .. math::
 
-        \\tan{\\psi_t\\left(x=0\\right)} = \\frac{\\text{GCR} \\sin{\\beta}}
-        {1 - \\text{GCR} \\cos{\\beta}}
+#         \\tan{\\psi_t\\left(x=0\\right)} = \\frac{\\text{GCR} \\sin{\\beta}}
+#         {1 - \\text{GCR} \\cos{\\beta}}
 
-    Parameters
-    ----------
-    gcr : numeric
-        ratio of module length to row spacing
-    tilt : numeric
-        angle of surface normal from vertical in radians
+#     Parameters
+#     ----------
+#     gcr : numeric
+#         ratio of module length to row spacing
+#     tilt : numeric
+#         angle of surface normal from vertical in radians
 
-    Returns
-    -------
-    tan_psi_top_0 : numeric
-        tangent angle from bottom, ``x = 0``, to top of next row
-    """
-    # f_y = 1  b/c x = 0, so f_x = 0
-    # tan psi_t0 = GCR * sin(tilt) / (1 - GCR * cos(tilt))
-    return sky_angle_tangent(gcr, tilt, 0.0)
+#     Returns
+#     -------
+#     tan_psi_top_0 : numeric
+#         tangent angle from bottom, ``x = 0``, to top of next row
+#     """
+#     # f_y = 1  b/c x = 0, so f_x = 0
+#     # tan psi_t0 = GCR * sin(tilt) / (1 - GCR * cos(tilt))
+#     return sky_angle_tangent(gcr, tilt, 0.0)
 
 
 def f_sky_diffuse_pv(tilt, tan_psi_top, tan_psi_top_0):
@@ -1031,7 +1042,7 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     f_x = shade_line(gcr, tilt, tan_phi)
     # angles from shadeline to top of next row
     tan_psi_top = sky_angle_tangent(gcr, tilt, f_x)
-    tan_psi_top_0 = sky_angle_0_tangent(gcr, tilt)
+    tan_psi_top_0 = sky_angle_tangent(gcr, tilt, 0.0)
     # fraction of sky visible from shaded and unshaded parts of PV surfaces
     f_sky_pv_shade, f_sky_pv_noshade = f_sky_diffuse_pv(
         tilt, tan_psi_top, tan_psi_top_0)

@@ -6,7 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import pvlib
-from pvlib.bifacial import infinite_sheds, utils
+import pvlib.bifacial.infinite_sheds as infinite_sheds
 
 
 from ..conftest import DATA_DIR
@@ -255,16 +255,23 @@ def test_sky_angle_tangent():
     tan_psi_top_b = infinite_sheds.sky_angle_tangent(
         GCR, BACK_TILT_RAD, TESTDATA.Fx_b)
     assert np.allclose(tan_psi_top_b, BACK_TAN_PSI_TOP)
-
-
-def test_sky_angle_0_tangent():
-    # frontside
-    tan_psi_top_f = infinite_sheds.sky_angle_0_tangent(GCR, TILT_RAD)
+    tan_psi_top_f = infinite_sheds.sky_angle_tangent(GCR, TILT_RAD, 0.0)
     assert np.allclose(tan_psi_top_f, TAN_PSI_TOP0_F)
     # backside
-    tan_psi_top_b = infinite_sheds.sky_angle_0_tangent(
-        GCR, BACK_TILT_RAD)
+    tan_psi_top_b = infinite_sheds.sky_angle_tangent(
+        GCR, BACK_TILT_RAD, 0.0)
     assert np.allclose(tan_psi_top_b, TAN_PSI_TOP0_B)
+
+
+#TODO: delete, function replaced by sky_angle_tangent
+# def test_sky_angle_0_tangent():
+#     # frontside
+#     tan_psi_top_f = infinite_sheds.sky_angle_0_tangent(GCR, TILT_RAD)
+#     assert np.allclose(tan_psi_top_f, TAN_PSI_TOP0_F)
+#     # backside
+#     tan_psi_top_b = infinite_sheds.sky_angle_0_tangent(
+#         GCR, BACK_TILT_RAD)
+#     assert np.allclose(tan_psi_top_b, TAN_PSI_TOP0_B)
 
 
 if __name__ == '__main__':

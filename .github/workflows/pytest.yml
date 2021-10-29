@@ -61,11 +61,6 @@ jobs:
 
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active
-        env:
-          # copy GitHub Secrets into environment variables for the tests to access
-          NREL_API_KEY: ${{ secrets.NRELAPIKEY }}
-          BSRN_FTP_USERNAME: ${{ secrets.BSRN_FTP_USERNAME }}
-          BSRN_FTP_PASSWORD: ${{ secrets.BSRN_FTP_PASSWORD }}
         run: pytest pvlib --cov=./ --cov-report=xml
 
       # - name: Upload coverage to Codecov

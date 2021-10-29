@@ -53,11 +53,8 @@ jobs:
 
       - name: Create bare environment
         if: matrix.environment-type == 'bare'
-        env:
-          REQUIREMENTS: pytest pytest-cov pytest-mock requests-mock pytest-timeout pytest-rerunfailures pytest-remotedata
         run: |
-          pip install $REQUIREMENTS
-          pip install .
+          pip install .[test]
 
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active

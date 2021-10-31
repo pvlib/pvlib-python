@@ -803,7 +803,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
         0.9801, 0.0283, -0.0092, 0.0019, -0.0001, 0.0117,
         -0.0126, 0, -0.0011, -0.0019, 1, 0)
     _coefficients['asi'] = (
-        1.1060, -0.0848, 0.0302, -0.0076, 0.0006, -0.12838,
+        1.1060, -0.0848, 0.0302, -0.0076, 0.0006, -0.1283,
         0.0986, -0.0254, 0.0156, 0.0146, 1, 0)
     _coefficients['perovskite'] = (
         1.0637, -0.0491, 0.0180, -0.0047, 0.0004, -0.0773,
@@ -823,14 +823,13 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
     # Evaluate Spectral Shift
     coeff = coefficients
     ama = airmass_absolute
-
     modifier = (
         coeff[0] + (ama) * coeff[1] + (ama * ama) * coeff[2]
         + (ama * ama * ama) * coeff[3] + (ama * ama * ama * ama) * coeff[4]
         + (aod500 - aod500_ref) * coeff[5]
         + ((aod500 - aod500_ref) * (ama) * coeff[6]) * coeff[10]
         + ((aod500 - aod500_ref) * (np.log(ama)) * coeff[6]) * coeff[11]
-        + (aod500 - aod500_ref) + (ama * ama) * coeff[7]
+        + (aod500 - aod500_ref) * (ama * ama) * coeff[7]
         + (pw - pw_ref) * coeff[8] + (pw - pw_ref) * (np.log(ama)) * coeff[9])
 
     return modifier

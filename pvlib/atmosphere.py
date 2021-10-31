@@ -686,7 +686,8 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
 
 
 def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
-                                  module_type=None, coefficients=None):
+                                  module_type=None, coefficients=None,
+                                  aod500_ref=0.84, pw_ref=1.42):
     r"""
     Spectral mismatch modifier based on absolute (pressure-adjusted)
     airmass (AM), aerosol optical depth (AOD) at 500 nm and
@@ -745,11 +746,17 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
             * 'asi' - anonymous amorphous silicon module.
             * 'perovskite' - anonymous pervoskite module.
 
-    coefficients : None or array-like, default None
+    coefficients : None or array-like, optional
         the coefficients employed have been obtained with experimental
         data in the city of Jaén, Spain. It is pending to verify if such
         coefficients vary in places with extreme climates where AOD and
         pw values are frequently high.
+
+    aod500_ref : numeric, default 0.84
+        TODO: description
+
+    pw_ref : numeric, default 1.42
+        TODO: description
 
     Returns
     -------
@@ -816,8 +823,6 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
     # Evaluate Spectral Shift
     coeff = coefficients
     ama = airmass_absolute
-    aod500_ref = 0.84
-    pw_ref = 1.42
 
     modifier = (
         coeff[0] + (ama) * coeff[1] + (ama * ama) * coeff[2]

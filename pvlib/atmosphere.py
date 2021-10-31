@@ -686,9 +686,7 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
 
 
 def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
-                                  module_type=None, coefficients=None,
-                                  min_aod500=0.05, max_aod500=0.6,
-                                  min_pw=0.25, max_pw=4):
+                                  module_type=None, coefficients=None):
     r"""
     Spectral mismatch modifier based on absolute (pressure-adjusted)
     airmass (AM), aerosol optical depth (AOD) at 500 nm and
@@ -753,25 +751,6 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
         coefficients vary in places with extreme climates where AOD and
         pw values are frequently high.
 
-    min_aod500 : float, default 0.05
-        minimum atmospheric aerosol optical depth at 500 nm. Any aod500 value
-        lower than min_aod500 is set to min_aod500 to avoid model
-        divergence. [unitless]
-
-    max_aod500 : float, default 0.6
-        maximum atmospheric aerosol optical depth at 500 nm. Any aod500 value
-        higher than max_aod500 is set to NaN to avoid model
-        divergence. [unitless]
-
-    min_pw : float, default 0.25
-        minimum atmospheric precipitable water. Any pw value lower than min_pw
-        is set to min_pw to avoid model divergence. [cm]
-
-    max_pw : float, default 4
-        maximum atmospheric precipitable water. Any pw value higher than max_pw
-        is set to NaN to avoid model divergence. [cm]
-
-
     Returns
     -------
     modifier: array-like
@@ -800,55 +779,6 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
         https://doi.org/10.1109/jphotov.2017.2787019
 
         """
-
-    # --- Screen Input Data ---
-
-    # *** ama ***
-    # Replace Extremely High ama with ama 10 to prevent model divergence
-    # ama > 10 will only occur very close to sunset
-    if np.max(airmass_absolute) > 10:
-        airmass_absolute = np.minimum(airmass_absolute, 10)
-
-    # Warn user about ama data that is exceptionally low
-
-    if np.min(airmass_absolute) < 0.58:
-        warn('Exceptionally low air mass: ' +
-             'model not intended for extra-terrestrial use')
-        # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
-        # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
-        # population over 50,000.
-
-    # *** aod500 ***
-    # Replace aod500 Values below 0.05  with 0.05 to prevent model from
-    # diverging"
-    aod500 = np.atleast_1d(aod500)
-    aod500 = aod500.astype('float64')
-    if np.min(aod500) < min_aod500:
-        aod500 = np.maximum(aod500, min_aod500)
-        warn(f'Exceptionally low aod values replaced with {min_aod500} to'
-             'prevent model divergence')
-
-    # Warn user about aod500 data that is exceptionally high
-    if np.max(aod500) > max_aod500:
-        aod500[aod500 > max_aod500] = np.nan
-        warn('Exceptionally high aod values replaced by np.nan: '
-             'check input data.')
-
-    # *** pw ***
-    # Replace pw Values below 0.25 cm with 0.25 cm to prevent model from
-    # diverging"
-    pw = np.atleast_1d(pw)
-    pw = pw.astype('float64')
-    if np.min(pw) < min_pw:
-        pw = np.maximum(pw, min_pw)
-        warn(f'Exceptionally low pw values replaced with {min_pw} cm to '
-             'prevent model divergence')
-
-    # Warn user about pw data that is exceptionally high
-    if np.max(pw) > max_pw:
-        pw[pw > max_pw] = np.nan
-        warn('Exceptionally high pw values replaced by np.nan: '
-             'check input data.')
 
     # Experimental coefficients
 

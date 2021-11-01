@@ -212,7 +212,8 @@ def test_AM_AOD_PW_spectral_correction_supplied():
     coeffs = (
         1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
         -0.0182, 0, 0.0095, 0.0068, 0, 1)
-    out = atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1, coefficients=coeffs)
+    out = atmosphere.AM_AOD_PW_spectral_correction(1,
+        1, 1, coefficients=coeffs)
     expected = 1.005674
     assert_allclose(out, expected, atol=1e-3)
 

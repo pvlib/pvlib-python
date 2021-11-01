@@ -687,8 +687,7 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
 
 def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
                                   module_type=None, coefficients=None,
-                                  min_aod500=0.05, max_aod500=0.6,
-                                  min_pw=0.25, max_pw=4):
+                                  aod500_ref=0.84, pw_ref=1.42):
     r"""
     Spectral mismatch modifier based on absolute (pressure-adjusted)
     airmass (AM), aerosol optical depth (AOD) at 500 nm and
@@ -747,30 +746,17 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
             * 'asi' - anonymous amorphous silicon module.
             * 'perovskite' - anonymous pervoskite module.
 
-    coefficients : None or array-like, default None
+    coefficients : None or array-like, optional
         the coefficients employed have been obtained with experimental
         data in the city of Jaén, Spain. It is pending to verify if such
         coefficients vary in places with extreme climates where AOD and
         pw values are frequently high.
 
-    min_aod500 : float, default 0.05
-        minimum atmospheric aerosol optical depth at 500 nm. Any aod500 value
-        lower than min_aod500 is set to min_aod500 to avoid model
-        divergence. [unitless]
+    aod500_ref : numeric, default 0.84
+        TODO: description
 
-    max_aod500 : float, default 0.6
-        maximum atmospheric aerosol optical depth at 500 nm. Any aod500 value
-        higher than max_aod500 is set to NaN to avoid model
-        divergence. [unitless]
-
-    min_pw : float, default 0.25
-        minimum atmospheric precipitable water. Any pw value lower than min_pw
-        is set to min_pw to avoid model divergence. [cm]
-
-    max_pw : float, default 4
-        maximum atmospheric precipitable water. Any pw value higher than max_pw
-        is set to NaN to avoid model divergence. [cm]
-
+    pw_ref : numeric, default 1.42
+        TODO: description
 
     Returns
     -------
@@ -801,55 +787,6 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
 
         """
 
-    # --- Screen Input Data ---
-
-    # *** ama ***
-    # Replace Extremely High ama with ama 10 to prevent model divergence
-    # ama > 10 will only occur very close to sunset
-    if np.max(airmass_absolute) > 10:
-        airmass_absolute = np.minimum(airmass_absolute, 10)
-
-    # Warn user about ama data that is exceptionally low
-
-    if np.min(airmass_absolute) < 0.58:
-        warn('Exceptionally low air mass: ' +
-             'model not intended for extra-terrestrial use')
-        # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
-        # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
-        # population over 50,000.
-
-    # *** aod500 ***
-    # Replace aod500 Values below 0.05  with 0.05 to prevent model from
-    # diverging"
-    aod500 = np.atleast_1d(aod500)
-    aod500 = aod500.astype('float64')
-    if np.min(aod500) < min_aod500:
-        aod500 = np.maximum(aod500, min_aod500)
-        warn(f'Exceptionally low aod values replaced with {min_aod500} to'
-             'prevent model divergence')
-
-    # Warn user about aod500 data that is exceptionally high
-    if np.max(aod500) > max_aod500:
-        aod500[aod500 > max_aod500] = np.nan
-        warn('Exceptionally high aod values replaced by np.nan: '
-             'check input data.')
-
-    # *** pw ***
-    # Replace pw Values below 0.25 cm with 0.25 cm to prevent model from
-    # diverging"
-    pw = np.atleast_1d(pw)
-    pw = pw.astype('float64')
-    if np.min(pw) < min_pw:
-        pw = np.maximum(pw, min_pw)
-        warn(f'Exceptionally low pw values replaced with {min_pw} cm to '
-             'prevent model divergence')
-
-    # Warn user about pw data that is exceptionally high
-    if np.max(pw) > max_pw:
-        pw[pw > max_pw] = np.nan
-        warn('Exceptionally high pw values replaced by np.nan: '
-             'check input data.')
-
     # Experimental coefficients
 
     _coefficients = {}
@@ -866,7 +803,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
         0.9801, 0.0283, -0.0092, 0.0019, -0.0001, 0.0117,
         -0.0126, 0, -0.0011, -0.0019, 1, 0)
     _coefficients['asi'] = (
-        1.1060, -0.0848, 0.0302, -0.0076, 0.0006, -0.12838,
+        1.1060, -0.0848, 0.0302, -0.0076, 0.0006, -0.1283,
         0.0986, -0.0254, 0.0156, 0.0146, 1, 0)
     _coefficients['perovskite'] = (
         1.0637, -0.0491, 0.0180, -0.0047, 0.0004, -0.0773,
@@ -886,16 +823,13 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
     # Evaluate Spectral Shift
     coeff = coefficients
     ama = airmass_absolute
-    aod500_ref = 0.84
-    pw_ref = 1.42
-
     modifier = (
         coeff[0] + (ama) * coeff[1] + (ama * ama) * coeff[2]
         + (ama * ama * ama) * coeff[3] + (ama * ama * ama * ama) * coeff[4]
         + (aod500 - aod500_ref) * coeff[5]
         + ((aod500 - aod500_ref) * (ama) * coeff[6]) * coeff[10]
         + ((aod500 - aod500_ref) * (np.log(ama)) * coeff[6]) * coeff[11]
-        + (aod500 - aod500_ref) + (ama * ama) * coeff[7]
+        + (aod500 - aod500_ref) * (ama * ama) * coeff[7]
         + (pw - pw_ref) * coeff[8] + (pw - pw_ref) * (np.log(ama)) * coeff[9])
 
     return modifier

@@ -187,3 +187,36 @@ def test_bird_hulstrom80_aod_bb():
     aod380, aod500 = 0.22072480948195175, 0.1614279181106312
     bird_hulstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
     assert np.isclose(0.11738229553812768, bird_hulstrom)
+
+
+@pytest.mark.parametrize("module_type,expected", [
+    ('asi', np.array([0.9124, 0.9908, 0.9723, 1.0276, 1.0808, 0.9554])),
+    ('perovskite', np.array([0.9434, 0.994, 0.988, 1.0191, 1.0612, 0.975])),
+    ('cdte', np.array([0.9832, 1.0005, 1.0073, 1.0122, 1.0431, 0.9987])),
+    ('multisi', np.array([0.9912, 0.9981, 1.0208, 1.0083, 1.006, 1.0196])),
+    ('monosi', np.array([0.9940, 0.9989, 1.0269, 1.0076, 1.0001, 1.0268])),
+    ('cigs', np.array([1.0018, 1.0012, 1.0274, 1.0083, 1.003, 1.0272])),
+])
+def test_AM_AOD_PW_spectral_correction(module_type, expected):
+    ams = np.array([3.0, 1.5, 3.0, 1.5, 1.5, 3.0])
+    aods = np.array([1.0, 1.0, 0.02, 0.02, 0.08, 0.08])
+    pws = np.array([1.42, 1.42, 1.42, 1.42, 4.0, 1.0])
+    out = atmosphere.AM_AOD_PW_spectral_correction(ams, aods, pws,
+                                                   module_type=module_type,
+                                                   aod500_ref=0.1, pw_ref=1.4)
+    assert np.allclose(expected, out, atol=1e-3)
+
+
+def test_AM_AOD_PW_spectral_correction_supplied():
+    # use the cdte coeffs
+    coeffs = (
+        1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
+        -0.0182, 0, 0.0095, 0.0068, 0, 1)
+    out = atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1, coefficients=coeffs)
+    expected = 1.005674
+    assert_allclose(out, expected, atol=1e-3)
+
+
+def test_AM_AOD_PW_spectral_correction_supplied_ambiguous():
+    with pytest.raises(TypeError):
+        atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1)

@@ -220,8 +220,4 @@ def test_AM_AOD_PW_spectral_correction_supplied():
 
 def test_AM_AOD_PW_spectral_correction_supplied_ambiguous():
     with pytest.raises(TypeError):
-        atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1,
-                                                 module_type=not None,
-                                                 coefficients=not None,
-                                                 aod500_ref=0.1,
-                                                 pw_ref=1.4)
+        atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1)

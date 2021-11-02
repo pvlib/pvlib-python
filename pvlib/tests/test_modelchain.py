@@ -717,7 +717,7 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
                                               weather, mocker):
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
-    sapm_dc_snl_ac_system.temperature_model_parameters = {
+    sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters = {
         'noct': 45, 'module_efficiency': 0.2
     }
     mc = ModelChain(sapm_dc_snl_ac_system, location)

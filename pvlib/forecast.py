@@ -986,7 +986,7 @@ class HRRR(ForecastModel):
 
     def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
-        model = 'NCEP HRRR CONUS 2.5km'
+        model = 'HRRR CONUS 2.5km Forecasts'
 
         self.variables = {
             'temp_air': 'Temperature_height_above_ground',

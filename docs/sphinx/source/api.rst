@@ -126,6 +126,7 @@ Airmass and atmospheric models
    atmosphere.kasten96_lt
    atmosphere.angstrom_aod_at_lambda
    atmosphere.angstrom_alpha
+   atmosphere.AM_AOD_PW_spectral_correction
 
 
 Irradiance

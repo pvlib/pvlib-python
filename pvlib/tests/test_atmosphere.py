@@ -221,4 +221,4 @@ def test_AM_AOD_PW_spectral_correction_supplied():
 
 def test_AM_AOD_PW_spectral_correction_ambiguous():
     with pytest.raises(TypeError):
-         atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1)
+        atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1)

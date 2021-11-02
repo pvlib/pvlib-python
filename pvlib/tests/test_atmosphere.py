@@ -203,7 +203,8 @@ def test_AM_AOD_PW_spectral_correction(module_type, expected):
     pws = np.array([1.42, 1.42, 1.42, 1.42, 4.0, 1.0])
     out = atmosphere.AM_AOD_PW_spectral_correction(ams, aods, pws,
                                                    module_type=module_type,
-                                                   aod500_ref=0.084, pw_ref=1.42)
+                                                   aod500_ref=0.084,
+                                                   pw_ref=1.42)
     assert np.allclose(expected, out, atol=1e-3)
 
 

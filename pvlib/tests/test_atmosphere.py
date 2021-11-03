@@ -219,6 +219,6 @@ def test_AM_AOD_PW_spectral_correction_supplied():
     assert_allclose(out, expected, atol=1e-3)
 
 
-def test_AM_AOD_PW_spectral_correction_ambiguous():
+def test_AM_AOD_PW_spectral_correction_supplied_ambiguous():
     with pytest.raises(TypeError):
         atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1)

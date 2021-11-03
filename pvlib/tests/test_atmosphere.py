@@ -225,3 +225,8 @@ def test_AM_AOD_PW_spectral_correction_supplied_ambiguous():
         atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1,
                                                  module_type='cdte',
                                                  coefficients=dummy_coeffs)
+def test_AM_AOD_PW_spectral_correction_supplied_ambiguous_1():    
+    with pytest.raises(TypeError):
+        atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1,
+                                                 module_type=None,
+                                                 coefficients=None)

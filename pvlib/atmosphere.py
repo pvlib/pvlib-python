@@ -820,6 +820,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
         raise TypeError('Cannot resolve input, must supply only one' +
                         'of module_type and coefficients')
 
+
     # Evaluate Spectral Shift
     coeff = coefficients
     ama = airmass_absolute

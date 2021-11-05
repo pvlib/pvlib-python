@@ -183,7 +183,7 @@ class Location:
         -------
         solar_position : DataFrame
             Columns depend on the ``method`` kwarg, but always include
-            ``zenith`` and ``azimuth``.
+            ``zenith`` and ``azimuth``. The angles are in degrees.
         """
         if pressure is None:
             pressure = atmosphere.alt2pres(self.altitude)

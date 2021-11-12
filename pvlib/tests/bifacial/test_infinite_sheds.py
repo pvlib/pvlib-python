@@ -56,43 +56,6 @@ BACK_SYSAZ_RAD = np.radians(BACKSIDE['sysaz'])
 TILT_RAD = np.radians(TILT)
 BACK_TILT_RAD = np.radians(BACKSIDE['tilt'])
 
-
-#TODO: moved to utils,
-def test_solar_projection_tangent():
-    tan_phi_f = infinite_sheds.solar_projection_tangent(
-        TESTDATA.apparent_zenith, TESTDATA.azimuth, SYSAZ)
-    tan_phi_b = infinite_sheds.solar_projection_tangent(
-        TESTDATA.apparent_zenith, TESTDATA.azimuth, BACKSIDE['sysaz'])
-    assert np.allclose(tan_phi_f, -tan_phi_b)
-    assert np.allclose(tan_phi_f, TESTDATA.tan_phi_f)
-    assert np.allclose(tan_phi_b, TESTDATA.tan_phi_b)
-
-
-def test_solar_projection():
-    # frontside
-    phi_f, tan_phi_f = infinite_sheds.solar_projection(
-        SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, SYSAZ_RAD)
-    assert np.allclose(tan_phi_f, TESTDATA.tan_phi_f)
-    assert np.allclose(np.tan(phi_f), tan_phi_f)
-    # backside
-    phi_b, tan_phi_b = infinite_sheds.solar_projection(
-        SOLAR_ZENITH_RAD, SOLAR_AZIMUTH_RAD, BACK_SYSAZ_RAD)
-    assert np.allclose(tan_phi_b, TESTDATA.tan_phi_b)
-    assert np.allclose(np.tan(phi_b), tan_phi_b)
-
-
-#TODO: moved to utils,
-# def test_unshaded_ground_fraction():
-#     # frontside, same for both sides
-#     f_sky_beam_f = infinite_sheds.unshaded_ground_fraction(
-#         GCR, TILT, TESTDATA.tan_phi_f)
-#     assert np.allclose(f_sky_beam_f, F_GND_BEAM)
-#     # backside, should be the same as frontside
-#     f_sky_beam_b = infinite_sheds.unshaded_ground_fraction(
-#         GCR, BACKSIDE['tilt'], TESTDATA.tan_phi_b)
-#     assert np.allclose(f_sky_beam_b, F_GND_BEAM)
-
-
 ARGS = (GCR, HEIGHT, np.radians(TILT), PITCH)
 
 

@@ -60,106 +60,6 @@ from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial.utils import unshaded_ground_fraction
 from pvlib.shading import shaded_fraction
 
-#TODO: not used
-def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
-    """
-    Calculate solar projection on YZ-plane, vertical and perpendicular to rows.
-
-    .. math::
-        \\tan \\phi = \\frac{\\cos\\left(\\text{solar azimuth} -
-        \\text{system azimuth}\\right)\\sin\\left(\\text{solar zenith}
-        \\right)}{\\cos\\left(\\text{solar zenith}\\right)}
-
-    Parameters
-    ----------
-    solar_zenith : numeric
-        apparent zenith in radians
-    solar_azimuth : numeric
-        azimuth in radians
-    system_azimuth : numeric
-        system rotation from north in radians
-
-    Returns
-    -------
-    phi : numeric
-        4-quadrant arc-tangent of solar projection in radians
-    tan_phi : numeric
-        tangent of the solar projection
-    """
-    rotation = solar_azimuth - system_azimuth
-    x1 = np.cos(rotation) * np.sin(solar_zenith)
-    x2 = np.cos(solar_zenith)
-    tan_phi = x1 / x2
-    phi = np.arctan2(x1, x2)
-    return phi, tan_phi
-
-
-#TODO: moved to utils, remove here
-def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
-    """
-    Calculate tangent of angle between sun vector projected to the YZ-plane
-    (vertical and perpendicular to rows) and zenith vector.
-
-    .. math::
-        \\tan \\phi = \\cos\\left(\\text{solar azimuth}-\\text{system azimuth}
-        \\right)\\tan\\left(\\text{solar zenith}\\right)
-
-    Parameters
-    ----------
-    solar_zenith : numeric
-        apparent zenith in degrees
-    solar_azimuth : numeric
-        azimuth in degrees
-    system_azimuth : numeric
-        system rotation from north in degrees
-
-    Returns
-    -------
-    tan_phi : numeric
-        Tangent of the angle between vertical and the projection of the 
-        sun direction onto the YZ plane.
-    """
-    rotation = solar_azimuth - system_azimuth
-    #TODO: I don't think tan_phi should ever be negative, but it could be if
-    # rotation > 90 (e.g. sun north of along-row azimuth)
-    tan_phi = cosd(rotation) * tand(solar_zenith)
-    return tan_phi
-
-
-#TODO: moved to utils, changed signature. remove here
-# def unshaded_ground_fraction(gcr, surface_tilt, tan_phi):
-#     """
-#     Calculate the fraction of the ground with incident direct irradiance.
-
-#     .. math::
-#         F_{gnd,sky} &= 1 - \\min{\\left(1, \\text{GCR} \\left|\\cos \\beta +
-#         \\sin \\beta \\tan \\phi \\right|\\right)} \\newline
-
-#         \\beta &= \\text{tilt}
-
-#     Parameters
-#     ----------
-#     gcr : numeric
-#         Ground coverage ratio, which is the ratio of row slant length to row
-#         spacing (pitch).
-#     surface_tilt: numeric
-#         Surface tilt angle in decimal degrees. The tilt angle is defined as
-#         degrees from horizontal, e.g., surface facing up = 0, surface facing
-#         horizon = 90.
-#     tan_phi : numeric
-#         Tangent of the angle between vertical and the projection of the 
-#         sun direction onto the YZ plane.
-
-#     Returns
-#     -------
-#     f_gnd_beam : numeric
-#         fraction of ground illuminated (unshaded)
-#     """
-#     #TODO: why np.abs? All angles should be <=90
-#     f_gnd_beam = 1.0 - np.minimum(
-#         1.0, gcr * np.abs(sind(surface_tilt) + cosd(surface_tilt) * tan_phi))
-#     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
-
 
 def _gcr_prime(gcr, height, surface_tilt, pitch):
     """
@@ -194,11 +94,11 @@ def _gcr_prime(gcr, height, surface_tilt, pitch):
     #  :        \                       \   h = height above ground
     #  :         \                 tilt  \  :
     #  +----------\<---------P----------->\---- ground
-#TODO convert to degrees
+    #TODO convert to degrees
     return gcr + height / np.sin(surface_tilt) / pitch
 
 
-# TODO: move to util, overlaps with ground_sky_angles_prev in that both return
+# TODO: overlaps with ground_sky_angles_prev in that both return
 # angle to top of previous row. Could the three ground_sky_angle_xxx functions
 # be combined and handle the cases of points behind the "previous" row or ahead
 # of the next row?
@@ -261,7 +161,6 @@ def ground_sky_angles(f_z, gcr, height, tilt, pitch):
     return psi_0, psi_1
 
 
-# move to util
 def ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
     """
     Angles from point z on ground to top and bottom of previous rows beyond the
@@ -1007,7 +906,7 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
                                           solar_zenith, solar_azimuth)
     # diffuse fraction
     df = diffuse_fraction(ghi, dhi)
-#TODO: move to bifacial.util
+    #TODO: move to bifacial.util
     # view factor from the ground in between infinite central rows to the sky
     vf_gnd_sky, _ = vf_ground_sky(gcr, height, tilt, pitch, npoints)
     # diffuse from sky reflected from ground accounting from shade from panels
@@ -1018,6 +917,7 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
                           gcr)
     # angles from shadeline to top of next row
     tan_psi_top = sky_angle_tangent(gcr, tilt, f_x)
+    # angles from tops of next row to bottom of current row
     tan_psi_top_0 = sky_angle_tangent(gcr, tilt, 0.0)
     # fraction of sky visible from shaded and unshaded parts of PV surfaces
     f_sky_pv_shade, f_sky_pv_noshade = f_sky_diffuse_pv(

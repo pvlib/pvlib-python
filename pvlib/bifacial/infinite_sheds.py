@@ -58,7 +58,7 @@ import pandas as pd
 from pvlib import irradiance, iam
 from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial.utils import unshaded_ground_fraction
-
+from pvlib.shading import shaded_fraction
 
 #TODO: not used
 def solar_projection(solar_zenith, solar_azimuth, system_azimuth):
@@ -644,33 +644,6 @@ def poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     return poa_ground * (f_gnd_beam*(1 - df) + df*vf_gnd_sky)
 
 
-#TODO: move to pvlib.shading?
-def shade_line(gcr, tilt, tan_phi):
-    """
-    calculate fraction of module shaded from the bottom
-
-    .. math::
-        F_x = \\max \\left( 0, \\min \\left(1 - \\frac{1}{\\text{GCR} \\left(
-        \\cos \\beta + \\sin \\beta \\tan \\phi \\right)}, 1 \\right) \\right)
-
-    Parameters
-    ----------
-    gcr : numeric
-        ratio of module length versus row spacing
-    tilt : numeric
-        angle of surface normal from vertical in radians
-    tan_phi : numeric
-        solar projection tangent
-
-    Returns
-    -------
-    f_x : numeric
-        fraction of module shaded from the bottom
-    """
-    f_x = 1.0 - 1.0 / gcr / (np.cos(tilt) + np.sin(tilt) * tan_phi)
-    return np.maximum(0.0, np.minimum(f_x, 1.0))
-
-
 def sky_angle(gcr, tilt, f_x):
     """
     angle from shade line to top of next row
@@ -1041,7 +1014,8 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     # considering the fraction of ground blocked by infinite adjacent rows
     poa_gnd_sky = poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky)
     # fraction of panel shaded
-    f_x = shade_line(gcr, tilt, tan_phi)
+    f_x = shaded_fraction(solar_zenith, solar_azimuth, tilt, system_azimuth,
+                          gcr)
     # angles from shadeline to top of next row
     tan_psi_top = sky_angle_tangent(gcr, tilt, f_x)
     tan_psi_top_0 = sky_angle_tangent(gcr, tilt, 0.0)

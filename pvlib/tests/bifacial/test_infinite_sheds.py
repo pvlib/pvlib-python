@@ -223,16 +223,6 @@ def test_poa_ground_sky():
     assert np.allclose(poa_gnd_sky_b, BACK_POA_GND_SKY, equal_nan=True)
 
 
-def test_shade_line():
-    # front side
-    fx_f = infinite_sheds.shade_line(GCR, TILT_RAD, TESTDATA.tan_phi_f)
-    assert np.allclose(fx_f, TESTDATA.Fx_f)
-    # backside
-    fx_b = infinite_sheds.shade_line(
-        GCR, BACK_TILT_RAD, TESTDATA.tan_phi_b)
-    assert np.allclose(fx_b, TESTDATA.Fx_b)
-
-
 def test_sky_angles():
     # frontside
     psi_top_f, tan_psi_top_f = infinite_sheds.sky_angle(

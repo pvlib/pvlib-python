@@ -6,6 +6,7 @@ associated effects on PV module output
 import numpy as np
 import pandas as pd
 from pvlib.tools import sind, cosd
+from pvlib import bifacial
 
 
 def masking_angle(surface_tilt, gcr, slant_height):
@@ -191,3 +192,40 @@ def sky_diffuse_passias(masking_angle):
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
     """
     return 1 - cosd(masking_angle/2)**2
+
+
+def shaded_fraction(solar_zenith, solar_azimuth, surface_tilt, surface_azimuth,
+                    gcr):
+    """
+    Calculate fraction (from the bottom) of row slant height that is shaded
+    by the row in front toward the sun.
+
+    .. math::
+        F_x = \\max \\left( 0, \\min \\left(1 - \\frac{1}{\\text{GCR} \\left(
+        \\cos \\beta + \\sin \\beta \\tan \\phi \\right)}, 1 \\right) \\right)
+
+    Parameters
+    ----------
+    solar_zenith : numeric
+        apparent zenith in degrees
+    solar_azimuth : numeric
+        azimuth in degrees
+        Surface tilt angles in decimal degrees.
+        The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+    surface_azimuth: float or array-like, default 180
+        Azimuth angle of the module surface.
+        North=0, East=90, South=180, West=270.
+    gcr : numeric
+        Ground coverage ratio, which is the ratio of row slant length to row
+        spacing (pitch).
+
+    Returns
+    -------
+    f_x : numeric
+        Fraction of row slant height shaded from the bottom.
+    """
+    tan_phi = bifacial.utils.solar_projection_tangent(
+        solar_zenith, solar_azimuth, surface_azimuth)
+    f_x = 1.0 - 1.0 / gcr / (cosd(surface_tilt) + sind(surface_tilt) * tan_phi)
+    return np.maximum(0.0, np.minimum(f_x, 1.0))

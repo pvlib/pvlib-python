@@ -5,6 +5,7 @@ from pandas.testing import assert_series_equal
 import pytest
 
 from pvlib import shading
+from pvlib.location import Location
 
 
 @pytest.fixture
@@ -69,3 +70,20 @@ def test_sky_diffuse_passias_scalar(average_masking_angle, shading_loss):
     for angle, loss in zip(average_masking_angle, shading_loss):
         actual_loss = shading.sky_diffuse_passias(angle)
         assert np.isclose(loss, actual_loss)
+
+
+def test_shaded_fraction_series():
+    idx = pd.date_range(start='1/2/2018 15:00', end='1/2/2018 17:00', freq='H',
+                        tz='Etc/GMT+8')
+    loc = Location(37.85, -122.25, 'Etc/GMT+8')
+    sp = loc.get_solarposition(idx)
+    result = shading.shaded_fraction(sp['apparent_zenith'], sp['azimuth'],
+                                     20., 250., 0.5)
+    expected = pd.Series(data=[0.0, 0.310216, 0.997537],
+                         index=idx)
+    assert_series_equal(result, expected)
+
+
+def test_shaded_fraction_floats():
+    result = shading.shaded_fraction(90. - 9.0646784, 180., 30., 180., 0.5)
+    assert np.isclose(result, 0.5)

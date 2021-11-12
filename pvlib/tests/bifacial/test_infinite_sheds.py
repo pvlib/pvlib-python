@@ -167,51 +167,51 @@ FZ_SKY = np.array([
     0.35300886, 0.35741583, 0.36235918, 0.36789933, 0.37394838])
 
 
-def test_vf_ground_sky():
-    vf_gnd_sky, fz_sky = infinite_sheds.vf_ground_sky(*ARGS)
+def test__vf_ground_sky():
+    vf_gnd_sky, fz_sky = infinite_sheds._vf_ground_sky(*ARGS)
     assert np.isclose(vf_gnd_sky, VF_GND_SKY)
     assert np.allclose(fz_sky, FZ_SKY)
 
 
-def test_poa_ground_sky():
+def test__poa_ground_sky():
     # front side
-    poa_gnd_sky_f = infinite_sheds.poa_ground_sky(
+    poa_gnd_sky_f = infinite_sheds._poa_ground_sky(
         TESTDATA.poa_ground_diffuse_f, F_GND_BEAM, DF, 1.0)
     # CSV file decimals are truncated
     assert np.allclose(
         poa_gnd_sky_f, FRONT_POA_GND_SKY, equal_nan=True, atol=1e-6)
     # backside
-    poa_gnd_sky_b = infinite_sheds.poa_ground_sky(
+    poa_gnd_sky_b = infinite_sheds._poa_ground_sky(
         TESTDATA.poa_ground_diffuse_b, F_GND_BEAM, DF, 1.0)
     assert np.allclose(poa_gnd_sky_b, BACK_POA_GND_SKY, equal_nan=True)
 
 
-def test_sky_angles():
+def test__sky_angle():
     # frontside
-    psi_top_f, tan_psi_top_f = infinite_sheds.sky_angle(
+    psi_top_f, tan_psi_top_f = infinite_sheds._sky_angle(
         GCR, TILT_RAD, TESTDATA.Fx_f)
     assert np.allclose(psi_top_f, TESTDATA.psi_top_f)
     assert np.allclose(tan_psi_top_f, FRONT_TAN_PSI_TOP)
     # backside
-    psi_top_b, tan_psi_top_b = infinite_sheds.sky_angle(
+    psi_top_b, tan_psi_top_b = infinite_sheds._sky_angle(
         GCR, BACK_TILT_RAD, TESTDATA.Fx_b)
     assert np.allclose(psi_top_b, TESTDATA.psi_top_b)
     assert np.allclose(tan_psi_top_b, BACK_TAN_PSI_TOP)
 
 
-def test_sky_angle_tangent():
+def test__sky_angle_tangent():
     # frontside
-    tan_psi_top_f = infinite_sheds.sky_angle_tangent(
+    tan_psi_top_f = infinite_sheds._sky_angle_tangent(
         GCR, TILT_RAD, TESTDATA.Fx_f)
     assert np.allclose(tan_psi_top_f, FRONT_TAN_PSI_TOP)
     # backside
-    tan_psi_top_b = infinite_sheds.sky_angle_tangent(
+    tan_psi_top_b = infinite_sheds._sky_angle_tangent(
         GCR, BACK_TILT_RAD, TESTDATA.Fx_b)
     assert np.allclose(tan_psi_top_b, BACK_TAN_PSI_TOP)
-    tan_psi_top_f = infinite_sheds.sky_angle_tangent(GCR, TILT_RAD, 0.0)
+    tan_psi_top_f = infinite_sheds._sky_angle_tangent(GCR, TILT_RAD, 0.0)
     assert np.allclose(tan_psi_top_f, TAN_PSI_TOP0_F)
     # backside
-    tan_psi_top_b = infinite_sheds.sky_angle_tangent(
+    tan_psi_top_b = infinite_sheds._sky_angle_tangent(
         GCR, BACK_TILT_RAD, 0.0)
     assert np.allclose(tan_psi_top_b, TAN_PSI_TOP0_B)
 

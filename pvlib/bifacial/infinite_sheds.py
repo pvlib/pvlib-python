@@ -240,7 +240,7 @@ def _f_z0_limit(gcr, height, tilt, pitch):
     between previous rows, where the angle :math:`\\psi` is tangent to both the
     top and bottom of panels.
     """
-    tan_psi_t_x0 = sky_angle_tangent(gcr, tilt, 0.0)
+    tan_psi_t_x0 = _sky_angle_tangent(gcr, tilt, 0.0)
     # tan_psi_t_x0 = gcr * np.sin(tilt) / (1.0 - gcr * np.cos(tilt))
     return height/pitch * (1/np.tan(tilt) + 1/tan_psi_t_x0)
 
@@ -322,7 +322,7 @@ def _f_z1_limit(gcr, height, tilt, pitch):
     visible between the next rows, where the angle :math:`\\psi` is tangent to
     both the top and bottom of panels.
     """
-    tan_psi_t_x1 =sky_angle_tangent(gcr, np.pi - tilt, 0.0)
+    tan_psi_t_x1 = _sky_angle_tangent(gcr, np.pi - tilt, 0.0)
     # tan_psi_t_x1 = gcr * np.sin(pi-tilt) / (1.0 - gcr * np.cos(pi-tilt))
     return height/pitch * (1/tan_psi_t_x1 - 1/np.tan(tilt))
 
@@ -412,8 +412,8 @@ def _ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     return fz_row, np.interp(fz_row, fz, fz_sky)
 
 
-# TODO: move to util
-def vf_ground_sky(gcr, height, tilt, pitch, npoints=100):
+# TODO: move to util?
+def _vf_ground_sky(gcr, height, tilt, pitch, npoints=100):
     """
     Integrated view factor from the ground in between central rows of the sky.
 
@@ -475,7 +475,7 @@ def calc_fgndpv_zsky(fx, gcr, height, tilt, pitch, npoints=100):
         psi_x_bottom = 0.0
     else:
         # how far on the ground can the point x see?
-        psi_x_bottom, _ = ground_angle(gcr, tilt, fx)
+        psi_x_bottom, _ = _ground_angle(gcr, tilt, fx)
 
     # max angle from pv surface perspective
     psi_max = tilt - psi_x_bottom
@@ -504,7 +504,7 @@ def _diffuse_fraction(ghi, dhi):
     return dhi/ghi
 
 
-def poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky):
+def _poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     """
     transposed ground reflected diffuse component adjusted for ground
     illumination AND accounting for infinite adjacent rows in both directions
@@ -542,7 +542,7 @@ def poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     return poa_ground * (f_gnd_beam*(1 - df) + df*vf_gnd_sky)
 
 
-def sky_angle(gcr, tilt, f_x):
+def _sky_angle(gcr, tilt, f_x):
     """
     angle from shade line to top of next row
 
@@ -570,7 +570,7 @@ def sky_angle(gcr, tilt, f_x):
     return psi_top, tan_psi_top
 
 
-def sky_angle_tangent(gcr, tilt, x):
+def _sky_angle_tangent(gcr, tilt, x):
     """
     tangent of angle from a point x along the module slant height to the
     top of the previous row.
@@ -609,35 +609,8 @@ def sky_angle_tangent(gcr, tilt, x):
     y = 1.0 - x
     return y * np.sin(tilt) / (1/gcr - y * np.cos(tilt))
 
-#TODO: delete, replaced by sky_angle_tangent
-# def sky_angle_0_tangent(gcr, tilt):
-#     """
-#     tangent of angle to top of next row with no shade (shade line at bottom) so
-#     :math:`F_x = 0`
 
-#     .. math::
-
-#         \\tan{\\psi_t\\left(x=0\\right)} = \\frac{\\text{GCR} \\sin{\\beta}}
-#         {1 - \\text{GCR} \\cos{\\beta}}
-
-#     Parameters
-#     ----------
-#     gcr : numeric
-#         ratio of module length to row spacing
-#     tilt : numeric
-#         angle of surface normal from vertical in radians
-
-#     Returns
-#     -------
-#     tan_psi_top_0 : numeric
-#         tangent angle from bottom, ``x = 0``, to top of next row
-#     """
-#     # f_y = 1  b/c x = 0, so f_x = 0
-#     # tan psi_t0 = GCR * sin(tilt) / (1 - GCR * cos(tilt))
-#     return sky_angle_tangent(gcr, tilt, 0.0)
-
-
-def f_sky_diffuse_pv(tilt, tan_psi_top, tan_psi_top_0):
+def _f_sky_diffuse_pv(tilt, tan_psi_top, tan_psi_top_0):
     """
     view factors of sky from shaded and unshaded parts of PV module
 
@@ -689,7 +662,7 @@ def f_sky_diffuse_pv(tilt, tan_psi_top, tan_psi_top_0):
     return f_sky_pv_shade, f_sky_pv_noshade
 
 
-def poa_sky_diffuse_pv(poa_sky_diffuse, f_x, f_sky_pv_shade, f_sky_pv_noshade):
+def _poa_sky_diffuse_pv(poa_sky_diffuse, f_x, f_sky_pv_shade, f_sky_pv_noshade):
     """
     Sky diffuse POA from average view factor weighted by shaded and unshaded
     parts of the surface.
@@ -713,7 +686,7 @@ def poa_sky_diffuse_pv(poa_sky_diffuse, f_x, f_sky_pv_shade, f_sky_pv_noshade):
     return poa_sky_diffuse * (f_x*f_sky_pv_shade + (1 - f_x)*f_sky_pv_noshade)
 
 
-def ground_angle(gcr, tilt, f_x):
+def _ground_angle(gcr, tilt, f_x):
     """
     angle from shadeline to bottom of adjacent row
 
@@ -741,7 +714,7 @@ def ground_angle(gcr, tilt, f_x):
     return psi_bottom, tan_psi_bottom
 
 
-def ground_angle_tangent(gcr, tilt, f_x):
+def _ground_angle_tangent(gcr, tilt, f_x):
     """
     tangent of angle from shadeline to bottom of adjacent row
 
@@ -768,7 +741,7 @@ def ground_angle_tangent(gcr, tilt, f_x):
         f_x * np.cos(tilt) + 1/gcr)
 
 
-def ground_angle_1_tangent(gcr, tilt):
+def _ground_angle_1_tangent(gcr, tilt):
     """
     tangent of angle to bottom of next row with all shade (shade line at top)
     so :math:`F_x = 1`
@@ -790,10 +763,10 @@ def ground_angle_1_tangent(gcr, tilt):
         tangent of angle to bottom of next row with all shade (shade line at
         top)
     """
-    return ground_angle_tangent(gcr, tilt, 1.0)
+    return _ground_angle_tangent(gcr, tilt, 1.0)
 
 
-def f_ground_pv(tilt, tan_psi_bottom, tan_psi_bottom_1):
+def _f_ground_pv(tilt, tan_psi_bottom, tan_psi_bottom_1):
     """
     view factors of ground from shaded and unshaded parts of PV module
 
@@ -840,7 +813,7 @@ def f_ground_pv(tilt, tan_psi_bottom, tan_psi_bottom_1):
     return f_gnd_pv_shade, f_gnd_pv_noshade
 
 
-def poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
+def _poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
     """
     Ground diffuse POA from average view factor weighted by shaded and unshaded
     parts of the surface.
@@ -860,17 +833,17 @@ def poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
     return poa_gnd_sky * (f_x*f_gnd_pv_shade + (1 - f_x)*f_gnd_pv_noshade)
 
 
-def poa_diffuse_pv(poa_gnd_pv, poa_sky_pv):
+def _poa_diffuse_pv(poa_gnd_pv, poa_sky_pv):
     """diffuse incident on PV surface from sky and ground"""
     return poa_gnd_pv + poa_sky_pv
 
 
-def poa_direct_pv(poa_direct, iam, f_x):
+def _poa_direct_pv(poa_direct, iam, f_x):
     """direct incident on PV surface"""
     return poa_direct * iam * (1 - f_x)
 
 
-def poa_global_pv(poa_dir_pv, poa_dif_pv):
+def _poa_global_pv(poa_dir_pv, poa_dif_pv):
     """global incident on PV surface"""
     return poa_dir_pv + poa_dif_pv
 
@@ -910,30 +883,30 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     vf_gnd_sky, _ = vf_ground_sky(gcr, height, tilt, pitch, npoints)
     # diffuse from sky reflected from ground accounting from shade from panels
     # considering the fraction of ground blocked by infinite adjacent rows
-    poa_gnd_sky = poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky)
+    poa_gnd_sky = _poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky)
     # fraction of panel shaded
     f_x = shaded_fraction(solar_zenith, solar_azimuth, tilt, system_azimuth,
                           gcr)
     # angles from shadeline to top of next row
-    tan_psi_top = sky_angle_tangent(gcr, tilt, f_x)
+    tan_psi_top = _sky_angle_tangent(gcr, tilt, f_x)
     # angles from tops of next row to bottom of current row
-    tan_psi_top_0 = sky_angle_tangent(gcr, tilt, 0.0)
+    tan_psi_top_0 = _sky_angle_tangent(gcr, tilt, 0.0)
     # fraction of sky visible from shaded and unshaded parts of PV surfaces
-    f_sky_pv_shade, f_sky_pv_noshade = f_sky_diffuse_pv(
+    f_sky_pv_shade, f_sky_pv_noshade = _f_sky_diffuse_pv(
         tilt, tan_psi_top, tan_psi_top_0)
     # total sky diffuse incident on plane of array
-    poa_sky_pv = poa_sky_diffuse_pv(
+    poa_sky_pv = _poa_sky_diffuse_pv(
         poa_sky_diffuse, f_x, f_sky_pv_shade, f_sky_pv_noshade)
     # angles from shadeline to bottom of next row
-    tan_psi_bottom = ground_angle_tangent(gcr, tilt, f_x)
-    tan_psi_bottom_1 = ground_angle_1_tangent(gcr, tilt)
-    f_gnd_pv_shade, f_gnd_pv_noshade = f_ground_pv(
+    tan_psi_bottom = _ground_angle_tangent(gcr, tilt, f_x)
+    tan_psi_bottom_1 = _ground_angle_1_tangent(gcr, tilt)
+    f_gnd_pv_shade, f_gnd_pv_noshade = _f_ground_pv(
         tilt, tan_psi_bottom, tan_psi_bottom_1)
-    poa_gnd_pv = poa_ground_pv(
+    poa_gnd_pv = _poa_ground_pv(
         poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade)
-    poa_dif_pv = poa_diffuse_pv(poa_gnd_pv, poa_sky_pv)
-    poa_dir_pv = poa_direct_pv(poa_direct, iam, f_x)
-    poa_glo_pv = poa_global_pv(poa_dir_pv, poa_dif_pv)
+    poa_dif_pv = _poa_diffuse_pv(poa_gnd_pv, poa_sky_pv)
+    poa_dir_pv = _poa_direct_pv(poa_direct, iam, f_x)
+    poa_glo_pv = _poa_global_pv(poa_dir_pv, poa_dif_pv)
     output = OrderedDict(
         poa_global_pv=poa_glo_pv, poa_direct_pv=poa_dir_pv,
         poa_diffuse_pv=poa_dif_pv, poa_ground_diffuse_pv=poa_gnd_pv,

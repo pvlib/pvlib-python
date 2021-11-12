@@ -77,13 +77,13 @@ PSI_0_X0, PSI_1_X0 = 2.792526803190927, 0.19278450775754705
 PSI_0_X1, PSI_1_X1 = 1.9271427336418656, 0.3490658503988659
 
 
-def test_ground_sky_angles():
+def test__ground_sky_angles():
     assert np.isclose(PSI_0_X0, np.pi - PSI_1_X1)
     # check limit at x=0, these are the same as the back edge of the row beyond
     assert np.allclose(
-        infinite_sheds.ground_sky_angles(0, *ARGS), (PSI_0_X0, PSI_1_X0))
+        infinite_sheds._ground_sky_angles(0, *ARGS), (PSI_0_X0, PSI_1_X0))
     assert np.allclose(
-        infinite_sheds.ground_sky_angles(1, *ARGS), (PSI_0_X1, PSI_1_X1))
+        infinite_sheds._ground_sky_angles(1, *ARGS), (PSI_0_X1, PSI_1_X1))
 
 
 FZ0_LIMIT = 1.4619022000815438  # infinite_sheds.f_z0_limit(*ARGS)
@@ -91,24 +91,24 @@ FZ0_LIMIT = 1.4619022000815438  # infinite_sheds.f_z0_limit(*ARGS)
 PSI_TOP = 0.3120297392978313
 
 
-def test_ground_sky_angles_prev():
+def test__ground_sky_angles_prev():
     if HEIGHT > 0:
         # check limit at z=0, these are the same as z=1 of the previous row
         assert np.allclose(
-            infinite_sheds.ground_sky_angles_prev(0, *ARGS),
+            infinite_sheds._ground_sky_angles_prev(0, *ARGS),
             (PSI_0_X1, PSI_1_X1))
         # check limit at z=z0_limit, angles must sum to 180
         assert np.isclose(
-            sum(infinite_sheds.ground_sky_angles_prev(FZ0_LIMIT, *ARGS)),
+            sum(infinite_sheds._ground_sky_angles_prev(FZ0_LIMIT, *ARGS)),
             np.pi)
         # directly under panel, angle should be 90 straight upward!
         z_panel = HEIGHT / PITCH / np.tan(TILT_RAD)
         assert np.isclose(
-            infinite_sheds.ground_sky_angles_prev(z_panel, *ARGS)[1],
+            infinite_sheds._ground_sky_angles_prev(z_panel, *ARGS)[1],
             np.pi / 2.)
     # angles must be the same as psi_top
     assert np.isclose(
-        infinite_sheds.ground_sky_angles_prev(FZ0_LIMIT, *ARGS)[0],
+        infinite_sheds._ground_sky_angles_prev(FZ0_LIMIT, *ARGS)[0],
         PSI_TOP)
 
 
@@ -117,29 +117,29 @@ FZ1_LIMIT = 1.4619022000815427  # infinite_sheds.f_z1_limit(*ARGS)
 PSI_TOP_BACK = 0.11582480672702507
 
 
-def test_ground_sky_angles_next():
+def test__ground_sky_angles_next():
     if HEIGHT > 0:
         # check limit at z=1, these are the same as z=0 of the next row beyond
         assert np.allclose(
-            infinite_sheds.ground_sky_angles_next(1, *ARGS),
+            infinite_sheds._ground_sky_angles_next(1, *ARGS),
             (PSI_0_X0, PSI_1_X0))
         # check limit at zprime=z1_limit, angles must sum to 180
         sum_angles_z1_limit = sum(
-            infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS))
+            infinite_sheds._ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS))
         assert np.isclose(sum_angles_z1_limit, np.pi)
         # directly under panel, angle should be 90 straight upward!
         z_panel = 1 + HEIGHT / PITCH / np.tan(TILT_RAD)
         assert np.isclose(
-            infinite_sheds.ground_sky_angles_next(z_panel, *ARGS)[0],
+            infinite_sheds._ground_sky_angles_next(z_panel, *ARGS)[0],
             np.pi / 2.)
     # angles must be the same as psi_top
     assert np.isclose(
-        infinite_sheds.ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS)[1],
+        infinite_sheds._ground_sky_angles_next(1 - FZ1_LIMIT, *ARGS)[1],
         PSI_TOP_BACK)
 
 
-def test_diffuse_fraction():
-    df = infinite_sheds.diffuse_fraction(GHI, DHI)
+def test__diffuse_fraction():
+    df = infinite_sheds._diffuse_fraction(GHI, DHI)
     assert np.allclose(df, DF, equal_nan=True)
 
 

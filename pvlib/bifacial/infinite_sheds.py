@@ -57,7 +57,7 @@ import numpy as np
 import pandas as pd
 from pvlib import irradiance, iam
 from pvlib.tools import cosd, sind, tand
-from pvlib.bifacial.utils import unshaded_ground_fraction
+from pvlib.bifacial import utils
 from pvlib.shading import shaded_fraction
 
 
@@ -102,7 +102,7 @@ def _gcr_prime(gcr, height, surface_tilt, pitch):
 # angle to top of previous row. Could the three ground_sky_angle_xxx functions
 # be combined and handle the cases of points behind the "previous" row or ahead
 # of the next row?
-def ground_sky_angles(f_z, gcr, height, tilt, pitch):
+def _ground_sky_angles(f_z, gcr, height, tilt, pitch):
     """
     Angles from point z on ground to tops of next and previous rows.
 
@@ -161,7 +161,7 @@ def ground_sky_angles(f_z, gcr, height, tilt, pitch):
     return psi_0, psi_1
 
 
-def ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
+def _ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
     """
     Angles from point z on ground to top and bottom of previous rows beyond the
     current row.
@@ -217,7 +217,7 @@ def ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
     return psi_0, psi_1
 
 
-def f_z0_limit(gcr, height, tilt, pitch):
+def _f_z0_limit(gcr, height, tilt, pitch):
     """
     Limit from the ground where sky is visible between previous rows.
 
@@ -245,7 +245,7 @@ def f_z0_limit(gcr, height, tilt, pitch):
     return height/pitch * (1/np.tan(tilt) + 1/tan_psi_t_x0)
 
 
-def ground_sky_angles_next(f_z, gcr, height, tilt, pitch):
+def _ground_sky_angles_next(f_z, gcr, height, tilt, pitch):
     """
     Angles from point z on the ground to top and bottom of next row beyond
     current row.
@@ -299,7 +299,7 @@ def ground_sky_angles_next(f_z, gcr, height, tilt, pitch):
     return psi_0, psi_1
 
 
-def f_z1_limit(gcr, height, tilt, pitch):
+def _f_z1_limit(gcr, height, tilt, pitch):
     """
     Limit from the ground where sky is visible between the next rows.
 
@@ -327,7 +327,7 @@ def f_z1_limit(gcr, height, tilt, pitch):
     return height/pitch * (1/tan_psi_t_x1 - 1/np.tan(tilt))
 
 
-def calc_fz_sky(psi_0, psi_1):
+def _calc_fz_sky(psi_0, psi_1):
     """
     Calculate the view factor for point "z" on the ground to the visible
     diffuse sky subtended by the angles :math:`\\psi_0` and :math:`\\psi_1`.
@@ -350,8 +350,7 @@ def calc_fz_sky(psi_0, psi_1):
 
 # TODO: add argument to set number of rows, default is infinite
 # TODO: add option for first or last row, default is middle row
-# TODO: possibly move to pvlib.shading?
-def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
+def _ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     """
     Calculate the fraction of diffuse irradiance from the sky incident on the
     ground.
@@ -374,8 +373,8 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
 
     """
     args = gcr, height, tilt, pitch
-    fz0_limit = f_z0_limit(*args)
-    fz1_limit = f_z1_limit(*args)
+    fz0_limit = _f_z0_limit(*args)
+    fz1_limit = _f_z1_limit(*args)
     # include extra space to account for sky visible from adjacent rows
     # divide ground between visible limits into 3x npoints
     fz = np.linspace(
@@ -384,10 +383,10 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
         3*npoints)
     # calculate the angles psi_0 and psi_1 that subtend the sky visible
     # from between rows
-    psi_z = ground_sky_angles(fz, *args)
+    psi_z = _ground_sky_angles(fz, *args)
     # front edge
-    psi_z0 = ground_sky_angles_prev(fz, *args)
-    fz_sky_next = calc_fz_sky(*psi_z0)
+    psi_z0 = _ground_sky_angles_prev(fz, *args)
+    fz_sky_next = _calc_fz_sky(*psi_z0)
     fz0_sky_next = []
     prev_row = 0.0
     # loop over rows by adding 1.0 to fz until prev_row < ceil(fz0_limit)
@@ -395,8 +394,8 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
         fz0_sky_next.append(np.interp(fz + prev_row, fz, fz_sky_next))
         prev_row += 1.0
     # back edge
-    psi_z1 = ground_sky_angles_next(fz, *args)
-    fz_sky_prev = calc_fz_sky(*psi_z1)
+    psi_z1 = _ground_sky_angles_next(fz, *args)
+    fz_sky_prev = _calc_fz_sky(*psi_z1)
     fz1_sky_prev = []
     next_row = 0.0
     # loop over rows by subtracting 1.0 to fz until next_row < ceil(fz1_limit)
@@ -405,7 +404,7 @@ def ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
         next_row += 1.0
     # calculate the view factor of the sky from the ground at point z
     fz_sky = (
-        calc_fz_sky(*psi_z)  # current row
+        _calc_fz_sky(*psi_z)  # current row
         + np.sum(fz0_sky_next, axis=0)  # sum of all next rows
         + np.sum(fz1_sky_prev, axis=0))  # sum of all previous rows
     # we just need one row, fz in range [0, 1]
@@ -434,7 +433,7 @@ def vf_ground_sky(gcr, height, tilt, pitch, npoints=100):
     """
     args = gcr, height, tilt, pitch
     # calculate the view factor of the diffuse sky from the ground between rows
-    z_star, fz_sky = ground_sky_diffuse_view_factor(*args, npoints=npoints)
+    z_star, fz_sky = _ground_sky_diffuse_view_factor(*args, npoints=npoints)
 
     # calculate the integrated view factor for all of the ground between rows
     fgnd_sky = np.trapz(fz_sky, z_star)
@@ -486,7 +485,7 @@ def calc_fgndpv_zsky(fx, gcr, height, tilt, pitch, npoints=100):
     return fskyz, fgnd_pv
 
 
-def diffuse_fraction(ghi, dhi):
+def _diffuse_fraction(ghi, dhi):
     """
     ratio of DHI to GHI
 
@@ -899,13 +898,13 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     
     """
     # calculate solar projection
-    tan_phi = solar_projection_tangent(
+    tan_phi = utils.solar_projection_tangent(
         solar_zenith, solar_azimuth, system_azimuth)
     # fraction of ground illuminated accounting from shade from panels
-    f_gnd_beam = unshaded_ground_fraction(gcr, tilt, system_azimuth,
-                                          solar_zenith, solar_azimuth)
+    f_gnd_beam = utils.unshaded_ground_fraction(gcr, tilt, system_azimuth,
+                                                solar_zenith, solar_azimuth)
     # diffuse fraction
-    df = diffuse_fraction(ghi, dhi)
+    df = _diffuse_fraction(ghi, dhi)
     #TODO: move to bifacial.util
     # view factor from the ground in between infinite central rows to the sky
     vf_gnd_sky, _ = vf_ground_sky(gcr, height, tilt, pitch, npoints)

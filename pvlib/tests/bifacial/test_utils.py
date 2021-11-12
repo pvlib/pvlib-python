@@ -5,7 +5,7 @@ test infinite sheds
 import os
 import numpy as np
 import pytest
-import pvlib.bifacial.utils as utils
+from pvlib.bifacial import utils
 
 BASEDIR = os.path.dirname(__file__)
 PROJDIR = os.path.dirname(BASEDIR)

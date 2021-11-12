@@ -6,7 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import pvlib
-import pvlib.bifacial.infinite_sheds as infinite_sheds
+from pvlib.bifacial import infinite_sheds
 
 
 from ..conftest import DATA_DIR

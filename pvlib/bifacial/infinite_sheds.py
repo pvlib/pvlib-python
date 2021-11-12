@@ -543,6 +543,7 @@ def vf_ground_sky(gcr, height, tilt, pitch, npoints=100):
     return fgnd_sky, fz_sky
 
 
+#TODO: not used
 def calc_fgndpv_zsky(fx, gcr, height, tilt, pitch, npoints=100):
     """
     Calculate the fraction of diffuse irradiance from the sky, reflecting from
@@ -1011,6 +1012,7 @@ def poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
 
 
 #TODO: rename to pvlib.bifacial.infinite_sheds?
+#TODO: not tested
 def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
                    tilt, pitch, ghi, dhi, poa_ground, poa_sky_diffuse,
                    poa_direct, iam, npoints=100, all_output=False):

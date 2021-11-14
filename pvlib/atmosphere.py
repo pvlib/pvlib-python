@@ -814,7 +814,7 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
     elif module_type is None and coefficients is not None:
         pass
     elif module_type is None and coefficients is None:
-        raise TypeError('No valid input provided, both module_type'
+        raise ValueError('No valid input provided, both module_type'
                         + 'and coefficients are None')
     else:
         raise TypeError('Cannot resolve input, must supply only one'

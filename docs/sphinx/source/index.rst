@@ -85,7 +85,7 @@ Additional pvlib python publications include:
 License
 =======
 
-`BSD 3-clause <https://github.com/pvlib/pvlib-python/LICENSE>`_.
+`BSD 3-clause <https://github.com/pvlib/pvlib-python/blob/master/LICENSE>`_.
 
 NumFOCUS
 ========

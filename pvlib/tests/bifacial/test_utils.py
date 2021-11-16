@@ -30,8 +30,7 @@ def test_solar_projection_tangent():
      (np.sqrt(2) / 2, 45, 180, 45, 90, 0.5),
      (np.sqrt(2) / 2, 45, 180, 45, 0, 1.0),
      (np.sqrt(2) / 2, 45, 180, 45, 135, 0.5 * (1 - np.sqrt(2) / 2)),
-     ]
-    )
+     ])
 def test_unshaded_ground_fraction(
         gcr, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         expected):

@@ -5,7 +5,6 @@ test infinite sheds
 import os
 import numpy as np
 import pandas as pd
-import pvlib
 from pvlib.bifacial import infinite_sheds
 
 
@@ -214,17 +213,6 @@ def test__sky_angle_tangent():
     tan_psi_top_b = infinite_sheds._sky_angle_tangent(
         GCR, BACK_TILT_RAD, 0.0)
     assert np.allclose(tan_psi_top_b, TAN_PSI_TOP0_B)
-
-
-#TODO: delete, function replaced by sky_angle_tangent
-# def test_sky_angle_0_tangent():
-#     # frontside
-#     tan_psi_top_f = infinite_sheds.sky_angle_0_tangent(GCR, TILT_RAD)
-#     assert np.allclose(tan_psi_top_f, TAN_PSI_TOP0_F)
-#     # backside
-#     tan_psi_top_b = infinite_sheds.sky_angle_0_tangent(
-#         GCR, BACK_TILT_RAD)
-#     assert np.allclose(tan_psi_top_b, TAN_PSI_TOP0_B)
 
 
 if __name__ == '__main__':

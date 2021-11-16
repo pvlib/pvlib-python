@@ -6,7 +6,7 @@ import numpy as np
 from pvlib.tools import sind, cosd, tand
 
 
-#TODO: make private?
+# TODO: make private?
 def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     """
     Calculate tangent of angle between sun vector projected to the YZ-plane
@@ -28,11 +28,11 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     Returns
     -------
     tan_phi : numeric
-        Tangent of the angle between vertical and the projection of the 
+        Tangent of the angle between vertical and the projection of the
         sun direction onto the YZ plane.
     """
     rotation = solar_azimuth - system_azimuth
-    #TODO: I don't think tan_phi should ever be negative, but it could be if
+    # TODO: I don't think tan_phi should ever be negative, but it could be if
     # rotation > 90 (e.g. sun north of along-row azimuth)
     tan_phi = cosd(rotation) * tand(solar_zenith)
     return tan_phi
@@ -71,7 +71,7 @@ def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
     f_gnd_beam : numeric
         Fraction of row pitch that is illuminated (unshaded).
     """
-    #TODO: why np.abs? All angles should be <=90
+    # TODO: why np.abs? All angles should be <=90
     tan_phi = solar_projection_tangent(solar_zenith, solar_azimuth,
                                        surface_azimuth)
     f_gnd_beam = 1.0 - np.minimum(

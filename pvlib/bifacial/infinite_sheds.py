@@ -37,7 +37,7 @@ front and back surfaces with the following steps:
 7. Treat the first and last row differently, because they aren't blocked on the
    front side for 1st row, or the backside for last row.
 
-#TODO: explain geometry: primary axes and orientation, what is meant by
+# TODO: explain geometry: primary axes and orientation, what is meant by
 "previous" and "next rows", etc.
 
 
@@ -73,9 +73,8 @@ def _gcr_prime(gcr, height, surface_tilt, pitch):
     height : numeric
         height of module lower edge above the ground
     surface_tilt : numeric
-        Surface tilt angle in decimal degrees. The tilt angle is defined as
-        degrees from horizontal, e.g., surface facing up = 0, surface facing
-        horizon = 90.
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
 
@@ -94,17 +93,20 @@ def _gcr_prime(gcr, height, surface_tilt, pitch):
     #  :        \                       \   h = height above ground
     #  :         \                 tilt  \  :
     #  +----------\<---------P----------->\---- ground
-    #TODO convert to degrees
-    return gcr + height / np.sin(surface_tilt) / pitch
+    # TODO convert to degrees
+    return gcr + height / sind(surface_tilt) / pitch
 
 
 # TODO: overlaps with ground_sky_angles_prev in that both return
 # angle to top of previous row. Could the three ground_sky_angle_xxx functions
 # be combined and handle the cases of points behind the "previous" row or ahead
 # of the next row?
-def _ground_sky_angles(f_z, gcr, height, tilt, pitch):
+def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
     """
     Angles from point z on ground to tops of next and previous rows.
+    
+    The point z lies between the extension to the ground of the previous row
+    and the extension to the ground of the next row.
 
     .. math::
         \\tan{\\psi_0} = \\frac{\\sin{\\beta^\\prime}}{\\frac{F_z}
@@ -121,18 +123,30 @@ def _ground_sky_angles(f_z, gcr, height, tilt, pitch):
         ground coverage ratio, ratio of row slant length to row spacing
     height : numeric
         height of module lower edge above the ground
-    tilt : numeric
-        module tilt in radians, between 0 and 180-degrees
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
 
     Returns
     -------
-    
+    psi_0 : numeric
+        Angle from horizontal of the line between a point on the ground and
+        the top of the previous row. [degree]
+    psi_1 : numeric
+        Angle from horizontal of the line between a point on the ground and
+        the top of the next row. [degree]
+
     Notes
     -----
     Assuming the first row is in the front of the array then previous rows are
     toward the front of the array and next rows are toward the back.
+    
+    See Also
+    --------
+    _ground_sky_angles_prev
+    _ground_sky_angles_next
 
     """
 
@@ -147,24 +161,31 @@ def _ground_sky_angles(f_z, gcr, height, tilt, pitch):
     #  +----------\<---------P----*+----->\---- ground
     #             1<-----1-fz-----><--fz--0---- fraction of ground
 
-    gcr_prime = _gcr_prime(gcr, height, tilt, pitch)
-    tilt_prime = np.pi - tilt
-    opposite_side = np.sin(tilt_prime)
-    adjacent_side = f_z/gcr_prime + np.cos(tilt_prime)
+    gcr_prime = _gcr_prime(gcr, height, surface_tilt, pitch)
+    tilt_prime = 180. - surface_tilt
+    opposite_side = sind(tilt_prime)
+    adjacent_side = f_z/gcr_prime + cosd(tilt_prime)
     # tan_psi_0 = opposite_side / adjacent_side
-    psi_0 = np.arctan2(opposite_side, adjacent_side)
+    psi_0 = np.rad2deg(np.arctan2(opposite_side, adjacent_side))
     f_z_prime = 1 - f_z
-    opposite_side = np.sin(tilt)
-    adjacent_side = f_z_prime/gcr_prime + np.cos(tilt)
+    opposite_side = np.sin(surface_tilt)
+    adjacent_side = f_z_prime/gcr_prime + cosd(surface_tilt)
     # tan_psi_1 = opposite_side / adjacent_side
-    psi_1 = np.arctan2(opposite_side, adjacent_side)
+    psi_1 = np.rad2deg(np.arctan2(opposite_side, adjacent_side))
     return psi_0, psi_1
 
 
-def _ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
+def _ground_sky_angles_prev(f_z, gcr, height, surface_tilt, pitch):
     """
-    Angles from point z on ground to top and bottom of previous rows beyond the
-    current row.
+    Angles from point z on ground to bottom of previous row and to the top of
+    the row beyond the previous row.
+
+    The point z lies between the extension to the ground of the previous row
+    and the extension to the ground of the next row.
+    
+    The function _ground_sky_angles_prev applies when the sky is visible
+    between the bottom of the previous row, and the top of the row in front
+    of the previous row.
 
     .. math::
 
@@ -183,14 +204,31 @@ def _ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
         ground coverage ratio
     height : numeric
         height of module lower edge above the ground
-    tilt : numeric
-        module tilt in radians, between 0 and 180-degrees
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
 
-    The sky is visible between rows beyond the current row. Therefore, we need
-    to calculate the angles :math:`\\psi_0` and :math:`\\psi_1` to the top and
-    bottom of the previous row.
+    Returns
+    -------
+    psi_0 : numeric
+        Angle from horizontal of the line between a point on the ground and
+        the bottom of the previous row. [degree]
+    psi_1 : numeric
+        Angle from horizontal of the line between a point on the ground and
+        the top of the row in front of the previous row. [degree]
+
+    Notes
+    -----
+    Assuming the first row is in the front of the array then previous rows are
+    toward the front of the array and next rows are toward the back.
+    
+    See Also
+    --------
+    _ground_sky_angles
+    _ground_sky_angles_next
+
     """
 
     #  : \\        |            *\\ top of previous row
@@ -204,20 +242,20 @@ def _ground_sky_angles_prev(f_z, gcr, height, tilt, pitch):
     #  +---+*-----\<---------P----------->\---- ground
     #      <-1+fz-1<---------fz=1---------0---- fraction of ground
 
-    gcr_prime = _gcr_prime(gcr, height, tilt, pitch)
-    tilt_prime = np.pi - tilt
+    gcr_prime = _gcr_prime(gcr, height, surface_tilt, pitch)
+    tilt_prime = 180. - surface_tilt
     # angle to top of previous panel beyond the current row
-    psi_0 = np.arctan2(
-        np.sin(tilt_prime), (1+f_z)/gcr_prime + np.cos(tilt_prime))
+    psi_0 = np.rad2deg(np.arctan2(
+        sind(tilt_prime), (1+f_z)/gcr_prime + cosd(tilt_prime)))
     # angle to bottom of previous panel
     z = f_z*pitch
     # other forms raise division by zero errors
     # avoid division by zero errors
-    psi_1 = np.arctan2(height, height/np.tan(tilt) - z)
+    psi_1 = np.rad2deg(np.arctan2(height, height/tand(surface_tilt) - z))
     return psi_0, psi_1
 
 
-def _f_z0_limit(gcr, height, tilt, pitch):
+def _f_z0_limit(gcr, height, surface_tilt, pitch):
     """
     Limit from the ground where sky is visible between previous rows.
 
@@ -231,24 +269,35 @@ def _f_z0_limit(gcr, height, tilt, pitch):
         ground coverage ratio
     height : numeric
         height of module lower edge above the ground
-    tilt : numeric
-        module tilt in radians, between 0 and 180-degrees
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
 
-    The point on the ground, :math:`z_0`, from which the sky is still visible
-    between previous rows, where the angle :math:`\\psi` is tangent to both the
-    top and bottom of panels.
+    Returns
+    -------
+    z1 : numeric
+        The point on the ground, :math:`z_0`, which is on the line
+        tangent to the bottom of the previous row and the top of the row in
+        front of the previous row.
     """
-    tan_psi_t_x0 = _sky_angle_tangent(gcr, tilt, 0.0)
+    tan_psi_t_x0 = _sky_angle_tangent(gcr, surface_tilt, 0.0)
     # tan_psi_t_x0 = gcr * np.sin(tilt) / (1.0 - gcr * np.cos(tilt))
-    return height/pitch * (1/np.tan(tilt) + 1/tan_psi_t_x0)
+    return height / pitch * (1. / tand(surface_tilt) + 1. / tan_psi_t_x0)
 
 
-def _ground_sky_angles_next(f_z, gcr, height, tilt, pitch):
+def _ground_sky_angles_next(f_z, gcr, height, surface_tilt, pitch):
     """
-    Angles from point z on the ground to top and bottom of next row beyond
-    current row.
+    Angles from point z on the ground to bottom of the next row and to the top
+    of the row behind the next row.
+
+    The point z lies between the extension to the ground of the previous row
+    and the extension to the ground of the next row.
+    
+    The function _ground_sky_angles_next applies when the sky is visible
+    between the bottom of the next row, and the top of the row behind
+    of the next row.
 
     .. math::
         \\tan \\psi_0 = \\frac{h}{\\frac{h}{\\tan\\beta^\\prime}
@@ -265,43 +314,62 @@ def _ground_sky_angles_next(f_z, gcr, height, tilt, pitch):
         ground coverage ratio
     height : numeric
         height of module lower edge above the ground
-    tilt : numeric
-        module tilt in radians, between 0 and 180-degrees
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
 
-    The sky is visible between rows beyond the current row. Therefore, we need
-    to calculate the angles :math:`\\psi_0` and :math:`\\psi_1` to the top and
-    bottom of the next row.
+    Returns
+    -------
+    psi_0 : numeric
+        Angle from horizontal of the line between a point on the ground and
+        the bottom of the previous row. [degree]
+    psi_1 : numeric
+        Angle from horizontal of the line between a point on the ground and
+        the top of the row in front of the previous row. [degree]
+
+    Notes
+    -----
+    Assuming the first row is in the front of the array then previous rows are
+    toward the front of the array and next rows are toward the back.
+    
+    See Also
+    --------
+    _ground_sky_angles
+    _ground_sky_angles_prev
+
     """
 
-    #  : \\+                     \\
-    #  :  \\  `*+                 \\
-    # next \\      `*+             \\
-    # row   \\          `*+         \\ next row bottom
-    # top....\\..............`*+.....\\_
+    #  : \\+           _         \\
+    #  :  \\  `*+        - _      \\
+    # next \\      `*+        _    \\
+    # row   \\          `*+     -_  \\ next row bottom
+    # top....\\..............`*+...-.\\_
     #  :       \                  `*+  \ -_  psi0
     #  :        \                psi1  `*+  -_
     #  :         \                       \  `*+ _
     #  +----------\<---------P----------->\------*----- ground
     #             1<---------fz=1---------0-1-fz->----- fraction of ground
 
-    gcr_prime = _gcr_prime(gcr, height, tilt, pitch)
-    tilt_prime = np.pi - tilt
+    gcr_prime = _gcr_prime(gcr, height, surface_tilt, pitch)
+    tilt_prime = 180. - surface_tilt
     # angle to bottom of next panel
-    fzprime = 1-f_z
+    fzprime = 1 - f_z
     zprime = fzprime*pitch
     # other forms raise division by zero errors
     # avoid division by zero errors
-    psi_0 = np.arctan2(height, height/np.tan(tilt_prime) - zprime)
+    psi_0 = np.rad2deg(np.arctan2(height, height/tand(tilt_prime) - zprime))
     # angle to top of next panel beyond the current row
-    psi_1 = np.arctan2(np.sin(tilt), (1+fzprime)/gcr_prime + np.cos(tilt))
+    psi_1 = np.rad2deg(np.arctan2(
+        cosd(surface_tilt), (1 + fzprime)/gcr_prime + cosd(surface_tilt)))
     return psi_0, psi_1
 
 
-def _f_z1_limit(gcr, height, tilt, pitch):
+def _f_z1_limit(gcr, height, surface_tilt, pitch):
     """
-    Limit from the ground where sky is visible between the next rows.
+    Limit from the ground where sky is visible between the next row and the
+    row behind the next row.
 
     .. math::
         F_{z1,limit} = \\frac{h}{P} \\left(
@@ -313,18 +381,22 @@ def _f_z1_limit(gcr, height, tilt, pitch):
         ground coverage ratio
     height : numeric
         height of module lower edge above the ground
-    tilt : numeric
-        module tilt in radians, between 0 and 180-degrees
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
 
-    The point on the ground, :math:`z_1^\\prime`, from which the sky is still
-    visible between the next rows, where the angle :math:`\\psi` is tangent to
-    both the top and bottom of panels.
+    Returns
+    -------
+    z1 : numeric
+        The point on the ground, :math:`z_1^\\prime`, which is on the line
+        tangent to the bottom of the next row and the top of the row behind
+        the next row.
     """
-    tan_psi_t_x1 = _sky_angle_tangent(gcr, np.pi - tilt, 0.0)
+    tan_psi_t_x1 = _sky_angle_tangent(gcr, 180. - surface_tilt, 0.0)
     # tan_psi_t_x1 = gcr * np.sin(pi-tilt) / (1.0 - gcr * np.cos(pi-tilt))
-    return height/pitch * (1/tan_psi_t_x1 - 1/np.tan(tilt))
+    return height / pitch * (1. / tan_psi_t_x1 - 1. / tand(surface_tilt))
 
 
 def _calc_fz_sky(psi_0, psi_1):
@@ -335,9 +407,9 @@ def _calc_fz_sky(psi_0, psi_1):
     Parameters
     ----------
     psi_0 : numeric
-        angle from ground to sky before point "z"
+        angle from ground to sky before point "z". [degree]
     psi_1 : numeric
-        angle from ground to sky after point "z"
+        angle from ground to sky after point "z". [degree]
 
     Returns
     -------
@@ -345,15 +417,20 @@ def _calc_fz_sky(psi_0, psi_1):
         fraction of energy from the diffuse sky dome that is incident on the
         ground at point "z"
     """
-    return (np.cos(psi_0) + np.cos(psi_1))/2
+    return (cosd(psi_0) + cosd(psi_1)) / 2.
 
 
+# TODO: move to util?
 # TODO: add argument to set number of rows, default is infinite
 # TODO: add option for first or last row, default is middle row
-def _ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
+def _ground_sky_diffuse_view_factor(gcr, height, surface_tilt, pitch,
+                                    npoints=100):
     """
-    Calculate the fraction of diffuse irradiance from the sky incident on the
-    ground.
+    Calculate the view factor from each point on the ground between adjacent,
+    interior rows, to the sky.
+    
+    The view factor is equal to the fraction of sky hemisphere visible at each
+    point on the ground.
 
     Parameters
     ----------
@@ -361,24 +438,30 @@ def _ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
         ground coverage ratio
     height : numeric
         height of module lower edge above the ground
-    tilt : numeric
-        module tilt in radians, between 0 and 180-degrees
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
-    npoints : int
-        divide the ground into discrete points
+    npoints : int, default 100
+        Number of points used to discretize distance along the ground.
 
     Returns
     -------
-
+    fz : ndarray
+        Fraction of distance from the previous row to the next row. [unitless]
+    fz_sky : ndarray
+        View factors at discrete points between adjacent, interior rows.
+        [unitless]
+        
     """
-    args = gcr, height, tilt, pitch
+    args = gcr, height, surface_tilt, pitch
     fz0_limit = _f_z0_limit(*args)
     fz1_limit = _f_z1_limit(*args)
     # include extra space to account for sky visible from adjacent rows
     # divide ground between visible limits into 3x npoints
     fz = np.linspace(
-        0.0 if (1-fz1_limit) > 0 else (1-fz1_limit),
+        0.0 if (1 - fz1_limit) > 0 else (1 - fz1_limit),
         1.0 if fz0_limit < 1 else fz0_limit,
         3*npoints)
     # calculate the angles psi_0 and psi_1 that subtend the sky visible
@@ -412,10 +495,10 @@ def _ground_sky_diffuse_view_factor(gcr, height, tilt, pitch, npoints=100):
     return fz_row, np.interp(fz_row, fz, fz_sky)
 
 
-# TODO: move to util?
-def _vf_ground_sky(gcr, height, tilt, pitch, npoints=100):
+def _vf_ground_sky(gcr, height, surface_tilt, pitch, npoints=100):
     """
-    Integrated view factor from the ground in between central rows of the sky.
+    Integrated and per-point view factors from the ground to the sky at points
+    between interior rows of the array.
 
     Parameters
     ----------
@@ -423,26 +506,38 @@ def _vf_ground_sky(gcr, height, tilt, pitch, npoints=100):
         ground coverage ratio
     height : numeric
         height of module lower edge above the ground
-    tilt : numeric
-        module tilt in radians, between 0 and 180-degrees
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
-    npoints : int
-        divide the ground into discrete points
+    npoints : int, default 100
+        Number of points used to discretize distance along the ground.
+
+    Returns
+    -------
+    fgnd_sky : float
+        Integration of view factors over the length between adjacent, interior
+        rows. [unitless]
+    fz : ndarray
+        Fraction of distance from the previous row to the next row. [unitless]
+    fz_sky : ndarray
+        View factors at discrete points between adjacent, interior rows.
+        [unitless]
 
     """
-    args = gcr, height, tilt, pitch
+    args = gcr, height, surface_tilt, pitch
     # calculate the view factor of the diffuse sky from the ground between rows
     z_star, fz_sky = _ground_sky_diffuse_view_factor(*args, npoints=npoints)
 
     # calculate the integrated view factor for all of the ground between rows
     fgnd_sky = np.trapz(fz_sky, z_star)
 
-    return fgnd_sky, fz_sky
+    return fgnd_sky, z_star, fz_sky
 
 
-#TODO: not used
-def calc_fgndpv_zsky(fx, gcr, height, tilt, pitch, npoints=100):
+# TODO: not used
+def _calc_fgndpv_zsky(fx, gcr, height, tilt, pitch, npoints=100):
     """
     Calculate the fraction of diffuse irradiance from the sky, reflecting from
     the ground, incident at a point "x" on the PV surface.
@@ -455,8 +550,9 @@ def calc_fgndpv_zsky(fx, gcr, height, tilt, pitch, npoints=100):
         ground coverage ratio
     height : numeric
         height of module lower edge above the ground
-    tilt : numeric
-        module tilt in radians, between 0 and 180-degrees
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
     npoints : int
@@ -466,7 +562,7 @@ def calc_fgndpv_zsky(fx, gcr, height, tilt, pitch, npoints=100):
 
     # calculate the view factor of the diffuse sky from the ground between rows
     # and integrate the view factor for all of the ground between rows
-    fgnd_sky, _ = vf_ground_sky(*args, npoints=npoints)
+    fgnd_sky, _, _ = _vf_ground_sky(*args, npoints=npoints)
 
     # if fx is zero, point x is at the bottom of the row, psi_x_bottom is zero,
     # and all of the ground is visible, so the view factor is just
@@ -501,7 +597,7 @@ def _diffuse_fraction(ghi, dhi):
     df : numeric
         diffuse fraction
     """
-    return dhi/ghi
+    return dhi / ghi
 
 
 def _poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky):
@@ -550,8 +646,9 @@ def _sky_angle(gcr, tilt, f_x):
     ----------
     gcr : numeric
         ratio of module length versus row spacing
-    tilt : numeric
-        angle of surface normal from vertical in radians
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     f_x : numeric
         fraction of module shaded from bottom
 
@@ -586,8 +683,9 @@ def _sky_angle_tangent(gcr, tilt, x):
     ----------
     gcr : numeric
         ratio of row slant length to row spacing (pitch)
-    tilt : numeric
-        angle of surface normal from vertical in radians
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     x : numeric
         fraction of module slant length from module bottom edge
 
@@ -616,9 +714,10 @@ def _f_sky_diffuse_pv(tilt, tan_psi_top, tan_psi_top_0):
 
     Parameters
     ----------
-    tilt : numeric
-        angle of surface normal from vertical in radians
-    tan_psi_top : numeric
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+   tan_psi_top : numeric
         tangent of angle from shade line to top of next row
     tan_psi_top_0 : numeric
         tangent of angle to top of next row with no shade (shade line at
@@ -662,7 +761,8 @@ def _f_sky_diffuse_pv(tilt, tan_psi_top, tan_psi_top_0):
     return f_sky_pv_shade, f_sky_pv_noshade
 
 
-def _poa_sky_diffuse_pv(poa_sky_diffuse, f_x, f_sky_pv_shade, f_sky_pv_noshade):
+def _poa_sky_diffuse_pv(poa_sky_diffuse, f_x, f_sky_pv_shade,
+                        f_sky_pv_noshade):
     """
     Sky diffuse POA from average view factor weighted by shaded and unshaded
     parts of the surface.
@@ -694,8 +794,9 @@ def _ground_angle(gcr, tilt, f_x):
     ----------
     gcr : numeric
         ratio of module length to row spacing
-    tilt : numeric
-        angle of surface normal from vertical in radians
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     f_x : numeric
         fraction of module shaded from bottom, ``f_x = 0`` if shade line at
         bottom and no shade, ``f_x = 1`` if shade line at top and all shade
@@ -726,8 +827,9 @@ def _ground_angle_tangent(gcr, tilt, f_x):
     ----------
     gcr : numeric
         ratio of module length to row spacing
-    tilt : numeric
-        angle of surface normal from vertical in radians
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     f_x : numeric
         fraction of module shaded from bottom, ``f_x = 0`` if shade line at
         bottom and no shade, ``f_x = 1`` if shade line at top and all shade
@@ -754,8 +856,9 @@ def _ground_angle_1_tangent(gcr, tilt):
     ----------
     gcr : numeric
         ratio of module length to row spacing
-    tilt : numeric
-        angle of surface normal from vertical in radians
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
 
     Returns
     -------
@@ -772,8 +875,9 @@ def _f_ground_pv(tilt, tan_psi_bottom, tan_psi_bottom_1):
 
     Parameters
     ----------
-    tilt : numeric
-        angle of surface normal from vertical in radians
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
     tan_psi_bottom : numeric
         tangent of angle from shade line to bottom of next row
     tan_psi_bottom_1 : numeric
@@ -855,20 +959,23 @@ def poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
     return poa_global_front + poa_global_back * bifaciality * effects
 
 
-#TODO: rename to pvlib.bifacial.infinite_sheds?
-#TODO: not tested
+# TODO: rename to pvlib.bifacial.infinite_sheds?
+# TODO: not tested
 def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
                    tilt, pitch, ghi, dhi, poa_ground, poa_sky_diffuse,
                    poa_direct, iam, npoints=100, all_output=False):
     r"""
     Get irradiance from infinite sheds model.
-    
+
     Parameters
     ----------
-    
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+
     Returns
     -------
-    
+
     """
     # calculate solar projection
     tan_phi = utils.solar_projection_tangent(
@@ -878,9 +985,9 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
                                                 solar_zenith, solar_azimuth)
     # diffuse fraction
     df = _diffuse_fraction(ghi, dhi)
-    #TODO: move to bifacial.util
+    # TODO: move to bifacial.util
     # view factor from the ground in between infinite central rows to the sky
-    vf_gnd_sky, _ = vf_ground_sky(gcr, height, tilt, pitch, npoints)
+    vf_gnd_sky, _, _ = _vf_ground_sky(gcr, height, tilt, pitch, npoints)
     # diffuse from sky reflected from ground accounting from shade from panels
     # considering the fraction of ground blocked by infinite adjacent rows
     poa_gnd_sky = _poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky)

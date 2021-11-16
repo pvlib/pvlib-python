@@ -13,7 +13,7 @@ DATADIR = os.path.join(PROJDIR, 'data')
 TESTDATA = os.path.join(DATADIR, 'infinite_sheds.csv')
 
 
-def solar_projection_tangent():
+def test_solar_projection_tangent():
     tan_phi_f = utils.solar_projection_tangent(
         30, 150, 180)
     tan_phi_b = utils.solar_projection_tangent(

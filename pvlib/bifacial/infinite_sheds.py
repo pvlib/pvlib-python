@@ -282,7 +282,7 @@ def _f_z0_limit(gcr, height, surface_tilt, pitch):
         tangent to the bottom of the previous row and the top of the row in
         front of the previous row.
     """
-    tan_psi_t_x0 = _sky_angle_tangent(gcr, surface_tilt, 0.0)
+    _, tan_psi_t_x0 = _sky_angle(gcr, surface_tilt, 0.0)
     # tan_psi_t_x0 = gcr * np.sin(tilt) / (1.0 - gcr * np.cos(tilt))
     return height / pitch * (1. / tand(surface_tilt) + 1. / tan_psi_t_x0)
 
@@ -394,7 +394,7 @@ def _f_z1_limit(gcr, height, surface_tilt, pitch):
         tangent to the bottom of the next row and the top of the row behind
         the next row.
     """
-    tan_psi_t_x1 = _sky_angle_tangent(gcr, 180. - surface_tilt, 0.0)
+    tan_psi_t_x1 = _sky_angle(gcr, 180. - surface_tilt, 0.0)
     # tan_psi_t_x1 = gcr * np.sin(pi-tilt) / (1.0 - gcr * np.cos(pi-tilt))
     return height / pitch * (1. / tan_psi_t_x1 - 1. / tand(surface_tilt))
 
@@ -600,6 +600,7 @@ def _diffuse_fraction(ghi, dhi):
     return dhi / ghi
 
 
+# TODO: docstring
 def _poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     """
     transposed ground reflected diffuse component adjusted for ground
@@ -638,66 +639,32 @@ def _poa_ground_sky(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     return poa_ground * (f_gnd_beam*(1 - df) + df*vf_gnd_sky)
 
 
-def _sky_angle(gcr, tilt, f_x):
+def _sky_angle(gcr, surface_tilt, x):
     """
-    angle from shade line to top of next row
+    Angle from from a point x along the module slant height to the
+    top of the facing row.
 
     Parameters
     ----------
     gcr : numeric
-        ratio of module length versus row spacing
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-    f_x : numeric
-        fraction of module shaded from bottom
-
-    Returns
-    -------
-    psi_top : numeric
-        4-quadrant arc-tangent in radians
-    tan_psi_top
-        tangent of angle from shade line to top of next row
-    """
-    f_y = 1.0 - f_x
-    x1 = f_y * np.sin(tilt)
-    x2 = (1/gcr - f_y * np.cos(tilt))
-    tan_psi_top = x1 / x2
-    psi_top = np.arctan2(x1, x2)
-    return psi_top, tan_psi_top
-
-
-def _sky_angle_tangent(gcr, tilt, x):
-    """
-    tangent of angle from a point x along the module slant height to the
-    top of the previous row.
-
-    .. math::
-
-        \\tan{\\psi_{top}} &= \\frac{y \\text{GCR} \\sin{\\beta}}{1 - y
-        \\text{GCR} \\cos{\\beta}} \\newline
-
-        y &= 1 - x
-
-    Parameters
-    ----------
-    gcr : numeric
-        ratio of row slant length to row spacing (pitch)
+        Ratio of row slant length to row spacing (pitch). [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
     x : numeric
-        fraction of module slant length from module bottom edge
+        Fraction of slant length from row bottom edge. [unitless]
 
     Returns
     -------
-    tan_psi_top : numeric
-        tangent of angle from x to top of previous row
+    psi : numeric
+        Angle. [degree]
+    tan_psi
+        Tangent of angle. [unitless]
     """
     #  : \\                    .*\\
     #  :  \\               .-*    \\
     #  :   \\          .-*         \\
-    #  :    \\   . .*+  psi_t       \\  previous row
+    #  :    \\   . .*+  psi         \\  facing row
     #  :     \\.-*__________________ \\
     #  :       \  ^                    \
     #  :        \  x                    \
@@ -705,44 +672,50 @@ def _sky_angle_tangent(gcr, tilt, x):
     #  :          \<---------P----------->\
 
     y = 1.0 - x
-    return y * np.sin(tilt) / (1/gcr - y * np.cos(tilt))
+    x1 = y * sind(surface_tilt)
+    x2 = (1/gcr - y * sind(surface_tilt))
+    tan_psi_top = x1 / x2
+    psi_top = np.rad2deg(np.arctan2(x1, x2))
+    return psi_top, tan_psi_top
 
 
-def _f_sky_diffuse_pv(tilt, tan_psi_top, tan_psi_top_0):
+def _f_sky_diffuse_pv(surface_tilt, tan_psi_top, tan_psi_top_0):
     """
-    view factors of sky from shaded and unshaded parts of PV module
+    View factors of the sky from the shaded and unshaded parts of the row slant
+    length.
 
     Parameters
     ----------
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
-   tan_psi_top : numeric
-        tangent of angle from shade line to top of next row
+    tan_psi_top : numeric
+        Tangent of angle between horizontal and the line from the shade line
+        on the current row to the top of the facing row. [degree]
     tan_psi_top_0 : numeric
-        tangent of angle to top of next row with no shade (shade line at
-        bottom)
+        Tangent of angle between horizontal and the line from the bottom of the
+        current row to the top of the facing row. [degree]
 
     Returns
     -------
     f_sky_pv_shade : numeric
-        view factor of sky from shaded part of PV surface
+        View factor from the shaded part of the row to the sky. [unitless]
     f_sky_pv_noshade : numeric
-        view factor of sky from unshaded part of PV surface
+        View factor from the unshaded part of the row to the sky. [unitless]
 
     Notes
     -----
     Assuming the view factor various roughly linearly from the top to the
-    bottom of the rack, we can take the average to get integrated view factor.
-    We'll average the shaded and unshaded regions separately to improve the
-    approximation slightly.
+    bottom of the slant height, we can take the average to get integrated view
+    factor. We'll average the shaded and unshaded regions separately to improve
+    the approximation slightly.
 
     .. math ::
         \\large{F_{sky \\rightarrow shade} = \\frac{ 1 + \\frac{\\cos
         \\left(\\psi_t + \\beta \\right) + \\cos \\left(\\psi_t
         \\left(x=0\\right) + \\beta \\right)}{2}  }{ 1 + \\cos \\beta}}
 
-    The view factor from the top of the rack is one because it's view is not
+    The view factor from the top of the row is one because it's view is not
     obstructed.
 
     .. math::
@@ -750,11 +723,13 @@ def _f_sky_diffuse_pv(tilt, tan_psi_top, tan_psi_top_0):
         \\cos \\left(\\psi_t + \\beta \\right)}{1 + \\cos \\beta} }{2}}
     """
     # TODO: don't average, return fsky-pv vs. x point on panel
-    psi_top = np.arctan(tan_psi_top)
-    psi_top_0 = np.arctan(tan_psi_top_0)
+    tilt = np.deg2rad(surface_tilt)
+    psi_top = np.arctan(np.deg2rad(tan_psi_top))
+    psi_top_0 = np.arctan(np.deg2rad(tan_psi_top_0))
     f_sky_pv_shade = (
-        (1 + (np.cos(psi_top + tilt)
-              + np.cos(psi_top_0 + tilt)) / 2) / (1 + np.cos(tilt)))
+        (1 +
+         (np.cos(psi_top + tilt) + np.cos(psi_top_0 + tilt))
+         / 2 / (1 + np.cos(tilt))))
 
     f_sky_pv_noshade = (1 + (
         1 + np.cos(psi_top + tilt)) / (1 + np.cos(tilt))) / 2
@@ -786,9 +761,10 @@ def _poa_sky_diffuse_pv(poa_sky_diffuse, f_x, f_sky_pv_shade,
     return poa_sky_diffuse * (f_x*f_sky_pv_shade + (1 - f_x)*f_sky_pv_noshade)
 
 
-def _ground_angle(gcr, tilt, f_x):
+def _ground_angle(gcr, surface_tilt, x):
     """
-    angle from shadeline to bottom of adjacent row
+    Angle from horizontal to the line from a point x on the row slant length
+    to the bottom of the facing row.
 
     Parameters
     ----------
@@ -797,103 +773,49 @@ def _ground_angle(gcr, tilt, f_x):
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
-    f_x : numeric
-        fraction of module shaded from bottom, ``f_x = 0`` if shade line at
-        bottom and no shade, ``f_x = 1`` if shade line at top and all shade
+    x : numeric
+        fraction of row slant length from bottom, ``x = 0`` is at the row
+        bottom, ``x = 1`` is at the top of the row.
 
     Returns
     -------
+    psi : numeric
+        Angle [degree].
+    tan_psi : numeric
+        Tangent of angle [unitless]
+    """
+    x1 = x * sind(surface_tilt)
+    x2 = (x * cosd(surface_tilt) + 1/gcr)
+    tan_psi = x1 / x2
+    psi = np.rad2deg(np.arctan2(x1, x2))
+    return psi, tan_psi
+
+
+def _f_ground_pv(surface_tilt, psi_shade, psi_bottom):
+    """
+    View factors of ground from shaded and unshaded parts of a row.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+    psi_shade : numeric
+        Angle from shade line to bottom of facing row. [degree]
     psi_bottom : numeric
-        4-quadrant arc-tangent
-    tan_psi_bottom : numeric
-        tangent of angle from shade line to bottom of next row
-    """
-    x1 = f_x * np.sin(tilt)
-    x2 = (f_x * np.cos(tilt) + 1/gcr)
-    tan_psi_bottom = x1 / x2
-    psi_bottom = np.arctan2(x1, x2)
-    return psi_bottom, tan_psi_bottom
-
-
-def _ground_angle_tangent(gcr, tilt, f_x):
-    """
-    tangent of angle from shadeline to bottom of adjacent row
-
-    .. math::
-        \\tan{\\psi_b} = \\frac{F_x \\sin \\beta}{F_x \\cos \\beta +
-        \\frac{1}{\\text{GCR}}}
-
-    Parameters
-    ----------
-    gcr : numeric
-        ratio of module length to row spacing
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-    f_x : numeric
-        fraction of module shaded from bottom, ``f_x = 0`` if shade line at
-        bottom and no shade, ``f_x = 1`` if shade line at top and all shade
-
-    Returns
-    -------
-    tan_psi_bottom : numeric
-        tangent of angle from shade line to bottom of next row
-    """
-    return f_x * np.sin(tilt) / (
-        f_x * np.cos(tilt) + 1/gcr)
-
-
-def _ground_angle_1_tangent(gcr, tilt):
-    """
-    tangent of angle to bottom of next row with all shade (shade line at top)
-    so :math:`F_x = 1`
-
-    .. math::
-        \\tan{\\psi_b\\left(x=1\\right)} = \\frac{\\sin{\\beta}}{\\cos{\\beta}
-        + \\frac{1}{\\text{GCR}}}
-
-    Parameters
-    ----------
-    gcr : numeric
-        ratio of module length to row spacing
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-
-    Returns
-    -------
-    tan_psi_bottom_1 : numeric
-        tangent of angle to bottom of next row with all shade (shade line at
-        top)
-    """
-    return _ground_angle_tangent(gcr, tilt, 1.0)
-
-
-def _f_ground_pv(tilt, tan_psi_bottom, tan_psi_bottom_1):
-    """
-    view factors of ground from shaded and unshaded parts of PV module
-
-    Parameters
-    ----------
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-    tan_psi_bottom : numeric
-        tangent of angle from shade line to bottom of next row
-    tan_psi_bottom_1 : numeric
-        tangent of angle to bottom of next row with all shade
+        Angle from row top to bottom of the facing row. [degree]
 
     Returns
     -------
     f_gnd_pv_shade : numeric
-        view factor of ground from shaded part of PV surface
+        View factor of ground from shaded part of row.
     f_gnd_pv_noshade : numeric
-        view factor of ground from unshaded part of PV surface
+        View factor of ground from unshaded part of row.
 
     Notes
     -----
     At the bottom of rack, :math:`x = 0`, the angle is zero, and the view
-    factor is one.
+    factor to the ground is one.
 
     .. math::
         \\large{F_{gnd \\rightarrow shade} = \\frac{1 + \\frac{1 - \\cos
@@ -907,13 +829,12 @@ def _f_ground_pv(tilt, tan_psi_bottom, tan_psi_bottom_1):
         \\left(x=1\\right) \\right)}{2}}{1 - \\cos \\beta}}
     """
     # TODO: don't average, return fgnd-pv vs. x point on panel
-    psi_bottom = np.arctan(tan_psi_bottom)
-    psi_bottom_1 = np.arctan(tan_psi_bottom_1)
-    f_gnd_pv_shade = (1 + (1 - np.cos(tilt - psi_bottom))
-                      / (1 - np.cos(tilt))) / 2
+    f_gnd_pv_shade = 0.5 * (1 + (1 - cosd(surface_tilt - psi_shade))
+                            / (1 - cosd(surface_tilt)))
     f_gnd_pv_noshade = (
-        (1 - (np.cos(tilt - psi_bottom) + np.cos(tilt - psi_bottom_1))/2)
-        / (1 - np.cos(tilt)))
+        (1 - (cosd(surface_tilt - psi_shade)
+              + cosd(surface_tilt - psi_bottom))/2)
+        / (1 - cosd(surface_tilt)))
     return f_gnd_pv_shade, f_gnd_pv_noshade
 
 
@@ -960,6 +881,7 @@ def poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
 
 
 # TODO: rename to pvlib.bifacial.infinite_sheds?
+# TODO: rework output to basics + optional
 # TODO: not tested
 def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
                    tilt, pitch, ghi, dhi, poa_ground, poa_sky_diffuse,
@@ -995,9 +917,9 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     f_x = shaded_fraction(solar_zenith, solar_azimuth, tilt, system_azimuth,
                           gcr)
     # angles from shadeline to top of next row
-    tan_psi_top = _sky_angle_tangent(gcr, tilt, f_x)
+    _, tan_psi_top = _sky_angle(gcr, tilt, f_x)
     # angles from tops of next row to bottom of current row
-    tan_psi_top_0 = _sky_angle_tangent(gcr, tilt, 0.0)
+    _, tan_psi_top_0 = _sky_angle(gcr, tilt, 0.0)
     # fraction of sky visible from shaded and unshaded parts of PV surfaces
     f_sky_pv_shade, f_sky_pv_noshade = _f_sky_diffuse_pv(
         tilt, tan_psi_top, tan_psi_top_0)
@@ -1005,10 +927,11 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     poa_sky_pv = _poa_sky_diffuse_pv(
         poa_sky_diffuse, f_x, f_sky_pv_shade, f_sky_pv_noshade)
     # angles from shadeline to bottom of next row
-    tan_psi_bottom = _ground_angle_tangent(gcr, tilt, f_x)
-    tan_psi_bottom_1 = _ground_angle_1_tangent(gcr, tilt)
+    psi_shade, _ = _ground_angle(gcr, tilt, f_x)
+    # angles from top of row to bottom of facing row
+    psi_bottom, _ = _ground_angle(gcr, tilt, 1.0)
     f_gnd_pv_shade, f_gnd_pv_noshade = _f_ground_pv(
-        tilt, tan_psi_bottom, tan_psi_bottom_1)
+        tilt, psi_shade, psi_bottom)
     poa_gnd_pv = _poa_ground_pv(
         poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade)
     poa_dif_pv = _poa_diffuse_pv(poa_gnd_pv, poa_sky_pv)
@@ -1025,8 +948,8 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
             sky_angle_tangent=tan_psi_top, sky_angle_0_tangent=tan_psi_top_0,
             f_sky_diffuse_pv_shade=f_sky_pv_shade,
             f_sky_diffuse_pv_noshade=f_sky_pv_noshade,
-            ground_angle_tangent=tan_psi_bottom,
-            ground_angle_1_tangent=tan_psi_bottom_1,
+            ground_angle=psi_shade,
+            ground_angle_bottom=psi_bottom,
             f_ground_diffuse_pv_shade=f_gnd_pv_shade,
             f_ground_diffuse_pv_noshade=f_gnd_pv_noshade)
     if isinstance(poa_glo_pv, pd.Series):

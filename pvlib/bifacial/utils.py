@@ -9,8 +9,8 @@ from pvlib.tools import sind, cosd, tand
 # TODO: make private?
 def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     """
-    Calculate tangent of angle between sun vector projected to the YZ-plane
-    (vertical and perpendicular to rows) and zenith vector.
+    Tangent of the angle between the sun vector projected to the YZ-plane
+    (vertical and perpendicular to rows) and the zenith vector.
 
     .. math::
         \\tan \\phi = \\cos\\left(\\text{solar azimuth}-\\text{system azimuth}
@@ -69,7 +69,8 @@ def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
     Returns
     -------
     f_gnd_beam : numeric
-        Fraction of row pitch that is illuminated (unshaded).
+        Fraction of distance betwen rows (pitch) that has direct irradiance
+        (unshaded).
     """
     # TODO: why np.abs? All angles should be <=90
     tan_phi = solar_projection_tangent(solar_zenith, solar_azimuth,

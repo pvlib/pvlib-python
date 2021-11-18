@@ -399,6 +399,8 @@ def _f_z1_limit(gcr, height, surface_tilt, pitch):
     return height / pitch * (1. / tan_psi_t_x1 - 1. / tand(surface_tilt))
 
 
+# TODO: make sure that it is clear psi_1 is a supplement (angle from negative
+# x axis)
 def _calc_fz_sky(psi_0, psi_1):
     """
     Calculate the view factor for point "z" on the ground to the visible
@@ -588,9 +590,9 @@ def _diffuse_fraction(ghi, dhi):
     Parameters
     ----------
     ghi : numeric
-        global horizontal irradiance (GHI) in W/m^2
+        Global horizontal irradiance (GHI). [W/m^2]
     dhi : numeric
-        diffuse horizontal irradiance (DHI) in W/m^2
+        Diffuse horizontal irradiance (DHI). [W/m^2]
 
     Returns
     -------
@@ -679,86 +681,90 @@ def _sky_angle(gcr, surface_tilt, x):
     return psi_top, tan_psi_top
 
 
-def _f_sky_diffuse_pv(surface_tilt, tan_psi_top, tan_psi_top_0):
+def _f_sky_diffuse_pv(gcr, surface_tilt, shade_line, npoints=100):
     """
-    View factors of the sky from the shaded and unshaded parts of the row slant
-    length.
+    Integrated view factors of the sky from the shaded and unshaded parts of
+    the row slant height.
 
     Parameters
     ----------
+    gcr : numeric
+        Ratio of row slant length to row spacing (pitch). [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
-    tan_psi_top : numeric
-        Tangent of angle between horizontal and the line from the shade line
-        on the current row to the top of the facing row. [degree]
-    tan_psi_top_0 : numeric
-        Tangent of angle between horizontal and the line from the bottom of the
-        current row to the top of the facing row. [degree]
+    shade_line : numeric
+        Fraction of row slant height shaded from the bottom of the row.
+    npoints : int, default 100
+        Number of points for integration. [unitless]
 
     Returns
     -------
     f_sky_pv_shade : numeric
-        View factor from the shaded part of the row to the sky. [unitless]
+        Integrated view factor from the shaded part of the row to the sky.
+        [unitless]
     f_sky_pv_noshade : numeric
-        View factor from the unshaded part of the row to the sky. [unitless]
+        Integrated view factor from the unshaded part of the row to the sky.
+        [unitless]
 
     Notes
     -----
-    Assuming the view factor various roughly linearly from the top to the
-    bottom of the slant height, we can take the average to get integrated view
-    factor. We'll average the shaded and unshaded regions separately to improve
-    the approximation slightly.
+    The view factor at a point x along the row slant height is given by
 
     .. math ::
-        \\large{F_{sky \\rightarrow shade} = \\frac{ 1 + \\frac{\\cos
-        \\left(\\psi_t + \\beta \\right) + \\cos \\left(\\psi_t
-        \\left(x=0\\right) + \\beta \\right)}{2}  }{ 1 + \\cos \\beta}}
+        \\large{f_{sky} = \frac{1}{2} \\left(\\cos\\left(\\psi_t\\right) + 
+        \\cos \\left(\\beta\\right) \\right)
 
-    The view factor from the top of the row is one because it's view is not
-    obstructed.
+    where :math:`\\psi_t` is the angle from horizontal of the line from point
+    x to the top of the facing row, and :math:`\\beta` is the surface tilt.
 
-    .. math::
-        \\large{F_{sky \\rightarrow no\\ shade} = \\frac{1 + \\frac{1 +
-        \\cos \\left(\\psi_t + \\beta \\right)}{1 + \\cos \\beta} }{2}}
+    View factors are integrated over shaded and unshaded portions of the row
+    slant height.
+
+    See Also
+    --------
+    _sky_angle
+
     """
-    # TODO: don't average, return fsky-pv vs. x point on panel
-    tilt = np.deg2rad(surface_tilt)
-    psi_top = np.arctan(np.deg2rad(tan_psi_top))
-    psi_top_0 = np.arctan(np.deg2rad(tan_psi_top_0))
-    f_sky_pv_shade = (
-        (1 +
-         (np.cos(psi_top + tilt) + np.cos(psi_top_0 + tilt))
-         / 2 / (1 + np.cos(tilt))))
-
-    f_sky_pv_noshade = (1 + (
-        1 + np.cos(psi_top + tilt)) / (1 + np.cos(tilt))) / 2
+    cst = cosd(surface_tilt)
+    # shaded portion
+    x = np.linspace(0, shade_line, npoints)
+    psi_t_shaded = _sky_angle(gcr, surface_tilt, x)
+    y = 0.5 * (cosd(psi_t_shaded) + cst)
+    # integrate view factors from each point in the discretization. This is an
+    # improvement over the algorithm described in [2]
+    f_sky_pv_shade = np.trapz(y, x)
+    # unshaded portion
+    x = np.linspace(shade_line, 1, npoints)
+    psi_t_unshaded = _sky_angle(gcr, surface_tilt, x)
+    y = 0.5 * (cosd(psi_t_unshaded) + cst)
+    f_sky_pv_noshade = np.trapz(y, x)
     return f_sky_pv_shade, f_sky_pv_noshade
 
 
-def _poa_sky_diffuse_pv(poa_sky_diffuse, f_x, f_sky_pv_shade,
-                        f_sky_pv_noshade):
+def _poa_sky_diffuse_pv(dhi, f_x, f_sky_pv_shade, f_sky_pv_noshade):
     """
-    Sky diffuse POA from average view factor weighted by shaded and unshaded
-    parts of the surface.
+    Sky diffuse POA from integrated view factors combined for both shaded and
+    unshaded parts of the surface.
 
     Parameters
     ----------
-    poa_sky_diffuse : numeric
-        sky diffuse irradiance on the plane of array (W/m^2)
+    dhi : numeric
+        Diffuse horizontal irradiance (DHI). [W/m^2]
     f_x : numeric
-        shade line fraction from bottom of module
+        Fraction of row slant height shaded from the bottom of the row.
+        [unitless]
     f_sky_pv_shade : numeric
-        fraction of sky visible from shaded part of PV surface
+        Fraction of sky visible from shaded part of PV surface. [unitless]
     f_sky_pv_noshade : numeric
-        fraction of sky visible from unshaded part of PV surface
+        Fraction of sky visible from unshaded part of PV surface. [unitless]
 
     Returns
     -------
     poa_sky_diffuse_pv : numeric
-        total sky diffuse irradiance incident on PV surface
+        Total sky diffuse irradiance incident on PV surface. [W/m^2]
     """
-    return poa_sky_diffuse * (f_x*f_sky_pv_shade + (1 - f_x)*f_sky_pv_noshade)
+    return dhi * (f_x * f_sky_pv_shade + (1 - f_x) * f_sky_pv_noshade)
 
 
 def _ground_angle(gcr, surface_tilt, x):
@@ -785,7 +791,7 @@ def _ground_angle(gcr, surface_tilt, x):
         Tangent of angle [unitless]
     """
     x1 = x * sind(surface_tilt)
-    x2 = (x * cosd(surface_tilt) + 1/gcr)
+    x2 = (x * cosd(surface_tilt) + 1 / gcr)
     tan_psi = x1 / x2
     psi = np.rad2deg(np.arctan2(x1, x2))
     return psi, tan_psi
@@ -922,10 +928,10 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     _, tan_psi_top_0 = _sky_angle(gcr, tilt, 0.0)
     # fraction of sky visible from shaded and unshaded parts of PV surfaces
     f_sky_pv_shade, f_sky_pv_noshade = _f_sky_diffuse_pv(
-        tilt, tan_psi_top, tan_psi_top_0)
-    # total sky diffuse incident on plane of array
+        gcr, tilt, f_x)
+    # total sky diffuse over both shaded and unshaded portions
     poa_sky_pv = _poa_sky_diffuse_pv(
-        poa_sky_diffuse, f_x, f_sky_pv_shade, f_sky_pv_noshade)
+        dhi, f_x, f_sky_pv_shade, f_sky_pv_noshade)
     # angles from shadeline to bottom of next row
     psi_shade, _ = _ground_angle(gcr, tilt, f_x)
     # angles from top of row to bottom of facing row

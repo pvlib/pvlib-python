@@ -124,12 +124,12 @@ def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
         ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
     height : numeric
-        height of module lower edge above the ground
+        height of module lower edge above the ground.
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
     pitch : numeric
-        row spacing
+        row spacing.
 
     Returns
     -------
@@ -144,6 +144,8 @@ def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
     -----
     Assuming the first row is in the front of the array then previous rows are
     toward the front of the array and next rows are toward the back.
+
+    Parameters `height` and `pitch` must have the same unit.
     
     See Also
     --------
@@ -906,18 +908,7 @@ def _poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
     -------
     
     """
-    # TODO: what is this weighting
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
-
-
-def _poa_diffuse_pv(poa_gnd_pv, poa_sky_pv):
-    """diffuse incident on PV surface from sky and ground"""
-    return poa_gnd_pv + poa_sky_pv
-
-
-def _poa_direct_pv(poa_direct, iam, f_x):
-    """direct incident on PV surface"""
-    return poa_direct * iam * (1 - f_x)
 
 
 def poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
@@ -930,60 +921,133 @@ def poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
 # TODO: rename to pvlib.bifacial.infinite_sheds?
 # TODO: rework output to basics + optional
 # TODO: not tested
-def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
-                   tilt, pitch, ghi, dhi, dni, albedo, iam,
-                   npoints=100, all_output=False):
+def get_poa_irradiance(solar_zenith, solar_azimuth, surface_tilt,
+                       surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
+                       albedo, iam=1.0, npoints=100, all_output=False):
     r"""
-    Get irradiance from infinite sheds model.
+    Get irradiance on one side of an infinite row of modules using the infinite
+    sheds model.
+
+    Plane-of-array (POA) irradiance components include direct, diffuse and
+    global (total). Irradiance values are not reduced by reflections, adjusted
+    for solar spectrum, or reduced by a module's light collecting aperature,
+    which is quantified by the module's bifaciality factor.
 
     Parameters
     ----------
+    solar_zenith : array-like
+        True (not refraction-corrected) solar zenith angles in decimal
+        degrees.
+
+    solar_azimuth : array-like
+        Solar azimuth angles in decimal degrees.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. Tilt must be >=0 and
+        <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The Azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
 
+    gcr : numeric
+        Ground coverage ratio, ratio of row slant length to row spacing.
+        [unitless]
+
+    height : numeric
+        height of module lower edge above the ground.
+
+    pitch : numeric
+        row spacing.
+
+    dni : numeric
+        Direct normal irradiance. [W/m2]
+
+    ghi : numeric
+        Global horizontal irradiance. [W/m2]
+
+    dhi : numeric
+        Diffuse horizontal irradiance. [W/m2]
+ 
+    albedo : numeric
+        Surface albedo. [unitless]
+
+    iam : numeric, default 1.0
+        Incidence angle modifier, the fraction of direct irradiance incident
+        on the surface that is not reflected away. [unitless]
+
+    npoints : int, default 100
+        Number of points used to discretize distance along the ground.
+
+    all_ouputs : boolean, default False
+        If True then detailed output is returned. If False, only plane-of-array
+        irradiance components are returned.
+
     Returns
     -------
+    output : OrderedDict or DataFrame
+        Output is a DataFrame when input ghi is a Series. See Notes for
+        descriptions of content.
+        
+    Notes
+    -----
+    Input parameters `height` and `pitch` must have the same unit.
+
+    Output always includes:
+  
+    - poa_global : total POA irradiance. [W/m^2]
+    - poa_diffuse : total diffuse POA irradiance from all sources. [W/m^2]
+    - poa_direct : total direct POA irradiance. [W/m^2]
+
+    Optionally, output includes:
+
+    - poa_diffuse_sky : total sky diffuse irradiance on the plane of array.
+      [W/m^2]
+    - poa_diffuse_ground : total ground-reflected diffuse irradiance on the
+      plane of array. [W/m^2]
 
     """
     # Calculate some geometric quantities
-    # solar projection
-    tan_phi = utils.solar_projection_tangent(
-        solar_zenith, solar_azimuth, system_azimuth)
     # fraction of ground between rows that is illuminated accounting for
     # shade from panels
-    f_gnd_beam = utils.unshaded_ground_fraction(gcr, tilt, system_azimuth,
+    f_gnd_beam = utils.unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth,
                                                 solar_zenith, solar_azimuth)
     # integrated view factor from the ground to the sky, integrated between
     # adjacent rows interior to the array
-    vf_gnd_sky, _, _ = _vf_ground_sky(gcr, height, tilt, pitch, npoints)
+    vf_gnd_sky, _, _ = _vf_ground_sky(gcr, height, surface_tilt, pitch, npoints)
 
     # fraction of row slant height that is shaded
-    f_x = shaded_fraction(solar_zenith, solar_azimuth, tilt, system_azimuth,
+    f_x = shaded_fraction(solar_zenith, solar_azimuth, surface_tilt, surface_azimuth,
                           gcr)
     # angle from the shadeline to top of next row
-    _, tan_psi_top = _sky_angle(gcr, tilt, f_x)
+    _, tan_psi_top = _sky_angle(gcr, surface_tilt, f_x)
     # angle from top of next row to bottom of current row
-    _, tan_psi_top_0 = _sky_angle(gcr, tilt, 0.0)
+    _, tan_psi_top_0 = _sky_angle(gcr, surface_tilt, 0.0)
     # fractions of the sky visible from the shaded and unshaded parts of the
     # row slant height
     f_sky_pv_shade, f_sky_pv_noshade = _f_sky_diffuse_pv(
-        gcr, tilt, f_x)
+        gcr, surface_tilt, f_x)
     # angle from shadeline to bottom of facing row
-    psi_shade, _ = _ground_angle(gcr, tilt, f_x)
+    psi_shade, _ = _ground_angle(gcr, surface_tilt, f_x)
     # angle from top of row to bottom of facing row
-    psi_bottom, _ = _ground_angle(gcr, tilt, 1.0)
+    psi_bottom, _ = _ground_angle(gcr, surface_tilt, 1.0)
     # view factors from the ground to shaded and unshaded portions of the row
     # slant height
-    f_gnd_pv_shade, f_gnd_pv_noshade = _f_ground_pv(gcr, tilt, f_x)
+    f_gnd_pv_shade, f_gnd_pv_noshade = _f_ground_pv(gcr, surface_tilt, f_x)
 
     # Calculate some preliminary irradiance quantities
     # diffuse fraction
     df = _diffuse_fraction(ghi, dhi)
     # sky diffuse reflected from the ground to an array consisting of a single
     # row
-    poa_ground = get_ground_diffuse(tilt, ghi, albedo)
-    poa_beam = beam_component(tilt, system_azimuth, solar_zenith, solar_azimuth,
+    poa_ground = get_ground_diffuse(surface_tilt, ghi, albedo)
+    poa_beam = beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                               dni)
     # Total sky diffuse recieved by both shaded and unshaded portions
     poa_sky_pv = _poa_sky_diffuse_pv(
@@ -1002,7 +1066,7 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
     # add sky and ground-reflected irradiance on the row by irradiance
     # component
     poa_diffuse = poa_gnd_pv + poa_sky_pv
-    poa_direct = _poa_direct_pv(poa_beam, iam, f_x)
+    poa_direct = poa_beam * (1 - f_x) * iam  # direct only on the unshaded part
     poa_global = poa_direct + poa_diffuse
 
     output = OrderedDict(
@@ -1010,59 +1074,53 @@ def get_irradiance(solar_zenith, solar_azimuth, system_azimuth, gcr, height,
         poa_diffuse=poa_diffuse, poa_ground_diffuse=poa_gnd_pv,
         poa_sky_diffuse=poa_sky_pv)
     if all_output:
-        output.update(
-            solar_projection=tan_phi, ground_illumination=f_gnd_beam,
-            diffuse_fraction=df, poa_ground_sky=poa_gnd_sky, shade_line=f_x,
-            sky_angle_tangent=tan_psi_top, sky_angle_0_tangent=tan_psi_top_0,
-            f_sky_diffuse_pv_shade=f_sky_pv_shade,
-            f_sky_diffuse_pv_noshade=f_sky_pv_noshade,
-            ground_angle=psi_shade,
-            ground_angle_bottom=psi_bottom,
-            f_ground_diffuse_pv_shade=f_gnd_pv_shade,
-            f_ground_diffuse_pv_noshade=f_gnd_pv_noshade)
-    if isinstance(poa_global, pd.Series):
+        output.update(poa_diffuse_sky=poa_sky_pv,
+                      poa_diffuse_ground=poa_gnd_pv)
+    if isinstance(ghi, pd.Series):
         output = pd.DataFrame(output)
     return output
 
 
-def get_poa_global_bifacial(solar_zenith, solar_azimuth, system_azimuth, gcr,
-                            height, tilt, pitch, ghi, dhi, dni, dni_extra,
-                            am_rel, iam_b0_front=0.05, iam_b0_back=0.05,
-                            bifaciality=0.8, shade_factor=-0.02,
-                            transmission_factor=0, method='haydavies'):
-    """Get global bifacial irradiance from infinite sheds model."""
+def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
+                   surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
+                   albedo, dni_extra, iam_front=1.0, iam_back=1.0,
+                   bifaciality=0.8, shade_factor=-0.02,
+                   transmission_factor=0):
+    """
+    Get bifacial irradiance using the infinite sheds model.
+    
+    Parameters
+    ----------    
+    iam_front : numeric, default 1.0
+        Incidence angle modifier, the fraction of direct irradiance incident
+        on the front surface that is not reflected away. [unitless]
+    
+    iam_back : numeric, default 1.0
+        Incidence angle modifier, the fraction of direct irradiance incident
+        on the back surface that is not reflected away. [unitless]
+    
+    """
     # backside is rotated and flipped relative to front
-    backside_tilt, backside_sysaz = _backside(tilt, system_azimuth)
-    # AOI
-    aoi_front = irradiance.aoi(
-        tilt, system_azimuth, solar_zenith, solar_azimuth)
-    aoi_back = irradiance.aoi(
-        backside_tilt, backside_sysaz, solar_zenith, solar_azimuth)
-    # transposition
-    irrad_front = irradiance.get_total_irradiance(
-        tilt, system_azimuth, solar_zenith, solar_azimuth,
-        dni, ghi, dhi, dni_extra, am_rel, model=method)
-    irrad_back = irradiance.get_total_irradiance(
-        backside_tilt, backside_sysaz, solar_zenith, solar_azimuth,
-        dni, ghi, dhi, dni_extra, am_rel, model=method)
-    # iam
-    iam_front = iam.ashrae(aoi_front, iam_b0_front)
-    iam_back = iam.ashrae(aoi_back, iam_b0_back)
-    # get front side
-    poa_global_front = get_irradiance(
-        solar_zenith, solar_azimuth, system_azimuth, gcr, height, tilt, pitch,
-        ghi, dhi, irrad_front['poa_ground_diffuse'],
-        irrad_front['poa_sky_diffuse'], irrad_front['poa_direct'], iam_front)
-    # get backside
-    poa_global_back = get_irradiance(
-        solar_zenith, solar_azimuth, backside_sysaz, gcr, height,
-        backside_tilt, pitch, ghi, dhi, irrad_back['poa_ground_diffuse'],
-        irrad_back['poa_sky_diffuse'], irrad_back['poa_direct'], iam_back)
-    # get bifacial
-    poa_glo_bifi = poa_global_bifacial(
-        poa_global_front['poa_global_pv'], poa_global_back['poa_global_pv'],
-        bifaciality, shade_factor, transmission_factor)
-    return poa_glo_bifi
+    backside_tilt, backside_sysaz = _backside(surface_tilt, surface_azimuth)
+    # front side POA irradiance
+    irrad_front = get_poa_irradiance(
+        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr,
+        height, pitch, ghi, dhi, dni, albedo, iam_front)
+    irrad_front.rename(columns={'poa_global': 'poa_front',
+                                'poa_diffuse': 'poa_front_diffuse',
+                                'poa_direct': 'poa_front_direct'})
+    # back side POA irradiance
+    irrad_back = get_poa_irradiance(
+        solar_zenith, solar_azimuth, backside_tilt, backside_sysaz, gcr,
+        height, pitch, ghi, dhi, dni, albedo, iam_back)
+    irrad_back.rename(columns={'poa_global': 'poa_back',
+                               'poa_diffuse': 'poa_back_diffuse',
+                               'poa_direct': 'poa_back_direct'})
+    effects = (1 + shade_factor) * (1 + transmission_factor)
+    output = pd.concat([irrad_front, irrad_back], axis=1)
+    output['poa_global'] = output['poa_front'] + \
+        output['poa_back'] * bifaciality * effects
+    return output
 
 
 def _backside(tilt, system_azimuth):

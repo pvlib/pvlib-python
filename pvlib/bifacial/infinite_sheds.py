@@ -55,7 +55,6 @@ IEEE PVSC 2017
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-from pvlib import irradiance, iam
 from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial import utils
 from pvlib.shading import shaded_fraction
@@ -105,7 +104,7 @@ def _gcr_prime(gcr, height, surface_tilt, pitch):
 def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
     """
     Angles from point z on ground to tops of next and previous rows.
-    
+
     The point z lies between the extension to the ground of the previous row
     and the extension to the ground of the next row.
 
@@ -146,7 +145,7 @@ def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
     toward the front of the array and next rows are toward the back.
 
     Parameters `height` and `pitch` must have the same unit.
-    
+
     See Also
     --------
     _ground_sky_angles_prev
@@ -186,7 +185,7 @@ def _ground_sky_angles_prev(f_z, gcr, height, surface_tilt, pitch):
 
     The point z lies between the extension to the ground of the previous row
     and the extension to the ground of the next row.
-    
+
     The function _ground_sky_angles_prev applies when the sky is visible
     between the bottom of the previous row, and the top of the row in front
     of the previous row.
@@ -227,7 +226,7 @@ def _ground_sky_angles_prev(f_z, gcr, height, surface_tilt, pitch):
     -----
     Assuming the first row is in the front of the array then previous rows are
     toward the front of the array and next rows are toward the back.
-    
+
     See Also
     --------
     _ground_sky_angles
@@ -298,7 +297,7 @@ def _ground_sky_angles_next(f_z, gcr, height, surface_tilt, pitch):
 
     The point z lies between the extension to the ground of the previous row
     and the extension to the ground of the next row.
-    
+
     The function _ground_sky_angles_next applies when the sky is visible
     between the bottom of the next row, and the top of the row behind
     of the next row.
@@ -337,7 +336,7 @@ def _ground_sky_angles_next(f_z, gcr, height, surface_tilt, pitch):
     -----
     Assuming the first row is in the front of the array then previous rows are
     toward the front of the array and next rows are toward the back.
-    
+
     See Also
     --------
     _ground_sky_angles
@@ -434,7 +433,7 @@ def _ground_sky_diffuse_view_factor(gcr, height, surface_tilt, pitch,
     """
     Calculate the view factor from each point on the ground between adjacent,
     interior rows, to the sky.
-    
+
     The view factor is equal to the fraction of sky hemisphere visible at each
     point on the ground.
 
@@ -459,7 +458,7 @@ def _ground_sky_diffuse_view_factor(gcr, height, surface_tilt, pitch,
     fz_sky : ndarray
         View factors at discrete points between adjacent, interior rows.
         [unitless]
-        
+
     """
     args = gcr, height, surface_tilt, pitch
     fz0_limit = _f_z0_limit(*args)
@@ -534,7 +533,7 @@ def _vf_ground_sky(gcr, height, surface_tilt, pitch, npoints=100):
 
     """
     args = gcr, height, surface_tilt, pitch
-    # calculate the view factor from the ground to the sky. Accounts for 
+    # calculate the view factor from the ground to the sky. Accounts for
     # views between rows both towards the array front, and array back
     z_star, fz_sky = _ground_sky_diffuse_view_factor(*args, npoints=npoints)
 
@@ -710,7 +709,7 @@ def _f_sky_diffuse_pv(gcr, surface_tilt, f_x, npoints=100):
     given by
 
     .. math ::
-        \\large{f_{sky} = \frac{1}{2} \\left(\\cos\\left(\\psi_t\\right) + 
+        \\large{f_{sky} = \frac{1}{2} \\left(\\cos\\left(\\psi_t\\right) +
         \\cos \\left(\\beta\\right) \\right)
 
     where :math:`\\psi_t` is the angle from horizontal of the line from point
@@ -770,7 +769,7 @@ def _ground_angle(gcr, surface_tilt, x):
     """
     Angle from horizontal to the line from a point x on the row slant length
     to the bottom of the facing row.
-    
+
     The angles returned are measured clockwise from horizontal, rather than
     the usual counterclockwise direction.
 
@@ -906,7 +905,7 @@ def _poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
 
     Returns
     -------
-    
+
     """
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
 
@@ -974,7 +973,7 @@ def get_poa_irradiance(solar_zenith, solar_azimuth, surface_tilt,
 
     dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
- 
+
     albedo : numeric
         Surface albedo. [unitless]
 
@@ -994,13 +993,13 @@ def get_poa_irradiance(solar_zenith, solar_azimuth, surface_tilt,
     output : OrderedDict or DataFrame
         Output is a DataFrame when input ghi is a Series. See Notes for
         descriptions of content.
-        
+
     Notes
     -----
     Input parameters `height` and `pitch` must have the same unit.
 
     Output always includes:
-  
+
     - poa_global : total POA irradiance. [W/m^2]
     - poa_diffuse : total diffuse POA irradiance from all sources. [W/m^2]
     - poa_direct : total direct POA irradiance. [W/m^2]
@@ -1016,15 +1015,16 @@ def get_poa_irradiance(solar_zenith, solar_azimuth, surface_tilt,
     # Calculate some geometric quantities
     # fraction of ground between rows that is illuminated accounting for
     # shade from panels
-    f_gnd_beam = utils.unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth,
-                                                solar_zenith, solar_azimuth)
+    f_gnd_beam = utils.unshaded_ground_fraction(
+        gcr, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     # integrated view factor from the ground to the sky, integrated between
     # adjacent rows interior to the array
-    vf_gnd_sky, _, _ = _vf_ground_sky(gcr, height, surface_tilt, pitch, npoints)
+    vf_gnd_sky, _, _ = _vf_ground_sky(gcr, height, surface_tilt, pitch,
+                                      npoints)
 
     # fraction of row slant height that is shaded
-    f_x = shaded_fraction(solar_zenith, solar_azimuth, surface_tilt, surface_azimuth,
-                          gcr)
+    f_x = shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
+                          surface_azimuth, gcr)
     # angle from the shadeline to top of next row
     _, tan_psi_top = _sky_angle(gcr, surface_tilt, f_x)
     # angle from top of next row to bottom of current row
@@ -1047,8 +1047,8 @@ def get_poa_irradiance(solar_zenith, solar_azimuth, surface_tilt,
     # sky diffuse reflected from the ground to an array consisting of a single
     # row
     poa_ground = get_ground_diffuse(surface_tilt, ghi, albedo)
-    poa_beam = beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-                              dni)
+    poa_beam = beam_component(surface_tilt, surface_azimuth, solar_zenith,
+                              solar_azimuth, dni)
     # Total sky diffuse recieved by both shaded and unshaded portions
     poa_sky_pv = _poa_sky_diffuse_pv(
         dhi, f_x, f_sky_pv_shade, f_sky_pv_noshade)
@@ -1088,17 +1088,17 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
                    transmission_factor=0):
     """
     Get bifacial irradiance using the infinite sheds model.
-    
+
     Parameters
-    ----------    
+    ----------
     iam_front : numeric, default 1.0
         Incidence angle modifier, the fraction of direct irradiance incident
         on the front surface that is not reflected away. [unitless]
-    
+
     iam_back : numeric, default 1.0
         Incidence angle modifier, the fraction of direct irradiance incident
         on the back surface that is not reflected away. [unitless]
-    
+
     """
     # backside is rotated and flipped relative to front
     backside_tilt, backside_sysaz = _backside(surface_tilt, surface_azimuth)

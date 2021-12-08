@@ -92,3 +92,17 @@ def test_dayofyear_missing(spectrl2_data):
     kwargs.pop('dayofyear')
     with pytest.raises(ValueError, match='dayofyear must be specified'):
         _ = spectrum.spectrl2(**kwargs)
+
+
+def test_aoi_gt_90(spectrl2_data):
+    # test that returned irradiance values are non-negative when aoi > 90
+    # see GH #1348
+    kwargs, _ = spectrl2_data
+    kwargs['apparent_zenith'] = 70
+    kwargs['aoi'] = 130
+    kwargs['surface_tilt'] = 60
+
+    spectra = spectrum.spectrl2(**kwargs)
+    for key in ['poa_direct', 'poa_global']:
+        message = f'{key} contains negative values for aoi>90'
+        assert np.all(spectra[key] >= 0), message

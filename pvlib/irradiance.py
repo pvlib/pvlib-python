@@ -795,6 +795,11 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     sky_diffuse : numeric
         The sky diffuse component of the solar radiation.
 
+    Notes
+    ------
+    When supplying projection_ratio, consider constraining its values
+    when zenith angle approaches 90 degrees. See code for details.
+
     References
     -----------
     .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to

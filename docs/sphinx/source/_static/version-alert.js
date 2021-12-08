@@ -25,9 +25,8 @@ function warnOnLatestVersion() {
     "</p>";
   warning.querySelector('a').href = window.location.pathname.replace('/latest', '/stable');
 
-  var parent = document.querySelector('div.body')
-    || document.querySelector('div.document')
-    || document.body;
+  // modified from original to work better w/ pydata sphinx theme
+  var parent = document.querySelector('main') || document.body;
   parent.insertBefore(warning, parent.firstChild);
 }
 

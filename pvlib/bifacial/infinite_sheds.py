@@ -93,7 +93,7 @@ def _gcr_prime(gcr, height, surface_tilt, pitch):
     #  :        \                       \   h = height above ground
     #  :         \                 tilt  \  :
     #  +----------\<---------P----------->\---- ground
-    # TODO convert to degrees
+
     return gcr + height / sind(surface_tilt) / pitch
 
 
@@ -103,10 +103,11 @@ def _gcr_prime(gcr, height, surface_tilt, pitch):
 # of the next row?
 def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
     """
-    Angles from point z on ground to tops of next and previous rows.
+    Angles from a point z on the ground to the tops of the previous and next
+    rows.
 
-    The point z lies between the extension to the ground of the previous row
-    and the extension to the ground of the next row.
+    The point z is the fraction of distance from the extension to the ground of
+    the previous row and the extension to the ground of the next row.
 
     .. math::
         \\tan{\\psi_0} = \\frac{\\sin{\\beta^\\prime}}{\\frac{F_z}
@@ -118,7 +119,7 @@ def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
     Parameters
     ----------
     f_z : numeric
-        fraction of ground from previous to next row
+        fraction of distance along the ground from the previous to the next row
     gcr : numeric
         ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
@@ -136,8 +137,8 @@ def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
         Angle from horizontal of the line between a point on the ground and
         the top of the previous row. [degree]
     psi_1 : numeric
-        Angle from horizontal of the line between a point on the ground and
-        the top of the next row. [degree]
+        Complement of the angle from horizontal of the line between a point on
+        the ground and the top of the next row. [degree]
 
     Notes
     -----
@@ -165,13 +166,12 @@ def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
     #             1<-----1-fz-----><--fz--0---- fraction of ground
 
     gcr_prime = _gcr_prime(gcr, height, surface_tilt, pitch)
-    tilt_prime = 180. - surface_tilt
-    opposite_side = sind(tilt_prime)
-    adjacent_side = f_z/gcr_prime + cosd(tilt_prime)
+    opposite_side = sind(surface_tilt)
+    adjacent_side = f_z/gcr_prime - cosd(surface_tilt)
     # tan_psi_0 = opposite_side / adjacent_side
     psi_0 = np.rad2deg(np.arctan2(opposite_side, adjacent_side))
     f_z_prime = 1 - f_z
-    opposite_side = np.sin(surface_tilt)
+    opposite_side = sind(surface_tilt)
     adjacent_side = f_z_prime/gcr_prime + cosd(surface_tilt)
     # tan_psi_1 = opposite_side / adjacent_side
     psi_1 = np.rad2deg(np.arctan2(opposite_side, adjacent_side))
@@ -180,11 +180,11 @@ def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
 
 def _ground_sky_angles_prev(f_z, gcr, height, surface_tilt, pitch):
     """
-    Angles from point z on ground to bottom of previous row and to the top of
-    the row beyond the previous row.
+    Angles from a point z on the ground to the tops of the previous and next
+    rows.
 
-    The point z lies between the extension to the ground of the previous row
-    and the extension to the ground of the next row.
+    The point z is the fraction of distance from the extension to the ground of
+    the previous row and the extension to the ground of the next row.
 
     The function _ground_sky_angles_prev applies when the sky is visible
     between the bottom of the previous row, and the top of the row in front
@@ -204,7 +204,8 @@ def _ground_sky_angles_prev(f_z, gcr, height, surface_tilt, pitch):
     f_z : numeric
         fraction of ground from previous to next row
     gcr : numeric
-        ground coverage ratio
+        ground coverage ratio, ratio of row slant length to row spacing.
+        [unitless]
     height : numeric
         height of module lower edge above the ground
     surface_tilt : numeric
@@ -217,15 +218,18 @@ def _ground_sky_angles_prev(f_z, gcr, height, surface_tilt, pitch):
     -------
     psi_0 : numeric
         Angle from horizontal of the line between a point on the ground and
-        the bottom of the previous row. [degree]
-    psi_1 : numeric
-        Angle from horizontal of the line between a point on the ground and
         the top of the row in front of the previous row. [degree]
+    psi_1 : numeric
+        Complement of the angle from horizontal of the line between a point on
+        the ground and the bottom of the previous row.
+        [degree]
 
     Notes
     -----
     Assuming the first row is in the front of the array then previous rows are
     toward the front of the array and next rows are toward the back.
+
+    Parameters `height` and `pitch` must have the same unit.
 
     See Also
     --------
@@ -246,12 +250,11 @@ def _ground_sky_angles_prev(f_z, gcr, height, surface_tilt, pitch):
     #      <-1+fz-1<---------fz=1---------0---- fraction of ground
 
     gcr_prime = _gcr_prime(gcr, height, surface_tilt, pitch)
-    tilt_prime = 180. - surface_tilt
-    # angle to top of previous panel beyond the current row
+    # angle to top of previous panel in front of the current row
     psi_0 = np.rad2deg(np.arctan2(
-        sind(tilt_prime), (1+f_z)/gcr_prime + cosd(tilt_prime)))
+        sind(surface_tilt), (1 + f_z)/gcr_prime - cosd(surface_tilt)))
     # angle to bottom of previous panel
-    z = f_z*pitch
+    z = f_z * pitch
     # other forms raise division by zero errors
     # avoid division by zero errors
     psi_1 = np.rad2deg(np.arctan2(height, height/tand(surface_tilt) - z))
@@ -269,7 +272,8 @@ def _f_z0_limit(gcr, height, surface_tilt, pitch):
     Parameters
     ----------
     gcr : numeric
-        ground coverage ratio
+        ground coverage ratio, ratio of row slant length to row spacing.
+        [unitless]
     height : numeric
         height of module lower edge above the ground
     surface_tilt : numeric
@@ -295,12 +299,12 @@ def _ground_sky_angles_next(f_z, gcr, height, surface_tilt, pitch):
     Angles from point z on the ground to bottom of the next row and to the top
     of the row behind the next row.
 
-    The point z lies between the extension to the ground of the previous row
-    and the extension to the ground of the next row.
+    The point z is the fraction of distance from the extension to the ground of
+    the previous row and the extension to the ground of the next row.
 
     The function _ground_sky_angles_next applies when the sky is visible
-    between the bottom of the next row, and the top of the row behind
-    of the next row.
+    between the bottom of the next row, and the top of the row behind the
+    next row.
 
     .. math::
         \\tan \\psi_0 = \\frac{h}{\\frac{h}{\\tan\\beta^\\prime}
@@ -358,14 +362,14 @@ def _ground_sky_angles_next(f_z, gcr, height, surface_tilt, pitch):
     gcr_prime = _gcr_prime(gcr, height, surface_tilt, pitch)
     tilt_prime = 180. - surface_tilt
     # angle to bottom of next panel
-    fzprime = 1 - f_z
-    zprime = fzprime*pitch
+    fzprime = 1. - f_z
+    zprime = fzprime * pitch
     # other forms raise division by zero errors
     # avoid division by zero errors
     psi_0 = np.rad2deg(np.arctan2(height, height/tand(tilt_prime) - zprime))
     # angle to top of next panel beyond the current row
     psi_1 = np.rad2deg(np.arctan2(
-        cosd(surface_tilt), (1 + fzprime)/gcr_prime + cosd(surface_tilt)))
+        sind(surface_tilt), (1 + fzprime)/gcr_prime + cosd(surface_tilt)))
     return psi_0, psi_1
 
 
@@ -639,8 +643,8 @@ def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
 
 def _sky_angle(gcr, surface_tilt, x):
     """
-    Angle from a point x along the module slant height to the
-    top of the facing row.
+    Angle from a point x along the module slant height to the top of the
+    facing row.
 
     Parameters
     ----------
@@ -1043,7 +1047,7 @@ def get_poa_irradiance(solar_zenith, solar_azimuth, surface_tilt,
 
     # Calculate some preliminary irradiance quantities
     # diffuse fraction
-    df = _diffuse_fraction(ghi, dhi)
+    df = dhi / ghi
     # sky diffuse reflected from the ground to an array consisting of a single
     # row
     poa_ground = get_ground_diffuse(surface_tilt, ghi, albedo)

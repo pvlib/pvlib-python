@@ -31,7 +31,7 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 # two choices for the axis azimuth angle, and by convention (at least in the
 # northern hemisphere), the more southward angle is chosen:
 #
-# .. image:: ../_images/tracker_azimuth_angle_convention.png
+# .. image:: ../../_images/tracker_azimuth_angle_convention.png
 #   :alt: Image showing the azimuth convention for single-axis tracker arrays.
 #   :width: 500
 #   :align: center
@@ -48,7 +48,7 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 # Point the right hand thumb along the axis in the direction of the axis
 # azimuth and the fingers curl in the direction of positive rotation angle:
 #
-# .. image:: ../_images/tracker_rotation_angle_convention.png
+# .. image:: ../../_images/tracker_rotation_angle_convention.png
 #   :alt: Image showing the rotation sign convention for single-axis trackers.
 #   :width: 500
 #   :align: center
@@ -66,7 +66,7 @@ Modeling backtracking for single-axis tracker arrays on sloped terrain.
 # with the axis azimuth coming out of the page, an east-facing, downward slope
 # is a negative rotation from horizontal:
 #
-# .. image:: ../_images/ground_slope_angle_convention.png
+# .. image:: ../../_images/ground_slope_angle_convention.png
 #   :alt: Image showing the ground slope sign convention.
 #   :width: 500
 #   :align: center

@@ -7,8 +7,10 @@ import numpy as np
 import pandas as pd
 from pvlib.bifacial import infinite_sheds
 
-
+import pytest
 from ..conftest import DATA_DIR
+
+
 TESTDATA = os.path.join(DATA_DIR, 'infinite_sheds.csv')
 
 # location and irradiance
@@ -61,7 +63,7 @@ ARGS = (GCR, HEIGHT, TILT, PITCH)
 gcr, height, surface_tilt, pitch = ARGS
 
 def test__gcr_prime():
-    result = infinite_sheds._gcr_prime(gcr = 0.5, height=1, surface_tilt=20,
+    result = infinite_sheds._gcr_prime(gcr=0.5, height=1, surface_tilt=20,
                                        pitch=4)
     assert np.isclose(result, 1.2309511000407718)
 
@@ -79,14 +81,18 @@ PSI_0_X0, PSI_1_X0 = 2.792526803190927, 0.19278450775754705
 PSI_0_X1, PSI_1_X1 = 1.9271427336418656, 0.3490658503988659
 
 
-def test__ground_sky_angles():
+@pytest.fixture
+def test_system():
+    syst = {'height': 1.,
+           'pitch': 4.,
+           'surface_tilt': 30}
+    syst['gcr'] = 2.0 / syst['pitch']
+    return syst
+
+
+def test__ground_sky_angles(test_system):
     x = np.array([0.0, 0.5, 1.0])
-    height = 1.
-    pitch = 4.
-    gcr = 2. / pitch
-    surface_tilt = 30.  # angle from horizontal to the back of the module
-    psi0, psi1 = infinite_sheds._ground_sky_angles(x, gcr, height,
-                                                   surface_tilt, pitch)
+    psi0, psi1 = infinite_sheds._ground_sky_angles(x, **test_system)
     expected_psi0 = np.array([150., 126.2060231, 75.])
     expected_psi1 = np.array([15., 20.10390936, 30.])
     assert np.allclose(psi0, expected_psi0)
@@ -98,14 +104,9 @@ FZ0_LIMIT = 1.4619022000815438  # infinite_sheds.f_z0_limit(*ARGS)
 PSI_TOP = 0.3120297392978313
 
 
-def test__ground_sky_angles_prev():
-    height = 1.
-    pitch = 4.
-    gcr = 2. / pitch
-    surface_tilt = 30.  # angle from horizontal to the back of the module
+def test__ground_sky_angles_prev(test_system):
     x = np.array([0.0, 1.0])
-    psi0, psi1 = infinite_sheds._ground_sky_angles_prev(
-        x, gcr, height, surface_tilt, pitch)
+    psi0, psi1 = infinite_sheds._ground_sky_angles_prev(x, **test_system)
     expected_psi0 = np.array([75., 23.7939769])
     expected_psi1 = np.array([30., 180. - 23.7939769])
     assert np.allclose(psi0, expected_psi0)
@@ -117,30 +118,31 @@ FZ1_LIMIT = 1.4619022000815427  # infinite_sheds.f_z1_limit(*ARGS)
 PSI_TOP_BACK = 0.11582480672702507
 
 
-def test__ground_sky_angles_next():
-    height = 1.
-    pitch = 4.
-    gcr = 2. / pitch
-    surface_tilt = 30.  # angle from horizontal to the back of the module
+def test__ground_sky_angles_next(test_system):
     x = np.array([0., 1.0])
-    psi0, psi1 = infinite_sheds._ground_sky_angles_next(
-        x, gcr, height, surface_tilt, pitch)
+    psi0, psi1 = infinite_sheds._ground_sky_angles_next(x, **test_system)
     expected_psi0 = np.array([180 - 9.8960906389, 150.])
     expected_psi1 = np.array([9.8960906389, 15.])
     assert np.allclose(psi0, expected_psi0)
     assert np.allclose(psi1, expected_psi1)
 
 
-def test__sky_angle(gcr, surface_tilt, x):
-    pitch = 4.
-    gcr = 2. / pitch
-    surface_tilt = 30.  # angle from horizontal to the back of the module
+def test__sky_angle(test_system):
     x = np.array([0., 1.0])
-    result = infinite_sheds._sky_angle(gcr, surface_tilt, x)
-    expected = np.array([np.rad2deg(np.arctan2(1, 4 - np.sqrt(3))), 0.])
-    assert np.allclose(result, expected)
+    angle, tan_angle = infinite_sheds._sky_angle(
+        test_system['gcr'], test_system['surface_tilt'], x)
+    exp_tan_angle = np.array([1. / (4 - np.sqrt(3)), 0.])
+    exp_angle = np.array([23.79397689, 0.])
+    assert np.allclose(angle, exp_angle)
+    assert np.allclose(tan_angle, exp_tan_angle)
 
 
+def test__f_z0_limit(test_system):
+    result = infinite_sheds._f_z0_limit(**test_system)
+    expected = 1.0
+    assert np.isclose(result, expected)
+
+    
 VF_GND_SKY = 0.5184093800689326
 FZ_SKY = np.array([
     0.37395996, 0.37985504, 0.38617593, 0.39294621, 0.40008092,

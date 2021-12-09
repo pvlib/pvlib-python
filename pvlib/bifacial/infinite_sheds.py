@@ -675,7 +675,7 @@ def _sky_angle(gcr, surface_tilt, x):
 
     y = 1.0 - x
     x1 = y * sind(surface_tilt)
-    x2 = (1/gcr - y * sind(surface_tilt))
+    x2 = (1/gcr - y * cosd(surface_tilt))
     tan_psi_top = x1 / x2
     psi_top = np.rad2deg(np.arctan2(x1, x2))
     return psi_top, tan_psi_top

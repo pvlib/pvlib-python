@@ -797,8 +797,9 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Notes
     ------
-    When supplying projection_ratio, consider constraining its values
-    when zenith angle approaches 90 degrees. See code for details.
+    When supplying ``projection_ratio``, consider constraining its values
+    when zenith angle approaches 90 degrees or angle of incidence
+    projection is negative. See code for details.
 
     References
     -----------

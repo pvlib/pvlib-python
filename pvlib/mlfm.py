@@ -122,7 +122,7 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
         ir = ((dmeas['i_sc'] * dmeas['r_sc'] - dmeas['v_oc']) /
               (dmeas['r_sc'] - dmeas['r_oc']))
 
-        vr = ((meas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
+        vr = ((dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
               dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc'])))
 
         # calculate normalised resistances r_sc and r_oc

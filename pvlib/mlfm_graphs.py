@@ -1,5 +1,5 @@
 '''
-This ``mlfm graphs`` module contains functions to display                  79-| 
+This ``mlfm graphs`` module contains functions to display                 79-|
 performance of PV modules using the mechanistic performance (MPM) and
 loss factors models (LFM)
 
@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 
 ''' Define standardised MLFM graph colours as a dict ``clr`` '''
-      
+
 clr = {
     # parameter_clr colour            R   G   B
     'irradiance':   'darkgreen',   # 000 064 000
@@ -37,7 +37,6 @@ clr = {
 }
 
 
-
 def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
     '''
     Scatter plot normalised MLFM parameters(y) vs. irradiance(x).
@@ -53,7 +52,7 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
         'poa_global', 'temp_module', 'wind_speed'
         and measured electrical/thermal values
         'i_sc' .. 'v_oc', temp_module.
-        
+
     dnorm : dataframe
         multiplicative lfm loss values 'i_sc' ... 'v_oc'
         where pr_dc = 1/ff * product('i_sc', ... 'v_oc')
@@ -69,26 +68,26 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
     '''
 
     # offset legend to the right to not overlap graph, use ~1.2
-    bbox = 1.2 
+    bbox = 1.2
 
     # set x_axis as irradiance
     xdata = dmeas['poa_global']
 
     fig, ax1 = plt.subplots()
-    
+
     # get filename without ".csv" for title
     ax1.set_title('Plot mlfm scatter ' +
                   mlfm_file_name[:len(mlfm_file_name)-4])
 
     ax1.set_ylabel('normalised mlfm values')
     ax1.axhline(y=1, c='grey', linewidth=3)  # show 100% line
-    ax1.set_ylim(0.8, 1.1) # optional normalised y scale
+    ax1.set_ylim(0.8, 1.1)  # optional normalised y scale
 
     ax1.set_xlabel('poa_global [W/m$^2$]')
     ax1.axvline(x=1.0, c='grey', linewidth=3)  # show 1000W/m^2 STC
     ax1.axvline(x=0.8, c='grey', linewidth=3)  # show 800W/m^2 NOCT
     ax1.axvline(x=0.2, c='grey', linewidth=3)  # show 200W/m^2 LIC
-    
+
     # plot the mlfm parameters depending on qty_mlfm_vars
     if qty_mlfm_vars == 1:  # only p_mp
         ax1.scatter(xdata, dnorm['pr_dc_temp_corr'],
@@ -104,7 +103,7 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
         ax1.scatter(xdata, dnorm['r_sc'], c=clr['r_sc'], label='norm_r_sc')
         ax1.scatter(xdata, dnorm['r_oc'], c=clr['r_oc'], label='norm_r_oc')
 
-    if qty_mlfm_vars >= 4:  # matrix 
+    if qty_mlfm_vars >= 4:  # matrix
         ax1.scatter(xdata, dnorm['i_sc'], c=clr['i_sc'], label='norm_i_sc')
 
         ax1.scatter(xdata, dnorm['v_oc_temp_corr'], c=clr['v_oc'],
@@ -124,9 +123,9 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
                 c=clr['temp_module'],
                 label='temp_module C/100')
 
-    # temp_air may not exist particularly for indoor measurements 
-    try: 
-        ax2.scatter(xdata, 
+    # temp_air may not exist particularly for indoor measurements
+    try:
+        ax2.scatter(xdata,
                     dmeas['temp_air']/100,
                     c=clr['temp_air'],
                     label='temp_air C/100')
@@ -137,9 +136,9 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
     plt.show()
 
 
-def plot_mlfm_stack(dmeas, dnorm, dstack, ref, 
+def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
                     mlfm_file_name, qty_mlfm_vars,
-                    xaxis_labels=12, is_i_sc_self_ref=False, 
+                    xaxis_labels=12, is_i_sc_self_ref=False,
                     is_v_oc_temp_module_corr=True):
 
     '''
@@ -152,7 +151,7 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
         'poa_global', 'temp_module', 'wind_speed'
         and measured electrical/thermal values
         'i_sc' .. 'v_oc', temp_module.
-    
+
     dnorm : dataframe
         normalised multiplicative lfm loss values 'i_sc' .. 'v_oc'
         where pr_dc = 1/ff * product('i_sc', ... 'v_oc').
@@ -322,9 +321,9 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
     plt.plot(xdata, dmeas['temp_module'] / 100,
              c=clr['temp_module'], label='temp_module/100')
 
-    # temp_air may not exist particularly for indoor measurements 
-    try: 
-        plt.plot(xdata, dmeas['temp_air']/100, 
+    # temp_air may not exist particularly for indoor measurements
+    try:
+        plt.plot(xdata, dmeas['temp_air']/100,
                  c=clr['temp_air'], label='temp_air/100')
     except:
         pass
@@ -336,7 +335,7 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
 
 """
 ## References
-     
+  
 The Loss Factors Model (LFM) and Mechanistic Performance Model (MPM)
 together known as "MLFM" have been developed by SRCL and Gantner Instruments
 (previously Oerlikon Solar and Tel Solar) since 2011 MLFM and 2017 MPM
@@ -359,7 +358,7 @@ PVSC June 2019 [Chicago], USA.
 http://www.steveransome.com/PUBS/1906_PVSC46_Chicago_Ransome.pdf
 
 .. [4] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
-'5CV.4.35 Quantifying Long Term PV Performance and Degradation 
+'5CV.4.35 Quantifying Long Term PV Performance and Degradation
 under Real Outdoor and IEC 61853 Test Conditions
 Using High Quality Module IV Measurements'.
 36th EU PVSEC Sep 2019 [Marseille]
@@ -370,7 +369,7 @@ effectively with PVPMC/PVLIB'
 [PVPMC] Webinar on PV Performance Modeling Methods, Aug 2020.
 https://pvpmc.sandia.gov/download/7879/
 
-.. [6] W.Marion et al (NREL) 
+.. [6] W.Marion et al (NREL)
 'New Data Set for Validating PV Module Performance Models'.
 https://www.researchgate.net/publication/286746041_New_data_set_for_validating_PV_module_performance_models
 

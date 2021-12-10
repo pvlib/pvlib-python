@@ -124,8 +124,8 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
             (dmeas['r_sc'] - dmeas['r_oc']))
 
         vr = (
-            dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
-            dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc']))
+              dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
+              dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc']))
 
         # calculate normalised resistances r_sc and r_oc
         dnorm['r_sc'] = ir / dmeas['i_sc']  # norm_r @ isc
@@ -172,7 +172,7 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6):
         c_2 * (dmeas['temp_module'] - T_STC) +      # temperature coefficient
         c_3 * np.log10(dmeas['poa_global_kwm2']) +  # low light drop, 'v_oc'
         c_4 * dmeas['poa_global_kwm2'] +            # high light drop 'rs'
-        c_5 * dmeas['wind_speed'] +                 # wind_speed (optional or 0)
+        c_5 * dmeas['wind_speed'] +                 # wind_speed (optional|0)
         c_6 / dmeas['poa_global_kwm2']              # rsh (optional but < 0)
     )
 

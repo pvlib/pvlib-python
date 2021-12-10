@@ -31,23 +31,23 @@ G_LIC = 0.2   # LIC irradiance  [kW/m^2]
 '''  Define standardised MLFM graph colours as a dict ``clr``  '''
 
 clr = {
-    #parameter_clr   colour             R   G   B
-    'irradiance':   'darkgreen',   #    0  64   0
-    'temp_module':  'red',         #  255   0   0
-    'temp_air':     'yellow',      #  245 245 220
-    'wind_speed':   'grey',        #  127 127 127
+    # parameter_clr colour            R   G   B
+    'irradiance':   'darkgreen',   # 000 064 000
+    'temp_module':  'red',         # 255 000 000
+    'temp_air':     'yellow',      # 245 245 220
+    'wind_speed':   'grey',        # 127 127 127
 
-    'i_sc':         'purple',      #  128   0 128
-    'r_sc':         'orange',      #  255 165   0
-    'i_ff':         'lightgreen',  #  144 238 144
-    'i_mp':         'green',       #    0 255   0
-    'i_v':          'black',       #    0   0   0 # between i and v losses
-    'v_ff':         'cyan',        #    0 255 255
-    'v_mp':         'blue',        #    0   0 255
-    'r_oc':         'pink',        #  255 192 203
-    'v_oc':         'sienna',      #  160  82  45
+    'i_sc':         'purple',      # 128 000 128
+    'r_sc':         'orange',      # 255 165 000
+    'i_ff':         'lightgreen',  # 144 238 144
+    'i_mp':         'green',       # 000 255 000
+    'i_v':          'black',       # 000 000 000 between i and v losses
+    'v_ff':         'cyan',        # 000 255 255
+    'v_mp':         'blue',        # 000 000 255
+    'r_oc':         'pink',        # 255 192 203
+    'v_oc':         'sienna',      # 160 082 045
 
-    'pr_dc':        'black',       #    0   0   0
+    'pr_dc':        'black',       # 000 000 000
 }
 
 
@@ -86,26 +86,30 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
     # calculate normalised mlfm values depending on number of qty_mlfm_vars
 
     if qty_mlfm_vars >= 1:  # do for all measurements
-        dnorm['pr_dc'] = (dmeas['p_mp'] /
+        dnorm['pr_dc'] = (
+            dmeas['p_mp'] /
             (ref['p_mp'] * dmeas['poa_global_kwm2']))
 
         # temperature corrected
-        dnorm['pr_dc_temp_corr'] = (dnorm['pr_dc'] *
-                (1 - ref['gamma_p_mp']*(dmeas['temp_module']-T_STC)))
+        dnorm['pr_dc_temp_corr'] = (
+            dnorm['pr_dc'] *
+            (1 - ref['gamma_p_mp']*(dmeas['temp_module']-T_STC)))
 
     if qty_mlfm_vars >= 2:  #
         dnorm['i_mp'] = dmeas['i_mp'] / dmeas['i_sc']
         dnorm['v_mp'] = dmeas['v_mp'] / dmeas['v_oc']
 
     if qty_mlfm_vars >= 4:  #
-        dnorm['i_sc'] = (dmeas['i_sc'] /
-                (dmeas['poa_global_kwm2'] * ref['i_sc']))
+        dnorm['i_sc'] = (
+            dmeas['i_sc'] /
+            (dmeas['poa_global_kwm2'] * ref['i_sc']))
 
         dnorm['v_oc'] = dmeas['v_oc'] / ref['v_oc']
 
         # temperature corrected
-        dnorm['v_oc_temp_corr'] = (dnorm['v_oc'] *
-                (1 - ref['beta_v_oc']*(dmeas['temp_module']-T_STC)))
+        dnorm['v_oc_temp_corr'] = (
+            dnorm['v_oc'] *
+            (1 - ref['beta_v_oc']*(dmeas['temp_module']-T_STC)))
 
     if qty_mlfm_vars >= 6:  # 6,8 IV data
 
@@ -115,11 +119,13 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
         to make maths easier
         '''
 
-        ir = ((dmeas['i_sc'] * dmeas['r_sc'] - dmeas['v_oc']) /
-                (dmeas['r_sc'] - dmeas['r_oc']))
+        ir = (
+            (dmeas['i_sc'] * dmeas['r_sc'] - dmeas['v_oc']) /
+            (dmeas['r_sc'] - dmeas['r_oc']))
 
-        vr = (dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
-                               dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc']))
+        vr = (
+            dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
+            dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc']))
 
         # calculate normalised resistances r_sc and r_oc
         dnorm['r_sc'] = ir / dmeas['i_sc'] #  norm_r @ isc
@@ -162,12 +168,12 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6):
     '''
 
     mlfm_6 = (
-        c_1 +                                      #  'constant' lossless
-        c_2 * (dmeas['temp_module'] - T_STC) +     #  temperature coefficient
-        c_3 * np.log10(dmeas['poa_global_kwm2']) + #  low light drop, 'v_oc'
-        c_4 * dmeas['poa_global_kwm2'] +           #  high light drop 'rs'
-        c_5 * dmeas['wind_speed'] +                #  wind_speed (optional or 0)
-        c_6 / dmeas['poa_global_kwm2']             #  rsh (optional but < 0)
+        c_1 +                                      # 'constant' lossless
+        c_2 * (dmeas['temp_module'] - T_STC) +     # temperature coefficient
+        c_3 * np.log10(dmeas['poa_global_kwm2']) + # low light drop, 'v_oc'
+        c_4 * dmeas['poa_global_kwm2'] +           # high light drop 'rs'
+        c_5 * dmeas['wind_speed'] +                # wind_speed (optional or 0)
+        c_6 / dmeas['poa_global_kwm2']             # rsh (optional but < 0)
     )
 
     return mlfm_6
@@ -234,7 +240,7 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
 
     '''
 
-    #create an empty pands to put stack results
+    # create an empty pands to put stack results
     dstack = pd.DataFrame()
 
     # create a gap to differentiate i and v losses : gap width~0.01
@@ -267,20 +273,20 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
             dnorm['v_ff'] + dnorm['r_oc'] + dnorm['v_oc'] - 6
         )
 
-        #  correction factor
+        # correction factor
         corr = (inv_ff - prod) / (inv_ff - tot)
 
-        #  put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
-        dstack['pr_dc'] = +dnorm['pr_dc'] # initialise
+        # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
+        dstack['pr_dc'] = +dnorm['pr_dc']  # initialise
         dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
         dstack['r_sc'] = -(dnorm['r_sc'] - 1) * corr
         dstack['i_ff'] = -(dnorm['i_ff'] - 1) * corr - gap/2
-        dstack['i_v'] =    gap
+        dstack['i_v']  =   gap
         dstack['v_ff'] = -(dnorm['v_ff'] - 1) * corr - gap/2
         dstack['r_oc'] = -(dnorm['r_oc'] - 1) * corr
         dstack['v_oc'] = -(dnorm['v_oc'] - 1) * corr
         dstack['temp_module_corr'] = (
-            - (dnorm['v_oc'] - dnorm['v_oc_temp_corr']) * corr)
+            -(dnorm['v_oc'] - dnorm['v_oc_temp_corr']) * corr)
 
     elif qty_mlfm_vars == 4: # matrix
         '''
@@ -300,10 +306,10 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
             dnorm['v_mp'] + dnorm['v_oc'] - 4
         )
 
-        #  correction factor
+        # correction factor
         corr = (inv_ff - prod) / (inv_ff - tot)
 
-        #  put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
+        # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
         dstack['pr_dc'] = + dnorm['pr_dc'] #  initialise
         dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
         dstack['i_mp'] = -(dnorm['i_mp'] - 1) * corr - gap/2
@@ -334,7 +340,8 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
     Returns
     -------
     dnorm : dataframe
-        same data but with added mlfm_var fit values calc_mlfm_sel and diff_mlfm_sel.
+        same data but with added mlfm_var fit values 
+        calc_mlfm_sel and diff_mlfm_sel.
 
     cc : list
         fit coefficients c_1 to c_6.
@@ -368,11 +375,11 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
 
     if True:
         popt, pcov = optimize.curve_fit(
-            f = f,                    #  fit function
-            xdata = dmeas,            #  input data
-            ydata = dnorm[mlfm_sel],  #  fit parameter
-            p0 = p0,                  #  initial
-            bounds = bounds           #  boundaries
+            f=f,                    # fit function
+            xdata=dmeas,            # input data
+            ydata=dnorm[mlfm_sel],  # fit parameter
+            p0=p0,                  # initial
+            bounds=bounds           # boundaries
         )
 
         # get mlfm coefficients
@@ -383,7 +390,7 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
         c_5 = popt[4]
         c_6 = popt[5]
 
-        cc = [c_1, c_2, c_3, c_4, c_5, c_6 ]
+        cc = [c_1, c_2, c_3, c_4, c_5, c_6]
 
         # get mlfm error coefficients as sqrt of covariance
         perr = np.sqrt(np.diag(pcov))
@@ -395,7 +402,7 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
         e_5 = perr[4]
         e_6 = perr[5]
 
-        ee = [e_1, e_2, e_3, e_4, e_5, e_6 ]
+        ee = [e_1, e_2, e_3, e_4, e_5, e_6]
 
         # format coefficients as strings, easier to read in graph title
         coeffs = (
@@ -406,7 +413,7 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
             ', {:.4%}'.format(c_5) +
             ', {:.4%}'.format(c_6)
         )
-        ###print ('coeffs = ', mlfm_sel, coeffs)
+        # print ('coeffs = ', mlfm_sel, coeffs)
 
         errs = (
             '  {:.4%}'.format(e_1) +
@@ -416,12 +423,14 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
             ', {:.4%}'.format(e_5) +
             ', {:.4%}'.format(e_6)
         )
-        ###print ('errs = ', mlfm_sel, errs)
+        # print ('errs = ', mlfm_sel, errs)
 
         # save fit and error to dataframe
-        dnorm['calc_' + mlfm_sel] = (mlfm_6(dmeas, c_1,c_2,c_3,c_4,c_5,c_6,))
+        dnorm['calc_' + mlfm_sel] = (
+            mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6))
 
-        dnorm['diff_' + mlfm_sel] = (dnorm[mlfm_sel] - dnorm['calc_' + mlfm_sel])
+        dnorm['diff_' + mlfm_sel] = (
+            dnorm[mlfm_sel] - dnorm['calc_' + mlfm_sel])
 
     return(dnorm, cc, ee, coeffs, errs)
 

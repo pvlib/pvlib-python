@@ -335,7 +335,7 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
 
 """
 ## References
-  
+
 The Loss Factors Model (LFM) and Mechanistic Performance Model (MPM)
 together known as "MLFM" have been developed by SRCL and Gantner Instruments
 (previously Oerlikon Solar and Tel Solar) since 2011 MLFM and 2017 MPM

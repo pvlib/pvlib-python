@@ -128,8 +128,8 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
             dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc']))
 
         # calculate normalised resistances r_sc and r_oc
-        dnorm['r_sc'] = ir / dmeas['i_sc'] #  norm_r @ isc
-        dnorm['r_oc'] = vr / dmeas['v_oc'] #  norm_r @ roc
+        dnorm['r_sc'] = ir / dmeas['i_sc']  # norm_r @ isc
+        dnorm['r_oc'] = vr / dmeas['v_oc']  # norm_r @ roc
 
         # calculate remaining fill factor losses partitioned to i_ff, v_ff
         dnorm['i_ff'] = dmeas['i_mp'] / ir
@@ -168,12 +168,12 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6):
     '''
 
     mlfm_6 = (
-        c_1 +                                      # 'constant' lossless
-        c_2 * (dmeas['temp_module'] - T_STC) +     # temperature coefficient
-        c_3 * np.log10(dmeas['poa_global_kwm2']) + # low light drop, 'v_oc'
-        c_4 * dmeas['poa_global_kwm2'] +           # high light drop 'rs'
-        c_5 * dmeas['wind_speed'] +                # wind_speed (optional or 0)
-        c_6 / dmeas['poa_global_kwm2']             # rsh (optional but < 0)
+        c_1 +                                       # 'constant' lossless
+        c_2 * (dmeas['temp_module'] - T_STC) +      # temperature coefficient
+        c_3 * np.log10(dmeas['poa_global_kwm2']) +  # low light drop, 'v_oc'
+        c_4 * dmeas['poa_global_kwm2'] +            # high light drop 'rs'
+        c_5 * dmeas['wind_speed'] +                 # wind_speed (optional or 0)
+        c_6 / dmeas['poa_global_kwm2']              # rsh (optional but < 0)
     )
 
     return mlfm_6
@@ -256,7 +256,7 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
     '''
     inv_ff = 1 / ff_ref
 
-    if qty_mlfm_vars == 6: # ivcurve
+    if qty_mlfm_vars == 6:  # ivcurve
         '''
         find factor to transform multiplicative to subtractive losses
         correction factor to scale losses to keep 1/ff --> pr_dc
@@ -281,14 +281,14 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
         dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
         dstack['r_sc'] = -(dnorm['r_sc'] - 1) * corr
         dstack['i_ff'] = -(dnorm['i_ff'] - 1) * corr - gap/2
-        dstack['i_v']  =   gap
+        dstack['i_v'] = gap
         dstack['v_ff'] = -(dnorm['v_ff'] - 1) * corr - gap/2
         dstack['r_oc'] = -(dnorm['r_oc'] - 1) * corr
         dstack['v_oc'] = -(dnorm['v_oc'] - 1) * corr
         dstack['temp_module_corr'] = (
             -(dnorm['v_oc'] - dnorm['v_oc_temp_corr']) * corr)
 
-    elif qty_mlfm_vars == 4: # matrix
+    elif qty_mlfm_vars == 4:  # matrix
         '''
         find factor to transform multiplicative to subtractive losses
         correction factor to scale losses to keep 1/ff --> pr_dc
@@ -310,10 +310,10 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
         corr = (inv_ff - prod) / (inv_ff - tot)
 
         # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
-        dstack['pr_dc'] = + dnorm['pr_dc'] #  initialise
+        dstack['pr_dc'] = + dnorm['pr_dc']  # initialise
         dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
         dstack['i_mp'] = -(dnorm['i_mp'] - 1) * corr - gap/2
-        dstack['i_v'] =   gap
+        dstack['i_v'] = gap
         dstack['v_mp'] = -(dnorm['v_mp'] - 1) * corr - gap/2
         dstack['v_oc'] = -(dnorm['v_oc'] - 1) * corr
 
@@ -340,7 +340,7 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
     Returns
     -------
     dnorm : dataframe
-        same data but with added mlfm_var fit values 
+        same data but with added mlfm_var fit values
         calc_mlfm_sel and diff_mlfm_sel.
 
     cc : list

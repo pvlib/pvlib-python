@@ -22,32 +22,32 @@ from scipy import optimize
 
 # NAME  value  comment         unit     PV_LIB name
 #
-T_STC = 25.0 # STC temperature [C]      temperature_ref
-T_HTC = 75.0 # HTC temperature [C]
-G_STC = 1.0  # STC irradiance  [kW/m^2]
-G_LIC = 0.2  # LIC irradiance  [kW/m^2]
+T_STC = 25.0  # STC temperature [C]      temperature_ref
+T_HTC = 75.0  # HTC temperature [C]
+G_STC = 1.0   # STC irradiance  [kW/m^2]
+G_LIC = 0.2   # LIC irradiance  [kW/m^2]
 
 
-''' Define standardised MLFM graph colours as a dict ``clr`` '''
+'''  Define standardised MLFM graph colours as a dict ``clr``  '''
 
 clr = {
     #parameter_clr   colour            R   G   B
-    'irradiance'  : 'darkgreen',   #   0  64   0
-    'temp_module' : 'red',         # 255   0   0
-    'temp_air'    : 'yellow',      # 245 245 220
-    'wind_speed'  : 'grey',        # 127 127 127
+    'irradiance':   'darkgreen',   #   0  64   0
+    'temp_module':  'red',         # 255   0   0
+    'temp_air':     'yellow',      # 245 245 220
+    'wind_speed':   'grey',        # 127 127 127
 
-    'i_sc'        : 'purple',      # 128   0 128
-    'r_sc'        : 'orange',      # 255 165   0
-    'i_ff'        : 'lightgreen',  # 144 238 144
-    'i_mp'        : 'green',       #   0 255   0
-    'i_v'         : 'black',       #   0   0   0 # between i and v losses
-    'v_ff'        : 'cyan',        #   0 255 255
-    'v_mp'        : 'blue',        #   0   0 255
-    'r_oc'        : 'pink',        # 255 192 203
-    'v_oc'        : 'sienna',      # 160  82  45
+    'i_sc':         'purple',      # 128   0 128
+    'r_sc':         'orange',      # 255 165   0
+    'i_ff':         'lightgreen',  # 144 238 144
+    'i_mp':         'green',       #   0 255   0
+    'i_v':          'black',       #   0   0   0 # between i and v losses
+    'v_ff':         'cyan',        #   0 255 255
+    'v_mp':         'blue',        #   0   0 255
+    'r_oc':         'pink',        # 255 192 203
+    'v_oc':         'sienna',      # 160  82  45
 
-    'pr_dc'       : 'black',       #   0   0   0
+    'pr_dc':        'black',       #   0   0   0
 }
 
 
@@ -85,7 +85,7 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
 
     # calculate normalised mlfm values depending on number of qty_mlfm_vars
 
-    if qty_mlfm_vars >= 1: # do for all measurements
+    if qty_mlfm_vars >= 1:  # do for all measurements
         dnorm['pr_dc'] = (dmeas['p_mp'] /
             (ref['p_mp'] * dmeas['poa_global_kwm2']))
 
@@ -93,11 +93,11 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
         dnorm['pr_dc_temp_corr'] = (dnorm['pr_dc'] *
             (1 - ref['gamma_p_mp']*(dmeas['temp_module']-T_STC)))
 
-    if qty_mlfm_vars >= 2: #
+    if qty_mlfm_vars >= 2:  #
         dnorm['i_mp'] = dmeas['i_mp'] / dmeas['i_sc']
         dnorm['v_mp'] = dmeas['v_mp'] / dmeas['v_oc']
 
-    if qty_mlfm_vars >= 4: #
+    if qty_mlfm_vars >= 4:  #
         dnorm['i_sc'] = (dmeas['i_sc'] /
             (dmeas['poa_global_kwm2'] * ref['i_sc']))
 
@@ -107,7 +107,7 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
         dnorm['v_oc_temp_corr'] = (dnorm['v_oc'] *
             (1 - ref['beta_v_oc']*(dmeas['temp_module']-T_STC)))
 
-    if qty_mlfm_vars >= 6: # 6,8 IV data
+    if qty_mlfm_vars >= 6:  # 6,8 IV data
 
         '''
         create temporary variables (ir, vr) from
@@ -255,22 +255,22 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
         find factor to transform multiplicative to subtractive losses
         correction factor to scale losses to keep 1/ff --> pr_dc
         '''
-        # product
+        #  product
         prod = inv_ff * (
             dnorm['i_sc'] * dnorm['r_sc'] * dnorm['i_ff'] *
             dnorm['v_ff'] * dnorm['r_oc'] * dnorm['v_oc']
         )
 
-        # total
+        #  total
         tot = inv_ff + (
             dnorm['i_sc'] + dnorm['r_sc'] + dnorm['i_ff'] +
             dnorm['v_ff'] + dnorm['r_oc'] + dnorm['v_oc'] - 6
         )
 
-        # correction factor
+        #  correction factor
         corr = ( inv_ff - prod ) / ( inv_ff - tot )
 
-        # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
+        #  put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
         dstack['pr_dc'] = +dnorm['pr_dc'] # initialise
         dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
         dstack['r_sc'] = -(dnorm['r_sc'] - 1) * corr
@@ -289,22 +289,22 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
         correction factor to scale losses to keep 1/ff --> pr_dc
         '''
 
-        # product
+        #  product
         prod = inv_ff * (
             dnorm['i_sc'] * dnorm['i_mp'] *
             dnorm['v_mp'] * dnorm['v_oc']
         )
 
-        #total
+        #  total
         tot = inv_ff + (
             dnorm['i_sc'] + dnorm['i_mp'] +
             dnorm['v_mp'] + dnorm['v_oc'] - 4
         )
 
-        #correction factor
+        #  correction factor
         corr = ( inv_ff - prod ) / ( inv_ff - tot )
 
-        # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
+        #  put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
         dstack['pr_dc'] = + dnorm['pr_dc'] # initialise
         dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
         dstack['i_mp'] = -(dnorm['i_mp'] - 1) * corr - gap/2

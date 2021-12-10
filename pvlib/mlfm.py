@@ -119,13 +119,11 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
         to make maths easier
         '''
 
-        ir = (
-            (dmeas['i_sc'] * dmeas['r_sc'] - dmeas['v_oc']) /
-            (dmeas['r_sc'] - dmeas['r_oc']))
+        ir = ((dmeas['i_sc'] * dmeas['r_sc'] - dmeas['v_oc']) /
+              (dmeas['r_sc'] - dmeas['r_oc']))
 
-        vr = (
-            (dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
-            dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc'])))
+        vr = ((meas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
+              dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc'])))
 
         # calculate normalised resistances r_sc and r_oc
         dnorm['r_sc'] = ir / dmeas['i_sc']  # norm_r @ isc

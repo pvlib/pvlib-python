@@ -241,6 +241,8 @@ def setup(app):
     # Override footnote callout CSS to be normal text instead of superscript
     # In-line links to references as numbers in brackets.
     app.add_css_file("reference_format.css")
+    # Add a warning banner at the top of the page if viewing the "latest" docs
+    app.add_javascript("version-alert.js")
 
 # -- Options for LaTeX output ---------------------------------------------
 

@@ -129,7 +129,7 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
                     dmeas['temp_air']/100,
                     c=clr['temp_air'],
                     label='temp_air C/100')
-    except:
+    except KeyError:
         pass
 
     ax2.legend(bbox_to_anchor=(bbox, 0.5), loc='upper left', borderaxespad=0.)
@@ -325,7 +325,7 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
     try:
         plt.plot(xdata, dmeas['temp_air']/100,
                  c=clr['temp_air'], label='temp_air/100')
-    except:
+    except KeyError:
         pass
 
     ax2.legend(bbox_to_anchor=(bbox, 0.3), loc='upper left', borderaxespad=0.)

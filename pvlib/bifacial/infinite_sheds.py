@@ -907,9 +907,39 @@ def _poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
 
 
-def poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
-                        shade_factor=-0.02, transmission_factor=0):
-    """total global incident on bifacial PV surfaces"""
+def get_irradiance(poa_global_front, poa_global_back, bifaciality=0.8,
+                   shade_factor=-0.02, transmission_factor=0):
+    r"""
+    Total irradiance on both sides of an infinite row of modules using the
+    infinite sheds model.
+
+    Parameters
+    ----------
+    poa_global_front : array-like
+        Total irradiance on the front surface of the array. [W/m^2]
+
+    poa_global_back : array-like
+        Total irradiance on the back surface of the array. [W/m^2]
+
+    bifaciality : numeric, default 0.8
+        Ratio of the efficiency of the module's rear surface to the efficiency
+        of the front surface. [unitless]
+
+    shade_factor : numeric, default -0.02
+        Fraction of back surface irradiance that is blocked by array mounting
+        structures. Negative value is a reduction in back irradiance.
+        [unitless]
+
+    transmission_factor : numeric, default 0.0
+        Fraction of irradiance on the back surface that does not reach the
+        module's cells due to module structures. Negative value is a reduction
+        in back irradiance. [unitless]
+
+    Returns
+    -------
+    output : array-like
+        Total irradiance on front and back module surfaces. [W/m^2]
+    """
     effects = (1 + shade_factor) * (1 + transmission_factor)
     return poa_global_front + poa_global_back * bifaciality * effects
 
@@ -917,11 +947,11 @@ def poa_global_bifacial(poa_global_front, poa_global_back, bifaciality=0.8,
 # TODO: rename to pvlib.bifacial.infinite_sheds?
 # TODO: rework output to basics + optional
 # TODO: not tested
-def get_poa_irradiance(solar_zenith, solar_azimuth, surface_tilt,
+def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
                        surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
                        albedo, iam=1.0, npoints=100, all_output=False):
     r"""
-    Get irradiance on one side of an infinite row of modules using the infinite
+    Irradiance on one side of an infinite row of modules using the infinite
     sheds model.
 
     Plane-of-array (POA) irradiance components include direct, diffuse and

@@ -3,9 +3,19 @@
 Bifacial
 ========
 
-Methods for calculating back surface irradiance
+Functions for calculating front and back surface irradiance
 
 .. autosummary::
    :toctree: generated/
 
-   bifacial.pvfactors_timeseries
+   bifacial.pvfactors.pvfactors_timeseries
+   bifacial.infinite_sheds.get_irradiance
+   bifacial.infinite_sheds.get_irradiance_poa
+
+Utility functions for bifacial irradiance calculations
+
+.. autosummary::
+   :toctree: generated/
+
+   bifacial.utils.solar_projection_tangent
+   bifacial.utils.unshaded_ground_fraction

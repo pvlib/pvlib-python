@@ -1,5 +1,5 @@
 '''
-This ``mlfm graphs`` module contains functions to display                 79-|
+This ``mlfm graphs`` module contains functions to display
 performance of PV modules using the mechanistic performance (MPM) and
 loss factors models (LFM)
 
@@ -13,8 +13,7 @@ https://github.com/python/peps/blob/master/pep-0008.txt
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-''' Define standardised MLFM graph colours as a dict ``clr`` '''
+#  Define standardised MLFM graph colours as a dict ``clr``
 
 clr = {
     # parameter_clr colour            R   G   B
@@ -93,7 +92,8 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
         ax1.scatter(xdata, dnorm['pr_dc_temp_corr'],
                     c=clr['pr_dc'], label='pr_dc_temp_corr')
 
-    if (qty_mlfm_vars == 2) or (qty_mlfm_vars == 4):  # mppt or matrix
+  # if (qty_mlfm_vars == 2) or (qty_mlfm_vars == 4):  # mppt or matrix
+    if qty_mlfm_vars in (2, 4):  # mppt or matrix
         ax1.scatter(xdata, dnorm['i_mp'], c=clr['i_mp'], label='norm_i_mp')
         ax1.scatter(xdata, dnorm['v_mp'], c=clr['v_mp'], label='norm_v_mp')
 
@@ -283,7 +283,8 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
     x_ticks = dmeas.shape[0]
     plt.xticks(np.arange(0, x_ticks), rotation=90)
 
-    if (xaxis_labels > 0 and xaxis_labels < x_ticks):
+  # if (xaxis_labels > 0 and xaxis_labels < x_ticks):
+    if 0 < xaxis_labels < x_ticks:
         xaxis_skip = np.floor(x_ticks / xaxis_labels)
     else:
         xaxis_skip = 2
@@ -293,12 +294,12 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
     x_count = 0
     while x_count < x_ticks:
         if x_count % xaxis_skip == 0:
-            '''
-            try to reformat any date indexes (not for matrices)
-
-            0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
-             y y y y - m m - d d t h h : m m : s s --> yy-mm-dd hh'h'
-            '''
+            #
+            #  try to reformat any date indexes (not for matrices)
+            #
+            #  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
+            #   y y y y - m m - d d t h h : m m : s s --> yy-mm-dd hh'h'
+            #
             try:
                 xax2[x_count] = xdata[x_count][2:13]+'h'
 
@@ -332,9 +333,8 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
     ax1.set_xticklabels(xax2, rotation=90)
     plt.show()
 
-
-"""
-## References
+REFS = """
+References
 
 The Loss Factors Model (LFM) and Mechanistic Performance Model (MPM)
 together known as "MLFM" have been developed by SRCL and Gantner Instruments

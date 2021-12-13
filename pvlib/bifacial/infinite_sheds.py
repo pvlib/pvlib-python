@@ -722,14 +722,14 @@ def _vf_row_sky_integ(gcr, surface_tilt, f_x, npoints=100):
     """
     cst = cosd(surface_tilt)
     # shaded portion
-    x = np.linspace(0 * f_x, f_x, num=npoints, axis=0)
+    x = np.linspace(0 * f_x, f_x, num=npoints)
     psi_t_shaded, _ = _sky_angle(gcr, surface_tilt, x)
     y = 0.5 * (cosd(psi_t_shaded) + cst)
     # integrate view factors from each point in the discretization. This is an
     # improvement over the algorithm described in [2]
     vf_shade_sky_integ = np.trapz(y, x, axis=0)
     # unshaded portion
-    x = np.linspace(f_x, np.ones_like(f_x), num=npoints, axis=0)
+    x = np.linspace(f_x, np.ones_like(f_x), num=npoints)
     psi_t_unshaded, _ = _sky_angle(gcr, surface_tilt, x)
     y = 0.5 * (cosd(psi_t_unshaded) + cst)
     vf_noshade_sky_integ = np.trapz(y, x, axis=0)
@@ -866,7 +866,7 @@ def _vf_row_ground_integ(gcr, surface_tilt, f_x, npoints=100):
     slant height.
     """
     # shaded portion of row slant height
-    x = np.linspace(0 * f_x, f_x, num=npoints, axis=0)
+    x = np.linspace(0 * f_x, f_x, num=npoints)
     # view factor from the point on the row to the ground
     y = _vf_row_ground(gcr, surface_tilt, x)
     # integrate view factors along the shaded portion of the row slant height.
@@ -874,7 +874,7 @@ def _vf_row_ground_integ(gcr, surface_tilt, f_x, npoints=100):
     vf_shade_ground_integ = np.trapz(y, x, axis=0)
 
     # unshaded portion of row slant height
-    x = np.linspace(f_x, np.ones_like(f_x), num=npoints, axis=0)
+    x = np.linspace(f_x, np.ones_like(f_x), num=npoints)
     # view factor from the point on the row to the ground
     y = _vf_row_ground(gcr, surface_tilt, x)
     # integrate view factors along the unshaded portion.

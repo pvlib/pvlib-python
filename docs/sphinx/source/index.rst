@@ -85,7 +85,7 @@ Additional pvlib python publications include:
 License
 =======
 
-`BSD 3-clause <https://github.com/pvlib/pvlib-python/LICENSE>`_.
+`BSD 3-clause <https://github.com/pvlib/pvlib-python/blob/master/LICENSE>`_.
 
 NumFOCUS
 ========
@@ -102,21 +102,11 @@ Contents
 .. toctree::
    :maxdepth: 1
 
-   package_overview
-   introtutorial
-   auto_examples/index
+   user_guide/index
+   gallery/index
+   reference/index
    whatsnew
-   installation
    contributing
-   pvsystem
-   modelchain
-   timetimezones
-   clearsky
-   forecasts
-   api
-   comparison_pvlib_matlab
-   variables_style_rules
-   singlediode
 
 
 Indices and tables

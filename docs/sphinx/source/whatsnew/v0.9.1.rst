@@ -1,0 +1,38 @@
+.. _whatsnew_0910:
+
+v0.9.1 (TBD)
+--------------------------
+
+Breaking changes
+~~~~~~~~~~~~~~~~
+
+Deprecations
+~~~~~~~~~~~~
+
+Enhancements
+~~~~~~~~~~~~
+
+Bug fixes
+~~~~~~~~~
+* Address round-off effects in :py:func:`pvlib.ivtools.utils._schumaker_qspline`
+  (:issue:`1311`, :pull:`1315`)
+* Fixed a bug in :py:func:`pvlib.spectrum.spectrl2` where negative spectral irradiance
+  values were returned when the sun is behind the plane of array (:issue:`1348`, :pull:`1349`)
+
+
+Testing
+~~~~~~~
+
+Documentation
+~~~~~~~~~~~~~
+
+Requirements
+~~~~~~~~~~~~
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* :ghuser:`Antoine-0`
+* :ghuser:`Carlosbogo`
+* Christian Weickhmann (:ghuser:`cweickhmann`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

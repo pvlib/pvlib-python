@@ -9,7 +9,9 @@ import pandas as pd
 
 
 # A small number used to decide when a slope is equivalent to zero
-EPS = np.finfo('float').eps**(1/3)
+EPS_slope = np.finfo('float').eps**(1/3)
+# A small number used to decide when a slope is equivalent to zero
+EPS_val = np.finfo('float').eps
 
 
 def _numdiff(x, f):
@@ -263,7 +265,7 @@ def _schumaker_qspline(x, y):
     # [2], Algorithm 4.1 first 'if' condition of step 5 defines intervals
     # which won't get internal knots
     tests = s[:-1] + s[1:]
-    u = np.isclose(tests, 2.0 * delta, atol=EPS)
+    u = np.isclose(tests, 2.0 * delta, atol=EPS_slope)
     # u = true for an interval which will not get an internal knot
 
     k = n + sum(~u)  # total number of knots = original data + inserted knots
@@ -312,6 +314,11 @@ def _schumaker_qspline(x, y):
 
     aa = s[:-1] - delta
     b = s[1:] - delta
+
+    # Since the above two lines can lead to numerical errors, aa and b
+    # are rounded to 0.0 is their absolute value is small enough.
+    aa[np.isclose(aa, 0., atol=EPS_val)] = 0.
+    b[np.isclose(b, 0., atol=EPS_val)] = 0.
 
     sbar = np.zeros(k)
     eta = np.zeros(k)

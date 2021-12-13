@@ -282,7 +282,7 @@ def test__vf_row_ground_integ(test_system):
         c = cosd(surface_tilt)
         a = 1. / gcr
         dx = np.sqrt(a**2 + 2 * a * c * x + x**2)
-        return  c * dx - a * (c**2 - 1) * np.arctanh((a * c + x) / dx)
+        return c * dx - a * (c**2 - 1) * np.arctanh((a * c + x) / dx)
 
     shaded = np.array(shaded)
     noshade = np.array(noshade)

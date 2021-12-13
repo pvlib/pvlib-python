@@ -92,7 +92,7 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
         ax1.scatter(xdata, dnorm['pr_dc_temp_corr'],
                     c=clr['pr_dc'], label='pr_dc_temp_corr')
 
-  # if (qty_mlfm_vars == 2) or (qty_mlfm_vars == 4):  # mppt or matrix
+    # if (qty_mlfm_vars == 2) or (qty_mlfm_vars == 4):  # mppt or matrix
     if qty_mlfm_vars in (2, 4):  # mppt or matrix
         ax1.scatter(xdata, dnorm['i_mp'], c=clr['i_mp'], label='norm_i_mp')
         ax1.scatter(xdata, dnorm['v_mp'], c=clr['v_mp'], label='norm_v_mp')
@@ -283,7 +283,7 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
     x_ticks = dmeas.shape[0]
     plt.xticks(np.arange(0, x_ticks), rotation=90)
 
-  # if (xaxis_labels > 0 and xaxis_labels < x_ticks):
+    # if (xaxis_labels > 0 and xaxis_labels < x_ticks):
     if 0 < xaxis_labels < x_ticks:
         xaxis_skip = np.floor(x_ticks / xaxis_labels)
     else:

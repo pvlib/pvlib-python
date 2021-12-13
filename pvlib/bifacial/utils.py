@@ -12,6 +12,9 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     Tangent of the angle between the sun vector projected to the YZ-plane
     (vertical and perpendicular to rows) and the zenith vector.
 
+    Tangent is positive when the projection of the sun vector is in the same
+    hemisphere as the system azimuth.
+
     .. math::
         \\tan \\phi = \\cos\\left(\\text{solar azimuth}-\\text{system azimuth}
         \\right)\\tan\\left(\\text{solar zenith}\\right)

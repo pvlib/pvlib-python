@@ -19,7 +19,7 @@ def test_solar_projection_tangent():
     tan_phi_b = utils.solar_projection_tangent(
         30, 150, 0)
     assert np.allclose(tan_phi_f, 0.5)
-    assert np.allclose(tan_phi_b, 0.5)
+    assert np.allclose(tan_phi_b, -0.5)
     assert np.allclose(tan_phi_f, -tan_phi_b)
 
 

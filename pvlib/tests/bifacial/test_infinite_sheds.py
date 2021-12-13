@@ -255,7 +255,7 @@ def test__ground_angle(test_system):
     assert np.allclose(tan_angles, expected_tan_angles)
 
 
-def test__vf_row_ground(gcr, surface_tilt, x):
+def test__vf_row_ground(test_system):
     x = np.array([0., 0.5, 1.0])
     sqr3 = np.sqrt(3)
     vfs = infinite_sheds._vf_row_ground(

@@ -12,6 +12,8 @@ from pvlib import (  # noqa: F401
     ivtools,
     location,
     modelchain,
+    mlfm,
+    mlfm_graphs,
     pvsystem,
     scaling,
     shading,

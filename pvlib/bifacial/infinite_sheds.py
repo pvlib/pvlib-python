@@ -798,7 +798,7 @@ def _ground_angle(gcr, surface_tilt, x):
 
 def _vf_row_ground(gcr, surface_tilt, x):
     """
-    View factor from a point x to the ground between rows.
+    View factor from a point x on the row to the ground between rows.
 
     Parameters
     ----------
@@ -818,8 +818,8 @@ def _vf_row_ground(gcr, surface_tilt, x):
 
     """
     cst = cosd(surface_tilt)
-    # angle from each point x on the row slant height to the bottom of the
-    # facing row
+    # angle from horizontal at the point x on the row slant height to the
+    # bottom of the facing row
     psi_t_shaded, _ = _ground_angle(gcr, surface_tilt, x)
     # view factor from the point on the row to the ground
     return 0.5 * (cosd(psi_t_shaded) - cst)

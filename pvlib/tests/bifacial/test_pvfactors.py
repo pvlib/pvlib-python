@@ -6,9 +6,11 @@ from ..conftest import requires_pvfactors, assert_series_equal
 
 @requires_pvfactors
 def test_pvfactors_timeseries():
-    """ Test that pvfactors is functional, using the TLDR section inputs of the
+    """
+    Test that pvfactors is functional, using the TLDR section inputs of the
     package github repo README.md file:
-    https://github.com/SunPower/pvfactors/blob/master/README.md#tldr---quick-start"""
+    https://github.com/SunPower/pvfactors/blob/master/README.md#tldr---quick-start
+    """   # noqa: E501
 
     # Create some inputs
     timestamps = pd.DatetimeIndex([datetime(2017, 8, 31, 11),
@@ -54,9 +56,11 @@ def test_pvfactors_timeseries():
 
 @requires_pvfactors
 def test_pvfactors_timeseries_pandas_inputs():
-    """ Test that pvfactors is functional, using the TLDR section inputs of the
+    """
+    Test that pvfactors is functional, using the TLDR section inputs of the
     package github repo README.md file, but converted to pandas Series:
-    https://github.com/SunPower/pvfactors/blob/master/README.md#tldr---quick-start"""
+    https://github.com/SunPower/pvfactors/blob/master/README.md#tldr---quick-start
+    """  # noqa: E501
 
     # Create some inputs
     timestamps = pd.DatetimeIndex([datetime(2017, 8, 31, 11),

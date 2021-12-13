@@ -420,7 +420,7 @@ def _vf_sky(psi_0, psi_1):
     """
     Calculate the view factor from the ground to the wedge of the visible
     sky bounded by the angles :math:`\\psi_0` and :math:`\\psi_1`.
-    
+
     Angle :math:`\\psi_0` is expected to be counterclockwise from the
     positive x-axis, and angle :math:`\\psi_1` is expected to be clockwise
     from the negative x-axis.

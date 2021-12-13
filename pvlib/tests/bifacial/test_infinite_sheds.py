@@ -63,6 +63,7 @@ ARGS = (GCR, HEIGHT, TILT, PITCH)
 
 gcr, height, surface_tilt, pitch = ARGS
 
+
 def test__gcr_prime():
     result = infinite_sheds._gcr_prime(gcr=0.5, height=1, surface_tilt=20,
                                        pitch=4)
@@ -85,8 +86,8 @@ PSI_0_X1, PSI_1_X1 = 1.9271427336418656, 0.3490658503988659
 @pytest.fixture
 def test_system():
     syst = {'height': 1.,
-           'pitch': 4.,
-           'surface_tilt': 30}
+            'pitch': 4.,
+            'surface_tilt': 30}
     syst['gcr'] = 2.0 / syst['pitch']
     return syst
 
@@ -143,7 +144,7 @@ def test__f_z0_limit(test_system):
     expected = 1.0
     assert np.isclose(result, expected)
 
-    
+
 def test__f_z1_limit(test_system):
     result = infinite_sheds._f_z1_limit(**test_system)
     expected = 1.0
@@ -166,9 +167,9 @@ def test__vf_ground_sky(test_system):
     # at f_z=0.5
     vf_05_pre = 0.5 * ((3 - sqr3) / np.sqrt(13 - 6 * sqr3)
                        - np.sqrt(2 - sqr3) / 2)
-    vf_05_mid = 0.5 * ((sqr3 + 1) / np.sqrt(5 + 2 * sqr3) 
+    vf_05_mid = 0.5 * ((sqr3 + 1) / np.sqrt(5 + 2 * sqr3)
                        - (sqr3 - 1) / np.sqrt(5 - 2 * sqr3))
-    vf_05_nex = 0.5 * ((2 + sqr3) / (2 * np.sqrt(2 + sqr3)) 
+    vf_05_nex = 0.5 * ((2 + sqr3) / (2 * np.sqrt(2 + sqr3))
                        - (3 + sqr3) / np.sqrt(13 + 6 * sqr3))
     vf_05 = vf_05_pre + vf_05_mid + vf_05_nex
     # at f_z=1.0
@@ -188,9 +189,9 @@ def test__vf_ground_sky_integ(test_system):
     # at f_z=0.5
     vf_05_pre = 0.5 * ((3 - sqr3) / np.sqrt(13 - 6 * sqr3)
                        - np.sqrt(2 - sqr3) / 2)
-    vf_05_mid = 0.5 * ((sqr3 + 1) / np.sqrt(5 + 2 * sqr3) 
+    vf_05_mid = 0.5 * ((sqr3 + 1) / np.sqrt(5 + 2 * sqr3)
                        - (sqr3 - 1) / np.sqrt(5 - 2 * sqr3))
-    vf_05_nex = 0.5 * ((2 + sqr3) / (2 * np.sqrt(2 + sqr3)) 
+    vf_05_nex = 0.5 * ((2 + sqr3) / (2 * np.sqrt(2 + sqr3))
                        - (3 + sqr3) / np.sqrt(13 + 6 * sqr3))
     vf_05 = vf_05_pre + vf_05_mid + vf_05_nex
     # at f_z=1.0
@@ -200,7 +201,7 @@ def test__vf_ground_sky_integ(test_system):
     assert np.allclose(pts, expected_pts)
     assert np.allclose(vf_pts, expected_vfs, rtol=0.1)
     assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
-    
+
 
 def test__vf_row_sky_integ(test_system):
     gcr = test_system['gcr']
@@ -213,17 +214,19 @@ def test__vf_row_sky_integ(test_system):
                                                  npoints=100)
         shaded.append(s)
         noshade.append(ns)
+
     def analytic(gcr, surface_tilt, x):
         c = cosd(surface_tilt)
         a = 1. / gcr
         dx = np.sqrt(a**2 - 2 * a * c * x + x**2)
         return - a * (c**2 - 1) * np.arctanh((x - a * c) / dx) - c * dx
+
     expected_shade = 0.5 * (f_x * cosd(surface_tilt)
                             - analytic(gcr, surface_tilt, 1 - f_x)
-                            + analytic(gcr, surface_tilt, 1.)) 
-    expected_noshade = 0.5 * ((1 - f_x) * cosd(surface_tilt) 
+                            + analytic(gcr, surface_tilt, 1.))
+    expected_noshade = 0.5 * ((1 - f_x) * cosd(surface_tilt)
                               + analytic(gcr, surface_tilt, 1. - f_x)
-                              - analytic(gcr, surface_tilt, 0.)) 
+                              - analytic(gcr, surface_tilt, 0.))
     shaded = np.array(shaded)
     noshade = np.array(noshade)
     assert np.allclose(shaded, expected_shade)
@@ -274,11 +277,13 @@ def test__vf_row_ground_integ(test_system):
             gcr, surface_tilt, x)
         shaded.append(s)
         noshade.append(ns)
+
     def analytic(gcr, surface_tilt, x):
         c = cosd(surface_tilt)
         a = 1. / gcr
         dx = np.sqrt(a**2 + 2 * a * c * x + x**2)
         return  c * dx - a * (c**2 - 1) * np.arctanh((a * c + x) / dx)
+
     shaded = np.array(shaded)
     noshade = np.array(noshade)
     expected_shade = 0.5 * (analytic(gcr, surface_tilt, f_x)
@@ -290,7 +295,7 @@ def test__vf_row_ground_integ(test_system):
     assert np.allclose(shaded, expected_shade)
     assert np.allclose(noshade, expected_noshade)
 
-    
+
 VF_GND_SKY = 0.5184093800689326
 FZ_SKY = np.array([
     0.37395996, 0.37985504, 0.38617593, 0.39294621, 0.40008092,

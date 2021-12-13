@@ -1,5 +1,5 @@
 '''
-This ``mlfm code`` module contains functions to analyse and predict        79-|
+This ``mlfm code`` module contains functions to analyse and predict
 performance of PV modules using the mechanistic performance (MPM) and
 loss factors models (LFM)
 
@@ -17,7 +17,7 @@ import pandas as pd
 from scipy import optimize
 
 
-''' DEFINE REFERENCE MEASUREMENT CONDITIONS '''
+#  DEFINE REFERENCE MEASUREMENT CONDITIONS
 # or use existing definitions in pvlib
 
 # NAME  value  comment         unit     PV_LIB name
@@ -28,7 +28,7 @@ G_STC = 1.0   # STC irradiance  [kW/m^2]
 G_LIC = 0.2   # LIC irradiance  [kW/m^2]
 
 
-'''  Define standardised MLFM graph colours as a dict ``clr``  '''
+#  Define standardised MLFM graph colours as a dict ``clr``
 
 clr = {
     # parameter_clr colour            R   G   B
@@ -113,25 +113,25 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
 
     if qty_mlfm_vars >= 6:  # 6,8 IV data
 
-        '''
-        create temporary variables (ir, vr) from
-        intercept of r_sc (at i_sc) with r_oc (at v_oc)
-        to make maths easier
-        '''
 
-        ir = ((dmeas['i_sc'] * dmeas['r_sc'] - dmeas['v_oc']) /
+        #  create temporary variables (i_r, v_r) from
+        #  intercept of r_sc (at i_sc) with r_oc (at v_oc)
+        #  to make maths easier
+
+
+        i_r = ((dmeas['i_sc'] * dmeas['r_sc'] - dmeas['v_oc']) /
               (dmeas['r_sc'] - dmeas['r_oc']))
 
-        vr = ((dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
+        v_r = ((dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
               dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc'])))
 
         # calculate normalised resistances r_sc and r_oc
-        dnorm['r_sc'] = ir / dmeas['i_sc']  # norm_r @ isc
-        dnorm['r_oc'] = vr / dmeas['v_oc']  # norm_r @ roc
+        dnorm['r_sc'] = i_r / dmeas['i_sc']  # norm_r @ isc
+        dnorm['r_oc'] = v_r / dmeas['v_oc']  # norm_r @ roc
 
         # calculate remaining fill factor losses partitioned to i_ff, v_ff
-        dnorm['i_ff'] = dmeas['i_mp'] / ir
-        dnorm['v_ff'] = dmeas['v_mp'] / vr
+        dnorm['i_ff'] = dmeas['i_mp'] / i_r
+        dnorm['v_ff'] = dmeas['v_mp'] / v_r
 
     return dnorm
 
@@ -156,6 +156,7 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6):
             c_2 - temperature coefficient (1/K)
             c_3 - low light log irradiance drop (~v_oc)
             c_4 - high light linear irradiance drop (~r_s)
+        (optional or set at 0)
             c_5 - wind speed dependence (=0 if indoor)
             c_6 - inverse irradiance (<= 0).
 
@@ -165,7 +166,7 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6):
         predicted performance values for pr_dc, norm(i_sc, .. v_oc) .
     '''
 
-    mlfm_6 = (
+    mlfm_out = (
         c_1 +                                       # 'constant' lossless
         c_2 * (dmeas['temp_module'] - T_STC) +      # temperature coefficient
         c_3 * np.log10(dmeas['poa_global_kwm2']) +  # low light drop, 'v_oc'
@@ -174,10 +175,10 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6):
         c_6 / dmeas['poa_global_kwm2']              # rsh (optional but < 0)
     )
 
-    return mlfm_6
+    return mlfm_out
 
 
-def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
+def mlfm_norm_to_stack(dnorm, ref, qty_mlfm_vars):
     '''
     Converts MLFM normalised multiplicative losses norm(i_sc ... v_oc)
     to stacked subtractive losses stack(i_sc ... v_oc).
@@ -210,12 +211,6 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
     Parameters
     ----------
 
-    dmeas : dataframe
-        measured weather data
-        'poa_global', 'temp_module', 'wind_speed'
-        and measured electrical/thermal values
-        'i_sc' .. 'v_oc', temp_module..
-
     dnorm : dataframe
         normalised multiplicative lfm loss values 'i_sc' .. 'v_oc'
         where pr_dc = 1/ff * product('i_sc', ... 'v_oc').
@@ -247,18 +242,18 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
     # calculate reference fill factor (usually between 0.5 and 0.8)
     ff_ref = ref['ff']
 
-    '''
-    calculate inverse fill factor ~ 1.25 - 2 as we calculate
-    i_losses from ref_isc to norm_imp
-    v_losses from ref_vocc to norm_vmp
-    '''
+
+    #  calculate inverse fill factor ~ 1.25 - 2 as we calculate
+    #  i_losses from ref_isc to norm_imp
+    #  v_losses from ref_voc to norm_vmp
+
     inv_ff = 1 / ff_ref
 
     if qty_mlfm_vars == 6:  # ivcurve
-        '''
-        find factor to transform multiplicative to subtractive losses
-        correction factor to scale losses to keep 1/ff --> pr_dc
-        '''
+
+        #  find factor to transform multiplicative to subtractive losses
+        #  correction factor to scale losses to keep 1/ff --> pr_dc
+
         #  product
         prod = inv_ff * (
             dnorm['i_sc'] * dnorm['r_sc'] * dnorm['i_ff'] *
@@ -287,10 +282,10 @@ def mlfm_norm_to_stack(dmeas, dnorm, ref, qty_mlfm_vars):
             -(dnorm['v_oc'] - dnorm['v_oc_temp_corr']) * corr)
 
     elif qty_mlfm_vars == 4:  # matrix
-        '''
-        find factor to transform multiplicative to subtractive losses
-        correction factor to scale losses to keep 1/ff --> pr_dc
-        '''
+
+        #  find factor to transform multiplicative to subtractive losses
+        #  correction factor to scale losses to keep 1/ff --> pr_dc
+
 
         #  product
         prod = inv_ff * (
@@ -341,10 +336,10 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
         same data but with added mlfm_var fit values
         calc_mlfm_sel and diff_mlfm_sel.
 
-    cc : list
+    coeff : list
         fit coefficients c_1 to c_6.
 
-    ee : list
+    err : list
         error values.
 
     coeffs : string
@@ -356,86 +351,84 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
 
     # drop missing data
     dnorm = dnorm.dropna()
-    '''
-    ensure correct number of p0 and bounds
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
-    '''
+
+    #  ensure correct number of p0 and bounds
+    #  https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
+
     # define function name
-    f = mlfm_6
+    func = mlfm_6
 
     # setup initial values and initial boundary conditions
 
     # initial   c1    c2    c3    c4    c5   c6<0
-    p0 = (1.0, 0.01, 0.01, 0.01, 0.01, -0.01)
+    p_0 = (1.0, 0.01, 0.01, 0.01, 0.01, -0.01)
     # boundaries
     bounds = ([ -2,   -2,   -2,   -2,   -2,    -2],
               [  2,    2,    2,    2,    2,     0])
 
-    if True:
-        popt, pcov = optimize.curve_fit(
-            f=f,                    # fit function
-            xdata=dmeas,            # input data
-            ydata=dnorm[mlfm_sel],  # fit parameter
-            p0=p0,                  # initial
-            bounds=bounds           # boundaries
-        )
 
-        # get mlfm coefficients
-        c_1 = popt[0]
-        c_2 = popt[1]
-        c_3 = popt[2]
-        c_4 = popt[3]
-        c_5 = popt[4]
-        c_6 = popt[5]
+    popt, pcov = optimize.curve_fit(
+        f=func,                 # fit function
+        xdata=dmeas,            # input data
+        ydata=dnorm[mlfm_sel],  # fit parameter
+        p0=p_0,                 # initial
+        bounds=bounds           # boundaries
+    )
 
-        cc = [c_1, c_2, c_3, c_4, c_5, c_6]
+    # get mlfm coefficients
+    c_1 = popt[0]
+    c_2 = popt[1]
+    c_3 = popt[2]
+    c_4 = popt[3]
+    c_5 = popt[4]
+    c_6 = popt[5]
 
-        # get mlfm error coefficients as sqrt of covariance
-        perr = np.sqrt(np.diag(pcov))
+    coeff = [c_1, c_2, c_3, c_4, c_5, c_6]
 
-        e_1 = perr[0]
-        e_2 = perr[1]
-        e_3 = perr[2]
-        e_4 = perr[3]
-        e_5 = perr[4]
-        e_6 = perr[5]
+    # get mlfm error coefficients as sqrt of covariance
+    perr = np.sqrt(np.diag(pcov))
 
-        ee = [e_1, e_2, e_3, e_4, e_5, e_6]
+    e_1 = perr[0]
+    e_2 = perr[1]
+    e_3 = perr[2]
+    e_4 = perr[3]
+    e_5 = perr[4]
+    e_6 = perr[5]
 
-        # format coefficients as strings, easier to read in graph title
-        coeffs = (
-            '  {:.4%}'.format(c_1) +
-            ', {:.4%}'.format(c_2) +
-            ', {:.4%}'.format(c_3) +
-            ', {:.4%}'.format(c_4) +
-            ', {:.4%}'.format(c_5) +
-            ', {:.4%}'.format(c_6)
-        )
-        # print ('coeffs = ', mlfm_sel, coeffs)
+    err = [e_1, e_2, e_3, e_4, e_5, e_6]
 
-        errs = (
-            '  {:.4%}'.format(e_1) +
-            ', {:.4%}'.format(e_2) +
-            ', {:.4%}'.format(e_3) +
-            ', {:.4%}'.format(e_4) +
-            ', {:.4%}'.format(e_5) +
-            ', {:.4%}'.format(e_6)
-        )
-        # print ('errs = ', mlfm_sel, errs)
+    # format coefficients as strings, easier to read in graph title
+    coeffs = (
+        '  {:.4%}'.format(c_1) +
+        ', {:.4%}'.format(c_2) +
+        ', {:.4%}'.format(c_3) +
+        ', {:.4%}'.format(c_4) +
+        ', {:.4%}'.format(c_5) +
+        ', {:.4%}'.format(c_6)
+    )
+    # print ('coeffs = ', mlfm_sel, coeffs)
 
-        # save fit and error to dataframe
-        dnorm['calc_' + mlfm_sel] = (
-            mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6))
+    errs = (
+        '  {:.4%}'.format(e_1) +
+        ', {:.4%}'.format(e_2) +
+        ', {:.4%}'.format(e_3) +
+        ', {:.4%}'.format(e_4) +
+        ', {:.4%}'.format(e_5) +
+        ', {:.4%}'.format(e_6)
+    )
+    # print ('errs = ', mlfm_sel, errs)
 
-        dnorm['diff_' + mlfm_sel] = (
-            dnorm[mlfm_sel] - dnorm['calc_' + mlfm_sel])
+    # save fit and error to dataframe
+    dnorm['calc_' + mlfm_sel] = (
+        mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6))
 
-    return(dnorm, cc, ee, coeffs, errs)
+    dnorm['diff_' + mlfm_sel] = (
+        dnorm[mlfm_sel] - dnorm['calc_' + mlfm_sel])
+
+    return(dnorm, coeff, err, coeffs, errs)
 
 
-"""
-## References
-
+REFS = """
 The Loss Factors Model (LFM) and Mechanistic Performance Model (MPM)
 together known as "MLFM" have been developed by SRCL and Gantner Instruments
 (previously Oerlikon Solar and Tel Solar) since 2011 MLFM and 2017 MPM

@@ -333,6 +333,7 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
     ax1.set_xticklabels(xax2, rotation=90)
     plt.show()
 
+
 REFS = """
 References
 

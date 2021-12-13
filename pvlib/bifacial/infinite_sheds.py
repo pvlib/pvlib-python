@@ -907,45 +907,6 @@ def _poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
 
 
-def get_irradiance(poa_global_front, poa_global_back, bifaciality=0.8,
-                   shade_factor=-0.02, transmission_factor=0):
-    r"""
-    Total irradiance on both sides of an infinite row of modules using the
-    infinite sheds model.
-
-    Parameters
-    ----------
-    poa_global_front : array-like
-        Total irradiance on the front surface of the array. [W/m^2]
-
-    poa_global_back : array-like
-        Total irradiance on the back surface of the array. [W/m^2]
-
-    bifaciality : numeric, default 0.8
-        Ratio of the efficiency of the module's rear surface to the efficiency
-        of the front surface. [unitless]
-
-    shade_factor : numeric, default -0.02
-        Fraction of back surface irradiance that is blocked by array mounting
-        structures. Negative value is a reduction in back irradiance.
-        [unitless]
-
-    transmission_factor : numeric, default 0.0
-        Fraction of irradiance on the back surface that does not reach the
-        module's cells due to module structures. Negative value is a reduction
-        in back irradiance. [unitless]
-
-    Returns
-    -------
-    output : array-like
-        Total irradiance on front and back module surfaces. [W/m^2]
-    """
-    effects = (1 + shade_factor) * (1 + transmission_factor)
-    return poa_global_front + poa_global_back * bifaciality * effects
-
-
-# TODO: rename to pvlib.bifacial.infinite_sheds?
-# TODO: rework output to basics + optional
 # TODO: not tested
 def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
                        surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
@@ -978,10 +939,6 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
         be >=0 and <=360. The Azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-
     gcr : numeric
         Ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
@@ -992,14 +949,14 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     pitch : numeric
         row spacing.
 
-    dni : numeric
-        Direct normal irradiance. [W/m2]
-
     ghi : numeric
         Global horizontal irradiance. [W/m2]
 
     dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
+
+    dni : numeric
+        Direct normal irradiance. [W/m2]
 
     albedo : numeric
         Surface albedo. [unitless]
@@ -1037,7 +994,6 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
       [W/m^2]
     - poa_diffuse_ground : total ground-reflected diffuse irradiance on the
       plane of array. [W/m^2]
-
     """
     # Calculate some geometric quantities
     # fraction of ground between rows that is illuminated accounting for
@@ -1109,6 +1065,7 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     return output
 
 
+# TODO: not tested
 def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
                    surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
                    albedo, dni_extra, iam_front=1.0, iam_back=1.0,
@@ -1119,6 +1076,45 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
 
     Parameters
     ----------
+    solar_zenith : array-like
+        True (not refraction-corrected) solar zenith angles in decimal
+        degrees.
+
+    solar_azimuth : array-like
+        Solar azimuth angles in decimal degrees.
+
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. Tilt must be >=0 and
+        <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90).
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The Azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    gcr : numeric
+        Ground coverage ratio, ratio of row slant length to row spacing.
+        [unitless]
+
+    height : numeric
+        height of module lower edge above the ground.
+
+    pitch : numeric
+        row spacing.
+
+    ghi : numeric
+        Global horizontal irradiance. [W/m2]
+
+    dhi : numeric
+        Diffuse horizontal irradiance. [W/m2]
+
+    dni : numeric
+        Direct normal irradiance. [W/m2]
+
+    albedo : numeric
+        Surface albedo. [unitless]
+
     iam_front : numeric, default 1.0
         Incidence angle modifier, the fraction of direct irradiance incident
         on the front surface that is not reflected away. [unitless]
@@ -1127,18 +1123,51 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
         Incidence angle modifier, the fraction of direct irradiance incident
         on the back surface that is not reflected away. [unitless]
 
+    bifaciality : numeric, default 0.8
+        Ratio of the efficiency of the module's rear surface to the efficiency
+        of the front surface. [unitless]
+
+    shade_factor : numeric, default -0.02
+        Fraction of back surface irradiance that is blocked by array mounting
+        structures. Negative value is a reduction in back irradiance.
+        [unitless]
+
+    transmission_factor : numeric, default 0.0
+        Fraction of irradiance on the back surface that does not reach the
+        module's cells due to module structures. Negative value is a reduction
+        in back irradiance. [unitless]
+
+    Returns
+    -------
+    output : OrderedDict or DataFrame
+        Output is a DataFrame when input ghi is a Series. See Notes for
+        descriptions of content.
+
+    Notes
+    -----
+    Input parameters `height` and `pitch` must have the same unit.
+
+    Output includes:
+
+    - poa_global : total irradiance reaching the module cells from both front
+    and back surfaces. [W/m^2]
+    - poa_front : total irradiance reaching the module cells from the front
+    surface. [W/m^2]
+    - poa_back : total irradiance reaching the module cells from the front
+    surface. [W/m^2]
+
     """
     # backside is rotated and flipped relative to front
     backside_tilt, backside_sysaz = _backside(surface_tilt, surface_azimuth)
     # front side POA irradiance
-    irrad_front = get_poa_irradiance(
+    irrad_front = get_irradiance_poa(
         solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr,
         height, pitch, ghi, dhi, dni, albedo, iam_front)
     irrad_front.rename(columns={'poa_global': 'poa_front',
                                 'poa_diffuse': 'poa_front_diffuse',
                                 'poa_direct': 'poa_front_direct'})
     # back side POA irradiance
-    irrad_back = get_poa_irradiance(
+    irrad_back = get_irradiance_poa(
         solar_zenith, solar_azimuth, backside_tilt, backside_sysaz, gcr,
         height, pitch, ghi, dhi, dni, albedo, iam_back)
     irrad_back.rename(columns={'poa_global': 'poa_back',

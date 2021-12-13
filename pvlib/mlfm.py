@@ -113,17 +113,15 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
 
     if qty_mlfm_vars >= 6:  # 6,8 IV data
 
-
         #  create temporary variables (i_r, v_r) from
         #  intercept of r_sc (at i_sc) with r_oc (at v_oc)
         #  to make maths easier
 
-
         i_r = ((dmeas['i_sc'] * dmeas['r_sc'] - dmeas['v_oc']) /
-              (dmeas['r_sc'] - dmeas['r_oc']))
+               (dmeas['r_sc'] - dmeas['r_oc']))
 
         v_r = ((dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
-              dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc'])))
+               dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc'])))
 
         # calculate normalised resistances r_sc and r_oc
         dnorm['r_sc'] = i_r / dmeas['i_sc']  # norm_r @ isc
@@ -242,7 +240,6 @@ def mlfm_norm_to_stack(dnorm, ref, qty_mlfm_vars):
     # calculate reference fill factor (usually between 0.5 and 0.8)
     ff_ref = ref['ff']
 
-
     #  calculate inverse fill factor ~ 1.25 - 2 as we calculate
     #  i_losses from ref_isc to norm_imp
     #  v_losses from ref_voc to norm_vmp
@@ -285,7 +282,6 @@ def mlfm_norm_to_stack(dnorm, ref, qty_mlfm_vars):
 
         #  find factor to transform multiplicative to subtractive losses
         #  correction factor to scale losses to keep 1/ff --> pr_dc
-
 
         #  product
         prod = inv_ff * (
@@ -365,7 +361,6 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
     # boundaries
     bounds = ([ -2,   -2,   -2,   -2,   -2,    -2],
               [  2,    2,    2,    2,    2,     0])
-
 
     popt, pcov = optimize.curve_fit(
         f=func,                 # fit function

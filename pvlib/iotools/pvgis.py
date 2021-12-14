@@ -190,7 +190,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
               'trackingtype': trackingtype, 'components': int(components),
               'usehorizon': int(usehorizon),
               'optimalangles': int(optimalangles),
-              'optimalinclination': int(optimalangles), 'loss': loss}
+              'optimalinclination': int(optimal_surface_tilt), 'loss': loss}
     # pvgis only takes 0 for False, and 1 for True, not strings
     if userhorizon is not None:
         params['userhorizon'] = ','.join(str(x) for x in userhorizon)

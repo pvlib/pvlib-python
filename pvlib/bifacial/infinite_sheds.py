@@ -60,6 +60,8 @@ from pvlib.bifacial import utils
 from pvlib.shading import shaded_fraction
 from pvlib.irradiance import get_ground_diffuse, beam_component
 
+EPS = 1e-9
+
 
 def _gcr_prime(gcr, height, surface_tilt, pitch):
     """
@@ -165,6 +167,9 @@ def _ground_sky_angles(f_z, gcr, height, surface_tilt, pitch):
     #  +----------\<---------P----*+----->\---- ground
     #             1<-----1-fz-----><--fz--0---- fraction of ground
 
+    if height < EPS:  # row is on the ground
+        return 0. * f_z, 0. * f_z
+
     gcr_prime = _gcr_prime(gcr, height, surface_tilt, pitch)
     opposite_side = sind(surface_tilt)
     adjacent_side = f_z/gcr_prime - cosd(surface_tilt)
@@ -249,6 +254,9 @@ def _ground_sky_angles_prev(f_z, gcr, height, surface_tilt, pitch):
     #  +---+*-----\<---------P----------->\---- ground
     #      <-1+fz-1<---------fz=1---------0---- fraction of ground
 
+    if height < EPS:  # row is on the ground
+        return 0. * f_z, 0. * f_z
+
     gcr_prime = _gcr_prime(gcr, height, surface_tilt, pitch)
     # angle to top of previous panel in front of the current row
     psi_0 = np.rad2deg(np.arctan2(
@@ -293,9 +301,12 @@ def _f_z0_limit(gcr, height, surface_tilt, pitch):
     z0 : numeric
         Limit position on the ground. [unitless]
     """
+    if height < EPS:
+        return 0.  # limit position is the bottom of the previous row
     _, tan_psi_t_x0 = _sky_angle(gcr, surface_tilt, 0.0)
     # tan_psi_t_x0 = gcr * np.sin(tilt) / (1.0 - gcr * np.cos(tilt))
-    return height / pitch * (1. / tand(surface_tilt) + 1. / tan_psi_t_x0)
+    with np.errstate(divide='ignore'):
+        return height / pitch * (1. / tand(surface_tilt) + 1. / tan_psi_t_x0)
 
 
 def _ground_sky_angles_next(f_z, gcr, height, surface_tilt, pitch):
@@ -363,6 +374,9 @@ def _ground_sky_angles_next(f_z, gcr, height, surface_tilt, pitch):
     #  +----------\<---------P----------->\------*----- ground
     #             1<---------fz=1---------0-1-fz->----- fraction of ground
 
+    if height < EPS:  # row is on the ground
+        return 0. * f_z, 0. * f_z
+
     gcr_prime = _gcr_prime(gcr, height, surface_tilt, pitch)
     tilt_prime = 180. - surface_tilt
     # angle to bottom of next panel
@@ -409,9 +423,12 @@ def _f_z1_limit(gcr, height, surface_tilt, pitch):
     z1 : numeric
         Limit position on the ground. [unitless]
     """
+    if height < EPS:
+        return 0.  # limit position is the bottom of the next row
     _, tan_psi_t_x1 = _sky_angle(gcr, 180. - surface_tilt, 0.0)
     # tan_psi_t_x1 = gcr * np.sin(pi-tilt) / (1.0 - gcr * np.cos(pi-tilt))
-    return height / pitch * (1. / tan_psi_t_x1 - 1. / tand(surface_tilt))
+    with np.errstate(divide='ignore'):
+        return height / pitch * (1. / tan_psi_t_x1 - 1. / tand(surface_tilt))
 
 
 # TODO: make sure that it is clear psi_1 is a supplement (angle from negative
@@ -443,7 +460,7 @@ def _vf_sky(psi_0, psi_1):
 # TODO: move to util
 # TODO: add argument to set number of rows, default is infinite
 # TODO: add option for first or last row, default is middle row
-def _vf_ground_sky(gcr, height, surface_tilt, pitch, npoints=100):
+def _vf_ground_sky(gcr, height, surface_tilt, pitch, max_rows=3, npoints=100):
     """
     View factors from an array of points on the ground between adjacent,
     interior rows, to the sky.
@@ -462,6 +479,9 @@ def _vf_ground_sky(gcr, height, surface_tilt, pitch, npoints=100):
         = 0, surface facing horizon = 90. [degree]
     pitch : numeric
         row spacing
+    max_rows : int, default 3
+        Number of rows to consider in front or behind the current previous and
+        next row.
     npoints : int, default 100
         Number of points used to discretize distance along the ground.
 
@@ -475,8 +495,8 @@ def _vf_ground_sky(gcr, height, surface_tilt, pitch, npoints=100):
 
     """
     args = gcr, height, surface_tilt, pitch
-    fz0_limit = _f_z0_limit(*args)
-    fz1_limit = _f_z1_limit(*args)
+    fz0_limit = np.minimum(pitch * max_rows, _f_z0_limit(*args))
+    fz1_limit = np.minimum(pitch * max_rows, _f_z1_limit(*args))
     # include extra space to account for sky visible from adjacent rows
     # divide ground between visible limits into 3x npoints
     fz = np.linspace(
@@ -669,8 +689,8 @@ def _sky_angle(gcr, surface_tilt, x):
     y = 1.0 - x
     x1 = y * sind(surface_tilt)
     x2 = (1/gcr - y * cosd(surface_tilt))
-    tan_psi_top = x1 / x2
     psi_top = np.rad2deg(np.arctan2(x1, x2))
+    tan_psi_top = tand(psi_top)  # avoids div by 0
     return psi_top, tan_psi_top
 
 
@@ -1148,13 +1168,12 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
     Input parameters `height` and `pitch` must have the same unit.
 
     Output includes:
-
     - poa_global : total irradiance reaching the module cells from both front
-    and back surfaces. [W/m^2]
+      and back surfaces. [W/m^2]
     - poa_front : total irradiance reaching the module cells from the front
-    surface. [W/m^2]
+      surface. [W/m^2]
     - poa_back : total irradiance reaching the module cells from the front
-    surface. [W/m^2]
+      surface. [W/m^2]
 
     """
     # backside is rotated and flipped relative to front

@@ -54,6 +54,7 @@ IEEE PVSC 2017
 
 from collections import OrderedDict
 import numpy as np
+from scipy.interpolate import interp1d
 import pandas as pd
 from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial import utils
@@ -483,7 +484,7 @@ def _vf_ground_sky(gcr, height, surface_tilt, pitch, max_rows=3, npoints=100):
         Number of rows to consider in front or behind the current previous and
         next row.
     npoints : int, default 100
-        Number of points used to discretize distance along the ground.
+        Number of points used per row to discretize distance along the ground.
 
     Returns
     -------
@@ -493,47 +494,64 @@ def _vf_ground_sky(gcr, height, surface_tilt, pitch, max_rows=3, npoints=100):
         View factors at discrete points between adjacent, interior rows.
         [unitless]
 
+    Notes
+    -----
+    height and pitch must be in the same units.
     """
     args = gcr, height, surface_tilt, pitch
-    fz0_limit = np.minimum(pitch * max_rows, _f_z0_limit(*args))
-    fz1_limit = np.minimum(pitch * max_rows, _f_z1_limit(*args))
+    # view limit behind previous row to gaps between previous rows
+    # in fraction of pitch 
+    fz0_limit = _f_z0_limit(*args)
+    fz0_limit = np.where(fz0_limit > max_rows, max_rows, fz0_limit)
+    next_limit = np.maximum(fz0_limit.max(), 1.0)
+    # view limit in front of next row to gaps between next rows 
+    fz1_limit = _f_z1_limit(*args)
+    fz1_limit = np.where(fz1_limit > max_rows, max_rows, fz0_limit)
+    prev_limit = np.minimum((1 - fz1_limit).min(), 0.)
     # include extra space to account for sky visible from adjacent rows
     # divide ground between visible limits into 3x npoints
-    fz = np.linspace(
-        0.0 if (1 - fz1_limit) > 0 else (1 - fz1_limit),
-        1.0 if fz0_limit < 1 else fz0_limit,
-        3*npoints)
+    # need one discretization because interp1d can accept only one x vector
+    fz = np.linspace(prev_limit, next_limit, 3*max_rows*npoints)
+    # tile fz with one row for each surface_tilt so we can vectorize angle
+    # calculations
+    fz_vec = np.tile(fz, [len(surface_tilt), 1])
+    # tile surface_tilt to match fz_vec dimensions
+    st_vec = np.tile(surface_tilt, [len(fz), 1]).T
     # calculate the angles psi_0 and psi_1 that bound the sky visible
-    # from between the previous and next rows
-    psi_0, psi_1 = _ground_sky_angles(fz, *args)
+    # from between the previous and next rows. Use same fz for every
+    # surface_tilt
+    psi_0, psi_1 = _ground_sky_angles(fz_vec, gcr, height, st_vec, pitch)
     # angles for portions of sky visible between rows in front of previous
     # row
-    psi_0_front, psi_1_front = _ground_sky_angles_prev(fz, *args)
-    fz_sky_next = _vf_sky(psi_0_front, psi_1_front)
-    fz0_sky_next = []
-    prev_row = 0.0
+    psi_0_front, psi_1_front = _ground_sky_angles_prev(
+        fz_vec, gcr, height, st_vec, pitch)
+    vf_sky_front = _vf_sky(psi_0_front, psi_1_front)
+    f_front = interp1d(fz, vf_sky_front, axis=1, fill_value=0,
+                       bounds_error=False, assume_sorted=True)
+    vf_front = 0. * fz_vec
     # loop over rows by adding 1.0 to fz until prev_row < ceil(fz0_limit)
     # TODO: explain this loop over rows in front of current row
-    while (fz0_limit - prev_row) > 0:
-        fz0_sky_next.append(np.interp(fz + prev_row, fz, fz_sky_next))
-        prev_row += 1.0
+    for row in np.arange(max_rows):
+        vf_front += f_front(fz + row)
     # angles for portions of the sky visible between rows behind the next row
-    psi_0_back, psi_1_back = _ground_sky_angles_next(fz, *args)
-    fz_sky_prev = _vf_sky(psi_0_back, psi_1_back)
-    fz1_sky_prev = []
-    next_row = 0.0
-    # loop over rows, subtracting 1.0 from fz until next_row < ceil(fz1_limit)
-    while (fz1_limit - next_row) > 0:
-        fz1_sky_prev.append(np.interp(fz - next_row, fz, fz_sky_prev))
-        next_row += 1.0
+    psi_0_back, psi_1_back = _ground_sky_angles_next(
+        fz_vec, gcr, height, st_vec, pitch)
+    vf_sky_back = _vf_sky(psi_0_back, psi_1_back)
+    f_back = interp1d(fz, vf_sky_back, axis=1, fill_value=0,
+                       bounds_error=False, assume_sorted=True)
+    vf_back = 0. * fz_vec
+    for row in np.arange(max_rows):
+        vf_back += f_back(fz - row)
     # calculate the view factor of the sky from the ground at point z
     fz_sky = (
         _vf_sky(psi_0, psi_1)  # current row
-        + np.sum(fz0_sky_next, axis=0)  # sum of all next rows
-        + np.sum(fz1_sky_prev, axis=0))  # sum of all previous rows
+        + vf_front  # sum of all next rows
+        + vf_back)  # sum of all previous rows
     # we just need one row, fz in range [0, 1]
     fz_row = np.linspace(0, 1, npoints)
-    return fz_row, np.interp(fz_row, fz, fz_sky)
+    f_all = interp1d(fz, fz_sky, axis=1, fill_value=0, bounds_error=False,
+                     assume_sorted=True)
+    return fz_row, f_all(fz_row)
 
 
 def _vf_ground_sky_integ(gcr, height, surface_tilt, pitch, npoints=100):

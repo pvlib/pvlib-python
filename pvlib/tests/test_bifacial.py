@@ -80,6 +80,3 @@ def test_pvfactors_scalar_orientation(example_values):
     ipoa_inc_front, ipoa_inc_back, _, _ = pvfactors_timeseries(**inputs)
     assert_series_equal(ipoa_inc_front, outputs['expected_ipoa_front'])
     assert_series_equal(ipoa_inc_back, outputs['expected_ipoa_back'])
-    
-    import pvlib
-    raise ValueError(pvlib.__file__)

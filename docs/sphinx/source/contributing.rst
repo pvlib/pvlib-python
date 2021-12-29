@@ -150,13 +150,14 @@ a timely manner is to:
 
 #. Start by creating an issue. The issue should be well-defined and
    actionable.
-#. Ask the maintainers to tag the issue with the appropriate milestone.
+#. Ask the [maintainers](https://github.com/orgs/pvlib/people) to tag
+   the issue with the appropriate milestone.
 #. Make a limited-scope pull request. It can be a lot of work to check all of
    the boxes in `pull request guidelines
    <https://github.com/pvlib/pvlib-python/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_,
    especially for pull requests with a lot of new primary code.
    See :ref:`pull-request-scope`.
-#. Tag pvlib community members or ``@pvlib/maintainer`` when the pull
+#. Tag pvlib community members or ``@pvlib/pvlib-maintainer`` when the pull
    request is ready for review. (see :ref:`pull-request-reviews`)
 
 

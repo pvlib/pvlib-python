@@ -9,56 +9,56 @@ from pvlib.tools import cosd
 import pytest
 
 
-def test__gcr_prime():
-    result = infinite_sheds._gcr_prime(gcr=0.5, height=1, surface_tilt=20,
-                                       pitch=4)
-    assert np.isclose(result, 1.2309511000407718)
-
-
 @pytest.fixture
 def test_system():
-    syst = {'height': 1.,
+    syst = {'height': 1.5,
             'pitch': 4.,
-            'surface_tilt': 30}
+            'surface_tilt': 30.,
+            'surface_azimuth': 180.,
+            'axis_azimuth': None,
+            'rotation': -30.}
     syst['gcr'] = 2.0 / syst['pitch']
     return syst
 
 
-def test__ground_sky_angles(test_system):
-    x = np.array([0.0, 0.5, 1.0])
-    psi0, psi1 = infinite_sheds._ground_sky_angles(x, **test_system)
-    expected_psi0 = np.array([150., 126.2060231, 75.])
-    expected_psi1 = np.array([15., 20.10390936, 30.])
-    assert np.allclose(psi0, expected_psi0)
-    assert np.allclose(psi1, expected_psi1)
+def test__tilt_to_rotation():
+    surface_tilt = np.array([0., 20., 90.])
+    surface_azimuth = np.array([180., 90., 270.])
+    result = infinite_sheds._tilt_to_rotation(
+        surface_tilt, surface_azimuth, 180.)
+    assert np.allclose(result, np.array([0., -20., 90.]))
+    res = infinite_sheds._tilt_to_rotation(surface_tilt, 180., None)
+    assert np.allclose(res, np.array([0., -20., -90.]))
 
 
-FZ0_LIMIT = 1.4619022000815438  # infinite_sheds.f_z0_limit(*ARGS)
-# np.arctan2(GCR * np.sin(TILT_RAD), (1.0 - GCR * np.cos(TILT_RAD)))
-PSI_TOP = 0.3120297392978313
+def test__calc_phi_top():
+    rotation = 0.
+    z = np.linspace(0., 1., 3)
+    height = 1.
+    pitch = 2.
+    gcr = 0.5
+    result = infinite_sheds._calc_phi_top(
+        z, gcr, rotation, height, pitch, max_rows=1)
+    expected = np.array(
+        [[33.690067525979785, 63.43494882292201, 116.56505117707799],
+         [116.56505117707799, 146.30993247402023, 158.19859051364818],
+         [158.19859051364818, 164.05460409907712, 167.47119229084848]])
+    assert np.allclose(result, expected)
 
 
-def test__ground_sky_angles_prev(test_system):
-    x = np.array([0.0, 1.0])
-    psi0, psi1 = infinite_sheds._ground_sky_angles_prev(x, **test_system)
-    expected_psi0 = np.array([75., 23.7939769])
-    expected_psi1 = np.array([30., 180. - 23.7939769])
-    assert np.allclose(psi0, expected_psi0)
-    assert np.allclose(psi1, expected_psi1)
-
-
-FZ1_LIMIT = 1.4619022000815427  # infinite_sheds.f_z1_limit(*ARGS)
-# np.arctan2(GCR * np.sin(BACK_TILT_RAD), (1.0 - GCR * np.cos(BACK_TILT_RAD)))
-PSI_TOP_BACK = 0.11582480672702507
-
-
-def test__ground_sky_angles_next(test_system):
-    x = np.array([0., 1.0])
-    psi0, psi1 = infinite_sheds._ground_sky_angles_next(x, **test_system)
-    expected_psi0 = np.array([180 - 9.8960906389, 150.])
-    expected_psi1 = np.array([9.8960906389, 15.])
-    assert np.allclose(psi0, expected_psi0)
-    assert np.allclose(psi1, expected_psi1)
+def test__calc_phi_bottom():
+    rotation = 0.
+    z = np.linspace(0., 1., 3)
+    height = 1.
+    pitch = 2.
+    gcr = 0.5
+    result = infinite_sheds._calc_phi_bottom(
+        z, gcr, rotation, height, pitch, max_rows=1)
+    expected = np.array(
+        [[21.80140948635181, 33.690067525979785, 63.43494882292201],
+         [63.43494882292201, 116.56505117707799, 146.30993247402023],
+         [146.30993247402023, 158.19859051364818, 164.05460409907712]])
+    assert np.allclose(result, expected)
 
 
 def test__sky_angle(test_system):
@@ -69,46 +69,6 @@ def test__sky_angle(test_system):
     exp_angle = np.array([23.79397689, 0.])
     assert np.allclose(angle, exp_angle)
     assert np.allclose(tan_angle, exp_tan_angle)
-
-
-def test__f_z0_limit(test_system):
-    result = infinite_sheds._f_z0_limit(**test_system)
-    expected = 1.0
-    assert np.isclose(result, expected)
-
-
-def test__f_z1_limit(test_system):
-    result = infinite_sheds._f_z1_limit(**test_system)
-    expected = 1.0
-    assert np.isclose(result, expected)
-
-
-def test__vf_sky():
-    result = infinite_sheds._vf_sky(np.array([0.0, 30.0, 90.]),
-                                    np.array([0.0, 30.0, 90.]))
-    expected = np.array([1., np.sqrt(3) / 2, 0.])
-    assert np.allclose(result, expected)
-
-
-def test__vf_ground_sky(test_system):
-    pts, vfs = infinite_sheds._vf_ground_sky(**test_system, npoints=3)
-    expected_pts = np.linspace(0, 1, num=3)
-    sqr3 = np.sqrt(3)
-    # at f_z=0
-    vf_0 = 0.5 * ((2 + sqr3) / np.sqrt(8 + 4 * sqr3) - sqr3 / 2)
-    # at f_z=0.5
-    vf_05_pre = 0.5 * ((3 - sqr3) / np.sqrt(13 - 6 * sqr3)
-                       - np.sqrt(2 - sqr3) / 2)
-    vf_05_mid = 0.5 * ((sqr3 + 1) / np.sqrt(5 + 2 * sqr3)
-                       - (sqr3 - 1) / np.sqrt(5 - 2 * sqr3))
-    vf_05_nex = 0.5 * ((2 + sqr3) / (2 * np.sqrt(2 + sqr3))
-                       - (3 + sqr3) / np.sqrt(13 + 6 * sqr3))
-    vf_05 = vf_05_pre + vf_05_mid + vf_05_nex
-    # at f_z=1.0
-    vf_1 = 0.5 * ((4 - 2 * sqr3) / 4 / np.sqrt(2 - sqr3) + sqr3 / 2)
-    expected_vfs = np.array([vf_0 + vf_1, vf_05, vf_0 + vf_1])
-    assert np.allclose(vfs, expected_vfs, rtol=0.1)  # middle point vf is off
-    assert np.allclose(pts, expected_pts)
 
 
 def test__vf_ground_sky_integ(test_system):
@@ -230,14 +190,14 @@ def test__vf_row_ground_integ(test_system):
 
 
 def test_get_irradiance_poa():
-    # front side irradiance
-    surface_tilt = np.array([0., 0., 0., 0.])
+    # singleton inputs
+    surface_tilt = 0.
     height = 1.
-    surface_azimuth = np.array([180., 180., 180., 180.])
+    surface_azimuth = 180.
     gcr = 0.5
     pitch = 1
-    solar_zenith = np.array([0., 45., 45., 90.])
-    solar_azimuth = np.array([180., 180., 135., 180.])
+    solar_zenith = 0.
+    solar_azimuth = 180.
     ghi = 1000
     dhi = 300
     dni = 700
@@ -256,6 +216,14 @@ def test_get_irradiance_poa():
     assert np.allclose(res['poa_global'], expected_global)
     assert np.allclose(res['poa_diffuse'], expected_diffuse)
     assert np.allclose(res['poa_direct'], expected_direct)
+    surface_tilt = np.array([0., 0., 0., 0.])
+    height = 1.
+    surface_azimuth = np.array([180., 180., 180., 180.])
+    gcr = 0.5
+    pitch = 1
+    solar_zenith = np.array([0., 45., 45., 90.])
+    solar_azimuth = np.array([180., 180., 135., 180.])
+
     # horizontal and elevated but gcr=1, so expect no rear irradiance
     height = 1
     gcr = 1.0
@@ -267,4 +235,6 @@ def test_get_irradiance_poa():
     assert np.allclose(res['poa_diffuse'], expected_diffuse)
     assert np.allclose(res['poa_direct'], expected_direct)
     
-test_get_irradiance_poa()
+#test_get_irradiance_poa()
+#ts = test_system()
+#test__vf_ground_sky_vec()

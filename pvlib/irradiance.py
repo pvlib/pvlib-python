@@ -11,7 +11,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 
-from pvlib import atmosphere, solarposition, tools
+from pvlib import atmosphere, solarposition, clearsky, tools
 
 
 # see References section of get_ground_diffuse function
@@ -95,8 +95,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
         RoverR0sqrd = 1 + 0.033 * np.cos(B)
     elif method == 'spencer':
         B = solarposition._calculate_simple_day_angle(to_doy(datetime_or_doy))
-        RoverR0sqrd = (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
-                       0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
+        RoverR0sqrd = _spencer(B)
     elif method == 'pyephem':
         times = to_datetimeindex(datetime_or_doy)
         RoverR0sqrd = solarposition.pyephem_earthsun_distance(times) ** (-2)
@@ -112,6 +111,11 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
     Ea = to_output(Ea)
 
     return Ea
+
+
+def _spencer(B):
+    return (1.00011 + 0.034221 * np.cos(B) + 0.00128 * np.sin(B) +
+            0.000719 * np.cos(2 * B) + 7.7e-05 * np.sin(2 * B))
 
 
 def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
@@ -2339,6 +2343,143 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
 
     if isinstance(ghi, pd.Series):
         irrads = pd.DataFrame(irrads)
+
+    return irrads
+
+
+def _engerer2_solar_calcs(latitude, longitude, times):
+    """
+    Solar position and extraterrestrial radiation for the engerer2 model.
+
+    Parameters
+    ----------
+    latitude, longitude : float
+        Coordinates in decimal degrees
+    times : pd.DatetimeIndex
+        Timestamps in UTC
+
+    Returns
+    -------
+    zenith : numeric
+        solar zenith angles [degrees]
+    ast : numeric
+        apparent solar time [hours]
+    dni_et_h : numeric
+        Extra-terrestrial horizontal irradiance [W/m2]
+
+    References
+    ----------
+    .. [1] Jamie M. Bright and Nicholas A. Engerer, "Engerer2: Global
+       re-parameterisation, update, and validation of anirradiance separation
+       model at different temporal resolutions", Journal of Renewable and
+       Sustainable Energy 11, 033701 (2019) https://doi.org/10.1063/1.5097014
+    """
+    d = times.dayofyear.values
+    beta = (360 / 365.242) * (d - 1)  # Eq 4
+    eps = (0.258 * tools.cosd(beta) - 7.416 * tools.sind(beta)
+           - 3.648 * tools.cosd(2*beta) - 9.228 * tools.sind(2*beta))  # Eq 5
+    ts = 12 - longitude / 15 - eps / 60  # Eq 6
+    th = times.hour + times.minute / 60 + times.second / 3600  # TODO us, ns?
+    hour_angle = 15 * (th - ts)  # Eq 7
+    hour_angle = (hour_angle + 180) % 360 - 180  # Eq 8
+
+    declination = solarposition.declination_spencer71(d + th/24)  # Eq 10
+    zenith = solarposition.solar_zenith_analytical(np.radians(latitude),
+                                                   np.radians(hour_angle),
+                                                   declination)  # Eq 11
+    ast = hour_angle / 15 + 12  # Eq 12
+    Esc = 1366.1  # solar constant from [1]
+    B = solarposition._calculate_simple_day_angle(d, offset=0)  # Eq 13
+    dni_et_h = np.cos(zenith) * Esc * _spencer(B)  # Eq 14
+    return np.degrees(zenith), ast, dni_et_h
+
+
+_ENGERER2_COEFFS = {
+    #                    C,    beta0,   beta1,    beta2,   beta3,     beta4,   beta5  # noqa
+    '2015-1min': [0.042336, -3.7912, 7.5479, -0.010036, 0.003148,   -5.3146, 1.7073],  # noqa
+    '1min':  [ 0.10562,   -4.1332,  8.2578,  0.010087,  0.00088801, -4.9302, 0.44378],  # noqa
+    '5min':  [ 0.093936,  -4.5771,  8.4641,  0.010012,  0.003975,   -4.3921, 0.39331],  # noqa
+    '10min': [ 0.079965,  -4.8539,  8.4764,  0.018849,  0.0051497,  -4.1457, 0.37466],  # noqa
+    '15min': [ 0.065972,  -4.7211,  8.3294,  0.0095444, 0.0053493,  -4.169,  0.39526],  # noqa
+    '30min': [ 0.032675,  -4.8681,  8.1867,  0.015829,  0.0059922,  -4.0304, 0.47371],  # noqa
+    '60min': [-0.0097539, -5.3169,  8.5084,  0.013241,  0.0074356,  -3.0329, 0.56403],  # noqa
+    '1day':  [ 0.32726,   -9.4391, 17.113,   0.13752,  -0.024099,    6.6257, 0.31419],  # noqa
+}
+
+
+def engerer2(ghi, latitude, longitude, coefficients, times=None, ghi_cs=None):
+    """
+    Determine DHI from GHI using the Engerer2 model.
+
+    The Engerer2 model predicts DHI from measured GHI. The model was
+    originally proposed in [1]_ and reparameterised in [2]_ to perform
+    better across diverse climates.
+
+    Parameters
+    ----------
+    ghi : numeric
+
+    latitude : numeric
+        Coordinates of the measurement location in decimal degrees
+
+    longitude : numeric
+        Coordinates of the measurement location in decimal degrees
+
+    coefficients : str, optional
+        The name of the engerer2 coefficient set to use.  Options include
+        ``'2015-1min'`` for the original coefficients from [1]_, or
+        ``'1min'``, ``'5min'``, ``'10min'``, ``'15min'``, ``'30min'``,
+        ``'60min'``, and ``'1day'`` for the updated coefficients from [2]_.
+
+    times : pd.DatetimeIndex, optional
+        Timestamps corresponding to the values of ``ghi``.
+        Must be specified if ``ghi`` is not a Series with a DatetimeIndex.
+
+    ghi_cs : numeric, optional
+        Clear-sky GHI.  If not specified, values will be modeled using
+        :py:func:`~pvlib.clearsky.threlkeld_jordan` [W/m2]
+
+    Returns
+    -------
+    irrads : dict or DataFrame
+        Contains keys ``dni``, ``dhi``, ``ghi``
+
+    References
+    ----------
+    .. [1] Nicholas A. Engerer, "Minute resolution estimates of the diffuse
+       fraction of global irradiance for southeastern Australia", Solar Energy
+    .. [2] Jamie M. Bright and Nicholas A. Engerer, "Engerer2: Global
+       re-parameterisation, update, and validation of anirradiance separation
+       model at different temporal resolutions", Journal of Renewable and
+       Sustainable Energy 11, 033701 (2019) https://doi.org/10.1063/1.5097014
+    """
+    if times is None:
+        try:
+            times = ghi.index
+        except AttributeError:
+            raise ValueError("TODO")
+    # TODO raise error if times are not localized?
+    times = times.tz_convert('UTC').tz_localize(None)
+
+    zenith, ast, dni_et_h = _engerer2_solar_calcs(latitude, longitude, times)
+    if ghi_cs is None:
+        ghi_cs = clearsky.threlkeld_jordan(zenith, times=times)
+
+    Kt = ghi / dni_et_h  # Eq 18 -- TODO use the constraining functions?
+    Ktc = ghi_cs / dni_et_h  # Eq 19
+    dKtc = Ktc - Kt  # Eq 20
+    Kde = np.maximum(0, 1 - ghi_cs / ghi)  # Eq 21
+
+    C, b0, b1, b2, b3, b4, b5 = _ENGERER2_COEFFS[coefficients]
+
+    alpha = 1 + np.exp(b0 + b1*Kt + b2*ast + b3*zenith + b4*dKtc)  # Eq 22
+    Kd = C + (1-C) / alpha + b5*Kde  # Eq 23
+    dhi = Kd * ghi
+
+    irrads = {}
+    irrads['dni'] = dni(ghi, dhi, zenith)
+    irrads['dhi'] = dhi
+    irrads['ghi'] = ghi
 
     return irrads
 

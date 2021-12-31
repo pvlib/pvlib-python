@@ -234,7 +234,3 @@ def test_get_irradiance_poa():
     assert np.allclose(res['poa_global'], expected_global)
     assert np.allclose(res['poa_diffuse'], expected_diffuse)
     assert np.allclose(res['poa_direct'], expected_direct)
-    
-#test_get_irradiance_poa()
-#ts = test_system()
-#test__vf_ground_sky_vec()

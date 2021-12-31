@@ -66,7 +66,7 @@ EPS = 1e-9
 def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
     """
     Convert surface tilt to rotation angle.
-    
+
     Surface tilt angles are positive by definition. A positive rotation
     angle is counterclockwise in a right hand coordinate system with the
     axis of rotation positive in the direction of axis_azimuth. A positive
@@ -78,7 +78,7 @@ def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees east of north 
+        Surface azimuth angles in decimal degrees east of north
         (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
         be >=0 and <=360.
     axis_azimuth : float or None, default None
@@ -198,7 +198,7 @@ def _vf_ground_sky_integ(gcr, height, surface_tilt, surface_azimuth,
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees east of north 
+        Surface azimuth angles in decimal degrees east of north
         (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
         be >=0 and <=360.
     pitch : float
@@ -568,7 +568,7 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees east of north 
+        Surface azimuth angles in decimal degrees east of north
         (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
         be >=0 and <=360.
 

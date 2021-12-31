@@ -1,8 +1,6 @@
 """
-test infinite sheds
+test bifical.utils
 """
-
-import os
 import numpy as np
 import pytest
 from pvlib.bifacial import utils
@@ -53,10 +51,10 @@ def test_unshaded_ground_fraction(
 
 
 def test__vf_ground_sky(test_system_fixed_tilt):
-    # singleton inputs
+    # vect0r input
     pts = np.linspace(0, 1, num=3)
     vfs, _ = utils.vf_ground_sky_2d(
-        pts, test_system_fixed_tilt['rotation'], test_system_fixed_tilt['gcr'], 
+        pts, test_system_fixed_tilt['rotation'], test_system_fixed_tilt['gcr'],
         test_system_fixed_tilt['pitch'], test_system_fixed_tilt['height'],
         max_rows=1)
     sqr3 = np.sqrt(3) / 4
@@ -69,12 +67,18 @@ def test__vf_ground_sky(test_system_fixed_tilt):
     c10 = (-3 - sqr3) / np.sqrt(1.25**2 + (3 + sqr3)**2)  # right edge row -1
     c11 = (-1 - sqr3) / np.sqrt(1.25**2 + (1 + sqr3)**2)  # right edge row 0
     c12 = (-1 + sqr3) / np.sqrt(0.75**2 + (-1 + sqr3)**2)  # left edge row 0
-    c13 = (1 - sqr3) / np.sqrt(1.25**2 + (1 - sqr3)**2)  # right edge row 
+    c13 = (1 - sqr3) / np.sqrt(1.25**2 + (1 - sqr3)**2)  # right edge row
     vf_1 = 0.5 * (c13 - c12 + c11 - c10)  # vf at point 1
     c20 = -(4 + sqr3) / np.sqrt(1.25**2 + (4 + sqr3)**2)  # right edge row -1
     c21 = (-2 + sqr3) / np.sqrt(0.75**2 + (-2 + sqr3)**2)  # left edge row 0
-    c22 = (-2 - sqr3) / np.sqrt(1.75**2 + (2 + sqr3)**2)  # right edge row 0
-    c23 = (0 - sqr3) / np.sqrt(1.25**2 + (0 - sqr3)**2)  # right edge row 1 
+    c22 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # right edge row 0
+    c23 = (0 - sqr3) / np.sqrt(1.25**2 + (0 - sqr3)**2)  # right edge row 1
     vf_2 = 0.5 * (c23 - c22 + c21 - c20)  # vf at point 1
     expected_vfs = np.array([vf_0, vf_1, vf_2])
     assert np.allclose(vfs, expected_vfs, rtol=0.1)  # middle point vf is off
+    # test with singleton x
+    vf, _ = utils.vf_ground_sky_2d(
+        pts[0], test_system_fixed_tilt['rotation'], test_system_fixed_tilt['gcr'],
+        test_system_fixed_tilt['pitch'], test_system_fixed_tilt['height'],
+        max_rows=1)
+    assert np.isclose(vf, expected_vfs[0])

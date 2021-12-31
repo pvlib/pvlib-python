@@ -90,7 +90,7 @@ def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
 
     Parameters
     ----------
-    x : array-like
+    x : numeric
         Position on the ground between two rows, as a fraction of the pitch.
         x = 0 corresponds to the center point of a row.
     rotation : float
@@ -110,11 +110,12 @@ def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     vf : array-like
         Fraction of sky dome visible from each point on the ground. [unitless]
     wedge_angles : array
-        Bounding angles of each wedge of visible sky. 
+        Bounding angles of each wedge of visible sky.
         Shape is (2, len(x), 2*max_rows+1). wedge_angles[0,:,:] is the
         starting angle of each wedge, wedge_angles[1,:,:] is the end angle.
         [degrees]
     """
+    x = np.atleast_1d(x)  # handle float
     all_k = np.arange(-max_rows, max_rows + 1)
     width = gcr * pitch / 2.
     # angles from x to left edge of each row
@@ -123,7 +124,7 @@ def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     phi_1 = np.degrees(np.arctan2(a1, b1))
     # angles from x to right edge of each row
     a2 = height - width * sind(rotation)
-    b2 = (all_k - x[:, np.newaxis]) * pitch - width * cosd(rotation) 
+    b2 = (all_k - x[:, np.newaxis]) * pitch - width * cosd(rotation)
     phi_2 = np.degrees(np.arctan2(a2, b2))
     phi = np.stack([phi_1, phi_2])
     swap = phi[0, :, :] > phi[1, :, :]

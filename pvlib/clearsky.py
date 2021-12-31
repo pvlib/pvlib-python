@@ -1062,3 +1062,67 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     if isinstance(irrads['dni'], pd.Series):
         irrads = pd.DataFrame.from_dict(irrads)
     return irrads
+
+
+def threlkeld_jordan(solar_zenith, times=None):
+    """
+    Determine clear sky GHI, DNI, and DHI with the Threlkeld/Jordan model,
+    sometimes called the ASHRAE Clear Day Solar Flux Model.
+
+    This implementation uses coefficients as fitted in [1]_ based on
+    data from [2]_, as used in [3]_.
+
+    Parameters
+    ----------
+    solar_zenith : numeric
+        Solar zenith angle [degree]
+
+    times : pd.DatetimeIndex, optional
+        Timestamps corresponding to the values of ``solar_zenith``.  Must
+        be specified if ``solar_zenith`` is not a Series with a DatetimeIndex.
+
+    Returns
+    -------
+    output : dict or DataFrame
+        Contains keys ``'ghi'``, ``'dni'``, ``'dhi'``
+
+    References
+    ----------
+    .. [1] Masters, Gilbert. 2005. Renewable and Efficient Electric Power
+       Systems. Wiley.
+    .. [2] J. Threlkeld and R. C. Jordan, "Direct solar radiation available
+       on clear days," Heat. Piping Air Cond. 29, 135 (1957).
+       https://www.osti.gov/biblio/5249365.
+    .. [3] Jamie M. Bright and Nicholas A. Engerer, "Engerer2: Global
+       re-parameterisation, update, and validation of anirradiance separation
+       model at different temporal resolutions", Journal of Renewable and
+       Sustainable Energy 11, 033701 (2019) https://doi.org/10.1063/1.5097014
+    """
+    if times is None:
+        try:
+            times = solar_zenith.index
+        except AttributeError:
+            raise ValueError("'times' must be specified if 'solar_zenith' "
+                             "is not a Series")
+
+    d = times.dayofyear.values
+    d1 = 360 * (d - 275) / 365
+    d2 = 360 * (d - 100) / 365
+    A = 1160 + 75 * tools.sind(d1)
+    k = 0.174 + 0.035 * tools.sind(d2)
+    c = 0.095 + 0.04 * tools.sind(d2)
+    cos_zen = tools.cosd(solar_zenith)
+    dni = A * np.exp(-k / cos_zen)
+    dni[cos_zen < 0] = 0
+    dhi = dni * c
+    ghi = dni * cos_zen + dhi
+
+    irrads = {}
+    irrads['ghi'] = ghi
+    irrads['dni'] = dni
+    irrads['dhi'] = dhi
+
+    if isinstance(solar_zenith, pd.Series):
+        irrads = pd.DataFrame(irrads)
+
+    return irrads

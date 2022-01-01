@@ -192,13 +192,13 @@ def test_get_irradiance_poa():
         solar_zenith, solar_azimuth, surface_tilt,
         surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
         albedo, iam, npoints, all_output)
-    expected_diffuse = np.array([300., 300., 300., 300.])
-    expected_direct = np.array(
-        [700., 350. * np.sqrt(2), 350. * np.sqrt(2), 0.])
+    expected_diffuse = np.array([300.])
+    expected_direct = np.array([700.])
     expected_global = expected_diffuse + expected_direct
-    assert np.allclose(res['poa_global'], expected_global)
-    assert np.allclose(res['poa_diffuse'], expected_diffuse)
-    assert np.allclose(res['poa_direct'], expected_direct)
+    assert np.isclose(res['poa_global'], expected_global)
+    assert np.isclose(res['poa_diffuse'], expected_diffuse)
+    assert np.isclose(res['poa_direct'], expected_direct)
+    # vector inputs
     surface_tilt = np.array([0., 0., 0., 0.])
     height = 1.
     surface_azimuth = np.array([180., 180., 180., 180.])
@@ -206,10 +206,10 @@ def test_get_irradiance_poa():
     pitch = 1
     solar_zenith = np.array([0., 45., 45., 90.])
     solar_azimuth = np.array([180., 180., 135., 180.])
-
-    # horizontal and elevated but gcr=1, so expect no rear irradiance
-    height = 1
-    gcr = 1.0
+    expected_diffuse = np.array([300., 300., 300., 300.])
+    expected_direct = np.array(
+        [700., 350. * np.sqrt(2), 350. * np.sqrt(2), 0.])
+    expected_global = expected_diffuse + expected_direct
     res = infinite_sheds.get_irradiance_poa(
         solar_zenith, solar_azimuth, surface_tilt,
         surface_azimuth, gcr, height, pitch, ghi, dhi, dni,

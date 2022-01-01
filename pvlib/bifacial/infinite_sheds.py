@@ -147,13 +147,17 @@ def _vf_ground_sky_integ(gcr, height, surface_tilt, surface_azimuth,
 
     """
     z = np.linspace(0, 1, npoints)
-    rotation = _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth)
+    rotation = np.atleast_1d(_tilt_to_rotation(
+        surface_tilt, surface_azimuth, axis_azimuth))
     # calculate the view factor from the ground to the sky. Accounts for
     # views between rows both towards the array front, and array back
-    fz_sky, _ = utils.vf_ground_sky_2d(z, rotation, gcr, pitch, height, max_rows)
-
+    # TODO: vectorize over rotation
+    fz_sky = np.zeros((len(rotation), npoints))
+    for k, r in enumerate(rotation):
+        vf, _ = utils.vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
+        fz_sky[k, :] = vf
     # calculate the integrated view factor for all of the ground between rows
-    fgnd_sky = np.trapz(fz_sky, z)
+    fgnd_sky = np.trapz(fz_sky, z, axis=1)
 
     return fgnd_sky, z, fz_sky
 

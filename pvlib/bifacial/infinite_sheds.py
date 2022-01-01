@@ -105,83 +105,6 @@ def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
     return rotation
 
 
-def _calc_phi_top(z, gcr, rotation, height, pitch, max_rows=5):
-    '''
-    Angle from z to the top (left) edge of each row.
-
-    Parameters
-    ----------
-    z : array-like
-        Position on the ground between two rows, as a fraction of the pitch.
-        z = 0 corresponds to the center point of a row.
-    gcr : float
-        Ratio of row slant length to row spacing (pitch). [unitless]
-    rotation : float
-        Rotation of lower (right) edge relative to row center. [degree]
-    height : float
-        Height of center point of the row above the ground. Must be in the same
-        units as pitch.
-    pitch : float
-        Distance between two rows. Must be in the same units as height.
-    max_rows : int, default 5
-        Maximum number of rows to consider in front and behind the current row.
-
-    Returns
-    -------
-    ndarray or float
-        Angle to line from z to the top (left) edge of each row. Rows are
-        ordered from max_row down to -max_row, column order corresponds to z.
-        [degree]
-
-    '''
-    length = pitch * gcr
-    # order from front to back
-    k = np.arange(max_rows, -max_rows-1, -1)
-    b = (k - z[:, np.newaxis]) * pitch - 0.5 * length * cosd(rotation)
-    a = height + 0.5 * length * sind(rotation)
-    phi = np.rad2deg(np.arctan2(a, b))
-    # transpose so that rows are in columns
-    return phi.T
-
-
-def _calc_phi_bottom(z, gcr, rotation, height, pitch, max_rows=5):
-    '''
-    Angle from z to the bottom (right) edge of each row.
-
-    Parameters
-    ----------
-    z : array-like
-        Position on the ground between two rows, as a fraction of the pitch.
-        z = 0 corresponds to the center point of a row.
-    gcr : float
-        Ratio of row slant length to row spacing (pitch). [unitless]
-    rotation : float
-        Rotation of lower (right) edge relative to row center. [degree]
-    height : float
-        Height of center point of the row above the ground. Must be in the same
-        units as pitch.
-    pitch : float
-        Distance between two rows. Must be in the same units as height.
-    max_rows : int, default 5
-        Maximum number of rows to consider in front and behind the current row.
-
-    Returns
-    -------
-    ndarray or float
-        Angle to line from z to the bottom (right) edge of each row. [degree]
-
-    '''
-    length = pitch * gcr
-    # calculate height of left/bottom edge
-    h = height + 0.5 * length * sind(rotation)
-    # order from front to back
-    k = np.arange(max_rows, -max_rows-1, -1)
-    b = (k - z[:, np.newaxis]) * pitch + 0.5 * length * cosd(rotation)
-    phi = np.rad2deg(np.arctan2(h, b))
-    # transpose so that rows are in columns
-    return phi.T
-
-
 def _vf_ground_sky_integ(gcr, height, surface_tilt, surface_azimuth,
                          pitch, axis_azimuth=None, max_rows=5, npoints=100):
     """
@@ -227,7 +150,7 @@ def _vf_ground_sky_integ(gcr, height, surface_tilt, surface_azimuth,
     rotation = _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth)
     # calculate the view factor from the ground to the sky. Accounts for
     # views between rows both towards the array front, and array back
-    fz_sky = utils._vf_ground_sky_2d(z, rotation, gcr, pitch, height, max_rows)
+    fz_sky, _ = utils.vf_ground_sky_2d(z, rotation, gcr, pitch, height, max_rows)
 
     # calculate the integrated view factor for all of the ground between rows
     fgnd_sky = np.trapz(fz_sky, z)

@@ -11,14 +11,34 @@ import pytest
 
 @pytest.fixture
 def test_system():
-    syst = {'height': 1.5,
-            'pitch': 4.,
+    syst = {'height': 1.0,
+            'pitch': 2.,
             'surface_tilt': 30.,
             'surface_azimuth': 180.,
             'axis_azimuth': None,
             'rotation': -30.}
-    syst['gcr'] = 2.0 / syst['pitch']
-    return syst
+    syst['gcr'] = 1.0 / syst['pitch']
+    pts = np.linspace(0, 1, num=3)
+    sqr3 = np.sqrt(3) / 4
+    # c_i,j = cos(angle from point i to edge of row j), j=0 is row = -1
+    # c_i,j = cos(angle from point i to edge of row j), j=0 is row = -1
+    c00 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # right edge row -1
+    c01 = -sqr3 / np.sqrt(1.25**2 + sqr3**2)  # right edge row 0
+    c02 = sqr3 / np.sqrt(0.75**2 + sqr3**2)  # left edge of row 0
+    c03 = (2 - sqr3) / np.sqrt(1.25**2 + (2 - sqr3)**2)  # right edge of row 1
+    vf_0 = 0.5 * (c03 - c02 + c01 - c00)  # vf at point 0
+    c10 = (-3 - sqr3) / np.sqrt(1.25**2 + (3 + sqr3)**2)  # right edge row -1
+    c11 = (-1 - sqr3) / np.sqrt(1.25**2 + (1 + sqr3)**2)  # right edge row 0
+    c12 = (-1 + sqr3) / np.sqrt(0.75**2 + (-1 + sqr3)**2)  # left edge row 0
+    c13 = (1 - sqr3) / np.sqrt(1.25**2 + (1 - sqr3)**2)  # right edge row
+    vf_1 = 0.5 * (c13 - c12 + c11 - c10)  # vf at point 1
+    c20 = -(4 + sqr3) / np.sqrt(1.25**2 + (4 + sqr3)**2)  # right edge row -1
+    c21 = (-2 + sqr3) / np.sqrt(0.75**2 + (-2 + sqr3)**2)  # left edge row 0
+    c22 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # right edge row 0
+    c23 = (0 - sqr3) / np.sqrt(1.25**2 + (0 - sqr3)**2)  # right edge row 1
+    vf_2 = 0.5 * (c23 - c22 + c21 - c20)  # vf at point 1
+    vfs_ground_sky = np.array([vf_0, vf_1, vf_2])
+    return syst, pts, vfs_ground_sky
 
 
 def test__tilt_to_rotation():
@@ -31,40 +51,11 @@ def test__tilt_to_rotation():
     assert np.allclose(res, np.array([0., -20., -90.]))
 
 
-def test__calc_phi_top():
-    rotation = 0.
-    z = np.linspace(0., 1., 3)
-    height = 1.
-    pitch = 2.
-    gcr = 0.5
-    result = infinite_sheds._calc_phi_top(
-        z, gcr, rotation, height, pitch, max_rows=1)
-    expected = np.array(
-        [[33.690067525979785, 63.43494882292201, 116.56505117707799],
-         [116.56505117707799, 146.30993247402023, 158.19859051364818],
-         [158.19859051364818, 164.05460409907712, 167.47119229084848]])
-    assert np.allclose(result, expected)
-
-
-def test__calc_phi_bottom():
-    rotation = 0.
-    z = np.linspace(0., 1., 3)
-    height = 1.
-    pitch = 2.
-    gcr = 0.5
-    result = infinite_sheds._calc_phi_bottom(
-        z, gcr, rotation, height, pitch, max_rows=1)
-    expected = np.array(
-        [[21.80140948635181, 33.690067525979785, 63.43494882292201],
-         [63.43494882292201, 116.56505117707799, 146.30993247402023],
-         [146.30993247402023, 158.19859051364818, 164.05460409907712]])
-    assert np.allclose(result, expected)
-
-
 def test__sky_angle(test_system):
+    ts, _, _ = test_system
     x = np.array([0., 1.0])
     angle, tan_angle = infinite_sheds._sky_angle(
-        test_system['gcr'], test_system['surface_tilt'], x)
+        ts['gcr'], ts['surface_tilt'], x)
     exp_tan_angle = np.array([1. / (4 - np.sqrt(3)), 0.])
     exp_angle = np.array([23.79397689, 0.])
     assert np.allclose(angle, exp_angle)
@@ -72,32 +63,21 @@ def test__sky_angle(test_system):
 
 
 def test__vf_ground_sky_integ(test_system):
-    vf_integ, pts, vf_pts = infinite_sheds._vf_ground_sky_integ(
-        **test_system, npoints=3)
-    expected_pts = np.linspace(0, 1, num=3)
-    sqr3 = np.sqrt(3)
-    # at f_z=0
-    vf_0 = 0.5 * ((2 + sqr3) / np.sqrt(8 + 4 * sqr3) - sqr3 / 2)
-    # at f_z=0.5
-    vf_05_pre = 0.5 * ((3 - sqr3) / np.sqrt(13 - 6 * sqr3)
-                       - np.sqrt(2 - sqr3) / 2)
-    vf_05_mid = 0.5 * ((sqr3 + 1) / np.sqrt(5 + 2 * sqr3)
-                       - (sqr3 - 1) / np.sqrt(5 - 2 * sqr3))
-    vf_05_nex = 0.5 * ((2 + sqr3) / (2 * np.sqrt(2 + sqr3))
-                       - (3 + sqr3) / np.sqrt(13 + 6 * sqr3))
-    vf_05 = vf_05_pre + vf_05_mid + vf_05_nex
-    # at f_z=1.0
-    vf_1 = 0.5 * ((4 - 2 * sqr3) / 4 / np.sqrt(2 - sqr3) + sqr3 / 2)
-    expected_vfs = np.array([vf_0 + vf_1, vf_05, vf_0 + vf_1])
-    expected_vf_integ = np.trapz(expected_vfs, pts)
-    assert np.allclose(pts, expected_pts)
-    assert np.allclose(vf_pts, expected_vfs, rtol=0.1)
+    ts, pts, vfs_gnd_sky = test_system
+    vf_integ, z, vfs = infinite_sheds._vf_ground_sky_integ(
+        ts['gcr'], ts['height'], ts['surface_tilt'],
+        ts['surface_azimuth'], ts['pitch'],
+        ts['axis_azimuth'], max_rows=1, npoints=3)
+    expected_vf_integ = np.trapz(vfs_gnd_sky, pts)
+    assert np.allclose(z, pts)
+    assert np.allclose(vfs, vfs_gnd_sky, rtol=0.1)
     assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
 
 
 def test__vf_row_sky_integ(test_system):
-    gcr = test_system['gcr']
-    surface_tilt = test_system['surface_tilt']
+    ts, _, _ = test_system
+    gcr = ts['gcr']
+    surface_tilt = ts['surface_tilt']
     f_x = np.array([0., 0.5, 1.])
     shaded = []
     noshade = []
@@ -137,9 +117,10 @@ def test__poa_sky_diffuse_pv():
 
 
 def test__ground_angle(test_system):
+    ts, _, _ = test_system
     x = np.array([0., 0.5, 1.0])
     angles, tan_angles = infinite_sheds._ground_angle(
-        test_system['gcr'], test_system['surface_tilt'], x)
+        ts['gcr'], ts['surface_tilt'], x)
     expected_angles = np.array([0., 5.866738789543952, 9.896090638982903])
     expected_tan_angles = np.array([0., 0.5 / (4 + np.sqrt(3) / 2.),
                                     1. / (4 + np.sqrt(3))])
@@ -148,10 +129,11 @@ def test__ground_angle(test_system):
 
 
 def test__vf_row_ground(test_system):
+    ts, _, _ = test_system
     x = np.array([0., 0.5, 1.0])
     sqr3 = np.sqrt(3)
     vfs = infinite_sheds._vf_row_ground(
-        test_system['gcr'], test_system['surface_tilt'], x)
+        ts['gcr'], ts['surface_tilt'], x)
     expected_vfs = np.array([
         0.5 * (1. - sqr3 / 2),
         0.5 * ((4 + sqr3 / 2) / np.sqrt(17 + 4 * sqr3) - sqr3 / 2),
@@ -160,8 +142,9 @@ def test__vf_row_ground(test_system):
 
 
 def test__vf_row_ground_integ(test_system):
-    gcr = test_system['gcr']
-    surface_tilt = test_system['surface_tilt']
+    ts, _, _ = test_system
+    gcr = ts['gcr']
+    surface_tilt = ts['surface_tilt']
     f_x = np.array([0., 0.5, 1.0])
     shaded = []
     noshade = []

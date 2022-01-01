@@ -131,6 +131,6 @@ def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     # swap where phi_1 > phi_2 so that phi_1[0,:,:] is the left edge
     phi = np.where(swap, phi[::-1], phi)
     # right edge of next row - left edge of previous row
-    wedge_vfs = 0.5 * (cosd(phi[1,:,1:]) - cosd(phi[0,:,:-1]))
+    wedge_vfs = 0.5 * (cosd(phi[1, :, 1:]) - cosd(phi[0, :, :-1]))
     vf = np.sum(np.where(wedge_vfs > 0, wedge_vfs, 0.), axis=1)
     return vf, phi

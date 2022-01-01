@@ -466,7 +466,6 @@ def _poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
 
 
-# TODO: not tested
 def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
                        surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
                        albedo, iam=1.0, axis_azimuth=None, max_rows=5,

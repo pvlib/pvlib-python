@@ -172,6 +172,23 @@ def test__vf_row_ground_integ(test_system):
     assert np.allclose(noshade, expected_noshade)
 
 
+def test__poa_ground_shadows():
+    poa_ground, f_gnd_beam, df, vf_gnd_sky = (300., 0.5, 0.5, 0.2)
+    result = infinite_sheds._poa_ground_shadows(
+        poa_ground, f_gnd_beam, df, vf_gnd_sky)
+    expected = 300. * (0.5 * 0.5 + 0.5 * 0.2)
+    assert np.isclose(result, expected)
+    # vector inputs
+    poa_ground = np.array([300., 300.])
+    f_gnd_beam = np.array([0.5, 0.5])
+    df = np.array([0.5, np.inf])
+    vf_gnd_sky = np.array([0.2, 0.2])
+    result = infinite_sheds._poa_ground_shadows(
+        poa_ground, f_gnd_beam, df, vf_gnd_sky)
+    expected_vec = np.array([expected, 300. * 0.5])    
+    assert np.allclose(result, expected_vec)
+
+
 def test_get_irradiance_poa():
     # singleton inputs
     surface_tilt = 0.

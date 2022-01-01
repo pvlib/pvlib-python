@@ -162,7 +162,6 @@ def _vf_ground_sky_integ(gcr, height, surface_tilt, surface_azimuth,
     return fgnd_sky, z, fz_sky
 
 
-# TODO: not tested
 def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     """
     Reduce ground-reflected irradiance to the tilted plane (poa_ground) to

@@ -185,7 +185,7 @@ def test__poa_ground_shadows():
     vf_gnd_sky = np.array([0.2, 0.2])
     result = infinite_sheds._poa_ground_shadows(
         poa_ground, f_gnd_beam, df, vf_gnd_sky)
-    expected_vec = np.array([expected, 300. * 0.5])    
+    expected_vec = np.array([expected, 300. * 0.5])
     assert np.allclose(result, expected_vec)
 
 

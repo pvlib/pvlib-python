@@ -3,8 +3,10 @@ test infinite sheds
 """
 
 import numpy as np
+import pandas as pd
 from pvlib.bifacial import infinite_sheds
 from pvlib.tools import cosd
+from ..conftest import assert_series_equal
 
 import pytest
 
@@ -234,3 +236,20 @@ def test_get_irradiance_poa():
     assert np.allclose(res['poa_global'], expected_global)
     assert np.allclose(res['poa_diffuse'], expected_diffuse)
     assert np.allclose(res['poa_direct'], expected_direct)
+    # series inputs
+    surface_tilt = pd.Series(surface_tilt)
+    surface_azimuth = pd.Series(data=surface_azimuth, index=surface_tilt.index)
+    solar_zenith = pd.Series(solar_zenith, index=surface_tilt.index)
+    solar_azimuth = pd.Series(data=solar_azimuth, index=surface_tilt.index)
+    expected_diffuse = pd.Series(
+        data=expected_diffuse, index=surface_tilt.index)
+    expected_direct = pd.Series(
+        data=expected_direct, index=surface_tilt.index)
+    expected_global = expected_diffuse + expected_direct
+    expected_global.name = 'poa_global'  # to match output Series
+    res = infinite_sheds.get_irradiance_poa(
+        solar_zenith, solar_azimuth, surface_tilt,
+        surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
+        albedo, iam, npoints, all_output)
+    assert isinstance(res, pd.DataFrame)
+    assert_series_equal(res['poa_global'], expected_global)

@@ -278,6 +278,8 @@ def _vf_row_sky_integ(gcr, surface_tilt, f_x, npoints=100):
     _sky_angle
 
     """
+    # handle Series inputs
+    surface_tilt = np.array(surface_tilt)
     cst = cosd(surface_tilt)
     # shaded portion
     x = np.linspace(0 * f_x, f_x, num=npoints)
@@ -423,6 +425,8 @@ def _vf_row_ground_integ(gcr, surface_tilt, f_x, npoints=100):
     Each view factor is integrated over the relevant portion of the row
     slant height.
     """
+    # handle Series inputs
+    surface_tilt = np.array(surface_tilt)
     # shaded portion of row slant height
     x = np.linspace(0 * f_x, f_x, num=npoints)
     # view factor from the point on the row to the ground
@@ -625,7 +629,7 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     if all_output:
         output.update(poa_diffuse_sky=poa_sky_pv,
                       poa_diffuse_ground=poa_gnd_pv)
-    if isinstance(ghi, pd.Series):
+    if isinstance(poa_global, pd.Series):
         output = pd.DataFrame(output)
     return output
 

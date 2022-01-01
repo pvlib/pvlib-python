@@ -571,9 +571,9 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
         gcr, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     # integrated view factor from the ground to the sky, integrated between
     # adjacent rows interior to the array
-    vf_gnd_sky, _, _ = _vf_ground_sky_integ(gcr, height, surface_tilt, pitch,
-                                            axis_azimuth, max_rows, npoints)
-
+    vf_gnd_sky, _, _ = _vf_ground_sky_integ(
+        gcr, height, surface_tilt, surface_azimuth, pitch, axis_azimuth,
+        max_rows, npoints)
     # fraction of row slant height that is shaded
     f_x = shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
                           surface_azimuth, gcr)
@@ -624,11 +624,10 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
 
     output = OrderedDict(
         poa_global=poa_global, poa_direct=poa_direct,
-        poa_diffuse=poa_diffuse, poa_ground_diffuse=poa_gnd_pv,
-        poa_sky_diffuse=poa_sky_pv)
+        poa_diffuse=poa_diffuse)
     if all_output:
-        output.update(poa_diffuse_sky=poa_sky_pv,
-                      poa_diffuse_ground=poa_gnd_pv)
+        output.update(
+            poa_ground_diffuse=poa_gnd_pv, poa_sky_diffuse=poa_sky_pv)
     if isinstance(poa_global, pd.Series):
         output = pd.DataFrame(output)
     return output
@@ -637,9 +636,9 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
 # TODO: not tested
 def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
                    surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
-                   albedo, dni_extra, iam_front=1.0, iam_back=1.0,
+                   albedo, iam_front=1.0, iam_back=1.0,
                    bifaciality=0.8, shade_factor=-0.02,
-                   transmission_factor=0):
+                   transmission_factor=0, max_rows=5, npoints=100):
     """
     Get bifacial irradiance using the infinite sheds model.
 
@@ -672,13 +671,13 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
     pitch : numeric
         row spacing.
 
-    ghi : numeric
+    ghi : array-like
         Global horizontal irradiance. [W/m2]
 
-    dhi : numeric
+    dhi : array-like
         Diffuse horizontal irradiance. [W/m2]
 
-    dni : numeric
+    dni : array-like
         Direct normal irradiance. [W/m2]
 
     albedo : numeric
@@ -706,6 +705,12 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
         module's cells due to module structures. Negative value is a reduction
         in back irradiance. [unitless]
 
+    max_rows : int, default 5
+        Maximum number of rows to consider in front and behind the current row.
+
+    npoints : int, default 100
+        Number of points used to discretize distance along the ground.
+
     Returns
     -------
     output : OrderedDict or DataFrame
@@ -731,18 +736,26 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
     irrad_front = get_irradiance_poa(
         solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr,
         height, pitch, ghi, dhi, dni, albedo, iam_front)
-    irrad_front.rename(columns={'poa_global': 'poa_front',
-                                'poa_diffuse': 'poa_front_diffuse',
-                                'poa_direct': 'poa_front_direct'})
     # back side POA irradiance
     irrad_back = get_irradiance_poa(
         solar_zenith, solar_azimuth, backside_tilt, backside_sysaz, gcr,
         height, pitch, ghi, dhi, dni, albedo, iam_back)
-    irrad_back.rename(columns={'poa_global': 'poa_back',
-                               'poa_diffuse': 'poa_back_diffuse',
-                               'poa_direct': 'poa_back_direct'})
+    if isinstance(ghi, pd.Series):
+        irrad_front.rename(columns={'poa_global': 'poa_front',
+                                    'poa_diffuse': 'poa_front_diffuse',
+                                    'poa_direct': 'poa_front_direct'})
+        irrad_back.rename(columns={'poa_global': 'poa_back',
+                                   'poa_diffuse': 'poa_back_diffuse',
+                                   'poa_direct': 'poa_back_direct'})
+        output = pd.concat([irrad_front, irrad_back], axis=1)
+    else:
+        front = ['poa_front', 'poa_front_diffuse', 'poa_front_direct']
+        back = ['poa_back', 'poa_back_diffuse', 'poa_back_direct']
+        irrad_front = OrderedDict(zip(front, irrad_front.values()))
+        irrad_back = OrderedDict(zip(back, irrad_back.values()))
+        irrad_front.update(irrad_back)
+        output = irrad_front
     effects = (1 + shade_factor) * (1 + transmission_factor)
-    output = pd.concat([irrad_front, irrad_back], axis=1)
     output['poa_global'] = output['poa_front'] + \
         output['poa_back'] * bifaciality * effects
     return output

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pvlib.bifacial import infinite_sheds
 from pvlib.tools import cosd
-from ..conftest import assert_series_equal
+#from ..conftest import assert_series_equal
 
 import pytest
 
@@ -193,24 +193,23 @@ def test__poa_ground_shadows():
 
 def test_get_irradiance_poa():
     # singleton inputs
-    surface_tilt = 0.
-    height = 1.
-    surface_azimuth = 180.
-    gcr = 0.5
-    pitch = 1
     solar_zenith = 0.
     solar_azimuth = 180.
+    surface_tilt = 0.
+    surface_azimuth = 180.
+    gcr = 0.5
+    height = 1.
+    pitch = 1
     ghi = 1000
     dhi = 300
     dni = 700
     albedo = 0
     iam = 1.0
     npoints = 100
-    all_output = True
     res = infinite_sheds.get_irradiance_poa(
         solar_zenith, solar_azimuth, surface_tilt,
         surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
-        albedo, iam, npoints, all_output)
+        albedo, iam=iam, npoints=npoints)
     expected_diffuse = np.array([300.])
     expected_direct = np.array([700.])
     expected_global = expected_diffuse + expected_direct
@@ -232,7 +231,7 @@ def test_get_irradiance_poa():
     res = infinite_sheds.get_irradiance_poa(
         solar_zenith, solar_azimuth, surface_tilt,
         surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
-        albedo, iam, npoints, all_output)
+        albedo, iam=iam, npoints=npoints)
     assert np.allclose(res['poa_global'], expected_global)
     assert np.allclose(res['poa_diffuse'], expected_diffuse)
     assert np.allclose(res['poa_direct'], expected_direct)
@@ -250,6 +249,42 @@ def test_get_irradiance_poa():
     res = infinite_sheds.get_irradiance_poa(
         solar_zenith, solar_azimuth, surface_tilt,
         surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
-        albedo, iam, npoints, all_output)
+        albedo, iam=iam, npoints=npoints, all_output=True)
     assert isinstance(res, pd.DataFrame)
     assert_series_equal(res['poa_global'], expected_global)
+    assert all(k in res.columns for k in [
+        'poa_global', 'poa_diffuse', 'poa_direct', 'poa_ground_diffuse',
+        'poa_sky_diffuse'])
+
+
+def test_get_irradiance():
+    # singleton inputs
+    # singleton inputs
+    solar_zenith = 0.
+    solar_azimuth = 180.
+    surface_tilt = 0.
+    surface_azimuth = 180.
+    gcr = 0.5
+    height = 1.
+    pitch = 1
+    ghi = 1000
+    dhi = 300
+    dni = 700
+    albedo = 0
+    iam_front = 1.0
+    iam_back = 1.0
+    npoints = 100
+    result = infinite_sheds.get_irradiance(
+        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr,
+        height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
+        bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
+        npoints=npoints)
+    expected_diffuse = np.array([300.])
+    expected_direct = np.array([700.])
+    expected_global = expected_diffuse + expected_direct
+    assert np.isclose(result['poa_global'], expected_global)
+    assert np.isclose(result['poa_diffuse'], expected_diffuse)
+    assert np.isclose(result['poa_direct'], expected_direct)
+
+
+test_get_irradiance()

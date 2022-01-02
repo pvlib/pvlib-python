@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pvlib.bifacial import infinite_sheds
 from pvlib.tools import cosd
-#from ..conftest import assert_series_equal
+from ..conftest import assert_series_equal
 
 import pytest
 
@@ -257,6 +257,14 @@ def test_get_irradiance_poa():
         'poa_sky_diffuse'])
 
 
+def test__backside_tilt():
+    tilt = np.array([0., 30., 30., 180.])
+    system_azimuth = np.array([180., 150., 270., 0.])
+    back_tilt, back_az = infinite_sheds._backside(tilt, system_azimuth)
+    assert np.allclose(back_tilt, np.array([180., 150., 150., 0.]))
+    assert np.allclose(back_az, np.array([0., 330., 90., 180.]))
+
+
 def test_get_irradiance():
     # singleton inputs
     # singleton inputs
@@ -283,8 +291,8 @@ def test_get_irradiance():
     expected_direct = np.array([700.])
     expected_global = expected_diffuse + expected_direct
     assert np.isclose(result['poa_global'], expected_global)
-    assert np.isclose(result['poa_diffuse'], expected_diffuse)
-    assert np.isclose(result['poa_direct'], expected_direct)
+    assert np.isclose(result['poa_front_diffuse'], expected_diffuse)
+    assert np.isclose(result['poa_front_direct'], expected_direct)
 
 
 test_get_irradiance()

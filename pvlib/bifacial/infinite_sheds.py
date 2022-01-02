@@ -600,8 +600,7 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     # sky diffuse reflected from the ground to an array consisting of a single
     # row
     poa_ground = get_ground_diffuse(surface_tilt, ghi, albedo)
-    poa_beam = beam_component(surface_tilt, surface_azimuth, solar_zenith,
-                              solar_azimuth, dni)
+
     # Total sky diffuse recieved by both shaded and unshaded portions
     poa_sky_pv = _poa_sky_diffuse_pv(
         dhi, f_x, vf_shade_sky, vf_noshade_sky)
@@ -619,6 +618,9 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     # add sky and ground-reflected irradiance on the row by irradiance
     # component
     poa_diffuse = poa_gnd_pv + poa_sky_pv
+    # beam on plane, make an array for consistency with poa_diffuse
+    poa_beam = np.atleast_1d(beam_component(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni))
     poa_direct = poa_beam * (1 - f_x) * iam  # direct only on the unshaded part
     poa_global = poa_direct + poa_diffuse
 
@@ -749,10 +751,13 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
                                    'poa_direct': 'poa_back_direct'})
         output = pd.concat([irrad_front, irrad_back], axis=1)
     else:
+        old = ['poa_global', 'poa_diffuse', 'poa_direct']
         front = ['poa_front', 'poa_front_diffuse', 'poa_front_direct']
         back = ['poa_back', 'poa_back_diffuse', 'poa_back_direct']
-        irrad_front = OrderedDict(zip(front, irrad_front.values()))
-        irrad_back = OrderedDict(zip(back, irrad_back.values()))
+        for old_key, new_key in zip(old, front):
+            irrad_front[new_key] = irrad_front.pop(old_key)
+        for old_key, new_key in zip(old, back):
+            irrad_back[new_key] = irrad_back.pop(old_key)
         irrad_front.update(irrad_back)
         output = irrad_front
     effects = (1 + shade_factor) * (1 + transmission_factor)
@@ -762,6 +767,6 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
 
 
 def _backside(tilt, system_azimuth):
-    backside_tilt = np.pi - tilt
-    backside_sysaz = (np.pi + system_azimuth) % (2*np.pi)
+    backside_tilt = 180. - tilt
+    backside_sysaz = (180. + system_azimuth) % 360.
     return backside_tilt, backside_sysaz

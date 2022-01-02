@@ -293,6 +293,3 @@ def test_get_irradiance():
     assert np.isclose(result['poa_global'], expected_global)
     assert np.isclose(result['poa_front_diffuse'], expected_diffuse)
     assert np.isclose(result['poa_front_direct'], expected_direct)
-
-
-test_get_irradiance()

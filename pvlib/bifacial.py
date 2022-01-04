@@ -82,31 +82,14 @@ def pvfactors_timeseries(
         Bifacial PV and Diffuse Shade on Single-Axis Trackers." 44th IEEE
         Photovoltaic Specialist Conference. 2017.
     """
-    # Convert pandas Series inputs (and some lists) to numpy arrays
-    if isinstance(solar_azimuth, pd.Series):
-        solar_azimuth = solar_azimuth.values
-    elif isinstance(solar_azimuth, list):
-        solar_azimuth = np.array(solar_azimuth)
-    if isinstance(solar_zenith, pd.Series):
-        solar_zenith = solar_zenith.values
-    elif isinstance(solar_zenith, list):
-        solar_zenith = np.array(solar_zenith)
-    if isinstance(surface_azimuth, pd.Series):
-        surface_azimuth = surface_azimuth.values
-    elif isinstance(surface_azimuth, list):
-        surface_azimuth = np.array(surface_azimuth)
-    if isinstance(surface_tilt, pd.Series):
-        surface_tilt = surface_tilt.values
-    elif isinstance(surface_tilt, list):
-        surface_tilt = np.array(surface_tilt)
-    if isinstance(dni, pd.Series):
-        dni = dni.values
-    elif isinstance(dni, list):
-        dni = np.array(dni)
-    if isinstance(dhi, pd.Series):
-        dhi = dhi.values
-    elif isinstance(dhi, list):
-        dhi = np.array(dhi)
+    # Convert Series, list, float inputs to numpy arrays
+    solar_azimuth = np.array(solar_azimuth)
+    solar_zenith = np.array(solar_zenith)
+    dni = np.array(dni)
+    dhi = np.array(dhi)
+    # GH 1127, GH 1332
+    surface_tilt = np.full_like(solar_zenith, surface_tilt)
+    surface_azimuth = np.full_like(solar_zenith, surface_azimuth)
 
     # Import pvfactors functions for timeseries calculations.
     from pvfactors.run import run_timeseries_engine

@@ -20,6 +20,8 @@ Bug fixes
   values were returned when the sun is behind the plane of array (:issue:`1348`, :pull:`1349`)
 * Fixed bug in :py:func:`pvlib.iotools.get_pvgis_hourly` where the ``optimal_surface_tilt``
   argument was not being passed to the ``optimalinclination`` request parameter (:pull:`1356`)
+* Fixed bug in :py:func:`pvlib.bifacial.pvfactors_timeseries` where scalar ``surface_tilt``
+  and ``surface_azimuth`` inputs caused an error (:issue:`1127`, :issue:`1332`, :pull:`1361`) 
 
 
 Testing

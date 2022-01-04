@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pvlib.bifacial import infinite_sheds
 from pvlib.tools import cosd
-from ..conftest import assert_series_equal
+#from ..conftest import assert_series_equal
 
 import pytest
 
@@ -293,3 +293,6 @@ def test_get_irradiance():
     assert np.isclose(result['poa_global'], expected_global)
     assert np.isclose(result['poa_front_diffuse'], expected_diffuse)
     assert np.isclose(result['poa_front_direct'], expected_direct)
+
+
+test_get_irradiance_poa()

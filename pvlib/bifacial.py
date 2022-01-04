@@ -88,12 +88,8 @@ def pvfactors_timeseries(
     dni = np.array(dni)
     dhi = np.array(dhi)
     # GH 1127, GH 1332
-    if np.isscalar(surface_tilt):
-        surface_tilt = [surface_tilt] * len(solar_zenith)
-    if np.isscalar(surface_azimuth):
-        surface_azimuth = [surface_azimuth] * len(solar_zenith)
-    surface_azimuth = np.array(surface_azimuth)
-    surface_tilt = np.array(surface_tilt)
+    surface_tilt = np.full_like(solar_zenith, surface_tilt)
+    surface_azimuth = np.full_like(solar_zenith, surface_azimuth)
 
     # Import pvfactors functions for timeseries calculations.
     from pvfactors.run import run_timeseries_engine

@@ -79,7 +79,7 @@ def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
     tan_phi = solar_projection_tangent(solar_zenith, solar_azimuth,
                                        surface_azimuth)
     f_gnd_beam = 1.0 - np.minimum(
-        1.0, gcr * np.abs(sind(surface_tilt) + cosd(surface_tilt) * tan_phi))
+        1.0, gcr * np.abs(cosd(surface_tilt) + sind(surface_tilt) * tan_phi))
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 

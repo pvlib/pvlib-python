@@ -40,7 +40,7 @@ DTYPES = [
 ]
 
 
-def read_crn(filename):
+def read_crn(filename, map_variables=True):
     """
     Read a NOAA USCRN fixed-width file into pandas dataframe.  The CRN is
     described in [1]_ and [2]_.
@@ -49,6 +49,9 @@ def read_crn(filename):
     ----------
     filename: str, path object, or file-like
         filepath or url to read for the fixed-width file.
+    map_variables: bool, default: True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable VARIABLE_MAP.
 
     Returns
     -------
@@ -116,6 +119,7 @@ def read_crn(filename):
         # consider replacing with .replace([-99, -999, -9999])
         data = data.where(data != val, np.nan)
 
-    data = data.rename(columns=VARIABLE_MAP)
+    if map_variables:
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data

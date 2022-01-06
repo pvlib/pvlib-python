@@ -554,19 +554,19 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
                     is_v_oc_temp_module_corr=True):
 
     '''
-    Plot graph of stacked MLFM losses from intital 1/FF down to pr_dc.
+    Plot graph of stacked MLFM losses from initial 1/FF down to pr_dc.
 
     Parameters
     ----------
-    dmeas : dataframe
-        measured weather data
-        'poa_global', 'temp_module', 'wind_speed'
+    dmeas : DataFrame
+        Measured weather data. Must include 'poa_global_kwm2' and
+        'temp_module', may include 'temp_air'.
         and measured electrical/thermal values
-        'i_sc' .. 'v_oc', temp_module.
+        'i_sc' .. 'v_oc', temp_module (cwh: I don't see these are referenced).
 
     dnorm : dataframe
-        normalised multiplicative lfm loss values 'i_sc' .. 'v_oc'
-        where pr_dc = 1/ff * product('i_sc', ... 'v_oc').
+        Normalised multiplicative LFM loss values 'i_sc' .. 'v_oc'
+        where pr_dc = 1/FF * product('i_sc', ... 'v_oc').
 
     dstack : dataframe
         normalised subtractive lfm loss values 'i_sc' .. 'v_oc'
@@ -585,15 +585,15 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
         4 = (i_sc, i_mp, v_mp, v_oc) from matrix
         6 = (i_sc, i_mp, v_mp, v_oc, r_sc, r_oc) from iv curve.
 
-    xaxis_labels : int
-        number of xaxis labels to show (~12) or 0 to show all.
+    xaxis_labels : int, default 12
+        Number of xaxis labels to show. Use 0 to show all.
 
-    is_i_sc_self_ref : bool
-       self corrects i_sc to remove angle of incidence,
+    is_i_sc_self_ref : bool, default False
+       Self corrects i_sc to remove angle of incidence,
        spectrum, snow or soiling?.
 
-    is_v_oc_temp_module_corr : bool
-       calc loss due to gamma, subtract from v_oc loss.
+    is_v_oc_temp_module_corr : bool, default True
+       Calculate loss due to gamma, subtract from v_oc loss.
 
     '''
 

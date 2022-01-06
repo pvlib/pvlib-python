@@ -14,8 +14,6 @@ https://github.com/python/peps/blob/master/pep-0008.txt
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
 from scipy import optimize
 
 
@@ -477,6 +475,10 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
         4 = (i_sc, i_mp, v_mp, v_oc) from matrix
         6 = (i_sc, i_mp, v_mp, v_oc, r_sc, r_oc) from iv curve.
     '''
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print('mlfm requires matplotlib')
 
     # offset legend to the right to not overlap graph, use ~1.2
     bbox = 1.2
@@ -596,6 +598,10 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
        Calculate loss due to gamma, subtract from v_oc loss.
 
     '''
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print('mlfm requires matplotlib')
 
     # offset legend right, use ~1.2
     bbox = 1.2

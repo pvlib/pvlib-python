@@ -151,7 +151,7 @@ requires_siphon = pytest.mark.skipif(not has_siphon,
                                      reason='requires siphon')
 
 try:
-    import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt  # noqa: F401
     has_mpl = True
 except ImportError:
     has_mpl = False

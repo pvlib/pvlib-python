@@ -41,9 +41,13 @@ DTYPES = [
 
 
 def read_crn(filename, map_variables=True):
-    """
-    Read a NOAA USCRN fixed-width file into pandas dataframe.  The CRN is
-    described in [1]_ and [2]_.
+    """Read a NOAA USCRN fixed-width file into a pandas dataframe.
+
+    The CRN network consists of a +100 meteorological stations covering the
+    U.S. and is described in [1]_ and [2]_. The primary goal of CRN is to
+    provide long-term measurements of temperature, precipitation, and soil
+    moisture and temperature. Additionally, global horizontal irradiance (GHI)
+    is measured using a photodiode pyranometer.
 
     Parameters
     ----------
@@ -63,10 +67,10 @@ def read_crn(filename, map_variables=True):
     -----
     CRN files contain 5 minute averages labeled by the interval ending
     time. Here, missing data is flagged as NaN, rather than the lowest
-    possible integer for a field (e.g. -999 or -99). Air temperature in
-    deg C. Wind speed in m/s at a height of 1.5 m above ground level.
+    possible integer for a field (e.g. -999 or -99). Air temperature is in
+    deg C and wind speed is in m/s at a height of 1.5 m above ground level.
 
-    Variables corresponding to standard pvlib variables are renamed,
+    Variables corresponding to standard pvlib variables are by default renamed,
     e.g. `SOLAR_RADIATION` becomes `ghi`. See the
     `pvlib.iotools.crn.VARIABLE_MAP` dict for the complete mapping.
 

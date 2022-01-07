@@ -512,8 +512,8 @@ class ForecastModel:
     def cloud_cover_to_transmittance_linear(self, cloud_cover, offset=0.75,
                                             **kwargs):
         """
-        Convert cloud cover percentage to atmospheric transmittance ratio using a
-        linear model.
+        Convert cloud cover percentage to atmospheric transmittance ratio
+        using a linear model.
 
         0% cloud cover returns offset.
 

@@ -106,11 +106,6 @@ def read_crn(filename, map_variables=True):
     dtindex = pd.to_datetime(dts['UTC_DATE'] + dts['UTC_TIME'].str.zfill(4),
                              format='%Y%m%d%H%M', utc=True)
     data = data.set_index(dtindex)
-    try:
-        # to_datetime(utc=True) does not work in older versions of pandas
-        data = data.tz_localize('UTC')
-    except TypeError:
-        pass
 
     # Now we can set nans. This could be done a per column basis to be
     # safer, since in principle a real -99 value could occur in a -9999

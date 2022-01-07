@@ -512,8 +512,8 @@ class ForecastModel:
     def cloud_cover_to_transmittance_linear(self, cloud_cover, offset=0.75,
                                             **kwargs):
         """
-        Convert cloud cover to atmospheric transmittance using a linear
-        model.
+        Convert cloud cover percentage to atmospheric transmittance ratio using a
+        linear model.
 
         0% cloud cover returns offset.
 
@@ -530,8 +530,8 @@ class ForecastModel:
 
         Returns
         -------
-        ghi : numeric
-            Estimated GHI.
+        transmittance : numeric
+            Estimated transmittance ratio.
         """
         transmittance = ((100.0 - cloud_cover) / 100.0) * offset
 

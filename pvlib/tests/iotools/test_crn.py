@@ -3,7 +3,7 @@ import numpy as np
 from numpy import dtype, nan
 import pytest
 from pvlib.iotools import crn
-from ..conftest import DATA_DIR, assert_frame_equal
+from ..conftest import DATA_DIR, assert_frame_equal, assert_index_equal
 
 
 @pytest.fixture

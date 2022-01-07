@@ -114,7 +114,7 @@ def read_crn(filename, map_variables=True):
     # Now we can set nans. This could be done a per column basis to be
     # safer, since in principle a real -99 value could occur in a -9999
     # column. Very unlikely to see that in the real world.
-    data = data.replace([-99, -999, -9999], np.nan)
+    data = data.replace([-99, -999, -9999, -99999, -999999], np.nan)
 
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)

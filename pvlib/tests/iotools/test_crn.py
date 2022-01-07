@@ -74,7 +74,7 @@ def test_read_crn(testfile, columns_mapped, dtypes):
 # Test map_variables=False returns correct column names
 def test_read_crn_map_variables(testfile, columns_unmapped, dtypes):
     out = crn.read_crn(testfile, map_variables=False)
-    assert (out.columns == columns_unmapped).all()
+    assert_index_equal(out.columns, pd.Index(columns_unmapped))
 
 
 def test_read_crn_problems(testfile_problems, columns_mapped, dtypes):

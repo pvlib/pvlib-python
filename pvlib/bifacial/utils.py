@@ -7,7 +7,7 @@ from pvlib.tools import sind, cosd, tand
 
 
 # TODO: make private?
-def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
+def solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     """
     Tangent of the angle between the sun vector projected to the YZ-plane
     (vertical and perpendicular to rows) and the zenith vector.
@@ -22,11 +22,12 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
     Parameters
     ----------
     solar_zenith : numeric
-        apparent zenith in degrees
+        Solar zenith angle. [degree].
     solar_azimuth : numeric
-        azimuth in degrees
-    system_azimuth : numeric
-        system rotation from north in degrees
+        Solar azimuth. [degree].
+    surface_azimuth: numeric
+        Azimuth of the module surface, i.e., North=0, East=90, South=180,
+        West=270. [degree]
 
     Returns
     -------
@@ -34,15 +35,13 @@ def solar_projection_tangent(solar_zenith, solar_azimuth, system_azimuth):
         Tangent of the angle between vertical and the projection of the
         sun direction onto the YZ plane.
     """
-    rotation = solar_azimuth - system_azimuth
-    # TODO: I don't think tan_phi should ever be negative, but it could be if
-    # rotation > 90 (e.g. sun north of along-row azimuth)
+    rotation = solar_azimuth - surface_azimuth
     tan_phi = cosd(rotation) * tand(solar_zenith)
     return tan_phi
 
 
 def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
-                             solar_azimuth):
+                             solar_azimuth, max_zenith=87):
     """
     Calculate the fraction of the ground with incident direct irradiance.
 
@@ -56,30 +55,34 @@ def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
     ----------
     gcr : numeric
         Ground coverage ratio, which is the ratio of row slant length to row
-        spacing (pitch).
+        spacing (pitch). [unitless]
     surface_tilt: numeric
-        Surface tilt angle in decimal degrees. The tilt angle is defined as
+        Surface tilt angle. The tilt angle is defined as
         degrees from horizontal, e.g., surface facing up = 0, surface facing
-        horizon = 90.
+        horizon = 90. [degree]
     surface_azimuth: numeric
-        Azimuth angle of the module surface in degrees.
-        North=0, East=90, South=180, West=270.
+        Azimuth of the module surface, i.e., North=0, East=90, South=180,
+        West=270. [degree]
     solar_zenith : numeric
-        Solar zenith angle in degrees.
+        Solar zenith angle. [degree].
     solar_azimuth : numeric
-        Solar azimuth angle in degrees.
+        Solar azimuth. [degree].
+    max_zenith : numeric, default 87
+        Maximum zenith angle. For solar_zenith > max_zenith, unshaded ground
+        fraction is set to 0. [degree]
 
     Returns
     -------
     f_gnd_beam : numeric
-        Fraction of distance betwen rows (pitch) that has direct irradiance
-        (unshaded).
+        Fraction of distance betwen rows (pitch) with direct irradiance
+        (unshaded). [unitless]
     """
     # TODO: why np.abs? All angles should be <=90
     tan_phi = solar_projection_tangent(solar_zenith, solar_azimuth,
                                        surface_azimuth)
     f_gnd_beam = 1.0 - np.minimum(
         1.0, gcr * np.abs(cosd(surface_tilt) + sind(surface_tilt) * tan_phi))
+    np.where(solar_zenith > max_zenith, 0., f_gnd_beam)
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 

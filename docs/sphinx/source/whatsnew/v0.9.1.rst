@@ -11,6 +11,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added ``map_variables`` option to :func:`~pvlib.iotools.read_crn` (:pull:`1368`)
 
 Bug fixes
 ~~~~~~~~~

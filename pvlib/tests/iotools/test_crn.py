@@ -71,27 +71,10 @@ def test_read_crn(testfile, columns_mapped, dtypes):
     assert_frame_equal(out, expected)
 
 
-# Test map_variables=False
+# Test map_variables=False returns correct column names
 def test_read_crn_map_variables(testfile, columns_unmapped, dtypes):
-    index = pd.DatetimeIndex(['2019-01-01 16:10:00',
-                              '2019-01-01 16:15:00',
-                              '2019-01-01 16:20:00',
-                              '2019-01-01 16:25:00'],
-                             freq=None).tz_localize('UTC')
-    values = np.array([
-        [53131, 20190101, 1610, 20190101, 910, 3, -111.17, 32.24, nan,
-         0.0, 296.0, 0, 4.4, 'C', 0, 90.0, 0, nan, nan, 24, 0, 0.78, 0],
-        [53131, 20190101, 1615, 20190101, 915, 3, -111.17, 32.24, 3.3,
-         0.0, 183.0, 0, 4.0, 'C', 0, 87.0, 0, nan, nan, 1182, 0, 0.36, 0],
-        [53131, 20190101, 1620, 20190101, 920, 3, -111.17, 32.24, 3.5,
-         0.0, 340.0, 0, 4.3, 'C', 0, 83.0, 0, nan, nan, 1183, 0, 0.53, 0],
-        [53131, 20190101, 1625, 20190101, 925, 3, -111.17, 32.24, 4.0,
-         0.0, 393.0, 0, 4.8, 'C', 0, 81.0, 0, nan, nan, 1223, 0, 0.64, 0]])
-    expected = pd.DataFrame(values, columns=columns_unmapped, index=index)
-    for (col, _dtype) in zip(expected.columns, dtypes):
-        expected[col] = expected[col].astype(_dtype)
     out = crn.read_crn(testfile, map_variables=False)
-    assert_frame_equal(out, expected)
+    assert (out.columns == columns_unmapped).all()
 
 
 def test_read_crn_problems(testfile_problems, columns_mapped, dtypes):

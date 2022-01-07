@@ -743,12 +743,14 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
         solar_zenith, solar_azimuth, backside_tilt, backside_sysaz, gcr,
         height, pitch, ghi, dhi, dni, albedo, iam_back)
     if isinstance(ghi, pd.Series):
-        irrad_front.rename(columns={'poa_global': 'poa_front',
-                                    'poa_diffuse': 'poa_front_diffuse',
-                                    'poa_direct': 'poa_front_direct'})
-        irrad_back.rename(columns={'poa_global': 'poa_back',
-                                   'poa_diffuse': 'poa_back_diffuse',
-                                   'poa_direct': 'poa_back_direct'})
+        irrad_front = irrad_front.rename(
+            columns={'poa_global': 'poa_front',
+                     'poa_diffuse': 'poa_front_diffuse',
+                     'poa_direct': 'poa_front_direct'})
+        irrad_back = irrad_back.rename(
+            columns={'poa_global': 'poa_back',
+                     'poa_diffuse': 'poa_back_diffuse',
+                     'poa_direct': 'poa_back_direct'})
         output = pd.concat([irrad_front, irrad_back], axis=1)
     else:
         old = ['poa_global', 'poa_diffuse', 'poa_direct']

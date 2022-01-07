@@ -267,7 +267,6 @@ def test__backside_tilt():
 
 def test_get_irradiance():
     # singleton inputs
-    # singleton inputs
     solar_zenith = 0.
     solar_azimuth = 180.
     surface_tilt = 0.
@@ -293,3 +292,23 @@ def test_get_irradiance():
     assert np.isclose(result['poa_global'], expected_global)
     assert np.isclose(result['poa_front_diffuse'], expected_diffuse)
     assert np.isclose(result['poa_front_direct'], expected_direct)
+    # series inputs
+    ghi = pd.Series([1000., 500., 500., np.nan])
+    dhi = pd.Series([300., 500., 500., 500.], index=ghi.index)
+    dni = pd.Series([700., 0., 0., 700.], index=ghi.index)
+    solar_zenith = pd.Series([0., 0., 0., 135.], index=ghi.index)
+    surface_tilt = pd.Series([0., 0., 90., 0.], index=ghi.index)
+    result = infinite_sheds.get_irradiance(
+        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr,
+        height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
+        bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
+        npoints=npoints)
+    result_front = infinite_sheds.get_irradiance_poa(
+        solar_zenith, solar_azimuth, surface_tilt,
+        surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
+        albedo, iam=iam_front)
+    assert isinstance(result, pd.DataFrame)
+    expected_poa_global = pd.Series(
+        [1000., 500., result_front['poa_global'][2] * (1 + 0.8 * 0.98),
+         np.nan], index=ghi.index, name='poa_global')
+    assert_series_equal(result['poa_global'], expected_poa_global)

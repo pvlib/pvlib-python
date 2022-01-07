@@ -15,6 +15,7 @@ def test_system_fixed_tilt():
             'axis_azimuth': None,
             'rotation': -30.}
     syst['gcr'] = 1.0 / syst['pitch']
+    # view factors from points on the ground to the sky
     pts = np.linspace(0, 1, num=3)
     sqr3 = np.sqrt(3) / 4
     # c_i,j = cos(angle from point i to edge of row j), j=0 is row = -1
@@ -53,6 +54,7 @@ def test_solar_projection_tangent():
     [(0.5, 0., 180., 0., 180., 0.5),
      (1.0, 0., 180., 0., 180., 0.0),
      (1.0, 90., 180., 0., 180., 1.0),
+     (0.5, 45., 180., 45., 270., 1.0 - np.sqrt(2) / 4),
      (np.sqrt(2) / 2, 45, 180, 0, 180, 0.5),
      (np.sqrt(2) / 2, 45, 180, 45, 180, 0.0),
      (np.sqrt(2) / 2, 45, 180, 45, 90, 0.5),

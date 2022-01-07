@@ -531,7 +531,7 @@ class ForecastModel:
         Returns
         -------
         transmittance : numeric
-            Estimated transmittance (ratio).
+            The fraction of extraterrestrial irradiance that reaches the ground. [unitless]
         """
         transmittance = ((100.0 - cloud_cover) / 100.0) * offset
 

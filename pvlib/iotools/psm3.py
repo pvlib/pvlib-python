@@ -40,7 +40,7 @@ PSM3_VARIABLE_MAP = {
     'Latitude': 'latitude',
     'Longitude': 'longitude',
     'Elevation': 'elevation'
-    }
+}
 
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
@@ -160,7 +160,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     # convert pvlib names in attributes to psm3 convention (reverse mapping)
     # unlike psm3 columns, attributes are lower case and with underscores
-    amap = {value : key.lower().replace(' ','_') for (key, value) in
+    amap = {value: key.lower().replace(' ', '_') for (key, value) in
             PSM3_VARIABLE_MAP.items()}
     attributes = [a if a not in amap.keys() else amap[a] for a in attributes]
     attributes = list(set(attributes))  # remove duplicate values

@@ -11,6 +11,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added ``map_variables`` option to :py:func:`pvlib.iotools.get_psm3` and
+  :py:func:`pvlib.iotools.read_psm3` (:pull:`1374`)
 
 Bug fixes
 ~~~~~~~~~

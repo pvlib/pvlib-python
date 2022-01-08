@@ -8,6 +8,8 @@ import io
 import requests
 import pandas as pd
 from json import JSONDecodeError
+import warnings
+from pvlib._deprecation import pvlibDeprecationWarning
 
 NSRDB_API_BASE = "https://developer.nrel.gov"
 PSM_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-download.csv"
@@ -20,10 +22,30 @@ ATTRIBUTES = (
     'surface_pressure', 'wind_direction', 'wind_speed')
 PVLIB_PYTHON = 'pvlib python'
 
+# Dictionary mapping PSM3 names to pvlib names
+PSM3_VARIABLE_MAP = {
+    'GHI': 'ghi',
+    'DHI': 'dhi',
+    'DNI': 'dni',
+    'Clearsky GHI': 'ghi_clear',
+    'Clearsky DHI': 'dhi_clear',
+    'Clearsky DNI': 'dni_clear',
+    'Solar Zenith Angle': 'solar_zenith',
+    'Temperature': 'temp_air',
+    'Relative Humidity': 'relative_humidity',
+    'Dew point': 'temp_dew',
+    'Pressure': 'pressure',
+    'Wind Direction': 'wind_direction',
+    'Wind Speed': 'wind_speed',
+    'Latitude': 'latitude',
+    'Longitude': 'longitude',
+    'Elevation': 'elevation'
+    }
+
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
              attributes=ATTRIBUTES, leap_day=False, full_name=PVLIB_PYTHON,
-             affiliation=PVLIB_PYTHON, timeout=30):
+             affiliation=PVLIB_PYTHON, map_variables=None, timeout=30):
     """
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API.  The NSRDB
     is described in [1]_ and the PSM3 API is described in [2]_, [3]_, and [4]_.
@@ -61,6 +83,9 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         optional
     affiliation : str, default 'pvlib python'
         optional
+    map_variables: bool
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable PSM3_VARIABLE_MAP.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 
@@ -133,6 +158,13 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # convert to string to accomodate integer years being passed in
     names = str(names)
 
+    # convert pvlib names in attributes to psm3 convention (reverse mapping)
+    # unlike psm3 columns, attributes are lower case and with underscores
+    amap = {value : key.lower().replace(' ','_') for (key, value) in
+            PSM3_VARIABLE_MAP.items()}
+    attributes = [a if a not in amap.keys() else amap[a] for a in attributes]
+    attributes = list(set(attributes))  # remove duplicate values
+
     # required query-string parameters for request to PSM3 API
     params = {
         'api_key': api_key,
@@ -167,10 +199,10 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return parse_psm3(fbuf)
+    return parse_psm3(fbuf, map_variables)
 
 
-def parse_psm3(fbuf):
+def parse_psm3(fbuf, map_variables):
     """
     Parse an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
@@ -184,6 +216,9 @@ def parse_psm3(fbuf):
     ----------
     fbuf: file-like object
         File-like object containing data to read.
+    map_variables: bool
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable PSM3_VARIABLE_MAP.
 
     Returns
     -------
@@ -296,10 +331,20 @@ def parse_psm3(fbuf):
     tz = 'Etc/GMT%+d' % -metadata['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
 
+    if map_variables is None:
+        warnings.warn(
+            'PSM3 variable names will be renamed to pvlib conventions by '
+            'default starting in pvlib 0.11.0. Specify map_variables=True '
+            'to enable that behavior now, or specify map_variables=False '
+            'to hide this warning.', pvlibDeprecationWarning)
+        map_variables = False
+    if map_variables:
+        data = data.rename(columns=PSM3_VARIABLE_MAP)
+
     return data, metadata
 
 
-def read_psm3(filename):
+def read_psm3(filename, map_variables=None):
     """
     Read an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
@@ -313,6 +358,9 @@ def read_psm3(filename):
     ----------
     filename: str
         Filename of a file containing data to read.
+    map_variables: bool
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable PSM3_VARIABLE_MAP.
 
     Returns
     -------
@@ -334,5 +382,5 @@ def read_psm3(filename):
        <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
     """
     with open(str(filename), 'r') as fbuf:
-        content = parse_psm3(fbuf)
+        content = parse_psm3(fbuf, map_variables)
     return content

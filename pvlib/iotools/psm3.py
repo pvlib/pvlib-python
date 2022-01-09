@@ -340,6 +340,9 @@ def parse_psm3(fbuf, map_variables):
         map_variables = False
     if map_variables:
         data = data.rename(columns=PSM3_VARIABLE_MAP)
+        metadata['latitude'] = metadata.pop('Latitude')
+        metadata['longitude'] = metadata.pop('Longitude')
+        metadata['elevation'] = metadata.pop('Elevation')
 
     return data, metadata
 

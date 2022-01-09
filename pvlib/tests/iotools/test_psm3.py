@@ -182,7 +182,12 @@ def test_read_psm3_map_variables():
 def test_get_psm3_attribute_mapping(nrel_api_key):
     """Test that pvlib names can be passed in as attributes and get correctly
     reverse mapped to PSM3 names"""
-    data, _ = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL,
-                            names=2019, interval=60, attributes=['ghi'],
-                            map_variables=True)
+    data, meta = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL,
+                               names=2019, interval=60,
+                               attributes=['ghi', 'wind_speed'],
+                               map_variables=True)
     assert 'ghi' in data.columns
+    assert 'wind_speed' in data.columns
+    assert 'latitude' in meta.keys()
+    assert 'longitude' in meta.keys()
+    assert 'elevation' in meta.keys()

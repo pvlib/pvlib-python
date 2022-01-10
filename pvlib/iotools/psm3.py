@@ -82,9 +82,9 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         optional
     affiliation : str, default 'pvlib python'
         optional
-    map_variables: bool
+    map_variables: boolean, optional
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PSM3_VARIABLE_MAP.
+        where applicable. See variable :const:`PSM3_VARIABLE_MAP`.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 

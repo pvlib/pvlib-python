@@ -36,9 +36,8 @@ PSM3_VARIABLE_MAP = {
     'Pressure': 'pressure',
     'Wind Direction': 'wind_direction',
     'Wind Speed': 'wind_speed',
-    'Latitude': 'latitude',
-    'Longitude': 'longitude',
-    'Elevation': 'elevation'
+    'Surface Albedo': 'albedo',
+    'Precipitable Water': 'precipitable_water',
 }
 
 
@@ -161,7 +160,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # unlike psm3 columns, attributes are lower case and with underscores
     amap = {value: key.lower().replace(' ', '_') for (key, value) in
             PSM3_VARIABLE_MAP.items()}
-    attributes = [a if a not in amap.keys() else amap[a] for a in attributes]
+    attributes = [amap.get(a, a) for a in attributes]
     attributes = list(set(attributes))  # remove duplicate values
 
     # required query-string parameters for request to PSM3 API
@@ -201,7 +200,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     return parse_psm3(fbuf, map_variables)
 
 
-def parse_psm3(fbuf, map_variables):
+def parse_psm3(fbuf, map_variables=None):
     """
     Parse an NSRDB PSM3 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.

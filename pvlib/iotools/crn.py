@@ -43,11 +43,11 @@ DTYPES = [
 def read_crn(filename, map_variables=True):
     """Read a NOAA USCRN fixed-width file into a pandas dataframe.
 
-    The CRN network consists of a +100 meteorological stations covering the
+    The CRN network consists of over 100 meteorological stations covering the
     U.S. and is described in [1]_ and [2]_. The primary goal of CRN is to
     provide long-term measurements of temperature, precipitation, and soil
     moisture and temperature. Additionally, global horizontal irradiance (GHI)
-    is measured using a photodiode pyranometer.
+    is measured at each site using a photodiode pyranometer.
 
     Parameters
     ----------

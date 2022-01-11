@@ -22,7 +22,7 @@ METADATA_FIELDS = [
     'Longitude', 'Time Zone', 'Elevation', 'Local Time Zone',
     'Dew Point Units', 'DHI Units', 'DNI Units', 'GHI Units',
     'Temperature Units', 'Pressure Units', 'Wind Direction Units',
-    'Wind Speed', 'Surface Albedo Units', 'Version']
+    'Wind Speed Units', 'Surface Albedo Units', 'Version']
 PVLIB_EMAIL = 'pvlib-admin@googlegroups.com'
 
 

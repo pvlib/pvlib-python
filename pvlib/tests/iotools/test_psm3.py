@@ -11,6 +11,7 @@ import pytest
 from requests import HTTPError
 from io import StringIO
 import warnings
+from pvlib._deprecation import pvlibDeprecationWarning
 
 TMY_TEST_DATA = DATA_DIR / 'test_psm3_tmy-2017.csv'
 YEAR_TEST_DATA = DATA_DIR / 'test_psm3_2017.csv'
@@ -170,8 +171,8 @@ def test_read_psm3_map_variables():
     columns_mapped = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'dhi', 'dni',
                       'ghi', 'dhi_clear', 'dni_clear', 'ghi_clear',
                       'Cloud Type', 'Dew Point', 'apparent_zenith',
-                      'Fill Flag', 'Surface Albedo', 'wind_speed',
-                      'Precipitable Water', 'wind_direction',
+                      'Fill Flag', 'albedo', 'wind_speed',
+                      'precipitable_water', 'wind_direction',
                       'relative_humidity', 'temp_air', 'pressure']
     data, metadata = psm3.read_psm3(MANUAL_TEST_DATA, map_variables=True)
     assert_index_equal(data.columns, pd.Index(columns_mapped))
@@ -191,3 +192,10 @@ def test_get_psm3_attribute_mapping(nrel_api_key):
     assert 'latitude' in meta.keys()
     assert 'longitude' in meta.keys()
     assert 'elevation' in meta.keys()
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_psm3_variable_map_deprecation_warning(nrel_api_key):
+    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
+        _ = psm3.read_psm3(MANUAL_TEST_DATA)

@@ -24,6 +24,21 @@ CRN_VARIABLE_MAP = {
     'WIND_FLAG': 'wind_speed_flag'
 }
 
+NAN_DICT = {
+    'CRX_VN': -99999,
+    'AIR_TEMPERATURE': -9999,
+    'PRECIPITATION': -9999,
+    'SOLAR_RADIATION': -99999,
+    'SURFACE_TEMPERATURE': -9999,
+    'RELATIVE_HUMIDITY': -9999,
+    'SOIL_MOISTURE_5': -99,
+    'SOIL_TEMPERATURE_5': -9999,
+    'WETNESS': -9999,
+    'WIND_1_5': -99}
+
+# Add NUL characters to possible NaN values for all columns
+NAN_DICT = {k: [v, '\x00\x00\x00\x00\x00\x00'] for k, v in NAN_DICT.items()}
+
 # as specified in CRN README.txt file. excludes 1 space between columns
 WIDTHS = [5, 8, 4, 8, 4, 6, 7, 7, 7, 7, 6, 1, 7, 1, 1, 5, 1, 7, 7, 5, 1, 6, 1]
 # add 1 to make fields contiguous (required by pandas.read_fwf)
@@ -92,13 +107,11 @@ def read_crn(filename, map_variables=True):
        Amer. Meteor. Soc., 94, 489-498. :doi:`10.1175/BAMS-D-12-00170.1`
     """
 
-    # read in data. set fields with NUL characters to NaN
+    # read in data
     data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '),
-                       widths=WIDTHS, na_values=['\x00\x00\x00\x00\x00\x00'])
-    # at this point we only have NaNs from NUL characters, not -999 etc.
-    # these bad rows need to be removed so that dtypes can be set.
-    # NaNs require float dtype so we run into errors if we don't do this.
-    data = data.dropna(axis=0)
+                       widths=WIDTHS, na_values=NAN_DICT)
+    # Remove rows with all nans
+    data = data.dropna(axis=0, how='all')
     # loop here because dtype kwarg not supported in read_fwf until 0.20
     for (col, _dtype) in zip(data.columns, DTYPES):
         data[col] = data[col].astype(_dtype)
@@ -110,11 +123,6 @@ def read_crn(filename, map_variables=True):
     dtindex = pd.to_datetime(dts['UTC_DATE'] + dts['UTC_TIME'].str.zfill(4),
                              format='%Y%m%d%H%M', utc=True)
     data = data.set_index(dtindex)
-
-    # Now we can set nans. This could be done a per column basis to be
-    # safer, since in principle a real -99 value could occur in a -9999
-    # column. Very unlikely to see that in the real world.
-    data = data.replace([-99, -999, -9999, -99999], np.nan)
 
     if map_variables:
         data = data.rename(columns=CRN_VARIABLE_MAP)

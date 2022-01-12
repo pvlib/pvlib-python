@@ -4,12 +4,12 @@
 import pandas as pd
 
 
-HEADERS = (
-    'WBANNO UTC_DATE UTC_TIME LST_DATE LST_TIME CRX_VN LONGITUDE LATITUDE '
-    'AIR_TEMPERATURE PRECIPITATION SOLAR_RADIATION SR_FLAG '
-    'SURFACE_TEMPERATURE ST_TYPE ST_FLAG RELATIVE_HUMIDITY RH_FLAG '
-    'SOIL_MOISTURE_5 SOIL_TEMPERATURE_5 WETNESS WET_FLAG WIND_1_5 WIND_FLAG'
-)
+HEADERS = [
+    'WBANNO', 'UTC_DATE', 'UTC_TIME', 'LST_DATE', 'LST_TIME', 'CRX_VN',
+    'LONGITUDE', 'LATITUDE', 'AIR_TEMPERATURE', 'PRECIPITATION',
+    'SOLAR_RADIATION', 'SR_FLAG', 'SURFACE_TEMPERATURE', 'ST_TYPE', 'ST_FLAG',
+    'RELATIVE_HUMIDITY', 'RH_FLAG', 'SOIL_MOISTURE_5', 'SOIL_TEMPERATURE_5',
+    'WETNESS', 'WET_FLAG', 'WIND_1_5', 'WIND_FLAG']
 
 VARIABLE_MAP = {
     'LONGITUDE': 'longitude',
@@ -107,13 +107,12 @@ def read_crn(filename, map_variables=True):
     """
 
     # read in data
-    data = pd.read_fwf(filename, header=None, names=HEADERS.split(' '),
-                       widths=WIDTHS, na_values=NAN_DICT)
+    data = pd.read_fwf(filename, header=None, names=HEADERS, widths=WIDTHS,
+                       na_values=NAN_DICT)
     # Remove rows with all nans
     data = data.dropna(axis=0, how='all')
-    # loop here because dtype kwarg not supported in read_fwf until 0.20
-    for (col, _dtype) in zip(data.columns, DTYPES):
-        data[col] = data[col].astype(_dtype)
+    # set dtypes here because dtype kwarg not supported in read_fwf until 0.20
+    data = data.astype(dict(zip(HEADERS, DTYPES)))
 
     # set index
     # UTC_TIME does not have leading 0s, so must zfill(4) to comply

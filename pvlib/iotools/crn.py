@@ -12,7 +12,7 @@ HEADERS = (
     'SOIL_MOISTURE_5 SOIL_TEMPERATURE_5 WETNESS WET_FLAG WIND_1_5 WIND_FLAG'
 )
 
-CRN_VARIABLE_MAP = {
+VARIABLE_MAP = {
     'LONGITUDE': 'longitude',
     'LATITUDE': 'latitude',
     'AIR_TEMPERATURE': 'temp_air',
@@ -70,7 +70,7 @@ def read_crn(filename, map_variables=True):
         filepath or url to read for the fixed-width file.
     map_variables: boolean, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable :const:`CRN_VARIABLE_MAP`.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -87,7 +87,7 @@ def read_crn(filename, map_variables=True):
 
     Variables corresponding to standard pvlib variables are by default renamed,
     e.g. `SOLAR_RADIATION` becomes `ghi`. See the
-    :const:`pvlib.iotools.crn.CRN_VARIABLE_MAP` dict for the complete mapping.
+    :const:`pvlib.iotools.crn.VARIABLE_MAP` dict for the complete mapping.
 
     CRN files occasionally have a set of null characters on a line
     instead of valid data. This function drops those lines. Sometimes
@@ -125,6 +125,6 @@ def read_crn(filename, map_variables=True):
     data = data.set_index(dtindex)
 
     if map_variables:
-        data = data.rename(columns=CRN_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data

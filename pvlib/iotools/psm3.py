@@ -223,7 +223,7 @@ def parse_psm3(fbuf):
     * Relative Humidity Units
     * Precipitable Water Units
     * Wind Direction Units
-    * Wind Speed
+    * Wind Speed Units
     * Cloud Type -15
     * Cloud Type 0
     * Cloud Type 1

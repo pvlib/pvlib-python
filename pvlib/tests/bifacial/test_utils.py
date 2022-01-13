@@ -15,7 +15,7 @@ def test_system_fixed_tilt():
             'axis_azimuth': None,
             'rotation': -30.}
     syst['gcr'] = 1.0 / syst['pitch']
-    # view factors from points on the ground to the sky
+    # view factors from 3 points on the ground between rows to the sky
     pts = np.linspace(0, 1, num=3)
     sqr3 = np.sqrt(3) / 4
     # c_i,j = cos(angle from point i to edge of row j), j=0 is row = -1
@@ -39,10 +39,10 @@ def test_system_fixed_tilt():
     return syst, pts, vfs_ground_sky
 
 
-def test_solar_projection_tangent():
-    tan_phi_f = utils.solar_projection_tangent(
+def test__solar_projection_tangent():
+    tan_phi_f = utils._solar_projection_tangent(
         30, 150, 180)
-    tan_phi_b = utils.solar_projection_tangent(
+    tan_phi_b = utils._solar_projection_tangent(
         30, 150, 0)
     assert np.allclose(tan_phi_f, 0.5)
     assert np.allclose(tan_phi_b, -0.5)
@@ -76,7 +76,7 @@ def test_unshaded_ground_fraction(
     assert np.allclose(f_sky_beam_b, expected)
 
 
-def test__vf_ground_sky(test_system_fixed_tilt):
+def test_vf_ground_sky_2d(test_system_fixed_tilt):
     # vector input
     ts, pts, vfs_gnd_sky = test_system_fixed_tilt
     vfs, _ = utils.vf_ground_sky_2d(pts, ts['rotation'], ts['gcr'],

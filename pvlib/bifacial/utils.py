@@ -6,8 +6,7 @@ import numpy as np
 from pvlib.tools import sind, cosd, tand
 
 
-# TODO: make private?
-def solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
+def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     """
     Tangent of the angle between the sun vector projected to the YZ-plane
     (vertical and perpendicular to rows) and the zenith vector.
@@ -78,8 +77,8 @@ def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
         (unshaded). [unitless]
     """
     # TODO: why np.abs? All angles should be <=90
-    tan_phi = solar_projection_tangent(solar_zenith, solar_azimuth,
-                                       surface_azimuth)
+    tan_phi = _solar_projection_tangent(solar_zenith, solar_azimuth,
+                                        surface_azimuth)
     f_gnd_beam = 1.0 - np.minimum(
         1.0, gcr * np.abs(cosd(surface_tilt) + sind(surface_tilt) * tan_phi))
     np.where(solar_zenith > max_zenith, 0., f_gnd_beam)
@@ -88,34 +87,39 @@ def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
 
 def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     """
-    Calculate the fraction of the sky dome visible from pointx on the ground,
-    accounting for obstructions by infinitely long rows.
+    Calculate the fraction of the sky dome visible from point x on the ground.
+
+    The view factor accounts for the obstruction of the sky by array rows that
+    are assumed to be infinitely long.  View factors are thus calculated in
+    a 2D geometry. The ground is assumed to be flat and level.
 
     Parameters
     ----------
     x : numeric
         Position on the ground between two rows, as a fraction of the pitch.
-        x = 0 corresponds to the center point of a row.
+        x = 0 corresponds to the point on the ground directly below the
+        center point of a row. Positive x is towards the right.
     rotation : float
-        Rotation of left edge relative to row center. [degree]
+        Rotation angle of the row's left edge relative to row center. [degree]
     gcr : float
-        Ratio of row slant length to row spacing (pitch). [unitless]
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
     height : float
-        Height of center point of the row above the ground. Must be in the same
-        units as pitch.
+        Height of the center point of the row above the ground; must be in the
+        same units as ``pitch``.
     pitch : float
-        Distance between two rows. Must be in the same units as height.
+        Distance between two rows; must be in the same units as ``height``.
     max_rows : int, default 10
-        Maximum number of rows to consider in front and behind the current row.
+        Maximum number of rows to consider on either side of the current
+        row. [unitless]
 
     Returns
     -------
     vf : array-like
         Fraction of sky dome visible from each point on the ground. [unitless]
     wedge_angles : array
-        Bounding angles of each wedge of visible sky.
-        Shape is (2, len(x), 2*max_rows+1). wedge_angles[0,:,:] is the
-        starting angle of each wedge, wedge_angles[1,:,:] is the end angle.
+        Angles defining each wedge of visible sky. Shape is
+        (2, len(x), 2*max_rows+1). ``wedge_angles[0,:,:]`` is the
+        starting angle of each wedge, ``wedge_angles[1,:,:]`` is the end angle.
         [degrees]
     """
     x = np.atleast_1d(x)  # handle float

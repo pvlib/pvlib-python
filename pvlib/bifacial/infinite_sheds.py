@@ -2,44 +2,55 @@ r"""
 Infinite Sheds
 ==============
 
-The "infinite sheds" model is a 2-dimensional model of an array that assumes
-rows are long enough that edge effects are negligible and therefore can be
-treated as infinite. The infinite sheds model considers an array of adjacent
-rows of PV modules versus just a single row. It is also capable of considering
-both mono and bifacial modules. Sheds are defined as either fixed tilt or
-trackers with uniform GCR on a horizontal plane. To consider arrays on an
-non-horizontal planes, rotate the solar vector into the reference frame of the
-sloped plane. The main purpose of the infinite shdes model is to modify the
-plane of array irradiance components to account for adjancent rows that reduce
-incident irradiance on the front and back sides versus a single isolated row
-that can see the entire sky as :math:`(1+cos(\beta))/2` and ground as
-:math:`(1-cos(\beta))/2`.
+The "infinite sheds" model is a 2-dimensional model of irradiance on the front
+and rear surfaces of a PV array. The model assumes that the array comprises
+parallel, equally spaced rows (sheds) and calculates irradiance in the middle
+of a shed which is long enough that end-of-row effects are negligible. Rows
+can be at fixed tilt or on single-axis trackers.
 
-Therefore the model picks up after the transposition of diffuse and direct onto
-front and back surfaces with the following steps:
-1. Find the fraction of unshaded ground between rows, ``f_gnd_beam``. We assume
+The ground is assumed to be flat and level. To consider arrays on an
+non-level ground, rotate the solar vector into the reference frame of the
+ground plane.
+
+The infinite shdes model accounts for the following effects:
+    - limited view from the row surfaces to the sky due to blocking of the
+      sky by nearby rows;
+    - reduction of irradiance reaching the ground due to shadows cast by
+      rows and due to blocking of the sky by nearby rows.
+The model operates in the following steps:
+1. Find the fraction of unshaded ground between rows, ``f_gnd_beam`` where
+   both direct and diffuse irradiance is recieved. The model assumes that
    there is no direct irradiance in the shaded fraction ``1 - f_gnd_beam``.
-2. Calculate the view factor,``fz_sky``, of diffuse sky incident on ground
-   between rows and not blocked by adjacent rows. This differs from the single
-   row model which assumes ``f_gnd_beam = 1`` or that the ground can see the
-   entire sky, and therefore, the ground reflected is just the product of GHI
-   and albedo. Note ``f_gnd_beam`` also considers the diffuse sky visible
-   between neighboring rows in front and behind the current row. If rows are
-   higher off the ground, then the sky might be visible between multiple rows!
-3. Calculate the view factor of the ground reflected irradiance incident on PV
-    surface.
-4. Find the fraction of PV surface shaded. We assume only diffuse in the shaded
-   fraction. We treat these two sections differently and assume that the view
-   factors of the sky and ground are linear in each section.
-5. Sum up components of diffuse sky, diffuse ground, and direct on the front
-   and  back PV surfaces.
-6. Apply the bifaciality factor to the backside and combine with the front.
-7. Treat the first and last row differently, because they aren't blocked on the
-   front side for 1st row, or the backside for last row.
+2. Calculate the view factor,``fz_sky``, from the ground to the sky accounting
+   for the parts of the sky that are blocked from view by the array's rows.
+   The view factor is multipled by the sky diffuse irradiance to calculate
+   the diffuse irradiance reaching the ground. Sky diffuse irradiance is thus
+   assumed to be isotropic.
+3. Calculate the view factor from the row surface to the ground which
+   determines the fraction of ground-reflected irradiance that reaches the row
+   surface.
+4. Find the fraction of the row surface that is shaded from direct irradiance.
+   Only sky and ground-reflected irradiance reach the the shaded fraction of
+   the row surface.
+5. For the front and rear surfaces, apply the incidence angle modifier to
+   the direct irradiance and sum the diffuse sky, diffuse ground, and direct
+   irradiance to compute the plane-of-array (POA) irradiance on each surface.
+6. Apply the bifaciality factor, shade factor and transmission factor to
+   the rear surface POA irradiance and add the result to the front surface
+   POA irradiance to calculate the total POA irradiance on the row.
 
-# TODO: explain geometry: primary axes and orientation, what is meant by
-"previous" and "next rows", etc.
-
+Array geometry is defined by the following:
+    - ground coverage ratio (GCR), ``gcr``, the ratio of row slant height to
+      the spacing between rows (pitch).
+    - height of row center above ground, ``height``.
+    - tilt of the row from horizontal, ``surface_tilt``.
+    - azimuth of the row's normal vector, ``surface_azimuth``.
+    - azimuth of the tracking axis, ``axis_azimuth``, when the array is on
+      single axis trackers.
+View factors from the ground to the sky are calculated at points spaced along
+a one-dimensional axis on the ground, with the origin under the center of a
+row and the positive direction toward the right. The positive direction is
+considered to be towards the "front" of the array.
 
 That's it folks! This model is influenced by the 2D model published by Marion,
 *et al.* in [1].
@@ -327,8 +338,8 @@ def _ground_angle(gcr, surface_tilt, x):
     Angle from horizontal of the line from a point x on the row slant length
     to the bottom of the facing row.
 
-    The angles returned are measured clockwise from horizontal, rather than
-    the usual counterclockwise direction.
+    The angles are clockwise from horizontal, rather than the usual
+    counterclockwise direction.
 
     Parameters
     ----------
@@ -358,7 +369,7 @@ def _ground_angle(gcr, surface_tilt, x):
 
 def _vf_row_ground(gcr, surface_tilt, x):
     """
-    View factor from a point x on the row to the ground between rows.
+    View factor from a point x on the row to the ground.
 
     Parameters
     ----------
@@ -448,23 +459,26 @@ def _vf_row_ground_integ(gcr, surface_tilt, f_x, npoints=100):
 
 def _poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
     """
-    Ground diffuse POA from average view factor weighted by shaded and unshaded
-    parts of the surface.
+    Reduce ground-reflected irradiance to account for limited view of the
+    ground from the row surface.
 
     Parameters
     ----------
     poa_gnd_sky : numeric
-        diffuse ground POA accounting for ground shade but not adjacent rows
+        Ground-reflected irradiance that would reach the row surface if the
+        full ground was visible. poa_gnd_sky accounts for limited view of the
+        sky from the ground. [W/m^2]
     f_x : numeric
         Fraction of row slant height from the bottom that is shaded. [unitless]
     f_gnd_pv_shade : numeric
-        fraction of ground visible from shaded part of PV surface
+        fraction of ground visible from shaded part of PV surface. [unitless]
     f_gnd_pv_noshade : numeric
-        fraction of ground visible from unshaded part of PV surface
+        fraction of ground visible from unshaded part of PV surface. [unitless]
 
     Returns
     -------
-
+    mumeric
+        Ground diffuse irradiance on the row plane. [W/m^2]
     """
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
 
@@ -474,12 +488,11 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
                        albedo, iam=1.0, axis_azimuth=None, max_rows=5,
                        npoints=100, all_output=False):
     r"""
-    Irradiance on one side of an infinite row of modules using the infinite
-    sheds model.
+    Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
-    Plane-of-array (POA) irradiance components include direct, diffuse and
-    global (total). Irradiance values are not reduced by reflections, adjusted
-    for solar spectrum, or reduced by a module's light collecting aperature,
+    POA irradiance components include direct, diffuse and global (total).
+    Irradiance values are not reduced by reflections, adjusted for solar
+    spectrum, or reduced by a module's aperture for light,
     which is quantified by the module's bifaciality factor.
 
     Parameters
@@ -563,6 +576,10 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
       [W/m^2]
     - poa_diffuse_ground : total ground-reflected diffuse irradiance on the
       plane of array. [W/m^2]
+
+    See also
+    --------
+    get_irradiance
     """
     # Calculate some geometric quantities
     # fraction of ground between rows that is illuminated accounting for
@@ -635,7 +652,6 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     return output
 
 
-# TODO: not tested
 def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
                    surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
                    albedo, iam_front=1.0, iam_back=1.0,
@@ -653,12 +669,12 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
     solar_azimuth : array-like
         Solar azimuth angles in decimal degrees.
 
-    surface_tilt : numeric
+    surface_tilt : array-like
         Surface tilt angles in decimal degrees. Tilt must be >=0 and
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
-    surface_azimuth : numeric
+    surface_azimuth : array-like
         Surface azimuth angles in decimal degrees. surface_azimuth must
         be >=0 and <=360. The Azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
@@ -682,7 +698,7 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
     dni : array-like
         Direct normal irradiance. [W/m2]
 
-    albedo : numeric
+    albedo : array-like
         Surface albedo. [unitless]
 
     iam_front : numeric, default 1.0
@@ -721,7 +737,7 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
 
     Notes
     -----
-    Input parameters `height` and `pitch` must have the same unit.
+    Input parameters ``height`` and ``pitch`` must have the same unit.
 
     Output includes:
     - poa_global : total irradiance reaching the module cells from both front

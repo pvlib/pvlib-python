@@ -5,7 +5,7 @@ associated effects on PV module output
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import sind, cosd
+from pvlib.tools import sind, cosd, tand
 from pvlib import bifacial
 
 
@@ -195,37 +195,60 @@ def sky_diffuse_passias(masking_angle):
 
 
 def shaded_fraction(solar_zenith, solar_azimuth, surface_tilt, surface_azimuth,
-                    gcr):
+                    gcr, cross_axis_tilt=0.):
     """
     Calculate fraction (from the bottom) of row slant height that is shaded
     by the row in front toward the sun.
 
+    See [1], Eq. 32.
+
     .. math::
-        F_x = \\max \\left( 0, \\min \\left(1 - \\frac{1}{\\text{GCR} \\left(
-        \\cos \\beta + \\sin \\beta \\tan \\phi \\right)}, 1 \\right) \\right)
+        F_x = \\max \\left( 0, \\min \\left(\\frac{\\text{GCR} \\cos \\theta
+        + \\left( \\text{GCR} \\sin \\theta - \\tan \\beta_{c} \\right)
+        \\tan Z - 1}
+        {\\text{GCR} \\left( \\cos \\theta + \\sin \\theta \\tan Z \\right)},
+        1 \\right) \\right)
 
     Parameters
     ----------
     solar_zenith : numeric
-        apparent zenith in degrees
+        Apparent solar zenith. [degrees]
     solar_azimuth : numeric
-        azimuth in degrees
-        Surface tilt angles in decimal degrees.
-        The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90)
-    surface_azimuth: float or array-like, default 180
-        Azimuth angle of the module surface.
-        North=0, East=90, South=180, West=270.
+        Solar azimuth. [degrees]
+    surface_tilt : numeric
+        Row tilt from horizontal, e.g. surface facing up = 0, surface facing
+        horizon = 90. [degrees]
+    surface_azimuth : numeric
+        Azimuth angle of the row surface. North=0, East=90, South=180,
+        West=270. [degrees]
     gcr : numeric
         Ground coverage ratio, which is the ratio of row slant length to row
-        spacing (pitch).
-
+        spacing (pitch). [unitless]
+    cross_axis_tilt : float, default 0.0
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. Cross-axis tilt should be specified
+        using a right-handed convention. For example, trackers with axis
+        azimuth of 180 degrees (heading south) will have a negative cross-axis
+        tilt if the tracker axes plane slopes down to the east and positive
+        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        `cross_axis_tilt`. [degrees]
     Returns
     -------
     f_x : numeric
         Fraction of row slant height shaded from the bottom.
+
+    References
+    ----------
+    .. [1] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
+       Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
+       https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
-    tan_phi = bifacial.utils.solar_projection_tangent(
+    tan_phi = bifacial.utils._solar_projection_tangent(
         solar_zenith, solar_azimuth, surface_azimuth)
-    f_x = 1.0 - 1.0 / gcr / (cosd(surface_tilt) + sind(surface_tilt) * tan_phi)
+    numerator = gcr * cosd(surface_tilt) \
+        + gcr * (sind(surface_tilt) - tand(cross_axis_tilt)) * tan_phi - 1
+    denominator = gcr * (cosd(surface_tilt) + sind(surface_tilt) * tan_phi)
+    f_x = numerator / denominator
     return np.maximum(0.0, np.minimum(f_x, 1.0))

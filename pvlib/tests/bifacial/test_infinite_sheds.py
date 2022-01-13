@@ -53,17 +53,6 @@ def test__tilt_to_rotation():
     assert np.allclose(res, np.array([0., -20., -90.]))
 
 
-def test__sky_angle(test_system):
-    ts, _, _ = test_system
-    x = np.array([0., 1.0])
-    angle, tan_angle = infinite_sheds._sky_angle(
-        ts['gcr'], ts['surface_tilt'], x)
-    exp_tan_angle = np.array([1. / (4 - np.sqrt(3)), 0.])
-    exp_angle = np.array([23.79397689, 0.])
-    assert np.allclose(angle, exp_angle)
-    assert np.allclose(tan_angle, exp_tan_angle)
-
-
 def test__vf_ground_sky_integ(test_system):
     ts, pts, vfs_gnd_sky = test_system
     vf_integ, z, vfs = infinite_sheds._vf_ground_sky_integ(

@@ -68,7 +68,7 @@ import numpy as np
 import pandas as pd
 from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial import utils
-from pvlib.shading import shaded_fraction
+from pvlib.shading import shaded_fraction, masking_angle
 from pvlib.irradiance import get_ground_diffuse, beam_component
 
 EPS = 1e-9
@@ -284,24 +284,20 @@ def _vf_row_sky_integ(gcr, surface_tilt, f_x, npoints=100):
     View factors are integrated separately over shaded and unshaded portions
     of the row slant height.
 
-    See Also
-    --------
-    _sky_angle
-
     """
     # handle Series inputs
     surface_tilt = np.array(surface_tilt)
     cst = cosd(surface_tilt)
     # shaded portion
     x = np.linspace(0 * f_x, f_x, num=npoints)
-    psi_t_shaded, _ = _sky_angle(gcr, surface_tilt, x)
+    psi_t_shaded = masking_angle(surface_tilt, gcr, x)
     y = 0.5 * (cosd(psi_t_shaded) + cst)
     # integrate view factors from each point in the discretization. This is an
     # improvement over the algorithm described in [2]
     vf_shade_sky_integ = np.trapz(y, x, axis=0)
     # unshaded portion
     x = np.linspace(f_x, np.ones_like(f_x), num=npoints)
-    psi_t_unshaded, _ = _sky_angle(gcr, surface_tilt, x)
+    psi_t_unshaded = masking_angle(surface_tilt, gcr, x)
     y = 0.5 * (cosd(psi_t_unshaded) + cst)
     vf_noshade_sky_integ = np.trapz(y, x, axis=0)
     return vf_shade_sky_integ, vf_noshade_sky_integ
@@ -360,6 +356,16 @@ def _ground_angle(gcr, surface_tilt, x):
     tan_psi : numeric
         Tangent of angle [unitless]
     """
+    #  : \\            \
+    #  :  \\            \
+    #  :   \\            \
+    #  :    \\            \  facing row
+    #  :     \\.___________\
+    #  :       \  ^*-.  psi \
+    #  :        \  x   *-.   \
+    #  :         \  v      *-.\
+    #  :          \<-----P---->\
+
     x1 = x * sind(surface_tilt)
     x2 = (x * cosd(surface_tilt) + 1 / gcr)
     psi = np.arctan2(x1, x2)  # do this first because it handles 0 / 0
@@ -594,10 +600,7 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     # fraction of row slant height that is shaded
     f_x = shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
                           surface_azimuth, gcr)
-    # angle from the shadeline to top of next row
-    _, tan_psi_top = _sky_angle(gcr, surface_tilt, f_x)
-    # angle from top of next row to bottom of current row
-    _, tan_psi_top_0 = _sky_angle(gcr, surface_tilt, 0.0)
+
     # Integrated view factors to the sky from the shaded and unshaded parts of
     # the row slant height
     vf_shade_sky, vf_noshade_sky = _vf_row_sky_integ(

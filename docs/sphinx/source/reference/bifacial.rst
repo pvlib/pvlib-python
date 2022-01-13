@@ -17,5 +17,4 @@ Utility functions for bifacial irradiance calculations
 .. autosummary::
    :toctree: generated/
 
-   bifacial.utils.solar_projection_tangent
    bifacial.utils.unshaded_ground_fraction

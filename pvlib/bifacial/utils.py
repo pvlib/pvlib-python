@@ -48,7 +48,7 @@ def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
         F_{gnd,sky} &= 1 - \\min{\\left(1, \\text{GCR} \\left|\\cos \\beta +
         \\sin \\beta \\tan \\phi \\right|\\right)} \\newline
 
-        \\beta &= \\text{tilt}
+    where :math:`\\beta` is the surface tilt.
 
     Parameters
     ----------

@@ -568,19 +568,19 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
 
     Notes
     -----
-    Input parameters `height` and `pitch` must have the same unit.
+    Input parameters ``height`` and ``pitch`` must have the same unit.
 
-    Output always includes:
+    ``output`` always includes:
 
-    - poa_global : total POA irradiance. [W/m^2]
-    - poa_diffuse : total diffuse POA irradiance from all sources. [W/m^2]
-    - poa_direct : total direct POA irradiance. [W/m^2]
+    - ``poa_global`` : total POA irradiance. [W/m^2]
+    - ``poa_diffuse`` : total diffuse POA irradiance from all sources. [W/m^2]
+    - ``poa_direct`` : total direct POA irradiance. [W/m^2]
 
-    Optionally, output includes:
+    Optionally, ``output`` includes:
 
-    - poa_diffuse_sky : total sky diffuse irradiance on the plane of array.
+    - ``poa_diffuse_sky`` : total sky diffuse irradiance on the plane of array.
       [W/m^2]
-    - poa_diffuse_ground : total ground-reflected diffuse irradiance on the
+    - ``poa_diffuse_ground`` : total ground-reflected diffuse irradiance on the
       plane of array. [W/m^2]
 
     See also
@@ -742,12 +742,13 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
     -----
     Input parameters ``height`` and ``pitch`` must have the same unit.
 
-    Output includes:
-    - poa_global : total irradiance reaching the module cells from both front
-      and back surfaces. [W/m^2]
-    - poa_front : total irradiance reaching the module cells from the front
+    ``output`` includes:
+
+    - ``poa_global`` : total irradiance reaching the module cells from both
+      front and back surfaces. [W/m^2]
+    - ``poa_front`` : total irradiance reaching the module cells from the front
       surface. [W/m^2]
-    - poa_back : total irradiance reaching the module cells from the front
+    - ``poa_back`` : total irradiance reaching the module cells from the front
       surface. [W/m^2]
 
     """

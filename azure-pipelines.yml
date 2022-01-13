@@ -15,7 +15,7 @@ jobs:
 - template: ci/azure/posix.yml
   parameters:
     name: Test_bare_macOS
-    vmImage: macOS-10.14
+    vmImage: macOS-10.15
 
 
 - template: ci/azure/conda_linux.yml
@@ -27,7 +27,7 @@ jobs:
 - template: ci/azure/conda_windows.yml
   parameters:
     name: Test_conda_windows
-    vmImage: vs2017-win2016
+    vmImage: windows-latest
 
 
 - job: 'Publish'

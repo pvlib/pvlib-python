@@ -158,6 +158,7 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "show_toc_level": 1,
+    "footer_items": ["copyright", "sphinx-version", "sidebar-ethical-ads"],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -198,7 +199,9 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    "**": ["search-field", "sidebar-nav-bs"]  # "sidebar-ethical-ads"
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -241,6 +244,8 @@ def setup(app):
     # Override footnote callout CSS to be normal text instead of superscript
     # In-line links to references as numbers in brackets.
     app.add_css_file("reference_format.css")
+    # Add a warning banner at the top of the page if viewing the "latest" docs
+    app.add_javascript("version-alert.js")
 
 # -- Options for LaTeX output ---------------------------------------------
 

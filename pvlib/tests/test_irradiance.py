@@ -878,7 +878,7 @@ def test_aoi_and_aoi_projection(surface_tilt, surface_azimuth, solar_zenith,
                                 aoi_proj_expected):
     aoi = irradiance.aoi(surface_tilt, surface_azimuth, solar_zenith,
                          solar_azimuth)
-    assert_allclose(aoi, aoi_expected, atol=1e-6)
+    assert_allclose(aoi, aoi_expected, atol=1e-5)
 
     aoi_projection = irradiance.aoi_projection(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)

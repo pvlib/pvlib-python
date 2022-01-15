@@ -12,7 +12,7 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     (vertical and perpendicular to rows) and the zenith vector.
 
     Tangent is positive when the projection of the sun vector is in the same
-    hemisphere as the system azimuth.
+    hemisphere as the surface azimuth.
 
     .. math::
         \\tan \\phi = \\cos\\left(\\text{solar azimuth}-\\text{system azimuth}
@@ -39,20 +39,22 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     return tan_phi
 
 
-def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
-                             solar_azimuth, max_zenith=87):
-    """
+def _unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
+                              solar_azimuth, max_zenith=87):
+    r"""
     Calculate the fraction of the ground with incident direct irradiance.
 
     .. math::
-        F_{gnd,sky} &= 1 - \\min{\\left(1, \\text{GCR} \\left|\\cos \\beta +
-        \\sin \\beta \\tan \\phi \\right|\\right)} \\newline
+        F_{gnd,sky} = 1 - \min{\left(1, \text{GCR} \left|\cos \beta +
+        \sin \beta \tan \phi \right|\right)}
 
-    where :math:`\\beta` is the surface tilt.
+    where :math:`\beta` is the surface tilt and :math:`\phi` is the angle
+    from vertical of the sun vector projected to a vertical plane that
+    contains the row azimuth `surface_azimuth`.
 
     Parameters
     ----------
-    gcr : numeric
+    gcr : float
         Ground coverage ratio, which is the ratio of row slant length to row
         spacing (pitch). [unitless]
     surface_tilt: numeric
@@ -85,8 +87,8 @@ def unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 
-def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
-    """
+def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
+    r"""
     Calculate the fraction of the sky dome visible from point x on the ground.
 
     The view factor accounts for the obstruction of the sky by array rows that

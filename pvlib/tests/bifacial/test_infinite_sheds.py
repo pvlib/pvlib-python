@@ -56,8 +56,8 @@ def test__tilt_to_rotation():
 def test__vf_ground_sky_integ(test_system):
     ts, pts, vfs_gnd_sky = test_system
     vf_integ, z, vfs = infinite_sheds._vf_ground_sky_integ(
-        ts['gcr'], ts['height'], ts['surface_tilt'],
-        ts['surface_azimuth'], ts['pitch'],
+        ts['surface_tilt'], ts['surface_azimuth'],
+        ts['gcr'], ts['height'], ts['pitch'],
         ts['axis_azimuth'], max_rows=1, npoints=3)
     expected_vf_integ = np.trapz(vfs_gnd_sky, pts)
     assert np.allclose(z, pts)
@@ -73,8 +73,8 @@ def test__vf_row_sky_integ(test_system):
     shaded = []
     noshade = []
     for x in f_x:
-        s, ns = infinite_sheds._vf_row_sky_integ(gcr, surface_tilt, x,
-                                                 npoints=100)
+        s, ns = infinite_sheds._vf_row_sky_integ(
+            x, surface_tilt, gcr, npoints=100)
         shaded.append(s)
         noshade.append(ns)
 
@@ -102,7 +102,7 @@ def test__poa_sky_diffuse_pv():
     vf_shade_sky_integ = np.array([1.0, 0.5, 0.2])
     vf_noshade_sky_integ = np.array([0.0, 0.5, 0.8])
     poa = infinite_sheds._poa_sky_diffuse_pv(
-        dhi, f_x, vf_shade_sky_integ, vf_noshade_sky_integ)
+        f_x, dhi, vf_shade_sky_integ, vf_noshade_sky_integ)
     expected_poa = np.array([np.nan, 0.0, 500 * (0.5 * 0.2 + 0.5 * 0.8)])
     assert np.allclose(poa, expected_poa, equal_nan=True)
 
@@ -111,7 +111,7 @@ def test__ground_angle(test_system):
     ts, _, _ = test_system
     x = np.array([0., 0.5, 1.0])
     angles, tan_angles = infinite_sheds._ground_angle(
-        ts['gcr'], ts['surface_tilt'], x)
+        x, ts['surface_tilt'], ts['gcr'])
     expected_angles = np.array([0., 5.866738789543952, 9.896090638982903])
     expected_tan_angles = np.array([0., 0.5 / (4 + np.sqrt(3) / 2.),
                                     1. / (4 + np.sqrt(3))])
@@ -124,7 +124,7 @@ def test__vf_row_ground(test_system):
     x = np.array([0., 0.5, 1.0])
     sqr3 = np.sqrt(3)
     vfs = infinite_sheds._vf_row_ground(
-        ts['gcr'], ts['surface_tilt'], x)
+        x, ts['surface_tilt'], ts['gcr'])
     expected_vfs = np.array([
         0.5 * (1. - sqr3 / 2),
         0.5 * ((4 + sqr3 / 2) / np.sqrt(17 + 4 * sqr3) - sqr3 / 2),
@@ -141,7 +141,7 @@ def test__vf_row_ground_integ(test_system):
     noshade = []
     for x in f_x:
         s, ns = infinite_sheds._vf_row_ground_integ(
-            gcr, surface_tilt, x)
+            x, surface_tilt, gcr)
         shaded.append(s)
         noshade.append(ns)
 
@@ -196,8 +196,8 @@ def test_get_irradiance_poa():
     iam = 1.0
     npoints = 100
     res = infinite_sheds.get_irradiance_poa(
-        solar_zenith, solar_azimuth, surface_tilt,
-        surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni,
         albedo, iam=iam, npoints=npoints)
     expected_diffuse = np.array([300.])
     expected_direct = np.array([700.])
@@ -218,8 +218,8 @@ def test_get_irradiance_poa():
         [700., 350. * np.sqrt(2), 350. * np.sqrt(2), 0.])
     expected_global = expected_diffuse + expected_direct
     res = infinite_sheds.get_irradiance_poa(
-        solar_zenith, solar_azimuth, surface_tilt,
-        surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni,
         albedo, iam=iam, npoints=npoints)
     assert np.allclose(res['poa_global'], expected_global)
     assert np.allclose(res['poa_diffuse'], expected_diffuse)
@@ -236,9 +236,9 @@ def test_get_irradiance_poa():
     expected_global = expected_diffuse + expected_direct
     expected_global.name = 'poa_global'  # to match output Series
     res = infinite_sheds.get_irradiance_poa(
-        solar_zenith, solar_azimuth, surface_tilt,
-        surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
-        albedo, iam=iam, npoints=npoints, all_output=True)
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni,
+        albedo, iam=iam, npoints=npoints)
     assert isinstance(res, pd.DataFrame)
     assert_series_equal(res['poa_global'], expected_global)
     assert all(k in res.columns for k in [
@@ -262,25 +262,27 @@ def test_get_irradiance():
     surface_azimuth = 180.
     gcr = 0.5
     height = 1.
-    pitch = 1
-    ghi = 1000
-    dhi = 300
-    dni = 700
-    albedo = 0
+    pitch = 1.
+    ghi = 1000.
+    dhi = 300.
+    dni = 700.
+    albedo = 0.
     iam_front = 1.0
     iam_back = 1.0
     npoints = 100
     result = infinite_sheds.get_irradiance(
-        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr,
-        height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
         bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
         npoints=npoints)
-    expected_diffuse = np.array([300.])
-    expected_direct = np.array([700.])
-    expected_global = expected_diffuse + expected_direct
-    assert np.isclose(result['poa_global'], expected_global)
-    assert np.isclose(result['poa_front_diffuse'], expected_diffuse)
-    assert np.isclose(result['poa_front_direct'], expected_direct)
+    expected_front_diffuse = np.array([300.])
+    expected_front_direct = np.array([700.])
+    expected_front_global = expected_diffuse + expected_direct
+    expected_global
+    assert np.isclose(result['poa_front'], expected_front_global)
+    assert np.isclose(result['poa_front_diffuse'], expected_front_diffuse)
+    assert np.isclose(result['poa_front_direct'], expected_front_direct)
+    assert np.isclose(result['poa_global'])
     # series inputs
     ghi = pd.Series([1000., 500., 500., np.nan])
     dhi = pd.Series([300., 500., 500., 500.], index=ghi.index)
@@ -288,13 +290,13 @@ def test_get_irradiance():
     solar_zenith = pd.Series([0., 0., 0., 135.], index=ghi.index)
     surface_tilt = pd.Series([0., 0., 90., 0.], index=ghi.index)
     result = infinite_sheds.get_irradiance(
-        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr,
-        height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
         bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
         npoints=npoints)
     result_front = infinite_sheds.get_irradiance_poa(
-        solar_zenith, solar_azimuth, surface_tilt,
-        surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
+        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth,
+        gcr, height, pitch, ghi, dhi, dni,
         albedo, iam=iam_front)
     assert isinstance(result, pd.DataFrame)
     expected_poa_global = pd.Series(

@@ -66,12 +66,13 @@ IEEE PVSC 2017
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-from pvlib.tools import cosd, sind, tand
+from pvlib.tools import cosd, sind
 from pvlib.bifacial import utils
 from pvlib.shading import shaded_fraction, masking_angle
 from pvlib.irradiance import get_ground_diffuse, beam_component
 
-EPS = 1e-9
+# TODO: document deviations from PVSC paper
+# TODO: add reference to docstrings for public functions
 
 
 def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
@@ -112,11 +113,10 @@ def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
     # Calculate rotation of PV row (signed tilt angle)
     is_pointing_right = ((surface_azimuth - axis_azimuth) % 360.) < 180.
     rotation = np.where(is_pointing_right, surface_tilt, -surface_tilt)
-    rotation[surface_tilt == 0] = -0.0  # pvfactors GH 125
     return rotation
 
 
-def _vf_ground_sky_integ(gcr, height, surface_tilt, surface_azimuth,
+def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
                          pitch, axis_azimuth=None, max_rows=5, npoints=100):
     """
     Integrated and per-point view factors from the ground to the sky at points
@@ -124,10 +124,6 @@ def _vf_ground_sky_integ(gcr, height, surface_tilt, surface_azimuth,
 
     Parameters
     ----------
-    gcr : numeric
-        Ratio of row slant length to row spacing (pitch). [unitless]
-    height : numeric
-        height of module lower edge above the ground
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
@@ -135,8 +131,13 @@ def _vf_ground_sky_integ(gcr, height, surface_tilt, surface_azimuth,
         Surface azimuth angles in decimal degrees east of north
         (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
         be >=0 and <=360.
+    gcr : float
+        Ratio of row slant length to row spacing (pitch). [unitless]
+    height : float
+        Height of the center point of the row above the ground; must be in the
+        same units as ``pitch``.
     pitch : float
-        Distance between two rows. Must be in the same units as height.
+        Distance between two rows. Must be in the same units as ``height``.
     axis_azimuth : numeric, default None
         The compass direction of the axis of rotation lies for a single-axis
         tracking system. Decimal degrees east of north.
@@ -165,7 +166,7 @@ def _vf_ground_sky_integ(gcr, height, surface_tilt, surface_azimuth,
     # TODO: vectorize over rotation
     fz_sky = np.zeros((len(rotation), npoints))
     for k, r in enumerate(rotation):
-        vf, _ = utils.vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
+        vf, _ = utils._vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
         fz_sky[k, :] = vf
     # calculate the integrated view factor for all of the ground between rows
     fgnd_sky = np.trapz(fz_sky, z, axis=1)
@@ -203,60 +204,20 @@ def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     return poa_ground * (f_gnd_beam*(1 - df) + df*vf_gnd_sky)
 
 
-def _sky_angle(gcr, surface_tilt, x):
-    """
-    Angle from a point x along the module slant height to the top of the
-    facing row.
-
-    Parameters
-    ----------
-    gcr : numeric
-        Ratio of row slant length to row spacing (pitch). [unitless]
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-    x : numeric
-        Fraction of slant length from row bottom edge. [unitless]
-
-    Returns
-    -------
-    psi : numeric
-        Angle. [degree]
-    tan_psi
-        Tangent of angle. [unitless]
-    """
-    #  : \\                    .*\\
-    #  :  \\               .-*    \\
-    #  :   \\          .-*         \\
-    #  :    \\   . .*+  psi         \\  facing row
-    #  :     \\.-*__________________ \\
-    #  :       \  ^                    \
-    #  :        \  x                    \
-    #  :         \  v                    \
-    #  :          \<---------P----------->\
-
-    y = 1.0 - x
-    x1 = y * sind(surface_tilt)
-    x2 = (1/gcr - y * cosd(surface_tilt))
-    psi_top = np.rad2deg(np.arctan2(x1, x2))
-    tan_psi_top = tand(psi_top)  # avoids div by 0
-    return psi_top, tan_psi_top
-
-
-def _vf_row_sky_integ(gcr, surface_tilt, f_x, npoints=100):
+def _vf_row_sky_integ(f_x, surface_tilt, gcr, npoints=100):
     """
     Integrated view factors from the shaded and unshaded parts of
     the row slant height to the sky.
 
     Parameters
     ----------
-    gcr : numeric
-        Ratio of row slant length to row spacing (pitch). [unitless]
+    f_x : numeric
+        Fraction of row slant height from the bottom that is shaded. [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
-    f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
+    gcr : float
+        Ratio of row slant length to row spacing (pitch). [unitless]
     npoints : int, default 100
         Number of points for integration. [unitless]
 
@@ -303,17 +264,17 @@ def _vf_row_sky_integ(gcr, surface_tilt, f_x, npoints=100):
     return vf_shade_sky_integ, vf_noshade_sky_integ
 
 
-def _poa_sky_diffuse_pv(dhi, f_x, vf_shade_sky_integ, vf_noshade_sky_integ):
+def _poa_sky_diffuse_pv(f_x, dhi, vf_shade_sky_integ, vf_noshade_sky_integ):
     """
     Sky diffuse POA from integrated view factors combined for both shaded and
     unshaded parts of the surface.
 
     Parameters
     ----------
-    dhi : numeric
-        Diffuse horizontal irradiance (DHI). [W/m^2]
     f_x : numeric
         Fraction of row slant height from the bottom that is shaded. [unitless]
+    dhi : numeric
+        Diffuse horizontal irradiance (DHI). [W/m^2]
     vf_shade_sky_integ : numeric
         Integrated view factor from the shaded part of the row to the sky.
         [unitless]
@@ -329,7 +290,7 @@ def _poa_sky_diffuse_pv(dhi, f_x, vf_shade_sky_integ, vf_noshade_sky_integ):
     return dhi * (f_x * vf_shade_sky_integ + (1 - f_x) * vf_noshade_sky_integ)
 
 
-def _ground_angle(gcr, surface_tilt, x):
+def _ground_angle(x, surface_tilt, gcr):
     """
     Angle from horizontal of the line from a point x on the row slant length
     to the bottom of the facing row.
@@ -339,15 +300,15 @@ def _ground_angle(gcr, surface_tilt, x):
 
     Parameters
     ----------
-    gcr : numeric
-        ground coverage ratio, ratio of row slant length to row spacing.
-        [unitless]
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
     x : numeric
         fraction of row slant length from bottom, ``x = 0`` is at the row
         bottom, ``x = 1`` is at the top of the row.
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+    gcr : float
+        ground coverage ratio, ratio of row slant length to row spacing.
+        [unitless]
 
     Returns
     -------
@@ -373,20 +334,20 @@ def _ground_angle(gcr, surface_tilt, x):
     return np.rad2deg(psi), tan_psi
 
 
-def _vf_row_ground(gcr, surface_tilt, x):
+def _vf_row_ground(x, surface_tilt, gcr):
     """
     View factor from a point x on the row to the ground.
 
     Parameters
     ----------
-    gcr : numeric
-        Ground coverage ratio, ratio of row slant length to row spacing.
-        [unitless]
+    x : numeric
+        Fraction of row slant height from the bottom. [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
-    x : numeric
-        Fraction of row slant height from the bottom. [unitless]
+    gcr : float
+        Ground coverage ratio, ratio of row slant length to row spacing.
+        [unitless]
 
     Returns
     -------
@@ -397,26 +358,27 @@ def _vf_row_ground(gcr, surface_tilt, x):
     cst = cosd(surface_tilt)
     # angle from horizontal at the point x on the row slant height to the
     # bottom of the facing row
-    psi_t_shaded, _ = _ground_angle(gcr, surface_tilt, x)
+    psi_t_shaded, _ = _ground_angle(x, surface_tilt, gcr)
     # view factor from the point on the row to the ground
     return 0.5 * (cosd(psi_t_shaded) - cst)
 
 
-def _vf_row_ground_integ(gcr, surface_tilt, f_x, npoints=100):
+def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):
     """
     View factors to the ground from shaded and unshaded parts of a row.
 
     Parameters
     ----------
-    gcr : numeric
-        Ground coverage ratio, ratio of row slant length to row spacing.
-        [unitless]
+    f_x : numeric
+        Fraction of row slant height from the bottom that is shaded. [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
-    f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
-    npoints:
+    gcr : float
+        Ground coverage ratio, ratio of row slant length to row spacing.
+        [unitless]
+    npoints : int, default 100
+        Number of points for integration. [unitless]
 
     Returns
     -------
@@ -463,19 +425,19 @@ def _vf_row_ground_integ(gcr, surface_tilt, f_x, npoints=100):
     return vf_shade_ground_integ, vf_noshade_ground_integ
 
 
-def _poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
+def _poa_ground_pv(f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade):
     """
     Reduce ground-reflected irradiance to account for limited view of the
     ground from the row surface.
 
     Parameters
     ----------
+    f_x : numeric
+        Fraction of row slant height from the bottom that is shaded. [unitless]
     poa_gnd_sky : numeric
         Ground-reflected irradiance that would reach the row surface if the
         full ground was visible. poa_gnd_sky accounts for limited view of the
         sky from the ground. [W/m^2]
-    f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
     f_gnd_pv_shade : numeric
         fraction of ground visible from shaded part of PV surface. [unitless]
     f_gnd_pv_noshade : numeric
@@ -489,27 +451,20 @@ def _poa_ground_pv(poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade):
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
 
 
-def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
-                       surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
+def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
+                       solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
                        albedo, iam=1.0, axis_azimuth=None, max_rows=5,
-                       npoints=100, all_output=False):
+                       npoints=100):
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
     POA irradiance components include direct, diffuse and global (total).
-    Irradiance values are not reduced by reflections, adjusted for solar
-    spectrum, or reduced by a module's aperture for light,
-    which is quantified by the module's bifaciality factor.
+    Irradiance values are not adjusted for solar spectrum or reduced
+    by a module's aperture for light, which is quantified by the module's
+    bifaciality factor.
 
     Parameters
     ----------
-    solar_zenith : array-like
-        True (not refraction-corrected) solar zenith angles in decimal
-        degrees.
-
-    solar_azimuth : array-like
-        Solar azimuth angles in decimal degrees.
-
     surface_tilt : numeric
         Surface tilt angles in decimal degrees. Tilt must be >=0 and
         <=180. The tilt angle is defined as degrees from horizontal
@@ -520,15 +475,23 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
         (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
         be >=0 and <=360.
 
-    gcr : numeric
+    solar_zenith : array-like
+        True (not refraction-corrected) solar zenith angles in decimal
+        degrees.
+
+    solar_azimuth : array-like
+        Solar azimuth angles in decimal degrees.
+
+    gcr : float
         Ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
 
-    height : numeric
-        height of module lower edge above the ground.
+    height : float
+        Height of the center point of the row above the ground; must be in the
+        same units as ``pitch``.
 
-    pitch : numeric
-        row spacing.
+    pitch : float
+        Distance between two rows; must be in the same units as ``height``.
 
     ghi : numeric
         Global horizontal irradiance. [W/m2]
@@ -556,9 +519,6 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     npoints : int, default 100
         Number of points used to discretize distance along the ground.
 
-    all_ouputs : boolean, default False
-        If True then detailed output is returned. If False, only plane-of-array
-        irradiance components are returned.
 
     Returns
     -------
@@ -575,9 +535,6 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     - ``poa_global`` : total POA irradiance. [W/m^2]
     - ``poa_diffuse`` : total diffuse POA irradiance from all sources. [W/m^2]
     - ``poa_direct`` : total direct POA irradiance. [W/m^2]
-
-    Optionally, ``output`` includes:
-
     - ``poa_diffuse_sky`` : total sky diffuse irradiance on the plane of array.
       [W/m^2]
     - ``poa_diffuse_ground`` : total ground-reflected diffuse irradiance on the
@@ -590,12 +547,12 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     # Calculate some geometric quantities
     # fraction of ground between rows that is illuminated accounting for
     # shade from panels
-    f_gnd_beam = utils.unshaded_ground_fraction(
+    f_gnd_beam = utils._unshaded_ground_fraction(
         gcr, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     # integrated view factor from the ground to the sky, integrated between
     # adjacent rows interior to the array
     vf_gnd_sky, _, _ = _vf_ground_sky_integ(
-        gcr, height, surface_tilt, surface_azimuth, pitch, axis_azimuth,
+        surface_tilt, surface_azimuth, gcr, height, pitch, axis_azimuth,
         max_rows, npoints)
     # fraction of row slant height that is shaded
     f_x = shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
@@ -604,15 +561,15 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     # Integrated view factors to the sky from the shaded and unshaded parts of
     # the row slant height
     vf_shade_sky, vf_noshade_sky = _vf_row_sky_integ(
-        gcr, surface_tilt, f_x)
+        f_x, surface_tilt, gcr)
     # angle from shadeline to bottom of facing row
-    psi_shade, _ = _ground_angle(gcr, surface_tilt, f_x)
+    psi_shade, _ = _ground_angle(f_x, surface_tilt, gcr)
     # angle from top of row to bottom of facing row
-    psi_bottom, _ = _ground_angle(gcr, surface_tilt, 1.0)
+    psi_bottom, _ = _ground_angle(1.0, surface_tilt, gcr)
     # view factors from the ground to shaded and unshaded portions of the row
     # slant height
     f_gnd_pv_shade, f_gnd_pv_noshade = _vf_row_ground_integ(
-        gcr, surface_tilt, f_x)
+        f_x, surface_tilt, gcr)
 
     # Calculate some preliminary irradiance quantities
     # diffuse fraction
@@ -623,7 +580,7 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
 
     # Total sky diffuse recieved by both shaded and unshaded portions
     poa_sky_pv = _poa_sky_diffuse_pv(
-        dhi, f_x, vf_shade_sky, vf_noshade_sky)
+        f_x, dhi, vf_shade_sky, vf_noshade_sky)
 
     # Reduce ground-reflected irradiance because other rows in the array
     # block irradiance from reaching the ground.
@@ -633,7 +590,7 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
     # Further reduce ground-reflected irradiance because adjacent rows block
     # the view to the ground.
     poa_gnd_pv = _poa_ground_pv(
-        poa_gnd_sky, f_x, f_gnd_pv_shade, f_gnd_pv_noshade)
+        f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade)
 
     # add sky and ground-reflected irradiance on the row by irradiance
     # component
@@ -646,17 +603,15 @@ def get_irradiance_poa(solar_zenith, solar_azimuth, surface_tilt,
 
     output = OrderedDict(
         poa_global=poa_global, poa_direct=poa_direct,
-        poa_diffuse=poa_diffuse)
-    if all_output:
-        output.update(
-            poa_ground_diffuse=poa_gnd_pv, poa_sky_diffuse=poa_sky_pv)
+        poa_diffuse=poa_diffuse, poa_ground_diffuse=poa_gnd_pv,
+        poa_sky_diffuse=poa_sky_pv)
     if isinstance(poa_global, pd.Series):
         output = pd.DataFrame(output)
     return output
 
 
-def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
-                   surface_azimuth, gcr, height, pitch, ghi, dhi, dni,
+def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+                   gcr, height, pitch, ghi, dhi, dni,
                    albedo, iam_front=1.0, iam_back=1.0,
                    bifaciality=0.8, shade_factor=-0.02,
                    transmission_factor=0, max_rows=5, npoints=100):
@@ -665,13 +620,6 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
 
     Parameters
     ----------
-    solar_zenith : array-like
-        True (not refraction-corrected) solar zenith angles in decimal
-        degrees.
-
-    solar_azimuth : array-like
-        Solar azimuth angles in decimal degrees.
-
     surface_tilt : array-like
         Surface tilt angles in decimal degrees. Tilt must be >=0 and
         <=180. The tilt angle is defined as degrees from horizontal
@@ -682,15 +630,23 @@ def get_irradiance(solar_zenith, solar_azimuth, surface_tilt,
         be >=0 and <=360. The Azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    gcr : numeric
+    solar_zenith : array-like
+        True (not refraction-corrected) solar zenith angles in decimal
+        degrees.
+
+    solar_azimuth : array-like
+        Solar azimuth angles in decimal degrees.
+
+    gcr : float
         Ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
 
-    height : numeric
-        height of module lower edge above the ground.
+    height : float
+        Height of the center point of the row above the ground; must be in the
+        same units as ``pitch``.
 
-    pitch : numeric
-        row spacing.
+    pitch : float
+        Distance between two rows; must be in the same units as ``height``.
 
     ghi : array-like
         Global horizontal irradiance. [W/m2]

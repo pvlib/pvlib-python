@@ -62,27 +62,27 @@ def test__solar_projection_tangent():
      (np.sqrt(2) / 2, 45, 180, 45, 0, 1.0),
      (np.sqrt(2) / 2, 45, 180, 45, 135, 0.5 * (1 - np.sqrt(2) / 2)),
      ])
-def test_unshaded_ground_fraction(
+def test__unshaded_ground_fraction(
         gcr, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         expected):
     # frontside, same for both sides
-    f_sky_beam_f = utils.unshaded_ground_fraction(
+    f_sky_beam_f = utils._unshaded_ground_fraction(
         gcr, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     assert np.allclose(f_sky_beam_f, expected)
     # backside, should be the same as frontside
-    f_sky_beam_b = utils.unshaded_ground_fraction(
+    f_sky_beam_b = utils._unshaded_ground_fraction(
         gcr, 180. - surface_tilt, surface_azimuth - 180, solar_zenith,
         solar_azimuth)
     assert np.allclose(f_sky_beam_b, expected)
 
 
-def test_vf_ground_sky_2d(test_system_fixed_tilt):
+def test__vf_ground_sky_2d(test_system_fixed_tilt):
     # vector input
     ts, pts, vfs_gnd_sky = test_system_fixed_tilt
-    vfs, _ = utils.vf_ground_sky_2d(pts, ts['rotation'], ts['gcr'],
-                                    ts['pitch'], ts['height'], max_rows=1)
+    vfs, _ = utils._vf_ground_sky_2d(pts, ts['rotation'], ts['gcr'],
+                                     ts['pitch'], ts['height'], max_rows=1)
     assert np.allclose(vfs, vfs_gnd_sky, rtol=0.1)  # middle point vf is off
     # test with singleton x
-    vf, _ = utils.vf_ground_sky_2d(pts[0], ts['rotation'], ts['gcr'],
-                                   ts['pitch'], ts['height'], max_rows=1)
+    vf, _ = utils._vf_ground_sky_2d(pts[0], ts['rotation'], ts['gcr'],
+                                    ts['pitch'], ts['height'], max_rows=1)
     assert np.isclose(vf, vfs_gnd_sky[0])

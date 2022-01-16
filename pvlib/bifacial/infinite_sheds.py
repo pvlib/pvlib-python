@@ -712,12 +712,12 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     backside_tilt, backside_sysaz = _backside(surface_tilt, surface_azimuth)
     # front side POA irradiance
     irrad_front = get_irradiance_poa(
-        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr,
-        height, pitch, ghi, dhi, dni, albedo, iam_front)
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni, albedo, iam_front)
     # back side POA irradiance
     irrad_back = get_irradiance_poa(
-        solar_zenith, solar_azimuth, backside_tilt, backside_sysaz, gcr,
-        height, pitch, ghi, dhi, dni, albedo, iam_back)
+        backside_tilt, backside_sysaz, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni, albedo, iam_back)
     if isinstance(ghi, pd.Series):
         irrad_front = irrad_front.rename(
             columns={'poa_global': 'poa_front',

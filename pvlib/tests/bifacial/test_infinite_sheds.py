@@ -277,12 +277,11 @@ def test_get_irradiance():
         npoints=npoints)
     expected_front_diffuse = np.array([300.])
     expected_front_direct = np.array([700.])
-    expected_front_global = expected_diffuse + expected_direct
-    expected_global
+    expected_front_global = expected_front_diffuse + expected_front_direct
     assert np.isclose(result['poa_front'], expected_front_global)
     assert np.isclose(result['poa_front_diffuse'], expected_front_diffuse)
     assert np.isclose(result['poa_front_direct'], expected_front_direct)
-    assert np.isclose(result['poa_global'])
+    assert np.isclose(result['poa_global'], result['poa_front'])
     # series inputs
     ghi = pd.Series([1000., 500., 500., np.nan])
     dhi = pd.Series([300., 500., 500., 500.], index=ghi.index)
@@ -295,7 +294,7 @@ def test_get_irradiance():
         bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
         npoints=npoints)
     result_front = infinite_sheds.get_irradiance_poa(
-        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth,
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni,
         albedo, iam=iam_front)
     assert isinstance(result, pd.DataFrame)

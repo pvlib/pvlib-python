@@ -475,11 +475,11 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
         be >=0 and <=360.
 
-    solar_zenith : array-like
+    solar_zenith : numeric
         True (not refraction-corrected) solar zenith angles in decimal
         degrees.
 
-    solar_azimuth : array-like
+    solar_azimuth : numeric
         Solar azimuth angles in decimal degrees.
 
     gcr : float
@@ -620,21 +620,21 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     Parameters
     ----------
-    surface_tilt : array-like
+    surface_tilt : numeric
         Surface tilt angles in decimal degrees. Tilt must be >=0 and
         <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
-    surface_azimuth : array-like
+    surface_azimuth : numeric
         Surface azimuth angles in decimal degrees. surface_azimuth must
         be >=0 and <=360. The Azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
-    solar_zenith : array-like
+    solar_zenith : numeric
         True (not refraction-corrected) solar zenith angles in decimal
         degrees.
 
-    solar_azimuth : array-like
+    solar_azimuth : numeric
         Solar azimuth angles in decimal degrees.
 
     gcr : float
@@ -648,16 +648,16 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     pitch : float
         Distance between two rows; must be in the same units as ``height``.
 
-    ghi : array-like
+    ghi : numeric
         Global horizontal irradiance. [W/m2]
 
-    dhi : array-like
+    dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
 
-    dni : array-like
+    dni : numeric
         Direct normal irradiance. [W/m2]
 
-    albedo : array-like
+    albedo : numeric
         Surface albedo. [unitless]
 
     iam_front : numeric, default 1.0

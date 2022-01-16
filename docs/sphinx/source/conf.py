@@ -51,6 +51,7 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx_gallery.gen_gallery',
     'sphinx_toggleprompt',
+    'jupyter_sphinx.execute',
 ]
 
 napoleon_use_rtype = False  # group rtype on same line together with return

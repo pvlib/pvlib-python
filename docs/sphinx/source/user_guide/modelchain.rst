@@ -33,7 +33,7 @@ Before delving into the intricacies of ModelChain, we provide a brief
 example of the modeling steps using ModelChain. First, we import pvlib’s
 objects, module data, and inverter data.
 
-.. ipython:: python
+.. jupyter-execute::
 
     import pandas as pd
     import numpy as np
@@ -57,7 +57,7 @@ objects, module data, and inverter data.
 Now we create a Location object, a Mount object, a PVSystem object, and a
 ModelChain object.
 
-.. ipython:: python
+.. jupyter-execute::
 
     location = Location(latitude=32.2, longitude=-110.9)
     system = PVSystem(surface_tilt=20, surface_azimuth=200,
@@ -68,13 +68,13 @@ ModelChain object.
 
 Printing a ModelChain object will display its models.
 
-.. ipython:: python
+.. jupyter-execute::
 
     print(mc)
 
 Next, we run a model with some simple weather data.
 
-.. ipython:: python
+.. jupyter-execute::
 
     weather = pd.DataFrame([[1050, 1000, 100, 30, 5]],
                            columns=['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed'],
@@ -87,19 +87,19 @@ ModelChain stores the modeling results in the ``results`` attribute. The
 A few examples of attributes of :py:class:`~pvlib.modelchain.ModelChainResult`
 are shown below.
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.results.aoi
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.results.cell_temperature
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.results.dc
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.results.ac
 
@@ -126,7 +126,7 @@ Below, we show some examples of how to define a ModelChain.
 Let’s make the most basic Location and PVSystem objects and build from
 there.
 
-.. ipython:: python
+.. jupyter-execute::
 
     location = Location(32.2, -110.9)
     poorly_specified_system = PVSystem()
@@ -137,8 +137,8 @@ These basic objects do not have enough information for ModelChain to be
 able to automatically determine its set of models, so the ModelChain
 will throw an error when we try to create it.
 
-.. ipython:: python
-   :okexcept:
+.. jupyter-execute::
+   :raises: ValueError
 
     ModelChain(poorly_specified_system, location)
 
@@ -147,7 +147,7 @@ inverter from the CEC database. ModelChain will examine the PVSystem
 object’s properties and determine that it should choose the SAPM DC
 model, AC model, AOI loss model, and spectral loss model.
 
-.. ipython:: python
+.. jupyter-execute::
 
     sapm_system = PVSystem(
         module_parameters=sandia_module,
@@ -156,7 +156,7 @@ model, AC model, AOI loss model, and spectral loss model.
     mc = ModelChain(sapm_system, location)
     print(mc)
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.run_model(weather);
     mc.results.ac
@@ -169,7 +169,7 @@ it should choose PVWatts DC and AC models. ModelChain still needs us to specify
 ``system.module_parameters`` dictionary does not contain enough
 information to determine which of those models to choose.
 
-.. ipython:: python
+.. jupyter-execute::
 
     pvwatts_system = PVSystem(
         module_parameters={'pdc0': 240, 'gamma_pdc': -0.004},
@@ -179,7 +179,7 @@ information to determine which of those models to choose.
                     aoi_model='physical', spectral_model='no_loss')
     print(mc)
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.run_model(weather);
     mc.results.ac
@@ -188,7 +188,7 @@ User-supplied keyword arguments override ModelChain’s inspection
 methods. For example, we can tell ModelChain to use different loss
 functions for a PVSystem that contains SAPM-specific parameters.
 
-.. ipython:: python
+.. jupyter-execute::
 
     sapm_system = PVSystem(
         module_parameters=sandia_module,
@@ -197,7 +197,7 @@ functions for a PVSystem that contains SAPM-specific parameters.
     mc = ModelChain(sapm_system, location, aoi_model='physical', spectral_model='no_loss')
     print(mc)
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.run_model(weather);
     mc.results.ac
@@ -216,7 +216,7 @@ Each "with" method returns a ModelChain using a Location and PVSystem. Parameter
 used to define the PVSystem need to be consistent with the models specified by
 the "with" method. Using location and sapm_system defined above:
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc = mc.with_sapm(sapm_system, location)
     print(mc)
@@ -272,7 +272,7 @@ wrapper methods for AOI loss, spectral loss, effective irradiance, cell
 temperature, DC power, AC power, and other losses. These methods are
 assigned to generic names, as described in the next section.
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.run_model??
 
@@ -301,7 +301,7 @@ and sets the same attributes, thus creating a uniform API. For example,
 the :py:meth:`~pvlib.modelchain.ModelChain.pvwatts_dc` method is shown below. Its only argument is
 ``self``, and it sets the ``dc`` attribute.
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.pvwatts_dc??
 
@@ -312,7 +312,7 @@ using data that is stored in the ModelChain ``effective_irradiance`` and
 result to the ``dc`` attribute of the ModelChain's ``results`` object. The code
 below shows a simple example of this.
 
-.. ipython:: python
+.. jupyter-execute::
 
     # make the objects
     pvwatts_system = PVSystem(
@@ -348,11 +348,11 @@ All ModelChain methods for DC output use the
 :py:meth:`~pvlib.pvsystem.PVSystem.scale_voltage_current_power` method to scale
 DC quantities to the output of the full PVSystem.
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.sapm??
 
-.. ipython:: python
+.. jupyter-execute::
 
     # make the objects
     sapm_system = PVSystem(
@@ -386,7 +386,7 @@ At object construction, ModelChain assigns the desired model’s method
 parameter at construction, or by inference as described in the next
 section.
 
-.. ipython:: python
+.. jupyter-execute::
 
     pvwatts_system = PVSystem(
         module_parameters={'pdc0': 240, 'gamma_pdc': -0.004},
@@ -419,11 +419,11 @@ respectively. A few examples are shown below. Inference methods generally work
 by inspecting the parameters for all required parameters for a corresponding
 method.
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.infer_dc_model??
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.infer_ac_model??
     pvlib.modelchain._snl_params??
@@ -443,7 +443,7 @@ When the PVSystem contains multiple arrays, ``ModelChain.results`` attributes
 are tuples with length equal to the number of Arrays. Each tuple's elements
 are in the same order as in ``PVSystem.arrays``.
 
-.. ipython:: python
+.. jupyter-execute::
 
     from pvlib.pvsystem import Array
     location = Location(latitude=32.2, longitude=-110.9)
@@ -510,7 +510,7 @@ functions, and then implementing wrappers to make them easier to use in
 specific applications. Of course, you could implement it in a single
 function if you wanted to.
 
-.. ipython:: python
+.. jupyter-execute::
 
     def pvusa(poa_global, wind_speed, temp_air, a, b, c, d):
         """
@@ -567,7 +567,7 @@ function if you wanted to.
         return mc
 
 
-.. ipython:: python
+.. jupyter-execute::
 
     module_parameters = {'a': 0.2, 'b': 0.00001, 'c': 0.001, 'd': -0.00005}
     pvusa_system = PVSystem(module_parameters=module_parameters)
@@ -580,13 +580,13 @@ function if you wanted to.
 A ModelChain object uses Python’s functools.partial function to assign
 itself as the argument to the user-supplied functions.
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc.dc_model.func
 
 The end result is that ModelChain.run_model works as expected!
 
-.. ipython:: python
+.. jupyter-execute::
 
     mc = mc.run_model(weather)
     mc.results.dc

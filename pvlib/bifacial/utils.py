@@ -78,7 +78,6 @@ def _unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
         Fraction of distance betwen rows (pitch) with direct irradiance
         (unshaded). [unitless]
     """
-    # TODO: why np.abs? All angles should be <=90
     tan_phi = _solar_projection_tangent(solar_zenith, solar_azimuth,
                                         surface_azimuth)
     f_gnd_beam = 1.0 - np.minimum(

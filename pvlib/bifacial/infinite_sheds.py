@@ -59,8 +59,6 @@ References
 ----------
 [1] A Practical Irradiance Model for Bifacial PV Modules, Bill Marion, et al.,
 IEEE PVSC 2017
-[2] Bifacial Performance Modeling in Large Arrays, Mikofski, et al., IEEE PVSC
-2018
 """
 
 from collections import OrderedDict
@@ -459,28 +457,27 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
     POA irradiance components include direct, diffuse and global (total).
-    Irradiance values are not adjusted for solar spectrum or reduced
-    by a module's aperture for light, which is quantified by the module's
+    Irradiance values are reduced to account for reflection of direct light,
+    but are not adjusted for solar spectrum or reduced by a module's
     bifaciality factor.
 
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. Tilt must be >=0 and
-        <=180. The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90).
+        Tilt of the surface from horizontal. Must be between 0 and 180. For
+        example, for a fixed tilt module mounted at 30 degrees from
+        horizontal, use ``surface_tilt``=30 to get front-side irradiance and
+        ``surface_tilt``=150 to get rear-side irradiance. [degree]
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees east of north
-        (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
-        be >=0 and <=360.
+        Surface azimuth in decimal degrees east of north
+        (e.g. North = 0, South=180 East = 90, West = 270). [degree]
 
     solar_zenith : numeric
-        True (not refraction-corrected) solar zenith angles in decimal
-        degrees.
+        True (not refraction-corrected) solar zenith. [degree]
 
     solar_azimuth : numeric
-        Solar azimuth angles in decimal degrees.
+        Solar azimuth. [degree]
 
     gcr : float
         Ground coverage ratio, ratio of row slant length to row spacing.
@@ -616,26 +613,40 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    bifaciality=0.8, shade_factor=-0.02,
                    transmission_factor=0, max_rows=5, npoints=100):
     """
-    Get bifacial irradiance using the infinite sheds model.
+    Get front and rear irradiance using the infinite sheds model.
+
+    The infinite sheds model [1] assumes the PV system comprises parallel,
+    evenly spaced rows on a level, horizontal surface. Rows can be on fixed
+    racking or single axis trackers. The model calculates irradiance at a
+    location far from the ends of any rows, in effect, assuming that the
+    rows (sheds) are infinitely long.
+
+    The model accounts for the following effects:
+
+    - restricted views of the sky from module surfaces due to the nearby rows.
+    - restricted views of the ground from module surfaces due to nearby rows.
+    - shading of module surfaces by nearby rows.
+    - shading of rear cells of a module by mounting structure and by
+      module features.
+
+    The model implicitly assumes that diffuse irradiance from the sky is
+    isotropic, and that module surfaces do not allow irradiance to transmit
+    through the module to the ground through gaps between cells.
 
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. Tilt must be >=0 and
-        <=180. The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90).
+        Tilt from horizontal of the front-side surface. [degree]
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. surface_azimuth must
-        be >=0 and <=360. The Azimuth convention is defined as degrees
-        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+        Surface azimuth in decimal degrees east of north
+        (e.g. North = 0, South=180 East = 90, West = 270). [degree]
 
     solar_zenith : numeric
-        True (not refraction-corrected) solar zenith angles in decimal
-        degrees.
+        True (not refraction-corrected) solar zenith. [degree]
 
     solar_azimuth : numeric
-        Solar azimuth angles in decimal degrees.
+        Solar azimuth. [degree]
 
     gcr : float
         Ground coverage ratio, ratio of row slant length to row spacing.
@@ -679,8 +690,8 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     transmission_factor : numeric, default 0.0
         Fraction of irradiance on the back surface that does not reach the
-        module's cells due to module structures. Negative value is a reduction
-        in back irradiance. [unitless]
+        module's cells due to module structures. A negative value is a
+        reduction in back irradiance. [unitless]
 
     max_rows : int, default 5
         Maximum number of rows to consider in front and behind the current row.
@@ -696,7 +707,6 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     Notes
     -----
-    Input parameters ``height`` and ``pitch`` must have the same unit.
 
     ``output`` includes:
 
@@ -707,6 +717,16 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     - ``poa_back`` : total irradiance reaching the module cells from the front
       surface. [W/m^2]
 
+    References
+    ----------
+    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+       J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
+       Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
+       doi: 10.1109/PVSC40753.2019.8980572.
+
+    See Also
+    --------
+    get_irradiance_poa
     """
     # backside is rotated and flipped relative to front
     backside_tilt, backside_sysaz = _backside(surface_tilt, surface_azimuth)

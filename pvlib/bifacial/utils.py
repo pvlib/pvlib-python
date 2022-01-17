@@ -39,8 +39,8 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     return tan_phi
 
 
-def _unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
-                              solar_azimuth, max_zenith=87):
+def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
+                              solar_azimuth, gcr, max_zenith=87):
     r"""
     Calculate the fraction of the ground with incident direct irradiance.
 
@@ -54,9 +54,6 @@ def _unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
 
     Parameters
     ----------
-    gcr : float
-        Ground coverage ratio, which is the ratio of row slant length to row
-        spacing (pitch). [unitless]
     surface_tilt: numeric
         Surface tilt angle. The tilt angle is defined as
         degrees from horizontal, e.g., surface facing up = 0, surface facing
@@ -68,6 +65,9 @@ def _unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
         Solar zenith angle. [degree].
     solar_azimuth : numeric
         Solar azimuth. [degree].
+    gcr : float
+        Ground coverage ratio, which is the ratio of row slant length to row
+        spacing (pitch). [unitless]
     max_zenith : numeric, default 87
         Maximum zenith angle. For solar_zenith > max_zenith, unshaded ground
         fraction is set to 0. [degree]
@@ -77,12 +77,19 @@ def _unshaded_ground_fraction(gcr, surface_tilt, surface_azimuth, solar_zenith,
     f_gnd_beam : numeric
         Fraction of distance betwen rows (pitch) with direct irradiance
         (unshaded). [unitless]
+
+    References
+    ----------
+    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+       J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
+       Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
+       doi: 10.1109/PVSC40753.2019.8980572.
     """
     tan_phi = _solar_projection_tangent(solar_zenith, solar_azimuth,
                                         surface_azimuth)
     f_gnd_beam = 1.0 - np.minimum(
         1.0, gcr * np.abs(cosd(surface_tilt) + sind(surface_tilt) * tan_phi))
-    np.where(solar_zenith > max_zenith, 0., f_gnd_beam)
+    np.where(solar_zenith > max_zenith, 0., f_gnd_beam)  # [1], Eq. 4
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 
@@ -99,7 +106,7 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     x : numeric
         Position on the ground between two rows, as a fraction of the pitch.
         x = 0 corresponds to the point on the ground directly below the
-        center point of a row. Positive x is towards the right.
+        center point of a row. Positive x is towards the right. [unitless]
     rotation : float
         Rotation angle of the row's left edge relative to row center. [degree]
     gcr : float
@@ -121,7 +128,7 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
         Angles defining each wedge of visible sky. Shape is
         (2, len(x), 2*max_rows+1). ``wedge_angles[0,:,:]`` is the
         starting angle of each wedge, ``wedge_angles[1,:,:]`` is the end angle.
-        [degrees]
+        [degree]
     """
     x = np.atleast_1d(x)  # handle float
     all_k = np.arange(-max_rows, max_rows + 1)

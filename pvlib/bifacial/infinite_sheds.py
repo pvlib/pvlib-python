@@ -2,11 +2,11 @@ r"""
 Infinite Sheds
 ==============
 
-The "infinite sheds" model is a 2-dimensional model of irradiance on the front
-and rear surfaces of a PV array. The model assumes that the array comprises
-parallel, equally spaced rows (sheds) and calculates irradiance in the middle
-of a shed which is long enough that end-of-row effects are negligible. Rows
-can be at fixed tilt or on single-axis trackers.
+The "infinite sheds" model [1] is a 2-dimensional model of irradiance on the
+front and rear surfaces of a PV array. The model assumes that the array
+comprises parallel, equally spaced rows (sheds) and calculates irradiance in
+the middle of a shed which is long enough that end-of-row effects can be
+neglected. Rows can be at fixed tilt or on single-axis trackers.
 
 The ground is assumed to be flat and level. To consider arrays on an
 non-level ground, rotate the solar vector into the reference frame of the
@@ -50,15 +50,23 @@ Array geometry is defined by the following:
 View factors from the ground to the sky are calculated at points spaced along
 a one-dimensional axis on the ground, with the origin under the center of a
 row and the positive direction toward the right. The positive direction is
-considered to be towards the "front" of the array.
+considered to be towards the "front" of the array. Array height differs in this
+code from the description in [1], where array height is described at the row's
+lower edge.
 
 That's it folks! This model is influenced by the 2D model published by Marion,
-*et al.* in [1].
+*et al.* in [2].
 
 References
 ----------
-[1] A Practical Irradiance Model for Bifacial PV Modules, Bill Marion, et al.,
-IEEE PVSC 2017
+    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+       J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
+       Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
+       doi: 10.1109/PVSC40753.2019.8980572.
+    .. [2] Marion. B., MacAlpine, S., Deline, C., Asgharzadeh, A., Toor, F.,
+       Riley, D., Stein, J. and Hansen, C. "A Practical Irradiance Model for
+       Bifacial PV Modules".2017 IEEE 44th Photovoltaic Specialists Conference
+       (PVSC), 2017, pp. 1537-1543. doi: 10.1109/PVSC.2017.8366263
 """
 
 from collections import OrderedDict
@@ -68,9 +76,6 @@ from pvlib.tools import cosd, sind
 from pvlib.bifacial import utils
 from pvlib.shading import shaded_fraction, masking_angle
 from pvlib.irradiance import get_ground_diffuse, beam_component
-
-# TODO: document deviations from PVSC paper
-# TODO: add reference to docstrings for public functions
 
 
 def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
@@ -456,6 +461,12 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
+    The infinite sheds model [1] assumes the PV system comprises parallel,
+    evenly spaced rows on a level, horizontal surface. Rows can be on fixed
+    racking or single axis trackers. The model calculates irradiance at a
+    location far from the ends of any rows, in effect, assuming that the
+    rows (sheds) are infinitely long.
+
     POA irradiance components include direct, diffuse and global (total).
     Irradiance values are reduced to account for reflection of direct light,
     but are not adjusted for solar spectrum or reduced by a module's
@@ -537,17 +548,26 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     - ``poa_diffuse_ground`` : total ground-reflected diffuse irradiance on the
       plane of array. [W/m^2]
 
+    References
+    ----------
+    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+       J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
+       Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
+       doi: 10.1109/PVSC40753.2019.8980572.
+
     See also
     --------
     get_irradiance
     """
     # Calculate some geometric quantities
     # fraction of ground between rows that is illuminated accounting for
-    # shade from panels
+    # shade from panels. [1], Eq. 4
     f_gnd_beam = utils._unshaded_ground_fraction(
-        gcr, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr)
     # integrated view factor from the ground to the sky, integrated between
     # adjacent rows interior to the array
+    # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
+    # center rather than at row lower edge as in [1].
     vf_gnd_sky, _, _ = _vf_ground_sky_integ(
         surface_tilt, surface_azimuth, gcr, height, pitch, axis_azimuth,
         max_rows, npoints)
@@ -557,6 +577,9 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
 
     # Integrated view factors to the sky from the shaded and unshaded parts of
     # the row slant height
+    # Differs from [1] Eq. 15 and Eq. 16. Here, we integrate over each
+    # interval (shaded or unshaded) rather than averaging values at each
+    # interval's end points.
     vf_shade_sky, vf_noshade_sky = _vf_row_sky_integ(
         f_x, surface_tilt, gcr)
     # angle from shadeline to bottom of facing row
@@ -565,6 +588,9 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     psi_bottom, _ = _ground_angle(1.0, surface_tilt, gcr)
     # view factors from the ground to shaded and unshaded portions of the row
     # slant height
+    # Differs from [1] Eq. 17 and Eq. 18. Here, we integrate over each
+    # interval (shaded or unshaded) rather than averaging values at each
+    # interval's end points.
     f_gnd_pv_shade, f_gnd_pv_noshade = _vf_row_ground_integ(
         f_x, surface_tilt, gcr)
 
@@ -724,7 +750,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        doi: 10.1109/PVSC40753.2019.8980572.
 
-    See Also
+    See also
     --------
     get_irradiance_poa
     """

@@ -2,13 +2,14 @@ import numpy as np
 import pandas as pd
 
 from pvlib.tools import cosd, sind, tand
-from pvlib.pvsystem import _combine_localized_attributes
-from pvlib.pvsystem import PVSystem
-from pvlib.location import Location
+from pvlib.pvsystem import (
+    PVSystem, Array, SingleAxisTrackerMount, _unwrap_single_value
+)
 from pvlib import irradiance, atmosphere
 from pvlib._deprecation import deprecated
 
 
+@deprecated('0.9.0', alternative='PVSystem with SingleAxisTrackerMount')
 class SingleAxisTracker(PVSystem):
     """
     A class for single-axis trackers that inherits the PV modeling methods from
@@ -57,7 +58,17 @@ class SingleAxisTracker(PVSystem):
         `cross_axis_tilt`. [degrees]
 
     **kwargs
-        Passed to :py:class:`~pvlib.pvsystem.PVSystem`.
+        Passed to :py:class:`~pvlib.pvsystem.PVSystem`. If the `arrays`
+        parameter is specified it must have only a single Array. Furthermore
+        if a :py:class:`~pvlib.pvsystem.Array` is provided it must have
+        ``surface_tilt`` and ``surface_azimuth`` equal to None.
+
+    Raises
+    ------
+    ValueError
+        If more than one Array is specified.
+    ValueError
+        If an Array is provided with a surface tilt or azimuth not None.
 
     See also
     --------
@@ -69,6 +80,31 @@ class SingleAxisTracker(PVSystem):
     def __init__(self, axis_tilt=0, axis_azimuth=0, max_angle=90,
                  backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0.0, **kwargs):
 
+        mount_kwargs = {
+            k: kwargs.pop(k) for k in ['racking_model', 'module_height']
+            if k in kwargs
+        }
+        mount = SingleAxisTrackerMount(axis_tilt, axis_azimuth, max_angle,
+                                       backtrack, gcr, cross_axis_tilt,
+                                       **mount_kwargs)
+
+        array_defaults = {
+            'albedo': None, 'surface_type': None, 'module': None,
+            'module_type': None, 'module_parameters': None,
+            'temperature_model_parameters': None,
+            'modules_per_string': 1,
+        }
+        array_kwargs = {
+            key: kwargs.get(key, array_defaults[key]) for key in array_defaults
+        }
+        # strings/strings_per_inverter is a special case
+        array_kwargs['strings'] = kwargs.get('strings_per_inverter', 1)
+
+        array = Array(mount=mount, **array_kwargs)
+        pass_through_kwargs = {  # other args to pass to PVSystem()
+            k: v for k, v in kwargs.items() if k not in array_defaults
+        }
+        # leave these in case someone is using them
         self.axis_tilt = axis_tilt
         self.axis_azimuth = axis_azimuth
         self.max_angle = max_angle
@@ -76,10 +112,10 @@ class SingleAxisTracker(PVSystem):
         self.gcr = gcr
         self.cross_axis_tilt = cross_axis_tilt
 
-        kwargs['surface_tilt'] = None
-        kwargs['surface_azimuth'] = None
+        pass_through_kwargs['surface_tilt'] = None
+        pass_through_kwargs['surface_azimuth'] = None
 
-        super().__init__(**kwargs)
+        super().__init__(arrays=[array], **pass_through_kwargs)
 
     def __repr__(self):
         attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr',
@@ -116,33 +152,6 @@ class SingleAxisTracker(PVSystem):
 
         return tracking_data
 
-    @deprecated('0.8',
-                alternative='SingleAxisTracker, Location, and ModelChain',
-                name='SingleAxisTracker.localize', removal='0.9')
-    def localize(self, location=None, latitude=None, longitude=None,
-                 **kwargs):
-        """
-        Creates a :py:class:`LocalizedSingleAxisTracker` object using
-        this object and location data. Must supply either location
-        object or latitude, longitude, and any location kwargs
-
-        Parameters
-        ----------
-        location : None or Location, default None
-        latitude : None or float, default None
-        longitude : None or float, default None
-        **kwargs : see Location
-
-        Returns
-        -------
-        localized_system : LocalizedSingleAxisTracker
-        """
-
-        if location is None:
-            location = Location(latitude, longitude, **kwargs)
-
-        return LocalizedSingleAxisTracker(pvsystem=self, location=location)
-
     def get_aoi(self, surface_tilt, surface_azimuth, solar_zenith,
                 solar_azimuth):
         """Get the angle of incidence on the system.
@@ -175,6 +184,7 @@ class SingleAxisTracker(PVSystem):
                              solar_zenith, solar_azimuth)
         return aoi
 
+    @_unwrap_single_value
     def get_irradiance(self, surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
@@ -227,52 +237,29 @@ class SingleAxisTracker(PVSystem):
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        return irradiance.get_total_irradiance(surface_tilt,
-                                               surface_azimuth,
-                                               solar_zenith,
-                                               solar_azimuth,
-                                               dni, ghi, dhi,
-                                               dni_extra=dni_extra,
-                                               airmass=airmass,
-                                               model=model,
-                                               albedo=self.albedo,
-                                               **kwargs)
+        # SingleAxisTracker only supports a single Array, but we need the
+        # validate/iterate machinery so that single length tuple input/output
+        # is handled the same as PVSystem.get_irradiance. GH 1159
+        dni = self._validate_per_array(dni, system_wide=True)
+        ghi = self._validate_per_array(ghi, system_wide=True)
+        dhi = self._validate_per_array(dhi, system_wide=True)
 
-
-@deprecated('0.8', alternative='SingleAxisTracker, Location, and ModelChain',
-            name='LocalizedSingleAxisTracker', removal='0.9')
-class LocalizedSingleAxisTracker(SingleAxisTracker, Location):
-    """
-    The :py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` class defines a
-    standard set of installed PV system attributes and modeling functions. This
-    class combines the attributes and methods of the
-    :py:class:`~pvlib.tracking.SingleAxisTracker` (a subclass of
-    :py:class:`~pvlib.pvsystem.PVSystem`) and
-    :py:class:`~pvlib.location.Location` classes.
-
-    The :py:class:`~pvlib.tracking.LocalizedSingleAxisTracker` may have bugs
-    due to the difficulty of robustly implementing multiple inheritance. See
-    :py:class:`~pvlib.modelchain.ModelChain` for an alternative paradigm
-    for modeling PV systems at specific locations.
-    """
-
-    def __init__(self, pvsystem=None, location=None, **kwargs):
-
-        new_kwargs = _combine_localized_attributes(
-            pvsystem=pvsystem,
-            location=location,
-            **kwargs,
+        return tuple(
+            irradiance.get_total_irradiance(
+                surface_tilt,
+                surface_azimuth,
+                solar_zenith,
+                solar_azimuth,
+                dni, ghi, dhi,
+                dni_extra=dni_extra,
+                airmass=airmass,
+                model=model,
+                albedo=self.arrays[0].albedo,
+                **kwargs)
+            for array, dni, ghi, dhi in zip(
+                self.arrays, dni, ghi, dhi
+            )
         )
-
-        SingleAxisTracker.__init__(self, **new_kwargs)
-        Location.__init__(self, **new_kwargs)
-
-    def __repr__(self):
-        attrs = ['latitude', 'longitude', 'altitude', 'tz']
-        return ('Localized' +
-                super().__repr__() + '\n  ' +
-                '\n  '.join(
-                    f'{attr}: {getattr(self, attr)}' for attr in attrs))
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,
@@ -471,7 +458,9 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     sun_vec = np.array([xp, yp, zp])
 
     # calculate angle-of-incidence on panel
-    aoi = np.degrees(np.arccos(np.abs(np.sum(sun_vec*panel_norm, axis=0))))
+    # TODO: use irradiance.aoi
+    projection = np.clip(np.sum(sun_vec*panel_norm, axis=0), -1, 1)
+    aoi = np.degrees(np.arccos(projection))
 
     # Calculate panel tilt and azimuth in a coordinate system where the panel
     # tilt is the angle from horizontal, and the panel azimuth is the compass

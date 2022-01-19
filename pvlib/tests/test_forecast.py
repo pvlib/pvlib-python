@@ -6,13 +6,13 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
-from conftest import (
+from .conftest import (
     requires_siphon,
     has_siphon,
     skip_windows,
-    requires_recent_cftime,
+    requires_recent_cftime
 )
-from conftest import RERUNS, RERUNS_DELAY
+from .conftest import RERUNS, RERUNS_DELAY
 
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 
@@ -69,7 +69,7 @@ def model(request):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_process_data(model):
-    for how in ['liujordan', 'clearsky_scaling']:
+    for how in ['campbell_norman', 'clearsky_scaling']:
         if model.raw_data.empty:
             warnings.warn('Could not test {} process_data with how={} '
                           'because raw_data was empty'.format(model, how))

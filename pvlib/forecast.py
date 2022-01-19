@@ -9,11 +9,13 @@ from requests.exceptions import HTTPError
 from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
-from pvlib.irradiance import liujordan, get_extra_radiation, disc
+from pvlib.irradiance import campbell_norman, get_extra_radiation, disc
+from pvlib.irradiance import _liujordan
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
 import warnings
+
 
 warnings.warn(
     'The forecast module algorithms and features are highly experimental. '
@@ -526,14 +528,14 @@ class ForecastModel:
 
         return transmittance
 
-    def cloud_cover_to_irradiance_liujordan(self, cloud_cover, **kwargs):
+    def cloud_cover_to_irradiance_campbell_norman(self, cloud_cover, **kwargs):
         """
         Estimates irradiance from cloud cover in the following steps:
 
         1. Determine transmittance using a function of cloud cover e.g.
            :py:meth:`~ForecastModel.cloud_cover_to_transmittance_linear`
         2. Calculate GHI, DNI, DHI using the
-           :py:func:`pvlib.irradiance.liujordan` model
+           :py:func:`pvlib.irradiance.campbell_norman` model
 
         Parameters
         ----------
@@ -549,14 +551,12 @@ class ForecastModel:
         # accurate enough to justify using these minor corrections
         solar_position = self.location.get_solarposition(cloud_cover.index)
         dni_extra = get_extra_radiation(cloud_cover.index)
-        airmass = self.location.get_airmass(cloud_cover.index)
 
         transmittance = self.cloud_cover_to_transmittance_linear(cloud_cover,
                                                                  **kwargs)
 
-        irrads = liujordan(solar_position['apparent_zenith'],
-                           transmittance, airmass['airmass_absolute'],
-                           dni_extra=dni_extra)
+        irrads = campbell_norman(solar_position['apparent_zenith'],
+                                 transmittance, dni_extra=dni_extra)
         irrads = irrads.fillna(0)
 
         return irrads
@@ -571,7 +571,8 @@ class ForecastModel:
         cloud_cover : Series
         how : str, default 'clearsky_scaling'
             Selects the method for conversion. Can be one of
-            clearsky_scaling or liujordan.
+            clearsky_scaling or campbell_norman. Method liujordan is
+            deprecated.
         **kwargs
             Passed to the selected method.
 
@@ -585,8 +586,8 @@ class ForecastModel:
         if how == 'clearsky_scaling':
             irrads = self.cloud_cover_to_irradiance_clearsky_scaling(
                 cloud_cover, **kwargs)
-        elif how == 'liujordan':
-            irrads = self.cloud_cover_to_irradiance_liujordan(
+        elif how == 'campbell_norman':
+            irrads = self.cloud_cover_to_irradiance_campbell_norman(
                 cloud_cover, **kwargs)
         else:
             raise ValueError('invalid how argument')
@@ -724,11 +725,11 @@ class GFS(ForecastModel):
             'total_clouds':
                 'Total_cloud_cover_entire_atmosphere_Mixed_intervals_Average',
             'low_clouds':
-                'Total_cloud_cover_low_cloud_Mixed_intervals_Average',
+                'Low_cloud_cover_low_cloud_Mixed_intervals_Average',
             'mid_clouds':
-                'Total_cloud_cover_middle_cloud_Mixed_intervals_Average',
+                'Medium_cloud_cover_middle_cloud_Mixed_intervals_Average',
             'high_clouds':
-                'Total_cloud_cover_high_cloud_Mixed_intervals_Average',
+                'High_cloud_cover_high_cloud_Mixed_intervals_Average',
             'boundary_clouds': ('Total_cloud_cover_boundary_layer_cloud_'
                                 'Mixed_intervals_Average'),
             'convect_clouds': 'Total_cloud_cover_convective_cloud',

@@ -18,6 +18,8 @@ jobs:
         python.version: '37'
       Python38:
         python.version: '38'
+      Python39:
+        python.version: '39'
 
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
@@ -36,6 +38,8 @@ jobs:
   - script: |
       source activate test_env
       export NREL_API_KEY=$(nrelApiKey)
+      export BSRN_FTP_USERNAME=$(BSRN_FTP_USERNAME)
+      export BSRN_FTP_PASSWORD=$(BSRN_FTP_PASSWORD)
       pytest pvlib --remote-data --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
     displayName: 'pytest'
   - task: PublishTestResults@2

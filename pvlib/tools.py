@@ -277,8 +277,9 @@ def _build_args(keys, input_dict, dict_name):
 
 # Created April,2014
 # Author: Rob Andrews, Calama Consulting
-
-def _golden_sect_DataFrame(params, VL, VH, func):
+# Modified: November, 2020 by C. W. Hansen, to add atol and change exit
+# criteria
+def _golden_sect_DataFrame(params, VL, VH, func, atol=1e-8):
     """
     Vectorized golden section search for finding MPP from a dataframe
     timeseries.

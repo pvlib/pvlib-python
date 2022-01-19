@@ -42,3 +42,7 @@ def test__golden_sect_DataFrame_vector():
     expected = np.array([0.5, 0.25])
     v, x = tools._golden_sect_DataFrame(params, 0., 1., _obj_test_golden_sect)
     assert np.allclose(x, expected, atol=1e-8)
+
+
+params, lb, ub, expected, func = ({'c': 1., 'n': 1.}, 0., 1., 0.5, _obj_test_golden_sect)
+test__golden_sect_DataFrame(params, lb, ub, expected, func)

@@ -321,11 +321,11 @@ def _golden_sect_DataFrame(params, VL, VH, func, atol=1e-8):
     df['VH'] = VH
     df['VL'] = VL
 
-    errflag = True
+    converged = False
     iterations = 0
     iterlimit = np.max(np.trunc(np.log(atol / (VH - VL)) / np.log(phim1))) + 1
 
-    while errflag and (iterations < iterlimit):
+    while not converged and (iterations < iterlimit):
 
         phi = phim1 * (df['VH'] - df['VL'])
         df['V1'] = df['VL'] + phi
@@ -339,11 +339,11 @@ def _golden_sect_DataFrame(params, VL, VH, func, atol=1e-8):
         df['VH'] = df['V1']*~df['SW_Flag'] + df['VH']*(df['SW_Flag'])
 
         err = abs(df['V2'] - df['V1'])
-        errflag = (err > atol).any()  # works because err is np.float64
 
+        # works with single value because err is np.float64
+        converged = (err < atol).all()
+        # err will be less than atol before iterations hit the limit
+        # but just to be safe
         iterations += 1
-
-    if iterations > iterlimit:
-        raise Exception("EXCEPTION: iteration limit exceeded")
 
     return func(df, 'V1'), df['V1']

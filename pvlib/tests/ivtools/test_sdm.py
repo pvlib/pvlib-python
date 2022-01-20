@@ -9,7 +9,7 @@ from pvlib import pvsystem
 
 from pvlib.tests.conftest import requires_pysam, requires_statsmodels
 
-#from ..conftest import DATA_DIR
+from ..conftest import DATA_DIR
 
 
 @pytest.fixture
@@ -125,10 +125,8 @@ def _read_iv_curves_for_test(datafile, npts):
     ivcurves = dict.fromkeys(['i_sc', 'i_mp', 'v_mp', 'v_oc', 'poa', 'tc',
                               'ee'])
 
-#    infilen = DATA_DIR / datafile
-    infilen = DATA_DIR + '/PVsyst_demo.csv'
-#    with infilen.open(mode='r') as f:
-    with open(infilen, mode='r') as f:
+    infilen = DATA_DIR / datafile
+    with infilen.open(mode='r') as f:
 
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 
@@ -191,10 +189,8 @@ def _read_pvsyst_expected(datafile):
     varlist = ['iph', 'io', 'rs', 'rsh', 'u']
     pvsyst = dict.fromkeys(paramlist + varlist)
 
-#    infilen = DATA_DIR / datafile
-#    with infilen.open(mode='r') as f:
-    infilen = DATA_DIR + '\PVsyst_demo_model.csv'
-    with open(infilen, mode='r') as f:
+    infilen = DATA_DIR / datafile
+    with infilen.open(mode='r') as f:
 
         Ns, aIsc, bVoc, descr = f.readline().split(',')
 
@@ -404,7 +400,3 @@ def test_pvsyst_temperature_coeff():
         params['I_L_ref'], params['I_o_ref'], params['R_sh_ref'],
         params['R_sh_0'], params['R_s'], params['cells_in_series'])
     assert_allclose(gamma_pdc, expected, rtol=0.0005)
-
-
-DATA_DIR = 'C:\python\pvlib-remote\pvlib-python\pvlib\data'
-test_fit_pvsyst_sandia(npts=3000)

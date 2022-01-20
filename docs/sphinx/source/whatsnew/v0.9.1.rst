@@ -24,6 +24,8 @@ Bug fixes
   and ``surface_azimuth`` inputs caused an error (:issue:`1127`, :issue:`1332`, :pull:`1361`) 
 * Changed the metadata entry for the wind speed unit to "Wind Speed Units" in
   the PSM3 iotools function (:pull:`1375`)
+* Improved convergence to maximum power point for :py:func:`pvlib.pvsystem.singlediode`
+  (:issue:`1087`, :pull:`1089`)
 
 Testing
 ~~~~~~~

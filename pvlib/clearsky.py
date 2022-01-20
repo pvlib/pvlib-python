@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
+import h5py
 
 from pvlib import atmosphere, tools
 
@@ -186,13 +187,6 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # 1st row: 89.9583 S, 2nd row: 89.875 S
     # 1st column: 179.9583 W, 2nd column: 179.875 W
 
-    try:
-        import tables
-    except ImportError:
-        raise ImportError('The Linke turbidity lookup table requires tables. '
-                          'You can still use clearsky.ineichen if you '
-                          'supply your own turbidities.')
-
     if filepath is None:
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
@@ -200,9 +194,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
-    with tables.open_file(filepath) as lt_h5_file:
-        lts = lt_h5_file.root.LinkeTurbidity[latitude_index,
-                                             longitude_index, :]
+    with h5py.File(filepath, 'r') as lt_h5_file:
+        lts = lt_h5_file['LinkeTurbidity'][latitude_index, longitude_index]
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
@@ -565,7 +558,7 @@ def _calc_taud(w, aod700, p):
     # set up nan-tolerant masks
     aod700_lt_0p05 = np.full_like(aod700, False, dtype='bool')
     np.less(aod700, 0.05, where=~np.isnan(aod700), out=aod700_lt_0p05)
-    aod700_mask = np.array([aod700_lt_0p05, ~aod700_lt_0p05], dtype=np.int)
+    aod700_mask = np.array([aod700_lt_0p05, ~aod700_lt_0p05], dtype=int)
 
     # create tuples of coefficients for
     # aod700 < 0.05, aod700 >= 0.05

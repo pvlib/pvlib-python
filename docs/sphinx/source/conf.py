@@ -70,7 +70,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'pvlib python'
 copyright = \
-    '2013-2020, Sandia National Laboratories and pvlib python Development Team'
+    '2013-2021, Sandia National Laboratories and pvlib python Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -127,20 +127,39 @@ autosummary_generate = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-# on_rtd is whether we are on readthedocs.org
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-else:
-    html_theme = 'default'
+html_theme = "pydata_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+# https://pydata-sphinx-theme.rtfd.io/en/latest/user_guide/configuring.html
+html_theme_options = {
+    "github_url": "https://github.com/pvlib/pvlib-python",
+    "favicons": [
+        {"rel": "icon", "sizes": "16x16", "href": "favicon-16x16.png"},
+        {"rel": "icon", "sizes": "32x32", "href": "favicon-32x32.png"},
+    ],
+    "icon_links": [
+        {
+            "name": "StackOverflow",
+            "url": "https://stackoverflow.com/questions/tagged/pvlib",
+            "icon": "fab fa-stack-overflow",
+        },
+        {
+            "name": "Google Group",
+            "url": "https://groups.google.com/g/pvlib-python",
+            "icon": "fab fa-google",
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/pvlib/",
+            "icon": "fab fa-python",
+        },
+    ],
+    "use_edit_page_button": True,
+    "show_toc_level": 1,
+    "footer_items": ["copyright", "sphinx-version", "sidebar-ethical-ads"],
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -154,7 +173,7 @@ else:
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = '_images/pvlib_logo_horiz.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -180,7 +199,9 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    "**": ["search-field", "sidebar-nav-bs"]  # "sidebar-ethical-ads"
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -223,6 +244,8 @@ def setup(app):
     # Override footnote callout CSS to be normal text instead of superscript
     # In-line links to references as numbers in brackets.
     app.add_css_file("reference_format.css")
+    # Add a warning banner at the top of the page if viewing the "latest" docs
+    app.add_javascript("version-alert.js")
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -332,12 +355,12 @@ suppress_warnings = ['ref.footnote']
 # settings for sphinx-gallery
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
-    'gallery_dirs': ['auto_examples'],  # location of generated output
+    'gallery_dirs': ['gallery'],  # location of generated output
     # sphinx-gallery only shows plots from plot_*.py files by default:
     # 'filename_pattern': '*.py',
 
     # directory where function/class granular galleries are stored
-    'backreferences_dir': 'generated/gallery_backreferences',
+    'backreferences_dir': 'reference/generated/gallery_backreferences',
 
     # Modules for which function/class level galleries are created. In
     # this case only pvlib, could include others though.  must be tuple of str
@@ -398,32 +421,30 @@ def get_linenos(obj):
         return start, start + len(lines) - 1
 
 
-def make_github_url(pagename):
+def make_github_url(file_name):
     """
     Generate the appropriate GH link for a given docs page.  This function
     is intended for use in sphinx template files.
 
-    The target URL is built differently based on the type of page.  Sphinx
-    provides templates with a built-in `pagename` variable that is the path
-    at the end of the URL, without the extension.  For instance,
-    https://pvlib-python.rtfd.org/en/stable/auto_examples/plot_singlediode.html
-    will have pagename = "auto_examples/plot_singlediode".
+    The target URL is built differently based on the type of page.  The pydata
+    sphinx theme has a built-in `file_name` variable that looks like
+    "/docs/sphinx/source/api.rst" or "generated/pvlib.atmosphere.alt2pres.rst"
     """
 
     URL_BASE = "https://github.com/pvlib/pvlib-python/blob/master/"
 
     # is it a gallery page?
-    if any(d in pagename for d in sphinx_gallery_conf['gallery_dirs']):
-        if pagename.split("/")[-1] == "index":
+    if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):
+        if file_name.split("/")[-1] == "index":
             example_file = "README.rst"
         else:
-            example_file = pagename.split("/")[-1] + ".py"
+            example_file = file_name.split("/")[-1].replace('.rst', '.py')
         target_url = URL_BASE + "docs/examples/" + example_file
 
     # is it an API autogen page?
-    elif "generated" in pagename:
-        # pagename looks like "generated/pvlib.location.Location"
-        qualname = pagename.split("/")[-1]
+    elif "generated" in file_name:
+        # pagename looks like "generated/pvlib.atmosphere.alt2pres.rst"
+        qualname = file_name.split("/")[-1].replace('.rst', '')
         obj, module = get_obj_module(qualname)
         path = module.__name__.replace(".", "/") + ".py"
         target_url = URL_BASE + path
@@ -434,7 +455,7 @@ def make_github_url(pagename):
 
     # Just a normal source RST page
     else:
-        target_url = URL_BASE + "docs/sphinx/source/" + pagename + ".rst"
+        target_url = URL_BASE + "docs/sphinx/source/" + file_name
 
     return target_url
 
@@ -443,4 +464,5 @@ def make_github_url(pagename):
 # _templates/breadcrumbs.html
 html_context = {
     'make_github_url': make_github_url,
+    'edit_page_url_template': '{{ make_github_url(file_name) }}',
 }

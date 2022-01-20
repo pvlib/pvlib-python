@@ -9,8 +9,7 @@ functions and classes for simulating the performance of photovoltaic
 energy systems. pvlib python was originally ported from the PVLIB MATLAB
 toolbox developed at Sandia National Laboratories and it implements many
 of the models and methods developed at the Labs. More information on
-Sandia Labs PV performance modeling programs can be found at
-https://pvpmc.sandia.gov/. We collaborate with the PVLIB MATLAB project,
+Sandia Labs PV performance modeling programs can be found at the `PVPMC <https://pvpmc.sandia.gov/>`_. We collaborate with the PVLIB MATLAB project,
 but operate independently of it.
 
 The source code for pvlib python is hosted on `github
@@ -50,6 +49,16 @@ Please also cite the DOI corresponding to the specific version of
 pvlib python that you used. pvlib python DOIs are listed at
 `Zenodo.org <https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version>`_
 
+If you use pvlib-python in a commercial or publicly-available
+application, please consider displaying one of the "powered by pvlib"
+logos:
+
+.. image:: _images/pvlib_powered_logo_horiz.png
+  :width: 300
+
+.. image:: _images/pvlib_powered_logo_vert.png
+  :width: 300
+
 Additional pvlib python publications include:
 
 * J. S. Stein, “The photovoltaic performance modeling
@@ -73,6 +82,10 @@ Additional pvlib python publications include:
   "An Open Source Solar Power Forecasting Tool Using PVLIB-Python,"
   in 43rd Photovoltaic Specialists Conference, 2016.
 
+License
+=======
+
+`BSD 3-clause <https://github.com/pvlib/pvlib-python/blob/master/LICENSE>`_.
 
 NumFOCUS
 ========
@@ -83,28 +96,17 @@ pvlib python is a `NumFOCUS Affiliated Project <https://numfocus.org/sponsored-p
   :target: https://numfocus.org/sponsored-projects/affiliated-projects
   :alt: NumFocus Affliated Projects
 
-
 Contents
 ========
 
 .. toctree::
    :maxdepth: 1
 
-   package_overview
-   introtutorial
-   auto_examples/index
+   user_guide/index
+   gallery/index
+   reference/index
    whatsnew
-   installation
    contributing
-   pvsystem
-   modelchain
-   timetimezones
-   clearsky
-   forecasts
-   api
-   comparison_pvlib_matlab
-   variables_style_rules
-   singlediode
 
 
 Indices and tables

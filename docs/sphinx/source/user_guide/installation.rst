@@ -146,7 +146,7 @@ Follow these steps to obtain the library using git/GitHub:
    This button is circled in the image below. Remember the system path that
    you clone the library to.
 
-.. image:: _images/clonebutton.png
+.. image:: ../_images/clonebutton.png
 
 Please see GitHub's
 `Forking Projects <https://guides.github.com/activities/forking/>`_,
@@ -235,7 +235,6 @@ A handful of pvlib-python features require additional packages that must
 be installed separately using pip or conda. These packages/features
 include:
 
-* pytables (tables on PyPI): Linke turbidity look up for clear sky models
 * statsmodels: parameter fitting
 * numba: fastest solar position calculations
 * pyephem: solar positions calculations using an astronomical library

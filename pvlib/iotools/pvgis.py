@@ -83,9 +83,9 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         Include effects of horizon
     userhorizon: list of float, default: None
         Optional user specified elevation of horizon in degrees, at equally
-        spaced azimuth clockwise from north, only valid if `usehorizon` is
-        true, if `usehorizon` is true but `userhorizon` is `None` then PVGIS
-        will calculate the horizon [4]_
+        spaced azimuth clockwise from north, only valid if ``usehorizon`` is
+        true, if ``usehorizon`` is true but ``userhorizon`` is ``None`` then
+        PVGIS will calculate the horizon [4]_
     pvcalculation: bool, default: False
         Return estimate of hourly PV production.
     peakpower: float, default: None
@@ -110,7 +110,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     outputformat: str, default: 'json'
         Must be in ``['json', 'csv']``. See PVGIS hourly data
         documentation [2]_ for more info.
-    url: str, default: const:`pvlib.iotools.pvgis.URL`
+    url: str, default: :const:`pvlib.iotools.pvgis.URL`
         Base url of PVGIS API. ``seriescalc`` is appended to get hourly data
         endpoint.
     map_variables: bool, default: True
@@ -190,7 +190,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
               'trackingtype': trackingtype, 'components': int(components),
               'usehorizon': int(usehorizon),
               'optimalangles': int(optimalangles),
-              'optimalinclination': int(optimalangles), 'loss': loss}
+              'optimalinclination': int(optimal_surface_tilt), 'loss': loss}
     # pvgis only takes 0 for False, and 1 for True, not strings
     if userhorizon is not None:
         params['userhorizon'] = ','.join(str(x) for x in userhorizon)
@@ -291,10 +291,10 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         Name, path, or buffer of hourly data file downloaded from PVGIS.
     pvgis_format : str, default None
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
-        parameter in the PVGIS API. If `filename` is a file and
-        `pvgis_format` is ``None`` then the file extension will be used to
-        determine the PVGIS format to parse. If `filename` is a buffer, then
-        `pvgis_format` is required and must be in ``['csv', 'json']``.
+        parameter in the PVGIS API. If ``filename`` is a file and
+        ``pvgis_format`` is ``None`` then the file extension will be used to
+        determine the PVGIS format to parse. If ``filename`` is a buffer, then
+        ``pvgis_format`` is required and must be in ``['csv', 'json']``.
     map_variables: bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable PVGIS_VARIABLE_MAP.
@@ -311,11 +311,11 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     Raises
     ------
     ValueError
-        if `pvgis_format` is ``None`` and the file extension is neither
-        ``.csv`` nor ``.json`` or if `pvgis_format` is provided as
+        if ``pvgis_format`` is ``None`` and the file extension is neither
+        ``.csv`` nor ``.json`` or if ``pvgis_format`` is provided as
         input but isn't in ``['csv', 'json']``
     TypeError
-        if `pvgis_format` is ``None`` and `filename` is a buffer
+        if ``pvgis_format`` is ``None`` and ``filename`` is a buffer
 
     See Also
     --------
@@ -385,14 +385,14 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         include effects of horizon
     userhorizon : list of float, default None
         optional user specified elevation of horizon in degrees, at equally
-        spaced azimuth clockwise from north, only valid if `usehorizon` is
-        true, if `usehorizon` is true but `userhorizon` is `None` then PVGIS
-        will calculate the horizon [3]_
+        spaced azimuth clockwise from north, only valid if ``usehorizon`` is
+        true, if ``usehorizon`` is true but ``userhorizon`` is ``None`` then
+        PVGIS will calculate the horizon [3]_
     startyear : int, default None
         first year to calculate TMY
     endyear : int, default None
         last year to calculate TMY, must be at least 10 years from first year
-    url : str, default :const:`pvlib.iotools.pvgis.URL`
+    url : str, default: :const:`pvlib.iotools.pvgis.URL`
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
@@ -410,6 +410,16 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         the inputs, ``None`` for basic and EPW
     metadata : list or dict
         file metadata, ``None`` for basic
+
+    Note
+    ----
+    The PVGIS website uses 10 years of data to generate the TMY, whereas the
+    API accessed by this function defaults to using all available years. This
+    means that the TMY returned by this function may not be identical to the
+    one generated by the website. To replicate the website requests, specify
+    the corresponding 10 year period using ``startyear`` and ``endyear``.
+    Specifying ``endyear`` also avoids the TMY changing when new data becomes
+    available.
 
     Raises
     ------
@@ -548,12 +558,12 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         Name, path, or buffer of file downloaded from PVGIS.
     pvgis_format : str, default None
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
-        parameter in the PVGIS TMY API. If `filename` is a file and
-        `pvgis_format` is ``None`` then the file extension will be used to
+        parameter in the PVGIS TMY API. If ``filename`` is a file and
+        ``pvgis_format`` is ``None`` then the file extension will be used to
         determine the PVGIS format to parse. For PVGIS files from the API with
-        ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
-        `filename` is a buffer, then `pvgis_format` is required and must be in
-        ``['csv', 'epw', 'json', 'basic']``.
+        ``outputformat='basic'``, please set ``pvgis_format`` to ``'basic'``.
+        If ``filename`` is a buffer, then ``pvgis_format`` is required and must
+        be in ``['csv', 'epw', 'json', 'basic']``.
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable PVGIS_VARIABLE_MAP.
@@ -573,11 +583,11 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     Raises
     ------
     ValueError
-        if `pvgis_format` is ``None`` and the file extension is neither
-        ``.csv``, ``.json``, nor ``.epw``, or if `pvgis_format` is provided as
+        if ``pvgis_format`` is ``None`` and the file extension is neither
+        ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided as
         input but isn't in ``['csv', 'epw', 'json', 'basic']``
     TypeError
-        if `pvgis_format` is ``None`` and `filename` is a buffer
+        if ``pvgis_format`` is ``None`` and ``filename`` is a buffer
 
     See also
     --------

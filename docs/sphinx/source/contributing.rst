@@ -157,7 +157,7 @@ a timely manner is to:
    <https://github.com/pvlib/pvlib-python/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_,
    especially for pull requests with a lot of new primary code.
    See :ref:`pull-request-scope`.
-#. Tag pvlib community members or ``@pvlib/pvlib-maintainer`` when the pull
+#. Tag pvlib community members or ``@pvlib`` when the pull
    request is ready for review. (see :ref:`pull-request-reviews`)
 
 
@@ -167,7 +167,7 @@ Pull request reviews
 --------------------
 
 The pvlib community and maintainers will review your pull request in a
-timely fashion. Please "ping" ``@pvlib/maintainer`` if it seems that
+timely fashion. Please "ping" ``@pvlib`` if it seems that
 your pull request has been forgotten at any point in the pull request
 process.
 

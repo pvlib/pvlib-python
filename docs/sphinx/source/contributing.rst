@@ -150,7 +150,7 @@ a timely manner is to:
 
 #. Start by creating an issue. The issue should be well-defined and
    actionable.
-#. Ask the [maintainers](https://github.com/orgs/pvlib/people) to tag
+#. Ask the `maintainers <https://github.com/orgs/pvlib/people>`_ to tag
    the issue with the appropriate milestone.
 #. Make a limited-scope pull request. It can be a lot of work to check all of
    the boxes in `pull request guidelines

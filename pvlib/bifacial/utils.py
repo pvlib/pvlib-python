@@ -93,7 +93,7 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 
-def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
+def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=5):
     r"""
     Calculate the fraction of the sky dome visible from point x on the ground.
 

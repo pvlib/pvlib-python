@@ -6,24 +6,21 @@ The "infinite sheds" model [1] is a 2-dimensional model of irradiance on the
 front and rear surfaces of a PV array. The model assumes that the array
 comprises parallel, equally spaced rows (sheds) and calculates irradiance in
 the middle of a shed which is long enough that end-of-row effects can be
-neglected. Rows can be at fixed tilt or on single-axis trackers.
+neglected. Rows can be at fixed tilt or on single-axis trackers. The ground
+is assumed to be flat and level.
 
-The ground is assumed to be flat and level. To consider arrays on an
-non-level ground, rotate the solar vector into the reference frame of the
-ground plane.
-
-The infinite shdes model accounts for the following effects:
+The infinite sheds model accounts for the following effects:
     - limited view from the row surfaces to the sky due to blocking of the
       sky by nearby rows;
     - reduction of irradiance reaching the ground due to shadows cast by
       rows and due to blocking of the sky by nearby rows.
 The model operates in the following steps:
 1. Find the fraction of unshaded ground between rows, ``f_gnd_beam`` where
-   both direct and diffuse irradiance is recieved. The model assumes that
+   both direct and diffuse irradiance is received. The model assumes that
    there is no direct irradiance in the shaded fraction ``1 - f_gnd_beam``.
 2. Calculate the view factor,``fz_sky``, from the ground to the sky accounting
    for the parts of the sky that are blocked from view by the array's rows.
-   The view factor is multipled by the sky diffuse irradiance to calculate
+   The view factor is multiplied by the sky diffuse irradiance to calculate
    the diffuse irradiance reaching the ground. Sky diffuse irradiance is thus
    assumed to be isotropic.
 3. Calculate the view factor from the row surface to the ground which
@@ -172,9 +169,7 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
         vf, _ = utils._vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
         fz_sky[k, :] = vf
     # calculate the integrated view factor for all of the ground between rows
-    fgnd_sky = np.trapz(fz_sky, z, axis=1)
-
-    return fgnd_sky, z, fz_sky
+    return np.trapz(fz_sky, z, axis=1)
 
 
 def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
@@ -253,14 +248,14 @@ def _vf_row_sky_integ(f_x, surface_tilt, gcr, npoints=100):
     surface_tilt = np.array(surface_tilt)
     cst = cosd(surface_tilt)
     # shaded portion
-    x = np.linspace(0 * f_x, f_x, num=npoints)
+    x = np.linspace(0, f_x, num=npoints)
     psi_t_shaded = masking_angle(surface_tilt, gcr, x)
     y = 0.5 * (cosd(psi_t_shaded) + cst)
     # integrate view factors from each point in the discretization. This is an
     # improvement over the algorithm described in [2]
     vf_shade_sky_integ = np.trapz(y, x, axis=0)
     # unshaded portion
-    x = np.linspace(f_x, np.ones_like(f_x), num=npoints)
+    x = np.linspace(f_x, 1., num=npoints)
     psi_t_unshaded = masking_angle(surface_tilt, gcr, x)
     y = 0.5 * (cosd(psi_t_unshaded) + cst)
     vf_noshade_sky_integ = np.trapz(y, x, axis=0)
@@ -333,8 +328,7 @@ def _ground_angle(x, surface_tilt, gcr):
     x1 = x * sind(surface_tilt)
     x2 = (x * cosd(surface_tilt) + 1 / gcr)
     psi = np.arctan2(x1, x2)  # do this first because it handles 0 / 0
-    tan_psi = np.tan(psi)
-    return np.rad2deg(psi), tan_psi
+    return np.rad2deg(psi)
 
 
 def _vf_row_ground(x, surface_tilt, gcr):
@@ -361,7 +355,7 @@ def _vf_row_ground(x, surface_tilt, gcr):
     cst = cosd(surface_tilt)
     # angle from horizontal at the point x on the row slant height to the
     # bottom of the facing row
-    psi_t_shaded, _ = _ground_angle(x, surface_tilt, gcr)
+    psi_t_shaded = _ground_angle(x, surface_tilt, gcr)
     # view factor from the point on the row to the ground
     return 0.5 * (cosd(psi_t_shaded) - cst)
 
@@ -418,7 +412,7 @@ def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):
     vf_shade_ground_integ = np.trapz(y, x, axis=0)
 
     # unshaded portion of row slant height
-    x = np.linspace(f_x, np.ones_like(f_x), num=npoints)
+    x = np.linspace(f_x, 1., num=npoints)
     # view factor from the point on the row to the ground
     y = _vf_row_ground(gcr, surface_tilt, x)
     # integrate view factors along the unshaded portion.
@@ -448,7 +442,7 @@ def _poa_ground_pv(f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade):
 
     Returns
     -------
-    mumeric
+    numeric
         Ground diffuse irradiance on the row plane. [W/m^2]
     """
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
@@ -477,8 +471,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     surface_tilt : numeric
         Tilt of the surface from horizontal. Must be between 0 and 180. For
         example, for a fixed tilt module mounted at 30 degrees from
-        horizontal, use ``surface_tilt``=30 to get front-side irradiance and
-        ``surface_tilt``=150 to get rear-side irradiance. [degree]
+        horizontal, use ``surface_tilt=30`` to get front-side irradiance and
+        ``surface_tilt=150`` to get rear-side irradiance. [degree]
 
     surface_azimuth : numeric
         Surface azimuth in decimal degrees east of north
@@ -568,7 +562,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # adjacent rows interior to the array
     # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
     # center rather than at row lower edge as in [1].
-    vf_gnd_sky, _, _ = _vf_ground_sky_integ(
+    vf_gnd_sky = _vf_ground_sky_integ(
         surface_tilt, surface_azimuth, gcr, height, pitch, axis_azimuth,
         max_rows, npoints)
     # fraction of row slant height that is shaded
@@ -581,18 +575,15 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # interval (shaded or unshaded) rather than averaging values at each
     # interval's end points.
     vf_shade_sky, vf_noshade_sky = _vf_row_sky_integ(
-        f_x, surface_tilt, gcr)
-    # angle from shadeline to bottom of facing row
-    psi_shade, _ = _ground_angle(f_x, surface_tilt, gcr)
-    # angle from top of row to bottom of facing row
-    psi_bottom, _ = _ground_angle(1.0, surface_tilt, gcr)
+        f_x, surface_tilt, gcr, npoints)
+
     # view factors from the ground to shaded and unshaded portions of the row
     # slant height
     # Differs from [1] Eq. 17 and Eq. 18. Here, we integrate over each
     # interval (shaded or unshaded) rather than averaging values at each
     # interval's end points.
     f_gnd_pv_shade, f_gnd_pv_noshade = _vf_row_ground_integ(
-        f_x, surface_tilt, gcr)
+        f_x, surface_tilt, gcr, npoints)
 
     # Calculate some preliminary irradiance quantities
     # diffuse fraction
@@ -601,7 +592,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # row
     poa_ground = get_ground_diffuse(surface_tilt, ghi, albedo)
 
-    # Total sky diffuse recieved by both shaded and unshaded portions
+    # Total sky diffuse received by both shaded and unshaded portions
     poa_sky_pv = _poa_sky_diffuse_pv(
         f_x, dhi, vf_shade_sky, vf_noshade_sky)
 
@@ -759,38 +750,44 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     # front side POA irradiance
     irrad_front = get_irradiance_poa(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-        gcr, height, pitch, ghi, dhi, dni, albedo, iam_front)
+        gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, max_rows,
+        npoints)
     # back side POA irradiance
     irrad_back = get_irradiance_poa(
         backside_tilt, backside_sysaz, solar_zenith, solar_azimuth,
-        gcr, height, pitch, ghi, dhi, dni, albedo, iam_back)
+        gcr, height, pitch, ghi, dhi, dni, albedo, iam_back, max_rows,
+        npoints)
+
+    colmap_front = {
+        'poa_global': 'poa_front',
+        'poa_diffuse': 'poa_front_diffuse',
+        'poa_direct': 'poa_front_direct',
+    }
+    colmap_back = {
+        'poa_global': 'poa_back',
+        'poa_diffuse': 'poa_back_diffuse',
+        'poa_direct': 'poa_back_direct',
+    }
+
     if isinstance(ghi, pd.Series):
-        irrad_front = irrad_front.rename(
-            columns={'poa_global': 'poa_front',
-                     'poa_diffuse': 'poa_front_diffuse',
-                     'poa_direct': 'poa_front_direct'})
-        irrad_back = irrad_back.rename(
-            columns={'poa_global': 'poa_back',
-                     'poa_diffuse': 'poa_back_diffuse',
-                     'poa_direct': 'poa_back_direct'})
+        irrad_front = irrad_front.rename(columns=colmap_front)
+        irrad_back = irrad_back.rename(columns=colmap_back)
         output = pd.concat([irrad_front, irrad_back], axis=1)
     else:
-        old = ['poa_global', 'poa_diffuse', 'poa_direct']
-        front = ['poa_front', 'poa_front_diffuse', 'poa_front_direct']
-        back = ['poa_back', 'poa_back_diffuse', 'poa_back_direct']
-        for old_key, new_key in zip(old, front):
+        for old_key, new_key in colmap_front.items():
             irrad_front[new_key] = irrad_front.pop(old_key)
-        for old_key, new_key in zip(old, back):
+        for old_key, new_key in colmap_back.items():
             irrad_back[new_key] = irrad_back.pop(old_key)
         irrad_front.update(irrad_back)
         output = irrad_front
+
     effects = (1 + shade_factor) * (1 + transmission_factor)
     output['poa_global'] = output['poa_front'] + \
         output['poa_back'] * bifaciality * effects
     return output
 
 
-def _backside(tilt, system_azimuth):
+def _backside(tilt, surface_azimuth):
     backside_tilt = 180. - tilt
-    backside_sysaz = (180. + system_azimuth) % 360.
+    backside_sysaz = (180. + surface_azimuth) % 360.
     return backside_tilt, backside_sysaz

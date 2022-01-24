@@ -1,0 +1,27 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: PVLib
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Cliff
+    family-names: Hansen
+    orcid: 'https://orcid.org/0000-0002-0321-9775'
+    affiliation: PVLib
+  - given-names: Kevin
+    family-names: Anderson
+    orcid: 'https://orcid.org/0000-0002-1166-7957'
+    affiliation: PVLib
+  - given-names: Mark
+    family-names: Mikofski
+    affiliation: PVLib
+    email: bwana.marko@yahoo.com
+    orcid: 'https://orcid.org/0000-0001-8001-8582'
+  - given-names: Will
+    family-names: Holmgren
+    email: william.holmgren@gmail.com
+    affiliation: PVLib

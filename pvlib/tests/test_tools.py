@@ -39,6 +39,9 @@ def test__golden_sect_DataFrame_atol():
 
 def test__golden_sect_DataFrame_vector():
     params = {'c': np.array([1., 2.]), 'n': np.array([1., 1.])}
+    lower = np.array([0., 0.001])
+    upper = np.array([1.1, 1.2])
     expected = np.array([0.5, 0.25])
-    v, x = tools._golden_sect_DataFrame(params, 0., 1., _obj_test_golden_sect)
+    v, x = tools._golden_sect_DataFrame(params, lower, upper,
+                                        _obj_test_golden_sect)
     assert np.allclose(x, expected, atol=1e-8)

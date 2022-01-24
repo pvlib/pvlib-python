@@ -279,51 +279,55 @@ def _build_args(keys, input_dict, dict_name):
 # Author: Rob Andrews, Calama Consulting
 # Modified: November, 2020 by C. W. Hansen, to add atol and change exit
 # criteria
-def _golden_sect_DataFrame(params, VL, VH, func, atol=1e-8):
+def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     """
-    Vectorized golden section search for finding MPP from a dataframe
-    timeseries.
+    Vectorized golden section search for finding maximum of a function of a
+    single variable.
 
     Parameters
     ----------
     params : dict or Dataframe
-        Parameters for the IV curve(s) where MPP will be found. Must contain
-        keys: 'r_sh', 'r_s', 'nNsVth', 'i_0', 'i_l'
-        of inputs to the function to be optimized.
-        Each row should represent an independent optimization.
+        Parameters to be passed to `func`.
 
-    VL: float
-        Lower bound on voltage for the optimization
+    lower: numeric
+        Lower bound for the optimization
 
-    VH: array-like
-        Upper bound on voltage for the optimization
+    upper: numeric
+        Upper bound for the optimization
 
     func: function
-        Function to be optimized must be in the form f(dict or Dataframe, str)
-        where str is the key corresponding to voltage
+        Function to be optimized. Must be in the form
+        result = f(dict or DataFrame, str), where result is a dict or DataFrame
+        that also contains the function output, and str is the key
+        corresponding to the function's input variable.
 
     Returns
     -------
-    func(params, 'V1') : dict or DataFrame
-        function evaluated at the optimal point
+    numeric
+        function evaluated at the optimal points
 
-    df['V1']: array-like or Series
-        Dataframe of optimal points
+    numeric
+        optimal points
 
     Notes
     -----
-    This function will find the MAXIMUM of a function
+    This function will find the points where the function is maximized.
+
+    See also
+    --------
+    pvlib.singlediode._pwr_optfcn
     """
 
     phim1 = (np.sqrt(5) - 1) / 2
 
     df = params
-    df['VH'] = VH
-    df['VL'] = VL
+    df['VH'] = upper
+    df['VL'] = lower
 
     converged = False
     iterations = 0
-    iterlimit = np.max(np.trunc(np.log(atol / (VH - VL)) / np.log(phim1))) + 1
+    iterlimit = 1 + np.max(
+        np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
 
     while not converged and (iterations < iterlimit):
 
@@ -345,5 +349,8 @@ def _golden_sect_DataFrame(params, VL, VH, func, atol=1e-8):
         # err will be less than atol before iterations hit the limit
         # but just to be safe
         iterations += 1
+
+    if iterations > iterlimit:
+        raise Exception("iterations exceeded maximum")  # pragma: no cover
 
     return func(df, 'V1'), df['V1']

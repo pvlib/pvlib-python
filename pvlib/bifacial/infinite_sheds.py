@@ -198,7 +198,6 @@ def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
         ground. [W/m^2]
 
     """
-    df = np.where(np.isfinite(df), df, 0.0)
     return poa_ground * (f_gnd_beam*(1 - df) + df*vf_gnd_sky)
 
 
@@ -587,7 +586,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
 
     # Calculate some preliminary irradiance quantities
     # diffuse fraction
-    df = dhi / ghi
+    df = np.clip(dhi / ghi, 0., 1.)
+
     # sky diffuse reflected from the ground to an array consisting of a single
     # row
     poa_ground = get_ground_diffuse(surface_tilt, ghi, albedo)

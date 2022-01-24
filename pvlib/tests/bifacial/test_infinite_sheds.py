@@ -55,13 +55,11 @@ def test__tilt_to_rotation():
 
 def test__vf_ground_sky_integ(test_system):
     ts, pts, vfs_gnd_sky = test_system
-    vf_integ, z, vfs = infinite_sheds._vf_ground_sky_integ(
+    vf_integ = infinite_sheds._vf_ground_sky_integ(
         ts['surface_tilt'], ts['surface_azimuth'],
         ts['gcr'], ts['height'], ts['pitch'],
         ts['axis_azimuth'], max_rows=1, npoints=3)
     expected_vf_integ = np.trapz(vfs_gnd_sky, pts)
-    assert np.allclose(z, pts)
-    assert np.allclose(vfs, vfs_gnd_sky, rtol=0.1)
     assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
 
 
@@ -110,13 +108,10 @@ def test__poa_sky_diffuse_pv():
 def test__ground_angle(test_system):
     ts, _, _ = test_system
     x = np.array([0., 0.5, 1.0])
-    angles, tan_angles = infinite_sheds._ground_angle(
+    angles = infinite_sheds._ground_angle(
         x, ts['surface_tilt'], ts['gcr'])
     expected_angles = np.array([0., 5.866738789543952, 9.896090638982903])
-    expected_tan_angles = np.array([0., 0.5 / (4 + np.sqrt(3) / 2.),
-                                    1. / (4 + np.sqrt(3))])
     assert np.allclose(angles, expected_angles)
-    assert np.allclose(tan_angles, expected_tan_angles)
 
 
 def test__vf_row_ground(test_system):

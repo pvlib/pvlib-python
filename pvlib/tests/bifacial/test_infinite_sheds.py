@@ -167,7 +167,7 @@ def test__poa_ground_shadows():
     # vector inputs
     poa_ground = np.array([300., 300.])
     f_gnd_beam = np.array([0.5, 0.5])
-    df = np.array([0.5, np.inf])
+    df = np.array([0.5, 0.])
     vf_gnd_sky = np.array([0.2, 0.2])
     result = infinite_sheds._poa_ground_shadows(
         poa_ground, f_gnd_beam, df, vf_gnd_sky)

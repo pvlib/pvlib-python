@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from pvlib.tools import sind
 from pvlib._deprecation import warn_deprecated
+import scipy
+
 
 TEMPERATURE_MODEL_PARAMETERS = {
     'sapm': {
@@ -821,3 +823,98 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     heat_loss = 1 - module_efficiency / tau_alpha
     wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)
     return temp_air + cell_temp_init * heat_loss * wind_loss
+
+
+def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
+    """
+    Smooth out short-term model transience using the Prilliman model [1]_.
+
+    The Prilliman et al. model applies an exponential moving average to
+    the output of a steady-state cell temperature model to account for a
+    module's thermal inertia and smooth out the cell temperature's response
+    to changing weather conditions.
+
+    .. warning::
+        This implementation requires the time series inputs to be regularly
+        sampled in time.  Data with irregular time steps should be resampled
+        prior to using this function.
+
+    Parameters
+    ----------
+    temp_cell : pandas Series
+        Cell temperature modeled with steady-state assumptions [C]
+
+    wind_speed : pandas Series
+        Wind speed, adjusted to correspond to array height [m/s]
+
+    unit_mass : float, default 11.1
+        Total mass of module divided by its one-sided surface area [kg/m^2]
+
+    coefficients : 4-element list-like, optional
+        Values for coefficients a_0–a_3 from [1]_
+
+    Returns
+    -------
+    temp_cell : pandas Series
+        Smoothed version of the input cell temperature [C]
+
+    Notes
+    -----
+    This smoothing model was developed and validated using the SAPM
+    model for the steady-state input.
+
+    References
+    ----------
+    .. [1] M. Prilliman, J. S. Stein, D. Riley and G. Tamizhmani,
+       "Transient Weighted Moving-Average Model of Photovoltaic Module
+       Back-Surface Temperature," IEEE Journal of Photovoltaics, 2020.
+       :doi:`10.1109/JPHOTOV.2020.2992351`
+    """
+
+    # TODO: check inputs to ensure regular spacing?
+
+    wind_speed = wind_speed.values
+    time_step = (temp_cell.index[1] - temp_cell.index[0]).total_seconds()
+    if time_step >= 1200:
+        # too coarsely sampled for smoothing to be relevant
+        return temp_cell
+        
+    window = int(1200 / time_step)
+
+    # prefix with NaNs so that the rolling window is "full",
+    # even for the first actual value:
+    prefix = np.full(window, np.nan)
+    temp_cell_prefixed = np.append(prefix, temp_cell.values)
+
+    # get one row per 20-minute window
+    H = scipy.linalg.hankel(np.arange(window),
+                            np.arange(window - 1, len(temp_cell_prefixed)))
+    subsets = temp_cell_prefixed[H].T
+
+    # calculate weights for the values in each window
+    if coefficients is None:
+        a = coefficients
+    else:
+        # values from [1], Table II
+        a = [0.0046, 0.00046, -0.00023, -1.6e-5]
+
+    P = a[0] + a[1]*wind_speed + a[2]*unit_mass + a[3]*wind_speed*unit_mass
+    timedeltas = np.arange(window, 0, -1) * time_step
+    weights = np.exp(-P[:, np.newaxis] * timedeltas)
+
+    # set weights corresponding to the prefix values to zero; otherwise the
+    # denominator of the weighted average below would be wrong
+    mask_idx = np.triu_indices(window)
+    np.fliplr(weights)[mask_idx] = 0
+
+    # change the first row of weights from zero to nan -- this is a
+    # trick to prevent div by zero warning on the next line
+    weights[0, :] = np.nan
+
+    # finally, take the weighted average of each window
+    numerator = np.nansum(subsets[:-1] * weights, axis=1)
+    denominator = np.sum(weights, axis=1)
+    smoothed = numerator / denominator
+    smoothed[0] = temp_cell.values[0]
+    smoothed = pd.Series(smoothed, index=temp_cell.index)
+    return smoothed

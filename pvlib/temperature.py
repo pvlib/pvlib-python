@@ -878,7 +878,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     if time_step >= 1200:
         # too coarsely sampled for smoothing to be relevant
         return temp_cell
-        
+
     window = int(1200 / time_step)
 
     # prefix with NaNs so that the rolling window is "full",

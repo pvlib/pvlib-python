@@ -908,7 +908,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     np.fliplr(weights)[mask_idx] = 0
 
     # change the first row of weights from zero to nan -- this is a
-    # trick to prevent div by zero warning on the next line
+    # trick to prevent div by zero warning when dividing by summed weights
     weights[0, :] = np.nan
 
     # finally, take the weighted average of each window

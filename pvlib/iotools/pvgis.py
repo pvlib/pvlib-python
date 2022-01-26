@@ -659,3 +659,34 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
 
     return data, months_selected, inputs, meta
 
+
+    
+def get_pvgis_horizon(latitude, longitude, proxies = None, url = URL):
+    r'''
+    Get horizon data from PVGIS
+    Parameters
+    ----------
+    latitude : float
+        Latitude in degrees north
+    longitude : float
+        Longitude in degrees east
+    proxies: dict
+        Dictionary of proxies to access through a corporate network
+    url: string
+        Base URL for PVGIS
+        
+    Returns
+    -------
+    df : pd.DataFrame
+        Pandas dataframe of the retrived horizon
+    '''
+    res = requests.get( url + 'printhorizon?lat=45&lon=8', proxies = proxies, verify = False)
+    res.raise_for_status()
+    string = str(io.BytesIO(res.content).read().decode('UTF-8'))
+    # the horizon data is given in a different format then the others
+    # numpy has an easier time decoding it
+    array = np.genfromtxt(io.StringIO(string), skip_header = 4, skip_footer = 7)
+    df = pd.DataFrame(array)
+    # Get the column names
+    df.columns = [s for s in string.splitlines()[3].split('\t') if s]
+    return df

@@ -873,13 +873,13 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
     # TODO: check inputs to ensure regular spacing?
 
-    wind_speed = wind_speed.values
     time_step = (temp_cell.index[1] - temp_cell.index[0]).total_seconds()
     if time_step >= 1200:
         # too coarsely sampled for smoothing to be relevant
         return temp_cell
 
-    window = int(1200 / time_step)
+    window = min(int(1200 / time_step),  # time series > 20 minutes
+                 len(temp_cell))         # time series < 20 minutes
 
     # prefix with NaNs so that the rolling window is "full",
     # even for the first actual value:
@@ -892,12 +892,13 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     subsets = temp_cell_prefixed[H].T
 
     # calculate weights for the values in each window
-    if coefficients is None:
+    if coefficients is not None:
         a = coefficients
     else:
         # values from [1], Table II
         a = [0.0046, 0.00046, -0.00023, -1.6e-5]
 
+    wind_speed = wind_speed.values
     P = a[0] + a[1]*wind_speed + a[2]*unit_mass + a[3]*wind_speed*unit_mass
     timedeltas = np.arange(window, 0, -1) * time_step
     weights = np.exp(-P[:, np.newaxis] * timedeltas)

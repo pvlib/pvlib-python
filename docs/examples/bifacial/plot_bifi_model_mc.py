@@ -2,7 +2,7 @@
 Bifacial Modeling - modelchain
 ==============================
 
-Example of bifacial modeling
+Example of bifacial modeling using the modelchain
 """
 
 # %%
@@ -17,6 +17,7 @@ from pvlib import location
 from pvlib import modelchain
 from pvlib import temperature
 from pvlib import bifacial
+import matplotlib.pyplot as plt
 
 # create site location and times characteristics
 lat, lon = 36.084, -79.817
@@ -66,17 +67,17 @@ orientation = sat_mount.get_orientation(solar_position['apparent_zenith'],
                                         )
 
 # get rear and front side irradiance from pvfactors transposition engine
-irrad = pd.concat(bifacial.pvfactors_timeseries(solar_position['azimuth'], 
-                                                solar_position['apparent_zenith'], 
-                                                orientation['surface_azimuth'], 
-                                                orientation['surface_tilt'], 
+irrad = pd.concat(bifacial.pvfactors_timeseries(solar_position['azimuth'],
+                                                solar_position['apparent_zenith'],
+                                                orientation['surface_azimuth'],
+                                                orientation['surface_tilt'],
                                                 axis_azimuth,
-                                                times, 
-                                                cs['dni'], 
-                                                cs['dhi'], 
+                                                times,
+                                                cs['dni'],
+                                                cs['dhi'],
                                                 gcr, 
-                                                pvrow_height, 
-                                                pvrow_width, 
+                                                pvrow_height,
+                                                pvrow_width,
                                                 albedo
                                                 ), axis=1)
 
@@ -85,11 +86,19 @@ irrad = pd.concat(bifacial.pvfactors_timeseries(solar_position['azimuth'],
 bifaciality = 0.75
 irrad['effective_irradiance'] = irrad['total_abs_front'] + (irrad['total_abs_back'] * bifaciality)
 
-# create a new modelchain object using the location and system
-mc = modelchain.ModelChain(system, site_location)
+# create modelchain object for bifacial system and run bifacial simulation
+mc_bifi = modelchain.ModelChain(system, site_location)
+mc_bifi.run_model_from_effective_irradiance(irrad)
 
-# run bifacial simulation
-mc.run_model_from_effective_irradiance(irrad)
+# for illustration, perform simulation on monofacial system
+# first create a new 'effective_irradiance' column from pvfactors data
+irrad_mono = irrad.copy()
+irrad_mono['effective_irradiance'] = irrad_mono['total_abs_front']
 
-# plot results
-mc.results.ac.plot()
+# create modelchain object for monofacial system run monofacial simulation
+mc_mono = modelchain.ModelChain(system, site_location)
+mc_mono.run_model_from_effective_irradiance(irrad_mono)
+
+# plot results of both monofacial and bifacial
+mc_bifi.results.ac.plot(title='Bifacial vs Monofacial Simulation on Clearsky Day')
+mc_mono.results.ac.plot(ylabel='AC Power')

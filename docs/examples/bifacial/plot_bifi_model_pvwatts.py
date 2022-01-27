@@ -2,7 +2,7 @@
 Bifacial Modeling - procedural
 ==============================
 
-Example of bifacial modeling
+Example of bifacial modeling using procedural method
 """
 
 # %%
@@ -29,10 +29,9 @@ times = pd.date_range('2021-06-21', '2021-6-22', freq='1T', tz=tz)
 site_location = location.Location(lat, lon, tz=tz, name='Greensboro, NC')
 cs = site_location.get_clearsky(times)
 
-
 # get solar position data
-solar_position = solarposition.get_solarposition(cs.index, 
-                                                 lat, 
+solar_position = solarposition.get_solarposition(cs.index,
+                                                 lat,
                                                  lon
                                                  )
 
@@ -40,7 +39,7 @@ solar_position = solarposition.get_solarposition(cs.index,
 # pull orientation data for a single-axis tracker
 gcr = 0.35
 max_phi = 60
-orientation = tracking.singleaxis(solar_position['apparent_zenith'], 
+orientation = tracking.singleaxis(solar_position['apparent_zenith'],
                                   solar_position['azimuth'],
                                   max_angle=max_phi,
                                   backtrack=True,
@@ -81,7 +80,7 @@ temp_cell = temperature.faiman(irrad[0], 25, 1)
 pdc0 = 1
 gamma_pdc = -0.0043
 pdc_bifi = pvsystem.pvwatts_dc(effective_irrad_bifi,
-                               temp_cell, 
+                               temp_cell,
                                pdc0,
                                gamma_pdc=gamma_pdc
                                ).fillna(0)
@@ -92,11 +91,10 @@ pdc_mono = pvsystem.pvwatts_dc(effective_irrad_mono,
                                gamma_pdc=gamma_pdc
                                ).fillna(0)
 
-
-# plot result
+# plot results
 plt.figure()
-plt.title('Bifacial vs Monofacial Simulation')
+plt.title('Bifacial vs Monofacial Simulation on Clearsky Day')
 plt.plot(pdc_bifi)
 plt.plot(pdc_mono)
-plt.legend(['bifi', 'mono'])
+plt.legend(['bifacial', 'monofacial'])
 plt.ylabel('DC Power')

@@ -32,7 +32,10 @@ Documentation
 ~~~~~~~~~~~~~
 * Fix documentation return error in :py:meth:`pvlib.forecast.ForecastModel.cloud_cover_to_transmittance_linear`
   (:issue:`1367`, :pull:`1370`)
-
+* Add gallery example illustrating bifacial simulation using :py:class:`pvlib.modelchain.ModelChain`
+  and the :py:func:`pvlib.bifacial.pvfactors_timeseries` function (:pull:`1394`)
+* Add gallery example illustrating bifacial simulation using procedural functions
+  and the :py:func:`pvlib.bifacial.pvfactors_timeseries` function (:pull:`1394`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -46,3 +49,4 @@ Contributors
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Johann Loux (:ghuser:`JoLo90`)
+* Saurabh Aneja (:ghuser:`spaneja`)

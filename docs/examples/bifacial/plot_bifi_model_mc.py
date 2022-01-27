@@ -15,9 +15,8 @@ import pandas as pd
 from pvlib import pvsystem
 from pvlib import location
 from pvlib import modelchain
-from pvlib import temperature
+from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS as PARAMS
 from pvlib import bifacial
-import matplotlib.pyplot as plt
 
 # create site location and times characteristics
 lat, lon = 36.084, -79.817
@@ -34,7 +33,7 @@ pvrow_width = 4
 albedo = 0.2
 
 # load temperature parameters and module/inverter specifications
-temperature_model_parameters = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_polymer']
+temp_model_parameters = PARAMS['sapm']['open_rack_glass_polymer']
 sandia_modules = pvsystem.retrieve_sam('SandiaMod')
 cec_inverters = pvsystem.retrieve_sam('cecinverter')
 sandia_module = sandia_modules['Sanyo_HIP_200DA3_Bifacial__2007__E__']
@@ -54,51 +53,44 @@ sat_mount = pvsystem.SingleAxisTrackerMount(axis_tilt=axis_tilt,
 # dc arrays
 array = pvsystem.Array(mount=sat_mount,
                        module_parameters=sandia_module,
-                       temperature_model_parameters=temperature_model_parameters)
+                       temperature_model_parameters=temp_model_parameters)
 
-# 
+# create system object
 system = pvsystem.PVSystem(arrays=[array],
-                           inverter_parameters=cec_inverter,
-                           )
+                           inverter_parameters=cec_inverter)
 
 # created for use in pvfactors timeseries
 orientation = sat_mount.get_orientation(solar_position['apparent_zenith'],
-                                        solar_position['azimuth']
-                                        )
+                                        solar_position['azimuth'])
 
 # get rear and front side irradiance from pvfactors transposition engine
-irrad = pd.concat(bifacial.pvfactors_timeseries(solar_position['azimuth'],
-                                                solar_position['apparent_zenith'],
-                                                orientation['surface_azimuth'],
-                                                orientation['surface_tilt'],
-                                                axis_azimuth,
-                                                times,
-                                                cs['dni'],
-                                                cs['dhi'],
-                                                gcr, 
-                                                pvrow_height,
-                                                pvrow_width,
-                                                albedo
-                                                ), axis=1)
+irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
+                                      solar_position['apparent_zenith'],
+                                      orientation['surface_azimuth'],
+                                      orientation['surface_tilt'],
+                                      axis_azimuth,
+                                      times,
+                                      cs['dni'],
+                                      cs['dhi'],
+                                      gcr,
+                                      pvrow_height,
+                                      pvrow_width,
+                                      albedo)
+
+# turn into pandas DataFrame
+irrad = pd.concat(irrad, axis=1)
 
 # define bifaciality coefficient (specific to module type being used)
 # create bifacial effective irradiance using aoi-corrected timeseries values
 bifaciality = 0.75
-irrad['effective_irradiance'] = irrad['total_abs_front'] + (irrad['total_abs_back'] * bifaciality)
+irrad['effective_irradiance'] = (
+    irrad['total_abs_front'] + (irrad['total_abs_back'] * bifaciality)
+)
 
 # create modelchain object for bifacial system and run bifacial simulation
 mc_bifi = modelchain.ModelChain(system, site_location)
 mc_bifi.run_model_from_effective_irradiance(irrad)
 
-# for illustration, perform simulation on monofacial system
-# first create a new 'effective_irradiance' column from pvfactors data
-irrad_mono = irrad.copy()
-irrad_mono['effective_irradiance'] = irrad_mono['total_abs_front']
-
-# create modelchain object for monofacial system run monofacial simulation
-mc_mono = modelchain.ModelChain(system, site_location)
-mc_mono.run_model_from_effective_irradiance(irrad_mono)
-
 # plot results of both monofacial and bifacial
-mc_bifi.results.ac.plot(title='Bifacial vs Monofacial Simulation on Clearsky Day')
-mc_mono.results.ac.plot(ylabel='AC Power')
+mc_bifi.results.ac.plot(title='Bifacial Simulation on June Solstice',
+                        ylabel='AC Power')

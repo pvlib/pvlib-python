@@ -35,7 +35,7 @@ solar_position = solarposition.get_solarposition(cs.index,
                                                  lon
                                                  )
 
-# set ground coverage ratio and max_angle to 
+# set ground coverage ratio and max_angle to
 # pull orientation data for a single-axis tracker
 gcr = 0.35
 max_phi = 60
@@ -70,7 +70,7 @@ irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
 # irradiance data
 bifaciality = 0.75
 effective_irrad_bifi = irrad[2] + (irrad[3] * bifaciality)
-effective_irrad_mono = irrad[2]
+
 
 # get cell temperature using the Faiman model
 temp_cell = temperature.faiman(irrad[0], 25, 1)
@@ -84,17 +84,24 @@ pdc_bifi = pvsystem.pvwatts_dc(effective_irrad_bifi,
                                pdc0,
                                gamma_pdc=gamma_pdc
                                ).fillna(0)
+pdc_bifi.plot(title='Bifacial Simulation on June Solstice', ylabel='DC Power')
 
+# %%
+# For illustration, perform monofacial simulation using pvfactors front-side
+# irradiance (AOI-corrected), and plot along with bifacial results.
+
+effective_irrad_mono = irrad[2]
 pdc_mono = pvsystem.pvwatts_dc(effective_irrad_mono,
-                               temp_cell, 
+                               temp_cell,
                                pdc0,
                                gamma_pdc=gamma_pdc
                                ).fillna(0)
 
-# plot results
+# plot monofacial results
 plt.figure()
-plt.title('Bifacial vs Monofacial Simulation on Clearsky Day')
-plt.plot(pdc_bifi)
-plt.plot(pdc_mono)
-plt.legend(['bifacial', 'monofacial'])
+plt.title('Bifacial vs Monofacial Simulation - June Solstice')
+pdc_bifi.plot(label='Bifacial')
+pdc_mono.plot(label='Monofacial')
 plt.ylabel('DC Power')
+plt.legend()
+# sphinx_gallery_thumbnail_number = 2

@@ -827,22 +827,22 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
 
 def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     """
-    Smooth out short-term model transience using the Prilliman model [1]_.
+    Smooth short-term cell temperature transients using the Prilliman model.
 
-    The Prilliman et al. model applies an exponential moving average to
-    the output of a steady-state cell temperature model to account for a
-    module's thermal inertia and smooth out the cell temperature's response
-    to changing weather conditions.
+    The Prilliman et al. model [1]_ applies a weighted moving average to
+    the output of a steady-state cell temperature model to account for
+    a module's thermal inertia by smoothing the cell temperature's
+    response to changing weather conditions.
 
     .. warning::
         This implementation requires the time series inputs to be regularly
-        sampled in time.  Data with irregular time steps should be resampled
+        sampled in time with frequency less than 20 minutes.  Data with irregular time steps should be resampled
         prior to using this function.
 
     Parameters
     ----------
-    temp_cell : pandas Series
-        Cell temperature modeled with steady-state assumptions [C]
+    temp_cell : pandas Series with DatetimeIndex
+        Cell temperature modeled with steady-state assumptions. [C]
 
     wind_speed : pandas Series
         Wind speed, adjusted to correspond to array height [m/s]
@@ -851,7 +851,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
         Total mass of module divided by its one-sided surface area [kg/m^2]
 
     coefficients : 4-element list-like, optional
-        Values for coefficients a_0–a_3 from [1]_
+        Values for coefficients a_0 through a_3, see Eq. 9 of [1]_
 
     Returns
     -------
@@ -861,7 +861,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     Notes
     -----
     This smoothing model was developed and validated using the SAPM
-    model for the steady-state input.
+    cell temperature model for the steady-state input.
 
     References
     ----------

@@ -8,6 +8,8 @@ from numpy.testing import assert_allclose
 from pvlib import temperature, tools
 from pvlib._deprecation import pvlibDeprecationWarning
 
+import re
+
 
 @pytest.fixture
 def sapm_default():
@@ -326,11 +328,16 @@ def test_prilliman():
 
 
 def test_prilliman_coarse():
-    # if the input series time step is >= 20 min, input is returned unchanged:
+    # if the input series time step is >= 20 min, input is returned unchanged,
+    # and a warning is emitted
     times = pd.date_range('2019-01-01', freq='30min', periods=3)
     cell_temperature = pd.Series([0, 1, 3], index=times)
     wind_speed = pd.Series([0, 1, 2])
-    actual = temperature.prilliman(cell_temperature, wind_speed)
+    msg = re.escape("temperature.prilliman only applies smoothing when the "
+                    "sampling interval is shorter than 20 minutes (input "
+                    "sampling interval: 30.0 minutes)")
+    with pytest.warns(UserWarning, match=msg):
+        actual = temperature.prilliman(cell_temperature, wind_speed)
     assert_series_equal(cell_temperature, actual)
 
 

@@ -7,7 +7,9 @@ import numpy as np
 import pandas as pd
 from pvlib.tools import sind
 from pvlib._deprecation import warn_deprecated
+from pvlib.clearsky import _get_sample_intervals
 import scipy
+import warnings
 
 
 TEMPERATURE_MODEL_PARAMETERS = {
@@ -871,15 +873,17 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
        :doi:`10.1109/JPHOTOV.2020.2992351`
     """
 
-    # TODO: check inputs to ensure regular spacing?
+    time_step, window = _get_sample_intervals(temp_cell.index, 20)
 
-    time_step = (temp_cell.index[1] - temp_cell.index[0]).total_seconds()
-    if time_step >= 1200:
+    if time_step >= 20:
+        warnings.warn("temperature.prilliman only applies smoothing when "
+                      "the sampling interval is shorter than 20 minutes "
+                      f"(input sampling interval: {time_step} minutes)")
         # too coarsely sampled for smoothing to be relevant
         return temp_cell
 
-    window = min(int(1200 / time_step),  # time series > 20 minutes
-                 len(temp_cell))         # time series < 20 minutes
+    window = min(window,          # time series > 20 minutes total
+                 len(temp_cell))  # time series < 20 minutes total
 
     # prefix with NaNs so that the rolling window is "full",
     # even for the first actual value:
@@ -900,7 +904,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
     wind_speed = wind_speed.values
     P = a[0] + a[1]*wind_speed + a[2]*unit_mass + a[3]*wind_speed*unit_mass
-    timedeltas = np.arange(window, 0, -1) * time_step
+    timedeltas = np.arange(window, 0, -1) * (time_step*60)  # s to min
     weights = np.exp(-P[:, np.newaxis] * timedeltas)
 
     # set weights corresponding to the prefix values to zero; otherwise the

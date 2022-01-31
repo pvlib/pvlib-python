@@ -5,7 +5,8 @@ Infinite Sheds
 The "infinite sheds" model [1] is a 2-dimensional model of irradiance on the
 front and rear surfaces of a PV array. The model assumes that the array
 comprises parallel, equally spaced rows (sheds) and calculates irradiance in
-the middle of a shed which is long enough that end-of-row effects can be
+the middle of a shed which is far from the front and back rows of the array.
+Sheds are assumed to be long enough that end-of-row effects can be
 neglected. Rows can be at fixed tilt or on single-axis trackers. The ground
 is assumed to be flat and level.
 
@@ -449,8 +450,7 @@ def _poa_ground_pv(f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade):
 
 def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                        solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
-                       albedo, iam=1.0, axis_azimuth=None, max_rows=5,
-                       npoints=100):
+                       albedo, iam=1.0, axis_azimuth=None, npoints=100):
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
@@ -514,12 +514,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         The compass direction of the axis of rotation lies for a single-axis
         tracking system. Decimal degrees east of north.
 
-    max_rows : int, default 5
-        Maximum number of rows to consider in front and behind the current row.
-
     npoints : int, default 100
         Number of points used to discretize distance along the ground.
-
 
     Returns
     -------
@@ -553,6 +549,10 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     get_irradiance
     """
     # Calculate some geometric quantities
+    # rows to consider in front and behind current row
+    # ensures that for a horizontal tilt, cos(right) - cos(left) < 0.01
+    # at max_rows in front
+    max_rows = int(100 * gcr)
     # fraction of ground between rows that is illuminated accounting for
     # shade from panels. [1], Eq. 4
     f_gnd_beam = utils._unshaded_ground_fraction(
@@ -628,7 +628,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
                    albedo, iam_front=1.0, iam_back=1.0,
                    bifaciality=0.8, shade_factor=-0.02,
-                   transmission_factor=0, max_rows=5, npoints=100):
+                   transmission_factor=0, npoints=100):
     """
     Get front and rear irradiance using the infinite sheds model.
 
@@ -710,9 +710,6 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         module's cells due to module structures. A negative value is a
         reduction in back irradiance. [unitless]
 
-    max_rows : int, default 5
-        Maximum number of rows to consider in front and behind the current row.
-
     npoints : int, default 100
         Number of points used to discretize distance along the ground.
 
@@ -747,6 +744,8 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     """
     # backside is rotated and flipped relative to front
     backside_tilt, backside_sysaz = _backside(surface_tilt, surface_azimuth)
+    # rows to consider in front and behind current row
+    max_rows = int(100 * gcr)
     # front side POA irradiance
     irrad_front = get_irradiance_poa(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,

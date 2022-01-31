@@ -101,17 +101,17 @@ def _point_symmetry(x, y):
     points : list
         List of reflected points
     """
-    return [(x,  y), 
-            (y,  x), 
-            (-x,  y), 
-            (-y,  x), 
-            (x, -y), 
-            (y, -x), 
-            (-x, -y), 
+    return [(x,  y),
+            (y,  x),
+            (-x,  y),
+            (-y,  x),
+            (x, -y),
+            (y, -x),
+            (-x, -y),
             (-y, -x)]
 
 
-def _bresenham_circ(r, center = (0,0)):
+def _bresenham_circ(r, center=(0, 0)):
     r""" Use midpoint algorithum to build a rasterized circle.
     Modified from
     https://funloop.org/post/2021-03-15-bresenham-circle-drawing-algorithm.html#bresenhams-algorithm
@@ -202,11 +202,11 @@ def _cart2pol(x, y):
     return r, theta
 
 
-def _sort_circ(pts, center=(0,0), az_len=360):
+def _sort_circ(pts, center=(0, 0), az_len=360):
     r'''Sort and resample points on a circle such that the zeroth element is
     due east and the points move around the circle counter clockwise.
     While in polar domain, resample points using FFT to
-    obtain desired number of bins,typically 360, for 
+    obtain desired number of bins,typically 360, for
     degrees around the circle.
 
     Parameters
@@ -275,7 +275,7 @@ def horizon_map(dem_pixel, dem_path, dem_res=30.0,
 
     # sort circle points and resample to desired number of points (az_len)
     pts = _sort_circ(pts, center=dem_pixel, az_len=az_len)
-    x0, y0  = dem_pixel
+    x0, y0 = dem_pixel
     profile = np.zeros(azimuth.shape)
     elevation_angles = np.zeros(azimuth.shape)
     x_bound, y_bound = elevation.shape

@@ -1,20 +1,17 @@
 '''
-The 'horizon' module contains function definitions that 
-retrive & calculate the surrounding horizon using DEM 
+The 'horizon' module contains function definitions that
+retrive & calculate the surrounding horizon using DEM
 elevation data
 '''
 import numpy as np
 import gdal
-from skimage.draw import line, line_aa
-import pandas as pd
-from scipy.linalg import polar
+from skimage.draw import line
 from scipy.signal import resample
 from osgeo import gdal_array
-import geoio  
-
+import geoio
+import numpy as np
 def latlong(ds):
-    r'''
-    From a gdal dataset, retrive the geotransform
+    r'''From a gdal dataset, retrive the geotransform
     and return an latitude and longitude coordinates
     for a DEM GeoTiff.
     
@@ -42,9 +39,9 @@ def latlong(ds):
     long = np.linspace(minx,maxx,width)
     return (lat,long)
 
+
 def load_DEM(filepath):
-    r'''
-    Loads a DEM from a .hgt file, segements into the GeoTiff
+    r'''Loads a DEM from a .hgt file, segements into the GeoTiff
     (elevation) and corresponding latitude and longitude
     
     Parameters
@@ -68,10 +65,9 @@ def load_DEM(filepath):
     lat, long = latlong(dataset)
     return elevation, lat, long
 
+
 def get_pixel_coords(lat, lon, DEM_path):
-    r'''
-    
-    Gets pixel coordinates from the raster, given latitude and longitude
+    r'''Gets pixel coordinates from the raster, given latitude and longitude
     
     Parameters
     ----------
@@ -85,12 +81,14 @@ def get_pixel_coords(lat, lon, DEM_path):
     Returns
     -------
     coords : tuple
-        Tuple with two elements, containing the x and y coordinate of the raster corresponding to latitiude and longitude
+        Tuple with two elements, containing the x and y coordinate
+        of the raster corresponding to latitiude and longitude
     '''
     img = geoio.GeoImage(DEM_path)
     return map(int, img.proj_to_raster(lon,lat))
 
-def point_symmetry(x, y):
+
+def _point_symmetry(x, y):
     r""" 
     Reflect a point 8 ways to form a circle. 
     """
@@ -103,10 +101,11 @@ def point_symmetry(x, y):
             (-x, -y),
             (-y, -x)]
 
-def bresenham_circ(r, center = (0,0)):
-    r""" 
-    Use midpoint algorithum to build a rasterized circle.
-    Modified from https://funloop.org/post/2021-03-15-bresenham-circle-drawing-algorithm.html#bresenhams-algorithm
+
+def _bresenham_circ(r, center = (0,0)):
+    r""" Use midpoint algorithum to build a rasterized circle.
+    Modified from 
+    https://funloop.org/post/2021-03-15-bresenham-circle-drawing-algorithm.html#bresenhams-algorithm
     to add circles not centered at the origin
     
     Parameters
@@ -119,7 +118,8 @@ def bresenham_circ(r, center = (0,0)):
     Returns
     -------
     points : np.array
-        Array of shape (n,2) of points that form a rasterized circle. n depends on the radius of the circle. 
+        Array of shape (n,2) of points that form a rasterized circle.
+        n depends on the radius of the circle. 
     """
     points = []
     x = 0
@@ -129,7 +129,7 @@ def bresenham_circ(r, center = (0,0)):
     d_e = 3
     # Initial value for (0,-r) for 2(x + y) + 5 = 0 - 2y + 5 = -2y + 5.
     d_ne = -(r << 1) + 5
-    points.extend(point_symmetry(x, y))
+    points.extend(_point_symmetry(x, y))
     while x < -y:
         if F_M < 0:
             F_M += d_e
@@ -140,15 +140,15 @@ def bresenham_circ(r, center = (0,0)):
         d_e += 2
         d_ne += 2
         x += 1
-        points.extend(point_symmetry(x, y))
+        points.extend(_point_symmetry(x, y))
     points = np.array(points)
     newx = points[:,0] + center[0]
     newy = points[:,1] + center[1]
     return np.vstack((newx,newy))
 
-def pol2cart(r,theta):
-    r'''
-    Converts polar to cartesian
+
+def _pol2cart(r,theta):
+    r'''Converts polar to cartesian
     Parameters
     ----------
     r : np.array
@@ -167,12 +167,11 @@ def pol2cart(r,theta):
 
     z = r * np.exp(1j * theta)
     x, y = z.real, z.imag
-
     return x, y
 
-def cart2pol(x, y):
-    r'''
-    Converts cartesian to polar
+
+def _cart2pol(x, y):
+    r'''Converts cartesian to polar
     Parameters
     ----------
     x : np.array
@@ -190,16 +189,15 @@ def cart2pol(x, y):
     '''
 
     z = x + y * 1j
-    r,theta = np.abs(z), np.angle(z)
+    r, theta = np.abs(z), np.angle(z)
+    return r, theta
 
-    return r,theta
 
-
-def sort_circ(pts, center = (0,0), az_len = 360):
-    r'''
-    Sort and resample points on a circle such that the zeroth element is
+def _sort_circ(pts, center = (0,0), az_len = 360):
+    r'''Sort and resample points on a circle such that the zeroth element is
     due east and the points move around the circle counter clockwise.
-    While in polar domain, resample points using FFT to obtain desired number of bins, typically 360, for degrees around the circle. 
+    While in polar domain, resample points using FFT to obtain desired number of bins,
+    typically 360, for degrees around the circle.
     
     Parameters
     ----------
@@ -217,21 +215,21 @@ def sort_circ(pts, center = (0,0), az_len = 360):
     '''
     pts[0] -= center[0]
     pts[1] -= center[1]
-    r, theta = cart2pol(pts[0], pts[1])
-    stacked = np.vstack((theta,r))
+    r, theta = _cart2pol(pts[0], pts[1])
+    stacked = np.vstack((theta, r))
     sort = np.sort(stacked, axis = 1)
     sort = resample(sort, az_len, axis = 1)
     theta = sort[0]
     r = sort[1]
-    x,y = pol2cart(r,theta)
+    x, y = _pol2cart(r,theta)
     x += center[0]
     y += center[1]
-    return np.vstack((x,y)).astype(int)
+    return np.vstack((x, y)).astype(int)
+
 
 def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
                 view_distance=500, az_len = 36):
-    """
-    Finds the horizon at point on a dem in pixel coordinates dem_pixel
+    r"""Finds the horizon at point on a dem in pixel coordinates dem_pixel
     
     Parameters
     ----------
@@ -253,9 +251,8 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
     elevation_angles: np.array
         The calculated elevation values at each point of azimuth
     profile:
-        The largest elevation in meters on the line between the observer and the highest point on the horizon within view_distance
-
-
+        The largest elevation in meters on the line between the observer 
+        and the highest point on the horizon within view_distance
     
     """
     # retrive data from the DEM
@@ -264,14 +261,14 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
     azimuth = np.linspace(0,360,az_len)
     
     # Use Midpoint Circle Algo/ Bresenham's circle
-    pts = bresenham_circ(view_distance,dem_pixel)
+    pts = _bresenham_circ(view_distance,dem_pixel)
     
     # sort circle points and resample to desired number of points (az_len)
-    pts = sort_circ(pts, center = dem_pixel, az_len = az_len)
+    pts = _sort_circ(pts, center = dem_pixel, az_len = az_len)
     x0,y0  = dem_pixel
     profile = np.zeros(azimuth.shape)
     elevation_angles = np.zeros(azimuth.shape)
-    
+    x_bound, y_bound = elevation.shape
     for az in range(az_len):
         
         source_lon = pts[1][az]
@@ -291,12 +288,12 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
         target_lat = int(x0)
         
         # draw a line from observer to horizon and record points
-        rr,cc = line(source_lon, source_lat, target_lon, target_lat)
+        rr, cc = line(source_lon, source_lat, target_lon, target_lat)
         
         # get the highest elevation on the line
-        elvs = elevation[rr,cc]
+        elvs = elevation[rr, cc]
         elvs_on_line = elevation[rr,cc]
-        idx = np.stack((rr,cc), axis = -1)
+        idx = np.stack((rr, cc), axis = -1)
         highest_elv = np.max(elvs_on_line)
         highest_point = idx[np.argmax(elvs_on_line)]
         high_x, high_y = tuple(highest_point)
@@ -313,8 +310,7 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
 
 def calculate_dtf(horizon_azimuths, horizon_angles,
                   surface_tilt, surface_azimuth):
-    """
-    Author: JPalakapillyKWH
+    r"""Author: JPalakapillyKWH
     Calculate the diffuse tilt factor for a tilted plane that is adjusted
     with for horizon profile. The idea for a diffuse tilt factor is explained
     in [1].
@@ -381,9 +377,9 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
         dtf += 2 * (first_term + second_term) / num_points
     return dtf
 
+
 def collection_plane_elev_angle(surface_tilt, surface_azimuth, direction):
-    """
-    Author: JPalakapillyKWH
+    r"""Author: JPalakapillyKWH
     Determine the elevation angle created by the surface of a tilted plane
     intersecting the plane tangent to the Earth's surface in a given direction.
     The angle is limited to be non-negative. This comes from Equation 10 in [1]
@@ -421,8 +417,7 @@ def collection_plane_elev_angle(surface_tilt, surface_azimuth, direction):
 
 
 def dni_horizon_adjustment(horizon_angles, solar_zenith, solar_azimuth):
-    '''
-    Author: JPalakapillyKWH
+    r'''Author: JPalakapillyKWH
     Calculates an adjustment to direct normal irradiance based on a horizon
     profile. The adjustment is a vector of binary values with the same length
     as the provided solar position values. Where the sun is below the horizon,

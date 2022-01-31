@@ -24,7 +24,8 @@ def latlong(ds):
     Returns
     -------
     lat,long : tuple
-        Tuple of np.array of latitude,longitude corresponding to the pixels in the GeoTiff
+        Tuple of np.array of latitude,longitude
+        corresponding to the pixels in the GeoTiff
 
     '''
 
@@ -35,9 +36,9 @@ def latlong(ds):
     miny = gt[3] + width*gt[4] + height*gt[5]
     maxx = gt[0] + width*gt[1] + height*gt[2]
     maxy = gt[3]
-    lat = np.linspace(miny,maxy,height)
-    long = np.linspace(minx,maxx,width)
-    return (lat,long)
+    lat = np.linspace(miny, maxy, height)
+    long = np.linspace(minx, maxx, width)
+    return (lat, long)
 
 
 def load_DEM(filepath):
@@ -83,20 +84,30 @@ def get_pixel_coords(lat, lon, DEM_path):
         of the raster corresponding to latitiude and longitude
     '''
     img = geoio.GeoImage(DEM_path)
-    return map(int, img.proj_to_raster(lon,lat))
+    return map(int, img.proj_to_raster(lon, lat))
 
 
 def _point_symmetry(x, y):
-    r"""
-    Reflect a point 8 ways to form a circle.
+    r"""Reflect a point 8 ways to form a circle.
+    Parameters
+    ----------
+    x : numeric
+        x point of the circle
+    y: numeric
+        y point of the circle
+
+    Returns
+    -------
+    points : list
+        List of reflected points
     """
-    return [( x,  y),
-            ( y,  x),
-            (-x,  y),
-            (-y,  x),
-            ( x, -y),
-            ( y, -x),
-            (-x, -y),
+    return [(x,  y), 
+            (y,  x), 
+            (-x,  y), 
+            (-y,  x), 
+            (x, -y), 
+            (y, -x), 
+            (-x, -y), 
             (-y, -x)]
 
 
@@ -140,12 +151,12 @@ def _bresenham_circ(r, center = (0,0)):
         x += 1
         points.extend(_point_symmetry(x, y))
     points = np.array(points)
-    newx = points[:,0] + center[0]
-    newy = points[:,1] + center[1]
-    return np.vstack((newx,newy))
+    newx = points[:, 0] + center[0]
+    newy = points[:, 1] + center[1]
+    return np.vstack((newx, newy))
 
 
-def _pol2cart(r,theta):
+def _pol2cart(r, theta):
     r'''Converts polar to cartesian
     Parameters
     ----------
@@ -191,11 +202,12 @@ def _cart2pol(x, y):
     return r, theta
 
 
-def _sort_circ(pts, center = (0,0), az_len = 360):
+def _sort_circ(pts, center=(0,0), az_len=360):
     r'''Sort and resample points on a circle such that the zeroth element is
     due east and the points move around the circle counter clockwise.
-    While in polar domain, resample points using FFT to obtain desired number of bins,
-    typically 360, for degrees around the circle.
+    While in polar domain, resample points using FFT to
+    obtain desired number of bins,typically 360, for 
+    degrees around the circle.
 
     Parameters
     ----------
@@ -215,18 +227,18 @@ def _sort_circ(pts, center = (0,0), az_len = 360):
     pts[1] -= center[1]
     r, theta = _cart2pol(pts[0], pts[1])
     stacked = np.vstack((theta, r))
-    sort = np.sort(stacked, axis = 1)
-    sort = resample(sort, az_len, axis = 1)
+    sort = np.sort(stacked, axis=1)
+    sort = resample(sort, az_len, axis=1)
     theta = sort[0]
     r = sort[1]
-    x, y = _pol2cart(r,theta)
+    x, y = _pol2cart(r, theta)
     x += center[0]
     y += center[1]
     return np.vstack((x, y)).astype(int)
 
 
-def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
-                view_distance=500, az_len = 36):
+def horizon_map(dem_pixel, dem_path, dem_res=30.0,
+                view_distance=500, az_len=36):
     r"""Finds the horizon at point on a dem in pixel coordinates dem_pixel
 
     Parameters
@@ -256,14 +268,14 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
     # retrive data from the DEM
     elevation, lat, long = load_DEM(dem_path)
 
-    azimuth = np.linspace(0,360,az_len)
+    azimuth = np.linspace(0, 360, az_len)
 
     # Use Midpoint Circle Algo/ Bresenham's circle
-    pts = _bresenham_circ(view_distance,dem_pixel)
+    pts = _bresenham_circ(view_distance, dem_pixel)
 
     # sort circle points and resample to desired number of points (az_len)
-    pts = _sort_circ(pts, center = dem_pixel, az_len = az_len)
-    x0,y0  = dem_pixel
+    pts = _sort_circ(pts, center=dem_pixel, az_len=az_len)
+    x0, y0  = dem_pixel
     profile = np.zeros(azimuth.shape)
     elevation_angles = np.zeros(azimuth.shape)
     x_bound, y_bound = elevation.shape
@@ -288,15 +300,14 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
         rr, cc = line(source_lon, source_lat, target_lon, target_lat)
 
         # get the highest elevation on the line
-        elvs = elevation[rr, cc]
-        elvs_on_line = elevation[rr,cc]
-        idx = np.stack((rr, cc), axis = -1)
+        elvs_on_line = elevation[rr, cc]
+        idx = np.stack((rr, cc), axis=-1)
         highest_elv = np.max(elvs_on_line)
         highest_point = idx[np.argmax(elvs_on_line)]
         high_x, high_y = tuple(highest_point)
 
         # convert from altitude in m to elevation degrees.
-        xdist = np.abs(highest_point[0]  - x0)
+        xdist = np.abs(highest_point[0]-x0)
         ydist = highest_elv - elevation[y0][x0]
         elv_ang = np.arctan(ydist/xdist)
         elevation_angles[az] = np.rad2deg(elv_ang)

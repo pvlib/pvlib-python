@@ -660,6 +660,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
 
     return data, months_selected, inputs, meta
 
+
 def get_pvgis_horizon(latitude, longitude, proxies = None, url = URL):
     r'''
     Get horizon data from PVGIS
@@ -673,7 +674,7 @@ def get_pvgis_horizon(latitude, longitude, proxies = None, url = URL):
         Dictionary of proxies to access through a corporate network
     url: string
         Base URL for PVGIS
-        
+
     Returns
     -------
     df : pd.DataFrame

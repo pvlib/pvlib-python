@@ -9,17 +9,18 @@ from skimage.draw import line
 from scipy.signal import resample
 from osgeo import gdal_array
 import geoio
-import numpy as np
+
+
 def latlong(ds):
     r'''From a gdal dataset, retrive the geotransform
     and return an latitude and longitude coordinates
     for a DEM GeoTiff.
-    
+
     Parameters
     ----------
     ds : tuple
         Geotransform parameters given by a osgeo.gdal.Dataset
-        
+
     Returns
     -------
     lat,long : tuple
@@ -29,10 +30,9 @@ def latlong(ds):
 
     width = ds.RasterXSize
     height = ds.RasterYSize
-    
     gt = ds.GetGeoTransform()
     minx = gt[0]
-    miny = gt[3] + width*gt[4] + height*gt[5] 
+    miny = gt[3] + width*gt[4] + height*gt[5]
     maxx = gt[0] + width*gt[1] + height*gt[2]
     maxy = gt[3]
     lat = np.linspace(miny,maxy,height)
@@ -43,12 +43,11 @@ def latlong(ds):
 def load_DEM(filepath):
     r'''Loads a DEM from a .hgt file, segements into the GeoTiff
     (elevation) and corresponding latitude and longitude
-    
+
     Parameters
     ----------
     filepath : string
         Absolute or relative path to the .hgt file
-        
     Returns
     -------
     elevation : np.array
@@ -57,9 +56,8 @@ def load_DEM(filepath):
         latitudes corresponding to the pixels along the 0th dim of elevation
     long : np.array
         longitudes corresponding to the pixels along the 1th dim of elevation
-
     '''
-    dataset = gdal.Open(filepath) 
+    dataset = gdal.Open(filepath)
     rasterArray = gdal_array.LoadFile(filepath)
     elevation = rasterArray
     lat, long = latlong(dataset)
@@ -68,7 +66,7 @@ def load_DEM(filepath):
 
 def get_pixel_coords(lat, lon, DEM_path):
     r'''Gets pixel coordinates from the raster, given latitude and longitude
-    
+
     Parameters
     ----------
     lat : float
@@ -77,7 +75,7 @@ def get_pixel_coords(lat, lon, DEM_path):
         Longitude of the point
     DEM_path: string
         Path of the DEM .hgt file
-        
+
     Returns
     -------
     coords : tuple
@@ -89,8 +87,8 @@ def get_pixel_coords(lat, lon, DEM_path):
 
 
 def _point_symmetry(x, y):
-    r""" 
-    Reflect a point 8 ways to form a circle. 
+    r"""
+    Reflect a point 8 ways to form a circle.
     """
     return [( x,  y),
             ( y,  x),
@@ -104,22 +102,22 @@ def _point_symmetry(x, y):
 
 def _bresenham_circ(r, center = (0,0)):
     r""" Use midpoint algorithum to build a rasterized circle.
-    Modified from 
+    Modified from
     https://funloop.org/post/2021-03-15-bresenham-circle-drawing-algorithm.html#bresenhams-algorithm
     to add circles not centered at the origin
-    
+
     Parameters
     ----------
     r : numeric
         Radius of the circle
     center: tuple
         Center of the point (Cartesian)
-        
+
     Returns
     -------
     points : np.array
         Array of shape (n,2) of points that form a rasterized circle.
-        n depends on the radius of the circle. 
+        n depends on the radius of the circle.
     """
     points = []
     x = 0
@@ -155,7 +153,7 @@ def _pol2cart(r,theta):
         r values for the points
     theta: np.array
         theta values for the points
-        
+
     Returns
     -------
     x : np.array
@@ -198,7 +196,7 @@ def _sort_circ(pts, center = (0,0), az_len = 360):
     due east and the points move around the circle counter clockwise.
     While in polar domain, resample points using FFT to obtain desired number of bins,
     typically 360, for degrees around the circle.
-    
+
     Parameters
     ----------
     pts : np.array
@@ -206,7 +204,7 @@ def _sort_circ(pts, center = (0,0), az_len = 360):
     center : tuple
         Center (x,y) of the circle rasterized by pts
     az_len : numeric
-        Desired number of points in the rasterized circle. 
+        Desired number of points in the rasterized circle.
 
     Returns
     -------
@@ -230,7 +228,7 @@ def _sort_circ(pts, center = (0,0), az_len = 360):
 def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
                 view_distance=500, az_len = 36):
     r"""Finds the horizon at point on a dem in pixel coordinates dem_pixel
-    
+
     Parameters
     ----------
     dem_pixel : tuple (int,int)
@@ -240,10 +238,10 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
     dem_res : float
         Resolution of the DEM. The default is SRTM 30m
     view_distance : int
-        Radius of the area of consideration. 
+        Radius of the area of consideration.
     az_len : int
         Number of samples on the perimeter of the circle.
-        
+
     Returns
     -------
     azimuth : np.array
@@ -251,18 +249,18 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
     elevation_angles: np.array
         The calculated elevation values at each point of azimuth
     profile:
-        The largest elevation in meters on the line between the observer 
+        The largest elevation in meters on the line between the observer
         and the highest point on the horizon within view_distance
-    
+
     """
     # retrive data from the DEM
     elevation, lat, long = load_DEM(dem_path)
-    
+
     azimuth = np.linspace(0,360,az_len)
-    
+
     # Use Midpoint Circle Algo/ Bresenham's circle
     pts = _bresenham_circ(view_distance,dem_pixel)
-    
+
     # sort circle points and resample to desired number of points (az_len)
     pts = _sort_circ(pts, center = dem_pixel, az_len = az_len)
     x0,y0  = dem_pixel
@@ -270,7 +268,6 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
     elevation_angles = np.zeros(azimuth.shape)
     x_bound, y_bound = elevation.shape
     for az in range(az_len):
-        
         source_lon = pts[1][az]
         source_lat = pts[0][az]
         # check for outmapping
@@ -283,13 +280,13 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
             source_lat = y_bound-1
         elif source_lat <= 0:
             source_lat = 0
-            
+
         target_lon = int(y0)
         target_lat = int(x0)
-        
+
         # draw a line from observer to horizon and record points
         rr, cc = line(source_lon, source_lat, target_lon, target_lat)
-        
+
         # get the highest elevation on the line
         elvs = elevation[rr, cc]
         elvs_on_line = elevation[rr,cc]
@@ -297,14 +294,13 @@ def horizon_map(dem_pixel, dem_path, dem_res = 30.0,
         highest_elv = np.max(elvs_on_line)
         highest_point = idx[np.argmax(elvs_on_line)]
         high_x, high_y = tuple(highest_point)
-        
-        # convert from altitude in m to elevation degrees. 
+
+        # convert from altitude in m to elevation degrees.
         xdist = np.abs(highest_point[0]  - x0)
-        ydist = highest_elv - elevation[y0][x0] 
+        ydist = highest_elv - elevation[y0][x0]
         elv_ang = np.arctan(ydist/xdist)
         elevation_angles[az] = np.rad2deg(elv_ang)
         profile[az] = highest_elv
-
     return azimuth, elevation_angles, profile
 
 

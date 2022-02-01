@@ -4,12 +4,7 @@ retrive & calculate the surrounding horizon using DEM
 elevation data
 '''
 import numpy as np
-import gdal
-from skimage.draw import line
 from scipy.signal import resample
-from osgeo import gdal_array
-import geoio
-
 
 def latlong(ds):
     r'''From a gdal dataset, retrive the geotransform
@@ -58,6 +53,8 @@ def load_DEM(filepath):
     long : np.array
         longitudes corresponding to the pixels along the 1th dim of elevation
     '''
+    import gdal
+    from osgeo import gdal_array
     dataset = gdal.Open(filepath)
     rasterArray = gdal_array.LoadFile(filepath)
     elevation = rasterArray
@@ -83,7 +80,8 @@ def get_pixel_coords(lat, lon, DEM_path):
         Tuple with two elements, containing the x and y coordinate
         of the raster corresponding to latitiude and longitude
     '''
-    img = geoio.GeoImage(DEM_path)
+    from geoio import GeoImage
+    img = GeoImage(DEM_path)
     return map(int, img.proj_to_raster(lon, lat))
 
 
@@ -237,7 +235,7 @@ def _sort_circ(pts, center=(0, 0), az_len=360):
     return np.vstack((x, y)).astype(int)
 
 
-def horizon_map(dem_pixel, dem_path, dem_res=30.0,
+def horizon_map(dem_pixel, elevation, dem_res=30.0,
                 view_distance=500, az_len=36):
     r"""Finds the horizon at point on a dem in pixel coordinates dem_pixel
 
@@ -245,8 +243,8 @@ def horizon_map(dem_pixel, dem_path, dem_res=30.0,
     ----------
     dem_pixel : tuple (int,int)
         Point on the DEM expressed in pixel coordinates
-    dem_path : string
-        Path to a downloaded DEM .hgt
+    elevation : np.array
+        nxn DEM of elevation values
     dem_res : float
         Resolution of the DEM. The default is SRTM 30m
     view_distance : int
@@ -265,9 +263,7 @@ def horizon_map(dem_pixel, dem_path, dem_res=30.0,
         and the highest point on the horizon within view_distance
 
     """
-    # retrive data from the DEM
-    elevation, lat, long = load_DEM(dem_path)
-
+    from skimage.draw import line
     azimuth = np.linspace(0, 360, az_len)
 
     # Use Midpoint Circle Algo/ Bresenham's circle

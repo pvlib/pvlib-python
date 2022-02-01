@@ -55,7 +55,7 @@ TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
 EXTRAS_REQUIRE = {
     'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
                  'pvfactors', 'siphon', 'statsmodels',
-                 'cftime >= 1.1.1'],
+                 'cftime >= 1.1.1', 'geoio', 'gdal', 'osgeo', 'scikit-image'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2',
             'pydata-sphinx-theme', 'sphinx-gallery', 'docutils == 0.15.2',
             'pillow', 'netcdf4', 'siphon',

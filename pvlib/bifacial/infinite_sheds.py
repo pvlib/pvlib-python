@@ -70,9 +70,9 @@ References
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-from pvlib.tools import cosd, sind
+from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial import utils
-from pvlib.shading import shaded_fraction, masking_angle
+from pvlib.shading import masking_angle
 from pvlib.irradiance import get_ground_diffuse, beam_component
 
 
@@ -108,8 +108,9 @@ def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
     Based on pvfactors.geometry.base._get_rotation_from_tilt_azimuth
     """
     if axis_azimuth is None:
-        # Assume fixed tilt. Place axis_azimuth 90 degrees clockwise so that
-        # tilt becomes a negative rotation (lowers left/bottom edge)
+        # Assume fixed tilt. Place axis_azimuth 90 degrees clockwise
+        # from surface_azimuth so that tilt becomes a negative rotation
+        # (lowers right/bottom edge)
         axis_azimuth = ((surface_azimuth + 90.) + 360) % 360
     # Calculate rotation of PV row (signed tilt angle)
     is_pointing_right = ((surface_azimuth - axis_azimuth) % 360.) < 180.
@@ -118,7 +119,7 @@ def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
 
 
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
-                         pitch, axis_azimuth=None, max_rows=5, npoints=100):
+                         pitch, axis_azimuth=None, max_rows=10, npoints=100):
     """
     Integrated and per-point view factors from the ground to the sky at points
     between interior rows of the array.
@@ -448,6 +449,72 @@ def _poa_ground_pv(f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade):
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
 
 
+
+def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
+                     surface_azimuth, gcr):
+    """
+    Calculate fraction (from the bottom) of row slant height that is shaded
+    by the row in front toward the sun.
+
+    See [1], Eq. 14 and also [2], Eq. 32.
+
+    .. math::
+        F_x = \\max \\left( 0, \\min \\left(\\frac{\\text{GCR} \\cos \\theta
+        + \\left( \\text{GCR} \\sin \\theta - \\tan \\beta_{c} \\right)
+        \\tan Z - 1}
+        {\\text{GCR} \\left( \\cos \\theta + \\sin \\theta \\tan Z \\right)},
+        1 \\right) \\right)
+
+    Parameters
+    ----------
+    solar_zenith : numeric
+        Apparent solar zenith. [degrees]
+    solar_azimuth : numeric
+        Solar azimuth. [degrees]
+    surface_tilt : numeric
+        Row tilt from horizontal, e.g. surface facing up = 0, surface facing
+        horizon = 90. [degrees]
+    surface_azimuth : numeric
+        Azimuth angle of the row surface. North=0, East=90, South=180,
+        West=270. [degrees]
+    gcr : numeric
+        Ground coverage ratio, which is the ratio of row slant length to row
+        spacing (pitch). [unitless]
+    cross_axis_tilt : float, default 0.0
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. Cross-axis tilt should be specified
+        using a right-handed convention. For example, trackers with axis
+        azimuth of 180 degrees (heading south) will have a negative cross-axis
+        tilt if the tracker axes plane slopes down to the east and positive
+        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        `cross_axis_tilt`. [degrees]
+    Returns
+    -------
+    f_x : numeric
+        Fraction of row slant height shaded from the bottom.
+
+    References
+    ----------
+    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+       J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
+       Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
+       doi: 10.1109/PVSC40753.2019.8980572.
+    .. [2] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
+       Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
+       https://www.nrel.gov/docs/fy20osti/76626.pdf
+    """
+    tan_phi = utils._solar_projection_tangent(
+        solar_zenith, solar_azimuth, surface_azimuth)
+    # length of shadow behind a row as a fraction of pitch
+    x = gcr * (sind(surface_tilt) * tan_phi + cosd(surface_tilt))
+    f_x = 1 - 1. / (gcr * x)  # []
+    # condition for shadow to fall on row surface
+    f_x = np.where(x > 1., f_x, 0.)
+    return f_x
+
+
 def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                        solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
                        albedo, iam=1.0, axis_azimuth=None, npoints=100):
@@ -565,8 +632,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         surface_tilt, surface_azimuth, gcr, height, pitch, axis_azimuth,
         max_rows, npoints)
     # fraction of row slant height that is shaded
-    f_x = shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
-                          surface_azimuth, gcr)
+    f_x = _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
+                           surface_azimuth, gcr)
 
     # Integrated view factors to the sky from the shaded and unshaded parts of
     # the row slant height
@@ -626,7 +693,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
 
 def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
-                   albedo, iam_front=1.0, iam_back=1.0,
+                   albedo, axis_azimuth=None, iam_front=1.0, iam_back=1.0,
                    bifaciality=0.8, shade_factor=-0.02,
                    transmission_factor=0, npoints=100):
     """
@@ -688,6 +755,10 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     albedo : numeric
         Surface albedo. [unitless]
 
+    axis_azimuth : numeric, default None
+        The compass direction of the axis of rotation lies for a single-axis
+        tracking system. Decimal degrees east of north.
+
     iam_front : numeric, default 1.0
         Incidence angle modifier, the fraction of direct irradiance incident
         on the front surface that is not reflected away. [unitless]
@@ -744,18 +815,16 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     """
     # backside is rotated and flipped relative to front
     backside_tilt, backside_sysaz = _backside(surface_tilt, surface_azimuth)
-    # rows to consider in front and behind current row
-    max_rows = int(100 * gcr)
     # front side POA irradiance
     irrad_front = get_irradiance_poa(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-        gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, max_rows,
-        npoints)
+        gcr, height, pitch, ghi, dhi, dni, albedo, axis_azimuth,
+        iam_front, npoints)
     # back side POA irradiance
     irrad_back = get_irradiance_poa(
         backside_tilt, backside_sysaz, solar_zenith, solar_azimuth,
-        gcr, height, pitch, ghi, dhi, dni, albedo, iam_back, max_rows,
-        npoints)
+        gcr, height, pitch, ghi, dhi, dni, albedo, axis_azimuth,
+        iam_back, npoints)
 
     colmap_front = {
         'poa_global': 'poa_front',

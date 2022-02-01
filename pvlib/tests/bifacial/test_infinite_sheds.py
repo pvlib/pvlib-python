@@ -175,6 +175,26 @@ def test__poa_ground_shadows():
     assert np.allclose(result, expected_vec)
 
 
+def test_shaded_fraction_floats():
+    result = infinite_sheds._shaded_fraction(
+        solar_zenith=60., solar_azimuth=180., surface_tilt=60.,
+        surface_azimuth=180., gcr=1.0)
+    assert np.isclose(result, 0.5)
+
+
+def test_shaded_fraction_array():
+    solar_zenith = np.array([0., 60., 90., 60.])
+    solar_azimuth = np.array([180., 180., 180., 180.])
+    surface_azimuth = np.array([180., 180., 180., 210.])
+    surface_tilt = np.array([30., 60., 0., 30.])
+    gcr = 1.0
+    result = infinite_sheds._shaded_fraction(
+        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr)
+    x = 0.75 + np.sqrt(3) / 2
+    expected = np.array([0.0, 0.5, 0., (x - 1) / x])
+    assert np.allclose(result, expected)
+
+
 def test_get_irradiance_poa():
     # singleton inputs
     solar_zenith = 0.

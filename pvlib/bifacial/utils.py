@@ -93,7 +93,7 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 
-def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=5):
+def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     r"""
     Calculate the fraction of the sky dome visible from point x on the ground.
 
@@ -125,7 +125,7 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=5):
     vf : numeric
         Fraction of sky dome visible from each point on the ground. [unitless]
     wedge_angles : array
-        Angles defining each wedge of visible sky. Shape is
+        Angles defining each wedge of sky that is blocked by a row. Shape is
         (2, len(x), 2*max_rows+1). ``wedge_angles[0,:,:]`` is the
         starting angle of each wedge, ``wedge_angles[1,:,:]`` is the end angle.
         [degree]
@@ -133,17 +133,17 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=5):
     x = np.atleast_1d(x)  # handle float
     all_k = np.arange(-max_rows, max_rows + 1)
     width = gcr * pitch / 2.
-    # angles from x to left edge of each row
+    # angles from x to right edge of each row
     a1 = height + width * sind(rotation)
     b1 = (all_k - x[:, np.newaxis]) * pitch + width * cosd(rotation)
     phi_1 = np.degrees(np.arctan2(a1, b1))
-    # angles from x to right edge of each row
+    # angles from x to left edge of each row
     a2 = height - width * sind(rotation)
     b2 = (all_k - x[:, np.newaxis]) * pitch - width * cosd(rotation)
     phi_2 = np.degrees(np.arctan2(a2, b2))
     phi = np.stack([phi_1, phi_2])
     swap = phi[0, :, :] > phi[1, :, :]
-    # swap where phi_1 > phi_2 so that phi_1[0,:,:] is the left edge
+    # swap where phi_1 > phi_2 so that phi_1[0,:,:] is the lesser angle
     phi = np.where(swap, phi[::-1], phi)
     # right edge of next row - left edge of previous row
     wedge_vfs = 0.5 * (cosd(phi[1, :, 1:]) - cosd(phi[0, :, :-1]))

@@ -6,6 +6,7 @@ elevation data
 import numpy as np
 from scipy.signal import resample
 
+
 def latlong(ds):
     r'''From a gdal dataset, retrive the geotransform
     and return an latitude and longitude coordinates

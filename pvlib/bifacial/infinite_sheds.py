@@ -75,44 +75,6 @@ from pvlib.shading import masking_angle
 from pvlib.irradiance import get_ground_diffuse, beam_component
 
 
-def _tilt_to_rotation(surface_tilt, surface_azimuth):
-    """
-    Convert surface tilt to rotation angle.
-
-    Surface tilt angles are positive by definition. The axis of rotation is
-    assumed to be parallel to the ground at 90 degrees clockwise from
-    surface_azimuth. A positive rotation about the axis of rotation angle is
-    counterclockwise around that axis, using a right-hand rule. A positive
-    rotation elevates the left (bottom) edge of the row.
-
-    Parameters
-    ----------
-    surface_tilt : numeric
-        Surface tilt in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-    surface_azimuth : numeric
-        Surface azimuth in decimal degrees east of north
-        (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
-        be >=0 and <=360.
-
-    Returns
-    -------
-    float or np.ndarray
-        Calculated rotation angle(s) in [deg]
-
-    Notes
-    -----
-    Based on pvfactors.geometry.base._get_rotation_from_tilt_azimuth
-    """
-    # Define axis_azimuth to be 90 degrees clockwise from surface_azimuth
-    axis_azimuth = (surface_azimuth + 90.) % 360
-    # Determine sign of rotation, so that positive rotation faces surface
-    # toward the right
-    is_pointing_right = ((surface_azimuth - axis_azimuth) % 360.) < 180.
-    rotation = np.where(is_pointing_right, surface_tilt, -surface_tilt)
-    return rotation
-
-
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
                          pitch, max_rows=10, npoints=100):
     """
@@ -152,12 +114,15 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
         [unitless]
 
     """
+    # TODO: vectorize over surface_tilt
+    # Abuse utils._vf_ground_sky_2d by supplying surface_tilt in place
+    # of a signed rotation. This is OK because 
+    # 1) z span the full distance between 2 rows, and
+    # 2) max_rows is set to be large upstream, and
+    # 3) _vf_ground_sky_2d considers [-max_rows, +max_rows]
+    # The VFs to the sky will thus be symmetric around z=0.5 
     z = np.linspace(0, 1, npoints)
-    rotation = np.atleast_1d(_tilt_to_rotation(
-        surface_tilt, surface_azimuth))
-    # calculate the view factor from the ground to the sky. Accounts for
-    # views between rows both towards the array front, and array back
-    # TODO: vectorize over rotation
+    rotation = np.atleast_1d(surface_tilt)
     fz_sky = np.zeros((len(rotation), npoints))
     for k, r in enumerate(rotation):
         vf, _ = utils._vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
@@ -496,8 +461,8 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
     # shadow is long enough to fall on row surface if x > 1
     f_x = np.where(x > 1., f_x, 0.)
     # when tan_phi < 0, then either sun is behind the array or below the
-    # horizon. Shaded fraction is 1 in these cases
-    f_x = np.where(tan_phi > 0, f_x, 1.)
+    # horizon. Shaded fraction is assigned to be 1 in these cases
+    f_x = np.where(tan_phi >= 0, f_x, 1.)
     return f_x
 
 

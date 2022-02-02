@@ -17,7 +17,7 @@ def test_system():
             'pitch': 2.,
             'surface_tilt': 30.,
             'surface_azimuth': 180.,
-            'rotation': -30.}
+            'rotation': -30.}  # rotation of right edge relative to horizontal
     syst['gcr'] = 1.0 / syst['pitch']
     pts = np.linspace(0, 1, num=3)
     sqr3 = np.sqrt(3) / 4
@@ -42,20 +42,13 @@ def test_system():
     return syst, pts, vfs_ground_sky
 
 
-def test__tilt_to_rotation():
-    surface_tilt = np.array([0., 20., 90.])
-    surface_azimuth = np.array([180., 90., 270.])
-    result = infinite_sheds._tilt_to_rotation(
-        surface_tilt, surface_azimuth, 180.)
-    assert np.allclose(result, np.array([0., -20., 90.]))
-    res = infinite_sheds._tilt_to_rotation(surface_tilt, 180., None)
-    assert np.allclose(res, np.array([0., -20., -90.]))
-
-
 def test__vf_ground_sky_integ(test_system):
     ts, pts, vfs_gnd_sky = test_system
+    # pass rotation here since max_rows=1 for the hand-solved case in
+    # the fixture test_system, which means the ground-to-sky view factor
+    # isn't summed over enough rows for symmetry to hold.
     vf_integ = infinite_sheds._vf_ground_sky_integ(
-        ts['surface_tilt'], ts['surface_azimuth'],
+        ts['rotation'], ts['surface_azimuth'],
         ts['gcr'], ts['height'], ts['pitch'],
         max_rows=1, npoints=3)
     expected_vf_integ = np.trapz(vfs_gnd_sky, pts)

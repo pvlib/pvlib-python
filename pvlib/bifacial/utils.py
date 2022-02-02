@@ -105,7 +105,8 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
         x = 0 corresponds to the point on the ground directly below the
         center point of a row. Positive x is towards the right. [unitless]
     rotation : float
-        Rotation angle of the row's left edge relative to row center. [degree]
+        Rotation angle of the row's right edge relative to row center.
+        [degree]
     gcr : float
         Ratio of the row slant length to the row spacing (pitch). [unitless]
     height : float

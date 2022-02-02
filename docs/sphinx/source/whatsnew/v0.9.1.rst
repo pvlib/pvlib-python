@@ -27,6 +27,8 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Updated test values to match the new values returned by the PVGIS TMY API. The difference
+  is very minor (0.01 W/m2, affecting only a few beam irradiance values) (:pull:`1396`)
 
 Documentation
 ~~~~~~~~~~~~~

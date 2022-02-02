@@ -132,27 +132,20 @@ def test__vf_row_ground_integ(test_system):
     gcr = ts['gcr']
     surface_tilt = ts['surface_tilt']
     f_x = np.array([0., 0.5, 1.0])
-    shaded = []
-    noshade = []
-    for x in f_x:
-        s, ns = infinite_sheds._vf_row_ground_integ(
-            x, surface_tilt, gcr)
-        shaded.append(s)
-        noshade.append(ns)
+    shaded, noshade = infinite_sheds._vf_row_ground_integ(
+        f_x, surface_tilt, gcr)
 
-    def analytic(gcr, surface_tilt, x):
+    def analytic(x, surface_tilt, gcr):
         c = cosd(surface_tilt)
         a = 1. / gcr
         dx = np.sqrt(a**2 + 2 * a * c * x + x**2)
         return c * dx - a * (c**2 - 1) * np.arctanh((a * c + x) / dx)
 
-    shaded = np.array(shaded)
-    noshade = np.array(noshade)
-    expected_shade = 0.5 * (analytic(gcr, surface_tilt, f_x)
-                            - analytic(gcr, surface_tilt, 0.)
+    expected_shade = 0.5 * (analytic(f_x, surface_tilt, gcr)
+                            - analytic(0., surface_tilt, gcr)
                             - f_x * cosd(surface_tilt))
-    expected_noshade = 0.5 * (analytic(gcr, surface_tilt, 1.)
-                              - analytic(gcr, surface_tilt, f_x)
+    expected_noshade = 0.5 * (analytic(1., surface_tilt, gcr)
+                              - analytic(f_x, surface_tilt, gcr)
                               - (1. - f_x) * cosd(surface_tilt))
     assert np.allclose(shaded, expected_shade)
     assert np.allclose(noshade, expected_noshade)

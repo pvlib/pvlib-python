@@ -5,8 +5,7 @@ associated effects on PV module output
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import sind, cosd, tand
-from pvlib import bifacial
+from pvlib.tools import sind, cosd
 
 
 def masking_angle(surface_tilt, gcr, slant_height):

@@ -7,13 +7,12 @@ Example of bifacial modeling using procedural method
 
 # %%
 # This example shows how to complete a bifacial modeling example using the
-# :py:class:`pvlib.modelchain.ModelChain` with the
+# :py:func:`pvlib.pvsystem.pvwatts_dc` with the
 # :py:func:`pvlib.bifacial.pvfactors_timeseries` function to transpose
 # GHI data to both front and rear Plane of Array (POA) irradiance.
 
 import pandas as pd
 from pvlib import location
-from pvlib import solarposition
 from pvlib import tracking
 from pvlib import bifacial
 from pvlib import temperature
@@ -23,17 +22,14 @@ import matplotlib.pyplot as plt
 # using Greensboro, NC for this example
 lat, lon = 36.084, -79.817
 tz = 'Etc/GMT+5'
-times = pd.date_range('2021-06-21', '2021-6-22', freq='1T', tz=tz)
+times = pd.date_range('2021-06-21', '2021-06-22', freq='1T', tz=tz)
 
 # create location object and get clearsky data
 site_location = location.Location(lat, lon, tz=tz, name='Greensboro, NC')
 cs = site_location.get_clearsky(times)
 
 # get solar position data
-solar_position = solarposition.get_solarposition(cs.index,
-                                                 lat,
-                                                 lon
-                                                 )
+solar_position = site_location.get_solarposition(times)
 
 # set ground coverage ratio and max_angle to
 # pull orientation data for a single-axis tracker
@@ -48,7 +44,7 @@ orientation = tracking.singleaxis(solar_position['apparent_zenith'],
 
 # set axis_azimuth, albedo, pvrow width and height, and use
 # the pvfactors  engine for both front and rear-side absorbed irradiance
-axis_azmuth = 180
+axis_azimuth = 180
 pvrow_height = 3
 pvrow_width = 4
 albedo = 0.2
@@ -56,7 +52,7 @@ irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
                                       solar_position['apparent_zenith'],
                                       orientation['surface_azimuth'],
                                       orientation['surface_tilt'],
-                                      axis_azmuth,
+                                      axis_azimuth,
                                       cs.index,
                                       cs['dni'],
                                       cs['dhi'],
@@ -66,14 +62,22 @@ irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
                                       albedo
                                       )
 
+# turn into pandas DataFrame
+irrad = pd.concat(irrad, axis=1)
+
 # using bifaciality factor and pvfactors results, create effective
 # irradiance data
 bifaciality = 0.75
-effective_irrad_bifi = irrad[2] + (irrad[3] * bifaciality)
+effective_irrad_bifi = irrad['total_abs_front'] + (irrad['total_abs_back']
+                                                   * bifaciality)
 
 
 # get cell temperature using the Faiman model
-temp_cell = temperature.faiman(irrad[0], 25, 1)
+# it is worth noting that this example uses total frontside incident
+# irradiance, however, for bifacial modeling, total irradiance (inclusive of
+# front and rear side) may be needed.
+temp_cell = temperature.faiman(irrad['total_inc_front'], temp_air=25,
+                               wind_speed=1)
 
 # using the pvwatts_dc model and parameters detailed above,
 # set pdc0 and return DC power for both bifacial and monofacial
@@ -90,7 +94,7 @@ pdc_bifi.plot(title='Bifacial Simulation on June Solstice', ylabel='DC Power')
 # For illustration, perform monofacial simulation using pvfactors front-side
 # irradiance (AOI-corrected), and plot along with bifacial results.
 
-effective_irrad_mono = irrad[2]
+effective_irrad_mono = irrad['total_abs_front']
 pdc_mono = pvsystem.pvwatts_dc(effective_irrad_mono,
                                temp_cell,
                                pdc0,

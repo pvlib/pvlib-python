@@ -10,6 +10,14 @@ Example of bifacial modeling using the modelchain
 # :py:class:`pvlib.modelchain.ModelChain` with the
 # :py:func:`pvlib.bifacial.pvfactors_timeseries` function to transpose
 # GHI data to both front and rear Plane of Array (POA) irradiance.
+#
+# Unfortunately ``ModelChain`` does not yet support bifacial simulation
+# directly so we have to do the bifacial irradiance simulation ourselves.
+# Once the combined front + rear irradiance is known, we can pass that
+# to ``ModelChain`` and proceed as usual.
+#
+# Future versions of pvlib may make it easier to do bifacial modeling
+# with ``ModelChain``.
 
 import pandas as pd
 from pvlib import pvsystem
@@ -31,12 +39,13 @@ max_angle = 60
 pvrow_height = 3
 pvrow_width = 4
 albedo = 0.2
+bifaciality = 0.75
 
 # load temperature parameters and module/inverter specifications
-temp_model_parameters = PARAMS['sapm']['open_rack_glass_polymer']
-sandia_modules = pvsystem.retrieve_sam('SandiaMod')
+temp_model_parameters = PARAMS['sapm']['open_rack_glass_glass']
+cec_modules = pvsystem.retrieve_sam('CECMod')
+cec_module = cec_modules['Trina_Solar_TSM_300DEG5C_07_II_']
 cec_inverters = pvsystem.retrieve_sam('cecinverter')
-sandia_module = sandia_modules['Sanyo_HIP_200DA3_Bifacial__2007__E__']
 cec_inverter = cec_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
 
 # create a location for site, and get solar position and clearsky data
@@ -50,14 +59,6 @@ sat_mount = pvsystem.SingleAxisTrackerMount(axis_tilt=axis_tilt,
                                             max_angle=max_angle,
                                             backtrack=True,
                                             gcr=gcr)
-# dc arrays
-array = pvsystem.Array(mount=sat_mount,
-                       module_parameters=sandia_module,
-                       temperature_model_parameters=temp_model_parameters)
-
-# create system object
-system = pvsystem.PVSystem(arrays=[array],
-                           inverter_parameters=cec_inverter)
 
 # created for use in pvfactors timeseries
 orientation = sat_mount.get_orientation(solar_position['apparent_zenith'],
@@ -82,15 +83,27 @@ irrad = pd.concat(irrad, axis=1)
 
 # define bifaciality coefficient (specific to module type being used)
 # create bifacial effective irradiance using aoi-corrected timeseries values
-bifaciality = 0.75
 irrad['effective_irradiance'] = (
     irrad['total_abs_front'] + (irrad['total_abs_back'] * bifaciality)
 )
 
+# %%
+# With effective irradiance, we can pass data to ModelChain for
+# bifacial simulation.
+
+# dc arrays
+array = pvsystem.Array(mount=sat_mount,
+                       module_parameters=cec_module,
+                       temperature_model_parameters=temp_model_parameters)
+
+# create system object
+system = pvsystem.PVSystem(arrays=[array],
+                           inverter_parameters=cec_inverter)
+
 # create modelchain object for bifacial system and run bifacial simulation
-mc_bifi = modelchain.ModelChain(system, site_location)
+mc_bifi = modelchain.ModelChain(system, site_location, aoi_model='no_loss')
 mc_bifi.run_model_from_effective_irradiance(irrad)
 
-# plot results of both monofacial and bifacial
+# plot results
 mc_bifi.results.ac.plot(title='Bifacial Simulation on June Solstice',
                         ylabel='AC Power')

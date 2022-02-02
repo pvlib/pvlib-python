@@ -5,7 +5,6 @@ from pandas.testing import assert_series_equal
 import pytest
 
 from pvlib import shading
-from pvlib.location import Location
 
 
 @pytest.fixture

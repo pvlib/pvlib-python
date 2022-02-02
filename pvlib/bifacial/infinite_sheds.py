@@ -70,7 +70,7 @@ References
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-from pvlib.tools import cosd, sind, tand
+from pvlib.tools import cosd, sind
 from pvlib.bifacial import utils
 from pvlib.shading import masking_angle
 from pvlib.irradiance import get_ground_diffuse, beam_component
@@ -447,7 +447,6 @@ def _poa_ground_pv(f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade):
         Ground diffuse irradiance on the row plane. [W/m^2]
     """
     return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
-
 
 
 def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,

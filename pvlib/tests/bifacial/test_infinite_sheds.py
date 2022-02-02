@@ -17,7 +17,6 @@ def test_system():
             'pitch': 2.,
             'surface_tilt': 30.,
             'surface_azimuth': 180.,
-            'axis_azimuth': None,
             'rotation': -30.}
     syst['gcr'] = 1.0 / syst['pitch']
     pts = np.linspace(0, 1, num=3)
@@ -58,7 +57,7 @@ def test__vf_ground_sky_integ(test_system):
     vf_integ = infinite_sheds._vf_ground_sky_integ(
         ts['surface_tilt'], ts['surface_azimuth'],
         ts['gcr'], ts['height'], ts['pitch'],
-        ts['axis_azimuth'], max_rows=1, npoints=3)
+        max_rows=1, npoints=3)
     expected_vf_integ = np.trapz(vfs_gnd_sky, pts)
     assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
 

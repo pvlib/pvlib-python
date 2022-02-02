@@ -8,7 +8,8 @@ comprises parallel, equally spaced rows (sheds) and calculates irradiance in
 the middle of a shed which is far from the front and back rows of the array.
 Sheds are assumed to be long enough that end-of-row effects can be
 neglected. Rows can be at fixed tilt or on single-axis trackers. The ground
-is assumed to be flat and level.
+is assumed to be horizontal and level, and the array is mounted at a fixed
+height above the ground.
 
 The infinite sheds model accounts for the following effects:
     - limited view from the row surfaces to the sky due to blocking of the
@@ -43,8 +44,6 @@ Array geometry is defined by the following:
     - height of row center above ground, ``height``.
     - tilt of the row from horizontal, ``surface_tilt``.
     - azimuth of the row's normal vector, ``surface_azimuth``.
-    - azimuth of the tracking axis, ``axis_azimuth``, when the array is on
-      single axis trackers.
 View factors from the ground to the sky are calculated at points spaced along
 a one-dimensional axis on the ground, with the origin under the center of a
 row and the positive direction toward the right. The positive direction is
@@ -70,33 +69,31 @@ References
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-from pvlib.tools import cosd, sind
+from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial import utils
 from pvlib.shading import masking_angle
 from pvlib.irradiance import get_ground_diffuse, beam_component
 
 
-def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
+def _tilt_to_rotation(surface_tilt, surface_azimuth):
     """
     Convert surface tilt to rotation angle.
 
-    Surface tilt angles are positive by definition. A positive rotation
-    angle is counterclockwise in a right hand coordinate system with the
-    axis of rotation positive in the direction of axis_azimuth. A positive
+    Surface tilt angles are positive by definition. The axis of rotation is
+    assumed to be parallel to the ground at 90 degrees clockwise from
+    surface_azimuth. A positive rotation about the axis of rotation angle is
+    counterclockwise around that axis, using a right-hand rule. A positive
     rotation elevates the left (bottom) edge of the row.
 
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        Surface tilt in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees east of north
+        Surface azimuth in decimal degrees east of north
         (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
         be >=0 and <=360.
-    axis_azimuth : float or None, default None
-        The azimuth of the axis of rotation. Decimal degrees east of north.
-        For fixed tilt, set axis_azimuth = None.
 
     Returns
     -------
@@ -107,19 +104,17 @@ def _tilt_to_rotation(surface_tilt, surface_azimuth, axis_azimuth=None):
     -----
     Based on pvfactors.geometry.base._get_rotation_from_tilt_azimuth
     """
-    if axis_azimuth is None:
-        # Assume fixed tilt. Place axis_azimuth 90 degrees clockwise
-        # from surface_azimuth so that tilt becomes a negative rotation
-        # (lowers right/bottom edge)
-        axis_azimuth = ((surface_azimuth + 90.) + 360) % 360
-    # Calculate rotation of PV row (signed tilt angle)
+    # Define axis_azimuth to be 90 degrees clockwise from surface_azimuth
+    axis_azimuth = (surface_azimuth + 90.) % 360
+    # Determine sign of rotation, so that positive rotation faces surface
+    # toward the right
     is_pointing_right = ((surface_azimuth - axis_azimuth) % 360.) < 180.
     rotation = np.where(is_pointing_right, surface_tilt, -surface_tilt)
     return rotation
 
 
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
-                         pitch, axis_azimuth=None, max_rows=10, npoints=100):
+                         pitch, max_rows=10, npoints=100):
     """
     Integrated and per-point view factors from the ground to the sky at points
     between interior rows of the array.
@@ -140,10 +135,7 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
         same units as ``pitch``.
     pitch : float
         Distance between two rows. Must be in the same units as ``height``.
-    axis_azimuth : numeric, default None
-        The compass direction of the axis of rotation lies for a single-axis
-        tracking system. Decimal degrees east of north.
-    max_rows : int, default 5
+    max_rows : int, default 10
         Maximum number of rows to consider in front and behind the current row.
     npoints : int, default 100
         Number of points used to discretize distance along the ground.
@@ -162,7 +154,7 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
     """
     z = np.linspace(0, 1, npoints)
     rotation = np.atleast_1d(_tilt_to_rotation(
-        surface_tilt, surface_azimuth, axis_azimuth))
+        surface_tilt, surface_azimuth))
     # calculate the view factor from the ground to the sky. Accounts for
     # views between rows both towards the array front, and array back
     # TODO: vectorize over rotation
@@ -405,7 +397,7 @@ def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):
     # handle Series inputs
     surface_tilt = np.array(surface_tilt)
     # shaded portion of row slant height
-    x = np.linspace(0 * f_x, f_x, num=npoints)
+    x = np.linspace(0, f_x, num=npoints)
     # view factor from the point on the row to the ground
     y = _vf_row_ground(x, surface_tilt, gcr)
     # integrate view factors along the shaded portion of the row slant height.
@@ -453,7 +445,7 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
                      surface_azimuth, gcr):
     """
     Calculate fraction (from the bottom) of row slant height that is shaded
-    by the row in front toward the sun.
+    from direct irradiance by the row in front toward the sun.
 
     See [1], Eq. 14 and also [2], Eq. 32.
 
@@ -479,20 +471,12 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
     gcr : numeric
         Ground coverage ratio, which is the ratio of row slant length to row
         spacing (pitch). [unitless]
-    cross_axis_tilt : float, default 0.0
-        The angle, relative to horizontal, of the line formed by the
-        intersection between the slope containing the tracker axes and a plane
-        perpendicular to the tracker axes. Cross-axis tilt should be specified
-        using a right-handed convention. For example, trackers with axis
-        azimuth of 180 degrees (heading south) will have a negative cross-axis
-        tilt if the tracker axes plane slopes down to the east and positive
-        cross-axis tilt if the tracker axes plane slopes up to the east. Use
-        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
-        `cross_axis_tilt`. [degrees]
+
     Returns
     -------
     f_x : numeric
-        Fraction of row slant height shaded from the bottom.
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance.
 
     References
     ----------
@@ -508,15 +492,18 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
         solar_zenith, solar_azimuth, surface_azimuth)
     # length of shadow behind a row as a fraction of pitch
     x = gcr * (sind(surface_tilt) * tan_phi + cosd(surface_tilt))
-    f_x = 1 - 1. / (gcr * x)  # []
-    # condition for shadow to fall on row surface
+    f_x = 1 - 1. / x
+    # shadow is long enough to fall on row surface if x > 1
     f_x = np.where(x > 1., f_x, 0.)
+    # when tan_phi < 0, then either sun is behind the array or below the
+    # horizon. Shaded fraction is 1 in these cases
+    f_x = np.where(tan_phi > 0, f_x, 1.)
     return f_x
 
 
 def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                        solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
-                       albedo, iam=1.0, axis_azimuth=None, npoints=100):
+                       albedo, iam=1.0, npoints=100):
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
@@ -576,10 +563,6 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         Incidence angle modifier, the fraction of direct irradiance incident
         on the surface that is not reflected away. [unitless]
 
-    axis_azimuth : numeric, default None
-        The compass direction of the axis of rotation lies for a single-axis
-        tracking system. Decimal degrees east of north.
-
     npoints : int, default 100
         Number of points used to discretize distance along the ground.
 
@@ -616,9 +599,9 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     """
     # Calculate some geometric quantities
     # rows to consider in front and behind current row
-    # ensures that for a horizontal tilt, cos(right) - cos(left) < 0.01
-    # at max_rows in front
-    max_rows = int(100 * gcr)
+    # ensures that view factors to the sky are computed to within 5 degrees
+    # of the horizon
+    max_rows = np.ceil(height / (pitch * tand(5)))
     # fraction of ground between rows that is illuminated accounting for
     # shade from panels. [1], Eq. 4
     f_gnd_beam = utils._unshaded_ground_fraction(
@@ -628,9 +611,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
     # center rather than at row lower edge as in [1].
     vf_gnd_sky = _vf_ground_sky_integ(
-        surface_tilt, surface_azimuth, gcr, height, pitch, axis_azimuth,
-        max_rows, npoints)
-    # fraction of row slant height that is shaded
+        surface_tilt, surface_azimuth, gcr, height, pitch, max_rows, npoints)
+    # fraction of row slant height that is shaded from direct irradiance
     f_x = _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
                            surface_azimuth, gcr)
 
@@ -692,7 +674,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
 
 def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
-                   albedo, axis_azimuth=None, iam_front=1.0, iam_back=1.0,
+                   albedo, iam_front=1.0, iam_back=1.0,
                    bifaciality=0.8, shade_factor=-0.02,
                    transmission_factor=0, npoints=100):
     """
@@ -754,10 +736,6 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     albedo : numeric
         Surface albedo. [unitless]
 
-    axis_azimuth : numeric, default None
-        The compass direction of the axis of rotation lies for a single-axis
-        tracking system. Decimal degrees east of north.
-
     iam_front : numeric, default 1.0
         Incidence angle modifier, the fraction of direct irradiance incident
         on the front surface that is not reflected away. [unitless]
@@ -816,14 +794,16 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     backside_tilt, backside_sysaz = _backside(surface_tilt, surface_azimuth)
     # front side POA irradiance
     irrad_front = get_irradiance_poa(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-        gcr, height, pitch, ghi, dhi, dni, albedo, axis_azimuth,
-        iam_front, npoints)
+        surface_tilt=surface_tilt, surface_azimuth=surface_azimuth,
+        solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
+        gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
+        albedo=albedo, iam=iam_front, npoints=npoints)
     # back side POA irradiance
     irrad_back = get_irradiance_poa(
-        backside_tilt, backside_sysaz, solar_zenith, solar_azimuth,
-        gcr, height, pitch, ghi, dhi, dni, albedo, axis_azimuth,
-        iam_back, npoints)
+        surface_tilt=backside_tilt, surface_azimuth=backside_sysaz,
+        solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
+        gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
+        albedo=albedo, iam=iam_back, npoints=npoints)
 
     colmap_front = {
         'poa_global': 'poa_front',

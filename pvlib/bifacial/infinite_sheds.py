@@ -116,11 +116,11 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
     """
     # TODO: vectorize over surface_tilt
     # Abuse utils._vf_ground_sky_2d by supplying surface_tilt in place
-    # of a signed rotation. This is OK because 
+    # of a signed rotation. This is OK because
     # 1) z span the full distance between 2 rows, and
     # 2) max_rows is set to be large upstream, and
     # 3) _vf_ground_sky_2d considers [-max_rows, +max_rows]
-    # The VFs to the sky will thus be symmetric around z=0.5 
+    # The VFs to the sky will thus be symmetric around z=0.5
     z = np.linspace(0, 1, npoints)
     rotation = np.atleast_1d(surface_tilt)
     fz_sky = np.zeros((len(rotation), npoints))

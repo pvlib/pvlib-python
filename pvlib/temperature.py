@@ -865,6 +865,10 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     This smoothing model was developed and validated using the SAPM
     cell temperature model for the steady-state input.
 
+    At the beginning of the series where a full 20 minute window is not
+    possible, "partial" windows including whatever values are available
+    is used instead.
+
     References
     ----------
     .. [1] M. Prilliman, J. S. Stein, D. Riley and G. Tamizhmani,
@@ -873,27 +877,42 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
        :doi:`10.1109/JPHOTOV.2020.2992351`
     """
 
-    time_step, window = _get_sample_intervals(temp_cell.index, 20)
+    # `sample_interval` in minutes:
+    sample_interval, samples_per_window = \
+        _get_sample_intervals(times=temp_cell.index, win_length=20)
 
-    if time_step >= 20:
+    if sample_interval >= 20:
         warnings.warn("temperature.prilliman only applies smoothing when "
                       "the sampling interval is shorter than 20 minutes "
-                      f"(input sampling interval: {time_step} minutes)")
+                      f"(input sampling interval: {sample_interval} minutes)")
         # too coarsely sampled for smoothing to be relevant
         return temp_cell
 
-    window = min(window,          # time series > 20 minutes total
-                 len(temp_cell))  # time series < 20 minutes total
+    # handle cases where the time series is shorter than 20 minutes total
+    samples_per_window = min(samples_per_window, len(temp_cell))
 
     # prefix with NaNs so that the rolling window is "full",
     # even for the first actual value:
-    prefix = np.full(window, np.nan)
+    prefix = np.full(samples_per_window, np.nan)
     temp_cell_prefixed = np.append(prefix, temp_cell.values)
 
-    # get one row per 20-minute window
-    H = scipy.linalg.hankel(np.arange(window),
-                            np.arange(window - 1, len(temp_cell_prefixed)))
+    # generate matrix of integers for creating windows with indexing
+    H = scipy.linalg.hankel(np.arange(samples_per_window),
+                            np.arange(samples_per_window - 1,
+                                      len(temp_cell_prefixed)))
+    # each row of `subsets` is the values in one window
     subsets = temp_cell_prefixed[H].T
+
+    # `subsets` now looks like this (for 5-minute data, so 4 samples/window)
+    # where "1." is a stand-in for the actual temperature values
+    # [[nan, nan, nan, nan],
+    #  [nan, nan, nan,  1.],
+    #  [nan, nan,  1.,  1.],
+    #  [nan,  1.,  1.,  1.],
+    #  [ 1.,  1.,  1.,  1.],
+    #  [ 1.,  1.,  1.,  1.],
+    #  [ 1.,  1.,  1.,  1.],
+    #  ...
 
     # calculate weights for the values in each window
     if coefficients is not None:
@@ -904,19 +923,47 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
     wind_speed = wind_speed.values
     p = a[0] + a[1]*wind_speed + a[2]*unit_mass + a[3]*wind_speed*unit_mass
-    timedeltas = np.arange(window, 0, -1) * (time_step*60)  # min to s
+    # calculate the time lag for each sample in the window, paying attention
+    # to units (seconds for `timedeltas`, minutes for `sample_interval`)
+    timedeltas = np.arange(samples_per_window, 0, -1) * sample_interval * 60
     weights = np.exp(-p[:, np.newaxis] * timedeltas)
 
     # set weights corresponding to the prefix values to zero; otherwise the
-    # denominator of the weighted average below would be wrong
-    mask_idx = np.triu_indices(window)
+    # denominator of the weighted average below would be wrong.
+
+    # The following arcane magic turns `weights` from something like this
+    # (using 5-minute inputs, so 4 samples per window -> 4 values per row):
+    # [[0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972]]
+    #  ...
+
+    # to this:
+    # [[0.    , 0.    , 0.    , 0.    ],
+    #  [0.    , 0.    , 0.    , 0.4972],
+    #  [0.    , 0.    , 0.2472, 0.4972],
+    #  [0.    , 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972]]
+    #  ...
+
+    # note that the triangle of zeros here corresponds to nans in `subsets`.
+    # it is a bit opaque, but it is fast!
+    mask_idx = np.triu_indices(samples_per_window)
     np.fliplr(weights)[mask_idx] = 0
 
     # change the first row of weights from zero to nan -- this is a
     # trick to prevent div by zero warning when dividing by summed weights
     weights[0, :] = np.nan
 
-    # finally, take the weighted average of each window
+    # finally, take the weighted average of each window:
+    # use np.nansum for numerator to ignore nans in input temperature, but
+    # np.sum for denominator to propagate nans in input wind speed.
     numerator = np.nansum(subsets[:-1] * weights, axis=1)
     denominator = np.sum(weights, axis=1)
     smoothed = numerator / denominator

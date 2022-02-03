@@ -843,10 +843,10 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
     Parameters
     ----------
-    temp_cell : pandas Series with DatetimeIndex
+    temp_cell : pandas.Series with DatetimeIndex
         Cell temperature modeled with steady-state assumptions. [C]
 
-    wind_speed : pandas Series
+    wind_speed : pandas.Series
         Wind speed, adjusted to correspond to array height [m/s]
 
     unit_mass : float, default 11.1
@@ -857,7 +857,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
     Returns
     -------
-    temp_cell : pandas Series
+    temp_cell : pandas.Series
         Smoothed version of the input cell temperature [C]
 
     Notes
@@ -903,9 +903,9 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
         a = [0.0046, 0.00046, -0.00023, -1.6e-5]
 
     wind_speed = wind_speed.values
-    P = a[0] + a[1]*wind_speed + a[2]*unit_mass + a[3]*wind_speed*unit_mass
+    p = a[0] + a[1]*wind_speed + a[2]*unit_mass + a[3]*wind_speed*unit_mass
     timedeltas = np.arange(window, 0, -1) * (time_step*60)  # min to s
-    weights = np.exp(-P[:, np.newaxis] * timedeltas)
+    weights = np.exp(-p[:, np.newaxis] * timedeltas)
 
     # set weights corresponding to the prefix values to zero; otherwise the
     # denominator of the weighted average below would be wrong

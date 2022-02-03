@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from pvlib.tools import sind
 from pvlib._deprecation import warn_deprecated
-from pvlib.clearsky import _get_sample_intervals
+from pvlib.tools import _get_sample_intervals
 import scipy
 import warnings
 

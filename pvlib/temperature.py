@@ -904,7 +904,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
     wind_speed = wind_speed.values
     P = a[0] + a[1]*wind_speed + a[2]*unit_mass + a[3]*wind_speed*unit_mass
-    timedeltas = np.arange(window, 0, -1) * (time_step*60)  # s to min
+    timedeltas = np.arange(window, 0, -1) * (time_step*60)  # min to s
     weights = np.exp(-P[:, np.newaxis] * timedeltas)
 
     # set weights corresponding to the prefix values to zero; otherwise the

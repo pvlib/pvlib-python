@@ -81,7 +81,6 @@ irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
 # turn into pandas DataFrame
 irrad = pd.concat(irrad, axis=1)
 
-# define bifaciality coefficient (specific to module type being used)
 # create bifacial effective irradiance using aoi-corrected timeseries values
 irrad['effective_irradiance'] = (
     irrad['total_abs_front'] + (irrad['total_abs_back'] * bifaciality)

@@ -72,7 +72,7 @@ import pandas as pd
 from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial import utils
 from pvlib.shading import masking_angle
-from pvlib.irradiance import get_ground_diffuse, beam_component
+from pvlib.irradiance import get_ground_diffuse, beam_component, aoi
 
 
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
@@ -458,11 +458,11 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
     # length of shadow behind a row as a fraction of pitch
     x = gcr * (sind(surface_tilt) * tan_phi + cosd(surface_tilt))
     f_x = 1 - 1. / x
-    # shadow is long enough to fall on row surface if x > 1
+    # set f_x to be 1 when sun is behind the array
+    ao = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
+    f_x = np.where(ao < 90, f_x, 1.)
+    # when x < 1, the shadow is not long enough to fall on the row surface
     f_x = np.where(x > 1., f_x, 0.)
-    # when tan_phi < 0, then either sun is behind the array or below the
-    # horizon. Shaded fraction is assigned to be 1 in these cases
-    f_x = np.where(tan_phi >= 0, f_x, 1.)
     return f_x
 
 
@@ -546,9 +546,9 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     - ``poa_global`` : total POA irradiance. [W/m^2]
     - ``poa_diffuse`` : total diffuse POA irradiance from all sources. [W/m^2]
     - ``poa_direct`` : total direct POA irradiance. [W/m^2]
-    - ``poa_diffuse_sky`` : total sky diffuse irradiance on the plane of array.
+    - ``poa_sky_diffuse`` : total sky diffuse irradiance on the plane of array.
       [W/m^2]
-    - ``poa_diffuse_ground`` : total ground-reflected diffuse irradiance on the
+    - ``poa_ground_diffuse`` : total ground-reflected diffuse irradiance on the
       plane of array. [W/m^2]
 
     References
@@ -772,13 +772,17 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     colmap_front = {
         'poa_global': 'poa_front',
-        'poa_diffuse': 'poa_front_diffuse',
         'poa_direct': 'poa_front_direct',
+        'poa_diffuse': 'poa_front_diffuse',
+        'poa_sky_diffuse': 'poa_front_sky_diffuse',
+        'poa_ground_diffuse': 'poa_front_ground_diffuse',
     }
     colmap_back = {
         'poa_global': 'poa_back',
-        'poa_diffuse': 'poa_back_diffuse',
         'poa_direct': 'poa_back_direct',
+        'poa_diffuse': 'poa_back_diffuse',
+        'poa_sky_diffuse': 'poa_back_sky_diffuse',
+        'poa_ground_diffuse': 'poa_back_ground_diffuse',
     }
 
     if isinstance(ghi, pd.Series):

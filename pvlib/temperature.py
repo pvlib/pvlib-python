@@ -865,9 +865,9 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     This smoothing model was developed and validated using the SAPM
     cell temperature model for the steady-state input.
 
-    At the beginning of the series where a full 20 minute window is not
-    possible, "partial" windows including whatever values are available
-    is used instead.
+    Smoothing is done using the 20 minute window behind each temperature
+    value. At the beginning of the series where a full 20 minute window is not
+    possible, partial windows are used instead.
 
     References
     ----------

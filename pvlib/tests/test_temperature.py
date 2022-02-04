@@ -335,7 +335,8 @@ def test_prilliman_coarse():
     wind_speed = pd.Series([0, 1, 2])
     msg = re.escape("temperature.prilliman only applies smoothing when the "
                     "sampling interval is shorter than 20 minutes (input "
-                    "sampling interval: 30.0 minutes)")
+                    "sampling interval: 30.0 minutes); returning "
+                    "input temperature series unchanged")
     with pytest.warns(UserWarning, match=msg):
         actual = temperature.prilliman(cell_temperature, wind_speed)
     assert_series_equal(cell_temperature, actual)

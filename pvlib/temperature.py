@@ -858,7 +858,8 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     Returns
     -------
     temp_cell : pandas.Series
-        Smoothed version of the input cell temperature [C]
+        Smoothed version of the input cell temperature. Input temperature
+        with sampling interval >= 20 minutes is returned unchanged. [C]
 
     Notes
     -----
@@ -888,7 +889,8 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     if sample_interval >= 20:
         warnings.warn("temperature.prilliman only applies smoothing when "
                       "the sampling interval is shorter than 20 minutes "
-                      f"(input sampling interval: {sample_interval} minutes)")
+                      f"(input sampling interval: {sample_interval} minutes);"
+                      " returning input temperature series unchanged")
         # too coarsely sampled for smoothing to be relevant
         return temp_cell
 

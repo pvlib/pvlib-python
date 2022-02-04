@@ -869,6 +869,10 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     value. At the beginning of the series where a full 20 minute window is not
     possible, partial windows are used instead.
 
+    Output ``temp_cell[k]`` is NaN when input ``wind_speed[k]`` is NaN, or
+    when no non-NaN data are in the input temperature for the 20 minute window
+    preceding index ``k``.
+
     References
     ----------
     .. [1] M. Prilliman, J. S. Stein, D. Riley and G. Tamizhmani,

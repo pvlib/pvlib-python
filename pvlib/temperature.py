@@ -899,7 +899,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     # generate matrix of integers for creating windows with indexing
     H = scipy.linalg.hankel(np.arange(samples_per_window),
                             np.arange(samples_per_window - 1,
-                                      len(temp_cell_prefixed)))
+                                      len(temp_cell_prefixed) - 1))
     # each row of `subsets` is the values in one window
     subsets = temp_cell_prefixed[H].T
 
@@ -928,10 +928,12 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     timedeltas = np.arange(samples_per_window, 0, -1) * sample_interval * 60
     weights = np.exp(-p[:, np.newaxis] * timedeltas)
 
-    # set weights corresponding to the prefix values to zero; otherwise the
+    # Set weights corresponding to the prefix values to zero; otherwise the
     # denominator of the weighted average below would be wrong.
+    # Weights corresponding to (non-prefix) NaN values must be zero too
+    # for the same reason.
 
-    # The following arcane magic turns `weights` from something like this
+    # Right now `weights` is something like this
     # (using 5-minute inputs, so 4 samples per window -> 4 values per row):
     # [[0.0611, 0.1229, 0.2472, 0.4972],
     #  [0.0611, 0.1229, 0.2472, 0.4972],
@@ -939,23 +941,22 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     #  [0.0611, 0.1229, 0.2472, 0.4972],
     #  [0.0611, 0.1229, 0.2472, 0.4972],
     #  [0.0611, 0.1229, 0.2472, 0.4972],
-    #  [0.0611, 0.1229, 0.2472, 0.4972]]
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
     #  ...
 
-    # to this:
+    # After the next line, the NaNs in `subsets` will be zeros in `weights`,
+    # like this (with more zeros for any NaNs in the input temperature):
+
     # [[0.    , 0.    , 0.    , 0.    ],
     #  [0.    , 0.    , 0.    , 0.4972],
     #  [0.    , 0.    , 0.2472, 0.4972],
     #  [0.    , 0.1229, 0.2472, 0.4972],
     #  [0.0611, 0.1229, 0.2472, 0.4972],
     #  [0.0611, 0.1229, 0.2472, 0.4972],
-    #  [0.0611, 0.1229, 0.2472, 0.4972]]
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
     #  ...
 
-    # note that the triangle of zeros here corresponds to nans in `subsets`.
-    # it is a bit opaque, but it is fast!
-    mask_idx = np.triu_indices(samples_per_window)
-    np.fliplr(weights)[mask_idx] = 0
+    weights[np.isnan(subsets)] = 0
 
     # change the first row of weights from zero to nan -- this is a
     # trick to prevent div by zero warning when dividing by summed weights
@@ -964,7 +965,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     # finally, take the weighted average of each window:
     # use np.nansum for numerator to ignore nans in input temperature, but
     # np.sum for denominator to propagate nans in input wind speed.
-    numerator = np.nansum(subsets[:-1] * weights, axis=1)
+    numerator = np.nansum(subsets * weights, axis=1)
     denominator = np.sum(weights, axis=1)
     smoothed = numerator / denominator
     smoothed[0] = temp_cell.values[0]

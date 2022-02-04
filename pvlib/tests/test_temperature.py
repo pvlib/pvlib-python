@@ -351,3 +351,14 @@ def test_prilliman_nans():
     expected = pd.Series([True, True, True, True, True, True, False, True],
                          index=times)
     assert_series_equal(actual.notnull(), expected)
+
+    # check that nan temperatures do not mess up the weighted average;
+    # the original implementation did not set weight=0 for nan values,
+    # so the numerator of the weighted average ignored nans but the
+    # denominator (total weight) still included the weight for the nan.
+    cell_temperature = pd.Series([1, 1, 1, 1, 1, np.nan, 1, 1], index=times)
+    wind_speed = pd.Series(1, index=times)
+    actual = temperature.prilliman(cell_temperature, wind_speed)
+    # original implementation would return some values < 1 here
+    expected = pd.Series(1., index=times)
+    assert_series_equal(actual, expected)

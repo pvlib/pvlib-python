@@ -248,8 +248,8 @@ def horizon_map(dem_pixel, elevation, dem_res=30.0,
         Point on the DEM expressed in pixel coordinates
     elevation : np.array
         nxn DEM of elevation values
-    dem_res : float
-        Resolution of the DEM. The default is SRTM 30m
+    dem_res : float, default 30
+        Resolution of the DEM. The default is SRTM's 30m. [m]
     view_distance : int
         Radius of the area of consideration.
     az_len : int, default 360

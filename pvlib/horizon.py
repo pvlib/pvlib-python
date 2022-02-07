@@ -120,7 +120,7 @@ def _bresenham_circ(r, center=(0, 0)):
 
     Parameters
     ----------
-    r : numeric
+    r : float
         Radius of the circle
     center: tuple
         Center of the point (Cartesian)

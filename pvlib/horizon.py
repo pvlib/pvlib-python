@@ -8,8 +8,8 @@ from scipy.signal import resample
 
 
 def latlong(ds):
-    r'''From a gdal dataset, retrive the geotransform
-    and return an latitude and longitude coordinates
+    r'''From a gdal dataset, retrieve the geotransform
+    and return latitude and longitude coordinates
     for a DEM GeoTiff.
 
     Parameters

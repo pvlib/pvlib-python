@@ -216,7 +216,7 @@ def _sort_circ(pts, center=(0, 0), az_len=360):
         Array of shape (n, 2) of points in Cartesian system
     center : tuple
         Center (x,y) of the circle rasterized by pts
-    az_len : numeric
+    az_len : int, default 360
         Desired number of points in the rasterized circle.
 
     Returns

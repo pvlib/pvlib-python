@@ -311,7 +311,10 @@ def horizon_map(dem_pixel, elevation, dem_res=30.0,
         high_x, high_y = tuple(highest_point)
 
         # convert from altitude in m to elevation degrees.
-        xdist = np.abs(highest_point[0]-x0)
+        #xdist = np.abs(highest_point[0]-x0)
+        x1, y1 = highest_point[0], highest_point[1]
+        abs_dist = np.array([x1, y1]) - np.array([x0, y0])
+        xdist = np.linalg.norm(abs_dist) * np.sqrt(dem_res)
         ydist = highest_elv - elevation[y0][x0]
         elv_ang = np.arctan2(ydist, xdist)
         elevation_angles[az] = np.rad2deg(elv_ang)

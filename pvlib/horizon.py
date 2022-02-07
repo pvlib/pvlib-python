@@ -45,6 +45,7 @@ def load_DEM(filepath):
     ----------
     filepath : string
         Absolute or relative path to the .hgt file
+
     Returns
     -------
     elevation : np.array

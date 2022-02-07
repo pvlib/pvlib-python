@@ -236,8 +236,8 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
     A similar method is used in section II of [1] although it is looking at
     both ground and sky diffuse irradiation.
     [2] Wright D. (2019) IEEE Journal of Photovoltaics 9(2), 391-396
-    
-    This function was written by @JPalakapillyKWH 
+
+    This function was written by @JPalakapillyKWH
     in an uncompleted pvlib-python pull request #758.
     """
     if horizon_azimuths.shape[0] != horizon_angles.shape[0]:

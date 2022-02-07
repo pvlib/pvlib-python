@@ -2,8 +2,8 @@
 The 'horizon' module contains function definitions that
 retrive & calculate the surrounding horizon using DEM
 elevation data.
-Optional dependencies for this module include 
-gdal, osgeo, geoio, and scikit-image. 
+Optional dependencies for this module include
+gdal, osgeo, geoio, and scikit-image.
 '''
 import numpy as np
 from scipy.signal import resample

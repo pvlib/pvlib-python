@@ -680,7 +680,7 @@ def get_pvgis_horizon(latitude, longitude, proxies=None, url=URL):
     df : pd.DataFrame
         Pandas dataframe of the retrived horizon
     '''
-    res = requests.get(url +f'printhorizon?lat={latitude}&lon={longitude}',
+    res = requests.get(url + f'printhorizon?lat={ latitude }&lon={ longitude }',
                        proxies=proxies, verify=False)
     res.raise_for_status()
     string = str(io.BytesIO(res.content).read().decode('UTF-8'))

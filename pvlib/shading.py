@@ -225,7 +225,7 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
         horizontal irradiance (DHI) to get the incident irradiance from
         the sky that is adjusted for the horizon profile and the tilt of
         the plane.
-        
+
     Notes
     ------
     The dtf in this method is calculated by approximating the surface integral
@@ -237,7 +237,8 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
     both ground and sky diffuse irradiation.
     [2] Wright D. (2019) IEEE Journal of Photovoltaics 9(2), 391-396
     
-    This function was written by @JPalakapillyKWH in an uncompleted pvlib-python pull request #758.
+    This function was written by @JPalakapillyKWH 
+    in an uncompleted pvlib-python pull request #758.
     """
     if horizon_azimuths.shape[0] != horizon_angles.shape[0]:
         raise ValueError('azimuths and elevation_angles must be of the same'
@@ -292,10 +293,11 @@ def collection_plane_elev_angle(surface_tilt, surface_azimuth, direction):
         when looking in the specified direction. Given in degrees above the
         horizontal and limited to be non-negative.
     [1] doi.org/10.1016/j.solener.2014.09.037
-    
+
     Notes
     ------
-    This function was written by @JPalakapillyKWH in an uncompleted pvlib-python pull request #758.
+    This function was written by @JPalakapillyKWH
+    in an uncompleted pvlib-python pull request #758.
     """
     tilt = np.radians(surface_tilt)
     bearing = np.radians(direction - surface_azimuth - 180.0)
@@ -332,10 +334,11 @@ def dni_horizon_adjustment(horizon_angles, solar_zenith, solar_azimuth):
     adjustment : numeric
         A vector of binary values with the same shape as the inputted solar
         position values. 0 when the sun is below the horizon and 1 elsewhere.
-        
+
     Notes
     ------
-    This function was written by @JPalakapillyKWH in an uncompleted pvlib-python pull request #758.
+    This function was written by @JPalakapillyKWH
+    in an uncompleted pvlib-python pull request #758.
     '''
     adjustment = np.ones(solar_zenith.shape)
 

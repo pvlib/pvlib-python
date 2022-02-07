@@ -2,7 +2,8 @@
 The 'horizon' module contains function definitions that
 retrive & calculate the surrounding horizon using DEM
 elevation data.
-Optional dependencies for this module include gdal, osgeo, geoio, and scikit-image. 
+Optional dependencies for this module include 
+gdal, osgeo, geoio, and scikit-image. 
 '''
 import numpy as np
 from scipy.signal import resample
@@ -26,9 +27,9 @@ def latlong(ds):
 
     Notes
     ------
-    Latitude and longitude are in decimal degrees and negative longitude is west of the prime meridian. 
+    Latitude and longitude are in decimal degrees
+    and negative longitude is west of the prime meridian.
     '''
-    import gdal
     width = ds.RasterXSize
     height = ds.RasterYSize
     gt = ds.GetGeoTransform()
@@ -88,7 +89,7 @@ def get_pixel_coords(latitude, longitude, DEM_path):
     '''
     from geoio import GeoImage
     img = GeoImage(DEM_path)
-    return map(int, img.proj_to_raster(lon, lat))
+    return map(int, img.proj_to_raster(longitude, latitude))
 
 
 def _point_symmetry(x, y):

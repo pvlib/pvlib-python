@@ -89,6 +89,7 @@ def get_pixel_coords(lat, lon, DEM_path):
 
 def _point_symmetry(x, y):
     r"""Reflect a point 8 ways to form a circle.
+
     Parameters
     ----------
     x : numeric

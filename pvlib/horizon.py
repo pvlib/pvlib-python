@@ -250,8 +250,8 @@ def horizon_map(dem_pixel, elevation, dem_res=30.0,
         nxn DEM of elevation values
     dem_res : float, default 30
         Resolution of the DEM. The default is SRTM's 30m. [m]
-    view_distance : int
-        Radius of the area of consideration.
+    view_distance : float, default 500
+        Radius of the area of consideration. [m]
     az_len : int, default 360
         Number of samples on the perimeter of the circle.
 

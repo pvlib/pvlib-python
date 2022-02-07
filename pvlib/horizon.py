@@ -38,7 +38,7 @@ def latlong(ds):
 
 
 def load_DEM(filepath):
-    r'''Loads a DEM from a .hgt file, segements into the GeoTiff
+    r'''Loads a DEM from a .hgt file, segments into the GeoTiff
     (elevation) and corresponding latitude and longitude
 
     Parameters

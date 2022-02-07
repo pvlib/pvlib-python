@@ -207,7 +207,7 @@ def _sort_circ(pts, center=(0, 0), az_len=360):
     r'''Sort and resample points on a circle such that the zeroth element is
     due east and the points move around the circle counter clockwise.
     While in polar domain, resample points using FFT to
-    obtain desired number of bins,typically 360, for
+    obtain desired number of bins, typically 360, for
     degrees around the circle.
 
     Parameters

@@ -240,7 +240,7 @@ def _sort_circ(pts, center=(0, 0), az_len=360):
 
 def horizon_map(dem_pixel, elevation, dem_res=30.0,
                 view_distance=500, az_len=36):
-    r"""Finds the horizon at point on a dem in pixel coordinates dem_pixel
+    r"""Finds the horizon for the point ``dem_pixel``.
 
     Parameters
     ----------

@@ -194,7 +194,7 @@ def _cart2pol(x, y):
     r : np.array
         r values for the points
     theta: np.array
-        theta values for the points
+        theta values for the points. [radian]
 
     '''
 

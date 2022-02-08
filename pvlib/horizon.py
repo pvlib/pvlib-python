@@ -284,35 +284,35 @@ def horizon_map(dem_pixel, elevation, dem_res=30.0,
     elevation_angles = np.zeros(azimuth.shape)
     x_bound, y_bound = elevation.shape
     for az in range(az_len):
-        source_lon = pts[1][az]
-        source_lat = pts[0][az]
+        target_y = pts[1][az]
+        target_x = pts[0][az]
         # check for outmapping
         # for now, if out of the DEM, assign to the border
-        if source_lon >= y_bound:
-            source_lon = y_bound-1
-        elif source_lon <= 0:
-            source_lon = 0
-        if source_lat >= y_bound:
-            source_lat = y_bound-1
-        elif source_lat <= 0:
-            source_lat = 0
+        if target_y >= y_bound:
+            target_y = y_bound-1
+        elif target_y <= 0:
+            target_y = 0
+        if target_x >= y_bound:
+            target_x = y_bound-1
+        elif target_x <= 0:
+            target_x = 0
 
-        target_lon = int(y0)
-        target_lat = int(x0)
+        observer_pixel_y = int(y0)
+        observer_pixel_x = int(x0)
 
         # draw a line from observer to horizon and record points
-        rr, cc = line(source_lon, source_lat, target_lon, target_lat)
+        rr, cc = line(target_y, target_x, observer_pixel_y, observer_pixel_x)
 
         # get the highest elevation on the line
         elvs_on_line = elevation[rr, cc]
-        idx = np.stack((rr, cc), axis=-1)
+        points_on_line = np.stack((rr, cc), axis=-1)
         highest_elv = np.max(elvs_on_line)
         largest_ang = 0
-        for point in idx:
+        for point in points_on_line:
             y1, x1 = point
             # convert from altitude in m to elevation degrees.
             abs_dist = np.array([x1, y1]) - np.array([x0, y0])
-            xdist = np.linalg.norm(abs_dist) * np.sqrt(dem_res)
+            xdist = np.linalg.norm(abs_dist) * dem_res
             ydist = elevation[y1][x1] - elevation[y0][x0]
             elv_ang = np.arctan2(ydist, xdist)
             if elv_ang > largest_ang:

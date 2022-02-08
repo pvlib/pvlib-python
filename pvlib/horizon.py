@@ -309,7 +309,7 @@ def horizon_map(dem_pixel, elevation, dem_res=30.0,
         highest_elv = np.max(elvs_on_line)
         largest_ang = 0
         for point in idx:
-            y1,x1 = point
+            y1, x1 = point
             # convert from altitude in m to elevation degrees.
             abs_dist = np.array([x1, y1]) - np.array([x0, y0])
             xdist = np.linalg.norm(abs_dist) * np.sqrt(dem_res)

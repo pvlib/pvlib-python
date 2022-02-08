@@ -16,6 +16,8 @@ Enhancements
 ~~~~~~~~~~~~
 * Added `pvlib.bifacial.infinite_sheds`, containing a model for irradiance
   on front and back surfaces of bifacial arrays. (:pull:`717`)
+* Added :py:func:`pvlib.temperature.prilliman` for modeling cell temperature
+  at short time steps (:issue:`1081`, :pull:`1391`)
 
 Bug fixes
 ~~~~~~~~~

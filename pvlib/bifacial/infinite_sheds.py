@@ -72,7 +72,7 @@ import pandas as pd
 from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial import utils
 from pvlib.shading import masking_angle
-from pvlib.irradiance import get_ground_diffuse, beam_component, aoi
+from pvlib.irradiance import beam_component, aoi
 
 
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
@@ -663,7 +663,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     - restricted view of the sky from module surfaces due to the nearby rows.
     - restricted view of the ground from module surfaces due to nearby rows.
-    - restricted view of the sky from the ground due to rows. 
+    - restricted view of the sky from the ground due to rows.
     - shading of module surfaces by nearby rows.
     - shading of rear cells of a module by mounting structure and by
       module features.

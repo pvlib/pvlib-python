@@ -40,7 +40,6 @@ Shading
    shading.masking_angle
    shading.masking_angle_passias
    shading.sky_diffuse_passias
-   shading.shaded_fraction
 
 Spectrum
 --------

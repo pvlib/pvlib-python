@@ -302,3 +302,46 @@ def test_get_irradiance():
         [1000., 500., result_front['poa_global'][2] * (1 + 0.8 * 0.98),
          np.nan], index=ghi.index, name='poa_global')
     assert_series_equal(result['poa_global'], expected_poa_global)
+
+
+def test_get_irradiance_limiting_gcr():
+    # test confirms that irradiance on widely spaced rows is approximately
+    # the same as for a single row array
+    solar_zenith = 0.
+    solar_azimuth = 180.
+    surface_tilt = 90.
+    surface_azimuth = 180.
+    gcr = 0.00001
+    height = 1.
+    pitch = 100.
+    ghi = 1000.
+    dhi = 300.
+    dni = 700.
+    albedo = 1.
+    iam_front = 1.0
+    iam_back = 1.0
+    npoints = 100
+    result = infinite_sheds.get_irradiance(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
+        bifaciality=1., shade_factor=-0.00, transmission_factor=0.,
+        npoints=npoints)
+    expected_ground_diffuse = np.array([500.])
+    expected_sky_diffuse = np.array([150.])
+    expected_direct = np.array([0.])
+    expected_diffuse = expected_ground_diffuse + expected_sky_diffuse
+    expected_poa = expected_diffuse + expected_direct
+    assert np.isclose(result['poa_front'], expected_poa, rtol=0.01)
+    assert np.isclose(result['poa_front_diffuse'], expected_diffuse, rtol=0.01)
+    assert np.isclose(result['poa_front_direct'], expected_direct)
+    assert np.isclose(result['poa_front_sky_diffuse'], expected_sky_diffuse,
+                      rtol=0.01)
+    assert np.isclose(result['poa_front_ground_diffuse'],
+                      expected_ground_diffuse, rtol=0.01)
+    assert np.isclose(result['poa_front'], result['poa_back'])
+    assert np.isclose(result['poa_front_diffuse'], result['poa_back_diffuse'])
+    assert np.isclose(result['poa_front_direct'], result['poa_back_direct'])
+    assert np.isclose(result['poa_front_sky_diffuse'],
+                      result['poa_back_sky_diffuse'])
+    assert np.isclose(result['poa_front_ground_diffuse'],
+                      result['poa_back_ground_diffuse'])

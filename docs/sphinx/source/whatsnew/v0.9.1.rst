@@ -8,9 +8,14 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Moved :py:func:`pvlib.bifacial.pvfactors_timeseries` to
+ :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries`.
+ :py:module:`pvlib.bifacial` is now a sub-package. (:pull:`717`)
 
 Enhancements
 ~~~~~~~~~~~~
+* Added `pvlib.bifacial.infinite_sheds`, containing a model for irradiance
+  on front and back surfaces of bifacial arrays. (:pull:`717`)
 
 Bug fixes
 ~~~~~~~~~

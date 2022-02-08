@@ -380,7 +380,7 @@ def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):
     return vf_shade_ground_integ, vf_noshade_ground_integ
 
 
-def _poa_ground_pv(f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade):
+def _poa_ground_pv(f_x, poa_ground, f_gnd_pv_shade, f_gnd_pv_noshade):
     """
     Reduce ground-reflected irradiance to account for limited view of the
     ground from the row surface.
@@ -389,7 +389,7 @@ def _poa_ground_pv(f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade):
     ----------
     f_x : numeric
         Fraction of row slant height from the bottom that is shaded. [unitless]
-    poa_gnd_sky : numeric
+    poa_ground : numeric
         Ground-reflected irradiance that would reach the row surface if the
         full ground was visible. poa_gnd_sky accounts for limited view of the
         sky from the ground. [W/m^2]
@@ -403,7 +403,7 @@ def _poa_ground_pv(f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade):
     numeric
         Ground diffuse irradiance on the row plane. [W/m^2]
     """
-    return poa_gnd_sky * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
+    return poa_ground * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
 
 
 def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
@@ -597,27 +597,35 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     f_gnd_pv_shade, f_gnd_pv_noshade = _vf_row_ground_integ(
         f_x, surface_tilt, gcr, npoints)
 
-    # Calculate some preliminary irradiance quantities
-    # diffuse fraction
-    df = np.clip(dhi / ghi, 0., 1.)
-
-    # sky diffuse reflected from the ground to an array consisting of a single
-    # row
-    poa_ground = get_ground_diffuse(surface_tilt, ghi, albedo)
-
     # Total sky diffuse received by both shaded and unshaded portions
     poa_sky_pv = _poa_sky_diffuse_pv(
         f_x, dhi, vf_shade_sky, vf_noshade_sky)
 
+    # irradiance reflected from the ground before accounting for shadows
+    # and restricted views
+    # this is a deviation from [1], because the row to ground view factor
+    # is accounted for in a different manner
+    ground_diffuse = ghi * albedo
+
+    # diffuse fraction
+    diffuse_fraction = np.clip(dhi / ghi, 0., 1.)
+    # replace 0/0 to avoid casting nans forward
+    # diffuse_fraction[np.isnan(diffuse_fraction)] = 0.
+
     # Reduce ground-reflected irradiance because other rows in the array
     # block irradiance from reaching the ground.
     # [2], Eq. 9
-    poa_gnd_sky = _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky)
+    ground_diffuse = _poa_ground_shadows(
+        ground_diffuse, f_gnd_beam, diffuse_fraction, vf_gnd_sky)
 
-    # Further reduce ground-reflected irradiance because adjacent rows block
-    # the view to the ground.
+    # Ground-reflected irradiance on the row surface accounting for
+    # the view to the ground. This deviates from [1], Eq. 10, 11 and
+    # subsequent. Here, the row to ground view factor is computed. In [1],
+    # the usual ground-reflected irradiance includes the single row to ground
+    # view factor (1 - cos(tilt))/2, and Eq. 10, 11 and later multiply
+    # this quantity by a ratio of view factors.
     poa_gnd_pv = _poa_ground_pv(
-        f_x, poa_gnd_sky, f_gnd_pv_shade, f_gnd_pv_noshade)
+        f_x, ground_diffuse, f_gnd_pv_shade, f_gnd_pv_noshade)
 
     # add sky and ground-reflected irradiance on the row by irradiance
     # component
@@ -653,8 +661,9 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     The model accounts for the following effects:
 
-    - restricted views of the sky from module surfaces due to the nearby rows.
-    - restricted views of the ground from module surfaces due to nearby rows.
+    - restricted view of the sky from module surfaces due to the nearby rows.
+    - restricted view of the ground from module surfaces due to nearby rows.
+    - restricted view of the sky from the ground due to rows. 
     - shading of module surfaces by nearby rows.
     - shading of rear cells of a module by mounting structure and by
       module features.
@@ -720,8 +729,8 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     transmission_factor : numeric, default 0.0
         Fraction of irradiance on the back surface that does not reach the
-        module's cells due to module structures. A negative value is a
-        reduction in back irradiance. [unitless]
+        module's cells due to module features such as busbars, junction box,
+        etc. A negative value is a reduction in back irradiance. [unitless]
 
     npoints : int, default 100
         Number of points used to discretize distance along the ground.
@@ -743,6 +752,22 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
       surface. [W/m^2]
     - ``poa_back`` : total irradiance reaching the module cells from the front
       surface. [W/m^2]
+    - ``poa_front_direct`` : direct irradiance reaching the module cells from
+      the front surface. [W/m^2]
+    - ``poa_front_diffuse`` : total diffuse irradiance reaching the module
+      cells from the front surface. [W/m^2]
+    - ``poa_front_sky_diffuse`` : sky diffuse irradiance reaching the module
+      cells from the front surface. [W/m^2]
+    - ``poa_front_ground_diffuse`` : ground-reflected diffuse irradiance
+      reaching the module cells from the front surface. [W/m^2]
+    - ``poa_back_direct`` : direct irradiance reaching the module cells from
+      the back surface. [W/m^2]
+    - ``poa_back_diffuse`` : total diffuse irradiance reaching the module
+      cells from the back surface. [W/m^2]
+    - ``poa_back_sky_diffuse`` : sky diffuse irradiance reaching the module
+      cells from the back surface. [W/m^2]
+    - ``poa_back_ground_diffuse`` : ground-reflected diffuse irradiance
+      reaching the module cells from the back surface. [W/m^2]
 
     References
     ----------

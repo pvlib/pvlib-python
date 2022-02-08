@@ -609,8 +609,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
 
     # diffuse fraction
     diffuse_fraction = np.clip(dhi / ghi, 0., 1.)
-    # replace 0/0 to avoid casting nans forward
-    # diffuse_fraction[np.isnan(diffuse_fraction)] = 0.
+    # make diffuse fraction 0 when ghi is small
+    diffuse_fraction = np.where(ghi < 0.0001, 0., diffuse_fraction)
 
     # Reduce ground-reflected irradiance because other rows in the array
     # block irradiance from reaching the ground.

@@ -8,6 +8,8 @@ from numpy.testing import assert_allclose
 from pvlib import temperature, tools
 from pvlib._deprecation import pvlibDeprecationWarning
 
+import re
+
 
 @pytest.fixture
 def sapm_default():
@@ -293,3 +295,71 @@ def test_noct_sam_options():
 def test_noct_sam_errors():
     with pytest.raises(ValueError):
         temperature.noct_sam(1000., 25., 1., 34., 0.2, array_height=3)
+
+
+def test_prilliman():
+    # test against values calculated using pvl_MAmodel_2, see pvlib #1081
+    times = pd.date_range('2019-01-01', freq='5min', periods=8)
+    cell_temperature = pd.Series([0, 1, 3, 6, 10, 15, 21, 27], index=times)
+    wind_speed = pd.Series([0, 1, 2, 3, 2, 1, 2, 3])
+
+    # default coeffs
+    expected = pd.Series([0, 0, 0.7047457, 2.21176412, 4.45584299, 7.63635512,
+                          12.26808265, 18.00305776], index=times)
+    actual = temperature.prilliman(cell_temperature, wind_speed, unit_mass=10)
+    assert_series_equal(expected, actual)
+
+    # custom coeffs
+    coefficients = [0.0046, 4.5537e-4, -2.2586e-4, -1.5661e-5]
+    expected = pd.Series([0, 0, 0.70716941, 2.2199537, 4.47537694, 7.6676931,
+                          12.30423167, 18.04215198], index=times)
+    actual = temperature.prilliman(cell_temperature, wind_speed, unit_mass=10,
+                                   coefficients=coefficients)
+    assert_series_equal(expected, actual)
+
+    # even very short inputs < 20 minutes total still work
+    times = pd.date_range('2019-01-01', freq='1min', periods=8)
+    cell_temperature = pd.Series([0, 1, 3, 6, 10, 15, 21, 27], index=times)
+    wind_speed = pd.Series([0, 1, 2, 3, 2, 1, 2, 3])
+    expected = pd.Series([0, 0, 0.53557976, 1.49270094, 2.85940173,
+                          4.63914366, 7.09641845, 10.24899272], index=times)
+    actual = temperature.prilliman(cell_temperature, wind_speed, unit_mass=12)
+    assert_series_equal(expected, actual)
+
+
+def test_prilliman_coarse():
+    # if the input series time step is >= 20 min, input is returned unchanged,
+    # and a warning is emitted
+    times = pd.date_range('2019-01-01', freq='30min', periods=3)
+    cell_temperature = pd.Series([0, 1, 3], index=times)
+    wind_speed = pd.Series([0, 1, 2])
+    msg = re.escape("temperature.prilliman only applies smoothing when the "
+                    "sampling interval is shorter than 20 minutes (input "
+                    "sampling interval: 30.0 minutes); returning "
+                    "input temperature series unchanged")
+    with pytest.warns(UserWarning, match=msg):
+        actual = temperature.prilliman(cell_temperature, wind_speed)
+    assert_series_equal(cell_temperature, actual)
+
+
+def test_prilliman_nans():
+    # nans in inputs are handled appropriately; nans in input tcell
+    # are ignored but nans in wind speed cause nan in output
+    times = pd.date_range('2019-01-01', freq='1min', periods=8)
+    cell_temperature = pd.Series([0, 1, 3, 6, 10, np.nan, 21, 27], index=times)
+    wind_speed = pd.Series([0, 1, 2, 3, 2, 1, np.nan, 3])
+    actual = temperature.prilliman(cell_temperature, wind_speed)
+    expected = pd.Series([True, True, True, True, True, True, False, True],
+                         index=times)
+    assert_series_equal(actual.notnull(), expected)
+
+    # check that nan temperatures do not mess up the weighted average;
+    # the original implementation did not set weight=0 for nan values,
+    # so the numerator of the weighted average ignored nans but the
+    # denominator (total weight) still included the weight for the nan.
+    cell_temperature = pd.Series([1, 1, 1, 1, 1, np.nan, 1, 1], index=times)
+    wind_speed = pd.Series(1, index=times)
+    actual = temperature.prilliman(cell_temperature, wind_speed)
+    # original implementation would return some values < 1 here
+    expected = pd.Series(1., index=times)
+    assert_series_equal(actual, expected)

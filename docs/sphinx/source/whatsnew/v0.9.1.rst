@@ -11,6 +11,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added :py:func:`pvlib.temperature.prilliman` for modeling cell temperature
+  at short time steps (:issue:`1081`, :pull:`1391`)
 
 Bug fixes
 ~~~~~~~~~

@@ -344,3 +344,20 @@ def _golden_sect_DataFrame(params, VL, VH, func):
             raise Exception("EXCEPTION:iterations exceeded maximum (50)")
 
     return func(df, 'V1'), df['V1']
+
+
+def _get_sample_intervals(times, win_length):
+    """ Calculates time interval and samples per window for Reno-style clear
+    sky detection functions
+    """
+    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
+
+    # determine if we can proceed
+    if times.inferred_freq and len(np.unique(deltas)) == 1:
+        sample_interval = times[1] - times[0]
+        sample_interval = sample_interval.seconds / 60  # in minutes
+        samples_per_window = int(win_length / sample_interval)
+        return sample_interval, samples_per_window
+    else:
+        raise NotImplementedError('algorithm does not yet support unequal '
+                                  'times. consider resampling your data.')

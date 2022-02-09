@@ -21,6 +21,8 @@ from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
 
+from pvlib._deprecation import deprecated
+
 # keys that are used to detect input data and assign data to appropriate
 # ModelChain attribute
 # for ModelChain.weather
@@ -62,6 +64,10 @@ SAPM_CONFIG = dict(
 )
 
 
+@deprecated(since='0.9.1', name='pvlib.modelchain.basic_chain',
+    alternative='pvlib.modelchain.ModelChain.with_pvwatts',
+    addendum='Note that with_pvwatts takes different model parameters.'
+)
 def basic_chain(times, latitude, longitude,
                 surface_tilt, surface_azimuth,
                 module_parameters, temperature_model_parameters,

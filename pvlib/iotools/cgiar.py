@@ -1,9 +1,10 @@
 """
-Get, read, and parse data from `CGIAR GeoPortal <https://srtm.csi.cgiar.org/>`_.
+Get, read, and parse data from 
+`CGIAR GeoPortal <https://srtm.csi.cgiar.org/>`_.
 
 For more information, see the following links:
 * `FAQ <https://srtm.csi.cgiar.org/faq/>`_
-* `Interpolation Method <https://srtm.csi.cgiar.org/wp-content/uploads/files/Reuteretal2007.pdf>`_
+
 
 """
 import math
@@ -11,7 +12,8 @@ from zipfile import ZipFile
 import requests
 import io
 
-def _lat_lon_to_query(longitude, latitude, srtm_arc_sec = 3):
+
+def _lat_lon_to_query(longitude, latitude, srtm_arc_sec=3):
     r'''Converts latitude, longitude from the format used as
     input to the other functions to format used by CGIAR
     ----------
@@ -20,7 +22,8 @@ def _lat_lon_to_query(longitude, latitude, srtm_arc_sec = 3):
     latitude: numeric
         latitude value
     srtm_arc_sec: numeric {1,3}
-        The resolution (arc-seconds) of the desired DEM. Either 1 or 3
+        The resolution (arc-seconds) of the desired DEM.
+        Either 1 or 3
 
     Returns
     -------
@@ -37,19 +40,22 @@ def _lat_lon_to_query(longitude, latitude, srtm_arc_sec = 3):
         rounded_lon, rounded_lat = rounded
         return (rounded_lon + 180) // 5 + 1, (64 - rounded_lat) // 5
     else:
-        raise Execption("Please use SRTM 1 Arc Second or SRTM 3 Arc Second")
+        raise Exception("Please use SRTM 1 Arc Second or SRTM 3 Arc Second")
 
-        
-def download_SRTM(latitude, longitude, srtm_arc_sec=3, path_to_save="./", proxies=None):
+
+def download_SRTM(latitude, longitude, srtm_arc_sec=3, 
+                  path_to_save="./", proxies=None):
     r'''Downloads a SRTM DEM tile from CGIAR,
     saves it to a path, and loads it as an array
     ----------
     latitude: numeric
         latitude value to be included in the DEM
     longitude : numeric
-        longitude value to be included in the DEM, negative W of prime meridian
+        longitude value to be included in the DEM,
+        negative W of prime meridian
     srtm_arc_sec: numeric, {1,3}
-        The resolution (arc-seconds) of the desired DEM. Either 1 or 3
+        The resolution (arc-seconds) of the desired DEM.
+        Either 1 or 3
     path_to_save: string
         The base path to save the DEM as a .tif file
     proxies: dict

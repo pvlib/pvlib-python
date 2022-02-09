@@ -25,6 +25,10 @@ from pvlib import location
 from pvlib import modelchain
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS as PARAMS
 from pvlib import bifacial
+import warnings
+
+# supressing shapely warnings that occur on import of pvfactors
+warnings.filterwarnings(action='ignore', module='pvfactors')
 
 # create site location and times characteristics
 lat, lon = 36.084, -79.817
@@ -65,6 +69,8 @@ orientation = sat_mount.get_orientation(solar_position['apparent_zenith'],
                                         solar_position['azimuth'])
 
 # get rear and front side irradiance from pvfactors transposition engine
+# explicity simulate on pvarray with 3 rows, with sensor placed in middle row
+# users may select different values depending on needs
 irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
                                       solar_position['apparent_zenith'],
                                       orientation['surface_azimuth'],
@@ -76,7 +82,10 @@ irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
                                       gcr,
                                       pvrow_height,
                                       pvrow_width,
-                                      albedo)
+                                      albedo,
+                                      n_pvrows=3,
+                                      index_observed_pvrow=1
+                                      )
 
 # turn into pandas DataFrame
 irrad = pd.concat(irrad, axis=1)
@@ -99,7 +108,10 @@ array = pvsystem.Array(mount=sat_mount,
 system = pvsystem.PVSystem(arrays=[array],
                            inverter_parameters=cec_inverter)
 
-# create modelchain object for bifacial system and run bifacial simulation
+# ModelChain requires the parameter aoi_loss to have a value. pvfactors
+# applies surface reflection models in the calculation of front and back
+# irradiance, so assign aoi_model='no_loss' to avoid double counting
+# reflections. 
 mc_bifi = modelchain.ModelChain(system, site_location, aoi_model='no_loss')
 mc_bifi.run_model_from_effective_irradiance(irrad)
 

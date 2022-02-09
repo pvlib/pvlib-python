@@ -18,6 +18,10 @@ from pvlib import bifacial
 from pvlib import temperature
 from pvlib import pvsystem
 import matplotlib.pyplot as plt
+import warnings
+
+# supressing shapely warnings that occur on import of pvfactors
+warnings.filterwarnings(action='ignore', module='pvfactors')
 
 # using Greensboro, NC for this example
 lat, lon = 36.084, -79.817
@@ -43,11 +47,14 @@ orientation = tracking.singleaxis(solar_position['apparent_zenith'],
                                   )
 
 # set axis_azimuth, albedo, pvrow width and height, and use
-# the pvfactors  engine for both front and rear-side absorbed irradiance
+# the pvfactors engine for both front and rear-side absorbed irradiance
 axis_azimuth = 180
 pvrow_height = 3
 pvrow_width = 4
 albedo = 0.2
+
+# explicity simulate on pvarray with 3 rows, with sensor placed in middle row
+# users may select different values depending on needs
 irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
                                       solar_position['apparent_zenith'],
                                       orientation['surface_azimuth'],
@@ -59,24 +66,21 @@ irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
                                       gcr,
                                       pvrow_height,
                                       pvrow_width,
-                                      albedo
+                                      albedo,
+                                      n_pvrows=3,
+                                      index_observed_pvrow=1
                                       )
 
 # turn into pandas DataFrame
 irrad = pd.concat(irrad, axis=1)
 
-# using bifaciality factor and pvfactors results, create effective
-# irradiance data
+# using bifaciality factor and pvfactors results, create effective irradiance
 bifaciality = 0.75
 effective_irrad_bifi = irrad['total_abs_front'] + (irrad['total_abs_back']
                                                    * bifaciality)
 
-
 # get cell temperature using the Faiman model
-# it is worth noting that this example uses total frontside incident
-# irradiance, however, for bifacial modeling, total irradiance (inclusive of
-# front and rear side) may be needed.
-temp_cell = temperature.faiman(irrad['total_inc_front'], temp_air=25,
+temp_cell = temperature.faiman(effective_irrad_bifi, temp_air=25,
                                wind_speed=1)
 
 # using the pvwatts_dc model and parameters detailed above,

@@ -79,7 +79,7 @@ def download_SRTM(latitude, longitude, srtm_arc_sec=3,
     zipfile = ZipFile(io.BytesIO(res.content))
     ext = '.tif'
     files = zipfile.namelist()
-    file = [ f for f in files if ext in f ][0]
-    path= zipfile.extract(file, path=path_to_save)
+    file = [ f for f in files if ext in f][0]
+    path = zipfile.extract(file, path=path_to_save)
     img = skimage.io.imread(path)
     return img, path

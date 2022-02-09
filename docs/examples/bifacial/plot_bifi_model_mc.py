@@ -111,7 +111,7 @@ system = pvsystem.PVSystem(arrays=[array],
 # ModelChain requires the parameter aoi_loss to have a value. pvfactors
 # applies surface reflection models in the calculation of front and back
 # irradiance, so assign aoi_model='no_loss' to avoid double counting
-# reflections. 
+# reflections.
 mc_bifi = modelchain.ModelChain(system, site_location, aoi_model='no_loss')
 mc_bifi.run_model_from_effective_irradiance(irrad)
 

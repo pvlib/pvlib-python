@@ -8,6 +8,11 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* :py:func:`pvlib.modelchain.basic_chain` is deprecated.
+  See :py:meth:`pvlib.modelchain.ModelChain.with_pvwatts` for a simplified
+  :py:class:`~pvlib.modelchain.ModelChain` interface, although note that the
+  model parameters for :py:func:`~pvlib.modelchain.basic_chain` do not directly
+  translate. (:pull:`1401`)
 
 Enhancements
 ~~~~~~~~~~~~

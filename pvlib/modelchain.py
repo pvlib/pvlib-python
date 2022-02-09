@@ -64,7 +64,9 @@ SAPM_CONFIG = dict(
 )
 
 
-@deprecated(since='0.9.1', name='pvlib.modelchain.basic_chain',
+@deprecated(
+    since='0.9.1',
+    name='pvlib.modelchain.basic_chain',
     alternative='pvlib.modelchain.ModelChain.with_pvwatts',
     addendum='Note that with_pvwatts takes different model parameters.'
 )

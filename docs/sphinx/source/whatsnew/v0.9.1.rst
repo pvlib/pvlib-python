@@ -40,7 +40,7 @@ Documentation
 
 Requirements
 ~~~~~~~~~~~~
-* numpy >= 1.16.0 is now required for all python versions.
+* numpy >= 1.16.0 is now required for all python versions. (:pull:`1400`)
 
 
 Contributors

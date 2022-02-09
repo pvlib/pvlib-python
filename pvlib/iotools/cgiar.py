@@ -1,5 +1,5 @@
 """
-Get, read, and parse data from 
+Get, read, and parse data from
 `CGIAR GeoPortal <https://srtm.csi.cgiar.org/>`_.
 
 For more information, see the following links:
@@ -43,7 +43,7 @@ def _lat_lon_to_query(longitude, latitude, srtm_arc_sec=3):
         raise Exception("Please use SRTM 1 Arc Second or SRTM 3 Arc Second")
 
 
-def download_SRTM(latitude, longitude, srtm_arc_sec=3, 
+def download_SRTM(latitude, longitude, srtm_arc_sec=3,
                   path_to_save="./", proxies=None):
     r'''Downloads a SRTM DEM tile from CGIAR,
     saves it to a path, and loads it as an array
@@ -71,14 +71,15 @@ def download_SRTM(latitude, longitude, srtm_arc_sec=3,
     '''
     import skimage
     long, lat = _lat_lon_to_query(longitude, latitude, srtm_arc_sec)
-    base_url = 'https://srtm.csi.cgiar.org/wp-content/uploads/files/srtm_5x5/TIFF/'
+    org_url = 'https://srtm.csi.cgiar.org/'
+    base_url = org_url + 'wp-content/uploads/files/srtm_5x5/TIFF/'
     query_URL = base_url + f'srtm_{ long:02d }_{ lat:02d }.zip'
     res = requests.get(query_URL, proxies=proxies, verify=False)
     res.raise_for_status()
     zipfile = ZipFile(io.BytesIO(res.content))
     ext = '.tif'
     files = zipfile.namelist()
-    file = [f for f in files if ext in f][0]
+    file = [ f for f in files if ext in f ][0]
     path= zipfile.extract(file, path=path_to_save)
     img = skimage.io.imread(path)
     return img, path

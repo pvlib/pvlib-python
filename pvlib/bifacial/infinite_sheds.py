@@ -269,8 +269,6 @@ def _ground_angle(x, surface_tilt, gcr):
     -------
     psi : numeric
         Angle [degree].
-    tan_psi : numeric
-        Tangent of angle [unitless]
     """
     #  : \\            \
     #  :  \\            \

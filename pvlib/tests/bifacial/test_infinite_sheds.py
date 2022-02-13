@@ -160,21 +160,21 @@ def test__poa_ground_shadows():
     assert np.allclose(result, expected_vec)
 
 
-def test_shaded_fraction_floats():
+def test__shaded_fraction_floats():
     result = infinite_sheds._shaded_fraction(
-        solar_zenith=60., solar_azimuth=180., surface_tilt=60.,
+        apparent_zenith=60., azimuth=180., surface_tilt=60.,
         surface_azimuth=180., gcr=1.0)
     assert np.isclose(result, 0.5)
 
 
-def test_shaded_fraction_array():
-    solar_zenith = np.array([0., 60., 90., 60.])
-    solar_azimuth = np.array([180., 180., 180., 180.])
+def test__shaded_fraction_array():
+    apparent_zenith = np.array([0., 60., 90., 60.])
+    azimuth = np.array([180., 180., 180., 180.])
     surface_azimuth = np.array([180., 180., 180., 210.])
     surface_tilt = np.array([30., 60., 0., 30.])
     gcr = 1.0
     result = infinite_sheds._shaded_fraction(
-        solar_zenith, solar_azimuth, surface_tilt, surface_azimuth, gcr)
+        apparent_zenith, azimuth, surface_tilt, surface_azimuth, gcr)
     x = 0.75 + np.sqrt(3) / 2
     expected = np.array([0.0, 0.5, 0., (x - 1) / x])
     assert np.allclose(result, expected)
@@ -182,8 +182,8 @@ def test_shaded_fraction_array():
 
 def test_get_irradiance_poa():
     # singleton inputs
-    solar_zenith = 0.
-    solar_azimuth = 180.
+    apparent_zenith = 0.
+    azimuth = 180.
     surface_tilt = 0.
     surface_azimuth = 180.
     gcr = 0.5
@@ -196,7 +196,7 @@ def test_get_irradiance_poa():
     iam = 1.0
     npoints = 100
     res = infinite_sheds.get_irradiance_poa(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        surface_tilt, surface_azimuth, apparent_zenith, azimuth,
         gcr, height, pitch, ghi, dhi, dni,
         albedo, iam=iam, npoints=npoints)
     expected_diffuse = np.array([300.])
@@ -211,14 +211,14 @@ def test_get_irradiance_poa():
     surface_azimuth = np.array([180., 180., 180., 180.])
     gcr = 0.5
     pitch = 1
-    solar_zenith = np.array([0., 45., 45., 90.])
-    solar_azimuth = np.array([180., 180., 135., 180.])
+    apparent_zenith = np.array([0., 45., 45., 90.])
+    azimuth = np.array([180., 180., 135., 180.])
     expected_diffuse = np.array([300., 300., 300., 300.])
     expected_direct = np.array(
         [700., 350. * np.sqrt(2), 350. * np.sqrt(2), 0.])
     expected_global = expected_diffuse + expected_direct
     res = infinite_sheds.get_irradiance_poa(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        surface_tilt, surface_azimuth, apparent_zenith, azimuth,
         gcr, height, pitch, ghi, dhi, dni,
         albedo, iam=iam, npoints=npoints)
     assert np.allclose(res['poa_global'], expected_global)
@@ -227,8 +227,8 @@ def test_get_irradiance_poa():
     # series inputs
     surface_tilt = pd.Series(surface_tilt)
     surface_azimuth = pd.Series(data=surface_azimuth, index=surface_tilt.index)
-    solar_zenith = pd.Series(solar_zenith, index=surface_tilt.index)
-    solar_azimuth = pd.Series(data=solar_azimuth, index=surface_tilt.index)
+    apparent_zenith = pd.Series(apparent_zenith, index=surface_tilt.index)
+    azimuth = pd.Series(data=azimuth, index=surface_tilt.index)
     expected_diffuse = pd.Series(
         data=expected_diffuse, index=surface_tilt.index)
     expected_direct = pd.Series(
@@ -236,7 +236,7 @@ def test_get_irradiance_poa():
     expected_global = expected_diffuse + expected_direct
     expected_global.name = 'poa_global'  # to match output Series
     res = infinite_sheds.get_irradiance_poa(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        surface_tilt, surface_azimuth, apparent_zenith, azimuth,
         gcr, height, pitch, ghi, dhi, dni,
         albedo, iam=iam, npoints=npoints)
     assert isinstance(res, pd.DataFrame)
@@ -256,8 +256,8 @@ def test__backside_tilt():
 
 def test_get_irradiance():
     # singleton inputs
-    solar_zenith = 0.
-    solar_azimuth = 180.
+    apparent_zenith = 0.
+    azimuth = 180.
     surface_tilt = 0.
     surface_azimuth = 180.
     gcr = 0.5
@@ -271,7 +271,7 @@ def test_get_irradiance():
     iam_back = 1.0
     npoints = 100
     result = infinite_sheds.get_irradiance(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        surface_tilt, surface_azimuth, apparent_zenith, azimuth,
         gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
         bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
         npoints=npoints)
@@ -286,15 +286,15 @@ def test_get_irradiance():
     ghi = pd.Series([1000., 500., 500., np.nan])
     dhi = pd.Series([300., 500., 500., 500.], index=ghi.index)
     dni = pd.Series([700., 0., 0., 700.], index=ghi.index)
-    solar_zenith = pd.Series([0., 0., 0., 135.], index=ghi.index)
+    apparent_zenith = pd.Series([0., 0., 0., 135.], index=ghi.index)
     surface_tilt = pd.Series([0., 0., 90., 0.], index=ghi.index)
     result = infinite_sheds.get_irradiance(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        surface_tilt, surface_azimuth, apparent_zenith, azimuth,
         gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
         bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
         npoints=npoints)
     result_front = infinite_sheds.get_irradiance_poa(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        surface_tilt, surface_azimuth, apparent_zenith, azimuth,
         gcr, height, pitch, ghi, dhi, dni,
         albedo, iam=iam_front)
     assert isinstance(result, pd.DataFrame)
@@ -307,8 +307,8 @@ def test_get_irradiance():
 def test_get_irradiance_limiting_gcr():
     # test confirms that irradiance on widely spaced rows is approximately
     # the same as for a single row array
-    solar_zenith = 0.
-    solar_azimuth = 180.
+    apparent_zenith = 0.
+    azimuth = 180.
     surface_tilt = 90.
     surface_azimuth = 180.
     gcr = 0.00001
@@ -322,7 +322,7 @@ def test_get_irradiance_limiting_gcr():
     iam_back = 1.0
     npoints = 100
     result = infinite_sheds.get_irradiance(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        surface_tilt, surface_azimuth, apparent_zenith, azimuth,
         gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
         bifaciality=1., shade_factor=-0.00, transmission_factor=0.,
         npoints=npoints)

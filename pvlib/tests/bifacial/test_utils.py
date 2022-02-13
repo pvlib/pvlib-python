@@ -50,7 +50,7 @@ def test__solar_projection_tangent():
 
 
 @pytest.mark.parametrize(
-    "gcr,surface_tilt,surface_azimuth,solar_zenith,solar_azimuth,expected",
+    "gcr,surface_tilt,surface_azimuth,apparent_zenith,azimuth,expected",
     [(0.5, 0., 180., 0., 180., 0.5),
      (1.0, 0., 180., 0., 180., 0.0),
      (1.0, 90., 180., 0., 180., 1.0),
@@ -63,16 +63,16 @@ def test__solar_projection_tangent():
      (np.sqrt(2) / 2, 45, 180, 45, 135, 0.5 * (1 - np.sqrt(2) / 2)),
      ])
 def test__unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr,
+        surface_tilt, surface_azimuth, apparent_zenith, azimuth, gcr,
         expected):
     # frontside, same for both sides
     f_sky_beam_f = utils._unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr)
+        surface_tilt, surface_azimuth, apparent_zenith, azimuth, gcr)
     assert np.allclose(f_sky_beam_f, expected)
     # backside, should be the same as frontside
     f_sky_beam_b = utils._unshaded_ground_fraction(
-        180. - surface_tilt, surface_azimuth - 180., solar_zenith,
-        solar_azimuth, gcr)
+        180. - surface_tilt, surface_azimuth - 180., apparent_zenith,
+        azimuth, gcr)
     assert np.allclose(f_sky_beam_b, expected)
 
 

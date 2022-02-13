@@ -21,7 +21,7 @@ def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
         Solar zenith angle. [degree].
     solar_azimuth : numeric
         Solar azimuth. [degree].
-    surface_azimuth: numeric
+    surface_azimuth : numeric
         Azimuth of the module surface, i.e., North=0, East=90, South=180,
         West=270. [degree]
 
@@ -51,11 +51,11 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
 
     Parameters
     ----------
-    surface_tilt: numeric
+    surface_tilt : numeric
         Surface tilt angle. The tilt angle is defined as
         degrees from horizontal, e.g., surface facing up = 0, surface facing
         horizon = 90. [degree]
-    surface_azimuth: numeric
+    surface_azimuth : numeric
         Azimuth of the module surface, i.e., North=0, East=90, South=180,
         West=270. [degree]
     solar_zenith : numeric
@@ -77,7 +77,7 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
 
     References
     ----------
-    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+    .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
        J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        doi: 10.1109/PVSC40753.2019.8980572.

@@ -51,12 +51,11 @@ considered to be towards the "front" of the array. Array height differs in this
 code from the description in [1], where array height is described at the row's
 lower edge.
 
-That's it folks! This model is influenced by the 2D model published by Marion,
-*et al.* in [2].
+This model is influenced by the 2D model published by Marion, *et al.* in [2].
 
 References
 ----------
-    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+    .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
        J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        doi: 10.1109/PVSC40753.2019.8980572.
@@ -88,7 +87,7 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
         = 0, surface facing horizon = 90. [degree]
     surface_azimuth : numeric
         Surface azimuth angles in decimal degrees east of north
-        (e.g. North = 0, South=180 East = 90, West = 270). surface_azimuth must
+        (e.g. North = 0, South = 180, East = 90, West = 270). ``surface_azimuth`` must
         be >=0 and <=360.
     gcr : float
         Ratio of row slant length to row spacing (pitch). [unitless]
@@ -445,10 +444,10 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
 
     References
     ----------
-    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+    .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
        J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
-       doi: 10.1109/PVSC40753.2019.8980572.
+       :doi:`10.1109/PVSC40753.2019.8980572`.
     .. [2] Kevin Anderson and Mark Mikofski, "Slope-Aware Backtracking for
        Single-Axis Trackers", Technical Report NREL/TP-5K00-76626, July 2020.
        https://www.nrel.gov/docs/fy20osti/76626.pdf
@@ -493,7 +492,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
 
     surface_azimuth : numeric
         Surface azimuth in decimal degrees east of north
-        (e.g. North = 0, South=180 East = 90, West = 270). [degree]
+        (e.g. North = 0, South = 180, East = 90, West = 270). [degree]
 
     solar_zenith : numeric
         True (not refraction-corrected) solar zenith. [degree]
@@ -553,10 +552,10 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
 
     References
     ----------
-    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+    .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
        J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
-       doi: 10.1109/PVSC40753.2019.8980572.
+       :doi:`10.1109/PVSC40753.2019.8980572`.
 
     See also
     --------
@@ -679,7 +678,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     surface_azimuth : numeric
         Surface azimuth in decimal degrees east of north
-        (e.g. North = 0, South=180 East = 90, West = 270). [degree]
+        (e.g. North = 0, South = 180, East = 90, West = 270). [degree]
 
     solar_zenith : numeric
         True (not refraction-corrected) solar zenith. [degree]
@@ -750,7 +749,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
       front and back surfaces. [W/m^2]
     - ``poa_front`` : total irradiance reaching the module cells from the front
       surface. [W/m^2]
-    - ``poa_back`` : total irradiance reaching the module cells from the front
+    - ``poa_back`` : total irradiance reaching the module cells from the back
       surface. [W/m^2]
     - ``poa_front_direct`` : direct irradiance reaching the module cells from
       the front surface. [W/m^2]
@@ -771,7 +770,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     References
     ----------
-    .. [1] Mikofksi, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
+    .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
        J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        doi: 10.1109/PVSC40753.2019.8980572.

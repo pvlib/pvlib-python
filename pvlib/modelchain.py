@@ -382,8 +382,7 @@ class ModelChain:
     appropriate model parameters. For example, if ``dc_model='pvwatts'``,
     then each ``Array.module_parameters`` must contain ``'pdc0'``.
 
-    See https://pvlib-python.readthedocs.io/en/stable/modelchain.html
-    for examples.
+    See :ref:`modelchaindoc` for examples.
 
     Parameters
     ----------

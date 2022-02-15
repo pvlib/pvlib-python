@@ -262,7 +262,7 @@ def parse_psm3(fbuf):
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
     .. [2] `Standard Time Series Data File Format
-       <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
+       <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
     # The first 2 lines of the response are headers with metadata
     metadata_fields = fbuf.readline().split(',')
@@ -331,7 +331,7 @@ def read_psm3(filename):
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
     .. [2] `Standard Time Series Data File Format
-       <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
+       <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
     with open(str(filename), 'r') as fbuf:
         content = parse_psm3(fbuf)

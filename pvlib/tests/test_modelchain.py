@@ -1799,7 +1799,7 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts instead'):
+    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
         dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                         surface_tilt, surface_azimuth,
                                         module_parameters, temp_model_params,
@@ -1822,7 +1822,7 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts instead'):
+    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
         dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                         surface_tilt, surface_azimuth,
                                         module_parameters, temp_model_params,
@@ -1833,7 +1833,7 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                          index=times)
     assert_series_equal(ac, expected)
 
-    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts instead'):
+    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
         dc, ac = modelchain.basic_chain(times, latitude, longitude,
                                         surface_tilt, surface_azimuth,
                                         module_parameters, temp_model_params,

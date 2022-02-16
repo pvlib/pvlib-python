@@ -67,8 +67,9 @@ SAPM_CONFIG = dict(
 @deprecated(
     since='0.9.1',
     name='pvlib.modelchain.basic_chain',
-    alternative='pvlib.modelchain.ModelChain.with_pvwatts',
-    addendum='Note that with_pvwatts takes different model parameters.'
+    alternative=('pvlib.modelchain.ModelChain.with_pvwatts'
+                 ' or pvlib.modelchain.ModelChain.with_sapm'),
+    addendum='Note that the with_xyz methods take different model parameters.'
 )
 def basic_chain(times, latitude, longitude,
                 surface_tilt, surface_azimuth,

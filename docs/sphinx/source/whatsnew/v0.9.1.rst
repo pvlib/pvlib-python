@@ -8,11 +8,18 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* :py:func:`pvlib.modelchain.basic_chain` is deprecated.
+  See :py:meth:`pvlib.modelchain.ModelChain.with_pvwatts` and
+  :py:meth:`pvlib.modelchain.ModelChain.with_sapm` for alternative simplified
+  :py:class:`~pvlib.modelchain.ModelChain` interfaces, although note that the
+  inputs do not directly translate. (:pull:`1401`)
 
 Enhancements
 ~~~~~~~~~~~~
 * Added ``map_variables`` option to :py:func:`pvlib.iotools.get_psm3` and
   :py:func:`pvlib.iotools.read_psm3` (:pull:`1374`)
+* Added :py:func:`pvlib.temperature.prilliman` for modeling cell temperature
+  at short time steps (:issue:`1081`, :pull:`1391`)
 
 Bug fixes
 ~~~~~~~~~
@@ -24,16 +31,28 @@ Bug fixes
   argument was not being passed to the ``optimalinclination`` request parameter (:pull:`1356`)
 * Fixed bug in :py:func:`pvlib.bifacial.pvfactors_timeseries` where scalar ``surface_tilt``
   and ``surface_azimuth`` inputs caused an error (:issue:`1127`, :issue:`1332`, :pull:`1361`) 
-
+* Changed the metadata entry for the wind speed unit to "Wind Speed Units" in
+  the PSM3 iotools function (:pull:`1375`)
+* Improved convergence when determining the maximum power point using
+  for :py:func:`pvlib.pvsystem.singlediode` with ``method='lambertw'``. Tolerance
+  is determined for the voltage at the maximum power point, and is improved
+  from 0.01 V to 1e-8 V. (:issue:`1087`, :pull:`1089`)
 
 Testing
 ~~~~~~~
+* Updated test values to match the new values returned by the PVGIS TMY API. The difference
+  is very minor (0.01 W/m2, affecting only a few beam irradiance values) (:pull:`1396`)
 
 Documentation
 ~~~~~~~~~~~~~
+* Fix documentation return error in :py:meth:`pvlib.forecast.ForecastModel.cloud_cover_to_transmittance_linear`
+  (:issue:`1367`, :pull:`1370`)
+
 
 Requirements
 ~~~~~~~~~~~~
+* numpy >= 1.16.0 is now required for all python versions. (:pull:`1400`)
+
 
 Contributors
 ~~~~~~~~~~~~
@@ -43,3 +62,4 @@ Contributors
 * Christian Weickhmann (:ghuser:`cweickhmann`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Johann Loux (:ghuser:`JoLo90`)

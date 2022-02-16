@@ -1313,32 +1313,35 @@ def test_singlediode_array():
                               resistance_series, resistance_shunt, nNsVth,
                               method='lambertw')
 
-    expected = np.array([
-        0.        ,  0.54538398,  1.43273966,  2.36328163,  3.29255606,
-        4.23101358,  5.16177031,  6.09368251,  7.02197553,  7.96846051,
-        8.88220557])
+    expected_i = np.array([
+        0., 0.54614798740338, 1.435026463529, 2.3621366610078, 3.2953968319952,
+        4.2303869378787, 5.1655276691892, 6.1000269648604, 7.0333996177802,
+        7.9653036915959, 8.8954716265647])
+    expected_v = np.array([
+        0., 7.0966259059555, 7.9961986643428, 8.2222496810656, 8.3255927555753,
+        8.3766915453915, 8.3988872440242, 8.4027948807891, 8.3941399580559,
+        8.3763655188855, 8.3517057522791])
 
-    assert_allclose(sd['i_mp'], expected, atol=0.01)
+    assert_allclose(sd['i_mp'], expected_i, atol=1e-8)
+    assert_allclose(sd['v_mp'], expected_v, atol=1e-8)
 
     sd = pvsystem.singlediode(photocurrent, saturation_current,
                               resistance_series, resistance_shunt, nNsVth)
-
     expected = pvsystem.i_from_v(resistance_shunt, resistance_series, nNsVth,
                                  sd['v_mp'], saturation_current, photocurrent,
                                  method='lambertw')
-
-    assert_allclose(sd['i_mp'], expected, atol=0.01)
+    assert_allclose(sd['i_mp'], expected, atol=1e-8)
 
 
 def test_singlediode_floats():
-    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, method='lambertw')
-    expected = {'i_xx': 4.2498,
-                'i_mp': 6.1275,
-                'v_oc': 8.1063,
-                'p_mp': 38.1937,
-                'i_x': 6.7558,
-                'i_sc': 6.9651,
-                'v_mp': 6.2331,
+    out = pvsystem.singlediode(7., 6.e-7, .1, 20., .5, method='lambertw')
+    expected = {'i_xx': 4.264060478,
+                'i_mp': 6.136267360,
+                'v_oc': 8.106300147,
+                'p_mp': 38.19421055,
+                'i_x': 6.7558815684,
+                'i_sc': 6.965172322,
+                'v_mp': 6.224339375,
                 'i': None,
                 'v': None}
     assert isinstance(out, dict)
@@ -1346,23 +1349,26 @@ def test_singlediode_floats():
         if k in ['i', 'v']:
             assert v is None
         else:
-            assert_allclose(v, expected[k], atol=1e-3)
+            assert_allclose(v, expected[k], atol=1e-6)
 
 
 def test_singlediode_floats_ivcurve():
-    out = pvsystem.singlediode(7, 6e-7, .1, 20, .5, ivcurve_pnts=3, method='lambertw')
-    expected = {'i_xx': 4.2498,
-                'i_mp': 6.1275,
-                'v_oc': 8.1063,
-                'p_mp': 38.1937,
-                'i_x': 6.7558,
-                'i_sc': 6.9651,
-                'v_mp': 6.2331,
-                'i': np.array([6.965172e+00, 6.755882e+00, 2.575717e-14]),
-                'v': np.array([0., 4.05315, 8.1063])}
+    out = pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
+                               method='lambertw')
+    expected = {'i_xx': 4.264060478,
+                'i_mp': 6.136267360,
+                'v_oc': 8.106300147,
+                'p_mp': 38.19421055,
+                'i_x': 6.7558815684,
+                'i_sc': 6.965172322,
+                'v_mp': 6.224339375,
+                'i': np.array([
+                    6.965172322, 6.755881568, 2.664535259e-14]),
+                'v': np.array([
+                    0., 4.053150073, 8.106300147])}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert_allclose(v, expected[k], atol=1e-3)
+        assert_allclose(v, expected[k], atol=1e-6)
 
 
 def test_singlediode_series_ivcurve(cec_module_params):
@@ -1383,21 +1389,20 @@ def test_singlediode_series_ivcurve(cec_module_params):
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
                                method='lambertw')
 
-    expected = OrderedDict([('i_sc', array([0., 3.01054475, 6.00675648])),
-                            ('v_oc', array([0., 9.96886962, 10.29530483])),
-                            ('i_mp', array([0., 2.65191983, 5.28594672])),
-                            ('v_mp', array([0., 8.33392491, 8.4159707])),
-                            ('p_mp', array([0., 22.10090078, 44.48637274])),
-                            ('i_x', array([0., 2.88414114, 5.74622046])),
-                            ('i_xx', array([0., 2.04340914, 3.90007956])),
+    expected = OrderedDict([('i_sc', array([0., 3.01079860, 6.00726296])),
+                            ('v_oc', array([0., 9.96959733, 10.29603253])),
+                            ('i_mp', array([0., 2.656285960, 5.290525645])),
+                            ('v_mp', array([0., 8.321092255, 8.409413795])),
+                            ('p_mp', array([0., 22.10320053, 44.49021934])),
+                            ('i_x', array([0., 2.884132006, 5.746202281])),
+                            ('i_xx', array([0., 2.052691562, 3.909673879])),
                             ('v', array([[0., 0., 0.],
-                                         [0., 4.98443481, 9.96886962],
-                                         [0., 5.14765242, 10.29530483]])),
+                                         [0., 4.984798663, 9.969597327],
+                                         [0., 5.148016266, 10.29603253]])),
                             ('i', array([[0., 0., 0.],
-                                         [3.01079860e+00, 2.88414114e+00,
-                                          3.10862447e-14],
-                                         [6.00726296e+00, 5.74622046e+00,
-                                          0.00000000e+00]]))])
+                                         [3.0107985972, 2.8841320056, 0.],
+                                         [6.0072629615, 5.7462022810, 0.]]))])
+
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)
@@ -1414,7 +1419,7 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                          method='lambertw').T
 
     for k, v in out.items():
-        assert_allclose(v, expected[k], atol=1e-2)
+        assert_allclose(v, expected[k], atol=1e-6)
 
 
 def test_scale_voltage_current_power():

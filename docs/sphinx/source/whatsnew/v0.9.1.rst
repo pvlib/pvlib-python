@@ -26,6 +26,10 @@ Bug fixes
   and ``surface_azimuth`` inputs caused an error (:issue:`1127`, :issue:`1332`, :pull:`1361`) 
 * Changed the metadata entry for the wind speed unit to "Wind Speed Units" in
   the PSM3 iotools function (:pull:`1375`)
+* Improved convergence when determining the maximum power point using
+  for :py:func:`pvlib.pvsystem.singlediode` with ``method='lambertw'``. Tolerance
+  is determined for the voltage at the maximum power point, and is improved
+  from 0.01 V to 1e-8 V. (:issue:`1087`, :pull:`1089`)
 
 Testing
 ~~~~~~~

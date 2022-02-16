@@ -22,7 +22,7 @@ ATTRIBUTES = (
 PVLIB_PYTHON = 'pvlib python'
 
 # Dictionary mapping PSM3 names to pvlib names
-PSM3_VARIABLE_MAP = {
+VARIABLE_MAP = {
     'GHI': 'ghi',
     'DHI': 'dhi',
     'DNI': 'dni',
@@ -83,7 +83,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         optional
     map_variables: boolean, optional
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable :const:`PSM3_VARIABLE_MAP`.
+        where applicable. See variable :const:`VARIABLE_MAP`.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 
@@ -160,7 +160,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # convert pvlib names in attributes to psm3 convention (reverse mapping)
     # unlike psm3 columns, attributes are lower case and with underscores
     amap = {value: key.lower().replace(' ', '_') for (key, value) in
-            PSM3_VARIABLE_MAP.items()}
+            VARIABLE_MAP.items()}
     attributes = [amap.get(a, a) for a in attributes]
     attributes = list(set(attributes))  # remove duplicate values
 
@@ -217,7 +217,7 @@ def parse_psm3(fbuf, map_variables=None):
         File-like object containing data to read.
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PSM3_VARIABLE_MAP.
+        where applicable. See variable VARIABLE_MAP.
 
     Returns
     -------
@@ -338,7 +338,7 @@ def parse_psm3(fbuf, map_variables=None):
             'to hide this warning.', pvlibDeprecationWarning)
         map_variables = False
     if map_variables:
-        data = data.rename(columns=PSM3_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
         metadata['latitude'] = metadata.pop('Latitude')
         metadata['longitude'] = metadata.pop('Longitude')
         metadata['elevation'] = metadata.pop('Elevation')
@@ -362,7 +362,7 @@ def read_psm3(filename, map_variables=None):
         Filename of a file containing data to read.
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PSM3_VARIABLE_MAP.
+        where applicable. See variable VARIABLE_MAP.
 
     Returns
     -------

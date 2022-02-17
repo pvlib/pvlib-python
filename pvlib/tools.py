@@ -6,6 +6,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import pytz
+import warnings
 
 
 def cosd(angle):
@@ -330,8 +331,13 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
     converged = False
     iterations = 0
-    iterlimit = 1 + np.nanmax(
-        np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
+
+    # handle all NaN case gracefully
+    with warnings.catch_warnings():
+        warnings.filterwarnings(action='ignore',
+                                message='All-NaN slice encountered')
+        iterlimit = 1 + np.nanmax(
+            np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
 
     while not converged and (iterations <= iterlimit):
 
@@ -358,8 +364,13 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
         raise Exception("Iterations exceeded maximum. Check that func",
                         " is not NaN in (lower, upper)")
 
-    func_result = func(df, 'V1')
-    x = np.where(np.isnan(func_result), np.nan, df['V1'])
+    try:
+        func_result = func(df, 'V1')
+        x = np.where(np.isnan(func_result), np.nan, df['V1'])
+    except KeyError:
+        func_result = np.full_like(upper, np.nan)
+        x = func_result.copy()
+
     return func_result, x
 
 

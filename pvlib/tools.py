@@ -327,7 +327,7 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     df = params
     df['VH'] = upper
     df['VL'] = lower
-    
+
     converged = False
     iterations = 0
     iterlimit = 1 + np.nanmax(

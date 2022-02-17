@@ -286,14 +286,17 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
     Parameters
     ----------
-    params : dict or Dataframe
-        Parameters to be passed to `func`.
+    params : dict of numeric
+        Parameters to be passed to `func`. Each entry must be of the same
+        length.
 
     lower: numeric
-        Lower bound for the optimization
+        Lower bound for the optimization. Must be the same length as each
+        entry of params.
 
     upper: numeric
-        Upper bound for the optimization
+        Upper bound for the optimization. Must be the same length as each
+        entry of params.
 
     func: function
         Function to be optimized. Must be in the form
@@ -312,6 +315,7 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     Notes
     -----
     This function will find the points where the function is maximized.
+    Returns nan where lower or upper is nan, or where func evaluates to nan.
 
     See also
     --------

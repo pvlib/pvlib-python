@@ -38,7 +38,7 @@ AUTHOR = 'pvlib python Developers'
 MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
 URL = 'https://github.com/pvlib/pvlib-python'
 
-INSTALL_REQUIRES = ['numpy >= 1.12.0',
+INSTALL_REQUIRES = ['numpy >= 1.16.0',
                     'pandas >= 0.22.0',
                     'pytz',
                     'requests',
@@ -57,8 +57,8 @@ EXTRAS_REQUIRE = {
                  'pvfactors', 'siphon', 'statsmodels',
                  'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2',
-            'pydata-sphinx-theme', 'sphinx-gallery', 'docutils == 0.15.2',
-            'pillow', 'netcdf4', 'siphon',
+            'pydata-sphinx-theme == 0.8.0', 'sphinx-gallery',
+            'docutils == 0.15.2', 'pillow', 'netcdf4', 'siphon',
             'sphinx-toggleprompt >= 0.0.5', 'pvfactors'],
     'test': TESTS_REQUIRE
 }

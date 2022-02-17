@@ -277,51 +277,61 @@ def _build_args(keys, input_dict, dict_name):
 
 # Created April,2014
 # Author: Rob Andrews, Calama Consulting
-
-def _golden_sect_DataFrame(params, VL, VH, func):
+# Modified: November, 2020 by C. W. Hansen, to add atol and change exit
+# criteria
+def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     """
-    Vectorized golden section search for finding MPP from a dataframe
-    timeseries.
+    Vectorized golden section search for finding maximum of a function of a
+    single variable.
 
     Parameters
     ----------
-    params : dict
-        Dictionary containing scalars or arrays
-        of inputs to the function to be optimized.
-        Each row should represent an independent optimization.
+    params : dict or Dataframe
+        Parameters to be passed to `func`.
 
-    VL: float
-        Lower bound of the optimization
+    lower: numeric
+        Lower bound for the optimization
 
-    VH: float
-        Upper bound of the optimization
+    upper: numeric
+        Upper bound for the optimization
 
     func: function
-        Function to be optimized must be in the form f(array-like, x)
+        Function to be optimized. Must be in the form
+        result = f(dict or DataFrame, str), where result is a dict or DataFrame
+        that also contains the function output, and str is the key
+        corresponding to the function's input variable.
 
     Returns
     -------
-    func(df,'V1') : DataFrame
-        function evaluated at the optimal point
+    numeric
+        function evaluated at the optimal points
 
-    df['V1']: Dataframe
-        Dataframe of optimal points
+    numeric
+        optimal points
 
     Notes
     -----
-    This function will find the MAXIMUM of a function
+    This function will find the points where the function is maximized.
+
+    See also
+    --------
+    pvlib.singlediode._pwr_optfcn
     """
 
+    phim1 = (np.sqrt(5) - 1) / 2
+
     df = params
-    df['VH'] = VH
-    df['VL'] = VL
+    df['VH'] = upper
+    df['VL'] = lower
 
-    errflag = True
+    converged = False
     iterations = 0
+    iterlimit = 1 + np.max(
+        np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
 
-    while errflag:
+    while not converged and (iterations < iterlimit):
 
-        phi = (np.sqrt(5)-1)/2*(df['VH']-df['VL'])
+        phi = phim1 * (df['VH'] - df['VL'])
         df['V1'] = df['VL'] + phi
         df['V2'] = df['VH'] - phi
 
@@ -332,15 +342,32 @@ def _golden_sect_DataFrame(params, VL, VH, func):
         df['VL'] = df['V2']*df['SW_Flag'] + df['VL']*(~df['SW_Flag'])
         df['VH'] = df['V1']*~df['SW_Flag'] + df['VH']*(df['SW_Flag'])
 
-        err = df['V1'] - df['V2']
-        try:
-            errflag = (abs(err) > .01).any()
-        except ValueError:
-            errflag = (abs(err) > .01)
+        err = abs(df['V2'] - df['V1'])
 
+        # works with single value because err is np.float64
+        converged = (err < atol).all()
+        # err will be less than atol before iterations hit the limit
+        # but just to be safe
         iterations += 1
 
-        if iterations > 50:
-            raise Exception("EXCEPTION:iterations exceeded maximum (50)")
+    if iterations > iterlimit:
+        raise Exception("iterations exceeded maximum")  # pragma: no cover
 
     return func(df, 'V1'), df['V1']
+
+
+def _get_sample_intervals(times, win_length):
+    """ Calculates time interval and samples per window for Reno-style clear
+    sky detection functions
+    """
+    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
+
+    # determine if we can proceed
+    if times.inferred_freq and len(np.unique(deltas)) == 1:
+        sample_interval = times[1] - times[0]
+        sample_interval = sample_interval.seconds / 60  # in minutes
+        samples_per_window = int(win_length / sample_interval)
+        return sample_interval, samples_per_window
+    else:
+        raise NotImplementedError('algorithm does not yet support unequal '
+                                  'times. consider resampling your data.')

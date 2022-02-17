@@ -47,7 +47,7 @@ def read_surfrad(filename, map_variables=True):
         Filepath or url.
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable SURFRAD_COLUMNS.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -113,7 +113,7 @@ def read_surfrad(filename, map_variables=True):
     =======================  ======  ==========================================
 
     See README files located in the station directories in the SURFRAD
-    data archives[2]_ for details on SURFRAD daily data files.
+    data archives [2]_ for details on SURFRAD daily data files.
 
     References
     ----------

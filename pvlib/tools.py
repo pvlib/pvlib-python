@@ -323,13 +323,13 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     df = params
     df['VH'] = upper
     df['VL'] = lower
-
+    
     converged = False
     iterations = 0
-    iterlimit = 1 + np.max(
+    iterlimit = 1 + np.nanmax(
         np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
 
-    while not converged and (iterations < iterlimit):
+    while not converged and (iterations <= iterlimit):
 
         phi = phim1 * (df['VH'] - df['VL'])
         df['V1'] = df['VL'] + phi
@@ -345,15 +345,18 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
         err = abs(df['V2'] - df['V1'])
 
         # works with single value because err is np.float64
-        converged = (err < atol).all()
+        converged = (err[~np.isnan(err)] < atol).all()
         # err will be less than atol before iterations hit the limit
         # but just to be safe
         iterations += 1
 
     if iterations > iterlimit:
-        raise Exception("iterations exceeded maximum")  # pragma: no cover
+        raise Exception("Iterations exceeded maximum. Check that func",
+                        " is not NaN in (lower, upper)")
 
-    return func(df, 'V1'), df['V1']
+    func_result = func(df, 'V1')
+    x = np.where(np.isnan(func_result), np.nan, df['V1'])
+    return func_result, x
 
 
 def _get_sample_intervals(times, win_length):

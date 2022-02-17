@@ -362,7 +362,7 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
     if iterations > iterlimit:
         raise Exception("Iterations exceeded maximum. Check that func",
-                        " is not NaN in (lower, upper)")
+                        " is not NaN in (lower, upper)")  # pragma: no cover
 
     try:
         func_result = func(df, 'V1')

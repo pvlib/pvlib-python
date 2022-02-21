@@ -1799,10 +1799,11 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    surface_tilt, surface_azimuth,
-                                    module_parameters, temp_model_params,
-                                    cec_inverter_parameters)
+    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
+        dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                        surface_tilt, surface_azimuth,
+                                        module_parameters, temp_model_params,
+                                        cec_inverter_parameters)
 
     expected = pd.Series(np.array([111.621405, -2.00000000e-02]),
                          index=times)
@@ -1821,21 +1822,23 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    surface_tilt, surface_azimuth,
-                                    module_parameters, temp_model_params,
-                                    cec_inverter_parameters,
-                                    pressure=93194)
+    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
+        dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                        surface_tilt, surface_azimuth,
+                                        module_parameters, temp_model_params,
+                                        cec_inverter_parameters,
+                                        pressure=93194)
 
     expected = pd.Series(np.array([113.190045, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
-    dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    surface_tilt, surface_azimuth,
-                                    module_parameters, temp_model_params,
-                                    cec_inverter_parameters,
-                                    altitude=altitude)
+    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
+        dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                        surface_tilt, surface_azimuth,
+                                        module_parameters, temp_model_params,
+                                        cec_inverter_parameters,
+                                        altitude=altitude)
 
     expected = pd.Series(np.array([113.189814, -2.00000000e-02]),
                          index=times)

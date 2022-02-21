@@ -771,7 +771,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,
        J. "Bifacial Performance Modeling in Large Arrays". 2019 IEEE 46th
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
-       doi: 10.1109/PVSC40753.2019.8980572.
+       :doi:`10.1109/PVSC40753.2019.8980572`.
 
     See also
     --------

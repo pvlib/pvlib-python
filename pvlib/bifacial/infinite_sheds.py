@@ -403,7 +403,7 @@ def _poa_ground_pv(f_x, poa_ground, f_gnd_pv_shade, f_gnd_pv_noshade):
     return poa_ground * (f_x * f_gnd_pv_shade + (1 - f_x) * f_gnd_pv_noshade)
 
 
-def _shaded_fraction(apparent_zenith, azimuth, surface_tilt,
+def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
                      surface_azimuth, gcr):
     """
     Calculate fraction (from the bottom) of row slant height that is shaded
@@ -420,9 +420,9 @@ def _shaded_fraction(apparent_zenith, azimuth, surface_tilt,
 
     Parameters
     ----------
-    apparent_zenith : numeric
-        Apparent solar zenith. [degrees]
-    azimuth : numeric
+    solar_zenith : numeric
+        Apparent (refraction-corrected) solar zenith. [degrees]
+    solar_azimuth : numeric
         Solar azimuth. [degrees]
     surface_tilt : numeric
         Row tilt from horizontal, e.g. surface facing up = 0, surface facing
@@ -451,20 +451,20 @@ def _shaded_fraction(apparent_zenith, azimuth, surface_tilt,
        https://www.nrel.gov/docs/fy20osti/76626.pdf
     """
     tan_phi = utils._solar_projection_tangent(
-        apparent_zenith, azimuth, surface_azimuth)
+        solar_zenith, solar_azimuth, surface_azimuth)
     # length of shadow behind a row as a fraction of pitch
     x = gcr * (sind(surface_tilt) * tan_phi + cosd(surface_tilt))
     f_x = 1 - 1. / x
     # set f_x to be 1 when sun is behind the array
-    ao = aoi(surface_tilt, surface_azimuth, apparent_zenith, azimuth)
+    ao = aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth)
     f_x = np.where(ao < 90, f_x, 1.)
     # when x < 1, the shadow is not long enough to fall on the row surface
     f_x = np.where(x > 1., f_x, 0.)
     return f_x
 
 
-def get_irradiance_poa(surface_tilt, surface_azimuth, apparent_zenith,
-                       azimuth, gcr, height, pitch, ghi, dhi, dni,
+def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
+                       solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
                        albedo, iam=1.0, npoints=100):
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
@@ -492,10 +492,10 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, apparent_zenith,
         Surface azimuth in decimal degrees east of north
         (e.g. North = 0, South = 180, East = 90, West = 270). [degree]
 
-    apparent_zenith : numeric
+    solar_zenith : numeric
         Refraction-corrected solar zenith. [degree]
 
-    azimuth : numeric
+    solar_azimuth : numeric
         Solar azimuth. [degree]
 
     gcr : float
@@ -567,7 +567,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, apparent_zenith,
     # fraction of ground between rows that is illuminated accounting for
     # shade from panels. [1], Eq. 4
     f_gnd_beam = utils._unshaded_ground_fraction(
-        surface_tilt, surface_azimuth, apparent_zenith, azimuth, gcr)
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, gcr)
     # integrated view factor from the ground to the sky, integrated between
     # adjacent rows interior to the array
     # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
@@ -575,7 +575,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, apparent_zenith,
     vf_gnd_sky = _vf_ground_sky_integ(
         surface_tilt, surface_azimuth, gcr, height, pitch, max_rows, npoints)
     # fraction of row slant height that is shaded from direct irradiance
-    f_x = _shaded_fraction(apparent_zenith, azimuth, surface_tilt,
+    f_x = _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
                            surface_azimuth, gcr)
 
     # Integrated view factors to the sky from the shaded and unshaded parts of
@@ -629,7 +629,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, apparent_zenith,
     poa_diffuse = poa_gnd_pv + poa_sky_pv
     # beam on plane, make an array for consistency with poa_diffuse
     poa_beam = np.atleast_1d(beam_component(
-        surface_tilt, surface_azimuth, apparent_zenith, azimuth, dni))
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni))
     poa_direct = poa_beam * (1 - f_x) * iam  # direct only on the unshaded part
     poa_global = poa_direct + poa_diffuse
 
@@ -642,7 +642,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, apparent_zenith,
     return output
 
 
-def get_irradiance(surface_tilt, surface_azimuth, apparent_zenith, azimuth,
+def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
                    albedo, iam_front=1.0, iam_back=1.0,
                    bifaciality=0.8, shade_factor=-0.02,
@@ -678,10 +678,10 @@ def get_irradiance(surface_tilt, surface_azimuth, apparent_zenith, azimuth,
         Surface azimuth in decimal degrees east of north
         (e.g. North = 0, South = 180, East = 90, West = 270). [degree]
 
-    apparent_zenith : numeric
+    solar_zenith : numeric
         Refraction-corrected solar zenith. [degree]
 
-    azimuth : numeric
+    solar_azimuth : numeric
         Solar azimuth. [degree]
 
     gcr : float
@@ -782,13 +782,13 @@ def get_irradiance(surface_tilt, surface_azimuth, apparent_zenith, azimuth,
     # front side POA irradiance
     irrad_front = get_irradiance_poa(
         surface_tilt=surface_tilt, surface_azimuth=surface_azimuth,
-        apparent_zenith=apparent_zenith, azimuth=azimuth,
+        solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
         gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
         albedo=albedo, iam=iam_front, npoints=npoints)
     # back side POA irradiance
     irrad_back = get_irradiance_poa(
         surface_tilt=backside_tilt, surface_azimuth=backside_sysaz,
-        apparent_zenith=apparent_zenith, azimuth=azimuth,
+        solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
         gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
         albedo=albedo, iam=iam_back, npoints=npoints)
 

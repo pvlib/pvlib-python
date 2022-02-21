@@ -2,7 +2,6 @@ r"""
 Functions for the infinite sheds bifacial irradiance model.
 """
 
-from collections import OrderedDict
 import numpy as np
 import pandas as pd
 from pvlib.tools import cosd, sind, tand
@@ -570,10 +569,10 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     poa_direct = poa_beam * (1 - f_x) * iam  # direct only on the unshaded part
     poa_global = poa_direct + poa_diffuse
 
-    output = OrderedDict(
-        poa_global=poa_global, poa_direct=poa_direct,
-        poa_diffuse=poa_diffuse, poa_ground_diffuse=poa_gnd_pv,
-        poa_sky_diffuse=poa_sky_pv)
+    output = {
+        'poa_global': poa_global, 'poa_direct': poa_direct,
+        'poa_diffuse': poa_diffuse, 'poa_ground_diffuse': poa_gnd_pv,
+        'poa_sky_diffuse': poa_sky_pv}
     if isinstance(poa_global, pd.Series):
         output = pd.DataFrame(output)
     return output

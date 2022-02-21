@@ -26,7 +26,7 @@ irradiance:
 pvfactors
 =========
 
-The `pvfactors <https://sunpower.github.io/pvfactors/>` package calculates
+The `pvfactors <https://sunpower.github.io/pvfactors/>`_ package calculates
 incident irradiance on the front and back surfaces of an array. pvfactors uses
 a 2D geometry which assumes that the array is made up of long, regular rows.
 Irradiance is calculated in the middle of a row; end-of-row effects are not

@@ -47,15 +47,18 @@ is assumed to be horizontal and level, and the array is mounted at a fixed
 height above the ground.
 
 The infinite sheds model accounts for the following effects:
+
     - limited view from the row surfaces to the sky due to blocking of the
       sky by nearby rows;
     - reduction of irradiance reaching the ground due to shadows cast by
       rows and due to blocking of the sky by nearby rows.
+
 The model operates in the following steps:
+
 1. Find the fraction of unshaded ground between rows, ``f_gnd_beam`` where
    both direct and diffuse irradiance is received. The model assumes that
    there is no direct irradiance in the shaded fraction ``1 - f_gnd_beam``.
-2. Calculate the view factor,``fz_sky``, from the ground to the sky accounting
+2. Calculate the view factor, ``fz_sky``, from the ground to the sky accounting
    for the parts of the sky that are blocked from view by the array's rows.
    The view factor is multiplied by the sky diffuse irradiance to calculate
    the diffuse irradiance reaching the ground. Sky diffuse irradiance is thus
@@ -74,6 +77,7 @@ The model operates in the following steps:
    POA irradiance to calculate the total POA irradiance on the row.
 
 Array geometry is defined by the following:
+
     - ground coverage ratio (GCR), ``gcr``, the ratio of row slant height to
       the spacing between rows (pitch).
     - height of row center above ground, ``height``.

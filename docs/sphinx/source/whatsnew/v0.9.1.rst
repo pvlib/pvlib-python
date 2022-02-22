@@ -8,6 +8,9 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Moved :py:func:`pvlib.bifacial.pvfactors_timeseries` to
+  :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries`.
+  :py:module:`pvlib.bifacial` is now a sub-package. (:pull:`717`)
 * :py:func:`pvlib.modelchain.basic_chain` is deprecated.
   See :py:meth:`pvlib.modelchain.ModelChain.with_pvwatts` and
   :py:meth:`pvlib.modelchain.ModelChain.with_sapm` for alternative simplified
@@ -16,6 +19,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added `pvlib.bifacial.infinite_sheds`, containing a model for irradiance
+  on front and back surfaces of bifacial arrays. (:pull:`717`)
 * Added ``map_variables`` option to :func:`~pvlib.iotools.read_crn` (:pull:`1368`)
 * Added :py:func:`pvlib.temperature.prilliman` for modeling cell temperature
   at short time steps (:issue:`1081`, :pull:`1391`)

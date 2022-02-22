@@ -8,8 +8,8 @@ Example of bifacial modeling using the modelchain
 # %%
 # This example shows how to complete a bifacial modeling example using the
 # :py:class:`pvlib.modelchain.ModelChain` with the
-# :py:func:`pvlib.bifacial.pvfactors_timeseries` function to transpose
-# GHI data to both front and rear Plane of Array (POA) irradiance.
+# :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries` function
+# to transpose GHI data to both front and rear Plane of Array (POA) irradiance.
 #
 # Unfortunately ``ModelChain`` does not yet support bifacial simulation
 # directly so we have to do the bifacial irradiance simulation ourselves.
@@ -24,7 +24,7 @@ from pvlib import pvsystem
 from pvlib import location
 from pvlib import modelchain
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS as PARAMS
-from pvlib import bifacial
+from pvlib.bifacial.pvfactors import pvfactors_timeseries
 import warnings
 
 # supressing shapely warnings that occur on import of pvfactors
@@ -71,21 +71,21 @@ orientation = sat_mount.get_orientation(solar_position['apparent_zenith'],
 # get rear and front side irradiance from pvfactors transposition engine
 # explicity simulate on pvarray with 3 rows, with sensor placed in middle row
 # users may select different values depending on needs
-irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
-                                      solar_position['apparent_zenith'],
-                                      orientation['surface_azimuth'],
-                                      orientation['surface_tilt'],
-                                      axis_azimuth,
-                                      times,
-                                      cs['dni'],
-                                      cs['dhi'],
-                                      gcr,
-                                      pvrow_height,
-                                      pvrow_width,
-                                      albedo,
-                                      n_pvrows=3,
-                                      index_observed_pvrow=1
-                                      )
+irrad = pvfactors_timeseries(solar_position['azimuth'],
+                             solar_position['apparent_zenith'],
+                             orientation['surface_azimuth'],
+                             orientation['surface_tilt'],
+                             axis_azimuth,
+                             times,
+                             cs['dni'],
+                             cs['dhi'],
+                             gcr,
+                             pvrow_height,
+                             pvrow_width,
+                             albedo,
+                             n_pvrows=3,
+                             index_observed_pvrow=1
+                             )
 
 # turn into pandas DataFrame
 irrad = pd.concat(irrad, axis=1)

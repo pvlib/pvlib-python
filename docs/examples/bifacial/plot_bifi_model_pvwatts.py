@@ -8,13 +8,13 @@ Example of bifacial modeling using procedural method
 # %%
 # This example shows how to complete a bifacial modeling example using the
 # :py:func:`pvlib.pvsystem.pvwatts_dc` with the
-# :py:func:`pvlib.bifacial.pvfactors_timeseries` function to transpose
-# GHI data to both front and rear Plane of Array (POA) irradiance.
+# :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries` function to
+# transpose GHI data to both front and rear Plane of Array (POA) irradiance.
 
 import pandas as pd
 from pvlib import location
 from pvlib import tracking
-from pvlib import bifacial
+from pvlib.bifacial.pvfactors import pvfactors_timeseries
 from pvlib import temperature
 from pvlib import pvsystem
 import matplotlib.pyplot as plt
@@ -55,21 +55,21 @@ albedo = 0.2
 
 # explicity simulate on pvarray with 3 rows, with sensor placed in middle row
 # users may select different values depending on needs
-irrad = bifacial.pvfactors_timeseries(solar_position['azimuth'],
-                                      solar_position['apparent_zenith'],
-                                      orientation['surface_azimuth'],
-                                      orientation['surface_tilt'],
-                                      axis_azimuth,
-                                      cs.index,
-                                      cs['dni'],
-                                      cs['dhi'],
-                                      gcr,
-                                      pvrow_height,
-                                      pvrow_width,
-                                      albedo,
-                                      n_pvrows=3,
-                                      index_observed_pvrow=1
-                                      )
+irrad = pvfactors_timeseries(solar_position['azimuth'],
+                             solar_position['apparent_zenith'],
+                             orientation['surface_azimuth'],
+                             orientation['surface_tilt'],
+                             axis_azimuth,
+                             cs.index,
+                             cs['dni'],
+                             cs['dhi'],
+                             gcr,
+                             pvrow_height,
+                             pvrow_width,
+                             albedo,
+                             n_pvrows=3,
+                             index_observed_pvrow=1
+                             )
 
 # turn into pandas DataFrame
 irrad = pd.concat(irrad, axis=1)

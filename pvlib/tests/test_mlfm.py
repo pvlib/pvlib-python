@@ -1,9 +1,10 @@
 
 import numpy as np
 import pandas as pd
-from pvlib.mlfm import mlfm_meas_to_norm, mlfm_6, mlfm_norm_to_stack, mlfm_fit
+from pvlib import mlfm
 from numpy.testing import assert_allclose  # assert_almost_equal,
 import pytest
+from .conftest import requires_mpl
 
 
 tolerance = 0.000001
@@ -185,18 +186,18 @@ def mlfm_6_fit():
 
 
 def test_mlfm_meas_to_norm(mlfm_6_coeffs, reference, measured, normalized):
-    norm_calc = mlfm_meas_to_norm(measured, reference, 6)
+    norm_calc = mlfm.mlfm_meas_to_norm(measured, reference, 6)
     assert_allclose(norm_calc, normalized, atol=1e-6)
 
 
 def test_mlfm_6(measured, mlfm_6_coeffs):
     c_1, c_2, c_3, c_4, c_5, c_6, expected = mlfm_6_coeffs
-    result = mlfm_6(measured, c_1, c_2, c_3, c_4, c_5, c_6)
+    result = mlfm.mlfm_6(measured, c_1, c_2, c_3, c_4, c_5, c_6)
     assert_allclose(expected, result[0], atol=1e-6)
 
 
 def test_mlfm_norm_to_stack(normalized, reference, stacked):
-    stack_calc = mlfm_norm_to_stack(normalized, reference, 6)
+    stack_calc = mlfm.mlfm_norm_to_stack(normalized, reference, 6)
     assert_allclose(stack_calc, stacked, atol=1e-6)
 
 
@@ -204,6 +205,13 @@ def test_mlfm_fit(matrix_data, mlfm_6_fit):
     c_1, c_2, c_3, c_4, c_5, c_6, expected, cc_target = mlfm_6_fit
     # choose which parameter to fit - usually pr_dc
     mlfm_sel = 'pr_dc'
-    norm, cc_fit, ee,  coeffs, errs = mlfm_fit(
+    norm, cc_fit, ee,  coeffs, errs = mlfm.mlfm_fit(
         matrix_data, matrix_data, mlfm_sel)
     assert_allclose(cc_fit, cc_target, atol=1e-3)
+
+
+@requires_mpl
+def test_plot_mlfm_scatter(measured, normalized):
+    import matplotlib.pyplot as plt
+    fig = mlfm.plot_mlfm_scatter(measured, normalized, 'title_string', 2)
+    assert isinstance(fig, plt.Figure)

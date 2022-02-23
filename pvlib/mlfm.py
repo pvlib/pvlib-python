@@ -474,6 +474,12 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
         2 = (imp, vmp) from mpp tracker
         4 = (i_sc, i_mp, v_mp, v_oc) from matrix
         6 = (i_sc, i_mp, v_mp, v_oc, r_sc, r_oc) from iv curve.
+
+    Returns
+    -------
+    fig : Figure
+        Instance of matplotlib.figure.Figure
+
     '''
     try:
         import matplotlib.pyplot as plt
@@ -548,6 +554,9 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
 
     ax2.legend(bbox_to_anchor=(bbox, 0.5), loc='upper left', borderaxespad=0.)
     plt.show()
+
+    return fig
+
 
 
 def plot_mlfm_stack(dmeas, dnorm, dstack, ref,

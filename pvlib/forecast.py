@@ -512,10 +512,10 @@ class ForecastModel:
     def cloud_cover_to_transmittance_linear(self, cloud_cover, offset=0.75,
                                             **kwargs):
         """
-        Convert cloud cover to atmospheric transmittance using a linear
-        model.
+        Convert cloud cover (percentage) to atmospheric transmittance
+        using a linear model.
 
-        0% cloud cover returns offset.
+        0% cloud cover returns "offset".
 
         100% cloud cover returns 0.
 
@@ -524,14 +524,15 @@ class ForecastModel:
         cloud_cover : numeric
             Cloud cover in %.
         offset : numeric, default 0.75
-            Determines the maximum transmittance.
+            Determines the maximum transmittance. [unitless]
         kwargs
             Not used.
 
         Returns
         -------
-        ghi : numeric
-            Estimated GHI.
+        transmittance : numeric
+            The fraction of extraterrestrial irradiance that reaches
+            the ground. [unitless]
         """
         transmittance = ((100.0 - cloud_cover) / 100.0) * offset
 

@@ -2,7 +2,7 @@
 Bifacial Modeling - modelchain
 ==============================
 
-Example of bifacial modeling using the modelchain
+Example of bifacial modeling using pvfactors and ModelChain
 """
 
 # %%

@@ -2,7 +2,7 @@
 Bifacial Modeling - procedural
 ==============================
 
-Example of bifacial modeling using procedural method
+Example of bifacial modeling using pvfactors and procedural method
 """
 
 # %%

@@ -55,8 +55,8 @@ Documentation
   (:issue:`1367`, :pull:`1370`)
 * Add gallery example illustrating bifacial simulation using the
   :py:func:`pvlib.bifacial.pvfactors_timeseries` function and either
-   :py:class:`pvlib.modelchain.ModelChain` or procedural functions.
-   (:pull:`1394`)
+  :py:class:`pvlib.modelchain.ModelChain` or procedural functions.
+  (:pull:`1394`)
 * Fix some typos (:pull:`1414`)
 
 Requirements

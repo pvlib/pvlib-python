@@ -53,7 +53,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Fix documentation return error in :py:meth:`pvlib.forecast.ForecastModel.cloud_cover_to_transmittance_linear`
   (:issue:`1367`, :pull:`1370`)
-* Fix some typos.
+* Fix some typos (:pull:`1414`)
 
 Requirements
 ~~~~~~~~~~~~

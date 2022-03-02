@@ -8,6 +8,9 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Moved :py:func:`pvlib.bifacial.pvfactors_timeseries` to
+  :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries`.
+  :py:module:`pvlib.bifacial` is now a sub-package. (:pull:`717`)
 * :py:func:`pvlib.modelchain.basic_chain` is deprecated.
   See :py:meth:`pvlib.modelchain.ModelChain.with_pvwatts` and
   :py:meth:`pvlib.modelchain.ModelChain.with_sapm` for alternative simplified
@@ -18,6 +21,8 @@ Enhancements
 ~~~~~~~~~~~~
 * Added ``map_variables`` option to :py:func:`pvlib.iotools.get_psm3` and
   :py:func:`pvlib.iotools.read_psm3` (:pull:`1374`)
+* Added `pvlib.bifacial.infinite_sheds`, containing a model for irradiance
+  on front and back surfaces of bifacial arrays. (:pull:`717`)
 * Added ``map_variables`` option to :func:`~pvlib.iotools.read_crn` (:pull:`1368`)
 * Added :py:func:`pvlib.temperature.prilliman` for modeling cell temperature
   at short time steps (:issue:`1081`, :pull:`1391`)
@@ -50,7 +55,11 @@ Documentation
 ~~~~~~~~~~~~~
 * Fix documentation return error in :py:meth:`pvlib.forecast.ForecastModel.cloud_cover_to_transmittance_linear`
   (:issue:`1367`, :pull:`1370`)
-
+* Add gallery example illustrating bifacial simulation using the
+  :py:func:`pvlib.bifacial.pvfactors_timeseries` function and either
+  :py:class:`pvlib.modelchain.ModelChain` or procedural functions.
+  (:pull:`1394`)
+* Fix some typos (:pull:`1414`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -66,3 +75,5 @@ Contributors
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Johann Loux (:ghuser:`JoLo90`)
+* Saurabh Aneja (:ghuser:`spaneja`)
+* Jack Kelly (:ghuser:`JackKelly`)

@@ -305,7 +305,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     wind_speed : numeric, default 1.0
         Wind speed in m/s measured at the same height for which the wind loss
-        factor was determined.  The default value 1.0 m/2 is the wind
+        factor was determined.  The default value 1.0 m/s is the wind
         speed at module height used to determine NOCT. [m/s]
 
     u_c : float, default 29.0

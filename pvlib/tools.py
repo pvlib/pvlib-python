@@ -6,6 +6,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import pytz
+import warnings
 
 
 def cosd(angle):
@@ -286,14 +287,17 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
     Parameters
     ----------
-    params : dict or Dataframe
-        Parameters to be passed to `func`.
+    params : dict of numeric
+        Parameters to be passed to `func`. Each entry must be of the same
+        length.
 
     lower: numeric
-        Lower bound for the optimization
+        Lower bound for the optimization. Must be the same length as each
+        entry of params.
 
     upper: numeric
-        Upper bound for the optimization
+        Upper bound for the optimization. Must be the same length as each
+        entry of params.
 
     func: function
         Function to be optimized. Must be in the form
@@ -312,6 +316,7 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     Notes
     -----
     This function will find the points where the function is maximized.
+    Returns nan where lower or upper is nan, or where func evaluates to nan.
 
     See also
     --------
@@ -326,10 +331,15 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
     converged = False
     iterations = 0
-    iterlimit = 1 + np.max(
-        np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
 
-    while not converged and (iterations < iterlimit):
+    # handle all NaN case gracefully
+    with warnings.catch_warnings():
+        warnings.filterwarnings(action='ignore',
+                                message='All-NaN slice encountered')
+        iterlimit = 1 + np.nanmax(
+            np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
+
+    while not converged and (iterations <= iterlimit):
 
         phi = phim1 * (df['VH'] - df['VL'])
         df['V1'] = df['VL'] + phi
@@ -345,15 +355,23 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
         err = abs(df['V2'] - df['V1'])
 
         # works with single value because err is np.float64
-        converged = (err < atol).all()
+        converged = (err[~np.isnan(err)] < atol).all()
         # err will be less than atol before iterations hit the limit
         # but just to be safe
         iterations += 1
 
     if iterations > iterlimit:
-        raise Exception("iterations exceeded maximum")  # pragma: no cover
+        raise Exception("Iterations exceeded maximum. Check that func",
+                        " is not NaN in (lower, upper)")  # pragma: no cover
 
-    return func(df, 'V1'), df['V1']
+    try:
+        func_result = func(df, 'V1')
+        x = np.where(np.isnan(func_result), np.nan, df['V1'])
+    except KeyError:
+        func_result = np.full_like(upper, np.nan)
+        x = func_result.copy()
+
+    return func_result, x
 
 
 def _get_sample_intervals(times, win_length):

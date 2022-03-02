@@ -15,7 +15,7 @@ A :py:class:`~.modelchain.ModelChain` has three components:
 
 * a :py:class:`~.pvsystem.PVSystem` object, representing a collection of modules and inverters
 * a :py:class:`~.location.Location` object, representing a location on the planet
-* values for attributes that specify the model to be used for for each step in the PV modeling
+* values for attributes that specify the model to be used for each step in the PV modeling
   process.
 
 Modeling with a :py:class:`~.ModelChain` typically involves 3 steps:

@@ -29,7 +29,7 @@ VARIABLE_MAP = {
     'Clearsky GHI': 'ghi_clear',
     'Clearsky DHI': 'dhi_clear',
     'Clearsky DNI': 'dni_clear',
-    'Solar Zenith Angle': 'apparent_zenith',
+    'Solar Zenith Angle': 'solar_zenith',
     'Temperature': 'temp_air',
     'Relative Humidity': 'relative_humidity',
     'Dew point': 'temp_dew',

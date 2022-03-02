@@ -55,7 +55,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     Access: free, but requires registration, see [1]_
 
     Requests: max. 100 per day
-    Geographical coverage:worldwide for CAMS McClear and approximately -66° to
+    Geographical coverage: worldwide for CAMS McClear and approximately -66° to
     66° in both latitude and longitude for CAMS Radiation.
     Parameters
     ----------

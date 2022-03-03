@@ -191,7 +191,7 @@ def test_get_psm3_attribute_mapping(nrel_api_key):
     assert 'wind_speed' in data.columns
     assert 'latitude' in meta.keys()
     assert 'longitude' in meta.keys()
-    assert 'elevation' in meta.keys()
+    assert 'altitude' in meta.keys()
 
 
 @pytest.mark.remote_data

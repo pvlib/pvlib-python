@@ -29,7 +29,7 @@ VARIABLE_MAP = {
     'Clearsky GHI': 'ghi_clear',
     'Clearsky DHI': 'dhi_clear',
     'Clearsky DNI': 'dni_clear',
-    'Solar Zenith Angle': 'apparent_zenith',
+    'Solar Zenith Angle': 'solar_zenith',
     'Temperature': 'temp_air',
     'Relative Humidity': 'relative_humidity',
     'Dew point': 'temp_dew',
@@ -73,7 +73,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     attributes : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
         ``pvlib.iotools.psm3.ATTRIBUTES``. See references [2]_, [3]_, and [4]_
-        for lists of available fields.
+        for lists of available fields. Alternatively, pvlib names may also be
+        used (e.g. 'ghi' rather than 'GHI'); see :const:`VARIABLE_MAP`.
     leap_day : boolean, default False
         include leap day in the results. Only used for single-year requests
         (i.e., it is ignored for tmy/tgy/tdy requests).

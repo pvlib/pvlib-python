@@ -23,7 +23,7 @@ jobs:
       versionSpec: '$(python.version)'
 
   - script: |
-      pip install pytest pytest-cov pytest-mock requests-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
+      pip install pytest==7.0.1 pytest-cov pytest-mock requests-mock pytest-timeout pytest-azurepipelines pytest-rerunfailures pytest-remotedata
       pip install -e .
       pytest pvlib --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'

@@ -54,7 +54,8 @@ else:
 @requires_siphon
 @pytest.fixture(scope='module', params=_modelclasses)
 def model(request):
-    amodel = request.param()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = request.param()
     try:
         raw_data = amodel.get_data(_latitude, _longitude, _start, _end)
     except Exception as e:

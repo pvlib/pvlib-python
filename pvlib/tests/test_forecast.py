@@ -14,6 +14,8 @@ from .conftest import (
 )
 from .conftest import RERUNS, RERUNS_DELAY
 
+from pvlib._deprecation import pvlibDeprecationWarning
+
 pytestmark = pytest.mark.skipif(not has_siphon, reason='requires siphon')
 
 
@@ -90,7 +92,8 @@ def test_process_data(model):
 def test_bad_kwarg_get_data():
     # For more information on why you would want to pass an unknown keyword
     # argument, see Github issue #745.
-    amodel = NAM()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = NAM()
     data = amodel.get_data(_latitude, _longitude, _start, _end,
                            bad_kwarg=False)
     assert not data.empty
@@ -103,7 +106,8 @@ def test_bad_kwarg_get_data():
 def test_bad_kwarg_get_processed_data():
     # For more information on why you would want to pass an unknown keyword
     # argument, see Github issue #745.
-    amodel = NAM()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = NAM()
     data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
                                      bad_kwarg=False)
     assert not data.empty
@@ -114,7 +118,8 @@ def test_bad_kwarg_get_processed_data():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_how_kwarg_get_processed_data():
-    amodel = NAM()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = NAM()
     data = amodel.get_processed_data(_latitude, _longitude, _start, _end,
                                      how='clearsky_scaling')
     assert not data.empty
@@ -125,7 +130,8 @@ def test_how_kwarg_get_processed_data():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_vert_level():
-    amodel = NAM()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = NAM()
     vert_level = 5000
     amodel.get_processed_data(_latitude, _longitude, _start, _end,
                               vert_level=vert_level)
@@ -136,7 +142,8 @@ def test_vert_level():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_datetime():
-    amodel = NAM()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = NAM()
     start = datetime.now(tz=timezone.utc)
     end = start + timedelta(days=1)
     amodel.get_processed_data(_latitude, _longitude, start, end)
@@ -147,7 +154,8 @@ def test_datetime():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_queryvariables():
-    amodel = GFS()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = GFS()
     new_variables = ['u-component_of_wind_height_above_ground']
     data = amodel.get_data(_latitude, _longitude, _start, _end,
                            query_variables=new_variables)
@@ -156,16 +164,19 @@ def test_queryvariables():
 
 @requires_siphon
 def test_latest():
-    GFS(set_type='latest')
+    with pytest.warns(pvlibDeprecationWarning):
+        GFS(set_type='latest')
 
 
 @requires_siphon
 def test_full():
-    GFS(set_type='full')
+    with pytest.warns(pvlibDeprecationWarning):
+        GFS(set_type='full')
 
 
 def test_temp_convert():
-    amodel = GFS()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = GFS()
     data = pd.DataFrame({'temp_air': [273.15]})
     data['temp_air'] = amodel.kelvin_to_celsius(data['temp_air'])
 
@@ -183,27 +194,31 @@ def test_temp_convert():
 
 
 def test_set_location():
-    amodel = GFS()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = GFS()
     latitude, longitude = 32.2, -110.9
     time = 'UTC'
     amodel.set_location(time, latitude, longitude)
 
 
 def test_set_query_time_range_tzfail():
-    amodel = GFS()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = GFS()
     with pytest.raises(TypeError):
         amodel.set_query_time_range(datetime.now(), datetime.now())
 
 
 def test_cloud_cover_to_transmittance_linear():
-    amodel = GFS()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = GFS()
     assert_allclose(amodel.cloud_cover_to_transmittance_linear(0), 0.75)
     assert_allclose(amodel.cloud_cover_to_transmittance_linear(100), 0.0)
     assert_allclose(amodel.cloud_cover_to_transmittance_linear(0, 0.5), 0.5)
 
 
 def test_cloud_cover_to_ghi_linear():
-    amodel = GFS()
+    with pytest.warns(pvlibDeprecationWarning):
+        amodel = GFS()
     ghi_clear = 1000
     offset = 25
     out = amodel.cloud_cover_to_ghi_linear(0, ghi_clear, offset=offset)

@@ -31,7 +31,7 @@ _forecast_deprecated = deprecated(
 
 # don't decorate the base class to prevent the subclasses from showing
 # duplicate warnings:
-#@_forecast_deprecated
+# @_forecast_deprecated
 class ForecastModel:
     """
     An object for querying and holding forecast model information for

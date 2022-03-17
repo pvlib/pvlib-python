@@ -3,6 +3,7 @@ import platform
 import warnings
 
 import pandas as pd
+import os
 from pkg_resources import parse_version
 import pytest
 from functools import wraps
@@ -83,6 +84,18 @@ skip_windows = pytest.mark.skipif(platform_is_windows,
 
 
 try:
+    # Attempt to load BSRN credentials used for testing pvlib.iotools.get_bsrn
+    bsrn_username = os.environ["BSRN_FTP_USERNAME"]
+    bsrn_password = os.environ["BSRN_FTP_PASSWORD"]
+    has_bsrn_credentials = True
+except KeyError:
+    has_bsrn_credentials = False
+
+requires_bsrn_credentials = pytest.mark.skipif(
+    not has_bsrn_credentials, reason='requires bsrn credentials')
+
+
+try:
     import statsmodels  # noqa: F401
     has_statsmodels = True
 except ImportError:
@@ -90,15 +103,6 @@ except ImportError:
 
 requires_statsmodels = pytest.mark.skipif(
     not has_statsmodels, reason='requires statsmodels')
-
-
-try:
-    import tables
-    has_tables = True
-except ImportError:
-    has_tables = False
-
-requires_tables = pytest.mark.skipif(not has_tables, reason='requires tables')
 
 
 try:

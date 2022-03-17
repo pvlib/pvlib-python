@@ -41,7 +41,7 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
                                  '0 year 1 month 0 day 0 h 0 min 0 s': '1M'}
 
 
-def get_cams(start, end, latitude, longitude, email, identifier='mcclear',
+def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
              altitude=None, time_step='1h', time_ref='UT', verbose=False,
              integrated=False, label=None, map_variables=True,
              server='www.soda-is.com', timeout=30):
@@ -55,26 +55,24 @@ def get_cams(start, end, latitude, longitude, email, identifier='mcclear',
     Access: free, but requires registration, see [1]_
 
     Requests: max. 100 per day
-
-    Geographical coverage: Wordwide for CAMS McClear and -66° to 66° in both
-    latitude and longitude for CAMS Radiation
-
+    Geographical coverage: worldwide for CAMS McClear and approximately -66° to
+    66° in both latitude and longitude for CAMS Radiation.
 
     Parameters
     ----------
-    start: datetime like
-        First day of the requested period
-    end: datetime like
-        Last day of the requested period
     latitude: float
         in decimal degrees, between -90 and 90, north is positive (ISO 19115)
     longitude : float
         in decimal degrees, between -180 and 180, east is positive (ISO 19115)
+    start: datetime like
+        First day of the requested period
+    end: datetime like
+        Last day of the requested period
     email: str
         Email address linked to a SoDa account
     identifier: {'mcclear', 'cams_radiation'}
         Specify whether to retrieve CAMS Radiation or McClear parameters
-    altitude: float, default: None
+    altitude: float, optional
         Altitude in meters. If None, then the altitude is determined from the
         NASA SRTM database
     time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
@@ -96,7 +94,7 @@ def get_cams(start, end, latitude, longitude, email, identifier='mcclear',
         where applicable. See variable CAMS_VARIABLE_MAP.
     server: str, default: 'www.soda-is.com'
         Main server (www.soda-is.com) or backup mirror server (pro.soda-is.com)
-    timeout : int, default 30
+    timeout : int, default: 30
         Time in seconds to wait for server response before timeout
 
     Returns

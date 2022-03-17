@@ -365,7 +365,7 @@ def spa_python(time, latitude, longitude,
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = np.array(time.astype(np.int64)/10**9)
+    unixtime = np.array(time.view(np.int64)/10**9)
 
     spa = _spa_python_import(how)
 
@@ -445,7 +445,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
 
     # must convert to midnight UTC on day of interest
     utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
-    unixtime = np.array(utcday.astype(np.int64)/10**9)
+    unixtime = np.array(utcday.view(np.int64)/10**9)
 
     spa = _spa_python_import(how)
 
@@ -1001,7 +1001,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = np.array(time.astype(np.int64)/10**9)
+    unixtime = np.array(time.view(np.int64)/10**9)
 
     spa = _spa_python_import(how)
 
@@ -1381,8 +1381,8 @@ def hour_angle(times, longitude, equation_of_time):
     naive_times = times.tz_localize(None)  # naive but still localized
     # hours - timezone = (times - normalized_times) - (naive_times - times)
     hrs_minus_tzs = 1 / NS_PER_HR * (
-        2 * times.astype(np.int64) - times.normalize().astype(np.int64) -
-        naive_times.astype(np.int64))
+        2 * times.view(np.int64) - times.normalize().view(np.int64) -
+        naive_times.view(np.int64))
     # ensure array return instead of a version-dependent pandas <T>Index
     return np.asarray(
         15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)
@@ -1392,7 +1392,7 @@ def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
     """converts hour angles in degrees to hours as a numpy array"""
     naive_times = times.tz_localize(None)  # naive but still localized
     tzs = 1 / NS_PER_HR * (
-        naive_times.astype(np.int64) - times.astype(np.int64))
+        naive_times.view(np.int64) - times.view(np.int64))
     hours = (hourangle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
     return np.asarray(hours)
 
@@ -1406,7 +1406,7 @@ def _local_times_from_hours_since_midnight(times, hours):
     # normalize local, naive times to previous midnight and add the hours until
     # sunrise, sunset, and transit
     return pd.DatetimeIndex(
-        (naive_times.normalize().astype(np.int64) +
+        (naive_times.normalize().view(np.int64) +
          (hours * NS_PER_HR).astype(np.int64)).astype('datetime64[ns]'),
         tz=tz_info)
 
@@ -1415,7 +1415,7 @@ def _times_to_hours_after_local_midnight(times):
     """convert local pandas datetime indices to array of hours as floats"""
     times = times.tz_localize(None)
     hrs = 1 / NS_PER_HR * (
-        times.astype(np.int64) - times.normalize().astype(np.int64))
+        times.view(np.int64) - times.normalize().view(np.int64))
     return np.array(hrs)
 
 

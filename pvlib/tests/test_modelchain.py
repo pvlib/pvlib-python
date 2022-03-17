@@ -13,7 +13,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 from .conftest import assert_series_equal, assert_frame_equal
 import pytest
 
-from .conftest import fail_on_pvlib_version, requires_tables
+from .conftest import fail_on_pvlib_version
 
 
 @pytest.fixture(scope='function')
@@ -55,13 +55,13 @@ def cec_dc_snl_ac_arrays(cec_module_cs5p_220m, cec_inverter_parameters,
     module_parameters['dEgdT'] = -0.0002677
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     array_one = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=180,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=180),
         module=module_parameters['Name'],
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
     )
     array_two = pvsystem.Array(
-        surface_tilt=42.2, surface_azimuth=220,
+        mount=pvsystem.FixedMount(surface_tilt=42.2, surface_azimuth=220),
         module=module_parameters['Name'],
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
@@ -109,13 +109,13 @@ def pvsyst_dc_snl_ac_arrays(pvsyst_module_params, cec_inverter_parameters,
     module_parameters['b'] = 0.05
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     array_one = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=180,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=180),
         module=module,
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
     )
     array_two = pvsystem.Array(
-        surface_tilt=42.2, surface_azimuth=220,
+        mount=pvsystem.FixedMount(surface_tilt=42.2, surface_azimuth=220),
         module=module,
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
@@ -172,12 +172,12 @@ def pvwatts_dc_pvwatts_ac_system_arrays(sapm_temperature_cs5p_220m):
     temp_model_params = sapm_temperature_cs5p_220m.copy()
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
     array_one = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=180,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=180),
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
     )
     array_two = pvsystem.Array(
-        surface_tilt=42.2, surface_azimuth=220,
+        mount=pvsystem.FixedMount(surface_tilt=42.2, surface_azimuth=220),
         module_parameters=module_parameters.copy(),
         temperature_model_parameters=temp_model_params.copy()
     )
@@ -288,13 +288,15 @@ def sapm_dc_snl_ac_system_Array(sapm_module_params, cec_inverter_parameters,
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = sapm_module_params.copy()
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    array_one = pvsystem.Array(surface_tilt=32, surface_azimuth=180,
+    array_one = pvsystem.Array(mount=pvsystem.FixedMount(surface_tilt=32,
+                                                         surface_azimuth=180),
                                albedo=0.2, module=module,
                                module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params,
                                modules_per_string=1,
                                strings=1)
-    array_two = pvsystem.Array(surface_tilt=15, surface_azimuth=180,
+    array_two = pvsystem.Array(mount=pvsystem.FixedMount(surface_tilt=15,
+                                                         surface_azimuth=180),
                                albedo=0.2, module=module,
                                module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params,
@@ -312,13 +314,15 @@ def sapm_dc_snl_ac_system_same_arrays(sapm_module_params,
     module = 'Canadian_Solar_CS5P_220M___2009_'
     module_parameters = sapm_module_params.copy()
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    array_one = pvsystem.Array(surface_tilt=32.2, surface_azimuth=180,
+    array_one = pvsystem.Array(mount=pvsystem.FixedMount(surface_tilt=32.2,
+                                                         surface_azimuth=180),
                                module=module,
                                module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params,
                                modules_per_string=1,
                                strings=1)
-    array_two = pvsystem.Array(surface_tilt=32.2, surface_azimuth=180,
+    array_two = pvsystem.Array(mount=pvsystem.FixedMount(surface_tilt=32.2,
+                                                         surface_azimuth=180),
                                module=module,
                                module_parameters=module_parameters,
                                temperature_model_parameters=temp_model_params,
@@ -365,12 +369,12 @@ def multi_array_sapm_dc_snl_ac_system(
     temp_model_parameters = sapm_temperature_cs5p_220m.copy()
     inverter_parameters = cec_inverter_parameters
     array_one = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=180,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=180),
         module_parameters=module_parameters,
         temperature_model_parameters=temp_model_parameters
     )
     array_two = pvsystem.Array(
-        surface_tilt=32.2, surface_azimuth=220,
+        mount=pvsystem.FixedMount(surface_tilt=32.2, surface_azimuth=220),
         module_parameters=module_parameters,
         temperature_model_parameters=temp_model_parameters
     )
@@ -696,7 +700,7 @@ def test_run_model_with_weather_fuentes_temp(sapm_dc_snl_ac_system, location,
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
     sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters = {
-        'noct_installed': 45
+        'noct_installed': 45, 'surface_tilt': 30,
     }
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     mc.temperature_model = 'fuentes'
@@ -713,7 +717,7 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
                                               weather, mocker):
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
-    sapm_dc_snl_ac_system.temperature_model_parameters = {
+    sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters = {
         'noct': 45, 'module_efficiency': 0.2
     }
     mc = ModelChain(sapm_dc_snl_ac_system, location)
@@ -730,12 +734,13 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
 
 
 def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
-    system = SingleAxisTracker(
-        module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
-        temperature_model_parameters=(
-            sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-        ),
-        inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
+    with pytest.warns(pvlibDeprecationWarning):
+        system = SingleAxisTracker(
+            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
+            temperature_model_parameters=(
+                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
+            ),
+            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
     mocker.spy(system, 'singleaxis')
     mc = ModelChain(system, location)
     mc.run_model(weather)
@@ -751,12 +756,13 @@ def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
 
 def test_run_model_tracker_list(
         sapm_dc_snl_ac_system, location, weather, mocker):
-    system = SingleAxisTracker(
-        module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
-        temperature_model_parameters=(
-            sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-        ),
-        inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
+    with pytest.warns(pvlibDeprecationWarning):
+        system = SingleAxisTracker(
+            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
+            temperature_model_parameters=(
+                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
+            ),
+            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
     mocker.spy(system, 'singleaxis')
     mc = ModelChain(system, location)
     mc.run_model([weather])
@@ -1023,12 +1029,13 @@ def test_run_model_from_poa_arrays_solar_position_weather(
 
 def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
                                      total_irrad):
-    system = SingleAxisTracker(
-        module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,
-        temperature_model_parameters=(
-            sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-        ),
-        inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
+    with pytest.warns(pvlibDeprecationWarning):
+        system = SingleAxisTracker(
+            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
+            temperature_model_parameters=(
+                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
+            ),
+            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
     mc = ModelChain(system, location, aoi_model='no_loss',
                     spectral_model='no_loss')
     ac = mc.run_model_from_poa(total_irrad).results.ac
@@ -1439,6 +1446,7 @@ def test_infer_ac_model_invalid_params(location):
     module_parameters = {'pdc0': 1, 'gamma_pdc': 1}
     system = pvsystem.PVSystem(
         arrays=[pvsystem.Array(
+            mount=pvsystem.FixedMount(0, 180),
             module_parameters=module_parameters
         )],
         inverter_parameters={'foo': 1, 'bar': 2}
@@ -1770,7 +1778,7 @@ def test_ModelChain_no_extra_kwargs(sapm_dc_snl_ac_system, location):
         ModelChain(sapm_dc_snl_ac_system, location, arbitrary_kwarg='value')
 
 
-@fail_on_pvlib_version('1.0')
+@fail_on_pvlib_version('0.10')
 def test_ModelChain_attributes_deprecated_10(sapm_dc_snl_ac_system, location):
     match = 'Use ModelChain.results'
     mc = ModelChain(sapm_dc_snl_ac_system, location)
@@ -1780,7 +1788,6 @@ def test_ModelChain_attributes_deprecated_10(sapm_dc_snl_ac_system, location):
         mc.aoi = 5
 
 
-@requires_tables
 def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                             sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -1792,17 +1799,17 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    surface_tilt, surface_azimuth,
-                                    module_parameters, temp_model_params,
-                                    cec_inverter_parameters)
+    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
+        dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                        surface_tilt, surface_azimuth,
+                                        module_parameters, temp_model_params,
+                                        cec_inverter_parameters)
 
     expected = pd.Series(np.array([111.621405, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
 
-@requires_tables
 def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                        sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -1815,21 +1822,23 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
     modules = sam_data['sandiamod']
     module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
     temp_model_params = sapm_temperature_cs5p_220m.copy()
-    dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    surface_tilt, surface_azimuth,
-                                    module_parameters, temp_model_params,
-                                    cec_inverter_parameters,
-                                    pressure=93194)
+    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
+        dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                        surface_tilt, surface_azimuth,
+                                        module_parameters, temp_model_params,
+                                        cec_inverter_parameters,
+                                        pressure=93194)
 
     expected = pd.Series(np.array([113.190045, -2.00000000e-02]),
                          index=times)
     assert_series_equal(ac, expected)
 
-    dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                    surface_tilt, surface_azimuth,
-                                    module_parameters, temp_model_params,
-                                    cec_inverter_parameters,
-                                    altitude=altitude)
+    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
+        dc, ac = modelchain.basic_chain(times, latitude, longitude,
+                                        surface_tilt, surface_azimuth,
+                                        module_parameters, temp_model_params,
+                                        cec_inverter_parameters,
+                                        altitude=altitude)
 
     expected = pd.Series(np.array([113.189814, -2.00000000e-02]),
                          index=times)
@@ -1853,7 +1862,6 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
                         pd.Series([9, 5], index=times, name='ghi'))
 
 
-@requires_tables
 def test_complete_irradiance(sapm_dc_snl_ac_system, location):
     """Check calculations"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)
@@ -1882,7 +1890,6 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
 
 @pytest.mark.filterwarnings("ignore:This function is not safe at the moment")
 @pytest.mark.parametrize("input_type", [tuple, list])
-@requires_tables
 def test_complete_irradiance_arrays(
         sapm_dc_snl_ac_system_same_arrays, location, input_type):
     """ModelChain.complete_irradiance can accept a tuple of weather
@@ -1953,10 +1960,13 @@ def test_inconsistent_array_params(location,
     different_module_system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=sapm_module_params),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params)]
     )
     with pytest.raises(ValueError, match=module_error):
@@ -1964,16 +1974,19 @@ def test_inconsistent_array_params(location,
     different_temp_system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params,
                 temperature_model_parameters={'a': 1,
                                               'b': 1,
                                               'deltaT': 1}),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params,
                 temperature_model_parameters={'a': 2,
                                               'b': 2,
                                               'deltaT': 2}),
             pvsystem.Array(
+                mount=pvsystem.FixedMount(0, 180),
                 module_parameters=cec_module_params,
                 temperature_model_parameters={'b': 3, 'deltaT': 3})]
     )

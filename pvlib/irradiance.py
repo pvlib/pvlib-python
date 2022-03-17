@@ -795,6 +795,12 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     sky_diffuse : numeric
         The sky diffuse component of the solar radiation.
 
+    Notes
+    ------
+    When supplying ``projection_ratio``, consider constraining its values
+    when zenith angle approaches 90 degrees or angle of incidence
+    projection is negative. See code for details.
+
     References
     -----------
     .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
@@ -1470,7 +1476,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     model.
 
     Implements the modified DISC model known as "DIRINT" introduced in
-    [1]. DIRINT predicts direct normal irradiance (DNI) from measured
+    [1]_. DIRINT predicts direct normal irradiance (DNI) from measured
     global horizontal irradiance (GHI). DIRINT improves upon the DISC
     model by using time-series GHI data and dew point temperature
     information. The effectiveness of the DIRINT model improves with
@@ -1712,11 +1718,11 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     """
     Determine DNI from GHI using the DIRINDEX model.
 
-    The DIRINDEX model [1] modifies the DIRINT model implemented in
-    :py:func:``pvlib.irradiance.dirint`` by taking into account information
+    The DIRINDEX model [1]_ modifies the DIRINT model implemented in
+    :py:func:`pvlib.irradiance.dirint` by taking into account information
     from a clear sky model. It is recommended that ``ghi_clearsky`` be
     calculated using the Ineichen clear sky model
-    :py:func:``pvlib.clearsky.ineichen`` with ``perez_enhancement=True``.
+    :py:func:`pvlib.clearsky.ineichen` with ``perez_enhancement=True``.
 
     The pvlib implementation limits the clearness index to 1.
 
@@ -1868,8 +1874,8 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
     albedo : numeric, default 0.25
         Surface albedo
 
-    model : String, default 'isotropic'
-        Irradiance model.
+    model : String, default 'perez'
+        Irradiance model.  See :py:func:`get_sky_diffuse` for allowed values.
 
     model_perez : String, default 'allsitescomposite1990'
         Used only if model='perez'. See :py:func:`perez`.
@@ -1884,7 +1890,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
 
     Returns
     -------
-    data : OrderedDict or DataFrame
+    data : DataFrame
         Contains the following keys/columns:
 
             * ``ghi``: the modeled global horizontal irradiance in W/m^2.

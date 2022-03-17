@@ -71,7 +71,7 @@ fig.show()
 # %%
 # Here is the original figure from [1]_ for comparison:
 #
-# .. image:: ../_images/Coello_Boyle_2019_Fig3.png
+# .. image:: ../../_images/Coello_Boyle_2019_Fig3.png
 #   :alt: Figure 3A from the paper showing a simulated soiling signal.
 #
 # Note that this figure shows additional timeseries not calculated here:

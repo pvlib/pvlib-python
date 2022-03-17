@@ -3,7 +3,7 @@
  - [ ] Closes #xxxx
  - [ ] I am familiar with the [contributing guidelines](https://pvlib-python.readthedocs.io/en/latest/contributing.html)
  - [ ] Tests added
- - [ ] Updates entries to [`docs/sphinx/source/api.rst`](https://github.com/pvlib/pvlib-python/blob/master/docs/sphinx/source/api.rst) for API changes.
+ - [ ] Updates entries in [`docs/sphinx/source/reference`](https://github.com/pvlib/pvlib-python/blob/master/docs/sphinx/source/reference) for API changes.
  - [ ] Adds description and name entries in the appropriate "what's new" file in [`docs/sphinx/source/whatsnew`](https://github.com/pvlib/pvlib-python/tree/master/docs/sphinx/source/whatsnew) for all changes. Includes link to the GitHub Issue with `` :issue:`num` `` or this Pull Request with `` :pull:`num` ``. Includes contributor name and/or GitHub username (link with `` :ghuser:`user` ``).
  - [ ] New code is fully documented. Includes [numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) compliant docstrings, examples, and comments where necessary.
  - [ ] Pull request is nearly complete and ready for detailed review.

@@ -228,7 +228,7 @@ def martin_ruiz(aoi, a_r=0.16):
     .. math::
 
        IAM = \frac{1 - \exp(-\cos(\frac{aoi}{a_r}))}
-       {1 - \exp(\frac{-1}{a_r}}
+       {1 - \exp(\frac{-1}{a_r})}
 
     which is presented as :math:`AL(\alpha) = 1 - IAM` in equation 4 of [1]_,
     with :math:`\alpha` representing the angle of incidence AOI. Thus IAM = 1

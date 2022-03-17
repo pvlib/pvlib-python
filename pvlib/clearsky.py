@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
+import h5py
 
 from pvlib import atmosphere, tools
 
@@ -186,13 +187,6 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # 1st row: 89.9583 S, 2nd row: 89.875 S
     # 1st column: 179.9583 W, 2nd column: 179.875 W
 
-    try:
-        import tables
-    except ImportError:
-        raise ImportError('The Linke turbidity lookup table requires tables. '
-                          'You can still use clearsky.ineichen if you '
-                          'supply your own turbidities.')
-
     if filepath is None:
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
@@ -200,9 +194,8 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
-    with tables.open_file(filepath) as lt_h5_file:
-        lts = lt_h5_file.root.LinkeTurbidity[latitude_index,
-                                             longitude_index, :]
+    with h5py.File(filepath, 'r') as lt_h5_file:
+        lts = lt_h5_file['LinkeTurbidity'][latitude_index, longitude_index]
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
@@ -565,7 +558,7 @@ def _calc_taud(w, aod700, p):
     # set up nan-tolerant masks
     aod700_lt_0p05 = np.full_like(aod700, False, dtype='bool')
     np.less(aod700, 0.05, where=~np.isnan(aod700), out=aod700_lt_0p05)
-    aod700_mask = np.array([aod700_lt_0p05, ~aod700_lt_0p05], dtype=np.int)
+    aod700_mask = np.array([aod700_lt_0p05, ~aod700_lt_0p05], dtype=int)
 
     # create tuples of coefficients for
     # aod700 < 0.05, aod700 >= 0.05
@@ -652,17 +645,18 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
     # shift to get forward difference, .diff() is backward difference instead
     data_diff = data.diff().shift(-1)
     data_slope = data_diff / sample_interval
-    data_slope_nstd = _slope_nstd_windowed(data, H, samples_per_window)
+    data_slope_nstd = _slope_nstd_windowed(data_slope.values[:-1], data, H,
+                                           samples_per_window, sample_interval)
     data_slope_nstd = data_slope_nstd
 
     return data_mean, data_max, data_slope_nstd, data_slope
 
 
-def _slope_nstd_windowed(data, H, samples_per_window):
+def _slope_nstd_windowed(slopes, data, H, samples_per_window, sample_interval):
     with np.errstate(divide='ignore', invalid='ignore'):
-        raw = np.diff(data)
-        raw = raw[H[:-1, ]].std(ddof=1, axis=0) / data.values[H].mean(axis=0)
-    return _to_centered_series(raw, data.index, samples_per_window)
+        nstd = slopes[H[:-1, ]].std(ddof=1, axis=0) \
+            / data.values[H].mean(axis=0)
+    return _to_centered_series(nstd, data.index, samples_per_window)
 
 
 def _max_diff_windowed(data, H, samples_per_window):
@@ -683,23 +677,6 @@ def _to_centered_series(vals, idx, samples_per_window):
                   constant_values=np.nan)
     shift = samples_per_window // 2  # align = 'center' only
     return pd.Series(index=idx, data=vals).shift(shift)
-
-
-def _get_sample_intervals(times, win_length):
-    """ Calculates time interval and samples per window for Reno-style clear
-    sky detection functions
-    """
-    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
-
-    # determine if we can proceed
-    if times.inferred_freq and len(np.unique(deltas)) == 1:
-        sample_interval = times[1] - times[0]
-        sample_interval = sample_interval.seconds / 60  # in minutes
-        samples_per_window = int(win_length / sample_interval)
-        return sample_interval, samples_per_window
-    else:
-        raise NotImplementedError('algorithm does not yet support unequal '
-                                  'times. consider resampling your data.')
 
 
 def _clear_sample_index(clear_windows, samples_per_window, align, H):
@@ -855,8 +832,8 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     else:
         clear = clearsky
 
-    sample_interval, samples_per_window = _get_sample_intervals(times,
-                                                                window_length)
+    sample_interval, samples_per_window = \
+        tools._get_sample_intervals(times, window_length)
 
     # generate matrix of integers for creating windows with indexing
     H = hankel(np.arange(samples_per_window),

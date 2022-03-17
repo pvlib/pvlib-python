@@ -64,6 +64,8 @@ Documentation
 Requirements
 ~~~~~~~~~~~~
 * numpy >= 1.16.0 is now required for all python versions. (:pull:`1400`)
+* Fix an installation issue with ``dataclasses`` on python 3.6
+  (:issue:`1302`, :pull:`1422`)
 
 
 Contributors

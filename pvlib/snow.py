@@ -190,7 +190,7 @@ def dc_loss_nrel(snow_coverage, num_strings):
 def _townsend_Se(S, N):
     '''
     Calculates effective snow for a given month based upon the total snowfall
-    received in a month in inches and the number of events where snowfall is 
+    received in a month in inches and the number of events where snowfall is
     greater than 1 inch
 
     Parameters
@@ -204,31 +204,35 @@ def _townsend_Se(S, N):
     Returns
     -------
     effective_snowfall : numeric
-        Effective snowfall as defined in the townsend model 
+        Effective snowfall as defined in the townsend model
 
     References
     ----------
-    .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An 
-            update from two winters of measurements in the SIERRA. Conference 
-            Record of the IEEE Photovoltaic Specialists Conference. 
+    .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
+            update from two winters of measurements in the SIERRA. Conference
+            Record of the IEEE Photovoltaic Specialists Conference.
             003231-003236. :doi:`10.1109/PVSC.2011.6186627`
        Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
 
-    '''
-    return(np.where(N>0, 0.5 * S * (1 + 1/N), 0))
+    '''# noqa
+    return(np.where(N > 0, 0.5 * S * (1 + 1/N), 0))
 
 
-def loss_townsend(snow_total, snow_events, tilt, relative_humidity, temp_air, poa_global, row_len, H, P=40):
+def loss_townsend(snow_total, snow_events, tilt, relative_humidity, temp_air,
+                  poa_global, row_len, H, P=40):
     '''
-    Calculates monthly snow loss based on a generalized monthly snow loss model discussed in [1]_.
+    Calculates monthly snow loss based on a generalized monthly snow loss model
+    discussed in [1]_.
 
     Parameters
     ----------
     snow_total : numeric
-        Inches of snow received in the current month. Referred as S in the paper
+        Inches of snow received in the current month. Referred as S in the
+        paper
 
     snow_events : numeric
-        Number of snowfall events with snowfall > 1". Referred as N in the paper
+        Number of snowfall events with snowfall > 1". Referred as N in the
+        paper
 
     tilt : numeric
         Array tilt in degrees
@@ -249,7 +253,7 @@ def loss_townsend(snow_total, snow_events, tilt, relative_humidity, temp_air, po
         Drop height from array edge to ground in inches
 
     P : float
-        piled snow angle, assumed to stabilize at 40° , the midpoint of 
+        piled snow angle, assumed to stabilize at 40° , the midpoint of
         25°-55° avalanching slope angles
 
     Returns
@@ -259,29 +263,29 @@ def loss_townsend(snow_total, snow_events, tilt, relative_humidity, temp_air, po
 
     References
     ----------
-    .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An 
-            update from two winters of measurements in the SIERRA. Conference 
-            Record of the IEEE Photovoltaic Specialists Conference. 
-            003231-003236. 10.1109/PVSC.2011.6186627. 
+    .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
+            update from two winters of measurements in the SIERRA. Conference
+            Record of the IEEE Photovoltaic Specialists Conference.
+            003231-003236. 10.1109/PVSC.2011.6186627.
        Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
-    '''
+    '''# noqa
 
     C1 = 5.7e04
     C2 = 0.51
-    
-    snow_total_prev = np.roll(snow_total,1)
-    snow_events_prev = np.roll(snow_events,1)
-    
+
+    snow_total_prev = np.roll(snow_total, 1)
+    snow_events_prev = np.roll(snow_events, 1)
+
     Se = _townsend_Se(snow_total, snow_events)
     Se_prev = _townsend_Se(snow_total_prev, snow_events_prev)
-    
+
     Se_weighted = 1/3 * Se_prev + 2/3 * Se
-    gamma = (row_len * Se_weighted * np.cos(np.deg2rad(tilt)))/ \
-        (np.clip((H**2 - Se_weighted**2),a_min=0.01,a_max=None)/2/ \
+    gamma = (row_len * Se_weighted * np.cos(np.deg2rad(tilt))) / \
+        (np.clip((H**2 - Se_weighted**2), a_min=0.01, a_max=None) / 2 /
             np.tan(np.deg2rad(P)))
-    
+
     GIT = 1 - C2 * np.exp(-gamma)
     loss = C1 * Se_weighted * (np.cos(np.deg2rad(tilt)))**2 * GIT * \
         relative_humidity / (temp_air+273.15)**2 / poa_global**0.67
-    
-    return (np.round(loss,2))
+
+    return (np.round(loss, 2))

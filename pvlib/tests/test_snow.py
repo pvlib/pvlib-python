@@ -96,6 +96,7 @@ def test_dc_loss_nrel():
     actual = snow.dc_loss_nrel(snow_coverage, num_strings)
     assert_series_equal(expected, actual)
 
+
 def test__townsend_Se():
     S = np.array([10, 10, 5, 1, 0, 0, 0, 0, 0, 0, 5, 10])
     N = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
@@ -103,18 +104,21 @@ def test__townsend_Se():
     actual = snow._townsend_Se(S, N)
     np.testing.assert_allclose(expected, actual, rtol=1e-07)
 
+
 def test_loss_townsend():
     snow_total = np.array([10, 10, 5, 1, 0, 0, 0, 0, 0, 0, 5, 10])
     snow_events = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
     tilt = 20
-    relative_humidity = np.array([80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80])
+    relative_humidity = np.array([80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
+                                  80, 80])
     temp_air = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    poa_global = np.array([350, 350, 350, 350, 350, 350, 350, 350, 350, 350, 350, 350])
+    poa_global = np.array([350, 350, 350, 350, 350, 350, 350, 350, 350, 350,
+                           350, 350])
     P = 40
     row_len = 100
     H = 10
     expected = np.array([7.7, 7.99, 6.22, 1.72, 0, 0, 0, 0, 0, 0, 2.64, 6.07])
-    actual = snow.loss_townsend(snow_total,snow_events,tilt,relative_humidity,temp_air,
-                                            poa_global,row_len,H,P)
+    actual = snow.loss_townsend(snow_total, snow_events, tilt,
+                                relative_humidity, temp_air,
+                                poa_global, row_len, H, P)
     np.testing.assert_allclose(expected, actual, rtol=1e-07)
-

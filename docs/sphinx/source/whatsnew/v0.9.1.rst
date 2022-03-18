@@ -16,6 +16,8 @@ Deprecations
   :py:meth:`pvlib.modelchain.ModelChain.with_sapm` for alternative simplified
   :py:class:`~pvlib.modelchain.ModelChain` interfaces, although note that the
   inputs do not directly translate. (:pull:`1401`)
+* All functionality in the ``pvlib.forecast`` module is deprecated.
+  For details, see :ref:`forecasts`. (:issue:`1057`, :pull:`1426`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -66,6 +68,8 @@ Documentation
 Requirements
 ~~~~~~~~~~~~
 * numpy >= 1.16.0 is now required for all python versions. (:pull:`1400`)
+* Fix an installation issue with ``dataclasses`` on python 3.6
+  (:issue:`1302`, :pull:`1422`)
 
 
 Contributors
@@ -80,4 +84,6 @@ Contributors
 * Saurabh Aneja (:ghuser:`spaneja`)
 * Jack Kelly (:ghuser:`JackKelly`)
 * Somasree Majumder(:ghuser:`soma2000-lang`)
+* Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Abhishek Parikh (:ghuser:`abhisheksparikh`)
+

@@ -43,11 +43,8 @@ INSTALL_REQUIRES = ['numpy >= 1.16.0',
                     'pytz',
                     'requests',
                     'scipy >= 1.2.0',
-                    'h5py']
-
-# include dataclasses as a dependency only on python 3.6
-if sys.version_info.major == 3 and sys.version_info.minor == 6:
-    INSTALL_REQUIRES.append('dataclasses')
+                    'h5py',
+                    'dataclasses; python_version < "3.7"']
 
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',

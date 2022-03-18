@@ -35,7 +35,7 @@
 </tr>
 <tr>
   <td>Code Quality</td>
-  <td>
+  <td>
     <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/context:python">
     <img src="https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm quality grade" />
     </a>
@@ -46,7 +46,7 @@
 </tr>
 <tr>
   <td>Coverage</td>
-  <td>
+  <td>
     <a href="https://coveralls.io/r/pvlib/pvlib-python">
     <img src="https://img.shields.io/coveralls/pvlib/pvlib-python.svg" alt="coveralls coverage" />
     </a>
@@ -62,7 +62,8 @@
     <img src="https://img.shields.io/badge/benchmarks-asv-lightgrey" />
     </a>
   </td>
-  </tr>
+</tr>
+<tr>
   <td>Publications</td>
   <td>
     <a href="https://doi.org/10.5281/zenodo.3762635">

@@ -5,7 +5,7 @@ associated effects on PV module output
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import sind
+from pvlib.tools import sind, cosd, tand
 
 
 def _time_delta_in_hours(times):
@@ -196,10 +196,10 @@ def _townsend_Se(S, N):
     Parameters
     ----------
     S : numeric
-        Snowfall in inches received in a month
+        Snowfall in inches received in a month [in]
 
     N: numeric
-        Number of snowfall events with snowfall > 1"
+        Number of snowfall events with snowfall > 1" [-]
 
     Returns
     -------
@@ -209,17 +209,18 @@ def _townsend_Se(S, N):
     References
     ----------
     .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
-            update from two winters of measurements in the SIERRA. Conference
-            Record of the IEEE Photovoltaic Specialists Conference.
-            003231-003236. :doi:`10.1109/PVSC.2011.6186627`
+       update from two winters of measurements in the SIERRA. Conference
+       Record of the IEEE Photovoltaic Specialists Conference.
+       003231-003236. :doi:`10.1109/PVSC.2011.6186627`
        Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
 
-    '''# noqa
+    '''  # noqa: E501
     return(np.where(N > 0, 0.5 * S * (1 + 1/N), 0))
 
 
-def loss_townsend(snow_total, snow_events, tilt, relative_humidity, temp_air,
-                  poa_global, row_len, H, P=40):
+def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
+                  temp_air, poa_global, slant_height, lower_edge_drop_height,
+                  angle_of_repose=40):
     '''
     Calculates monthly snow loss based on a generalized monthly snow loss model
     discussed in [1]_.
@@ -228,47 +229,47 @@ def loss_townsend(snow_total, snow_events, tilt, relative_humidity, temp_air,
     ----------
     snow_total : numeric
         Inches of snow received in the current month. Referred as S in the
-        paper
+        paper [in]
 
     snow_events : numeric
         Number of snowfall events with snowfall > 1". Referred as N in the
-        paper
+        paper [-]
 
-    tilt : numeric
-        Array tilt in degrees
+    surface_tilt : numeric
+        Array surface_tilt [deg]
 
     relative_humidity : numeric
-        Relative humidity in percentage
+        Relative humidity [%]
 
     temp_air : numeric
-        Ambient temperature [C]
+        Ambient temperature [°C]
 
     poa_global : numeric
-        Plane of array insolation in kWh/m2/month
+        Plane of array insolation [kWh/m2/month]
 
-    row_len : float
-        Row length in the slanted plane of array dimension in inches
+    slant_height : float
+        Row length in the slanted plane of array dimension [in]
 
-    H : float
-        Drop height from array edge to ground in inches
+    lower_edge_drop_height : float
+        Drop height from array edge to ground [in]
 
     P : float
         piled snow angle, assumed to stabilize at 40° , the midpoint of
-        25°-55° avalanching slope angles
+        25°-55° avalanching slope angles [deg]
 
     Returns
     -------
     loss : numeric
-        Average monthly DC capacity loss in percentage due to snow coverage
+        Average monthly DC capacity loss due to snow coverage [%]
 
     References
     ----------
     .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
-            update from two winters of measurements in the SIERRA. Conference
-            Record of the IEEE Photovoltaic Specialists Conference.
-            003231-003236. 10.1109/PVSC.2011.6186627.
+       update from two winters of measurements in the SIERRA. Conference
+       Record of the IEEE Photovoltaic Specialists Conference.
+       003231-003236. 10.1109/PVSC.2011.6186627.
        Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
-    '''# noqa
+    '''  # noqa: E501
 
     C1 = 5.7e04
     C2 = 0.51
@@ -280,12 +281,12 @@ def loss_townsend(snow_total, snow_events, tilt, relative_humidity, temp_air,
     Se_prev = _townsend_Se(snow_total_prev, snow_events_prev)
 
     Se_weighted = 1/3 * Se_prev + 2/3 * Se
-    gamma = (row_len * Se_weighted * np.cos(np.deg2rad(tilt))) / \
-        (np.clip((H**2 - Se_weighted**2), a_min=0.01, a_max=None) / 2 /
-            np.tan(np.deg2rad(P)))
+    gamma = (slant_height * Se_weighted * cosd(surface_tilt)) / \
+        (np.clip((lower_edge_drop_height**2 - Se_weighted**2), a_min=0.01,
+         a_max=None) / 2 / tand(angle_of_repose))
 
     GIT = 1 - C2 * np.exp(-gamma)
-    loss = C1 * Se_weighted * (np.cos(np.deg2rad(tilt)))**2 * GIT * \
-        relative_humidity / (temp_air+273.15)**2 / poa_global**0.67
+    loss = (C1 * Se_weighted * (cosd(surface_tilt))**2 * GIT *
+            relative_humidity / (temp_air+273.15)**2 / poa_global**0.67) / 100
 
-    return (np.round(loss, 2))
+    return loss

@@ -1097,15 +1097,9 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     temp : int or float
         avg. yearly temperature at location in
         degrees C; used for atmospheric correction
-    delta_t : float, optional
-        If delta_t is None, uses spa.calculate_deltat
-        using time.year and time.month from pandas.DatetimeIndex.
-        For most simulations specifing delta_t is sufficient.
+    delta_t : float
         Difference between terrestrial time and UT1.
-        *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.
-        By default, use USNO historical data and predictions
-    atmos_refrac : float, optional
+    atmos_refrac : float
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     numthreads: int, optional, default 8

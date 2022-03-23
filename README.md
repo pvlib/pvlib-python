@@ -56,6 +56,13 @@
   </td>
 </tr>
 <tr>
+  <td>Benchmarks</td>
+  <td>
+    <a href="https://pvlib-benchmarker.github.io/pvlib-benchmarks/">
+    <img src="https://img.shields.io/badge/benchmarks-asv-lightgrey" />
+    </a>
+  </td>
+  </tr>
   <td>Publications</td>
   <td>
     <a href="https://doi.org/10.5281/zenodo.3762635">

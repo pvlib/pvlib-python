@@ -16,9 +16,13 @@ Deprecations
   :py:meth:`pvlib.modelchain.ModelChain.with_sapm` for alternative simplified
   :py:class:`~pvlib.modelchain.ModelChain` interfaces, although note that the
   inputs do not directly translate. (:pull:`1401`)
+* All functionality in the ``pvlib.forecast`` module is deprecated.
+  For details, see :ref:`forecasts`. (:issue:`1057`, :pull:`1426`)
 
 Enhancements
 ~~~~~~~~~~~~
+* Added ``map_variables`` option to :py:func:`pvlib.iotools.get_psm3` and
+  :py:func:`pvlib.iotools.read_psm3` (:pull:`1374`)
 * Added `pvlib.bifacial.infinite_sheds`, containing a model for irradiance
   on front and back surfaces of bifacial arrays. (:pull:`717`)
 * Added ``map_variables`` option to :func:`~pvlib.iotools.read_crn` (:pull:`1368`)
@@ -53,11 +57,17 @@ Documentation
 ~~~~~~~~~~~~~
 * Fix documentation return error in :py:meth:`pvlib.forecast.ForecastModel.cloud_cover_to_transmittance_linear`
   (:issue:`1367`, :pull:`1370`)
-
+* Add gallery example illustrating bifacial simulation using the
+  :py:func:`pvlib.bifacial.pvfactors_timeseries` function and either
+  :py:class:`pvlib.modelchain.ModelChain` or procedural functions.
+  (:pull:`1394`)
+* Fix some typos (:pull:`1414`)
 
 Requirements
 ~~~~~~~~~~~~
 * numpy >= 1.16.0 is now required for all python versions. (:pull:`1400`)
+* Fix an installation issue with ``dataclasses`` on python 3.6
+  (:issue:`1302`, :pull:`1422`)
 
 
 Contributors
@@ -69,3 +79,7 @@ Contributors
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Johann Loux (:ghuser:`JoLo90`)
+* Saurabh Aneja (:ghuser:`spaneja`)
+* Jack Kelly (:ghuser:`JackKelly`)
+* Somasree Majumder(:ghuser:`soma2000-lang`)
+* Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)

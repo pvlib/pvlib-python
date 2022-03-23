@@ -59,6 +59,8 @@ Documentation
   :py:class:`pvlib.modelchain.ModelChain` or procedural functions.
   (:pull:`1394`)
 * Fix some typos (:pull:`1414`)
+* Clarify the descriptions of ``delta_t`` in several solar position functions
+  (:pull:`1429`)
 
 Requirements
 ~~~~~~~~~~~~

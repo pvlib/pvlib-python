@@ -281,10 +281,10 @@ included with pvlib python by using the :py:func:`~pvlib.pvsystem.retrieve_sam` 
     modules = pvsystem.retrieve_sam('cecmod')
     # retrieve_sam returns a dict. the dict keys are module names,
     # and the values are model parameters for that module
-    module_parameters = modules['Canadian_Solar_Inc__CS5P_220M']
+    module_parameters = modules['JA_Solar_JAM5_72_165']
     # Load the database of CEC inverter model parameters
     inverters = pvsystem.retrieve_sam('cecinverter')
-    inverter_parameters = inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
+    inverter_parameters = inverters['Enphase_Energy_Inc___IQ6_60_ACM_US__208V_']
     system_one_array = pvsystem.PVSystem(module_parameters=module_parameters,
                                          inverter_parameters=inverter_parameters)
 

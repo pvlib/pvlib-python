@@ -136,8 +136,11 @@ def test_retrieve_sam_cecmod():
         'Bifacial',
         'Length',
         'Width',
+        'Manufacturer',
     ]
-    module = 'Itek_Energy_LLC_iT_300_HE'
+    # nothing special about this module; OK to switch to another
+    # if this one disappears from the CEC file
+    module = 'JA_Solar_JAM5_72_165'
     assert module in data
     assert set(data[module].keys()) == set(keys)
 
@@ -165,9 +168,11 @@ def test_retrieve_sam_cecinverter():
         'Mppt_low',
         'Mppt_high',
         'CEC_Date',
-        'CEC_Type',
+        'CEC_hybrid',
     ]
-    inverter = 'Yaskawa_Solectria_Solar__PVI_5300_208__208V_'
+    # nothing special about this inverter; OK to switch to another
+    # if this one disappears from the CEC file
+    inverter = 'Yaskawa_Solectria_Solar__XGI_1500_166_166__600V_'
     assert inverter in data
     assert set(data[inverter].keys()) == set(keys)
 

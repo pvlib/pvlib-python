@@ -56,7 +56,9 @@ EXTRAS_REQUIRE = {
     'doc': ['ipython', 'matplotlib', 'sphinx == 3.1.2',
             'pydata-sphinx-theme == 0.8.0', 'sphinx-gallery',
             'docutils == 0.15.2', 'pillow', 'netcdf4', 'siphon',
-            'sphinx-toggleprompt >= 0.0.5', 'pvfactors'],
+            'sphinx-toggleprompt >= 0.0.5', 'pvfactors',
+            'jinja2<3.1',  # https://github.com/sphinx-doc/sphinx/issues/10291
+            ],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))

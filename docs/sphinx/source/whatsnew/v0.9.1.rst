@@ -28,6 +28,12 @@ Enhancements
 * Added ``map_variables`` option to :func:`~pvlib.iotools.read_crn` (:pull:`1368`)
 * Added :py:func:`pvlib.temperature.prilliman` for modeling cell temperature
   at short time steps (:issue:`1081`, :pull:`1391`)
+* Updated the CEC parameter tables returned by :py:func:`pvlib.pvsystem.retrieve_sam`
+  with the latest tables from SAM (:issue:`1345`, :pull:`1432`):
+
+    - ``cecmod`` updated from ``2019-03-05`` to ``2021-12-01``
+    - ``cecinverter`` updated from ``2019-03-05`` to ``2022-02-18``
+
 
 Bug fixes
 ~~~~~~~~~

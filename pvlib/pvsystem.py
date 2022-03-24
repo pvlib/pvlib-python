@@ -2327,23 +2327,25 @@ def retrieve_sam(name=None, path=None):
 
     >>> from pvlib import pvsystem
     >>> invdb = pvsystem.retrieve_sam('CECInverter')
-    >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
+    >>> inverter = invdb.ABB__PVI_6000_OUTD_US_Z_M_A__277V_
     >>> inverter
-    Vac           277.000000
-    Paco         6000.000000
-    Pdco         6165.670000
-    Vdco          361.123000
-    Pso            36.792300
+    Vac                  277
+    Pso              35.3609
+    Paco              6000.0
+    Pdco             6196.81
+    Vdco               400.0
     C0             -0.000002
-    C1             -0.000047
-    C2             -0.001861
-    C3              0.000721
-    Pnt             0.070000
-    Vdcmax        600.000000
-    Idcmax         32.000000
-    Mppt_low      200.000000
-    Mppt_high     500.000000
-    Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
+    C1             -0.000024
+    C2             -0.000044
+    C3             -0.001749
+    Pnt                 0.32
+    Vdcmax             480.0
+    Idcmax            15.492
+    Mppt_low           100.0
+    Mppt_high          480.0
+    CEC_Date      10/15/2018
+    CEC_hybrid             N
+    Name: ABB__PVI_6000_OUTD_US_Z_M_A__277V_, dtype: object
     '''
 
     if name is not None:

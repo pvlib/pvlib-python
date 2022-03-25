@@ -34,6 +34,7 @@ Enhancements
     - ``cecmod`` updated from ``2019-03-05`` to ``2021-12-01``
     - ``cecinverter`` updated from ``2019-03-05`` to ``2022-02-18``
 
+  Switching between these versions is controlled by the new ``version`` parameter.
 
 Bug fixes
 ~~~~~~~~~

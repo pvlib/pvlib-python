@@ -109,7 +109,7 @@ def test_retrieve_sam_cecmod_version():
     particular, check for a known module in the database and check for the
     expected keys for that module.
     """
-    data = pvsystem.retrieve_sam('cecmod', version='2013-03-05')
+    data = pvsystem.retrieve_sam('cecmod', version='2019-03-05')
     keys = [
         'BIPV',
         'Date',

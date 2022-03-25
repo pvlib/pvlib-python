@@ -29,8 +29,8 @@ Enhancements
 * Added :py:func:`pvlib.temperature.prilliman` for modeling cell temperature
   at short time steps (:issue:`1081`, :pull:`1391`)
 * Updated the CEC parameter tables returned by :py:func:`pvlib.pvsystem.retrieve_sam`
-  with the latest tables from SAM. A new optional ``version`` parameter can switch
-  between versions (:issue:`1345`, :pull:`1433`)
+  with the latest tables from SAM. Older tables can be retrieved using the new
+  optional ``version`` parameter. (:issue:`1345`, :pull:`1433`)
 
 Bug fixes
 ~~~~~~~~~

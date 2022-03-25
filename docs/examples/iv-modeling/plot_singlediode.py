@@ -103,7 +103,7 @@ plt.figure()
 for i, case in conditions.iterrows():
     label = (
         "$G_{eff}$ " + f"{case['Geff']} $W/m^2$\n"
-        "$T_{cell}$ " + f"{case['Tcell']} $C$"
+        "$T_{cell}$ " + f"{case['Tcell']} $°C$"
     )
     plt.plot(curve_info['v'][i], curve_info['i'][i], label=label)
     v_mp = curve_info['v_mp'][i]

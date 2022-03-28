@@ -53,10 +53,7 @@ EXTRAS_REQUIRE = {
     'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
                  'pvfactors', 'siphon', 'statsmodels',
                  'cftime >= 1.1.1'],
-    # sphinx 4.4.0 has an annoying, difficult-to-disable, warning about
-    # extlinks: https://github.com/sphinx-doc/sphinx/issues/10112
-    # So stick with <4.4.0 for now.
-    'doc': ['ipython', 'matplotlib', 'sphinx == 4.3.2',
+    'doc': ['ipython', 'matplotlib', 'sphinx == 4.5.0',
             'pydata-sphinx-theme == 0.8.1', 'sphinx-gallery',
             'docutils == 0.15.2', 'pillow', 'netcdf4', 'siphon',
             'sphinx-toggleprompt >= 0.0.5', 'pvfactors'],

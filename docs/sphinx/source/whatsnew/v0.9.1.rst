@@ -84,3 +84,5 @@ Contributors
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Mark Mikofksi (:ghuser:`mikofski`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Uday Guntupalli (:ghuser:`uguntupalli`)

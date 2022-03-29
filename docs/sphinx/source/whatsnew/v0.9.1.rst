@@ -87,4 +87,4 @@ Contributors
 * Mark Mikofksi (:ghuser:`mikofski`)
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Uday Guntupalli (:ghuser:`uguntupalli`)
-* Shashwata Roy (:ghuser: `RoyCoding8`)
+* Shashwata Roy (:ghuser:`RoyCoding8`)

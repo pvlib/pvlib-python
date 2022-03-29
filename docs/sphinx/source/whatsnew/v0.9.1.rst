@@ -61,6 +61,7 @@ Documentation
 * Fix some typos (:pull:`1414`)
 * Clarify the descriptions of ``delta_t`` in several solar position functions
   (:pull:`1429`)
+* Changed $C$ to $\\degree C$ in the plot_singlediode.py file (:pull:`1434`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -86,3 +87,4 @@ Contributors
 * Mark Mikofksi (:ghuser:`mikofski`)
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Uday Guntupalli (:ghuser:`uguntupalli`)
+* Shashwata Roy (:ghuser: `RoyCoding8`)

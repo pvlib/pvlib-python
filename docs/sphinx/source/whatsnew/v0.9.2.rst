@@ -11,7 +11,10 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* :py:func:`pvlib.irradiance.get_total_irradiance` and
+  :py:func:`pvlib.solarposition.spa_python` now raise an error instead
+  of silently ignoring unknown parameters (:ghpull:`1437`)
+  
 Testing
 ~~~~~~~
 

@@ -1,6 +1,6 @@
 .. _whatsnew_0920:
 
-v0.9.2 (April 5, 2022)
+v0.9.2 (TBD)
 -----------------------
 
 Deprecations

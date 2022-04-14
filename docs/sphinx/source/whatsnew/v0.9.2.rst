@@ -23,9 +23,11 @@ Documentation
 Benchmarking
 ~~~~~~~~~~~~~
 * Updated version of numba in asv.conf from 0.36.1 to 0.40.0 to solve numba/numpy conflict. (:issue:`1439`, :pull:`1440`)
+* Improved the benchmark in solarposition.py (:issue:`1441`)
 Requirements
 ~~~~~~~~~~~~
 
 Contributors
 ~~~~~~~~~~~~
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
+* Chencheng Luo (:ghuser:`roger-lcc`)

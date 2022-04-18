@@ -11,7 +11,7 @@ class Scaling:
 
     def setup(self):
         self.n = 1000
-        lat = np.array((9.99, 10, 10.01)) 
+        lat = np.array((9.99, 10, 10.01))
         lon = np.array((4.99, 5, 5.01))
         self.coordinates = np.array([(lati, loni) for (lati, loni) in zip(lat, lon)])
         self.times = pd.date_range('2019-01-01', freq='1T', periods=self.n)

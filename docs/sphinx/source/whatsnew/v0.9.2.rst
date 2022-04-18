@@ -23,6 +23,7 @@ Documentation
 Benchmarking
 ~~~~~~~~~~~~~
 * Updated version of numba in asv.conf from 0.36.1 to 0.40.0 to solve numba/numpy conflict. (:issue:`1439`, :pull:`1440`)
+* Added Benchmarking for :py:func:`pvlib.scaling.latlon_to_xy`, :py:func:`pvlib.scaling._compute_wavelet`, :py:func:`pvlib.scaling._compute_vr`, and :py:func:`pvlib.scaling.wvm` functions for the module `scaling`
 Requirements
 ~~~~~~~~~~~~
 

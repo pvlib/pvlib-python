@@ -25,3 +25,9 @@ coverage:
           - "pvlib/tests/.*"
 
 comment: off
+
+# "flags" are used to identify subsets of the overall codebase when calculating coverage.
+# Currently used for "iotools" (just pvlib.iotools) and "core" (everything else)
+# https://docs.codecov.com/docs/flags#recommended-automatic-flag-management
+flag_management:
+  default_rules:

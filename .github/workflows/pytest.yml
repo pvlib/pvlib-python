@@ -59,12 +59,14 @@ jobs:
 
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active
-        run: pytest pvlib --cov=./ --cov-report=xml
+        run: |
+          sed -i '/iotools/s/#//' .coveragerc  # don't include pvlib.iotools in coverage
+          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools
 
-      # - name: Upload coverage to Codecov
-      #   if: matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
-      #   uses: codecov/codecov-action@v2
-      #   with:
-      #     directory: ./coverage/reports/
-      #     fail_ci_if_error: true
-      #     verbose: true
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == 3.9 && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          verbose: true
+          flags: core  # flags are configured in codecov.yml

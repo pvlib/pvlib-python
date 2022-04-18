@@ -29,10 +29,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        # pull_request_target runs in the context of the target branch (pvlib/master), not the
-        # PR head, so specify the PR head explicitly:
+        # pull_request_target runs in the context of the target branch (pvlib/master),
+        # but what we need is the hypothetical merge commit:
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: "refs/pull/${{ github.event.number }}/merge"
 
       - name: Set up conda environment
         uses: conda-incubator/setup-miniconda@v2
@@ -53,12 +53,12 @@ jobs:
           NREL_API_KEY: ${{ secrets.NRELAPIKEY }}
           BSRN_FTP_USERNAME: ${{ secrets.BSRN_FTP_USERNAME }}
           BSRN_FTP_PASSWORD: ${{ secrets.BSRN_FTP_PASSWORD }}
-        run: pytest pvlib --cov=./ --cov-report=xml --remote-data
+        run: pytest pvlib/tests/iotools --cov=./ --cov-report=xml --remote-data
 
-      # - name: Upload coverage to Codecov
-      #   if: matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
-      #   uses: codecov/codecov-action@v2
-      #   with:
-      #     directory: ./coverage/reports/
-      #     fail_ci_if_error: true
-      #     verbose: true
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == 3.9
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          verbose: true
+          flags: iotools  # flags are configured in codecov.yml

@@ -13,7 +13,6 @@ jobs:
         suffix: '-min'
       Python36:
         python.version: '36'
-        coverage: true
       Python37:
         python.version: '37'
       Python38:

@@ -33,11 +33,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python ${{ matrix.python-version }}${{ matrix.suffix }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Set up conda environment
         if: matrix.environment-type == 'conda'
         uses: conda-incubator/setup-miniconda@v2
@@ -51,8 +46,11 @@ jobs:
           # version, mapping from "3.7" to "37", second is to add "-min" if needed
           REQUIREMENTS: ci/requirements-py${{ fromJSON(env.VERSIONMAP)[matrix.python-version] }}${{ matrix.suffix }}.yml
 
-      - name: Create bare environment
+      - name: Set up bare Python ${{ matrix.python-version }}${{ matrix.suffix }} environment
         if: matrix.environment-type == 'bare'
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
         run: |
           pip install .[test]
 

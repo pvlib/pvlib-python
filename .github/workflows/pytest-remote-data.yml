@@ -1,6 +1,9 @@
 name: pytest-remote-data
 
 on:
+  # use pull_request_target, in combination with the `remote-data` label (below)
+  # so that we can access repository secrets.
+  # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
   pull_request_target:
     types: [labeled]
 
@@ -30,11 +33,6 @@ jobs:
         # PR head, so specify the PR head explicitly:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Set up Python ${{ matrix.python-version }}${{ matrix.suffix }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
 
       - name: Set up conda environment
         uses: conda-incubator/setup-miniconda@v2

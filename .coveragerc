@@ -5,4 +5,4 @@
 # If changing this file, make sure it does not break that integration.
 omit =
     pvlib/_version.py
-	#pvlib/iotools/*
+    #pvlib/iotools/*

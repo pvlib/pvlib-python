@@ -60,7 +60,7 @@ jobs:
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active
         run: |
-          sed -i '/iotools/s/#//' .coveragerc  # don't include pvlib.iotools in coverage
+          sed -i '/#pvlib\/iotools/s/#//' .coveragerc  # don't include pvlib.iotools in coverage
           pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools
 
       - name: Upload coverage to Codecov

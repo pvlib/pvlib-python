@@ -46,13 +46,16 @@ jobs:
           # version, mapping from "3.7" to "37", second is to add "-min" if needed
           REQUIREMENTS: ci/requirements-py${{ fromJSON(env.VERSIONMAP)[matrix.python-version] }}${{ matrix.suffix }}.yml
 
-      - name: Set up bare Python ${{ matrix.python-version }}${{ matrix.suffix }} environment
+      - name: Install Python ${{ matrix.python-version }}${{ matrix.suffix }}
         if: matrix.environment-type == 'bare'
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-        run: |
-          pip install .[test]
+
+      - name: Set up bare environment
+        if: matrix.environment-type == 'bare'
+        shell: bash -l {0}  # necessary for conda env to be active
+        run: pip install .[test]
 
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active

@@ -54,7 +54,6 @@ jobs:
 
       - name: Set up bare environment
         if: matrix.environment-type == 'bare'
-        shell: bash -l {0}  # necessary for conda env to be active
         run: pip install .[test]
 
       - name: Run tests

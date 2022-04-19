@@ -21,9 +21,8 @@ class SolarPositionSlow:
     param_names = ['ndays']
 
     def setup(self, ndays):
-        self.times = pd.date_range(start='20180601', freq='1min',
-                                   periods=1440*ndays)
-        self.times_localized = self.times.tz_localize('Etc/GMT+7')
+        self.times_localized = pd.date_range(start='20180601', freq='1min',
+                                             periods=1440 * ndays, tz='Etc/GMT+7')
         self.lat = 35.1
         self.lon = -106.6
 
@@ -96,10 +95,10 @@ class SolarPositionFast:
     def time_sun_rise_set_transit_geometric_full_comparison(self, ndays):
         dayofyear = self.times_daily.dayofyear
         declination = solarposition.declination_spencer71(dayofyear)
-        equation_of_time = solarposition.equation_of_time_spencer71(dayofyear)
+        equationoftime = solarposition.equation_of_time_spencer71(dayofyear)
         solarposition.sun_rise_set_transit_geometric(
             self.times_daily, self.lat, self.lon, declination,
-            equation_of_time)
+            equationoftime)
 
     def time_sun_rise_set_transit_ephem(self, ndays):
         solarposition.sun_rise_set_transit_ephem(

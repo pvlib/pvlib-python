@@ -28,10 +28,6 @@ class SolarPositionSlow:
         self.lon = -106.6
 
     # GH 512
-    # def time_ephemeris(self, ndays):
-    #     solarposition.ephemeris(self.times, self.lat, self.lon)
-
-    # GH 512
     def time_ephemeris_localized(self, ndays):
         solarposition.ephemeris(self.times_localized, self.lat, self.lon)
 
@@ -46,10 +42,6 @@ class SolarPositionSlow:
 
     def time_pyephem_earthsun_distance(self, ndays):
         solarposition.pyephem_earthsun_distance(self.times_localized)
-
-    def time_get_solarposition(self, ndays):
-        solarposition.get_solarposition(self.times_localized,
-                                        self.lat, self.lon)
 
 
 class SolarPositionFast:

@@ -21,8 +21,9 @@ class SolarPositionSlow:
     param_names = ['ndays']
 
     def setup(self, ndays):
-        self.times_localized = pd.date_range(start='20180601', freq='1min',
-                                             periods=1440 * ndays, tz='Etc/GMT+7')
+        self.times_localized = pd.date_range(
+            start='20180601', freq='1min',
+            periods=1440 * ndays, tz='Etc/GMT+7')
         self.lat = 35.1
         self.lon = -106.6
 

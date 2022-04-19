@@ -22,7 +22,7 @@ class SolarPositionSlow:
 
     def setup(self, ndays):
         self.times = pd.date_range(start='20180601', freq='1min',
-                                   periods=1440 * ndays)
+                                   periods=1440*ndays)
         self.times_localized = self.times.tz_localize('Etc/GMT+7')
         self.lat = 35.1
         self.lon = -106.6

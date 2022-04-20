@@ -1,8 +1,2 @@
 [run]
-# NOTE: the github action jobs in pvlib-python/.github/workflows
-# add entries to this `omit` list to calculate test coverage separately
-# for the iotools subpackage.
-# If changing this file, make sure it does not break that integration.
-omit =
-    pvlib/_version.py
-    #pvlib/iotools/*
+omit = pvlib/_version.py

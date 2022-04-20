@@ -7,6 +7,6 @@
  - [ ] Adds description and name entries in the appropriate "what's new" file in [`docs/sphinx/source/whatsnew`](https://github.com/pvlib/pvlib-python/tree/master/docs/sphinx/source/whatsnew) for all changes. Includes link to the GitHub Issue with `` :issue:`num` `` or this Pull Request with `` :pull:`num` ``. Includes contributor name and/or GitHub username (link with `` :ghuser:`user` ``).
  - [ ] New code is fully documented. Includes [numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) compliant docstrings, examples, and comments where necessary.
  - [ ] Pull request is nearly complete and ready for detailed review.
- - [ ] Maintainer: Appropriate GitHub Labels and Milestone are assigned to the Pull Request and linked Issue.
+ - [ ] Maintainer: Appropriate GitHub Labels (including `remote-data`) and Milestone are assigned to the Pull Request and linked Issue.
 
 <!-- Brief description of the problem and proposed solution (if not already fully described in the issue linked to above): -->

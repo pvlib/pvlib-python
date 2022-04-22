@@ -27,7 +27,7 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
-* Minimum pandas version increased to v0.25.0, released July 18, 2019.
+* Minimum pandas version increased to v0.25.0, released July 18, 2019. (:pull:`1448`)
 
 Contributors
 ~~~~~~~~~~~~

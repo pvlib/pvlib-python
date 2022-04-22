@@ -13,7 +13,8 @@ Bug fixes
 ~~~~~~~~~
 * :py:func:`pvlib.irradiance.get_total_irradiance` and
   :py:func:`pvlib.solarposition.spa_python` now raise an error instead
-  of silently ignoring unknown parameters (:ghpull:`1437`)
+  of silently ignoring unknown parameters (:pull:`1437`)
+  
 Testing
 ~~~~~~~
 
@@ -23,8 +24,10 @@ Documentation
 Benchmarking
 ~~~~~~~~~~~~~
 * Updated version of numba in asv.conf from 0.36.1 to 0.40.0 to solve numba/numpy conflict. (:issue:`1439`, :pull:`1440`)
+
 Requirements
 ~~~~~~~~~~~~
+* Minimum pandas version increased to v0.25.0, released July 18, 2019.
 
 Contributors
 ~~~~~~~~~~~~

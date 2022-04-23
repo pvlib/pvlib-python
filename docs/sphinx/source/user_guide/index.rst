@@ -15,6 +15,7 @@ User Guide
    clearsky
    bifacial
    forecasts
+   storage
    comparison_pvlib_matlab
    variables_style_rules
    singlediode

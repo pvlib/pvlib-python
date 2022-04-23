@@ -47,13 +47,13 @@ TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
                  'pytest-remotedata']
 EXTRAS_REQUIRE = {
-    'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
+    'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam >= 3.0.1', 'numba',
                  'pvfactors', 'siphon', 'statsmodels',
                  'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 4.5.0',
             'pydata-sphinx-theme == 0.8.1', 'sphinx-gallery',
             'docutils == 0.15.2', 'pillow', 'netcdf4', 'siphon',
-            'sphinx-toggleprompt >= 0.0.5', 'pvfactors'],
+            'sphinx-toggleprompt >= 0.0.5', 'pvfactors', 'nrel-pysam >= 3.0.1'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))

@@ -1,3 +1,5 @@
+from functools import lru_cache
+from importlib.resources import files
 from pathlib import Path
 import platform
 import warnings
@@ -493,3 +495,73 @@ def sapm_module_params():
                   'IXXO': 3.18803,
                   'FD': 1}
     return parameters
+
+
+@pytest.fixture(scope="function")
+def datasheet_battery_params():
+    """
+    Define some datasheet battery parameters for testing.
+
+    The scope of the fixture is set to ``'function'`` to allow tests to modify
+    parameters if required without affecting other tests.
+    """
+    parameters = {
+        "brand": "BYD",
+        "model": "HVS 5.1",
+        "width": 0.585,
+        "height": 0.712,
+        "depth": 0.298,
+        "weight": 91,
+        "chemistry": "LFP",
+        "mode": "AC",
+        "charge_efficiency": 0.96,
+        "discharge_efficiency": 0.96,
+        "min_soc_percent": 10,
+        "max_soc_percent": 90,
+        "dc_modules": 2,
+        "dc_modules_in_series": 2,
+        "dc_energy_wh": 5120,
+        "dc_nominal_voltage": 204,
+        "dc_max_power_w": 5100,
+    }
+    return parameters
+
+
+@lru_cache(maxsize=20)
+def _read_sample_profile(profile, timezone):
+    series = pd.read_csv(profile, names=["Timestamp", "Power"])
+    series = series.set_index("Timestamp")
+    series.index = pd.to_datetime(
+        series.index, format="%Y-%m-%dT%H:%M:%S%z", utc=True
+    )
+    series.index = series.index.tz_convert(timezone)
+    series = series.asfreq("1H")
+    return series["Power"].copy()
+
+
+@pytest.fixture(scope="function")
+def residential_load_profile():
+    """
+    Get a sample residential hourly load profile for testing purposes.
+
+    Returns
+    -------
+    The load profile.
+    """
+    tz = "Europe/Madrid"
+    # TODO: use a more realistic (i.e.: non-synthetic) load profile if this is
+    # going to be integrated.
+    return _read_sample_profile(files("pvlib") / "data" / "consumed.csv", tz)
+
+
+@pytest.fixture(scope="function")
+def residential_generation_profile():
+    """
+    Get a sample residential hourly generation profile for testing purposes.
+
+    Returns
+    -------
+    The generation profile.
+    """
+    tz = "Europe/Madrid"
+    return _read_sample_profile(files("pvlib") / "data" / "generated.csv", tz)

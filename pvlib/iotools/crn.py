@@ -108,11 +108,9 @@ def read_crn(filename, map_variables=True):
 
     # read in data
     data = pd.read_fwf(filename, header=None, names=HEADERS, widths=WIDTHS,
-                       na_values=NAN_DICT)
+                       na_values=NAN_DICT, dtype=dict(zip(HEADERS, DTYPES)))
     # Remove rows with all nans
     data = data.dropna(axis=0, how='all')
-    # set dtypes here because dtype kwarg not supported in read_fwf until 0.20
-    data = data.astype(dict(zip(HEADERS, DTYPES)))
 
     # set index
     # UTC_TIME does not have leading 0s, so must zfill(4) to comply

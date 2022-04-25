@@ -57,6 +57,10 @@ def test__check_pandas_assert_kwargs(mocker, function_name, pd_version,
     # test that conftest._check_pandas_assert_kwargs returns appropriate
     # kwargs for the assert_x_equal functions
 
+    # NOTE: be careful about mixing mocker.patch and pytest.MonkeyPatch!
+    # they do not coordinate their cleanups, so it is safest to only
+    # use one or the other.  GH #1447
+
     # patch the pandas assert; not interested in actually calling them,
     # plus we want to spy on how they get called.
     spy = mocker.patch('pandas.testing.' + function_name)

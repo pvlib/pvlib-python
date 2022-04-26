@@ -18,11 +18,10 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 # For this example, we will be using Golden, Colorado
-tz = 'MST'
 lat, lon = 39.755, -105.221
 
 # Create location object to store lat, lon, timezone
-site = location.Location(lat, lon, tz=tz)
+site = location.Location(lat, lon, tz='MST')
 
 
 # Calculate clear-sky GHI and transpose to plane of array
@@ -52,7 +51,7 @@ def get_irradiance(site_location, date, tilt, surface_azimuth):
                          'POA': POA_irradiance['poa_global']})
 
 
-# Get irradiance data for summer and winter solstice, assuming 25 degree tilt
+# Get irradiance data for summer and winter solstice, assuming 25 degrees tilt
 # and a south facing array
 summer_irradiance = get_irradiance(site, '06-20-2020', 25, 180)
 winter_irradiance = get_irradiance(site, '12-21-2020', 25, 180)
@@ -67,8 +66,8 @@ summer_irradiance['GHI'].plot(ax=ax1, label='GHI')
 summer_irradiance['POA'].plot(ax=ax1, label='POA')
 winter_irradiance['GHI'].plot(ax=ax2, label='GHI')
 winter_irradiance['POA'].plot(ax=ax2, label='POA')
-ax1.set_xlabel('Time of day (Summer)')
-ax2.set_xlabel('Time of day (Winter)')
+ax1.set_xlabel('Time of day (in Summer)')
+ax2.set_xlabel('Time of day (in Winter)')
 ax1.set_ylabel('Irradiance ($W/m^2$)')
 ax1.legend()
 ax2.legend()

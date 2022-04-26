@@ -1,0 +1,37 @@
+name: CI ASV check
+
+on: [pull_request, push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults: 
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9.7'
+
+      - name: Install asv
+        run: |
+          pip install .
+          pip install ephem==3.7.6.0
+          pip install numba==0.40.0
+          pip install asv==0.4.2
+
+      - name: Run asv benchmarks
+        run: |
+          cd benchmarks
+          asv machine --yes
+          asv run --quick --dry-run --python=same | sed "/failed$/ s/^/##[error]/" | tee benchmarks.log
+          if grep "failed" benchmarks.log > /dev/null ; then
+              exit 1
+          fi
+        

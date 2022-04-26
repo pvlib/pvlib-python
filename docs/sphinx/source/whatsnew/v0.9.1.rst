@@ -65,6 +65,7 @@ Documentation
 * Clarify the descriptions of ``delta_t`` in several solar position functions
   (:pull:`1429`)
 * Changed $C$ to $\\degree C$ in the plot_singlediode.py file (:pull:`1434`)
+* Changed axis labels and comments, and also deleted a string variable which wasn't required (:pull: `1450`)
 
 Requirements
 ~~~~~~~~~~~~

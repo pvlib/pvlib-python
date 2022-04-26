@@ -2,6 +2,7 @@
 """
 
 import pandas as pd
+import numpy as np
 
 
 HEADERS = [
@@ -107,9 +108,23 @@ def read_crn(filename, map_variables=True):
     """
 
     # read in data
+    # TODO: instead of parsing as strings and then post-processing, switch to
+    # pd.read_fwf(..., dtype=dict(zip(HEADERS, DTYPES)), skip_blank_lines=True)
+    # when our minimum pandas >= 1.2.0 (skip_blank_lines bug for <1.2.0).
+    # As a workaround, parse all values as strings, then drop NaN, then cast
+    # to the appropriate dtypes, and mask "sentinal" NaN (e.g. -9999.0)
     data = pd.read_fwf(filename, header=None, names=HEADERS, widths=WIDTHS,
-                       na_values=NAN_DICT, dtype=dict(zip(HEADERS, DTYPES)),
-                       skip_blank_lines=True)
+                       dtype=str)
+
+    # drop empty (bad) lines
+    data = data.dropna(axis=0, how='all')
+
+    # can't set dtypes in read_fwf because int cols can't contain NaN, so
+    # do it here instead
+    data = data.astype(dict(zip(HEADERS, DTYPES)))
+
+    # finally, replace -999 values with NaN
+    data = data.replace(NAN_DICT, value=np.nan)
 
     # set index
     # UTC_TIME does not have leading 0s, so must zfill(4) to comply

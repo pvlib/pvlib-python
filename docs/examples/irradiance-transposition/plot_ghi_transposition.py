@@ -19,9 +19,10 @@ from matplotlib import pyplot as plt
 
 # For this example, we will be using Golden, Colorado
 lat, lon = 39.755, -105.221
+tz='MST'
 
 # Create location object to store lat, lon, timezone
-site = location.Location(lat, lon, tz='MST')
+site = location.Location(lat, lon, tz=tz)
 
 
 # Calculate clear-sky GHI and transpose to plane of array

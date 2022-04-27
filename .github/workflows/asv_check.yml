@@ -1,10 +1,10 @@
-name: CI ASV CHECK
+name: asv
 
 # CI ASV CHECK is aimed to verify that the benchmarks execute without error.
 on: [pull_request, push]
 
 jobs:
-  test:
+  quick:
     runs-on: ubuntu-latest
     defaults: 
       run:
@@ -21,18 +21,13 @@ jobs:
           python-version: '3.9.7'
 
       - name: Install asv
-        run: |
-          pip install .
-          pip install ephem==3.7.6.0
-          pip install numba==0.40.0
-          pip install asv==0.4.2
+        run: pip install asv==0.4.2
 
       - name: Run asv benchmarks
         run: |
           cd benchmarks
           asv machine --yes
-          asv run --quick --dry-run --show-stderr --python=same\
-          | sed "/failed$/ s/^/##[error]/" | tee benchmarks.log
+          asv run --quick --dry-run --show-stderr --python=same | sed "/failed$/ s/^/##[error]/" | tee benchmarks.log
           if grep "failed" benchmarks.log > /dev/null ; then
               exit 1
           fi

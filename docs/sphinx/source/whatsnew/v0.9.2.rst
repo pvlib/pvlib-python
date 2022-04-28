@@ -23,8 +23,9 @@ Documentation
 Benchmarking
 ~~~~~~~~~~~~~
 * Updated version of numba in asv.conf from 0.36.1 to 0.40.0 to solve numba/numpy conflict. (:issue:`1439`, :pull:`1440`)
+* Added a basic CI asv check (:issue:`1446`, :pull:`1454`)
+
 Requirements
-* Added a basic CI asv check(:issue:`1446`, :pull:`1454`)
 ~~~~~~~~~~~~
 
 Contributors

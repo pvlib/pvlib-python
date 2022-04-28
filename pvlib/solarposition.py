@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 import scipy.optimize as so
 import warnings
-import pytz
+import datetime
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime

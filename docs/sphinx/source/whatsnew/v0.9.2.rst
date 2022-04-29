@@ -13,7 +13,13 @@ Bug fixes
 ~~~~~~~~~
 * :py:func:`pvlib.irradiance.get_total_irradiance` and
   :py:func:`pvlib.solarposition.spa_python` now raise an error instead
-  of silently ignoring unknown parameters (:ghpull:`1437`)
+  of silently ignoring unknown parameters (:pull:`1437`)
+* Fix a bug in :py:func:`pvlib.solarposition.sun_rise_set_transit_ephem`
+  where passing localized timezones with large UTC offsets could return
+  rise/set/transit times for the wrong day in recent versions of ``ephem``
+  (:issue:`1449`, :pull:`1448`)
+
+
 Testing
 ~~~~~~~
 
@@ -27,6 +33,7 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
+* Minimum pandas version increased to v0.25.0, released July 18, 2019. (:pull:`1448`)
 
 Contributors
 ~~~~~~~~~~~~

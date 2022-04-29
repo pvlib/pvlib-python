@@ -170,7 +170,7 @@ def test_read_psm3_map_variables():
     data, metadata = psm3.read_psm3(MANUAL_TEST_DATA, map_variables=True)
     columns_mapped = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'dhi', 'dni',
                       'ghi', 'dhi_clear', 'dni_clear', 'ghi_clear',
-                      'Cloud Type', 'Dew Point', 'apparent_zenith',
+                      'Cloud Type', 'Dew Point', 'solar_zenith',
                       'Fill Flag', 'albedo', 'wind_speed',
                       'precipitable_water', 'wind_direction',
                       'relative_humidity', 'temp_air', 'pressure']

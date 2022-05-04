@@ -116,7 +116,7 @@
         {
             "python": "3.6",
             "numpy": "1.16.0",
-            "pandas": "0.22.0",
+            "pandas": "0.25.0",
             "scipy": "1.2.0",
             // Note: these don't have a minimum in setup.py
             "h5py": "2.10.0",

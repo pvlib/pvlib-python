@@ -558,7 +558,6 @@ def plot_mlfm_scatter(dmeas, dnorm, mlfm_file_name, qty_mlfm_vars):
     return fig
 
 
-
 def plot_mlfm_stack(dmeas, dnorm, dstack, ref,
                     mlfm_file_name, qty_mlfm_vars,
                     xaxis_labels=12, is_i_sc_self_ref=False,

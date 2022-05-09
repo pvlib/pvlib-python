@@ -1,6 +1,6 @@
 """
-The ``bifacial`` module contains functions for modeling back surface
-plane-of-array irradiance under various conditions.
+The ``bifacial.pvfactors`` module contains functions for modeling back surface
+plane-of-array irradiance using the pvfactors package.
 """
 
 import pandas as pd

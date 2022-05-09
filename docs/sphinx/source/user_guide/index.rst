@@ -13,6 +13,7 @@ User Guide
    modelchain
    timetimezones
    clearsky
+   bifacial
    forecasts
    comparison_pvlib_matlab
    variables_style_rules

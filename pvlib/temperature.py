@@ -7,6 +7,10 @@ import numpy as np
 import pandas as pd
 from pvlib.tools import sind
 from pvlib._deprecation import warn_deprecated
+from pvlib.tools import _get_sample_intervals
+import scipy
+import warnings
+
 
 TEMPERATURE_MODEL_PARAMETERS = {
     'sapm': {
@@ -301,7 +305,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     wind_speed : numeric, default 1.0
         Wind speed in m/s measured at the same height for which the wind loss
-        factor was determined.  The default value 1.0 m/2 is the wind
+        factor was determined.  The default value 1.0 m/s is the wind
         speed at module height used to determine NOCT. [m/s]
 
     u_c : float, default 29.0
@@ -821,3 +825,155 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
     heat_loss = 1 - module_efficiency / tau_alpha
     wind_loss = 9.5 / (5.7 + 3.8 * wind_adj)
     return temp_air + cell_temp_init * heat_loss * wind_loss
+
+
+def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
+    """
+    Smooth short-term cell temperature transients using the Prilliman model.
+
+    The Prilliman et al. model [1]_ applies a weighted moving average to
+    the output of a steady-state cell temperature model to account for
+    a module's thermal inertia by smoothing the cell temperature's
+    response to changing weather conditions.
+
+    .. warning::
+        This implementation requires the time series inputs to be regularly
+        sampled in time with frequency less than 20 minutes.  Data with
+        irregular time steps should be resampled prior to using this function.
+
+    Parameters
+    ----------
+    temp_cell : pandas.Series with DatetimeIndex
+        Cell temperature modeled with steady-state assumptions. [C]
+
+    wind_speed : pandas.Series
+        Wind speed, adjusted to correspond to array height [m/s]
+
+    unit_mass : float, default 11.1
+        Total mass of module divided by its one-sided surface area [kg/m^2]
+
+    coefficients : 4-element list-like, optional
+        Values for coefficients a_0 through a_3, see Eq. 9 of [1]_
+
+    Returns
+    -------
+    temp_cell : pandas.Series
+        Smoothed version of the input cell temperature. Input temperature
+        with sampling interval >= 20 minutes is returned unchanged. [C]
+
+    Notes
+    -----
+    This smoothing model was developed and validated using the SAPM
+    cell temperature model for the steady-state input.
+
+    Smoothing is done using the 20 minute window behind each temperature
+    value. At the beginning of the series where a full 20 minute window is not
+    possible, partial windows are used instead.
+
+    Output ``temp_cell[k]`` is NaN when input ``wind_speed[k]`` is NaN, or
+    when no non-NaN data are in the input temperature for the 20 minute window
+    preceding index ``k``.
+
+    References
+    ----------
+    .. [1] M. Prilliman, J. S. Stein, D. Riley and G. Tamizhmani,
+       "Transient Weighted Moving-Average Model of Photovoltaic Module
+       Back-Surface Temperature," IEEE Journal of Photovoltaics, 2020.
+       :doi:`10.1109/JPHOTOV.2020.2992351`
+    """
+
+    # `sample_interval` in minutes:
+    sample_interval, samples_per_window = \
+        _get_sample_intervals(times=temp_cell.index, win_length=20)
+
+    if sample_interval >= 20:
+        warnings.warn("temperature.prilliman only applies smoothing when "
+                      "the sampling interval is shorter than 20 minutes "
+                      f"(input sampling interval: {sample_interval} minutes);"
+                      " returning input temperature series unchanged")
+        # too coarsely sampled for smoothing to be relevant
+        return temp_cell
+
+    # handle cases where the time series is shorter than 20 minutes total
+    samples_per_window = min(samples_per_window, len(temp_cell))
+
+    # prefix with NaNs so that the rolling window is "full",
+    # even for the first actual value:
+    prefix = np.full(samples_per_window, np.nan)
+    temp_cell_prefixed = np.append(prefix, temp_cell.values)
+
+    # generate matrix of integers for creating windows with indexing
+    H = scipy.linalg.hankel(np.arange(samples_per_window),
+                            np.arange(samples_per_window - 1,
+                                      len(temp_cell_prefixed) - 1))
+    # each row of `subsets` is the values in one window
+    subsets = temp_cell_prefixed[H].T
+
+    # `subsets` now looks like this (for 5-minute data, so 4 samples/window)
+    # where "1." is a stand-in for the actual temperature values
+    # [[nan, nan, nan, nan],
+    #  [nan, nan, nan,  1.],
+    #  [nan, nan,  1.,  1.],
+    #  [nan,  1.,  1.,  1.],
+    #  [ 1.,  1.,  1.,  1.],
+    #  [ 1.,  1.,  1.,  1.],
+    #  [ 1.,  1.,  1.,  1.],
+    #  ...
+
+    # calculate weights for the values in each window
+    if coefficients is not None:
+        a = coefficients
+    else:
+        # values from [1], Table II
+        a = [0.0046, 0.00046, -0.00023, -1.6e-5]
+
+    wind_speed = wind_speed.values
+    p = a[0] + a[1]*wind_speed + a[2]*unit_mass + a[3]*wind_speed*unit_mass
+    # calculate the time lag for each sample in the window, paying attention
+    # to units (seconds for `timedeltas`, minutes for `sample_interval`)
+    timedeltas = np.arange(samples_per_window, 0, -1) * sample_interval * 60
+    weights = np.exp(-p[:, np.newaxis] * timedeltas)
+
+    # Set weights corresponding to the prefix values to zero; otherwise the
+    # denominator of the weighted average below would be wrong.
+    # Weights corresponding to (non-prefix) NaN values must be zero too
+    # for the same reason.
+
+    # Right now `weights` is something like this
+    # (using 5-minute inputs, so 4 samples per window -> 4 values per row):
+    # [[0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  ...
+
+    # After the next line, the NaNs in `subsets` will be zeros in `weights`,
+    # like this (with more zeros for any NaNs in the input temperature):
+
+    # [[0.    , 0.    , 0.    , 0.    ],
+    #  [0.    , 0.    , 0.    , 0.4972],
+    #  [0.    , 0.    , 0.2472, 0.4972],
+    #  [0.    , 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  [0.0611, 0.1229, 0.2472, 0.4972],
+    #  ...
+
+    weights[np.isnan(subsets)] = 0
+
+    # change the first row of weights from zero to nan -- this is a
+    # trick to prevent div by zero warning when dividing by summed weights
+    weights[0, :] = np.nan
+
+    # finally, take the weighted average of each window:
+    # use np.nansum for numerator to ignore nans in input temperature, but
+    # np.sum for denominator to propagate nans in input wind speed.
+    numerator = np.nansum(subsets * weights, axis=1)
+    denominator = np.sum(weights, axis=1)
+    smoothed = numerator / denominator
+    smoothed[0] = temp_cell.values[0]
+    smoothed = pd.Series(smoothed, index=temp_cell.index)
+    return smoothed

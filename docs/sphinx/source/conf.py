@@ -159,6 +159,7 @@ html_theme_options = {
     "use_edit_page_button": True,
     "show_toc_level": 1,
     "footer_items": ["copyright", "sphinx-version", "sidebar-ethical-ads"],
+    "left_sidebar_end": [],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -199,9 +200,7 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {
-    "**": ["search-field", "sidebar-nav-bs"]  # "sidebar-ethical-ads"
-}
+# html_sidebars = {}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.

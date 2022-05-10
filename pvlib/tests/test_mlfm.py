@@ -177,7 +177,7 @@ def mlfm_6_fit():
     c_2 = -0.0030248261647759975
     c_3 = +0.12378885001559799
     c_4 = -0.05521716508715758
-    c_5 = +0.735430328541581
+    c_5 = 0.
     c_6 = -0.0023546463713093836
     expected = 0.9845007615699125
 
@@ -205,8 +205,10 @@ def test_mlfm_fit(matrix_data, mlfm_6_fit):
     c_1, c_2, c_3, c_4, c_5, c_6, expected, cc_target = mlfm_6_fit
     # choose which parameter to fit - usually pr_dc
     mlfm_sel = 'pr_dc'
-    norm, cc_fit, ee,  coeffs, errs = mlfm.mlfm_fit(
-        matrix_data, matrix_data, mlfm_sel)
+    # drop wind_speed since it's always zero
+    matrix_data = matrix_data.drop(columns=['wind_speed'])
+    predictions, cc_fit, residuals = mlfm.mlfm_fit(
+        matrix_data, mlfm_sel)
     assert_allclose(cc_fit, cc_target, atol=1e-3)
 
 

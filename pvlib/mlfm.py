@@ -134,48 +134,6 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
     return dnorm
 
 
-def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6):
-    '''
-    Predict normalised lfm values e.g. pr_dc, norm(i_sc, ... v_oc)
-    from poa_global, temp_module, wind_speed and mlfm(c_1 .. c_6).
-
-    Parameters
-    ----------
-
-    dmeas : dataframe
-        measured weather data
-        'poa_global', 'temp_module', 'wind_speed'
-        and measured electrical/thermal values
-        'i_sc' .. 'v_oc', temp_module.
-
-    c_1 to c_6 : float
-        fitted mlfm coefficients (dependencies)
-            c_1 - constant
-            c_2 - temperature coefficient (1/K)
-            c_3 - low light log irradiance drop (~v_oc)
-            c_4 - high light linear irradiance drop (~r_s)
-        (optional or set at 0)
-            c_5 - wind speed dependence (=0 if indoor)
-            c_6 - inverse irradiance (<= 0).
-
-    Returns
-    -------
-    mlfm_6 : float
-        predicted performance values for pr_dc, norm(i_sc, .. v_oc) .
-    '''
-
-    mlfm_out = (
-        c_1 +                                       # 'constant' lossless
-        c_2 * (dmeas['temp_module'] - T_STC) +      # temperature coefficient
-        c_3 * np.log10(dmeas['poa_global_kwm2']) +  # low light drop, 'v_oc'
-        c_4 * dmeas['poa_global_kwm2'] +            # high light drop 'rs'
-        c_5 * dmeas['wind_speed'] +                 # wind_speed (optional|0)
-        c_6 / dmeas['poa_global_kwm2']              # rsh (optional but < 0)
-    )
-
-    return mlfm_out
-
-
 def mlfm_norm_to_stack(dnorm, ref, qty_mlfm_vars):
     '''
     Converts MLFM normalised multiplicative losses norm(i_sc ... v_oc)
@@ -312,44 +270,77 @@ def mlfm_norm_to_stack(dnorm, ref, qty_mlfm_vars):
     return dstack
 
 
-def mlfm_fit(dmeas, dnorm, mlfm_sel):
+def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     '''
-    Fit MLFM to normalised data e.g. norm_pr_dc,(norm_i_sc .. norm_v_oc).
+    Predict normalised lfm values e.g. pr_dc, norm(i_sc, ... v_oc)
+    from poa_global, temp_module, wind_speed and mlfm(c_1 .. c_6).
 
     Parameters
     ----------
 
-    dnorm : dataframe
-        normalised multiplicative lfm loss values 'i_sc' .. 'v_oc'
-        where pr_dc = 1/ff * product('i_sc', ... 'v_oc').
+    dmeas : dataframe
+        measured weather data
+        'poa_global', 'temp_module', 'wind_speed'
+        and measured electrical/thermal values
+        'i_sc' .. 'v_oc', temp_module.
 
-    mlfm_sel : string
-        mlfm variable being fitted e.g. pr_dc.
+    c_1 to c_6 : float
+        fitted mlfm coefficients (dependencies)
+            c_1 - constant
+            c_2 - temperature coefficient (1/K)
+            c_3 - low light log irradiance drop (~v_oc)
+            c_4 - high light linear irradiance drop (~r_s)
+        (optional or set at 0)
+            c_5 - wind speed dependence (=0 if indoor)
+            c_6 - inverse irradiance (<= 0).
 
     Returns
     -------
-    dnorm : dataframe
-        same data but with added mlfm_var fit values
-        calc_mlfm_sel and diff_mlfm_sel.
+    mlfm_6 : float
+        predicted performance values for pr_dc, norm(i_sc, .. v_oc) .
+    '''
+    mlfm_out = c_1 + c_2 * (dmeas['temp_module'] - T_STC) + \
+        c_3 * np.log10(dmeas['poa_global_kwm2']) + \
+        c_4 * dmeas['poa_global_kwm2'] + c_6 / dmeas['poa_global_kwm2']
+    if 'wind_speed' in dmeas.columns:
+        mlfm_out += c_5 * dmeas['wind_speed']
+    return mlfm_out
+
+
+def mlfm_fit(data, var_to_fit):
+    '''
+    Fit MLFM to data.
+
+    Parameters
+    ----------
+
+    data : DataFrame
+        Must include columns 'poa_global', 'temp_module', 'wind_speed'.
+        May include optional column 'wind_speed'.
+        Must include column names var_to_fit.
+
+    var_to_fit : string
+        variable being fitted e.g. 'pr_dc'.
+
+    Returns
+    -------
+    pred : Series
+        Values predicted by the fitted model.
 
     coeff : list
-        fit coefficients c_1 to c_6.
+        Model coefficients c_1 to c_6.
 
-    err : list
-        error values.
-
-    coeffs : string
-        formatted coefficients for printing.
-
-    errs
-        formatted errors for printing.
+    resid : Series
+        Residuals of the fitted model.
     '''
 
     # drop missing data
-    dnorm = dnorm.dropna()
+    data = data.dropna()
 
-    #  ensure correct number of p0 and bounds
-    #  https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
+    c5_zero = 'wind_speed' not in data.columns
+    # if wind_speed is not present, add it
+    if c5_zero:
+        data['wind_speed'] = 0.
 
     # define function name
     func = mlfm_6
@@ -364,8 +355,8 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
 
     popt, pcov = optimize.curve_fit(
         f=func,                 # fit function
-        xdata=dmeas,            # input data
-        ydata=dnorm[mlfm_sel],  # fit parameter
+        xdata=data,            # input data
+        ydata=data[var_to_fit],  # fit parameter
         p0=p_0,                 # initial
         bounds=bounds           # boundaries
     )
@@ -377,6 +368,9 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
     c_4 = popt[3]
     c_5 = popt[4]
     c_6 = popt[5]
+
+    if c5_zero:
+        c_5 = 0.
 
     coeff = [c_1, c_2, c_3, c_4, c_5, c_6]
 
@@ -403,7 +397,7 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
     )
     # print ('coeffs = ', mlfm_sel, coeffs)
 
-    errs = (
+    err = (
         '  {:.4%}'.format(e_1) +
         ', {:.4%}'.format(e_2) +
         ', {:.4%}'.format(e_3) +
@@ -414,13 +408,10 @@ def mlfm_fit(dmeas, dnorm, mlfm_sel):
     # print ('errs = ', mlfm_sel, errs)
 
     # save fit and error to dataframe
-    dnorm['calc_' + mlfm_sel] = (
-        mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5, c_6))
+    pred = mlfm_6(data, c_1, c_2, c_3, c_4, c_5, c_6)
+    resid = pred - data[var_to_fit]
 
-    dnorm['diff_' + mlfm_sel] = (
-        dnorm[mlfm_sel] - dnorm['calc_' + mlfm_sel])
-
-    return(dnorm, coeff, err, coeffs, errs)
+    return pred, coeff, resid
 
 
 #  Define standardised MLFM graph colours as a dict ``clr``

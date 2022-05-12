@@ -1588,20 +1588,26 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
     Calculate delta_kt_prime (Perez eqn 2 and eqn 3), or return a default value
     for use with :py:func:`_dirint_bins`.
     """
+    shape = kt_prime.shape  # times as last dimension
     if use_delta_kt_prime:
         # Perez eqn 2
-        kt_next = kt_prime.shift(-1)
-        kt_previous = kt_prime.shift(1)
-        # replace nan with values that implement Perez Eq 3 for first and last
-        # positions. Use kt_previous and kt_next to handle series of length 1
-        kt_next.iloc[-1] = kt_previous.iloc[-1]
-        kt_previous.iloc[0] = kt_next.iloc[0]
-        delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(
-                                (kt_prime - kt_previous).abs(),
-                                fill_value=0))
+        kt_diffp1 = np.abs(np.diff(kt_prime, axis=-1))
+        kt_diffm1 = np.flip(np.abs(np.diff(np.flip(kt_prime, axis=-1), axis=-1)), axis=-1)
+
+        kt_next = np.empty(shape, dtype=np.float32)
+        # work only on last dimension
+        kt_next[..., :-1] = kt_diffp1
+        kt_next[..., -1] = kt_diffm1[..., -1]
+
+        kt_previous = np.empty(shape, dtype=np.float32)
+        # work only on last dimension
+        kt_previous[..., 1:] = kt_diffm1
+        kt_previous[..., 0] = kt_diffp1[..., 0]
+
+        delta_kt_prime = 0.5 * (np.abs(kt_prime - kt_next) + np.abs(kt_prime - kt_previous))
     else:
         # do not change unless also modifying _dirint_bins
-        delta_kt_prime = pd.Series(-1, index=times)
+        delta_kt_prime = np.full(shape, -1)
     return delta_kt_prime
 
 

@@ -1545,7 +1545,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
        Global Horizontal to Direct Normal Insolation", Technical Report No.
        SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
-
+    shape = ghi.shape
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
                     min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)
     airmass = disc_out['airmass']
@@ -1554,10 +1554,10 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     kt_prime = clearness_index_zenith_independent(
         kt, airmass, max_clearness_index=1)
     delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime,
-                                            times)
-    w = _temp_dew_dirint(temp_dew, times)
+                                            shape)
+    w = _temp_dew_dirint(temp_dew, shape)
 
-    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w,
+    dirint_coeffs = _dirint_coeffs(kt_prime, solar_zenith, w,
                                    delta_kt_prime)
 
     # Perez eqn 5

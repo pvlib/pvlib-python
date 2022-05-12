@@ -1583,7 +1583,7 @@ def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime,
     return dni_dirint
 
 
-def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
+def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, shape):
     """
     Calculate delta_kt_prime (Perez eqn 2 and eqn 3), or return a default value
     for use with :py:func:`_dirint_bins`.

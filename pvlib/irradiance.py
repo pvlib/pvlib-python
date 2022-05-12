@@ -1833,9 +1833,13 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
                                  min_cos_zenith=min_cos_zenith,
                                  max_zenith=max_zenith)
 
-    dni_dirindex = dni_clearsky * dni_dirint / dni_dirint_clearsky
+    # Avoid dividing by zero with clearsky. Whenever the dni_dirint_clearsky is zero, the array defaults
+    # to dni_dirint (which logically should be also zero)  
+    nonzero = dni_dirint_clearsky != 0
+    dni_dirindex = dni_dirint
+    dni_dirindex[nonzero] = dni_clearsky[nonzero] * dni_dirint[nonzero] / dni_dirint_clearsky[nonzero]
 
-    dni_dirindex[dni_dirindex < 0] = 0.
+    dni_dirindex[dni_dirindex < 0] = 0.0
 
     return dni_dirindex
 

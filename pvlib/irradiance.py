@@ -1394,10 +1394,12 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     --------
     dirint
     """
-    # TODO: this function should be vectorized
     # this is the I0 calculation from the reference
     # SSC uses solar constant = 1367.0 (checked 2018 08 15)
     I0 = get_extra_radiation(datetime_or_doy, 1370., 'spencer')
+
+    # Considering the extra radiation is only time dependent, broadcast it to ghi's dimensions
+    I0 = np.broadcast_to(I0, ghi.shape).astype(np.float32)
 
     kt = clearness_index(ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith,
                          max_clearness_index=1)

@@ -1644,7 +1644,7 @@ def _temp_dew_dirint(temp_dew, shape):
     return w
 
 
-def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
+def _dirint_coeffs(kt_prime, solar_zenith, w, delta_kt_prime):
     """
     Determine the DISC to DIRINT multiplier `dirint_coeffs`.
 
@@ -1652,7 +1652,6 @@ def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
 
     Parameters
     ----------
-    times : pd.DatetimeIndex
     kt_prime : Zenith-independent clearness index
     solar_zenith : Solar zenith angle
     w : precipitable water estimated from surface dew-point temperature
@@ -1662,21 +1661,28 @@ def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
     -------
     dirint_coeffs : array-like
     """
-    kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = \
-        _dirint_bins(times, kt_prime, solar_zenith, w, delta_kt_prime)
+    kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = _dirint_bins(
+        kt_prime=kt_prime,
+        solar_zenith=solar_zenith,
+        w=w,
+        delta_kt_prime=delta_kt_prime,
+    )
 
     # get the coefficients
-    coeffs = _get_dirint_coeffs()
+    coeffs = _get_dirint_coeffs().astype(np.float32)
 
     # subtract 1 to account for difference between MATLAB-style bin
     # assignment and Python-style array lookup.
-    dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
-                           delta_kt_prime_bin-1, w_bin-1]
+    dirint_coeffs = coeffs[kt_prime_bin - 1, zenith_bin - 1,
+                            delta_kt_prime_bin - 1, w_bin - 1]
 
-    # convert unassigned bins to nan
-    dirint_coeffs = np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
-                             (w_bin == 0) | (delta_kt_prime_bin == 0),
-                             np.nan, dirint_coeffs)
+    # convert unassigned bins to 1, instead of putting nan originally
+    # whenever the dirint coeff is not known it should be preferred to fall back
+    # to disc values and therefore have a coeff of 1.
+    dirint_coeffs[
+        (kt_prime_bin == 0) | (zenith_bin == 0) | 
+        (w_bin == 0) | (delta_kt_prime_bin == 0)
+    ] = 1
     return dirint_coeffs
 
 

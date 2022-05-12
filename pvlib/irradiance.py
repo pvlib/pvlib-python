@@ -1686,13 +1686,12 @@ def _dirint_coeffs(kt_prime, solar_zenith, w, delta_kt_prime):
     return dirint_coeffs
 
 
-def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
+def _dirint_bins(kt_prime, zenith, w, delta_kt_prime):
     """
     Determine the bins for the DIRINT coefficients.
 
     Parameters
     ----------
-    times : pd.DatetimeIndex
     kt_prime : Zenith-independent clearness index
     zenith : Solar zenith angle
     w : precipitable water estimated from surface dew-point temperature
@@ -1702,11 +1701,12 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     -------
     tuple of kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
     """
+    shape = kt_prime.shape
     # @wholmgren: the following bin assignments use MATLAB's 1-indexing.
     # Later, we'll subtract 1 to conform to Python's 0-indexing.
 
     # Create kt_prime bins
-    kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
+    kt_prime_bin = np.zeros(shape, dtype=np.int8)
     kt_prime_bin[(kt_prime >= 0) & (kt_prime < 0.24)] = 1
     kt_prime_bin[(kt_prime >= 0.24) & (kt_prime < 0.4)] = 2
     kt_prime_bin[(kt_prime >= 0.4) & (kt_prime < 0.56)] = 3
@@ -1715,7 +1715,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     kt_prime_bin[(kt_prime >= 0.8) & (kt_prime <= 1)] = 6
 
     # Create zenith angle bins
-    zenith_bin = pd.Series(0, index=times, dtype=np.int64)
+    zenith_bin = np.zeros(shape, dtype=np.int8)
     zenith_bin[(zenith >= 0) & (zenith < 25)] = 1
     zenith_bin[(zenith >= 25) & (zenith < 40)] = 2
     zenith_bin[(zenith >= 40) & (zenith < 55)] = 3
@@ -1724,7 +1724,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     zenith_bin[(zenith >= 80)] = 6
 
     # Create the bins for w based on dew point temperature
-    w_bin = pd.Series(0, index=times, dtype=np.int64)
+    w_bin = np.zeros(shape, dtype=np.int8)
     w_bin[(w >= 0) & (w < 1)] = 1
     w_bin[(w >= 1) & (w < 2)] = 2
     w_bin[(w >= 2) & (w < 3)] = 3
@@ -1732,7 +1732,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     w_bin[(w == -1)] = 5
 
     # Create delta_kt_prime binning.
-    delta_kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
+    delta_kt_prime_bin = np.zeros(shape, dtype=np.int8)
     delta_kt_prime_bin[(delta_kt_prime >= 0) & (delta_kt_prime < 0.015)] = 1
     delta_kt_prime_bin[(delta_kt_prime >= 0.015) &
                        (delta_kt_prime < 0.035)] = 2

@@ -1587,6 +1587,17 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, shape):
     """
     Calculate delta_kt_prime (Perez eqn 2 and eqn 3), or return a default value
     for use with :py:func:`_dirint_bins`.
+
+    Parameters
+    ----------
+    kt_prime : Zenith-independent clearness index
+    use_delta_kt_prime : Boolean flag whether to use calculate the stability 
+        index or to use the default value
+    shape : Shape of the input data
+
+    Returns
+    ----------
+    delta_kt_prime : Stability index
     """
     if use_delta_kt_prime:
         # Perez eqn 2
@@ -1614,6 +1625,15 @@ def _temp_dew_dirint(temp_dew, shape):
     """
     Calculate precipitable water from surface dew point temp (Perez eqn 4),
     or return a default value for use with :py:func:`_dirint_bins`.
+
+    Parameters
+    ----------
+    temp_dew : Surface dew point temperature array
+    shape : Shape of the input data
+
+    Returns
+    ----------
+    w : Precipitable water estimated from surface dew-point temperature
     """
     if temp_dew is not None:
         # Perez eqn 4

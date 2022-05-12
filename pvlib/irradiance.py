@@ -1588,7 +1588,6 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, shape):
     Calculate delta_kt_prime (Perez eqn 2 and eqn 3), or return a default value
     for use with :py:func:`_dirint_bins`.
     """
-    shape = kt_prime.shape  # times as last dimension
     if use_delta_kt_prime:
         # Perez eqn 2
         kt_diffp1 = np.abs(np.diff(kt_prime, axis=-1))
@@ -1611,17 +1610,17 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, shape):
     return delta_kt_prime
 
 
-def _temp_dew_dirint(temp_dew, times):
+def _temp_dew_dirint(temp_dew, shape):
     """
     Calculate precipitable water from surface dew point temp (Perez eqn 4),
     or return a default value for use with :py:func:`_dirint_bins`.
     """
     if temp_dew is not None:
         # Perez eqn 4
-        w = pd.Series(np.exp(0.07 * temp_dew - 0.075), index=times)
+        w = np.exp(0.07 * temp_dew - 0.075)
     else:
         # do not change unless also modifying _dirint_bins
-        w = pd.Series(-1, index=times)
+        w = np.full(shape, -1)
     return w
 
 

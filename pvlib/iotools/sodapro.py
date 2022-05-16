@@ -185,7 +185,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     email = email.replace('@', '%2540')  # Format email address
     identifier = 'get_{}'.format(identifier.lower())  # Format identifier str
 
-    base_url = f"http://{server}/service/wps"
+    base_url = f"https://{server}/service/wps"
 
     data_inputs_dict = {
         'latitude': latitude,

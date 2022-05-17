@@ -153,11 +153,11 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     References
     ----------
     .. [1] `CAMS Radiation Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
+       <https://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
     .. [2] `CAMS McClear Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
+       <https://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
     .. [3] `CAMS McClear Automatic Access
-       <http://www.soda-pro.com/help/cams-services/cams-mcclear-service/automatic-access>`_
+       <https://www.soda-pro.com/help/cams-services/cams-mcclear-service/automatic-access>`_
     """
     try:
         time_step_str = TIME_STEPS_MAP[time_step]
@@ -263,9 +263,9 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     References
     ----------
     .. [1] `CAMS Radiation Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
+       <https://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
     .. [2] `CAMS McClear Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
+       <https://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
     """
     metadata = {}
     # Initial lines starting with # contain metadata
@@ -366,9 +366,9 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     References
     ----------
     .. [1] `CAMS Radiation Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
+       <https://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
     .. [2] `CAMS McClear Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
+       <https://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
     """
     with open(str(filename), 'r') as fbuf:
         content = parse_cams(fbuf, integrated, label, map_variables)

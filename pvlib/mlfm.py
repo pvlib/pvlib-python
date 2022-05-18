@@ -289,7 +289,7 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     ----------
     dmeas : DataFrame
         Must include columns:
-        * 'poa_global' global plane of array irradiance [kW/m^2]
+        * 'poa_global_kwm2' global plane of array irradiance [kW/m^2]
         * 'temp_module' module temperature [C]
         May include optional column:
         * 'wind_speed' wind speed [m/s].
@@ -308,8 +308,8 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
         Predicted values.
     '''
     mlfm_out = c_1 + c_2 * (dmeas['temp_module'] - T_STC) + \
-        c_3 * np.log10(dmeas['poa_global']) + \
-        c_4 * dmeas['poa_global'] + c_6 / dmeas['poa_global']
+        c_3 * np.log10(dmeas['poa_global_kwm2']) + \
+        c_4 * dmeas['poa_global_kwm2'] + c_6 / dmeas['poa_global_kwm2']
     if 'wind_speed' in dmeas.columns:
         mlfm_out += c_5 * dmeas['wind_speed']
     return mlfm_out
@@ -323,7 +323,7 @@ def mlfm_fit(data, var_to_fit):
     ----------
     data : DataFrame
         Must include columns:
-        * 'poa_global' global plane of array irradiance [kW/m^2]
+        * 'poa_global_kwm2' global plane of array irradiance [kW/m^2]
         * 'temp_module' module temperature [C]
         Must include column named ``var_to_fit``.
         May include optional column:

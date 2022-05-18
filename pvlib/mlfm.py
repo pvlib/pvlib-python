@@ -271,37 +271,45 @@ def mlfm_norm_to_stack(dnorm, ref, qty_mlfm_vars):
 
 
 def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
-    '''
-    Predict normalised lfm values e.g. pr_dc, norm(i_sc, ... v_oc)
-    from poa_global, temp_module, wind_speed and mlfm(c_1 .. c_6).
+    r'''
+    Predict normalised LFM values from data in ``dmeas``.
+
+    The normalized LFM values are given by
+
+    .. math::
+
+        c_1 + c_2 * (T_m - 25) + c_3 * \log10(G_{POA}) + c_4 * G_{POA}
+        + c_5 * WS + c_6 / G_{POA}
+
+    where :math:`G_{POA}` is global plane-of-array (POA) irradiance in kW/m2,
+    :math:`T_m` is module temperature in C and :math:`WS` is wind speed in
+    m/s.
 
     Parameters
     ----------
+    dmeas : DataFrame
+        Must include columns:
+        * 'poa_global' global plane of array irradiance [kW/m^2]
+        * 'temp_module' module temperature [C]
+        May include optional column:
+        * 'wind_speed' wind speed [m/s].
 
-    dmeas : dataframe
-        measured weather data
-        'poa_global', 'temp_module', 'wind_speed'
-        and measured electrical/thermal values
-        'i_sc' .. 'v_oc', temp_module.
-
-    c_1 to c_6 : float
-        fitted mlfm coefficients (dependencies)
-            c_1 - constant
-            c_2 - temperature coefficient (1/K)
-            c_3 - low light log irradiance drop (~v_oc)
-            c_4 - high light linear irradiance drop (~r_s)
-        (optional or set at 0)
-            c_5 - wind speed dependence (=0 if indoor)
-            c_6 - inverse irradiance (<= 0).
+    c_1 : float
+        Constant term in model- constant
+    c_2 - temperature coefficient (1/K)
+    c_3 - low light log irradiance drop (~v_oc)
+    c_4 - high light linear irradiance drop (~r_s)
+    c_5 - wind speed dependence (=0 if indoor)
+    c_6 - inverse irradiance (<= 0).
 
     Returns
     -------
-    mlfm_6 : float
-        predicted performance values for pr_dc, norm(i_sc, .. v_oc) .
+    mlfm_6 : Series
+        Predicted values.
     '''
     mlfm_out = c_1 + c_2 * (dmeas['temp_module'] - T_STC) + \
-        c_3 * np.log10(dmeas['poa_global_kwm2']) + \
-        c_4 * dmeas['poa_global_kwm2'] + c_6 / dmeas['poa_global_kwm2']
+        c_3 * np.log10(dmeas['poa_global']) + \
+        c_4 * dmeas['poa_global'] + c_6 / dmeas['poa_global']
     if 'wind_speed' in dmeas.columns:
         mlfm_out += c_5 * dmeas['wind_speed']
     return mlfm_out
@@ -313,14 +321,16 @@ def mlfm_fit(data, var_to_fit):
 
     Parameters
     ----------
-
     data : DataFrame
-        Must include columns 'poa_global', 'temp_module', 'wind_speed'.
-        May include optional column 'wind_speed'.
-        Must include column names var_to_fit.
+        Must include columns:
+        * 'poa_global' global plane of array irradiance [kW/m^2]
+        * 'temp_module' module temperature [C]
+        Must include column named ``var_to_fit``.
+        May include optional column:
+        * 'wind_speed' wind speed [m/s].
 
     var_to_fit : string
-        variable being fitted e.g. 'pr_dc'.
+        Column name in ``data`` containing variable being fit.
 
     Returns
     -------
@@ -328,10 +338,14 @@ def mlfm_fit(data, var_to_fit):
         Values predicted by the fitted model.
 
     coeff : list
-        Model coefficients c_1 to c_6.
+        Model coefficients ``c_1`` to ``c_6``.
 
     resid : Series
         Residuals of the fitted model.
+
+    See also
+    --------
+    mlfm_6
     '''
 
     # drop missing data

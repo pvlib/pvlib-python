@@ -289,11 +289,12 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     ----------
     dmeas : DataFrame
         Must include columns:
+
         * 'poa_global_kwm2' global plane of array irradiance [kW/m^2]
         * 'temp_module' module temperature [C]
         May include optional column:
-        * 'wind_speed' wind speed [m/s].
 
+            * 'wind_speed' wind speed [m/s].
     c_1 : float
         Constant term in model- constant
     c_2 - temperature coefficient (1/K)

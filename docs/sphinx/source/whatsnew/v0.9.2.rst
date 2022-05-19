@@ -8,6 +8,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* :py:func:`pvlib.iotools.read_surfrad` now also accepts remote files
+  with https links in addition to files on the SURFRAD FTP server
+  (:pull:`1459`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -37,6 +41,7 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Chencheng Luo (:ghuser:`roger-lcc`)
-* Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
+* Prajwal Borkar (:ghuser:`PrajwalBorkar`)

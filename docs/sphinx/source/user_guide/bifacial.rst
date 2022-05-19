@@ -24,7 +24,7 @@ irradiance:
 
 
 pvfactors
-=========
+---------
 
 The `pvfactors <https://sunpower.github.io/pvfactors/>`_ package calculates
 incident irradiance on the front and back surfaces of an array. pvfactors uses
@@ -35,7 +35,7 @@ trackers.
 
 
 Infinite Sheds
-==============
+--------------
 
 The "infinite sheds" model [1] is a 2-dimensional model of irradiance on the
 front and rear surfaces of a PV array. The model assumes that the array

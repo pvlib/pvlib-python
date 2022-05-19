@@ -11,7 +11,7 @@ dependencies:
     - nose
     - numba
     - numpy >= 1.16.0
-    - pandas >= 0.25.0
+    - pandas >= 0.22.0
     - pip
     - pytest
     - pytest-cov

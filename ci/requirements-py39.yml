@@ -11,7 +11,7 @@ dependencies:
     - nose
     # - numba  # python 3.9 compat in early 2021
     - numpy >= 1.16.0
-    - pandas >= 0.25.0
+    - pandas >= 0.22.0
     - pip
     - pytest
     - pytest-cov

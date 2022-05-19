@@ -3,12 +3,6 @@
 Forecasting
 ===========
 
-.. warning::
-
-    All functionality in the ``pvlib.forecast`` module is deprecated as of
-    pvlib v0.9.1. For details, see :ref:`forecasts`.
-
-
 Forecast models
 ---------------
 

@@ -510,9 +510,6 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # Calculate surface_tilt
     dotproduct = (panel_norm_earth * projected_normal).sum(axis=1)
-    # for edge cases like axis_tilt=90, numpy's SIMD can produce values like
-    # dotproduct = (1 + 2e-16). Clip off the excess so that arccos works:
-    dotproduct = np.clip(dotproduct, -1, 1)
     surface_tilt = 90 - np.degrees(np.arccos(dotproduct))
 
     # Bundle DataFrame for return values and filter for sun below horizon.

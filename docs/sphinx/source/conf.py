@@ -20,9 +20,6 @@ import warnings
 # for generating GH links with linenumbers
 import inspect
 
-# import distutils before calling pd.show_versions()
-# https://github.com/pypa/setuptools/issues/3044
-import distutils  # noqa: F401
 import pandas as pd
 pd.show_versions()
 
@@ -247,7 +244,7 @@ def setup(app):
     # In-line links to references as numbers in brackets.
     app.add_css_file("reference_format.css")
     # Add a warning banner at the top of the page if viewing the "latest" docs
-    app.add_js_file("version-alert.js")
+    app.add_javascript("version-alert.js")
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -345,6 +342,8 @@ intersphinx_mapping = {
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
     'matplotlib': ('https://matplotlib.org/stable', None),
 }
+
+nbsphinx_allow_errors = True
 
 ipython_warning_is_error = False
 

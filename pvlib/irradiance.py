@@ -29,6 +29,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'fresh steel': 0.35,
                    'dirty steel': 0.08,
                    'sea': 0.06}
+PVLIB_IRR_DTYPE = getenv('PVLIB_IRR_DTYPE', default=np.float64)
 
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
@@ -1399,7 +1400,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     I0 = get_extra_radiation(datetime_or_doy, 1370., 'spencer')
 
     # Considering the extra radiation is only time dependent, broadcast it to ghi's dimensions
-    I0 = np.broadcast_to(I0, ghi.shape).astype(np.float32)
+    I0 = np.broadcast_to(I0, ghi.shape).astype(PVLIB_IRR_DTYPE)
 
     kt = clearness_index(ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith,
                          max_clearness_index=1)
@@ -1604,12 +1605,12 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, shape):
         kt_diffp1 = np.abs(np.diff(kt_prime, axis=-1))
         kt_diffm1 = np.flip(np.abs(np.diff(np.flip(kt_prime, axis=-1), axis=-1)), axis=-1)
 
-        kt_next = np.empty(shape, dtype=np.float32)
+        kt_next = np.empty(shape, dtype=PVLIB_IRR_DTYPE)
         # work only on last dimension
         kt_next[..., :-1] = kt_diffp1
         kt_next[..., -1] = kt_diffm1[..., -1]
 
-        kt_previous = np.empty(shape, dtype=np.float32)
+        kt_previous = np.empty(shape, dtype=PVLIB_IRR_DTYPE)
         # work only on last dimension
         kt_previous[..., 1:] = kt_diffm1
         kt_previous[..., 0] = kt_diffp1[..., 0]
@@ -1669,7 +1670,7 @@ def _dirint_coeffs(kt_prime, solar_zenith, w, delta_kt_prime):
     )
 
     # get the coefficients
-    coeffs = _get_dirint_coeffs().astype(np.float32)
+    coeffs = _get_dirint_coeffs().astype(PVLIB_IRR_DTYPE)
 
     # subtract 1 to account for difference between MATLAB-style bin
     # assignment and Python-style array lookup.

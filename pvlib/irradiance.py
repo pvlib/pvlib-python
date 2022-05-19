@@ -7,6 +7,7 @@ irradiance, and total irradiance under various conditions.
 import datetime
 from collections import OrderedDict
 from functools import partial
+from os import getenv
 
 import numpy as np
 import pandas as pd

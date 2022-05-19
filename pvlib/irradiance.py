@@ -1665,7 +1665,7 @@ def _dirint_coeffs(kt_prime, solar_zenith, w, delta_kt_prime):
     """
     kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = _dirint_bins(
         kt_prime=kt_prime,
-        solar_zenith=solar_zenith,
+        zenith=solar_zenith,
         w=w,
         delta_kt_prime=delta_kt_prime,
     )

@@ -189,9 +189,15 @@ Loss Factors model
 
 Functions for fitting the Loss Factors model
 
+.. autosummary::
+   :toctree: generated/
+
     mlfm.mlfm_fit
 
 Utilities for plotting
+
+.. autosummary::
+   :toctree: generated/
 
     mlfm.plot_mlfm_scatter
     mlfm.plot_mlfm_stack

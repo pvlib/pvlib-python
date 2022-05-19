@@ -209,7 +209,7 @@ def test_mlfm_fit(matrix_data, mlfm_6_fit):
     matrix_data = matrix_data.drop(columns=['wind_speed'])
     predictions, cc_fit, residuals = mlfm.mlfm_fit(
         matrix_data, mlfm_sel)
-    assert_allclose(cc_fit, cc_target, atol=1e-3)
+    assert_allclose(cc_fit, cc_target, atol=5e-3)
 
 
 @requires_mpl

@@ -177,6 +177,25 @@ Utilities for working with IV curve data
 
     ivtools.utils.rectify_iv_curve
 
+Loss Factors model
+^^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+    mlfm.mlfm_6
+    mlfm.mlfm_meas_to_norm
+    mlfm.mlfm_norm_to stack
+
+Functions for fitting the Loss Factors model
+
+    mlfm.mlfm_fit
+
+Utilities for plotting
+
+    mlfm.plot_mlfm_scatter
+    mlfm.plot_mlfm_stack
+
 Other
 -----
 

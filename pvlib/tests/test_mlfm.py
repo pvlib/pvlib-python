@@ -186,7 +186,7 @@ def mlfm_6_fit():
 
 
 def test_mlfm_meas_to_norm(mlfm_6_coeffs, reference, measured, normalized):
-    norm_calc = mlfm.mlfm_meas_to_norm(measured, reference, 6)
+    norm_calc = mlfm.mlfm_meas_to_norm(measured, reference)
     assert_allclose(norm_calc, normalized, atol=1e-6)
 
 
@@ -209,6 +209,7 @@ def test_mlfm_fit(matrix_data, mlfm_6_fit):
     matrix_data = matrix_data.drop(columns=['wind_speed'])
     predictions, cc_fit, residuals = mlfm.mlfm_fit(
         matrix_data, mlfm_sel)
+    # atol is large due to different behavior in conda_linux Python 3.6 env.
     assert_allclose(cc_fit, cc_target, atol=5e-3)
 
 

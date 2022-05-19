@@ -51,29 +51,48 @@ clr = {
 }
 
 
-def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
+def mlfm_meas_to_norm(dmeas, ref):
     '''
-    Convert measured values e.g. meas(i_sc, ... v_oc)
-    to normalised loss values e.g. norm(i_sc, ... v_oc)
-    normalising by ref stc values and irradiance.
+    Convert measured power, current and voltage to normalized values.
 
     Parameters
     ----------
-    dmeas : dataframe
-        measured weather data
-        'poa_global', 'temp_module', 'wind_speed'
-        and measured electrical/thermal values
-        'i_sc' .. 'v_oc', temp_module.
+    dmeas : DataFrame
+        Measurements. Must include columns:
+
+        * `'poa_global_kwm2'` global plane of array irradiance [kW/m^2]
+        * `'temp_module'` module temperature [C]
+        * `'p_mp'` - power at maximum power point [kW]
+        * `'temp_module'` - module temperature [C]
+
+        May include optional columns:
+
+        * `'i_sc'` - current at short circuit condition [A]
+        * `'v_oc'` - voltage at open circuit condition [V]
+        * `'i_mp'` - current at maximum power point [A]. Must be accompanied
+          by `'i_sc'`.
+        * `'v_mp'` - voltage at maximum power point [V]. Must be accompanied
+          by `'v_oc'`.
+        * `'r_sc'` - inverse of slope of IV curve at short circuit condition.
+          Requires both `'i_sc'` and `'v_oc'`. [V/A]
+        * `'r_oc'` - slope of IV curve at open circuit condition. Requires
+          both `'i_sc'` and `'v_oc'` [A/V]
 
     ref : dict
-        reference stc values e.g. 'v_oc' and
-        temperature coeffs e.g. 'beta_v_oc' .
+        Reference values. Must include:
 
-    qty_mlfm_vars : int
-        number of mlfm_values present in data usually
-        2 = (imp, vmp) from mpp tracker
-        4 = (i_sc, i_mp, v_mp, v_oc) from matrix
-        6 = (i_sc, i_mp, v_mp, v_oc, r_sc, r_oc) from iv curve.
+        * `'p_mp'` - Power at maximum power point at Standard Test Condition
+          (STC). [kW]
+        * `'gamma_p_mp'` - Temperature coefficient of power at STC. [W/C]
+
+        May include:
+
+        * `'i_sc'` - Current at short circuit at STC. Required if `'i_sc'` is
+          present in `'dmeas'`. [A]
+        * `'v_oc'` - Voltage at open circuit at STC. Required if `'V_oc'` is
+          present in `'dmeas'`. [A]
+        * `'beta_v_oc'` - Temperature coefficient of open circuit voltage at
+          STC. Required if `'v_oc'` is present in `'dmeas'`. [V/C]
 
     Returns
     -------
@@ -83,36 +102,29 @@ def mlfm_meas_to_norm(dmeas, ref, qty_mlfm_vars):
     '''
     dnorm = pd.DataFrame()
 
-    # calculate normalised mlfm values depending on number of qty_mlfm_vars
+    dnorm['pr_dc'] = (
+        dmeas['p_mp'] /
+        (ref['p_mp'] * dmeas['poa_global_kwm2']))
 
-    if qty_mlfm_vars >= 1:  # do for all measurements
-        dnorm['pr_dc'] = (
-            dmeas['p_mp'] /
-            (ref['p_mp'] * dmeas['poa_global_kwm2']))
+    # temperature corrected
+    dnorm['pr_dc_temp_corr'] = (
+        dnorm['pr_dc'] *
+        (1 - ref['gamma_p_mp']*(dmeas['temp_module'] - T_STC)))
 
-        # temperature corrected
-        dnorm['pr_dc_temp_corr'] = (
-            dnorm['pr_dc'] *
-            (1 - ref['gamma_p_mp']*(dmeas['temp_module']-T_STC)))
+    if 'i_sc' in dmeas.columns:
+        dnorm['i_sc'] = dmeas['i_sc'] / dmeas['poa_global_kwm2'] / ref['i_sc']
+        if 'i_mp' in dmeas.columns:
+            dnorm['i_mp'] = dmeas['i_mp'] / dmeas['i_sc']
 
-    if qty_mlfm_vars >= 2:  #
-        dnorm['i_mp'] = dmeas['i_mp'] / dmeas['i_sc']
-        dnorm['v_mp'] = dmeas['v_mp'] / dmeas['v_oc']
-
-    if qty_mlfm_vars >= 4:  #
-        dnorm['i_sc'] = (
-            dmeas['i_sc'] /
-            (dmeas['poa_global_kwm2'] * ref['i_sc']))
-
+    if 'v_oc' in dmeas.columns:
         dnorm['v_oc'] = dmeas['v_oc'] / ref['v_oc']
-
+        if 'v_mp' in dmeas.columns:
+            dnorm['v_mp'] = dmeas['v_mp'] / dmeas['v_oc']
         # temperature corrected
-        dnorm['v_oc_temp_corr'] = (
-            dnorm['v_oc'] *
-            (1 - ref['beta_v_oc']*(dmeas['temp_module']-T_STC)))
+        dnorm['v_oc_temp_corr'] = dnorm['v_oc'] * \
+            (1 - ref['beta_v_oc']*(dmeas['temp_module'] - T_STC))
 
-    if qty_mlfm_vars >= 6:  # 6,8 IV data
-
+    if all(c in dmeas.columns for c in ['i_sc', 'v_oc', 'r_sc', 'r_oc']):
         #  create temporary variables (i_r, v_r) from
         #  intercept of r_sc (at i_sc) with r_oc (at v_oc)
         #  to make maths easier
@@ -278,8 +290,8 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
 
     .. math::
 
-        c_1 + c_2 * (T_m - 25) + c_3 * \log10(G_{POA}) + c_4 * G_{POA}
-        + c_5 * WS + c_6 / G_{POA}
+        c_1 + c_2 (T_m - 25) + c_3 \log10(G_{POA}) + c_4 G_{POA}
+        + c_5 WS + c_6 / G_{POA}
 
     where :math:`G_{POA}` is global plane-of-array (POA) irradiance in kW/m2,
     :math:`T_m` is module temperature in C and :math:`WS` is wind speed in
@@ -290,18 +302,23 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     dmeas : DataFrame
         Must include columns:
 
-        * 'poa_global_kwm2' global plane of array irradiance [kW/m^2]
-        * 'temp_module' module temperature [C]
+        * `'poa_global_kwm2'` global plane of array irradiance [kW/m^2]
+        * `'temp_module'` module temperature [C]
         May include optional column:
 
-            * 'wind_speed' wind speed [m/s].
+        * `'wind_speed'` wind speed [m/s].
     c_1 : float
-        Constant term in model- constant
-    c_2 - temperature coefficient (1/K)
-    c_3 - low light log irradiance drop (~v_oc)
-    c_4 - high light linear irradiance drop (~r_s)
-    c_5 - wind speed dependence (=0 if indoor)
-    c_6 - inverse irradiance (<= 0).
+        Constant term in model
+    c_2 : float
+        Temperature coefficient in model (1/K)
+    c_3 : float
+        Coefficient for low light log irradiance drop.
+    c_4 : float
+        Coefficient for high light linear irradiance drop.
+    c_5 : float, default 0
+        Coefficient for wind speed dependence
+    c_6 : float, default 0
+        Coefficient for dependence on inverse irradiance.
 
     Returns
     -------

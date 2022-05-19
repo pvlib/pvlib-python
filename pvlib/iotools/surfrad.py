@@ -123,7 +123,7 @@ def read_surfrad(filename, map_variables=True):
     .. [2] NOAA SURFRAD Data Archive
        `SURFRAD Archive <ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/>`_
     """
-    if str(filename).startswith('ftp'):
+    if str(filename).startswith('ftp') or str(filename).startswith('http'):
         req = Request(filename)
         response = urlopen(req)
         file_buffer = io.StringIO(response.read().decode(errors='ignore'))

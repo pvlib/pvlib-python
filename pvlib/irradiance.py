@@ -1400,7 +1400,8 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     # SSC uses solar constant = 1367.0 (checked 2018 08 15)
     I0 = get_extra_radiation(datetime_or_doy, 1370., 'spencer')
 
-    # Considering the extra radiation is only time dependent, broadcast it to ghi's dimensions
+    # Considering the extra radiation is only time dependent,
+    # broadcast it to ghi's dimensions
     I0 = np.broadcast_to(I0, ghi.shape).astype(PVLIB_IRR_DTYPE)
 
     kt = clearness_index(ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith,
@@ -1593,7 +1594,7 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, shape):
     Parameters
     ----------
     kt_prime : Zenith-independent clearness index
-    use_delta_kt_prime : Boolean flag whether to use calculate the stability 
+    use_delta_kt_prime : Boolean flag whether to use calculate the stability
         index or to use the default value
     shape : Shape of the input data
 
@@ -1604,7 +1605,9 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, shape):
     if use_delta_kt_prime:
         # Perez eqn 2
         kt_diffp1 = np.abs(np.diff(kt_prime, axis=-1))
-        kt_diffm1 = np.flip(np.abs(np.diff(np.flip(kt_prime, axis=-1), axis=-1)), axis=-1)
+        kt_diffm1 = np.flip(
+            np.abs(np.diff(np.flip(kt_prime, axis=-1), axis=-1)), axis=-1
+        )
 
         kt_next = np.empty(shape, dtype=PVLIB_IRR_DTYPE)
         # work only on last dimension
@@ -1616,7 +1619,9 @@ def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, shape):
         kt_previous[..., 1:] = kt_diffm1
         kt_previous[..., 0] = kt_diffp1[..., 0]
 
-        delta_kt_prime = 0.5 * (np.abs(kt_prime - kt_next) + np.abs(kt_prime - kt_previous))
+        delta_kt_prime = 0.5 * (
+            np.abs(kt_prime - kt_next) + np.abs(kt_prime - kt_previous)
+        )
     else:
         # do not change unless also modifying _dirint_bins
         delta_kt_prime = np.full(shape, -1)
@@ -1663,12 +1668,9 @@ def _dirint_coeffs(kt_prime, solar_zenith, w, delta_kt_prime):
     -------
     dirint_coeffs : array-like
     """
-    kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = _dirint_bins(
-        kt_prime=kt_prime,
-        zenith=solar_zenith,
-        w=w,
-        delta_kt_prime=delta_kt_prime,
-    )
+    kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = \
+        _dirint_bins(kt_prime=kt_prime, zenith=solar_zenith,
+                     w=w, delta_kt_prime=delta_kt_prime)
 
     # get the coefficients
     coeffs = _get_dirint_coeffs().astype(PVLIB_IRR_DTYPE)
@@ -1679,10 +1681,11 @@ def _dirint_coeffs(kt_prime, solar_zenith, w, delta_kt_prime):
                             delta_kt_prime_bin - 1, w_bin - 1]
 
     # convert unassigned bins to 1, instead of putting nan originally
-    # whenever the dirint coeff is not known it should be preferred to fall back
+    # whenever the dirint coeff is not known
+    # it should be preferred to fall back
     # to disc values and therefore have a coeff of 1.
     dirint_coeffs[
-        (kt_prime_bin == 0) | (zenith_bin == 0) | 
+        (kt_prime_bin == 0) | (zenith_bin == 0) |
         (w_bin == 0) | (delta_kt_prime_bin == 0)
     ] = 1
     return dirint_coeffs
@@ -1835,11 +1838,14 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
                                  min_cos_zenith=min_cos_zenith,
                                  max_zenith=max_zenith)
 
-    # Avoid dividing by zero with clearsky. Whenever the dni_dirint_clearsky is zero, the array defaults
-    # to dni_dirint (which logically should be also zero)  
+    # Avoid dividing by zero with clearsky.
+    # Whenever the dni_dirint_clearsky is zero, the array defaults
+    # to dni_dirint (which logically should be also zero)
     nonzero = dni_dirint_clearsky != 0
     dni_dirindex = dni_dirint
-    dni_dirindex[nonzero] = dni_clearsky[nonzero] * dni_dirint[nonzero] / dni_dirint_clearsky[nonzero]
+    dni_dirindex[nonzero] = \
+        dni_clearsky[nonzero] * dni_dirint[nonzero] / \
+        dni_dirint_clearsky[nonzero]
 
     dni_dirindex[dni_dirindex < 0] = 0.0
 

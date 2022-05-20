@@ -1677,8 +1677,8 @@ def _dirint_coeffs(kt_prime, solar_zenith, w, delta_kt_prime):
 
     # subtract 1 to account for difference between MATLAB-style bin
     # assignment and Python-style array lookup.
-    dirint_coeffs = coeffs[kt_prime_bin - 1, zenith_bin - 1,
-                           delta_kt_prime_bin - 1, w_bin - 1]
+    dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
+                           delta_kt_prime_bin-1, w_bin-1]
 
     # convert unassigned bins to 1, instead of putting nan originally
     # whenever the dirint coeff is not known

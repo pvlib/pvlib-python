@@ -977,3 +977,251 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     smoothed[0] = temp_cell.values[0]
     smoothed = pd.Series(smoothed, index=temp_cell.index)
     return smoothed
+
+
+class GenericLinearModel():
+    '''
+    A generic linear temperature model class that can both use and convert
+    parameters of several well-known equivalent or nearly equivalent models.
+
+    Examples
+    --------
+
+    glm = GenericLinearModel(module_efficiency=0.19, absorptance=0.88)
+
+    glm.set_faiman(16, 8)
+
+    glm.get_pvsyst()
+
+    parmdict = glm.get_pvsyst()
+
+    glm.set_pvsyst(29, 0).get_faiman()
+
+    Tests
+    -----
+    wind = np.array([1.4, 1/.51, 5.4])
+    weather = (765, 32, wind)
+
+    glm = GenericLinearModel(module_efficiency=0.18)
+
+    glm.set_faiman(25, 6.84)
+
+    print(glm)
+    print(glm(*weather))
+    print(faiman(*weather, **glm.get_faiman()))
+    print(pvsyst_cell(*weather, **glm.get_pvsyst()))
+    print(sapm_module(*weather, **glm.get_sapm()))
+    print(noct_sam(*weather, **glm.get_noct_sam()))
+
+    glm.set_pvsyst(29, 0)
+
+    print(glm)
+    print(glm(*weather))
+    print(faiman(*weather, **glm.get_faiman()))
+    print(pvsyst_cell(*weather, **glm.get_pvsyst()))
+    print(sapm_module(*weather, **glm.get_sapm()))
+    print(noct_sam(*weather, **glm.get_noct_sam()))
+
+    glm.set_sapm(-3.56, -0.075)
+
+    print(glm)
+    print(glm(*weather))
+    print(faiman(*weather, **glm.get_faiman()))
+    print(pvsyst_cell(*weather, **glm.get_pvsyst()))
+    print(sapm_module(*weather, **glm.get_sapm()))
+    print(noct_sam(*weather, **glm.get_noct_sam()))
+
+    glm.set_noct_sam(45)
+
+    print(glm)
+    print(glm(*weather))
+    print(faiman(*weather, **glm.get_faiman()))
+    print(pvsyst_cell(*weather, **glm.get_pvsyst()))
+    print(sapm_module(*weather, **glm.get_sapm()))
+    print(noct_sam(*weather, **glm.get_noct_sam()))
+    '''
+
+    def __init__(self, module_efficiency=0.15, absorptance=0.9):
+        '''
+        init docstring
+
+        The two parameters are pv module properties that are relevant for
+        temperature modeling even if certain models do not explicitly
+        mention or use them.
+
+        Since these are empirical models, their parameters are determined
+        from a limited set of measurements (usually high irradiance).
+        The values of efficiency and absorptance should be interpreted
+        as representative of the efficiency and absorptance actually
+        occuring during those measurements.
+
+        When used for simulation, efficiency and absorptance may be
+        different, and each model handles this differently.
+        '''
+        self.u_const = np.nan
+        self.du_wind = np.nan
+        self.eta = module_efficiency
+        self.alpha = absorptance
+        return None
+
+
+    def __repr__(self):
+        '''
+        Return an informative string for a particular model instance.
+        '''
+        return self.__class__.__name__ + ': ' +vars(self).__repr__()
+
+
+    def __call__(self, poa_global, temp_air, wind_speed,
+                       module_efficiency=None):
+        '''
+        Calculate module temperature using the generic linear model and
+        previously initialized parameters.
+        '''
+        if module_efficiency is None:
+            module_efficiency = self.eta
+
+        heat_input = poa_global * (self.alpha - module_efficiency)
+        total_loss_factor = self.u_const + self.du_wind * wind_speed
+        temp_difference = heat_input / total_loss_factor
+
+        return temp_air + temp_difference
+
+
+    def set_faiman(self, u0, u1, **kwargs):
+        '''
+        Set the generic model parameters to match the Faiman model.
+        '''
+        net_absorptance = self.alpha - self.eta
+        self.u_const = u0 * net_absorptance
+        self.du_wind = u1 * net_absorptance
+
+        return self
+
+
+    def get_faiman(self):
+        '''
+        Get the Faiman model parameters matching the generic ones.
+        '''
+        net_absorptance = self.alpha - self.eta
+        u0 = self.u_const / net_absorptance
+        u1 = self.du_wind / net_absorptance
+
+        return dict(u0=u0, u1=u1)
+
+
+    def set_pvsyst(self, u_c, u_v, module_efficiency=None,
+                                   alpha_absorption=None):
+        '''
+        Set the generic model parameters to match the PVsyst model.
+
+        The optional parameters are primarily for convenient compatibility
+        with the other function signatures.
+        '''
+        if module_efficiency is not None:
+            self.eta = module_efficiency
+
+        if alpha_absorption is not None:
+            self.alpha = alpha_absorption
+
+        net_absorptance_glm = self.alpha - self.eta
+        net_absorptance_pvsyst = self.alpha * (1.0 - self.eta)
+        absorptance_ratio = net_absorptance_glm / net_absorptance_pvsyst
+
+        self.u_const  = u_c * absorptance_ratio
+        self.du_wind  = u_v * absorptance_ratio
+
+        return self
+
+
+    def get_pvsyst(self):
+        '''
+        Get the PVsyst model parameters matching the generic ones.
+        '''
+        net_absorptance_glm = self.alpha - self.eta
+        net_absorptance_pvsyst = self.alpha * (1.0 - self.eta)
+        absorptance_ratio = net_absorptance_glm / net_absorptance_pvsyst
+
+        u_c = self.u_const / absorptance_ratio
+        u_v = self.du_wind / absorptance_ratio
+
+        return dict(u_c=u_c,
+                    u_v=u_v,
+                    module_efficiency=self.eta,
+                    alpha_absorption=self.alpha)
+
+
+    def set_noct_sam(self, noct, module_efficiency=None,
+                                 transmittance_absorptance=None):
+        '''
+        Set the generic model parameters to match the NOCT SAM model.
+
+        The optional parameters are primarily for convenient compatibility
+        with the other function signatures.
+        '''
+        if module_efficiency is not None:
+            self.eta = module_efficiency
+
+        if transmittance_absorptance is not None:
+            self.alpha = transmittance_absorptance
+
+        # NOCT is determined with wind speed near module height
+        # the adjustment reduces the wind coefficient for use with 10m wind
+        wind_adj=0.51
+        u_noct = 800.0 * self.alpha / (noct - 20.0)
+        self.u_const = u_noct * 0.6
+        self.du_wind = u_noct * 0.4 * wind_adj
+        return self
+
+
+    def get_noct_sam(self):
+        '''
+        Get the NOCT SAM model parameters to approximate the generic model.
+        '''
+        # NOCT is determined with wind speed near module height
+        # the adjustment reduces the wind coefficient for use with 10m wind
+        wind_adj=0.51
+        u_noct = self.u_const + self.du_wind / wind_adj
+        noct = 20.0 + (800.0 * self.alpha) / u_noct
+        return dict(noct=noct,
+                    module_efficiency=self.eta,
+                    transmittance_absorptance=self.alpha)
+
+
+    def set_sapm(self, a, b, wind_fit_low=1.4, wind_fit_high=5.4):
+        '''
+        Set the generic model parameters to approximate the SAPM module model.
+
+        The generic model will equal the SAPM model at the two
+        given 10m wind speed values.
+        '''
+        u_low  = 1.0 / np.exp(a + b * wind_fit_low)
+        u_high = 1.0 / np.exp(a + b * wind_fit_high)
+
+        du_wind = (u_high - u_low) / (wind_fit_high - wind_fit_low)
+        u_const = u_low - du_wind * wind_fit_low
+
+        net_absorptance = self.alpha - self.eta
+        self.u_const = u_const * net_absorptance
+        self.du_wind = du_wind * net_absorptance
+        return self
+
+
+    def get_sapm(self, wind_fit_low=1.4, wind_fit_high=5.4):
+        '''
+        Get the SAPM module model parameters to approximate the generic model.
+
+        The SAPM model will equal the generic model at the two
+        given 10m wind speed values.
+        '''
+        net_absorptance = self.alpha - self.eta
+        u_const = self.u_const / net_absorptance
+        du_wind = self.du_wind / net_absorptance
+
+        u_low  = u_const + du_wind * wind_fit_low
+        u_high = u_const + du_wind * wind_fit_high
+
+        b = - ((np.log(u_high) - np.log(u_low)) /
+                  (wind_fit_high - wind_fit_low))
+        a = - (np.log(u_low) + b * wind_fit_low)
+        return dict(a=a, b=b)

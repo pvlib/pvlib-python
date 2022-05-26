@@ -216,5 +216,5 @@ def test_mlfm_fit(matrix_data, mlfm_6_fit):
 @requires_mpl
 def test_plot_mlfm_scatter(measured, normalized):
     import matplotlib.pyplot as plt
-    fig = mlfm.plot_mlfm_scatter(measured, normalized, 'title_string', 2)
+    fig = mlfm.plot_mlfm_scatter(measured, normalized, 'title_string')
     assert isinstance(fig, plt.Figure)

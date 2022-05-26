@@ -84,7 +84,6 @@ Contributors
 * Jack Kelly (:ghuser:`JackKelly`)
 * Somasree Majumder(:ghuser:`soma2000-lang`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
-
 * Will Holmgren (:ghuser:`wholmgren`)
 * Mark Mikofksi (:ghuser:`mikofski`)
 * Will Hobbs (:ghuser:`williamhobbs`)

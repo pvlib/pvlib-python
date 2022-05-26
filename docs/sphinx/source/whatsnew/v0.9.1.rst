@@ -1,3 +1,4 @@
+
 .. _whatsnew_0910:
 
 v0.9.1 (March 29, 2022)
@@ -25,8 +26,6 @@ Enhancements
 * Added ``map_variables`` option to :func:`~pvlib.iotools.read_crn` (:pull:`1368`)
 * Added :py:func:`pvlib.temperature.prilliman` for modeling cell temperature
   at short time steps (:issue:`1081`, :pull:`1391`)
-* Added Townsend Powers Snow loss model in :py:func:`pvlib.snow`
-  (:issue:`1246`, :pull:`1251`)
 
 Bug fixes
 ~~~~~~~~~
@@ -85,7 +84,6 @@ Contributors
 * Jack Kelly (:ghuser:`JackKelly`)
 * Somasree Majumder(:ghuser:`soma2000-lang`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
-* Abhishek Parikh (:ghuser:`abhisheksparikh`)
 
 * Will Holmgren (:ghuser:`wholmgren`)
 * Mark Mikofksi (:ghuser:`mikofski`)

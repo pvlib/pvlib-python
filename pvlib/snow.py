@@ -187,24 +187,23 @@ def dc_loss_nrel(snow_coverage, num_strings):
     return np.ceil(snow_coverage * num_strings) / num_strings
 
 
-def _townsend_Se(S, N):
+def _townsend_effective_snow(snow_load, snow_events):
     '''
-    Calculates effective snow for a given month based upon the total snowfall
-    received in a month in inches and the number of events where snowfall is
-    greater than 1 inch
+    Calculates effective snow using the total snowfall in inches received
+    each month and the number of snowfall events each month.
 
     Parameters
     ----------
-    S : numeric
-        Snowfall in inches received in a month [in]
+    snow_load : array-like
+        Inches of snow received each month. Referred to as S in the paper [in]
 
-    N: numeric
-        Number of snowfall events with snowfall > 1" [-]
+    snow_events : array-like
+        Number of snowfall events each month. Referred to as N in the paper [-]
 
     Returns
     -------
-    effective_snowfall : numeric
-        Effective snowfall as defined in the townsend model
+    effective_snowfall : array-like
+        Effective snowfall as defined in the Townsend model
 
     References
     ----------
@@ -215,37 +214,36 @@ def _townsend_Se(S, N):
        Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
 
     '''  # noqa: E501
-    return(np.where(N > 0, 0.5 * S * (1 + 1/N), 0))
+    snow_events_no_zeros = np.maximum(snow_events, 1)
+    effective_snow = 0.5 * snow_load * (1 + 1 / snow_events_no_zeros)
+    return np.where(snow_events > 0, effective_snow, 0)
 
 
 def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
                   temp_air, poa_global, slant_height, lower_edge_drop_height,
                   angle_of_repose=40):
     '''
-    Calculates monthly snow loss based on a generalized monthly snow loss model
-    discussed in [1]_.
+    Calculates monthly snow loss based on the Townsend monthly snow loss model [1]_.
 
     Parameters
     ----------
-    snow_total : numeric
-        Inches of snow received in the current month. Referred as S in the
-        paper [in]
+    snow_total : array-like
+        Inches of snow received each month. Referred to as S in the paper [in]
 
-    snow_events : numeric
-        Number of snowfall events with snowfall > 1". Referred as N in the
-        paper [-]
+    snow_events : array-like
+        Number of snowfall events each month. Referred to as N in the paper [-]
 
-    surface_tilt : numeric
-        Array surface_tilt [deg]
+    surface_tilt : float
+        Tilt angle of the array [deg]
 
-    relative_humidity : numeric
-        Relative humidity [%]
+    relative_humidity : array-like
+        Monthly average relative humidity [%]
 
-    temp_air : numeric
-        Ambient temperature [°C]
+    temp_air : array-like
+        Monthly average ambient temperature [C]
 
-    poa_global : numeric
-        Plane of array insolation [kWh/m2/month]
+    poa_global : array-like
+        Monthly plane of array insolation [kWh/m2/month]
 
     slant_height : float
         Row length in the slanted plane of array dimension [in]
@@ -253,14 +251,19 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     lower_edge_drop_height : float
         Drop height from array edge to ground [in]
 
-    P : float
-        piled snow angle, assumed to stabilize at 40° , the midpoint of
+    angle_of_repose : float, default 40
+        piled snow angle, assumed to stabilize at 40°, the midpoint of
         25°-55° avalanching slope angles [deg]
 
     Returns
     -------
-    loss : numeric
-        Average monthly DC capacity loss due to snow coverage [%]
+    loss : array-like
+        Monthly average DC capacity loss fraction due to snow coverage
+
+    Notes
+    -----
+    This model has not been validated for tracking arrays; however, for tracking
+    arrays [1]_ suggests using the maximum rotation angle in place of surface_tilt.
 
     References
     ----------
@@ -277,16 +280,30 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     snow_total_prev = np.roll(snow_total, 1)
     snow_events_prev = np.roll(snow_events, 1)
 
-    Se = _townsend_Se(snow_total, snow_events)
-    Se_prev = _townsend_Se(snow_total_prev, snow_events_prev)
+    effective_snow = _townsend_effective_snow(snow_total, snow_events)
+    effective_snow_prev = _townsend_effective_snow(snow_total_prev, snow_events_prev)
+    effective_snow_weighted = 1 / 3 * effective_snow_prev + 2 / 3 * effective_snow
 
-    Se_weighted = 1/3 * Se_prev + 2/3 * Se
-    gamma = (slant_height * Se_weighted * cosd(surface_tilt)) / \
-        (np.clip((lower_edge_drop_height**2 - Se_weighted**2), a_min=0.01,
-         a_max=None) / 2 / tand(angle_of_repose))
+    drop_height_clipped = np.maximum(lower_edge_drop_height, 0.01)
+    gamma = (
+        slant_height
+        * effective_snow_weighted
+        * cosd(surface_tilt)
+        / (drop_height_clipped**2 - effective_snow_weighted**2)
+        * 2
+        * tand(angle_of_repose)
+    )
 
-    GIT = 1 - C2 * np.exp(-gamma)
-    loss = (C1 * Se_weighted * (cosd(surface_tilt))**2 * GIT *
-            relative_humidity / (temp_air+273.15)**2 / poa_global**0.67) / 100
+    ground_interference_term = 1 - C2 * np.exp(-gamma)
+    temp_air_kelvin = temp_air + 273.15
+    loss_percentage = (
+        C1
+        * effective_snow_weighted
+        * cosd(surface_tilt)**2
+        * ground_interference_term
+        * relative_humidity
+        / temp_air_kelvin**2
+        / poa_global**0.67
+    )
 
-    return loss
+    return loss_percentage / 100

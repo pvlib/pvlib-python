@@ -4,7 +4,7 @@ import pandas as pd
 from pvlib import mlfm
 from numpy.testing import assert_allclose  # assert_almost_equal,
 import pytest
-from .conftest import requires_mpl
+from .conftest import requires_mpl, assert_frame_equal
 
 
 tolerance = 0.000001
@@ -68,10 +68,10 @@ def normalized():
         # 'date_time':     ['2016-03-23 09:00:00-07:00'],
         'pr_dc':           [0.989242790817207],
         'pr_dc_temp_corr': [1.00183462464583],
-        'i_mp':            [0.93628796685047],
-        'v_mp':            [0.821773945683017],
         'i_sc':            [0.995586151149719],
+        'i_mp':            [0.93628796685047],
         'v_oc':            [0.98475928597285],
+        'v_mp':            [0.821773945683017],
         'v_oc_temp_corr':  [0.994508547151521],
         'r_sc':            [0.981487711004909],
         'r_oc':            [0.903706382978424],
@@ -187,7 +187,7 @@ def mlfm_6_fit():
 
 def test_mlfm_meas_to_norm(mlfm_6_coeffs, reference, measured, normalized):
     norm_calc = mlfm.mlfm_meas_to_norm(measured, reference)
-    assert_allclose(norm_calc, normalized, atol=1e-6)
+    assert_frame_equal(norm_calc, normalized, atol=1e-6)
 
 
 def test_mlfm_6(measured, mlfm_6_coeffs):
@@ -197,8 +197,8 @@ def test_mlfm_6(measured, mlfm_6_coeffs):
 
 
 def test_mlfm_norm_to_stack(normalized, reference, stacked):
-    stack_calc = mlfm.mlfm_norm_to_stack(normalized, reference, 6)
-    assert_allclose(stack_calc, stacked, atol=1e-6)
+    stack_calc = mlfm.mlfm_norm_to_stack(normalized, reference['ff'])
+    assert_frame_equal(stack_calc, stacked, atol=1e-6)
 
 
 def test_mlfm_fit(matrix_data, mlfm_6_fit):

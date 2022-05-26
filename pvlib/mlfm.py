@@ -96,9 +96,21 @@ def mlfm_meas_to_norm(dmeas, ref):
 
     Returns
     -------
-    dnorm : dataframe
-        normalised multiplicative lfm loss values 'i_sc' .. 'v_oc'
-        where pr_dc = 1/ff * product('i_sc', ... 'v_oc').
+    dnorm : DataFrame
+        Normalised values.
+        * `'pr_dc'` is `'p_mp'` normalied by reference `'p_mp'` and 
+          `'poa_global_kwm2'`
+        * `'pr_dc_temp_corr'` is `'pr_dc'` adjusted to 25C.
+        * Columns `'i_sc'`, `'i_mp'`, `'v_oc'`, `'v_mp'`, `'v_oc_temp_corr'`,
+          `'r_sc'`, `'r_oc'`, `'i_ff'`, `'v_ff'` are returned when the
+          the corresponding optional columns are included in `'dmeas'`.
+
+    References
+    ----------
+    .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
+       "Quantifying Long Term PV Performance and Degradation under Real Outdoor
+       and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
+       36th EU PVSEC, Marseille, France. September 2019
     '''
     dnorm = pd.DataFrame()
 
@@ -146,10 +158,9 @@ def mlfm_meas_to_norm(dmeas, ref):
     return dnorm
 
 
-def mlfm_norm_to_stack(dnorm, ref, qty_mlfm_vars):
+def mlfm_norm_to_stack(dnorm, ff):
     '''
-    Converts MLFM normalised multiplicative losses norm(i_sc ... v_oc)
-    to stacked subtractive losses stack(i_sc ... v_oc).
+    Converts normalised values to stacked subtractive normalized losses.
 
     Ref:
     http://www.steveransome.com/PUBS/1909_5CV4_35_PVSEC36_Marseille_Ransome_PPT.pdf
@@ -165,69 +176,75 @@ def mlfm_norm_to_stack(dnorm, ref, qty_mlfm_vars):
     1/ff_ref = (ref(isc) / ref(imp)) * (ref(voc) / ref(vmp))
 
 
-    Multiplicative losses:
-        - are easier to use on a scatter plot vs. irradiance or temperature.
+    Normalized values can reveal losses via scatter plots vs. irradiance or
+    temperature.
 
-    Stacked losses:
-        - are better to use to see relative loss proportions
-        (for underperformance limitations)
-        or vs. time e.g. for degradation.
-
-        - Stacked losses are scaled so they give the correct pr_dc
-        and are in the right proportion to each other.
+    Stacked subtractive losses can show relative loss proportions. Stacked
+    losses partition the difference between the normalized power and the
+    power that corresponds to the reference fill factor.
 
     Parameters
     ----------
+    dnorm : DataFrame
+        Normalised values. Must include columns:
 
-    dnorm : dataframe
-        normalised multiplicative lfm loss values 'i_sc' .. 'v_oc'
-        where pr_dc = 1/ff * product('i_sc', ... 'v_oc').
+        * `'pr_dc'` normalized power at the maximum power point.
+        * `'i_sc'` normalized short circuit current.
+        * `'i_mp'` normalized current at maximum power point.
+        * `'v_oc'` normalized open circuit voltage.
+        * `'v_mp'` normalized voltage at maximum power point.
+        * `'v_oc_temp_corr'` normalized open circuit voltage adjusted to 25C.        
 
-    ref : dict
-        reference stc values e.g. 'v_oc' and
-        temperature coeffs e.g. 'beta_v_oc' .
+        May include optional columns:
 
-    qty_mlfm_vars : int
-        number of mlfm_values present in data usually
-        2 = (imp, vmp) from mpp tracker
-        4 = (i_sc, i_mp, v_mp, v_oc) from matrix
-        6 = (i_sc, i_mp, v_mp, v_oc, r_sc, r_oc) from iv curve.
+        * `'v_ff'` normalized multiplicative loss in fill factor apportioned
+          to voltage.
+        * `'i_ff'` normalized multiplicative loss in fill factor apportioned
+          to current.
+        * `'r_oc'` normalized slope of IV curve at open circuit.
+        * `'r_sc'` normalized slope of IV curve at short circuit.
+
+        ff : float
+            Reference value of fill factor for IV curve at STC conditions.
 
     Returns
     -------
-    dstack : dataframe
-        normalised subtractive lfm loss values 'i_sc' .. 'v_oc'
-        where pr_dc = 1/ff - sum('i_sc', ... 'v_oc').
+    dstack : DataFrame
+        Stacked subtractive normalized losses.
 
+    See also
+    --------
+    mlfm_meas_to_norm
+
+    References
+    ----------
+    .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
+       "Quantifying Long Term PV Performance and Degradation under Real Outdoor
+       and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
+       36th EU PVSEC, Marseille, France. September 2019
     '''
 
-    # create an empty pands to put stack results
+    # create an empty DataFrame to put stack results
     dstack = pd.DataFrame()
 
     # create a gap to differentiate i and v losses : gap width~0.01
     gap = 0.01
 
-    # calculate reference fill factor (usually between 0.5 and 0.8)
-    ff_ref = ref['ff']
+    inv_ff = 1 / ff
 
-    #  calculate inverse fill factor ~ 1.25 - 2 as we calculate
-    #  i_losses from ref_isc to norm_imp
-    #  v_losses from ref_voc to norm_vmp
+    if all(c in dnorm.columns for c in ['v_ff', 'r_oc', 'i_ff', 'r_sc']):
 
-    inv_ff = 1 / ff_ref
+        # include effects of series and shunt resistances in stacked losses
+        # find factor to transform multiplicative to subtractive losses
+        # correction factor to scale losses to keep 1/ff --> pr_dc
 
-    if qty_mlfm_vars == 6:  # ivcurve
-
-        #  find factor to transform multiplicative to subtractive losses
-        #  correction factor to scale losses to keep 1/ff --> pr_dc
-
-        #  product
+        # product
         prod = inv_ff * (
             dnorm['i_sc'] * dnorm['r_sc'] * dnorm['i_ff'] *
             dnorm['v_ff'] * dnorm['r_oc'] * dnorm['v_oc']
         )
 
-        #  total
+        # total
         tot = inv_ff + (
             dnorm['i_sc'] + dnorm['r_sc'] + dnorm['i_ff'] +
             dnorm['v_ff'] + dnorm['r_oc'] + dnorm['v_oc'] - 6
@@ -248,36 +265,34 @@ def mlfm_norm_to_stack(dnorm, ref, qty_mlfm_vars):
         dstack['temp_module_corr'] = (
             -(dnorm['v_oc'] - dnorm['v_oc_temp_corr']) * corr)
 
-    elif qty_mlfm_vars == 4:  # matrix
+        return dstack
 
-        #  find factor to transform multiplicative to subtractive losses
-        #  correction factor to scale losses to keep 1/ff --> pr_dc
+    # subtractive losses without series and shunt resistance effects
+    # find factor to transform multiplicative to subtractive losses
+    # correction factor to scale losses to keep 1/ff --> pr_dc
 
-        #  product
-        prod = inv_ff * (
-            dnorm['i_sc'] * dnorm['i_mp'] *
-            dnorm['v_mp'] * dnorm['v_oc']
-        )
+    prod = inv_ff * (
+        dnorm['i_sc'] * dnorm['i_mp'] *
+        dnorm['v_mp'] * dnorm['v_oc']
+    )
 
-        #  total
-        tot = inv_ff + (
-            dnorm['i_sc'] + dnorm['i_mp'] +
-            dnorm['v_mp'] + dnorm['v_oc'] - 4
-        )
+    tot = inv_ff + (
+        dnorm['i_sc'] + dnorm['i_mp'] +
+        dnorm['v_mp'] + dnorm['v_oc'] - 4
+    )
 
-        # correction factor
-        corr = (inv_ff - prod) / (inv_ff - tot)
+    corr = (inv_ff - prod) / (inv_ff - tot)
 
-        # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
-        dstack['pr_dc'] = + dnorm['pr_dc']  # initialise
-        dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
-        dstack['i_mp'] = -(dnorm['i_mp'] - 1) * corr - gap/2
-        dstack['i_v'] = gap
-        dstack['v_mp'] = -(dnorm['v_mp'] - 1) * corr - gap/2
-        dstack['v_oc'] = -(dnorm['v_oc'] - 1) * corr
+    # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
+    dstack['pr_dc'] = + dnorm['pr_dc']  # initialise
+    dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
+    dstack['i_mp'] = -(dnorm['i_mp'] - 1) * corr - gap/2
+    dstack['i_v'] = gap
+    dstack['v_mp'] = -(dnorm['v_mp'] - 1) * corr - gap/2
+    dstack['v_oc'] = -(dnorm['v_oc'] - 1) * corr
 
-        dstack['temp_module_corr'] = (
-            - (dnorm['v_oc'] - dnorm['v_oc_temp_corr']) * corr)
+    dstack['temp_module_corr'] = (
+        - (dnorm['v_oc'] - dnorm['v_oc_temp_corr']) * corr)
 
     return dstack
 
@@ -324,7 +339,14 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     -------
     mlfm_6 : Series
         Predicted values.
-    '''
+
+    References
+    ----------
+    .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
+       "Quantifying Long Term PV Performance and Degradation under Real Outdoor
+       and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
+       36th EU PVSEC, Marseille, France. September 2019
+     '''
     mlfm_out = c_1 + c_2 * (dmeas['temp_module'] - T_STC) + \
         c_3 * np.log10(dmeas['poa_global_kwm2']) + \
         c_4 * dmeas['poa_global_kwm2'] + c_6 / dmeas['poa_global_kwm2']

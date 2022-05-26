@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import scipy.optimize as so
 import warnings
+import datetime
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
@@ -275,7 +276,7 @@ def _spa_python_import(how):
 
 def spa_python(time, latitude, longitude,
                altitude=0, pressure=101325, temperature=12, delta_t=67.0,
-               atmos_refract=None, how='numpy', numthreads=4, **kwargs):
+               atmos_refract=None, how='numpy', numthreads=4):
     """
     Calculate the solar position using a python implementation of the
     NREL SPA algorithm.
@@ -304,13 +305,13 @@ def spa_python(time, latitude, longitude,
     temperature : int or float, optional, default 12
         avg. yearly air temperature in degrees C.
     delta_t : float, optional, default 67.0
+        Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.
-        For most simulations specifing delta_t is sufficient.
-        Difference between terrestrial time and UT1.
+        For most simulations the default delta_t is sufficient.
         *Note: delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.*
-        The USNO has historical and forecasted delta_t [3].
+        The USNO has historical and forecasted delta_t [3]_.
     atmos_refrac : None or float, optional, default None
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
@@ -405,18 +406,17 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         Latitude in degrees, positive north of equator, negative to south
     longitude : float
         Longitude in degrees, positive east of prime meridian, negative to west
-    delta_t : float, optional
-        If delta_t is None, uses spa.calculate_deltat
-        using times.year and times.month from pandas.DatetimeIndex.
-        For most simulations specifing delta_t is sufficient.
-        Difference between terrestrial time and UT1.
-        delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.
-        By default, use USNO historical data and predictions
     how : str, optional, default 'numpy'
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
+    delta_t : float, optional, default 67.0
+        Difference between terrestrial time and UT1.
+        If delta_t is None, uses spa.calculate_deltat
+        using times.year and times.month from pandas.DatetimeIndex.
+        For most simulations the default delta_t is sufficient.
+        *Note: delta_t = None will break code using nrel_numba,
+        this will be fixed in a future version.*
     numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
 
@@ -575,9 +575,10 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
     trans = []
     for thetime in times:
         thetime = thetime.to_pydatetime()
-        # pyephem drops timezone when converting to its internal datetime
-        # format, so handle timezone explicitly here
-        obs.date = ephem.Date(thetime - thetime.utcoffset())
+        # older versions of pyephem ignore timezone when converting to its
+        # internal datetime format, so convert to UTC here to support
+        # all versions.  GH #1449
+        obs.date = ephem.Date(thetime.astimezone(datetime.timezone.utc))
         sunrise.append(_ephem_to_timezone(rising(sun), tzinfo))
         sunset.append(_ephem_to_timezone(setting(sun), tzinfo))
         trans.append(_ephem_to_timezone(transit(sun), tzinfo))
@@ -972,13 +973,12 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         to machine code and run them multithreaded.
 
     delta_t : float, optional, default 67.0
+        Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.
-        For most simulations specifing delta_t is sufficient.
-        Difference between terrestrial time and UT1.
+        For most simulations the default delta_t is sufficient.
         *Note: delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.*
-        By default, use USNO historical data and predictions
 
     numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.

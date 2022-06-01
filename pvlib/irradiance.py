@@ -306,7 +306,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
                          dni, ghi, dhi, dni_extra=None, airmass=None,
                          albedo=.25, surface_type=None,
                          model='isotropic',
-                         model_perez='allsitescomposite1990', **kwargs):
+                         model_perez='allsitescomposite1990'):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.

@@ -231,8 +231,7 @@ class Location:
             pressure = atmosphere.alt2pres(self.altitude)
 
         if solar_position is None:
-            solar_position = self.get_solarposition(times, pressure=pressure,
-                                                    **kwargs)
+            solar_position = self.get_solarposition(times, pressure=pressure)
 
         apparent_zenith = solar_position['apparent_zenith']
         apparent_elevation = solar_position['apparent_elevation']

@@ -23,7 +23,7 @@ from pvlib.iotools import read_epw, parse_epw
 import warnings
 from pvlib._deprecation import pvlibDeprecationWarning
 
-URL = 'https://re.jrc.ec.europa.eu/api/'
+URL = 'https://re.jrc.ec.europa.eu/api/v5_2/'
 
 # Dictionary mapping PVGIS names to pvlib names
 PVGIS_VARIABLE_MAP = {

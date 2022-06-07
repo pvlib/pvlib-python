@@ -212,7 +212,6 @@ def _townsend_effective_snow(snow_load, snow_events):
        Record of the IEEE Photovoltaic Specialists Conference.
        003231-003236. :doi:`10.1109/PVSC.2011.6186627`
        Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
-
     '''  # noqa: E501
     snow_events_no_zeros = np.maximum(snow_events, 1)
     effective_snow = 0.5 * snow_load * (1 + 1 / snow_events_no_zeros)

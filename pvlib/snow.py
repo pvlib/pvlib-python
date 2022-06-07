@@ -280,8 +280,14 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     snow_events_prev = np.roll(snow_events, 1)
 
     effective_snow = _townsend_effective_snow(snow_total, snow_events)
-    effective_snow_prev = _townsend_effective_snow(snow_total_prev, snow_events_prev)
-    effective_snow_weighted = 1 / 3 * effective_snow_prev + 2 / 3 * effective_snow
+    effective_snow_prev = _townsend_effective_snow(
+        snow_total_prev,
+        snow_events_prev
+    )
+    effective_snow_weighted = (
+        1 / 3 * effective_snow_prev
+        + 2 / 3 * effective_snow
+    )
 
     drop_height_clipped = np.maximum(lower_edge_drop_height, 0.01)
     gamma = (

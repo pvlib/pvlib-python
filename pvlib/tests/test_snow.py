@@ -97,7 +97,7 @@ def test_dc_loss_nrel():
     assert_series_equal(expected, actual)
 
 
-def test__townsend_Se():
+def test__townsend_effective_snow():
     snow_load = np.array([10, 10, 5, 1, 0, 0, 0, 0, 0, 0, 5, 10])
     snow_events = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
     expected = np.array([7.5, 7.5, 5, 0, 0, 0, 0, 0, 0, 0, 3.75, 6.66666667])

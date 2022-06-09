@@ -41,7 +41,7 @@ albedo = 0.2
 # Now the trick: since pvfactors only wants to model single-axis tracking
 # arrays, we have to pretend our fixed tilt array is a single-axis tracking
 # array that never rotates.  In that case, the "axis of rotation" is
-# the along the length of the row, 90 degrees offset from the
+# along the length of the row, with ``axis_azimuth`` 90 degrees offset from the
 # fixed ``surface_azimuth``.
 
 irrad = pvfactors_timeseries(

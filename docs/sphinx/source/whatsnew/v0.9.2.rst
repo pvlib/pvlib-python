@@ -25,6 +25,9 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Add gallery example of simulating rearside irradiance for a fixed-tilt
+  array with pvfactors (:pull:`1470`)
+
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -40,3 +43,4 @@ Contributors
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Chencheng Luo (:ghuser:`roger-lcc`)
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

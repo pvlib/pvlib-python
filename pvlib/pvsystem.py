@@ -156,14 +156,15 @@ class PVSystem:
         Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
 
-    albedo : None or float, default None
-        The ground albedo. If ``None``, will attempt to use
-        ``surface_type`` and ``irradiance.SURFACE_ALBEDOS``
-        to lookup albedo.
+    albedo : None or numeric, default None
+        Ground surface albedo. If ``None``, then ``surface_type`` is used
+        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        If ``surface_type`` is also None then a ground surface albedo
+        of 0.25 is used.
 
     surface_type : None or string, default None
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
-        for valid values.
+        The ground surface type. Required if ``albedo`` is None.
+        See ``irradiance.SURFACE_ALBEDOS`` for valid values.
 
     module : None or string, default None
         The model name of the modules.
@@ -1257,15 +1258,15 @@ class Array:
         single axis tracker. Mounting is used to determine module orientation.
         If not provided, a FixedMount with zero tilt is used.
 
-    albedo : None or float, default None
-        The ground albedo. If ``None``, will attempt to use
-        ``surface_type`` to look up an albedo value in
-        ``irradiance.SURFACE_ALBEDOS``. If a surface albedo
-        cannot be found then 0.25 is used.
+    albedo : None or numeric, default None
+        Ground surface albedo. If ``None``, then ``surface_type`` is used
+        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        If ``surface_type`` is also None then a ground surface albedo
+        of 0.25 is used.
 
     surface_type : None or string, default None
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
-        for valid values.
+        The ground surface type. Required if ``albedo`` is None.
+        See ``irradiance.SURFACE_ALBEDOS`` for valid values.
 
     module : None or string, default None
         The model name of the modules.

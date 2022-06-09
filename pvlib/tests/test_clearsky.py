@@ -756,6 +756,18 @@ def test_bird():
     assert np.allclose(
         testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
     )
+    # repeat test with albedo as a Series
+    alb_series = pd.Series(0.2, index=times)
+    irrads = clearsky.bird(
+        zenith, airmass, aod_380nm, aod_500nm, h2o_cm, o3_cm, press_mB * 100.,
+        etr, b_a, alb_series
+    )
+    Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
+    assert np.allclose(testdata['DEC'], np.rad2deg(declination[1:48]))
+    assert np.allclose(testdata['EQT'], eot[1:48], rtol=1e-4)
+    assert np.allclose(testdata['Hour Angle'], hour_angle[1:48])
+    assert np.allclose(testdata['Zenith Ang'], zenith[1:48])
+
     # test keyword parameters
     irrads2 = clearsky.bird(
         zenith, airmass, aod_380nm, aod_500nm, h2o_cm, dni_extra=etr
@@ -792,3 +804,6 @@ def test_bird():
         testdata2[['Direct Beam', 'Direct Hz', 'Global Hz', 'Dif Hz']].iloc[11],
         rtol=1e-3)
     return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=times)
+
+
+test_bird()

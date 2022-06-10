@@ -1500,14 +1500,24 @@ class ModelChain:
         --------
         ModelChain.complete_irradiance
         """
-        # transfer albedo to weather if needed
-        if 'albedo' in weather.columns:
-            for array in self.system.Arrays:
-                if array.albedo:
-                    raise ValueError('albedo found in both weather and on'
-                                     ' PVsystem. Provide albedo on one or'
-                                     ' on neither, but not on both.')
-                array.albedo = weather['albedo']
+        # transfer albedo from weather to mc.system.arrays if needed
+        if isinstance(weather, pd.DataFrame):
+            if 'albedo' in weather.columns:
+                for array in self.system.arrays:
+                    if hasattr('array', 'albedo'):
+                        raise ValueError('albedo found in both weather and on'
+                                         ' PVsystem.Array Provide albedo on'
+                                         ' one or on neither, but not both.')
+                    array.albedo = weather['albedo']
+        else:  # weather is a list or tuple
+            for w, a in zip(weather, self.system.arrays):
+                if 'albedo' in w.columns:
+                    if hasattr('a', 'albedo'):
+                        raise ValueError('albedo found in both weather and on'
+                                         ' PVsystem.Array Provide albedo on'
+                                         ' one or on neither, but not both.')
+                    a.albedo = weather['albedo']
+
         weather = _to_tuple(weather)
         self._check_multiple_input(weather, strict=False)
         self._verify_df(weather, required=['ghi', 'dni', 'dhi'])

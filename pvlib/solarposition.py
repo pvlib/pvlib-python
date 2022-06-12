@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import scipy.optimize as so
 import warnings
+import datetime
 
 from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
@@ -574,9 +575,10 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
     trans = []
     for thetime in times:
         thetime = thetime.to_pydatetime()
-        # pyephem drops timezone when converting to its internal datetime
-        # format, so handle timezone explicitly here
-        obs.date = ephem.Date(thetime - thetime.utcoffset())
+        # older versions of pyephem ignore timezone when converting to its
+        # internal datetime format, so convert to UTC here to support
+        # all versions.  GH #1449
+        obs.date = ephem.Date(thetime.astimezone(datetime.timezone.utc))
         sunrise.append(_ephem_to_timezone(rising(sun), tzinfo))
         sunset.append(_ephem_to_timezone(setting(sun), tzinfo))
         trans.append(_ephem_to_timezone(transit(sun), tzinfo))

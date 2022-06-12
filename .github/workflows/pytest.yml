@@ -24,7 +24,7 @@ jobs:
             environment-type: conda
             suffix: -min
         exclude:
-          - os: macos-latest
+          - os: macos-10.15
             environment-type: conda
           - os: windows-latest
             environment-type: bare
@@ -47,7 +47,12 @@ jobs:
           # version, mapping from "3.7" to "37", second is to add "-min" if needed
           REQUIREMENTS: ci/requirements-py${{ fromJSON(env.VERSIONMAP)[matrix.python-version] }}${{ matrix.suffix }}.yml
 
-      - name: Install Python ${{ matrix.python-version }}${{ matrix.suffix }}
+      - name: List installed package versions (conda)
+        if: matrix.environment-type == 'conda'
+        shell: bash -l {0}  # necessary for conda env to be active
+        run: conda list
+
+      - name: Install bare Python ${{ matrix.python-version }}${{ matrix.suffix }}
         if: matrix.environment-type == 'bare'
         uses: actions/setup-python@v1
         with:
@@ -55,16 +60,18 @@ jobs:
 
       - name: Set up bare environment
         if: matrix.environment-type == 'bare'
-        run: pip install .[test]
+        run: |
+          pip install .[test]
+          pip freeze
 
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active
         run: |
-          sed -i '/#pvlib\/iotools/s/#//' .coveragerc  # don't include pvlib.iotools in coverage
-          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools
+          # ignore iotools & forecast; those tests are run in a separate workflow
+          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools --ignore=pvlib/tests/test_forecast.py
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == 3.9 && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+        if: matrix.python-version == 3.6 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
         uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true

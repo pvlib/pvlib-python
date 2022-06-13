@@ -8,6 +8,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added Townsend-Powers monthly snow loss model: :py:func:`pvlib.snow.loss_townsend`
+  (:issue:`1246`, :pull:`1251`, :pull:`1468`)
 
 Bug fixes
 ~~~~~~~~~
@@ -18,9 +20,6 @@ Bug fixes
   where passing localized timezones with large UTC offsets could return
   rise/set/transit times for the wrong day in recent versions of ``ephem``
   (:issue:`1449`, :pull:`1448`)
-* Added Townsend-Powers monthly snow loss model: :py:func:`pvlib.snow.loss_townsend`
-  (:issue:`1246`, :pull:`1251`, :pull:`1468`)
-
 
 Testing
 ~~~~~~~

@@ -211,8 +211,7 @@ def _townsend_effective_snow(snow_load, snow_events):
        update from two winters of measurements in the SIERRA. Conference
        Record of the IEEE Photovoltaic Specialists Conference.
        003231-003236. :doi:`10.1109/PVSC.2011.6186627`
-       Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
-    '''  # noqa: E501
+    '''
     snow_events_no_zeros = np.maximum(snow_events, 1)
     effective_snow = 0.5 * snow_load * (1 + 1 / snow_events_no_zeros)
     return np.where(snow_events > 0, effective_snow, 0)
@@ -222,7 +221,8 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
                   temp_air, poa_global, slant_height, lower_edge_drop_height,
                   angle_of_repose=40):
     '''
-    Calculates monthly snow loss based on the Townsend monthly snow loss model [1]_.
+    Calculates monthly snow loss based on the Townsend monthly snow loss
+    model [1]_.
 
     Parameters
     ----------
@@ -242,7 +242,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Monthly average ambient temperature [C]
 
     poa_global : array-like
-        Monthly plane of array insolation [kWh/m2/month]
+        Monthly plane of array insolation [kWh/m2]
 
     slant_height : float
         Row length in the slanted plane of array dimension [in]
@@ -261,8 +261,9 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
 
     Notes
     -----
-    This model has not been validated for tracking arrays; however, for tracking
-    arrays [1]_ suggests using the maximum rotation angle in place of surface_tilt.
+    This model has not been validated for tracking arrays; however, for
+    tracking arrays [1]_ suggests using the maximum rotation angle in place
+    of surface_tilt.
 
     References
     ----------
@@ -270,8 +271,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
        update from two winters of measurements in the SIERRA. Conference
        Record of the IEEE Photovoltaic Specialists Conference.
        003231-003236. 10.1109/PVSC.2011.6186627.
-       Available at https://www.researchgate.net/publication/261042016_Photovoltaics_and_snow_An_update_from_two_winters_of_measurements_in_the_SIERRA
-    '''  # noqa: E501
+    '''
 
     C1 = 5.7e04
     C2 = 0.51

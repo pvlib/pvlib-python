@@ -506,6 +506,11 @@ def test_prepare_inputs_transfer_albedo(
     # albedo on pvsystem but not in weather
     weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1},
                            index=times)
+    # weather as a single DataFrame
+    mc.prepare_inputs(weather)
+    num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
+    assert len(mc.results.total_irrad) == num_arrays
+    # repeat with tuple of weather
     mc.prepare_inputs(input_type((weather, weather)))
     num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
     assert len(mc.results.total_irrad) == num_arrays

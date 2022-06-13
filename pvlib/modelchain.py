@@ -1507,15 +1507,14 @@ class ModelChain:
         ModelChain.complete_irradiance
         """
         # transfer albedo from weather to mc.system.arrays if needed
-        if len(weather) == 1:  # single weather, multiple arrays
-            w = weather[0]
-            if 'albedo' in w.columns:
+        if isinstance(weather, pd.DataFrame):  # single weather, multiple arrays
+            if 'albedo' in weather.columns:
                 for array in self.system.arrays:
                     if hasattr(array, 'albedo'):
                         raise ValueError('albedo found in both weather and on'
                                          ' PVsystem.Array Provide albedo on'
                                          ' one or on neither, but not both.')
-                    array.albedo = w['albedo']
+                    array.albedo = weather['albedo']
         else:  # multiple weather and arrays
             for w, array in zip(weather, self.system.arrays):
                 if 'albedo' in w.columns:

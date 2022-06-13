@@ -517,6 +517,8 @@ def test_prepare_inputs_transfer_albedo(
     # albedo on both weather and system
     weather['albedo'] = 0.5
     with pytest.raises(ValueError, match='albedo found in both weather'):
+        mc.prepare_inputs(weather)
+    with pytest.raises(ValueError, match='albedo found in both weather'):
         mc.prepare_inputs(input_type((weather, weather)))
     # albedo on weather but not system
     pvsystem = sapm_dc_snl_ac_system_Array

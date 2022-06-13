@@ -1507,7 +1507,7 @@ class ModelChain:
         ModelChain.complete_irradiance
         """
         # transfer albedo from weather to mc.system.arrays if needed
-        if isinstance(weather, pd.DataFrame):  # single weather, multiple arrays
+        if isinstance(weather, pd.DataFrame):  # single weather, many arrays
             if 'albedo' in weather.columns:
                 for array in self.system.arrays:
                     if hasattr(array, 'albedo'):

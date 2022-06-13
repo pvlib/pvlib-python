@@ -165,8 +165,8 @@ class PVSystem:
         :py:class:`pvlib.modelchain.ModelChain` methods.
 
     surface_type : None or string, default None
-        The ground surface type. Required if ``albedo`` is None.
-        See ``irradiance.SURFACE_ALBEDOS`` for valid values.
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for
+        valid values.
 
     module : None or string, default None
         The model name of the modules.
@@ -1267,8 +1267,8 @@ class Array:
         of 0.25 is used.
 
     surface_type : None or string, default None
-        The ground surface type. Required if ``albedo`` is None.
-        See ``irradiance.SURFACE_ALBEDOS`` for valid values.
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for valid
+        values.
 
     module : None or string, default None
         The model name of the modules.

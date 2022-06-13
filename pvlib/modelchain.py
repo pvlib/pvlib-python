@@ -1471,7 +1471,7 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : tuple or list of DataFrames
+        weather : DataFrame, or tuple or list of DataFrames
             Required column names include ``'dni'``, ``'ghi'``, ``'dhi'``.
             Optional column names are ``'wind_speed'``, ``'temp_air'``,
             ``'albedo'``.
@@ -1770,7 +1770,7 @@ class ModelChain:
             is provided, `temperature_model` must be ``'sapm'``.
 
             If optional column ``'albedo'`` is provided, ``'albedo'`` may not
-            be present on the ModelChain's PVSystem or PVSystem.Arrays.
+            be present on the ModelChain's PVSystem.Arrays.
 
             If weather is a list or tuple, it must be of the same length and
             order as the Arrays of the ModelChain's PVSystem.

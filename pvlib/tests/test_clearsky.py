@@ -763,10 +763,22 @@ def test_bird():
         etr, b_a, alb_series
     )
     Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
-    assert np.allclose(testdata['DEC'], np.rad2deg(declination[1:48]))
-    assert np.allclose(testdata['EQT'], eot[1:48], rtol=1e-4)
-    assert np.allclose(testdata['Hour Angle'], hour_angle[1:48])
-    assert np.allclose(testdata['Zenith Ang'], zenith[1:48])
+    direct_beam = pd.Series(np.where(dawn, Eb, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Beam'].where(dusk, 0.), direct_beam[1:48], rtol=1e-3
+    )
+    direct_horz = pd.Series(np.where(dawn, Ebh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Hz'].where(dusk, 0.), direct_horz[1:48], rtol=1e-3
+    )
+    global_horz = pd.Series(np.where(dawn, Gh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Global Hz'].where(dusk, 0.), global_horz[1:48], rtol=1e-3
+    )
+    diffuse_horz = pd.Series(np.where(dawn, Dh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
+    )
 
     # test keyword parameters
     irrads2 = clearsky.bird(

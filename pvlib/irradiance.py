@@ -1872,7 +1872,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         applied.
 
     albedo : numeric, default 0.25
-        Gound surface albedo. [unitless]
+        Ground surface albedo. [unitless]
 
     model : String, default 'perez'
         Irradiance model.  See :py:func:`get_sky_diffuse` for allowed values.

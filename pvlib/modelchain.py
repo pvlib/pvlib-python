@@ -1504,7 +1504,7 @@ class ModelChain:
         if isinstance(weather, pd.DataFrame):
             if 'albedo' in weather.columns:
                 for array in self.system.arrays:
-                    if hasattr('array', 'albedo'):
+                    if hasattr(array, 'albedo'):
                         raise ValueError('albedo found in both weather and on'
                                          ' PVsystem.Array Provide albedo on'
                                          ' one or on neither, but not both.')
@@ -1512,11 +1512,11 @@ class ModelChain:
         else:  # weather is a list or tuple
             for w, a in zip(weather, self.system.arrays):
                 if 'albedo' in w.columns:
-                    if hasattr('a', 'albedo'):
+                    if hasattr(a, 'albedo'):
                         raise ValueError('albedo found in both weather and on'
                                          ' PVsystem.Array Provide albedo on'
                                          ' one or on neither, but not both.')
-                    a.albedo = weather['albedo']
+                    a.albedo = w['albedo']
 
         weather = _to_tuple(weather)
         self._check_multiple_input(weather, strict=False)

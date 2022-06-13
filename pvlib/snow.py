@@ -187,23 +187,23 @@ def dc_loss_nrel(snow_coverage, num_strings):
     return np.ceil(snow_coverage * num_strings) / num_strings
 
 
-def _townsend_effective_snow(snow_load, snow_events):
+def _townsend_effective_snow(snow_total, snow_events):
     '''
-    Calculates effective snow using the total snowfall in inches received
-    each month and the number of snowfall events each month.
+    Calculates effective snow using the total snowfall received each month and
+    the number of snowfall events each month.
 
     Parameters
     ----------
-    snow_load : array-like
-        Inches of snow received each month. Referred to as S in the paper [in]
+    snow_total : array-like
+        Snow received each month. Referred to as S in [1]_ [cm]
 
     snow_events : array-like
-        Number of snowfall events each month. Referred to as N in the paper [-]
+        Number of snowfall events each month. Referred to as N in [1]_ [-]
 
     Returns
     -------
     effective_snowfall : array-like
-        Effective snowfall as defined in the Townsend model
+        Effective snowfall as defined in the Townsend model [cm]
 
     References
     ----------
@@ -213,7 +213,7 @@ def _townsend_effective_snow(snow_load, snow_events):
        003231-003236. :doi:`10.1109/PVSC.2011.6186627`
     '''
     snow_events_no_zeros = np.maximum(snow_events, 1)
-    effective_snow = 0.5 * snow_load * (1 + 1 / snow_events_no_zeros)
+    effective_snow = 0.5 * snow_total * (1 + 1 / snow_events_no_zeros)
     return np.where(snow_events > 0, effective_snow, 0)
 
 
@@ -227,10 +227,10 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     Parameters
     ----------
     snow_total : array-like
-        Inches of snow received each month. Referred to as S in the paper [in]
+        Snow received each month. Referred to as S in [1]_ [cm]
 
     snow_events : array-like
-        Number of snowfall events each month. Referred to as N in the paper [-]
+        Number of snowfall events each month. Referred to as N in [1]_ [-]
 
     surface_tilt : float
         Tilt angle of the array [deg]
@@ -245,10 +245,10 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Monthly plane of array insolation [kWh/m2]
 
     slant_height : float
-        Row length in the slanted plane of array dimension [in]
+        Row length in the slanted plane of array dimension [m]
 
     lower_edge_drop_height : float
-        Drop height from array edge to ground [in]
+        Drop height from array edge to ground [m]
 
     angle_of_repose : float, default 40
         piled snow angle, assumed to stabilize at 40°, the midpoint of
@@ -288,13 +288,14 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         1 / 3 * effective_snow_prev
         + 2 / 3 * effective_snow
     )
+    effective_snow_weighted_m = effective_snow_weighted / 100
 
     drop_height_clipped = np.maximum(lower_edge_drop_height, 0.01)
     gamma = (
         slant_height
-        * effective_snow_weighted
+        * effective_snow_weighted_m
         * cosd(surface_tilt)
-        / (drop_height_clipped**2 - effective_snow_weighted**2)
+        / (drop_height_clipped**2 - effective_snow_weighted_m**2)
         * 2
         * tand(angle_of_repose)
     )

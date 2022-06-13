@@ -115,8 +115,8 @@ def test_loss_townsend():
     relative_humidity = np.array([80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
                                   80, 80])
     temp_air = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    poa_global = np.array([350, 350, 350, 350, 350, 350, 350, 350, 350, 350,
-                           350, 350])
+    poa_global = np.array([350000, 350000, 350000, 350000, 350000, 350000,
+                           350000, 350000, 350000, 350000, 350000, 350000])
     angle_of_repose = 40
     slant_height = 2.54
     lower_edge_drop_height = 0.254

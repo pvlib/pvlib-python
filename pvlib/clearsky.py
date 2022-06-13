@@ -647,8 +647,6 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
     data_slope = data_diff / sample_interval
     data_slope_nstd = _slope_nstd_windowed(data_slope.values[:-1], data, H,
                                            samples_per_window, sample_interval)
-    data_slope_nstd = data_slope_nstd
-
     return data_mean, data_max, data_slope_nstd, data_slope
 
 

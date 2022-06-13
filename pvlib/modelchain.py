@@ -1471,9 +1471,10 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame, or tuple or list of DataFrame
+        weather : tuple or list of DataFrames
             Required column names include ``'dni'``, ``'ghi'``, ``'dhi'``.
-            Optional column names are ``'wind_speed'``, ``'temp_air'``, ``'albedo'``.
+            Optional column names are ``'wind_speed'``, ``'temp_air'``,
+            ``'albedo'``.
 
             If optional columns ``'wind_speed'``, ``'temp_air'`` are not
             provided, air temperature of 20 C and wind speed
@@ -1506,22 +1507,23 @@ class ModelChain:
         ModelChain.complete_irradiance
         """
         # transfer albedo from weather to mc.system.arrays if needed
-        if isinstance(weather, pd.DataFrame):
-            if 'albedo' in weather.columns:
+        if len(weather) == 1:  # single weather, multiple arrays
+            w = weather[0]
+            if 'albedo' in w.columns:
                 for array in self.system.arrays:
                     if hasattr(array, 'albedo'):
                         raise ValueError('albedo found in both weather and on'
                                          ' PVsystem.Array Provide albedo on'
                                          ' one or on neither, but not both.')
-                    array.albedo = weather['albedo']
-        else:  # weather is a list or tuple
-            for w, a in zip(weather, self.system.arrays):
+                    array.albedo = w['albedo']
+        else:  # multiple weather and arrays
+            for w, array in zip(weather, self.system.arrays):
                 if 'albedo' in w.columns:
-                    if hasattr(a, 'albedo'):
+                    if hasattr(array, 'albedo'):
                         raise ValueError('albedo found in both weather and on'
                                          ' PVsystem.Array Provide albedo on'
                                          ' one or on neither, but not both.')
-                    a.albedo = w['albedo']
+                    array.albedo = w['albedo']
 
         weather = _to_tuple(weather)
         self._check_multiple_input(weather, strict=False)

@@ -134,7 +134,7 @@ class PVSystem:
         a single array is created from the other parameters (e.g.
         `surface_tilt`, `surface_azimuth`). Must contain at least one Array,
         if length of arrays is 0 a ValueError is raised. If `arrays` is
-        specified the following parameters are ignored:
+        specified the following PVSystem parameters are ignored:
 
         - `surface_tilt`
         - `surface_azimuth`
@@ -156,11 +156,13 @@ class PVSystem:
         Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
 
-    albedo : None or numeric, default None
+    albedo : None or float, default None
         Ground surface albedo. If ``None``, then ``surface_type`` is used
         to look up a value in ``irradiance.SURFACE_ALBEDOS``.
         If ``surface_type`` is also None then a ground surface albedo
-        of 0.25 is used.
+        of 0.25 is used. For time-dependent albedos, add ``'albedo'`` to
+        the input ``'weather'`` DataFrame for
+        :py:class:`pvlib.modelchain.ModelChain` methods.
 
     surface_type : None or string, default None
         The ground surface type. Required if ``albedo`` is None.
@@ -1258,7 +1260,7 @@ class Array:
         single axis tracker. Mounting is used to determine module orientation.
         If not provided, a FixedMount with zero tilt is used.
 
-    albedo : None or numeric, default None
+    albedo : None or float, default None
         Ground surface albedo. If ``None``, then ``surface_type`` is used
         to look up a value in ``irradiance.SURFACE_ALBEDOS``.
         If ``surface_type`` is also None then a ground surface albedo

@@ -519,14 +519,14 @@ def test_prepare_inputs_transfer_albedo(
         del a.albedo
     mc = ModelChain(pvsystem, location)
     mc = mc.prepare_inputs(weather)
-    assert (mc.system.arrays[0].albedo.values==0.5).all()
+    assert (mc.system.arrays[0].albedo.values == 0.5).all()
     # again with weather as a tuple
     for a in pvsystem.arrays:
         del a.albedo
     mc = ModelChain(pvsystem, location)
     mc = mc.prepare_inputs(input_type((weather, weather)))
     for a in mc.system.arrays:
-        assert (a.albedo.values==0.5).all()
+        assert (a.albedo.values == 0.5).all()
 
 
 def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):

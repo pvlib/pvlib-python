@@ -139,7 +139,7 @@ def test_get_ground_diffuse_albedo_0(irrad_data):
 def test_get_ground_diffuse_albedo_series(times):
     albedo = pd.Series(0.2, index=times)
     ground_irrad = irradiance.get_ground_diffuse(
-            45, pd.Series(1000, index=times), albedo)
+        45, pd.Series(1000, index=times), albedo)
     expected = albedo * 0.5 * (1 - np.sqrt(2) / 2.) * 1000
     expected.name = 'diffuse_ground'
     assert_series_equal(ground_irrad, expected)

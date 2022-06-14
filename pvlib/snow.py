@@ -302,14 +302,16 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
 
     ground_interference_term = 1 - C2 * np.exp(-gamma)
     temp_air_kelvin = temp_air + 273.15
+    effective_snow_weighted_in = effective_snow_weighted / 2.54
+    poa_global_kWh = poa_global / 1000
     loss_percentage = (
         C1
-        * effective_snow_weighted
+        * effective_snow_weighted_in
         * cosd(surface_tilt)**2
         * ground_interference_term
         * relative_humidity
         / temp_air_kelvin**2
-        / poa_global**0.67
+        / poa_global_kWh**0.67
     )
 
     return loss_percentage / 100

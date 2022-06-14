@@ -52,11 +52,6 @@ on:
 
 jobs:
   test:
-    env:
-      # we need to turn "3.6" into 36 to build the conda requirement filename,
-      # but there's no good way to do that via string manipulation.  So set up
-      # a map that will be parsed as JSON later:
-      VERSIONMAP: '{"3.6": "36", "3.7": "37", "3.8": "38", "3.9": "39"}'
 
     strategy:
       fail-fast: false  # don't cancel other matrix jobs when one fails
@@ -90,8 +85,8 @@ jobs:
           auto-activate-base: false
         env:
           # build requirement filename.  First replacement is for the python
-          # version, mapping from "3.7" to "37", second is to add "-min" if needed
-          REQUIREMENTS: ci/requirements-py${{ fromJSON(env.VERSIONMAP)[matrix.python-version] }}${{ matrix.suffix }}.yml
+          # version, second is to add "-min" if needed
+          REQUIREMENTS: ci/requirements-py${{ matrix.python-version }}${{ matrix.suffix }}.yml
 
       - name: List installed package versions
         shell: bash -l {0}  # necessary for conda env to be active

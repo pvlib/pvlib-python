@@ -22,6 +22,8 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Switched CI testing provider from Azure to GitHub Actions (:pull:`1306`)
+
 
 Documentation
 ~~~~~~~~~~~~~
@@ -41,3 +43,4 @@ Contributors
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Chencheng Luo (:ghuser:`roger-lcc`)
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

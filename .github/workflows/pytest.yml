@@ -1,0 +1,78 @@
+name: pytest
+
+on:
+  pull_request:
+  push:
+    branches:
+    - master
+
+jobs:
+  test:
+
+    strategy:
+      fail-fast: false  # don't cancel other matrix jobs when one fails
+      matrix:
+        # use macos-10.15 instead of macos-latest for py3.6 support
+        os: [ubuntu-latest, macos-10.15, windows-latest]
+        python-version: [3.6, 3.7, 3.8, 3.9]
+        environment-type: [conda, bare]
+        suffix: ['']  # placeholder as an alternative to "-min"
+        include:
+          - os: ubuntu-latest
+            python-version: 3.6
+            environment-type: conda
+            suffix: -min
+        exclude:
+          - os: macos-10.15
+            environment-type: conda
+          - os: windows-latest
+            environment-type: bare
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up conda environment
+        if: matrix.environment-type == 'conda'
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test_env
+          environment-file: ${{ env.REQUIREMENTS }}
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: false
+        env:
+          # build requirement filename.  First replacement is for the python
+          # version, second is to add "-min" if needed
+          REQUIREMENTS: ci/requirements-py${{ matrix.python-version }}${{ matrix.suffix }}.yml
+
+      - name: List installed package versions (conda)
+        if: matrix.environment-type == 'conda'
+        shell: bash -l {0}  # necessary for conda env to be active
+        run: conda list
+
+      - name: Install bare Python ${{ matrix.python-version }}${{ matrix.suffix }}
+        if: matrix.environment-type == 'bare'
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up bare environment
+        if: matrix.environment-type == 'bare'
+        run: |
+          pip install .[test]
+          pip freeze
+
+      - name: Run tests
+        shell: bash -l {0}  # necessary for conda env to be active
+        run: |
+          # ignore iotools & forecast; those tests are run in a separate workflow
+          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools --ignore=pvlib/tests/test_forecast.py
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == 3.6 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          verbose: true
+          flags: core  # flags are configured in codecov.yml

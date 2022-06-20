@@ -2,26 +2,68 @@ codecov:
   notify:
     require_ci_to_pass: no
 
+# "flags" are used to identify subsets of the overall codebase when calculating coverage.
+# Currently used for "remote_data" (pvlib.iotools & forecast) and "core" (everything else).
+# Because we only run the remote_data tests sometimes, we need to split it out so that
+# codecov doesn't report a big drop in coverage when we don't run them.
+# We also use "carryforward: true" so that, when we don't run remote_data tests, the last
+# known coverage is carried forward and used in place of the missing coverage.
+# https://docs.codecov.com/docs/flags
+flags:
+
+  core:
+    paths:
+      - pvlib/
+      - '!pvlib/iotools/'
+      - '!pvlib/tests/iotools/'
+      - '!pvlib/forecast.py'
+      - '!pvlib/tests/test_forecast.py'
+    carryforward: false
+
+  remote-data:
+    paths:
+      - pvlib/iotools/
+      - pvlib/tests/iotools
+      - pvlib/forecast.py
+      - pvlib/tests/test_forecast.py
+    carryforward: true  # if not run, use coverage from previous commit
+
+
 coverage:
-  status:
+  status:  # each entry here represents a check status to report to GitHub
     patch:
       default:
         target: 100%
-        if_no_uploads: error
-        if_not_found: success
-        if_ci_failed: failure
+
     project:
-      default: false
-      library:
+      default: off
+
+      core:
         target: auto
-        if_no_uploads: error
-        if_not_found: success
-        if_ci_failed: failure
-        paths:
-          - "pvlib/.*"
-      tests:
+        flags:
+          - core
+
+      remote-data:
+        target: auto
+        flags:
+          - remote-data
+
+      tests-core:
         target: 95%
         paths:
-          - "pvlib/tests/.*"
+          - 'pvlib/tests/.*'
+          - '!pvlib/tests/iotools/.*'
+          - '!pvlib/tests/test_forecast.py'
+        flags:
+          - core
+
+      tests-remote-data:
+        target: 95%
+        paths:
+          - 'pvlib/tests/iotools/.*'
+          - 'pvlib/tests/test_forecast.py'
+        flags:
+          - remote-data
+
 
 comment: off

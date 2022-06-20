@@ -251,8 +251,8 @@ class SingleAxisTracker(PVSystem):
             try:
                 albedo = kwargs.pop('albedo')
             except KeyError:
-                # assign default albedo here because SingleAxisTracker initializes
-                # albedo to None
+                # assign default albedo here because SingleAxisTracker
+                # initializes albedo to None
                 albedo = 0.25
 
         albedo = self._validate_per_array(albedo, system_wide=True)

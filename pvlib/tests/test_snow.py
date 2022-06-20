@@ -120,8 +120,9 @@ def test_loss_townsend():
     angle_of_repose = 40
     slant_height = 2.54
     lower_edge_drop_height = 0.254
-    expected = np.array([0.07696253, 0.07992262, 0.06216201, 0.01715392, 0, 0,
-                         0, 0, 0, 0, 0.02643821, 0.06068194])
+    expected = np.array([0.0007696253, 0.0007992262, 0.0006216201,
+                         0.0001715392, 0, 0, 0, 0, 0, 0, 0.0002643821,
+                         0.0006068194])
     actual = snow.loss_townsend(snow_total, snow_events, surface_tilt,
                                 relative_humidity, temp_air,
                                 poa_global, slant_height,

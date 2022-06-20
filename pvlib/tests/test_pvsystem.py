@@ -1717,10 +1717,9 @@ def test_PVSystem_get_irradiance_albedo():
     expected = pd.DataFrame(data=np.array(
         [[895.05134334, 745.86141676, 149.18992658, 126.397131, 22.79279558],
          [0., -0., 0., 0., 0.]]),
-                            columns=['poa_global', 'poa_direct',
-                                     'poa_diffuse', 'poa_sky_diffuse',
-                                     'poa_ground_diffuse'],
-                            index=times)
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse'],
+        index=times)
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 

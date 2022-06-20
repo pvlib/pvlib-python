@@ -304,7 +304,7 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 def get_total_irradiance(surface_tilt, surface_azimuth,
                          solar_zenith, solar_azimuth,
                          dni, ghi, dhi, dni_extra=None, airmass=None,
-                         albedo=.25, surface_type=None,
+                         albedo=0.25, surface_type=None,
                          model='isotropic',
                          model_perez='allsitescomposite1990'):
     r"""

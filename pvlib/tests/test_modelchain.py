@@ -498,13 +498,13 @@ def test_prepare_inputs_multi_weather(
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])
-def test_prepare_inputs_transfer_albedo(
+def test_prepare_inputs_albedo_in_weather(
         sapm_dc_snl_ac_system_Array, location, input_type):
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     # albedo on pvsystem but not in weather
-    weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1},
+    weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1, 'albedo': 0.5},
                            index=times)
     # weather as a single DataFrame
     mc.prepare_inputs(weather)
@@ -514,26 +514,6 @@ def test_prepare_inputs_transfer_albedo(
     mc.prepare_inputs(input_type((weather, weather)))
     num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
     assert len(mc.results.total_irrad) == num_arrays
-    # albedo on both weather and system
-    weather['albedo'] = 0.5
-    with pytest.raises(ValueError, match='albedo found in both weather'):
-        mc.prepare_inputs(weather)
-    with pytest.raises(ValueError, match='albedo found in both weather'):
-        mc.prepare_inputs(input_type((weather, weather)))
-    # albedo on weather but not system
-    pvsystem = sapm_dc_snl_ac_system_Array
-    for a in pvsystem.arrays:
-        del a.albedo
-    mc = ModelChain(pvsystem, location)
-    mc = mc.prepare_inputs(weather)
-    assert (mc.system.arrays[0].albedo.values == 0.5).all()
-    # again with weather as a tuple
-    for a in pvsystem.arrays:
-        del a.albedo
-    mc = ModelChain(pvsystem, location)
-    mc = mc.prepare_inputs(input_type((weather, weather)))
-    for a in mc.system.arrays:
-        assert (a.albedo.values == 0.5).all()
 
 
 def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):

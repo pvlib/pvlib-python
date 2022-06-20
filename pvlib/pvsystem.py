@@ -336,13 +336,12 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
-                       **kwargs):
+                       dni_extra=None, airmass=None,
+                       model='haydavies', **kwargs):
         """
         Uses the :py:func:`irradiance.get_total_irradiance` function to
         calculate the plane of array irradiance components on a tilted
-        surface defined by ``self.surface_tilt``,
-        ``self.surface_azimuth``, and ``self.albedo``.
+        surface defined by ``self.surface_tilt`` and ``self.surface_azimuth```.
 
         Parameters
         ----------
@@ -351,15 +350,15 @@ class PVSystem:
         solar_azimuth : float or Series.
             Solar azimuth angle.
         dni : float or Series or tuple of float or Series
-            Direct Normal Irradiance
+            Direct Normal Irradiance. [W/m2]
         ghi : float or Series or tuple of float or Series
-            Global horizontal irradiance
+            Global horizontal irradiance. [W/m2]
         dhi : float or Series or tuple of float or Series
-            Diffuse horizontal irradiance
+            Diffuse horizontal irradiance. [W/m2]
         dni_extra : None, float or Series, default None
-            Extraterrestrial direct normal irradiance
+            Extraterrestrial direct normal irradiance [W/m2]
         airmass : None, float or Series, default None
-            Airmass
+            Airmass. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
 
@@ -379,17 +378,29 @@ class PVSystem:
         poa_irradiance : DataFrame or tuple of DataFrame
             Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
             'poa_sky_diffuse', 'poa_ground_diffuse'``.
+
+        See also
+        --------
+        :py:func:`pvlib.irradiance.get_total_irradiance`
         """
         dni = self._validate_per_array(dni, system_wide=True)
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)
+
+        try:
+            albedo = kwargs.pop('albedo')
+        except KeyError:
+            albedo = None
+        albedo = self._validate_per_array(albedo, system_wide=True)
+
         return tuple(
             array.get_irradiance(solar_zenith, solar_azimuth,
                                  dni, ghi, dhi,
+                                 albedo,
                                  dni_extra, airmass, model,
                                  **kwargs)
-            for array, dni, ghi, dhi in zip(
-                self.arrays, dni, ghi, dhi
+            for array, dni, ghi, dhi, albedo in zip(
+                self.arrays, dni, ghi, dhi, albedo
             )
         )
 
@@ -1428,15 +1439,14 @@ class Array:
                               solar_zenith, solar_azimuth)
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
-                       **kwargs):
+                       albedo=None, dni_extra=None, airmass=None,
+                       model='haydavies', **kwargs):
         """
         Get plane of array irradiance components.
 
         Uses the :py:func:`pvlib.irradiance.get_total_irradiance` function to
         calculate the plane of array irradiance components for a surface
-        defined by ``self.surface_tilt`` and ``self.surface_azimuth`` with
-        albedo ``self.albedo``.
+        defined by ``self.surface_tilt`` and ``self.surface_azimuth``.
 
         Parameters
         ----------
@@ -1445,15 +1455,17 @@ class Array:
         solar_azimuth : float or Series.
             Solar azimuth angle.
         dni : float or Series
-            Direct Normal Irradiance
-        ghi : float or Series
+            Direct normal irradiance. [W/m2]
+        ghi : float or Series. [W/m2]
             Global horizontal irradiance
         dhi : float or Series
-            Diffuse horizontal irradiance
+            Diffuse horizontal irradiance. [W/m2]
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
         dni_extra : None, float or Series, default None
-            Extraterrestrial direct normal irradiance
+            Extraterrestrial direct normal irradiance. [W/m2]
         airmass : None, float or Series, default None
-            Airmass
+            Airmass. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
 
@@ -1466,7 +1478,14 @@ class Array:
         poa_irradiance : DataFrame
             Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
             'poa_sky_diffuse', 'poa_ground_diffuse'``.
+
+        See also
+        --------
+        :py:func:`pvlib.irradiance.get_total_irradiance`
         """
+        if albedo is None:
+            albedo = self.albedo
+
         # not needed for all models, but this is easier
         if dni_extra is None:
             dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
@@ -1479,10 +1498,10 @@ class Array:
                                                orientation['surface_azimuth'],
                                                solar_zenith, solar_azimuth,
                                                dni, ghi, dhi,
+                                               albedo=albedo,
                                                dni_extra=dni_extra,
                                                airmass=airmass,
                                                model=model,
-                                               albedo=self.albedo,
                                                **kwargs)
 
     def get_iam(self, aoi, iam_model='physical'):

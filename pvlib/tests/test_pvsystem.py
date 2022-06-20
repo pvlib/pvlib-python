@@ -1689,17 +1689,41 @@ def test_PVSystem_get_irradiance():
                                        irrads['dhi'])
 
     expected = pd.DataFrame(data=np.array(
-        [[ 883.65494055,  745.86141676,  137.79352379,  126.397131  ,
-              11.39639279],
-           [   0.        ,   -0.        ,    0.        ,    0.        ,    0.        ]]),
+        [[883.65494055, 745.86141676, 137.79352379, 126.397131, 11.39639279],
+         [  0.        ,  -0.        ,   0.        ,   0.      ,  0.        ]]),
                             columns=['poa_global', 'poa_direct',
                                      'poa_diffuse', 'poa_sky_diffuse',
                                      'poa_ground_diffuse'],
                             index=times)
-
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 
+def test_PVSystem_get_irradiance_albedo():
+    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
+    location = Location(latitude=32, longitude=-111)
+    solar_position = location.get_solarposition(times)
+    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0],
+                           'albedo':[0.5, 0.5]},
+                          index=times)
+    # albedo as a Series
+    irradiance = system.get_irradiance(solar_position['apparent_zenith'],
+                                       solar_position['azimuth'],
+                                       irrads['dni'],
+                                       irrads['ghi'],
+                                       irrads['dhi'],
+                                       albedo=irrads['albedo'])
+    expected = pd.DataFrame(data=np.array(
+        [[895.05134334, 745.86141676, 149.18992658, 126.397131, 22.79279558],
+         [  0.        ,  -0.        ,   0.        ,   0.      ,  0.        ]]),
+                            columns=['poa_global', 'poa_direct',
+                                     'poa_diffuse', 'poa_sky_diffuse',
+                                     'poa_ground_diffuse'],
+                            index=times)
+    assert_frame_equal(irradiance, expected, check_less_precise=2)
+
+    
 def test_PVSystem_get_irradiance_model(mocker):
     spy_perez = mocker.spy(irradiance, 'perez')
     spy_haydavies = mocker.spy(irradiance, 'haydavies')

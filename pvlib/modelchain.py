@@ -1339,6 +1339,16 @@ class ModelChain:
             **kwargs)
         return self
 
+    def _prep_inputs_albedo(self, weather):
+        """
+        Get albedo from weather
+        """
+        try:
+            self.results.albedo = _tuple_from_dfs(weather, 'albedo')
+        except KeyError:
+            self.results.albedo = None
+        return self
+
     def _prep_inputs_airmass(self):
         """
         Assign airmass
@@ -1480,6 +1490,9 @@ class ModelChain:
             provided, air temperature of 20 C and wind speed
             of 0 m/s will be added to the `weather` DataFrame.
 
+            If optional column ``'albedo'`` is provided, albedo values in the
+            ModelChain's PVSystem.arrays are ignored.
+
             If `weather` is a tuple or list, it must be of the same length and
             order as the Arrays of the ModelChain's PVSystem.
 
@@ -1493,37 +1506,16 @@ class ModelChain:
         ValueError
             If `weather` is a tuple or list with a different length than the
             number of Arrays in the system.
-        ValueError
-            If ``'albedo'`` is a column in `weather` and is also an attribute
-            of the ModelChain's PVSystem.Arrays.
 
         Notes
         -----
         Assigns attributes to ``results``: ``times``, ``weather``,
-        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``, ``albedo``.
 
         See also
         --------
         ModelChain.complete_irradiance
         """
-        # transfer albedo from weather to mc.system.arrays if needed
-        if isinstance(weather, pd.DataFrame):  # single weather, many arrays
-            if 'albedo' in weather.columns:
-                for array in self.system.arrays:
-                    if hasattr(array, 'albedo'):
-                        raise ValueError('albedo found in both weather and on'
-                                         ' PVsystem.Array Provide albedo on'
-                                         ' one or on neither, but not both.')
-                    array.albedo = weather['albedo']
-        else:  # multiple weather and arrays
-            for w, array in zip(weather, self.system.arrays):
-                if 'albedo' in w.columns:
-                    if hasattr(array, 'albedo'):
-                        raise ValueError('albedo found in both weather and on'
-                                         ' PVsystem.Array Provide albedo on'
-                                         ' one or on neither, but not both.')
-                    array.albedo = w['albedo']
-
         weather = _to_tuple(weather)
         self._check_multiple_input(weather, strict=False)
         self._verify_df(weather, required=['ghi', 'dni', 'dhi'])
@@ -1531,6 +1523,7 @@ class ModelChain:
 
         self._prep_inputs_solar_pos(weather)
         self._prep_inputs_airmass()
+        self._prep_inputs_albedo(weather)
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
@@ -1555,6 +1548,7 @@ class ModelChain:
             _tuple_from_dfs(self.results.weather, 'dni'),
             _tuple_from_dfs(self.results.weather, 'ghi'),
             _tuple_from_dfs(self.results.weather, 'dhi'),
+            albedo=self.results.albedo,
             airmass=self.results.airmass['airmass_relative'],
             model=self.transposition_model
         )

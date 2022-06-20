@@ -24,6 +24,8 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Switched CI testing provider from Azure to GitHub Actions (:pull:`1306`)
+
 
 Documentation
 ~~~~~~~~~~~~~
@@ -44,3 +46,4 @@ Contributors
 * Chencheng Luo (:ghuser:`roger-lcc`)
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

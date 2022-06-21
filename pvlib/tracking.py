@@ -187,7 +187,8 @@ class SingleAxisTracker(PVSystem):
     @_unwrap_single_value
     def get_irradiance(self, surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
+                       albedo=None, dni_extra=None, airmass=None,
+                       model='haydavies',
                        **kwargs):
         """
         Uses the :func:`irradiance.get_total_irradiance` function to
@@ -214,6 +215,8 @@ class SingleAxisTracker(PVSystem):
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
         dni_extra : float or Series, default None
             Extraterrestrial direct normal irradiance
         airmass : float or Series, default None
@@ -244,6 +247,13 @@ class SingleAxisTracker(PVSystem):
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)
 
+        if albedo is None:
+            # assign default albedo here because SingleAxisTracker
+            # initializes albedo to None
+            albedo = 0.25
+
+        albedo = self._validate_per_array(albedo, system_wide=True)
+
         return tuple(
             irradiance.get_total_irradiance(
                 surface_tilt,
@@ -254,10 +264,10 @@ class SingleAxisTracker(PVSystem):
                 dni_extra=dni_extra,
                 airmass=airmass,
                 model=model,
-                albedo=self.arrays[0].albedo,
+                albedo=albedo,
                 **kwargs)
-            for array, dni, ghi, dhi in zip(
-                self.arrays, dni, ghi, dhi
+            for array, dni, ghi, dhi, albedo in zip(
+                self.arrays, dni, ghi, dhi, albedo
             )
         )
 

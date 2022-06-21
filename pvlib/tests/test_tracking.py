@@ -393,25 +393,6 @@ def test_get_irradiance():
 
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
-    # test with albedo as a Series
-    irrads['albedo'] = [0.5, 0.5]
-    with np.errstate(invalid='ignore'):
-        irradiance = system.get_irradiance(tracker_data['surface_tilt'],
-                                           tracker_data['surface_azimuth'],
-                                           solar_zenith,
-                                           solar_azimuth,
-                                           irrads['dni'],
-                                           irrads['ghi'],
-                                           irrads['dhi'],
-                                           albedo=irrads['albedo'])
-
-    expected = pd.Series(data=[21.05514984, nan], index=times,
-                         name='poa_ground_diffuse')
-
-    assert_series_equal(irradiance['poa_ground_diffuse'], expected,
-                        check_less_precise=2)
-
-
 
 def test_SingleAxisTracker___repr__():
     with pytest.warns(pvlibDeprecationWarning):

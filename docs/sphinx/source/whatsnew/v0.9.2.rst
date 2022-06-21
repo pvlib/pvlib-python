@@ -8,17 +8,15 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* albedo can now be provided as a column in the `weather` DataFrame input to
-  :py:method:`pvlib.modelchain.ModelChain.run_model`. (:issue:`1387`, :pull:`1469`)
 
 Bug fixes
 ~~~~~~~~~
 * :py:func:`pvlib.irradiance.get_total_irradiance` and
   :py:func:`pvlib.solarposition.spa_python` now raise an error instead
-  of silently ignoring unknown parameters. (:pull:`1437`)
+  of silently ignoring unknown parameters (:pull:`1437`)
 * Fix a bug in :py:func:`pvlib.solarposition.sun_rise_set_transit_ephem`
   where passing localized timezones with large UTC offsets could return
-  rise/set/transit times for the wrong day in recent versions of ``ephem``.
+  rise/set/transit times for the wrong day in recent versions of ``ephem``
   (:issue:`1449`, :pull:`1448`)
 
 
@@ -45,5 +43,4 @@ Contributors
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Chencheng Luo (:ghuser:`roger-lcc`)
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
-* Cliff Hansen (:ghuser:`cwhanse`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)

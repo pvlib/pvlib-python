@@ -497,24 +497,6 @@ def test_prepare_inputs_multi_weather(
     assert len(mc.results.total_irrad) == num_arrays
 
 
-@pytest.mark.parametrize("input_type", [tuple, list])
-def test_prepare_inputs_albedo_in_weather(
-        sapm_dc_snl_ac_system_Array, location, input_type):
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
-    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
-    weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1, 'albedo': 0.5},
-                           index=times)
-    # weather as a single DataFrame
-    mc.prepare_inputs(weather)
-    num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
-    assert len(mc.results.total_irrad) == num_arrays
-    # repeat with tuple of weather
-    mc.prepare_inputs(input_type((weather, weather)))
-    num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
-    assert len(mc.results.total_irrad) == num_arrays
-
-
 def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     weather = pd.DataFrame()

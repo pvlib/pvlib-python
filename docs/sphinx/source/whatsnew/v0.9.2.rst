@@ -27,6 +27,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
 
 Benchmarking
 ~~~~~~~~~~~~~

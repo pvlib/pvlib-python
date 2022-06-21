@@ -503,7 +503,6 @@ def test_prepare_inputs_albedo_in_weather(
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
-    # albedo on pvsystem but not in weather
     weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1, 'albedo': 0.5},
                            index=times)
     # weather as a single DataFrame

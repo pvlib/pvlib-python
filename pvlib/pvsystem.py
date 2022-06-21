@@ -336,7 +336,7 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None,
+                       albedo=None, dni_extra=None, airmass=None,
                        model='haydavies', **kwargs):
         """
         Uses the :py:func:`irradiance.get_total_irradiance` function to
@@ -345,9 +345,9 @@ class PVSystem:
 
         Parameters
         ----------
-        solar_zenith : float or Series.
+        solar_zenith : float or Series
             Solar zenith angle.
-        solar_azimuth : float or Series.
+        solar_azimuth : float or Series
             Solar azimuth angle.
         dni : float or Series or tuple of float or Series
             Direct Normal Irradiance. [W/m2]
@@ -355,8 +355,11 @@ class PVSystem:
             Global horizontal irradiance. [W/m2]
         dhi : float or Series or tuple of float or Series
             Diffuse horizontal irradiance. [W/m2]
-        dni_extra : None, float or Series, default None
-            Extraterrestrial direct normal irradiance [W/m2]
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
+        dni_extra : None, float, Series or tuple of float or Series,
+            default None
+            Extraterrestrial direct normal irradiance. [W/m2]
         airmass : None, float or Series, default None
             Airmass. [unitless]
         model : String, default 'haydavies'
@@ -387,17 +390,14 @@ class PVSystem:
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)
 
-        try:
-            albedo = kwargs.pop('albedo')
-        except KeyError:
-            albedo = None
         albedo = self._validate_per_array(albedo, system_wide=True)
 
         return tuple(
             array.get_irradiance(solar_zenith, solar_azimuth,
                                  dni, ghi, dhi,
-                                 albedo,
-                                 dni_extra, airmass, model,
+                                 albedo=albedo,
+                                 dni_extra=dni_extra, airmass=airmass,
+                                 model=model,
                                  **kwargs)
             for array, dni, ghi, dhi, albedo in zip(
                 self.arrays, dni, ghi, dhi, albedo

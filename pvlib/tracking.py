@@ -248,12 +248,9 @@ class SingleAxisTracker(PVSystem):
         dhi = self._validate_per_array(dhi, system_wide=True)
 
         if albedo is None:
-            try:
-                albedo = kwargs.pop('albedo')
-            except KeyError:
-                # assign default albedo here because SingleAxisTracker
-                # initializes albedo to None
-                albedo = 0.25
+            # assign default albedo here because SingleAxisTracker
+            # initializes albedo to None
+            albedo = 0.25
 
         albedo = self._validate_per_array(albedo, system_wide=True)
 

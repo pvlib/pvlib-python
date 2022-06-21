@@ -9,7 +9,9 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * albedo can now be provided as a column in the `weather` DataFrame input to
-  :py:method:`pvlib.modelchain.ModelChain.run_model`. (:issue:`1387`, :pull:`1469`)
+  :py:method:`pvlib.modelchain.ModelChain.run_model`. (:issue:`1387`, :pull:`1478`)
+* albedo is now available as an input to :py:method`pvlib.pvsystem.PVSystem.get_irradiance`
+  and  :py:method`pvlib.pvsystem.Array.get_irradiance`. (:pull:`1478`)
 
 Bug fixes
 ~~~~~~~~~

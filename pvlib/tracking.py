@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from pvlib.tools import cosd, sind, tand
+from pvlib.tools import cosd, sind, tand, acosd, asind
 from pvlib.pvsystem import (
     PVSystem, Array, SingleAxisTrackerMount, _unwrap_single_value
 )
@@ -525,6 +525,58 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     else:
         out = {k: np.where(zen_gt_90, np.nan, v) for k, v in out.items()}
 
+    return out
+
+
+def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
+    """
+    Calculate the surface tilt and azimuth angles for a given tracker rotation.
+
+    Parameters
+    ----------
+    tracker_theta : numeric
+        Tracker rotation angle [degrees]
+    axis_tilt : float, default 0
+        The tilt of the axis of rotation with respect to horizontal [degrees]
+    axis_azimuth : float, default 0
+        A value denoting the compass direction along which the axis of
+        rotation lies. Measured east of north. [degrees]
+
+    Returns
+    -------
+    dict or DataFrame with the following columns:
+        * `surface_tilt`: The angle between the panel surface and the earth
+          surface, accounting for panel rotation. [degrees]
+        * `surface_azimuth`: The azimuth of the rotated panel, determined by
+          projecting the vector normal to the panel's surface to the earth's
+          surface. [degrees]
+
+    References
+    ----------
+    .. [1] William F Marion and Aron P Dobos, "Rotation Angle for the Optimum
+       Tracking of One-Axis Trackers", Technical Report NREL/TP-6A20-58891,
+       July 2013. https://www.nrel.gov/docs/fy13osti/58891.pdf
+    """
+    with np.errstate(invalid='ignore', divide='ignore'):
+        surface_tilt = acosd(cosd(tracker_theta) * cosd(axis_tilt))
+
+        # clip(..., -1, +1) to prevent arcsin(1 + epsilon) issues:
+        azimuth_delta = asind(np.clip(sind(tracker_theta) / sind(surface_tilt),
+                                      a_min=-1, a_max=1))
+        # Combine Eqs 2, 3, and 4:
+        azimuth_delta = np.where(abs(tracker_theta) < 90,
+                                 azimuth_delta,
+                                 -azimuth_delta + np.sign(tracker_theta) * 180)
+        # handle surface_tilt=0 case:
+        azimuth_delta = np.where(sind(surface_tilt) != 0, azimuth_delta, 90)
+        surface_azimuth = (axis_azimuth + azimuth_delta) % 360
+
+    out = {
+        'surface_tilt': surface_tilt,
+        'surface_azimuth': surface_azimuth,
+    }
+    if hasattr(tracker_theta, 'index'):
+        out = pd.DataFrame(out)
     return out
 
 

@@ -178,9 +178,9 @@ def sandia_multi(v_dc, p_dc, inverter):
     .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
        for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
        National Laboratories.
-    .. [2] C. Hansen, J. Johnson, R. Darbali- N. Gurule. "Modeling Efficiency
-       Of Inverters With Multiple Inputs", 46th IEEE Photovoltaic Specialist
-       Conference, Philadelphia, PA, USA. June 2022.
+    .. [2] C. Hansen, J. Johnson, R. Darbali-Zamora, N. Gurule. "Modeling
+       Efficiency Of Inverters With Multiple Inputs", 49th IEEE Photovoltaic
+       Specialist Conference, Philadelphia, PA, USA. June 2022.
 
     See also
     --------

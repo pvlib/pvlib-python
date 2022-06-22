@@ -195,22 +195,22 @@ def _townsend_effective_snow(snow_total, snow_events):
     Parameters
     ----------
     snow_total : array-like
-        Snow received each month. Referred to as S in [1]_ [cm]
+        Snow received each month. Referred to as S in [1]_. [cm]
 
     snow_events : array-like
-        Number of snowfall events each month. Referred to as N in [1]_ [-]
+        Number of snowfall events each month. Referred to as N in [1]_. [-]
 
     Returns
     -------
     effective_snowfall : array-like
-        Effective snowfall as defined in the Townsend model [cm]
+        Effective snowfall as defined in the Townsend model. [cm]
 
     References
     ----------
     .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
-       update from two winters of measurements in the SIERRA. Conference
-       Record of the IEEE Photovoltaic Specialists Conference.
-       003231-003236. :doi:`10.1109/PVSC.2011.6186627`
+       update from two winters of measurements in the SIERRA. 37th IEEE
+       Photovoltaic Specialists Conference, Seattle, WA, USA.
+       :doi:`10.1109/PVSC.2011.6186627`
     '''
     snow_events_no_zeros = np.maximum(snow_events, 1)
     effective_snow = 0.5 * snow_total * (1 + 1 / snow_events_no_zeros)
@@ -218,7 +218,7 @@ def _townsend_effective_snow(snow_total, snow_events):
 
 
 def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
-                  temp_air, poa_global, slant_height, lower_edge_drop_height,
+                  temp_air, poa_global, slant_height, lower_edge_height,
                   angle_of_repose=40):
     '''
     Calculates monthly snow loss based on the Townsend monthly snow loss
@@ -227,50 +227,50 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     Parameters
     ----------
     snow_total : array-like
-        Snow received each month. Referred to as S in [1]_ [cm]
+        Snow received each month. Referred to as S in [1]_. [cm]
 
     snow_events : array-like
-        Number of snowfall events each month. Referred to as N in [1]_ [-]
+        Number of snowfall events each month. Referred to as N in [1]_. [-]
 
     surface_tilt : float
-        Tilt angle of the array [deg]
+        Tilt angle of the array. [deg]
 
     relative_humidity : array-like
-        Monthly average relative humidity [%]
+        Monthly average relative humidity. [%]
 
     temp_air : array-like
-        Monthly average ambient temperature [C]
+        Monthly average ambient temperature. [C]
 
     poa_global : array-like
-        Monthly plane of array insolation [Wh/m2]
+        Monthly plane of array insolation. [Wh/m2]
 
     slant_height : float
-        Row length in the slanted plane of array dimension [m]
+        Row length in the slanted plane of array dimension. [m]
 
-    lower_edge_drop_height : float
-        Drop height from array edge to ground [m]
+    lower_edge_height : float
+        Distance from array lower edge to the ground. [m]
 
     angle_of_repose : float, default 40
-        piled snow angle, assumed to stabilize at 40°, the midpoint of
-        25°-55° avalanching slope angles [deg]
+        Piled snow angle, assumed to stabilize at 40°, the midpoint of
+        25°-55° avalanching slope angles. [deg]
 
     Returns
     -------
     loss : array-like
-        Monthly average DC capacity loss fraction due to snow coverage
+        Monthly average DC capacity loss fraction due to snow coverage.
 
     Notes
     -----
     This model has not been validated for tracking arrays; however, for
     tracking arrays [1]_ suggests using the maximum rotation angle in place
-    of surface_tilt.
+    of ``surface_tilt``.
 
     References
     ----------
     .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
-       update from two winters of measurements in the SIERRA. Conference
-       Record of the IEEE Photovoltaic Specialists Conference.
-       003231-003236. 10.1109/PVSC.2011.6186627.
+       update from two winters of measurements in the SIERRA. 37th IEEE
+       Photovoltaic Specialists Conference, Seattle, WA, USA.
+       :doi:`10.1109/PVSC.2011.6186627`
     '''
 
     C1 = 5.7e04
@@ -290,12 +290,12 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     )
     effective_snow_weighted_m = effective_snow_weighted / 100
 
-    drop_height_clipped = np.maximum(lower_edge_drop_height, 0.01)
+    lower_edge_height_clipped = np.maximum(lower_edge_height, 0.01)
     gamma = (
         slant_height
         * effective_snow_weighted_m
         * cosd(surface_tilt)
-        / (drop_height_clipped**2 - effective_snow_weighted_m**2)
+        / (lower_edge_height_clipped**2 - effective_snow_weighted_m**2)
         * 2
         * tand(angle_of_repose)
     )

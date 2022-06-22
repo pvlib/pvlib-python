@@ -31,6 +31,9 @@
     <a href="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml?query=branch%3Amaster">
       <img src="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml/badge.svg?branch=master" alt="GitHub Actions Testing Status" />
     </a>
+    <a href="https://codecov.io/gh/pvlib/pvlib-python">
+    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg" alt="codecov coverage" />
+    </a>
   </td>
 </tr>
 <tr>
@@ -41,17 +44,6 @@
     </a>
     <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/alerts">
     <img src="https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm alters" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td>Coverage</td>
-  <td>
-    <a href="https://coveralls.io/r/pvlib/pvlib-python">
-    <img src="https://img.shields.io/coveralls/pvlib/pvlib-python.svg" alt="coveralls coverage" />
-    </a>
-    <a href="https://codecov.io/gh/pvlib/pvlib-python">
-    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg" alt="codecov coverage" />
     </a>
   </td>
 </tr>

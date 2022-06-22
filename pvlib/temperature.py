@@ -979,6 +979,19 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     return smoothed
 
 
+def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
+                   module_efficiency=0.15, absorptance=0.9):
+    r"""
+    Calculate cell temperature using a generic linear heat loss factor model
+    as formulated in [n].
+    """
+    heat_input = poa_global * (absorptance - module_efficiency)
+    total_loss_factor = u_const + du_wind * wind_speed
+    temp_difference = heat_input / total_loss_factor
+
+    return temp_air + temp_difference
+
+
 class GenericLinearModel():
     '''
     A generic linear temperature model class that can both use and convert
@@ -1008,6 +1021,7 @@ class GenericLinearModel():
 
     print(glm)
     print(glm(*weather))
+    print(generic_linear(*weather, **glm.get_generic()))
     print(faiman(*weather, **glm.to_faiman()))
     print(pvsyst_cell(*weather, **glm.to_pvsyst()))
     print(sapm_module(*weather, **glm.to_sapm()))
@@ -1017,6 +1031,7 @@ class GenericLinearModel():
 
     print(glm)
     print(glm(*weather))
+    print(generic_linear(*weather, **glm.get_generic()))
     print(faiman(*weather, **glm.to_faiman()))
     print(pvsyst_cell(*weather, **glm.to_pvsyst()))
     print(sapm_module(*weather, **glm.to_sapm()))
@@ -1026,6 +1041,7 @@ class GenericLinearModel():
 
     print(glm)
     print(glm(*weather))
+    print(generic_linear(*weather, **glm.get_generic()))
     print(faiman(*weather, **glm.to_faiman()))
     print(pvsyst_cell(*weather, **glm.to_pvsyst()))
     print(sapm_module(*weather, **glm.to_sapm()))
@@ -1035,12 +1051,12 @@ class GenericLinearModel():
 
     print(glm)
     print(glm(*weather))
+    print(generic_linear(*weather, **glm.get_generic()))
     print(faiman(*weather, **glm.to_faiman()))
     print(pvsyst_cell(*weather, **glm.to_pvsyst()))
     print(sapm_module(*weather, **glm.to_sapm()))
     print(noct_sam(*weather, **glm.to_noct_sam()))
     '''
-
     def __init__(self, module_efficiency=0.15, absorptance=0.9):
         '''
         init docstring
@@ -1064,13 +1080,11 @@ class GenericLinearModel():
         self.alpha = absorptance
         return None
 
-
     def __repr__(self):
         '''
         Return an informative string for a particular model instance.
         '''
         return self.__class__.__name__ + ': ' +vars(self).__repr__()
-
 
     def __call__(self, poa_global, temp_air, wind_speed,
                        module_efficiency=None):
@@ -1087,10 +1101,19 @@ class GenericLinearModel():
 
         return temp_air + temp_difference
 
+    def get_generic(self):
+        '''
+        Get the generic model parameters to use with the separate
+        generic module temperature calculation function.
+        '''
+        return dict(u_const=self.u_const,
+                    du_wind=self.du_wind,
+                    module_efficiency=self.eta,
+                    absorptance=self.alpha)
 
     def use_faiman(self, u0, u1, **kwargs):
         '''
-        Set the generic model parameters to match the Faiman model.
+        Use the Faiman model parameters to set the generic equivalents.
         '''
         net_absorptance = self.alpha - self.eta
         self.u_const = u0 * net_absorptance
@@ -1098,10 +1121,9 @@ class GenericLinearModel():
 
         return self
 
-
     def to_faiman(self):
         '''
-        Get the Faiman model parameters matching the generic ones.
+        Convert the generic model parameters to Faiman equivalents.
         '''
         net_absorptance = self.alpha - self.eta
         u0 = self.u_const / net_absorptance
@@ -1109,11 +1131,10 @@ class GenericLinearModel():
 
         return dict(u0=u0, u1=u1)
 
-
     def use_pvsyst(self, u_c, u_v, module_efficiency=None,
                                    alpha_absorption=None):
         '''
-        Set the generic model parameters to match the PVsyst model.
+        Use the PVsyst model parameters to set the generic equivalents.
 
         The optional parameters are primarily for convenient compatibility
         with the other function signatures.
@@ -1133,10 +1154,9 @@ class GenericLinearModel():
 
         return self
 
-
     def to_pvsyst(self):
         '''
-        Get the PVsyst model parameters matching the generic ones.
+        Convert the generic model parameters to PVsyst model equivalents.
         '''
         net_absorptance_glm = self.alpha - self.eta
         net_absorptance_pvsyst = self.alpha * (1.0 - self.eta)
@@ -1150,11 +1170,10 @@ class GenericLinearModel():
                     module_efficiency=self.eta,
                     alpha_absorption=self.alpha)
 
-
     def use_noct_sam(self, noct, module_efficiency=None,
                                  transmittance_absorptance=None):
         '''
-        Set the generic model parameters to match the NOCT SAM model.
+        Use the NOCT SAM model parameters to set the generic equivalents.
 
         The optional parameters are primarily for convenient compatibility
         with the other function signatures.
@@ -1173,10 +1192,9 @@ class GenericLinearModel():
         self.du_wind = u_noct * 0.4 * wind_adj
         return self
 
-
     def to_noct_sam(self):
         '''
-        Get the NOCT SAM model parameters to approximate the generic model.
+        Convert the generic model parameters to NOCT SAM model equivalents.
         '''
         # NOCT is determined with wind speed near module height
         # the adjustment reduces the wind coefficient for use with 10m wind
@@ -1187,10 +1205,9 @@ class GenericLinearModel():
                     module_efficiency=self.eta,
                     transmittance_absorptance=self.alpha)
 
-
     def use_sapm(self, a, b, wind_fit_low=1.4, wind_fit_high=5.4):
         '''
-        Set the generic model parameters to approximate the SAPM module model.
+        Use the SAPM module model parameters to set the generic equivalents.
 
         The generic model will equal the SAPM model at the two
         given 10m wind speed values.
@@ -1206,10 +1223,9 @@ class GenericLinearModel():
         self.du_wind = du_wind * net_absorptance
         return self
 
-
     def to_sapm(self, wind_fit_low=1.4, wind_fit_high=5.4):
         '''
-        Get the SAPM module model parameters to approximate the generic model.
+        Convert the generic model parameters to SAPM model equivalents.
 
         The SAPM model will equal the generic model at the two
         given 10m wind speed values.

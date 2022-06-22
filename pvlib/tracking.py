@@ -483,12 +483,10 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
 
     Returns
     -------
-    dict or DataFrame with the following columns:
-        * `surface_tilt`: The angle between the panel surface and the earth
-          surface, accounting for panel rotation. [degrees]
-        * `surface_azimuth`: The azimuth of the rotated panel, determined by
-          projecting the vector normal to the panel's surface to the earth's
-          surface. [degrees]
+    dict or DataFrame
+        Contains keys ``'surface_tilt'`` and ``'surface_azimuth'`` representing
+        the module orientation accounting for tracker rotation and axis
+        orientation. [degrees]
 
     References
     ----------

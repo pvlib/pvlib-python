@@ -492,7 +492,7 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
     ----------
     .. [1] William F Marion and Aron P Dobos, "Rotation Angle for the Optimum
        Tracking of One-Axis Trackers", Technical Report NREL/TP-6A20-58891,
-       July 2013. https://www.nrel.gov/docs/fy13osti/58891.pdf
+       July 2013. :doi:`10.2172/1089596`
     """
     with np.errstate(invalid='ignore', divide='ignore'):
         surface_tilt = acosd(cosd(tracker_theta) * cosd(axis_tilt))

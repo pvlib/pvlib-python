@@ -334,9 +334,9 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     Returns
     -------
     dict or DataFrame with the following columns:
-        * `tracker_theta`: The rotation angle of the tracker.
-          tracker_theta = 0 is horizontal, and positive rotation angles are
-          clockwise. [degrees]
+        * `tracker_theta`: The rotation angle of the tracker as a right-handed
+          rotation defined by `axis_azimuth`.
+          tracker_theta = 0 is horizontal. [degrees]
         * `aoi`: The angle-of-incidence of direct irradiance onto the
           rotated panel surface. [degrees]
         * `surface_tilt`: The angle between the panel surface and the earth
@@ -349,6 +349,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     --------
     pvlib.tracking.calc_axis_tilt
     pvlib.tracking.calc_cross_axis_tilt
+    pvlib.tracking.calc_surface_orientation
 
     References
     ----------
@@ -396,9 +397,10 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     cos_axis_tilt = cosd(axis_tilt)
     sin_axis_tilt = sind(axis_tilt)
     xp = x*cos_axis_azimuth - y*sin_axis_azimuth
-    yp = (x*cos_axis_tilt*sin_axis_azimuth
-          + y*cos_axis_tilt*cos_axis_azimuth
-          - z*sin_axis_tilt)
+    # not necessary to calculate y'
+    # yp = (x*cos_axis_tilt*sin_axis_azimuth
+    #       + y*cos_axis_tilt*cos_axis_azimuth
+    #       - z*sin_axis_tilt)
     zp = (x*sin_axis_tilt*sin_axis_azimuth
           + y*sin_axis_tilt*cos_axis_azimuth
           + z*cos_axis_tilt)
@@ -446,81 +448,18 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # system-plane normal
     tracker_theta = np.clip(tracker_theta, -max_angle, max_angle)
 
-    # Calculate panel normal vector in panel-oriented x, y, z coordinates.
-    # y-axis is axis of tracker rotation. tracker_theta is a compass angle
-    # (clockwise is positive) rather than a trigonometric angle.
-    # NOTE: the *0 is a trick to preserve NaN values.
-    panel_norm = np.array([sind(tracker_theta),
-                           tracker_theta*0,
-                           cosd(tracker_theta)])
-
-    # sun position in vector format in panel-oriented x, y, z coordinates
-    sun_vec = np.array([xp, yp, zp])
-
-    # calculate angle-of-incidence on panel
-    # TODO: use irradiance.aoi
-    projection = np.clip(np.sum(sun_vec*panel_norm, axis=0), -1, 1)
-    aoi = np.degrees(np.arccos(projection))
-
-    # Calculate panel tilt and azimuth in a coordinate system where the panel
-    # tilt is the angle from horizontal, and the panel azimuth is the compass
-    # angle (clockwise from north) to the projection of the panel's normal to
-    # the earth's surface. These outputs are provided for convenience and
-    # comparison with other PV software which use these angle conventions.
-
-    # Project normal vector to earth surface. First rotate about x-axis by
-    # angle -axis_tilt so that y-axis is also parallel to earth surface, then
-    # project.
-
-    # Calculate standard rotation matrix
-    rot_x = np.array([[1, 0, 0],
-                      [0, cosd(-axis_tilt), -sind(-axis_tilt)],
-                      [0, sind(-axis_tilt), cosd(-axis_tilt)]])
-
-    # panel_norm_earth contains the normal vector expressed in earth-surface
-    # coordinates (z normal to surface, y aligned with tracker axis parallel to
-    # earth)
-    panel_norm_earth = np.dot(rot_x, panel_norm).T
-
-    # projection to plane tangent to earth surface, in earth surface
-    # coordinates
-    projected_normal = np.array([panel_norm_earth[:, 0],
-                                 panel_norm_earth[:, 1],
-                                 panel_norm_earth[:, 2]*0]).T
-
-    # calculate vector magnitudes
-    projected_normal_mag = np.sqrt(np.nansum(projected_normal**2, axis=1))
-
-    # renormalize the projected vector, avoid creating nan values.
-    non_zeros = projected_normal_mag != 0
-    projected_normal[non_zeros] = (projected_normal[non_zeros].T /
-                                   projected_normal_mag[non_zeros]).T
-
-    # calculation of surface_azimuth
-    surface_azimuth = \
-        np.degrees(np.arctan2(projected_normal[:, 1], projected_normal[:, 0]))
-
-    # Rotate 0 reference from panel's x-axis to its y-axis and then back to
-    # north.
-    surface_azimuth = 90 - surface_azimuth + axis_azimuth
-
-    # Map azimuth into [0,360) domain.
-    with np.errstate(invalid='ignore'):
-        surface_azimuth = surface_azimuth % 360
-
-    # Calculate surface_tilt
-    dotproduct = (panel_norm_earth * projected_normal).sum(axis=1)
-    # for edge cases like axis_tilt=90, numpy's SIMD can produce values like
-    # dotproduct = (1 + 2e-16). Clip off the excess so that arccos works:
-    dotproduct = np.clip(dotproduct, -1, 1)
-    surface_tilt = 90 - np.degrees(np.arccos(dotproduct))
+    # Calculate auxiliary angles
+    surface = calc_surface_orientation(tracker_theta, axis_tilt, axis_azimuth)
+    surface_tilt = surface['surface_tilt']
+    surface_azimuth = surface['surface_azimuth']
+    aoi = irradiance.aoi(surface_tilt, surface_azimuth,
+                         apparent_zenith, apparent_azimuth)
 
     # Bundle DataFrame for return values and filter for sun below horizon.
     out = {'tracker_theta': tracker_theta, 'aoi': aoi,
-           'surface_tilt': surface_tilt, 'surface_azimuth': surface_azimuth}
+           'surface_azimuth': surface_azimuth, 'surface_tilt': surface_tilt}
     if index is not None:
         out = pd.DataFrame(out, index=index)
-        out = out[['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt']]
         out[zen_gt_90] = np.nan
     else:
         out = {k: np.where(zen_gt_90, np.nan, v) for k, v in out.items()}

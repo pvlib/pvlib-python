@@ -989,13 +989,13 @@ class GenericLinearModel():
 
     glm = GenericLinearModel(module_efficiency=0.19, absorptance=0.88)
 
-    glm.set_faiman(16, 8)
+    glm.use_faiman(16, 8)
 
-    glm.get_pvsyst()
+    glm.to_pvsyst()
 
-    parmdict = glm.get_pvsyst()
+    parmdict = glm.to_pvsyst()
 
-    glm.set_pvsyst(29, 0).get_faiman()
+    glm.use_pvsyst(29, 0).to_faiman()
 
     Tests
     -----
@@ -1004,41 +1004,41 @@ class GenericLinearModel():
 
     glm = GenericLinearModel(module_efficiency=0.18)
 
-    glm.set_faiman(25, 6.84)
+    glm.use_faiman(25, 6.84)
 
     print(glm)
     print(glm(*weather))
-    print(faiman(*weather, **glm.get_faiman()))
-    print(pvsyst_cell(*weather, **glm.get_pvsyst()))
-    print(sapm_module(*weather, **glm.get_sapm()))
-    print(noct_sam(*weather, **glm.get_noct_sam()))
+    print(faiman(*weather, **glm.to_faiman()))
+    print(pvsyst_cell(*weather, **glm.to_pvsyst()))
+    print(sapm_module(*weather, **glm.to_sapm()))
+    print(noct_sam(*weather, **glm.to_noct_sam()))
 
-    glm.set_pvsyst(29, 0)
-
-    print(glm)
-    print(glm(*weather))
-    print(faiman(*weather, **glm.get_faiman()))
-    print(pvsyst_cell(*weather, **glm.get_pvsyst()))
-    print(sapm_module(*weather, **glm.get_sapm()))
-    print(noct_sam(*weather, **glm.get_noct_sam()))
-
-    glm.set_sapm(-3.56, -0.075)
+    glm.use_pvsyst(29, 0)
 
     print(glm)
     print(glm(*weather))
-    print(faiman(*weather, **glm.get_faiman()))
-    print(pvsyst_cell(*weather, **glm.get_pvsyst()))
-    print(sapm_module(*weather, **glm.get_sapm()))
-    print(noct_sam(*weather, **glm.get_noct_sam()))
+    print(faiman(*weather, **glm.to_faiman()))
+    print(pvsyst_cell(*weather, **glm.to_pvsyst()))
+    print(sapm_module(*weather, **glm.to_sapm()))
+    print(noct_sam(*weather, **glm.to_noct_sam()))
 
-    glm.set_noct_sam(45)
+    glm.use_sapm(-3.56, -0.075)
 
     print(glm)
     print(glm(*weather))
-    print(faiman(*weather, **glm.get_faiman()))
-    print(pvsyst_cell(*weather, **glm.get_pvsyst()))
-    print(sapm_module(*weather, **glm.get_sapm()))
-    print(noct_sam(*weather, **glm.get_noct_sam()))
+    print(faiman(*weather, **glm.to_faiman()))
+    print(pvsyst_cell(*weather, **glm.to_pvsyst()))
+    print(sapm_module(*weather, **glm.to_sapm()))
+    print(noct_sam(*weather, **glm.to_noct_sam()))
+
+    glm.use_noct_sam(45)
+
+    print(glm)
+    print(glm(*weather))
+    print(faiman(*weather, **glm.to_faiman()))
+    print(pvsyst_cell(*weather, **glm.to_pvsyst()))
+    print(sapm_module(*weather, **glm.to_sapm()))
+    print(noct_sam(*weather, **glm.to_noct_sam()))
     '''
 
     def __init__(self, module_efficiency=0.15, absorptance=0.9):
@@ -1088,7 +1088,7 @@ class GenericLinearModel():
         return temp_air + temp_difference
 
 
-    def set_faiman(self, u0, u1, **kwargs):
+    def use_faiman(self, u0, u1, **kwargs):
         '''
         Set the generic model parameters to match the Faiman model.
         '''
@@ -1099,7 +1099,7 @@ class GenericLinearModel():
         return self
 
 
-    def get_faiman(self):
+    def to_faiman(self):
         '''
         Get the Faiman model parameters matching the generic ones.
         '''
@@ -1110,7 +1110,7 @@ class GenericLinearModel():
         return dict(u0=u0, u1=u1)
 
 
-    def set_pvsyst(self, u_c, u_v, module_efficiency=None,
+    def use_pvsyst(self, u_c, u_v, module_efficiency=None,
                                    alpha_absorption=None):
         '''
         Set the generic model parameters to match the PVsyst model.
@@ -1134,7 +1134,7 @@ class GenericLinearModel():
         return self
 
 
-    def get_pvsyst(self):
+    def to_pvsyst(self):
         '''
         Get the PVsyst model parameters matching the generic ones.
         '''
@@ -1151,7 +1151,7 @@ class GenericLinearModel():
                     alpha_absorption=self.alpha)
 
 
-    def set_noct_sam(self, noct, module_efficiency=None,
+    def use_noct_sam(self, noct, module_efficiency=None,
                                  transmittance_absorptance=None):
         '''
         Set the generic model parameters to match the NOCT SAM model.
@@ -1174,7 +1174,7 @@ class GenericLinearModel():
         return self
 
 
-    def get_noct_sam(self):
+    def to_noct_sam(self):
         '''
         Get the NOCT SAM model parameters to approximate the generic model.
         '''
@@ -1188,7 +1188,7 @@ class GenericLinearModel():
                     transmittance_absorptance=self.alpha)
 
 
-    def set_sapm(self, a, b, wind_fit_low=1.4, wind_fit_high=5.4):
+    def use_sapm(self, a, b, wind_fit_low=1.4, wind_fit_high=5.4):
         '''
         Set the generic model parameters to approximate the SAPM module model.
 
@@ -1207,7 +1207,7 @@ class GenericLinearModel():
         return self
 
 
-    def get_sapm(self, wind_fit_low=1.4, wind_fit_high=5.4):
+    def to_sapm(self, wind_fit_low=1.4, wind_fit_high=5.4):
         '''
         Get the SAPM module model parameters to approximate the generic model.
 

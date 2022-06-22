@@ -476,17 +476,17 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
     tracker_theta : numeric
         Tracker rotation angle [degrees]
     axis_tilt : float, default 0
-        The tilt of the axis of rotation with respect to horizontal [degrees]
+        The tilt of the axis of rotation with respect to horizontal. [degree]
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
-        rotation lies. Measured east of north. [degrees]
+        rotation lies. Measured east of north. [degree]
 
     Returns
     -------
     dict or DataFrame
         Contains keys ``'surface_tilt'`` and ``'surface_azimuth'`` representing
         the module orientation accounting for tracker rotation and axis
-        orientation. [degrees]
+        orientation. [degree]
 
     References
     ----------

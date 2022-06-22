@@ -28,8 +28,8 @@
     <a href="http://pvlib-python.readthedocs.org/en/stable/">
     <img src="https://readthedocs.org/projects/pvlib-python/badge/?version=stable" alt="documentation build status" />
     </a>
-    <a href="https://dev.azure.com/solararbiter/pvlib%20python/_build/latest?definitionId=4&branchName=master">
-      <img src="https://dev.azure.com/solararbiter/pvlib%20python/_apis/build/status/pvlib.pvlib-python?branchName=master" alt="Azure Pipelines build status" />
+    <a href="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml?query=branch%3Amaster">
+      <img src="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml/badge.svg?branch=master" alt="GitHub Actions Testing Status" />
     </a>
   </td>
 </tr>

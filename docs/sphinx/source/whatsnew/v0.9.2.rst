@@ -10,7 +10,7 @@ Enhancements
 ~~~~~~~~~~~~
 * Add :py:func:`pvlib.tracking.calc_surface_orientation` for calculating
   single-axis tracker ``surface_tilt`` and ``surface_azimuth`` from
-  rotation angles (:issue:`1471`, :pull:`1480`)
+  rotation angles. (:issue:`1471`, :pull:`1480`)
 
 Bug fixes
 ~~~~~~~~~

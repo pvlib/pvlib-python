@@ -477,8 +477,8 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
         Tracker rotation angle as a right-handed rotation around
         the axis defined by ``axis_tilt`` and ``axis_azimuth``.  For example,
         with ``axis_tilt=0`` and ``axis_azimuth=180``, ``tracker_theta > 0``
-        results in ``surface_azimuth``s to the West while ``tracker_theta < 0``
-        results in ``surface_azimuth``s to the East. [degree]
+        results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
+        results in ``surface_azimuth`` to the East. [degree]
     axis_tilt : float, default 0
         The tilt of the axis of rotation with respect to horizontal. [degree]
     axis_azimuth : float, default 0

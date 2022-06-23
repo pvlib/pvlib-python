@@ -421,8 +421,7 @@ def mlfm_fit(data, var_to_fit):
     perr = np.sqrt(np.diag(pcov))
 
     # save fit and error to dataframe
-    pred = mlfm_6(data, popt[0], popt[1], popt[2], popt[3], popt[4], popt[5],
-                  popt[6])
+    pred = mlfm_6(data, popt[0], popt[1], popt[2], popt[3], popt[4], popt[5])
     resid = pred - data[var_to_fit]
 
     return pred, popt, resid, perr

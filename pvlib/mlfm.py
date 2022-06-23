@@ -522,7 +522,7 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
     # plot the mlfm parameters depending on qty_mlfm_vars
     for k in lines.keys():
         try:
-            ax1.scatter(xdata, dnorm[k], c=lines[k], label=labels[k])
+            ax1.scatter(xdata, dnorm[k], c=clr[lines[k]], label=labels[k])
         except KeyError:
             pass
 

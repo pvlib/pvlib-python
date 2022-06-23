@@ -160,9 +160,7 @@ class PVSystem:
         Ground surface albedo. If ``None``, then ``surface_type`` is used
         to look up a value in ``irradiance.SURFACE_ALBEDOS``.
         If ``surface_type`` is also None then a ground surface albedo
-        of 0.25 is used. For time-dependent albedos, add ``'albedo'`` to
-        the input ``'weather'`` DataFrame for
-        :py:class:`pvlib.modelchain.ModelChain` methods.
+        of 0.25 is used.
 
     surface_type : None or string, default None
         The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for
@@ -340,8 +338,9 @@ class PVSystem:
                        model='haydavies', **kwargs):
         """
         Uses the :py:func:`irradiance.get_total_irradiance` function to
-        calculate the plane of array irradiance components on a tilted
-        surface defined by ``self.surface_tilt`` and ``self.surface_azimuth```.
+        calculate the plane of array irradiance components on the tilted
+        surfaces defined by each array's ``surface_tilt`` and
+        ``surface_azimuth```.
 
         Parameters
         ----------

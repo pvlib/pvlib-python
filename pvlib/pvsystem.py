@@ -357,7 +357,7 @@ class PVSystem:
             Diffuse horizontal irradiance. [W/m2]
         albedo : None, float or Series, default None
             Ground surface albedo. [unitless]
-        dni_extra : None, float, Series or tuple of float or Series,
+        dni_extra : None, float, Series or tuple of float or Series,\
             default None
             Extraterrestrial direct normal irradiance. [W/m2]
         airmass : None, float or Series, default None

@@ -334,7 +334,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     Returns
     -------
     dict or DataFrame with the following columns:
-        * `tracker_theta`: The rotation angle of the tracker as a right-handed
+        * `tracker_theta`: The rotation angle of the tracker is a right-handed
           rotation defined by `axis_azimuth`.
           tracker_theta = 0 is horizontal. [degrees]
         * `aoi`: The angle-of-incidence of direct irradiance onto the
@@ -494,7 +494,7 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
 
     References
     ----------
-    .. [1] William F Marion and Aron P Dobos, "Rotation Angle for the Optimum
+    .. [1] William F. Marion and Aron P. Dobos, "Rotation Angle for the Optimum
        Tracking of One-Axis Trackers", Technical Report NREL/TP-6A20-58891,
        July 2013. :doi:`10.2172/1089596`
     """

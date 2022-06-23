@@ -97,7 +97,7 @@ def mlfm_meas_to_norm(dmeas, ref):
     -------
     dnorm : DataFrame
         Normalised values.
-        * `'pr_dc'` is `'p_mp'` normalied by reference `'p_mp'` and 
+        * `'pr_dc'` is `'p_mp'` normalised by reference `'p_mp'` and
           `'poa_global_kwm2'`
         * `'pr_dc_temp_corr'` is `'pr_dc'` adjusted to 25C.
         * Columns `'i_sc'`, `'i_mp'`, `'v_oc'`, `'v_mp'`, `'v_oc_temp_corr'`,
@@ -192,7 +192,7 @@ def mlfm_norm_to_stack(dnorm, fill_factor):
         * `'i_mp'` normalized current at maximum power point.
         * `'v_oc'` normalized open circuit voltage.
         * `'v_mp'` normalized voltage at maximum power point.
-        * `'v_oc_temp_corr'` normalized open circuit voltage adjusted to 25C.        
+        * `'v_oc_temp_corr'` normalized open circuit voltage adjusted to 25C.
 
         May include optional columns:
 
@@ -414,57 +414,18 @@ def mlfm_fit(data, var_to_fit):
         bounds=bounds           # boundaries
     )
 
-    # get mlfm coefficients
-    c_1 = popt[0]
-    c_2 = popt[1]
-    c_3 = popt[2]
-    c_4 = popt[3]
-    c_5 = popt[4]
-    c_6 = popt[5]
-
     if c5_zero:
-        c_5 = 0.
+        popt[4] = 0.
 
-    coeff = [c_1, c_2, c_3, c_4, c_5, c_6]
-
-    # get mlfm error coefficients as sqrt of covariance
+    # get error of mlfm coefficients as sqrt of covariance
     perr = np.sqrt(np.diag(pcov))
 
-    e_1 = perr[0]
-    e_2 = perr[1]
-    e_3 = perr[2]
-    e_4 = perr[3]
-    e_5 = perr[4]
-    e_6 = perr[5]
-
-    err = [e_1, e_2, e_3, e_4, e_5, e_6]
-
-    # format coefficients as strings, easier to read in graph title
-    coeffs = (
-        '  {:.4%}'.format(c_1) +
-        ', {:.4%}'.format(c_2) +
-        ', {:.4%}'.format(c_3) +
-        ', {:.4%}'.format(c_4) +
-        ', {:.4%}'.format(c_5) +
-        ', {:.4%}'.format(c_6)
-    )
-    # print ('coeffs = ', mlfm_sel, coeffs)
-
-    err = (
-        '  {:.4%}'.format(e_1) +
-        ', {:.4%}'.format(e_2) +
-        ', {:.4%}'.format(e_3) +
-        ', {:.4%}'.format(e_4) +
-        ', {:.4%}'.format(e_5) +
-        ', {:.4%}'.format(e_6)
-    )
-    # print ('errs = ', mlfm_sel, errs)
-
     # save fit and error to dataframe
-    pred = mlfm_6(data, c_1, c_2, c_3, c_4, c_5, c_6)
+    pred = mlfm_6(data, popt[0], popt[1], popt[2], popt[3], popt[4], popt[5],
+                  popt[6])
     resid = pred - data[var_to_fit]
 
-    return pred, coeff, resid
+    return pred, popt, resid, perr
 
 
 def plot_mlfm_scatter(dmeas, dnorm, title):
@@ -494,7 +455,7 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
         * `'i_sc'` normalized short circuit current.
         * `'i_mp'` normalized current at maximum power point.
         * `'v_mp'` normalized voltage at maximum power point.
-        * `'v_oc_temp_corr'` normalized open circuit voltage adjusted to 25C.        
+        * `'v_oc_temp_corr'` normalized open circuit voltage adjusted to 25C.
         * `'v_ff'` normalized multiplicative loss in fill factor apportioned
           to voltage.
         * `'i_ff'` normalized multiplicative loss in fill factor apportioned
@@ -538,24 +499,26 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
     ax1.axvline(x=0.8, c='grey', linewidth=3)  # show 800W/m^2 NOCT
     ax1.axvline(x=0.2, c='grey', linewidth=3)  # show 200W/m^2 LIC
 
-    lines = {'pr_dc_temp_corr': 'pr_dc',
-             'i_mp': 'i_mp',
-             'v_mp': 'v_mp',
-             'i_sc': 'i_sc',
-             'r_sc': 'r_sc',
-             'r_oc': 'r_oc',
-             'i_ff': 'i_ff',
-             'v_ff': 'v_ff',
-             'v_oc_temp_corr': 'v_oc'}
-    labels = {'pr_dc_temp_corr': 'pr_dc_temp-corr',
-             'i_mp': 'norm_i_mp',
-             'v_mp': 'norm_v_mp',
-             'i_sc': 'norm_i_sc',
-             'r_sc': 'norm_r_sc',
-             'r_oc': 'norm_r_oc',
-             'i_ff': 'norm_i_ff',
-             'v_ff': 'norm_v_ff',
-             'v_oc_temp_corr': 'norm_v_oc_temp_corr'}
+    lines = {
+        'pr_dc_temp_corr': 'pr_dc',
+        'i_mp': 'i_mp',
+        'v_mp': 'v_mp',
+        'i_sc': 'i_sc',
+        'r_sc': 'r_sc',
+        'r_oc': 'r_oc',
+        'i_ff': 'i_ff',
+        'v_ff': 'v_ff',
+        'v_oc_temp_corr': 'v_oc'}
+    labels = {
+        'pr_dc_temp_corr': 'pr_dc_temp-corr',
+        'i_mp': 'norm_i_mp',
+        'v_mp': 'norm_v_mp',
+        'i_sc': 'norm_i_sc',
+        'r_sc': 'norm_r_sc',
+        'r_oc': 'norm_r_oc',
+        'i_ff': 'norm_i_ff',
+        'v_ff': 'norm_v_ff',
+        'v_oc_temp_corr': 'norm_v_oc_temp_corr'}
 
     # plot the mlfm parameters depending on qty_mlfm_vars
     for k in lines.keys():
@@ -770,7 +733,7 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
 
     ax2.legend(bbox_to_anchor=(bbox, 0.3), loc='upper left', borderaxespad=0.)
     ax1.set_xticklabels(xax2, rotation=90)
-    
+
     return fig
 
 

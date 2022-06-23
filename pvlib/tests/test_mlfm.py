@@ -207,7 +207,7 @@ def test_mlfm_fit(matrix_data, mlfm_6_fit):
     mlfm_sel = 'pr_dc'
     # drop wind_speed since it's always zero
     matrix_data = matrix_data.drop(columns=['wind_speed'])
-    predictions, cc_fit, residuals = mlfm.mlfm_fit(
+    predictions, cc_fit, residuals, perr = mlfm.mlfm_fit(
         matrix_data, mlfm_sel)
     # atol is large due to different behavior in conda_linux Python 3.6 env.
     assert_allclose(cc_fit, cc_target, atol=5e-3)

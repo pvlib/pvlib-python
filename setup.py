@@ -4,7 +4,7 @@ import os
 import sys
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
     from setuptools.extension import Extension
 except ImportError:
     raise RuntimeError('setuptools is required')
@@ -85,7 +85,7 @@ PROJECT_URLS = {
 }
 
 # set up pvlib packages to be installed and extensions to be compiled
-PACKAGES = ['pvlib']
+PACKAGES = find_packages() + ['pvlib.data']
 
 extensions = []
 

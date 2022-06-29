@@ -6,7 +6,7 @@ performance of PV modules using the mechanistic performance (MPM) and
 loss factors models (LFM)
 
 Authors : Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
-Thanks to Cliff Hansen (Sandia National Laboratories) 
+Thanks to Cliff Hansen (Sandia National Laboratories)
 
 https://pvlib-python.readthedocs.io/en/stable/variables_style_rules.html#variables-style-rules
 
@@ -199,7 +199,7 @@ def mlfm_norm_to_stack(dnorm, fill_factor):
         Stacked subtractive normalized losses. Includes columns:
 
         * `'pr_dc'` equal to `dnorm['pr_dc']`.
-        * `'i_sc'` 
+        * `'i_sc'`
         * `'r_sc'`
         * `'i_mp'`
         * `'i_v'`

@@ -24,8 +24,8 @@ def reference():
         alpha_i_sc=0.0005,
         alpha_i_mp=0,  # often not known, not used here
         beta_v_mp=0,  # often not known, not used here
-        beta_v_oc=-0.0035,
-        gamma_p_mp=-0.0045,  # = alpha_i_mp + beta_v_mp
+        beta_voc=-0.0035,  # 1/C
+        gamma_pdc=-0.0045,  # = alpha_i_mp + beta_v_mp
         delta_ff=0,  # often not known, not used here
     )
     # create p_mp and ff

@@ -6,6 +6,7 @@ performance of PV modules using the mechanistic performance (MPM) and
 loss factors models (LFM)
 
 Authors : Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
+Thanks to Cliff Hansen (Sandia National Laboratories) 
 
 https://pvlib-python.readthedocs.io/en/stable/variables_style_rules.html#variables-style-rules
 
@@ -62,7 +63,7 @@ def mlfm_meas_to_norm(dmeas, ref):
 
         * `'poa_global_kwm2'` global plane of array irradiance [kW/m^2]
         * `'temp_module'` module temperature [C]
-        * `'p_mp'` - power at maximum power point [kW]
+        * `'p_mp'` - power at maximum power point [W]
 
         May include optional columns:
 
@@ -73,16 +74,16 @@ def mlfm_meas_to_norm(dmeas, ref):
         * `'v_mp'` - voltage at maximum power point [V]. Must be accompanied
           by `'v_oc'`.
         * `'r_sc'` - inverse of slope of IV curve at short circuit condition.
-          Requires both `'i_sc'` and `'v_oc'`. [V/A]
-        * `'r_oc'` - slope of IV curve at open circuit condition. Requires
-          both `'i_sc'` and `'v_oc'` [A/V]
+          Requires both `'i_sc'` and `'v_oc'`. [Ohm]
+        * `'r_oc'` - inverse slope of IV curve at open circuit condition.
+          Requires both `'i_sc'` and `'v_oc'` [Ohm]
 
     ref : dict
         Reference values. Must include:
 
         * `'p_mp'` - Power at maximum power point at Standard Test Condition
-          (STC). [kW]
-        * `'gamma_p_mp'` - Temperature coefficient of power at STC. [W/C]
+          (STC). [W]
+        * `'gamma_pdc'` - Temperature coefficient of power at STC. [1/C]
 
         May include:
 
@@ -91,7 +92,7 @@ def mlfm_meas_to_norm(dmeas, ref):
         * `'v_oc'` - Voltage at open circuit at STC. Required if `'V_oc'` is
           present in `'dmeas'`. [A]
         * `'beta_v_oc'` - Temperature coefficient of open circuit voltage at
-          STC. Required if `'v_oc'` is present in `'dmeas'`. [V/C]
+          STC. Required if `'v_oc'` is present in `'dmeas'`. [1/C]
 
     Returns
     -------
@@ -120,7 +121,7 @@ def mlfm_meas_to_norm(dmeas, ref):
     # temperature corrected
     dnorm['pr_dc_temp_corr'] = (
         dnorm['pr_dc'] *
-        (1 - ref['gamma_p_mp']*(dmeas['temp_module'] - T_STC)))
+        (1 - ref['gamma_pdc']*(dmeas['temp_module'] - T_STC)))
 
     if 'i_sc' in dmeas.columns:
         dnorm['i_sc'] = dmeas['i_sc'] / dmeas['poa_global_kwm2'] / ref['i_sc']
@@ -161,20 +162,6 @@ def mlfm_norm_to_stack(dnorm, fill_factor):
     '''
     Converts normalised values to stacked subtractive normalized losses.
 
-    Ref:
-    http://www.steveransome.com/PUBS/1909_5CV4_35_PVSEC36_Marseille_Ransome_PPT.pdf
-
-    current losses :
-        meas(imp) / ref(i_sc) =
-        poa_global_kwm2 * (norm(i_sc) * norm(r_sc) * norm(i_ff))
-
-    voltage losses :
-        meas(vmp) / ref(v_oc) =
-        (norm(v_ff) * norm(r_oc) * norm(v_oc))
-
-    1/ff_ref = (ref(isc) / ref(imp)) * (ref(voc) / ref(vmp))
-
-
     Normalized values can reveal losses via scatter plots vs. irradiance or
     temperature.
 
@@ -209,7 +196,16 @@ def mlfm_norm_to_stack(dnorm, fill_factor):
     Returns
     -------
     dstack : DataFrame
-        Stacked subtractive normalized losses.
+        Stacked subtractive normalized losses. Includes columns:
+
+        * `'pr_dc'` equal to `dnorm['pr_dc']`.
+        * `'i_sc'` 
+        * `'r_sc'`
+        * `'i_mp'`
+        * `'i_v'`
+        * `'v_mp'`
+        * `'v_oc'`
+        * `'temp_module_corr'`
 
     See also
     --------
@@ -253,6 +249,7 @@ def mlfm_norm_to_stack(dnorm, fill_factor):
         corr = (inv_ff - prod) / (inv_ff - tot)
 
         # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
+        # accounting for series and shunt resistance losses
         dstack['pr_dc'] = +dnorm['pr_dc']  # initialise
         dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
         dstack['r_sc'] = -(dnorm['r_sc'] - 1) * corr
@@ -318,9 +315,11 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
 
         * `'poa_global_kwm2'` global plane of array irradiance [kW/m^2]
         * `'temp_module'` module temperature [C]
+
         May include optional column:
 
         * `'wind_speed'` wind speed [m/s].
+
     c_1 : float
         Constant term in model
     c_2 : float
@@ -414,6 +413,8 @@ def mlfm_fit(data, var_to_fit):
         bounds=bounds           # boundaries
     )
 
+    # if data has no wind_speed measurements then c_5 coefficient is
+    # meaningless but a non-zero value may have been returned.
     if c5_zero:
         popt[4] = 0.
 

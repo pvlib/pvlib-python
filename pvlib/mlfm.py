@@ -88,22 +88,23 @@ def mlfm_meas_to_norm(dmeas, ref):
         May include:
 
         * `'i_sc'` - Current at short circuit at STC. Required if `'i_sc'` is
-          present in `'dmeas'`. [A]
-        * `'v_oc'` - Voltage at open circuit at STC. Required if `'V_oc'` is
-          present in `'dmeas'`. [A]
+          present in ``dmeas``. [A]
+        * `'v_oc'` - Voltage at open circuit at STC. Required if `'v_oc'` is
+          present in ``dmeas``. [A]
         * `'beta_v_oc'` - Temperature coefficient of open circuit voltage at
-          STC. Required if `'v_oc'` is present in `'dmeas'`. [1/C]
+          STC. Required if `'v_oc'` is present in ``dmeas``. [1/C]
 
     Returns
     -------
     dnorm : DataFrame
         Normalised values.
-        * `'pr_dc'` is `'p_mp'` normalised by reference `'p_mp'` and
+
+        * `'pr_dc'` is `'p_mp'` normalised by reference `'p_mp'` and \
           `'poa_global_kwm2'`
         * `'pr_dc_temp_corr'` is `'pr_dc'` adjusted to 25C.
         * Columns `'i_sc'`, `'i_mp'`, `'v_oc'`, `'v_mp'`, `'v_oc_temp_corr'`,
           `'r_sc'`, `'r_oc'`, `'i_ff'`, `'v_ff'` are returned when the
-          the corresponding optional columns are included in `'dmeas'`.
+          the corresponding optional columns are included in ``dmeas``.
 
     References
     ----------
@@ -321,15 +322,15 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
         * `'wind_speed'` wind speed [m/s].
 
     c_1 : float
-        Constant term in model
+        Constant term in model.
     c_2 : float
-        Temperature coefficient in model (1/K)
+        Temperature coefficient in model. [1/C]
     c_3 : float
         Coefficient for low light log irradiance drop.
     c_4 : float
         Coefficient for high light linear irradiance drop.
     c_5 : float, default 0
-        Coefficient for wind speed dependence
+        Coefficient for wind speed dependence.
     c_6 : float, default 0
         Coefficient for dependence on inverse irradiance.
 
@@ -361,11 +362,15 @@ def mlfm_fit(data, var_to_fit):
     ----------
     data : DataFrame
         Must include columns:
+
         * 'poa_global_kwm2' global plane of array irradiance [kW/m^2]
         * 'temp_module' module temperature [C]
+
         Must include column named ``var_to_fit``.
+
         May include optional column:
-        * 'wind_speed' wind speed [m/s].
+
+            * 'wind_speed' wind speed [m/s].
 
     var_to_fit : string
         Column name in ``data`` containing variable being fit.
@@ -432,9 +437,8 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
     '''
     Scatterplot of normalised values (y) vs. irradiance (x).
 
-    y1_axis : e.g. norm(i_sc, ... v_oc),_temp_module_corr
-    x_axis  : e.g. irradiance, poa_global_kwm2
-    y2_axis : e.g. temp_air, temp_module (C/100 to fit graphs).
+    Electrical quantities are plotted on the left y-axis, and temperature
+    quantities are plotted on the right y-axis.
 
     Parameters
     ----------
@@ -557,7 +561,7 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
 
 
 def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
-                    xaxis_labels=12, is_i_sc_self_ref=False,
+                    xaxis_labels=0, is_i_sc_self_ref=False,
                     is_v_oc_temp_module_corr=True):
 
     '''
@@ -591,15 +595,15 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
     title : string
         Title for the figure.
 
-    xaxis_labels : int, default 12
-        Number of xaxis labels to show. Use 0 to show all.
+    xaxis_labels : int, default 0
+        Number of x-axis labels to show. Default 0 shows all.
 
     is_i_sc_self_ref : bool, default False
-       Self corrects i_sc to remove angle of incidence,
+       Self-correct `'i_sc'` to remove angle of incidence,
        spectrum, snow or soiling.
 
     is_v_oc_temp_module_corr : bool, default True
-       Calculate loss due to gamma, subtract from v_oc loss.
+       Calculate loss due to temperature and subtract from `'v_oc'` loss.
 
     Returns
     -------

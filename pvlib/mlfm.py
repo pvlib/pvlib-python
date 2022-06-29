@@ -363,8 +363,8 @@ def mlfm_fit(data, var_to_fit):
     data : DataFrame
         Must include columns:
 
-        * 'poa_global_kwm2' global plane of array irradiance [kW/m^2]
-        * 'temp_module' module temperature [C]
+        * 'poa_global_kwm2' global plane of array irradiance. [kW/m^2]
+        * 'temp_module' module temperature. [C]
 
         Must include column named ``var_to_fit``.
 
@@ -385,6 +385,9 @@ def mlfm_fit(data, var_to_fit):
 
     resid : Series
         Residuals of the fitted model.
+
+    coeff_err : list
+        Standard deviation of error in each model coefficient.
 
     See also
     --------
@@ -410,7 +413,7 @@ def mlfm_fit(data, var_to_fit):
     bounds = ([ -2,   -2,   -2,   -2,   -2,    -2],
               [  2,    2,    2,    2,    2,     0])
 
-    popt, pcov = optimize.curve_fit(
+    coeff, pcov = optimize.curve_fit(
         f=func,                 # fit function
         xdata=data,            # input data
         ydata=data[var_to_fit],  # fit parameter
@@ -421,16 +424,18 @@ def mlfm_fit(data, var_to_fit):
     # if data has no wind_speed measurements then c_5 coefficient is
     # meaningless but a non-zero value may have been returned.
     if c5_zero:
-        popt[4] = 0.
+        coeff[4] = 0.
 
     # get error of mlfm coefficients as sqrt of covariance
     perr = np.sqrt(np.diag(pcov))
+    coeff_err = list(perr)
 
     # save fit and error to dataframe
-    pred = mlfm_6(data, popt[0], popt[1], popt[2], popt[3], popt[4], popt[5])
+    pred = mlfm_6(data, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4],
+                  coeff[5])
     resid = pred - data[var_to_fit]
 
-    return pred, popt, resid, perr
+    return pred, coeff, resid, coeff_err
 
 
 def plot_mlfm_scatter(dmeas, dnorm, title):
@@ -488,7 +493,7 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
     bbox = 1.2
 
     # set x_axis as irradiance
-    xdata = dmeas['poa_global_kwm2'] / 1000.
+    xdata = dmeas['poa_global_kwm2']
 
     fig, ax1 = plt.subplots()
 

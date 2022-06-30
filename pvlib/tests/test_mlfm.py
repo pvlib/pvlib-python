@@ -216,5 +216,20 @@ def test_mlfm_fit(matrix_data, mlfm_6_fit):
 @requires_mpl
 def test_plot_mlfm_scatter(measured, normalized):
     import matplotlib.pyplot as plt
-    fig = mlfm.plot_mlfm_scatter(measured, normalized, 'title_string')
+    fig = mlfm.plot_mlfm_scatter(measured, normalized, 'norm plot')
+    assert isinstance(fig, plt.Figure)
+
+
+@requires_mpl
+def test_plot_mlfm_stack(measured, normalized, stacked, reference):
+    # stacked plot requires at least index length of 2
+    m = measured.append(measured)
+    m.index = [0, 1]
+    n = normalized.append(normalized)
+    n.index = [0, 1]
+    s = stacked.append(stacked)
+    s.index = [0, 1]
+    import matplotlib.pyplot as plt
+    fig = mlfm.plot_mlfm_stack(m, n, s, reference['ff'], 'stacked plot')
+    plt.show()
     assert isinstance(fig, plt.Figure)

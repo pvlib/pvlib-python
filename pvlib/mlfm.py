@@ -691,7 +691,7 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
     bbox = 1.2
 
     # select x axis usually date_time
-    xdata = dmeas.index
+    xdata = dmeas.index.values
     fig, ax1 = plt.subplots()
 
     ax1.set_title(title)
@@ -727,9 +727,10 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
             #
             try:
                 xax2[x_count] = xdata[x_count][2:13]+'h'
-
             except IndexError:
                 xax2[x_count] = xdata[x_count]
+            except TypeError:  # xdata can't be subscripted
+                xax2[x_count] = xdata[0]
 
         x_count += 1
 

@@ -624,6 +624,69 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
     except ImportError:
         raise ImportError('plt_mlfm_stack requires matplotlib')
 
+    stack6 = ['i_sc', 'r_sc', 'i_ff', 'i_v', 'v_ff', 'r_oc', 'v_oc']
+    stack4 = ['i_sc', 'i_mp', 'i_v', 'v_mp', 'v_oc']
+
+    if all([c in dstack.columns for c in stack6]):
+        # data order from bottom to top
+        ydata = [dnorm['pr_dc'] + (dstack['i_sc'] * (is_i_sc_self_ref)),
+                 dstack['temp_module_corr'] * (is_v_oc_temp_module_corr),
+                 dstack['v_oc'] - (
+                     dstack['temp_module_corr'] * (is_v_oc_temp_module_corr)),
+                 dstack['r_oc'],
+                 dstack['v_ff'],
+                 dstack['i_v'],
+                 dstack['i_ff'],
+                 dstack['r_sc'],
+                 dstack['i_sc'] * (not is_i_sc_self_ref)]
+        labels = [
+            'pr_dc',
+            'stack_t_mod',
+            'stack_v_oc',
+            'stack_r_oc',
+            'stack_v_ff',
+            '- - -',
+            'stack_i_ff',
+            'stack_r_sc',
+            'stack_i_sc']
+        color_map = [
+            'white',  # colour to bottom of graph
+            clr['temp_module'],
+            clr['v_oc'],
+            clr['r_oc'],
+            clr['v_ff'],
+            clr['i_v'],
+            clr['i_ff'],
+            clr['r_sc'],
+            clr['i_sc']]
+
+    if all([c in dstack.columns for c in stack4]):
+        # data order from bottom to top
+        ydata = [dnorm['pr_dc'] + (dstack['i_sc'] * (is_i_sc_self_ref)),
+                 dstack['temp_module_corr'] * (is_v_oc_temp_module_corr),
+                 dstack['v_oc'] - (
+                     dstack['temp_module_corr'] * (is_v_oc_temp_module_corr)),
+                 dstack['v_mp'],
+                 dstack['i_v'],
+                 dstack['i_mp'],
+                 dstack['i_sc'] * (not is_i_sc_self_ref)]
+        labels = [
+            'pr_dc',
+            'stack_t_mod',
+            'stack_v_oc',
+            'stack_v_mp',
+            '- - -',
+            'stack_i_mp',
+            'stack_i_sc']
+        color_map = [
+            'white',  # colour to bottom of graph
+            clr['temp_module'],
+            clr['v_oc'],
+            clr['v_mp'],
+            clr['i_v'],
+            clr['i_mp'],
+            clr['i_sc']]
+
     # offset legend right, use ~1.2
     bbox = 1.2
 
@@ -632,55 +695,6 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
     fig, ax1 = plt.subplots()
 
     ax1.set_title(title)
-
-    ydata = [dnorm['pr_dc'] + (dstack['i_sc'] * (is_i_sc_self_ref)),
-             dstack['temp_module_corr'] * (is_v_oc_temp_module_corr),
-             dstack['v_oc'] - (
-                 dstack['temp_module_corr'] * (is_v_oc_temp_module_corr)),
-             dstack['v_mp'],
-             dstack['i_v'],
-             dstack['i_mp'],
-             dstack['i_sc'] * (not is_i_sc_self_ref)]
-    labels = [
-        'pr_dc',
-        'stack_t_mod',
-        'stack_v_oc',
-        'stack_v_mp',
-        '- - -',
-        'stack_i_mp',
-        'stack_i_sc']
-    color_map = [
-        'white',  # colour to bottom of graph
-        clr['temp_module'],
-        clr['v_oc'],
-        clr['v_mp'],
-        clr['i_v'],
-        clr['i_mp'],
-        clr['i_sc']]
-
-    if all([c in dstack.columns for c in ['v_ff', 'r_oc']]):
-        # replace v_mp with v_ff and r_oc
-        ydata.pop(3)
-        ydata.insert(2, dstack['v_ff'])
-        ydata.insert(2, dstack['r_oc'])
-        labels.pop(3)
-        labels.insert(2, 'stack_v_ff')
-        labels.insert(2, 'stack_r_oc')
-        color_map.pop(3)
-        color_map.insert(2, clr['v_ff'])
-        color_map.insert(2, clr['r_oc'])
-
-    if all([c in dstack.columns for c in ['i_ff', 'r_sc']]):
-        # replace i_mp with i_ff and r_sc
-        ydata.pop(-1)
-        ydata.append(dstack['r_sc'])
-        ydata.append(dstack['i_ff'])
-        labels.pop(-1)
-        labels.append('stack_r_sc')
-        labels.append('stack_i_ff')
-        color_map.pop(-1)
-        color_map.append(clr['r_scf'])
-        color_map.append(clr['i_ff'])
 
     # plot stack in order bottom to top,
     # allowing self_ref and temp_module corrections

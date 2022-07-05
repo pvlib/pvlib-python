@@ -4,7 +4,7 @@ import os
 import sys
 
 try:
-    from setuptools import setup, find_packages
+    from setuptools import setup, find_namespace_packages
     from setuptools.extension import Extension
 except ImportError:
     raise RuntimeError('setuptools is required')
@@ -85,7 +85,16 @@ PROJECT_URLS = {
 }
 
 # set up pvlib packages to be installed and extensions to be compiled
-PACKAGES = find_packages() + ['pvlib.data']
+
+# the list of packages is not just the top-level "pvlib", but also
+# all sub-packages like "pvlib.bifacial".  Here, setuptools's definition of
+# "package" is, in effect, any directory you want to include in the
+# distribution.  So even "pvlib.data" counts as a package, despite
+# not having any python code or even an __init__.py.
+# setuptools.find_namespace_packages() will find all these directories,
+# although to exclude "docs", "ci", etc., we include only names matching
+# the "pvlib*" glob.
+PACKAGES = find_namespace_packages(include=['pvlib*'])
 
 extensions = []
 

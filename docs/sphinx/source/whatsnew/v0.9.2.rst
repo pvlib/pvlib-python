@@ -30,6 +30,9 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Add gallery example of simulating rearside irradiance for a fixed-tilt
+  array with pvfactors (:pull:`1470`)
+
 
 Benchmarking
 ~~~~~~~~~~~~~

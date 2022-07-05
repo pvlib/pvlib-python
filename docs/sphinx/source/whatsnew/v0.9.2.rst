@@ -8,6 +8,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add :py:func:`pvlib.tracking.calc_surface_orientation` for calculating
+  single-axis tracker ``surface_tilt`` and ``surface_azimuth`` from
+  rotation angles. (:issue:`1471`, :pull:`1480`)
 
 Bug fixes
 ~~~~~~~~~
@@ -28,6 +31,9 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
+* Add gallery example of simulating rearside irradiance for a fixed-tilt
+  array with pvfactors (:pull:`1470`)
+
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -45,3 +51,4 @@ Contributors
 * Chencheng Luo (:ghuser:`roger-lcc`)
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Cliff Hansen (:ghuser:`cwhanse`)

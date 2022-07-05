@@ -30,6 +30,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
 * Add gallery example of simulating rearside irradiance for a fixed-tilt
   array with pvfactors (:pull:`1470`)
 
@@ -50,3 +51,4 @@ Contributors
 * Chencheng Luo (:ghuser:`roger-lcc`)
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Cliff Hansen (:ghuser:`cwhanse`)

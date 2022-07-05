@@ -93,7 +93,8 @@ PROJECT_URLS = {
 # not having any python code or even an __init__.py.
 # setuptools.find_namespace_packages() will find all these directories,
 # although to exclude "docs", "ci", etc., we include only names matching
-# the "pvlib*" glob.
+# the "pvlib*" glob.  Although note that "docs" does get added separately
+# via the MANIFEST.in spec.
 PACKAGES = find_namespace_packages(include=['pvlib*'])
 
 extensions = []

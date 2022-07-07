@@ -295,8 +295,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
-        axis_azimuth) with respect to horizontal, in decimal degrees.
-        axis_tilt must be >= 0 and <= 90.
+        ``axis_azimuth``) with respect to horizontal.
+        ``axis_tilt`` must be >= 0 and <= 90. [degree]
 
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of

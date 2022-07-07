@@ -527,10 +527,9 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
 def calc_axis_tilt(slope_azimuth, slope_tilt, axis_azimuth):
     """
     Calculate tracker axis tilt in the global reference frame when on a sloped
-    plane. Tracker axis tilt is a limited positive angle equaling a minimum of
-    0 when the normal vector of the module's surface points straight skyward,
-    parallel to the z-axis and a maximum of 90 when the normal vector of the
-    modules surface is parallel with the y-axis.
+    plane. Axis tilt is the inclination of the tracker rotation axis with
+    respect to horizontal, ranging from 0 degrees (horizontal axis) to 90
+    degrees (vertical axis).
 
     Parameters
     ----------

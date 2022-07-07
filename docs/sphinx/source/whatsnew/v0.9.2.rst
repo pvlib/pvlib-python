@@ -52,3 +52,4 @@ Contributors
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)

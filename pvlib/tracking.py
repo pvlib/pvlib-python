@@ -482,8 +482,8 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
         results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
         results in ``surface_azimuth`` to the East. [degree]
     axis_tilt : float, default 0
-        The tilt of the axis of rotation with respect to horizontal. [degree]
-        axis_tilt must be >= 0 and <= 90.
+        The tilt of the axis of rotation with respect to horizontal.
+        ``axis_tilt`` must be >= 0 and <= 90.  [degree]
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
         rotation lies. Measured east of north. [degree]

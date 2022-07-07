@@ -644,8 +644,8 @@ def calc_cross_axis_tilt(
     axis_azimuth : float
         direction of tracker axes projected on the horizontal [degrees]
     axis_tilt : float
-        tilt of trackers relative to horizontal.  axis_tilt must be >= 0
-        and <= 90.[degrees]
+        tilt of trackers relative to horizontal.  ``axis_tilt`` must be >= 0
+        and <= 90. [degree]
 
     Returns
     -------

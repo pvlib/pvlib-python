@@ -11,6 +11,9 @@ Enhancements
 * Add :py:func:`pvlib.tracking.calc_surface_orientation` for calculating
   single-axis tracker ``surface_tilt`` and ``surface_azimuth`` from
   rotation angles. (:issue:`1471`, :pull:`1480`)
+* Improve error message about uneven time intervals for
+  :py:func:`~pvlib.clearsky.detect_clearsky` and :py:func:`~pvlib.temperature.prilliman`
+  (:issue:`1476`, :pull:`1490`)
 
 Bug fixes
 ~~~~~~~~~
@@ -52,3 +55,4 @@ Contributors
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Will Hobbs (:ghuser:`williamhobbs`)

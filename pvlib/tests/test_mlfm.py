@@ -85,7 +85,7 @@ def normalized():
 
 
 @pytest.fixture
-def stacked():
+def stacked6():
     # get stack data
     data_stack_target = {
         # 'date_time':       ['2016-03-23 09:00:00-07:00'],
@@ -98,6 +98,24 @@ def stacked():
         'r_oc':              [0.114393859291095],
         'v_oc':              [0.0181055001343123],
         'temp_module_corr':  [0.0115818228244058],
+    }
+
+    stack_target = pd.DataFrame(data_stack_target)
+
+    return stack_target
+
+
+@pytest.fixture
+def stacked4():
+    data_stack_target = {
+        # 'date_time':       ['2016-03-23 09:00:00-07:00'],
+        'pr_dc':             [0.989242790817],
+        'i_sc':              [0.0054355995322],
+        'i_mp':              [0.0734605702031],
+        'i_v':               [0.01],
+        'v_mp':              [0.214483151855],
+        'v_oc':              [0.0187687482844],
+        'temp_module_corr':  [0.012006092936],
     }
 
     stack_target = pd.DataFrame(data_stack_target)
@@ -196,9 +214,14 @@ def test_mlfm_6(measured, mlfm_6_coeffs):
     assert_allclose(expected, result[0], atol=1e-6)
 
 
-def test_mlfm_norm_to_stack(normalized, reference, stacked):
+def test_mlfm_norm_to_stack(normalized, reference, stacked6, stacked4):
     stack_calc = mlfm.mlfm_norm_to_stack(normalized, reference['ff'])
-    assert_frame_equal(stack_calc, stacked, atol=1e-6)
+    assert_frame_equal(stack_calc, stacked6, atol=1e-6)
+    # test without 'i_ff', 'r_sc', 'v_ff', 'r_oc'
+    # v_mp = v_ff * r_oc and i_mp = i_ff * r_sc
+    norm = normalized.drop(columns=['i_ff', 'r_sc', 'v_ff', 'r_oc'])
+    short_stack_calc = mlfm.mlfm_norm_to_stack(norm, reference['ff'])
+    assert_frame_equal(short_stack_calc, stacked4, check_less_precise=True)
 
 
 def test_mlfm_fit(matrix_data, mlfm_6_fit):
@@ -221,15 +244,19 @@ def test_plot_mlfm_scatter(measured, normalized):
 
 
 @requires_mpl
-def test_plot_mlfm_stack(measured, normalized, stacked, reference):
+def test_plot_mlfm_stack(measured, normalized, stacked6, stacked4, reference):
     # stacked plot requires at least index length of 2
-    m = measured.append(measured)
+    m = pd.concat([measured, measured])
     m.index = [0, 1]
-    n = normalized.append(normalized)
+    n = pd.concat([normalized, normalized])
     n.index = [0, 1]
-    s = stacked.append(stacked)
-    s.index = [0, 1]
+    s6 = pd.concat([stacked6, stacked6])
+    s6.index = [0, 1]
     import matplotlib.pyplot as plt
-    fig = mlfm.plot_mlfm_stack(m, n, s, reference['ff'], 'stacked plot')
-    plt.show()
+    fig = mlfm.plot_mlfm_stack(m, n, s6, reference['ff'], 'stacked 6 plot')
+    assert isinstance(fig, plt.Figure)
+    s4 = pd.concat([stacked4, stacked4])
+    s4.index = [0, 1]
+    import matplotlib.pyplot as plt
+    fig = mlfm.plot_mlfm_stack(m, n, s4, reference['ff'], 'stacked 4 plot')
     assert isinstance(fig, plt.Figure)

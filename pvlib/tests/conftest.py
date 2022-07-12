@@ -152,6 +152,8 @@ requires_siphon = pytest.mark.skipif(not has_siphon,
 
 try:
     import matplotlib.pyplot as plt  # noqa: F401
+    import matplotlib
+    matplotlib.use('agg')
     has_mpl = True
 except ImportError:
     has_mpl = False

@@ -26,6 +26,7 @@ Bug fixes
 Testing
 ~~~~~~~
 * Switched CI testing provider from Azure to GitHub Actions (:pull:`1306`)
+* Speed up CI setup using micromamba instead of conda (:pull:`1493`)
 
 
 Documentation
@@ -52,3 +53,4 @@ Contributors
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Jules Chéron (:ghuser:`jules-ch`)

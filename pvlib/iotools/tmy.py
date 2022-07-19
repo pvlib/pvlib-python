@@ -1,6 +1,4 @@
-"""
-Import functions for TMY2 and TMY3 data files.
-"""
+"""Functions for reading TMY2 and TMY3 data files."""
 
 import datetime
 import re
@@ -8,8 +6,7 @@ import pandas as pd
 
 
 def read_tmy3(filename, coerce_year=None, recolumn=True):
-    '''
-    Read a TMY3 file in to a pandas dataframe.
+    """Read a TMY3 file into a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged
     from the TMY3 file (i.e. units are retained). In the case of any
@@ -40,7 +37,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     data : DataFrame
         A pandas dataframe with the columns described in the table
         below. For more detailed descriptions of each component, please
-        consult the TMY3 User's Manual ([1]), especially tables 1-1
+        consult the TMY3 User's Manual ([1]_), especially tables 1-1
         through 1-6.
 
     metadata : dict
@@ -150,14 +147,12 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
 
     References
     ----------
-
     .. [1] Wilcox, S and Marion, W. "Users Manual for TMY3 Data Sets".
        NREL/TP-581-43156, Revised May 2008.
 
     .. [2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005
        Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.
-    '''
-
+    """
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
     with open(str(filename), 'r') as csvdata:
@@ -181,8 +176,9 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     data_ymd = pd.to_datetime(data['Date (MM/DD/YYYY)'], format='%m/%d/%Y')
     # shift the time column so that midnite is 00:00 instead of 24:00
     shifted_hour = data['Time (HH:MM)'].str[:2].astype(int) % 24
-    # shift the dates at midnite so they correspond to the next day
-    data_ymd[shifted_hour == 0] += datetime.timedelta(days=1)
+    # shift the dates at midnight (24:00) so they correspond to the next day.
+    # If midnight is specified as 00:00 do not shift date.
+    data_ymd[data['Time (HH:MM)'].str[:2] == '24'] += datetime.timedelta(days=1)  # noqa: E501
     # NOTE: as of pandas>=0.24 the pd.Series.array has a month attribute, but
     # in pandas-0.18.1, only DatetimeIndex has month, but indices are immutable
     # so we need to continue to work with the panda series of dates `data_ymd`
@@ -250,7 +246,7 @@ def _recolumn(tmy3_dataframe):
 
 
 def read_tmy2(filename):
-    '''
+    """
     Read a TMY2 file in to a DataFrame.
 
     Note that values contained in the DataFrame are unchanged from the
@@ -282,7 +278,6 @@ def read_tmy2(filename):
 
     Notes
     -----
-
     The returned structures have the following fields.
 
     =============    ==================================
@@ -375,11 +370,9 @@ def read_tmy2(filename):
 
     References
     ----------
-
     .. [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
        for TMY2s". NREL 1995.
-    '''
-
+    """
     # paste in the column info as one long line
     string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'  # noqa: E501
     columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUncertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'  # noqa: E501

@@ -20,7 +20,8 @@ class SingleAxisTracker(PVSystem):
     ----------
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
-        axis_azimuth) with respect to horizontal, in decimal degrees.
+        ``axis_azimuth``) with respect to horizontal.
+        ``axis_tilt`` must be >= 0 and <= 90. [degree]
 
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
@@ -294,7 +295,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
-        axis_azimuth) with respect to horizontal, in decimal degrees.
+        ``axis_azimuth``) with respect to horizontal.
+        ``axis_tilt`` must be >= 0 and <= 90. [degree]
 
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
@@ -480,7 +482,8 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
         results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
         results in ``surface_azimuth`` to the East. [degree]
     axis_tilt : float, default 0
-        The tilt of the axis of rotation with respect to horizontal. [degree]
+        The tilt of the axis of rotation with respect to horizontal.
+        ``axis_tilt`` must be >= 0 and <= 90.  [degree]
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
         rotation lies. Measured east of north. [degree]
@@ -524,7 +527,9 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
 def calc_axis_tilt(slope_azimuth, slope_tilt, axis_azimuth):
     """
     Calculate tracker axis tilt in the global reference frame when on a sloped
-    plane.
+    plane. Axis tilt is the inclination of the tracker rotation axis with
+    respect to horizontal, ranging from 0 degrees (horizontal axis) to 90
+    degrees (vertical axis).
 
     Parameters
     ----------
@@ -639,7 +644,8 @@ def calc_cross_axis_tilt(
     axis_azimuth : float
         direction of tracker axes projected on the horizontal [degrees]
     axis_tilt : float
-        tilt of trackers relative to horizontal [degrees]
+        tilt of trackers relative to horizontal.  ``axis_tilt`` must be >= 0
+        and <= 90. [degree]
 
     Returns
     -------

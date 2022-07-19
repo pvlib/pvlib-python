@@ -58,3 +58,4 @@ Contributors
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Jules Chéron (:ghuser:`jules-ch`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)

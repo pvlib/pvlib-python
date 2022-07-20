@@ -10,9 +10,6 @@ except ImportError:
     raise RuntimeError('setuptools is required')
 
 
-import versioneer
-
-
 DESCRIPTION = ('A set of functions and classes for simulating the ' +
                'performance of photovoltaic energy systems.')
 LONG_DESCRIPTION = """
@@ -44,7 +41,7 @@ INSTALL_REQUIRES = ['numpy >= 1.16.0',
                     'requests',
                     'scipy >= 1.2.0',
                     'h5py',
-                    ]
+                    'importlib-metadata; python_version < "3.8"']
 
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
@@ -107,8 +104,6 @@ else:
 
 
 setup(name=DISTNAME,
-      version=versioneer.get_version(),
-      cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
       install_requires=INSTALL_REQUIRES,
       extras_require=EXTRAS_REQUIRE,

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
+[tool.pytest]
+junit_family = "xunit2"
+testpaths = "pvlib/tests"
+# warning messages to suppress from pytest output.  useful in cases
+# where a dependency hasn't addressed a deprecation yet, and there's
+# nothing we can do to fix it ourselves.
+# syntax is: action:message:category:module:lineno
+# `message` is a regex matching start of warning message
+# https://docs.python.org/3/library/warnings.html#the-warnings-filter
+filterwarnings =[
+    "ignore:Using or importing the ABCs:DeprecationWarning:.*patsy:",
+    # deprecation warnings from numpy 1.20
+    "ignore:`np.long` is a deprecated alias:DeprecationWarning:.*numba:",
+    "ignore:`np.int` is a deprecated alias:DeprecationWarning:.*(numba|scipy):",
+    "ignore:`np.bool` is a deprecated alias:DeprecationWarning:.*numba:",
+    # warnings from netcdf4, but reported as coming from pvlib
+    "ignore:`np.bool` is a deprecated alias:DeprecationWarning:.*(ecmwf_macc|forecast):",
+    "ignore:tostring() is deprecated:DeprecationWarning:.*ecmwf_macc:"
+    ]

@@ -25,7 +25,7 @@ from scipy import optimize
 #
 T_STC = 25.0  # STC temperature [C]      temperature_ref
 T_HTC = 75.0  # HTC temperature [C]
-G_STC = 1.0   # STC irradiance  [kW/m^2]
+G_STC = 1000.0   # STC irradiance  [W/m^2]
 G_LIC = 0.2   # LIC irradiance  [kW/m^2]
 
 
@@ -115,9 +115,8 @@ def mlfm_meas_to_norm(dmeas, ref):
     '''
     dnorm = pd.DataFrame()
 
-    dnorm['pr_dc'] = (
-        dmeas['p_mp'] /
-        (ref['p_mp'] * dmeas['poa_global'] / G_STC))
+    dnorm['pr_dc'] = dmeas['p_mp'] / ref['p_mp'] \
+        / (dmeas['poa_global'] / G_STC)
 
     # temperature corrected
     dnorm['pr_dc_temp_corr'] = (
@@ -349,8 +348,8 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
      '''
     mlfm_out = c_1 + c_2 * (dmeas['temp_module'] - T_STC) + \
         c_3 * np.log10(dmeas['poa_global'] / G_STC) + \
-        c_4 * dmeas['poa_global'] / G_STC + \
-        c_6 / dmeas['poa_global']  / G_STC
+        c_4 * (dmeas['poa_global'] / G_STC) + \
+        c_6 / (dmeas['poa_global']  / G_STC)
     if 'wind_speed' in dmeas.columns:
         mlfm_out += c_5 * dmeas['wind_speed']
     return mlfm_out

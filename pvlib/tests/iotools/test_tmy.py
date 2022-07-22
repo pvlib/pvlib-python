@@ -7,9 +7,11 @@ import pytest
 # test the API works
 from pvlib.iotools import read_tmy3
 
-TMY3_TESTFILE = DATA_DIR / '703165TY.csv'
 TMY2_TESTFILE = DATA_DIR / '12839.tm2'
+# TMY3 format (two files below) represents midnight as 24:00
+TMY3_TESTFILE = DATA_DIR / '703165TY.csv'
 TMY3_FEB_LEAPYEAR = DATA_DIR / '723170TYA.CSV'
+# The SolarAnywhere TMY3 format (file below) represents midnight as 00:00
 TMY3_SOLARANYWHERE = DATA_DIR / 'Burlington, United States SolarAnywhere Time Series 2021 Lat_44_465 Lon_-73_205 TMY3 format.csv'  # noqa: E501
 
 

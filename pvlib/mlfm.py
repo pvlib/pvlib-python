@@ -61,7 +61,7 @@ def mlfm_meas_to_norm(dmeas, ref):
     dmeas : DataFrame
         Measurements. Must include columns:
 
-        * `'poa_global_kwm2'` global plane of array irradiance [kW/m^2]
+        * `'poa_global'` global plane of array irradiance [W/m^2]
         * `'temp_module'` module temperature [C]
         * `'p_mp'` - power at maximum power point [W]
 
@@ -99,8 +99,8 @@ def mlfm_meas_to_norm(dmeas, ref):
     dnorm : DataFrame
         Normalised values.
 
-        * `'pr_dc'` is `'p_mp'` normalised by reference `'p_mp'` and \
-          `'poa_global_kwm2'`
+        * `'pr_dc'` is `'p_mp'` normalised (divided) by reference `'p_mp'` \
+            and by `'poa_global'` in kW/m^2.
         * `'pr_dc_temp_corr'` is `'pr_dc'` adjusted to 25C.
         * Columns `'i_sc'`, `'i_mp'`, `'v_oc'`, `'v_mp'`, `'v_oc_temp_corr'`,
           `'r_sc'`, `'r_oc'`, `'i_ff'`, `'v_ff'` are returned when the
@@ -117,7 +117,7 @@ def mlfm_meas_to_norm(dmeas, ref):
 
     dnorm['pr_dc'] = (
         dmeas['p_mp'] /
-        (ref['p_mp'] * dmeas['poa_global_kwm2']))
+        (ref['p_mp'] * dmeas['poa_global'] / G_STC))
 
     # temperature corrected
     dnorm['pr_dc_temp_corr'] = (
@@ -125,7 +125,8 @@ def mlfm_meas_to_norm(dmeas, ref):
         (1 - ref['gamma_pdc']*(dmeas['temp_module'] - T_STC)))
 
     if 'i_sc' in dmeas.columns:
-        dnorm['i_sc'] = dmeas['i_sc'] / dmeas['poa_global_kwm2'] / ref['i_sc']
+        dnorm['i_sc'] = dmeas['i_sc'] / (dmeas['poa_global'] * G_STC) \
+            / ref['i_sc']
         if 'i_mp' in dmeas.columns:
             dnorm['i_mp'] = dmeas['i_mp'] / dmeas['i_sc']
 
@@ -314,8 +315,8 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     dmeas : DataFrame
         Must include columns:
 
-        * `'poa_global_kwm2'` global plane of array irradiance [kW/m^2]
-        * `'temp_module'` module temperature [C]
+        * `'poa_global'` global plane of array irradiance. [W/m^2]
+        * `'temp_module'` module temperature. [C]
 
         May include optional column:
 
@@ -347,8 +348,9 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
        36th EU PVSEC, Marseille, France. September 2019
      '''
     mlfm_out = c_1 + c_2 * (dmeas['temp_module'] - T_STC) + \
-        c_3 * np.log10(dmeas['poa_global_kwm2']) + \
-        c_4 * dmeas['poa_global_kwm2'] + c_6 / dmeas['poa_global_kwm2']
+        c_3 * np.log10(dmeas['poa_global'] / G_STC) + \
+        c_4 * dmeas['poa_global'] / G_STC + \
+        c_6 / dmeas['poa_global_kwm2']  / G_STC
     if 'wind_speed' in dmeas.columns:
         mlfm_out += c_5 * dmeas['wind_speed']
     return mlfm_out
@@ -363,7 +365,7 @@ def mlfm_fit(data, var_to_fit):
     data : DataFrame
         Must include columns:
 
-        * 'poa_global_kwm2' global plane of array irradiance. [kW/m^2]
+        * 'poa_global' global plane of array irradiance. [W/m^2]
         * 'temp_module' module temperature. [C]
 
         Must include column named ``var_to_fit``.
@@ -450,7 +452,7 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
     dmeas : DataFrame
         Measurements. Must include columns:
 
-        * `'poa_global_kwm2'` global plane of array irradiance [kW/m^2]
+        * `'poa_global'` global plane of array irradiance [W/m^2]
         * `'temp_module'` module temperature [C]
 
         May include optional columns:
@@ -492,8 +494,8 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
     # offset legend to the right to not overlap graph, use ~1.2
     bbox = 1.2
 
-    # set x_axis as irradiance
-    xdata = dmeas['poa_global_kwm2']
+    # set x_axis as irradiance in kW/m2
+    xdata = dmeas['poa_global'] / G_STC
 
     fig, ax1 = plt.subplots()
 
@@ -503,7 +505,7 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
     ax1.axhline(y=1, c='grey', linewidth=3)  # show 100% line
     ax1.set_ylim(0.8, 1.1)  # optional normalised y scale
 
-    ax1.set_xlabel('Plane of array irradiance [W/m$^2$]')
+    ax1.set_xlabel('Plane of array irradiance [kW/m$^2$]')
     ax1.axvline(x=1.0, c='grey', linewidth=3)  # show 1000W/m^2 STC
     ax1.axvline(x=0.8, c='grey', linewidth=3)  # show 800W/m^2 NOCT
     ax1.axvline(x=0.2, c='grey', linewidth=3)  # show 200W/m^2 LIC
@@ -540,7 +542,7 @@ def plot_mlfm_scatter(dmeas, dnorm, title):
 
     # y2axis plot met on right y axis
     ax2 = ax1.twinx()
-    ax2.set_ylabel('Temperature (C/100)')  # poa_global (kW/m$^2$);
+    ax2.set_ylabel('Temperature (C/100)')
 
     # set wide limits 0 to 4 so they don't overlap mlfm params
     ax2.set_ylim(0, 4)
@@ -577,7 +579,7 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
     dmeas : DataFrame
         Measurements. Must include columns:
 
-        * `'poa_global_kwm2'` global plane of array irradiance [kW/m^2]
+        * `'poa_global'` global plane of array irradiance [W/m^2]
         * `'temp_module'` module temperature [C]
 
         May include optional columns:
@@ -743,10 +745,10 @@ def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
     ax2.set_ylabel('poa_global (kW/m^2), temp_module (C/100)')
     ax2.set_ylim(0, 4)  # set so doesn't overlap mlfm params
 
-    plt.plot(xdata, dmeas['poa_global_kwm2'],
-             c=clr['irradiance'], label='poa_global_kwm2')
+    plt.plot(xdata, dmeas['poa_global'] / G_STC,
+             c=clr['irradiance'], label='poa_global (kW/m^2)')
     plt.plot(xdata, dmeas['temp_module'] / 100,
-             c=clr['temp_module'], label='temp_module/100')
+             c=clr['temp_module'], label='temp_module / 100')
 
     # temp_air may not exist particularly for indoor measurements
     try:

@@ -42,7 +42,7 @@ VARIABLE_MAP = {
 
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
-             attributes=ATTRIBUTES, leap_day=False, full_name=PVLIB_PYTHON,
+             attributes=ATTRIBUTES, leap_day=True, full_name=PVLIB_PYTHON,
              affiliation=PVLIB_PYTHON, map_variables=None, timeout=30):
     """
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API. The NSRDB
@@ -75,7 +75,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         ``pvlib.iotools.psm3.ATTRIBUTES``. See references [2]_, [3]_, and [4]_
         for lists of available fields. Alternatively, pvlib names may also be
         used (e.g. 'ghi' rather than 'GHI'); see :const:`VARIABLE_MAP`.
-    leap_day : boolean, default False
+    leap_day : boolean, default: True
         include leap day in the results. Only used for single-year requests
         (i.e., it is ignored for tmy/tgy/tdy requests).
     full_name : str, default 'pvlib python'

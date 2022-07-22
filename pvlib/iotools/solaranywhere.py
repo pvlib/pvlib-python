@@ -128,7 +128,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         "Sites": [{
             "Latitude": latitude,
             "Longitude": longitude
-            }],
+        }],
         "Options": {
             "OutputFields": DEFAULT_VARIABLES,
             "SummaryOutputFields": [],  # Do not request summary/monthly data
@@ -136,8 +136,8 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
             "TimeResolution_Minutes": time_resolution,
             "WeatherDataSource": source,
             "MissingDataHandling": missing_data,
-            }
         }
+    }
 
     if true_dynamics:
         payload['Options']['ApplyTrueDynamics'] = True

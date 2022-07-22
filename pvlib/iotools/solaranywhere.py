@@ -48,7 +48,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
                       true_dynamics=False, source='SolarAnywhereLatest',
                       variables=DEFAULT_VARIABLES, missing_data='Omit',
                       url=URL, map_variables=True, max_response_time=300):
-    """Retrieve historical time series irradiance data from SolarAnywhere.
+    """Retrieve historical irradiance time series data from SolarAnywhere.
 
     The SolarAnywhere API is described in [1]_ and [2]_. A detailed list of
     available options for the input parameters can be found in [3]_.
@@ -81,23 +81,23 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         (TMY for DNI). Specific dataset versions can also be specified, e.g.,
         'SolarAnywhere3_2' (see [3]_ for a full list of options).
     variables: list-like, default: :const:`DEFAULT_VARIABLES`
-        Variables to retrieve (see [4]_).  Available variables depend on
-        whether historical or TMY data is requested.
+        Variables to retrieve (described in [4]_).  Available variables depend
+        on whether historical or TMY data is requested.
     missing_data: {'Omit', 'FillAverage'}, default: 'Omit'
         Method for treating missing data.
     url: str, default: :const:`pvlib.iotools.solaranywhere.URL`
         Base url of SolarAnywhere API.
     map_variables: bool, default: True
-        When true, renames columns of the Dataframe to pvlib variable names
+        When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-    max_response_time: int, default: 300
+    max_response_time: float, default: 300
         Time in seconds to wait for requested data to become available.
 
     Returns
     -------
     data: pandas.DataFrame
         Timeseries data from SolarAnywhere. The index is the observation time
-        (middle of period) in UTC.
+        (middle of period) localized to UTC.
     metadata: dict
         Metadata available (includes site latitude, longitude, and altitude).
 
@@ -108,7 +108,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     Note
     ----
     SolarAnywhere data requests are asynchronous, and it might take several
-    minutes for the data to become available.
+    minutes for the requested data to become available.
 
     Examples
     --------
@@ -150,8 +150,8 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     if true_dynamics:
         payload['Options']['ApplyTrueDynamics'] = True
 
-    # Add start/end time if requesting non-TMY data (SolarAnywhereLatest)
-    if source == 'SolarAnywhereLatest':
+    # Add start/end time if requesting non-TMY data
+    if ('TGY' not in source) & ('TDY' not in source) & ('TMY' not in source):
         if (start is None) or (end is None):
             ValueError('When requesting non-TMY data, specifying `start` and'
                        '`end` is required.')
@@ -183,10 +183,10 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         results_json = results.json()
         if results_json.get('Status') == 'Done':
             if results_json['WeatherDataResults'][0]['Status'] == 'Failure':
-                raise ValueError(results_json['WeatherDataResults'][0]['ErrorMessages'])  # noqa: E501
+                raise RuntimeError(results_json['WeatherDataResults'][0]['ErrorMessages'])  # noqa: E501
             break
         elif results_json.get('StatusCode') == 'BadRequest':
-            raise ValueError(f"Bad request: {results_json['Message']}")
+            raise RuntimeError(f"Bad request: {results_json['Message']}")
         elif (time.time()-start_time) > max_response_time:
             raise TimeoutError('Time exceeded the `max_response_time`.')
 
@@ -212,8 +212,8 @@ def read_solaranywhere(filename, map_variables=True):
     """
     Read a SolarAnywhere formatted file into a pandas DataFrame.
 
-    The SolarAnywhere file format and the variables are described in [1]_. The
-    SolarAnywhere file format resembles the TMY3 file format but contains
+    The SolarAnywhere file format and variables are described in [1]_. Note,
+    the SolarAnywhere file format resembles the TMY3 file format but contains
     additional variables and meatadata.
 
     Parameters
@@ -221,7 +221,7 @@ def read_solaranywhere(filename, map_variables=True):
     fbuf: file-like object
         File-like object containing data to read.
     map_variables: bool, default: True
-        When true, renames columns of the Dataframe to pvlib variable names
+        When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
@@ -249,8 +249,8 @@ def parse_solaranywhere(fbuf, map_variables=True):
     """
     Parse a file-like buffer with data in the format of a SolarAnywhere file.
 
-    The SolarAnywhere file format and the variables are described in [1]_. The
-    SolarAnywhere file format resembles the TMY3 file format but contains
+    The SolarAnywhere file format and variables are described in [1]_. Note,
+    the SolarAnywhere file format resembles the TMY3 file format but contains
     additional variables and meatadata.
 
     Parameters
@@ -258,7 +258,7 @@ def parse_solaranywhere(fbuf, map_variables=True):
     fbuf: file-like object
         File-like object containing data to read.
     map_variables: bool, default: True
-        When true, renames columns of the Dataframe to pvlib variable names
+        When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns

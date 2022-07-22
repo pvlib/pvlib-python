@@ -135,8 +135,9 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     =====================       ======================================================================================================================================================
 
     .. admonition:: Midnight representation
+
        The function is able to handle midnight represented as 24:00 (NREL TMY3
-       format, see [1]_) and as 00:00 (SolarAnywhere TMY format, see [3]_).
+       format, see [1]_) and as 00:00 (SolarAnywhere TMY3 format, see [3]_).
 
     .. warning:: TMY3 irradiance data corresponds to the *previous* hour, so
         the first index is 1AM, corresponding to the irradiance from midnight

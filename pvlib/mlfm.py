@@ -350,7 +350,7 @@ def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     mlfm_out = c_1 + c_2 * (dmeas['temp_module'] - T_STC) + \
         c_3 * np.log10(dmeas['poa_global'] / G_STC) + \
         c_4 * dmeas['poa_global'] / G_STC + \
-        c_6 / dmeas['poa_global_kwm2']  / G_STC
+        c_6 / dmeas['poa_global']  / G_STC
     if 'wind_speed' in dmeas.columns:
         mlfm_out += c_5 * dmeas['wind_speed']
     return mlfm_out

@@ -8,7 +8,6 @@ on:
 
 jobs:
   test:
-
     strategy:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
@@ -31,16 +30,23 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up conda environment
-        if: matrix.environment-type == 'conda'
-        uses: conda-incubator/setup-miniconda@v2
+      # We check out only a limited depth and then pull tags to save time
+      - name: Checkout source
+        uses: actions/checkout@v3
         with:
-          activate-environment: test_env
+          fetch-depth: 100
+
+      - name: Get tags
+        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      - name: Install Conda environment with Micromamba
+        if: matrix.environment-type == 'conda'
+        uses: mamba-org/provision-with-micromamba@v12
+        with:
           environment-file: ${{ env.REQUIREMENTS }}
-          python-version: ${{ matrix.python-version }}
-          auto-activate-base: false
+          cache-downloads: true
+          extra-specs: |
+            python=${{ matrix.python-version }}
         env:
           # build requirement filename.  First replacement is for the python
           # version, second is to add "-min" if needed
@@ -49,13 +55,18 @@ jobs:
       - name: List installed package versions (conda)
         if: matrix.environment-type == 'conda'
         shell: bash -l {0}  # necessary for conda env to be active
-        run: conda list
+        run: micromamba list
 
       - name: Install bare Python ${{ matrix.python-version }}${{ matrix.suffix }}
         if: matrix.environment-type == 'bare'
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Install pvlib
+        if: matrix.environment-type == 'conda'
+        shell: bash -l {0}
+        run: python -m pip install --no-deps .
 
       - name: Set up bare environment
         if: matrix.environment-type == 'bare'

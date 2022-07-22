@@ -1,0 +1,18 @@
+module_id,source,site,manufacturer,technology,module_type,module_serial,i_sc,i_mp,v_mp,v_oc,alpha_i_sc,alpha_i_mp,beta_v_mp,beta_v_oc,gamma_pdc,delta_ff,irradiance_sensor_id,temp_sensor_id,comments
+t1,test,test,test,test,test,test,10,8,25,30,0.0005,0.0001,-0.004,-0.0035,-0.0045,-0.0075,1,1,tes
+g31,gantner ,tempe,Sanyo,hit,HIP-210NKHEI, ,5.57,5.09,41.3,50.9,0.0002998,0,0,-0.002459,-0.003,,5,121,https://www.gantner-instruments.com/
+g72,gantner ,tempe,FirstSolar,CdTe,FS-380, ,1.88,1.65,48.5,60.8,0.0004,0,0,-0.0027,-0.0025,,6,119,https://www.gantner-instruments.com/
+g78,gantner ,tempe,TrinaSolar,csi,TSM-180DC01, ,5.35,4.9,36.8,44.2,0.0005,0,0,-0.0035,-0.0045,,5,115,https://www.gantner-instruments.com/
+g81,gantner ,tempe,MiaSole,CIS/CIGS,MR-107, ,6.46,5.33,20,25.4,-0.0003,0,0,-0.0036,-0.0044,,5,124,https://www.gantner-instruments.com/
+n0188,nrel,cocoa,Manufacturer 2,msi,Model C,118,2.73,2.522,18.16,22.07,0.000426165,0.00000298,-0.004133773,-0.003298414,-0.004137609,,n/a,n/a,https://www.nrel.gov/docs/fy14osti/61610.pdf
+n05667,nrel,eugene,Manufacturer 6,hit,Model G,5667,5.456,5.1,41.58,50.11,0.000349521,-0.000108326,-0.003372754,-0.002666783,-0.003466138,,n/a,n/a,https://www.nrel.gov/docs/fy14osti/61610.pdf
+n75669,nrel,golden,Manufacturer 3,cdte,Model D,75669,1.177,1.02,64.12,87.66,0.000388,0.00037,-0.00247,-0.00231,-0.00214,,n/a,n/a,https://www.nrel.gov/docs/fy14osti/61610.pdf
+x19074001,cfv,indoor,Panasonic,HIT,VBHN325SA 16,W0JH9NH02089,5.902849487,5.50600091,58.53700524,70.21442506,0.000254238,-4.31E-05,-0.00297779,-0.002441497,-0.002940601,-0.000867764,n/a,n/a,https://pvpmc.sandia.gov/download/7701/
+x19074002,cfv,indoor,LG,,LG320N1K-A5,,10.35517229,9.788568757,32.72393392,40.13233059,0.000292305,-0.000192674,-0.003839589,-0.002909917,-0.004001761,-0.001512487,n/a,n/a,https://pvpmc.sandia.gov/download/7701/
+x19074003,cfv,indoor,Hanwah Q Cells,,Q.PLUS BFR-G4-1 280,,9.488280901,8.9279505,31.12943344,38.75616482,0.000377717,-0.000163595,-0.00381762,-0.002876365,-0.003953902,-0.001574468,n/a,n/a,https://pvpmc.sandia.gov/download/7701/
+x19074004,cfv,indoor,Jinko Solar,,JKM260P-60,,8.98846222,8.436453776,30.64339913,37.69974132,0.000373517,-0.000160436,-0.004092276,-0.003117413,-0.004226894,-0.001618429,n/a,n/a,https://pvpmc.sandia.gov/download/7701/
+x19074005,cfv,indoor,Canadian Solar,cSi,CS6K-275M,1.16E+13,9.29909371,8.81042239,31.48246048,38.29373004,0.000350383,-0.000165735,-0.004038306,-0.003075087,-0.004181404,-0.001560515,n/a,n/a,https://pvpmc.sandia.gov/download/7701/
+x19074006,cfv,indoor,Canadian Solar,,CS6K-270P,,9.150327478,8.600350021,31.10742638,38.07417146,0.000376151,-0.000142885,-0.003951002,-0.003052053,-0.003981806,-0.001530851,n/a,n/a,https://pvpmc.sandia.gov/download/7701/
+x19074007,cfv,indoor,Mission Solar,,MSE300SQ5T,,9.425221741,8.945631878,31.9608779,39.37453464,0.000329992,-0.000168207,-0.003848512,-0.002852233,-0.004141737,-0.001596551,n/a,n/a,https://pvpmc.sandia.gov/download/7701/
+x19074008,cfv,indoor,Hanwha Q CELLS,,Q.Peak-G4.1 300,,9.590035307,9.078192813,31.93130479,39.53341539,0.00031755,-0.000189238,-0.00387389,-0.002865072,-0.004034699,-0.001618217,n/a,n/a,https://pvpmc.sandia.gov/download/7701/
+x19074009,cfv,indoor,itek Energy,,IT-360-SE72,,9.635601996,9.128439457,38.85677238,47.51235266,0.000355585,-0.000115779,-0.003804129,-0.002844126,-0.003902273,-0.001529759,n/a,n/a,https://pvpmc.sandia.gov/download/7701/

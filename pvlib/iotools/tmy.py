@@ -157,7 +157,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
        Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.
     .. [3] `SolarAnywhere file formats
        <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
-    """
+    """  # noqa: E501
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
     with open(str(filename), 'r') as csvdata:
@@ -377,7 +377,7 @@ def read_tmy2(filename):
     ----------
     .. [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
        for TMY2s". NREL 1995.
-    """
+    """  # noqa: E501
     # paste in the column info as one long line
     string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'  # noqa: E501
     columns = 'year,month,day,hour,ETR,ETRN,GHI,GHISource,GHIUncertainty,DNI,DNISource,DNIUncertainty,DHI,DHISource,DHIUncertainty,GHillum,GHillumSource,GHillumUncertainty,DNillum,DNillumSource,DNillumUncertainty,DHillum,DHillumSource,DHillumUncertainty,Zenithlum,ZenithlumSource,ZenithlumUncertainty,TotCld,TotCldSource,TotCldUncertainty,OpqCld,OpqCldSource,OpqCldUncertainty,DryBulb,DryBulbSource,DryBulbUncertainty,DewPoint,DewPointSource,DewPointUncertainty,RHum,RHumSource,RHumUncertainty,Pressure,PressureSource,PressureUncertainty,Wdir,WdirSource,WdirUncertainty,Wspd,WspdSource,WspdUncertainty,Hvis,HvisSource,HvisUncertainty,CeilHgt,CeilHgtSource,CeilHgtUncertainty,PresentWeather,Pwat,PwatSource,PwatUncertainty,AOD,AODSource,AODUncertainty,SnowDepth,SnowDepthSource,SnowDepthUncertainty,LastSnowfall,LastSnowfallSource,LastSnowfallUncertaint'  # noqa: E501
@@ -389,7 +389,7 @@ def read_tmy2(filename):
 
 
 def _parsemeta_tmy2(columns, line):
-    """Retrieves metadata from the top line of the tmy2 file.
+    """Retrieve metadata from the top line of the tmy2 file.
 
     Parameters
     ----------

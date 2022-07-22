@@ -124,9 +124,7 @@ def test_get_psm3_check_leap_day(nrel_api_key):
                           ])
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_psm3_tmy_errors(
-    latitude, longitude, api_key, names, interval
-):
+def test_get_psm3_tmy_errors(latitude, longitude, api_key, names, interval):
     """Test get_psm3() for multiple erroneous input scenarios.
 
     These scenarios include:

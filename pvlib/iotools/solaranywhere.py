@@ -22,9 +22,13 @@ VARIABLE_MAP = {
     'WindSpeed (m/s)': 'wind_speed',
     'WindSpeed_MetersPerSecond': 'wind_speed',
     'Relative Humidity (%)': 'relative_humidity',
+    'RelativeHumidity_Percent': 'relative_humidity',
     'Clear Sky GHI': 'ghi_clear',
+    'ClearSkyGHI_WattsPerMeterSquared': 'ghi_clear',
     'Clear Sky DNI': 'dni_clear',
+    'ClearSkyDNI_WattsPerMeterSquared': 'dni_clear',
     'Clear Sky DHI': 'dhi_clear',
+    'ClearSkyDHI_WattsPerMeterSquared': 'dhi_clear',
     'Albedo': 'albedo',
     'Albedo_Unitless': 'albedo',
 }
@@ -42,11 +46,12 @@ DEFAULT_VARIABLES = [
 def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
                       time_resolution=60, spatial_resolution=0.1,
                       true_dynamics=False, source='SolarAnywhereLatest',
-                      missing_data='Omit', url=URL, map_variables=True,
-                      max_response_time=300):
+                      variables=DEFAULT_VARIABLES, missing_data='Omit',
+                      url=URL, map_variables=True, max_response_time=300):
     """Retrieve historical time series irradiance data from SolarAnywhere.
 
-    The SolarAnywhere API is described in [1]_ and [2]_.
+    The SolarAnywhere API is described in [1]_ and [2]_. A detailed list of
+    available options for the input parameters can be found in [3]_.
 
     Parameters
     ----------
@@ -73,10 +78,11 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     source: str, default: 'SolarAnywhereLatest'
         Data source. Options include: 'SolarAnywhereLatest' (historical data),
         'SolarAnywhereTGYLatest' (TMY for GHI), or 'SolarAnywhereTDYLatest'
-        (TMY for DNI).
+        (TMY for DNI). Specific dataset versions can also be specified, e.g.,
+        'SolarAnywhere3_2' (see [3]_ for a full list of options).
     variables: list-like, default: :const:`DEFAULT_VARIABLES`
-        Variables to retrieve. A description can be found in [3]_.  Available
-        variables depend on whether historical or TMY data is requested.
+        Variables to retrieve (see [4]_).  Available variables depend on
+        whether historical or TMY data is requested.
     missing_data: {'Omit', 'FillAverage'}, default: 'Omit'
         Method for treating missing data.
     url: str, default: :const:`pvlib.iotools.solaranywhere.URL`
@@ -117,7 +123,9 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
        <https://www.solaranywhere.com/support/using-solaranywhere/api/>`_
     .. [2] `SolarAnywhere irradiance and weather API requests
        <https://developers.cleanpower.com/irradiance-and-weather-data/irradiance-and-weather-requests/>`_
-    .. [3] `SolarAnywhere variable definitions
+    .. [3] `SolarAnywhere API options
+       <https://developers.cleanpower.com/irradiance-and-weather-data/complete-schema/createweatherdatarequest/options/>`_
+    .. [4] `SolarAnywhere variable definitions
        <https://www.solaranywhere.com/support/data-fields/definitions/>`_
     """  # noqa: E501
     headers = {'content-type': "application/json; charset=utf-8",
@@ -130,7 +138,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
             "Longitude": longitude
         }],
         "Options": {
-            "OutputFields": DEFAULT_VARIABLES,
+            "OutputFields": variables,
             "SummaryOutputFields": [],  # Do not request summary/monthly data
             "SpatialResolution_Degrees": spatial_resolution,
             "TimeResolution_Minutes": time_resolution,

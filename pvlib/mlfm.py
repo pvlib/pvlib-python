@@ -125,7 +125,7 @@ def mlfm_meas_to_norm(dmeas, ref):
         (1 - ref['gamma_pdc']*(dmeas['temp_module'] - T_STC)))
 
     if 'i_sc' in dmeas.columns:
-        dnorm['i_sc'] = dmeas['i_sc'] / (dmeas['poa_global'] * G_STC) \
+        dnorm['i_sc'] = dmeas['i_sc'] / (dmeas['poa_global'] / G_STC) \
             / ref['i_sc']
         if 'i_mp' in dmeas.columns:
             dnorm['i_mp'] = dmeas['i_mp'] / dmeas['i_sc']

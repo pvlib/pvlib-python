@@ -37,6 +37,9 @@ of sources and file formats relevant to solar energy modeling.
    iotools.get_cams
    iotools.read_cams
    iotools.parse_cams
+   iotools.get_solaranywhere
+   iotools.read_solaranywhere
+   iotools.parse_solaranywhere
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

@@ -21,3 +21,6 @@ from pvlib.iotools.bsrn import parse_bsrn  # noqa: F401
 from pvlib.iotools.sodapro import get_cams  # noqa: F401
 from pvlib.iotools.sodapro import read_cams  # noqa: F401
 from pvlib.iotools.sodapro import parse_cams  # noqa: F401
+from pvlib.iotools.solaranywhere import get_solaranywhere  # noqa: F401
+from pvlib.iotools.solaranywhere import read_solaranywhere  # noqa: F401
+from pvlib.iotools.solaranywhere import parse_solaranywhere  # noqa: F401

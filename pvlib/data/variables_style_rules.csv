@@ -4,6 +4,7 @@ latitude;latitude
 longitude;longitude
 dni;direct normal irradiance
 dni_extra;direct normal irradiance at top of atmosphere (extraterrestrial)
+dni_clear;clear sky direct normal irradiance
 dhi;diffuse horizontal irradiance
 bhi;beam/direct horizontal irradiance
 ghi;global horizontal irradiance

@@ -44,9 +44,10 @@ DEFAULT_VARIABLES = [
 
 
 def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
-                      time_resolution=60, spatial_resolution=0.1,
-                      true_dynamics=False, source='SolarAnywhereLatest',
-                      variables=DEFAULT_VARIABLES, missing_data='Omit',
+                      source='SolarAnywhereLatest', time_resolution=60,
+                      spatial_resolution=0.01, true_dynamics=False,
+                      probability_of_exceedance=None,
+                      variables=DEFAULT_VARIABLES, missing_data='FillAverage',
                       url=URL, map_variables=True, max_response_time=300):
     """Retrieve historical irradiance time series data from SolarAnywhere.
 
@@ -67,23 +68,27 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     end: datetime like, optional
         Last timtestamp of the requested period. If a timezone is not
         specified, UTC is assumed. Not applicable for TMY data.
+    source: str, default: 'SolarAnywhereLatest'
+        Data source. Options include: 'SolarAnywhereLatest' (historical data),
+        'SolarAnywhereTGYLatest' (TMY for GHI), 'SolarAnywhereTDYLatest' (TMY
+        for DNI), or 'SolarAnywherePOELatest' for probability of exceedance.
+        Specific dataset versions can also be specified, e.g.,
+        'SolarAnywhere3_2' (see [3]_ for a full list of options).
     time_resolution: {60, 30, 15, 5}, default: 60
         Time resolution in minutes. For TMY data, time resolution has to be 60
         min. (hourly).
-    spatial_resolution: {0.1, 0.01, 0.005}, default: 0.1
+    spatial_resolution: {0.1, 0.01, 0.005}, default: 0.01
         Spatial resolution in degrees.
     true_dynamics: bool, default: False
         Whether to apply SolarAnywhere TrueDynamics statistical processing.
         Only available for the 5-min time resolution.
-    source: str, default: 'SolarAnywhereLatest'
-        Data source. Options include: 'SolarAnywhereLatest' (historical data),
-        'SolarAnywhereTGYLatest' (TMY for GHI), or 'SolarAnywhereTDYLatest'
-        (TMY for DNI). Specific dataset versions can also be specified, e.g.,
-        'SolarAnywhere3_2' (see [3]_ for a full list of options).
+    probability_of_exceedance: int, optional
+        Probability of exceedance in the range of 1 to 99. Only relevant when
+        requesting probability of exceedance (POE) time series.
     variables: list-like, default: :const:`DEFAULT_VARIABLES`
         Variables to retrieve (described in [4]_).  Available variables depend
         on whether historical or TMY data is requested.
-    missing_data: {'Omit', 'FillAverage'}, default: 'Omit'
+    missing_data: {'Omit', 'FillAverage'}, default: 'FillAverage'
         Method for treating missing data.
     url: str, default: :const:`pvlib.iotools.solaranywhere.URL`
         Base url of SolarAnywhere API.
@@ -150,8 +155,15 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     if true_dynamics:
         payload['Options']['ApplyTrueDynamics'] = True
 
+    if probability_of_exceedance is not None:
+        if type(probability_of_exceedance) != int:
+            raise ValueError('`probability_of_exceedance` must be an integer')
+        payload['Options']['ProbabilityOfExceedance'] = \
+            probability_of_exceedance
+
     # Add start/end time if requesting non-TMY data
-    if ('TGY' not in source) & ('TDY' not in source) & ('TMY' not in source):
+    if (('TGY' not in source) & ('TDY' not in source) & ('TMY' not in source) &
+            ('POE' not in source)):
         if (start is None) or (end is None):
             ValueError('When requesting non-TMY data, specifying `start` and'
                        '`end` is required.')

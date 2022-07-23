@@ -8,6 +8,12 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* :py:func:`pvlib.iotools.read_surfrad` now also accepts remote files
+  with https links in addition to files on the SURFRAD FTP server
+  (:pull:`1459`)
+* Add :py:func:`pvlib.tracking.calc_surface_orientation` for calculating
+  single-axis tracker ``surface_tilt`` and ``surface_azimuth`` from
+  rotation angles. (:issue:`1471`, :pull:`1480`)
 
 Bug fixes
 ~~~~~~~~~
@@ -23,10 +29,15 @@ Bug fixes
 Testing
 ~~~~~~~
 * Switched CI testing provider from Azure to GitHub Actions (:pull:`1306`)
+* Speed up CI setup using micromamba instead of conda (:pull:`1493`)
 
 
 Documentation
 ~~~~~~~~~~~~~
+* Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
+* Add gallery example of simulating rearside irradiance for a fixed-tilt
+  array with pvfactors (:pull:`1470`)
+
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -40,7 +51,11 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Chencheng Luo (:ghuser:`roger-lcc`)
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Jules Chéron (:ghuser:`jules-ch`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)

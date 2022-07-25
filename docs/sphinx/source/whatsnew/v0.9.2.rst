@@ -24,7 +24,7 @@ Bug fixes
 * :py:func:`pvlib.iotools.read_tmy3` is now able to accept midnight
   timestamps as either 24:00 (which is the standard) as well as 00:00.
   Previously 00:00 timestamps would incorrectly be moved one day forward.
-
+  (:pull:`1494`)
 
 Testing
 ~~~~~~~
@@ -36,7 +36,6 @@ Documentation
 * Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
 * Add gallery example of simulating rearside irradiance for a fixed-tilt
   array with pvfactors (:pull:`1470`)
-
 
 Benchmarking
 ~~~~~~~~~~~~~

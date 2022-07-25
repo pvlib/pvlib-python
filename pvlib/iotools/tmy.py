@@ -62,7 +62,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     =====================       ======================================================================================================================================================
     field                       description
     =====================       ======================================================================================================================================================
-    Index                       A pandas datetime index. NOTE, the index is timezone aware, and times are set to local time (daylight savings is not included)
+    Index                       A pandas datetime index. NOTE, the index is timezone aware, and times are set to local standard time (daylight savings is not included)
     ETR                         Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
     ETRN                        Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
     GHI                         Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2

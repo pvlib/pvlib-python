@@ -87,9 +87,7 @@ def test_solaranywhere_tmy3(solaranywhere_index):
     # The SolarAnywhere TMY3 format specifies midnight as 00:00 whereas the
     # NREL TMY3 format utilizes 24:00. The SolarAnywhere file is therefore
     # included to test files with  00:00 timestamps are parsed correctly
-    data, meta = tmy.read_tmy3(TMY3_SOLARANYWHERE, encoding='iso-8859-1')
-    # Opening of SolarAnywhere TMY3 files on Linux requires encoding to be
-    # 'iso-8859-01, as the files contain the registrered symbol (non-ascii)
+    data, meta = tmy.read_tmy3(TMY3_SOLARANYWHERE)
     pd.testing.assert_index_equal(data.index, solaranywhere_index)
     assert meta['USAF'] == 0
     assert meta['Name'] == 'Burlington  United States'

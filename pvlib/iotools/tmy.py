@@ -5,7 +5,7 @@ import re
 import pandas as pd
 
 
-def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
+def read_tmy3(filename, coerce_year=None, recolumn=True):
     """Read a TMY3 file into a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged
@@ -27,9 +27,6 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     recolumn : bool, default True
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
-    encoding, str, optional
-        Name of the encoding used to decode the file. Files with non UTF-8
-        characters, may be parsed using ``encoding='iso-8859-1'``.
 
     Returns
     -------
@@ -161,15 +158,20 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
        <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
     """  # noqa: E501
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
+    try:
+        fbuf = open(str(filename), 'r')
+    # SolarAnywhere files contain non-UTF8 characters and require
+    # encoding='iso-8859-1' on Linux in order to be parsed
+    except UnicodeDecodeError:
+        fbuf = open(str(filename, 'r', encoding='iso-8859-1'))
 
-    with open(str(filename), 'r', encoding=encoding) as csvdata:
-        # read in file metadata, advance buffer to second line
-        firstline = csvdata.readline()
-        # use pandas to read the csv file buffer
-        # header is actually the second line, but tell pandas to look for
-        # header information on the 1st line (0 indexing) because we've already
-        # advanced past the true first line with the readline call above.
-        data = pd.read_csv(csvdata, header=0)
+    # read in file metadata, advance buffer to second line
+    firstline = fbuf.readline()
+    # use pandas to read the csv file buffer
+    # header is actually the second line, but tell pandas to look for
+    # header information on the 1st line (0 indexing) because we've already
+    # advanced past the true first line with the readline call above.
+    data = pd.read_csv(fbuf, header=0)
 
     meta = dict(zip(head, firstline.rstrip('\n').split(",")))
     # convert metadata strings to numeric types

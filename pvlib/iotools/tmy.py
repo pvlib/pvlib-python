@@ -27,7 +27,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     recolumn : bool, default True
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
-    encoding, str, optional
+    encoding : str, optional
         Name of the encoding used to decode the file. Files with non UTF-8
         characters, may be parsed using ``encoding='iso-8859-1'``.
 

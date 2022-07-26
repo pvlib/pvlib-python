@@ -165,8 +165,8 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     if (('TGY' not in source) & ('TDY' not in source) & ('TMY' not in source) &
             ('POE' not in source)):
         if (start is None) or (end is None):
-            ValueError('When requesting non-TMY data, specifying `start` and'
-                       '`end` is required.')
+            raise ValueError('When requesting non-TMY data, specifying `start`'
+                             ' and `end` is required.')
         # start/end are required to have an associated time zone
         if start.tz is None:
             start = start.tz_localize('UTC')
@@ -304,7 +304,7 @@ def parse_solaranywhere(fbuf, map_variables=True):
     # The additional metadata is specified as key-value pairs, where each entry
     # is separated by a slash, and the key-value pairs are separated by a
     # colon. E.g., 'Data Version: 3.4 / Type: Typical Year / ...'
-    for i in ','.join(firstline).split('/'):
+    for i in ','.join(firstline).replace('"', '').split('/'):
         if ':' in i:
             k, v = i.split(':')
             meta[k.strip()] = v.strip()

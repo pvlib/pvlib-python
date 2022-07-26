@@ -163,7 +163,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     # SolarAnywhere files contain non-UTF8 characters and require
     # encoding='iso-8859-1' on Linux in order to be parsed
     except UnicodeDecodeError:
-        fbuf = open(str(filename, 'r', encoding='iso-8859-1'))
+        fbuf = open(str(filename), 'r', encoding='iso-8859-1')
 
     # read in file metadata, advance buffer to second line
     firstline = fbuf.readline()

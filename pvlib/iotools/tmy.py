@@ -5,7 +5,7 @@ import re
 import pandas as pd
 
 
-def read_tmy3(filename, coerce_year=None, recolumn=True):
+def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     """Read a TMY3 file into a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged
@@ -20,15 +20,16 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     ----------
     filename : str
         A relative file path or absolute file path.
-
     coerce_year : None or int, default None
         If supplied, the year of the index will be set to `coerce_year`, except
         for the last index value which will be set to the *next* year so that
         the index increases monotonically.
-
     recolumn : bool, default True
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
+    encoding, str, optional
+        Name of the encoding used to decode the file. Files with non UTF-8
+        characters, may be parsed using ``encoding='iso-8859-1'``.        
 
     Returns
     -------
@@ -161,7 +162,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     """  # noqa: E501
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
-    with open(str(filename), 'r') as csvdata:
+    with open(str(filename), 'r', encoding=encoding) as csvdata:
         # read in file metadata, advance buffer to second line
         firstline = csvdata.readline()
         # use pandas to read the csv file buffer

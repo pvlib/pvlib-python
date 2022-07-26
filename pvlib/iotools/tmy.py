@@ -29,7 +29,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
         results in stripping the units from the column name.
     encoding, str, optional
         Name of the encoding used to decode the file. Files with non UTF-8
-        characters, may be parsed using ``encoding='iso-8859-1'``.        
+        characters, may be parsed using ``encoding='iso-8859-1'``.
 
     Returns
     -------

@@ -160,13 +160,13 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
     try:
         fbuf = open(str(filename), 'r')
+        firstline = fbuf.readline()  # first line contains the metadata
     # SolarAnywhere files contain non-UTF8 characters and require
     # encoding='iso-8859-1' on Linux in order to be parsed
     except UnicodeDecodeError:
         fbuf = open(str(filename), 'r', encoding='iso-8859-1')
+        firstline = fbuf.readline()  # first line contains the metadata
 
-    # read in file metadata, advance buffer to second line
-    firstline = fbuf.readline()
     # use pandas to read the csv file buffer
     # header is actually the second line, but tell pandas to look for
     # header information on the 1st line (0 indexing) because we've already
@@ -208,7 +208,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
         data = _recolumn(data)  # rename to standard column names
 
     data = data.tz_localize(int(meta['TZ'] * 3600))
-
+    fbuf.close()
     return data, meta
 
 

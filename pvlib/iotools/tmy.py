@@ -166,12 +166,14 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     except UnicodeDecodeError:
         fbuf = open(str(filename), 'r', encoding='iso-8859-1')
         firstline = fbuf.readline()  # first line contains the metadata
-
-    # use pandas to read the csv file buffer
-    # header is actually the second line, but tell pandas to look for
-    # header information on the 1st line (0 indexing) because we've already
-    # advanced past the true first line with the readline call above.
-    data = pd.read_csv(fbuf, header=0)
+    finally:
+        # use pandas to read the csv file buffer
+        # header is actually the second line, but tell pandas to look for
+        # header information on the 1st line (0 indexing) because we've already
+        # advanced past the true first line with the readline call above.
+        data = pd.read_csv(fbuf, header=0)
+        # close file
+        fbuf.close()
 
     meta = dict(zip(head, firstline.rstrip('\n').split(",")))
     # convert metadata strings to numeric types
@@ -208,7 +210,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
         data = _recolumn(data)  # rename to standard column names
 
     data = data.tz_localize(int(meta['TZ'] * 3600))
-    fbuf.close()
+
     return data, meta
 
 

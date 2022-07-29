@@ -166,7 +166,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     # encoding='iso-8859-1' in order to be parsed
     except UnicodeDecodeError:
         with open(str(filename), 'r', encoding='iso-8859-1') as fbuf:
-            firstline, data = _parse(fbuf)
+            firstline, data = _parse_tmy3(fbuf)
 
     meta = dict(zip(head, firstline.rstrip('\n').split(",")))
     # convert metadata strings to numeric types

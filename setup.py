@@ -44,7 +44,7 @@ INSTALL_REQUIRES = ['numpy >= 1.16.0',
                     'requests',
                     'scipy >= 1.2.0',
                     'h5py',
-                    'dataclasses; python_version < "3.7"']
+                    ]
 
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',

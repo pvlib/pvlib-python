@@ -158,22 +158,15 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
        <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
     """  # noqa: E501
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
+
     try:
-        fbuf = open(str(filename), 'r')
-        firstline = fbuf.readline()  # first line contains the metadata
-    # SolarAnywhere files contain non-UTF8 characters and require
-    # encoding='iso-8859-1' on Linux in order to be parsed
+        with open(str(filename), 'r') as fbuf:
+            firstline, data = _parse_tmy3(fbuf)
+    # SolarAnywhere files contain non-UTF8 characters and may require
+    # encoding='iso-8859-1' in order to be parsed
     except UnicodeDecodeError:
-        fbuf = open(str(filename), 'r', encoding='iso-8859-1')
-        firstline = fbuf.readline()  # first line contains the metadata
-    finally:
-        # use pandas to read the csv file buffer
-        # header is actually the second line, but tell pandas to look for
-        # header information on the 1st line (0 indexing) because we've already
-        # advanced past the true first line with the readline call above.
-        data = pd.read_csv(fbuf, header=0)
-        # close file
-        fbuf.close()
+        with open(str(filename), 'r', encoding='iso-8859-1') as fbuf:
+            firstline, data = _parse(fbuf)
 
     meta = dict(zip(head, firstline.rstrip('\n').split(",")))
     # convert metadata strings to numeric types
@@ -212,6 +205,15 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     data = data.tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
+
+
+def _parse_tmy3(fbuf):
+    # header information on the 1st line (0 indexing)
+    firstline = fbuf.readline()
+    # use pandas to read the csv file buffer
+    # header is actually the second line, but tell pandas to look for
+    data = pd.read_csv(fbuf, header=0)
+    return firstline, data
 
 
 def _recolumn(tmy3_dataframe):

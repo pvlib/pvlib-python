@@ -13,12 +13,12 @@ jobs:
       matrix:
         # use macos-10.15 instead of macos-latest for py3.6 support
         os: [ubuntu-latest, macos-10.15, windows-latest]
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9]
         environment-type: [conda, bare]
         suffix: ['']  # placeholder as an alternative to "-min"
         include:
           - os: ubuntu-latest
-            python-version: 3.6
+            python-version: 3.7
             environment-type: conda
             suffix: -min
         exclude:
@@ -81,7 +81,7 @@ jobs:
           pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools --ignore=pvlib/tests/test_forecast.py
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == 3.6 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+        if: matrix.python-version == 3.7 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
         uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true

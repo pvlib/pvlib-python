@@ -508,11 +508,11 @@ def test_prepare_inputs_albedo_in_weather(
     # weather as a single DataFrame
     mc.prepare_inputs(weather)
     num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
-    assert len(mc.results.total_irrad) == num_arrays
+    assert len(mc.results.albedo) == num_arrays
     # repeat with tuple of weather
     mc.prepare_inputs(input_type((weather, weather)))
     num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
-    assert len(mc.results.total_irrad) == num_arrays
+    assert len(mc.results.albedo) == num_arrays
 
 
 def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):

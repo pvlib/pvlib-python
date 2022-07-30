@@ -334,7 +334,7 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       albedo=None, dni_extra=None, airmass=None,
+                       dni_extra=None, airmass=None, albedo=None,
                        model='haydavies', **kwargs):
         """
         Uses the :py:func:`irradiance.get_total_irradiance` function to
@@ -354,13 +354,13 @@ class PVSystem:
             Global horizontal irradiance. [W/m2]
         dhi : float or Series or tuple of float or Series
             Diffuse horizontal irradiance. [W/m2]
-        albedo : None, float or Series, default None
-            Ground surface albedo. [unitless]
         dni_extra : None, float, Series or tuple of float or Series,\
             default None
             Extraterrestrial direct normal irradiance. [W/m2]
         airmass : None, float or Series, default None
             Airmass. [unitless]
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
 
@@ -383,7 +383,7 @@ class PVSystem:
 
         See also
         --------
-        :py:func:`pvlib.irradiance.get_total_irradiance`
+        pvlib.irradiance.get_total_irradiance
         """
         dni = self._validate_per_array(dni, system_wide=True)
         ghi = self._validate_per_array(ghi, system_wide=True)
@@ -394,10 +394,8 @@ class PVSystem:
         return tuple(
             array.get_irradiance(solar_zenith, solar_azimuth,
                                  dni, ghi, dhi,
-                                 albedo=albedo,
                                  dni_extra=dni_extra, airmass=airmass,
-                                 model=model,
-                                 **kwargs)
+                                 albedo=albedo, model=model, **kwargs)
             for array, dni, ghi, dhi, albedo in zip(
                 self.arrays, dni, ghi, dhi, albedo
             )
@@ -1438,7 +1436,7 @@ class Array:
                               solar_zenith, solar_azimuth)
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       albedo=None, dni_extra=None, airmass=None,
+                       dni_extra=None, airmass=None, albedo=None,
                        model='haydavies', **kwargs):
         """
         Get plane of array irradiance components.
@@ -1459,12 +1457,12 @@ class Array:
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance. [W/m2]
-        albedo : None, float or Series, default None
-            Ground surface albedo. [unitless]
         dni_extra : None, float or Series, default None
             Extraterrestrial direct normal irradiance. [W/m2]
         airmass : None, float or Series, default None
             Airmass. [unitless]
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
 
@@ -1497,9 +1495,9 @@ class Array:
                                                orientation['surface_azimuth'],
                                                solar_zenith, solar_azimuth,
                                                dni, ghi, dhi,
-                                               albedo=albedo,
                                                dni_extra=dni_extra,
                                                airmass=airmass,
+                                               albedo=albedo,
                                                model=model,
                                                **kwargs)
 
@@ -3314,7 +3312,7 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
 
     See Also
     --------
-    :py:func:`~pvlib.pvsystem.dc_ohmic_losses`
+    pvlib.pvsystem.dc_ohmic_losses
 
     References
     ----------
@@ -3349,7 +3347,7 @@ def dc_ohmic_losses(resistance, current):
 
     See Also
     --------
-    :py:func:`~pvlib.pvsystem.dc_ohms_from_percent`
+    pvlib.pvsystem.dc_ohms_from_percent
 
     References
     ----------

@@ -397,7 +397,7 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-              'haydavies', 'reindl', 'king', 'perez'])
+                                   'haydavies', 'reindl', 'king', 'perez'])
 def test_get_total_irradiance_albedo(
         irrad_data, ephem_data, dni_et, relative_airmass, model):
     albedo = pd.Series(0.2, index=ephem_data.index)
@@ -411,8 +411,8 @@ def test_get_total_irradiance_albedo(
         albedo=albedo)
 
     assert total.columns.tolist() == ['poa_global', 'poa_direct',
-                                          'poa_diffuse', 'poa_sky_diffuse',
-                                          'poa_ground_diffuse']
+                                      'poa_diffuse', 'poa_sky_diffuse',
+                                      'poa_ground_diffuse']
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',

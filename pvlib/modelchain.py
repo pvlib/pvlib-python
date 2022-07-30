@@ -268,7 +268,7 @@ class ModelChainResult:
     _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
                          'effective_irradiance', 'dc', 'diode_params',
-                         'dc_ohmic_losses', 'weather'}
+                         'dc_ohmic_losses', 'weather', 'albedo'}
 
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
@@ -364,6 +364,10 @@ class ModelChainResult:
 
     times: Optional[pd.DatetimeIndex] = None
     """DatetimeIndex containing a copy of the index of the input weather data.
+    """
+
+    albedo: Optional[PerArray[pd.Series]] = None
+    """Series (or tuple of Series, one for each array) containing albedo.
     """
 
     def _result_type(self, value):

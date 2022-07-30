@@ -1673,17 +1673,21 @@ def test_PVSystem_multiple_array_get_aoi():
     assert aoi_one > 0
 
 
-def test_PVSystem_get_irradiance():
-    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
+@pytest.fixture
+def solar_pos():
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     location = Location(latitude=32, longitude=-111)
-    solar_position = location.get_solarposition(times)
-    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
-                          index=times)
+    return location.get_solarposition(times)
 
-    irradiance = system.get_irradiance(solar_position['apparent_zenith'],
-                                       solar_position['azimuth'],
+
+def test_PVSystem_get_irradiance(solar_pos):
+    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
+    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
+                          index=solar_pos.index)
+
+    irradiance = system.get_irradiance(solar_pos['apparent_zenith'],
+                                       solar_pos['azimuth'],
                                        irrads['dni'],
                                        irrads['ghi'],
                                        irrads['dhi'])
@@ -1694,22 +1698,18 @@ def test_PVSystem_get_irradiance():
                             columns=['poa_global', 'poa_direct',
                                      'poa_diffuse', 'poa_sky_diffuse',
                                      'poa_ground_diffuse'],
-                            index=times)
+                            index=solar_pos.index)
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 
-def test_PVSystem_get_irradiance_albedo():
+def test_PVSystem_get_irradiance_albedo(solar_pos):
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
-    location = Location(latitude=32, longitude=-111)
-    solar_position = location.get_solarposition(times)
     irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0],
                            'albedo': [0.5, 0.5]},
-                          index=times)
+                          index=solar_pos.index)
     # albedo as a Series
-    irradiance = system.get_irradiance(solar_position['apparent_zenith'],
-                                       solar_position['azimuth'],
+    irradiance = system.get_irradiance(solar_pos['apparent_zenith'],
+                                       solar_pos['azimuth'],
                                        irrads['dni'],
                                        irrads['ghi'],
                                        irrads['dhi'],
@@ -1719,7 +1719,7 @@ def test_PVSystem_get_irradiance_albedo():
          [0., -0., 0., 0., 0.]]),
         columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
                  'poa_ground_diffuse'],
-        index=times)
+        index=solar_pos.index)
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 

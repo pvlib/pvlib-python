@@ -396,22 +396,21 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
                                           'poa_ground_diffuse']
 
 
+@pytest.mark.parametrize('model', ['isotropic', 'klucher',
+              'haydavies', 'reindl', 'king', 'perez'])
 def test_get_total_irradiance_albedo(
-        irrad_data, ephem_data, dni_et, relative_airmass):
-    models = ['isotropic', 'klucher',
-              'haydavies', 'reindl', 'king', 'perez']
+        irrad_data, ephem_data, dni_et, relative_airmass, model):
     albedo = pd.Series(0.2, index=ephem_data.index)
-    for model in models:
-        total = irradiance.get_total_irradiance(
-            32, 180,
-            ephem_data['apparent_zenith'], ephem_data['azimuth'],
-            dni=irrad_data['dni'], ghi=irrad_data['ghi'],
-            dhi=irrad_data['dhi'],
-            dni_extra=dni_et, airmass=relative_airmass,
-            model=model,
-            albedo=albedo)
+    total = irradiance.get_total_irradiance(
+        32, 180,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'],
+        dni=irrad_data['dni'], ghi=irrad_data['ghi'],
+        dhi=irrad_data['dhi'],
+        dni_extra=dni_et, airmass=relative_airmass,
+        model=model,
+        albedo=albedo)
 
-        assert total.columns.tolist() == ['poa_global', 'poa_direct',
+    assert total.columns.tolist() == ['poa_global', 'poa_direct',
                                           'poa_diffuse', 'poa_sky_diffuse',
                                           'poa_ground_diffuse']
 

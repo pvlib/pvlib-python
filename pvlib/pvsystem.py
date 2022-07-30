@@ -340,7 +340,7 @@ class PVSystem:
         Uses the :py:func:`irradiance.get_total_irradiance` function to
         calculate the plane of array irradiance components on the tilted
         surfaces defined by each array's ``surface_tilt`` and
-        ``surface_azimuth```.
+        ``surface_azimuth``.
 
         Parameters
         ----------

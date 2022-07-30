@@ -1488,7 +1488,7 @@ class ModelChain:
 
             If optional columns ``'wind_speed'``, ``'temp_air'`` are not
             provided, air temperature of 20 C and wind speed
-            of 0 m/s will be added to the `weather` DataFrame.
+            of 0 m/s will be added to the ``weather`` DataFrame.
 
             If optional column ``'albedo'`` is provided, albedo values in the
             ModelChain's PVSystem.arrays are ignored.
@@ -1761,7 +1761,7 @@ class ModelChain:
             are added to the DataFrame. If optional column
             ``'cell_temperature'`` is provided, these values are used instead
             of `temperature_model`. If optional column ``'module_temperature'``
-            is provided, `temperature_model` must be ``'sapm'``.
+            is provided, ``temperature_model`` must be ``'sapm'``.
 
             If optional column ``'albedo'`` is provided, ``'albedo'`` may not
             be present on the ModelChain's PVSystem.Arrays.

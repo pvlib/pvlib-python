@@ -1861,7 +1861,7 @@ def test_Array_get_irradiance(solar_pos):
                                      'poa_diffuse', 'poa_sky_diffuse',
                                      'poa_ground_diffuse'],
                             index=solar_pos.index)
-    assert_frame_equal(modeled, expected, check_less_precise=2)
+    assert_frame_equal(modeled, expected, check_less_precise=5)
     # with specified kwargs, use isotropic sky diffuse because it's easier
     modeled = array.get_irradiance(
         solar_pos['apparent_zenith'],

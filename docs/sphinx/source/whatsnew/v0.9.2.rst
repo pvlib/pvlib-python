@@ -24,6 +24,10 @@ Bug fixes
   where passing localized timezones with large UTC offsets could return
   rise/set/transit times for the wrong day in recent versions of ``ephem``
   (:issue:`1449`, :pull:`1448`)
+* :py:func:`pvlib.iotools.get_psm3` now raises a deprecation warning if
+  the `leap_day` parameter is not specified. Starting in pvlib 0.11.0
+  `leap_day` will be default to True instead of False.
+  (:issue:`1481`, :pull:`1511`)
 
 
 Testing

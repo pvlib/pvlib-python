@@ -839,7 +839,8 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     .. warning::
         This implementation requires the time series inputs to be regularly
         sampled in time with frequency less than 20 minutes.  Data with
-        irregular time steps should be resampled prior to using this function.
+        irregular time steps (including from data gaps, missing leap days,
+        etc) should be resampled prior to using this function.
 
     Parameters
     ----------

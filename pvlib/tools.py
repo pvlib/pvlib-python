@@ -406,5 +406,9 @@ def _get_sample_intervals(times, win_length):
         samples_per_window = int(win_length / sample_interval)
         return sample_interval, samples_per_window
     else:
-        raise NotImplementedError('algorithm does not yet support unequal '
-                                  'times. consider resampling your data.')
+        message = (
+            'algorithm does not yet support unequal time intervals. consider '
+            'resampling your data and checking for gaps from missing '
+            'periods, leap days, etc.'
+        )
+        raise NotImplementedError(message)

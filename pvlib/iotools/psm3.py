@@ -165,7 +165,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     attributes = [amap.get(a, a) for a in attributes]
     attributes = list(set(attributes))  # remove duplicate values
 
-    if (leap_day is None) & (not names.startswith('t')):
+    if (leap_day is None) and (not names.startswith('t')):
         warnings.warn(
             'The ``get_psm3`` function will default to leap_day=True '
             'starting in pvlib 0.11.0. Specify leap_day=True '

@@ -412,3 +412,36 @@ def _get_sample_intervals(times, win_length):
             'periods, leap days, etc.'
         )
         raise NotImplementedError(message)
+
+
+def _degrees_to_index(longitude, latitude, width=4320, height=2160):
+    """ Transform latitude, longitude degrees to x and y indexes for a
+    lookup table.
+
+    Parameters
+    ----------
+    latitude : float or int
+        Degrees of either latitude or longitude.
+    longitude : float or int
+        Degrees of either latitude or longitude.
+    width : int
+        Width of the lookup table.
+    height : int
+        Height of the lookup table.
+
+    Returns
+    -------
+    x : int
+        The x dimension index for the lookup table.
+    y : int
+        The y dimension index for the lookup table.
+    """
+
+    if longitude < -180 or longitude > 180:
+        raise ValueError('longitude must be between -180 and 180')
+    if latitude < -90 or latitude > 90:
+        raise ValueError('latitude must be between -90 and 90')
+
+    x = int(((longitude + 180) / 360) * width)
+    y = int((1 - ((latitude + 90) / 180)) * height)
+    return x, y

@@ -17,6 +17,9 @@ Enhancements
 * Improve error message about uneven time intervals for
   :py:func:`~pvlib.clearsky.detect_clearsky` and :py:func:`~pvlib.temperature.prilliman`
   (:issue:`1476`, :pull:`1490`)
+* Low resolution altitude lookup map
+  :py:func:`~pvlib.location.lookup_altitude`
+  (:issue:`1516`, :pull:`1518`)
 
 Bug fixes
 ~~~~~~~~~

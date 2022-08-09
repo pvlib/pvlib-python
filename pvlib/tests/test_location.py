@@ -12,7 +12,7 @@ import pytz
 from pytz.exceptions import UnknownTimeZoneError
 
 import pvlib
-from pvlib.location import Location
+from pvlib.location import Location, lookup_altitude
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
 from .conftest import requires_ephem
@@ -326,3 +326,23 @@ def test_get_sun_rise_set_transit_valueerror(golden):
 def test_extra_kwargs():
     with pytest.raises(TypeError, match='arbitrary_kwarg'):
         Location(32.2, -111, arbitrary_kwarg='value')
+
+
+def test_lookup_altitude():
+    max_alt_error = 125
+    # location name, latitude, longitude, altitude
+    test_locations = [
+        ('Tucson, USA', 32.2540, -110.9742, 724),
+        ('Lusaka, Zambia', -15.3875, 28.3228, 1253),
+        ('Tokio, Japan', 35.6762, 139.6503, 40),
+        ('Canberra, Australia', -35.2802, 149.1310, 566),
+        ('Bogota, Colombia', 4.7110, -74.0721, 2555),
+        ('Dead Sea, West Bank', 31.525849, 35.449214, -415),
+        ('New Delhi, India', 28.6139, 77.2090, 214),
+        ('Null Island,  Atlantic Ocean', 0, 0, 0),
+    ]
+
+    for name, lat, lon, expected_alt in test_locations:
+        alt_found = lookup_altitude(lat, lon)
+        assert abs(alt_found - expected_alt) < max_alt_error, \
+            f'Max error exceded for {name} - e: {expected_alt} f: {alt_found}'

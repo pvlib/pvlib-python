@@ -66,3 +66,4 @@ Contributors
 * Jules Chéron (:ghuser:`jules-ch`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
 * Will Hobbs (:ghuser:`williamhobbs`)
+* Nicolas Martinez (:ghuser:`nicomt`)

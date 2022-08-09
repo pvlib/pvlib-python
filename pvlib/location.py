@@ -371,8 +371,8 @@ def lookup_altitude(latitude, longitude, filepath=None):
     https://github.com/tilezen/joerd/blob/master/docs/data-sources.md
 
     Altitudes from this map are a coarse approximation and can have
-    significant errors (100+ meters) depending on the source and error
-    introduced by downsampling.
+    significant errors (100+ meters) introduced by downsampling and
+    source data resolution.
 
     Parameters
     ----------
@@ -394,7 +394,7 @@ def lookup_altitude(latitude, longitude, filepath=None):
 
     Notes
     -----------
-    Attribuitons:
+    Attributions:
 
     * ArcticDEM terrain data DEM(s) were created from DigitalGlobe, Inc.,
       imagery and funded under National Science Foundation awards 1043681,
@@ -418,6 +418,16 @@ def lookup_altitude(latitude, longitude, filepath=None):
       database right 2015. All rights reserved;
     * United States 3DEP (formerly NED) and global GMTED2010 and SRTM
       terrain data courtesy of the U.S. Geological Survey.
+
+    References
+    ----------
+    .. [1] `Mapzen, Linux foundation project for open data maps
+        <https://www.mapzen.com/>`_
+    .. [2] `Joerd, tool for downloading and processing DEMs, Used by Mapzen
+        <https://github.com/tilezen/joerd/>`_
+    .. [3] `AWS, Open Data Registry Terrain Tiles
+        <https://registry.opendata.aws/terrain-tiles/>`_
+
     """
 
     if filepath is None:
@@ -432,6 +442,8 @@ def lookup_altitude(latitude, longitude, filepath=None):
     # 255 is a special value that means nodata. Fallback to 0 if nodata.
     if alt == 255:
         return 0
+    # Altitude is encoded in 35 meter steps from -2364 meters to 6526 meters
+    # There are 0-254 possible altitudes, with 255 reserved for nodata.
     alt *= 35
     alt -= 2364
     return int(alt)

@@ -1854,13 +1854,14 @@ def test_Array_get_irradiance(solar_pos):
         solar_pos['azimuth'],
         irrads['dni'], irrads['ghi'], irrads['dhi']
     )
-    expected = pd.DataFrame(data=np.array(
-        [[883.65494055, 745.86141676, 137.79352379, 126.397131, 11.39639279],
-         [0., -0., 0., 0., 0.]]),
-                            columns=['poa_global', 'poa_direct',
-                                     'poa_diffuse', 'poa_sky_diffuse',
-                                     'poa_ground_diffuse'],
-                            index=solar_pos.index)
+    expected = pd.DataFrame(
+        data=np.array(
+            [[883.65494055, 745.86141676, 137.79352379, 126.397131, 11.39639279],
+             [0., -0., 0., 0., 0.]]),
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse'],
+        index=solar_pos.index
+    )
     assert_frame_equal(modeled, expected, check_less_precise=5)
     # with specified kwargs, use isotropic sky diffuse because it's easier
     modeled = array.get_irradiance(

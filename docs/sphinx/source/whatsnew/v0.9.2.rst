@@ -33,6 +33,7 @@ Testing
 ~~~~~~~
 * Switched CI testing provider from Azure to GitHub Actions (:pull:`1306`)
 * Speed up CI setup using micromamba instead of conda (:pull:`1493`)
+* Drop python 3.6 (reached end of life Dec 2021) and add 3.10 to test matrix (:pull:`1507`)
 
 
 Documentation
@@ -50,6 +51,7 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
+* Python 3.7 or greater. (:pull:`1507`)
 * Minimum pandas version increased to v0.25.0, released July 18, 2019. (:pull:`1448`)
 
 Contributors

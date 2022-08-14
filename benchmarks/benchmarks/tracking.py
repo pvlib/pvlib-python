@@ -28,4 +28,3 @@ class SingleAxis:
                                 max_angle=60,
                                 backtrack=True,
                                 gcr=0.45)
-            

@@ -78,7 +78,7 @@ def test_get_psm3_tmy(nrel_api_key):
     """test get_psm3 with a TMY"""
     data, metadata = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
                                    PVLIB_EMAIL, names='tmy-2017',
-                                   map_variables=False)
+                                   leap_day=False, map_variables=False)
     expected = pd.read_csv(TMY_TEST_DATA)
     assert_psm3_equal(data, metadata, expected)
 
@@ -89,7 +89,8 @@ def test_get_psm3_singleyear(nrel_api_key):
     """test get_psm3 with a single year"""
     data, metadata = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
                                    PVLIB_EMAIL, names='2017',
-                                   map_variables=False, interval=30)
+                                   leap_day=False,  map_variables=False,
+                                   interval=30)
     expected = pd.read_csv(YEAR_TEST_DATA)
     assert_psm3_equal(data, metadata, expected)
 
@@ -100,7 +101,7 @@ def test_get_psm3_5min(nrel_api_key):
     """test get_psm3 for 5-minute data"""
     data, metadata = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key,
                                    PVLIB_EMAIL, names='2019', interval=5,
-                                   map_variables=False)
+                                   leap_day=False, map_variables=False)
     assert len(data) == 525600/5
     first_day = data.loc['2019-01-01']
     expected = pd.read_csv(YEAR_TEST_DATA_5MIN)
@@ -137,7 +138,8 @@ def test_get_psm3_tmy_errors(
     """
     with pytest.raises(HTTPError) as excinfo:
         psm3.get_psm3(latitude, longitude, api_key, PVLIB_EMAIL,
-                      names=names, interval=interval, map_variables=False)
+                      names=names, interval=interval, leap_day=False,
+                      map_variables=False)
     # ensure the HTTPError caught isn't due to overuse of the API key
     assert "OVER_RATE_LIMIT" not in str(excinfo.value)
 
@@ -186,7 +188,7 @@ def test_get_psm3_attribute_mapping(nrel_api_key):
     data, meta = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL,
                                names=2019, interval=60,
                                attributes=['ghi', 'wind_speed'],
-                               map_variables=True)
+                               leap_day=False, map_variables=True)
     assert 'ghi' in data.columns
     assert 'wind_speed' in data.columns
     assert 'latitude' in meta.keys()
@@ -199,3 +201,14 @@ def test_get_psm3_attribute_mapping(nrel_api_key):
 def test_psm3_variable_map_deprecation_warning(nrel_api_key):
     with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
         _ = psm3.read_psm3(MANUAL_TEST_DATA)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_psm3_leap_day_deprecation_warning(nrel_api_key):
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='default to leap_day=True'):
+        _, _ = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL,
+                             names=2019, interval=60,
+                             attributes=['ghi', 'wind_speed'],
+                             map_variables=True)

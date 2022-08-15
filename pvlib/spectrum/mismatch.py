@@ -6,6 +6,7 @@ import pvlib
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
+import os
 
 def get_sample_sr(wavelength=None):
     '''
@@ -48,3 +49,38 @@ def get_sample_sr(wavelength=None):
     sr.name = 'sr'
 
     return sr
+
+def get_am15g(wavelength=None):
+    '''
+    Read the ASTM G173 AM1.5 global spectrum, optionally interpolated to the
+    specified wavelength(s).
+
+    Notes
+    -----
+    More information about reference spectra is found here:
+    https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html
+
+    The original file containing the reference spectra can be found here:
+    https://www.nrel.gov/grid/solar-resource/assets/data/astmg173.xls
+    '''
+
+    pvlib_path = pvlib.__path__[0]
+    filepath = os.path.join(pvlib_path, 'data', 'astmg173.xls')
+
+    g173 = pd.read_excel(filepath, index_col=0, skiprows=1)
+    am15g = g173['Global tilt  W*m-2*nm-1']
+
+    if wavelength is not None:
+        interpolator = interp1d(am15g.index, am15g,
+                            kind='linear',
+                            bounds_error=False,
+                            fill_value=0.0,
+                            copy=False,
+                            assume_sorted=True)
+
+        am15g = pd.Series(data=interpolator(wavelength), index=wavelength)
+
+    am15g.index.name = 'wavelength'
+    am15g.name = 'am15g'
+
+    return am15g

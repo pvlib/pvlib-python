@@ -7,9 +7,9 @@ dependencies:
     - cython
     - ephem
     - h5py
-    - netcdf4
+    # - netcdf4  # pulls in a different version of numpy with ImportError
     - nose
-    - numba
+    # - numba  # python 3.9 compat in early 2021
     - numpy >= 1.16.0
     - pandas >= 0.25.0
     - pip
@@ -17,17 +17,16 @@ dependencies:
     - pytest-cov
     - pytest-mock
     - requests-mock
+    - pytest-timeout
     - pytest-rerunfailures
     - pytest-remotedata
-    - pytest-timeout
-    - python=3.6
+    - python=3.10
     - pytz
     - requests
     - scipy >= 1.2.0
     - shapely  # pvfactors dependency
-    - siphon  # conda-forge
+    # - siphon  # conda-forge
     - statsmodels
     - pip:
-        - dataclasses
-        - nrel-pysam>=2.0
+        # - nrel-pysam>=2.0  # install error on windows
         - pvfactors==1.4.1

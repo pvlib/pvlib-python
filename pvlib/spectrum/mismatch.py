@@ -52,8 +52,8 @@ def get_sample_sr(wavelength=None):
 
 def get_am15g(wavelength=None):
     '''
-    Read the ASTM G173 AM1.5 global spectrum, optionally interpolated to the
-    specified wavelength(s).
+    Read the ASTM G173-03 AM1.5 global tilted spectrum, optionally interpolated
+    to the specified wavelength(s).
 
     Notes
     -----
@@ -72,11 +72,11 @@ def get_am15g(wavelength=None):
 
     if wavelength is not None:
         interpolator = interp1d(am15g.index, am15g,
-                            kind='linear',
-                            bounds_error=False,
-                            fill_value=0.0,
-                            copy=False,
-                            assume_sorted=True)
+                                kind='linear',
+                                bounds_error=False,
+                                fill_value=0.0,
+                                copy=False,
+                                assume_sorted=True)
 
         am15g = pd.Series(data=interpolator(wavelength), index=wavelength)
 
@@ -84,3 +84,58 @@ def get_am15g(wavelength=None):
     am15g.name = 'am15g'
 
     return am15g
+
+def calc_spectral_mismatch(sr, e_sun, e_ref=None):
+    """
+    Calculate the spectral mismatch under a given measured spectrum with
+    respect to a reference spectrum.
+
+    Parameters
+    ----------
+    sr: pandas.Series
+        The spectral response of one (photovoltaic) device.
+    e_sun: pandas.DataFrame or pandase.Series
+        One or more irradiance spectra.  Usually a pandas.DataFrame with
+        wavelength as column index.  A single spectrum may be given as a
+        pandas.Series having a wavelength index.
+    e_ref: pandas.Series, optional
+        The reference spectrum to use for the mismatch calculation. The default
+        is the ASTM G173-03 global tilted spectrum.
+
+    Returns
+    -------
+    smm: pandas.Series or float
+
+    Notes
+    -----
+    If the default reference spectrum is used, it is reindexed
+    to the wavelengths of the measured spectrum.
+
+    If e_ref is provided as an argument, it is used without modification.
+
+    The spectral response is always interpolated to the wavelengths of the
+    spectrum with which is it multiplied.
+    """
+    # get the reference spectrum at wavelengths matching the measured spectra
+    if e_ref is None:
+        e_ref = get_am15g(wavelength=e_sun.T.index)
+
+    # interpolate the sr at the wavelengths of the spectra
+    # reference spectrum wavelengths may differ if e_ref is from caller
+    sr_sun = np.interp(e_sun.T.index, sr.index, sr, left=0.0, right=0.0)
+    sr_ref = np.interp(e_ref.T.index, sr.index, sr, left=0.0, right=0.0)
+
+    # a helper function to make usable fraction calculations more readable
+    integrate = lambda e: np.trapz(e, x=e.T.index, axis=-1)
+
+    # calculate usable fractions
+    uf_sun = integrate(e_sun * sr_sun) / integrate(e_sun)
+    uf_ref = integrate(e_ref * sr_ref) / integrate(e_ref)
+
+    # mismatch is the ratio or quotient of the usable fractions
+    smm = uf_sun / uf_ref
+
+    if isinstance(e_sun, pd.DataFrame):
+        smm = pd.Series(smm, index=e_sun.index)
+
+    return smm

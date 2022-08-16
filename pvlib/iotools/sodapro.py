@@ -47,12 +47,11 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
              server='www.soda-is.com', timeout=30):
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
-    diffuse radiation from CAMS. Data from CAMS Radiation [1]_ and CAMS McClear
-    [2]_ are retrieved from SoDa [3]_.
+    diffuse radiation from CAMS (see [1]_). Data is retrieved from SoDa [2]_.
 
     Time coverage: 2004-01-01 to two days ago
 
-    Access: free, but requires registration, see [1]_
+    Access: free, but requires registration, see [2]_
 
     Requests: max. 100 per day
     Geographical coverage: worldwide for CAMS McClear and approximately -66° to
@@ -107,7 +106,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     Notes
     -----
     In order to use the CAMS services, users must register for a free SoDa
-    account using an email address [1]_.
+    account using an email address [2]_.
 
     The returned data DataFrame includes the following fields:
 
@@ -130,7 +129,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     ========================  ======  =========================================
 
     †Parameters only returned if identifier='cams_radiation'. For description
-    of additional output parameters in verbose mode, see [1]_ and [2]_.
+    of additional output parameters in verbose mode, see [1]_.
 
     Note that it is recommended to specify the latitude and longitude to at
     least the fourth decimal place.
@@ -152,12 +151,10 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
 
     References
     ----------
-    .. [1] `CAMS Radiation Service Info
-       <https://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
-    .. [2] `CAMS McClear Service Info
-       <https://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
-    .. [3] `CAMS McClear Automatic Access
-       <https://www.soda-pro.com/help/cams-services/cams-mcclear-service/automatic-access>`_
+    .. [1] `CAMS solar radiation documentation
+       <https://atmosphere.copernicus.eu/solar-radiation>`_
+    .. [2] `CAMS Radiation Automatic Access (SoDa)
+       <https://www.soda-pro.com/help/cams-services/cams-radiation-service/automatic-access>`_
     """
     try:
         time_step_str = TIME_STEPS_MAP[time_step]
@@ -233,7 +230,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
 def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     """
     Parse a file-like buffer with data in the format of a CAMS Radiation or
-    McClear file. The CAMS services are described in [1]_ and [2]_.
+    McClear file. The CAMS solar radiation services are described in [1]_.
 
     Parameters
     ----------
@@ -262,10 +259,8 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
 
     References
     ----------
-    .. [1] `CAMS Radiation Service Info
-       <https://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
-    .. [2] `CAMS McClear Service Info
-       <https://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
+    .. [1] `CAMS solar radiation documentation
+       <https://atmosphere.copernicus.eu/solar-radiation>`_
     """
     metadata = {}
     # Initial lines starting with # contain metadata
@@ -334,8 +329,9 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
 
 def read_cams(filename, integrated=False, label=None, map_variables=True):
     """
-    Read a CAMS Radiation or McClear file into a pandas DataFrame. CAMS
-    radiation and McClear are described in [1]_ and [2]_, respectively.
+    Read a CAMS Radiation or McClear file into a pandas DataFrame.
+
+    CAMS Radiation and McClear are described in [1]_.
 
     Parameters
     ----------
@@ -365,10 +361,8 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
 
     References
     ----------
-    .. [1] `CAMS Radiation Service Info
-       <https://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
-    .. [2] `CAMS McClear Service Info
-       <https://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
+    .. [1] `CAMS solar radiation documentation
+       <https://atmosphere.copernicus.eu/solar-radiation>`_
     """
     with open(str(filename), 'r') as fbuf:
         content = parse_cams(fbuf, integrated, label, map_variables)

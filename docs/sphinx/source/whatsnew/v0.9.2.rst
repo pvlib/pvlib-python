@@ -27,11 +27,14 @@ Bug fixes
   where passing localized timezones with large UTC offsets could return
   rise/set/transit times for the wrong day in recent versions of ``ephem``
   (:issue:`1449`, :pull:`1448`)
+* :py:func:`pvlib.iotools.read_tmy3` is now able to accept midnight
+  timestamps as either 24:00 (which is the standard) as well as 00:00.
+  Previously 00:00 timestamps would incorrectly be moved one day forward.
+  (:pull:`1494`)
 * :py:func:`pvlib.iotools.get_psm3` now raises a deprecation warning if
   the `leap_day` parameter is not specified in a single-year request.
   Starting in pvlib 0.11.0 `leap_day` will default to True instead of False.
   (:issue:`1481`, :pull:`1511`)
-
 
 Testing
 ~~~~~~~
@@ -45,7 +48,6 @@ Documentation
 * Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
 * Add gallery example of simulating rearside irradiance for a fixed-tilt
   array with pvfactors (:pull:`1470`)
-
 
 Benchmarking
 ~~~~~~~~~~~~~

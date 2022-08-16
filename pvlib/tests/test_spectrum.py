@@ -160,8 +160,9 @@ def test_calc_mismatch(spectrl2_data):
     assert_approx_equal(mm, 0.992393, significant=6)
 
     # test with single sun spectrum, also used as reference spectrum
-    mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_sun.loc['specglo'],
-                                             e_ref=e_sun.loc['specglo'])
+    mm = mismatch.calc_spectral_mismatch(sr,
+                                         e_sun=e_sun.loc['specglo'],
+                                         e_ref=e_sun.loc['specglo'])
     assert_approx_equal(mm, 1.0, significant=6)
 
     # test with multiple sun spectra
@@ -170,4 +171,3 @@ def test_calc_mismatch(spectrl2_data):
     mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_sun)
     assert mm.index is e_sun.index
     assert_allclose(mm, expected, rtol=1e-6)
-

@@ -8,6 +8,7 @@ import pandas as pd
 from scipy.interpolate import interp1d
 import os
 
+
 def get_sample_sr(wavelength=None):
     '''
     Generate a generic smooth c-si spectral response for tests and experiments.
@@ -56,6 +57,7 @@ def get_sample_sr(wavelength=None):
 
     return sr
 
+
 def get_am15g(wavelength=None):
     '''
     Read the ASTM G173-03 AM1.5 global tilted spectrum, optionally interpolated
@@ -99,6 +101,7 @@ def get_am15g(wavelength=None):
     am15g.name = 'am15g'
 
     return am15g
+
 
 def calc_spectral_mismatch(sr, e_sun, e_ref=None):
     """
@@ -145,7 +148,8 @@ def calc_spectral_mismatch(sr, e_sun, e_ref=None):
     sr_ref = np.interp(e_ref.T.index, sr.index, sr, left=0.0, right=0.0)
 
     # a helper function to make usable fraction calculations more readable
-    integrate = lambda e: np.trapz(e, x=e.T.index, axis=-1)
+    def integrate(e):
+        return np.trapz(e, x=e.T.index, axis=-1)
 
     # calculate usable fractions
     uf_sun = integrate(e_sun * sr_sun) / integrate(e_sun)

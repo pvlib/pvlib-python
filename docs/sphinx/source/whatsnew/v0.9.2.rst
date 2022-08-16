@@ -17,6 +17,9 @@ Enhancements
 * Improve error message about uneven time intervals for
   :py:func:`~pvlib.clearsky.detect_clearsky` and :py:func:`~pvlib.temperature.prilliman`
   (:issue:`1476`, :pull:`1490`)
+* New module and function to calculate spectral mismatch
+  :py:func:`~pvlib.spetrum.mismatch.calc_spectral_mismatch`
+  (:issue:`1523`, :pull:`1524`)
 
 Bug fixes
 ~~~~~~~~~
@@ -59,9 +62,10 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Chencheng Luo (:ghuser:`roger-lcc`)
-* Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
+* Prajwal Borkar (:ghuser:`PrajwalBorkar`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Jules Chéron (:ghuser:`jules-ch`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
 * Will Hobbs (:ghuser:`williamhobbs`)
+* Anton Driesse (:ghuser:`adriesse`)

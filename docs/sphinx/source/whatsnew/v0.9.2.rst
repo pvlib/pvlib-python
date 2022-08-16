@@ -28,19 +28,17 @@ Bug fixes
   rise/set/transit times for the wrong day in recent versions of ``ephem``
   (:issue:`1449`, :pull:`1448`)
 
-
 Testing
 ~~~~~~~
 * Switched CI testing provider from Azure to GitHub Actions (:pull:`1306`)
 * Speed up CI setup using micromamba instead of conda (:pull:`1493`)
-
 
 Documentation
 ~~~~~~~~~~~~~
 * Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
 * Add gallery example of simulating rearside irradiance for a fixed-tilt
   array with pvfactors (:pull:`1470`)
-
+* Updated reference links to CAMS Radiation (:issue:`1515`, :pull:`1529`)
 
 Benchmarking
 ~~~~~~~~~~~~~

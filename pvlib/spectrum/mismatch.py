@@ -12,6 +12,12 @@ def get_sample_sr(wavelength=None):
     '''
     Generate a generic smooth c-si spectral response for tests and experiments.
 
+    Parameters
+    ----------
+    wavelength: 1-D sequence of numeric, optional
+        The wavelengths at which the sample sr should be interpolated. [nm]
+        By default the wavelengths are from 280 to 1200 in 5 nm intervals.
+
     Notes
     -----
     This sr is based on measurements taken on a reference cell.
@@ -55,8 +61,17 @@ def get_am15g(wavelength=None):
     Read the ASTM G173-03 AM1.5 global tilted spectrum, optionally interpolated
     to the specified wavelength(s).
 
+    Parameters
+    ----------
+    wavelength: 1-D sequence of numeric, optional
+        The wavelengths at which the spectrum should be interpolated. [nm]
+        By default the 2002 wavelengths of the standard are returned.
+
     Notes
     -----
+    This function uses linear interpolation.  If the reference spectrum is too
+    coarsely interpolated, its integral may deviate from 1000.37 W/m2.
+
     More information about reference spectra is found here:
     https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html
 
@@ -94,27 +109,31 @@ def calc_spectral_mismatch(sr, e_sun, e_ref=None):
     ----------
     sr: pandas.Series
         The spectral response of one (photovoltaic) device.
+        The index of the Series must contain wavelength values in nm.
     e_sun: pandas.DataFrame or pandase.Series
-        One or more irradiance spectra.  Usually a pandas.DataFrame with
-        wavelength as column index.  A single spectrum may be given as a
-        pandas.Series having a wavelength index.
+        One or more measured irradiance spectra in a pandas.DataFrame
+        having wavelength in nm as column index.  A single spectrum may be
+        be given as a pandas.Series having wavelength in nm as index.
     e_ref: pandas.Series, optional
-        The reference spectrum to use for the mismatch calculation. The default
-        is the ASTM G173-03 global tilted spectrum.
+        The reference spectrum to use for the mismatch calculation.
+        The index of the Series must contain wavelength values in nm.
+        The default is the ASTM G173-03 global tilted spectrum.
 
     Returns
     -------
-    smm: pandas.Series or float
+    smm: pandas.Series or float if a single measured spectrum is provided.
 
     Notes
     -----
-    If the default reference spectrum is used, it is reindexed
-    to the wavelengths of the measured spectrum.
+    If the default reference spectrum is used it is linearly interpolated
+    to the wavelengths of the measured spectrum.  To achieve alternate
+    behavior e_ref can be transformed before calling this function and
+    provided as an argument.
 
-    If e_ref is provided as an argument, it is used without modification.
-
-    The spectral response is always interpolated to the wavelengths of the
-    spectrum with which is it multiplied.
+    The spectral response is linearly interpolated to the wavelengths of the
+    spectrum with which is it multiplied internally (e_sun and e_ref). To
+    achieve alternate behavior the sr can be transformed before calling
+    this function.
     """
     # get the reference spectrum at wavelengths matching the measured spectra
     if e_ref is None:

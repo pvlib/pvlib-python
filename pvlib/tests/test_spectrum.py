@@ -1,12 +1,12 @@
 import pytest
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_approx_equal, assert_equal
 import pandas as pd
 import numpy as np
 from pvlib import spectrum
+from pvlib.spectrum import mismatch
 from .conftest import DATA_DIR
 
 SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
-
 
 @pytest.fixture
 def spectrl2_data():
@@ -34,9 +34,9 @@ def spectrl2_data():
         'aerosol_turbidity_500nm': 0.1,
         'dayofyear': 75
     }
-    df = pd.read_csv(SPECTRL2_TEST_DATA)
+    df = pd.read_csv(SPECTRL2_TEST_DATA, index_col=0)
     # convert um to nm
-    df['wavelength'] *= 1000
+    df['wavelength'] = np.round(df['wavelength'] * 1000, 1)
     df[['specdif', 'specdir', 'specetr', 'specglo']] /= 1000
     return kwargs, df
 
@@ -106,3 +106,68 @@ def test_aoi_gt_90(spectrl2_data):
     for key in ['poa_direct', 'poa_global']:
         message = f'{key} contains negative values for aoi>90'
         assert np.all(spectra[key] >= 0), message
+
+
+def test_get_sample_sr():
+    # test that the sample sr is read and interpolated correctly
+    sr = mismatch.get_sample_sr()
+    assert_equal(len(sr), 185)
+    assert_equal(np.sum(sr.index), 136900)
+    assert_approx_equal(np.sum(sr), 107.6027)
+
+    wavelength = [270, 850, 957, 1200, 4001]
+    expected = [0.0, 0.92732, 1.0, 0.0, 0.0]
+
+    sr = mismatch.get_sample_sr(wavelength)
+    assert_equal(len(sr), len(wavelength))
+    assert_allclose(sr, expected, rtol=1e-5)
+
+
+def test_get_am15g():
+    # test that the reference spectrum is read and interpolated correctly
+    e = mismatch.get_am15g()
+    assert_equal(len(e), 2002)
+    assert_equal(np.sum(e.index), 2761442)
+    assert_approx_equal(np.sum(e), 1002.88, significant=6)
+
+    wavelength = [270, 850, 957, 1200, 4001]
+    expected = [0.0, 0.893720, 0.270670, 0.448250, 0.0]
+
+    e = mismatch.get_am15g(wavelength)
+    assert_equal(len(e), len(wavelength))
+    assert_allclose(e, expected, rtol=1e-6)
+
+
+def test_calc_mismatch(spectrl2_data):
+    # test that the mismatch is calculated correctly with
+    # - default and custom reference sepctrum
+    # - single or multiple sun spectra
+
+    # sample data
+    _, e_sun = spectrl2_data
+    e_sun = e_sun.set_index('wavelength')
+    e_sun = e_sun.transpose()
+
+    e_ref = mismatch.get_am15g()
+    sr = mismatch.get_sample_sr()
+
+    # test with single sun spectrum, same as ref spectrum
+    mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_ref)
+    assert_approx_equal(mm, 1.0, significant=6)
+
+    # test with single sun spectrum
+    mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_sun.loc['specglo'])
+    assert_approx_equal(mm, 0.992393, significant=6)
+
+    # test with single sun spectrum, also used as reference spectrum
+    mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_sun.loc['specglo'],
+                                             e_ref=e_sun.loc['specglo'])
+    assert_approx_equal(mm, 1.0, significant=6)
+
+    # test with multiple sun spectra
+    expected = [0.973016, 0.995571, 0.899784, 0.992393]
+
+    mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_sun)
+    assert mm.index is e_sun.index
+    assert_allclose(mm, expected, rtol=1e-6)
+

@@ -253,7 +253,7 @@ def read_solaranywhere(filename, map_variables=True):
     .. [1] `SolarAnywhere historical data file formats
        <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
     """
-    with open(str(filename), 'r') as fbuf:
+    with open(str(filename), 'r', encoding='iso-8859-1') as fbuf:
         content = parse_solaranywhere(fbuf, map_variables=map_variables)
     return content
 

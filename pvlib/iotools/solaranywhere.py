@@ -2,6 +2,7 @@
 
 import requests
 import pandas as pd
+import numpy as np
 import time
 import json
 
@@ -190,7 +191,6 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     start_time = time.time()  # Current time in seconds since the Epoch
     # Attempt to retrieve results until the max response time has been exceeded
     while True:
-        time.sleep(5)  # Sleep for 5 seconds before each data retrieval attempt
         results = requests.get(url+'/WeatherDataResult/'+weather_request_id, headers=headers)  # noqa: E501
         results_json = results.json()
         if results_json.get('Status') == 'Done':
@@ -201,6 +201,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
             raise RuntimeError(f"Bad request: {results_json['Message']}")
         elif (time.time()-start_time) > max_response_time:
             raise TimeoutError('Time exceeded the `max_response_time`.')
+        time.sleep(5)  # Sleep for 5 seconds before each data retrieval attempt
 
     # Extract time series data
     data = pd.DataFrame(results_json['WeatherDataResults'][0]['WeatherDataPeriods']['WeatherDataPeriods'])  # noqa: E501
@@ -314,6 +315,10 @@ def parse_solaranywhere(fbuf, map_variables=True):
     # Set index to UTC
     data.index = pd.to_datetime(data['ObservationTime(GMT)'],
                                 format='%m/%d/%Y %H:%M', utc=True)
+
+    # Missing values can be represented as: blanks, 'NaN', or -999
+    data = data.replace(-999, np.nan)
+
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
 

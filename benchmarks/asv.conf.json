@@ -114,7 +114,7 @@
     "include": [
         // minimum supported versions
         {
-            "python": "3.6",
+            "python": "3.7",
             "numpy": "1.16.0",
             "pandas": "0.25.0",
             "scipy": "1.2.0",

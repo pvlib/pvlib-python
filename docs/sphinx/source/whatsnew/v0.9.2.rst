@@ -14,6 +14,9 @@ Enhancements
 * Add :py:func:`pvlib.tracking.calc_surface_orientation` for calculating
   single-axis tracker ``surface_tilt`` and ``surface_azimuth`` from
   rotation angles. (:issue:`1471`, :pull:`1480`)
+* Improve error message about uneven time intervals for
+  :py:func:`~pvlib.clearsky.detect_clearsky` and :py:func:`~pvlib.temperature.prilliman`
+  (:issue:`1476`, :pull:`1490`)
 
 Bug fixes
 ~~~~~~~~~
@@ -24,12 +27,20 @@ Bug fixes
   where passing localized timezones with large UTC offsets could return
   rise/set/transit times for the wrong day in recent versions of ``ephem``
   (:issue:`1449`, :pull:`1448`)
-
+* :py:func:`pvlib.iotools.read_tmy3` is now able to accept midnight
+  timestamps as either 24:00 (which is the standard) as well as 00:00.
+  Previously 00:00 timestamps would incorrectly be moved one day forward.
+  (:pull:`1494`)
+* :py:func:`pvlib.iotools.get_psm3` now raises a deprecation warning if
+  the `leap_day` parameter is not specified in a single-year request.
+  Starting in pvlib 0.11.0 `leap_day` will default to True instead of False.
+  (:issue:`1481`, :pull:`1511`)
 
 Testing
 ~~~~~~~
 * Switched CI testing provider from Azure to GitHub Actions (:pull:`1306`)
 * Speed up CI setup using micromamba instead of conda (:pull:`1493`)
+* Drop python 3.6 (reached end of life Dec 2021) and add 3.10 to test matrix (:pull:`1507`)
 
 
 Documentation
@@ -37,7 +48,6 @@ Documentation
 * Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
 * Add gallery example of simulating rearside irradiance for a fixed-tilt
   array with pvfactors (:pull:`1470`)
-
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -47,6 +57,7 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
+* Python 3.7 or greater. (:pull:`1507`)
 * Minimum pandas version increased to v0.25.0, released July 18, 2019. (:pull:`1448`)
 
 Contributors
@@ -59,3 +70,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Jules Chéron (:ghuser:`jules-ch`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
+* Will Hobbs (:ghuser:`williamhobbs`)

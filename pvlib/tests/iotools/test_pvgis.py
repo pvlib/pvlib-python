@@ -20,12 +20,12 @@ from pvlib._deprecation import pvlibDeprecationWarning
 testfile_radiation_csv = DATA_DIR / \
     'pvgis_hourly_Timeseries_45.000_8.000_SA_30deg_0deg_2016_2016.csv'
 testfile_pv_json = DATA_DIR / \
-    'pvgis_hourly_Timeseries_45.000_8.000_CM_10kWp_CIS_5_2a_2013_2014.json'
+    'pvgis_hourly_Timeseries_45.000_8.000_SA2_10kWp_CIS_5_2a_2013_2014.json'
 
 index_radiation_csv = \
     pd.date_range('20160101 00:10', freq='1h', periods=14, tz='UTC')
 index_pv_json = \
-    pd.date_range('2013-01-01 00:55', freq='1h', periods=10, tz='UTC')
+    pd.date_range('2013-01-01 00:10', freq='1h', periods=10, tz='UTC')
 
 columns_radiation_csv = [
     'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
@@ -33,10 +33,9 @@ columns_radiation_csv_mapped = [
     'poa_direct', 'poa_sky_diffuse', 'poa_ground_diffuse', 'solar_elevation',
     'temp_air', 'wind_speed', 'Int']
 columns_pv_json = [
-    'P', 'Gb(i)', 'Gd(i)', 'Gr(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
+    'P', 'G(i)', 'H_sun', 'T2m', 'WS10m', 'Int']
 columns_pv_json_mapped = [
-    'P', 'poa_direct', 'poa_sky_diffuse', 'poa_ground_diffuse',
-    'solar_elevation', 'temp_air', 'wind_speed', 'Int']
+    'P', 'poa_global', 'solar_elevation', 'temp_air', 'wind_speed', 'Int']
 
 data_radiation_csv = [
     [0.0, 0.0, 0.0, 0.0, 3.44, 1.43, 0.0],
@@ -54,16 +53,16 @@ data_radiation_csv = [
     [4.25, 1.88, 0.05, 21.41, 7.84, 0.4, 1.0],
     [0.0, 0.0, 0.0, 0.0, 7.43, 0.72, 0.0]]
 data_pv_json = [
-    [0.0, 0.0, 0.0, 0.0, 0.0, 3.01, 1.23, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 2.22, 1.46, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 1.43, 1.7, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 0.64, 1.93, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 0.77, 1.8, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 0.91, 1.66, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 1.05, 1.53, 0.0],
-    [3464.5, 270.35, 91.27, 6.09, 6.12, 1.92, 1.44, 0.0],
-    [1586.9, 80.76, 83.95, 9.04, 13.28, 2.79, 1.36, 0.0],
-    [713.3, 5.18, 70.57, 7.31, 18.56, 3.66, 1.27, 0.0]]
+    [0.0, 0.0, 0.0, -0.97, 1.52, 0.0],
+    [0.0, 0.0, 0.0, -1.06, 1.45, 0.0],
+    [0.0, 0.0, 0.0, -1.03, 1.45, 0.0],
+    [0.0, 0.0, 0.0, -0.48, 1.31, 0.0],
+    [0.0, 0.0, 0.0, -0.09, 1.24, 0.0],
+    [0.0, 0.0, 0.0, -0.38, 1.17, 0.0],
+    [0.0, 0.0, 0.0, 0.29, 1.03, 0.0],
+    [0.0, 0.0, 0.0, 1.0, 0.62, 0.0],
+    [1187.2, 129.59, 8.06, 0.97, 0.97, 0.0],
+    [3950.1, 423.28, 14.8, 1.89, 0.69, 0.0]]
 
 inputs_radiation_csv = {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0,
                         'radiation_database': 'PVGIS-SARAH',
@@ -80,7 +79,7 @@ metadata_radiation_csv = {
 
 inputs_pv_json = {
     'location': {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0},
-    'meteo_data': {'radiation_db': 'PVGIS-CMSAF', 'meteo_db': 'ERA-Interim',
+    'meteo_data': {'radiation_db': 'PVGIS-SARAH2', 'meteo_db': 'ERA-Interim',
                    'year_min': 2013, 'year_max': 2014, 'use_horizon': True,
                    'horizon_db': None, 'horizon_data': 'DEM-calculated'},
     'mounting_system': {'two_axis': {
@@ -88,45 +87,45 @@ inputs_pv_json = {
         'azimuth': {'value': '-', 'optimal': '-'}}},
     'pv_module': {'technology': 'CIS', 'peak_power': 10.0, 'system_loss': 5.0}}
 
+
 metadata_pv_json = {
     'inputs': {
-        'location': {'description': 'Selected location', 'variables': {
-            'latitude': {'description': 'Latitude', 'units': 'decimal degree'},
-            'longitude': {'description': 'Longitude', 'units': 'decimal degree'},  # noqa: E501
-            'elevation': {'description': 'Elevation', 'units': 'm'}}},
-        'meteo_data': {
-            'description': 'Sources of meteorological data',
-            'variables': {
-                'radiation_db': {'description': 'Solar radiation database'},
-                'meteo_db': {'description': 'Database used for meteorological variables other than solar radiation'},  # noqa: E501
-                'year_min': {'description': 'First year of the calculations'},
-                'year_max': {'description': 'Last year of the calculations'},
-                'use_horizon': {'description': 'Include horizon shadows'},
-                'horizon_db': {'description': 'Source of horizon data'}}},
-        'mounting_system': {
-            'description': 'Mounting system',
-            'choices': 'fixed, vertical_axis, inclined_axis, two_axis',
-            'fields': {
-                'slope': {'description': 'Inclination angle from the horizontal plane', 'units': 'degree'},  # noqa: E501
-                'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)', 'units': 'degree'}}},  # noqa: E501
-        'pv_module': {
-            'description': 'PV module parameters',
-            'variables': {
-                'technology': {'description': 'PV technology'},
-                'peak_power': {'description': 'Nominal (peak) power of the PV module', 'units': 'kW'},  # noqa: E501
-                'system_loss': {'description': 'Sum of system losses', 'units': '%'}}}},  # noqa: E501
-    'outputs': {
-        'hourly': {
-            'type': 'time series', 'timestamp': 'hourly averages',
-            'variables': {
-                'P': {'description': 'PV system power', 'units': 'W'},
-                'Gb(i)': {'description': 'Beam (direct) irradiance on the inclined plane (plane of the array)', 'units': 'W/m2'},  # noqa: E501
-                'Gd(i)': {'description': 'Diffuse irradiance on the inclined plane (plane of the array)', 'units': 'W/m2'},  # noqa: E501
-                'Gr(i)': {'description': 'Reflected irradiance on the inclined plane (plane of the array)', 'units': 'W/m2'},  # noqa: E501
-                'H_sun': {'description': 'Sun height', 'units': 'degree'},
-                'T2m': {'description': '2-m air temperature', 'units': 'degree Celsius'},  # noqa: E501
-                'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},  # noqa: E501
-                'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: E501
+        'location':
+            {'description': 'Selected location', 'variables': {
+                'latitude': {'description': 'Latitude', 'units': 'decimal degree'},  # noqa: E501
+                'longitude': {'description': 'Longitude', 'units': 'decimal degree'},  # noqa: E501
+                'elevation': {'description': 'Elevation', 'units': 'm'}}},
+            'meteo_data': {
+                'description': 'Sources of meteorological data',
+                'variables': {
+                    'radiation_db': {'description': 'Solar radiation database'},  # noqa: E501
+                    'meteo_db': {'description': 'Database used for meteorological variables other than solar radiation'},  # noqa: E501
+                    'year_min': {'description': 'First year of the calculations'},  # noqa: E501
+                    'year_max': {'description': 'Last year of the calculations'},  # noqa: E501
+                    'use_horizon': {'description': 'Include horizon shadows'},
+                    'horizon_db': {'description': 'Source of horizon data'}}},
+            'mounting_system': {
+                'description': 'Mounting system',
+                'choices': 'fixed, vertical_axis, inclined_axis, two_axis',
+                'fields': {
+                    'slope': {'description': 'Inclination angle from the horizontal plane', 'units': 'degree'},  # noqa: E501
+                    'azimuth': {'description': 'Orientation (azimuth) angle of the (fixed) PV system (0 = S, 90 = W, -90 = E)', 'units': 'degree'}}},  # noqa: E501
+            'pv_module': {
+                'description': 'PV module parameters',
+                'variables': {
+                    'technology': {'description': 'PV technology'},
+                    'peak_power': {'description': 'Nominal (peak) power of the PV module', 'units': 'kW'},  # noqa: E501
+                    'system_loss': {'description': 'Sum of system losses', 'units': '%'}}}},  # noqa: E501
+        'outputs': {
+            'hourly': {
+                'type': 'time series', 'timestamp': 'hourly averages',
+                'variables': {
+                    'P': {'description': 'PV system power', 'units': 'W'},
+                    'G(i)': {'description': 'Global irradiance on the inclined plane (plane of the array)', 'units': 'W/m2'},  # noqa: E501
+                    'H_sun': {'description': 'Sun height', 'units': 'degree'},
+                    'T2m': {'description': '2-m air temperature', 'units': 'degree Celsius'},  # noqa: E501
+                    'WS10m': {'description': '10-m total wind speed', 'units': 'm/s'},  # noqa: E501
+                    'Int': {'description': '1 means solar radiation values are reconstructed'}}}}}  # noqa: E501
 
 
 def generate_expected_dataframe(values, columns, index):
@@ -215,12 +214,13 @@ url_hourly_radiation_csv = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lo
 
 args_pv_json = {
     'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'json',
-    'usehorizon': True, 'userhorizon': None, 'raddatabase': 'PVGIS-CMSAF',
+    'usehorizon': True, 'userhorizon': None, 'raddatabase': 'PVGIS-SARAH2',
     'start': pd.Timestamp(2013, 1, 1), 'end': pd.Timestamp(2014, 5, 1),
     'pvcalculation': True, 'peakpower': 10, 'pvtechchoice': 'CIS', 'loss': 5,
-    'trackingtype': 2, 'optimalangles': True, 'components': True}
+    'trackingtype': 2, 'optimalangles': True, 'components': False,
+    'url': 'https://re.jrc.ec.europa.eu/api/v5_2/'}
 
-url_pv_json = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=json&angle=30&aspect=0&pvtechchoice=CIS&mountingplace=free&trackingtype=2&components=1&usehorizon=1&raddatabase=PVGIS-CMSAF&startyear=2013&endyear=2014&pvcalculation=1&peakpower=10&loss=5&optimalangles=1'  # noqa: E501
+url_pv_json = 'https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat=45&lon=8&outputformat=json&angle=30&aspect=0&pvtechchoice=CIS&mountingplace=free&trackingtype=2&components=0&usehorizon=1&raddatabase=PVGIS-SARAH2&startyear=2013&endyear=2014&pvcalculation=1&peakpower=10&loss=5&optimalangles=1'  # noqa: E501
 
 
 @pytest.mark.parametrize('testfile,expected_name,args,map_variables,url_test', [  # noqa: E501

@@ -15,7 +15,7 @@ CAMS_INTEGRATED_COLUMNS = [
     'GHI no corr', 'BHI no corr', 'DHI no corr', 'BNI no corr']
 
 # Dictionary mapping CAMS Radiation and McClear variables to pvlib names
-CAMS_VARIABLE_MAP = {
+VARIABLE_MAP = {
     'TOA': 'ghi_extra',
     'Clear sky GHI': 'ghi_clear',
     'Clear sky BHI': 'bhi_clear',
@@ -90,7 +90,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable CAMS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
     server: str, default: 'www.soda-is.com'
         Main server (www.soda-is.com) or backup mirror server (pro.soda-is.com)
     timeout : int, default: 30
@@ -135,9 +135,8 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     least the fourth decimal place.
 
     Variables corresponding to standard pvlib variables are renamed,
-    e.g. `sza` becomes `solar_zenith`. See the
-    `pvlib.iotools.cams.CAMS_VARIABLE_MAP` dict for the complete
-    mapping.
+    e.g. `sza` becomes `solar_zenith`. See variable :const:`VARIABLE_MAP` for
+    the complete mapping.
 
     See Also
     --------
@@ -244,7 +243,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable CAMS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -322,7 +321,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
                                      TIME_STEPS_IN_HOURS[time_step])
     data.index.name = None  # Set index name to None
     if map_variables:
-        data = data.rename(columns=CAMS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data, metadata
 
@@ -345,7 +344,7 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable CAMS_VARIABLE_MAP.
+        where applicable. See variable VARIABLE_MAP.
 
     Returns
     -------

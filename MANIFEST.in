@@ -17,3 +17,15 @@ global-exclude .DS_Store
 global-exclude .git*
 global-exclude \#*
 global-exclude .ipynb_checkpoints
+
+exclude .coveragerc
+exclude .lgtm.yml
+exclude .stickler.yml
+exclude codecov.yml
+exclude readthedocs.yml
+exclude CODE_OF_CONDUCT.md
+
+prune paper
+prune .github
+prune benchmarks
+prune ci

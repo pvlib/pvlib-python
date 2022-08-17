@@ -113,10 +113,10 @@ def test_get_sample_sr():
     sr = mismatch.get_sample_sr()
     assert_equal(len(sr), 185)
     assert_equal(np.sum(sr.index), 136900)
-    assert_approx_equal(np.sum(sr), 107.6027)
+    assert_approx_equal(np.sum(sr), 107.6116)
 
-    wavelength = [270, 850, 957, 1200, 4001]
-    expected = [0.0, 0.92732, 1.0, 0.0, 0.0]
+    wavelength = [270, 850, 950, 1200, 4001]
+    expected = [0.0, 0.92778, 1.0, 0.0, 0.0]
 
     sr = mismatch.get_sample_sr(wavelength)
     assert_equal(len(sr), len(wavelength))
@@ -130,8 +130,8 @@ def test_get_am15g():
     assert_equal(np.sum(e.index), 2761442)
     assert_approx_equal(np.sum(e), 1002.88, significant=6)
 
-    wavelength = [270, 850, 957, 1200, 4001]
-    expected = [0.0, 0.893720, 0.270670, 0.448250, 0.0]
+    wavelength = [270, 850, 950, 1200, 4001]
+    expected = [0.0, 0.893720, 0.147260, 0.448250, 0.0]
 
     e = mismatch.get_am15g(wavelength)
     assert_equal(len(e), len(wavelength))
@@ -157,7 +157,7 @@ def test_calc_mismatch(spectrl2_data):
 
     # test with single sun spectrum
     mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_sun.loc['specglo'])
-    assert_approx_equal(mm, 0.992393, significant=6)
+    assert_approx_equal(mm, 0.992397, significant=6)
 
     # test with single sun spectrum, also used as reference spectrum
     mm = mismatch.calc_spectral_mismatch(sr,
@@ -166,7 +166,7 @@ def test_calc_mismatch(spectrl2_data):
     assert_approx_equal(mm, 1.0, significant=6)
 
     # test with multiple sun spectra
-    expected = [0.973016, 0.995571, 0.899784, 0.992393]
+    expected = [0.972982, 0.995581, 0.899782, 0.992397]
 
     mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_sun)
     assert mm.index is e_sun.index

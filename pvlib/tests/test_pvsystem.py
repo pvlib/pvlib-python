@@ -1856,7 +1856,8 @@ def test_Array_get_irradiance(solar_pos):
     )
     expected = pd.DataFrame(
         data=np.array(
-            [[883.65494055, 745.86141676, 137.79352379, 126.397131, 11.39639279],
+            [[883.65494055, 745.86141676, 137.79352379, 126.397131,
+              11.39639279],
              [0., -0., 0., 0., 0.]]),
         columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
                  'poa_ground_diffuse'],

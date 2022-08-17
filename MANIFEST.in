@@ -18,14 +18,14 @@ global-exclude .git*
 global-exclude \#*
 global-exclude .ipynb_checkpoints
 
-prune .coveragerc
-prune .lgtm.yml
-prune .stickler.yml
-prune codecov.yml
-prune readthedocs.yml
+exclude .coveragerc
+exclude .lgtm.yml
+exclude .stickler.yml
+exclude codecov.yml
+exclude readthedocs.yml
+exclude CODE_OF_CONDUCT.md
 
 prune paper
 prune .github
-prune CODE_OF_CONDUCT.md
 prune benchmarks
 prune ci

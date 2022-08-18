@@ -414,34 +414,60 @@ def _get_sample_intervals(times, win_length):
         raise NotImplementedError(message)
 
 
-def _degrees_to_index(longitude, latitude, width=4320, height=2160):
-    """ Transform latitude, longitude degrees to x and y indexes for a
-    lookup table.
-
+def _degrees_to_index(degrees, coordinate):
+    """Transform input degrees to an output index integer.
+    Specify a degree value and either 'latitude' or 'longitude' to get
+    the appropriate index number for these two index numbers.
     Parameters
     ----------
-    latitude : float or int
+    degrees : float or int
         Degrees of either latitude or longitude.
-    longitude : float or int
-        Degrees of either latitude or longitude.
-    width : int
-        Width of the lookup table.
-    height : int
-        Height of the lookup table.
-
+    coordinate : string
+        Specify whether degrees arg is latitude or longitude. Must be set to
+        either 'latitude' or 'longitude' or an error will be raised.
     Returns
     -------
-    x : int
-        The x dimension index for the lookup table.
-    y : int
-        The y dimension index for the lookup table.
+    index : np.int16
+        The latitude or longitude index number to use when looking up values
+        in the Linke turbidity lookup table.
     """
+    # Assign inputmin, inputmax, and outputmax based on degree type.
+    if coordinate == 'latitude':
+        inputmin = 90
+        inputmax = -90
+        outputmax = 2160
+    elif coordinate == 'longitude':
+        inputmin = -180
+        inputmax = 180
+        outputmax = 4320
+    else:
+        raise IndexError("coordinate must be 'latitude' or 'longitude'.")
 
-    if longitude < -180 or longitude > 180:
-        raise ValueError('longitude must be between -180 and 180')
-    if latitude < -90 or latitude > 90:
-        raise ValueError('latitude must be between -90 and 90')
+    inputrange = inputmax - inputmin
+    scale = outputmax/inputrange  # number of indices per degree
+    center = inputmin + 1 / scale / 2  # shift to center of index
+    outputmax -= 1  # shift index to zero indexing
+    index = (degrees - center) * scale
+    err = IndexError('Input, %g, is out of range (%g, %g).' %
+                     (degrees, inputmin, inputmax))
 
-    x = int(((longitude + 180) / 360) * width)
-    y = int((1 - ((latitude + 90) / 180)) * height)
-    return x, y
+    # If the index is still out of bounds after rounding, raise an error.
+    # 0.500001 is used in comparisons instead of 0.5 to allow for a small
+    # margin of error which can occur when dealing with floating point numbers.
+    if index > outputmax:
+        if index - outputmax <= 0.500001:
+            index = outputmax
+        else:
+            raise err
+    elif index < 0:
+        if -index <= 0.500001:
+            index = 0
+        else:
+            raise err
+    # If the index wasn't set to outputmax or 0, round it and cast it as an
+    # integer so it can be used in integer-based indexing.
+    else:
+        index = int(np.around(index))
+
+    return index
+

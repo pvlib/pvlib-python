@@ -434,10 +434,11 @@ def lookup_altitude(latitude, longitude, filepath=None):
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'Altitude.h5')
 
-    x, y = _degrees_to_index(longitude, latitude)
+    latitude_index = _degrees_to_index(latitude, coordinate='latitude')
+    longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
     with h5py.File(filepath, 'r') as alt_h5_file:
-        alt = alt_h5_file['Altitude'][y, x]
+        alt = alt_h5_file['Altitude'][latitude_index, longitude_index]
 
     # 255 is a special value that means nodata. Fallback to 0 if nodata.
     if alt == 255:

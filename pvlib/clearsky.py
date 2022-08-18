@@ -192,10 +192,11 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
         pvlib_path = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
-    x, y = _degrees_to_index(longitude, latitude)
+    latitude_index = _degrees_to_index(latitude, coordinate='latitude')
+    longitude_index = _degrees_to_index(longitude, coordinate='longitude')
 
     with h5py.File(filepath, 'r') as lt_h5_file:
-        lts = lt_h5_file['LinkeTurbidity'][y, x]
+        lts = lt_h5_file['LinkeTurbidity'][latitude_index, longitude_index]
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)

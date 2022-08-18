@@ -470,4 +470,3 @@ def _degrees_to_index(degrees, coordinate):
         index = int(np.around(index))
 
     return index
-

@@ -246,7 +246,7 @@ def read_solaranywhere(filename, map_variables=True):
 
     See Also
     --------
-    pvlib.iotools.get_solaranywhere, pvlib.iotools.parse_solaranywhere
+    pvlib.iotools.get_solaranywhere
 
     References
     ----------
@@ -254,44 +254,12 @@ def read_solaranywhere(filename, map_variables=True):
        <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
     """
     with open(str(filename), 'r', encoding='iso-8859-1') as fbuf:
-        content = parse_solaranywhere(fbuf, map_variables=map_variables)
-    return content
+        # Extract first line of file which contains the metadata
+        firstline = fbuf.readline().strip().split(',')
+        # Read remaining part of file which contains the time series data
+        data = pd.read_csv(fbuf)
 
-
-def parse_solaranywhere(fbuf, map_variables=True):
-    """
-    Parse a file-like buffer with data in the format of a SolarAnywhere file.
-
-    The SolarAnywhere file format and variables are described in [1]_. Note,
-    the SolarAnywhere file format resembles the TMY3 file format but contains
-    additional variables and meatadata.
-
-    Parameters
-    ----------
-    fbuf: file-like object
-        File-like object containing data to read.
-    map_variables: bool, default: True
-        When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable :const:`VARIABLE_MAP`.
-
-    Returns
-    -------
-    data: pandas.DataFrame
-        Timeseries data from SolarAnywhere. Index is localized to UTC.
-    metadata: dict
-        Metadata available in the file.
-
-    See Also
-    --------
-    pvlib.iotools.read_solaranywhere, pvlib.iotools.get_solaranywhere
-
-    References
-    ----------
-    .. [1] `SolarAnywhere historical data file formats
-       <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
-    """
-    # Parse metadata contained within the first line
-    firstline = fbuf.readline().strip().split(',')
+    # Parse metadata
     meta = {}
     meta['USAF'] = int(firstline.pop(0))
     meta['name'] = firstline.pop(0)
@@ -310,8 +278,6 @@ def parse_solaranywhere(fbuf, map_variables=True):
             k, v = i.split(':')
             meta[k.strip()] = v.strip()
 
-    # Read remaining part of file which contains the time series data
-    data = pd.read_csv(fbuf)
     # Set index to UTC
     data.index = pd.to_datetime(data['ObservationTime(GMT)'],
                                 format='%m/%d/%Y %H:%M', utc=True)

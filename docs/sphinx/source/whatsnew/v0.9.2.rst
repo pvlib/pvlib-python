@@ -16,7 +16,7 @@ Enhancements
   rotation angles. (:issue:`1471`, :pull:`1480`)
 * Add :py:func:`pvlib.iotools.read_solaranywhere` and
   :py:func:`pvlib.iotools.get_solaranywhere` for reading and retrieving
-  SolarAnywhere solar irradiance data. (:pull:`1497`, :discussion:`1310`)
+  SolarAnywhere solar irradiance data. (:pull:`1497`)
 * Improve error message about uneven time intervals for
   :py:func:`~pvlib.clearsky.detect_clearsky` and :py:func:`~pvlib.temperature.prilliman`
   (:issue:`1476`, :pull:`1490`)

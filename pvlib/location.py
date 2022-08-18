@@ -445,6 +445,6 @@ def lookup_altitude(latitude, longitude, filepath=None):
         return 0
     # Altitude is encoded in 35 meter steps from -2364 meters to 6526 meters
     # There are 0-254 possible altitudes, with 255 reserved for nodata.
-    alt *= 35
-    alt -= 2364
+    alt *= 28
+    alt -= 450
     return int(alt)

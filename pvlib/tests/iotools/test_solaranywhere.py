@@ -135,31 +135,30 @@ def time_series_index():
 
 
 @pytest.fixture
-def timeseries_dni_series(time_series_index):
-    dni = [
+def timeseries_temp_air(time_series_index):
+    temp_air = [
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9, 10, 1, 3,
-        3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 0, 3, 3, 12, 8, 9, 9, 11, 4, 8,
-        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
     ]
-    return pd.Series(data=dni, index=time_series_index, name='dni')
+    return pd.Series(data=temp_air, index=time_series_index, name='temp_air')
 
 
-@requires_solaranywhere_credentials
+#@requires_solaranywhere_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solaranywhere_no_timezone_information(
         high_resolution_index, solaranywhere_api_key, time_series_index,
-        timeseries_dni_series):
+        timeseries_temp_air):
     # Test if data can be retrieved. This test only retrieves one day of data
     # to minimize the request time.
     data, meta = pvlib.iotools.get_solaranywhere(
@@ -170,7 +169,7 @@ def test_get_solaranywhere_no_timezone_information(
         start=pd.Timestamp(2020, 1, 1), end=pd.Timestamp(2020, 1, 2),
         spatial_resolution=0.005, time_resolution=5, true_dynamics=True)
 
-    # Check metadta and that true-dynamics is set
+    # Check metadata, including that true-dynamics is set
     assert meta['WeatherSiteName'] == 'SolarAnywhere3_6'
     assert meta['ApplyTrueDynamics'] is True
     assert meta['time_resolution'] == 5
@@ -193,9 +192,12 @@ def test_get_solaranywhere_no_timezone_information(
     # Assert index (checks that time resolution is 5 min)
     pd.testing.assert_index_equal(data.index, time_series_index)
     # Test one column
-    pd.testing.assert_series_equal(data['dni'], timeseries_dni_series)
+    pd.testing.assert_series_equal(data['temp_air'], timeseries_temp_air)
 
 
+@requires_solaranywhere_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solaranywhere_max_response_time(solaranywhere_api_key):
     # Test if ValueError is raised if start/end is missing for non-TMY request
     with pytest.raises(TimeoutError, match="Time exceeded"):
@@ -207,6 +209,9 @@ def test_get_solaranywhere_max_response_time(solaranywhere_api_key):
             max_response_time=0.00001)
 
 
+@requires_solaranywhere_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solaranywhere_not_available(solaranywhere_api_key):
     # Test if RuntimeError is raised if location in the ocean is requested
     with pytest.raises(RuntimeError, match="Tile is outside of our coverage"):

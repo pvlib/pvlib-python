@@ -495,6 +495,8 @@ def test_prepare_inputs_multi_weather(
     mc.prepare_inputs(input_type((weather, weather)))
     num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
     assert len(mc.results.total_irrad) == num_arrays
+    # check that albedo is transfered to mc.results from mc.system.arrays
+    assert mc.results.albedo == (0.2, 0.2)
 
 
 @pytest.mark.parametrize("input_type", [tuple, list])

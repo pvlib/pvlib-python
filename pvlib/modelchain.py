@@ -1350,7 +1350,8 @@ class ModelChain:
         try:
             self.results.albedo = _tuple_from_dfs(weather, 'albedo')
         except KeyError:
-            self.results.albedo = None
+            self.results.albedo = tuple([
+                a.albedo for a in self.system.arrays])
         return self
 
     def _prep_inputs_airmass(self):

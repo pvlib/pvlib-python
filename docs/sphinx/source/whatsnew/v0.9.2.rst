@@ -79,3 +79,7 @@ Contributors
 * Stephen Schneider (:ghuser:`sjschneider`)
 * :ghuser:`Kaesekopf`
 * :ghuser:`hf-kklein`
+* Mark Campanelli (:ghuser:`campanelli-sunpower`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Kristen Wagner (:ghuser:`kwagnercpr`)
+* Mark Mikofski (:ghuser:`mikofski`)

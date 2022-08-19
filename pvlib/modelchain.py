@@ -268,7 +268,7 @@ class ModelChainResult:
     _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
                          'effective_irradiance', 'dc', 'diode_params',
-                         'dc_ohmic_losses', 'weather'}
+                         'dc_ohmic_losses', 'weather', 'albedo'}
 
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
@@ -364,6 +364,10 @@ class ModelChainResult:
 
     times: Optional[pd.DatetimeIndex] = None
     """DatetimeIndex containing a copy of the index of the input weather data.
+    """
+
+    albedo: Optional[PerArray[pd.Series]] = None
+    """Series (or tuple of Series, one for each array) containing albedo.
     """
 
     def _result_type(self, value):
@@ -1339,6 +1343,17 @@ class ModelChain:
             **kwargs)
         return self
 
+    def _prep_inputs_albedo(self, weather):
+        """
+        Get albedo from weather
+        """
+        try:
+            self.results.albedo = _tuple_from_dfs(weather, 'albedo')
+        except KeyError:
+            self.results.albedo = tuple([
+                a.albedo for a in self.system.arrays])
+        return self
+
     def _prep_inputs_airmass(self):
         """
         Assign airmass
@@ -1471,11 +1486,17 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame, or tuple or list of DataFrame
+        weather : DataFrame, or tuple or list of DataFrames
             Required column names include ``'dni'``, ``'ghi'``, ``'dhi'``.
-            Optional column names are ``'wind_speed'``, ``'temp_air'``; if not
+            Optional column names are ``'wind_speed'``, ``'temp_air'``,
+            ``'albedo'``.
+
+            If optional columns ``'wind_speed'``, ``'temp_air'`` are not
             provided, air temperature of 20 C and wind speed
-            of 0 m/s will be added to the DataFrame.
+            of 0 m/s will be added to the ``weather`` DataFrame.
+
+            If optional column ``'albedo'`` is provided, albedo values in the
+            ModelChain's PVSystem.arrays are ignored.
 
             If `weather` is a tuple or list, it must be of the same length and
             order as the Arrays of the ModelChain's PVSystem.
@@ -1494,7 +1515,7 @@ class ModelChain:
         Notes
         -----
         Assigns attributes to ``results``: ``times``, ``weather``,
-        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``, ``albedo``.
 
         See also
         --------
@@ -1507,6 +1528,7 @@ class ModelChain:
 
         self._prep_inputs_solar_pos(weather)
         self._prep_inputs_airmass()
+        self._prep_inputs_albedo(weather)
 
         # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
         # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
@@ -1531,6 +1553,7 @@ class ModelChain:
             _tuple_from_dfs(self.results.weather, 'dni'),
             _tuple_from_dfs(self.results.weather, 'ghi'),
             _tuple_from_dfs(self.results.weather, 'dhi'),
+            albedo=self.results.albedo,
             airmass=self.results.airmass['airmass_relative'],
             model=self.transposition_model
         )
@@ -1724,16 +1747,32 @@ class ModelChain:
         Parameters
         ----------
         weather : DataFrame, or tuple or list of DataFrame
-            Irradiance column names must include ``'dni'``, ``'ghi'``, and
-            ``'dhi'``. If optional columns ``'temp_air'`` and ``'wind_speed'``
+            Column names must include:
+
+            - ``'dni'``
+            - ``'ghi'``
+            - ``'dhi'``
+
+            Optional columns are:
+
+            - ``'temp_air'``
+            - ``'cell_temperature'``
+            - ``'module_temperature'``
+            - ``'wind_speed'``
+            - ``'albedo'``
+
+            If optional columns ``'temp_air'`` and ``'wind_speed'``
             are not provided, air temperature of 20 C and wind speed of 0 m/s
             are added to the DataFrame. If optional column
             ``'cell_temperature'`` is provided, these values are used instead
-            of `temperature_model`. If optional column `module_temperature`
-            is provided, `temperature_model` must be ``'sapm'``.
+            of `temperature_model`. If optional column ``'module_temperature'``
+            is provided, ``temperature_model`` must be ``'sapm'``.
 
-            If list or tuple, must be of the same length and order as the
-            Arrays of the ModelChain's PVSystem.
+            If optional column ``'albedo'`` is provided, ``'albedo'`` may not
+            be present on the ModelChain's PVSystem.Arrays.
+
+            If weather is a list or tuple, it must be of the same length and
+            order as the Arrays of the ModelChain's PVSystem.
 
         Returns
         -------

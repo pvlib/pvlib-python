@@ -8,6 +8,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* albedo can now be provided as a column in the `weather` DataFrame input to
+  :py:method:`pvlib.modelchain.ModelChain.run_model`. (:issue:`1387`, :pull:`1478`)
+* albedo is now available as an input to :py:meth:`pvlib.pvsystem.PVSystem.get_irradiance`
+  and :py:meth:`pvlib.pvsystem.Array.get_irradiance`. (:pull:`1478`)
 * :py:func:`pvlib.iotools.read_surfrad` now also accepts remote files
   with https links in addition to files on the SURFRAD FTP server
   (:pull:`1459`)
@@ -20,14 +24,15 @@ Enhancements
 * Add support for `PEP517 <https://peps.python.org/pep-0517/>`_ & `PEP518 <https://peps.python.org/pep-0518/>`_
   with setuptools build backend. (:pull:`1495`)
 
+
 Bug fixes
 ~~~~~~~~~
 * :py:func:`pvlib.irradiance.get_total_irradiance` and
   :py:func:`pvlib.solarposition.spa_python` now raise an error instead
-  of silently ignoring unknown parameters (:pull:`1437`)
+  of silently ignoring unknown parameters. (:pull:`1437`)
 * Fix a bug in :py:func:`pvlib.solarposition.sun_rise_set_transit_ephem`
   where passing localized timezones with large UTC offsets could return
-  rise/set/transit times for the wrong day in recent versions of ``ephem``
+  rise/set/transit times for the wrong day in recent versions of ``ephem``.
   (:issue:`1449`, :pull:`1448`)
 * :py:func:`pvlib.iotools.read_tmy3` is now able to accept midnight
   timestamps as either 24:00 (which is the standard) as well as 00:00.
@@ -68,6 +73,7 @@ Contributors
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Chencheng Luo (:ghuser:`roger-lcc`)
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Jules Chéron (:ghuser:`jules-ch`)

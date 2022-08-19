@@ -17,7 +17,9 @@ Enhancements
 * Improve error message about uneven time intervals for
   :py:func:`~pvlib.clearsky.detect_clearsky` and :py:func:`~pvlib.temperature.prilliman`
   (:issue:`1476`, :pull:`1490`)
-* New module and function to calculate spectral mismatch
+* Add support for `PEP517 <https://peps.python.org/pep-0517/>`_ & `PEP518 <https://peps.python.org/pep-0518/>`_
+  with setuptools build backend. (:pull:`1495`)
+* New module to calculate spectral mismatch
   :py:func:`~pvlib.spectrum.mismatch.calc_spectral_mismatch`
   (:issue:`1523`, :pull:`1524`)
 

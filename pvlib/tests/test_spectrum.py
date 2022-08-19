@@ -3,7 +3,7 @@ from numpy.testing import assert_allclose, assert_approx_equal, assert_equal
 import pandas as pd
 import numpy as np
 from pvlib import spectrum
-from pvlib.spectrum import mismatch
+
 from .conftest import DATA_DIR
 
 SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
@@ -110,7 +110,7 @@ def test_aoi_gt_90(spectrl2_data):
 
 def test_get_sample_sr():
     # test that the sample sr is read and interpolated correctly
-    sr = mismatch.get_sample_sr()
+    sr = spectrum.get_sample_sr()
     assert_equal(len(sr), 185)
     assert_equal(np.sum(sr.index), 136900)
     assert_approx_equal(np.sum(sr), 107.6116)
@@ -118,14 +118,14 @@ def test_get_sample_sr():
     wavelength = [270, 850, 950, 1200, 4001]
     expected = [0.0, 0.92778, 1.0, 0.0, 0.0]
 
-    sr = mismatch.get_sample_sr(wavelength)
+    sr = spectrum.get_sample_sr(wavelength)
     assert_equal(len(sr), len(wavelength))
     assert_allclose(sr, expected, rtol=1e-5)
 
 
 def test_get_am15g():
     # test that the reference spectrum is read and interpolated correctly
-    e = mismatch.get_am15g()
+    e = spectrum.get_am15g()
     assert_equal(len(e), 2002)
     assert_equal(np.sum(e.index), 2761442)
     assert_approx_equal(np.sum(e), 1002.88, significant=6)
@@ -133,7 +133,7 @@ def test_get_am15g():
     wavelength = [270, 850, 950, 1200, 4001]
     expected = [0.0, 0.893720, 0.147260, 0.448250, 0.0]
 
-    e = mismatch.get_am15g(wavelength)
+    e = spectrum.get_am15g(wavelength)
     assert_equal(len(e), len(wavelength))
     assert_allclose(e, expected, rtol=1e-6)
 
@@ -148,19 +148,19 @@ def test_calc_mismatch(spectrl2_data):
     e_sun = e_sun.set_index('wavelength')
     e_sun = e_sun.transpose()
 
-    e_ref = mismatch.get_am15g()
-    sr = mismatch.get_sample_sr()
+    e_ref = spectrum.get_am15g()
+    sr = spectrum.get_sample_sr()
 
     # test with single sun spectrum, same as ref spectrum
-    mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_ref)
+    mm = spectrum.calc_spectral_mismatch(sr, e_sun=e_ref)
     assert_approx_equal(mm, 1.0, significant=6)
 
     # test with single sun spectrum
-    mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_sun.loc['specglo'])
+    mm = spectrum.calc_spectral_mismatch(sr, e_sun=e_sun.loc['specglo'])
     assert_approx_equal(mm, 0.992397, significant=6)
 
     # test with single sun spectrum, also used as reference spectrum
-    mm = mismatch.calc_spectral_mismatch(sr,
+    mm = spectrum.calc_spectral_mismatch(sr,
                                          e_sun=e_sun.loc['specglo'],
                                          e_ref=e_sun.loc['specglo'])
     assert_approx_equal(mm, 1.0, significant=6)
@@ -168,6 +168,6 @@ def test_calc_mismatch(spectrl2_data):
     # test with multiple sun spectra
     expected = [0.972982, 0.995581, 0.899782, 0.992397]
 
-    mm = mismatch.calc_spectral_mismatch(sr, e_sun=e_sun)
+    mm = spectrum.calc_spectral_mismatch(sr, e_sun=e_sun)
     assert mm.index is e_sun.index
     assert_allclose(mm, expected, rtol=1e-6)

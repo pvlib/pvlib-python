@@ -363,7 +363,7 @@ class Location:
 
 def lookup_altitude(latitude, longitude, filepath=None):
     """
-    Look up location altitude from local low-resolution altitude map
+    Look up location altitude from low-resolution altitude map
     supplied with pvlib. The data for this map comes from multiple open data
     sources with varying resolutions aggregated by Mapzen.
 

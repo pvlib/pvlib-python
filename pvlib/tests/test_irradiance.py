@@ -120,20 +120,29 @@ def test_get_extra_radiation_invalid():
         irradiance.get_extra_radiation(300, method='invalid')
 
 
-def test_grounddiffuse_simple_float():
+def test_get_ground_diffuse_simple_float():
     result = irradiance.get_ground_diffuse(40, 900)
     assert_allclose(result, 26.32000014911496)
 
 
-def test_grounddiffuse_simple_series(irrad_data):
+def test_get_ground_diffuse_simple_series(irrad_data):
     ground_irrad = irradiance.get_ground_diffuse(40, irrad_data['ghi'])
     assert ground_irrad.name == 'diffuse_ground'
 
 
-def test_grounddiffuse_albedo_0(irrad_data):
+def test_get_ground_diffuse_albedo_0(irrad_data):
     ground_irrad = irradiance.get_ground_diffuse(
         40, irrad_data['ghi'], albedo=0)
     assert 0 == ground_irrad.all()
+
+
+def test_get_ground_diffuse_albedo_series(times):
+    albedo = pd.Series(0.2, index=times)
+    ground_irrad = irradiance.get_ground_diffuse(
+        45, pd.Series(1000, index=times), albedo)
+    expected = albedo * 0.5 * (1 - np.sqrt(2) / 2.) * 1000
+    expected.name = 'diffuse_ground'
+    assert_series_equal(ground_irrad, expected)
 
 
 def test_grounddiffuse_albedo_invalid_surface(irrad_data):
@@ -142,7 +151,7 @@ def test_grounddiffuse_albedo_invalid_surface(irrad_data):
             40, irrad_data['ghi'], surface_type='invalid')
 
 
-def test_grounddiffuse_albedo_surface(irrad_data):
+def test_get_ground_diffuse_albedo_surface(irrad_data):
     result = irradiance.get_ground_diffuse(40, irrad_data['ghi'],
                                            surface_type='sand')
     assert_allclose(result, [0, 3.731058, 48.778813, 12.035025], atol=1e-4)
@@ -385,6 +394,25 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
         assert total.columns.tolist() == ['poa_global', 'poa_direct',
                                           'poa_diffuse', 'poa_sky_diffuse',
                                           'poa_ground_diffuse']
+
+
+@pytest.mark.parametrize('model', ['isotropic', 'klucher',
+                                   'haydavies', 'reindl', 'king', 'perez'])
+def test_get_total_irradiance_albedo(
+        irrad_data, ephem_data, dni_et, relative_airmass, model):
+    albedo = pd.Series(0.2, index=ephem_data.index)
+    total = irradiance.get_total_irradiance(
+        32, 180,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'],
+        dni=irrad_data['dni'], ghi=irrad_data['ghi'],
+        dhi=irrad_data['dhi'],
+        dni_extra=dni_et, airmass=relative_airmass,
+        model=model,
+        albedo=albedo)
+
+    assert total.columns.tolist() == ['poa_global', 'poa_direct',
+                                      'poa_diffuse', 'poa_sky_diffuse',
+                                      'poa_ground_diffuse']
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
@@ -695,6 +723,14 @@ def test_gti_dirint():
          [ 294.4985420,   66.25848451,  247.64671830],
          [ 941.7943404,  727.50552952,  258.16276278]]),
         columns=expected_col_order, index=times)
+
+    assert_frame_equal(output, expected)
+
+    # test with albedo as a Series
+    albedo = pd.Series(0.05, index=times)
+    output = irradiance.gti_dirint(
+        poa_global, aoi, zenith, azimuth, times, surface_tilt, surface_azimuth,
+        albedo=albedo)
 
     assert_frame_equal(output, expected)
 

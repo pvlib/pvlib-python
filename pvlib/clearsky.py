@@ -900,8 +900,8 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
         Extraterrestrial radiation [W/m^2], defaults to 1364[W/m^2]
     asymmetry : numeric
         Asymmetry factor, defaults to 0.85
-    albedo : numeric
-        Albedo, defaults to 0.2
+    albedo : numeric, default 0.2
+        Ground surface albedo. [unitless]
 
     Returns
     -------

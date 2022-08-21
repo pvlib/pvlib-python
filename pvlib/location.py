@@ -361,7 +361,7 @@ class Location:
         return result
 
 
-def lookup_altitude(latitude, longitude, filepath=None):
+def lookup_altitude(latitude, longitude):
     """
     Look up location altitude from low-resolution altitude map
     supplied with pvlib. The data for this map comes from multiple open data
@@ -384,12 +384,9 @@ def lookup_altitude(latitude, longitude, filepath=None):
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
-    filepath : None or string, default None
-        The path to the ``.h5`` file.
-
     Returns
     -------
-    altitude : int
+    altitude : float
         The altitude of the location in meters.
 
     Notes
@@ -430,9 +427,8 @@ def lookup_altitude(latitude, longitude, filepath=None):
 
     """
 
-    if filepath is None:
-        pvlib_path = os.path.dirname(os.path.abspath(__file__))
-        filepath = os.path.join(pvlib_path, 'data', 'Altitude.h5')
+    pvlib_path = os.path.dirname(os.path.abspath(__file__))
+    filepath = os.path.join(pvlib_path, 'data', 'Altitude.h5')
 
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')
@@ -443,8 +439,8 @@ def lookup_altitude(latitude, longitude, filepath=None):
     # 255 is a special value that means nodata. Fallback to 0 if nodata.
     if alt == 255:
         return 0
-    # Altitude is encoded in 35 meter steps from -2364 meters to 6526 meters
+    # Altitude is encoded in 28 meter steps from -450 meters to 6561 meters
     # There are 0-254 possible altitudes, with 255 reserved for nodata.
     alt *= 28
     alt -= 450
-    return int(alt)
+    return float(alt)

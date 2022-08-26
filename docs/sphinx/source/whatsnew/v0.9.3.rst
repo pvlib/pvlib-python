@@ -4,7 +4,7 @@ v0.9.3 (TBD)
 ------------------------
 
 Deprecations
-~~~~~~~~~~~~
+- removing the parameter *closed* from the pandas dataframes in the examples because it is deprecated for pandas >= 1.4.0.
 
 
 Enhancements
@@ -32,5 +32,5 @@ Requirements
 
 
 Contributors
-~~~~~~~~~~~~
+- Joao Guilherme
 

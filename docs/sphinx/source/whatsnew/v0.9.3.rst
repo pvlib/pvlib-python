@@ -5,7 +5,7 @@ v0.9.3 (TBD)
 
 Deprecations
 ~~~~~~~~~~~~
-
+it was removed the tag *close* in the examples files, since it was unsual and it is deprecated for pandas >= 1.4.0.
 
 Enhancements
 ~~~~~~~~~~~~
@@ -33,4 +33,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+João Guilherme

@@ -1,30 +1,7 @@
-"""
-Sun path diagram
-================
-
-Examples of generating sunpath diagrams.
-"""
-
-#%%
-# This example shows basic usage of pvlib's solar position calculations with
-# :py:meth:`pvlib.solarposition.get_solarposition`.  The examples shown here
-# will generate sunpath diagrams that shows solar position over a year.
-#
-# Polar plot
-# ----------
-#
-# Below is an example plot of solar position in
-# `polar coordinates <https://en.wikipedia.org/wiki/Polar_coordinate_system>`_.
-
-from pvlib import solarposition
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 tz = 'Asia/Calcutta'
 lat, lon = 28.6, 77.2
 
-times = pd.date_range('2019-01-01 00:00:00', '2020-01-01', closed='left',
+times = pd.date_range('2019-01-01 00:00:00', '2020-01-01', inclusive='left',
                       freq='H', tz=tz)
 solpos = solarposition.get_solarposition(times, lat, lon)
 # remove nighttime
@@ -104,7 +81,7 @@ import matplotlib.pyplot as plt
 
 tz = 'Asia/Calcutta'
 lat, lon = 28.6, 77.2
-times = pd.date_range('2019-01-01 00:00:00', '2020-01-01', closed='left',
+times = pd.date_range('2019-01-01 00:00:00', '2020-01-01', inclusive='left',
                       freq='H', tz=tz)
 
 solpos = solarposition.get_solarposition(times, lat, lon)

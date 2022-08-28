@@ -92,7 +92,7 @@ gcr = 0.4
 
 # calculate the solar position
 times = pd.date_range('2019-01-01 06:00', '2019-01-01 18:00', freq='1min',
-                       tz=tz)
+                      tz=tz)
 solpos = solarposition.get_solarposition(times, lat, lon)
 
 # compare the backtracking angle at various terrain slopes

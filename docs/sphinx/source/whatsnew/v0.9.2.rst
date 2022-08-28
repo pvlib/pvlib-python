@@ -19,9 +19,6 @@ Enhancements
   (:issue:`1476`, :pull:`1490`)
 * Add support for `PEP517 <https://peps.python.org/pep-0517/>`_ & `PEP518 <https://peps.python.org/pep-0518/>`_
   with setuptools build backend. (:pull:`1495`)
-* New module to calculate spectral mismatch
-  :py:func:`~pvlib.spectrum.mismatch.calc_spectral_mismatch`
-  (:issue:`1523`, :pull:`1524`)
 
 Bug fixes
 ~~~~~~~~~
@@ -32,7 +29,14 @@ Bug fixes
   where passing localized timezones with large UTC offsets could return
   rise/set/transit times for the wrong day in recent versions of ``ephem``
   (:issue:`1449`, :pull:`1448`)
-
+* :py:func:`pvlib.iotools.read_tmy3` is now able to accept midnight
+  timestamps as either 24:00 (which is the standard) as well as 00:00.
+  Previously 00:00 timestamps would incorrectly be moved one day forward.
+  (:pull:`1494`)
+* :py:func:`pvlib.iotools.get_psm3` now raises a deprecation warning if
+  the `leap_day` parameter is not specified in a single-year request.
+  Starting in pvlib 0.11.0 `leap_day` will default to True instead of False.
+  (:issue:`1481`, :pull:`1511`)
 
 Testing
 ~~~~~~~
@@ -46,7 +50,6 @@ Documentation
 * Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
 * Add gallery example of simulating rearside irradiance for a fixed-tilt
   array with pvfactors (:pull:`1470`)
-
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -64,10 +67,9 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Chencheng Luo (:ghuser:`roger-lcc`)
-* Prajwal Borkar (:ghuser:`PrajwalBorkar`)
+* Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Jules Chéron (:ghuser:`jules-ch`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)
 * Will Hobbs (:ghuser:`williamhobbs`)
-* Anton Driesse (:ghuser:`adriesse`)

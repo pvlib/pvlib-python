@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 tz = 'US/Eastern'
 lat, lon = 40, -80
 
-times = pd.date_range('2019-01-01', '2019-01-02', closed='left', freq='5min',
+times = pd.date_range('2019-01-01', '2019-01-02', freq='5min',
                       tz=tz)
 solpos = solarposition.get_solarposition(times, lat, lon)
 

@@ -1,7 +1,12 @@
 name: asv
 
 # CI ASV CHECK is aimed to verify that the benchmarks execute without error.
-on: [pull_request, push]
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+
 
 jobs:
   quick-benchmarks:

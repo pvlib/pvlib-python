@@ -27,4 +27,4 @@ jobs:
         run: |
           cd benchmarks
           asv machine --yes
-          asv run HEAD^! --quick --dry-run --show-stderr --verbose
+          asv run HEAD^! --quick --dry-run --show-stderr

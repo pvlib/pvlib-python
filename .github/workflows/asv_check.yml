@@ -4,7 +4,7 @@ name: asv
 on: [pull_request, push]
 
 jobs:
-  quick:
+  quick-benchmarks:
     runs-on: ubuntu-latest
     defaults: 
       run:

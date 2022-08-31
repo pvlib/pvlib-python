@@ -21,7 +21,7 @@ jobs:
           python-version: '3.9.7'
 
       - name: Install asv
-        run: pip install asv==0.4.2
+        run: pip install asv==0.4.2 build
 
       - name: Run asv benchmarks
         run: |

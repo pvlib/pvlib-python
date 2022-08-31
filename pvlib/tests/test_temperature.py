@@ -366,7 +366,7 @@ def test_prilliman_nans():
 
 
 def test_glm_conversions():
-
+    # it is easiest and sufficient to test conversion from  & to the same model
     glm = temperature.GenericLinearModel(module_efficiency=0.1,
                                          absorptance=0.9)
 
@@ -382,6 +382,7 @@ def test_glm_conversions():
     for k, v in inp.items():
         assert np.isclose(out[k], v)
 
+    # test with optional parameters
     inp = {'u_c': 25, 'u_v': 4,
            'module_efficiency': 0.15,
            'alpha_absorption': 0.95}
@@ -396,6 +397,7 @@ def test_glm_conversions():
     for k, v in inp.items():
         assert np.isclose(out[k], v)
 
+    # test with optional parameters
     inp = {'noct': 47,
            'module_efficiency': 0.15,
            'transmittance_absorptance': 0.95}
@@ -416,7 +418,7 @@ def test_glm_simulations():
     glm = temperature.GenericLinearModel(module_efficiency=0.1,
                                          absorptance=0.9)
     wind = np.array([1.4, 1/.51, 5.4])
-    weather = (765, 32, wind)
+    weather = (800, 20, wind)
 
     inp = {'u0': 20.0, 'u1': 5.0}
     glm.use_faiman(**inp)

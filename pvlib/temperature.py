@@ -1016,7 +1016,7 @@ class GenericLinearModel():
     wind = np.array([1.4, 1/.51, 5.4])
     weather = (765, 32, wind)
 
-    glm = GenericLinearModel(module_efficiency=0.18)
+    glm = GenericLinearModel(module_efficiency=0.18, absorptance=0.90)
 
     glm.use_faiman(25, 6.84)
 
@@ -1058,7 +1058,7 @@ class GenericLinearModel():
     print(sapm_module(*weather, **glm.to_sapm()))
     print(noct_sam(*weather, **glm.to_noct_sam()))
     '''
-    def __init__(self, module_efficiency=0.15, absorptance=0.9):
+    def __init__(self, module_efficiency, absorptance):
         '''
         init docstring
 

@@ -115,6 +115,7 @@
         // minimum supported versions
         {
             "python": "3.7",
+			"build": "",
             "numpy": "1.16.0",
             "pandas": "0.25.0",
             "scipy": "1.2.0",
@@ -126,6 +127,7 @@
         // latest versions available
         {
             "python": "3.8",
+			"build": "",
             "numpy": "",
             "pandas": "",
             "scipy": "",

@@ -5,7 +5,7 @@ v0.9.3 (TBD)
 
 Deprecations
 ~~~~~~~~~~~~
-
+  * Removed the kwarg ``closed`` from ``pd.date_range`` in the examples since it is deprecated for pandas >= 1.4.0. (:pull:`1540`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -35,4 +35,5 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* João Guilherme (:ghuser:`joaoguilhermeS`)
 * Nicolas Martinez (:ghuser:`nicomt`)

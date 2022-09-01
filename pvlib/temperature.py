@@ -1152,7 +1152,7 @@ class GenericLinearModel():
 
         return temp_air + temp_difference
 
-    def use_generic_linear(self):
+    def get_generic_linear(self):
         '''
         Get the generic linear model parameters to use with the separate
         generic linear module temperature calculation function.

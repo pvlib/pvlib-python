@@ -432,7 +432,7 @@ def test_glm_simulations():
     out = glm(*weather, module_efficiency=0.1)
     assert np.allclose(out, expected)
 
-    inp = glm.use_generic_linear()
+    inp = glm.get_generic_linear()
     out = temperature.generic_linear(*weather, **inp)
     assert np.allclose(out, expected)
 

@@ -981,11 +981,53 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
 
 def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
-                   module_efficiency=0.15, absorptance=0.9):
-    r"""
-    Calculate cell temperature using a generic linear heat loss factor model
-    as formulated in [n].
+                   module_efficiency, absorptance):
     """
+    Calculate cell temperature using a generic linear heat loss factor model
+    as developed in [1]_.
+
+    The parameters for this model can be obtained using
+    :py:class:`GenericLinearModel`
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    temp_air : numeric
+        Ambient dry bulb temperature [C].
+
+    wind_speed : numeric
+        Wind speed at a height of 10 meters [m/s].
+
+    u_const : numeric
+        Combined heat transfer coefficient at zero wind speed [(W/m^2)/C]
+
+    du_wind : numeric
+        Influence of wind speed on combined heat transfer coefficient
+        [(W/m^2)/C/(m/s)]
+
+    module_efficiency : float
+        The electrical efficiency of the module. [pu]
+
+    absorptance : float
+        The light absorptance of the module. [pu]
+
+    Returns
+    -------
+    numeric, values in degrees C.
+
+    References
+    ----------
+    .. [1] A. Driesse et al, "PV Module Operating Temperature
+        Model Equivalence and Parameter Translation". 2022 IEEE
+       Photovoltaic Specialists Conference (PVSC), 2022.
+
+    See also
+    --------
+    pvlib.temperature.GenericLinearModel
+    """
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs, Sept. 2022
     heat_input = poa_global * (absorptance - module_efficiency)
     total_loss_factor = u_const + du_wind * wind_speed
     temp_difference = heat_input / total_loss_factor
@@ -1023,6 +1065,7 @@ class GenericLinearModel():
     ----------
     module_efficiency : float
         The electrical efficiency of the module. [pu]
+
     absorptance : float
         The light absorptance of the module. [pu]
 
@@ -1043,9 +1086,20 @@ class GenericLinearModel():
 
     parmdict = glm.to_pvsyst()
 
-    glm.use_pvsyst(29, 0).to_faiman()
+    pvsyst_cell(800, 20, 1, **parmdict)
 
+    References
+    ----------
+    .. [1] A. Driesse et al, "PV Module Operating Temperature
+       Model Equivalence and Parameter Translation". 2022 IEEE
+       Photovoltaic Specialists Conference (PVSC), 2022.
+
+    See also
+    --------
+    pvlib.temperature.generic_linear
     '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs, Sept. 2022
+
     def __init__(self, module_efficiency, absorptance):
 
         self.u_const = np.nan
@@ -1083,6 +1137,11 @@ class GenericLinearModel():
         Returns
         -------
         numeric, values in degrees Celsius
+
+        See also
+        --------
+        get_generic
+        pvlib.temperature.generic_linear
         '''
         if module_efficiency is None:
             module_efficiency = self.eta
@@ -1114,8 +1173,7 @@ class GenericLinearModel():
         Parameters
         ----------
         u0, u1 : float
-
-        See :py:func:`pvlib.temperature.faiman` for details.
+            See :py:func:`pvlib.temperature.faiman` for details.
         '''
         net_absorptance = self.alpha - self.eta
         self.u_const = u0 * net_absorptance
@@ -1129,9 +1187,9 @@ class GenericLinearModel():
 
         Returns
         ----------
-        dict containing keys 'u0', 'u1'
-
-        See :py:func:`pvlib.temperature.faiman` for details.
+        model_parameters : dict
+            See :py:func:`pvlib.temperature.faiman` for
+            model parameter details.
         '''
         net_absorptance = self.alpha - self.eta
         u0 = self.u_const / net_absorptance
@@ -1144,8 +1202,18 @@ class GenericLinearModel():
         '''
         Use the PVsyst model parameters to set the generic equivalents.
 
+        Parameters
+        ----------
+        u_c, u_v : float
+            See :py:func:`pvlib.temperature.pvsyst_cell` for details.
+
+        module_efficiency, alpha_absorption : float, optional
+            See :py:func:`pvlib.temperature.pvsyst_cell` for details.
+
+        Notes
+        -----
         The optional parameters are primarily for convenient compatibility
-        with the other function signatures.
+        with existing function signatures.
         '''
         if module_efficiency is not None:
             self.eta = module_efficiency
@@ -1165,6 +1233,12 @@ class GenericLinearModel():
     def to_pvsyst(self):
         '''
         Convert the generic model parameters to PVsyst model equivalents.
+
+        Returns
+        ----------
+        model_parameters : dict
+            See :py:func:`pvlib.temperature.pvsyst_cell` for
+            model parameter details.
         '''
         net_absorptance_glm = self.alpha - self.eta
         net_absorptance_pvsyst = self.alpha * (1.0 - self.eta)
@@ -1183,8 +1257,18 @@ class GenericLinearModel():
         '''
         Use the NOCT SAM model parameters to set the generic equivalents.
 
+        Parameters
+        ----------
+        noct : float
+            See :py:func:`pvlib.temperature.noct_sam` for details.
+
+        module_efficiency, transmittance_absorptance : float, optional
+            See :py:func:`pvlib.temperature.noct_sam` for details.
+
+        Notes
+        -----
         The optional parameters are primarily for convenient compatibility
-        with the other function signatures.
+        with existing function signatures.
         '''
         if module_efficiency is not None:
             self.eta = module_efficiency
@@ -1203,6 +1287,12 @@ class GenericLinearModel():
     def to_noct_sam(self):
         '''
         Convert the generic model parameters to NOCT SAM model equivalents.
+
+        Returns
+        ----------
+        model_parameters : dict
+            See :py:func:`pvlib.temperature.noct_sam` for
+            model parameter details.
         '''
         # NOCT is determined with wind speed near module height
         # the adjustment reduces the wind coefficient for use with 10m wind
@@ -1217,8 +1307,21 @@ class GenericLinearModel():
         '''
         Use the SAPM module model parameters to set the generic equivalents.
 
-        The generic model will equal the SAPM model at the two
-        given 10m wind speed values.
+        In the SAPM the heat transfer coefficient increases exponentially
+        with windspeed, whereas in the other models the increase is linear.
+        This function equates the generic linear model to SAPM at two
+        specified winds speeds, thereby defining a linear approximation
+        for the exponential behavior.
+
+        Parameters
+        ----------
+        a, b : float
+            See :py:func:`pvlib.temperature.noct_sam` for details.
+
+        wind_fit_low, wind_fit_high : float, optional
+            Two wind speed values at which the generic linear model
+            must be equal to the SAPM model. The default
+            values represent wind speed at 10m height. [m/s]
         '''
         u_low = 1.0 / np.exp(a + b * wind_fit_low)
         u_high = 1.0 / np.exp(a + b * wind_fit_high)
@@ -1235,8 +1338,30 @@ class GenericLinearModel():
         '''
         Convert the generic model parameters to SAPM model equivalents.
 
+        In the SAPM the heat transfer coefficient increases exponentially
+        with windspeed, whereas in the other models the increase is linear.
+        This function equates SAPM to the generic linear model at two
+        specified winds speeds, thereby defining an exponential approximation
+        for the linear behavior.
+
+        Parameters
+        ----------
+        wind_fit_low, wind_fit_high : float, optional
+            Two wind speed values at which the generic linear model
+            must be equal to the SAPM model. The default
+            values represent wind speed at 10m height. [m/s]
+
+        Returns
+        ----------
+        model_parameters : dict
+            See :py:func:`pvlib.temperature.sapm_module` for
+            model parameter details.
+
+        Notes
+        -----
         The SAPM model will equal the generic model at the two
-        given 10m wind speed values.
+        given 10m wind speed values, and approximately equal at
+        other wind speeds.
         '''
         net_absorptance = self.alpha - self.eta
         u_const = self.u_const / net_absorptance

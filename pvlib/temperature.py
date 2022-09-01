@@ -1206,7 +1206,7 @@ class GenericLinearModel():
         '''
         # NOCT is determined with wind speed near module height
         # the adjustment reduces the wind coefficient for use with 10m wind
-        wind_adj=0.51
+        wind_adj = 0.51
         u_noct = self.u_const + self.du_wind / wind_adj
         noct = 20.0 + (800.0 * self.alpha) / u_noct
         return dict(noct=noct,
@@ -1246,6 +1246,6 @@ class GenericLinearModel():
         u_high = u_const + du_wind * wind_fit_high
 
         b = - ((np.log(u_high) - np.log(u_low)) /
-                  (wind_fit_high - wind_fit_low))
+              (wind_fit_high - wind_fit_low))
         a = - (np.log(u_low) + b * wind_fit_low)
         return dict(a=a, b=b)

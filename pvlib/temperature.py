@@ -1008,10 +1008,10 @@ def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
         [(W/m^2)/C/(m/s)]
 
     module_efficiency : float
-        The electrical efficiency of the module. [pu]
+        The electrical efficiency of the module. [-]
 
     absorptance : float
-        The light absorptance of the module. [pu]
+        The light absorptance of the module. [-]
 
     Returns
     -------
@@ -1020,7 +1020,7 @@ def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
     References
     ----------
     .. [1] A. Driesse et al, "PV Module Operating Temperature
-        Model Equivalence and Parameter Translation". 2022 IEEE
+       Model Equivalence and Parameter Translation". 2022 IEEE
        Photovoltaic Specialists Conference (PVSC), 2022.
 
     See also
@@ -1028,6 +1028,7 @@ def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
     pvlib.temperature.GenericLinearModel
     """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs, Sept. 2022
+
     heat_input = poa_global * (absorptance - module_efficiency)
     total_loss_factor = u_const + du_wind * wind_speed
     temp_difference = heat_input / total_loss_factor
@@ -1048,7 +1049,7 @@ class GenericLinearModel():
     model functions in pvlib.temperature.
 
     An instance of the class represents a specific module type, therefore,
-    the module properties efficiency and absorptance must be provided.
+    the module properties *efficiency* and *absorptance* must be provided.
     Although some temperature models do not use these properties, they
     nevertheless exist and affect operating temperature.
 
@@ -1059,15 +1060,15 @@ class GenericLinearModel():
     occuring during those measurements.
 
     When used for time series simulation, efficiency and absorptance may
-    vary, and each emperical model handles this differently.
+    vary, and each empirical model handles this differently.
 
     Parameters
     ----------
     module_efficiency : float
-        The electrical efficiency of the module. [pu]
+        The electrical efficiency of the module. [-]
 
     absorptance : float
-        The light absorptance of the module. [pu]
+        The light absorptance of the module. [-]
 
     Notes
     -----
@@ -1075,9 +1076,14 @@ class GenericLinearModel():
     one of the use_* methods must be called to provide thermal model
     parameters.
 
+    References
+    ----------
+    .. [1] A. Driesse et al, "PV Module Operating Temperature
+       Model Equivalence and Parameter Translation". 2022 IEEE
+       Photovoltaic Specialists Conference (PVSC), 2022.
+
     Examples
     --------
-
     glm = GenericLinearModel(module_efficiency=0.19, absorptance=0.88)
 
     glm.use_faiman(16, 8)
@@ -1087,12 +1093,6 @@ class GenericLinearModel():
     parmdict = glm.to_pvsyst()
 
     pvsyst_cell(800, 20, 1, **parmdict)
-
-    References
-    ----------
-    .. [1] A. Driesse et al, "PV Module Operating Temperature
-       Model Equivalence and Parameter Translation". 2022 IEEE
-       Photovoltaic Specialists Conference (PVSC), 2022.
 
     See also
     --------
@@ -1152,14 +1152,18 @@ class GenericLinearModel():
 
         return temp_air + temp_difference
 
-    def get_generic(self):
+    def use_generic_linear(self):
         '''
-        Get the generic linea model parameters to use with the separate
+        Get the generic linear model parameters to use with the separate
         generic linear module temperature calculation function.
 
         Returns:
         --------
-        dict containg generic linear model parameters
+        model_parameters : dict
+
+        See also
+        --------
+        pvlib.temperature.generic_linear
         '''
         return dict(u_const=self.u_const,
                     du_wind=self.du_wind,
@@ -1356,12 +1360,6 @@ class GenericLinearModel():
         model_parameters : dict
             See :py:func:`pvlib.temperature.sapm_module` for
             model parameter details.
-
-        Notes
-        -----
-        The SAPM model will equal the generic model at the two
-        given 10m wind speed values, and approximately equal at
-        other wind speeds.
         '''
         net_absorptance = self.alpha - self.eta
         u_const = self.u_const / net_absorptance

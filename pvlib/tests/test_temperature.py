@@ -426,6 +426,25 @@ def test_glm_simulations():
     expected = temperature.faiman(*weather, **inp)
     assert np.allclose(out, expected)
 
-    inp = glm.get_generic()
-    temperature.generic_linear(*weather, **inp)
+    out = glm(*weather)
     assert np.allclose(out, expected)
+
+    out = glm(*weather, module_efficiency=0.1)
+    assert np.allclose(out, expected)
+
+    inp = glm.get_generic()
+    out = temperature.generic_linear(*weather, **inp)
+    assert np.allclose(out, expected)
+
+
+def test_glm_repr():
+
+    glm = temperature.GenericLinearModel(module_efficiency=0.1,
+                                         absorptance=0.9)
+    inp = {'u0': 20.0, 'u1': 5.0}
+    glm.use_faiman(**inp)
+    expected = ("GenericLinearModel: {'u_const': 16.0, "
+                                     "'du_wind': 4.0, "
+                                     "'eta': 0.1, "
+                                     "'alpha': 0.9}")
+    assert glm.__repr__() == expected

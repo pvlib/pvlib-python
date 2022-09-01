@@ -9,7 +9,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Low resolution altitude lookup map
+  :py:func:`~pvlib.location.lookup_altitude`
+  (:issue:`1516`, :pull:`1518`)
 
 Bug fixes
 ~~~~~~~~~
@@ -33,5 +35,6 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-João Guilherme (:ghuser:`joaoguilhermeS`)
+* João Guilherme (:ghuser:`joaoguilhermeS`)
+* Nicolas Martinez (:ghuser:`nicomt`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)

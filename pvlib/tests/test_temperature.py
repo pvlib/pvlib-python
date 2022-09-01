@@ -443,8 +443,10 @@ def test_glm_repr():
                                          absorptance=0.9)
     inp = {'u0': 20.0, 'u1': 5.0}
     glm.use_faiman(**inp)
-    expected = ("GenericLinearModel: {'u_const': 16.0, "
-                                     "'du_wind': 4.0, "
-                                     "'eta': 0.1, "
-                                     "'alpha': 0.9}")
+    expected = ("GenericLinearModel: {"
+                "'u_const': 16.0, "
+                "'du_wind': 4.0, "
+                "'eta': 0.1, "
+                "'alpha': 0.9}")
+
     assert glm.__repr__() == expected

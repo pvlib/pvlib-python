@@ -1246,6 +1246,6 @@ class GenericLinearModel():
         u_high = u_const + du_wind * wind_fit_high
 
         b = - ((np.log(u_high) - np.log(u_low)) /
-              (wind_fit_high - wind_fit_low))
+               (wind_fit_high - wind_fit_low))
         a = - (np.log(u_low) + b * wind_fit_low)
         return dict(a=a, b=b)

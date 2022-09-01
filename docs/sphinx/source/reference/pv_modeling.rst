@@ -44,8 +44,9 @@ PV temperature models
    temperature.ross
    temperature.noct_sam
    temperature.prilliman
-   temperature.generic_linear
    pvsystem.PVSystem.get_cell_temperature
+   temperature.generic_linear
+   temperature.GenericLinearModel
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -54,10 +55,6 @@ Temperature Model Parameters
    :annotation:
 
 .. currentmodule:: pvlib
-
-.. autosummary::
-   :toctree: generated/
-   temperature.GenericLinearModel
 
 Single diode models
 -------------------

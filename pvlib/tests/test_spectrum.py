@@ -108,9 +108,9 @@ def test_aoi_gt_90(spectrl2_data):
         assert np.all(spectra[key] >= 0), message
 
 
-def test_get_sample_sr():
+def test_get_example_spectral_response():
     # test that the sample sr is read and interpolated correctly
-    sr = spectrum.get_sample_sr()
+    sr = spectrum.get_example_spectral_response()
     assert_equal(len(sr), 185)
     assert_equal(np.sum(sr.index), 136900)
     assert_approx_equal(np.sum(sr), 107.6116)
@@ -118,7 +118,7 @@ def test_get_sample_sr():
     wavelength = [270, 850, 950, 1200, 4001]
     expected = [0.0, 0.92778, 1.0, 0.0, 0.0]
 
-    sr = spectrum.get_sample_sr(wavelength)
+    sr = spectrum.get_example_spectral_response(wavelength)
     assert_equal(len(sr), len(wavelength))
     assert_allclose(sr, expected, rtol=1e-5)
 
@@ -149,7 +149,7 @@ def test_calc_mismatch(spectrl2_data):
     e_sun = e_sun.transpose()
 
     e_ref = spectrum.get_am15g()
-    sr = spectrum.get_sample_sr()
+    sr = spectrum.get_example_spectral_response()
 
     # test with single sun spectrum, same as ref spectrum
     mm = spectrum.calc_spectral_mismatch(sr, e_sun=e_ref)

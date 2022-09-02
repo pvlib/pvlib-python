@@ -9,9 +9,9 @@ from scipy.interpolate import interp1d
 import os
 
 
-def get_sample_sr(wavelength=None):
+def get_example_spectral_response(wavelength=None):
     '''
-    Generate a generic smooth c-Si spectral response for tests and experiments.
+    Generate a generic smooth spectral response (SR) for tests and experiments.
 
     Parameters
     ----------
@@ -26,17 +26,17 @@ def get_sample_sr(wavelength=None):
 
     Notes
     -----
-    This spectral response is based on measurements taken on a reference cell.
+    This spectral response is based on measurements taken on a c-Si cell.
     The measured data points have been adjusted by PV Performance Labs so that
     standard cubic spline interpolation produces a curve without oscillations
-    as shown in [1]_.
+    as shown in [1]_, which makes it suitable for experimenting with spectral
+    data of different resolutions.
 
     References
     ----------
     .. [1] Driesse, Anton, and Stein, Joshua. "Global Normal Spectral
        Irradiance in Albuquerque: a One-Year Open Dataset for PV Research".
-       United States 2020. https://doi.org/10.2172/1814068.
-       https://www.osti.gov/servlets/purl/1814068.
+       United States 2020. :doi:`10.2172/1814068`.
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
 
@@ -78,6 +78,10 @@ def get_am15g(wavelength=None):
     Read the ASTM G173-03 AM1.5 global tilted spectrum, optionally interpolated
     to the specified wavelength(s).
 
+    Global (tilted) irradiance includes direct and diffuse irradiance from sky
+    and ground reflections, and is more formally called hemispherical
+    irradiance (on a tilted surface).
+
     Parameters
     ----------
     wavelength: 1-D sequence of numeric, optional
@@ -87,13 +91,13 @@ def get_am15g(wavelength=None):
     Returns
     -------
     am15g: pandas.Series
-        The AM1.5g standard spectrum indexed by wavelength in nm. [W/m^2/nm]
+        The AM1.5g standard spectrum indexed by wavelength in nm. [(W/m^2)/nm]
 
     Notes
     -----
-    This function uses linear interpolation.  If the reference spectrum is too
-    coarsely interpolated, its integral may deviate from the standard value
-    of 1000.37 W/m^2.
+    This function uses linear interpolation.  If the values in ``wavelength``
+    are too widely spaced, the integral of the spectrum may deviate from the
+    standard value of 1000.37 W/m^2.
 
     The values in the data file provided with pvlib-python are copied from an
     Excel file distributed by NREL, which is found here:
@@ -112,7 +116,7 @@ def get_am15g(wavelength=None):
     pvlib_path = pvlib.__path__[0]
     filepath = os.path.join(pvlib_path, 'data', 'astm_g173_am15g.csv')
 
-    am15g = pd.read_csv(filepath, index_col=0, squeeze=True)
+    am15g = pd.read_csv(filepath, index_col=0).squeeze()
 
     if wavelength is not None:
         interpolator = interp1d(am15g.index, am15g,
@@ -140,11 +144,13 @@ def calc_spectral_mismatch(sr, e_sun, e_ref=None):
     sr: pandas.Series
         The relative spectral response of one (photovoltaic) test device.
         The index of the Series must contain wavelength values in nm. [-]
+
     e_sun: pandas.DataFrame or pandas.Series
         One or more measured solar irradiance spectra in a pandas.DataFrame
         having wavelength in nm as column index.  A single spectrum may be
         be given as a pandas.Series having wavelength in nm as index.
         [W/m^2/nm]
+
     e_ref: pandas.Series, optional
         The reference spectrum to use for the mismatch calculation.
         The index of the Series must contain wavelength values in nm.
@@ -178,10 +184,10 @@ def calc_spectral_mismatch(sr, e_sun, e_ref=None):
     ----------
     .. [1] ASTM "E973-16 Standard Test Method for Determination of the
        Spectral Mismatch Parameter Between a Photovoltaic Device and a
-       Photovoltaic Reference Cell"
+       Photovoltaic Reference Cell" :doi:`10.1520/E0973-16R20`
     .. [2] ASTM "E973-10 Standard Test Method for Determination of the
        Spectral Mismatch Parameter Between a Photovoltaic Device and a
-       Photovoltaic Reference Cell"
+       Photovoltaic Reference Cell" :doi:`10.1520/E0973-10`
     .. [3] IEC 60904-7 "Computation of the spectral mismatch correction
        for measurements of photovoltaic devices"
     """

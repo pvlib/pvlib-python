@@ -1,4 +1,4 @@
-wavelength,am15g
+wavelength [nm],am15g [(W/m^2)/nm]
 280.0,4.7309e-23
 280.5,1.2307e-21
 281.0,5.6895e-21

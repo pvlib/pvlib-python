@@ -96,9 +96,10 @@ def get_am15g(wavelength=None):
 
     Notes
     -----
-    This function uses linear interpolation.  If the values in ``wavelength``
-    are too widely spaced, the integral of the spectrum may deviate from the
-    standard value of 1000.37 W/m^2.
+    If ``wavelength`` is specified this function uses linear interpolation.
+
+    If the values in ``wavelength`` are too widely spaced, the integral of the
+    spectrum may deviate from the standard value of 1000.37 W/m^2.
 
     The values in the data file provided with pvlib-python are copied from an
     Excel file distributed by NREL, which is found here:
@@ -150,12 +151,12 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
         One or more measured solar irradiance spectra in a pandas.DataFrame
         having wavelength in nm as column index.  A single spectrum may be
         be given as a pandas.Series having wavelength in nm as index.
-        [W/m^2/nm]
+        [(W/m^2)/nm]
 
     e_ref: pandas.Series, optional
         The reference spectrum to use for the mismatch calculation.
         The index of the Series must contain wavelength values in nm.
-        The default is the ASTM G173-03 global tilted spectrum. [W/m^2/nm]
+        The default is the ASTM G173-03 global tilted spectrum. [(W/m^2)/nm]
 
     Returns
     -------
@@ -169,18 +170,20 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
     makes it possible to avoid interpolation, or to use a different method of
     interpolation.
 
-    The spectral response is linearly interpolated to the wavelengths of the
-    spectrum with which is it multiplied internally (e_sun and e_ref). To
-    achieve alternate behavior the spectral response can be transformed
-    before calling this function.
+    The spectral response is linearly interpolated to the wavelengths of each
+    spectrum with which is it multiplied internally (``e_sun`` and ``e_ref``).
+    If the wavelengths of the spectral response already match one or both
+    of these spectra interpolation has no effect; therefore, another type of
+    interpolation could be used to process ``sr`` before calling this function.
 
     The standards describing mismatch calculations focus on indoor laboratory
     applications, but are applicable to outdoor performance as well.
-    The most recent version of ASTM E973 [1]_ is somewhat more difficult to
-    read because it includes adjustments for temperature dependency of the
-    spectral response, which led to a formulation using quantum efficiency
-    (QE). IEC 60904-7 is clearer and also discusses the use of a
-    broadband reference device.
+    The 2016 version of ASTM E973 [1]_ is somewhat more difficult to
+    read than the 2010 version [2]_ because it includes adjustments for
+    the temperature dependency of spectral response, which led to a
+    formulation using quantum efficiency (QE).
+    IEC 60904-7 is clearer and also discusses the use of a broadband
+    reference device. [3]_
 
     References
     ----------

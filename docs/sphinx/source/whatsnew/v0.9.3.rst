@@ -12,6 +12,9 @@ Enhancements
 * Low resolution altitude lookup map
   :py:func:`~pvlib.location.lookup_altitude`
   (:issue:`1516`, :pull:`1518`)
+* New module to calculate spectral mismatch
+  :py:func:`~pvlib.spectrum.mismatch.calc_spectral_mismatch_field`
+  (:issue:`1523`, :pull:`1524`)
 
 Bug fixes
 ~~~~~~~~~
@@ -37,3 +40,8 @@ Contributors
 ~~~~~~~~~~~~
 * João Guilherme (:ghuser:`joaoguilhermeS`)
 * Nicolas Martinez (:ghuser:`nicomt`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

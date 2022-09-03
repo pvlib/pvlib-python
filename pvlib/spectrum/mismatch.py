@@ -16,20 +16,21 @@ def get_example_spectral_response(wavelength=None):
     Parameters
     ----------
     wavelength: 1-D sequence of numeric, optional
-        Wavelengths at which the spectral response should be interpolated.
-        By default the wavelengths are from 280 to 1200 in 5 nm intervals. [nm]
+        Wavelengths at which spectral response values are generated.
+        By default ``wavelength`` is from 280 to 1200 in 5 nm intervals. [nm]
 
     Returns
     -------
     sr: pandas.Series
-        The relative spectral response indexed by wavelength in nm. [-]
+        The relative spectral response indexed by ``wavelength`` in nm. [-]
 
     Notes
     -----
     This spectral response is based on measurements taken on a c-Si cell.
-    The measured data points have been adjusted by PV Performance Labs so that
-    standard cubic spline interpolation produces a curve without oscillations
-    as shown in [1]_, which makes it suitable for experimenting with spectral
+    A small number of points near the measured curve are used to define
+    a cubic spline having no undue oscillations, as shown in [1]_.  The spline
+    can be interpolated at arbitrary wavelengths to produce a continuous,
+    smooth curve , which makes it suitable for experimenting with spectral
     data of different resolutions.
 
     References
@@ -85,13 +86,13 @@ def get_am15g(wavelength=None):
     Parameters
     ----------
     wavelength: 1-D sequence of numeric, optional
-        The wavelengths at which the spectrum should be interpolated.
+        Wavelengths at which the spectrum is interpolated.
         By default the 2002 wavelengths of the standard are returned. [nm]
 
     Returns
     -------
     am15g: pandas.Series
-        The AM1.5g standard spectrum indexed by wavelength in nm. [(W/m^2)/nm]
+        The AM1.5g standard spectrum indexed by ``wavelength``. [(W/m^2)/nm]
 
     Notes
     -----
@@ -134,7 +135,7 @@ def get_am15g(wavelength=None):
     return am15g
 
 
-def calc_spectral_mismatch(sr, e_sun, e_ref=None):
+def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
     """
     Calculate spectral mismatch between a test device and broadband reference
     device under specified solar spectral irradiance conditions.
@@ -163,9 +164,10 @@ def calc_spectral_mismatch(sr, e_sun, e_ref=None):
     Notes
     -----
     If the default reference spectrum is used it is linearly interpolated
-    to the wavelengths of the measured spectrum.  To achieve alternate
-    behavior e_ref can be transformed before calling this function and
-    provided as an argument.
+    to the wavelengths of the measured spectrum, but if a reference spectrum
+    is provided via the parameter ``e_ref`` it is used without change. This
+    makes it possible to avoid interpolation, or to use a different method of
+    interpolation.
 
     The spectral response is linearly interpolated to the wavelengths of the
     spectrum with which is it multiplied internally (e_sun and e_ref). To

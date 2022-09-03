@@ -138,7 +138,7 @@ def test_get_am15g():
     assert_allclose(e, expected, rtol=1e-6)
 
 
-def test_calc_mismatch(spectrl2_data):
+def test_calc_spectral_mismatch_field(spectrl2_data):
     # test that the mismatch is calculated correctly with
     # - default and custom reference sepctrum
     # - single or multiple sun spectra
@@ -152,15 +152,15 @@ def test_calc_mismatch(spectrl2_data):
     sr = spectrum.get_example_spectral_response()
 
     # test with single sun spectrum, same as ref spectrum
-    mm = spectrum.calc_spectral_mismatch(sr, e_sun=e_ref)
+    mm = spectrum.calc_spectral_mismatch_field(sr, e_sun=e_ref)
     assert_approx_equal(mm, 1.0, significant=6)
 
     # test with single sun spectrum
-    mm = spectrum.calc_spectral_mismatch(sr, e_sun=e_sun.loc['specglo'])
+    mm = spectrum.calc_spectral_mismatch_field(sr, e_sun=e_sun.loc['specglo'])
     assert_approx_equal(mm, 0.992397, significant=6)
 
     # test with single sun spectrum, also used as reference spectrum
-    mm = spectrum.calc_spectral_mismatch(sr,
+    mm = spectrum.calc_spectral_mismatch_field(sr,
                                          e_sun=e_sun.loc['specglo'],
                                          e_ref=e_sun.loc['specglo'])
     assert_approx_equal(mm, 1.0, significant=6)
@@ -168,6 +168,6 @@ def test_calc_mismatch(spectrl2_data):
     # test with multiple sun spectra
     expected = [0.972982, 0.995581, 0.899782, 0.992397]
 
-    mm = spectrum.calc_spectral_mismatch(sr, e_sun=e_sun)
+    mm = spectrum.calc_spectral_mismatch_field(sr, e_sun=e_sun)
     assert mm.index is e_sun.index
     assert_allclose(mm, expected, rtol=1e-6)

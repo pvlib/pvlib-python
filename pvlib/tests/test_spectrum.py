@@ -161,8 +161,8 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
 
     # test with single sun spectrum, also used as reference spectrum
     mm = spectrum.calc_spectral_mismatch_field(sr,
-                                         e_sun=e_sun.loc['specglo'],
-                                         e_ref=e_sun.loc['specglo'])
+                                               e_sun=e_sun.loc['specglo'],
+                                               e_ref=e_sun.loc['specglo'])
     assert_approx_equal(mm, 1.0, significant=6)
 
     # test with multiple sun spectra

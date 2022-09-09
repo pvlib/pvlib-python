@@ -58,7 +58,8 @@ class Location:
     pvlib.pvsystem.PVSystem
     """
 
-    def __init__(self, latitude, longitude, tz='UTC', altitude=None, name=None):
+    def __init__(self, latitude, longitude, tz='UTC', altitude=None,
+                 name=None):
 
         self.latitude = latitude
         self.longitude = longitude

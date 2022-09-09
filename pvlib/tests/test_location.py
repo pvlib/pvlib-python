@@ -18,6 +18,33 @@ from pvlib.solarposition import equation_of_time_spencer71
 from .conftest import requires_ephem
 
 
+@pytest.fixture(
+    # latitude, longitude, altitude
+    params=[
+        (32.2540, -110.9742, 724),
+        (-15.3875, 28.3228, 1253),
+        (35.6762, 139.6503, 40),
+        (-35.2802, 149.1310, 566),
+        (4.7110, -74.0721, 2555),
+        (31.525849, 35.449214, -415),
+        (28.6139, 77.2090, 214),
+        (0, 0, 0)
+    ],
+    ids=[
+        'Tucson, USA',
+        'Lusaka, Zambia',
+        'Tokyo, Japan',
+        'Canberra, Australia',
+        'Bogota, Colombia',
+        'Dead Sea, West Bank',
+        'New Delhi, India',
+        'Null Island,  Atlantic Ocean'
+    ]
+)
+def location_altitude(request):
+    return request.param
+
+
 def test_location_required():
     Location(32.2, -111)
 
@@ -328,21 +355,7 @@ def test_extra_kwargs():
         Location(32.2, -111, arbitrary_kwarg='value')
 
 
-def test_lookup_altitude():
-    max_alt_error = 125
-    # location name, latitude, longitude, altitude
-    test_locations = [
-        ('Tucson, USA', 32.2540, -110.9742, 724),
-        ('Lusaka, Zambia', -15.3875, 28.3228, 1253),
-        ('Tokio, Japan', 35.6762, 139.6503, 40),
-        ('Canberra, Australia', -35.2802, 149.1310, 566),
-        ('Bogota, Colombia', 4.7110, -74.0721, 2555),
-        ('Dead Sea, West Bank', 31.525849, 35.449214, -415),
-        ('New Delhi, India', 28.6139, 77.2090, 214),
-        ('Null Island,  Atlantic Ocean', 0, 0, 0),
-    ]
-
-    for name, lat, lon, expected_alt in test_locations:
-        alt_found = lookup_altitude(lat, lon)
-        assert abs(alt_found - expected_alt) < max_alt_error, \
-            f'Max error exceded for {name} - e: {expected_alt} f: {alt_found}'
+def test_lookup_altitude(location_altitude):
+    lat, lon, expected_alt = location_altitude
+    alt_found = lookup_altitude(lat, lon)
+    assert alt_found == pytest.approx(expected_alt, abs=125)

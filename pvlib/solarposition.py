@@ -24,7 +24,7 @@ import scipy.optimize as so
 import warnings
 import datetime
 
-from pvlib import atmosphere
+from pvlib import atmosphere, location
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
 
@@ -52,12 +52,13 @@ def get_solarposition(time, latitude, longitude,
         negative to west.
 
     altitude : None or float, default None
-        If None, computed from pressure. Assumed to be 0 m
-        if pressure is also None.
+        Altitude from sea level in meters.
+        If None, the altitude will be fetched from
+        :py:func:`pvlib.location.lookup_altitude`.
 
     pressure : None or float, default None
-        If None, computed from altitude. Assumed to be 101325 Pa
-        if altitude is also None.
+        Air pressure in Pascals.
+        If None, computed from altitude.
 
     method : string, default 'nrel_numpy'
         'nrel_numpy' uses an implementation of the NREL SPA algorithm
@@ -92,12 +93,10 @@ def get_solarposition(time, latitude, longitude,
     .. [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
     """
 
-    if altitude is None and pressure is None:
-        altitude = 0.
-        pressure = 101325.
-    elif altitude is None:
-        altitude = atmosphere.pres2alt(pressure)
-    elif pressure is None:
+    if altitude is None:
+        altitude = location.lookup_altitude(latitude, longitude)
+
+    if pressure is None:
         pressure = atmosphere.alt2pres(altitude)
 
     method = method.lower()
@@ -129,7 +128,7 @@ def get_solarposition(time, latitude, longitude,
     return ephem_df
 
 
-def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
+def spa_c(time, latitude, longitude, pressure=None, altitude=None,
           temperature=12, delta_t=67.0,
           raw_spa_output=False):
     """
@@ -153,10 +152,13 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    pressure : float, default 101325
-        Pressure in Pascals
-    altitude : float, default 0
-        Height above sea level. [m]
+    pressure : None or float, default None
+        Air pressure in Pascals.
+        If None, computed from altitude.
+    altitude : None or float, default None
+        Altitude from sea level in meters.
+        If None, the altitude will be fetched from
+        :py:func:`pvlib.location.lookup_altitude`.
     temperature : float, default 12
         Temperature in C
     delta_t : float, default 67.0
@@ -209,6 +211,11 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
         time_utc = time.tz_convert('UTC')
     except TypeError:
         time_utc = time
+
+    if altitude is None:
+        altitude = location.lookup_altitude(latitude, longitude)
+    if pressure is None:
+        pressure = atmosphere.alt2pres(altitude)
 
     spa_out = []
 
@@ -275,7 +282,7 @@ def _spa_python_import(how):
 
 
 def spa_python(time, latitude, longitude,
-               altitude=0, pressure=101325, temperature=12, delta_t=67.0,
+               altitude=None, pressure=None, temperature=12, delta_t=67.0,
                atmos_refract=None, how='numpy', numthreads=4):
     """
     Calculate the solar position using a python implementation of the
@@ -298,10 +305,13 @@ def spa_python(time, latitude, longitude,
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    altitude : float, default 0
-        Distance above sea level.
-    pressure : int or float, optional, default 101325
+    altitude : None or float, default None
+        Altitude from sea level in meters.
+        If None, the altitude will be fetched from
+        :py:func:`pvlib.location.lookup_altitude`.
+    pressure : int or float, optional, default None
         avg. yearly air pressure in Pascals.
+        If None, computed from altitude.
     temperature : int or float, optional, default 12
         avg. yearly air temperature in degrees C.
     delta_t : float, optional, default 67.0
@@ -350,6 +360,11 @@ def spa_python(time, latitude, longitude,
     --------
     pyephem, spa_c, ephemeris
     """
+
+    if altitude is None:
+        altitude = location.lookup_altitude(latitude, longitude)
+    if pressure is None:
+        pressure = atmosphere.alt2pres(altitude)
 
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
@@ -504,8 +519,8 @@ def _ephem_setup(latitude, longitude, altitude, pressure, temperature,
 
 def sun_rise_set_transit_ephem(times, latitude, longitude,
                                next_or_previous='next',
-                               altitude=0,
-                               pressure=101325,
+                               altitude=None,
+                               pressure=None,
                                temperature=12, horizon='0:00'):
     """
     Calculate the next sunrise and sunset times using the PyEphem package.
@@ -520,10 +535,13 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
         Longitude in degrees, positive east of prime meridian, negative to west
     next_or_previous : str
         'next' or 'previous' sunrise and sunset relative to time
-    altitude : float, default 0
-        distance above sea level in meters.
-    pressure : int or float, optional, default 101325
-        air pressure in Pascals.
+    altitude : None or float, default None
+        Altitude from sea level in meters.
+        If None, the altitude will be fetched from
+        :py:func:`pvlib.location.lookup_altitude`.
+    pressure : None or float, default None
+        Air pressure in Pascals.
+        If None, computed from altitude.
     temperature : int or float, optional, default 12
         air temperature in degrees C.
     horizon : string, format +/-X:YY
@@ -554,6 +572,11 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
         tzinfo = times.tz
     else:
         raise ValueError('times must be localized')
+
+    if altitude is None:
+        altitude = location.lookup_altitude(latitude, longitude)
+    if pressure is None:
+        pressure = atmosphere.alt2pres(altitude)
 
     obs, sun = _ephem_setup(latitude, longitude, altitude,
                             pressure, temperature, horizon)
@@ -588,7 +611,7 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
                                            'transit': trans})
 
 
-def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
+def pyephem(time, latitude, longitude, altitude=None, pressure=None,
             temperature=12, horizon='+0:00'):
     """
     Calculate the solar position using the PyEphem package.
@@ -603,10 +626,13 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     longitude : float
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
-    altitude : float, default 0
-        Height above sea level in meters. [m]
-    pressure : int or float, optional, default 101325
-        air pressure in Pascals.
+    altitude : None or float, default None
+        Altitude from sea level in meters.
+        If None, the altitude will be fetched from
+        :py:func:`pvlib.location.lookup_altitude`.
+    pressure : None or float, default None
+        Air pressure in Pascals.
+        If None, computed from altitude.
     temperature : int or float, optional, default 12
         air temperature in degrees C.
     horizon : string, optional, default '+0:00'
@@ -641,6 +667,11 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
         time_utc = time.tz_convert('UTC')
     except TypeError:
         time_utc = time
+
+    if altitude is None:
+        altitude = location.lookup_altitude(latitude, longitude)
+    if pressure is None:
+        pressure = atmosphere.alt2pres(altitude)
 
     sun_coords = pd.DataFrame(index=time)
 
@@ -862,7 +893,7 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
 
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
-              altitude=0, pressure=101325, temperature=12, horizon='+0:00',
+              altitude=None, pressure=None, temperature=12, horizon='+0:00',
               xtol=1.0e-12):
     """
     Calculate the time between lower_bound and upper_bound
@@ -885,11 +916,14 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         and 'az' (which must be given in radians).
     value : int or float
         The value of the attribute to solve for
-    altitude : float, default 0
-        Distance above sea level.
-    pressure : int or float, optional, default 101325
+    altitude : None or float, default None
+        Altitude from sea level in meters.
+        If None, the altitude will be fetched from
+        :py:func:`pvlib.location.lookup_altitude`.
+    pressure : int or float, optional, default None
         Air pressure in Pascals. Set to 0 for no
         atmospheric correction.
+        If None, computed from altitude.
     temperature : int or float, optional, default 12
         Air temperature in degrees C.
     horizon : string, optional, default '+0:00'
@@ -913,6 +947,12 @@ def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
         If the given attribute is not an attribute of a
         PyEphem.Sun object.
     """
+
+    if altitude is None:
+        altitude = location.lookup_altitude(latitude, longitude)
+    if pressure is None:
+        pressure = atmosphere.alt2pres(altitude)
+
     obs, sun = _ephem_setup(latitude, longitude, altitude,
                             pressure, temperature, horizon)
 

@@ -45,8 +45,10 @@ class Location:
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
 
-    altitude : float, default 0.
+    altitude : None or float, default None
         Altitude from sea level in meters.
+        If None, the altitude will be fetched from
+        :py:func:`pvlib.location.lookup_altitude`.
 
     name : None or string, default None.
         Sets the name attribute of the Location object.
@@ -56,7 +58,7 @@ class Location:
     pvlib.pvsystem.PVSystem
     """
 
-    def __init__(self, latitude, longitude, tz='UTC', altitude=0, name=None):
+    def __init__(self, latitude, longitude, tz='UTC', altitude=None, name=None):
 
         self.latitude = latitude
         self.longitude = longitude
@@ -75,6 +77,9 @@ class Location:
             self.pytz = pytz.FixedOffset(tz*60)
         else:
             raise TypeError('Invalid tz specification')
+
+        if altitude is None:
+            altitude = lookup_altitude(latitude, longitude)
 
         self.altitude = altitude
 

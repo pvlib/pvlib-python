@@ -450,7 +450,7 @@ def test_calc_axis_tilt():
     stoptime = '2017-12-31T23:59:59-0300'
     lat, lon = -27.597300, -48.549610
     times = pd.DatetimeIndex(pd.date_range(starttime, stoptime, freq='H'))
-    solpos = pvlib.solarposition.get_solarposition(times, lat, lon)
+    solpos = pvlib.solarposition.get_solarposition(times, lat, lon, altitude=0)
     # singleaxis tracker w/slope data
     slope_azimuth, slope_tilt = 77.34, 10.1149
     axis_azimuth = 0.0

@@ -18,7 +18,7 @@ from pvlib.tools import _degrees_to_index
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
-             altitude=None, dni_extra=1364., perez_enhancement=False):
+             altitude=0, dni_extra=1364., perez_enhancement=False):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
 
@@ -42,10 +42,8 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     linke_turbidity : numeric
         Linke Turbidity.
 
-    altitude : None or float, default None
-        Altitude from sea level in meters.
-        If None, the altitude will be fetched from
-        :py:func:`pvlib.location.lookup_altitude`.
+    altitude : numeric, default 0
+        Altitude above sea level in meters.
 
     dni_extra : numeric, default 1364
         Extraterrestrial irradiance. The units of ``dni_extra``
@@ -88,9 +86,6 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
        ISES Solar World Congress, June 2003. Goteborg, Sweden.
     '''
-
-    if altitude is None:
-        altitude = location.lookup_altitude(latitude, longitude)
 
     # ghi is calculated using either the equations in [1] by setting
     # perez_enhancement=False (default behavior) or using the model

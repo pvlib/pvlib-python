@@ -13,7 +13,7 @@ from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
 import h5py
 
-from pvlib import atmosphere, tools, location
+from pvlib import atmosphere, tools
 from pvlib.tools import _degrees_to_index
 
 

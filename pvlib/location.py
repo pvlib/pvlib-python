@@ -4,7 +4,7 @@ This module contains the Location class.
 
 # Will Holmgren, University of Arizona, 2014-2016.
 
-import os
+import pathlib
 import datetime
 import warnings
 
@@ -427,8 +427,8 @@ def lookup_altitude(latitude, longitude):
 
     """
 
-    pvlib_path = os.path.dirname(os.path.abspath(__file__))
-    filepath = os.path.join(pvlib_path, 'data', 'Altitude.h5')
+    pvlib_path = pathlib.Path(__file__).parent
+    filepath = pvlib_path / 'data' / 'Altitude.h5'
 
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')

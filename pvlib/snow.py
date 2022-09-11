@@ -305,7 +305,13 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     temp_air_kelvin = temp_air + 273.15
     effective_snow_weighted_in = effective_snow_weighted / 2.54
     poa_global_kWh = poa_global / 1000
-    loss_percentage = (
+
+    # Calculate Eqn. 3 in the reference.
+    # Although the reference says Eqn. 3 calculates percentage loss, the y-axis
+    # of Figure 7 indicates Eqn. 3 calculates fractional loss. Since the slope
+    # of the line in Figure 7 is the same as C1 in Eqn. 3, it is assumed that
+    # Eqn. 3 calculates fractional loss.
+    loss_fraction = (
         C1
         * effective_snow_weighted_in
         * cosd(surface_tilt)**2
@@ -315,4 +321,4 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         / poa_global_kWh**0.67
     )
 
-    return loss_percentage / 100
+    return np.clip(loss_fraction, 0, 1)

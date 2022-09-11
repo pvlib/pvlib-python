@@ -5,8 +5,6 @@ v0.9.2 (August 19, 2022)
 
 Enhancements
 ~~~~~~~~~~~~
-* Added Townsend-Powers monthly snow loss model: :py:func:`pvlib.snow.loss_townsend`
-  (:issue:`1246`, :pull:`1251`, :pull:`1468`)
 * albedo can now be provided as a column in the `weather` DataFrame input to
   :py:meth:`pvlib.modelchain.ModelChain.run_model`. (:issue:`1387`, :pull:`1478`)
 * albedo is now available as an input to :py:meth:`pvlib.pvsystem.PVSystem.get_irradiance`
@@ -74,8 +72,6 @@ Contributors
 * Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
-* Abhishek Parikh (:ghuser:`abhisheksparikh`)
-* Taos Transue (:ghuser:`reepoi`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Jules Chéron (:ghuser:`jules-ch`)
 * Kurt Rhee (:ghuser:`kurt-rhee`)

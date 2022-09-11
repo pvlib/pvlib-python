@@ -12,6 +12,9 @@ Enhancements
 * Low resolution altitude lookup map
   :py:func:`~pvlib.location.lookup_altitude`
   (:issue:`1516`, :pull:`1518`)
+* Added Townsend-Powers monthly snow loss model:
+  :py:func:`pvlib.snow.loss_townsend`
+  (:issue:`1246`, :pull:`1251`, :pull:`1468`)
 
 Bug fixes
 ~~~~~~~~~
@@ -37,3 +40,5 @@ Contributors
 ~~~~~~~~~~~~
 * João Guilherme (:ghuser:`joaoguilhermeS`)
 * Nicolas Martinez (:ghuser:`nicomt`)
+* Abhishek Parikh (:ghuser:`abhisheksparikh`)
+* Taos Transue (:ghuser:`reepoi`)

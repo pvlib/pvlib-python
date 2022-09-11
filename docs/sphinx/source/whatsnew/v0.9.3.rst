@@ -1,0 +1,39 @@
+.. _whatsnew_0930:
+
+v0.9.3 (TBD)
+------------------------
+
+Deprecations
+~~~~~~~~~~~~
+  * Removed the kwarg ``closed`` from ``pd.date_range`` in the examples since it is deprecated for pandas >= 1.4.0. (:pull:`1540`)
+
+Enhancements
+~~~~~~~~~~~~
+* Low resolution altitude lookup map
+  :py:func:`~pvlib.location.lookup_altitude`
+  (:issue:`1516`, :pull:`1518`)
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* João Guilherme (:ghuser:`joaoguilhermeS`)
+* Nicolas Martinez (:ghuser:`nicomt`)

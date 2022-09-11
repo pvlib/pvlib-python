@@ -511,13 +511,6 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
 
 
-def test_degrees_to_index_1():
-    """Test that _degrees_to_index raises an error when something other than
-    'latitude' or 'longitude' is passed."""
-    with pytest.raises(IndexError):  # invalid value for coordinate argument
-        clearsky._degrees_to_index(degrees=22.0, coordinate='width')
-
-
 @pytest.fixture
 def detect_clearsky_data():
     data_file = DATA_DIR / 'detect_clearsky_data.csv'
@@ -756,6 +749,30 @@ def test_bird():
     assert np.allclose(
         testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
     )
+    # repeat test with albedo as a Series
+    alb_series = pd.Series(0.2, index=times)
+    irrads = clearsky.bird(
+        zenith, airmass, aod_380nm, aod_500nm, h2o_cm, o3_cm, press_mB * 100.,
+        etr, b_a, alb_series
+    )
+    Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
+    direct_beam = pd.Series(np.where(dawn, Eb, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Beam'].where(dusk, 0.), direct_beam[1:48], rtol=1e-3
+    )
+    direct_horz = pd.Series(np.where(dawn, Ebh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Hz'].where(dusk, 0.), direct_horz[1:48], rtol=1e-3
+    )
+    global_horz = pd.Series(np.where(dawn, Gh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Global Hz'].where(dusk, 0.), global_horz[1:48], rtol=1e-3
+    )
+    diffuse_horz = pd.Series(np.where(dawn, Dh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
+    )
+
     # test keyword parameters
     irrads2 = clearsky.bird(
         zenith, airmass, aod_380nm, aod_500nm, h2o_cm, dni_extra=etr

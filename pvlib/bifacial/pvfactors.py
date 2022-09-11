@@ -35,6 +35,8 @@ def pvfactors_timeseries(
     axis_azimuth: float
         Azimuth angle of the rotation axis of the PV modules, using pvlib's
         convention (deg). This is supposed to be fixed for all timestamps.
+        When modeling fixed-tilt arrays, set this value to be 90 degrees
+        clockwise from ``surface_azimuth``.
     timestamps: datetime or DatetimeIndex
         List of simulation timestamps
     dni: numeric

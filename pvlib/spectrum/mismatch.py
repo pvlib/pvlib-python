@@ -21,7 +21,7 @@ def get_example_spectral_response(wavelength=None):
 
     Returns
     -------
-    sr: pandas.Series
+    spectral_response : pandas.Series
         The relative spectral response indexed by ``wavelength`` in nm. [-]
 
     Notes
@@ -69,19 +69,21 @@ def get_example_spectral_response(wavelength=None):
     sr = pd.Series(data=interpolator(wavelength), index=wavelength)
 
     sr.index.name = 'wavelength'
-    sr.name = 'sr'
+    sr.name = 'spectral_response'
 
     return sr
 
 
 def get_am15g(wavelength=None):
     '''
-    Read the ASTM G173-03 AM1.5 global tilted spectrum, optionally interpolated
-    to the specified wavelength(s).
+    Read the ASTM G173-03 AM1.5 global spectrum on a 37-degree tilted surface,
+    optionally interpolated to the specified wavelength(s).
 
     Global (tilted) irradiance includes direct and diffuse irradiance from sky
     and ground reflections, and is more formally called hemispherical
-    irradiance (on a tilted surface).
+    irradiance (on a tilted surface).  In the context of photovoltaic systems
+    the irradiance on a flat receiver is frequently called plane-of-array (POA)
+    irradiance.
 
     Parameters
     ----------

@@ -12,7 +12,9 @@ Enhancements
 * Low resolution altitude lookup map
   :py:func:`~pvlib.location.lookup_altitude`
   (:issue:`1516`, :pull:`1518`)
-* New module to calculate spectral mismatch
+* New module to calculate spectral mismatch from field spectral measurements
+  :py:func:`~pvlib.spectrum.mismatch.get_example_spectral_response`
+  :py:func:`~pvlib.spectrum.mismatch.get_am15g`
   :py:func:`~pvlib.spectrum.mismatch.calc_spectral_mismatch_field`
   (:issue:`1523`, :pull:`1524`)
 

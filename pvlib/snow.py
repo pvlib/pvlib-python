@@ -5,7 +5,7 @@ associated effects on PV module output
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import sind
+from pvlib.tools import sind, cosd, tand
 
 
 def _time_delta_in_hours(times):
@@ -185,3 +185,140 @@ def dc_loss_nrel(snow_coverage, num_strings):
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
     '''
     return np.ceil(snow_coverage * num_strings) / num_strings
+
+
+def _townsend_effective_snow(snow_total, snow_events):
+    '''
+    Calculates effective snow using the total snowfall received each month and
+    the number of snowfall events each month.
+
+    Parameters
+    ----------
+    snow_total : array-like
+        Snow received each month. Referred to as S in [1]_. [cm]
+
+    snow_events : array-like
+        Number of snowfall events each month. Referred to as N in [1]_. [-]
+
+    Returns
+    -------
+    effective_snowfall : array-like
+        Effective snowfall as defined in the Townsend model. [cm]
+
+    References
+    ----------
+    .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
+       update from two winters of measurements in the SIERRA. 37th IEEE
+       Photovoltaic Specialists Conference, Seattle, WA, USA.
+       :doi:`10.1109/PVSC.2011.6186627`
+    '''
+    snow_events_no_zeros = np.maximum(snow_events, 1)
+    effective_snow = 0.5 * snow_total * (1 + 1 / snow_events_no_zeros)
+    return np.where(snow_events > 0, effective_snow, 0)
+
+
+def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
+                  temp_air, poa_global, slant_height, lower_edge_height,
+                  angle_of_repose=40):
+    '''
+    Calculates monthly snow loss based on the Townsend monthly snow loss
+    model [1]_.
+
+    Parameters
+    ----------
+    snow_total : array-like
+        Snow received each month. Referred to as S in [1]_. [cm]
+
+    snow_events : array-like
+        Number of snowfall events each month. Referred to as N in [1]_. [-]
+
+    surface_tilt : float
+        Tilt angle of the array. [deg]
+
+    relative_humidity : array-like
+        Monthly average relative humidity. [%]
+
+    temp_air : array-like
+        Monthly average ambient temperature. [C]
+
+    poa_global : array-like
+        Monthly plane of array insolation. [Wh/m2]
+
+    slant_height : float
+        Row length in the slanted plane of array dimension. [m]
+
+    lower_edge_height : float
+        Distance from array lower edge to the ground. [m]
+
+    angle_of_repose : float, default 40
+        Piled snow angle, assumed to stabilize at 40°, the midpoint of
+        25°-55° avalanching slope angles. [deg]
+
+    Returns
+    -------
+    loss : array-like
+        Monthly average DC capacity loss fraction due to snow coverage.
+
+    Notes
+    -----
+    This model has not been validated for tracking arrays; however, for
+    tracking arrays [1]_ suggests using the maximum rotation angle in place
+    of ``surface_tilt``.
+
+    References
+    ----------
+    .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
+       update from two winters of measurements in the SIERRA. 37th IEEE
+       Photovoltaic Specialists Conference, Seattle, WA, USA.
+       :doi:`10.1109/PVSC.2011.6186627`
+    '''
+
+    C1 = 5.7e04
+    C2 = 0.51
+
+    snow_total_prev = np.roll(snow_total, 1)
+    snow_events_prev = np.roll(snow_events, 1)
+
+    effective_snow = _townsend_effective_snow(snow_total, snow_events)
+    effective_snow_prev = _townsend_effective_snow(
+        snow_total_prev,
+        snow_events_prev
+    )
+    effective_snow_weighted = (
+        1 / 3 * effective_snow_prev
+        + 2 / 3 * effective_snow
+    )
+    effective_snow_weighted_m = effective_snow_weighted / 100
+
+    lower_edge_height_clipped = np.maximum(lower_edge_height, 0.01)
+    gamma = (
+        slant_height
+        * effective_snow_weighted_m
+        * cosd(surface_tilt)
+        / (lower_edge_height_clipped**2 - effective_snow_weighted_m**2)
+        * 2
+        * tand(angle_of_repose)
+    )
+
+    ground_interference_term = 1 - C2 * np.exp(-gamma)
+    relative_humidity_fraction = relative_humidity / 100
+    temp_air_kelvin = temp_air + 273.15
+    effective_snow_weighted_in = effective_snow_weighted / 2.54
+    poa_global_kWh = poa_global / 1000
+
+    # Calculate Eqn. 3 in the reference.
+    # Although the reference says Eqn. 3 calculates percentage loss, the y-axis
+    # of Figure 7 indicates Eqn. 3 calculates fractional loss. Since the slope
+    # of the line in Figure 7 is the same as C1 in Eqn. 3, it is assumed that
+    # Eqn. 3 calculates fractional loss.
+    loss_fraction = (
+        C1
+        * effective_snow_weighted_in
+        * cosd(surface_tilt)**2
+        * ground_interference_term
+        * relative_humidity_fraction
+        / temp_air_kelvin**2
+        / poa_global_kWh**0.67
+    )
+
+    return np.clip(loss_fraction, 0, 1)

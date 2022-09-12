@@ -169,10 +169,13 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
     Measured solar spectral irradiance usually covers a wavelength range
     that is smaller than the range considered as broadband irradiance.
     The infrared limit for the former typically lies around 1100 or 1600 nm,
-    whereas the latter extends to around 2800 or 4000 nm.  To avoid a mismatch
+    whereas the latter extends to around 2800 or 4000 nm.  To avoid imbalance
     between the magnitudes of the integrated spectra (the broadband values)
     this function truncates the reference spectrum to the same range as the
-    measured (or simulated) field spectra.
+    measured (or simulated) field spectra. The assumption implicit in this
+    truncation is that the energy in the unmeasured wavelength range
+    is the same fraction of the broadband energy for both the measured
+    spectra and the reference spectrum.
 
     If the default reference spectrum is used it is linearly interpolated
     to the wavelengths of the measured spectrum, but if a reference spectrum

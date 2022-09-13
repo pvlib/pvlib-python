@@ -12,6 +12,7 @@ import pytz
 from pytz.exceptions import UnknownTimeZoneError
 
 import pvlib
+from pvlib import location
 from pvlib.location import Location, lookup_altitude
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
@@ -341,3 +342,15 @@ def test_extra_kwargs():
 def test_lookup_altitude(lat, lon, expected_alt):
     alt_found = lookup_altitude(lat, lon)
     assert alt_found == pytest.approx(expected_alt, abs=125)
+
+
+def test_location_lookup_altitude(mocker):
+    mocker.spy(location, 'lookup_altitude')
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    location.lookup_altitude.assert_not_called()
+    assert tus.altitude == 700
+    location.lookup_altitude.reset_mock()
+
+    tus = Location(32.2, -111, 'US/Arizona')
+    location.lookup_altitude.assert_called_once_with(32.2, -111)
+    assert tus.altitude == location.lookup_altitude(32.2, -111)

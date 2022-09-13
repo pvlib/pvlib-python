@@ -1678,7 +1678,7 @@ def test_PVSystem_multiple_array_get_aoi():
 def solar_pos():
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
-    location = Location(latitude=32, longitude=-111)
+    location = Location(latitude=32, longitude=-111, altitude=0)
     return location.get_solarposition(times)
 
 

@@ -9,6 +9,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* New class and function translate module temperature model parameters
+  :py:func:`~pvlib.temperature.GenericLinearModel`
+  :py:func:`~pvlib.temperature.generic_linear`
+  (:issue:`1442`, :pull:`1463`)
 * Low resolution altitude lookup map
   :py:func:`~pvlib.location.lookup_altitude`
   (:issue:`1516`, :pull:`1518`)
@@ -48,6 +52,8 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Will Holmgren (:ghuser:`wholmgren`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Abhishek Parikh (:ghuser:`abhisheksparikh`)

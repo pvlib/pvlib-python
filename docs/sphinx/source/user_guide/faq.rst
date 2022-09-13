@@ -24,7 +24,8 @@ pvlib is similar to tools like PVsyst and SAM in that it can be used
 for "weather-to-power" modeling to model system energy production
 based on system configuration and a weather dataset.  However, pvlib
 is also very different in that you use pvlib via python code instead
-of via a GUI.  pvlib is also more of a toolbox or a framework to use
+of via a GUI, which makes pvlib ideal for automating tasks.  pvlib
+is also more of a toolbox or a framework to use
 to build your own modeling process (although some pre-built workflows
 are available as well).
 
@@ -35,7 +36,8 @@ Usage Questions
 All I have is GHI, how do I get to POA?
 ---------------------------------------
 
-Going from GHI to POA irradiance is a two-step process.  The first step is to
+Going from GHI to plane of array (POA) irradiance is a two-step process. 
+The first step is to
 use a decomposition model (also called a separation model) to estimate the
 DNI and DHI corresponding to your GHI.  For a list of decomposition
 models available in pvlib, see :ref:`dniestmodels`.

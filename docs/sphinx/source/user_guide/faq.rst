@@ -116,6 +116,6 @@ The CEC tables for module and inverter parameters included in pvlib are periodic
 copied from `SAM <https://github.com/NREL/SAM/tree/develop/deploy/libraries>`_,
 so you can check the tables there for more up-to-date tables.
 
-For modules, if even files don't include the module you're looking for either,
-you can calculate CEC module model parameters from
+For modules, if even the SAM files don't include the module you're looking for
+either, you can calculate CEC module model parameters from
 datasheet information using :py:func:`pvlib.ivtools.sdm.fit_cec_sam`.

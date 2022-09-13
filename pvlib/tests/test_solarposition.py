@@ -10,7 +10,7 @@ from numpy.testing import assert_allclose
 import pytest
 
 from pvlib.location import Location
-from pvlib import solarposition, spa
+from pvlib import solarposition, spa, location, atmosphere
 
 from .conftest import requires_ephem, requires_spa_c, requires_numba
 
@@ -769,3 +769,37 @@ def test_spa_python_numba_physical_dst(expected_solpos, golden):
                                               temperature=11, delta_t=67,
                                               atmos_refract=0.5667,
                                               how='numpy', numthreads=1)
+
+
+@pytest.mark.parametrize(
+    'method',
+    [
+        solarposition.get_solarposition,
+        pytest.param(solarposition.spa_c, marks=requires_spa_c),
+        pytest.param(solarposition.spa_python, marks=requires_numba),
+        pytest.param(solarposition.pyephem, marks=requires_ephem),
+    ]
+)
+def test_solarposition_lookup_altitude(mocker, method):
+    lat, lon = 32.2, -111
+    times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
+                          periods=1, freq='D')
+    mocker.spy(location, 'lookup_altitude')
+    mocker.spy(atmosphere, 'alt2pres')
+
+    method(times, lat, lon, altitude=0, pressure=0)
+    location.lookup_altitude.assert_not_called()
+    atmosphere.alt2pres.assert_not_called()
+    location.lookup_altitude.reset_mock()
+    atmosphere.alt2pres.reset_mock()
+
+    method(times, lat, lon, altitude=0)
+    location.lookup_altitude.assert_not_called()
+    atmosphere.alt2pres.assert_called_once_with(0)
+    location.lookup_altitude.reset_mock()
+    atmosphere.alt2pres.reset_mock()
+
+    method(times, lat, lon)
+    location.lookup_altitude.assert_called_once_with(lat, lon)
+    atmosphere.alt2pres.assert_called_once_with(
+        location.lookup_altitude(lat, lon))

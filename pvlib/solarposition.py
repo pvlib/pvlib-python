@@ -196,6 +196,11 @@ def spa_c(time, latitude, longitude, pressure=None, altitude=None,
     pyephem, spa_python, ephemeris
     """
 
+    if altitude is None:
+        altitude = location.lookup_altitude(latitude, longitude)
+    if pressure is None:
+        pressure = atmosphere.alt2pres(altitude)
+
     # Added by Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
     # Edited by Will Holmgren (@wholmgren), University of Arizona, 2014
     # Edited by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
@@ -211,11 +216,6 @@ def spa_c(time, latitude, longitude, pressure=None, altitude=None,
         time_utc = time.tz_convert('UTC')
     except TypeError:
         time_utc = time
-
-    if altitude is None:
-        altitude = location.lookup_altitude(latitude, longitude)
-    if pressure is None:
-        pressure = atmosphere.alt2pres(altitude)
 
     spa_out = []
 

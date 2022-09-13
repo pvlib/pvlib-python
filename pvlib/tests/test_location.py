@@ -18,33 +18,6 @@ from pvlib.solarposition import equation_of_time_spencer71
 from .conftest import requires_ephem
 
 
-@pytest.fixture(
-    # latitude, longitude, altitude
-    params=[
-        (32.2540, -110.9742, 724),
-        (-15.3875, 28.3228, 1253),
-        (35.6762, 139.6503, 40),
-        (-35.2802, 149.1310, 566),
-        (4.7110, -74.0721, 2555),
-        (31.525849, 35.449214, -415),
-        (28.6139, 77.2090, 214),
-        (0, 0, 0)
-    ],
-    ids=[
-        'Tucson, USA',
-        'Lusaka, Zambia',
-        'Tokyo, Japan',
-        'Canberra, Australia',
-        'Bogota, Colombia',
-        'Dead Sea, West Bank',
-        'New Delhi, India',
-        'Null Island,  Atlantic Ocean'
-    ]
-)
-def location_altitude(request):
-    return request.param
-
-
 def test_location_required():
     Location(32.2, -111)
 
@@ -355,7 +328,16 @@ def test_extra_kwargs():
         Location(32.2, -111, arbitrary_kwarg='value')
 
 
-def test_lookup_altitude(location_altitude):
-    lat, lon, expected_alt = location_altitude
+@pytest.mark.parametrize('lat,lon,expected_alt', [
+    pytest.param(32.2540, -110.9742, 724, id='Tucson, USA'),
+    pytest.param(-15.3875, 28.3228, 1253, id='Lusaka, Zambia'),
+    pytest.param(35.6762, 139.6503, 40, id='Tokyo, Japan'),
+    pytest.param(-35.2802, 149.1310, 566, id='Canberra, Australia'),
+    pytest.param(4.7110, -74.0721, 2555, id='Bogota, Colombia'),
+    pytest.param(31.525849, 35.449214, -415, id='Dead Sea, West Bank'),
+    pytest.param(28.6139, 77.2090, 214, id='New Delhi, India'),
+    pytest.param(0, 0, 0, id='Null Island,  Atlantic Ocean'),
+])
+def test_lookup_altitude(lat, lon, expected_alt):
     alt_found = lookup_altitude(lat, lon)
     assert alt_found == pytest.approx(expected_alt, abs=125)

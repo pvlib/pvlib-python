@@ -12,6 +12,11 @@ Enhancements
 * Low resolution altitude lookup map
   :py:func:`~pvlib.location.lookup_altitude`
   (:issue:`1516`, :pull:`1518`)
+* New module to calculate spectral mismatch from field spectral measurements
+  :py:func:`~pvlib.spectrum.mismatch.get_example_spectral_response`
+  :py:func:`~pvlib.spectrum.mismatch.get_am15g`
+  :py:func:`~pvlib.spectrum.mismatch.calc_spectral_mismatch_field`
+  (:issue:`1523`, :pull:`1524`)
 * Added Townsend-Powers monthly snow loss model:
   :py:func:`pvlib.snow.loss_townsend`
   (:issue:`1246`, :pull:`1251`, :pull:`1468`)
@@ -40,5 +45,10 @@ Contributors
 ~~~~~~~~~~~~
 * João Guilherme (:ghuser:`joaoguilhermeS`)
 * Nicolas Martinez (:ghuser:`nicomt`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Abhishek Parikh (:ghuser:`abhisheksparikh`)
 * Taos Transue (:ghuser:`reepoi`)

@@ -35,6 +35,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Clarified description of cross-axis slope in :py:mod:`pvlib.tracking.py` (:pull:`1530`)
 
 
 Benchmarking
@@ -58,3 +59,4 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Abhishek Parikh (:ghuser:`abhisheksparikh`)
 * Taos Transue (:ghuser:`reepoi`)
+* (:ghuser:`chirapachori`)

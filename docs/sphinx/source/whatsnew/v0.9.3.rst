@@ -59,4 +59,4 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Abhishek Parikh (:ghuser:`abhisheksparikh`)
 * Taos Transue (:ghuser:`reepoi`)
-* (:ghuser:`chirapachori`)
+* (:ghuser:`chiragpachori`)

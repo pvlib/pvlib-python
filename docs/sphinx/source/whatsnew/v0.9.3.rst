@@ -35,7 +35,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-* Clarified description of cross-axis slope in :py:mod:`pvlib.tracking.py` (:pull:`1530`)
+* Clarified description of cross-axis slope in :py:mod:`pvlib.tracking` (:pull:`1530`)
 
 
 Benchmarking

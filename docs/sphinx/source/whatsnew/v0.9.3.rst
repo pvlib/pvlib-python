@@ -1,11 +1,7 @@
 .. _whatsnew_0930:
 
-v0.9.3 (TBD)
-------------------------
-
-Deprecations
-~~~~~~~~~~~~
-  * Removed the kwarg ``closed`` from ``pd.date_range`` in the examples since it is deprecated for pandas >= 1.4.0. (:pull:`1540`)
+v0.9.3 (September 14, 2022)
+---------------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -25,26 +21,10 @@ Enhancements
   :py:func:`pvlib.snow.loss_townsend`
   (:issue:`1246`, :pull:`1251`, :pull:`1468`)
 
-Bug fixes
-~~~~~~~~~
-
-
-Testing
-~~~~~~~
-
-
 Documentation
 ~~~~~~~~~~~~~
 * Clarified description of cross-axis slope in :py:mod:`pvlib.tracking` (:pull:`1530`)
-
-
-Benchmarking
-~~~~~~~~~~~~~
-
-
-Requirements
-~~~~~~~~~~~~
-
+* Removed the kwarg ``closed`` from ``pd.date_range`` in the examples since it is deprecated for pandas >= 1.4.0. (:pull:`1540`)
 
 Contributors
 ~~~~~~~~~~~~

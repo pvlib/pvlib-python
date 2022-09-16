@@ -23,7 +23,6 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-* Added an FAQ page to the docs: :ref:`faq`. (:issue:`1546`, :pull:`1549`)
 
 
 Benchmarking

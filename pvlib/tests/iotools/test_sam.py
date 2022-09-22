@@ -4,6 +4,7 @@ test the SAM IO tools
 from pvlib.iotools import get_pvgis_tmy
 from pvlib.iotools import saveSAM_WeatherFile, tz_convert
 from ..conftest import DATA_DIR
+import numpy as np
 
 # PVGIS Hourly tests
 # The test files are actual files from PVGIS where the data section have been
@@ -20,9 +21,10 @@ def test_saveSAM_WeatherFile():
                 'longitude': inputs['location']['longitude'],
                 'elevation': inputs['location']['elevation'],
                 'source': 'User-generated'}
-    metadata['TZ'] = -7
-    data = tz_convert(data, tz_convert_val=metadata['TZ'])
+    data, metadata = tz_convert(data, tz_convert_val=-7, metadata=metadata)
+    data['albedo'] = 0.2 
     coerce_year = 2021
+    data['poa'] = np.nan
     data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
     saveSAM_WeatherFile(data, metadata, savefile='test_SAMWeatherFile.csv',
-                        standardSAM=True)
+                        standardSAM=True, includeminute = True)

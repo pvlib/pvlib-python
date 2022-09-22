@@ -3,7 +3,7 @@
 import pandas as pd
 
 
-def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv', 
+def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
                         standardSAM=True, includeminute=False):
     """
     Saves dataframe with weather data from pvlib format on SAM-friendly format.

@@ -46,14 +46,11 @@ DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
 # basic_chain and ModelChain. They are used by the ModelChain methods
 # ModelChain.with_pvwatts, ModelChain.with_sapm, etc.
 
-# pvwatts documentation states that it uses the following reference for
-# a temperature model: Fuentes, M. K. (1987). A Simplified Thermal Model
-# for Flat-Plate Photovoltaic Arrays. SAND85-0330. Albuquerque, NM:
-# Sandia National Laboratories. Accessed September 3, 2013:
-# http://prod.sandia.gov/techlib/access-control.cgi/1985/850330.pdf
-# pvlib python does not implement that model, so use the SAPM instead.
-PVWATTS_CONFIG = dict(
-    dc_model='pvwatts', ac_model='pvwatts', losses_model='pvwatts',
+# Technically the pvwatts v5 model uses the fuentes temperature model;
+# however, fuentes is harder to use and much slower than SAPM, so we
+# use SAPM here.
+PVWATTS_V5_CONFIG = dict(
+    dc_model='pvwattsv5', ac_model='pvwattsv5', losses_model='pvwattsv5',
     transposition_model='perez', aoi_model='physical',
     spectral_model='no_loss', temperature_model='sapm'
 )
@@ -392,7 +389,7 @@ class ModelChain:
     interface for all of the modeling steps necessary for calculating PV
     power from a time series of weather inputs. The same models are applied
     to all ``pvsystem.Array`` objects, so each Array must contain the
-    appropriate model parameters. For example, if ``dc_model='pvwatts'``,
+    appropriate model parameters. For example, if ``dc_model='pvwattsv5'``,
     then each ``Array.module_parameters`` must contain ``'pdc0'``.
 
     See :ref:`modelchaindoc` for examples.
@@ -422,14 +419,14 @@ class ModelChain:
     dc_model: None, str, or function, default None
         If None, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'.
+        Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwattsv5'.
         The ModelChain instance will be passed as the first argument
         to a user-defined function.
 
     ac_model: None, str, or function, default None
         If None, the model will be inferred from the parameters that
         are common to all of system.inverter_parameters.
-        Valid strings are 'sandia', 'adr', 'pvwatts'. The
+        Valid strings are 'sandia', 'adr', 'pvwattsv5'. The
         ModelChain instance will be passed as the first argument to a
         user-defined function.
 
@@ -458,7 +455,7 @@ class ModelChain:
         function.
 
     losses_model: str or function, default 'no_loss'
-        Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
+        Valid strings are 'pvwattsv5', 'no_loss'. The ModelChain instance
         will be passed as the first argument to a user-defined function.
 
     name: None or str, default None
@@ -529,6 +526,7 @@ class ModelChain:
                      clearsky_model='ineichen',
                      airmass_model='kastenyoung1989',
                      name=None,
+                     version=5,
                      **kwargs):
         """
         ModelChain that follows the PVWatts methods.
@@ -552,6 +550,10 @@ class ModelChain:
         name: None or str, default None
             Name of ModelChain instance.
 
+        version: int, default 5
+            The version of PVWatts to emulate. Currently, version 5
+            is the only option.
+
         **kwargs
             Parameters supplied here are passed to the ModelChain
             constructor and take precedence over the default
@@ -574,14 +576,18 @@ class ModelChain:
           transposition_model: perez
           solar_position_method: nrel_numpy
           airmass_model: kastenyoung1989
-          dc_model: pvwatts_dc
-          ac_model: pvwatts_inverter
+          dc_model: pvwattsv5_dc
+          ac_model: pvwattsv5_inverter
           aoi_model: physical_aoi_loss
           spectral_model: no_spectral_loss
           temperature_model: sapm_temp
-          losses_model: pvwatts_losses
+          losses_model: pvwattsv5_losses
         """  # noqa: E501
-        config = PVWATTS_CONFIG.copy()
+        if version == 5:
+            config = PVWATTS_V5_CONFIG.copy()
+        else:
+            raise ValueError(f'Invalid PVWatts version: {version}')
+
         config.update(kwargs)
         return ModelChain(
             system, location,
@@ -723,8 +729,14 @@ class ModelChain:
                     self._dc_model = self.cec
                 elif model == 'pvsyst':
                     self._dc_model = self.pvsyst
-                elif model == 'pvwatts':
-                    self._dc_model = self.pvwatts_dc
+                elif model in ['pvwatts', 'pvwattsv5']:
+                    if model == 'pvwatts':
+                        warnings.warn(
+                            "model='pvwatts' is now called model='pvwattsv5'; "
+                            "use the new model name to silence this warning",
+                            pvlibDeprecationWarning)
+
+                    self._dc_model = self.pvwattsv5_dc
             else:
                 raise ValueError(model + ' is not a valid DC power model')
         else:
@@ -745,7 +757,7 @@ class ModelChain:
               'R_sh_0', 'R_sh_exp', 'R_s'} <= params:
             return self.pvsyst, 'pvsyst'
         elif {'pdc0', 'gamma_pdc'} <= params:
-            return self.pvwatts_dc, 'pvwatts'
+            return self.pvwattsv5_dc, 'pvwattsv5'
         else:
             raise ValueError(
                 'Could not infer DC model from the module_parameters '
@@ -796,8 +808,8 @@ class ModelChain:
     def pvsyst(self):
         return self._singlediode(self.system.calcparams_pvsyst)
 
-    def pvwatts_dc(self):
-        """Calculate DC power using the PVWatts model.
+    def pvwattsv5_dc(self):
+        """Calculate DC power using the PVWatts v5 model.
 
         Results are stored in ModelChain.results.dc. DC power is computed
         from PVSystem.arrays[i].module_parameters['pdc0'] and then scaled by
@@ -809,10 +821,10 @@ class ModelChain:
 
         See also
         --------
-        pvlib.pvsystem.PVSystem.pvwatts_dc
+        pvlib.pvsystem.PVSystem.pvwattsv5_dc
         pvlib.pvsystem.PVSystem.scale_voltage_current_power
         """
-        dc = self.system.pvwatts_dc(
+        dc = self.system.pvwattsv5_dc(
             self.results.effective_irradiance,
             self.results.cell_temperature,
             unwrap=False
@@ -821,6 +833,10 @@ class ModelChain:
         scaled = self.system.scale_voltage_current_power(p_mp)
         self.results.dc = _tuple_from_dfs(scaled, "p_mp")
         return self
+
+    @deprecated('0.9.4', alternative='ModelChain.pvwattsv5_dc', removal='0.10')
+    def pvwatts_dc(self):
+        return self.pvwattsv5_dc()
 
     @property
     def ac_model(self):
@@ -836,8 +852,14 @@ class ModelChain:
                 self._ac_model = self.sandia_inverter
             elif model in 'adr':
                 self._ac_model = self.adr_inverter
-            elif model == 'pvwatts':
-                self._ac_model = self.pvwatts_inverter
+            elif model in ['pvwatts', 'pvwattsv5']:
+                if model == 'pvwatts':
+                    warnings.warn(
+                        "model='pvwatts' is now called model='pvwattsv5'; "
+                        "use the new model name to silence this warning",
+                        pvlibDeprecationWarning)
+
+                self._ac_model = self.pvwattsv5_inverter
             else:
                 raise ValueError(model + ' is not a valid AC power model')
         else:
@@ -855,8 +877,8 @@ class ModelChain:
                     ' with multiple MPPT inputs')
             else:
                 return self.adr_inverter
-        if _pvwatts_params(inverter_params):
-            return self.pvwatts_inverter
+        if _pvwattsv5_params(inverter_params):
+            return self.pvwattsv5_inverter
         raise ValueError('could not infer AC model from '
                          'system.inverter_parameters. Check '
                          'system.inverter_parameters or explicitly '
@@ -878,10 +900,15 @@ class ModelChain:
         )
         return self
 
-    def pvwatts_inverter(self):
-        ac = self.system.get_ac('pvwatts', self.results.dc)
+    def pvwattsv5_inverter(self):
+        ac = self.system.get_ac('pvwattsv5', self.results.dc)
         self.results.ac = ac.fillna(0)
         return self
+
+    @deprecated('0.9.4', alternative='ModelChain.pvwattsv5_inverter',
+                removal='0.10')
+    def pvwatts_inverter(self):
+        return self.pvwattsv5_inverter()
 
     @property
     def aoi_model(self):
@@ -1183,8 +1210,14 @@ class ModelChain:
             self._losses_model = self.infer_losses_model()
         elif isinstance(model, str):
             model = model.lower()
-            if model == 'pvwatts':
-                self._losses_model = self.pvwatts_losses
+            if model in ['pvwatts', 'pvwattsv5']:
+                if model == 'pvwatts':
+                    warnings.warn(
+                        "model='pvwatts' is now called model='pvwattsv5'; "
+                        "use the new model name to silence this warning",
+                        pvlibDeprecationWarning)
+
+                self._losses_model = self.pvwattsv5_losses
             elif model == 'no_loss':
                 self._losses_model = self.no_extra_losses
             else:
@@ -1195,14 +1228,19 @@ class ModelChain:
     def infer_losses_model(self):
         raise NotImplementedError
 
-    def pvwatts_losses(self):
-        self.results.losses = (100 - self.system.pvwatts_losses()) / 100.
+    def pvwattsv5_losses(self):
+        self.results.losses = (100 - self.system.pvwattsv5_losses()) / 100.
         if isinstance(self.results.dc, tuple):
             for dc in self.results.dc:
                 dc *= self.results.losses
         else:
             self.results.dc *= self.results.losses
         return self
+
+    @deprecated('0.9.4', alternative='ModelChain.pvwattsv5_losses',
+                removal='0.10')
+    def pvwatts_losses(self):
+        return self.pvwattsv5_losses()
 
     def no_extra_losses(self):
         self.results.losses = 1
@@ -2004,9 +2042,9 @@ def _adr_params(inverter_params):
     return {'ADRCoefficients'} <= inverter_params
 
 
-def _pvwatts_params(inverter_params):
+def _pvwattsv5_params(inverter_params):
     """Return True if `inverter_params` includes parameters for the
-    PVWatts inverter model."""
+    PVWatts v5 inverter model."""
     return {'pdc0'} <= inverter_params
 
 

@@ -15,12 +15,13 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from pvlib._deprecation import deprecated
+from pvlib._deprecation import deprecated, pvlibDeprecationWarning
 
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
 from pvlib.tools import _build_kwargs, _build_args
 
+import warnings
 
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
@@ -43,7 +44,7 @@ _DC_MODEL_PARAMS = {
     'singlediode': {
         'alpha_sc', 'a_ref', 'I_L_ref', 'I_o_ref',
         'R_sh_ref', 'R_s'},
-    'pvwatts': {'pdc0', 'gamma_pdc'}
+    'pvwattsv5': {'pdc0', 'gamma_pdc'}
 }
 
 
@@ -823,9 +824,9 @@ class PVSystem:
         Notes
         -----
         The Fuentes thermal model uses the module surface tilt for convection
-        modeling. The SAM implementation of PVWatts hardcodes the surface tilt
+        modeling. SAM's implementation of PVWatts v5 hardcodes the surface tilt
         value at 30 degrees, ignoring whatever value is used for irradiance
-        transposition.  If you want to match the PVWatts behavior you can
+        transposition.  If you want to match the PVWatts v5 behavior you can
         either leave ``surface_tilt`` unspecified to use the PVWatts default
         of 30, or specify a ``surface_tilt`` value in the Array's
         ``temperature_model_parameters``.
@@ -959,7 +960,7 @@ class PVSystem:
         Parameters
         ----------
         model : str
-            Must be one of 'sandia', 'adr', or 'pvwatts'.
+            Must be one of 'sandia', 'adr', or 'pvwattsv5'.
         p_dc : numeric, or tuple, list or array of numeric
             DC power on each MPPT input of the inverter. Use tuple, list or
             array for inverters with multiple MPPT inputs. If type is array,
@@ -978,7 +979,7 @@ class PVSystem:
         Raises
         ------
         ValueError
-            If model is not one of 'sandia', 'adr' or 'pvwatts'.
+            If model is not one of 'sandia', 'adr' or 'pvwattsv5'.
         ValueError
             If model='adr' and the PVSystem has more than one array.
 
@@ -987,8 +988,8 @@ class PVSystem:
         pvlib.inverter.sandia
         pvlib.inverter.sandia_multi
         pvlib.inverter.adr
-        pvlib.inverter.pvwatts
-        pvlib.inverter.pvwatts_multi
+        pvlib.inverter.pvwattsv5
+        pvlib.inverter.pvwattsv5_multi
         """
         model = model.lower()
         multiple_arrays = self.num_arrays > 1
@@ -999,14 +1000,19 @@ class PVSystem:
                 return inverter.sandia_multi(
                     v_dc, p_dc, self.inverter_parameters)
             return inverter.sandia(v_dc[0], p_dc[0], self.inverter_parameters)
-        elif model == 'pvwatts':
+        elif model in ['pvwatts', 'pvwattsv5']:
+            if model == 'pvwatts':
+                warnings.warn(
+                    "model='pvwatts' is now called model='pvwattsv5'; "
+                    "use the new model name to silence this warning",
+                    pvlibDeprecationWarning)
             kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
                                    self.inverter_parameters)
             p_dc = self._validate_per_array(p_dc)
             if multiple_arrays:
-                return inverter.pvwatts_multi(
+                return inverter.pvwattsv5_multi(
                     p_dc, self.inverter_parameters['pdc0'], **kwargs)
-            return inverter.pvwatts(
+            return inverter.pvwattsv5(
                 p_dc[0], self.inverter_parameters['pdc0'], **kwargs)
         elif model == 'adr':
             if multiple_arrays:
@@ -1021,7 +1027,7 @@ class PVSystem:
         else:
             raise ValueError(
                 model + ' is not a valid AC power model.',
-                ' model must be one of "sandia", "adr" or "pvwatts"')
+                ' model must be one of "sandia", "adr" or "pvwattsv5"')
 
     @deprecated('0.9', alternative='PVSystem.get_ac', removal='0.10')
     def snlinverter(self, v_dc, p_dc):
@@ -1067,53 +1073,82 @@ class PVSystem:
         )
 
     @_unwrap_single_value
-    def pvwatts_dc(self, g_poa_effective, temp_cell):
+    def pvwattsv5_dc(self, g_poa_effective, temp_cell):
         """
-        Calcuates DC power according to the PVWatts model using
-        :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
+        Calculates DC power according to the PVWatts v5 model using
+        :py:func:`pvlib.pvsystem.pvwattsv5_dc`,
+        `self.module_parameters['pdc0']`,
         and `self.module_parameters['gamma_pdc']`.
 
-        See :py:func:`pvlib.pvsystem.pvwatts_dc` for details.
+        See :py:func:`pvlib.pvsystem.pvwattsv5_dc` for details.
         """
         g_poa_effective = self._validate_per_array(g_poa_effective)
         temp_cell = self._validate_per_array(temp_cell)
         return tuple(
-            pvwatts_dc(g_poa_effective, temp_cell,
-                       array.module_parameters['pdc0'],
-                       array.module_parameters['gamma_pdc'],
-                       **_build_kwargs(['temp_ref'], array.module_parameters))
+            pvwattsv5_dc(
+                g_poa_effective, temp_cell,
+                array.module_parameters['pdc0'],
+                array.module_parameters['gamma_pdc'],
+                **_build_kwargs(['temp_ref'], array.module_parameters))
             for array, g_poa_effective, temp_cell
             in zip(self.arrays, g_poa_effective, temp_cell)
         )
 
-    def pvwatts_losses(self):
+    @deprecated('0.9.4', alternative='PVSystem.pvwattsv5_dc', removal='0.10')
+    def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
-        Calculates DC power losses according the PVwatts model using
-        :py:func:`pvlib.pvsystem.pvwatts_losses` and
+        Calculates DC power according to the PVWatts v5 model using
+        :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
+        and `self.module_parameters['gamma_pdc']`.
+
+        See :py:func:`pvlib.pvsystem.pvwattsv5_dc` for details.
+        """
+        return self.pvwattsv5_dc(g_poa_effective, temp_cell)
+
+    def pvwattsv5_losses(self):
+        """
+        Calculates DC power losses according the PVwatts v5 model using
+        :py:func:`pvlib.pvsystem.pvwattsv5_losses` and
         ``self.losses_parameters``.
 
-        See :py:func:`pvlib.pvsystem.pvwatts_losses` for details.
+        See :py:func:`pvlib.pvsystem.pvwattsv5_losses` for details.
         """
         kwargs = _build_kwargs(['soiling', 'shading', 'snow', 'mismatch',
                                 'wiring', 'connections', 'lid',
                                 'nameplate_rating', 'age', 'availability'],
                                self.losses_parameters)
-        return pvwatts_losses(**kwargs)
+        return pvwattsv5_losses(**kwargs)
+
+    @deprecated('0.9.4', alternative='PVSystem.pvwattsv5_losses',
+                removal='0.10')
+    def pvwatts_losses(self):
+        """
+        Calculates DC power losses according the PVwatts v5 model using
+        :py:func:`pvlib.pvsystem.pvwattsv5_losses` and
+        ``self.losses_parameters``.
+
+        See :py:func:`pvlib.pvsystem.pvwattsv5_losses` for details.
+        """
+        kwargs = _build_kwargs(['soiling', 'shading', 'snow', 'mismatch',
+                                'wiring', 'connections', 'lid',
+                                'nameplate_rating', 'age', 'availability'],
+                               self.losses_parameters)
+        return pvwattsv5_losses(**kwargs)
 
     @deprecated('0.9', alternative='PVSystem.get_ac', removal='0.10')
     def pvwatts_ac(self, pdc):
         """
         Calculates AC power according to the PVWatts model using
-        :py:func:`pvlib.inverter.pvwatts`, `self.module_parameters["pdc0"]`,
+        :py:func:`pvlib.inverter.pvwattsv5`, `self.module_parameters["pdc0"]`,
         and `eta_inv_nom=self.inverter_parameters["eta_inv_nom"]`.
 
-        See :py:func:`pvlib.inverter.pvwatts` for details.
+        See :py:func:`pvlib.inverter.pvwattsv5` for details.
         """
         kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
                                self.inverter_parameters)
 
-        return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
-                                **kwargs)
+        return inverter.pvwattsv5(pdc, self.inverter_parameters['pdc0'],
+                                  **kwargs)
 
     @_unwrap_single_value
     def dc_ohms_from_percent(self):
@@ -3171,18 +3206,18 @@ def scale_voltage_current_power(data, voltage=1, current=1):
     return df_sorted
 
 
-def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
+def pvwattsv5_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     r"""
-    Implements NREL's PVWatts DC power model. The PVWatts DC model [1]_ is:
+    Implements NREL's PVWatts v5 DC power model. The PVWatts DC model [1]_ is:
 
     .. math::
 
         P_{dc} = \frac{G_{poa eff}}{1000} P_{dc0} ( 1 + \gamma_{pdc} (T_{cell} - T_{ref}))
 
     Note that the pdc0 is also used as a symbol in
-    :py:func:`pvlib.inverter.pvwatts`. pdc0 in this function refers to the DC
+    :py:func:`pvlib.inverter.pvwattsv5`. pdc0 in this function refers to the DC
     power of the modules at reference conditions. pdc0 in
-    :py:func:`pvlib.inverter.pvwatts` refers to the DC power input limit of
+    :py:func:`pvlib.inverter.pvwattsv5` refers to the DC power input limit of
     the inverter.
 
     Parameters
@@ -3221,11 +3256,17 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     return pdc
 
 
-def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
-                   connections=0.5, lid=1.5, nameplate_rating=1, age=0,
-                   availability=3):
+pvwatts_dc = deprecated(since='0.9.4',
+                        name='pvwatts_dc',
+                        alternative='pvwattsv5_dc',
+                        removal='0.10')(pvwattsv5_dc)
+
+
+def pvwattsv5_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
+                     connections=0.5, lid=1.5, nameplate_rating=1, age=0,
+                     availability=3):
     r"""
-    Implements NREL's PVWatts system loss model.
+    Implements NREL's PVWatts v5 system loss model.
     The PVWatts loss model [1]_ is:
 
     .. math::
@@ -3273,6 +3314,12 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
     losses = (1 - perf) * 100.
 
     return losses
+
+
+pvwatts_losses = deprecated(since='0.9.4',
+                            name='pvwatts_losses',
+                            alternative='pvwattsv5_losses',
+                            removal='0.10')(pvwattsv5_losses)
 
 
 def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,

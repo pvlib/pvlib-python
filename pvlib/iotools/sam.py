@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+
 def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv', 
                         standardSAM=True, includeminute=False):
     """
@@ -49,10 +50,7 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
     def _averageSAMStyle(df, interval='60T', closed='right', label='right'):
         ''' Averages subhourly data into hourly data in SAM's expected format.
         '''
-        try:
-            df = df.resample(interval, closed=closed, label=label).mean()
-        except:
-            print('Warning - unable to average')
+        df = df.resample(interval, closed=closed, label=label).mean()
         return df
 
     def _fillYearSAMStyle(df, freq='60T'):
@@ -60,19 +58,17 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
         '''
         # add zeros for the rest of the year
         if freq is None:
-            try:
-                freq = pd.infer_freq(df.index)
-            except:
-                freq = '60T'  # 15 minute data by default
+            freq = pd.infer_freq(df.index)
         # add a timepoint at the end of the year
         # idx = df.index
         # apply correct TZ info (if applicable)
         tzinfo = df.index.tzinfo
         starttime = pd.to_datetime('%s-%s-%s %s:%s' % (df.index.year[0], 1, 1,
-                                                      0, 0)).tz_localize(tzinfo)
+                                                       0, 0)
+                                   ).tz_localize(tzinfo)
         endtime = pd.to_datetime('%s-%s-%s %s:%s' % (df.index.year[-1], 12, 31,
                                                      23, 60-int(freq[:-1]))
-                                                     ).tz_localize(tzinfo)
+                                 ).tz_localize(tzinfo)
 
         df2 = _averageSAMStyle(df, freq)
         df2.iloc[0] = 0  # set first datapt to zero to forward fill w zeros
@@ -97,13 +93,15 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
     source = metadata['source']
 
     # make a header
-    header = '\n'.join([ 'Source,Latitude,Longitude,Time Zone,Elevation',
-                        source + ',' + str(latitude) + ',' + str(longitude) 
-                        + ',' + str(timezone_offset) + ',' + str(elevation)])+'\n'
+    header = '\n'.join(['Source,Latitude,Longitude,Time Zone,Elevation',
+                        source + ',' + str(latitude) + ',' + str(longitude)
+                        + ',' + str(timezone_offset) + ',' +
+                        str(elevation)])+'\n'
 
-    savedata = pd.DataFrame({'Year':data.index.year, 'Month':data.index.month,
-                             'Day':data.index.day,
-                             'Hour':data.index.hour})
+    savedata = pd.DataFrame({'Year': data.index.year,
+                             'Month': data.index.month,
+                             'Day': data.index.day,
+                             'Hour': data.index.hour})
 
     if includeminute:
         savedata['Minute'] = data.index.minute
@@ -145,7 +143,7 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
 
 def tz_convert(df, tz_convert_val, metadata=None):
     """
-    Support function to convert metdata to a different local timezone. 
+    Support function to convert metdata to a different local timezone.
     Particularly for GIS weather files which are returned in UTC by default.
 
     Parameters

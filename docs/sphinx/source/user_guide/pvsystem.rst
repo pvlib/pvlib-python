@@ -70,28 +70,28 @@ that describe a PV system's modules and inverter are stored in
 
 
 Extrinsic data is passed to the arguments of PVSystem methods. For example,
-the :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method accepts extrinsic
+the :py:meth:`~pvlib.pvsystem.PVSystem.pvwattsv5_dc` method accepts extrinsic
 data irradiance and temperature.
 
 .. ipython:: python
 
-    pdc = system.pvwatts_dc(g_poa_effective=1000, temp_cell=30)
+    pdc = system.pvwattsv5_dc(g_poa_effective=1000, temp_cell=30)
     print(pdc)
 
 Methods attached to a PVSystem object wrap the corresponding functions in
 :py:mod:`~pvlib.pvsystem`. The methods simplify the argument list by
 using data stored in the PVSystem attributes. Compare the
-:py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc` method signature to the
-:py:func:`~pvlib.pvsystem.pvwatts_dc` function signature:
+:py:meth:`~pvlib.pvsystem.PVSystem.pvwattsv5_dc` method signature to the
+:py:func:`~pvlib.pvsystem.pvwattsv5_dc` function signature:
 
-    * :py:meth:`PVSystem.pvwatts_dc(g_poa_effective, temp_cell) <pvlib.pvsystem.PVSystem.pvwatts_dc>`
-    * :py:func:`pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.) <pvlib.pvsystem.pvwatts_dc>`
+    * :py:meth:`PVSystem.pvwattsv5_dc(g_poa_effective, temp_cell) <pvlib.pvsystem.PVSystem.pvwattsv5_dc>`
+    * :py:func:`pvwattsv5_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.) <pvlib.pvsystem.pvwattsv5_dc>`
 
-How does this work? The :py:meth:`~pvlib.pvsystem.PVSystem.pvwatts_dc`
+How does this work? The :py:meth:`~pvlib.pvsystem.PVSystem.pvwattsv5_dc`
 method looks in `PVSystem.module_parameters` for the `pdc0`, and
-`gamma_pdc` arguments. Then the :py:meth:`PVSystem.pvwatts_dc
-<pvlib.pvsystem.PVSystem.pvwatts_dc>` method calls the
-:py:func:`pvsystem.pvwatts_dc <pvlib.pvsystem.pvwatts_dc>` function with
+`gamma_pdc` arguments. Then the :py:meth:`PVSystem.pvwattsv5_dc
+<pvlib.pvsystem.PVSystem.pvwattsv5_dc>` method calls the
+:py:func:`pvsystem.pvwattsv5_dc <pvlib.pvsystem.pvwattsv5_dc>` function with
 all of the arguments and returns the result to the user. Note that the
 function includes a default value for the parameter `temp_ref`. This
 default value may be overridden by specifying the `temp_ref` key in the
@@ -101,7 +101,7 @@ default value may be overridden by specifying the `temp_ref` key in the
 
     system.arrays[0].module_parameters['temp_ref'] = 0
     # lower temp_ref should lead to lower DC power than calculated above
-    pdc = system.pvwatts_dc(1000, 30)
+    pdc = system.pvwattsv5_dc(1000, 30)
     print(pdc)
 
 Multiple methods may pull data from the same attribute. For example, the
@@ -320,8 +320,8 @@ Losses
 
 The `losses_parameters` attribute contains data that may be used with
 methods that calculate system losses. At present, these methods include
-only :py:meth:`pvlib.pvsystem.PVSystem.pvwatts_losses` and
-:py:func:`pvlib.pvsystem.pvwatts_losses`, but we hope to add more related functions
+only :py:meth:`pvlib.pvsystem.PVSystem.pvwattsv5_losses` and
+:py:func:`pvlib.pvsystem.pvwattsv5_losses`, but we hope to add more related functions
 and methods in the future.
 
 

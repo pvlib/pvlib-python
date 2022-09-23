@@ -109,24 +109,19 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
     savedata['Tdry'] = temp_amb
 
     if 'dni' in data:
-        dni = list(data.dni)
-        savedata['DHI'] = dni
+        savedata['DHI'] = data.dni.values
 
     if 'dhi' in data:
-        dhi = list(data.dhi)
-        savedata['DNI'] = dhi
+        savedata['DNI'] = data.dhi.values
 
     if 'ghi' in data:
-        ghi = list(data.ghi)
-        savedata['GHI'] = ghi
+        savedata['GHI'] = data.ghi.values
 
     if 'poa' in data:
-        poa = list(data.poa)
-        savedata['POA'] = poa
+        savedata['POA'] = data.poa.values
 
     if 'albedo' in data:
-        albedo = list(data.albedo)
-        savedata['Albedo'] = albedo
+        savedata['Albedo'] = data.albedo.values
 
         # Not elegant but seems to work for the standardSAM format
         if standardSAM and savedata.Albedo.iloc[0] == 0:

@@ -27,7 +27,7 @@ Deprecations
       instead of ``'pvwatts'``.
 
   The originals should continue to work for now (emitting a deprecation warning),
-  but will be removed in a future release. (:issue:`1350`, :pull:`TODO`)
+  but will be removed in a future release. (:issue:`1350`, :pull:`1558`)
 
 
 Enhancements

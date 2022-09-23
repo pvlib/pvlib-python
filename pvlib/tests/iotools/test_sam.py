@@ -22,9 +22,9 @@ def test_saveSAM_WeatherFile():
                 'elevation': inputs['location']['elevation'],
                 'source': 'User-generated'}
     data, metadata = tz_convert(data, tz_convert_val=-7, metadata=metadata)
-    data['albedo'] = 0.2 
+    data['albedo'] = 0.2
     coerce_year = 2021
     data['poa'] = np.nan
     data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
     saveSAM_WeatherFile(data, metadata, savefile='test_SAMWeatherFile.csv',
-                        standardSAM=True, includeminute = True)
+                        standardSAM=True, includeminute=True)

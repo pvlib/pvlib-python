@@ -57,10 +57,7 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
         ''' Fills year
         '''
         # add zeros for the rest of the year
-        if freq is None:
-            freq = pd.infer_freq(df.index)
         # add a timepoint at the end of the year
-        # idx = df.index
         # apply correct TZ info (if applicable)
         tzinfo = df.index.tzinfo
         starttime = pd.to_datetime('%s-%s-%s %s:%s' % (df.index.year[0], 1, 1,
@@ -130,11 +127,13 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
     if 'albedo' in data:
         albedo = list(data.albedo)
         savedata['Albedo'] = albedo
-        
+
         # Not elegant but seems to work for the standardSAM format
         if standardSAM and savedata.Albedo.iloc[0] == 0:
-            savedata.loc[savedata.index[0],'Albedo'] = savedata.loc[savedata.index[1]]['Albedo']
-            savedata.loc[savedata.index[-1],'Albedo'] = savedata.loc[savedata.index[-2]]['Albedo']
+            savedata.loc[savedata.index[0], 'Albedo'] = savedata.loc[
+                savedata.index[1]]['Albedo']
+            savedata.loc[savedata.index[-1], 'Albedo'] = savedata.loc[
+                savedata.index[-2]]['Albedo']
 
     with open(savefile, 'w', newline='') as ict:
         # Write the header lines, including the index variable for

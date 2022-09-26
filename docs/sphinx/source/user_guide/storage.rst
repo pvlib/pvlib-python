@@ -422,11 +422,6 @@ load/battery/grid, from battery to load and from grid to load/system:
    plt.close()
 
 
-.. note:: The :py:func:`~pvlib.flow.self_consumption_ac_battery` function
-   allows you to define the AC-DC losses, if you would rather avoid the default
-   values.
-
-
 While the self-consumption with AC-connected battery use case imposes many
 restrictions to the power flow, it still allows some flexibility to decide when
 to allow charging and discharging. If you wanted to simulate a use case where

@@ -9,11 +9,11 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
 
 Bug fixes
 ~~~~~~~~~
-* Multiple issues fixed that were reported by LGTM analysis.
+
 
 
 Testing

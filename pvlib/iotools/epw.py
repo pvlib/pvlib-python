@@ -226,17 +226,13 @@ def read_epw(filename, coerce_year=None):
             'Safari/537.36')})
         response = urlopen(request)
         with io.StringIO(response.read().decode(errors='ignore')) as csvdata:
-            try:
-                data, meta = parse_epw(csvdata, coerce_year)
-            except Exception as e:
-                print(e)
+            data, meta = parse_epw(csvdata, coerce_year)
+
     else:
         # Assume it's accessible via the file system
         with open(str(filename), 'r') as csvdata:
-            try:
-                data, meta = parse_epw(csvdata, coerce_year)
-            except Exception as e:
-                print(e)
+            data, meta = parse_epw(csvdata, coerce_year)
+
 
     return data, meta
 

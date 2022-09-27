@@ -655,7 +655,6 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
 
     # iterate through timeseries inputs
     sun0 = 0
-    tmod0 = 293.15
 
     # n.b. the way Fuentes calculates the first timedelta makes it seem like
     # the value doesn't matter -- rather than recreate it here, just assume

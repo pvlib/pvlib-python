@@ -362,18 +362,16 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
 
     beta = np.radians(surface_tilt)
 
-    from numpy import pi, sin, cos, exp
-
     # avoid RuntimeWarnings for <, sin, and cos with nan
     with np.errstate(invalid='ignore'):
         # because sin(pi) isn't exactly zero
-        sin_beta = np.where(surface_tilt < 90, sin(beta), sin(pi - beta))
+        sin_beta = np.where(surface_tilt < 90, np.sin(beta), np.sin(np.pi - beta))
 
-        trig_term_sky = sin_beta + (pi - beta - sin_beta) / (1 + cos(beta))
-        trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta))  # noqa: E222 E261 E501
+        trig_term_sky = sin_beta + (np.pi - beta - sin_beta) / (1 + np.cos(beta))
+        trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - np.cos(beta))  # noqa: E222 E261 E501
 
-    iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
-    iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
+    iam_sky = 1 - np.exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
+    iam_gnd = 1 - np.exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
 
     if out_index is not None:
         iam_sky = pd.Series(iam_sky, index=out_index, name='iam_sky')

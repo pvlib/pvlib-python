@@ -125,9 +125,7 @@ def test_get_psm3_check_leap_day(nrel_api_key):
                           ])
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_psm3_tmy_errors(
-    latitude, longitude, api_key, names, interval
-):
+def test_get_psm3_tmy_errors(latitude, longitude, api_key, names, interval):
     """Test get_psm3() for multiple erroneous input scenarios.
 
     These scenarios include:
@@ -201,14 +199,3 @@ def test_get_psm3_attribute_mapping(nrel_api_key):
 def test_psm3_variable_map_deprecation_warning(nrel_api_key):
     with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
         _ = psm3.read_psm3(MANUAL_TEST_DATA)
-
-
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_psm3_leap_day_deprecation_warning(nrel_api_key):
-    with pytest.warns(pvlibDeprecationWarning,
-                      match='default to leap_day=True'):
-        _, _ = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL,
-                             names=2019, interval=60,
-                             attributes=['ghi', 'wind_speed'],
-                             map_variables=True)

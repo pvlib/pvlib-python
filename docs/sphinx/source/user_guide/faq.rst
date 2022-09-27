@@ -79,19 +79,20 @@ Why don't my simulation results make sense?
 
 pvlib does not prevent you from using models improperly and generating
 invalid results.  It is on you as the user to understand the models you
-are using.  However, here are a few modeling errors that beginners sometimes
-run into:
+are using.  However, one modeling error that beginners sometimes
+run into is improper time zone localization: calculating solar
+positions is often the first step of a modeling process
+and relies on timestamps being localized to the correct time zone.
+A telltale sign of improper time zones is a time shift between solar
+position and the irradiance data (for example, ``solar_elevation``
+peaks at a different time from clear-sky ``ghi``).
+For more information on handling timezone correctly, see :ref:`timetimezones`.
 
-- *Improper time zone localization*: calculating solar positions is often the
-  first step of a modeling process and relies on timestamps being localized to
-  the correct time zone.  A telltale sign of improper time zones is a time
-  shift between solar position and the irradiance data.
-  For more information on handling timezone correctly, see :ref:`timetimezones`.
-- TODO other beginner issues
-
+More generally, inspecting the simulation results visually is a good first
+step when investigating strange results.
 Matplotlib and pandas have very powerful plotting capabilities that are great
 for tracking down where things went wrong in a modeling process.  Try plotting
-multiple a few days of intermediate time series in a single plot, looking for
+a few days of intermediate time series in a single plot, looking for
 inconsistencies like nonzero irradiance when the sun is below the horizon.
 This will give you a clue of where to look for errors in your code.
 
@@ -124,7 +125,7 @@ the `v:` version switcher widget in the bottom right corner of this page.
 
 You can also upgrade your installed pvlib to the latest compatible version
 with ``pip install -U pvlib``, but be sure to check the :ref:`whatsnew`
-page to see what the differences between versions are.
+page to see the differences between versions.
 
 
 The CEC table doesn't include my module or inverter, what should I do?

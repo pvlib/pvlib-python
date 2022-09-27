@@ -6,7 +6,6 @@ This module contains the Location class.
 
 import os
 import datetime
-import warnings
 
 import pandas as pd
 import pytz

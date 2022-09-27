@@ -9,10 +9,11 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
 
 Bug fixes
 ~~~~~~~~~
+
 
 
 Testing
@@ -33,3 +34,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Christian Orner (:ghuser:`chrisorner`)

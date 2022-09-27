@@ -13,6 +13,7 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Multiple issues fixed that were reported by LGTM analysis.
 
 
 Testing
@@ -33,3 +34,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Christian Orner (:ghuser:`chrisorner`)

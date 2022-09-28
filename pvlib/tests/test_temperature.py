@@ -210,73 +210,35 @@ def test_fuentes(filename, inoct):
     assert night_difference.min() > 0
 
 
-def test__calculate_radiative_heat():
-    # TODO placeholder until final model is validated
-    q = temperature._calculate_radiative_heat(
-        module_area=2.47,
-        view_factor=0.5,
-        emissivity=0.5,
-        temperature1=30 + 273.15,
-        temperature2=10 + 273.15
-    )
-    assert round(q, 5) == 70.65021
+@pytest.fixture
+def hayes_data():
+    index = pd.date_range('2019-06-01 12:00', freq='T', periods=5)
+    df = pd.DataFrame({
+        'poa_global': [600, 700, 100, 800, 900],
+        'temp_air': [20, 21, 22, 23, 24],
+        'wind_speed': [1, 2, 1, 2, 1],
+    }, index=index).astype(float)
+    return df
 
 
-def test_hayes():
-    # TODO placeholder until final model is validated
+def test_hayes(hayes_data):
+    out = temperature.hayes(**hayes_data, module_efficiency=0.160,
+                            module_area=0.72, module_mass=12, surface_tilt=20,
+                            module_emissivity=0.84)
+    expected = pd.Series([20, 21.9448677, 24.1349903, 24.0457299, 26.5799448],
+                         index=hayes_data.index, name='tmod')
+    assert_series_equal(out, expected)
 
-    # simulate psm3 data
-    data_psm3 = [
-        {'Latitude': 39.66, 'Longitude': -105.207},
-        pd.DataFrame(
-            data={
-                'DNI': [0, 163, 133, 189],
-                'DHI': [0, 4, 12, 16],
-                'GHI': [0, 7, 16, 25],
-                'Temperature': [-13.2, -13.1, -13.1, -13],
-                'Wind Speed': [1.6, 1.7, 1.7, 1.7]
-            },
-            index=pd.date_range('2019-01-01 07:25:00',
-                                '2019-01-01 07:40:00',
-                                freq='5min')
-        )
-    ]
 
-    # data preparation
-    module_tilt = 30
-    module_azimuth = 180
-    site = location.Location(
-        latitude=data_psm3[0]['Latitude'],
-        longitude=data_psm3[0]['Longitude'],
-        tz='MST'
-    )
-    solar_position = site.get_solarposition(times=data_psm3[1].index)
-    poa_global = irradiance.get_total_irradiance(
-        surface_tilt=module_tilt,
-        surface_azimuth=module_azimuth,
-        dni=data_psm3[1]['DNI'],
-        ghi=data_psm3[1]['GHI'],
-        dhi=data_psm3[1]['DHI'],
-        solar_zenith=solar_position['apparent_zenith'],
-        solar_azimuth=solar_position['azimuth']
-    )['poa_global']
-    temp_air = data_psm3[1]['Temperature']
-    wind_speed = data_psm3[1]['Wind Speed']
-
-    # 1. Calculate module temp with new model
-    aoi = irradiance.aoi(module_tilt, module_azimuth,
-                         solar_position['zenith'],
-                         solar_position['azimuth'])
-    poa_effective = poa_global.multiply(iam.ashrae(aoi))
-    module_efficiency = 0.176
-    module_area = 2.47  # m^2
-    module_weight = 34.5
-    tmod_hayes = temperature.hayes(poa_effective, temp_air, wind_speed,
-                                   module_efficiency, module_area,
-                                   module_weight, module_tilt)
-
-    assert [round(t, 2) for t in tmod_hayes.values] == \
-           [-13.20, -14.81, -15.98, -16.85]
+def test_hayes_nan(hayes_data):
+    df = hayes_data.copy()
+    df['poa_global'].values[2] = np.nan
+    expected = pd.Series([20, 21.9448677, 24.1349903, np.nan, np.nan],
+                         index=hayes_data.index, name='tmod')
+    out = temperature.hayes(**df, module_efficiency=0.160,
+                            module_area=0.72, module_mass=12, surface_tilt=20,
+                            module_emissivity=0.84)
+    assert_series_equal(out, expected)
 
 
 @pytest.mark.parametrize('tz', [None, 'Etc/GMT+5'])

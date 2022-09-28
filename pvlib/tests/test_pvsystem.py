@@ -1595,6 +1595,7 @@ def test_PVSystem_get_ac_pvwatts_multi_deprecated(
         with pytest.warns(pvlibDeprecationWarning, match=match):
             pacs = system.get_ac('pvwatts', (pdcs, pdcs))
         assert_series_equal(pacs, exp)
+    assert inverter.pvwatts_multi.call_count == 0
 
 
 @pytest.mark.parametrize('model', ['sandia', 'adr', 'pvwattsv5'])
@@ -2110,7 +2111,7 @@ def test_PVSystem_pvwatts_dcv5(pvwatts_system_defaults, mocker):
 
 @fail_on_pvlib_version('0.10.0')
 def test_PVSystem_pvwatts_dc_deprecated(pvwatts_system_defaults, mocker):
-    mocker.spy(pvsystem, 'pvwattsv5_dc')
+    mocker.spy(pvsystem, 'pvwatts_dc')
     irrad = 900
     temp_cell = 30
     expected = 90
@@ -2121,6 +2122,7 @@ def test_PVSystem_pvwatts_dc_deprecated(pvwatts_system_defaults, mocker):
         irrad, temp_cell,
         **pvwatts_system_defaults.arrays[0].module_parameters)
     assert_allclose(expected, out, atol=10)
+    assert pvsystem.pvwatts_dc.call_count == 0
 
 
 def test_PVSystem_pvwattsv5_dc_kwargs(pvwatts_system_kwargs, mocker):
@@ -2204,14 +2206,14 @@ def test_PVSystem_pvwattsv5_losses(pvwatts_system_defaults, mocker):
 
 @fail_on_pvlib_version('0.10.0')
 def test_PVSystem_pvwatts_losses_deprecated(pvwatts_system_defaults, mocker):
-    mocker.spy(pvsystem, 'pvwattsv5_losses')
+    mocker.spy(pvsystem, 'pvwatts_losses')
     age = 1
     pvwatts_system_defaults.losses_parameters = dict(age=age)
     expected = 15
     with pytest.warns(pvlibDeprecationWarning,
                       match='Use PVSystem.pvwattsv5_losses instead'):
         out = pvwatts_system_defaults.pvwatts_losses()
-    pvsystem.pvwattsv5_losses.assert_called_once_with(age=age)
+    pvsystem.pvwatts_losses.call_count == 0
     assert out < expected
 
 

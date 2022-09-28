@@ -1101,7 +1101,8 @@ class PVSystem:
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
         Calculates DC power according to the PVWatts v5 model using
-        :py:func:`pvlib.pvsystem.pvwattsv5_dc`, `self.module_parameters['pdc0']`,
+        :py:func:`pvlib.pvsystem.pvwattsv5_dc`,
+        `self.module_parameters['pdc0']`,
         and `self.module_parameters['gamma_pdc']`.
 
         See :py:func:`pvlib.pvsystem.pvwattsv5_dc` for details.

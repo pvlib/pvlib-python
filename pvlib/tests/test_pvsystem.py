@@ -2118,9 +2118,6 @@ def test_PVSystem_pvwatts_dc_deprecated(pvwatts_system_defaults, mocker):
     match = "Use PVSystem.pvwattsv5_dc instead"
     with pytest.warns(pvlibDeprecationWarning, match=match):
         out = pvwatts_system_defaults.pvwatts_dc(irrad, temp_cell)
-    pvsystem.pvwattsv5_dc.assert_called_once_with(
-        irrad, temp_cell,
-        **pvwatts_system_defaults.arrays[0].module_parameters)
     assert_allclose(expected, out, atol=10)
     assert pvsystem.pvwatts_dc.call_count == 0
 

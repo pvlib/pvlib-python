@@ -5,7 +5,7 @@ import pytest
 from .conftest import DATA_DIR, assert_series_equal
 from numpy.testing import assert_allclose
 
-from pvlib import temperature, tools
+from pvlib import temperature, location, irradiance, iam, tools
 from pvlib._deprecation import pvlibDeprecationWarning
 
 import re
@@ -208,6 +208,37 @@ def test_fuentes(filename, inoct):
     night_difference = expected_tcell[is_night] - actual_tcell[is_night]
     assert night_difference.max() < 6
     assert night_difference.min() > 0
+
+
+@pytest.fixture
+def hayes_data():
+    index = pd.date_range('2019-06-01 12:00', freq='T', periods=5)
+    df = pd.DataFrame({
+        'poa_global': [600, 700, 100, 800, 900],
+        'temp_air': [20, 21, 22, 23, 24],
+        'wind_speed': [1, 2, 1, 2, 1],
+    }, index=index).astype(float)
+    return df
+
+
+def test_hayes(hayes_data):
+    out = temperature.hayes(**hayes_data, module_efficiency=0.160,
+                            module_area=0.72, module_mass=12, surface_tilt=20,
+                            module_emissivity=0.84)
+    expected = pd.Series([20, 21.9448677, 24.1349903, 24.0457299, 26.5799448],
+                         index=hayes_data.index, name='tmod')
+    assert_series_equal(out, expected)
+
+
+def test_hayes_nan(hayes_data):
+    df = hayes_data.copy()
+    df['poa_global'].values[2] = np.nan
+    expected = pd.Series([20, 21.9448677, 24.1349903, np.nan, np.nan],
+                         index=hayes_data.index, name='tmod')
+    out = temperature.hayes(**df, module_efficiency=0.160,
+                            module_area=0.72, module_mass=12, surface_tilt=20,
+                            module_emissivity=0.84)
+    assert_series_equal(out, expected)
 
 
 @pytest.mark.parametrize('tz', [None, 'Etc/GMT+5'])

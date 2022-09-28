@@ -9,7 +9,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added :py:func:`pvlib.temperature.hayes`, a transient cell temperature model
+  for fixed-tilt CdTe systems. (:issue:`1080`, :pull:`1083`)
 * Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -35,3 +38,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Christian Orner (:ghuser:`chrisorner`)
+* Stephen Kaplan (:ghuser:`stephenjkaplan`)

@@ -5,7 +5,7 @@ PV modules and cells.
 
 import numpy as np
 import pandas as pd
-from pvlib.tools import sind
+from pvlib.tools import sind, cosd
 from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _get_sample_intervals
 import scipy
@@ -718,6 +718,231 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
         sun0 = sun
 
     return pd.Series(tmod_array - 273.15, index=poa_global.index, name='tmod')
+
+
+def _calculate_radiative_heat(module_area, view_factor, emissivity1,
+                              emissivity2, temperature1, temperature2):
+    """
+    Calculate radiative heat transfer between two objects.
+
+    Parameters
+    ----------
+    module_area : float
+        Front-side surface area of PV module [m^2]
+
+    view_factor : float
+        View factor of object 1 with respect to object 2 [unitless]
+
+    emissivity1 : float
+        Thermal emissivity of object 1 [unitless]. Must be between 0 and 1.
+
+    emissivity2 : float
+        Thermal emissivity of object 2 [unitless]. Must be between 0 and 1.
+
+    temperature1 : float
+        Temperature of object 1 [K]
+
+    temperature2 : float
+        Temperature of object 2 [K]
+
+    Returns
+    -------
+    q : float
+        Radiative heat transfer between object 1 and object 2 [W]
+    """
+    # Stefan-Boltzmann constant
+    sigma = 5.670374419E-8      # W m^-2 K^-4
+    q = sigma * module_area * view_factor * \
+        (emissivity1 * temperature1 ** 4 - emissivity2 * temperature2 ** 4)
+
+    return q
+
+
+def hayes(poa_global, temp_air, wind_speed, module_efficiency, module_area,
+          module_mass, surface_tilt, module_emissivity, sky_emissivity=0.95,
+          ground_emissivity=0.85, heat_capacity=840, t_mod_init=None, k_c=12.7,
+          k_v=2.0, wind_sensor_height=2.5, z0=0.25):
+    """
+    Calculate module temperature at sub-hourly resolution for fixed tilt
+    systems per the Hayes model.
+
+    The Hayes model [1]_ enables more accurate modeling of module temperature
+    at time scales less than one hour by introducing a time dependency based
+    on module heat capacity. The model can only be used for fixed tilt
+    systems. Additionally, it has only been validated using data from
+    utility-scale PV systems with CdTe modules. It is more accurate for
+    time intervals less than 5 minutes. For data with larger time steps,
+    [1]_ recommends downscaling the inputs with linear interpolation.
+
+    .. warning::
+        This model was validated using data from systems built prior to 2012.
+        Using module parameters (area, efficiency, weight) for more recent
+        First Solar modules may not produce realistic temperature estimates.
+
+    Parameters
+    ----------
+    poa_global : pandas.Series
+        Total incident irradiance adjusted for optical (IAM) losses [W/m^2]
+
+    temp_air : pandas.Series
+        Ambient dry bulb temperature [C]
+
+    wind_speed : pandas.Series
+        Wind speed [m/s]
+
+    module_efficiency : float
+        PV module efficiency [decimal]
+
+    module_area : float
+        Front-side surface area of PV module [m^2]
+
+    module_mass : float
+        Mass of PV module [kg]
+
+    surface_tilt : float
+        Tilt angle of fixed tilt array [deg]
+
+    module_emissivity : float
+        Thermal emissivity of the module [unitless]. Must be between 0 and 1.
+        No guidance for this value was given in [1]_, but the analogous
+        parameter in :py:func:`fuentes` defaults to 0.84.
+
+    sky_emissivity : float, default 0.95
+        Thermal emissivity of sky [unitless]. Must be between 0 and 1.
+
+    ground_emissivity : float, default 0.85
+        Thermal emissivity of ground [unitless]. Default value is suggested
+        value for sand. Suggested value for grass is 0.9. Must be between
+        0 and 1.
+
+    heat_capacity : float, default 840
+        Specific heat capacity of PV module [J / kg-K].
+        The default value is that of glass.
+
+    t_mod_init : float, default None
+        Initial condition for module temperature [C]. If left as default,
+        will be set to first value in temp_air based on the assumption
+        that if the first timestamp is in the middle of the night, the
+        module would be in steady-state equilibrium with the environment.
+
+    k_c : float, default 12.7
+        Free convective heat coefficient. Defaults to value for "hot"
+        climates (climates closest to Koppen-Geiger Dry B and Temperate C
+        zones). Suggested value for "temperate" climates (climates closest
+        to Koppen-Geiger Cold D zones) is 16.5
+
+    k_v : float, default 2.0
+        Forced convective heat coefficient. Defaults to value for "hot"
+        climates (climates closest to Koppen-Geiger Dry B and Temperate C
+        zones). Suggested value for "temperate" climates (climates closest
+        to Koppen-Geiger Cold D zones) 3.2
+
+    wind_sensor_height : float, default 2.5
+        Height of wind sensor used to measure wind_speed [m]
+
+    z0 : float, default 0.25
+        Davenport-Wieringa roughness length [m]. Default value chosen in
+        [1]_ to minimize error.
+
+    Returns
+    -------
+    tmod : pandas.Series
+        The modeled module temperature [C]
+
+    Notes
+    -----
+    For simplicity, this implementation calculates radiative view factors
+    slightly differently from [1]_ in that the sky and ground view factors
+    are not affected by adjacent rows in the array.
+
+    Additionally, implementation corrects two supposed errors in the reference:
+
+    1. Eq 2: the signs of some terms are corrected.
+    2. Eq 3: ``POA_eff`` is multiplied by ``A``.
+
+    References
+    ----------
+    .. [1] W. Hayes and L. Ngan, "A Time-Dependent Model for CdTe PV Module
+           Temperature in Utility-Scale Systems," in IEEE Journal of
+           Photovoltaics, vol. 5, no. 1, pp. 238-242, Jan. 2015,
+           :doi:`10.1109/JPHOTOV.2014.2361653`.
+    """
+    dt_seconds = poa_global.index.to_series().diff().dt.total_seconds()
+    dt_seconds.values[0] = dt_seconds.values[1]  # simplicity
+
+    # radiation (from sun)
+    q_short_wave_radiation = module_area * poa_global
+
+    # converted electrical energy
+    p_out = module_efficiency * q_short_wave_radiation
+
+    # adjust wind speed if sensor height not at 2.5 meters
+    wind_speed_adj = wind_speed * (np.log(2.5 / z0) /
+                                   np.log(wind_sensor_height / z0))
+
+    # convert C to K for convenience
+    temp_air = temp_air + 273.15
+
+    # sky temperature assumed to be constant offset from ambient (see Table 1)
+    t_sky = temp_air - 20
+
+    # calculate view factors (simplified calculations)
+    # TODO: from Hayes & Ngan:
+    #
+    #     The view factor represents the percentage of the hemispherical
+    #     dome viewed from object one (the PV module) that is
+    #     occupied by object two. For this case, the reference point on
+    #     the module is assumed to be at the midpoint of the module
+    #     row height.
+    #
+    # So these simplified view factor equations are not wholly consistent
+    # with the reference.  Implementing the real VF calculation would
+    # require additional inputs (gcr, at least).
+    view_factor_mod_sky = (1 + cosd(surface_tilt)) / 2
+    view_factor_mod_ground = (1 - cosd(surface_tilt)) / 2
+
+    t_mod = np.zeros_like(poa_global, dtype=np.float64)
+    t_mod_i = t_mod_init + 273.15 if t_mod_init is not None else temp_air[0]
+    t_mod[0] = t_mod_i
+    # calculate successive module temperatures for each time stamp
+    for i in range(len(t_mod) - 1):
+        # calculate long wave radiation (radiative interactions between module
+        # and objects within Earth's atmosphere)
+        q_mod_sky = _calculate_radiative_heat(
+            module_area=module_area,
+            view_factor=view_factor_mod_sky,
+            emissivity1=module_emissivity,
+            emissivity2=sky_emissivity,
+            temperature1=t_mod_i,
+            temperature2=t_sky[i],
+        )
+        q_mod_ground = _calculate_radiative_heat(
+            module_area=module_area,
+            view_factor=view_factor_mod_ground,
+            emissivity1=module_emissivity,
+            emissivity2=ground_emissivity,
+            temperature1=t_mod_i,
+            temperature2=t_mod_i
+        )
+        q_mod_mod = 0   # current assumption is that it is negligible
+        # Eq 4
+        q_long_wave_radiation = q_mod_sky + q_mod_ground + q_mod_mod
+
+        # calculation convective heat transfer (Eq 6)
+        q_convection = (k_c + k_v*wind_speed_adj[i]) * (t_mod_i - temp_air[i])
+
+        # calculate delta in module temp, add to the current module temp.
+        # Eq 2 seems to get the sign wrong for some terms; corrected here
+        total_heat_transfer = (
+            - q_long_wave_radiation + q_short_wave_radiation[i]
+            - q_convection - p_out[i]
+        )
+        dt = dt_seconds[i]
+        t_mod_delta = dt / (module_mass*heat_capacity) * total_heat_transfer
+        t_mod_i += t_mod_delta
+        t_mod[i + 1] = t_mod_i
+
+    return pd.Series(t_mod - 273.15, index=poa_global.index, name='tmod')
 
 
 def _adj_for_mounting_standoff(x):

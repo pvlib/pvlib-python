@@ -41,6 +41,7 @@ PV temperature models
    temperature.pvsyst_cell
    temperature.faiman
    temperature.fuentes
+   temperature.hayes
    temperature.ross
    temperature.noct_sam
    temperature.prilliman

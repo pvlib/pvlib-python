@@ -758,7 +758,7 @@ def _calculate_radiative_heat(module_area, view_factor, emissivity1,
     return q
 
 
-def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
+def hayes(poa_global, temp_air, wind_speed, module_efficiency, module_area,
           module_mass, surface_tilt, module_emissivity, sky_emissivity=0.95,
           ground_emissivity=0.85, heat_capacity=840, t_mod_init=None, k_c=12.7,
           k_v=2.0, wind_sensor_height=2.5, z0=0.25):
@@ -804,6 +804,8 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
 
     module_emissivity : float
         Thermal emissivity of the module [unitless]. Must be between 0 and 1.
+        No guidance for this value was given in [1]_, but the analogous
+        parameter in :py:func:`fuentes` defaults to 0.84.
 
     sky_emissivity : float, default 0.95
         Thermal emissivity of sky [unitless]. Must be between 0 and 1.
@@ -865,11 +867,11 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
            Photovoltaics, vol. 5, no. 1, pp. 238-242, Jan. 2015,
            :doi:`10.1109/JPHOTOV.2014.2361653`.
     """
-    dt_seconds = poa_effective.index.to_series().diff().dt.total_seconds()
+    dt_seconds = poa_global.index.to_series().diff().dt.total_seconds()
     dt_seconds.values[0] = dt_seconds.values[1]  # simplicity
 
     # radiation (from sun)
-    q_short_wave_radiation = module_area * poa_effective
+    q_short_wave_radiation = module_area * poa_global
 
     # converted electrical energy
     p_out = module_efficiency * q_short_wave_radiation
@@ -899,7 +901,7 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     view_factor_mod_sky = (1 + cosd(surface_tilt)) / 2
     view_factor_mod_ground = (1 - cosd(surface_tilt)) / 2
 
-    t_mod = np.zeros_like(poa_effective)
+    t_mod = np.zeros_like(poa_global)
     t_mod_i = t_mod_init + 273.15 if t_mod_init is not None else temp_air[0]
     t_mod[0] = t_mod_i
     # calculate successive module temperatures for each time stamp
@@ -937,11 +939,10 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
         )
         dt = dt_seconds[i]
         t_mod_delta = dt / (module_mass*heat_capacity) * total_heat_transfer
-
         t_mod_i += t_mod_delta
         t_mod[i + 1] = t_mod_i
 
-    return pd.Series(t_mod - 273.15, index=poa_effective.index, name='tmod')
+    return pd.Series(t_mod - 273.15, index=poa_global.index, name='tmod')
 
 
 def _adj_for_mounting_standoff(x):

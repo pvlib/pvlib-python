@@ -349,6 +349,12 @@ def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
     mc.run_model(weather)
 
 
+def test_with_pvwatts_invalid_version(pvwatts_dc_pvwatts_ac_system, location):
+    with pytest.raises(ValueError, match='Invalid pvwatts version'):
+        mc = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location,
+                                     version='bad')
+
+
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
@@ -2066,3 +2072,40 @@ def test__irrad_for_celltemp():
     assert len(poa) == 2
     assert_series_equal(poa[0], effect_irrad)
     assert_series_equal(poa[1], effect_irrad)
+
+
+@fail_on_pvlib_version('0.10.0')
+def test_modelchain_pvwatts_methods_deprecated(pvwatts_dc_pvwatts_ac_system,
+                                               location, weather):
+    mc = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location)
+    mc.run_model(weather)
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use ModelChain.pvwattsv5_dc instead'):
+        mc.pvwatts_dc()
+
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use ModelChain.pvwattsv5_inverter instead'):
+        mc.pvwatts_inverter()
+
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use ModelChain.pvwattsv5_losses instead'):
+        mc.pvwatts_losses()
+
+
+@fail_on_pvlib_version('0.10.0')
+def test_modelchain_pvwatts_modelnames_deprecated(pvwatts_dc_pvwatts_ac_system,
+                                                  location):
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="model='pvwatts' is now called model='pvwattsv5'"):
+        _ = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location,
+                                    dc_model='pvwatts')
+
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="model='pvwatts' is now called model='pvwattsv5'"):
+        _ = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location,
+                                    ac_model='pvwatts')
+
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="model='pvwatts' is now called model='pvwattsv5'"):
+        _ = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location,
+                                    losses_model='pvwatts')

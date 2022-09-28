@@ -47,6 +47,9 @@ _DC_MODEL_PARAMS = {
     'pvwattsv5': {'pdc0', 'gamma_pdc'}
 }
 
+# temporary alias during the deprecation period
+_DC_MODEL_PARAMS['pvwatts'] = _DC_MODEL_PARAMS['pvwattsv5']
+
 
 def _unwrap_single_value(func):
     """Decorator for functions that return iterables.

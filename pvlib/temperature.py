@@ -901,7 +901,7 @@ def hayes(poa_global, temp_air, wind_speed, module_efficiency, module_area,
     view_factor_mod_sky = (1 + cosd(surface_tilt)) / 2
     view_factor_mod_ground = (1 - cosd(surface_tilt)) / 2
 
-    t_mod = np.zeros_like(poa_global)
+    t_mod = np.zeros_like(poa_global, dtype=np.float64)
     t_mod_i = t_mod_init + 273.15 if t_mod_init is not None else temp_air[0]
     t_mod[0] = t_mod_i
     # calculate successive module temperatures for each time stamp

@@ -7,7 +7,7 @@ import math
 import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
-from pvlib.tools import sind
+from pvlib.tools import sind, cosd
 from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _get_sample_intervals
 import scipy
@@ -842,7 +842,7 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
 
     z0 : float, default 0.25
         Davenport-Wieringa roughness length [m]. Default value chosen in
-        white-paper to minimize error.
+        [1]_ to minimize error.
 
     Returns
     -------
@@ -853,8 +853,8 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     ----------
     .. [1] W. Hayes and L. Ngan, "A Time-Dependent Model for CdTe PV Module
            Temperature in Utility-Scale Systems," in IEEE Journal of
-           Photovoltaics, vol. 5, no. 1, pp. 238-242, Jan. 2015, doi:
-           10.1109/JPHOTOV.2014.2361653.
+           Photovoltaics, vol. 5, no. 1, pp. 238-242, Jan. 2015,
+           :doi:`10.1109/JPHOTOV.2014.2361653`.
     """
     # ensure that time series inputs are all of the same length
     if not (len(poa_effective) == len(temp_air) and
@@ -885,8 +885,18 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     t_sky = temp_air - 20
 
     # calculate view factors (simplified calculations)
-    view_factor_mod_sky = (1 + math.cos(math.radians(surface_tilt))) / 2
-    view_factor_mod_ground = (1 - math.cos(math.radians(surface_tilt))) / 2
+    # TODO: from Hayes & Ngan:
+    #
+    #     The view factor represents the percentage of the hemispherical
+    #     dome viewed from object one (the PV module) that is
+    #     occupied by object two. For this case, the reference point on
+    #     the module is assumed to be at the midpoint of the module
+    #     row height.
+    #
+    # So these simplified view factor equations are not wholly consistent
+    # with the reference.
+    view_factor_mod_sky = (1 + cosd(surface_tilt)) / 2
+    view_factor_mod_ground = (1 - cosd(surface_tilt)) / 2
 
     t_mod = np.zeros_like(poa_effective)
     t_mod_i = t_mod_init + 273.15 if t_mod_init is not None else temp_air[0]

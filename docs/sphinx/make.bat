@@ -17,8 +17,8 @@ if "%1" == "clean" (
     REM override the default `make clean` behavior of sphinx-build;
     REM this lets us clean out the various build files in sphinx/source/
 	for /d %%i in (%BUILDDIR%\*) do rmdir /q /s %%i
-	rmdir /q /s %SOURCEDIR%\generated >nul 2>&1
-	rmdir /q /s %SOURCEDIR%\auto_examples >nul 2>&1
+	rmdir /q /s %SOURCEDIR%\reference\generated >nul 2>&1
+	rmdir /q /s %SOURCEDIR%\gallery >nul 2>&1
 	rmdir /q /s %SOURCEDIR%\savefig >nul 2>&1
 	goto end
 )

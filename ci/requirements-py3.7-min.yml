@@ -1,0 +1,23 @@
+name: test_env
+channels:
+    - defaults
+dependencies:
+    - coveralls
+    - nose
+    - pip
+    - pytest
+    - pytest-cov
+    - pytest-mock
+    - pytest-timeout
+    - python=3.7
+    - pytz
+    - requests
+    - pip:
+        - dataclasses
+        - h5py==3.1.0
+        - numpy==1.16.0
+        - pandas==0.25.0
+        - scipy==1.2.0
+        - pytest-rerunfailures # conda version is >3.6
+        - pytest-remotedata # conda package is 0.3.0, needs > 0.3.1
+        - requests-mock

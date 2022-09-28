@@ -62,26 +62,9 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
 
     # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2019
 
-    pos = np.array(positions)
-    dist = pdist(pos, 'euclidean')
     wavelet, tmscales = _compute_wavelet(clearsky_index, dt)
 
-    # Find effective length of position vector, 'dist' is full pairwise
-    n_pairs = len(dist)
-
-    def fn(x):
-        return np.abs((x ** 2 - x) / 2 - n_pairs)
-    n_dist = np.round(scipy.optimize.fmin(fn, np.sqrt(n_pairs), disp=False))
-
-    # Compute VR
-    A = cloud_speed / 2  # Resultant fit for A from [2]
-    vr = np.zeros(tmscales.shape)
-    for i, tmscale in enumerate(tmscales):
-        rho = np.exp(-1 / A * dist / tmscale)  # Eq 5 from [1]
-
-        # 2*rho is because rho_ij = rho_ji. +n_dist accounts for sum(rho_ii=1)
-        denominator = 2 * np.sum(rho) + n_dist
-        vr[i] = n_dist ** 2 / denominator  # Eq 6 of [1]
+    vr = _compute_vr(positions, cloud_speed, tmscales)
 
     # Scale each wavelet by VR (Eq 7 in [1])
     wavelet_smooth = np.zeros_like(wavelet)
@@ -99,6 +82,68 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
         smoothed = outsignal  # just output the numpy signal
 
     return smoothed, wavelet, tmscales
+
+
+def _compute_vr(positions, cloud_speed, tmscales):
+    """
+    Compute the variability reduction factors for each wavelet mode for the
+    Wavelet Variability Model [1-3].
+
+    Parameters
+    ----------
+    positions : numeric
+        Array of coordinate distances as (x,y) pairs representing the
+        easting, northing of the site positions in meters [m]. Distributed
+        plants could be simulated by gridded points throughout the plant
+        footprint.
+
+    cloud_speed : numeric
+        Speed of cloud movement in meters per second [m/s].
+
+    tmscales: numeric
+        The timescales associated with the wavelets in seconds [s].
+
+    Returns
+    -------
+    vr : numeric
+        an array of variability reduction factors for each tmscale.
+
+    References
+    ----------
+    .. [1] M. Lave, J. Kleissl and J.S. Stein. A Wavelet-Based Variability
+       Model (WVM) for Solar PV Power Plants. IEEE Transactions on Sustainable
+       Energy, vol. 4, no. 2, pp. 501-509, 2013.
+
+    .. [2] M. Lave and J. Kleissl. Cloud speed impact on solar variability
+       scaling - Application to the wavelet variability model. Solar Energy,
+       vol. 91, pp. 11-21, 2013.
+
+    .. [3] Wavelet Variability Model - Matlab Code:
+       https://github.com/sandialabs/wvm
+    """
+
+    # Added by Joe Ranalli (@jranalli), Penn State Hazleton, 2021
+
+    pos = np.array(positions)
+    dist = pdist(pos, 'euclidean')
+
+    # Find effective length of position vector, 'dist' is full pairwise
+    n_pairs = len(dist)
+
+    def fn(x):
+        return np.abs((x ** 2 - x) / 2 - n_pairs)
+
+    n_dist = np.round(scipy.optimize.fmin(fn, np.sqrt(n_pairs), disp=False))
+    # Compute VR
+    A = cloud_speed / 2  # Resultant fit for A from [2]
+    vr = np.zeros(tmscales.shape)
+    for i, tmscale in enumerate(tmscales):
+        rho = np.exp(-1 / A * dist / tmscale)  # Eq 5 from [1]
+
+        # 2*rho is because rho_ij = rho_ji. +n_dist accounts for sum(rho_ii=1)
+        denominator = 2 * np.sum(rho) + n_dist
+        vr[i] = n_dist ** 2 / denominator  # Eq 6 of [1]
+    return vr
 
 
 def latlon_to_xy(coordinates):
@@ -205,7 +250,8 @@ def _compute_wavelet(clearsky_index, dt=None):
             raise ValueError("dt must be specified for numpy type inputs.")
     else:  # flatten() succeeded, thus it's a pandas type, so get its dt
         try:  # Assume it's a time series type index
-            dt = (clearsky_index.index[1] - clearsky_index.index[0]).seconds
+            dt = clearsky_index.index[1] - clearsky_index.index[0]
+            dt = dt.seconds + dt.microseconds/1e6
         except AttributeError:  # It must just be a numeric index
             dt = (clearsky_index.index[1] - clearsky_index.index[0])
 
@@ -221,7 +267,7 @@ def _compute_wavelet(clearsky_index, dt=None):
     csi_mean = np.zeros([max_tmscale, len(cs_long)])
     # Skip averaging for the 0th scale
     csi_mean[0, :] = cs_long.values.flatten()
-    tmscales[0] = 1
+    tmscales[0] = dt
     # Loop for all time scales we will consider
     for i in np.arange(1, max_tmscale):
         tmscales[i] = 2**i * dt  # Wavelet integration time scale

@@ -11,6 +11,9 @@ import os
 from urllib.request import urlopen
 import numpy as np
 import pandas as pd
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
+from typing import Optional
 
 from pvlib._deprecation import deprecated
 
@@ -131,7 +134,7 @@ class PVSystem:
         a single array is created from the other parameters (e.g.
         `surface_tilt`, `surface_azimuth`). Must contain at least one Array,
         if length of arrays is 0 a ValueError is raised. If `arrays` is
-        specified the following parameters are ignored:
+        specified the following PVSystem parameters are ignored:
 
         - `surface_tilt`
         - `surface_azimuth`
@@ -154,13 +157,14 @@ class PVSystem:
         North=0, East=90, South=180, West=270.
 
     albedo : None or float, default None
-        The ground albedo. If ``None``, will attempt to use
-        ``surface_type`` and ``irradiance.SURFACE_ALBEDOS``
-        to lookup albedo.
+        Ground surface albedo. If ``None``, then ``surface_type`` is used
+        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        If ``surface_type`` is also None then a ground surface albedo
+        of 0.25 is used.
 
     surface_type : None or string, default None
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
-        for valid values.
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for
+        valid values.
 
     module : None or string, default None
         The model name of the modules.
@@ -234,8 +238,7 @@ class PVSystem:
                 array_losses_parameters = _build_kwargs(['dc_ohmic_percent'],
                                                         losses_parameters)
             self.arrays = (Array(
-                surface_tilt,
-                surface_azimuth,
+                FixedMount(surface_tilt, surface_azimuth, racking_model),
                 albedo,
                 surface_type,
                 module,
@@ -244,7 +247,6 @@ class PVSystem:
                 temperature_model_parameters,
                 modules_per_string,
                 strings_per_inverter,
-                racking_model,
                 array_losses_parameters,
             ),)
         elif len(arrays) == 0:
@@ -299,7 +301,6 @@ class PVSystem:
 
     @_unwrap_single_value
     def _infer_cell_type(self):
-
         """
         Examines module_parameters and maps the Technology key for the CEC
         database and the Material key for the Sandia database to a common
@@ -333,30 +334,33 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
-                       **kwargs):
+                       dni_extra=None, airmass=None, albedo=None,
+                       model='haydavies', **kwargs):
         """
         Uses the :py:func:`irradiance.get_total_irradiance` function to
-        calculate the plane of array irradiance components on a tilted
-        surface defined by ``self.surface_tilt``,
-        ``self.surface_azimuth``, and ``self.albedo``.
+        calculate the plane of array irradiance components on the tilted
+        surfaces defined by each array's ``surface_tilt`` and
+        ``surface_azimuth``.
 
         Parameters
         ----------
-        solar_zenith : float or Series.
+        solar_zenith : float or Series
             Solar zenith angle.
-        solar_azimuth : float or Series.
+        solar_azimuth : float or Series
             Solar azimuth angle.
         dni : float or Series or tuple of float or Series
-            Direct Normal Irradiance
+            Direct Normal Irradiance. [W/m2]
         ghi : float or Series or tuple of float or Series
-            Global horizontal irradiance
+            Global horizontal irradiance. [W/m2]
         dhi : float or Series or tuple of float or Series
-            Diffuse horizontal irradiance
-        dni_extra : None, float or Series, default None
-            Extraterrestrial direct normal irradiance
+            Diffuse horizontal irradiance. [W/m2]
+        dni_extra : None, float, Series or tuple of float or Series,\
+            default None
+            Extraterrestrial direct normal irradiance. [W/m2]
         airmass : None, float or Series, default None
-            Airmass
+            Airmass. [unitless]
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
 
@@ -374,18 +378,26 @@ class PVSystem:
         Returns
         -------
         poa_irradiance : DataFrame or tuple of DataFrame
-            Column names are: ``total, beam, sky, ground``.
+            Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
+            'poa_sky_diffuse', 'poa_ground_diffuse'``.
+
+        See also
+        --------
+        pvlib.irradiance.get_total_irradiance
         """
         dni = self._validate_per_array(dni, system_wide=True)
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)
+
+        albedo = self._validate_per_array(albedo, system_wide=True)
+
         return tuple(
             array.get_irradiance(solar_zenith, solar_azimuth,
                                  dni, ghi, dhi,
-                                 dni_extra, airmass, model,
-                                 **kwargs)
-            for array, dni, ghi, dhi in zip(
-                self.arrays, dni, ghi, dhi
+                                 dni_extra=dni_extra, airmass=airmass,
+                                 albedo=albedo, model=model, **kwargs)
+            for array, dni, ghi, dhi, albedo in zip(
+                self.arrays, dni, ghi, dhi, albedo
             )
         )
 
@@ -626,7 +638,7 @@ class PVSystem:
     @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
                 removal='0.10.0')
     def sapm_celltemp(self, poa_global, temp_air, wind_speed):
-        """Uses :py:func:`temperature.sapm_cell` to calculate cell
+        """Uses :py:func:`pvlib.temperature.sapm_cell` to calculate cell
         temperatures.
 
         Parameters
@@ -719,7 +731,7 @@ class PVSystem:
     @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
                 removal='0.10.0')
     def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
-        """Uses :py:func:`temperature.pvsyst_cell` to calculate cell
+        """Uses :py:func:`pvlib.temperature.pvsyst_cell` to calculate cell
         temperature.
 
         Parameters
@@ -755,7 +767,7 @@ class PVSystem:
                 removal='0.10.0')
     def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
         """
-        Use :py:func:`temperature.faiman` to calculate cell temperature.
+        Use :py:func:`pvlib.temperature.faiman` to calculate cell temperature.
 
         Parameters
         ----------
@@ -790,7 +802,7 @@ class PVSystem:
                 removal='0.10.0')
     def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
         """
-        Use :py:func:`temperature.fuentes` to calculate cell temperature.
+        Use :py:func:`pvlib.temperature.fuentes` to calculate cell temperature.
 
         Parameters
         ----------
@@ -813,11 +825,13 @@ class PVSystem:
         The Fuentes thermal model uses the module surface tilt for convection
         modeling. The SAM implementation of PVWatts hardcodes the surface tilt
         value at 30 degrees, ignoring whatever value is used for irradiance
-        transposition. This method defaults to using ``self.surface_tilt``, but
-        if you want to match the PVWatts behavior, you can override it by
-        including a ``surface_tilt`` value in ``temperature_model_parameters``.
+        transposition.  If you want to match the PVWatts behavior you can
+        either leave ``surface_tilt`` unspecified to use the PVWatts default
+        of 30, or specify a ``surface_tilt`` value in the Array's
+        ``temperature_model_parameters``.
 
-        The `temp_air` and `wind_speed` parameters may be passed as tuples
+        The `temp_air`, `wind_speed`, and `surface_tilt` parameters may be
+        passed as tuples
         to provide different values for each Array in the system. If not
         passed as a tuple then the same value is used for input to each Array.
         If passed as a tuple the length must be the same as the number of
@@ -831,7 +845,8 @@ class PVSystem:
     def noct_sam_celltemp(self, poa_global, temp_air, wind_speed,
                           effective_irradiance=None):
         """
-        Use :py:func:`temperature.noct_sam` to calculate cell temperature.
+        Use :py:func:`pvlib.temperature.noct_sam` to calculate cell
+        temperature.
 
         Parameters
         ----------
@@ -867,9 +882,8 @@ class PVSystem:
 
     @_unwrap_single_value
     def first_solar_spectral_loss(self, pw, airmass_absolute):
-
         """
-        Use the :py:func:`first_solar_spectral_correction` function to
+        Use :py:func:`pvlib.atmosphere.first_solar_spectral_correction` to
         calculate the spectral loss modifier. The model coefficients are
         specific to the module's cell type, and are determined by searching
         for one of the following keys in self.module_parameters (in order):
@@ -1165,25 +1179,25 @@ class PVSystem:
     @_unwrap_single_value
     @_check_deprecated_passthrough
     def surface_tilt(self):
-        return tuple(array.surface_tilt for array in self.arrays)
+        return tuple(array.mount.surface_tilt for array in self.arrays)
 
     @surface_tilt.setter
     @_check_deprecated_passthrough
     def surface_tilt(self, value):
         for array in self.arrays:
-            array.surface_tilt = value
+            array.mount.surface_tilt = value
 
     @property
     @_unwrap_single_value
     @_check_deprecated_passthrough
     def surface_azimuth(self):
-        return tuple(array.surface_azimuth for array in self.arrays)
+        return tuple(array.mount.surface_azimuth for array in self.arrays)
 
     @surface_azimuth.setter
     @_check_deprecated_passthrough
     def surface_azimuth(self, value):
         for array in self.arrays:
-            array.surface_azimuth = value
+            array.mount.surface_azimuth = value
 
     @property
     @_unwrap_single_value
@@ -1201,13 +1215,13 @@ class PVSystem:
     @_unwrap_single_value
     @_check_deprecated_passthrough
     def racking_model(self):
-        return tuple(array.racking_model for array in self.arrays)
+        return tuple(array.mount.racking_model for array in self.arrays)
 
     @racking_model.setter
     @_check_deprecated_passthrough
     def racking_model(self, value):
         for array in self.arrays:
-            array.racking_model = value
+            array.mount.racking_model = value
 
     @property
     @_unwrap_single_value
@@ -1243,30 +1257,26 @@ class Array:
     """
     An Array is a set of of modules at the same orientation.
 
-    Specifically, an array is defined by tilt, azimuth, the
+    Specifically, an array is defined by its mount, the
     module parameters, the number of parallel strings of modules
     and the number of modules on each string.
 
     Parameters
     ----------
-    surface_tilt: float or array-like, default 0
-        Surface tilt angles in decimal degrees.
-        The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90)
-
-    surface_azimuth: float or array-like, default 180
-        Azimuth angle of the module surface.
-        North=0, East=90, South=180, West=270.
+    mount: FixedMount, SingleAxisTrackerMount, or other
+        Mounting for the array, either on fixed-tilt racking or horizontal
+        single axis tracker. Mounting is used to determine module orientation.
+        If not provided, a FixedMount with zero tilt is used.
 
     albedo : None or float, default None
-        The ground albedo. If ``None``, will attempt to use
-        ``surface_type`` to look up an albedo value in
-        ``irradiance.SURFACE_ALBEDOS``. If a surface albedo
-        cannot be found then 0.25 is used.
+        Ground surface albedo. If ``None``, then ``surface_type`` is used
+        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        If ``surface_type`` is also None then a ground surface albedo
+        of 0.25 is used.
 
     surface_type : None or string, default None
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
-        for valid values.
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for valid
+        values.
 
     module : None or string, default None
         The model name of the modules.
@@ -1290,26 +1300,22 @@ class Array:
     strings: int, default 1
         Number of parallel strings in the array.
 
-    racking_model : None or string, default None
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
-
     array_losses_parameters: None, dict or Series, default None.
         Supported keys are 'dc_ohmic_percent'.
 
+    name: None or str, default None
+        Name of Array instance.
     """
 
-    def __init__(self,
-                 surface_tilt=0, surface_azimuth=180,
+    def __init__(self, mount,
                  albedo=None, surface_type=None,
                  module=None, module_type=None,
                  module_parameters=None,
                  temperature_model_parameters=None,
                  modules_per_string=1, strings=1,
-                 racking_model=None, array_losses_parameters=None,
+                 array_losses_parameters=None,
                  name=None):
-        self.surface_tilt = surface_tilt
-        self.surface_azimuth = surface_azimuth
+        self.mount = mount
 
         self.surface_type = surface_type
         if albedo is None:
@@ -1324,7 +1330,6 @@ class Array:
             self.module_parameters = module_parameters
 
         self.module_type = module_type
-        self.racking_model = racking_model
 
         self.strings = strings
         self.modules_per_string = modules_per_string
@@ -1343,10 +1348,11 @@ class Array:
         self.name = name
 
     def __repr__(self):
-        attrs = ['name', 'surface_tilt', 'surface_azimuth', 'module',
-                 'albedo', 'racking_model', 'module_type',
+        attrs = ['name', 'mount', 'module',
+                 'albedo', 'module_type',
                  'temperature_model_parameters',
                  'strings', 'modules_per_string']
+
         return 'Array:\n  ' + '\n  '.join(
             f'{attr}: {getattr(self, attr)}' for attr in attrs
         )
@@ -1354,7 +1360,7 @@ class Array:
     def _infer_temperature_model_params(self):
         # try to infer temperature model parameters from from racking_model
         # and module_type
-        param_set = f'{self.racking_model}_{self.module_type}'
+        param_set = f'{self.mount.racking_model}_{self.module_type}'
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
             return temperature._temperature_model_params('sapm', param_set)
         elif 'freestanding' in param_set:
@@ -1424,19 +1430,20 @@ class Array:
         aoi : Series
             Then angle of incidence.
         """
-        return irradiance.aoi(self.surface_tilt, self.surface_azimuth,
+        orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
+        return irradiance.aoi(orientation['surface_tilt'],
+                              orientation['surface_azimuth'],
                               solar_zenith, solar_azimuth)
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
-                       **kwargs):
+                       dni_extra=None, airmass=None, albedo=None,
+                       model='haydavies', **kwargs):
         """
         Get plane of array irradiance components.
 
         Uses the :py:func:`pvlib.irradiance.get_total_irradiance` function to
         calculate the plane of array irradiance components for a surface
-        defined by ``self.surface_tilt`` and ``self.surface_azimuth`` with
-        albedo ``self.albedo``.
+        defined by ``self.surface_tilt`` and ``self.surface_azimuth``.
 
         Parameters
         ----------
@@ -1445,15 +1452,17 @@ class Array:
         solar_azimuth : float or Series.
             Solar azimuth angle.
         dni : float or Series
-            Direct Normal Irradiance
-        ghi : float or Series
+            Direct normal irradiance. [W/m2]
+        ghi : float or Series. [W/m2]
             Global horizontal irradiance
         dhi : float or Series
-            Diffuse horizontal irradiance
+            Diffuse horizontal irradiance. [W/m2]
         dni_extra : None, float or Series, default None
-            Extraterrestrial direct normal irradiance
+            Extraterrestrial direct normal irradiance. [W/m2]
         airmass : None, float or Series, default None
-            Airmass
+            Airmass. [unitless]
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
 
@@ -1464,8 +1473,16 @@ class Array:
         Returns
         -------
         poa_irradiance : DataFrame
-            Column names are: ``total, beam, sky, ground``.
+            Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
+            'poa_sky_diffuse', 'poa_ground_diffuse'``.
+
+        See also
+        --------
+        :py:func:`pvlib.irradiance.get_total_irradiance`
         """
+        if albedo is None:
+            albedo = self.albedo
+
         # not needed for all models, but this is easier
         if dni_extra is None:
             dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
@@ -1473,14 +1490,15 @@ class Array:
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
-        return irradiance.get_total_irradiance(self.surface_tilt,
-                                               self.surface_azimuth,
+        orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
+        return irradiance.get_total_irradiance(orientation['surface_tilt'],
+                                               orientation['surface_azimuth'],
                                                solar_zenith, solar_azimuth,
                                                dni, ghi, dhi,
                                                dni_extra=dni_extra,
                                                airmass=airmass,
+                                               albedo=albedo,
                                                model=model,
-                                               albedo=self.albedo,
                                                **kwargs)
 
     def get_iam(self, aoi, iam_model='physical'):
@@ -1595,13 +1613,11 @@ class Array:
             func = temperature.fuentes
             required = _build_tcell_args(['noct_installed'])
             optional = _build_kwargs([
-                'module_height', 'wind_height', 'emissivity', 'absorption',
+                'wind_height', 'emissivity', 'absorption',
                 'surface_tilt', 'module_width', 'module_length'],
                 self.temperature_model_parameters)
-            # default to using the Array attribute, but allow user to override
-            # with a custom surface_tilt value in temperature_model_parameters
-            if 'surface_tilt' not in optional:
-                optional['surface_tilt'] = self.surface_tilt
+            if self.mount.module_height is not None:
+                optional['module_height'] = self.mount.module_height
         elif model == 'noct_sam':
             func = functools.partial(temperature.noct_sam,
                                      effective_irradiance=effective_irradiance)
@@ -1681,6 +1697,145 @@ class Array:
             self.array_losses_parameters['dc_ohmic_percent'],
             self.modules_per_string,
             self.strings)
+
+
+@dataclass
+class AbstractMount(ABC):
+    """
+    A base class for Mount classes to extend. It is not intended to be
+    instantiated directly.
+    """
+
+    @abstractmethod
+    def get_orientation(self, solar_zenith, solar_azimuth):
+        """
+        Determine module orientation.
+
+        Parameters
+        ----------
+        solar_zenith : numeric
+            Solar apparent zenith angle [degrees]
+        solar_azimuth : numeric
+            Solar azimuth angle [degrees]
+
+        Returns
+        -------
+        orientation : dict-like
+            A dict-like object with keys `'surface_tilt', 'surface_azimuth'`
+            (typically a dict or pandas.DataFrame)
+        """
+
+
+@dataclass
+class FixedMount(AbstractMount):
+    """
+    Racking at fixed (static) orientation.
+
+    Parameters
+    ----------
+    surface_tilt : float, default 0
+        Surface tilt angle. The tilt angle is defined as angle from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90) [degrees]
+
+    surface_azimuth : float, default 180
+        Azimuth angle of the module surface. North=0, East=90, South=180,
+        West=270. [degrees]
+
+    racking_model : str, optional
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
+
+    module_height : float, optional
+       The height above ground of the center of the module [m]. Used for
+       the Fuentes cell temperature model.
+    """
+
+    surface_tilt: float = 0.0
+    surface_azimuth: float = 180.0
+    racking_model: Optional[str] = None
+    module_height: Optional[float] = None
+
+    def get_orientation(self, solar_zenith, solar_azimuth):
+        # note -- docstring is automatically inherited from AbstractMount
+        return {
+            'surface_tilt': self.surface_tilt,
+            'surface_azimuth': self.surface_azimuth,
+        }
+
+
+@dataclass
+class SingleAxisTrackerMount(AbstractMount):
+    """
+    Single-axis tracker racking for dynamic solar tracking.
+
+    Parameters
+    ----------
+    axis_tilt : float, default 0
+        The tilt of the axis of rotation (i.e, the y-axis defined by
+        axis_azimuth) with respect to horizontal. [degrees]
+
+    axis_azimuth : float, default 180
+        A value denoting the compass direction along which the axis of
+        rotation lies, measured east of north. [degrees]
+
+    max_angle : float, default 90
+        A value denoting the maximum rotation angle
+        of the one-axis tracker from its horizontal position (horizontal
+        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
+        to rotate to a vertical position to point the panel towards a
+        horizon. max_angle of 180 degrees allows for full rotation. [degrees]
+
+    backtrack : bool, default True
+        Controls whether the tracker has the capability to "backtrack"
+        to avoid row-to-row shading. False denotes no backtrack
+        capability. True denotes backtrack capability.
+
+    gcr : float, default 2.0/7.0
+        A value denoting the ground coverage ratio of a tracker system
+        which utilizes backtracking; i.e. the ratio between the PV array
+        surface area to total ground area. A tracker system with modules
+        2 meters wide, centered on the tracking axis, with 6 meters
+        between the tracking axes has a gcr of 2/6=0.333. If gcr is not
+        provided, a gcr of 2/7 is default. gcr must be <=1. [unitless]
+
+    cross_axis_tilt : float, default 0.0
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. Cross-axis tilt should be specified
+        using a right-handed convention. For example, trackers with axis
+        azimuth of 180 degrees (heading south) will have a negative cross-axis
+        tilt if the tracker axes plane slopes down to the east and positive
+        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        `cross_axis_tilt`. [degrees]
+
+    racking_model : str, optional
+        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
+        Used to identify a parameter set for the SAPM cell temperature model.
+
+    module_height : float, optional
+       The height above ground of the center of the module [m]. Used for
+       the Fuentes cell temperature model.
+    """
+    axis_tilt: float = 0.0
+    axis_azimuth: float = 0.0
+    max_angle: float = 90.0
+    backtrack: bool = True
+    gcr: float = 2.0/7.0
+    cross_axis_tilt: float = 0.0
+    racking_model: Optional[str] = None
+    module_height: Optional[float] = None
+
+    def get_orientation(self, solar_zenith, solar_azimuth):
+        # note -- docstring is automatically inherited from AbstractMount
+        from pvlib import tracking  # avoid circular import issue
+        tracking_data = tracking.singleaxis(
+            solar_zenith, solar_azimuth,
+            self.axis_tilt, self.axis_azimuth,
+            self.max_angle, self.backtrack,
+            self.gcr, self.cross_axis_tilt
+        )
+        return tracking_data
 
 
 def calcparams_desoto(effective_irradiance, temp_cell,
@@ -3157,7 +3312,7 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
 
     See Also
     --------
-    :py:func:`~pvlib.pvsystem.dc_ohmic_losses`
+    pvlib.pvsystem.dc_ohmic_losses
 
     References
     ----------
@@ -3192,7 +3347,7 @@ def dc_ohmic_losses(resistance, current):
 
     See Also
     --------
-    :py:func:`~pvlib.pvsystem.dc_ohms_from_percent`
+    pvlib.pvsystem.dc_ohms_from_percent
 
     References
     ----------

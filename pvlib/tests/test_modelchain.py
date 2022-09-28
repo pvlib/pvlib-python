@@ -350,7 +350,7 @@ def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
 
 
 def test_with_pvwatts_invalid_version(pvwatts_dc_pvwatts_ac_system, location):
-    with pytest.raises(ValueError, match='Invalid pvwatts version'):
+    with pytest.raises(ValueError, match='Invalid PVWatts version'):
         mc = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location,
                                      version='bad')
 

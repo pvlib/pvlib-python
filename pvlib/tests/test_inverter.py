@@ -148,12 +148,8 @@ def test_pvwattsv5_scalars():
 @fail_on_pvlib_version('0.10.0')
 def test_pvwatts_deprecated():
     expected = 85.58556604752516
-    out = inverter.pvwattsv5(90, 100, 0.95)
-    assert_allclose(out, expected)
-    # GH 675
-    expected = 0.
     with pytest.warns(pvlibDeprecationWarning, match='Use pvwattsv5 instead'):
-        out = inverter.pvwatts(0., 100)
+        out = inverter.pvwatts(90, 100, 0.95)
     assert_allclose(out, expected)
 
 

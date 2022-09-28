@@ -224,7 +224,7 @@ def pvwatts_dc_pvwatts_ac_fuentes_temp_system():
 
 
 @pytest.fixture(scope="function")
-def pvwattsv5_dc_pvwattsv5_ac_noct_sam_temp_system():
+def pvwatts_dc_pvwatts_ac_noct_sam_temp_system():
     module_parameters = {'pdc0': 220, 'gamma_pdc': -0.003}
     temp_model_params = {'noct': 45, 'module_efficiency': 0.2}
     inverter_parameters = {'pdc0': 220, 'eta_inv_nom': 0.95}
@@ -1350,14 +1350,13 @@ def test_infer_temp_model(location, sapm_dc_snl_ac_system,
                           pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
                           pvwatts_dc_pvwatts_ac_faiman_temp_system,
                           pvwatts_dc_pvwatts_ac_fuentes_temp_system,
-                          pvwattsv5_dc_pvwattsv5_ac_noct_sam_temp_system,
+                          pvwatts_dc_pvwatts_ac_noct_sam_temp_system,
                           temp_model):
-    dc_systems = {
-        'sapm_temp': sapm_dc_snl_ac_system,
-        'pvsyst_temp': pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
-        'faiman_temp': pvwatts_dc_pvwatts_ac_faiman_temp_system,
-        'fuentes_temp': pvwatts_dc_pvwatts_ac_fuentes_temp_system,
-        'noct_sam_temp': pvwattsv5_dc_pvwattsv5_ac_noct_sam_temp_system}
+    dc_systems = {'sapm_temp': sapm_dc_snl_ac_system,
+                  'pvsyst_temp': pvwatts_dc_pvwatts_ac_pvsyst_temp_system,
+                  'faiman_temp': pvwatts_dc_pvwatts_ac_faiman_temp_system,
+                  'fuentes_temp': pvwatts_dc_pvwatts_ac_fuentes_temp_system,
+                  'noct_sam_temp': pvwatts_dc_pvwatts_ac_noct_sam_temp_system}
     system = dc_systems[temp_model]
     mc = ModelChain(system, location, aoi_model='physical',
                     spectral_model='no_loss')

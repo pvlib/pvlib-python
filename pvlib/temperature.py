@@ -3,10 +3,8 @@ The ``temperature`` module contains functions for modeling temperature of
 PV modules and cells.
 """
 
-import math
 import numpy as np
 import pandas as pd
-from pandas.tseries.frequencies import to_offset
 from pvlib.tools import sind, cosd
 from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _get_sample_intervals
@@ -761,8 +759,8 @@ def _calculate_radiative_heat(module_area, view_factor, emissivity1,
 
 
 def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
-          module_weight, surface_tilt, emissivity_module, emissivity_sky=0.95,
-          emissivity_ground=0.85, heat_capacity=840, t_mod_init=None, k_c=12.7,
+          module_mass, surface_tilt, module_emissivity, sky_emissivity=0.95,
+          ground_emissivity=0.85, heat_capacity=840, t_mod_init=None, k_c=12.7,
           k_v=2.0, wind_sensor_height=2.5, z0=0.25):
     """
     Calculate module temperature at sub-hourly resolution for fixed tilt
@@ -773,17 +771,17 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     on module heat capacity. The model can only be used for fixed tilt
     systems. Additionally, it has only been validated using data from
     utility-scale PV systems with CdTe modules. It is more accurate for
-    time intervals less than 5 minutes.
+    time intervals less than 5 minutes. For data with larger time steps,
+    [1]_ recommends downscaling the inputs with linear interpolation.
 
     .. warning::
         This model was validated using data from systems built prior to 2012.
         Using module parameters (area, efficiency, weight) for more recent
         First Solar modules may not produce realistic temperature estimates.
 
-
     Parameters
     ----------
-    poa_effective : pandas.Series
+    poa_global : pandas.Series
         Total incident irradiance adjusted for optical (IAM) losses [W/m^2]
 
     temp_air : pandas.Series
@@ -798,19 +796,19 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     module_area : float
         Front-side surface area of PV module [m^2]
 
-    module_weight : float
-        Weight of PV module [kg]
+    module_mass : float
+        Mass of PV module [kg]
 
     surface_tilt : float
         Tilt angle of fixed tilt array [deg]
 
-    emissivity_module : float
+    module_emissivity : float
         Thermal emissivity of the module [unitless]. Must be between 0 and 1.
 
-    emissivity_sky : float, default 0.95
+    sky_emissivity : float, default 0.95
         Thermal emissivity of sky [unitless]. Must be between 0 and 1.
 
-    emissivity_ground : float, default 0.85
+    ground_emissivity : float, default 0.85
         Thermal emissivity of ground [unitless]. Default value is suggested
         value for sand. Suggested value for grass is 0.9. Must be between
         0 and 1.
@@ -849,6 +847,17 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     tmod : pandas.Series
         The modeled module temperature [C]
 
+    Notes
+    -----
+    For simplicity, this implementation calculates radiative view factors
+    slightly differently from [1]_ in that the sky and ground view factors
+    are not affected by adjacent rows in the array.
+
+    Additionally, implementation corrects two supposed errors in the reference:
+
+    1. Eq 2: the signs of some terms are corrected.
+    2. Eq 3: ``POA_eff`` is multiplied by ``A``.
+
     References
     ----------
     .. [1] W. Hayes and L. Ngan, "A Time-Dependent Model for CdTe PV Module
@@ -856,17 +865,8 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
            Photovoltaics, vol. 5, no. 1, pp. 238-242, Jan. 2015,
            :doi:`10.1109/JPHOTOV.2014.2361653`.
     """
-    # ensure that time series inputs are all of the same length
-    if not (len(poa_effective) == len(temp_air) and
-            len(temp_air) == len(wind_speed)):
-
-        raise ValueError('poa_effective, temp_air, and wind_speed must all be'
-                         ' pandas Series of the same size.')
-
-    # infer the time resolution from the inputted time series.
-    # first get pandas frequency alias, then convert to seconds
-    freq = pd.infer_freq(poa_effective.index)
-    dt = pd.to_timedelta(to_offset(freq)).seconds
+    dt_seconds = poa_effective.index.to_series().diff().dt.total_seconds()
+    dt_seconds.values[0] = dt_seconds.values[1]  # simplicity
 
     # radiation (from sun)
     q_short_wave_radiation = module_area * poa_effective
@@ -875,8 +875,8 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     p_out = module_efficiency * q_short_wave_radiation
 
     # adjust wind speed if sensor height not at 2.5 meters
-    wind_speed_adj = wind_speed * (math.log(2.5 / z0) /
-                                   math.log(wind_sensor_height / z0))
+    wind_speed_adj = wind_speed * (np.log(2.5 / z0) /
+                                   np.log(wind_sensor_height / z0))
 
     # convert C to K for convenience
     temp_air = temp_air + 273.15
@@ -894,7 +894,8 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
     #     row height.
     #
     # So these simplified view factor equations are not wholly consistent
-    # with the reference.
+    # with the reference.  Implementing the real VF calculation would
+    # require additional inputs (gcr, at least).
     view_factor_mod_sky = (1 + cosd(surface_tilt)) / 2
     view_factor_mod_ground = (1 - cosd(surface_tilt)) / 2
 
@@ -908,16 +909,16 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
         q_mod_sky = _calculate_radiative_heat(
             module_area=module_area,
             view_factor=view_factor_mod_sky,
-            emissivity1=emissivity_module,
-            emissivity2=emissivity_sky,
+            emissivity1=module_emissivity,
+            emissivity2=sky_emissivity,
             temperature1=t_mod_i,
             temperature2=t_sky[i],
         )
         q_mod_ground = _calculate_radiative_heat(
             module_area=module_area,
             view_factor=view_factor_mod_ground,
-            emissivity1=emissivity_module,
-            emissivity2=emissivity_ground,
+            emissivity1=module_emissivity,
+            emissivity2=ground_emissivity,
             temperature1=t_mod_i,
             temperature2=t_mod_i
         )
@@ -934,7 +935,8 @@ def hayes(poa_effective, temp_air, wind_speed, module_efficiency, module_area,
             - q_long_wave_radiation + q_short_wave_radiation[i]
             - q_convection - p_out[i]
         )
-        t_mod_delta = dt / (module_weight*heat_capacity) * total_heat_transfer
+        dt = dt_seconds[i]
+        t_mod_delta = dt / (module_mass*heat_capacity) * total_heat_transfer
 
         t_mod_i += t_mod_delta
         t_mod[i + 1] = t_mod_i

@@ -750,122 +750,94 @@ def marion_integrate(function, surface_tilt, region, num=None):
     return Fd
 
 
-def fedis(aoi, surface_tilt, rfn, rfnt=1.4585):
-    '''
-    The “Fresnel Equations” for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)
-    is an analytical solution of diffuse transmission based on the rigorous integration of
-    an alternate form of the Fresnel equations. The approach leads to a simple yet accurate
-    relative transmittance model that reconciles the solar energy sensed by pyranometers and PV panels.
+def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
+    """
+    Determine the incidence angle modifiers (iam) for direct, diffuse sky,
+    and ground-reflected radiation using the FEDIS transmittance model.
+
+    The "Fresnel Equations" for Diffuse radiation on Inclined photovoltaic
+    Surfaces (FEDIS) [1]_ is an analytical solution of diffuse transmission
+    based on the rigorous integration of an alternate form of the
+    Fresnel equations. The approach leads to a simple yet accurate
+    relative transmittance model that reconciles the solar energy
+    sensed by pyranometers and PV panels.
 
     Parameters
     ----------
-    aoi : Angle of incidence in degrees.
-
-    rfnt: the refractive index of the pyranometer cover
-          For a fused silica dome over a CMP22, the rfnt is 1.4585
-
-    rfn: the refractive index of the PV cover
-         The suggested value is 1.5
+    aoi : numeric
+        Angle of incidence. [degrees]
 
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees.
-        The tilt angle is defined as degrees from horizontal
-        (e.g. surface facing up = 0, surface facing horizon = 90).
+        Surface tilt angle measured from horizontal (e.g. surface facing
+        up = 0, surface facing horizon = 90). [degrees]
+
+    n : float, default 1.5
+        Refractive index of the PV cover.  The default value of 1.5
+        was used for an IMT reference cell in [1]_. [unitless]
+
+    n_ref : float, default 1.4585
+        Refractive index of the pyranometer cover. The default value
+        was used for a fused silica dome over a CMP22 in [1]_.
 
     Returns
     -------
-    cd : the incidence angle modifier (IAM) for direct radiation
-    cuk: the IAM for diffuse radiation from the sky
-    cug: the IAM for diffuse radiation from the ground reflection
+    iam : dict
+        IAM values for each type of irradiance:
 
-    Usage
+            * 'direct': radiation from the solar disc
+            * 'sky': radiation from the sky dome (zenith <= 90)
+            * 'ground': radiation reflected from the ground (zenith >= 90)
+
+    References
     ----------
-    The solar energy received by a PV can be given by
-    F = cd*Fd + cuk*Fuk + cug*Fug
-    Fd, Fuk, and Fug are the POA irradiances, observed by the pyranometer, 
-    that are associated with direct radiation, diffuse radiation from the sky, and 
-    diffuse radiation from ground reflection, respectively.
-    An example can be found in Eq.(1-2) from the reference
+    .. [1] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
+       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
+       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
+       :doi:`10.1016/j.rser.2022.112362`
+    """
 
-    rfnt = 1.4585
-    rfn = np.arange(nPV)
-    aoi = np.arange(n)
-    surface_tilt = np.arange(n)
-    cd, cuk, cug = FEDIS(aoi, surface_tilt, rfn, rfnt )
-        Will return 2 dimensional arrays (nPV, n)
-        n represents the number of total scenarios
-        nPV represents the number of PV cover types
+    # avoid undefined results for horizontal or upside-down surfaces
+    zeroang = 1e-06
+    surface_tilt = np.where(surface_tilt == 0, zeroang, surface_tilt)
+    # similar for AOI > 90
+    aoi = np.where(aoi <= 90, zeroang, aoi)
 
-    Example
-    -------
-    belta = np.arange(100)*0.9
-    rfn = np.array([1.3, 2.0]) 
-    theta0p = belta*np.pi/180.0
-    aoi = theta0p*180.0/np.pi
-    surface_tilt = belta
+    # angle between module normal and refracted ray:
+    theta_0tp = asind(sind(aoi) / n)  # Eq 3c
 
-    cd, cuk, cug = FEDIS(aoi, surface_tilt, rfn, rfnt )
-    print( cd[0][:] )
-    print( cuk[0][:] )
-    print( cug[0][:] )
-    This generate the results of Fig.3 in the reference
+    # reflectance of direct radiation on PV cover:
+    sin_term = sind(aoi - theta_0tp)**2 / sind(aoi + theta_0tp)**2 / 2
+    tan_term = tand(aoi - theta_0tp)**2 / tand(aoi + theta_0tp)**2 / 2
+    rd = sin_term + tan_term  # Eq 3b
 
-    Reference
-    ----------
-    Xie, Y., M. Sengupta, A. Habte, A. Andreas, The "Fresnel Equations for Diffuse 
-    radiation on Inclined photovoltaic Surfaces (FEDIS), Rew. Sus. En. Rev., 161, 112362
+    # reflectance on pyranometer cover:
+    r0 = ((n_ref-1.0)/(n_ref+1.0))**2.0  # Eq 3e
 
-    '''
+    # relative transmittance of direct radiation by PV cover:
+    cd = (1 - rd) / (1 - r0)  # Eq 3a
 
-    surface_tilt[surface_tilt<0.01] = 0.01
-    aoi[aoi==0.0] = 0.001
+    # weighting function
+    term1 = n*(n_ref+1)**2 / (n_ref*(n+1)**2)
+    polycoeffs = [2.77526e-09, 3.74953, -5.18727, 3.41186, -1.08794, -0.136060]
+    term2 = np.polynomial.polynomial.polyval(n, polycoeffs)
+    w = term1 * term2  # Eq 5
 
-    r0 = ( (rfnt-1.0)/(rfnt+1.0) )**2.0
-    aoi = aoi*np.pi/180.0
-    theta0tp = [] 
-    for rfn1 in rfn:
-        theta0tp1 =  np.arcsin( np.sin(aoi)/rfn1 ) 
-        theta0tp.append( theta0tp1 )
-    theta0tp = np.asarray(theta0tp, dtype=np.float)
+    # relative transmittance of sky diffuse radiation by PV cover:
+    cosB = cosd(surface_tilt)
+    sinB = sind(surface_tilt)
+    cuk = (2*w / (np.pi * (1 + cosB))) * (
+        (30/7)*np.pi - (169/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
+        + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
+        - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
+    )  # Eq 4
 
-    rd = [ ]
-    for i in range( rfn.shape[0] ):
-        rd1 = ( np.sin(aoi-theta0tp[i,:])/np.sin(aoi+theta0tp[i,:]) )**2.0 + \
-             ( np.tan(aoi-theta0tp[i,:])/np.tan(aoi+theta0tp[i,:]) )**2.0
-        rd1 = rd1*0.5
-        rd.append( rd1 )
-    rd = np.asarray(rd, dtype=np.float)
+    # relative transmittance of ground-reflected radiation by PV cover:
+    cug = 40 * w / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
 
-    cd = [ ]
-    for j in range( surface_tilt.shape[0] ):
-        cd1 = (1.0-rd[:,j])/(1.0-r0)
-        cd.append( cd1 )
-    cd = np.asarray(cd, dtype=np.float)
-    cd = cd.T
+    out = {
+        'direct': cd,
+        'sky': cuk,
+        'ground': cug,
+    }
 
-    cuk = [ ]
-    cug = [ ]
-    w = 2.77526e-09  +3.74953*rfn -5.18727*rfn**2.0 +3.41186*rfn**3.0 -1.08794*rfn**4.0 +0.136060*rfn**5.0
-    w = w*(rfn*(1.0+rfnt)**2.0)/( rfnt*(1.0+rfn)**2.0 )
-
-    for i in range( rfn.shape[0] ):
-        w1 = w[i]
-        cuk1 = 30.0*np.pi/7.0 - (160.0/21.0)*(surface_tilt*np.pi/180.0) - (10.0*np.pi/3.0)*np.cos(surface_tilt*np.pi/180.0) + \
-            (160.0/21.0)*np.cos(surface_tilt*np.pi/180.0)*np.sin(surface_tilt*np.pi/180.0) \
-            - (5.0*np.pi/3.0)*np.cos(surface_tilt*np.pi/180.0)*( np.sin(surface_tilt*np.pi/180.0) )**2.0 \
-            + (20.0/7.0)*np.cos(surface_tilt*np.pi/180.0)*( np.sin(surface_tilt*np.pi/180.0) )**3.0 \
-            - (5.0*np.pi/16.0)*np.cos(surface_tilt*np.pi/180.0)*( np.sin(surface_tilt*np.pi/180.0) )**4.0 \
-            + (16.0/105.0)*np.cos(surface_tilt*np.pi/180.0)*( np.sin(surface_tilt*np.pi/180.0) )**5.0
-        cuk1 = cuk1*w1*2.0/(np.pi*(1.0+np.cos(surface_tilt*np.pi/180.0)))
-        cuk.append( cuk1 )
-        cug1 = 40.0*w1/(21.0*(1.0-np.cos(surface_tilt*np.pi/180.0))) - \
-               (1.0+np.cos(surface_tilt*np.pi/180.0))*cuk1/(1.0-np.cos(surface_tilt*np.pi/180.0))
-        cug.append( cug1 )
-    cuk = np.asarray( cuk, dtype=np.float)
-    cug = np.asarray( cug, dtype=np.float)
-
-    return cd, cuk, cug
-
-
-
-
+    return out

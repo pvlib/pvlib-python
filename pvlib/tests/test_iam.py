@@ -322,3 +322,51 @@ def test_marion_integrate_invalid():
 
     with pytest.raises(ValueError):
         _iam.marion_integrate(_iam.ashrae, 0, 'bad', 180)
+
+
+def test_fedis_defaults():
+    # expected values generated with code from model authors
+    surface_tilt = np.array([0, 30, 60, 90])
+    aoi = np.array([0, 30, 60, 90])
+
+    expected = {
+        'direct': np.array([0.994592623, 0.99301513, 0.943633517, 0.0]),
+        'sky': np.array([0.9410498, 0.95449355, 0.95357626, 0.9410498]),
+        'ground': np.array([0.0, 0.75380253, 0.9034704, 0.9410498]),
+    }
+    # numpy arrays
+    actual = _iam.fedis(aoi, surface_tilt)
+    assert_allclose(expected['direct'], actual['direct'], atol=1e-6)
+    assert_allclose(expected['sky'], actual['sky'])
+    assert_allclose(expected['ground'], actual['ground'], atol=1e-6)
+
+    # scalars
+    for i in range(len(aoi)):
+        actual = _iam.fedis(aoi[i], surface_tilt[i])
+        assert_allclose(expected['direct'][i], actual['direct'], atol=1e-6)
+        assert_allclose(expected['sky'][i], actual['sky'])
+        assert_allclose(expected['ground'][i], actual['ground'], atol=1e-6)
+
+
+def test_fedis_kwargs():
+    # expected values generated with code from model authors
+    surface_tilt = np.array([0, 30, 60, 90])
+    aoi = np.array([0, 30, 60, 90])
+
+    expected = {
+        'direct': np.array([0.948928986, 0.947089588, 0.894889901, 0.0]),
+        'sky': np.array([0.89536659, 0.90815772, 0.90728496, 0.89536659]),
+        'ground': np.array([0.0,  0.717209232, 0.859611482, 0.895366593]),
+    }
+    # numpy arrays
+    actual = _iam.fedis(aoi, surface_tilt, n=1.7, n_ref=1.3)
+    assert_allclose(expected['direct'], actual['direct'], atol=1e-6)
+    assert_allclose(expected['sky'], actual['sky'])
+    assert_allclose(expected['ground'], actual['ground'], atol=1e-6)
+
+    # scalars
+    for i in range(len(aoi)):
+        actual = _iam.fedis(aoi[i], surface_tilt[i], n=1.7, n_ref=1.3)
+        assert_allclose(expected['direct'][i], actual['direct'], atol=1e-6)
+        assert_allclose(expected['sky'][i], actual['sky'])
+        assert_allclose(expected['ground'][i], actual['ground'], atol=1e-6)

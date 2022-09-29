@@ -799,8 +799,12 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
     # avoid undefined results for horizontal or upside-down surfaces
     zeroang = 1e-06
     surface_tilt = np.where(surface_tilt == 0, zeroang, surface_tilt)
+    surface_tilt = np.where(surface_tilt >= 90, 90 - zeroang, surface_tilt)
+
+    # and for aoi:
+    aoi = np.where(aoi <= 0, zeroang, aoi)
     # similar for AOI > 90
-    aoi = np.where(aoi <= 90, zeroang, aoi)
+    aoi = np.where(aoi >= 90, 90 - zeroang, aoi)
 
     # angle between module normal and refracted ray:
     theta_0tp = asind(sind(aoi) / n)  # Eq 3c
@@ -818,7 +822,8 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
 
     # weighting function
     term1 = n*(n_ref+1)**2 / (n_ref*(n+1)**2)
-    polycoeffs = [2.77526e-09, 3.74953, -5.18727, 3.41186, -1.08794, -0.136060]
+    # note: the last coefficient here differs in sign from the reference
+    polycoeffs = [2.77526e-09, 3.74953, -5.18727, 3.41186, -1.08794, 0.136060]
     term2 = np.polynomial.polynomial.polyval(n, polycoeffs)
     w = term1 * term2  # Eq 5
 
@@ -826,7 +831,7 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
     cosB = cosd(surface_tilt)
     sinB = sind(surface_tilt)
     cuk = (2*w / (np.pi * (1 + cosB))) * (
-        (30/7)*np.pi - (169/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
+        (30/7)*np.pi - (160/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
         + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
         - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
     )  # Eq 4
@@ -834,6 +839,8 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
     # relative transmittance of ground-reflected radiation by PV cover:
     cug = 40 * w / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
 
+    # handle tilt=0 case correctly:
+    cug = np.where(surface_tilt == zeroang, 0, cug)
     out = {
         'direct': cd,
         'sky': cuk,

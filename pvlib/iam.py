@@ -837,7 +837,7 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
     )  # Eq 4
 
     # relative transmittance of ground-reflected radiation by PV cover:
-    cug = 40 * w / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
+    cug = 40 * w / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk  # Eq 6
 
     # handle tilt=0 case correctly:
     cug = np.where(surface_tilt == zeroang, 0, cug)

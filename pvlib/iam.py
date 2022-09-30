@@ -752,7 +752,7 @@ def marion_integrate(function, surface_tilt, region, num=None):
 
 def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
     """
-    Determine the incidence angle modifiers (iam) for direct, diffuse sky,
+    Determine the incidence angle modifiers (IAM) for direct, diffuse sky,
     and ground-reflected radiation using the FEDIS transmittance model.
 
     The "Fresnel Equations" for Diffuse radiation on Inclined photovoltaic
@@ -772,7 +772,7 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
         up = 0, surface facing horizon = 90). [degrees]
 
     n : float, default 1.5
-        Refractive index of the PV cover.  The default value of 1.5
+        Refractive index of the PV front surface material.  The default value of 1.5
         was used for an IMT reference cell in [1]_. [unitless]
 
     n_ref : float, default 1.4585
@@ -785,12 +785,12 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
         IAM values for each type of irradiance:
 
             * 'direct': radiation from the solar disc
-            * 'sky': radiation from the sky dome (zenith <= 90)
-            * 'ground': radiation reflected from the ground (zenith >= 90)
+            * 'sky': diffuse radiation from the sky dome
+            * 'ground': radiation reflected from the ground
 
     Notes
     -----
-    This implementation corrects a typo in the reference regarding the sign
+    This implementation corrects a typo in [1]_ regarding the sign
     of the last polynomial term in Equation 5.
 
     References

@@ -784,9 +784,9 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
     iam : dict
         IAM values for each type of irradiance:
 
-            * 'direct': radiation from the solar disc
-            * 'sky': diffuse radiation from the sky dome
-            * 'ground': radiation reflected from the ground
+            * 'direct': irradiance from the solar disc
+            * 'sky': irradiance radiation from the sky dome
+            * 'ground': irradiance reflected from the ground
 
     Notes
     -----

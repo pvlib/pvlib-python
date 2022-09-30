@@ -325,10 +325,11 @@ def test_marion_integrate_invalid():
 
 
 def test_fedis_defaults():
-    # expected values generated with code from model authors
     surface_tilt = np.array([0, 30, 60, 90])
     aoi = np.array([0, 30, 60, 90])
 
+    # expected values generated with code from model authors:
+    # https://github.com/NREL/FEDIS/commit/7ae7186caa39aa85848163a39dac46df56fb9819  # noqa: E501
     expected = {
         'direct': np.array([0.994592623, 0.99301513, 0.943633517, 0.0]),
         'sky': np.array([0.9410498, 0.95449355, 0.95357626, 0.9410498]),
@@ -349,10 +350,11 @@ def test_fedis_defaults():
 
 
 def test_fedis_kwargs():
-    # expected values generated with code from model authors
     surface_tilt = np.array([0, 30, 60, 90])
     aoi = np.array([0, 30, 60, 90])
 
+    # expected values generated with code from model authors:
+    # https://github.com/NREL/FEDIS/commit/7ae7186caa39aa85848163a39dac46df56fb9819  # noqa: E501
     expected = {
         'direct': np.array([0.948928986, 0.947089588, 0.894889901, 0.0]),
         'sky': np.array([0.89536659, 0.90815772, 0.90728496, 0.89536659]),

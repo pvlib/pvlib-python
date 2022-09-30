@@ -788,6 +788,11 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
             * 'sky': radiation from the sky dome (zenith <= 90)
             * 'ground': radiation reflected from the ground (zenith >= 90)
 
+    Notes
+    -----
+    This implementation corrects a typo in the reference regarding the sign
+    of the last polynomial term in Equation 5.
+
     References
     ----------
     .. [1] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'

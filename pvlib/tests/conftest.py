@@ -442,6 +442,28 @@ def cec_module_fs_495():
 
 
 @pytest.fixture(scope='function')
+def precise_iv_curves1():
+    params = pd.read_csv(f'{DATA_DIR}/precise_iv_curves_parameter_sets1.csv')
+    curves = pd.read_json(f'{DATA_DIR}/precise_iv_curves1.json')
+    curves = pd.DataFrame(curves['IV Curves'].values.tolist())
+    joined = params.merge(curves, on='Index', how='inner',
+                          suffixes=(None, '_drop'), validate='one_to_one')
+    joined = joined[(c for c in joined.columns if not c.endswith('_drop'))]
+    return joined
+
+
+@pytest.fixture(scope='function')
+def precise_iv_curves2():
+    params = pd.read_csv(f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv')
+    curves = pd.read_json(f'{DATA_DIR}/precise_iv_curves2.json')
+    curves = pd.DataFrame(curves['IV Curves'].values.tolist())
+    joined = params.merge(curves, on='Index', how='inner',
+                          suffixes=(None, '_drop'), validate='one_to_one')
+    joined = joined[(c for c in joined.columns if not c.endswith('_drop'))]
+    return joined
+
+
+@pytest.fixture(scope='function')
 def sapm_temperature_cs5p_220m():
     # SAPM temperature model parameters for Canadian_Solar_CS5P_220M
     # (glass/polymer) in open rack

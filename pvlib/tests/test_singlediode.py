@@ -69,6 +69,42 @@ def test_newton_fs_495(method, cec_module_fs_495):
     assert np.isclose(pvs_ixx, ixx)
 
 
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+def test_precise_iv_curves1(method, precise_iv_curves1):
+    """test pvsystem.singlediode with different methods"""
+    pc = precise_iv_curves1
+    print(pc.columns)
+    il, io, rs, rsh, nnsvt = (
+        pc['photocurrent'], pc['saturation_current'],
+        pc['resistance_series'], pc['resistance_shunt'],
+        pc['n'] * pc['cells_in_series'] * pc['Temperature']
+    )
+    import pdb
+    pdb.set_trace()
+    ivcurve_pnts = len(pc['Currents'][0])
+    outs = pvsystem.singlediode(il, io, rs, rsh, nnsvt, method=method,
+                                ivcurve_pnts=ivcurve_pnts)
+    pc_i , pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
+    assert np.allclose(pc_i, outs['i'])
+    assert np.allclose(pc_v, outs['v'])
+    assert np.allclose(pc['i_sc'], outs['i_sc'])
+    assert np.allclose(pc['v_oc'], outs['v_oc'])
+    # the singlediode method doesn't actually get the MPP correct
+    pvs_imp = pvsystem.i_from_v(rsh, rs, nnsvt, vmp, io, il, method='lambertw')
+    pvs_vmp = pvsystem.v_from_i(rsh, rs, nnsvt, imp, io, il, method='lambertw')
+    assert np.allclose(pc['i_mp'], pvs_imp)
+    assert np.allclose(pc['v_mp'], pvs_vmp)
+    assert np.allclose(pc['p_mp'], outs['p_mp'])
+    # assert np.isclose(pvs['i_x'], ix) # ???
+    # pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
+    #                             method='lambertw')
+    # assert np.isclose(pvs_ixx, ixx)
+    # ['Index', 'photocurrent', 'saturation_current', 'resistance_series',
+    #    'resistance_shunt', 'n', 'cells_in_series', 'Voltages', 'Currents',
+    #    'v_oc', 'i_sc', 'v_mp', 'i_mp', 'p_mp', 'Temperature', 'Irradiance',
+    #    'Sweep direction', 'Datetime']
+
+
 def get_pvsyst_fs_495():
     """
     PVsyst parameters for First Solar FS-495 module from PVSyst-6.7.2 database.

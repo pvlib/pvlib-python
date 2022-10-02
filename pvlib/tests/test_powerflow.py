@@ -1,14 +1,18 @@
+from numpy import array
 from numpy import nan
 from numpy.random import uniform
 from pandas import Series
+from pandas import Timestamp
 from pandas import date_range
 from pytest import approx
 from pytest import mark
 
 from pvlib.battery import boc
 from pvlib.battery import fit_boc
+from pvlib.powerflow import multi_dc_battery
 from pvlib.powerflow import self_consumption
 from pvlib.powerflow import self_consumption_ac_battery
+from pvlib.pvsystem import retrieve_sam
 
 
 @mark.parametrize(
@@ -144,7 +148,7 @@ def test_self_consumption_ac_battery_sum(datasheet_battery_params):
         periods=1000,
         freq="1H",
         tz="Europe/Madrid",
-        closed="left",
+        inclusive="left",
     )
     _, flow = self_consumption_ac_battery(
         generation=Series(uniform(0, 1, 1000), index=index),
@@ -220,3 +224,125 @@ def test_self_consumption_nan_load():
     )
     assert flow["System to load"].isna().all()
     assert flow["Grid to load"].isna().all()
+
+
+@mark.parametrize(
+    "inputs,outputs",
+    [
+        (
+            {"pv_power": 800, "dispatch": -400},
+            {
+                "Battery power flow": -400,
+                "AC power": 400,
+                "Clipping": 0,
+                "Battery factor": 0,
+            },
+        ),
+        (
+            {"pv_power": 200, "dispatch": -600},
+            {
+                "Battery power flow": -200,
+                "AC power": 0,
+                "Clipping": 0,
+                "Battery factor": nan,
+            },
+        ),
+        (
+            {"pv_power": 1200, "dispatch": 400},
+            {
+                "Battery power flow": -200,
+                "AC power": 1000,
+                "Clipping": 0,
+                "Battery factor": 0,
+            },
+        ),
+        (
+            {"pv_power": 2000, "dispatch": 400},
+            {
+                "Battery power flow": -850,
+                "AC power": 1000,
+                "Clipping": 150,
+                "Battery factor": 0,
+            },
+        ),
+        (
+            {"pv_power": 100, "dispatch": 400},
+            {
+                "Battery power flow": 400,
+                "AC power": 500,
+                "Clipping": 0,
+                "Battery factor": 0.8,
+            },
+        ),
+        (
+            {"pv_power": 400, "dispatch": 1000},
+            {
+                "Battery power flow": 600,
+                "AC power": 1000,
+                "Clipping": 0,
+                "Battery factor": 0.6,
+            },
+        ),
+    ],
+    ids=[
+        "Charging is prioritized over AC conversion while enough PV power is available",
+        "Charging is limited by the available PV power",
+        "Clipping forces battery to charge, even when dispatch is set to discharge",
+        "Clipping cannot be avoided if the battery is unable to handle too much input power",
+        "Battery discharge can be combined with PV power to provide higher AC output power",
+        "Battery discharge is limited to the inverter's nominal power",
+    ],
+)
+def test_multi_dc_battery(inputs, outputs, datasheet_battery_params):
+    """
+    Test well-known cases of a multi-input (PV) and DC-connected battery
+    inverter.
+
+    - Assume an ideal inverter with 100 % DC-AC conversion efficiency
+    - Assume an ideal battery with "infinite" capacity and 100 % efficiency
+    - The inverter must try to follow the custom dispatch series as close as
+      possible
+    - Battery can only charge from PV
+    - The inverter is smart enough to charge the battery in order to avoid
+      clipping losses while still maintaining the MPP tracking
+    """
+    datasheet_battery_params.update({
+        "dc_energy_wh": 100000,
+        "dc_max_power_w": 850,
+        "charge_efficiency": 1.0,
+        "discharge_efficiency": 1.0,
+    })
+    inverter = {
+        'Vac': '240',
+        'Pso': 0.0,
+        'Paco': 1000.0,
+        'Pdco': 1000.0,
+        'Vdco': 325.0,
+        'C0': 0.0,
+        'C1': 0.0,
+        'C2': 0.0,
+        'C3': 0.0,
+        'Pnt': 0.5,
+        'Vdcmax': 600.0,
+        'Idcmax': 12.0,
+        'Mppt_low': 100.0,
+        'Mppt_high': 600.0,
+    }
+    dispatch = array([inputs["dispatch"]])
+    index = date_range(
+        "2022-01-01",
+        periods=len(dispatch),
+        freq="1H",
+        tz="Europe/Madrid",
+        inclusive="left",
+    )
+    dispatch = Series(data=dispatch, index=index)
+    result = multi_dc_battery(
+        v_dc=[array([400] * len(dispatch))],
+        p_dc=[array([inputs["pv_power"]])],
+        inverter=inverter,
+        battery_dispatch=dispatch,
+        battery_parameters=fit_boc(datasheet_battery_params),
+        battery_model=boc,
+    )
+    assert approx(result.iloc[0].to_dict(), nan_ok=True) == outputs

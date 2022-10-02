@@ -1,14 +1,16 @@
-from functools import lru_cache
-from importlib.resources import files
-from pathlib import Path
+import os
 import platform
 import warnings
+from functools import lru_cache
+from functools import wraps
+from importlib.resources import files
+from pathlib import Path
 
 import pandas as pd
-import os
-from pkg_resources import parse_version
 import pytest
-from functools import wraps
+from numpy import nan
+from numpy.random import uniform
+from pkg_resources import parse_version
 
 import pvlib
 from pvlib.location import Location
@@ -527,20 +529,8 @@ def datasheet_battery_params():
     return parameters
 
 
-@lru_cache(maxsize=20)
-def _read_sample_profile(profile, timezone):
-    series = pd.read_csv(profile, names=["Timestamp", "Power"])
-    series = series.set_index("Timestamp")
-    series.index = pd.to_datetime(
-        series.index, format="%Y-%m-%dT%H:%M:%S%z", utc=True
-    )
-    series.index = series.index.tz_convert(timezone)
-    series = series.asfreq("1H")
-    return series["Power"].copy()
-
-
-@pytest.fixture(scope="function")
-def residential_load_profile():
+@pytest.fixture(scope="session")
+def residential_load_profile_generator():
     """
     Get a sample residential hourly load profile for testing purposes.
 
@@ -548,14 +538,22 @@ def residential_load_profile():
     -------
     The load profile.
     """
-    tz = "Europe/Madrid"
-    # TODO: use a more realistic (i.e.: non-synthetic) load profile if this is
-    # going to be integrated.
-    return _read_sample_profile(files("pvlib") / "data" / "consumed.csv", tz)
+    def profile_generator(index):
+        load = pd.Series(data=nan, index=index)
+        load[load.index.hour == 0] = 600
+        load[load.index.hour == 4] = 400
+        load[load.index.hour == 13] = 1100
+        load[load.index.hour == 17] = 800
+        load[load.index.hour == 21] = 1300
+        load *= uniform(low=0.6, high=1.4, size=len(load))
+        load = load.interpolate(method="spline", order=2)
+        load = load.bfill().ffill()
+        return load
+    return profile_generator
 
 
-@pytest.fixture(scope="function")
-def residential_generation_profile():
+@pytest.fixture(scope="session")
+def residential_model_chain():
     """
     Get a sample residential hourly generation profile for testing purposes.
 
@@ -563,5 +561,38 @@ def residential_generation_profile():
     -------
     The generation profile.
     """
-    tz = "Europe/Madrid"
-    return _read_sample_profile(files("pvlib") / "data" / "generated.csv", tz)
+    name = 'Madrid'
+    latitude = 40.31672645215922
+    longitude = -3.674695061062714
+    altitude = 603
+    timezone = 'Europe/Madrid'
+    module = pvlib.pvsystem.retrieve_sam('SandiaMod')['Canadian_Solar_CS5P_220M___2009_']
+    inverter = pvlib.pvsystem.retrieve_sam('cecinverter')['Powercom__SLK_1500__240V_']
+    weather = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)[0]
+    weather.index = pd.date_range(
+        start=weather.index[0].replace(year=2021),
+        end=weather.index[-1].replace(year=2021),
+        freq="H",
+    )
+    weather.index = weather.index.tz_convert(timezone)
+    weather.index.name = "Timestamp"
+    location = pvlib.location.Location(
+        latitude,
+        longitude,
+        name=name,
+        altitude=altitude,
+        tz=timezone,
+    )
+    mount = pvlib.pvsystem.FixedMount(surface_tilt=latitude, surface_azimuth=180)
+    temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+    array = pvlib.pvsystem.Array(
+        mount=mount,
+        module_parameters=module,
+        modules_per_string=16,
+        strings=1,
+        temperature_model_parameters=temperature_model_parameters,
+    )
+    system = pvlib.pvsystem.PVSystem(arrays=[array], inverter_parameters=inverter)
+    mc = pvlib.modelchain.ModelChain(system, location)
+    mc.run_model(weather)
+    return mc

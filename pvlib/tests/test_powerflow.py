@@ -12,7 +12,16 @@ from pvlib.battery import fit_boc
 from pvlib.powerflow import multi_dc_battery
 from pvlib.powerflow import self_consumption
 from pvlib.powerflow import self_consumption_ac_battery
-from pvlib.pvsystem import retrieve_sam
+
+
+def gen_hourly_index(periods):
+    return date_range(
+        "2022-01-01",
+        periods=periods,
+        freq="1H",
+        tz="Europe/Madrid",
+        closed="left",
+    )
 
 
 @mark.parametrize(
@@ -143,16 +152,17 @@ def test_self_consumption_ac_battery_sum(datasheet_battery_params):
     The sum of the flows with respect to the system, load, grid and battery
     must be balanced.
     """
-    index = date_range(
-        "2022-01-01",
-        periods=1000,
-        freq="1H",
-        tz="Europe/Madrid",
-        inclusive="left",
+    self_consumption_flow = self_consumption(
+        generation=Series(uniform(0, 1, 1000), index=gen_hourly_index(1000)),
+        load=Series(uniform(0, 1, 1000), index=gen_hourly_index(1000)),
+    )
+    dispatch = (
+        self_consumption_flow["Grid to load"]
+        - self_consumption_flow["System to grid"]
     )
     _, flow = self_consumption_ac_battery(
-        generation=Series(uniform(0, 1, 1000), index=index),
-        load=Series(uniform(0, 1, 1000), index=index),
+        self_consumption_flow,
+        dispatch=dispatch,
         battery=fit_boc(datasheet_battery_params),
         model=boc,
     )
@@ -184,8 +194,8 @@ def test_self_consumption_ac_battery_sum(datasheet_battery_params):
 )
 def test_self_consumption_ac_battery_losses(
     datasheet_battery_params,
-    residential_generation_profile,
-    residential_load_profile,
+    residential_model_chain,
+    residential_load_profile_generator,
     charge_efficiency,
     discharge_efficiency,
     efficiency,
@@ -199,11 +209,21 @@ def test_self_consumption_ac_battery_losses(
     datasheet_battery_params["charge_efficiency"] = charge_efficiency
     datasheet_battery_params["discharge_efficiency"] = discharge_efficiency
     battery = fit_boc(datasheet_battery_params)
-    residential_generation_profile.iloc[:1000] = 0.0
-    residential_generation_profile.iloc[-1000:] = 0.0
+    generation = residential_model_chain.results.ac.copy()
+    generation.iloc[:1000] = 0.0
+    generation.iloc[-1000:] = 0.0
+    load = residential_load_profile_generator(generation.index)
+    self_consumption_flow = self_consumption(
+        generation=generation,
+        load=load,
+    )
+    dispatch = (
+        self_consumption_flow["Grid to load"]
+        - self_consumption_flow["System to grid"]
+    )
     _, lossy = self_consumption_ac_battery(
-        generation=residential_generation_profile,
-        load=residential_load_profile,
+        self_consumption_flow,
+        dispatch=dispatch,
         battery=battery,
         model=boc,
     )
@@ -306,12 +326,14 @@ def test_multi_dc_battery(inputs, outputs, datasheet_battery_params):
     - The inverter is smart enough to charge the battery in order to avoid
       clipping losses while still maintaining the MPP tracking
     """
-    datasheet_battery_params.update({
-        "dc_energy_wh": 100000,
-        "dc_max_power_w": 850,
-        "charge_efficiency": 1.0,
-        "discharge_efficiency": 1.0,
-    })
+    datasheet_battery_params.update(
+        {
+            "dc_energy_wh": 100000,
+            "dc_max_power_w": 850,
+            "charge_efficiency": 1.0,
+            "discharge_efficiency": 1.0,
+        }
+    )
     inverter = {
         'Vac': '240',
         'Pso': 0.0,
@@ -329,14 +351,7 @@ def test_multi_dc_battery(inputs, outputs, datasheet_battery_params):
         'Mppt_high': 600.0,
     }
     dispatch = array([inputs["dispatch"]])
-    index = date_range(
-        "2022-01-01",
-        periods=len(dispatch),
-        freq="1H",
-        tz="Europe/Madrid",
-        inclusive="left",
-    )
-    dispatch = Series(data=dispatch, index=index)
+    dispatch = Series(data=dispatch, index=gen_hourly_index(len(dispatch)))
     result = multi_dc_battery(
         v_dc=[array([400] * len(dispatch))],
         p_dc=[array([inputs["pv_power"]])],

@@ -278,11 +278,11 @@ location and configuration:
        inverter = retrieve_sam('cecinverter')['Powercom__SLK_1500__240V_']
        weather = get_pvgis_tmy(latitude, longitude, map_variables=True)[0]
        weather.index = date_range(
-           start="2021-01-01 00:00:00",
-           end="2022-01-01 00:00:00",
-           closed="left",
+           start=weather.index[0].replace(year=2021),
+           end=weather.index[-1].replace(year=2021),
            freq="H",
        )
+       weather.index = weather.index.tz_convert(timezone)
        weather.index.name = "Timestamp"
        location = Location(
            latitude,
@@ -315,7 +315,7 @@ And a syntethic load profile for the experiment:
    from numpy import nan
    from numpy.random import uniform
 
-   def create_synthetic_load_profile(index):
+   def residential_load_profile(index):
        load = Series(data=nan, index=index)
        load[load.index.hour == 0] = 600
        load[load.index.hour == 4] = 400
@@ -323,9 +323,11 @@ And a syntethic load profile for the experiment:
        load[load.index.hour == 17] = 800
        load[load.index.hour == 21] = 1300
        load *= uniform(low=0.6, high=1.4, size=len(load))
-       return load.interpolate(method="spline", order=2)
+       load = load.interpolate(method="spline", order=2)
+       load = load.bfill().ffill()
+       return load
 
-   load = create_synthetic_load_profile(mc.results.ac.index)
+   load = residential_load_profile(mc.results.ac.index)
 
 
 Self consumption
@@ -361,8 +363,7 @@ self-consumption use case:
 
    from pvlib.powerflow import self_consumption
 
-   generation = mc.results.ac
-   self_consumption_flow = self_consumption(generation, load)
+   self_consumption_flow = self_consumption(mc.results.ac, load)
    self_consumption_flow.head()
 
 
@@ -423,7 +424,7 @@ solution:
 
    from pvlib.powerflow import self_consumption
 
-   self_consumption_flow = self_consumption(generation, load)
+   self_consumption_flow = self_consumption(mc.results.ac, load)
    self_consumption_flow.head()
 
 
@@ -446,10 +447,10 @@ dispatch series to solve the new power flow scenario:
 
 .. ipython:: python
 
-   from pvlib.powerflow import self_consumption_ac_battery_custom_dispatch
+   from pvlib.powerflow import self_consumption_ac_battery
 
    battery = fit_sam(parameters)
-   state, flow = self_consumption_ac_battery_custom_dispatch(self_consumption_flow, dispatch, battery, sam)
+   state, ac_battery_flow = self_consumption_ac_battery(self_consumption_flow, dispatch, battery, sam)
 
 
 The new power flow results now include the flow series from system to
@@ -457,8 +458,8 @@ load/battery/grid, from battery to load and from grid to load/system:
 
 .. ipython:: python
 
-   @savefig flow_self_consumption_ac_battery_load.png
-   flow.groupby(flow.index.hour).mean()[["System to load", "Battery to load", "Grid to load", "System to battery", "System to grid"]].plot.bar(stacked=True, legend=True, xlabel="Hour", ylabel="Power (W)", title="Average power flow")
+   @savefig ac_battery_flow.png
+   ac_battery_flow.groupby(ac_battery_flow.index.hour).mean()[["System to load", "Battery to load", "Grid to load", "System to battery", "System to grid"]].plot.bar(stacked=True, legend=True, xlabel="Hour", ylabel="Power (W)", title="Average power flow")
    @suppress
    plt.close()
 
@@ -499,11 +500,12 @@ solution and dispatch series as in the AC battery use case:
 
 .. ipython:: python
 
-   self_consumption_flow = self_consumption(generation, load)
+   self_consumption_flow = self_consumption(mc.results.ac, load)
    dispatch = self_consumption_flow["Grid to load"] - self_consumption_flow["System to grid"]
 
 
-TODO:
+Then, you can solve the DC-connected inverter power flow by using the
+``multi_dc_battery`` inverter model:
 
 .. ipython:: python
 
@@ -522,7 +524,7 @@ TODO:
        "dc_nominal_voltage": 102.4,
        "dc_max_power_w": 3400,
    }
-   results = multi_dc_battery(
+   dc_battery_solution = multi_dc_battery(
        v_dc=[mc.results.dc["v_mp"]],
        p_dc=[mc.results.dc["p_mp"]],
        inverter=mc.system.inverter_parameters,
@@ -530,13 +532,35 @@ TODO:
        battery_parameters=fit_sam(battery_datasheet),
        battery_model=sam,
    )
-   dc_battery_flow = self_consumption(results["AC power"], load)
-   dc_battery_flow["PV to load"] = dc_battery_flow["System to load"] * (1 - results["Battery factor"])
-   dc_battery_flow["Battery to load"] = dc_battery_flow["System to load"] * results["Battery factor"]
-   @savefig flow_self_consumption_dc_battery_load.png
-   dc_battery_flow.groupby(dc_battery_flow.index.hour).mean()[["PV to load", "Battery to load", "Grid to load", "System to grid"]].plot.bar(stacked=True, legend=True, xlabel="Hour", ylabel="Power (W)", title="Average power flow")
+
+
+The last step is to use the resulting DC-connected inverter power flow solution
+to solve the new self-consumption power flow scenario:
+
+.. ipython:: python
+
+   from pvlib.powerflow import self_consumption_dc_battery
+
+   dc_battery_flow = self_consumption_dc_battery(dc_battery_solution, load)
+
+
+The new power flow results now include the flow series from system to
+load/battery/grid, from battery to load and from grid to load/system:
+
+.. ipython:: python
+
+   @savefig dc_battery_flow.png
+   dc_battery_flow.groupby(dc_battery_flow.index.hour).mean()[["PV to load", "Battery to load", "Grid to load", "PV to battery", "System to grid"]].plot.bar(stacked=True, legend=True, xlabel="Hour", ylabel="Power (W)", title="Average power flow")
    @suppress
    plt.close()
+
+
+.. note:: Since the system was intentionally designed to have a high DC-AC
+   ratio (resulting in clipping losses), the DC-connected battery allows the
+   inverter to avoid some of those clipping losses by charging the battery
+   instead. Hence, the "system-to-grid" power is actually extra power that the
+   AC-connected battery would not be able to provide for the same system
+   configuration.
 
 
 Dispatching strategies
@@ -559,7 +583,7 @@ by simply:
 
    dispatch = self_consumption_flow["Grid to load"] - self_consumption_flow["System to grid"]
    dispatch.loc[dispatch.index.hour >= 21] = 0
-   state, flow = self_consumption_ac_battery_custom_dispatch(self_consumption_flow, dispatch, battery, sam)
+   state, flow = self_consumption_ac_battery(self_consumption_flow, dispatch, battery, sam)
 
    @savefig flow_self_consumption_ac_battery_restricted_dispatch_load.png
    flow.groupby(flow.index.hour).mean()[["System to load", "Battery to load", "Grid to load"]].plot.bar(stacked=True, legend=True, xlabel="Hour", ylabel="Power (W)", title="Average power flow to load")

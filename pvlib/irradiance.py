@@ -10,6 +10,7 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
+import warnings
 
 from pvlib import atmosphere, solarposition, tools
 
@@ -2917,14 +2918,19 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
     return dni
 
 
-def component_sum_irradiance(self, weather, solar_zenith):
+def component_sum_irradiance(self, weather,
+                             zenith,
+                             clearsky_dni=None):
     """
 
     Parameters
     ----------
-    weather : TYPE
-        DESCRIPTION.
-    solar_zenith : TYPE
+    weather : DataFrame, or tuple or list of DataFrame
+            Column names must include ``'dni'``, ``'ghi'``, ``'dhi'``.
+    zenith : Series
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. Angles must be >=0 and <=180.
+    clearsky_dni : Series, default None
         DESCRIPTION.
 
     Returns
@@ -2939,22 +2945,21 @@ def component_sum_irradiance(self, weather, solar_zenith):
                "https://github.com/pvlib/pvlib-python \n")
 
     if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
-        clearsky = self.location.get_clearsky(
-            weather.index, solar_position=self.results.solar_position)
-        weather.loc[:, 'dni'] = pvlib.irradiance.dni(
+        weather.loc[:, 'dni'] = dni(
             weather.loc[:, 'ghi'],
             weather.loc[:, 'dhi'],
-            solar_zenith,
-            clearsky_dni=clearsky['dni'],
+            zenith,
+            clearsky_dni=clearsky_dni,
             clearsky_tolerance=1.1)
     elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
         warnings.warn(wrn_txt, UserWarning)
         weather.loc[:, 'ghi'] = (
             weather.dhi + weather.dni *
-            tools.cosd(solar_zenith)
+            tools.cosd(zenith)
         )
     elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
         warnings.warn(wrn_txt, UserWarning)
         weather.loc[:, 'dhi'] = (
             weather.ghi - weather.dni *
-            tools.cosd(solar_zenith))
+            tools.cosd(zenith))
+    return weather

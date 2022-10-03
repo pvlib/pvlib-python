@@ -2926,7 +2926,8 @@ def component_sum_irradiance(self, weather,
     Parameters
     ----------
     weather : DataFrame, or tuple or list of DataFrame
-            Column names must include ``'dni'``, ``'ghi'``, ``'dhi'``.
+            Column names must include at least 2 of the 3 columns:
+            ``'dni'``, ``'ghi'``, ``'dhi'``.
     zenith : Series
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=180.
@@ -2935,7 +2936,7 @@ def component_sum_irradiance(self, weather,
 
     Returns
     -------
-    None.
+    weather:
 
     """
     icolumns = set(weather.columns)
@@ -2943,7 +2944,6 @@ def component_sum_irradiance(self, weather,
                "Results can be too high or negative.\n" +
                "Help to improve this function on github:\n" +
                "https://github.com/pvlib/pvlib-python \n")
-
     if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
         weather.loc[:, 'dni'] = dni(
             weather.loc[:, 'ghi'],

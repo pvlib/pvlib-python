@@ -2915,3 +2915,46 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
             (zenith < zenith_threshold_for_zero_dni) &
             (dni > max_dni)] = max_dni
     return dni
+
+
+def component_sum_irradiance(self, weather, solar_zenith):
+    """
+
+    Parameters
+    ----------
+    weather : TYPE
+        DESCRIPTION.
+    solar_zenith : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    icolumns = set(weather.columns)
+    wrn_txt = ("This function is not safe at the moment.\n" +
+               "Results can be too high or negative.\n" +
+               "Help to improve this function on github:\n" +
+               "https://github.com/pvlib/pvlib-python \n")
+
+    if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
+        clearsky = self.location.get_clearsky(
+            weather.index, solar_position=self.results.solar_position)
+        weather.loc[:, 'dni'] = pvlib.irradiance.dni(
+            weather.loc[:, 'ghi'],
+            weather.loc[:, 'dhi'],
+            solar_zenith,
+            clearsky_dni=clearsky['dni'],
+            clearsky_tolerance=1.1)
+    elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
+        warnings.warn(wrn_txt, UserWarning)
+        weather.loc[:, 'ghi'] = (
+            weather.dhi + weather.dni *
+            tools.cosd(solar_zenith)
+        )
+    elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
+        warnings.warn(wrn_txt, UserWarning)
+        weather.loc[:, 'dhi'] = (
+            weather.ghi - weather.dni *
+            tools.cosd(solar_zenith))

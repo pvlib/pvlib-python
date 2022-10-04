@@ -8,7 +8,7 @@ import pandas as pd
 
 import pytest
 from numpy.testing import assert_almost_equal, assert_allclose
-
+from pvlib.location import Location
 from pvlib import irradiance
 
 from .conftest import (
@@ -29,6 +29,10 @@ def times():
     # must include night values
     return pd.date_range(start='20140624', freq='6H', periods=4,
                          tz='US/Arizona')
+
+@pytest.fixture
+def location():
+    return Location(32.2, -111, altitude=700)
 
 
 @pytest.fixture
@@ -1082,3 +1086,41 @@ def test_clearness_index_zenith_independent(airmass_kt):
                                                         airmass)
     expected = pd.Series([np.nan, 0.553744437562], index=times)
     assert_series_equal(out, expected)
+
+
+def test_component_sum_irradiance(location):
+    # Generate dataframe to test on
+    times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='H')
+    i = pd.DataFrame({'dni': [49.756966, 62.153947],
+                      'ghi': [372.103976116, 497.087579068],
+                      'dhi': [356.543700, 465.44400]}, index=times)
+    # Get zenith values associated with the location
+    solar_position = location.get_solarposition(times,
+                                                method='nrel_numpy')
+    # Get the clearsky data associated with the location
+    clearsky = location.get_clearsky(times, solar_position=solar_position)
+    # Test scenario where DNI is generated via component sum equation
+    irradiance.component_sum_irradiance(solar_position.zenith,
+                                        ghi=i.ghi,
+                                        dhi=i.dhi,
+                                        dni=None,
+                                        clearsky_dni=clearsky)
+    # Test scenario where GHI is generated via component sum equation
+    irradiance.component_sum_irradiance(solar_position.zenith,
+                                        ghi=i.ghi,
+                                        dhi=i.dhi,
+                                        dni=None,
+                                        clearsky_dni=clearsky)    
+    # Test scenario where DHI is generated via component sum equation
+    irradiance.component_sum_irradiance(solar_position.zenith,
+                                        ghi=i.ghi,
+                                        dhi=i.dhi,
+                                        dni=None,
+                                        clearsky_dni=clearsky)
+    # Test scenario where all parameters are passed (throw warning)
+    irradiance.component_sum_irradiance(solar_position.zenith,
+                                        ghi=i.ghi,
+                                        dhi=i.dhi,
+                                        dni=i.dni,
+                                        clearsky_dni=clearsky)
+

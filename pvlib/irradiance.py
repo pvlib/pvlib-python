@@ -2964,14 +2964,13 @@ def component_sum_irradiance(zenith,
         the original passed series or the component-sum calculated series
         (if dni passed as None)
     """
-    if ghi and dhi and not dni:
+    if (ghi, dhi) is not None and dni is None:
         dni = dni(ghi, dhi, zenith,
                   clearsky_dni=clearsky_dni,
                   clearsky_tolerance=1.1)
-        return
-    elif dni and dhi and not ghi:
+    elif (dhi,dni) is not None and ghi is None:
         ghi = (dhi + dni * tools.cosd(zenith))
-    elif dni and ghi and not dhi:
+    elif (dni, ghi) is not None and dhi is None:
         dhi = (ghi - dni * tools.cosd(zenith))
     else:
         wrn_txt = ("No component sum calculated. Please recheck \n"

@@ -2918,48 +2918,64 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
     return dni
 
 
-def component_sum_irradiance(self, weather,
-                             zenith,
+def component_sum_irradiance(zenith,
+                             ghi=None,
+                             dhi=None,
+                             dni=None,
                              clearsky_dni=None):
     """
+    Use the component sum equations to calculate the missing series, using
+    the other available time series. One of the three parameters (ghi, dhi,
+    dni) is passed as None, and the other associated series passed are used to
+    calculate the missing series value.
 
     Parameters
     ----------
-    weather : DataFrame, or tuple or list of DataFrame
-            Column names must include at least 2 of the 3 columns:
-            ``'dni'``, ``'ghi'``, ``'dhi'``.
     zenith : Series
         True (not refraction-corrected) zenith angles in decimal
-        degrees. Angles must be >=0 and <=180.
+        degrees, with datetime index. Angles must be >=0 and <=180. Must have
+        the same datetime index as ghi, dhi, and dni series, when available.
+    ghi : Series, default None
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as dni, dhi, and zenith series, when available.
+    dhi : Series, default None
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as ghi, dni, and zenith series, when available.
+    dni : Series, default None
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as ghi, dhi, and zenith series, when available.
     clearsky_dni : Series, default None
-        DESCRIPTION.
+        Pandas series of clearsky dni data, calculated via the
+        get_clearsky function. Must have the same datetime index as ghi, dhi,
+        dni, and zenith series, when available.
 
     Returns
     -------
-    weather:
-
+    ghi : Series
+        Pandas series of GHI values with datetime index, which can either be
+        the original passed series or the component-sum calculated series
+        (if ghi passed as None)
+    dhi : Series
+        Pandas series of DHI values with datetime index, which can either be
+        the original passed series or the component-sum calculated series
+        (if dhi passed as None)
+    dni: Series
+        Pandas series of DNI values with datetime index, which can either be
+        the original passed series or the component-sum calculated series
+        (if dni passed as None)
     """
-    icolumns = set(weather.columns)
-    wrn_txt = ("This function is not safe at the moment.\n" +
-               "Results can be too high or negative.\n" +
-               "Help to improve this function on github:\n" +
-               "https://github.com/pvlib/pvlib-python \n")
-    if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
-        weather.loc[:, 'dni'] = dni(
-            weather.loc[:, 'ghi'],
-            weather.loc[:, 'dhi'],
-            zenith,
-            clearsky_dni=clearsky_dni,
-            clearsky_tolerance=1.1)
-    elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
-        warnings.warn(wrn_txt, UserWarning)
-        weather.loc[:, 'ghi'] = (
-            weather.dhi + weather.dni *
-            tools.cosd(zenith)
-        )
-    elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
-        warnings.warn(wrn_txt, UserWarning)
-        weather.loc[:, 'dhi'] = (
-            weather.ghi - weather.dni *
-            tools.cosd(zenith))
-    return weather
+    if ghi and dhi and not dni:
+        dni = dni(ghi, dhi, zenith,
+                  clearsky_dni=clearsky_dni,
+                  clearsky_tolerance=1.1)
+        return
+    elif dni and dhi and not ghi:
+        ghi = (dhi + dni * tools.cosd(zenith))
+    elif dni and ghi and not dhi:
+        dhi = (ghi - dni * tools.cosd(zenith))
+    else:
+        wrn_txt = ("No component sum calculated. Please recheck \n"
+                   "passed ghi, dni, and dhi parameters to check \n"
+                   "exactly one field out of the three is set to None.")
+        warnings.warn(wrn_txt)
+    return ghi, dhi, dni

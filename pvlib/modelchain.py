@@ -1314,6 +1314,7 @@ class ModelChain:
                     dhi=weather.dhi,
                     dni=None,
                     clearsky_dni=clearsky.dni)
+            weather.loc[:, 'dni'] = dni
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             ghi, dhi, dni = pvlib.irradiance.component_sum_irradiance(
                     zenith=self.results.solar_position.zenith,
@@ -1321,6 +1322,7 @@ class ModelChain:
                     dhi=weather.dhi,
                     dni=weather.dni,
                     clearsky_dni=clearsky.dni)
+            weather.loc[:, 'ghi'] = ghi
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             ghi, dhi, dni = pvlib.irradiance.component_sum_irradiance(
                     zenith=self.results.solar_position.zenith,
@@ -1328,11 +1330,7 @@ class ModelChain:
                     dhi=None,
                     dni=weather.dni,
                     clearsky_dni=clearsky.dni)
-        # Set the ghi, dni, and dhi columns based on
-        # pvlib.irradiance.component_sum_irradiance outputs
-        weather.loc[:, 'dhi'] = dhi
-        weather.loc[:, 'dni'] = dni
-        weather.loc[:, 'ghi'] = ghi
+            weather.loc[:, 'dhi'] = dhi
 
     def _prep_inputs_solar_pos(self, weather):
         """

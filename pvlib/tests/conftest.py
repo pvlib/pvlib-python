@@ -441,25 +441,33 @@ def cec_module_fs_495():
     return parameters
 
 
-@pytest.fixture(scope='function')
-def precise_iv_curves1():
-    params = pd.read_csv(f'{DATA_DIR}/precise_iv_curves_parameter_sets1.csv')
-    curves = pd.read_json(f'{DATA_DIR}/precise_iv_curves1.json')
+@pytest.fixture(scope='function', params=[
+    {
+        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets1.csv',
+        'json': f'{DATA_DIR}/precise_iv_curves1.json'
+    },
+    {
+        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
+        'json': f'{DATA_DIR}/precise_iv_curves2.json'
+    }
+],
+ids=[1, 2])
+def precise_iv_curves(request):
+    file_csv, file_json = request.param['csv'], request.param['json']
+    params = pd.read_csv(file_csv)
+    curves = pd.read_json(file_json)
     curves = pd.DataFrame(curves['IV Curves'].values.tolist())
     joined = params.merge(curves, on='Index', how='inner',
                           suffixes=(None, '_drop'), validate='one_to_one')
     joined = joined[(c for c in joined.columns if not c.endswith('_drop'))]
-    return joined
 
+    joined['Boltzman'] = 1.380649e-23
+    joined['Electron Charge'] = 1.60217663e-19
+    joined['Vth'] = (
+            joined['Boltzman'] * joined['Temperature']
+            / joined['Electron Charge']
+    )
 
-@pytest.fixture(scope='function')
-def precise_iv_curves2():
-    params = pd.read_csv(f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv')
-    curves = pd.read_json(f'{DATA_DIR}/precise_iv_curves2.json')
-    curves = pd.DataFrame(curves['IV Curves'].values.tolist())
-    joined = params.merge(curves, on='Index', how='inner',
-                          suffixes=(None, '_drop'), validate='one_to_one')
-    joined = joined[(c for c in joined.columns if not c.endswith('_drop'))]
     return joined
 
 

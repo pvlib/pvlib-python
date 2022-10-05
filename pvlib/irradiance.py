@@ -2944,10 +2944,11 @@ def component_sum_irradiance(zenith,
     dni_series : Series, default None
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as ghi, dhi, and zenith series, when available.
-    clearsky_dni : Series, default None
+    clearsky_dni : Series, (optional, default None)
         Pandas series of clearsky dni data, calculated via the
         get_clearsky function. Must have the same datetime index as ghi, dhi,
-        dni, and zenith series, when available.
+        dni, and zenith series, when available. This is an optional field that
+        is only used when calculating the DNI component sum series.
 
     Returns
     -------

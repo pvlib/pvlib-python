@@ -30,6 +30,7 @@ def times():
     return pd.date_range(start='20140624', freq='6H', periods=4,
                          tz='US/Arizona')
 
+
 @pytest.fixture
 def location():
     return Location(32.2, -111, altitude=700)

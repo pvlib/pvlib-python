@@ -1,16 +1,19 @@
-.. _whatsnew_0930:
+.. _whatsnew_0940:
 
-v0.9.3 (TBD)
+v0.9.4 (TBD)
 ------------------------
 
 Deprecations
 ~~~~~~~~~~~~
 
+
 Enhancements
 ~~~~~~~~~~~~
+* Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
 * Added the component sum irradiance function to calculate the component sum value for GHI, DHI, and DNI values
   :py:func:`~pvlib.irradiance.component_sum_irradiance`
   (:issue:`1565`, :pull:`1567`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -35,3 +38,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Kirsten Perry (:ghuser:`kperrynrel`)
+* Christian Orner (:ghuser:`chrisorner`)

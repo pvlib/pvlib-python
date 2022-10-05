@@ -54,7 +54,7 @@ class SingleAxisTracker(PVSystem):
         using a right-handed convention. For example, trackers with axis
         azimuth of 180 degrees (heading south) will have a negative cross-axis
         tilt if the tracker axes plane slopes down to the east and positive
-        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        cross-axis tilt if the tracker axes plane slopes down to the west. Use
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
 
@@ -339,7 +339,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         using a right-handed convention. For example, trackers with axis
         azimuth of 180 degrees (heading south) will have a negative cross-axis
         tilt if the tracker axes plane slopes down to the east and positive
-        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        cross-axis tilt if the tracker axes plane slopes down to the west. Use
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
 
@@ -641,7 +641,7 @@ def calc_cross_axis_tilt(
     specified using a right-handed convention. For example, trackers with axis
     azimuth of 180 degrees (heading south) will have a negative cross-axis tilt
     if the tracker axes plane slopes down to the east and positive cross-axis
-    tilt if the tracker axes plane slopes up to the east.
+    tilt if the tracker axes plane slopes down to the west.
 
     Parameters
     ----------

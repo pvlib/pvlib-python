@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import sys
 
 try:
     from setuptools import setup, find_namespace_packages

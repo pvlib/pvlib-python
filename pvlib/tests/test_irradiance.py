@@ -7,7 +7,7 @@ from numpy import array, nan
 import pandas as pd
 
 import pytest
-from numpy.testing import assert_almost_equal, assert_allclose
+from numpy.testing import assert_almost_equal, assert_allclose, assert_warns
 from pvlib.location import Location
 from pvlib import irradiance
 
@@ -1100,27 +1100,50 @@ def test_component_sum_irradiance(location):
     # Get the clearsky data associated with the location
     clearsky = location.get_clearsky(times, solar_position=solar_position)
     # Test scenario where DNI is generated via component sum equation
-    irradiance.component_sum_irradiance(solar_position.zenith,
-                                        ghi=i.ghi,
-                                        dhi=i.dhi,
-                                        dni=None,
-                                        clearsky_dni=clearsky)
+    ghi_series, dhi_series, dni_series = irradiance.component_sum_irradiance(
+        solar_position.zenith,
+        ghi_series=i.ghi,
+        dhi_series=i.dhi,
+        dni_series=None,
+        clearsky_dni=clearsky.dni)
+    dni_series.name = 'dni'
+    # Assert that the ghi, dhi, and dni series match the original dataframe
+    # values
+    assert_series_equal(ghi_series, i.ghi)
+    assert_series_equal(dhi_series, i.dhi)
+    assert_series_equal(dni_series, i.dni)
     # Test scenario where GHI is generated via component sum equation
-    irradiance.component_sum_irradiance(solar_position.zenith,
-                                        ghi=i.ghi,
-                                        dhi=i.dhi,
-                                        dni=None,
-                                        clearsky_dni=clearsky)    
+    ghi_series, dhi_series, dni_series = irradiance.component_sum_irradiance(
+        solar_position.zenith,
+        ghi_series=i.ghi,
+        dhi_series=i.dhi,
+        dni_series=None,
+        clearsky_dni=clearsky.dni)
     # Test scenario where DHI is generated via component sum equation
-    irradiance.component_sum_irradiance(solar_position.zenith,
-                                        ghi=i.ghi,
-                                        dhi=i.dhi,
-                                        dni=None,
-                                        clearsky_dni=clearsky)
+    ghi_series, dhi_series, dni_series = irradiance.component_sum_irradiance(
+        solar_position.zenith,
+        ghi_series=i.ghi,
+        dhi_series=i.dhi,
+        dni_series=None,
+        clearsky_dni=clearsky.dni)
+    dni_series.name = 'dni'
+    # Assert that the ghi, dhi, and dni series match the original dataframe
+    # values
+    assert_series_equal(ghi_series, i.ghi)
+    assert_series_equal(dhi_series, i.dhi)
+    assert_series_equal(dni_series, i.dni)
     # Test scenario where all parameters are passed (throw warning)
-    irradiance.component_sum_irradiance(solar_position.zenith,
-                                        ghi=i.ghi,
-                                        dhi=i.dhi,
-                                        dni=i.dni,
-                                        clearsky_dni=clearsky)
-
+    ghi_series, dhi_series, dni_series = \
+        assert_warns(UserWarning,
+                     irradiance.component_sum_irradiance,
+                     solar_position.zenith,
+                     ghi_series=i.ghi,
+                     dhi_series=i.dhi,
+                     dni_series=i.dni,
+                     clearsky_dni=clearsky.dni)
+    dni_series.name = 'dni'
+    # Assert that the ghi, dhi, and dni series match the original dataframe
+    # values
+    assert_series_equal(ghi_series, i.ghi)
+    assert_series_equal(dhi_series, i.dhi)
+    assert_series_equal(dni_series, i.dni)

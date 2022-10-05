@@ -1313,21 +1313,21 @@ class ModelChain:
                     ghi=weather.ghi,
                     dhi=weather.dhi,
                     dni=None,
-                    clearsky_dni=clearsky)
+                    clearsky_dni=clearsky.dni)
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             ghi, dhi, dni = pvlib.irradiance.component_sum_irradiance(
                     zenith=self.results.solar_position.zenith,
                     ghi=None,
                     dhi=weather.dhi,
                     dni=weather.dni,
-                    clearsky_dni=clearsky)
+                    clearsky_dni=clearsky.dni)
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             ghi, dhi, dni = pvlib.irradiance.component_sum_irradiance(
                     zenith=self.results.solar_position.zenith,
                     ghi=weather.ghi,
                     dhi=None,
                     dni=weather.dni,
-                    clearsky_dni=clearsky)
+                    clearsky_dni=clearsky.dni)
         # Set the ghi, dni, and dhi columns based on
         # pvlib.irradiance.component_sum_irradiance outputs
         weather.loc[:, 'dhi'] = dhi

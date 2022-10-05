@@ -1,0 +1,37 @@
+.. _whatsnew_0930:
+
+v0.9.3 (TBD)
+------------------------
+
+Deprecations
+~~~~~~~~~~~~
+
+Enhancements
+~~~~~~~~~~~~
+* Added the component sum irradiance function to calculate the component sum value for GHI, DHI, and DNI values
+  :py:func:`~pvlib.irradiance.component_sum_irradiance`
+  (:issue:`1565`, :pull:`1567`)
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Kirsten Perry (:ghuser:`kperrynrel`)

@@ -2976,5 +2976,5 @@ def component_sum_irradiance(zenith,
         wrn_txt = ("No component sum calculated. Please recheck \n"
                    "passed ghi, dni, and dhi parameters to check \n"
                    "exactly one field out of the three is set to None.")
-        warnings.warn(wrn_txt)
+        warnings.warn(wrn_txt, UserWarning)
     return ghi_series, dhi_series, dni_series

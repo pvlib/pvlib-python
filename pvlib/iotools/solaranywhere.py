@@ -163,11 +163,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
             probability_of_exceedance
 
     # Add start/end time if requesting non-TMY data
-    if (('TGY' not in source) & ('TDY' not in source) & ('TMY' not in source) &
-            ('POE' not in source)):
-        if (start is None) or (end is None):
-            raise ValueError('When requesting non-TMY data, specifying `start`'
-                             ' and `end` is required.')
+    if (start is not None) or (end is not None):
         # start/end are required to have an associated time zone
         if start.tz is None:
             start = start.tz_localize('UTC')
@@ -195,10 +191,8 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         results_json = results.json()
         if results_json.get('Status') == 'Done':
             if results_json['WeatherDataResults'][0]['Status'] == 'Failure':
-                raise RuntimeError(results_json['WeatherDataResults'][0]['ErrorMessages'])  # noqa: E501
+                raise RuntimeError(results_json['WeatherDataResults'][0]['ErrorMessages'][0]['Message'])  # noqa: E501
             break
-        elif results_json.get('StatusCode') == 'BadRequest':
-            raise RuntimeError(f"Bad request: {results_json['Message']}")
         elif (time.time()-start_time) > max_response_time:
             raise TimeoutError('Time exceeded the `max_response_time`.')
         time.sleep(5)  # Sleep for 5 seconds before each data retrieval attempt

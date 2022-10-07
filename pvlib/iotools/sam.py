@@ -47,7 +47,7 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
                ((s.index.year % 100 != 0) | (s.index.year % 400 == 0)) & \
                (s.index.month == 2) & (s.index.day == 29)
 
-    def _averageSAMStyle(df, interval='60T', closed='right', label='right'):
+    def _averageSAMStyle(df, interval='60T', closed='left', label='left'):
         ''' Averages subhourly data into hourly data in SAM's expected format.
         '''
         df = df.resample(interval, closed=closed, label=label).mean()
@@ -119,6 +119,15 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
 
     if 'poa' in data:
         savedata['POA'] = data.poa.values
+
+    if 'rh' in data:
+        savedata['rh'] = data.rh.values
+
+    if 'pressure' in data:
+        savedata['pressure'] = data.pressure.values
+    
+    if 'wdir' in data:
+        savedata['wdir'] = data.wdir.values
 
     if 'albedo' in data:
         savedata['Albedo'] = data.albedo.values

@@ -750,7 +750,50 @@ def marion_integrate(function, surface_tilt, region, num=None):
     return Fd
 
 
-def fedis(aoi, surface_tilt, n=1.5, n_ref=1.4585):
+def schlick(aoi):
+    """
+    Determine incidence angle modifier (IAM) using the Schlick approximation
+    to the Fresnel equations.
+
+    The Schlick approximation was proposed in [1]_ as a computationally
+    efficient alternative to computing the Fresnel factor in computer
+    graphics contexts.  This implementation is a normalized form of the
+    equation in [1]_ so that it can be used as a typical IAM model.
+    Unlike most other IAM models, this model has no parameters to fit
+    different reflection profiles.
+
+    In PV contexts, the Schlick approximation has been used as an analytically
+    integrable alternative to the Fresnel equations to estimate IAM
+    for diffuse irradiance [2]_.
+
+    Parameters
+    ----------
+    aoi : numeric
+        The angle of incidence (AOI) between the module normal vector and the
+        sun-beam vector in degrees. Angles of nan will result in nan.
+
+    Returns
+    -------
+    iam : numeric
+        The incident angle modifier
+
+    References
+    ----------
+    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
+       rendering. Computer graphics forum 13 (1994).
+
+    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
+       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
+       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
+       :doi:`10.1016/j.rser.2022.112362`
+
+    See Also
+    --------
+    pvlib.iam.fedis
+    """
+    return 1 - (1 - cosd(aoi)) ** 5
+
+
     """
     Determine the incidence angle modifiers (IAM) for direct, diffuse sky,
     and ground-reflected radiation using the FEDIS transmittance model.

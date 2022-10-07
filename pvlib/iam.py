@@ -794,16 +794,14 @@ def schlick(aoi):
     return 1 - (1 - cosd(aoi)) ** 5
 
 
+def fedis(aoi, surface_tilt, n=1.5, n_ref=1.5):
     """
     Determine the incidence angle modifiers (IAM) for direct, diffuse sky,
     and ground-reflected radiation using the FEDIS transmittance model.
 
     The "Fresnel Equations" for Diffuse radiation on Inclined photovoltaic
-    Surfaces (FEDIS) [1]_ is an analytical solution of diffuse transmission
-    based on the rigorous integration of an alternate form of the
-    Fresnel equations. The approach leads to a simple yet accurate
-    relative transmittance model that reconciles the solar energy
-    sensed by pyranometers and PV panels.
+    Surfaces (FEDIS) [1]_ is the result of analytical integration
+    the Schlick approximation [2]_ to the Fresnel equations.
 
     Parameters
     ----------
@@ -815,12 +813,14 @@ def schlick(aoi):
         up = 0, surface facing horizon = 90). [degrees]
 
     n : float, default 1.5
-        Refractive index of the PV front surface material.  The default value of 1.5
-        was used for an IMT reference cell in [1]_. [unitless]
+        Refractive index of the PV front surface material.  The default value
+        of 1.5 was used for an IMT reference cell in [1]_. [unitless]
 
-    n_ref : float, default 1.4585
-        Refractive index of the pyranometer cover. The default value
-        was used for a fused silica dome over a CMP22 in [1]_.
+    n_ref : float, default 1.5
+        Reference refractive index. In [1]_ this was set to 1.4585 for
+        was used for a fused silica dome over a CMP22, but in conventional
+        PV applications it is appropriate to set this to the same value as
+        ``n``.
 
     Returns
     -------
@@ -842,6 +842,13 @@ def schlick(aoi):
        for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
+
+    .. [2] Schlick, C. An inexpensive BRDF model for physically-based
+       rendering. Computer graphics forum 13 (1994).
+
+    See Also
+    --------
+    pvlib.iam.schlick
     """
 
     # avoid undefined results for horizontal or upside-down surfaces
@@ -862,7 +869,7 @@ def schlick(aoi):
     tan_term = tand(aoi - theta_0tp)**2 / tand(aoi + theta_0tp)**2 / 2
     rd = sin_term + tan_term  # Eq 3b
 
-    # reflectance on pyranometer cover:
+    # reflectance for normal incidence with reference refractive index:
     r0 = ((n_ref-1.0)/(n_ref+1.0))**2.0  # Eq 3e
 
     # relative transmittance of direct radiation by PV cover:

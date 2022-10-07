@@ -10,8 +10,8 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
-* Added :py:func:`pvlib.iam.fedis`, a model for calculating direct and diffuse IAM
-  coefficients. (:pull:`1562`)
+* Added :py:func:`pvlib.iam.schlick` and :py:func:`pvlib.iam.fedis`, models
+  for calculating direct and diffuse IAM values. (:pull:`1562`, :issue:`1564`)
 
 
 Bug fixes

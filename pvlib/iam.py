@@ -758,12 +758,12 @@ def schlick(aoi):
     The Schlick approximation was proposed in [1]_ as a computationally
     efficient alternative to computing the Fresnel factor in computer
     graphics contexts.  This implementation is a normalized form of the
-    equation in [1]_ so that it can be used as a typical IAM model.
-    Unlike most other IAM models, this model has no parameters to fit
+    equation in [1]_ so that it can be used as a PV IAM model.
+    Unlike other IAM models, this model has no ability to describe
     different reflection profiles.
 
     In PV contexts, the Schlick approximation has been used as an analytically
-    integrable alternative to the Fresnel equations to estimate IAM
+    integrable alternative to the Fresnel equations for estimating IAM
     for diffuse irradiance [2]_.
 
     Parameters

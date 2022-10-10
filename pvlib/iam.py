@@ -828,8 +828,8 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=None):
 
     n_ref : float, optional
         Reference refractive index. In [1]_ this was set to 1.4585 for
-        was used for a fused silica dome over a CMP22, but in conventional
-        PV applications it is appropriate to set this to the same value as
+        a fused silica dome over a CMP22, but in conventional
+        PV applications it is appropriate to set n_ref to the same value as
         ``n`` (the default behavior).
 
     Returns
@@ -838,7 +838,7 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=None):
         IAM values for each type of irradiance:
 
             * 'direct': irradiance from the solar disc
-            * 'sky': irradiance radiation from the sky dome
+            * 'sky': diffuse irradiance from the sky dome
             * 'ground': irradiance reflected from the ground
 
     Notes

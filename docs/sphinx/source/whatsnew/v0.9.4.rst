@@ -10,8 +10,9 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
-* Added :py:func:`pvlib.iam.schlick` and :py:func:`pvlib.iam.fedis`, models
-  for calculating direct and diffuse IAM values. (:pull:`1562`, :issue:`1564`)
+* Added a simple IAM model :py:func:`pvlib.iam.schlick` and made it available
+  in :py:func:`~pvlib.iam.marion_diffuse` via ``model='schlick'`` (:pull:`1562`, :issue:`1564`)
+* Added a direct and diffuse IAM model :py:func:`pvlib.iam.fedis` (:pull:`1562`)
 
 
 Bug fixes

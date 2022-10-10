@@ -541,7 +541,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     ----------
     model : str
         The IAM function to evaluate across solid angle. Must be one of
-        `'ashrae', 'physical', 'martin_ruiz', 'sapm'`.
+        `'ashrae', 'physical', 'martin_ruiz', 'sapm', 'schlick'`.
 
     surface_tilt : numeric
         Surface tilt angles in decimal degrees.
@@ -592,6 +592,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
         'ashrae': ashrae,
         'sapm': sapm,
         'martin_ruiz': martin_ruiz,
+        'schlick': schlick,
     }
 
     try:
@@ -791,7 +792,16 @@ def schlick(aoi):
     --------
     pvlib.iam.fedis
     """
-    return 1 - (1 - cosd(aoi)) ** 5
+    iam = 1 - (1 - cosd(aoi)) ** 5
+    iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
+
+    # preserve input type
+    if np.isscalar(aoi):
+        iam = iam.item()
+    elif isinstance(aoi, pd.Series):
+        iam = pd.Series(iam, aoi.index)
+
+    return iam
 
 
 def fedis(aoi, surface_tilt, n=1.5, n_ref=1.5):
@@ -851,29 +861,23 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.5):
     pvlib.iam.schlick
     """
 
-    # avoid undefined results for horizontal or upside-down surfaces
-    zeroang = 1e-06
-    surface_tilt = np.where(surface_tilt == 0, zeroang, surface_tilt)
-    surface_tilt = np.where(surface_tilt >= 90, 90 - zeroang, surface_tilt)
-
-    # and for aoi:
-    aoi = np.where(aoi <= 0, zeroang, aoi)
-    # similar for AOI > 90
-    aoi = np.where(aoi >= 90, 90 - zeroang, aoi)
-
     # angle between module normal and refracted ray:
     theta_0tp = asind(sind(aoi) / n)  # Eq 3c
 
     # reflectance of direct radiation on PV cover:
-    sin_term = sind(aoi - theta_0tp)**2 / sind(aoi + theta_0tp)**2 / 2
-    tan_term = tand(aoi - theta_0tp)**2 / tand(aoi + theta_0tp)**2 / 2
+    with np.errstate(invalid='ignore'):
+        sin_term = sind(aoi - theta_0tp)**2 / sind(aoi + theta_0tp)**2 / 2
+        tan_term = tand(aoi - theta_0tp)**2 / tand(aoi + theta_0tp)**2 / 2
+
     rd = sin_term + tan_term  # Eq 3b
+    rd = np.where(np.abs(aoi) < 1e-6, ((n-1.0)/(n+1.0))**2.0, rd)
 
     # reflectance for normal incidence with reference refractive index:
     r0 = ((n_ref-1.0)/(n_ref+1.0))**2.0  # Eq 3e
 
     # relative transmittance of direct radiation by PV cover:
     cd = (1 - rd) / (1 - r0)  # Eq 3a
+    cd = np.where(np.abs(aoi) > 90, 0, cd)
 
     # weighting function
     term1 = n*(n_ref+1)**2 / (n_ref*(n+1)**2)
@@ -892,10 +896,24 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.5):
     )  # Eq 4
 
     # relative transmittance of ground-reflected radiation by PV cover:
-    cug = 40 * w / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk  # Eq 6
+    with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6
+        cug = 40 * w / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
 
-    # handle tilt=0 case correctly:
-    cug = np.where(surface_tilt == zeroang, 0, cug)
+    cug = np.where(surface_tilt < 1e-6, 0, cug)
+
+    # respect input types:
+    if np.isscalar(aoi):
+        cd = cd.item()
+    elif isinstance(aoi, pd.Series):
+        cd = pd.Series(cd, aoi.index)
+
+    if np.isscalar(surface_tilt):
+        cuk = cuk.item()
+        cug = cug.item()
+    elif isinstance(surface_tilt, pd.Series):
+        cuk = pd.Series(cuk, surface_tilt.index)
+        cug = pd.Series(cug, surface_tilt.index)
+
     out = {
         'direct': cd,
         'sky': cuk,

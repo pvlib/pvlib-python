@@ -739,7 +739,8 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
 
 def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-              solar_zenith=None, solar_azimuth=None, projection_ratio=None):
+              solar_zenith=None, solar_azimuth=None, projection_ratio=None,
+              return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     Hay & Davies' 1980 model
@@ -833,7 +834,25 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     sky_diffuse = dhi * (AI * Rb + term1 * term2)
     sky_diffuse = np.maximum(sky_diffuse, 0)
 
-    return sky_diffuse
+    if return_components:
+        diffuse_components = OrderedDict()
+        diffuse_components['sky_diffuse'] = sky_diffuse
+
+        # Calculate the individual components
+        diffuse_components['isotropic'] = np.maximum(dhi * term1 * term2, 0)
+        diffuse_components['circumsolar'] = np.maximum(dhi * (AI * Rb), 0)
+
+        # Set values of components to 0 when sky_diffuse is 0
+        mask = sky_diffuse == 0
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+            diffuse_components.loc[mask] = 0
+        else:
+            diffuse_components = {k: np.where(mask, 0, v) for k, v in
+                                  diffuse_components.items()}
+        return diffuse_components
+    else:
+        return sky_diffuse
 
 
 def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,

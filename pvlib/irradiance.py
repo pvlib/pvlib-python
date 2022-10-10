@@ -2919,11 +2919,11 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
     return dni
 
 
-def component_sum_irradiance(zenith,
+def component_sum_irradiance(solar_zenith,
                              ghi=None,
                              dhi=None,
                              dni=None,
-                             clearsky_dni=None):
+                             dni_clear=None):
     """
     Use the component sum equations to calculate the missing series, using
     the other available time series. One of the three parameters (ghi, dhi,
@@ -2932,20 +2932,20 @@ def component_sum_irradiance(zenith,
 
     Parameters
     ----------
-    zenith : Series
-        True (not refraction-corrected) zenith angles in decimal
+    solar_zenith : Series
+        Refraction-corrected zenith angles in decimal
         degrees, with datetime index. Angles must be >=0 and <=180. Must have
         the same datetime index as ghi, dhi, and dni series, when available.
-    ghi : Series, default None
+    ghi : Series, (optional, default None)
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as dni, dhi, and zenith series, when available.
-    dhi : Series, default None
+    dhi : Series, (optional, default None)
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as ghi, dni, and zenith series, when available.
-    dni : Series, default None
+    dni : Series, (optional, default None)
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as ghi, dhi, and zenith series, when available.
-    clearsky_dni : Series, (optional, default None)
+    dni_clear : Series, (optional, default None)
         Pandas series of clearsky dni data, calculated via the
         get_clearsky function. Must have the same datetime index as ghi, dhi,
         dni, and zenith series, when available. This is an optional field that
@@ -2956,14 +2956,14 @@ def component_sum_irradiance(zenith,
     component_sum_df : Dataframe
         Pandas series of 'ghi', 'dhi', and 'dni' columns with datetime index
     """
-    if (ghi, dhi) is not None and dni is None:
-        dni = pvlib.irradiance.dni(ghi, dhi, zenith,
-                                   clearsky_dni=clearsky_dni,
+    if ghi is not None and dhi is not None and dni is None:
+        dni = pvlib.irradiance.dni(ghi, dhi, solar_zenith,
+                                   clearsky_dni=dni_clear,
                                    clearsky_tolerance=1.1)
-    elif (dhi, dni) is not None and ghi is None:
-        ghi = (dhi + dni * tools.cosd(zenith))
-    elif (dni, ghi) is not None and dhi is None:
-        dhi = (ghi - dni * tools.cosd(zenith))
+    elif dni is not None and dhi is not None and ghi is None:
+        ghi = (dhi + dni * tools.cosd(solar_zenith))
+    elif dni is not None and ghi is not None and dhi is None:
+        dhi = (ghi - dni * tools.cosd(solar_zenith))
     else:
         wrn_txt = ("No component sum calculated. Please recheck \n"
                    "passed ghi, dni, and dhi parameters to check \n"
@@ -2971,7 +2971,7 @@ def component_sum_irradiance(zenith,
         warnings.warn(wrn_txt, UserWarning)
     # Merge the outputs into a master dataframe containing 'ghi', 'dhi',
     # and 'dni' columns
-    component_sum_df = pd.concat({'ghi': ghi,
-                                  'dhi': dhi,
-                                  'dni': dni}, axis=1)
+    component_sum_df = pd.DataFrame({'ghi': ghi,
+                                     'dhi': dhi,
+                                     'dni': dni})
     return component_sum_df

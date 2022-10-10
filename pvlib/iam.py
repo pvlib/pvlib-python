@@ -804,7 +804,7 @@ def schlick(aoi):
     return iam
 
 
-def fedis(aoi, surface_tilt, n=1.5, n_ref=1.5):
+def fedis(aoi, surface_tilt, n=1.5, n_ref=None):
     """
     Determine the incidence angle modifiers (IAM) for direct, diffuse sky,
     and ground-reflected radiation using the FEDIS transmittance model.
@@ -826,11 +826,11 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.5):
         Refractive index of the PV front surface material.  The default value
         of 1.5 was used for an IMT reference cell in [1]_. [unitless]
 
-    n_ref : float, default 1.5
+    n_ref : float, optional
         Reference refractive index. In [1]_ this was set to 1.4585 for
         was used for a fused silica dome over a CMP22, but in conventional
         PV applications it is appropriate to set this to the same value as
-        ``n``.
+        ``n`` (the default behavior).
 
     Returns
     -------
@@ -860,6 +860,8 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=1.5):
     --------
     pvlib.iam.schlick
     """
+    if n_ref is None:
+        n_ref = n
 
     # angle between module normal and refracted ray:
     theta_0tp = asind(sind(aoi) / n)  # Eq 3c

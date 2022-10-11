@@ -791,14 +791,27 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         projection. Must supply ``solar_zenith`` and ``solar_azimuth``
         or supply ``projection_ratio``.
 
-    return_components: bool (optional, default=False)
+    return_components : bool, default False
         Flag used to decide whether to return the calculated diffuse components
         or not.
 
     Returns
     --------
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by `return_components` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
     sky_diffuse : numeric
-        The sky diffuse component of the solar radiation.
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * sky_diffuse: Total sky diffuse
+            * isotropic
+            * circumsolar
+            * horizon
 
     Notes
     ------
@@ -835,33 +848,22 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     term1 = 1 - AI
     term2 = 0.5 * (1 + tools.cosd(surface_tilt))
 
-    sky_diffuse = dhi * (AI * Rb + term1 * term2)
-    sky_diffuse = np.maximum(sky_diffuse, 0)
-
-    # we've preserved the input type until now, so don't ruin it!
-    # if isinstance(sky_diffuse, pd.Series):
-    #     sky_diffuse[np.isnan(surface_tilt)] = 0
-    # else:
-    #     sky_diffuse = np.where(np.isnan(surface_tilt), 0, sky_diffuse)
+    poa_isotropic = np.maximum(dhi * term1 * term2, 0)
+    poa_circumsolar = np.maximum(dhi * (AI * Rb), 0)
+    sky_diffuse = poa_isotropic + poa_circumsolar
 
     if return_components:
         diffuse_components = OrderedDict()
         diffuse_components['sky_diffuse'] = sky_diffuse
 
         # Calculate the individual components
-        diffuse_components['isotropic'] = np.maximum(dhi * term1 * term2, 0)
-        diffuse_components['circumsolar'] = np.maximum(dhi * (AI * Rb), 0)
+        diffuse_components['isotropic'] = poa_isotropic
+        diffuse_components['circumsolar'] = poa_circumsolar
         diffuse_components['horizon'] = np.where(
             np.isnan(diffuse_components['isotropic']), np.nan, 0.)
 
-        # Set values of components to 0 when sky_diffuse is 0
-        mask = sky_diffuse == 0
         if isinstance(sky_diffuse, pd.Series):
             diffuse_components = pd.DataFrame(diffuse_components)
-            diffuse_components.loc[mask] = 0
-        else:
-            diffuse_components = {k: np.where(mask, 0, v) for k, v in
-                                  diffuse_components.items()}
         return diffuse_components
     else:
         return sky_diffuse

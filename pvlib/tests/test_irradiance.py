@@ -225,14 +225,7 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
         index=irrad_data.index
     )
     # values
-    assert_allclose(result.sky_diffuse, [0, 27.1775, 102.9949, 33.1909],
-                    atol=1e-4)
-    assert_allclose(result.isotropic, [0, 27.1775, 30.1818, 27.9837],
-                    atol=1e-4)
-    assert_allclose(result.circumsolar, [0, 0, 72.8130, 5.2071], atol=1e-4)
-    assert_allclose(result.horizon, [0, 0, 0, 0], atol=1e-4)
     assert_frame_equal(result, expected, check_less_precise=4)
-    assert isinstance(result, pd.DataFrame)
     assert_allclose(result_val['sky_diffuse'], [0, 27.1775, 102.9949, 33.1909],
                     atol=1e-4)
 

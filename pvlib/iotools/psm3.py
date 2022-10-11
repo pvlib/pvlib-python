@@ -314,7 +314,8 @@ def parse_psm3(fbuf, map_variables=None):
     metadata_values[-1] = metadata_values[-1].strip()  # strip trailing newline
     metadata = dict(zip(metadata_fields, metadata_values))
     # the response is all strings, so set some metadata types to numbers
-    metadata['Local Time Zone'] = int(metadata['Local Time Zone'])
+    if 'Local Time Zone' in metadata:
+        metadata['Local Time Zone'] = int(metadata['Local Time Zone'])
     metadata['Time Zone'] = int(metadata['Time Zone'])
     metadata['Latitude'] = float(metadata['Latitude'])
     metadata['Longitude'] = float(metadata['Longitude'])
@@ -333,8 +334,13 @@ def parse_psm3(fbuf, map_variables=None):
         fbuf, header=None, names=columns, usecols=columns, dtype=dtypes,
         delimiter=',', lineterminator='\n')  # skip carriage returns \r
     # the response 1st 5 columns are a date vector, convert to datetime
-    dtidx = pd.to_datetime(
-        data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
+    # SAM foramt only specifies minutes for specific solar position modeling.
+    if 'Minute' in data.columns:
+        dtidx = pd.to_datetime(
+            data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
+    else: 
+        dtidx = pd.to_datetime(
+            data[['Year', 'Month', 'Day', 'Hour']])
     # in USA all timezones are integers
     tz = 'Etc/GMT%+d' % -metadata['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)

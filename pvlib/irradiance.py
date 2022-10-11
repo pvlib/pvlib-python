@@ -791,6 +791,10 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         projection. Must supply ``solar_zenith`` and ``solar_azimuth``
         or supply ``projection_ratio``.
 
+    return_components: bool (optional, default=False)
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
+
     Returns
     --------
     sky_diffuse : numeric

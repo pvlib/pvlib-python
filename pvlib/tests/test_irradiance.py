@@ -212,6 +212,10 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
         40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
         ephem_data['apparent_zenith'], ephem_data['azimuth'],
         return_components=True)
+    result_val = irradiance.haydavies(
+        40, 180, irrad_data['dhi'].values, irrad_data['dni'].values, dni_et,
+        ephem_data['apparent_zenith'].values, ephem_data['azimuth'].values,
+        return_components=True)
     expected = pd.DataFrame(np.array(
         [[0, 27.1775, 102.9949, 33.1909],
          [0, 27.1775, 30.1818, 27.9837],
@@ -229,6 +233,8 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
     assert_allclose(result.horizon, [0, 0, 0, 0], atol=1e-4)
     assert_frame_equal(result, expected, check_less_precise=4)
     assert isinstance(result, pd.DataFrame)
+    assert_allclose(result_val['sky_diffuse'], [0, 27.1775, 102.9949, 33.1909],
+                    atol=1e-4)
 
 
 def test_reindl(irrad_data, ephem_data, dni_et):

@@ -834,6 +834,12 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     sky_diffuse = dhi * (AI * Rb + term1 * term2)
     sky_diffuse = np.maximum(sky_diffuse, 0)
 
+    # we've preserved the input type until now, so don't ruin it!
+    # if isinstance(sky_diffuse, pd.Series):
+    #     sky_diffuse[np.isnan(surface_tilt)] = 0
+    # else:
+    #     sky_diffuse = np.where(np.isnan(surface_tilt), 0, sky_diffuse)
+
     if return_components:
         diffuse_components = OrderedDict()
         diffuse_components['sky_diffuse'] = sky_diffuse
@@ -841,6 +847,8 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         # Calculate the individual components
         diffuse_components['isotropic'] = np.maximum(dhi * term1 * term2, 0)
         diffuse_components['circumsolar'] = np.maximum(dhi * (AI * Rb), 0)
+        diffuse_components['horizon'] = np.where(np.isnan(diffuse_components['isotropic']),
+                                                 np.nan, 0.)
 
         # Set values of components to 0 when sky_diffuse is 0
         mask = sky_diffuse == 0

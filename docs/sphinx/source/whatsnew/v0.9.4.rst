@@ -10,6 +10,7 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
+* Option to return individual components of Hay Davies sky transposition model (:issue:`1553`, :pull:`1568`)
 
 Bug fixes
 ~~~~~~~~~
@@ -35,3 +36,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Christian Orner (:ghuser:`chrisorner`)
+* Saurabh Aneja (:ghuser:`spaneja`)

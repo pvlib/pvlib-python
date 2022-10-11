@@ -847,8 +847,8 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         # Calculate the individual components
         diffuse_components['isotropic'] = np.maximum(dhi * term1 * term2, 0)
         diffuse_components['circumsolar'] = np.maximum(dhi * (AI * Rb), 0)
-        diffuse_components['horizon'] = np.where(np.isnan(diffuse_components['isotropic']),
-                                                 np.nan, 0.)
+        diffuse_components['horizon'] = np.where(
+            np.isnan(diffuse_components['isotropic']), np.nan, 0.)
 
         # Set values of components to 0 when sky_diffuse is 0
         mask = sky_diffuse == 0

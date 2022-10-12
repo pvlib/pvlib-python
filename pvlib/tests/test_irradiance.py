@@ -208,14 +208,6 @@ def test_haydavies(irrad_data, ephem_data, dni_et):
 
 
 def test_haydavies_components(irrad_data, ephem_data, dni_et):
-    result = irradiance.haydavies(
-        40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
-        ephem_data['apparent_zenith'], ephem_data['azimuth'],
-        return_components=True)
-    result_val = irradiance.haydavies(
-        40, 180, irrad_data['dhi'].values, irrad_data['dni'].values, dni_et,
-        ephem_data['apparent_zenith'].values, ephem_data['azimuth'].values,
-        return_components=True)
     expected = pd.DataFrame(np.array(
         [[0, 27.1775, 102.9949, 33.1909],
          [0, 27.1775, 30.1818, 27.9837],
@@ -224,11 +216,35 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
         columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
         index=irrad_data.index
     )
-    # values
+    # pandas
+    result = irradiance.haydavies(
+        40, 180, irrad_data['dhi'], irrad_data['dni'], dni_et,
+        ephem_data['apparent_zenith'], ephem_data['azimuth'],
+        return_components=True)
     assert_frame_equal(result, expected, check_less_precise=4)
-    assert_allclose(result_val['sky_diffuse'], [0, 27.1775, 102.9949, 33.1909],
+    # numpy
+    result = irradiance.haydavies(
+        40, 180, irrad_data['dhi'].values, irrad_data['dni'].values, dni_et,
+        ephem_data['apparent_zenith'].values, ephem_data['azimuth'].values,
+        return_components=True)
+    assert_allclose(result['sky_diffuse'], expected['sky_diffuse'], atol=1e-4)
+    assert_allclose(result['isotropic'], expected['isotropic'], atol=1e-4)
+    assert_allclose(result['circumsolar'], expected['circumsolar'], atol=1e-4)
+    assert_allclose(result['horizon'], expected['horizon'], atol=1e-4)
+    assert isinstance(result, dict)
+    # scalar
+    result = irradiance.haydavies(
+        40, 180, irrad_data['dhi'].values[-1], irrad_data['dni'].values[-1],
+        dni_et[-1], ephem_data['apparent_zenith'].values[-1],
+        ephem_data['azimuth'].values[-1], return_components=True)
+    assert_allclose(result['sky_diffuse'], expected['sky_diffuse'][-1],
                     atol=1e-4)
-
+    assert_allclose(result['isotropic'], expected['isotropic'][-1],
+                    atol=1e-4)
+    assert_allclose(result['circumsolar'], expected['circumsolar'][-1],
+                    atol=1e-4)
+    assert_allclose(result['horizon'], expected['horizon'][-1], atol=1e-4)
+    assert isinstance(result, dict)
 
 def test_reindl(irrad_data, ephem_data, dni_et):
     result = irradiance.reindl(

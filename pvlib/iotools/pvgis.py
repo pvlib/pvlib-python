@@ -688,8 +688,11 @@ def get_pvgis_horizon(latitude, longitude, proxies=None, url=URL):
     # the horizon data is given in a different format then the others
     # numpy has an easier time decoding it
     array = np.genfromtxt(io.StringIO(string),
-                          skip_header=4, skip_footer=7)
+                          skip_header = 4, skip_footer = 7)
     df = pd.DataFrame(array)
-    # Get the column names
-    df.columns = [s for s in string.splitlines()[3].split('\t') if s]
+    
+    # Set the column names
+    df.columns = ['horizon_azimuth', 'horizon_angles',
+              'azimuth_sun_winter_solstice', 'elevation_sun_winter_solstice',
+              'azimuth_sun_summer_solstice', 'elevation_sun_summer_solstice']
     return df

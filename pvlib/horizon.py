@@ -6,7 +6,7 @@ Optional dependencies for this module include
 gdal, osgeo, geoio, and scikit-image.
 '''
 import numpy as np
-
+from pathlib import Path
 
 def dni_horizon_adjustment(horizon_angles, solar_zenith, solar_azimuth):
     '''
@@ -45,7 +45,6 @@ def dni_horizon_adjustment(horizon_angles, solar_zenith, solar_azimuth):
     mask = solar_zenith > horizon_zenith
     adjustment[mask] = 0
     return adjustment
-
 
 def calculate_dtf(horizon_azimuths, horizon_angles,
                   surface_tilt, surface_azimuth):
@@ -115,7 +114,6 @@ def calculate_dtf(horizon_azimuths, horizon_angles,
         second_term = .5 * c * np.cos(elev)**2
         dtf += 2 * (first_term + second_term) / num_points
     return dtf
-
 
 def collection_plane_elev_angle(surface_tilt, surface_azimuth, direction):
     """

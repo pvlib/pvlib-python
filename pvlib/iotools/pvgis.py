@@ -27,7 +27,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
 # Dictionary mapping PVGIS names to pvlib names
-PVGIS_VARIABLE_MAP = {
+VARIABLE_MAP = {
     'G(h)': 'ghi',
     'Gb(n)': 'dni',
     'Gd(h)': 'dhi',
@@ -113,10 +113,11 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         documentation [2]_ for more info.
     url: str, default: :const:`pvlib.iotools.pvgis.URL`
         Base url of PVGIS API. ``seriescalc`` is appended to get hourly data
-        endpoint.
+        endpoint. Note, a specific PVGIS version can be specified, e.g.,
+        https://re.jrc.ec.europa.eu/api/v5_2/
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
     timeout: int, default: 30
         Time in seconds to wait for server response before timeout
 
@@ -139,10 +140,10 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     Hint
     ----
     PVGIS provides access to a number of different solar radiation datasets,
-    including satellite-based (SARAH, CMSAF, and NSRDB PSM3) and re-analysis
-    products (ERA5 and COSMO). Each data source has a different geographical
-    coverage and time stamp convention, e.g., SARAH and CMSAF provide
-    instantaneous values, whereas values from ERA5 are averages for the hour.
+    including satellite-based (SARAH, SARAH2, and NSRDB PSM3) and re-analysis
+    products (ERA5). Each data source has a different geographical coverage and
+    time stamp convention, e.g., SARAH and SARAH2 provide instantaneous values,
+    whereas values from ERA5 are averages for the hour.
 
     Notes
     -----
@@ -172,6 +173,12 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     See Also
     --------
     pvlib.iotools.read_pvgis_hourly, pvlib.iotools.get_pvgis_tmy
+
+    Examples
+    --------
+    >>> # Retrieve two years of irradiance data from PVGIS:
+    >>> data, meta, inputs = pvlib.iotools.get_pvgis_hourly(  # doctest: +SKIP
+    >>>    latitude=45, longitude=8, start=2015, end=2016)  # doctest: +SKIP
 
     References
     ----------
@@ -229,7 +236,7 @@ def _parse_pvgis_hourly_json(src, map_variables):
     data = data.drop('time', axis=1)
     data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
     return data, inputs, metadata
 
 
@@ -271,7 +278,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
     # All columns should have the dtype=float, except 'Int' which should be
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})
@@ -298,7 +305,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         ``pvgis_format`` is required and must be in ``['csv', 'json']``.
     map_variables: bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -370,8 +377,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
                   map_variables=None, timeout=30):
     """
-    Get TMY data from PVGIS. For more information see the PVGIS [1]_ TMY tool
-    documentation [2]_.
+    Get TMY data from PVGIS.
+
+    For more information see the PVGIS [1]_ TMY tool documentation [2]_.
 
     Parameters
     ----------
@@ -397,7 +405,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable const:`VARIABLE_MAP`.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 
@@ -429,13 +437,12 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 
-    See also
+    See Also
     --------
     read_pvgis_tmy
 
     References
     ----------
-
     .. [1] `PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
     .. [2] `PVGIS TMY tool <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
     .. [3] `PVGIS horizon profile tool
@@ -493,7 +500,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         )
         map_variables = False
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data, months_selected, inputs, meta
 
@@ -567,7 +574,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         be in ``['csv', 'epw', 'json', 'basic']``.
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
 
     Returns
@@ -590,7 +597,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     TypeError
         if ``pvgis_format`` is ``None`` and ``filename`` is a buffer
 
-    See also
+    See Also
     --------
     get_pvgis_tmy
     """
@@ -656,7 +663,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         )
         map_variables = False
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data, months_selected, inputs, meta
 
@@ -688,13 +695,11 @@ def get_pvgis_horizon(latitude, longitude, proxies=None, url=URL):
     # the horizon data is given in a different format then the others
     # numpy has an easier time decoding it
     array = np.genfromtxt(io.StringIO(string),
-                          skip_header=4, skip_footer=7)
+                          skip_header = 4, skip_footer = 7)
     df = pd.DataFrame(array)
-
+    
     # Set the column names
     df.columns = ['horizon_azimuth', 'horizon_angles',
-                  'azimuth_sun_winter_solstice',
-                  'elevation_sun_winter_solstice',
-                  'azimuth_sun_summer_solstice',
-                  'elevation_sun_summer_solstice']
+              'azimuth_sun_winter_solstice', 'elevation_sun_winter_solstice',
+              'azimuth_sun_summer_solstice', 'elevation_sun_summer_solstice']
     return df

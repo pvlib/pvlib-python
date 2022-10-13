@@ -65,9 +65,9 @@ data_pv_json = [
     [1187.2, 129.59, 8.06, 0.97, 0.97, 0.0],
     [3950.1, 423.28, 14.8, 1.89, 0.69, 0.0]]
 
-data_horizon_abq = [9.9, 13.0, 14.5, 15.7, 14.9, 15.3, 
-                    15.7, 15.7, 13.0, 11.5, 11.1, 11.5, 
-                    10.3, 11.5, 10.3, 9.5, 10.7, 11.8, 
+data_horizon_abq = [9.9, 13.0, 14.5, 15.7, 14.9, 15.3,
+                    15.7, 15.7, 13.0, 11.5, 11.1, 11.5,
+                    10.3, 11.5, 10.3, 9.5, 10.7, 11.8,
                     11.8, 8.8, 8.4, 7.3, 5.7, 5.7, 4.6,
                     3.4, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0,
                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -518,11 +518,12 @@ def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
     actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
     assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
 
+
 @pytest.mark.remote_data
 def test_read_pvgis_horizon():
     azimuth, horizon = get_pvgis_horizon(35.171051, -106.465158)
     assert all(np.isclose(horizon, data_horizon_abq))
-    
+
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
     actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)

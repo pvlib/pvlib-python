@@ -1,0 +1,37 @@
+.. _whatsnew_0940:
+
+v0.9.4 (TBD)
+------------------------
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+* Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
+
+Bug fixes
+~~~~~~~~~
+
+
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Christian Orner (:ghuser:`chrisorner`)

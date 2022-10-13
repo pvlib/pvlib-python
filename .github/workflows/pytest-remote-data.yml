@@ -1,0 +1,111 @@
+# A secondary test job that only runs the iotools tests if explicitly requested
+# (for pull requests) or on a push to the master branch.
+# Because the iotools tests require GitHub secrets, we need to be careful about 
+# malicious PRs accessing the secrets and exposing them externally.
+#
+# We prevent this by only running this workflow when a maintainer has looked
+# over the PR's diff and verified that nothing malicious seems to be going on.
+# The maintainer then adds the "remote-data" label to the PR, which will then
+# trigger this workflow via the combination of the "on: ... types:"
+# and "if:" sections below.  The first restricts the workflow to only run when
+# a label is added to the PR and the second requires one of the PR's labels
+# is the "remote-data" label.  Technically this is slightly different from
+# triggering when the "remote-data" label is added, since it will also trigger
+# when "remote-data" is added, then later some other label is added.  Maybe
+# there's a better way to do this.
+#
+# But wait, you say!  Can't a malicious PR get around this by modifying
+# this workflow file and removing the label requirement?  I think the answer
+# is "no" as long as we trigger the workflow on "pull_request_target" instead
+# of the usual "pull_request".  The difference is what context the workflow
+# runs inside: "pull_request" runs in the context of the fork, where changes
+# to the workflow definition will take immediate effect, while "pull_request_target"
+# runs in the context of the main pvlib repository, where the original (non-fork)
+# workflow definition is used instead.  Of course by switching away from the fork's
+# context to keep our original workflow definitions, we're also keeping all the
+# original code, so the tests won't be run against the PR's new code.  To fix this
+# we explicitly check out the PR's code as the first step of the workflow.
+# This allows the job to run modified pvlib & pytest code, but only ever via
+# the original workflow file.
+# So long as a maintainer always verifies that the PR's code is not malicious prior to
+# adding the label and triggering this workflow, I think this should not present
+# a security risk.
+#
+# Note that this workflow can be triggered again by removing and re-adding the
+# "remote-data" label to the PR.
+#
+# Note also that "pull_request_target" is also the only way for the secrets
+# to be accessible in the first place.
+# 
+# Further reading:
+# - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+# - https://github.community/t/can-workflow-changes-be-used-with-pull-request-target/178626/7
+
+name: pytest-remote-data
+
+on:
+  pull_request_target:
+    types: [labeled]
+  push:
+    branches:
+    - master
+
+jobs:
+  test:
+
+    strategy:
+      fail-fast: false  # don't cancel other matrix jobs when one fails
+      matrix:
+        python-version: [3.7, 3.8, 3.9, "3.10"]
+        suffix: ['']  # the alternative to "-min"
+        include:
+          - python-version: 3.7
+            suffix: -min
+
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'remote-data')) || (github.event_name == 'push')
+
+    steps:
+      - uses: actions/checkout@v3
+        if: github.event_name == 'pull_request_target'
+        # pull_request_target runs in the context of the target branch (pvlib/master),
+        # but what we need is the hypothetical merge commit from the PR:
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
+
+      - uses: actions/checkout@v2
+        if: github.event_name == 'push'
+
+      - name: Set up conda environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test_env
+          environment-file: ${{ env.REQUIREMENTS }}
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: false
+        env:
+          # build requirement filename.  First replacement is for the python
+          # version, second is to add "-min" if needed
+          REQUIREMENTS: ci/requirements-py${{ matrix.python-version }}${{ matrix.suffix }}.yml
+
+      - name: List installed package versions
+        shell: bash -l {0}  # necessary for conda env to be active
+        run: conda list
+
+      - name: Run tests
+        shell: bash -l {0}  # necessary for conda env to be active
+        env:
+          # copy GitHub Secrets into environment variables for the tests to access
+          NREL_API_KEY: ${{ secrets.NRELAPIKEY }}
+          SOLARANYWHERE_API_KEY: ${{ secrets.SOLARANYWHERE_API_KEY }}
+          BSRN_FTP_USERNAME: ${{ secrets.BSRN_FTP_USERNAME }}
+          BSRN_FTP_PASSWORD: ${{ secrets.BSRN_FTP_PASSWORD }}
+        run: pytest pvlib/tests/iotools pvlib/tests/test_forecast.py --cov=./ --cov-report=xml --remote-data
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == 3.7 && matrix.suffix == ''
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          verbose: true
+          flags: remote-data  # flags are configured in codecov.yml

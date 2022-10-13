@@ -353,6 +353,7 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     # avoid undefined results for horizontal or upside-down surfaces
     zeroang = 1e-06
 
+
     surface_tilt = np.where(surface_tilt == 0, zeroang, surface_tilt)
     surface_tilt = np.where(surface_tilt == 180, 180 - zeroang, surface_tilt)
 
@@ -361,8 +362,9 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
         c2 = 0.5 * a_r - 0.154
 
     beta = np.radians(surface_tilt)
-
-    from numpy import pi, sin, cos, exp
+    sin = np.sin
+    pi = np.pi
+    cos = np.cos
 
     # avoid RuntimeWarnings for <, sin, and cos with nan
     with np.errstate(invalid='ignore'):
@@ -372,8 +374,8 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
         trig_term_sky = sin_beta + (pi - beta - sin_beta) / (1 + cos(beta))
         trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta))  # noqa: E222 E261 E501
 
-    iam_sky = 1 - exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
-    iam_gnd = 1 - exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
+    iam_sky = 1 - np.exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
+    iam_gnd = 1 - np.exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
 
     if out_index is not None:
         iam_sky = pd.Series(iam_sky, index=out_index, name='iam_sky')

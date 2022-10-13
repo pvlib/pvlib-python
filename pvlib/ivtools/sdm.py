@@ -979,7 +979,8 @@ def _filter_params(ee, isc, io, rs, rsh):
     negrs = rs < 0.
     badrs = np.logical_or(rs > rsh, np.isnan(rs))
     imagrs = ~(np.isreal(rs))
-    badio = np.logical_or(~(np.isreal(rs)), io <= 0)
+    badio = np.logical_or(np.logical_or(~(np.isreal(rs)), io <= 0),
+                          np.isnan(io))
     goodr = np.logical_and(~badrsh, ~imagrs)
     goodr = np.logical_and(goodr, ~negrs)
     goodr = np.logical_and(goodr, ~badrs)

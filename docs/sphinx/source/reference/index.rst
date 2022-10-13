@@ -20,3 +20,4 @@ API reference
    modelchain
    bifacial
    scaling
+   location

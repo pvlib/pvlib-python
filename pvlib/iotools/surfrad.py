@@ -44,10 +44,10 @@ def read_surfrad(filename, map_variables=True):
     Parameters
     ----------
     filename: str
-        Filepath or url.
+        Filepath or URL. URL can be either FTP or HTTP.
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable SURFRAD_COLUMNS.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -113,7 +113,8 @@ def read_surfrad(filename, map_variables=True):
     =======================  ======  ==========================================
 
     See README files located in the station directories in the SURFRAD
-    data archives[2]_ for details on SURFRAD daily data files.
+    data archives [2]_ for details on SURFRAD daily data files. In addition to
+    the FTP server, the SURFRAD files are also available via HTTP access [3]_.
 
     References
     ----------
@@ -122,8 +123,10 @@ def read_surfrad(filename, map_variables=True):
        `SURFRAD Homepage <https://www.esrl.noaa.gov/gmd/grad/surfrad/>`_
     .. [2] NOAA SURFRAD Data Archive
        `SURFRAD Archive <ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/>`_
+    .. [3] `NOAA SURFRAD HTTP Index
+       <https://gml.noaa.gov/aftp/data/radiation/surfrad/>`_
     """
-    if str(filename).startswith('ftp'):
+    if str(filename).startswith('ftp') or str(filename).startswith('http'):
         req = Request(filename)
         response = urlopen(req)
         file_buffer = io.StringIO(response.read().decode(errors='ignore'))

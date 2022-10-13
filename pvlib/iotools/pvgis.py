@@ -585,7 +585,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     ------
     ValueError
         if ``pvgis_format`` is ``None`` and the file extension is neither
-        ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided 
+        ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided
         as input but isn't in ``['csv', 'epw', 'json', 'basic']``
     TypeError
         if ``pvgis_format`` is ``None`` and ``filename`` is a buffer

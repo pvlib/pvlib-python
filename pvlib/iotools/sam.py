@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def write_sam(data, metadata, savefile='SAM_WeatherFile.csv',
-                        standardSAM=True, includeminute=False):
+              standardSAM=True, includeminute=False):
     """
     Saves dataframe with weather data from pvlib format on SAM-friendly format.
 
@@ -87,7 +87,7 @@ def write_sam(data, metadata, savefile='SAM_WeatherFile.csv',
     longitude = metadata['longitude']
     elevation = metadata['elevation']
     timezone_offset = metadata['tz']
-    
+
     if 'source' in metadata:
         source = metadata['source']
     else:
@@ -177,7 +177,7 @@ def tz_convert(df, tz_convert_val, metadata=None):
         Adds (or updates) the existing Timezone in the metadata dictionary
 
     """
-    
+
     if isinstance(tz_convert_val, int) is False:
         print("Please pass a numeric timezone, i.e. -6 for MDT or 0 for UTC.")
         return

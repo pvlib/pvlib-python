@@ -3,7 +3,7 @@
 import pandas as pd
 
 
-def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
+def write_sam(data, metadata, savefile='SAM_WeatherFile.csv',
                         standardSAM=True, includeminute=False):
     """
     Saves dataframe with weather data from pvlib format on SAM-friendly format.
@@ -11,12 +11,12 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
     Parameters
     -----------
     data : pandas.DataFrame
-        timeseries data in PVLib format. Should be TZ converted (not UTC).
+        timeseries data in PVLib format. Should be tz converted (not UTC).
         Ideally it is one sequential year data; if not suggested to use
         standardSAM = False.
     metdata : dictionary
         Dictionary with 'latitude', 'longitude', 'elevation', 'source',
-        and 'TZ' for timezone.
+        and 'tz' for timezone.
     savefile : str
         Name of file to save output as.
     standardSAM : boolean
@@ -58,7 +58,7 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
         '''
         # add zeros for the rest of the year
         # add a timepoint at the end of the year
-        # apply correct TZ info (if applicable)
+        # apply correct tz info (if applicable)
         tzinfo = df.index.tzinfo
         starttime = pd.to_datetime('%s-%s-%s %s:%s' % (df.index.year[0], 1, 1,
                                                        0, 0)
@@ -86,8 +86,13 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
     latitude = metadata['latitude']
     longitude = metadata['longitude']
     elevation = metadata['elevation']
-    timezone_offset = metadata['TZ']
-    source = metadata['source']
+    timezone_offset = metadata['tz']
+    
+    if 'source' in metadata:
+        source = metadata['source']
+    else:
+        source = 'pvlib export'
+        metadata['source'] = source
 
     # make a header
     header = '\n'.join(['Source,Latitude,Longitude,Time Zone,Elevation',
@@ -125,7 +130,7 @@ def saveSAM_WeatherFile(data, metadata, savefile='SAM_WeatherFile.csv',
 
     if 'pressure' in data:
         savedata['pressure'] = data.pressure.values
-    
+
     if 'wdir' in data:
         savedata['wdir'] = data.wdir.values
 
@@ -172,11 +177,16 @@ def tz_convert(df, tz_convert_val, metadata=None):
         Adds (or updates) the existing Timezone in the metadata dictionary
 
     """
+    
+    if isinstance(tz_convert_val, int) is False:
+        print("Please pass a numeric timezone, i.e. -6 for MDT or 0 for UTC.")
+        return
+
     import pytz
     if (type(tz_convert_val) == int) | (type(tz_convert_val) == float):
         df = df.tz_convert(pytz.FixedOffset(tz_convert_val*60))
 
-        if metadata is not None:
-            metadata['TZ'] = tz_convert_val
+        if 'tz' in metadata:
+            metadata['tz'] = tz_convert_val
             return df, metadata
     return df

@@ -338,7 +338,7 @@ def parse_psm3(fbuf, map_variables=None):
     if 'Minute' in data.columns:
         dtidx = pd.to_datetime(
             data[['Year', 'Month', 'Day', 'Hour', 'Minute']])
-    else: 
+    else:
         dtidx = pd.to_datetime(
             data[['Year', 'Month', 'Day', 'Hour']])
     # in USA all timezones are integers

@@ -21,4 +21,4 @@ from pvlib.iotools.bsrn import parse_bsrn  # noqa: F401
 from pvlib.iotools.sodapro import get_cams  # noqa: F401
 from pvlib.iotools.sodapro import read_cams  # noqa: F401
 from pvlib.iotools.sodapro import parse_cams  # noqa: F401
-from pvlib.iotools.sam import saveSAM_WeatherFile, tz_convert  # noqa: F401
+from pvlib.iotools.sam import write_sam, tz_convert  # noqa: F401

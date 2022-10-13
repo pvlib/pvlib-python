@@ -9,7 +9,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* :py:func:`pvlib.iotools.saveSAM_WeatherFile` now writes pvlib formated dataframe 
+* :py:func:`pvlib.iotools.write_sam` now writes pvlib formated dataframe 
 into a weatherfile usable in SAM. (:pull:`1556`, :issue:`1371`)
 
 Bug fixes

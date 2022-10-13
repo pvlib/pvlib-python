@@ -603,4 +603,3 @@ def test_read_pvgis_tmy_exception():
     with pytest.raises(ValueError, match=err_msg):
         read_pvgis_tmy('filename', pvgis_format=bad_outputformat,
                        map_variables=False)
-    

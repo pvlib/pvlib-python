@@ -585,8 +585,8 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     ------
     ValueError
         if ``pvgis_format`` is ``None`` and the file extension is neither
-        ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided as
-        input but isn't in ``['csv', 'epw', 'json', 'basic']``
+        ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided 
+        as input but isn't in ``['csv', 'epw', 'json', 'basic']``
     TypeError
         if ``pvgis_format`` is ``None`` and ``filename`` is a buffer
 
@@ -693,6 +693,8 @@ def get_pvgis_horizon(latitude, longitude, proxies=None, url=URL):
 
     # Set the column names
     df.columns = ['horizon_azimuth', 'horizon_angles',
-                  'azimuth_sun_winter_solstice', 'elevation_sun_winter_solstice',
-                  'azimuth_sun_summer_solstice', 'elevation_sun_summer_solstice']
+                  'azimuth_sun_winter_solstice',
+                  'elevation_sun_winter_solstice',
+                  'azimuth_sun_summer_solstice',
+                  'elevation_sun_summer_solstice']
     return df

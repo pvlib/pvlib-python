@@ -142,7 +142,8 @@ def sandia_multi(v_dc, p_dc, inverter):
     Convert DC power and voltage to AC power for an inverter with multiple
     MPPT inputs.
 
-    Uses Sandia's Grid-Connected PV Inverter model [1]_.
+    Uses Sandia's Grid-Connected PV Inverter model [1]_. Extension of [1]_
+    to inverters with multiple, unbalanced inputs as described in [2]_.
 
     Parameters
     ----------
@@ -177,6 +178,9 @@ def sandia_multi(v_dc, p_dc, inverter):
     .. [1] D. King, S. Gonzalez, G. Galbraith, W. Boyson, "Performance Model
        for Grid-Connected Photovoltaic Inverters", SAND2007-5036, Sandia
        National Laboratories.
+    .. [2] C. Hansen, J. Johnson, R. Darbali-Zamora, N. Gurule. "Modeling
+       Efficiency Of Inverters With Multiple Inputs", 49th IEEE Photovoltaic
+       Specialist Conference, Philadelphia, PA, USA. June 2022.
 
     See also
     --------

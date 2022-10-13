@@ -10,8 +10,8 @@ dependencies:
     - netcdf4
     - nose
     - numba
-    - numpy >= 1.12.0
-    - pandas >= 0.22.0
+    - numpy >= 1.16.0
+    - pandas >= 0.25.0
     - pip
     - pytest
     - pytest-cov

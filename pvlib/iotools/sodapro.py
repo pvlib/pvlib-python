@@ -15,7 +15,7 @@ CAMS_INTEGRATED_COLUMNS = [
     'GHI no corr', 'BHI no corr', 'DHI no corr', 'BNI no corr']
 
 # Dictionary mapping CAMS Radiation and McClear variables to pvlib names
-CAMS_VARIABLE_MAP = {
+VARIABLE_MAP = {
     'TOA': 'ghi_extra',
     'Clear sky GHI': 'ghi_clear',
     'Clear sky BHI': 'bhi_clear',
@@ -47,18 +47,15 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
              server='www.soda-is.com', timeout=30):
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
-    diffuse radiation from CAMS. Data from CAMS Radiation [1]_ and CAMS McClear
-    [2]_ are retrieved from SoDa [3]_.
+    diffuse radiation from CAMS (see [1]_). Data is retrieved from SoDa [2]_.
 
     Time coverage: 2004-01-01 to two days ago
 
-    Access: free, but requires registration, see [1]_
+    Access: free, but requires registration, see [2]_
 
     Requests: max. 100 per day
-
-    Geographical coverage: Wordwide for CAMS McClear and -66° to 66° in both
-    latitude and longitude for CAMS Radiation
-
+    Geographical coverage: worldwide for CAMS McClear and approximately -66° to
+    66° in both latitude and longitude for CAMS Radiation.
 
     Parameters
     ----------
@@ -93,7 +90,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable CAMS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
     server: str, default: 'www.soda-is.com'
         Main server (www.soda-is.com) or backup mirror server (pro.soda-is.com)
     timeout : int, default: 30
@@ -109,7 +106,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     Notes
     -----
     In order to use the CAMS services, users must register for a free SoDa
-    account using an email address [1]_.
+    account using an email address [2]_.
 
     The returned data DataFrame includes the following fields:
 
@@ -132,15 +129,14 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     ========================  ======  =========================================
 
     †Parameters only returned if identifier='cams_radiation'. For description
-    of additional output parameters in verbose mode, see [1]_ and [2]_.
+    of additional output parameters in verbose mode, see [1]_.
 
     Note that it is recommended to specify the latitude and longitude to at
     least the fourth decimal place.
 
     Variables corresponding to standard pvlib variables are renamed,
-    e.g. `sza` becomes `solar_zenith`. See the
-    `pvlib.iotools.cams.CAMS_VARIABLE_MAP` dict for the complete
-    mapping.
+    e.g. `sza` becomes `solar_zenith`. See variable :const:`VARIABLE_MAP` for
+    the complete mapping.
 
     See Also
     --------
@@ -154,12 +150,10 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
 
     References
     ----------
-    .. [1] `CAMS Radiation Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
-    .. [2] `CAMS McClear Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
-    .. [3] `CAMS McClear Automatic Access
-       <http://www.soda-pro.com/help/cams-services/cams-mcclear-service/automatic-access>`_
+    .. [1] `CAMS solar radiation documentation
+       <https://atmosphere.copernicus.eu/solar-radiation>`_
+    .. [2] `CAMS Radiation Automatic Access (SoDa)
+       <https://www.soda-pro.com/help/cams-services/cams-radiation-service/automatic-access>`_
     """
     try:
         time_step_str = TIME_STEPS_MAP[time_step]
@@ -187,7 +181,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     email = email.replace('@', '%2540')  # Format email address
     identifier = 'get_{}'.format(identifier.lower())  # Format identifier str
 
-    base_url = f"http://{server}/service/wps"
+    base_url = f"https://{server}/service/wps"
 
     data_inputs_dict = {
         'latitude': latitude,
@@ -235,7 +229,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
 def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     """
     Parse a file-like buffer with data in the format of a CAMS Radiation or
-    McClear file. The CAMS services are described in [1]_ and [2]_.
+    McClear file. The CAMS solar radiation services are described in [1]_.
 
     Parameters
     ----------
@@ -249,7 +243,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable CAMS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -264,10 +258,8 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
 
     References
     ----------
-    .. [1] `CAMS Radiation Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
-    .. [2] `CAMS McClear Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
+    .. [1] `CAMS solar radiation documentation
+       <https://atmosphere.copernicus.eu/solar-radiation>`_
     """
     metadata = {}
     # Initial lines starting with # contain metadata
@@ -329,15 +321,16 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
                                      TIME_STEPS_IN_HOURS[time_step])
     data.index.name = None  # Set index name to None
     if map_variables:
-        data = data.rename(columns=CAMS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data, metadata
 
 
 def read_cams(filename, integrated=False, label=None, map_variables=True):
     """
-    Read a CAMS Radiation or McClear file into a pandas DataFrame. CAMS
-    radiation and McClear are described in [1]_ and [2]_, respectively.
+    Read a CAMS Radiation or McClear file into a pandas DataFrame.
+
+    CAMS Radiation and McClear are described in [1]_.
 
     Parameters
     ----------
@@ -351,7 +344,7 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable CAMS_VARIABLE_MAP.
+        where applicable. See variable VARIABLE_MAP.
 
     Returns
     -------
@@ -367,10 +360,8 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
 
     References
     ----------
-    .. [1] `CAMS Radiation Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-radiation-service/info>`_
-    .. [2] `CAMS McClear Service Info
-       <http://www.soda-pro.com/web-services/radiation/cams-mcclear/info>`_
+    .. [1] `CAMS solar radiation documentation
+       <https://atmosphere.copernicus.eu/solar-radiation>`_
     """
     with open(str(filename), 'r') as fbuf:
         content = parse_cams(fbuf, integrated, label, map_variables)

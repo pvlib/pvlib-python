@@ -7,6 +7,8 @@ from ..conftest import DATA_DIR, RERUNS, RERUNS_DELAY
 testfile = DATA_DIR / 'surfrad-slv16001.dat'
 network_testfile = ('ftp://aftp.cmdl.noaa.gov/data/radiation/surfrad/'
                     'Alamosa_CO/2016/slv16001.dat')
+https_testfile = ('https://gml.noaa.gov/aftp/data/radiation/surfrad/'
+                  'Alamosa_CO/2016/slv16001.dat')
 
 
 @pytest.mark.remote_data
@@ -16,6 +18,17 @@ def test_read_surfrad_network():
     # archive may have changed.
     local_data, _ = surfrad.read_surfrad(testfile)
     network_data, _ = surfrad.read_surfrad(network_testfile)
+    assert local_data.equals(network_data)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_read_surfrad_https():
+    # Test reading of https files.
+    # If this test begins failing, SURFRAD's data structure or data
+    # archive may have changed.
+    local_data, _ = surfrad.read_surfrad(testfile)
+    network_data, _ = surfrad.read_surfrad(https_testfile)
     assert local_data.equals(network_data)
 
 

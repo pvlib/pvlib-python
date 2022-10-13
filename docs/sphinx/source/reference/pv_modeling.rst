@@ -43,7 +43,10 @@ PV temperature models
    temperature.fuentes
    temperature.ross
    temperature.noct_sam
+   temperature.prilliman
    pvsystem.PVSystem.get_cell_temperature
+   temperature.generic_linear
+   temperature.GenericLinearModel
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

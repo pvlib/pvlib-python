@@ -772,7 +772,7 @@ def schlick(aoi):
     ----------
     aoi : numeric
         The angle of incidence (AOI) between the module normal vector and the
-        sun-beam vector in degrees. Angles of nan will result in nan.
+        sun-beam vector. Angles of nan will result in nan. [degrees]
 
     Returns
     -------
@@ -880,7 +880,7 @@ def fedis(aoi, n=1.5, n_ref=None):
     using the FEDIS transmittance model.
 
     Note that FEDIS [1]_ calculates direct IAM using the Fresnel equations
-    without extinction, thus in the default case of ``n_ref=n``, this is
+    without extinction, thus in the default case of ``n_ref=None``, this is
     equivalent to calling :py:func:`physical` with ``K=0``.
 
     Parameters
@@ -893,10 +893,10 @@ def fedis(aoi, n=1.5, n_ref=None):
         of 1.5 was used for an IMT reference cell in [1]_. [unitless]
 
     n_ref : float, optional
-        Reference refractive index. In [1]_ this was set to 1.4585 for
+        Reference refractive index. If None (default), set equal to ``n``.
+        In [1]_ ``n_ref`` was set to 1.4585 for
         a fused silica dome over a CMP22, but in conventional
-        PV applications it is appropriate to set n_ref to the same value as
-        ``n`` (the default behavior).
+        PV applications it is appropriate to set ``n_ref=n`` (the default behavior).
 
     Returns
     -------

@@ -343,26 +343,62 @@ def test_schlick():
     assert_series_equal(expected, actual)
 
 
-def test_fedis_defaults_direct():
+def test_schlick_diffuse():
+    surface_tilt = np.array([0, 20, 70, 90])
+    # expected values calculated with marion_integrate and schlick
+    expected_sky = np.array([0.95238092, 0.96249934, 0.96228167, 0.95238094])
+    expected_ground = np.array([0, 0.62693858, 0.93218737, 0.95238094])
+
+    # numpy arrays
+    actual_sky, actual_ground = _iam.schlick_diffuse(surface_tilt)
+    assert_allclose(expected_sky, actual_sky)
+    assert_allclose(expected_ground, actual_ground, rtol=1e-6)
+
+    # scalars
+    for i in range(len(surface_tilt)):
+        actual_sky, actual_ground = _iam.schlick_diffuse(surface_tilt[i])
+        assert_allclose(expected_sky[i], actual_sky)
+        assert_allclose(expected_ground[i], actual_ground, rtol=1e-6)
+
+    # pandas Series
+    idx = pd.date_range('2019-01-01', freq='h', periods=len(surface_tilt))
+    actual_sky, actual_ground = _iam.schlick_diffuse(pd.Series(surface_tilt,
+                                                               idx))
+    assert_series_equal(pd.Series(expected_sky, idx), actual_sky)
+    assert_series_equal(pd.Series(expected_ground, idx), actual_ground,
+                        rtol=1e-6)
+
+
+def test_fedis_defaults():
     idx = pd.date_range('2019-01-01', freq='h', periods=9)
     aoi = pd.Series([-180, -135, -90, -45, 0, 45, 90, 135, 180], idx)
     expected = pd.Series([0, 0, 0, 0.989333426, 1, 0.989333426, 0, 0, 0], idx)
 
     # numpy arrays
-    actual = _iam.fedis(aoi.values, surface_tilt=0)
+    actual = _iam.fedis(aoi.values)
     assert_allclose(expected, expected, atol=1e-6)
 
     # scalars
     for i in range(len(aoi)):
-        actual = _iam.fedis(aoi[i], surface_tilt=0)
-        assert_allclose(expected[i], actual['direct'], atol=1e-6)
+        actual = _iam.fedis(aoi[i])
+        assert_allclose(expected[i], actual, atol=1e-6)
 
     # pandas Series
-    actual = _iam.fedis(aoi, surface_tilt=0)
-    assert_series_equal(expected, actual['direct'])
+    actual = _iam.fedis(aoi)
+    assert_series_equal(expected, actual)
 
 
-def test_fedis_defaults_diffuse():
+def test_fedis_kwargs():
+    # custom n and n_ref
+    aoi = np.array([0, 30, 60, 90])
+    # expected values generated with code from model authors:
+    # https://github.com/NREL/FEDIS/commit/7ae7186caa39aa85848163a39dac46df56fb9819  # noqa: E501
+    expected = np.array([0.948928986, 0.947089588, 0.894889901, 0.0])
+    actual = _iam.fedis(aoi, n=1.7, n_ref=1.3)
+    assert_allclose(expected, actual, atol=1e-6)
+
+
+def test_fedis_diffuse_defaults():
     idx = pd.date_range('2019-01-01', freq='h', periods=3)
     surface_tilt = pd.Series([0, 20, 90], idx)
 
@@ -374,37 +410,33 @@ def test_fedis_defaults_diffuse():
     }
 
     # numpy arrays
-    actual = _iam.fedis(aoi=0, surface_tilt=surface_tilt.values)
-    assert_allclose(expected['sky'], actual['sky'])
-    assert_allclose(expected['ground'], actual['ground'])
+    actual_sky, actual_ground = _iam.fedis_diffuse(surface_tilt.values)
+    assert_allclose(expected['sky'], actual_sky)
+    assert_allclose(expected['ground'], actual_ground)
 
     # scalars
     for i in range(len(surface_tilt)):
-        actual = _iam.fedis(aoi=0, surface_tilt=surface_tilt[i])
-        assert_allclose(expected['sky'][i], actual['sky'])
-        assert_allclose(expected['ground'][i], actual['ground'])
+        actual_sky, actual_ground = _iam.fedis_diffuse(surface_tilt[i])
+        assert_allclose(expected['sky'][i], actual_sky)
+        assert_allclose(expected['ground'][i], actual_ground)
 
     # pandas Series
-    actual = _iam.fedis(aoi=0, surface_tilt=surface_tilt)
-    assert_series_equal(expected['sky'], actual['sky'])
-    assert_series_equal(expected['ground'], actual['ground'])
+    actual_sky, actual_ground = _iam.fedis_diffuse(surface_tilt)
+    assert_series_equal(expected['sky'], actual_sky)
+    assert_series_equal(expected['ground'], actual_ground)
 
 
-def test_fedis_kwargs():
+def test_fedis_diffuse_kwargs():
     # custom n and n_ref
-
     surface_tilt = np.array([0, 30, 60, 90])
-    aoi = np.array([0, 30, 60, 90])
-
     # expected values generated with code from model authors:
     # https://github.com/NREL/FEDIS/commit/7ae7186caa39aa85848163a39dac46df56fb9819  # noqa: E501
     expected = {
-        'direct': np.array([0.948928986, 0.947089588, 0.894889901, 0.0]),
         'sky': np.array([0.89536659, 0.90815772, 0.90728496, 0.89536659]),
         'ground': np.array([0.0,  0.717209232, 0.859611482, 0.895366593]),
     }
     # numpy arrays
-    actual = _iam.fedis(aoi, surface_tilt, n=1.7, n_ref=1.3)
-    assert_allclose(expected['direct'], actual['direct'], atol=1e-6)
-    assert_allclose(expected['sky'], actual['sky'])
-    assert_allclose(expected['ground'], actual['ground'], atol=1e-6)
+    actual_sky, actual_ground = _iam.fedis_diffuse(surface_tilt,
+                                                   n=1.7, n_ref=1.3)
+    assert_allclose(expected['sky'], actual_sky)
+    assert_allclose(expected['ground'], actual_ground, atol=1e-6)

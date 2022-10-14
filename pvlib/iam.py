@@ -541,7 +541,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     ----------
     model : str
         The IAM function to evaluate across solid angle. Must be one of
-        `'ashrae', 'physical', 'martin_ruiz', 'sapm', 'schlick'`.
+        `'ashrae', 'physical', 'martin_ruiz', 'sapm', 'schlick', 'fedis'`.
 
     surface_tilt : numeric
         Surface tilt angles in decimal degrees.
@@ -593,6 +593,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
         'sapm': sapm,
         'martin_ruiz': martin_ruiz,
         'schlick': schlick,
+        'fedis': fedis,
     }
 
     try:
@@ -791,6 +792,7 @@ def schlick(aoi):
     See Also
     --------
     pvlib.iam.fedis
+    pvlib.iam.schlick_diffuse
     """
     iam = 1 - (1 - cosd(aoi)) ** 5
     iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
@@ -804,23 +806,87 @@ def schlick(aoi):
     return iam
 
 
-def fedis(aoi, surface_tilt, n=1.5, n_ref=None):
+def schlick_diffuse(surface_tilt):
     """
-    Determine the incidence angle modifiers (IAM) for direct, diffuse sky,
-    and ground-reflected radiation using the FEDIS transmittance model.
+    Determine the incidence angle modifiers (iam) for diffuse sky and
+    ground-reflected irradiance on a tilted surface using the Schlick
+    incident angle model.
 
-    The "Fresnel Equations" for Diffuse radiation on Inclined photovoltaic
-    Surfaces (FEDIS) [1]_ is the result of analytical integration
-    the Schlick approximation [2]_ to the Fresnel equations.
+    The diffuse iam values are calculated using an analytical integration
+    of the Schlick equation [1]_ over the portion of an isotropic sky and
+    isotropic foreground that is visible from the tilted surface [2]_.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angle measured from horizontal (e.g. surface facing
+        up = 0, surface facing horizon = 90). [degrees]
+
+    Returns
+    -------
+    iam_sky : numeric
+        The incident angle modifier for sky diffuse
+
+    iam_ground : numeric
+        The incident angle modifier for ground-reflected diffuse
+
+    References
+    ----------
+    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
+       rendering. Computer graphics forum 13 (1994).
+
+    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
+       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
+       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
+       :doi:`10.1016/j.rser.2022.112362`
+
+    See Also
+    --------
+    pvlib.iam.schlick
+    pvlib.iam.fedis_diffuse
+    """
+    # these calculations are as in [2]_, but with the refractive index
+    # weighting coefficient w set to 1.0 (so it is omitted)
+
+    # relative transmittance of sky diffuse radiation by PV cover:
+    cosB = cosd(surface_tilt)
+    sinB = sind(surface_tilt)
+    cuk = (2 / (np.pi * (1 + cosB))) * (
+        (30/7)*np.pi - (160/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
+        + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
+        - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
+    )  # Eq 4 in [2]
+
+    # relative transmittance of ground-reflected radiation by PV cover:
+    with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6 in [2]
+        cug = 40 / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
+
+    cug = np.where(surface_tilt < 1e-6, 0, cug)
+
+    # respect input types:
+    if np.isscalar(surface_tilt):
+        cuk = cuk.item()
+        cug = cug.item()
+    elif isinstance(surface_tilt, pd.Series):
+        cuk = pd.Series(cuk, surface_tilt.index)
+        cug = pd.Series(cug, surface_tilt.index)
+
+    return cuk, cug
+
+
+def fedis(aoi, n=1.5, n_ref=None):
+    """
+    Determine the incidence angle modifier (IAM) for direct irradiance
+    using the FEDIS transmittance model.
+
+    Note that FEDIS [1]_ calculates direct IAM using the Fresnel equations
+    without extinction, thus in the default case of ``n_ref=n``, this is
+    equivalent to calling :py:func:`physical` with ``K=0``.
 
     Parameters
     ----------
     aoi : numeric
         Angle of incidence. [degrees]
-
-    surface_tilt : numeric
-        Surface tilt angle measured from horizontal (e.g. surface facing
-        up = 0, surface facing horizon = 90). [degrees]
 
     n : float, default 1.5
         Refractive index of the PV front surface material.  The default value
@@ -834,17 +900,8 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=None):
 
     Returns
     -------
-    iam : dict
-        IAM values for each type of irradiance:
-
-            * 'direct': irradiance from the solar disc
-            * 'sky': diffuse irradiance from the sky dome
-            * 'ground': irradiance reflected from the ground
-
-    Notes
-    -----
-    This implementation corrects a typo in [1]_ regarding the sign
-    of the last polynomial term in Equation 5.
+    iam : numeric
+        The incident angle modifier
 
     References
     ----------
@@ -853,12 +910,9 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=None):
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
 
-    .. [2] Schlick, C. An inexpensive BRDF model for physically-based
-       rendering. Computer graphics forum 13 (1994).
-
     See Also
     --------
-    pvlib.iam.schlick
+    pvlib.iam.physical
     """
     if n_ref is None:
         n_ref = n
@@ -881,6 +935,72 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=None):
     cd = (1 - rd) / (1 - r0)  # Eq 3a
     cd = np.where(np.abs(aoi) > 90, 0, cd)
 
+    # respect input types:
+    if np.isscalar(aoi):
+        cd = cd.item()
+    elif isinstance(aoi, pd.Series):
+        cd = pd.Series(cd, aoi.index)
+
+    return cd
+
+
+def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
+    """
+    Determine the incidence angle modifiers (IAM) for diffuse sky and
+    and ground-reflected radiation using the FEDIS transmittance model.
+
+    The "Fresnel Equations" for Diffuse radiation on Inclined photovoltaic
+    Surfaces (FEDIS) [1]_ is the result of analytical integration
+    the Schlick approximation [2]_ to the Fresnel equations.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angle measured from horizontal (e.g. surface facing
+        up = 0, surface facing horizon = 90). [degrees]
+
+    n : float, default 1.5
+        Refractive index of the PV front surface material.  The default value
+        of 1.5 was used for an IMT reference cell in [1]_. [unitless]
+
+    n_ref : float, optional
+        Reference refractive index. In [1]_ this was set to 1.4585 for
+        a fused silica dome over a CMP22, but in conventional
+        PV applications it is appropriate to set n_ref to the same value as
+        ``n`` (the default behavior).
+
+    Returns
+    -------
+    iam_sky : numeric
+        The incident angle modifier for sky diffuse
+
+    iam_ground : numeric
+        The incident angle modifier for ground-reflected diffuse
+
+    Notes
+    -----
+    This implementation corrects a typo in [1]_ regarding the sign
+    of the last polynomial term in Equation 5.
+
+    References
+    ----------
+    .. [1] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
+       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
+       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
+       :doi:`10.1016/j.rser.2022.112362`
+
+    .. [2] Schlick, C. An inexpensive BRDF model for physically-based
+       rendering. Computer graphics forum 13 (1994).
+
+    See Also
+    --------
+    pvlib.iam.schlick_diffuse
+    """
+    if n_ref is None:
+        n_ref = n
+
+    cuk, cug = schlick_diffuse(surface_tilt)
+
     # weighting function
     term1 = n*(n_ref+1)**2 / (n_ref*(n+1)**2)
     # note: the last coefficient here differs in sign from the reference
@@ -888,38 +1008,7 @@ def fedis(aoi, surface_tilt, n=1.5, n_ref=None):
     term2 = np.polynomial.polynomial.polyval(n, polycoeffs)
     w = term1 * term2  # Eq 5
 
-    # relative transmittance of sky diffuse radiation by PV cover:
-    cosB = cosd(surface_tilt)
-    sinB = sind(surface_tilt)
-    cuk = (2*w / (np.pi * (1 + cosB))) * (
-        (30/7)*np.pi - (160/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
-        + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
-        - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
-    )  # Eq 4
+    cuk = cuk * w
+    cug = cug * w
 
-    # relative transmittance of ground-reflected radiation by PV cover:
-    with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6
-        cug = 40 * w / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
-
-    cug = np.where(surface_tilt < 1e-6, 0, cug)
-
-    # respect input types:
-    if np.isscalar(aoi):
-        cd = cd.item()
-    elif isinstance(aoi, pd.Series):
-        cd = pd.Series(cd, aoi.index)
-
-    if np.isscalar(surface_tilt):
-        cuk = cuk.item()
-        cug = cug.item()
-    elif isinstance(surface_tilt, pd.Series):
-        cuk = pd.Series(cuk, surface_tilt.index)
-        cug = pd.Series(cug, surface_tilt.index)
-
-    out = {
-        'direct': cd,
-        'sky': cuk,
-        'ground': cug,
-    }
-
-    return out
+    return cuk, cug

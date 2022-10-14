@@ -10,9 +10,10 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
-* Added a simple IAM model :py:func:`pvlib.iam.schlick` and made it available
-  in :py:func:`~pvlib.iam.marion_diffuse` via ``model='schlick'`` (:pull:`1562`, :issue:`1564`)
-* Added a direct and diffuse IAM model :py:func:`pvlib.iam.fedis` (:pull:`1562`)
+* Added two direct IAM models :py:func:`pvlib.iam.schlick` and :py:func:`pvlib.iam.fedis`,
+  both of which are also available in :py:func:`~pvlib.iam.marion_diffuse` (:pull:`1562`, :issue:`1564`)
+* Added two diffuse IAM models :py:func:`pvlib.iam.schlick_diffuse` and 
+  :py:func:`pvlib.iam.fedis_diffuse` (:pull:`1562`)
 
 
 Bug fixes
@@ -40,3 +41,6 @@ Contributors
 ~~~~~~~~~~~~
 * Christian Orner (:ghuser:`chrisorner`)
 * Yu Xie (:ghuser:`xieyupku`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

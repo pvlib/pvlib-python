@@ -67,20 +67,19 @@ def write_sam(data, metadata, savefile='SAM_WeatherFile.csv',
                                                      23, 60-int(freq[:-1]))
                                  ).tz_localize(tzinfo)
 
-        df2 = _averageSAMStyle(df, freq)
-        df2.iloc[0] = 0  # set first datapt to zero to forward fill w zeros
-        df2.iloc[-1] = 0  # set last datapt to zero to forward fill w zeros
-        df2.loc[starttime] = 0
-        df2.loc[endtime] = 0
-        df2 = df2.resample(freq).ffill()
-        return df2
+        df.iloc[0] = 0  # set first datapt to zero to forward fill w zeros
+        df.iloc[-1] = 0  # set last datapt to zero to forward fill w zeros
+        df.loc[starttime] = 0
+        df.loc[endtime] = 0
+        df = df.resample(freq).ffill()
+        return df
 
     # Modify this to cut into different years. Right now handles partial year
     # and sub-hourly interval.
     if standardSAM:
+        data = _averageSAMStyle(data, '60T')
         filterdatesLeapYear = ~(_is_leap_and_29Feb(data))
         data = data[filterdatesLeapYear]
-        data = _fillYearSAMStyle(data)
 
     # metadata
     latitude = metadata['latitude']
@@ -134,15 +133,23 @@ def write_sam(data, metadata, savefile='SAM_WeatherFile.csv',
     if 'wdir' in data:
         savedata['wdir'] = data.wdir.values
 
+    savedata = savedata.sort_values(by=['Month','Day','Hour'])
+
     if 'albedo' in data:
         savedata['Albedo'] = data.albedo.values
 
-        # Not elegant but seems to work for the standardSAM format
+    if standardSAM and len(data) < 8760:
+        savedata = _fillYearSAMStyle(savedata)
+
+    # Not elegant but seems to work for the standardSAM format
+    if 'Albedo' in savedata:
         if standardSAM and savedata.Albedo.iloc[0] == 0:
             savedata.loc[savedata.index[0], 'Albedo'] = savedata.loc[
                 savedata.index[1]]['Albedo']
             savedata.loc[savedata.index[-1], 'Albedo'] = savedata.loc[
                 savedata.index[-2]]['Albedo']
+        savedata['Albedo'] = savedata['Albedo'].fillna(0.99).clip(lower=0.01,
+                                                          upper=0.99)
 
     with open(savefile, 'w', newline='') as ict:
         # Write the header lines, including the index variable for

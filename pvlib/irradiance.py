@@ -2965,10 +2965,10 @@ def component_sum_irradiance(solar_zenith,
     elif dni is not None and ghi is not None and dhi is None:
         dhi = (ghi - dni * tools.cosd(solar_zenith))
     else:
-        wrn_txt = ("No component sum calculated. Please recheck \n"
+        err_txt = ("No component sum calculated. Please recheck \n"
                    "passed ghi, dni, and dhi parameters to check \n"
                    "exactly one field out of the three is set to None.")
-        warnings.warn(wrn_txt, UserWarning)
+        raise ValueError(err_txt)
     # Merge the outputs into a master dataframe containing 'ghi', 'dhi',
     # and 'dni' columns
     component_sum_df = pd.DataFrame({'ghi': ghi,

@@ -27,4 +27,4 @@ def test_saveSAM_WeatherFile():
     data['poa'] = np.nan
     data.index = data.index.map(lambda dt: dt.replace(year=coerce_year))
     write_sam(data, metadata, savefile='test_SAMWeatherFile.csv',
-                    standardSAM=True, includeminute=True)
+              standardSAM=True, includeminute=True)

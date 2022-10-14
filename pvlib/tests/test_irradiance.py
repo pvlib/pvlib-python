@@ -7,7 +7,10 @@ from numpy import array, nan
 import pandas as pd
 
 import pytest
-from numpy.testing import assert_almost_equal, assert_allclose, assert_warns
+from numpy.testing import (assert_almost_equal,
+                           assert_allclose,
+                           assert_warns,
+                           assert_raises)
 from pvlib import irradiance
 
 from .conftest import (
@@ -1086,9 +1089,10 @@ def test_clearness_index_zenith_independent(airmass_kt):
 def test_component_sum_irradiance():
     # Generate dataframe to test on
     times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='H')
-    i = pd.DataFrame({'dni': [49.63565561689957, 62.10624908037814],
-                      'ghi': [372.103976116, 497.087579068],
-                      'dhi': [356.543700, 465.44400]}, index=times)
+    i = pd.DataFrame({'ghi': [372.103976116, 497.087579068],
+                      'dhi': [356.543700, 465.44400],
+                      'dni': [49.63565561689957, 62.10624908037814]},
+                     index=times)
     # Define the solar position and clearsky dataframes
     solar_position = pd.DataFrame({'apparent_zenith': [71.7303262449161,
                                                        59.369],
@@ -1096,8 +1100,8 @@ def test_component_sum_irradiance():
                                   index=pd.DatetimeIndex([
                                       '2010-07-05 07:00:00-0700',
                                       '2010-07-05 08:00:00-0700']))
-    clearsky = pd.DataFrame({'ghi': [246.3508023804681, 469.461381740857],
-                             'dni': [625.5254880160008, 778.7766443075865],
+    clearsky = pd.DataFrame({'dni': [625.5254880160008, 778.7766443075865],
+                             'ghi': [246.3508023804681, 469.461381740857],
                              'dhi': [50.25488725346631, 72.66909939636372]},
                             index=pd.DatetimeIndex([
                                       '2010-07-05 07:00:00-0700',
@@ -1132,22 +1136,19 @@ def test_component_sum_irradiance():
     # Assert that the ghi, dhi, and dni series match the original dataframe
     # values
     assert_frame_equal(component_sum_df, i)
-    # Test scenario where all parameters are passed (throw warning)
-    component_sum_df = assert_warns(UserWarning,
-                                    irradiance.component_sum_irradiance,
-                                    solar_position.apparent_zenith,
-                                    ghi=i.ghi,
-                                    dhi=i.dhi,
-                                    dni=i.dni,
-                                    dni_clear=clearsky.dni)
-    # Assert that the ghi, dhi, and dni series match the original dataframe
-    # values
-    assert_frame_equal(component_sum_df, i)
-    # Test scenario where only one parameter is passed (throw warning)
-    component_sum_df = assert_warns(UserWarning,
-                                    irradiance.component_sum_irradiance,
-                                    solar_position.apparent_zenith,
-                                    ghi=None,
-                                    dhi=None,
-                                    dni=i.dni,
-                                    dni_clear=clearsky.dni)
+    # Test scenario where all parameters are passed (throw error)
+    component_sum_df = assert_raises(ValueError,
+                                     irradiance.component_sum_irradiance,
+                                     solar_position.apparent_zenith,
+                                     ghi=i.ghi,
+                                     dhi=i.dhi,
+                                     dni=i.dni,
+                                     dni_clear=clearsky.dni)
+    # Test scenario where only one parameter is passed (throw error)
+    component_sum_df = assert_raises(ValueError,
+                                     irradiance.component_sum_irradiance,
+                                     solar_position.apparent_zenith,
+                                     ghi=None,
+                                     dhi=None,
+                                     dni=i.dni,
+                                     dni_clear=clearsky.dni)

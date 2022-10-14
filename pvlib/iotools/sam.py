@@ -133,7 +133,7 @@ def write_sam(data, metadata, savefile='SAM_WeatherFile.csv',
     if 'wdir' in data:
         savedata['wdir'] = data.wdir.values
 
-    savedata = savedata.sort_values(by=['Month','Day','Hour'])
+    savedata = savedata.sort_values(by=['Month', 'Day', 'Hour'])
 
     if 'albedo' in data:
         savedata['Albedo'] = data.albedo.values
@@ -149,7 +149,7 @@ def write_sam(data, metadata, savefile='SAM_WeatherFile.csv',
             savedata.loc[savedata.index[-1], 'Albedo'] = savedata.loc[
                 savedata.index[-2]]['Albedo']
         savedata['Albedo'] = savedata['Albedo'].fillna(0.99).clip(lower=0.01,
-                                                          upper=0.99)
+                                                                  upper=0.99)
 
     with open(savefile, 'w', newline='') as ict:
         # Write the header lines, including the index variable for

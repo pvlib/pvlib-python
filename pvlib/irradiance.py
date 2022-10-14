@@ -2930,6 +2930,13 @@ def component_sum_irradiance(solar_zenith,
     dni) is passed as None, and the other associated series passed are used to
     calculate the missing series value.
 
+    The "component sum" or "closure" equation relates the three
+    primary irradiance components as follows:
+
+    .. math::
+
+       GHI = DHI + DNI \cos(\theta_z)
+
     Parameters
     ----------
     solar_zenith : Series

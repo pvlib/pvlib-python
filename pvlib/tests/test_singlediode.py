@@ -72,7 +72,7 @@ def test_newton_fs_495(method, cec_module_fs_495):
 @pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
 def test_singlediode_precision(method, precise_iv_curves):
     """
-    test pvsystem.singlediode with different methods
+    Tests the accuracy of singlediode. ivcurve_pnts is not tested.
     """
     pc = precise_iv_curves
     il, io, rs, rsh, nnsvt = (

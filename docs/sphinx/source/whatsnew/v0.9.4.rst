@@ -10,6 +10,7 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
+* Testing :py:func:`pvlib.pvsystem.singlediode` against precisely generated IV curve data. (:issue:`411`, :pull:`1573`)
 
 Bug fixes
 ~~~~~~~~~
@@ -35,3 +36,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Christian Orner (:ghuser:`chrisorner`)
+* Taos Transue (:ghuser:`reepoi`)

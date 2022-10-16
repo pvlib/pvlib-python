@@ -87,10 +87,8 @@ def test_singlediode_precision(method, precise_iv_curves):
     assert np.allclose(pc['i_mp'], outs['i_mp'], atol=5e-8, rtol=0)
     assert np.allclose(pc['v_mp'], outs['v_mp'], atol=8e-7, rtol=0)
     assert np.allclose(pc['p_mp'], outs['p_mp'], atol=1e-10, rtol=0)
-    # assert np.isclose(pvs['i_x'], ix) # not calculated in ivcurves
-    # pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
-    #                             method='lambertw') # not calculated in ivcurves
-    # assert np.isclose(pvs_ixx, ixx) # not calculated in ivcurves
+    assert np.allclose(pc['i_x'], outs['i_x'], atol=1e-10, rtol=0)
+    assert np.allclose(pc['i_xx'], outs['i_xx'], atol=8e-8, rtol=0)
 
 
 @pytest.mark.parametrize('method', ['lambertw'])

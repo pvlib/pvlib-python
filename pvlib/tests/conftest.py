@@ -441,19 +441,29 @@ def cec_module_fs_495():
     return parameters
 
 
-@pytest.fixture(scope='function', params=[
-    {
-        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets1.csv',
-        'json': f'{DATA_DIR}/precise_iv_curves1.json'
-    },
-    {
-        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
-        'json': f'{DATA_DIR}/precise_iv_curves2.json'
-    }
-],
-ids=[1, 2])
-def precise_iv_curves(request):
-    file_csv, file_json = request.param['csv'], request.param['json']
+def build_precise_iv_curve_dataframe(file_csv, file_json):
+    """
+    Reads the data at ``file_csv`` and ``file_json`` to create a
+    data frame with these columns: ``Index``, ``photocurrent``,
+    ``saturation_current``, ``resistance_series``, ``resistance_shunt``,
+    ``n``, ``cells_in_series``, ``Voltages``, ``Currents``, ``v_oc``, ``i_sc``,
+    ``v_mp``, ``i_mp``, ``p_mp``, ``Temperature``, ``Irradiance``,
+    ``Sweep Direction``, ``Datetime``, ``Boltzman``, ``Electron Charge``, and
+    ``Vth``. The columns ``Irradiance``, ``Sweep Direction``, and ``Datetime``
+    are null or empty strings.
+
+    Parameters
+    ----------
+    file_csv: str
+        Path to a CSV file of iv curve parameter sets.
+
+    file_json: str
+        Path to a JSON file of precise iv curves.
+
+    Returns
+    -------
+        A data frame.
+    """
     params = pd.read_csv(file_csv)
     curves = pd.read_json(file_json)
     curves = pd.DataFrame(curves['IV Curves'].values.tolist())
@@ -469,6 +479,38 @@ def precise_iv_curves(request):
     )
 
     return joined
+
+
+@pytest.fixture(scope='function', params=[
+    {
+        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets1.csv',
+        'json': f'{DATA_DIR}/precise_iv_curves1.json'
+    },
+    {
+        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
+        'json': f'{DATA_DIR}/precise_iv_curves2.json'
+    }
+],
+ids=[1, 2])
+def precise_iv_curves(request):
+    file_csv, file_json = request.param['csv'], request.param['json']
+    return build_precise_iv_curve_dataframe(file_csv, file_json)
+
+
+@pytest.fixture(scope='function', params=[
+    {
+        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets1.csv',
+        'json': f'{DATA_DIR}/precise_iv_curves1_log_spacing.json'
+    },
+    {
+        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
+        'json': f'{DATA_DIR}/precise_iv_curves2_log_spacing.json'
+    }
+],
+ids=[1, 2])
+def precise_iv_curves_log_spacing(request):
+    file_csv, file_json = request.param['csv'], request.param['json']
+    return build_precise_iv_curve_dataframe(file_csv, file_json)
 
 
 @pytest.fixture(scope='function')

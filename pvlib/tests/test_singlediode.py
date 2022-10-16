@@ -70,7 +70,7 @@ def test_newton_fs_495(method, cec_module_fs_495):
 
 
 @pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
-def test_precise_iv_curves(method, precise_iv_curves):
+def test_singlediode_precision(method, precise_iv_curves):
     """
     test pvsystem.singlediode with different methods
     """
@@ -82,23 +82,22 @@ def test_precise_iv_curves(method, precise_iv_curves):
     )
     outs = pvsystem.singlediode(il, io, rs, rsh, nnsvt, method=method)
 
-    assert np.allclose(pc['i_sc'], outs['i_sc'])
-    assert np.allclose(pc['v_oc'], outs['v_oc'])
-    assert np.allclose(pc['i_mp'], outs['i_mp'])
-    assert np.allclose(pc['v_mp'], outs['v_mp'])
-    assert np.allclose(pc['p_mp'], outs['p_mp'])
+    assert np.allclose(pc['i_sc'], outs['i_sc'], atol=1e-10, rtol=0)
+    assert np.allclose(pc['v_oc'], outs['v_oc'], atol=1e-10, rtol=0)
+    assert np.allclose(pc['i_mp'], outs['i_mp'], atol=5e-8, rtol=0)
+    assert np.allclose(pc['v_mp'], outs['v_mp'], atol=8e-7, rtol=0)
+    assert np.allclose(pc['p_mp'], outs['p_mp'], atol=1e-10, rtol=0)
     # assert np.isclose(pvs['i_x'], ix) # not calculated in ivcurves
     # pvs_ixx = pvsystem.i_from_v(rsh, rs, nnsvt, (voc + vmp)/2, io, il,
     #                             method='lambertw') # not calculated in ivcurves
     # assert np.isclose(pvs_ixx, ixx) # not calculated in ivcurves
 
 
-@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
-def test_precise_iv_curves_ivcurve_pnts(method, precise_iv_curves):
+@pytest.mark.parametrize('method', ['lambertw'])
+def test_ivcurve_pnts_precision(method, precise_iv_curves):
     """
-    test pvsystem.singlediode with different methods
-    tests only the points on the iv curve calcuated by passing ivcurve_pnts
-    interpolate between precise voltage/current values
+    Tests the accuracy of the IV curve points calcuated by singlediode. Only
+    methods of singlediode that return these points linearly spaced are tested.
     """
     pc = precise_iv_curves
     x = (
@@ -108,25 +107,34 @@ def test_precise_iv_curves_ivcurve_pnts(method, precise_iv_curves):
     )
     pc_i , pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
     ivcurve_pnts = len(pc['Currents'][0])
+    outs = pvsystem.singlediode(*x, method=method,
+                                ivcurve_pnts=ivcurve_pnts)
+    assert np.allclose(pc_i, outs['i'], atol=1e-10, rtol=0)
+    assert np.allclose(pc_v, outs['v'], atol=1e-10, rtol=0)
 
-    if method == 'lambertw':
-        outs = pvsystem.singlediode(*x, method=method,
-                                    ivcurve_pnts=ivcurve_pnts)
-        assert np.allclose(pc_i, outs['i'])
-        assert np.allclose(pc_v, outs['v'])
-    else:
-        for idx, x_one_curve in enumerate(zip(*x)):
-            out = pvsystem.singlediode(*x_one_curve, method=method,
-                                        ivcurve_pnts=ivcurve_pnts) # create issue for this not vectorized
-            interp_v_to_i = np.interp(out['v'], pc_v[idx], pc_i[idx])
-            # pc_i[idx] is decreasing, but np.interp requires its second
-            # argument to be increasing. Multiplying both pc_i[idx] and
-            # out['i'] by -1 makes them increasing.
-            interp_i_to_v = np.interp(-out['i'], -pc_i[idx], pc_v[idx])
-            max_err_v_to_i = np.max(np.abs(interp_v_to_i - out['i']))
-            assert np.allclose(interp_v_to_i, out['i'], atol=1e-1)
-            max_err_i_to_v = np.max(np.abs(interp_i_to_v - out['v']))
-            assert np.allclose(interp_i_to_v, out['v'], atol=1e-1)
+
+@pytest.mark.parametrize('method', ['brentq', 'newton'])
+def test_ivcurve_pnts_precision_log_spacing(method,
+                                            precise_iv_curves_log_spacing):
+    """
+    Tests the accuracy of the IV curve points calcuated by singlediode. Only
+    methods of singlediode that return these points with log spacing are
+    tested.
+    """
+    pc = precise_iv_curves_log_spacing
+    x = (
+        pc['photocurrent'], pc['saturation_current'],
+        pc['resistance_series'], pc['resistance_shunt'],
+        pc['n'] * pc['cells_in_series'] * pc['Vth']
+    )
+    pc_i , pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
+    ivcurve_pnts = len(pc['Currents'][0])
+
+    for idx, x_one_curve in enumerate(zip(*x)):
+        out = pvsystem.singlediode(*x_one_curve, method=method,
+                                   ivcurve_pnts=ivcurve_pnts) # create issue for this not vectorized
+        assert np.allclose(pc_i[idx], out['i'], atol=1e-10, rtol=0)
+        assert np.allclose(pc_v[idx], out['v'], atol=1e-10, rtol=0)
 
 
 def get_pvsyst_fs_495():

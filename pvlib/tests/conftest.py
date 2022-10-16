@@ -447,10 +447,10 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     data frame with these columns: ``Index``, ``photocurrent``,
     ``saturation_current``, ``resistance_series``, ``resistance_shunt``,
     ``n``, ``cells_in_series``, ``Voltages``, ``Currents``, ``v_oc``, ``i_sc``,
-    ``v_mp``, ``i_mp``, ``p_mp``, ``Temperature``, ``Irradiance``,
-    ``Sweep Direction``, ``Datetime``, ``Boltzman``, ``Electron Charge``, and
-    ``Vth``. The columns ``Irradiance``, ``Sweep Direction``, and ``Datetime``
-    are null or empty strings.
+    ``v_mp``, ``i_mp``, ``p_mp``, ``i_x``, ``i_xx`, ``Temperature``,
+    ``Irradiance``, ``Sweep Direction``, ``Datetime``, ``Boltzman``,
+    ``Electron Charge``, and ``Vth``. The columns ``Irradiance``,
+    ``Sweep Direction``, and ``Datetime`` are null or empty strings.
 
     Parameters
     ----------
@@ -474,8 +474,8 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     joined['Boltzman'] = 1.380649e-23
     joined['Electron Charge'] = 1.60217663e-19
     joined['Vth'] = (
-            joined['Boltzman'] * joined['Temperature']
-            / joined['Electron Charge']
+        joined['Boltzman'] * joined['Temperature']
+        / joined['Electron Charge']
     )
 
     return joined
@@ -490,8 +490,7 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
         'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
         'json': f'{DATA_DIR}/precise_iv_curves2.json'
     }
-],
-ids=[1, 2])
+], ids=[1, 2])
 def precise_iv_curves(request):
     file_csv, file_json = request.param['csv'], request.param['json']
     return build_precise_iv_curve_dataframe(file_csv, file_json)
@@ -506,8 +505,7 @@ def precise_iv_curves(request):
         'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
         'json': f'{DATA_DIR}/precise_iv_curves2_log_spacing.json'
     }
-],
-ids=[1, 2])
+], ids=[1, 2])
 def precise_iv_curves_log_spacing(request):
     file_csv, file_json = request.param['csv'], request.param['json']
     return build_precise_iv_curve_dataframe(file_csv, file_json)

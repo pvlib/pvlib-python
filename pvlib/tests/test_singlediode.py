@@ -103,7 +103,7 @@ def test_ivcurve_pnts_precision(method, precise_iv_curves):
         pc['resistance_series'], pc['resistance_shunt'],
         pc['n'] * pc['cells_in_series'] * pc['Vth']
     )
-    pc_i , pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
+    pc_i, pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
     ivcurve_pnts = len(pc['Currents'][0])
     outs = pvsystem.singlediode(*x, method=method,
                                 ivcurve_pnts=ivcurve_pnts)
@@ -125,12 +125,12 @@ def test_ivcurve_pnts_precision_log_spacing(method,
         pc['resistance_series'], pc['resistance_shunt'],
         pc['n'] * pc['cells_in_series'] * pc['Vth']
     )
-    pc_i , pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
+    pc_i, pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
     ivcurve_pnts = len(pc['Currents'][0])
 
     for idx, x_one_curve in enumerate(zip(*x)):
         out = pvsystem.singlediode(*x_one_curve, method=method,
-                                   ivcurve_pnts=ivcurve_pnts) # create issue for this not vectorized
+                                   ivcurve_pnts=ivcurve_pnts)
         assert np.allclose(pc_i[idx], out['i'], atol=1e-10, rtol=0)
         assert np.allclose(pc_v[idx], out['v'], atol=1e-10, rtol=0)
 

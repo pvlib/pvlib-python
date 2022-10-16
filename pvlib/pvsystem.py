@@ -2873,10 +2873,11 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
         # calculate the IV curve if requested using bishop88
         if ivcurve_pnts:
-            vd = v_oc * (
+            ivcurve_v = v_oc * (
                 (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
             )
-            ivcurve_i, ivcurve_v, _ = _singlediode.bishop88(vd, *args)
+            ivcurve_i = _singlediode.bishop88_i_from_v(ivcurve_v, *args,
+                                                       method=method.lower())
 
     out = OrderedDict()
     out['i_sc'] = i_sc

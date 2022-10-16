@@ -124,9 +124,9 @@ def test_precise_iv_curves_ivcurve_pnts(method, precise_iv_curves):
             # out['i'] by -1 makes them increasing.
             interp_i_to_v = np.interp(-out['i'], -pc_i[idx], pc_v[idx])
             max_err_v_to_i = np.max(np.abs(interp_v_to_i - out['i']))
-            assert np.allclose(interp_v_to_i, out['i'], atol=1)
+            assert np.allclose(interp_v_to_i, out['i'], atol=1e-1)
             max_err_i_to_v = np.max(np.abs(interp_i_to_v - out['v']))
-            assert np.allclose(interp_i_to_v, out['v'], atol=1)
+            assert np.allclose(interp_i_to_v, out['v'], atol=1e-1)
 
 
 def get_pvsyst_fs_495():

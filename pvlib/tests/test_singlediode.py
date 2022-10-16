@@ -118,16 +118,15 @@ def test_precise_iv_curves_ivcurve_pnts(method, precise_iv_curves):
         for idx, x_one_curve in enumerate(zip(*x)):
             out = pvsystem.singlediode(*x_one_curve, method=method,
                                         ivcurve_pnts=ivcurve_pnts) # create issue for this not vectorized
-            import pdb
-            pdb.set_trace()
-            assert np.allclose(
-                       np.interp(out['v'], pc_v[idx], pc_i[idx]), out['i'],
-                       rtol=1e-05, atol=1e-05
-                   )
-            assert np.allclose(
-                       np.interp(out['i'], pc_i[idx], pc_v[idx]), out['v'],
-                       rtol=1e-05, atol=1e-05
-                   )
+            interp_v_to_i = np.interp(out['v'], pc_v[idx], pc_i[idx])
+            # pc_i[idx] is decreasing, but np.interp requires its second
+            # argument to be increasing. Multiplying both pc_i[idx] and
+            # out['i'] by -1 makes them increasing.
+            interp_i_to_v = np.interp(-out['i'], -pc_i[idx], pc_v[idx])
+            max_err_v_to_i = np.max(np.abs(interp_v_to_i - out['i']))
+            assert np.allclose(interp_v_to_i, out['i'], atol=1)
+            max_err_i_to_v = np.max(np.abs(interp_i_to_v - out['v']))
+            assert np.allclose(interp_i_to_v, out['v'], atol=1)
 
 
 def get_pvsyst_fs_495():

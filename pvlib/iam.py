@@ -915,34 +915,22 @@ def fedis(aoi, n=1.5, n_ref=None):
     --------
     pvlib.iam.physical
     """
+    iam_physical = physical(aoi, n, K=0, L=0)
+
     if n_ref is None:
-        n_ref = n
+        return iam_physical
 
-    # angle between module normal and refracted ray:
-    theta_0tp = asind(sind(aoi) / n)  # Eq 3c
+    else:
+        # reflectance for normal incidence with refractive index n:
+        rd0 = ((n - 1) / (n + 1)) ** 2
 
-    # reflectance of direct radiation on PV cover:
-    with np.errstate(invalid='ignore'):
-        sin_term = sind(aoi - theta_0tp)**2 / sind(aoi + theta_0tp)**2 / 2
-        tan_term = tand(aoi - theta_0tp)**2 / tand(aoi + theta_0tp)**2 / 2
+        # reflectance for normal incidence with refractive index n_ref:
+        r0 = ((n_ref - 1) / (n_ref + 1)) ** 2
 
-    rd = sin_term + tan_term  # Eq 3b
-    rd = np.where(np.abs(aoi) < 1e-6, ((n-1.0)/(n+1.0))**2.0, rd)
+        # weighting function
+        w = (1 - rd0) / (1 - r0)
 
-    # reflectance for normal incidence with reference refractive index:
-    r0 = ((n_ref-1.0)/(n_ref+1.0))**2.0  # Eq 3e
-
-    # relative transmittance of direct radiation by PV cover:
-    cd = (1 - rd) / (1 - r0)  # Eq 3a
-    cd = np.where(np.abs(aoi) > 90, 0, cd)
-
-    # respect input types:
-    if np.isscalar(aoi):
-        cd = cd.item()
-    elif isinstance(aoi, pd.Series):
-        cd = pd.Series(cd, aoi.index)
-
-    return cd
+        return w * iam_physical
 
 
 def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):

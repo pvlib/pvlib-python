@@ -1304,7 +1304,6 @@ class ModelChain:
                    "Results can be too high or negative.\n" +
                    "Help to improve this function on github:\n" +
                    "https://github.com/pvlib/pvlib-python \n")
-        warnings.warn(wrn_txt, UserWarning)
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
                 weather.index, solar_position=self.results.solar_position)
@@ -1316,6 +1315,7 @@ class ModelChain:
                 dni_clear=clearsky.dni)
             weather.loc[:, 'dni'] = component_sum_df.dni
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
+            warnings.warn(wrn_txt, UserWarning)
             component_sum_df = pvlib.irradiance.component_sum_irradiance(
                 solar_zenith=self.results.solar_position.apparent_zenith,
                 ghi=None,
@@ -1323,6 +1323,7 @@ class ModelChain:
                 dni=weather.dni)
             weather.loc[:, 'ghi'] = component_sum_df.ghi
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
+            warnings.warn(wrn_txt, UserWarning)
             component_sum_df = pvlib.irradiance.component_sum_irradiance(
                 solar_zenith=self.results.solar_position.apparent_zenith,
                 ghi=weather.ghi,

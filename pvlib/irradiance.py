@@ -2924,11 +2924,18 @@ def component_sum_irradiance(solar_zenith,
                              dhi=None,
                              dni=None,
                              dni_clear=None):
-    """
+    r"""
     Use the component sum equations to calculate the missing series, using
     the other available time series. One of the three parameters (ghi, dhi,
     dni) is passed as None, and the other associated series passed are used to
     calculate the missing series value.
+
+    The "component sum" or "closure" equation relates the three
+    primary irradiance components as follows:
+
+    .. math::
+
+       GHI = DHI + DNI \cos(\theta_z)
 
     Parameters
     ----------

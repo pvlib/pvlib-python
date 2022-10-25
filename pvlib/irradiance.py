@@ -2942,7 +2942,7 @@ def component_sum_irradiance(solar_zenith,
         Refraction-corrected zenith angles in decimal
         degrees, with datetime index. Angles must be >=0 and <=180. Must have
         the same datetime index as ghi, dhi, and dni series, when available.
-    ghi : Series, (optional, default None)
+    ghi : Series, optional
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as dni, dhi, and zenith series, when available.
     dhi : Series, (optional, default None)

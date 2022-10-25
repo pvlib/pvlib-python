@@ -2918,11 +2918,11 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
     return dni
 
 
-def component_sum_irradiance(solar_zenith,
-                             ghi=None,
-                             dhi=None,
-                             dni=None,
-                             dni_clear=None):
+def complete_irradiance(solar_zenith,
+                        ghi=None,
+                        dhi=None,
+                        dni=None,
+                        dni_clear=None):
     r"""
     Use the component sum equations to calculate the missing series, using
     the other available time series. One of the three parameters (ghi, dhi,
@@ -2971,8 +2971,8 @@ def component_sum_irradiance(solar_zenith,
     elif dni is not None and ghi is not None and dhi is None:
         dhi = (ghi - dni * tools.cosd(solar_zenith))
     else:
-        err_txt = ("No component sum calculated. Please recheck \n"
-                   "passed ghi, dni, and dhi parameters to check \n"
+        err_txt = ("No component sum calculated. Please recheck "
+                   "passed ghi, dni, and dhi parameters to check "
                    "exactly one field out of the three is set to None.")
         raise ValueError(err_txt)
     # Merge the outputs into a master dataframe containing 'ghi', 'dhi',

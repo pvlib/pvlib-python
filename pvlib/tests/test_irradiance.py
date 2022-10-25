@@ -1085,7 +1085,7 @@ def test_clearness_index_zenith_independent(airmass_kt):
     assert_series_equal(out, expected)
 
 
-def test_component_sum_irradiance():
+def test_complete_irradiance():
     # Generate dataframe to test on
     times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='H')
     i = pd.DataFrame({'ghi': [372.103976116, 497.087579068],
@@ -1106,7 +1106,7 @@ def test_component_sum_irradiance():
                                 '2010-07-05 07:00:00-0700',
                                 '2010-07-05 08:00:00-0700']))
     # Test scenario where DNI is generated via component sum equation
-    component_sum_df = irradiance.component_sum_irradiance(
+    complete_df = irradiance.complete_irradiance(
         solar_position.apparent_zenith,
         ghi=i.ghi,
         dhi=i.dhi,
@@ -1114,9 +1114,9 @@ def test_component_sum_irradiance():
         dni_clear=clearsky.dni)
     # Assert that the ghi, dhi, and dni series match the original dataframe
     # values
-    assert_frame_equal(component_sum_df, i)
+    assert_frame_equal(complete_df, i)
     # Test scenario where GHI is generated via component sum equation
-    component_sum_df = irradiance.component_sum_irradiance(
+    complete_df = irradiance.complete_irradiance(
         solar_position.apparent_zenith,
         ghi=None,
         dhi=i.dhi,
@@ -1124,9 +1124,9 @@ def test_component_sum_irradiance():
         dni_clear=clearsky.dni)
     # Assert that the ghi, dhi, and dni series match the original dataframe
     # values
-    assert_frame_equal(component_sum_df, i)
+    assert_frame_equal(complete_df, i)
     # Test scenario where DHI is generated via component sum equation
-    component_sum_df = irradiance.component_sum_irradiance(
+    complete_df = irradiance.complete_irradiance(
         solar_position.apparent_zenith,
         ghi=i.ghi,
         dhi=None,
@@ -1134,18 +1134,18 @@ def test_component_sum_irradiance():
         dni_clear=clearsky.dni)
     # Assert that the ghi, dhi, and dni series match the original dataframe
     # values
-    assert_frame_equal(component_sum_df, i)
+    assert_frame_equal(complete_df, i)
     # Test scenario where all parameters are passed (throw error)
-    component_sum_df = assert_raises(ValueError,
-                                     irradiance.component_sum_irradiance,
+    complete_df = assert_raises(ValueError,
+                                     irradiance.complete_irradiance,
                                      solar_position.apparent_zenith,
                                      ghi=i.ghi,
                                      dhi=i.dhi,
                                      dni=i.dni,
                                      dni_clear=clearsky.dni)
     # Test scenario where only one parameter is passed (throw error)
-    component_sum_df = assert_raises(ValueError,
-                                     irradiance.component_sum_irradiance,
+    complete_df = assert_raises(ValueError,
+                                     irradiance.complete_irradiance,
                                      solar_position.apparent_zenith,
                                      ghi=None,
                                      dhi=None,

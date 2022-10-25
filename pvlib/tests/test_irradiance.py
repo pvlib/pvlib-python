@@ -1137,17 +1137,17 @@ def test_complete_irradiance():
     assert_frame_equal(complete_df, i)
     # Test scenario where all parameters are passed (throw error)
     complete_df = assert_raises(ValueError,
-                                     irradiance.complete_irradiance,
-                                     solar_position.apparent_zenith,
-                                     ghi=i.ghi,
-                                     dhi=i.dhi,
-                                     dni=i.dni,
-                                     dni_clear=clearsky.dni)
+                                irradiance.complete_irradiance,
+                                solar_position.apparent_zenith,
+                                ghi=i.ghi,
+                                dhi=i.dhi,
+                                dni=i.dni,
+                                dni_clear=clearsky.dni)
     # Test scenario where only one parameter is passed (throw error)
     complete_df = assert_raises(ValueError,
-                                     irradiance.complete_irradiance,
-                                     solar_position.apparent_zenith,
-                                     ghi=None,
-                                     dhi=None,
-                                     dni=i.dni,
-                                     dni_clear=clearsky.dni)
+                                irradiance.complete_irradiance,
+                                solar_position.apparent_zenith,
+                                ghi=None,
+                                dhi=None,
+                                dni=i.dni,
+                                dni_clear=clearsky.dni)

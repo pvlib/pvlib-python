@@ -21,7 +21,7 @@ Bug fixes
 
 Testing
 ~~~~~~~
-
+* Corrected a flawed test for :py:func:`~pvlib.irradiance.get_ground_diffuse` (:issue:`1569`, :pull:`1575`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -39,3 +39,4 @@ Contributors
 ~~~~~~~~~~~~
 * Kirsten Perry (:ghuser:`kperrynrel`)
 * Christian Orner (:ghuser:`chrisorner`)
+* Marcus Boumans (:ghuser:`bowie2211`)

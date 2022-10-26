@@ -2945,13 +2945,13 @@ def complete_irradiance(solar_zenith,
     ghi : Series, optional
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as dni, dhi, and zenith series, when available.
-    dhi : Series, (optional, default None)
+    dhi : Series, optional
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as ghi, dni, and zenith series, when available.
-    dni : Series, (optional, default None)
+    dni : Series, optional
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as ghi, dhi, and zenith series, when available.
-    dni_clear : Series, (optional, default None)
+    dni_clear : Series, optional
         Pandas series of clearsky dni data, calculated via the
         get_clearsky function. Must have the same datetime index as ghi, dhi,
         dni, and zenith series, when available. This is an optional field that

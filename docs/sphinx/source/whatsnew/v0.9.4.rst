@@ -10,7 +10,7 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
-* Added the component sum irradiance function to calculate the component sum value for GHI, DHI, and DNI values
+* Added a function to calculate one of GHI, DHI, and DNI from values of the other two.
   :py:func:`~pvlib.irradiance.complete_irradiance`
   (:issue:`1565`, :pull:`1567`)
 

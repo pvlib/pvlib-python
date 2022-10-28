@@ -754,8 +754,8 @@ def marion_integrate(function, surface_tilt, region, num=None):
 
 def schlick(aoi):
     """
-    Determine incidence angle modifier (IAM) using the Schlick approximation
-    to the Fresnel equations.
+    Determine incidence angle modifier (IAM) for direct irradiance using the
+    Schlick approximation to the Fresnel equations.
 
     The Schlick approximation was proposed in [1]_ as a computationally
     efficient alternative to computing the Fresnel factor in computer
@@ -777,7 +777,7 @@ def schlick(aoi):
     Returns
     -------
     iam : numeric
-        The incident angle modifier
+        The incident angle modifier.
 
     References
     ----------
@@ -825,10 +825,10 @@ def schlick_diffuse(surface_tilt):
     Returns
     -------
     iam_sky : numeric
-        The incident angle modifier for sky diffuse
+        The incident angle modifier for sky diffuse.
 
     iam_ground : numeric
-        The incident angle modifier for ground-reflected diffuse
+        The incident angle modifier for ground-reflected diffuse.
 
     References
     ----------
@@ -897,12 +897,12 @@ def fedis(aoi, n=1.5, n_ref=None):
         In [1]_ ``n_ref`` was set to 1.4585 for
         a fused silica dome over a CMP22, but in conventional
         PV applications it is appropriate to set ``n_ref=n`` (the default
-        behavior).
+        behavior). [unitless]
 
     Returns
     -------
     iam : numeric
-        The incident angle modifier
+        The incident angle modifier.
 
     References
     ----------
@@ -957,15 +957,15 @@ def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
         In [1]_ ``n_ref`` was set to 1.4585 for
         a fused silica dome over a CMP22, but in conventional
         PV applications it is appropriate to set ``n_ref=n`` (the default
-        behavior).
+        behavior). [unitless]
 
     Returns
     -------
     iam_sky : numeric
-        The incident angle modifier for sky diffuse
+        The incident angle modifier for sky diffuse.
 
     iam_ground : numeric
-        The incident angle modifier for ground-reflected diffuse
+        The incident angle modifier for ground-reflected diffuse.
 
     Notes
     -----

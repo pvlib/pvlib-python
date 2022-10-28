@@ -927,10 +927,10 @@ def fedis(aoi, n=1.5, n_ref=None):
         # reflectance for normal incidence with refractive index n_ref:
         r0 = ((n_ref - 1) / (n_ref + 1)) ** 2
 
-        # weighting function
-        w = (1 - rd0) / (1 - r0)
+        # correction coefficient for different indices of refraction
+        transmittance_ratio = (1 - rd0) / (1 - r0)
 
-        return w * iam_physical
+        return transmittance_ratio * iam_physical
 
 
 def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
@@ -992,6 +992,8 @@ def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
     cuk, cug = schlick_diffuse(surface_tilt)
 
     # weighting function
+    # note that this expression for term1 is algebraically equivalent to
+    # the "transmittance_ratio" in fedis()
     term1 = n*(n_ref+1)**2 / (n_ref*(n+1)**2)
     # note: the last coefficient here differs in sign from the reference
     polycoeffs = [2.77526e-09, 3.74953, -5.18727, 3.41186, -1.08794, 0.136060]

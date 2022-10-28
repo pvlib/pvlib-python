@@ -23,7 +23,7 @@ Bug fixes
 
 Testing
 ~~~~~~~
-
+* Corrected a flawed test for :py:func:`~pvlib.irradiance.get_ground_diffuse` (:issue:`1569`, :pull:`1575`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -44,3 +44,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Marcus Boumans (:ghuser:`bowie2211`)

@@ -2939,9 +2939,9 @@ def complete_irradiance(solar_zenith,
     Parameters
     ----------
     solar_zenith : Series
-        Refraction-corrected zenith angles in decimal
-        degrees, with datetime index. Angles must be >=0 and <=180. Must have
-        the same datetime index as ghi, dhi, and dni series, when available.
+        Zenith angles in decimal degrees, with datetime index.
+        Angles must be >=0 and <=180. Must have the same datetime index
+        as ghi, dhi, and dni series, when available.
     ghi : Series, optional
         Pandas series of dni data, with datetime index. Must have the same
         datetime index as dni, dhi, and zenith series, when available.
@@ -2971,9 +2971,8 @@ def complete_irradiance(solar_zenith,
     elif dni is not None and ghi is not None and dhi is None:
         dhi = (ghi - dni * tools.cosd(solar_zenith))
     else:
-        err_txt = ("No component sum calculated. Please recheck "
-                   "passed ghi, dni, and dhi parameters to check "
-                   "exactly one field out of the three is set to None.")
+        err_txt = ("No component sum calculated. Please check that "
+                   "exactly one of ghi, dhi and dni parameters is set to None")
         raise ValueError(err_txt)
     # Merge the outputs into a master dataframe containing 'ghi', 'dhi',
     # and 'dni' columns

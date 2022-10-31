@@ -1130,7 +1130,7 @@ def test_complete_irradiance():
                       'dhi': [356.543700, 465.44400],
                       'dni': [49.63565561689957, 62.10624908037814]},
                      index=times)
-    # Define the solar position and clearsky dataframes
+    # Define the solar position and clearsky dataframe
     solar_position = pd.DataFrame({'apparent_zenith': [71.7303262449161,
                                                        59.369],
                                    'zenith': [71.7764, 59.395]},

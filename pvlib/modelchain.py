@@ -1308,7 +1308,7 @@ class ModelChain:
             clearsky = self.location.get_clearsky(
                 weather.index, solar_position=self.results.solar_position)
             complete_irrad_df = pvlib.irradiance.complete_irradiance(
-                solar_zenith=self.results.solar_position.apparent_zenith,
+                solar_zenith=self.results.solar_position.zenith,
                 ghi=weather.ghi,
                 dhi=weather.dhi,
                 dni=None,
@@ -1317,7 +1317,7 @@ class ModelChain:
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
             complete_irrad_df = pvlib.irradiance.complete_irradiance(
-                solar_zenith=self.results.solar_position.apparent_zenith,
+                solar_zenith=self.results.solar_position.zenith,
                 ghi=None,
                 dhi=weather.dhi,
                 dni=weather.dni)
@@ -1325,7 +1325,7 @@ class ModelChain:
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
             complete_irrad_df = pvlib.irradiance.complete_irradiance(
-                solar_zenith=self.results.solar_position.apparent_zenith,
+                solar_zenith=self.results.solar_position.zenith,
                 ghi=weather.ghi,
                 dhi=None,
                 dni=weather.dni)

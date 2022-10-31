@@ -41,7 +41,6 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Christian Orner (:ghuser:`chrisorner`)
-* Marcus Boumans (:ghuser:`bowie2211`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * Marcus Boumans (:ghuser:`bowie2211`)
 * Yu Xie (:ghuser:`xieyupku`)

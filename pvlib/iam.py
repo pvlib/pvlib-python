@@ -893,16 +893,29 @@ def fedis(aoi, n=1.5, n_ref=None):
         of 1.5 was used for an IMT reference cell in [1]_. [unitless]
 
     n_ref : float, optional
-        Reference refractive index. If None (default), set equal to ``n``.
-        In [1]_ ``n_ref`` was set to 1.4585 for
-        a fused silica dome over a CMP22, but in conventional
-        PV applications it is appropriate to set ``n_ref=n`` (the default
-        behavior). [unitless]
+        Refractive index of the surface material for the reference device
+        measuring irradiance at normal incidence.  Mathematically, this is
+        the value of ``n`` for which IAM=1.0 at normal incidence.
+        If None (default), set equal to ``n``. See Notes for
+        possible use cases. [unitless]
 
     Returns
     -------
     iam : numeric
         The incident angle modifier.
+
+    See Also
+    --------
+    pvlib.iam.physical
+
+    Notes
+    -----
+    In most PV applications it is appropriate to set ``n_ref=n``
+    (the default behavior), but a custom ``n_ref`` may be useful when
+    using irradiance data from a pyranometer whose calibration does not
+    account for reflection off its glass dome.  It may also be used as
+    the original index of refraction if the module surface's refractive
+    index is changing over time (for example a degraded AR coating).
 
     References
     ----------
@@ -910,10 +923,6 @@ def fedis(aoi, n=1.5, n_ref=None):
        for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
-
-    See Also
-    --------
-    pvlib.iam.physical
     """
     iam_physical = physical(aoi, n, K=0, L=0)
 
@@ -953,11 +962,11 @@ def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
         of 1.5 was used for an IMT reference cell in [1]_. [unitless]
 
     n_ref : float, optional
-        Reference refractive index. If None (default), set equal to ``n``.
-        In [1]_ ``n_ref`` was set to 1.4585 for
-        a fused silica dome over a CMP22, but in conventional
-        PV applications it is appropriate to set ``n_ref=n`` (the default
-        behavior). [unitless]
+        Refractive index of the surface material for the reference device
+        measuring irradiance at normal incidence.  Mathematically, this is
+        the value of ``n`` for which IAM=1.0 at normal incidence.
+        If None (default), set equal to ``n``. See :py:func:`fedis` for
+        more information regardings its use. [unitless]
 
     Returns
     -------
@@ -966,6 +975,10 @@ def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
 
     iam_ground : numeric
         The incident angle modifier for ground-reflected diffuse.
+
+    See Also
+    --------
+    pvlib.iam.schlick_diffuse
 
     Notes
     -----
@@ -981,10 +994,6 @@ def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
 
     .. [2] Schlick, C. An inexpensive BRDF model for physically-based
        rendering. Computer graphics forum 13 (1994).
-
-    See Also
-    --------
-    pvlib.iam.schlick_diffuse
     """
     if n_ref is None:
         n_ref = n

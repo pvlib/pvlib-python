@@ -133,7 +133,7 @@ def test_get_ground_diffuse_simple_series(irrad_data):
 def test_get_ground_diffuse_albedo_0(irrad_data):
     ground_irrad = irradiance.get_ground_diffuse(
         40, irrad_data['ghi'], albedo=0)
-    assert 0 == ground_irrad.all()
+    assert (0 == ground_irrad).all()
 
 
 def test_get_ground_diffuse_albedo_series(times):

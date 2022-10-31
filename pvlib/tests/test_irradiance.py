@@ -8,8 +8,7 @@ import pandas as pd
 
 import pytest
 from numpy.testing import (assert_almost_equal,
-                           assert_allclose,
-                           assert_raises)
+                           assert_allclose)
 from pvlib import irradiance
 
 from .conftest import (
@@ -1136,18 +1135,16 @@ def test_complete_irradiance():
     # values
     assert_frame_equal(complete_df, i)
     # Test scenario where all parameters are passed (throw error)
-    complete_df = assert_raises(ValueError,
-                                irradiance.complete_irradiance,
-                                solar_position.apparent_zenith,
-                                ghi=i.ghi,
-                                dhi=i.dhi,
-                                dni=i.dni,
-                                dni_clear=clearsky.dni)
+    with pytest.raises(ValueError):
+        irradiance.complete_irradiance(solar_position.apparent_zenith,
+                                       ghi=i.ghi,
+                                       dhi=i.dhi,
+                                       dni=i.dni,
+                                       dni_clear=clearsky.dni)
     # Test scenario where only one parameter is passed (throw error)
-    complete_df = assert_raises(ValueError,
-                                irradiance.complete_irradiance,
-                                solar_position.apparent_zenith,
-                                ghi=None,
-                                dhi=None,
-                                dni=i.dni,
-                                dni_clear=clearsky.dni)
+    with pytest.raises(ValueError):
+        irradiance.complete_irradiance(solar_position.apparent_zenith,
+                                       ghi=None,
+                                       dhi=None,
+                                       dni=i.dni,
+                                       dni_clear=clearsky.dni)

@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
-import pvlib
+import pvlib  # used to avoid dni name collision in complete_irradiance
 
 
 # see References section of get_ground_diffuse function

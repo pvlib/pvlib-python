@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
-import pvlib
+import pvlib  # used to avoid dni name collision in complete_irradiance
 
 
 # see References section of get_ground_diffuse function
@@ -2970,9 +2970,10 @@ def complete_irradiance(solar_zenith,
     elif dni is not None and ghi is not None and dhi is None:
         dhi = (ghi - dni * tools.cosd(solar_zenith))
     else:
-        err_txt = ("No component sum calculated. Please check that "
-                   "exactly one of ghi, dhi and dni parameters is set to None")
-        raise ValueError(err_txt)
+        raise ValueError(
+            "Please check that exactly one of ghi, dhi and dni parameters "
+            "is set to None"
+        )
     # Merge the outputs into a master dataframe containing 'ghi', 'dhi',
     # and 'dni' columns
     component_sum_df = pd.DataFrame({'ghi': ghi,

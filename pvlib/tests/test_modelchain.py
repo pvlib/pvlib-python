@@ -1886,7 +1886,7 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
     """Check calculations"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='H')
-    i = pd.DataFrame({'dni': [49.63565561689957, 62.10624908037814],
+    i = pd.DataFrame({'dni': [49.756966, 62.153947],
                       'ghi': [372.103976116, 497.087579068],
                       'dhi': [356.543700, 465.44400]}, index=times)
 
@@ -1904,7 +1904,7 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
 
     mc.complete_irradiance(i[['dhi', 'ghi']])
     assert_series_equal(mc.results.weather['dni'],
-                        pd.Series([49.63565561689957, 62.10624908037814],
+                        pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))
 
 

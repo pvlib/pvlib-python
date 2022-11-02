@@ -58,7 +58,7 @@ jobs:
 
       - name: Install bare Python ${{ matrix.python-version }}${{ matrix.suffix }}
         if: matrix.environment-type == 'bare'
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 

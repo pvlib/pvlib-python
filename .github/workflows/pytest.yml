@@ -40,12 +40,13 @@ jobs:
 
       - name: Install Conda environment with Micromamba
         if: matrix.environment-type == 'conda'
-        uses: mamba-org/provision-with-micromamba@v12
+        uses: mamba-org/provision-with-micromamba@v14
         with:
           environment-file: ${{ env.REQUIREMENTS }}
           cache-downloads: true
           extra-specs: |
             python=${{ matrix.python-version }}
+          channel-priority: flexible
         env:
           # build requirement filename.  First replacement is for the python
           # version, second is to add "-min" if needed

@@ -4,9 +4,10 @@ import pandas as pd
 import numpy as np
 from pvlib import spectrum
 
-from .conftest import DATA_DIR
+from .conftest import DATA_DIR, assert_series_equal
 
 SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
+
 
 @pytest.fixture
 def spectrl2_data():
@@ -140,7 +141,7 @@ def test_get_am15g():
 
 def test_calc_spectral_mismatch_field(spectrl2_data):
     # test that the mismatch is calculated correctly with
-    # - default and custom reference sepctrum
+    # - default and custom reference spectrum
     # - single or multiple sun spectra
 
     # sample data
@@ -171,3 +172,137 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
     mm = spectrum.calc_spectral_mismatch_field(sr, e_sun=e_sun)
     assert mm.index is e_sun.index
     assert_allclose(mm, expected, rtol=1e-6)
+
+
+def test_martin_ruiz_spectral_modifier():
+    # tests with only cell_type given
+    # test with scalar values
+    clearness_index = 0.82
+    airmass_absolute = 1.2
+    # Expected values: Direct | Sky diffuse | Ground diffuse
+    # Do not change order in any 'expected' values list
+    expected = (1.00197741, 0.71632057, 0.94757498)
+
+    result = \
+        spectrum.martin_ruiz_spectral_modifier(clearness_index,
+                                               airmass_absolute,
+                                               cell_type='monosi')
+    assert_approx_equal(result['direct'], expected[0])
+    assert_approx_equal(result['sky_diffuse'], expected[1])
+    assert_approx_equal(result['ground_diffuse'], expected[2])
+
+    # test NaN in, NaN out
+    clearness_index = 0.82
+    airmass_absolute = np.nan
+    result = spectrum.martin_ruiz_spectral_modifier(clearness_index,
+                                                    airmass_absolute,
+                                                    cell_type='monosi')
+    assert result.isna().all()
+
+    # test with Series input
+    clearness_index = pd.Series([0.56, 0.67, 0.80])
+    airmass_absolute = pd.Series([1.6, 1.4, 1.2])
+    expected = (
+        pd.Series([1.088928, 1.050989, 1.008082]),  # Direct
+        pd.Series([0.901327, 0.816901, 0.726754]),  # Sky diffuse
+        pd.Series([1.019917, 0.986947, 0.949899]))  # Ground diffuse
+
+    result = \
+        spectrum.martin_ruiz_spectral_modifier(clearness_index,
+                                               airmass_absolute,
+                                               cell_type='polysi')
+    assert_series_equal(result['direct'], expected[0], atol=1e-5)
+    assert_series_equal(result['sky_diffuse'], expected[1], atol=1e-5)
+    assert_series_equal(result['ground_diffuse'], expected[2], atol=1e-5)
+
+    # test results when giving 'model_parameters' as DataFrame
+    clearness_index = np.array([0.56, 0.612, 0.664, 0.716, 0.768, 0.82])
+    airmass_absolute = np.array([2, 1.8, 1.6, 1.4, 1.2, 1])
+    model_parameters = pd.DataFrame({  # monosi values
+        'direct': [1.029, -0.313, 0.00524],
+        'sky diffuse':  [0.764, -0.882, -0.0204],
+        'ground diffuse':  [0.97, -0.244, 0.0129]},
+        index=('c', 'a', 'b'))
+    expected = (  # Direct / Sky diffuse / Ground diffuse
+        np.array([1.09149, 1.07274, 1.05432, 1.03621, 1.01841, 1.00092]),
+        np.array([0.88636, 0.85009, 0.81530, 0.78193, 0.74993, 0.71924]),
+        np.array([1.02011, 1.00465, 0.98943, 0.97443, 0.95967, 0.94513]))
+
+    result = spectrum.martin_ruiz_spectral_modifier(
+        clearness_index,
+        airmass_absolute,
+        cell_type='asi',
+        model_parameters=model_parameters)
+    assert_allclose(result['direct'], expected[0], atol=1e-5)
+    assert_allclose(result['sky_diffuse'], expected[1], atol=1e-5)
+    assert_allclose(result['ground_diffuse'], expected[2], atol=1e-5)
+
+    # test warning is raised with both 'cell_type' and 'model_parameters'
+    # test results when giving 'model_parameters' as dict
+    clearness_index = np.array([0.56, 0.612, 0.664, 0.716, 0.768, 0.82])
+    airmass_absolute = np.array([2, 1.8, 1.6, 1.4, 1.2, 1])
+    model_parameters = {  # Using 'monosi' values
+        'direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
+        'sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},
+        'ground_diffuse': {'c': 0.970, 'a': -2.44e-1, 'b': 1.29e-2}}
+    expected = (  # Direct / Sky diffuse / Ground diffuse
+        np.array([1.09149, 1.07274, 1.05432, 1.03621, 1.01841, 1.00092]),
+        np.array([0.88636, 0.85009, 0.81530, 0.78193, 0.74993, 0.71924]),
+        np.array([1.02011, 1.00465, 0.98943, 0.97443, 0.95967, 0.94513]))
+
+    with pytest.warns(UserWarning,
+                      match='Both "cell_type" and "model_parameters" given! '
+                            'Using provided "model_parameters".'):
+        result = spectrum.martin_ruiz_spectral_modifier(
+            clearness_index,
+            airmass_absolute,
+            cell_type='asi',
+            model_parameters=model_parameters)
+        assert_allclose(result['direct'], expected[0], atol=1e-5)
+        assert_allclose(result['sky_diffuse'], expected[1], atol=1e-5)
+        assert_allclose(result['ground_diffuse'], expected[2], atol=1e-5)
+
+
+def test_martin_ruiz_spectral_modifier_errors():
+    # mock values to run errors
+    clearness_index = 0.75
+    airmass_absolute = 1.6
+    # test exception raised when cell_type does not exist in algorithm
+    with pytest.raises(NotImplementedError,
+                       match='Cell type parameters not defined in algorithm!'):
+        _ = spectrum.martin_ruiz_spectral_modifier(clearness_index,
+                                                   airmass_absolute,
+                                                   cell_type='')
+    # test exception raised when missing cell_type and model_parameters
+    with pytest.raises(TypeError,
+                       match='You must pass at least "cell_type" '
+                             'or "model_parameters" as arguments!'):
+        _ = spectrum.martin_ruiz_spectral_modifier(clearness_index,
+                                                   airmass_absolute)
+    # tests for inadequate "model_parameters"
+    clearness_index = 0.74
+    airmass_absolute = 1.5
+    # test for error on irradiances keys
+    model_parameters = {
+        'direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
+        'sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},
+        ':(': {'c': 0.970, 'a': -2.44e-1, 'b': 1.29e-2}}
+    with pytest.raises(ValueError,
+                       match='You must specify model parameters for exact '
+                             'irradiance components '):
+        _ = spectrum.martin_ruiz_spectral_modifier(
+            clearness_index,
+            airmass_absolute,
+            model_parameters=model_parameters)
+    # test for error on params keys
+    model_parameters = {
+        'direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
+        'sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},
+        'ground_diffuse': {'z': 0.970, 'x': -2.44e-1, 'y': 1.29e-2}}
+    with pytest.raises(ValueError,
+                       match="You must specify model parameters with keys "
+                             "'a','b','c' for each irradiation component."):
+        _ = spectrum.martin_ruiz_spectral_modifier(
+            clearness_index,
+            airmass_absolute,
+            model_parameters=model_parameters)

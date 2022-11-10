@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 import os
+from warnings import warn
 
 
 def get_example_spectral_response(wavelength=None):
@@ -235,3 +236,153 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
         smm = pd.Series(smm, index=e_sun.index)
 
     return smm
+
+
+def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
+                                  cell_type=None, model_parameters=None):
+    r"""
+    Calculate mismatch modifiers for POA direct, sky diffuse and ground diffuse
+    irradiances due to material's spectral response to spectrum characterised
+    by the clearness index and the absolute airmass, with respect to the
+    standard spectrum.
+
+    .. warning::
+        Included model parameters for ``monosi``, ``polysi`` and ``asi`` were
+        estimated using the airmass model ``kasten1966`` [1]_. It is heavily
+        recommended to use the same model in order to not introduce errors.
+        See :py:func:`~pvlib.atmosphere.get_relative_airmass`.
+
+    Parameters
+    ----------
+    clearness_index : numeric
+        Clearness index of the sky.
+        Should be obtained through :py:func:`~pvlib.irradiance.clearness_index`
+
+    airmass_absolute : numeric
+        Absolute airmass. Give attention to algorithm used (``kasten1966`` is
+        recommended for default parameters of ``monosi``, ``polysi`` and
+        ``asi``, as used in [1]_).
+
+    cell_type : string or None, default None
+        Specifies material of the cell in order to infer model parameters.
+        Allowed types are ``monosi``, ``polysi`` and ``asi``, either lower or
+        upper case. If None, the parameters must be provided.
+
+    model_parameters : dict-like or None, default None
+        In case you want to specify your model parameters use a dict or a
+        ``pd.DataFrame`` as follows:
+
+        .. code-block:: python
+
+            # Using a dict
+            model_parameters = {
+                'direct': {'c': c1, 'a': a1, 'b': b1},
+                'sky_diffuse': {'c': c2, 'a': a2, 'b': b2},
+                'ground_diffuse': {'c': c3, 'a': a3, 'b': b3}
+            }
+            # Using a pd.DataFrame
+            model_parameters = pd.DataFrame({
+                'direct': [a1, b1, c1],
+                'sky diffuse':  [a2, b2, c2],
+                'ground diffuse':  [a3, b3, c3]},
+                index=('a', 'b', 'c'))
+
+        ``a``, ``b`` and ``c`` must be scalar.
+
+    Returns
+    -------
+    Mismatch modifiers : pd.Series of numeric
+        Modifiers for direct, sky diffuse and ground diffuse irradiances, with
+        indexes ``direct``, ``sky_diffuse``, ``ground_diffuse``.
+        Each mismatch modifier should be multiplied by its corresponding
+        POA component.
+
+    Raises
+    ------
+    ValueError
+        If ``model_parameters`` is not suitable. See example given above.
+    TypeError
+        If neither ``cell_type`` nor ``model_parameters`` are given.
+    NotImplementedError
+        If ``cell_type`` is not found in internal table of parameters.
+
+    Notes
+    -----
+    The mismatch modifier is defined as
+
+    .. math:: M = c \cdot \exp( a \cdot (K_t - 0.74) + b \cdot (AM - 1.5) )
+    
+    where ``a``, ``b`` and ``c`` are the model parameters, different for each
+    irradiance component.
+
+    References
+    ----------
+    .. [1] Martín, N. and Ruiz, J.M. (1999), A new method for the spectral
+       characterisation of PV modules. Prog. Photovolt: Res. Appl., 7: 299-310.
+       :doi:10.1002/(SICI)1099-159X(199907/08)7:4<299::AID-PIP260>3.0.CO;2-0
+
+    See Also
+    --------
+    pvlib.irradiance.clearness_index
+    pvlib.atmosphere.get_relative_airmass
+    pvlib.atmosphere.get_absolute_airmass
+    pvlib.atmosphere.first_solar_spectral_correction
+    """
+
+    IRRAD_COMPONENTS = ('direct', 'sky_diffuse', 'ground_diffuse')
+    # Fitting parameters directly from [1]_
+    MARTIN_RUIZ_PARAMS = pd.DataFrame(
+        index=('monosi', 'polysi', 'asi'),
+        columns=pd.MultiIndex.from_product([IRRAD_COMPONENTS,
+                                           ('c', 'a', 'b')]),
+        data=[  # Direct(c,a,b)  | Sky diffuse(c,a,b) | Ground diffuse(c,a,b)
+            [1.029, -.313, 524e-5, .764, -.882, -.0204, .970, -.244, .0129],
+            [1.029, -.311, 626e-5, .764, -.929, -.0192, .970, -.270, .0158],
+            [1.024, -.222, 920e-5, .840, -.728, -.0183, .989, -.219, .0179],
+        ])
+
+    # Argument validation and choose components and model parameters
+    if cell_type is not None and model_parameters is None:
+        # Infer parameters from cell material
+        cell_type_lower = cell_type.lower()
+        if cell_type_lower in MARTIN_RUIZ_PARAMS.index:
+            _params = MARTIN_RUIZ_PARAMS.loc[cell_type_lower]
+        else:
+            raise NotImplementedError('Cell type parameters not defined in '
+                                      'algorithm! Allowed types are '
+                                      f'{tuple(MARTIN_RUIZ_PARAMS.index)}')
+    elif cell_type is None and model_parameters is None:
+        raise TypeError('You must pass at least "cell_type" '
+                        'or "model_parameters" as arguments!')
+    elif model_parameters is not None:
+        # Use user-defined model parameters
+        # Validate 'model_parameters' dict keys and sub-dicts keys
+        if (set(IRRAD_COMPONENTS) != model_parameters.keys()):
+            raise ValueError('You must specify model parameters for exact '
+                             f'irradiance components {IRRAD_COMPONENTS}')
+        if any([{'a', 'b', 'c'} != model_parameters[irrad_type].keys()
+                for irrad_type in IRRAD_COMPONENTS]):
+            raise ValueError("You must specify model parameters with keys "
+                             "'a','b','c' for each irradiation component.")
+
+        _params = model_parameters
+        if cell_type is not None:
+            warn('Both "cell_type" and "model_parameters" given! '
+                 'Using provided "model_parameters".')
+
+    # Compute difference to avoid recalculating inside loop
+    kt_delta = clearness_index - 0.74
+    am_delta = airmass_absolute - 1.5
+
+    modifiers = pd.Series()
+
+    # Order of irradiations shouldn't be changed
+    # Values are tested in return order in test_martin_ruiz_spectral_modifier
+    for irrad_type in IRRAD_COMPONENTS:
+        _coeffs = _params[irrad_type]
+
+        modifier = _coeffs['c'] * np.exp(_coeffs['a'] * kt_delta
+                                         + _coeffs['b'] * am_delta)
+        modifiers[irrad_type] = modifier
+
+    return modifiers

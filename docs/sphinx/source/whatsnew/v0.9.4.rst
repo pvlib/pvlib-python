@@ -20,6 +20,8 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
+* Fixed bug in :py:func:`pvlib.shading.masking_angle` and :py:func:`pvlib.bifacial.infinite_sheds._ground_angle`
+  where zero ``gcr`` input caused a ZeroDivisionError (:issue:`1576`, :pull:`1589`)
 
 Testing
 ~~~~~~~
@@ -43,3 +45,4 @@ Contributors
 * Christian Orner (:ghuser:`chrisorner`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * Marcus Boumans (:ghuser:`bowie2211`)
+* Karel De Brabandere (:ghuser:`kdebrab`)

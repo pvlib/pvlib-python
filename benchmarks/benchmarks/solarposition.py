@@ -16,22 +16,16 @@ else:
     sun_rise_set_transit_spa = solarposition.get_sun_rise_set_transit
 
 
-class SolarPosition:
+class SolarPositionSlow:
     params = [1, 10, 100]  # number of days
     param_names = ['ndays']
 
     def setup(self, ndays):
-        self.times = pd.date_range(start='20180601', freq='1min',
-                                   periods=1440*ndays)
-        self.times_localized = self.times.tz_localize('Etc/GMT+7')
+        self.times_localized = pd.date_range(
+            start='20180601', freq='1min',
+            periods=1440 * ndays, tz='Etc/GMT+7')
         self.lat = 35.1
         self.lon = -106.6
-        self.times_daily = pd.date_range(
-            start='20180601', freq='24h', periods=ndays, tz='Etc/GMT+7')
-
-    # GH 512
-    def time_ephemeris(self, ndays):
-        solarposition.ephemeris(self.times, self.lat, self.lon)
 
     # GH 512
     def time_ephemeris_localized(self, ndays):
@@ -43,23 +37,73 @@ class SolarPosition:
     def time_pyephem(self, ndays):
         solarposition.pyephem(self.times_localized, self.lat, self.lon)
 
-    def time_sun_rise_set_transit_spa(self, ndays):
-        sun_rise_set_transit_spa(self.times_daily, self.lat, self.lon)
+    def time_nrel_earthsun_distance(self, ndays):
+        solarposition.nrel_earthsun_distance(self.times_localized)
 
-    def time_sun_rise_set_transit_ephem(self, ndays):
-        solarposition.sun_rise_set_transit_ephem(
-            self.times_daily, self.lat, self.lon)
+    def time_pyephem_earthsun_distance(self, ndays):
+        solarposition.pyephem_earthsun_distance(self.times_localized)
+
+
+class SolarPositionFast:
+    params = [1, 365 * 10, 365 * 100]
+    param_names = ['ndays']  # provide informative names for the parameters
+
+    def setup(self, ndays):
+        self.lat = 35.1
+        self.lon = -106.6
+        self.times_daily = pd.date_range(
+            start='20180601', freq='24h', periods=ndays, tz='Etc/GMT+7')
 
     def time_sun_rise_set_transit_geometric_full_comparison(self, ndays):
         dayofyear = self.times_daily.dayofyear
         declination = solarposition.declination_spencer71(dayofyear)
-        equation_of_time = solarposition.equation_of_time_spencer71(dayofyear)
+        equationoftime = solarposition.equation_of_time_spencer71(dayofyear)
         solarposition.sun_rise_set_transit_geometric(
             self.times_daily, self.lat, self.lon, declination,
-            equation_of_time)
+            equationoftime)
 
-    def time_nrel_earthsun_distance(self, ndays):
-        solarposition.nrel_earthsun_distance(self.times_localized)
+    def time__local_times_from_hours_full_comparison(self, ndays):
+        dayofyear = self.times_daily.dayofyear
+        equationoftime = solarposition.equation_of_time_spencer71(dayofyear)
+        hourangle = solarposition.hour_angle(self.times_daily,
+                                             self.lon, equationoftime)
+        solarposition._hour_angle_to_hours(self.times_daily,
+                                           hourangle, self.lon, equationoftime)
+
+    def time_solar_azimuth_analytical_full_comparison(self, nadys):
+        dayofyear = self.times_daily.dayofyear
+        equationoftime = solarposition.equation_of_time_spencer71(dayofyear)
+        declination = solarposition.declination_spencer71(dayofyear)
+        hourangle = solarposition.hour_angle(self.times_daily,
+                                             self.lon, equationoftime)
+        zenith = solarposition.solar_zenith_analytical(self.lat,
+                                                       hourangle, declination)
+        solarposition.solar_azimuth_analytical(self.lat,
+                                               hourangle, declination, zenith)
+
+    def time_calculate_simple_day_angle(self, ndays):
+        solarposition._calculate_simple_day_angle(self.times_daily.dayofyear)
+
+    def time_equation_of_time_pvcdrom(self, ndays):
+        solarposition.equation_of_time_pvcdrom(self.times_daily.dayofyear)
+
+    def time_declination_cooper69(self, ndays):
+        solarposition.declination_cooper69(self.times_daily.dayofyear)
+
+    def time_sun_rise_set_transit_spa(self, ndays):
+        sun_rise_set_transit_spa(self.times_daily, self.lat, self.lon)
+
+    def time_sun_rise_set_transit_geometric_full_comparison(self, ndays):
+        dayofyear = self.times_daily.dayofyear
+        declination = solarposition.declination_spencer71(dayofyear)
+        equationoftime = solarposition.equation_of_time_spencer71(dayofyear)
+        solarposition.sun_rise_set_transit_geometric(
+            self.times_daily, self.lat, self.lon, declination,
+            equationoftime)
+
+    def time_sun_rise_set_transit_ephem(self, ndays):
+        solarposition.sun_rise_set_transit_ephem(
+            self.times_daily, self.lat, self.lon)
 
 
 class SolarPositionCalcTime:

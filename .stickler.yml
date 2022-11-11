@@ -5,4 +5,4 @@ linters:
         ignore: E201,E241,E226,W503,W504
 files:
     ignore:
-        - 'pvlib/_version.py'
+        - 'pvlib/version.py'

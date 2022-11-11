@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from pvlib.tools import cosd, sind, tand
+from pvlib.tools import cosd, sind, tand, acosd, asind
 from pvlib.pvsystem import (
     PVSystem, Array, SingleAxisTrackerMount, _unwrap_single_value
 )
@@ -20,7 +20,8 @@ class SingleAxisTracker(PVSystem):
     ----------
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
-        axis_azimuth) with respect to horizontal, in decimal degrees.
+        ``axis_azimuth``) with respect to horizontal.
+        ``axis_tilt`` must be >= 0 and <= 90. [degree]
 
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
@@ -53,7 +54,7 @@ class SingleAxisTracker(PVSystem):
         using a right-handed convention. For example, trackers with axis
         azimuth of 180 degrees (heading south) will have a negative cross-axis
         tilt if the tracker axes plane slopes down to the east and positive
-        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        cross-axis tilt if the tracker axes plane slopes down to the west. Use
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
 
@@ -187,7 +188,8 @@ class SingleAxisTracker(PVSystem):
     @_unwrap_single_value
     def get_irradiance(self, surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
+                       albedo=None, dni_extra=None, airmass=None,
+                       model='haydavies',
                        **kwargs):
         """
         Uses the :func:`irradiance.get_total_irradiance` function to
@@ -214,6 +216,8 @@ class SingleAxisTracker(PVSystem):
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
         dni_extra : float or Series, default None
             Extraterrestrial direct normal irradiance
         airmass : float or Series, default None
@@ -244,6 +248,13 @@ class SingleAxisTracker(PVSystem):
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)
 
+        if albedo is None:
+            # assign default albedo here because SingleAxisTracker
+            # initializes albedo to None
+            albedo = 0.25
+
+        albedo = self._validate_per_array(albedo, system_wide=True)
+
         return tuple(
             irradiance.get_total_irradiance(
                 surface_tilt,
@@ -254,10 +265,10 @@ class SingleAxisTracker(PVSystem):
                 dni_extra=dni_extra,
                 airmass=airmass,
                 model=model,
-                albedo=self.arrays[0].albedo,
+                albedo=albedo,
                 **kwargs)
-            for array, dni, ghi, dhi in zip(
-                self.arrays, dni, ghi, dhi
+            for array, dni, ghi, dhi, albedo in zip(
+                self.arrays, dni, ghi, dhi, albedo
             )
         )
 
@@ -294,7 +305,8 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
-        axis_azimuth) with respect to horizontal, in decimal degrees.
+        ``axis_azimuth``) with respect to horizontal.
+        ``axis_tilt`` must be >= 0 and <= 90. [degree]
 
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
@@ -327,16 +339,16 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         using a right-handed convention. For example, trackers with axis
         azimuth of 180 degrees (heading south) will have a negative cross-axis
         tilt if the tracker axes plane slopes down to the east and positive
-        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        cross-axis tilt if the tracker axes plane slopes down to the west. Use
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
 
     Returns
     -------
     dict or DataFrame with the following columns:
-        * `tracker_theta`: The rotation angle of the tracker.
-          tracker_theta = 0 is horizontal, and positive rotation angles are
-          clockwise. [degrees]
+        * `tracker_theta`: The rotation angle of the tracker is a right-handed
+          rotation defined by `axis_azimuth`.
+          tracker_theta = 0 is horizontal. [degrees]
         * `aoi`: The angle-of-incidence of direct irradiance onto the
           rotated panel surface. [degrees]
         * `surface_tilt`: The angle between the panel surface and the earth
@@ -349,6 +361,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     --------
     pvlib.tracking.calc_axis_tilt
     pvlib.tracking.calc_cross_axis_tilt
+    pvlib.tracking.calc_surface_orientation
 
     References
     ----------
@@ -396,9 +409,10 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     cos_axis_tilt = cosd(axis_tilt)
     sin_axis_tilt = sind(axis_tilt)
     xp = x*cos_axis_azimuth - y*sin_axis_azimuth
-    yp = (x*cos_axis_tilt*sin_axis_azimuth
-          + y*cos_axis_tilt*cos_axis_azimuth
-          - z*sin_axis_tilt)
+    # not necessary to calculate y'
+    # yp = (x*cos_axis_tilt*sin_axis_azimuth
+    #       + y*cos_axis_tilt*cos_axis_azimuth
+    #       - z*sin_axis_tilt)
     zp = (x*sin_axis_tilt*sin_axis_azimuth
           + y*sin_axis_tilt*cos_axis_azimuth
           + z*cos_axis_tilt)
@@ -446,81 +460,18 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # system-plane normal
     tracker_theta = np.clip(tracker_theta, -max_angle, max_angle)
 
-    # Calculate panel normal vector in panel-oriented x, y, z coordinates.
-    # y-axis is axis of tracker rotation. tracker_theta is a compass angle
-    # (clockwise is positive) rather than a trigonometric angle.
-    # NOTE: the *0 is a trick to preserve NaN values.
-    panel_norm = np.array([sind(tracker_theta),
-                           tracker_theta*0,
-                           cosd(tracker_theta)])
-
-    # sun position in vector format in panel-oriented x, y, z coordinates
-    sun_vec = np.array([xp, yp, zp])
-
-    # calculate angle-of-incidence on panel
-    # TODO: use irradiance.aoi
-    projection = np.clip(np.sum(sun_vec*panel_norm, axis=0), -1, 1)
-    aoi = np.degrees(np.arccos(projection))
-
-    # Calculate panel tilt and azimuth in a coordinate system where the panel
-    # tilt is the angle from horizontal, and the panel azimuth is the compass
-    # angle (clockwise from north) to the projection of the panel's normal to
-    # the earth's surface. These outputs are provided for convenience and
-    # comparison with other PV software which use these angle conventions.
-
-    # Project normal vector to earth surface. First rotate about x-axis by
-    # angle -axis_tilt so that y-axis is also parallel to earth surface, then
-    # project.
-
-    # Calculate standard rotation matrix
-    rot_x = np.array([[1, 0, 0],
-                      [0, cosd(-axis_tilt), -sind(-axis_tilt)],
-                      [0, sind(-axis_tilt), cosd(-axis_tilt)]])
-
-    # panel_norm_earth contains the normal vector expressed in earth-surface
-    # coordinates (z normal to surface, y aligned with tracker axis parallel to
-    # earth)
-    panel_norm_earth = np.dot(rot_x, panel_norm).T
-
-    # projection to plane tangent to earth surface, in earth surface
-    # coordinates
-    projected_normal = np.array([panel_norm_earth[:, 0],
-                                 panel_norm_earth[:, 1],
-                                 panel_norm_earth[:, 2]*0]).T
-
-    # calculate vector magnitudes
-    projected_normal_mag = np.sqrt(np.nansum(projected_normal**2, axis=1))
-
-    # renormalize the projected vector, avoid creating nan values.
-    non_zeros = projected_normal_mag != 0
-    projected_normal[non_zeros] = (projected_normal[non_zeros].T /
-                                   projected_normal_mag[non_zeros]).T
-
-    # calculation of surface_azimuth
-    surface_azimuth = \
-        np.degrees(np.arctan2(projected_normal[:, 1], projected_normal[:, 0]))
-
-    # Rotate 0 reference from panel's x-axis to its y-axis and then back to
-    # north.
-    surface_azimuth = 90 - surface_azimuth + axis_azimuth
-
-    # Map azimuth into [0,360) domain.
-    with np.errstate(invalid='ignore'):
-        surface_azimuth = surface_azimuth % 360
-
-    # Calculate surface_tilt
-    dotproduct = (panel_norm_earth * projected_normal).sum(axis=1)
-    # for edge cases like axis_tilt=90, numpy's SIMD can produce values like
-    # dotproduct = (1 + 2e-16). Clip off the excess so that arccos works:
-    dotproduct = np.clip(dotproduct, -1, 1)
-    surface_tilt = 90 - np.degrees(np.arccos(dotproduct))
+    # Calculate auxiliary angles
+    surface = calc_surface_orientation(tracker_theta, axis_tilt, axis_azimuth)
+    surface_tilt = surface['surface_tilt']
+    surface_azimuth = surface['surface_azimuth']
+    aoi = irradiance.aoi(surface_tilt, surface_azimuth,
+                         apparent_zenith, apparent_azimuth)
 
     # Bundle DataFrame for return values and filter for sun below horizon.
     out = {'tracker_theta': tracker_theta, 'aoi': aoi,
-           'surface_tilt': surface_tilt, 'surface_azimuth': surface_azimuth}
+           'surface_azimuth': surface_azimuth, 'surface_tilt': surface_tilt}
     if index is not None:
         out = pd.DataFrame(out, index=index)
-        out = out[['tracker_theta', 'aoi', 'surface_azimuth', 'surface_tilt']]
         out[zen_gt_90] = np.nan
     else:
         out = {k: np.where(zen_gt_90, np.nan, v) for k, v in out.items()}
@@ -528,10 +479,67 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     return out
 
 
+def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
+    """
+    Calculate the surface tilt and azimuth angles for a given tracker rotation.
+
+    Parameters
+    ----------
+    tracker_theta : numeric
+        Tracker rotation angle as a right-handed rotation around
+        the axis defined by ``axis_tilt`` and ``axis_azimuth``.  For example,
+        with ``axis_tilt=0`` and ``axis_azimuth=180``, ``tracker_theta > 0``
+        results in ``surface_azimuth`` to the West while ``tracker_theta < 0``
+        results in ``surface_azimuth`` to the East. [degree]
+    axis_tilt : float, default 0
+        The tilt of the axis of rotation with respect to horizontal.
+        ``axis_tilt`` must be >= 0 and <= 90.  [degree]
+    axis_azimuth : float, default 0
+        A value denoting the compass direction along which the axis of
+        rotation lies. Measured east of north. [degree]
+
+    Returns
+    -------
+    dict or DataFrame
+        Contains keys ``'surface_tilt'`` and ``'surface_azimuth'`` representing
+        the module orientation accounting for tracker rotation and axis
+        orientation. [degree]
+
+    References
+    ----------
+    .. [1] William F. Marion and Aron P. Dobos, "Rotation Angle for the Optimum
+       Tracking of One-Axis Trackers", Technical Report NREL/TP-6A20-58891,
+       July 2013. :doi:`10.2172/1089596`
+    """
+    with np.errstate(invalid='ignore', divide='ignore'):
+        surface_tilt = acosd(cosd(tracker_theta) * cosd(axis_tilt))
+
+        # clip(..., -1, +1) to prevent arcsin(1 + epsilon) issues:
+        azimuth_delta = asind(np.clip(sind(tracker_theta) / sind(surface_tilt),
+                                      a_min=-1, a_max=1))
+        # Combine Eqs 2, 3, and 4:
+        azimuth_delta = np.where(abs(tracker_theta) < 90,
+                                 azimuth_delta,
+                                 -azimuth_delta + np.sign(tracker_theta) * 180)
+        # handle surface_tilt=0 case:
+        azimuth_delta = np.where(sind(surface_tilt) != 0, azimuth_delta, 90)
+        surface_azimuth = (axis_azimuth + azimuth_delta) % 360
+
+    out = {
+        'surface_tilt': surface_tilt,
+        'surface_azimuth': surface_azimuth,
+    }
+    if hasattr(tracker_theta, 'index'):
+        out = pd.DataFrame(out)
+    return out
+
+
 def calc_axis_tilt(slope_azimuth, slope_tilt, axis_azimuth):
     """
     Calculate tracker axis tilt in the global reference frame when on a sloped
-    plane.
+    plane. Axis tilt is the inclination of the tracker rotation axis with
+    respect to horizontal, ranging from 0 degrees (horizontal axis) to 90
+    degrees (vertical axis).
 
     Parameters
     ----------
@@ -633,7 +641,7 @@ def calc_cross_axis_tilt(
     specified using a right-handed convention. For example, trackers with axis
     azimuth of 180 degrees (heading south) will have a negative cross-axis tilt
     if the tracker axes plane slopes down to the east and positive cross-axis
-    tilt if the tracker axes plane slopes up to the east.
+    tilt if the tracker axes plane slopes down to the west.
 
     Parameters
     ----------
@@ -646,7 +654,8 @@ def calc_cross_axis_tilt(
     axis_azimuth : float
         direction of tracker axes projected on the horizontal [degrees]
     axis_tilt : float
-        tilt of trackers relative to horizontal [degrees]
+        tilt of trackers relative to horizontal.  ``axis_tilt`` must be >= 0
+        and <= 90. [degree]
 
     Returns
     -------

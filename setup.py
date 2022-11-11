@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 
 import os
-import sys
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_namespace_packages
     from setuptools.extension import Extension
 except ImportError:
     raise RuntimeError('setuptools is required')
-
-
-import versioneer
 
 
 DESCRIPTION = ('A set of functions and classes for simulating the ' +
@@ -44,7 +40,7 @@ INSTALL_REQUIRES = ['numpy >= 1.16.0',
                     'requests',
                     'scipy >= 1.2.0',
                     'h5py',
-                    'dataclasses; python_version < "3.7"']
+                    'importlib-metadata; python_version < "3.8"']
 
 TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
@@ -75,7 +71,7 @@ setuptools_kwargs = {
     'zip_safe': False,
     'scripts': [],
     'include_package_data': True,
-    'python_requires': '>=3.6'
+    'python_requires': '>=3.7'
 }
 
 PROJECT_URLS = {
@@ -85,7 +81,17 @@ PROJECT_URLS = {
 }
 
 # set up pvlib packages to be installed and extensions to be compiled
-PACKAGES = ['pvlib']
+
+# the list of packages is not just the top-level "pvlib", but also
+# all sub-packages like "pvlib.bifacial".  Here, setuptools's definition of
+# "package" is, in effect, any directory you want to include in the
+# distribution.  So even "pvlib.data" counts as a package, despite
+# not having any python code or even an __init__.py.
+# setuptools.find_namespace_packages() will find all these directories,
+# although to exclude "docs", "ci", etc., we include only names matching
+# the "pvlib*" glob.  Although note that "docs" does get added separately
+# via the MANIFEST.in spec.
+PACKAGES = find_namespace_packages(include=['pvlib*'])
 
 extensions = []
 
@@ -107,8 +113,6 @@ else:
 
 
 setup(name=DISTNAME,
-      version=versioneer.get_version(),
-      cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
       install_requires=INSTALL_REQUIRES,
       extras_require=EXTRAS_REQUIRE,

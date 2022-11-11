@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
+import pvlib  # used to avoid dni name collision in complete_irradiance
 
 
 # see References section of get_ground_diffuse function
@@ -304,7 +305,7 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 def get_total_irradiance(surface_tilt, surface_azimuth,
                          solar_zenith, solar_azimuth,
                          dni, ghi, dhi, dni_extra=None, airmass=None,
-                         albedo=.25, surface_type=None,
+                         albedo=0.25, surface_type=None,
                          model='isotropic',
                          model_perez='allsitescomposite1990'):
     r"""
@@ -344,7 +345,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     airmass : None or numeric, default None
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
-        Surface albedo. [unitless]
+        Ground surface albedo. [unitless]
     surface_type : None or str, default None
         Surface type. See :py:func:`~pvlib.irradiance.get_ground_diffuse` for
         the list of accepted values.
@@ -739,7 +740,8 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
 
 def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-              solar_zenith=None, solar_azimuth=None, projection_ratio=None):
+              solar_zenith=None, solar_azimuth=None, projection_ratio=None,
+              return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     Hay & Davies' 1980 model
@@ -790,10 +792,27 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         projection. Must supply ``solar_zenith`` and ``solar_azimuth``
         or supply ``projection_ratio``.
 
+    return_components : bool, default False
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
+
     Returns
     --------
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by `return_components` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
     sky_diffuse : numeric
-        The sky diffuse component of the solar radiation.
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * sky_diffuse: Total sky diffuse
+            * isotropic
+            * circumsolar
+            * horizon
 
     Notes
     ------
@@ -830,10 +849,25 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     term1 = 1 - AI
     term2 = 0.5 * (1 + tools.cosd(surface_tilt))
 
-    sky_diffuse = dhi * (AI * Rb + term1 * term2)
-    sky_diffuse = np.maximum(sky_diffuse, 0)
+    poa_isotropic = np.maximum(dhi * term1 * term2, 0)
+    poa_circumsolar = np.maximum(dhi * (AI * Rb), 0)
+    sky_diffuse = poa_isotropic + poa_circumsolar
 
-    return sky_diffuse
+    if return_components:
+        diffuse_components = OrderedDict()
+        diffuse_components['sky_diffuse'] = sky_diffuse
+
+        # Calculate the individual components
+        diffuse_components['isotropic'] = poa_isotropic
+        diffuse_components['circumsolar'] = poa_circumsolar
+        diffuse_components['horizon'] = np.where(
+            np.isnan(diffuse_components['isotropic']), np.nan, 0.)
+
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+        return diffuse_components
+    else:
+        return sky_diffuse
 
 
 def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
@@ -1872,7 +1906,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         applied.
 
     albedo : numeric, default 0.25
-        Surface albedo
+        Ground surface albedo. [unitless]
 
     model : String, default 'perez'
         Irradiance model.  See :py:func:`get_sky_diffuse` for allowed values.
@@ -2915,3 +2949,67 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
             (zenith < zenith_threshold_for_zero_dni) &
             (dni > max_dni)] = max_dni
     return dni
+
+
+def complete_irradiance(solar_zenith,
+                        ghi=None,
+                        dhi=None,
+                        dni=None,
+                        dni_clear=None):
+    r"""
+    Use the component sum equations to calculate the missing series, using
+    the other available time series. One of the three parameters (ghi, dhi,
+    dni) is passed as None, and the other associated series passed are used to
+    calculate the missing series value.
+
+    The "component sum" or "closure" equation relates the three
+    primary irradiance components as follows:
+
+    .. math::
+
+       GHI = DHI + DNI \cos(\theta_z)
+
+    Parameters
+    ----------
+    solar_zenith : Series
+        Zenith angles in decimal degrees, with datetime index.
+        Angles must be >=0 and <=180. Must have the same datetime index
+        as ghi, dhi, and dni series, when available.
+    ghi : Series, optional
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as dni, dhi, and zenith series, when available.
+    dhi : Series, optional
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as ghi, dni, and zenith series, when available.
+    dni : Series, optional
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as ghi, dhi, and zenith series, when available.
+    dni_clear : Series, optional
+        Pandas series of clearsky dni data. Must have the same datetime index
+        as ghi, dhi, dni, and zenith series, when available. See
+        :py:func:`dni` for details.
+
+    Returns
+    -------
+    component_sum_df : Dataframe
+        Pandas series of 'ghi', 'dhi', and 'dni' columns with datetime index
+    """
+    if ghi is not None and dhi is not None and dni is None:
+        dni = pvlib.irradiance.dni(ghi, dhi, solar_zenith,
+                                   clearsky_dni=dni_clear,
+                                   clearsky_tolerance=1.1)
+    elif dni is not None and dhi is not None and ghi is None:
+        ghi = (dhi + dni * tools.cosd(solar_zenith))
+    elif dni is not None and ghi is not None and dhi is None:
+        dhi = (ghi - dni * tools.cosd(solar_zenith))
+    else:
+        raise ValueError(
+            "Please check that exactly one of ghi, dhi and dni parameters "
+            "is set to None"
+        )
+    # Merge the outputs into a master dataframe containing 'ghi', 'dhi',
+    # and 'dni' columns
+    component_sum_df = pd.DataFrame({'ghi': ghi,
+                                     'dhi': dhi,
+                                     'dni': dni})
+    return component_sum_df

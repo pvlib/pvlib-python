@@ -72,3 +72,10 @@ def test__golden_sect_DataFrame_nans():
     v, x = tools._golden_sect_DataFrame(params, lower, upper,
                                         _obj_test_golden_sect)
     assert np.allclose(x, expected, atol=1e-8, equal_nan=True)
+
+
+def test_degrees_to_index_1():
+    """Test that _degrees_to_index raises an error when something other than
+    'latitude' or 'longitude' is passed."""
+    with pytest.raises(IndexError):  # invalid value for coordinate argument
+        tools._degrees_to_index(degrees=22.0, coordinate='width')

@@ -42,7 +42,7 @@ VARIABLE_MAP = {
 
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
-             attributes=ATTRIBUTES, leap_day=False, full_name=PVLIB_PYTHON,
+             attributes=ATTRIBUTES, leap_day=None, full_name=PVLIB_PYTHON,
              affiliation=PVLIB_PYTHON, map_variables=None, timeout=30):
     """
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API. The NSRDB
@@ -164,6 +164,14 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
             VARIABLE_MAP.items()}
     attributes = [amap.get(a, a) for a in attributes]
     attributes = list(set(attributes))  # remove duplicate values
+
+    if (leap_day is None) and (not names.startswith('t')):
+        warnings.warn(
+            'The ``get_psm3`` function will default to leap_day=True '
+            'starting in pvlib 0.11.0. Specify leap_day=True '
+            'to enable this behavior now, or specify leap_day=False '
+            'to hide this warning.', pvlibDeprecationWarning)
+        leap_day = False
 
     # required query-string parameters for request to PSM3 API
     params = {

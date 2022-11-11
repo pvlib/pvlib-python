@@ -95,3 +95,35 @@ def test_dc_loss_nrel():
     expected = pd.Series([1, 1, .5, .625, .25, .5, 0])
     actual = snow.dc_loss_nrel(snow_coverage, num_strings)
     assert_series_equal(expected, actual)
+
+
+def test__townsend_effective_snow():
+    snow_total = np.array([25.4, 25.4, 12.7, 2.54, 0, 0, 0, 0, 0, 0, 12.7,
+                           25.4])
+    snow_events = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
+    expected = np.array([19.05, 19.05, 12.7, 0, 0, 0, 0, 0, 0, 0, 9.525,
+                         254 / 15])
+    actual = snow._townsend_effective_snow(snow_total, snow_events)
+    np.testing.assert_allclose(expected, actual, rtol=1e-07)
+
+
+def test_loss_townsend():
+    snow_total = np.array([25.4, 25.4, 12.7, 2.54, 0, 0, 0, 0, 0, 0, 12.7,
+                           25.4])
+    snow_events = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
+    surface_tilt = 20
+    relative_humidity = np.array([80, 80, 80, 80, 80, 80, 80, 80, 80, 80,
+                                  80, 80])
+    temp_air = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    poa_global = np.array([350000, 350000, 350000, 350000, 350000, 350000,
+                           350000, 350000, 350000, 350000, 350000, 350000])
+    angle_of_repose = 40
+    slant_height = 2.54
+    lower_edge_height = 0.254
+    expected = np.array([0.07696253, 0.07992262, 0.06216201, 0.01715392, 0, 0,
+                         0, 0, 0, 0, 0.02643821, 0.06068194])
+    actual = snow.loss_townsend(snow_total, snow_events, surface_tilt,
+                                relative_humidity, temp_air,
+                                poa_global, slant_height,
+                                lower_edge_height, angle_of_repose)
+    np.testing.assert_allclose(expected, actual, rtol=1e-05)

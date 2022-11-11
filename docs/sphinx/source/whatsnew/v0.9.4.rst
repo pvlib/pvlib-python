@@ -34,6 +34,7 @@ Documentation
 Benchmarking
 ~~~~~~~~~~~~~
 * Removed ``time_tracker_singleaxis`` function from tracking.py (:issue:`1508`, :pull:`1535`)
+* More comprehensive benchmarking for solarposition.py (:issue:`1441`, :pull:`1443`)
 
 
 Requirements
@@ -48,3 +49,4 @@ Contributors
 * Marcus Boumans (:ghuser:`bowie2211`)
 * Karel De Brabandere (:ghuser:`kdebrab`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
+* Chencheng Luo (:ghuser:`roger-lcc`)

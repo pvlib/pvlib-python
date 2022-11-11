@@ -31,6 +31,7 @@ Documentation
 
 Benchmarking
 ~~~~~~~~~~~~~
+* Removed ``time_tracker_singleaxis`` function from tracking.py (:issue:`1508`, :pull:`1535`)
 
 
 Requirements
@@ -43,3 +44,5 @@ Contributors
 * Christian Orner (:ghuser:`chrisorner`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * Marcus Boumans (:ghuser:`bowie2211`)
+* Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
+

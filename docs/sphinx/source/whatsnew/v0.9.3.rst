@@ -23,13 +23,6 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
-
-Benchmarking
-~~~~~~~~~~~~~
-* Removed ``time_tracker_singleaxis`` function from tracking.py (:issue:`1508`, :pull:`1535`)
-
-Requirements
-~~~~~~~~~~~~
 * Clarified description of cross-axis slope in :py:mod:`pvlib.tracking` (:pull:`1530`)
 * Removed the kwarg ``closed`` from ``pd.date_range`` in the examples since it is deprecated for pandas >= 1.4.0. (:pull:`1540`)
 
@@ -47,4 +40,3 @@ Contributors
 * Abhishek Parikh (:ghuser:`abhisheksparikh`)
 * Taos Transue (:ghuser:`reepoi`)
 * (:ghuser:`chiragpachori`)
-* Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)

@@ -261,7 +261,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     airmass_absolute : numeric
         Absolute airmass. Give attention to algorithm used (``kasten1966`` is
         recommended for default parameters of ``monosi``, ``polysi`` and
-        ``asi``, as used in [1]_).
+        ``asi``, see reference [1]_).
 
     cell_type : string or None, default None
         Specifies material of the cell in order to infer model parameters.
@@ -269,8 +269,8 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         upper case. If None, the parameters must be provided.
 
     model_parameters : dict-like or None, default None
-        In case you want to specify your model parameters use a dict or a
-        ``pd.DataFrame`` as follows:
+        In case you want to specify your model parameters and components
+        use a dict or a ``pd.DataFrame`` as follows:
 
         .. code-block:: python
 
@@ -283,8 +283,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
             # Using a pd.DataFrame
             model_parameters = pd.DataFrame({
                 'direct': [a1, b1, c1],
-                'sky diffuse':  [a2, b2, c2],
-                'ground diffuse':  [a3, b3, c3]},
+                'diffuse':  [a2, b2, c2]},
                 index=('a', 'b', 'c'))
 
         ``a``, ``b`` and ``c`` must be scalar.
@@ -300,7 +299,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     Raises
     ------
     ValueError
-        If ``model_parameters`` is not suitable. See example given above.
+        If ``model_parameters`` is not suitable. See examples given above.
     TypeError
         If neither ``cell_type`` nor ``model_parameters`` are given.
     NotImplementedError
@@ -311,7 +310,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     The mismatch modifier is defined as
 
     .. math:: M = c \cdot \exp( a \cdot (K_t - 0.74) + b \cdot (AM - 1.5) )
-    
+
     where ``a``, ``b`` and ``c`` are the model parameters, different for each
     irradiance component.
 
@@ -329,11 +328,11 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     pvlib.atmosphere.first_solar_spectral_correction
     """
 
-    IRRAD_COMPONENTS = ('direct', 'sky_diffuse', 'ground_diffuse')
+    irrad_components = ('direct', 'sky_diffuse', 'ground_diffuse')
     # Fitting parameters directly from [1]_
     MARTIN_RUIZ_PARAMS = pd.DataFrame(
         index=('monosi', 'polysi', 'asi'),
-        columns=pd.MultiIndex.from_product([IRRAD_COMPONENTS,
+        columns=pd.MultiIndex.from_product([irrad_components,
                                            ('c', 'a', 'b')]),
         data=[  # Direct(c,a,b)  | Sky diffuse(c,a,b) | Ground diffuse(c,a,b)
             [1.029, -.313, 524e-5, .764, -.882, -.0204, .970, -.244, .0129],
@@ -354,14 +353,13 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     elif cell_type is None and model_parameters is None:
         raise TypeError('You must pass at least "cell_type" '
                         'or "model_parameters" as arguments!')
-    elif model_parameters is not None:
-        # Use user-defined model parameters
-        # Validate 'model_parameters' dict keys and sub-dicts keys
-        if (set(IRRAD_COMPONENTS) != model_parameters.keys()):
-            raise ValueError('You must specify model parameters for exact '
-                             f'irradiance components {IRRAD_COMPONENTS}')
-        if any([{'a', 'b', 'c'} != model_parameters[irrad_type].keys()
-                for irrad_type in IRRAD_COMPONENTS]):
+    elif model_parameters is not None:  # Use user-defined model parameters
+        # Overwrite components, to later iterate over them,
+        # in case user wants to specify their components
+        irrad_components = model_parameters.keys()
+        # Validate 'model_parameters' sub-dicts keys
+        if any([{'a', 'b', 'c'} != set(model_parameters[component].keys())
+                for component in irrad_components]):
             raise ValueError("You must specify model parameters with keys "
                              "'a','b','c' for each irradiation component.")
 
@@ -376,9 +374,8 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
 
     modifiers = pd.Series()
 
-    # Order of irradiations shouldn't be changed
     # Values are tested in return order in test_martin_ruiz_spectral_modifier
-    for irrad_type in IRRAD_COMPONENTS:
+    for irrad_type in irrad_components:
         _coeffs = _params[irrad_type]
 
         modifier = _coeffs['c'] * np.exp(_coeffs['a'] * kt_delta

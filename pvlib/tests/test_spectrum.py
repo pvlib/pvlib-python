@@ -216,26 +216,23 @@ def test_martin_ruiz_spectral_modifier():
     assert_series_equal(result['ground_diffuse'], expected[2], atol=1e-5)
 
     # test results when giving 'model_parameters' as DataFrame
+    # test custom quantity of components and its names can be given
     clearness_index = np.array([0.56, 0.612, 0.664, 0.716, 0.768, 0.82])
     airmass_absolute = np.array([2, 1.8, 1.6, 1.4, 1.2, 1])
     model_parameters = pd.DataFrame({  # monosi values
         'direct': [1.029, -0.313, 0.00524],
-        'sky diffuse':  [0.764, -0.882, -0.0204],
-        'ground diffuse':  [0.97, -0.244, 0.0129]},
+        'diffuse_sky':  [0.764, -0.882, -0.0204]},
         index=('c', 'a', 'b'))
     expected = (  # Direct / Sky diffuse / Ground diffuse
         np.array([1.09149, 1.07274, 1.05432, 1.03621, 1.01841, 1.00092]),
-        np.array([0.88636, 0.85009, 0.81530, 0.78193, 0.74993, 0.71924]),
-        np.array([1.02011, 1.00465, 0.98943, 0.97443, 0.95967, 0.94513]))
+        np.array([0.88636, 0.85009, 0.81530, 0.78193, 0.74993, 0.71924]))
 
     result = spectrum.martin_ruiz_spectral_modifier(
         clearness_index,
         airmass_absolute,
-        cell_type='asi',
         model_parameters=model_parameters)
     assert_allclose(result['direct'], expected[0], atol=1e-5)
-    assert_allclose(result['sky_diffuse'], expected[1], atol=1e-5)
-    assert_allclose(result['ground_diffuse'], expected[2], atol=1e-5)
+    assert_allclose(result['diffuse_sky'], expected[1], atol=1e-5)
 
     # test warning is raised with both 'cell_type' and 'model_parameters'
     # test results when giving 'model_parameters' as dict
@@ -279,22 +276,9 @@ def test_martin_ruiz_spectral_modifier_errors():
                              'or "model_parameters" as arguments!'):
         _ = spectrum.martin_ruiz_spectral_modifier(clearness_index,
                                                    airmass_absolute)
-    # tests for inadequate "model_parameters"
+    # test for error in params keys
     clearness_index = 0.74
     airmass_absolute = 1.5
-    # test for error on irradiances keys
-    model_parameters = {
-        'direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
-        'sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},
-        ':(': {'c': 0.970, 'a': -2.44e-1, 'b': 1.29e-2}}
-    with pytest.raises(ValueError,
-                       match='You must specify model parameters for exact '
-                             'irradiance components '):
-        _ = spectrum.martin_ruiz_spectral_modifier(
-            clearness_index,
-            airmass_absolute,
-            model_parameters=model_parameters)
-    # test for error on params keys
     model_parameters = {
         'direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
         'sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},

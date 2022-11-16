@@ -947,9 +947,10 @@ def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
     Determine the incidence angle modifiers (IAM) for diffuse sky and
     and ground-reflected radiation using the FEDIS transmittance model.
 
-This model scales the :py:func:`schlick_diffuse` output using a 
-polynomial to approximate the influence of refractive index n.  
-An additional scaling factor is applied if ``n_ref`` is not equal to ``n``.
+    This model scales the :py:func:`schlick_diffuse` output using a 
+    polynomial to approximate the influence of refractive index n.  
+    An additional scaling factor is applied if ``n_ref`` is not equal
+    to ``n``.
 
 
     Parameters
@@ -1003,7 +1004,8 @@ An additional scaling factor is applied if ``n_ref`` is not equal to ``n``.
 
     # weighting function
     # note that the following line is algebraically equivalent to
-    # sequence of calculations for the "normal_transmittance_ratio" found in fedis()
+    # sequence of calculations for the "normal_transmittance_ratio" found
+    # in fedis()
     normal_transmittance_ratio = n*(n_ref+1)**2 / (n_ref*(n+1)**2)
     # note: the last coefficient here differs in sign from the reference
     polycoeffs = [2.77526e-09, 3.74953, -5.18727, 3.41186, -1.08794, 0.136060]

@@ -1010,7 +1010,7 @@ def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
     # note: the last coefficient here differs in sign from the reference
     polycoeffs = [2.77526e-09, 3.74953, -5.18727, 3.41186, -1.08794, 0.136060]
     term2 = np.polynomial.polynomial.polyval(n, polycoeffs)
-    w = term1 * term2  # Eq 5
+    w = normal_transmittance_ratio * term2  # Eq 5
 
     cuk = cuk * w
     cug = cug * w

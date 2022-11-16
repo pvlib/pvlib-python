@@ -937,9 +937,9 @@ def fedis(aoi, n=1.5, n_ref=None):
         r0 = ((n_ref - 1) / (n_ref + 1)) ** 2
 
         # correction coefficient for different indices of refraction
-        transmittance_ratio = (1 - rd0) / (1 - r0)
+        normal_transmittance_ratio = (1 - rd0) / (1 - r0)
 
-        return transmittance_ratio * iam_physical
+        return normal_transmittance_ratio * iam_physical
 
 
 def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
@@ -947,9 +947,10 @@ def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
     Determine the incidence angle modifiers (IAM) for diffuse sky and
     and ground-reflected radiation using the FEDIS transmittance model.
 
-    The "Fresnel Equations" for Diffuse radiation on Inclined photovoltaic
-    Surfaces (FEDIS) [1]_ is the result of analytical integration
-    the Schlick approximation [2]_ to the Fresnel equations.
+This model scales the :py:func:`schlick_diffuse` output using a 
+polynomial to approximate the influence of refractive index n.  
+An additional scaling factor is applied if ``n_ref`` is not equal to ``n``.
+
 
     Parameters
     ----------
@@ -1001,9 +1002,9 @@ def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
     cuk, cug = schlick_diffuse(surface_tilt)
 
     # weighting function
-    # note that this expression for term1 is algebraically equivalent to
-    # the "transmittance_ratio" in fedis()
-    term1 = n*(n_ref+1)**2 / (n_ref*(n+1)**2)
+    # note that the following line is algebraically equivalent to
+    # sequence of calculations for the "normal_transmittance_ratio" found in fedis()
+    normal_transmittance_ratio = n*(n_ref+1)**2 / (n_ref*(n+1)**2)
     # note: the last coefficient here differs in sign from the reference
     polycoeffs = [2.77526e-09, 3.74953, -5.18727, 3.41186, -1.08794, 0.136060]
     term2 = np.polynomial.polynomial.polyval(n, polycoeffs)

@@ -30,8 +30,6 @@ Incident angle modifiers
    iam.marion_integrate
    iam.schlick
    iam.schlick_diffuse
-   iam.fedis
-   iam.fedis_diffuse
 
 PV temperature models
 ---------------------

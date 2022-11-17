@@ -541,7 +541,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     ----------
     model : str
         The IAM function to evaluate across solid angle. Must be one of
-        `'ashrae', 'physical', 'martin_ruiz', 'sapm', 'schlick', 'fedis'`.
+        `'ashrae', 'physical', 'martin_ruiz', 'sapm', 'schlick'`.
 
     surface_tilt : numeric
         Surface tilt angles in decimal degrees.
@@ -593,7 +593,6 @@ def marion_diffuse(model, surface_tilt, **kwargs):
         'sapm': sapm,
         'martin_ruiz': martin_ruiz,
         'schlick': schlick,
-        'fedis': fedis,
     }
 
     try:
@@ -791,7 +790,6 @@ def schlick(aoi):
 
     See Also
     --------
-    pvlib.iam.fedis
     pvlib.iam.schlick_diffuse
     """
     iam = 1 - (1 - cosd(aoi)) ** 5
@@ -843,7 +841,6 @@ def schlick_diffuse(surface_tilt):
     See Also
     --------
     pvlib.iam.schlick
-    pvlib.iam.fedis_diffuse
     """
     # these calculations are as in [2]_, but with the refractive index
     # weighting coefficient w set to 1.0 (so it is omitted)
@@ -870,149 +867,5 @@ def schlick_diffuse(surface_tilt):
     elif isinstance(surface_tilt, pd.Series):
         cuk = pd.Series(cuk, surface_tilt.index)
         cug = pd.Series(cug, surface_tilt.index)
-
-    return cuk, cug
-
-
-def fedis(aoi, n=1.5, n_ref=None):
-    """
-    Determine the incidence angle modifier (IAM) for direct irradiance
-    using the FEDIS transmittance model.
-
-    Note that FEDIS [1]_ calculates direct IAM using the Fresnel equations
-    without extinction, thus in the default case of ``n_ref=None``, this is
-    equivalent to calling :py:func:`physical` with ``K=0``.
-
-    Parameters
-    ----------
-    aoi : numeric
-        Angle of incidence. [degrees]
-
-    n : float, default 1.5
-        Refractive index of the PV front surface material.  The default value
-        of 1.5 was used for an IMT reference cell in [1]_. [unitless]
-
-    n_ref : float, optional
-        Refractive index of the surface material for the reference device
-        measuring irradiance at normal incidence.  Mathematically, this is
-        the value of ``n`` for which IAM=1.0 at normal incidence.
-        If None (default), set equal to ``n``. See Notes for
-        possible use cases. [unitless]
-
-    Returns
-    -------
-    iam : numeric
-        The incident angle modifier.
-
-    See Also
-    --------
-    pvlib.iam.physical
-
-    Notes
-    -----
-    In most PV applications it is appropriate to set ``n_ref=n``
-    (the default behavior), but a custom ``n_ref`` may be useful when
-    using irradiance data from a pyranometer whose calibration does not
-    account for reflection off its glass dome.  It may also be used as
-    the original index of refraction if the module surface's refractive
-    index is changing over time (for example a degraded AR coating).
-
-    References
-    ----------
-    .. [1] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
-       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
-       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
-       :doi:`10.1016/j.rser.2022.112362`
-    """
-    iam_physical = physical(aoi, n, K=0, L=0)
-
-    if n_ref is None:
-        return iam_physical
-
-    else:
-        # reflectance for normal incidence with refractive index n:
-        rd0 = ((n - 1) / (n + 1)) ** 2
-
-        # reflectance for normal incidence with refractive index n_ref:
-        r0 = ((n_ref - 1) / (n_ref + 1)) ** 2
-
-        # correction coefficient for different indices of refraction
-        normal_transmittance_ratio = (1 - rd0) / (1 - r0)
-
-        return normal_transmittance_ratio * iam_physical
-
-
-def fedis_diffuse(surface_tilt, n=1.5, n_ref=None):
-    """
-    Determine the incidence angle modifiers (IAM) for diffuse sky and
-    and ground-reflected radiation using the FEDIS transmittance model.
-
-    This model scales the :py:func:`schlick_diffuse` output using a 
-    polynomial to approximate the influence of refractive index n.  
-    An additional scaling factor is applied if ``n_ref`` is not equal
-    to ``n``.
-
-
-    Parameters
-    ----------
-    surface_tilt : numeric
-        Surface tilt angle measured from horizontal (e.g. surface facing
-        up = 0, surface facing horizon = 90). [degrees]
-
-    n : float, default 1.5
-        Refractive index of the PV front surface material.  The default value
-        of 1.5 was used for an IMT reference cell in [1]_. [unitless]
-
-    n_ref : float, optional
-        Refractive index of the surface material for the reference device
-        measuring irradiance at normal incidence.  Mathematically, this is
-        the value of ``n`` for which IAM=1.0 at normal incidence.
-        If None (default), set equal to ``n``. See :py:func:`fedis` for
-        more information regardings its use. [unitless]
-
-    Returns
-    -------
-    iam_sky : numeric
-        The incident angle modifier for sky diffuse.
-
-    iam_ground : numeric
-        The incident angle modifier for ground-reflected diffuse.
-
-    See Also
-    --------
-    pvlib.iam.schlick_diffuse
-
-    Notes
-    -----
-    This implementation corrects a typo in [1]_ regarding the sign
-    of the last polynomial term in Equation 5.
-
-    References
-    ----------
-    .. [1] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
-       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
-       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
-       :doi:`10.1016/j.rser.2022.112362`
-
-    .. [2] Schlick, C. An inexpensive BRDF model for physically-based
-       rendering. Computer graphics forum 13 (1994).
-    """
-    if n_ref is None:
-        n_ref = n
-
-    cuk, cug = schlick_diffuse(surface_tilt)
-
-    # weighting function
-    # note that the following line is algebraically equivalent to
-    # sequence of calculations for the "normal_transmittance_ratio" found
-    # in fedis()
-    normal_transmittance_ratio = n*(n_ref+1)**2 / (n_ref*(n+1)**2)
-    # note: the last coefficient here differs in sign from the reference
-    polycoeffs = [2.77526e-09, 3.74953, -5.18727, 3.41186, -1.08794, 0.136060]
-    term2 = np.polynomial.polynomial.polyval(n, polycoeffs)
-    w = normal_transmittance_ratio * term2  # Eq 5
-
-    cuk = cuk * w
-    cug = cug * w
 
     return cuk, cug

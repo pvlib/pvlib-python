@@ -135,12 +135,10 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
 def precise_iv_curves(request):
     file_csv, file_json = request.param['csv'], request.param['json']
     pc = build_precise_iv_curve_dataframe(file_csv, file_json)
-    singlediode_params = pd.DataFrame(
-        pc['n'] * pc['cells_in_series'] * pc['Vth'], columns=['nNsVth']
-    )
-    for c in ['photocurrent', 'saturation_current',
-              'resistance_series', 'resistance_shunt']:
-        singlediode_params[c] = pc[c]
+    params = ['photocurrent', 'saturation_current', 'resistance_series',
+              'resistance_shunt']
+    singlediode_params = pc.loc[:, params]
+    singlediode_params['nNsVth'] = pc['n'] * pc['cells_in_series'] * pc['Vth']
     return singlediode_params, pc
 
 

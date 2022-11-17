@@ -79,7 +79,7 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     ``Voltages``, ``Currents``, ``v_oc``, ``i_sc``, ``v_mp``, ``i_mp``,
     ``p_mp``, ``i_x``, ``i_xx`, ``Temperature``, ``Irradiance``,
     ``Sweep Direction``, ``Datetime``, ``Boltzman``, ``Electron Charge``, and
-    ``Vth``. The columns ``Irradiance``, ``Sweep Direction`` are null or empty
+    ``Vth``. The columns ``Irradiance``, ``Sweep Direction`` are None or empty
     strings.
 
     Parameters
@@ -95,11 +95,22 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
         A data frame.
     """
     params = pd.read_csv(file_csv)
-    curves = pd.read_json(file_json)
-    curves = pd.DataFrame(curves['IV Curves'].values.tolist())
+    curves_metadata = pd.read_json(file_json)
+    curves = pd.DataFrame(curves_metadata['IV Curves'].values.tolist())
+    curves['cells_in_series'] = curves_metadata['cells_in_series']
     joined = params.merge(curves, on='Index', how='inner',
                           suffixes=(None, '_drop'), validate='one_to_one')
     joined = joined[(c for c in joined.columns if not c.endswith('_drop'))]
+
+    # parse strings to np.float64
+    is_array = ['Currents', 'Voltages', 'diode_voltage']
+    joined[is_array] = joined[is_array].applymap(
+        lambda a: np.asarray(a, dtype=np.float64)
+    )
+    is_number = joined.columns.difference(
+        is_array + ['Index', 'Irradiance', 'Sweep direction', 'Datetime']
+    )
+    joined[is_number] = joined[is_number].applymap(np.float64)
 
     joined['Boltzman'] = 1.380649e-23
     joined['Electron Charge'] = 1.60217663e-19
@@ -123,22 +134,14 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
 ], ids=[1, 2])
 def precise_iv_curves(request):
     file_csv, file_json = request.param['csv'], request.param['json']
-    return build_precise_iv_curve_dataframe(file_csv, file_json)
-
-
-@pytest.fixture(scope='function', params=[
-    {
-        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets1.csv',
-        'json': f'{DATA_DIR}/precise_iv_curves1_log_spacing.json'
-    },
-    {
-        'csv': f'{DATA_DIR}/precise_iv_curves_parameter_sets2.csv',
-        'json': f'{DATA_DIR}/precise_iv_curves2_log_spacing.json'
-    }
-], ids=[1, 2])
-def precise_iv_curves_log_spacing(request):
-    file_csv, file_json = request.param['csv'], request.param['json']
-    return build_precise_iv_curve_dataframe(file_csv, file_json)
+    pc = build_precise_iv_curve_dataframe(file_csv, file_json)
+    singlediode_params = pd.DataFrame(
+        pc['n'] * pc['cells_in_series'] * pc['Vth'], columns=['nNsVth']
+    )
+    for c in ['photocurrent', 'saturation_current',
+              'resistance_series', 'resistance_shunt']:
+        singlediode_params[c] = pc[c]
+    return singlediode_params, pc
 
 
 @pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
@@ -146,13 +149,8 @@ def test_singlediode_precision(method, precise_iv_curves):
     """
     Tests the accuracy of singlediode. ivcurve_pnts is not tested.
     """
-    pc = precise_iv_curves
-    x = (
-        pc['photocurrent'], pc['saturation_current'],
-        pc['resistance_series'], pc['resistance_shunt'],
-        pc['n'] * pc['cells_in_series'] * pc['Vth']
-    )
-    outs = pvsystem.singlediode(*x, method=method)
+    x, pc = precise_iv_curves
+    outs = pvsystem.singlediode(method=method, **x)
 
     assert np.allclose(pc['i_sc'], outs['i_sc'], atol=1e-10, rtol=0)
     assert np.allclose(pc['v_oc'], outs['v_oc'], atol=1e-10, rtol=0)
@@ -167,44 +165,30 @@ def test_singlediode_precision(method, precise_iv_curves):
 def test_ivcurve_pnts_precision(method, precise_iv_curves):
     """
     Tests the accuracy of the IV curve points calcuated by singlediode. Only
-    methods of singlediode that return these points linearly spaced are tested.
+    methods of singlediode that linearly spaced points are tested.
     """
-    pc = precise_iv_curves
-    x = (
-        pc['photocurrent'], pc['saturation_current'],
-        pc['resistance_series'], pc['resistance_shunt'],
-        pc['n'] * pc['cells_in_series'] * pc['Vth']
-    )
+    x, pc = precise_iv_curves
     pc_i, pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
     ivcurve_pnts = len(pc['Currents'][0])
-    outs = pvsystem.singlediode(*x, method=method,
-                                ivcurve_pnts=ivcurve_pnts)
+    outs = pvsystem.singlediode(method=method, ivcurve_pnts=ivcurve_pnts, **x)
+
     assert np.allclose(pc_i, outs['i'], atol=1e-10, rtol=0)
     assert np.allclose(pc_v, outs['v'], atol=1e-10, rtol=0)
 
 
-@pytest.mark.parametrize('method', ['brentq', 'newton'])
-def test_ivcurve_pnts_precision_log_spacing(method,
-                                            precise_iv_curves_log_spacing):
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+def test_v_from_i_i_from_v_precision(method, precise_iv_curves):
     """
-    Tests the accuracy of the IV curve points calcuated by singlediode. Only
-    methods of singlediode that return these points with log spacing are
-    tested.
+    Tests the accuracy of pvsystem.v_from_i and pvsystem.i_from_v.
     """
-    pc = precise_iv_curves_log_spacing
-    x = (
-        pc['photocurrent'], pc['saturation_current'],
-        pc['resistance_series'], pc['resistance_shunt'],
-        pc['n'] * pc['cells_in_series'] * pc['Vth']
-    )
-    pc_i, pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
-    ivcurve_pnts = len(pc['Currents'][0])
+    x, pc = precise_iv_curves
+    pc_i, pc_v = pc['Currents'], pc['Voltages']
+    for i, v, (_, x_one_curve) in zip(pc_i, pc_v, x.iterrows()):
+        out_i = pvsystem.i_from_v(voltage=v, method=method, **x_one_curve)
+        out_v = pvsystem.v_from_i(current=i, method=method, **x_one_curve)
 
-    for idx, x_one_curve in enumerate(zip(*x)):
-        out = pvsystem.singlediode(*x_one_curve, method=method,
-                                   ivcurve_pnts=ivcurve_pnts)
-        assert np.allclose(pc_i[idx], out['i'], atol=1e-10, rtol=0)
-        assert np.allclose(pc_v[idx], out['v'], atol=1e-10, rtol=0)
+        assert np.allclose(i, out_i, atol=1e-10, rtol=0)
+        assert np.allclose(v, out_v, atol=1e-10, rtol=0)
 
 
 def get_pvsyst_fs_495():

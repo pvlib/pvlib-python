@@ -457,6 +457,99 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     return temp_air + temp_difference
 
 
+def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=0.0,
+               u0=25.0, u1=6.84, emissivity=0.88, sky_view=1.0):
+    r'''
+    Calculate cell or module temperature using the Faiman model augmented
+    with a radiative loss term.
+
+    The Faiman model uses an empirical heat loss factor model [1]_ and is
+    adopted in the IEC 61853 standards [2]_ and [3]_.  The radiative loss
+    term was developed in [4]_.
+
+    Usage of this model in the IEC 61853 standard does not distinguish
+    between cell and module temperature.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    temp_air : numeric
+        Ambient dry bulb temperature [C].
+
+    wind_speed : numeric, default 1.0
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT. [m/s]
+
+    ir_down : numeric, default 0.0
+        Downwelling infrared radiation from the sky, measured on a horizontal
+        surface. [W/m^2]
+
+    u0 : numeric, default 25.0
+        Combined heat loss factor coefficient. The default value is one
+        determined by Faiman for 7 silicon modules.
+        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
+
+    u1 : numeric, default 6.84
+        Combined heat loss factor influenced by wind. The default value is one
+        determined by Faiman for 7 silicon modules.
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+
+    emissivity : numeric, default 0.88
+        Infrared emissivity of the module surface facing the sky. [-]
+
+    sky_view : numeric, default 1.0
+        Effective view factor limiting the radiative exchange between the
+        module and the sky. [-]
+
+    Returns
+    -------
+    numeric, values in degrees Celsius
+
+    Notes
+    -----
+    All arguments may be scalars or vectors. If multiple arguments
+    are vectors they must be the same length.
+
+    References
+    ----------
+    .. [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+       photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+
+    .. [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
+       rating - Part 2: Spectral responsivity, incidence angle and module
+       operating temperature measurements". IEC, Geneva, 2018.
+
+    .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
+       rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
+
+    .. [4] Driesse, A. et al (2022) "Improving Common PV Module Temperature
+       Models by Incorporating Radiative Losses to the Sky". SAND2022-11604.
+
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2022
+
+    # The following lines may seem odd since the values are probably scalar,
+    # but they serve an indirect and easy way of allowing lists and
+    # tuples for the other function arguments.
+    u0 = np.asanyarray(u0)
+    u1 = np.asanyarray(u1)
+    emissivity = np.asanyarray(emissivity)
+
+    t_zero = np.array(-273.15)
+    kstefbolz = np.array(5.670367e-8)
+
+    ir_up = kstefbolz * ((temp_air - t_zero)**4)
+    qrad_sky = emissivity * sky_view * (ir_up - ir_down)
+
+    heat_input = poa_global - qrad_sky
+    total_loss_factor = u0 + u1 * wind_speed
+    temp_difference = heat_input / total_loss_factor
+    return temp_air + temp_difference
+
+
 def ross(poa_global, temp_air, noct):
     r'''
     Calculate cell temperature using the Ross model.

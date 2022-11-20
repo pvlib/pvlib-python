@@ -457,8 +457,8 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     return temp_air + temp_difference
 
 
-def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=0.0,
-               u0=25.0, u1=6.84, emissivity=0.88, sky_view=1.0):
+def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
+               u0=25.0, u1=6.84, sky_view=1.0, emissivity=0.88):
     r'''
     Calculate cell or module temperature using the Faiman model augmented
     with a radiative loss term.
@@ -533,7 +533,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=0.0,
 
     # The following lines may seem odd since the values are probably scalar,
     # but they serve an indirect and easy way of allowing lists and
-    # tuples for the other function arguments.
+    # tuples for the other function arguments, and providing Series output.
     u0 = np.asanyarray(u0)
     u1 = np.asanyarray(u1)
     emissivity = np.asanyarray(emissivity)
@@ -541,8 +541,11 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=0.0,
     t_zero = np.array(-273.15)
     kstefbolz = np.array(5.670367e-8)
 
-    ir_up = kstefbolz * ((temp_air - t_zero)**4)
-    qrad_sky = emissivity * sky_view * (ir_up - ir_down)
+    if ir_down is None:
+        qrad_sky = np.array(0.0)
+    else:
+        ir_up = kstefbolz * ((temp_air - t_zero)**4)
+        qrad_sky = emissivity * sky_view * (ir_up - ir_down)
 
     heat_input = poa_global - qrad_sky
     total_loss_factor = u0 + u1 * wind_speed

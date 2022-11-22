@@ -135,8 +135,9 @@ def test_faiman_ndarray():
 
 
 def test_faiman_rad_no_ir():
-    result = temperature.faiman_rad(900, 20, 5, ir_down=None)
-    assert_allclose(result, 35.203, atol=0.001)
+    expected = temperature.faiman(900, 20, 5)
+    result = temperature.faiman_rad(900, 20, 5)
+    assert_allclose(result, expected)
 
 
 def test_faiman_rad_ir():
@@ -147,11 +148,15 @@ def test_faiman_rad_ir():
 
     sky_view = [1.0, 0.5, 0.0]
     expected = [-4.071, -2.036, 0.000]
-    result = temperature.faiman_rad(0, 0, 0, ir_down=200, sky_view=sky_view)
+    result = temperature.faiman_rad(0, 0, 0, ir_down=200,
+                                    sky_view=sky_view)
+    assert_allclose(result, expected, atol=0.001)
 
     emissivity = [1.0, 0.88, 0.5, 0.0]
     expected = [-4.626, -4.071, -2.313, 0.000]
-    result = temperature.faiman_rad(0, 0, 0, ir_down=200, emissivity=emissivity)
+    result = temperature.faiman_rad(0, 0, 0, ir_down=200,
+                                    emissivity=emissivity)
+    assert_allclose(result, expected, atol=0.001)
 
 
 def test_ross():

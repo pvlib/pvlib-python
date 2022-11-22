@@ -419,7 +419,7 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
         determined by Faiman for 7 silicon modules.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
 
     Returns
     -------
@@ -494,18 +494,19 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
         determined by Faiman for 7 silicon modules.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
 
     sky_view : numeric, default 1.0
         Effective view factor limiting the radiative exchange between the
         module and the sky. For a tilted array the expressions
         (1 + 3*cos(tilt)) / 4 can be used as a first estimate for sky_view
-        as discussed in [4]_. The default value is for a horizontal module. [-]
+        as discussed in [4]_. The default value is for a horizontal module.
+        [unitless]
 
     emissivity : numeric, default 0.88
         Infrared emissivity of the module surface facing the sky. The default
         value represents the middle of a range of values found in the
-        literature. [-]
+        literature. [unitless]
 
     Returns
     -------
@@ -537,20 +538,17 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2022
 
-    # The following lines may seem odd since the values are probably scalar,
-    # but they serve an indirect and easy way of allowing lists and
-    # tuples for the other function arguments, and providing Series output.
     u0 = np.asanyarray(u0)
     u1 = np.asanyarray(u1)
     emissivity = np.asanyarray(emissivity)
 
-    t_zero = np.array(-273.15)
+    abs_zero = np.array(-273.15)
     kstefbolz = np.array(5.670367e-8)
 
     if ir_down is None:
         qrad_sky = np.array(0.0)
     else:
-        ir_up = kstefbolz * ((temp_air - t_zero)**4)
+        ir_up = kstefbolz * ((temp_air - abs_zero)**4)
         qrad_sky = emissivity * sky_view * (ir_up - ir_down)
 
     heat_input = poa_global - qrad_sky

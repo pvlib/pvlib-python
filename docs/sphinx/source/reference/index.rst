@@ -12,7 +12,7 @@ API reference
    clearsky
    airmass_atmospheric
    irradiance
-   pv_modeling
+   pv_modeling/index
    effects_on_pv_system_output
    tracking
    iotools

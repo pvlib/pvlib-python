@@ -15,8 +15,7 @@ import inspect
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
-
-from pvpltools.iec61853 import BilinearInterpolator
+from scipy.special import exp10
 
 
 def fit_efficiency_model(irradiance, temperature, eta, model, p0=None,
@@ -168,21 +167,26 @@ def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
 
     Author: Anton Driesse, PV Performance Labs
     '''
-    g = np.asanyarray(irradiance)
-    t = np.asanyarray(temperature)
+    g = irradiance
+    t = temperature
+
+    k_a = np.array(k_a)
+    k_d = np.array(k_d)
+    tc_d = np.array(tc_d)
+    k_rs = np.array(k_rs)
+    k_rsh = np.array(k_rsh)
 
     # normalize the irradiance
-    G_REF = 1000
+    G_REF = np.array(1000.)
     s = g / G_REF
 
     # obtain the difference from reference temperature
-    T_REF = 25
+    T_REF = np.array(25.)
     dt   = t - T_REF
-    t_abs = t + 273.15
 
     # equation 29 in JPV
-    s_o     = 10**(k_d + (tc_d * dt))
-    s_o_ref = 10**(k_d)
+    s_o     = exp10(k_d + (dt * tc_d))
+    s_o_ref = exp10(k_d)
 
     # equation 28 and 30 in JPV
     # the constant k_v does not appear here because it cancels out

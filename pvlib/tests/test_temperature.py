@@ -108,12 +108,12 @@ def test_pvsyst_cell_eta_m_deprecated():
 
 def test_faiman_default():
     result = temperature.faiman(900, 20, 5)
-    assert_allclose(result, 35.203, 0.001)
+    assert_allclose(result, 35.203, atol=0.001)
 
 
 def test_faiman_kwargs():
     result = temperature.faiman(900, 20, wind_speed=5.0, u0=22.0, u1=6.)
-    assert_allclose(result, 37.308, 0.001)
+    assert_allclose(result, 37.308, atol=0.001)
 
 
 def test_faiman_list():
@@ -122,7 +122,7 @@ def test_faiman_list():
     winds = [10, 5, 0]
     result = temperature.faiman(irrads, temps, wind_speed=winds)
     expected = np.array([0.0, 18.446, 5.0])
-    assert_allclose(expected, result, 3)
+    assert_allclose(expected, result, atol=0.001)
 
 
 def test_faiman_ndarray():
@@ -131,7 +131,27 @@ def test_faiman_ndarray():
     winds = np.array([10, 5, 0])
     result = temperature.faiman(irrads, temps, wind_speed=winds)
     expected = np.array([0.0, 18.446, 5.0])
-    assert_allclose(expected, result, 3)
+    assert_allclose(expected, result, atol=0.001)
+
+
+def test_faiman_rad_no_ir():
+    result = temperature.faiman_rad(900, 20, 5, ir_down=None)
+    assert_allclose(result, 35.203, atol=0.001)
+
+
+def test_faiman_rad_ir():
+    ir_down = [0, 100, 200, 315.6574, 400]
+    expected = [-11.111, -7.591, -4.071, -0.000, 2.969]
+    result = temperature.faiman_rad(0, 0, 0, ir_down)
+    assert_allclose(result, expected, atol=0.001)
+
+    sky_view = [1.0, 0.5, 0.0]
+    expected = [-4.071, -2.036, 0.000]
+    result = temperature.faiman_rad(0, 0, 0, ir_down=200, sky_view=sky_view)
+
+    emissivity = [1.0, 0.88, 0.5, 0.0]
+    expected = [-4.626, -4.071, -2.313, 0.000]
+    result = temperature.faiman_rad(0, 0, 0, ir_down=200, emissivity=emissivity)
 
 
 def test_ross():

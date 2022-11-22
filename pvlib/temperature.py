@@ -467,8 +467,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     adopted in the IEC 61853 standards [2]_ and [3]_.  The radiative loss
     term was developed in [4]_.
 
-    Usage of this model in the IEC 61853 standard does not distinguish
-    between cell and module temperature.
+    The model can be used to represent cell or module temperature.
 
     Parameters
     ----------
@@ -497,12 +496,16 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
         determined by Faiman for 7 silicon modules.
         :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
-    emissivity : numeric, default 0.88
-        Infrared emissivity of the module surface facing the sky. [-]
-
     sky_view : numeric, default 1.0
         Effective view factor limiting the radiative exchange between the
-        module and the sky. [-]
+        module and the sky. For a tilted array the expressions
+        (1 + 3*cos(tilt)) / 4 can be used as a first estimate for sky_view
+        as discussed in [4]_. The default value is for a horizontal module. [-]
+
+    emissivity : numeric, default 0.88
+        Infrared emissivity of the module surface facing the sky. The default
+        value represents the middle of a range of values found in the
+        literature. [-]
 
     Returns
     -------
@@ -512,6 +515,9 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     -----
     All arguments may be scalars or vectors. If multiple arguments
     are vectors they must be the same length.
+
+    If the input `ir_down` is not supplied the model output is the same as the
+    original Faiman model.
 
     References
     ----------

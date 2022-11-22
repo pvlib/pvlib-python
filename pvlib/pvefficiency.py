@@ -1,5 +1,5 @@
 """
-This module contains implementations of several PV module efficiency models.
+This module contains implementations of PV module efficiency models.
 
 These models have a common purpose, which is to predict the efficiency at
 maximum power point as a function of the main operating conditions:
@@ -29,23 +29,24 @@ def fit_efficiency_model(irradiance, temperature, eta, model, p0=None,
 
     Parameters
     ----------
-    irradiance : non-negative numeric, W/m²
-        The effective irradiance incident on the PV module.
+    irradiance : numeric, non-negative
+        Effective irradiance incident on the PV module. [W/m²]
 
-    temperature : numeric, °C
-        The module operating temperature.
+    temperature : numeric
+        PV module operating temperature. [°C]
 
     eta : numeric
-        The efficiency of the module at the specified irradiance and
-        temperature.
+        Efficiency of the PV module at the specified irradiance and
+        temperature(s). [unitless|%]
 
     model : function
         A PV module efficiency function such as `adr`.  It must take
         irradiance and temperature as the first two arguments and the
-        model-specific parameters as the remaining arguments.
+        model-specific parameters as the remaining arguments. [n/a]
 
     p0 : array_like, optional
         Initial guess for the parameters, which may speed up the fit process.
+        Units depend on the model.
 
     kwargs :
         Optional keyword arguments passed to `curve_fit`.
@@ -54,28 +55,15 @@ def fit_efficiency_model(irradiance, temperature, eta, model, p0=None,
     -------
     popt : array
         Optimal values for the parameters so that the sum of the squared
-        residuals of ``model(irradiance, temperature, *popt) - eta`` is minimized.
+        residuals ``model(irradiance, temperature, *popt) - eta`` is
+        minimized.
 
     pcov : 2-D array
-        The estimated covariance of popt. See `curve_fit` for details.
-
-    Raises
-    ------
-    (These errors and warnings are from `curve_fit`.)
-
-    ValueError
-        if either `ydata` or `xdata` contain NaNs, or if incompatible options
-        are used.
-
-    RuntimeError
-        if the least-squares minimization fails.
-
-    OptimizeWarning
-        if covariance of the parameters can not be estimated.
+        Estimated covariance of popt. See `curve_fit` for details.
 
     See also
     --------
-    pvpltools.module_efficiency.adr
+    pvlib.pvefficiency.adr
     scipy.optimize.curve_fit
 
     Author: Anton Driesse, PV Performance Labs
@@ -111,34 +99,35 @@ def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
 
     Parameters
     ----------
-    irradiance : non-negative numeric, W/m²
-        The effective irradiance incident on the PV module.
+    irradiance : numeric, non-negative
+        The effective irradiance incident on the PV module. [W/m²]
 
-    temperature : numeric, °C
-        The module operating temperature.
+    temperature : numeric
+        The PV module operating temperature. [°C]
 
-    k_a : float
+    k_a : numeric
         Absolute scaling factor, which is equal to the efficiency at
         reference conditions. This factor allows the model to be used
         with relative or absolute efficiencies, and to accommodate data sets
         which are not perfectly normalized but have a slight bias at
-        the reference conditions.
+        the reference conditions. [unitless|%]
 
-    k_d : negative float
+    k_d : numeric, negative
         “Dark irradiance” or diode coefficient which influences the voltage
-        increase with irradiance.
+        increase with irradiance. [unitless]
 
-    tc_d : float
+    tc_d : numeric
         Temperature coefficient of the diode coefficient, which indirectly
         influences voltage. Because it is the only temperature coefficient
         in the model, its value will also reflect secondary temperature
-        dependencies that are present in the PV module.
+        dependencies that are present in the PV module. [unitless]
 
-    k_rs and k_rsh : float
+    k_rs and k_rsh : numeric
         Series and shunt resistance loss factors. Because of the normalization
         they can be read as power loss fractions at reference conditions.
         For example, if k_rs is 0.05, the internal loss assigned to the
         series resistance has a magnitude equal to 5% of the module output.
+        [unitless]
 
     Returns
     -------
@@ -156,14 +145,29 @@ def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
     freely to adjust the scale, or to change the module class to a slightly
     higher or lower efficiency.
 
+    All arguments may be scalars or vectors. If multiple arguments
+    are vectors they must be the same length.
+
     References
     ----------
     .. [1] A. Driesse and J. S. Stein, "From IEC 61853 power measurements
        to PV system simulations", Sandia Report No. SAND2020-3877, 2020.
 
-    .. [2] A. Driesse, M. Theristis and J. S. Stein, "A New Photovoltaic
-       Module Efficiency Model for Energy Prediction and Rating",
-       forthcoming.
+    .. [2] A. Driesse, M. Theristis and J. S. Stein, "A New Photovoltaic Module
+       Efficiency Model for Energy Prediction and Rating," in IEEE Journal
+       of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021,
+       doi: 10.1109/JPHOTOV.2020.3045677.
+
+    Examples
+    --------
+    >>> adr([1000, 200], 25,
+            k_a=100, k_d=-6.0, tc_d=-0.02, k_rs=0.01, k_rsh=0.01)
+    array([100.        ,  89.13695871])
+
+    >>> adr([1000, 200], 25,
+            k_a=1.0, k_d=-6.0, tc_d=-0.02, k_rs=0.01, k_rsh=0.01)
+    array([1.        , 0.89136959])
+
 
     Author: Anton Driesse, PV Performance Labs
     '''

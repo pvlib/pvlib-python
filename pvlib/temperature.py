@@ -478,7 +478,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
         Ambient dry bulb temperature [C].
 
     wind_speed : numeric, default 1.0
-        Wind speed in m/s measured at the same height for which the wind loss
+        Wind speed measured at the same height for which the wind loss
         factor was determined.  The default value 1.0 m/s is the wind
         speed at module height used to determine NOCT. [m/s]
 

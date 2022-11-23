@@ -8,10 +8,12 @@ and using the model for system simulation.
 (WORK IN PROGRESS)
 
 """
-
+import os
 from io import StringIO
 import pandas as pd
 import matplotlib.pyplot as plt
+
+import pvlib
 from pvlib.pvefficiency import fit_pvefficiency_adr, adr
 
 iec61853data = '''
@@ -48,11 +50,14 @@ df = pd.read_csv(StringIO(iec61853data), delim_whitespace=True)
 
 P_STC = 322.305
 
+
 def pmp2eta(g, p, p_stc):
     return p / p_stc / (g / 1000)
 
+
 def eta2pmp(g, eta, p_stc):
     return eta * p_stc * (g / 1000)
+
 
 eta_rel = pmp2eta(df.irradiance, df.p_mp, P_STC)
 
@@ -68,43 +73,42 @@ plt.xlabel('Irradiance [W/m²]')
 
 # %% Cell 1
 
-import os
-import pvlib
-
 # this system is 4000 W nominal
 # system losses are 14.08 %
 # therefore P_STC = 3437 W
 
-DATAFILE = os.path.join(pvlib.__path__[0], 'data', 'pvwatts_8760_rackmount.csv')
+DATADIR = os.path.join(pvlib.__path__[0], 'data')
+DATAFILE = os.path.join(DATADIR, 'pvwatts_8760_rackmount.csv')
 
 df = pd.read_csv(DATAFILE, skiprows=17, nrows=8760)
-df['Year'] = 2019
-df.index = pd.to_datetime(df[['Year', 'Month', 'Day', 'Hour']])
+df.columns = ['month', 'day', 'hour',
+              'dni', 'dif', 't_amb', 'wind_speed',
+              'poa_global', 't_cell', 'p_dc', 'p_ac']
 
-df['ADR modelled efficiency (-)'] = adr(df['Plane of Array Irradiance (W/m^2)'],
-                                        df['Cell Temperature (C)'],
-                                        **adr_parms)
+df['year'] = 2019
+DATECOLS = ['year', 'month', 'day', 'hour']
+df.index = pd.to_datetime(df[DATECOLS])
+df = df.drop(columns=DATECOLS)
 
-df['ADR modelled power (W)'] = eta2pmp(df['Plane of Array Irradiance (W/m^2)'],
-                                       df['ADR modelled efficiency (-)'],
-                                       p_stc = 3437)
+df['eta_adr'] = adr(df['poa_global'], df['t_cell'], **adr_parms)
+df['p_dc_adr'] = eta2pmp(df['poa_global'], df['eta_adr'], p_stc=3437)
 
 # %% Cell 2
 
 DEMO_DAY = '2019-08-05'
 
 plt.figure()
-plt.plot(df['DC Array Output (W)'][DEMO_DAY])
-plt.plot(df['ADR modelled power (W)'][DEMO_DAY])
+plt.plot(df['p_dc'][DEMO_DAY])
+plt.plot(df['p_dc_adr'][DEMO_DAY])
 plt.xticks(rotation=30)
-plt.legend(['PVWATTS','ADR'])
+plt.legend(['PVWATTS', 'ADR'])
 plt.ylabel('Power [W]')
 
 # %% Cell 3
 
 plt.figure()
-plt.scatter(df['DC Array Output (W)'], df['ADR modelled power (W)'],
-            c=df['Cell Temperature (C)'], alpha=.3, cmap='jet')
+plt.scatter(df['p_dc'], df['p_dc_adr'],
+            c=df['t_cell'], alpha=.3, cmap='jet')
 plt.plot([0, 4000], [0, 4000], 'k', alpha=.5)
-plt.xlabel('PVWATTS DC Array Output [W]')
-plt.ylabel('ADR modelled power [W]')
+plt.xlabel('PVWATTS DC array output [W]')
+plt.ylabel('ADR modelled DC array output [W]')

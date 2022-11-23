@@ -6,9 +6,9 @@ from pvlib import pvefficiency
 def test_adr():
     g = [1000, 200, 1000, 200, 1000, 200]
     t = [25, 25, 50, 50, 75, 75]
-    p = [1.0, -6.602189, 0.018582, 0.071889, 0.054049]
+    p = [1.0, -6.684898, 0.018855, 0.069917, 0.054369]
 
-    e = [1.0, 0.949147, 0.928114, 0.876456, 0.855693, 0.80323]
+    e = [1.0, 0.949154, 0.92812, 0.876472, 0.855699, 0.80325]
 
     result = pvefficiency.adr(g, t, *p)
     assert_allclose(result, e, rtol=1e-4)
@@ -17,9 +17,9 @@ def test_adr():
 def test_fit_pvefficiency_adr():
     g = [1000, 200, 1000, 200, 1000, 200]
     t = [25, 25, 50, 50, 75, 75]
-    e = [1.0, 0.949147, 0.928114, 0.876456, 0.855693, 0.80323]
+    e = [1.0, 0.949154, 0.92812, 0.876472, 0.855699, 0.80325]
 
-    p = [1.0, -6.602189, 0.018582, 0.071889, 0.054049]
+    p = [1.0, -6.684898, 0.018855, 0.069917, 0.054369]
 
     result = pvefficiency.fit_pvefficiency_adr(g, t, e, dict_output=False)
     assert_allclose(result, p, rtol=1e-4)
@@ -31,7 +31,7 @@ def test_fit_pvefficiency_adr():
 def test_adr_round_trip():
     g = [1000, 200, 1000, 200, 1000, 200]
     t = [25, 25, 50, 50, 75, 75]
-    e = [1.0, 0.949147, 0.928114, 0.876456, 0.855693, 0.80323]
+    e = [1.0, 0.949154, 0.92812, 0.876472, 0.855699, 0.80325]
 
     p = pvefficiency.fit_pvefficiency_adr(g, t, e, dict_output=False)
     result = pvefficiency.adr(g, t, *p)

@@ -60,9 +60,9 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
     eta_max = np.max(eta)
 
     P_NAMES = ['k_a', 'k_d', 'tc_d', 'k_rs', 'k_rsh']
-    P_MAX =   [+np.inf,   0, +0.1, 1, 1]
-    P_MIN =   [0,       -12, -0.1, 0, 0]
-    P0 =      [eta_max,  -6,  0.0, 0, 0]
+    P_MAX   = [+np.inf,   0, +0.1, 1, 1]                           # noQA: E221
+    P_MIN   = [0,       -12, -0.1, 0, 0]                           # noQA: E221
+    P0      = [eta_max,  -6,  0.0, 0, 0]                           # noQA: E221
     P_SCALE = [eta_max,  10,  0.1, 1, 1]
 
     fit_options = dict(p0=P0,

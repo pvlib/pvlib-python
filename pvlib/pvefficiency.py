@@ -7,7 +7,6 @@ effective irradiance and module temperature.
 """
 
 import numpy as np
-import pandas as pd
 from scipy.optimize import curve_fit
 from scipy.special import exp10
 
@@ -61,18 +60,17 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
     eta_max = np.max(eta)
 
     P_NAMES = ['k_a', 'k_d', 'tc_d', 'k_rs', 'k_rsh']
-    P_MAX   = [+np.inf,   0, +0.1, 1, 1]
-    P_MIN   = [0,       -12, -0.1, 0, 0]
-    P0      = [eta_max,  -6,  0.0, 0, 0]
-    P_SCALE = [eta_max,  100,  0.1, 1, 1]
+    P_MAX =   [+np.inf,   0, +0.1, 1, 1]
+    P_MIN =   [0,       -12, -0.1, 0, 0]
+    P0 =      [eta_max,  -6,  0.0, 0, 0]
+    P_SCALE = [eta_max,  10,  0.1, 1, 1]
 
-    fit_options = dict(
-                       p0 = P0,
-                       bounds = [P_MIN, P_MAX],
-                       method = 'trf',
-                       x_scale = P_SCALE,
-                       loss = 'soft_l1',
-                       f_scale = eta_max * 0.05,
+    fit_options = dict(p0=P0,
+                       bounds=[P_MIN, P_MAX],
+                       method='trf',
+                       x_scale=P_SCALE,
+                       loss='soft_l1',
+                       f_scale=eta_max * 0.05,
                        )
 
     fit_options.update(kwargs)
@@ -191,18 +189,18 @@ def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
 
     # obtain the difference from reference temperature
     T_REF = np.array(25.)
-    dt   = temperature - T_REF
+    dt = temperature - T_REF
 
     # equation 29 in JPV
-    s_o     = exp10(k_d + (dt * tc_d))
+    s_o     = exp10(k_d + (dt * tc_d))                             # noQA: E221
     s_o_ref = exp10(k_d)
 
     # equation 28 and 30 in JPV
     # the constant k_v does not appear here because it cancels out
-    v  = np.log(s / s_o     + 1)
+    v  = np.log(s / s_o     + 1)                                   # noQA: E221
     v /= np.log(1 / s_o_ref + 1)
 
     # equation 25 in JPV
-    eta  = k_a * ((1 + k_rs + k_rsh) * v - k_rs * s - k_rsh * v**2)
+    eta = k_a * ((1 + k_rs + k_rsh) * v - k_rs * s - k_rsh * v**2)
 
     return eta

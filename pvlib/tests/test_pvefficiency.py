@@ -1,10 +1,4 @@
-import numpy as np
-import pandas as pd
-
-from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
-
-import pytest
 
 from pvlib import pvefficiency
 

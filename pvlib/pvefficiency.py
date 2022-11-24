@@ -18,9 +18,9 @@ def power_from_efficiency(efficiency, irradiance, p_mp_ref):
     If you can't figure out what the parameters mean, don't use this function!
     '''
     G_REF = np.array(1000.)
-    g_rel = irradiance / G_REF
+    s = irradiance / G_REF
 
-    p_rel = g_rel * efficiency
+    p_rel = s * efficiency
     power = p_rel * p_mp_ref
     return power
 
@@ -32,10 +32,10 @@ def efficiency_from_power(power, irradiance, p_mp_ref):
     If you can't figure out what the parameters mean, don't use this function!
     '''
     G_REF = np.array(1000.)
-    g_rel = irradiance / G_REF
+    s = irradiance / G_REF
 
     p_rel = power / np.asanyarray(p_mp_ref, dtype=float)
-    eta_rel = p_rel / g_rel
+    eta_rel = p_rel / s
     return eta_rel
 
 

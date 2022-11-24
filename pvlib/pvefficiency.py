@@ -11,83 +11,32 @@ from scipy.optimize import curve_fit
 from scipy.special import exp10
 
 
-def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
-                         **kwargs):
-    """
-    Determine the parameters of the adr module efficiency model by non-linear
-    least-squares fit to lab or field measurements.
+def power_from_efficiency(efficiency, irradiance, p_mp_ref):
+    '''
+    Convert normalized or relative efficiency to power.
 
-    Parameters
-    ----------
-    irradiance : numeric, non-negative
-        Effective irradiance incident on the PV module. [W/m²]
+    If you can't figure out what the parameters mean, don't use this function!
+    '''
+    G_REF = np.array(1000.)
+    g_rel = irradiance / G_REF
 
-    temperature : numeric
-        PV module operating temperature. [°C]
-
-    eta : numeric
-        Efficiency of the PV module at the specified irradiance and
-        temperature(s). [unitless] or [%]
-
-    dict_output : boolean, optional
-        When True, return the result as a dictionary; when False, return
-        the result as an numpy array.
-
-    kwargs :
-        Optional keyword arguments passed to `curve_fit`.
-
-    Returns
-    -------
-    popt : array
-        Optimal values for the parameters.
-
-    pcov : 2-D array
-        Estimated covariance of popt. See `curve_fit` for details.
-
-    See also
-    --------
-    pvlib.pvefficiency.adr
+    p_rel = g_rel * efficiency
+    power = p_rel * p_mp_ref
+    return power
 
 
-    Adapted from https://github.com/adriesse/pvpltools-python
-    Copyright (c) 2022, Anton Driesse, PV Performance Labs
-    All rights reserved.
-    """
-    irradiance = np.asarray(irradiance, dtype=float).reshape(-1)
-    temperature = np.asarray(temperature, dtype=float).reshape(-1)
-    eta = np.asarray(eta, dtype=float).reshape(-1)
+def efficiency_from_power(power, irradiance, p_mp_ref):
+    '''
+    Convert power to normalized or relative efficiency.
 
-    eta_max = np.max(eta)
+    If you can't figure out what the parameters mean, don't use this function!
+    '''
+    G_REF = np.array(1000.)
+    g_rel = irradiance / G_REF
 
-    P_NAMES = ['k_a', 'k_d', 'tc_d', 'k_rs', 'k_rsh']
-    P_MAX   = [+np.inf,   0, +0.1, 1, 1]                           # noQA: E221
-    P_MIN   = [0,       -12, -0.1, 0, 0]                           # noQA: E221
-    P0      = [eta_max,  -6,  0.0, 0, 0]                           # noQA: E221
-    P_SCALE = [eta_max,  10,  0.1, 1, 1]
-
-    fit_options = dict(p0=P0,
-                       bounds=[P_MIN, P_MAX],
-                       method='trf',
-                       x_scale=P_SCALE,
-                       loss='soft_l1',
-                       f_scale=eta_max * 0.05,
-                       )
-
-    fit_options.update(kwargs)
-
-    def adr_wrapper(xdata, *params):
-        return adr(*xdata, *params)
-
-    result = curve_fit(adr_wrapper,
-                       xdata=[irradiance, temperature],
-                       ydata=eta,
-                       **fit_options,
-                       )
-    popt = result[0]
-    if dict_output:
-        return dict(zip(P_NAMES, popt))
-    else:
-        return popt
+    p_rel = power / np.asanyarray(p_mp_ref, dtype=float)
+    eta_rel = p_rel / g_rel
+    return eta_rel
 
 
 def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
@@ -204,3 +153,82 @@ def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
     eta = k_a * ((1 + k_rs + k_rsh) * v - k_rs * s - k_rsh * v**2)
 
     return eta
+
+
+def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
+                         **kwargs):
+    """
+    Determine the parameters of the adr module efficiency model by non-linear
+    least-squares fit to lab or field measurements.
+
+    Parameters
+    ----------
+    irradiance : numeric, non-negative
+        Effective irradiance incident on the PV module. [W/m²]
+
+    temperature : numeric
+        PV module operating temperature. [°C]
+
+    eta : numeric
+        Efficiency of the PV module at the specified irradiance and
+        temperature(s). [unitless] or [%]
+
+    dict_output : boolean, optional
+        When True, return the result as a dictionary; when False, return
+        the result as an numpy array.
+
+    kwargs :
+        Optional keyword arguments passed to `curve_fit`.
+
+    Returns
+    -------
+    popt : array
+        Optimal values for the parameters.
+
+    pcov : 2-D array
+        Estimated covariance of popt. See `curve_fit` for details.
+
+    See also
+    --------
+    pvlib.pvefficiency.adr
+
+
+    Adapted from https://github.com/adriesse/pvpltools-python
+    Copyright (c) 2022, Anton Driesse, PV Performance Labs
+    All rights reserved.
+    """
+    irradiance = np.asarray(irradiance, dtype=float).reshape(-1)
+    temperature = np.asarray(temperature, dtype=float).reshape(-1)
+    eta = np.asarray(eta, dtype=float).reshape(-1)
+
+    eta_max = np.max(eta)
+
+    P_NAMES = ['k_a', 'k_d', 'tc_d', 'k_rs', 'k_rsh']
+    P_MAX   = [+np.inf,   0, +0.1, 1, 1]                           # noQA: E221
+    P_MIN   = [0,       -12, -0.1, 0, 0]                           # noQA: E221
+    P0      = [eta_max,  -6,  0.0, 0, 0]                           # noQA: E221
+    P_SCALE = [eta_max,  10,  0.1, 1, 1]
+
+    fit_options = dict(p0=P0,
+                       bounds=[P_MIN, P_MAX],
+                       method='trf',
+                       x_scale=P_SCALE,
+                       loss='soft_l1',
+                       f_scale=eta_max * 0.05,
+                       )
+
+    fit_options.update(kwargs)
+
+    def adr_wrapper(xdata, *params):
+        return adr(*xdata, *params)
+
+    result = curve_fit(adr_wrapper,
+                       xdata=[irradiance, temperature],
+                       ydata=eta,
+                       **fit_options,
+                       )
+    popt = result[0]
+    if dict_output:
+        return dict(zip(P_NAMES, popt))
+    else:
+        return popt

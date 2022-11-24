@@ -174,115 +174,173 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
     assert_allclose(mm, expected, rtol=1e-6)
 
 
-def test_martin_ruiz_spectral_modifier():
-    # tests with only cell_type given
-    # test with scalar values
-    clearness_index = 0.82
-    airmass_absolute = 1.2
-    # Expected values: Direct | Sky diffuse | Ground diffuse
-    # Do not change order in any 'expected' values list
-    expected = (1.00197741, 0.71632057, 0.94757498)
+@pytest.fixture
+def martin_ruiz_mismatch_data():
+    # Data to run tests of martin_ruiz_spectral_modifier
+    kwargs = {
+        'clearness_index': [0.56, 0.612, 0.664, 0.716, 0.768, 0.82],
+        'airmass_absolute': [2, 1.8, 1.6, 1.4, 1.2, 1],
+        'monosi_expected': {
+            'dir': [1.09149, 1.07275, 1.05432, 1.03622, 1.01842, 1.00093],
+            'sky': [0.88636, 0.85009, 0.81530, 0.78194, 0.74994, 0.71925],
+            'gnd': [1.02011, 1.00465, 0.98943, 0.97444, 0.95967, 0.94513]},
+        'polysi_expected': {
+            'dir': [1.09166, 1.07280, 1.05427, 1.03606, 1.01816, 1.00058],
+            'sky': [0.89443, 0.85553, 0.81832, 0.78273, 0.74868, 0.71612],
+            'gnd': [1.02638, 1.00888, 0.99168, 0.97476, 0.95814, 0.94180]},
+        'asi_expected': {
+            'dir': [1.07066, 1.05643, 1.04238, 1.02852, 1.01485, 1.00136],
+            'sky': [0.94889, 0.91699, 0.88616, 0.85637, 0.82758, 0.79976],
+            'gnd': [1.03801, 1.02259, 1.00740, 0.99243, 0.97769, 0.96316]},
+        'monosi_model_params_dict': {
+            'direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
+            'sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},
+            'ground_diffuse': {'c': 0.970, 'a': -2.44e-1, 'b': 1.29e-2}},
+        'monosi_custom_params_df': pd.DataFrame({
+            'direct': [1.029, -0.313, 0.00524],
+            'diffuse_sky': [0.764, -0.882, -0.0204]},
+            index=('c', 'a', 'b'))
+    }
+    return kwargs
 
-    result = \
-        spectrum.martin_ruiz_spectral_modifier(clearness_index,
-                                               airmass_absolute,
-                                               cell_type='monosi')
-    assert_approx_equal(result['direct'], expected[0])
-    assert_approx_equal(result['sky_diffuse'], expected[1])
-    assert_approx_equal(result['ground_diffuse'], expected[2])
 
-    # test NaN in, NaN out
-    clearness_index = 0.82
-    airmass_absolute = np.nan
+def test_martin_ruiz_mm_scalar(martin_ruiz_mismatch_data):
+    # test scalar input ; only cell_type given
+    clearness_index = martin_ruiz_mismatch_data['clearness_index'][0]
+    airmass_absolute = martin_ruiz_mismatch_data['airmass_absolute'][0]
+    result = spectrum.martin_ruiz_spectral_modifier(clearness_index,
+                                                    airmass_absolute,
+                                                    cell_type='asi')
+
+    assert_approx_equal(result['direct'],
+                        martin_ruiz_mismatch_data['asi_expected']['dir'][0],
+                        significant=5)
+    assert_approx_equal(result['sky_diffuse'],
+                        martin_ruiz_mismatch_data['asi_expected']['sky'][0],
+                        significant=5)
+    assert_approx_equal(result['ground_diffuse'],
+                        martin_ruiz_mismatch_data['asi_expected']['gnd'][0],
+                        significant=5)
+
+
+def test_martin_ruiz_mm_series(martin_ruiz_mismatch_data):
+    # test with Series input ; only cell_type given
+    clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
+    expected = {
+        'dir': pd.Series(martin_ruiz_mismatch_data['polysi_expected']['dir']),
+        'sky': pd.Series(martin_ruiz_mismatch_data['polysi_expected']['sky']),
+        'gnd': pd.Series(martin_ruiz_mismatch_data['polysi_expected']['gnd'])}
+
+    result = spectrum.martin_ruiz_spectral_modifier(clearness_index,
+                                                    airmass_absolute,
+                                                    cell_type='polysi')
+    assert_series_equal(result['direct'], expected['dir'], atol=1e-5)
+    assert_series_equal(result['sky_diffuse'], expected['sky'], atol=1e-5)
+    assert_series_equal(result['ground_diffuse'], expected['gnd'], atol=1e-5)
+
+
+def test_martin_ruiz_mm_nans(martin_ruiz_mismatch_data):
+    # test NaN in, NaN out ; only cell_type given
+    clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
+    airmass_absolute[:5] = np.nan
+
     result = spectrum.martin_ruiz_spectral_modifier(clearness_index,
                                                     airmass_absolute,
                                                     cell_type='monosi')
-    assert result.isna().all()
+    assert np.isnan(result['direct'][:5]).all()
+    assert not np.isnan(result['direct'][5:]).any()
+    assert np.isnan(result['sky_diffuse'][:5]).all()
+    assert not np.isnan(result['sky_diffuse'][5:]).any()
+    assert np.isnan(result['ground_diffuse'][:5]).all()
+    assert not np.isnan(result['ground_diffuse'][5:]).any()
 
-    # test with Series input
-    clearness_index = pd.Series([0.56, 0.67, 0.80])
-    airmass_absolute = pd.Series([1.6, 1.4, 1.2])
-    expected = (
-        pd.Series([1.088928, 1.050989, 1.008082]),  # Direct
-        pd.Series([0.901327, 0.816901, 0.726754]),  # Sky diffuse
-        pd.Series([1.019917, 0.986947, 0.949899]))  # Ground diffuse
 
-    result = \
-        spectrum.martin_ruiz_spectral_modifier(clearness_index,
-                                               airmass_absolute,
-                                               cell_type='polysi')
-    assert_series_equal(result['direct'], expected[0], atol=1e-5)
-    assert_series_equal(result['sky_diffuse'], expected[1], atol=1e-5)
-    assert_series_equal(result['ground_diffuse'], expected[2], atol=1e-5)
-
-    # test results when giving 'model_parameters' as DataFrame
+def test_martin_ruiz_mm_model_dict(martin_ruiz_mismatch_data):
+    # test results when giving 'model_parameters' as dict
     # test custom quantity of components and its names can be given
-    clearness_index = np.array([0.56, 0.612, 0.664, 0.716, 0.768, 0.82])
-    airmass_absolute = np.array([2, 1.8, 1.6, 1.4, 1.2, 1])
-    model_parameters = pd.DataFrame({  # monosi values
-        'direct': [1.029, -0.313, 0.00524],
-        'diffuse_sky':  [0.764, -0.882, -0.0204]},
-        index=('c', 'a', 'b'))
-    expected = (  # Direct / Sky diffuse / Ground diffuse
-        np.array([1.09149, 1.07274, 1.05432, 1.03621, 1.01841, 1.00092]),
-        np.array([0.88636, 0.85009, 0.81530, 0.78193, 0.74993, 0.71924]))
+    clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
+    expected = {
+        'dir': pd.Series(martin_ruiz_mismatch_data['monosi_expected']['dir']),
+        'sky': pd.Series(martin_ruiz_mismatch_data['monosi_expected']['sky']),
+        'gnd': pd.Series(martin_ruiz_mismatch_data['monosi_expected']['gnd'])}
+    model_parameters = martin_ruiz_mismatch_data['monosi_model_params_dict']
 
     result = spectrum.martin_ruiz_spectral_modifier(
         clearness_index,
         airmass_absolute,
         model_parameters=model_parameters)
-    assert_allclose(result['direct'], expected[0], atol=1e-5)
-    assert_allclose(result['diffuse_sky'], expected[1], atol=1e-5)
+    assert_allclose(result['direct'], expected['dir'], atol=1e-5)
+    assert_allclose(result['sky_diffuse'], expected['sky'], atol=1e-5)
+    assert_allclose(result['ground_diffuse'], expected['gnd'], atol=1e-5)
 
+
+def test_martin_ruiz_mm_model_df(martin_ruiz_mismatch_data):
+    # test results when giving 'model_parameters' as DataFrame
+    # test custom quantity of components and its names can be given
+    clearness_index = np.array(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
+    model_parameters = martin_ruiz_mismatch_data['monosi_custom_params_df']
+    expected = {
+        'dir': np.array(martin_ruiz_mismatch_data['monosi_expected']['dir']),
+        'sky': np.array(martin_ruiz_mismatch_data['monosi_expected']['sky'])}
+
+    result = spectrum.martin_ruiz_spectral_modifier(
+        clearness_index,
+        airmass_absolute,
+        model_parameters=model_parameters)
+    assert_allclose(result['direct'], expected['dir'], atol=1e-5)
+    assert_allclose(result['diffuse_sky'], expected['sky'], atol=1e-5)
+
+
+def test_martin_ruiz_mm_userwarning(martin_ruiz_mismatch_data):
     # test warning is raised with both 'cell_type' and 'model_parameters'
-    # test results when giving 'model_parameters' as dict
-    clearness_index = np.array([0.56, 0.612, 0.664, 0.716, 0.768, 0.82])
-    airmass_absolute = np.array([2, 1.8, 1.6, 1.4, 1.2, 1])
-    model_parameters = {  # Using 'monosi' values
-        'direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
-        'sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},
-        'ground_diffuse': {'c': 0.970, 'a': -2.44e-1, 'b': 1.29e-2}}
-    expected = (  # Direct / Sky diffuse / Ground diffuse
-        np.array([1.09149, 1.07274, 1.05432, 1.03621, 1.01841, 1.00092]),
-        np.array([0.88636, 0.85009, 0.81530, 0.78193, 0.74993, 0.71924]),
-        np.array([1.02011, 1.00465, 0.98943, 0.97443, 0.95967, 0.94513]))
+    clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
+    model_parameters = martin_ruiz_mismatch_data['monosi_model_params_dict']
 
     with pytest.warns(UserWarning,
                       match='Both "cell_type" and "model_parameters" given! '
                             'Using provided "model_parameters".'):
-        result = spectrum.martin_ruiz_spectral_modifier(
+        _ = spectrum.martin_ruiz_spectral_modifier(
             clearness_index,
             airmass_absolute,
             cell_type='asi',
             model_parameters=model_parameters)
-        assert_allclose(result['direct'], expected[0], atol=1e-5)
-        assert_allclose(result['sky_diffuse'], expected[1], atol=1e-5)
-        assert_allclose(result['ground_diffuse'], expected[2], atol=1e-5)
 
 
-def test_martin_ruiz_spectral_modifier_errors():
-    # mock values to run errors
-    clearness_index = 0.75
-    airmass_absolute = 1.6
-    # test exception raised when cell_type does not exist in algorithm
+def test_martin_ruiz_mm_error_notimplemented(martin_ruiz_mismatch_data):
+    # test exception is raised when cell_type does not exist in algorithm
+    clearness_index = np.array(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
+
     with pytest.raises(NotImplementedError,
                        match='Cell type parameters not defined in algorithm!'):
         _ = spectrum.martin_ruiz_spectral_modifier(clearness_index,
                                                    airmass_absolute,
                                                    cell_type='')
-    # test exception raised when missing cell_type and model_parameters
+
+
+def test_martin_ruiz_mm_error_missing_params(martin_ruiz_mismatch_data):
+    # test exception is raised when missing cell_type and model_parameters
+    clearness_index = np.array(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
+
     with pytest.raises(TypeError,
                        match='You must pass at least "cell_type" '
                              'or "model_parameters" as arguments!'):
         _ = spectrum.martin_ruiz_spectral_modifier(clearness_index,
                                                    airmass_absolute)
-    # test for error in params keys
-    clearness_index = 0.74
-    airmass_absolute = 1.5
+
+
+def test_martin_ruiz_mm_error_model_keys(martin_ruiz_mismatch_data):
+    # test exception is raised when  in params keys
+    clearness_index = np.array(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
     model_parameters = {
-        'direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
-        'sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},
-        'ground_diffuse': {'z': 0.970, 'x': -2.44e-1, 'y': 1.29e-2}}
+        'component_example': {'z': 0.970, 'x': -2.44e-1, 'y': 1.29e-2}}
     with pytest.raises(ValueError,
                        match="You must specify model parameters with keys "
                              "'a','b','c' for each irradiation component."):

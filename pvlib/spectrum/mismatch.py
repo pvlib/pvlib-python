@@ -256,7 +256,6 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     ----------
     clearness_index : numeric
         Clearness index of the sky.
-        Should be obtained through :py:func:`~pvlib.irradiance.clearness_index`
 
     airmass_absolute : numeric
         Absolute airmass. Give attention to algorithm used (``kasten1966`` is
@@ -327,6 +326,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     pvlib.atmosphere.get_absolute_airmass
     pvlib.atmosphere.first_solar_spectral_correction
     """
+    # Note tests for this function are prefixed with test_martin_ruiz_mm_*
 
     irrad_components = ('direct', 'sky_diffuse', 'ground_diffuse')
     # Fitting parameters directly from [1]_

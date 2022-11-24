@@ -80,7 +80,7 @@ df['p_dc_adr'] = eta2pmp(df['poa_global'], df['eta_adr'], p_stc=3437)
 
 # %%
 #
-# Compare the ADR simulated output to PVWATS.
+# Compare the ADR simulated output to PVWATS for one day.
 #
 # NOTE: they are not supposed to be the same because the module simulated
 # by PVWATTS is most likely different from the our ADR example module.
@@ -93,7 +93,8 @@ plt.plot(df['p_dc'][DEMO_DAY])
 plt.plot(df['p_dc_adr'][DEMO_DAY])
 plt.xticks(rotation=30)
 plt.legend(['PVWATTS', 'ADR'])
-plt.ylabel('Power [W]');
+plt.ylabel('Power [W]')
+plt.show()
 
 # %%
 #
@@ -106,8 +107,9 @@ plt.scatter(df['p_dc'], df['p_dc_adr'],
             c=df['t_cell'], alpha=.3, cmap='jet')
 plt.plot([0, 4000], [0, 4000], 'k', alpha=.5)
 plt.xlabel('PVWATTS DC array output [W]')
-plt.ylabel('ADR modelled DC array output [W]');
-plt.colorbar(label='T_cell', ax=plt.gca());
+plt.ylabel('ADR modelled DC array output [W]')
+plt.colorbar(label='T_cell', ax=plt.gca())
+plt.show()
 
 # %%
 #
@@ -115,8 +117,12 @@ plt.colorbar(label='T_cell', ax=plt.gca());
 # ----------
 # .. [1] A. Driesse and J. S. Stein, "From IEC 61853 power measurements
 #    to PV system simulations", Sandia Report No. SAND2020-3877, 2020.
-
+#
 # .. [2] A. Driesse, M. Theristis and J. S. Stein, "A New Photovoltaic Module
 #    Efficiency Model for Energy Prediction and Rating," in IEEE Journal
 #    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021,
 #    doi: 10.1109/JPHOTOV.2020.3045677.
+#
+#
+#
+#

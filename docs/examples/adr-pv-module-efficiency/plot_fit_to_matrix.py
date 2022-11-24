@@ -84,32 +84,34 @@ def eta2pmp(g, eta_rel, p_stc):
 
 # %%
 #
-# Now calculate the normalized or relative efficiency
-# and use the handy fitting function to determine the parameters.
+# Now calculate the normalized or relative efficiency values
+# and use the fitting function to determine the parameters.
+# The parameters (shown below) can now be used to
+# simulate the module operating in a PV system.
 #
 
 eta_rel = pmp2eta(df.irradiance, df.p_mp, P_STC)
 
 adr_params = fit_pvefficiency_adr(df.irradiance, df.temperature, eta_rel)
 
-eta_adr = adr(df.irradiance, df.temperature, **adr_params)
+for k, v in adr_params.items():
+    print('%-5s = %7.4f' % (k, v))
 
-#%%
+# %%
 #
-# The result shows only minor random differences.
-# These are most likely evidence of measurement errors.
-# The parameters shown below can now be used to
-# simulate the module operating in a PV system.
+# Compare the model output to the original measurements.
+# The chart below shows minor random differences
+# that are most likely evidence of measurement errors.
 #
+
+eta_adr = adr(df.irradiance, df.temperature, **adr_params)
 
 plt.figure()
 plt.plot(df.irradiance, eta_rel, 'oc')
 plt.plot(df.irradiance, eta_adr, '.k')
 plt.legend(['Lab measurements', 'ADR model fit'])
 plt.xlabel('Irradiance [W/m²]')
-
-for k, v in adr_params.items():
-    print('%-5s = %7.4f' % (k, v))
+plt.show()
 
 # %%
 #
@@ -117,8 +119,9 @@ for k, v in adr_params.items():
 # ----------
 # .. [1] A. Driesse and J. S. Stein, "From IEC 61853 power measurements
 #    to PV system simulations", Sandia Report No. SAND2020-3877, 2020.
-
+#
 # .. [2] A. Driesse, M. Theristis and J. S. Stein, "A New Photovoltaic Module
 #    Efficiency Model for Energy Prediction and Rating," in IEEE Journal
 #    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021,
 #    doi: 10.1109/JPHOTOV.2020.3045677.
+#

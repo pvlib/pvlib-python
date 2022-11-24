@@ -1,20 +1,31 @@
 """
-Fitting the ADR PV module efficiency model to IEC 61853-1 matrix measurements
-=============================================================================
+Obtaining ADR model parameters from IEC 61853 matrix measurements
+=================================================================
 
-Examples of getting the ADR PV efficiency model parameters
-and using the model for system simulation.
+The fitting function provided in pvlib does exactly that--and more.
 
 (WORK IN PROGRESS)
 
+Since PV module efficiency varies with irradiance and temperature
+what better way to train a model than using efficiency measurement
+over a broad range of temperature and irradiance levels?
+The standard IEC 61853-1 defines a standard matrix of conditions
+for such measurements and this example shows how the ADR model
+parameters can be determined with just a few lines of code using
+functions in pvlib-python.
+
 """
-import os
+
 from io import StringIO
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import pvlib
 from pvlib.pvefficiency import fit_pvefficiency_adr, adr
+
+# %% The text on this line is not displayed
+#
+# Here are some matrix measurements:
+#
 
 iec61853data = '''
     irradiance  temperature     p_mp
@@ -50,11 +61,13 @@ df = pd.read_csv(StringIO(iec61853data), delim_whitespace=True)
 
 P_STC = 322.305
 
-#%%
+# %%
+#
 # Going back and forth between power and efficiency is a common operation
 # so here are a couple of functions for that.
 # The efficiency is normalized to STC conditions, in other words, at STC
 # conditions the efficiency is 1.0 (or 100 %)
+#
 
 
 def pmp2eta(g, p, p_stc):
@@ -69,13 +82,25 @@ def eta2pmp(g, eta_rel, p_stc):
     return p_rel * p_stc
 
 
-#%%
+# %%
 #
+# Now calculate the normalized or relative efficiency
+# and use the handy fitting function to determine the parameters.
+#
+
 eta_rel = pmp2eta(df.irradiance, df.p_mp, P_STC)
 
 adr_params = fit_pvefficiency_adr(df.irradiance, df.temperature, eta_rel)
 
 eta_adr = adr(df.irradiance, df.temperature, **adr_params)
+
+#%%
+#
+# The result shows only minor random differences.
+# These are most likely evidence of measurement errors.
+# The parameters shown below can now be used to
+# simulate the module operating in a PV system.
+#
 
 plt.figure()
 plt.plot(df.irradiance, eta_rel, 'oc')
@@ -84,4 +109,16 @@ plt.legend(['Lab measurements', 'ADR model fit'])
 plt.xlabel('Irradiance [W/m²]')
 
 for k, v in adr_params.items():
-    print ('%-5s = %7.4f' % (k, v))
+    print('%-5s = %7.4f' % (k, v))
+
+# %%
+#
+# References
+# ----------
+# .. [1] A. Driesse and J. S. Stein, "From IEC 61853 power measurements
+#    to PV system simulations", Sandia Report No. SAND2020-3877, 2020.
+
+# .. [2] A. Driesse, M. Theristis and J. S. Stein, "A New Photovoltaic Module
+#    Efficiency Model for Energy Prediction and Rating," in IEEE Journal
+#    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021,
+#    doi: 10.1109/JPHOTOV.2020.3045677.

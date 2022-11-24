@@ -1,6 +1,6 @@
 """
-Using the ADR PV efficiency model
-=================================
+Fitting the ADR PV module efficiency model to IEC 61853-1 matrix measurements
+=============================================================================
 
 Examples of getting the ADR PV efficiency model parameters
 and using the model for system simulation.
@@ -50,20 +50,32 @@ df = pd.read_csv(StringIO(iec61853data), delim_whitespace=True)
 
 P_STC = 322.305
 
+#%%
+# Going back and forth between power and efficiency is a common operation
+# so here are a couple of functions for that.
+# The efficiency is normalized to STC conditions, in other words, at STC
+# conditions the efficiency is 1.0 (or 100 %)
+
 
 def pmp2eta(g, p, p_stc):
-    return p / p_stc / (g / 1000)
+    g_rel = g / 1000
+    p_rel = p / p_stc
+    return p_rel / g_rel
 
 
-def eta2pmp(g, eta, p_stc):
-    return eta * p_stc * (g / 1000)
+def eta2pmp(g, eta_rel, p_stc):
+    g_rel = g / 1000
+    p_rel = g_rel * eta_rel
+    return p_rel * p_stc
 
 
+#%%
+#
 eta_rel = pmp2eta(df.irradiance, df.p_mp, P_STC)
 
-adr_parms = fit_pvefficiency_adr(df.irradiance, df.temperature, eta_rel)
+adr_params = fit_pvefficiency_adr(df.irradiance, df.temperature, eta_rel)
 
-eta_adr = adr(df.irradiance, df.temperature, **adr_parms)
+eta_adr = adr(df.irradiance, df.temperature, **adr_params)
 
 plt.figure()
 plt.plot(df.irradiance, eta_rel, 'oc')
@@ -71,44 +83,5 @@ plt.plot(df.irradiance, eta_adr, '.k')
 plt.legend(['Lab measurements', 'ADR model fit'])
 plt.xlabel('Irradiance [W/m²]')
 
-# %% Cell 1
-
-# this system is 4000 W nominal
-# system losses are 14.08 %
-# therefore P_STC = 3437 W
-
-DATADIR = os.path.join(pvlib.__path__[0], 'data')
-DATAFILE = os.path.join(DATADIR, 'pvwatts_8760_rackmount.csv')
-
-df = pd.read_csv(DATAFILE, skiprows=17, nrows=8760)
-df.columns = ['month', 'day', 'hour',
-              'dni', 'dif', 't_amb', 'wind_speed',
-              'poa_global', 't_cell', 'p_dc', 'p_ac']
-
-df['year'] = 2019
-DATECOLS = ['year', 'month', 'day', 'hour']
-df.index = pd.to_datetime(df[DATECOLS])
-df = df.drop(columns=DATECOLS)
-
-df['eta_adr'] = adr(df['poa_global'], df['t_cell'], **adr_parms)
-df['p_dc_adr'] = eta2pmp(df['poa_global'], df['eta_adr'], p_stc=3437)
-
-# %% Cell 2
-
-DEMO_DAY = '2019-08-05'
-
-plt.figure()
-plt.plot(df['p_dc'][DEMO_DAY])
-plt.plot(df['p_dc_adr'][DEMO_DAY])
-plt.xticks(rotation=30)
-plt.legend(['PVWATTS', 'ADR'])
-plt.ylabel('Power [W]')
-
-# %% Cell 3
-
-plt.figure()
-plt.scatter(df['p_dc'], df['p_dc_adr'],
-            c=df['t_cell'], alpha=.3, cmap='jet')
-plt.plot([0, 4000], [0, 4000], 'k', alpha=.5)
-plt.xlabel('PVWATTS DC array output [W]')
-plt.ylabel('ADR modelled DC array output [W]')
+for k, v in adr_params.items():
+    print ('%-5s = %7.4f' % (k, v))

@@ -27,9 +27,10 @@ Testing
 ~~~~~~~
 * Corrected a flawed test for :py:func:`~pvlib.irradiance.get_ground_diffuse` (:issue:`1569`, :pull:`1575`)
 
+
 Documentation
 ~~~~~~~~~~~~~
-
+* Fixed equation in :py:func:`pvlib.iam.martin_ruiz` docstring (:issue:`1561`, :pull:`1599`)
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -48,3 +49,4 @@ Contributors
 * Marcus Boumans (:ghuser:`bowie2211`)
 * Karel De Brabandere (:ghuser:`kdebrab`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
+* Echedey Luis (:ghuser:`echedey-ls`)

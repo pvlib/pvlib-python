@@ -16,31 +16,7 @@ import pvlib
 from pvlib.pvefficiency import adr
 
 # %%
-#
-# Going back and forth between power and efficiency is a common operation
-# so here are a couple of functions for that.
-# The efficiency is normalized to STC conditions, in other words, at STC
-# conditions the efficiency is 1.0 (or 100 %)
-#
-
-
-def pmp2eta(g, p, p_stc):
-    g_rel = g / 1000
-    p_rel = p / p_stc
-    return p_rel / g_rel
-
-
-def eta2pmp(g, eta_rel, p_stc):
-    g_rel = g / 1000
-    p_rel = g_rel * eta_rel
-    return p_rel * p_stc
-
-
-# %%
-#
-# this system is 4000 W nominal
-# system losses are 14.08 %
-# therefore P_STC = 3437 W
+# Borrow the model parameters from the other example:
 #
 
 adr_parms = {'k_a': 0.99879,
@@ -54,6 +30,9 @@ adr_parms = {'k_a': 0.99879,
 #
 # Read an existing PVWATTS simulation output file
 # which contains all the input data we need to run an ADR simulation.
+# this system is 4000 W nominal
+# system losses are 14.08 %
+# therefore P_STC = 3437 W
 #
 
 DATADIR = os.path.join(pvlib.__path__[0], 'data')
@@ -71,9 +50,16 @@ df = df.drop(columns=DATECOLS)
 
 # %%
 #
-# Simulating takes just two lines of code:
+# Simulating takes just two steps:
 # one to calculate the efficiency and one to convert efficiency to power.
 #
+
+
+def eta2pmp(g, eta_rel, p_stc):
+    g_rel = g / 1000
+    p_rel = g_rel * eta_rel
+    return p_rel * p_stc
+
 
 df['eta_adr'] = adr(df['poa_global'], df['t_cell'], **adr_parms)
 df['p_dc_adr'] = eta2pmp(df['poa_global'], df['eta_adr'], p_stc=3437)
@@ -122,7 +108,4 @@ plt.show()
 #    Efficiency Model for Energy Prediction and Rating," in IEEE Journal
 #    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021,
 #    doi: 10.1109/JPHOTOV.2020.3045677.
-#
-#
-#
 #

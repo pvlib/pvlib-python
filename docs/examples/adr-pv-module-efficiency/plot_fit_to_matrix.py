@@ -20,7 +20,7 @@ from io import StringIO
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from pvlib.pvefficiency import fit_pvefficiency_adr, adr
+from pvlib.pvefficiency import adr, fit_pvefficiency_adr
 
 # %% The text on this line is not displayed
 #
@@ -63,10 +63,10 @@ P_STC = 322.305
 
 # %%
 #
-# Going back and forth between power and efficiency is a common operation
-# so here are a couple of functions for that.
-# The efficiency is normalized to STC conditions, in other words, at STC
-# conditions the efficiency is 1.0 (or 100 %)
+# Now calculate the normalized or relative efficiency values
+# and use the fitting function to determine the parameters.
+# The parameters (shown below) can now be used to
+# simulate the module operating in a PV system.
 #
 
 
@@ -75,20 +75,6 @@ def pmp2eta(g, p, p_stc):
     p_rel = p / p_stc
     return p_rel / g_rel
 
-
-def eta2pmp(g, eta_rel, p_stc):
-    g_rel = g / 1000
-    p_rel = g_rel * eta_rel
-    return p_rel * p_stc
-
-
-# %%
-#
-# Now calculate the normalized or relative efficiency values
-# and use the fitting function to determine the parameters.
-# The parameters (shown below) can now be used to
-# simulate the module operating in a PV system.
-#
 
 eta_rel = pmp2eta(df.irradiance, df.p_mp, P_STC)
 

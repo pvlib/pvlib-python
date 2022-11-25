@@ -262,14 +262,14 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         recommended for default parameters of ``monosi``, ``polysi`` and
         ``asi``, see reference [1]_).
 
-    cell_type : string or None, default None
+    cell_type : string, optional
         Specifies material of the cell in order to infer model parameters.
         Allowed types are ``monosi``, ``polysi`` and ``asi``, either lower or
         upper case. If None, the parameters must be provided.
 
-    model_parameters : dict-like or None, default None
         In case you want to specify your model parameters and components
         use a dict or a ``pd.DataFrame`` as follows:
+    model_parameters : dict-like, optional
 
         .. code-block:: python
 

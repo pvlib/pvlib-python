@@ -2,7 +2,7 @@
 Obtaining ADR model parameters from IEC 61853 matrix measurements
 =================================================================
 
-The fitting function provided in pvlib does exactly that--and more.
+There's a fitting function provided in pvlib to do exactly that.
 
 (WORK IN PROGRESS)
 

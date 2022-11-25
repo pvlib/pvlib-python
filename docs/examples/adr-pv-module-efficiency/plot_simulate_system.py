@@ -54,8 +54,8 @@ df = df.drop(columns=DATECOLS)
 # first calculate the efficiency, then convert efficiency to power.
 #
 
-P_REF = 3437. # (W)
-G_REF = 1000. # (W/m2)
+P_REF = 3437.   # (W)
+G_REF = 1000.   # (W/m2)
 
 df['eta_rel'] = adr(df['poa_global'], df['t_cell'], **adr_parms)
 

@@ -59,8 +59,6 @@ iec61853data = '''
 '''
 df = pd.read_csv(StringIO(iec61853data), delim_whitespace=True)
 
-P_STC = 322.305
-
 # %%
 #
 # Now calculate the normalized or relative efficiency values
@@ -69,16 +67,12 @@ P_STC = 322.305
 # simulate the module operating in a PV system.
 #
 
+P_REF = 322.305   # (W) STC value from the table above
+G_REF = 1000.     # (W/m2)
 
-def pmp2eta(g, p, p_stc):
-    g_rel = g / 1000
-    p_rel = p / p_stc
-    return p_rel / g_rel
+df['eta_rel'] = (df.p_mp / P_REF) / (df.irradiance / G_REF)
 
-
-eta_rel = pmp2eta(df.irradiance, df.p_mp, P_STC)
-
-adr_params = fit_pvefficiency_adr(df.irradiance, df.temperature, eta_rel)
+adr_params = fit_pvefficiency_adr(df.irradiance, df.temperature, df.eta_rel)
 
 for k, v in adr_params.items():
     print('%-5s = %7.4f' % (k, v))
@@ -90,11 +84,11 @@ for k, v in adr_params.items():
 # that are most likely evidence of measurement errors.
 #
 
-eta_adr = adr(df.irradiance, df.temperature, **adr_params)
+eta_rel_adr = adr(df.irradiance, df.temperature, **adr_params)
 
 plt.figure()
-plt.plot(df.irradiance, eta_rel, 'oc')
-plt.plot(df.irradiance, eta_adr, '.k')
+plt.plot(df.irradiance, df.eta_rel, 'oc')
+plt.plot(df.irradiance, eta_rel_adr, '.k')
 plt.legend(['Lab measurements', 'ADR model fit'])
 plt.xlabel('Irradiance [W/m²]')
 plt.show()

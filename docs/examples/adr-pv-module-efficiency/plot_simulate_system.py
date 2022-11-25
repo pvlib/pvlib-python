@@ -50,26 +50,23 @@ df = df.drop(columns=DATECOLS)
 
 # %%
 #
-# Simulating takes just two steps:
-# one to calculate the efficiency and one to convert efficiency to power.
+# Simulating is done in two steps:
+# first calculate the efficiency, then convert efficiency to power.
 #
 
+P_REF = 3437. # (W)
+G_REF = 1000. # (W/m2)
 
-def eta2pmp(g, eta_rel, p_stc):
-    g_rel = g / 1000
-    p_rel = g_rel * eta_rel
-    return p_rel * p_stc
+df['eta_rel'] = adr(df['poa_global'], df['t_cell'], **adr_parms)
 
-
-df['eta_adr'] = adr(df['poa_global'], df['t_cell'], **adr_parms)
-df['p_dc_adr'] = eta2pmp(df['poa_global'], df['eta_adr'], p_stc=3437)
+df['p_dc_adr'] = P_REF * df['eta_rel'] * (df['poa_global'] / G_REF)
 
 # %%
 #
 # Compare the ADR simulated output to PVWATS for one day.
 #
 # NOTE: they are not supposed to be the same because the module simulated
-# by PVWATTS is most likely different from the our ADR example module.
+# by PVWATTS is different from the our ADR example module.
 #
 
 DEMO_DAY = '2019-08-05'

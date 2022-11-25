@@ -3,16 +3,6 @@ from numpy.testing import assert_allclose
 from pvlib import pvefficiency
 
 
-def test_power_from_efficiency():
-    # super simple function so one test will do
-    assert_allclose(100, pvefficiency.power_from_efficiency(.5, 500, 400))
-
-
-def test_efficiency_from_power():
-    # super simple function so one test will do
-    assert_allclose(0.5, pvefficiency.efficiency_from_power(100, 500, 400))
-
-
 def test_adr():
     g = [1000, 200, 1000, 200, 1000, 200]
     t = [25, 25, 50, 50, 75, 75]

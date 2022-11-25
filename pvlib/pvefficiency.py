@@ -11,34 +11,6 @@ from scipy.optimize import curve_fit
 from scipy.special import exp10
 
 
-def power_from_efficiency(efficiency, irradiance, p_mp_ref):
-    '''
-    Convert normalized or relative efficiency to power.
-
-    If you can't figure out what the parameters mean, don't use this function!
-    '''
-    G_REF = np.array(1000.)
-    s = irradiance / G_REF
-
-    p_rel = s * efficiency
-    power = p_rel * p_mp_ref
-    return power
-
-
-def efficiency_from_power(power, irradiance, p_mp_ref):
-    '''
-    Convert power to normalized or relative efficiency.
-
-    If you can't figure out what the parameters mean, don't use this function!
-    '''
-    G_REF = np.array(1000.)
-    s = irradiance / G_REF
-
-    p_rel = power / np.asanyarray(p_mp_ref, dtype=float)
-    eta_rel = p_rel / s
-    return eta_rel
-
-
 def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
     '''
     Calculate PV module efficiency using the ADR model.

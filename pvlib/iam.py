@@ -227,7 +227,7 @@ def martin_ruiz(aoi, a_r=0.16):
 
     .. math::
 
-       IAM = \frac{1 - \exp(-\cos(\frac{aoi}{a_r}))}
+       IAM = \frac{1 - \exp(-\frac{\cos(aoi)}{a_r})}
        {1 - \exp(\frac{-1}{a_r})}
 
     which is presented as :math:`AL(\alpha) = 1 - IAM` in equation 4 of [1]_,
@@ -352,7 +352,6 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
 
     # avoid undefined results for horizontal or upside-down surfaces
     zeroang = 1e-06
-
 
     surface_tilt = np.where(surface_tilt == 0, zeroang, surface_tilt)
     surface_tilt = np.where(surface_tilt == 180, 180 - zeroang, surface_tilt)

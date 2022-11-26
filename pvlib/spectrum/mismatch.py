@@ -268,11 +268,11 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         upper case. If not specified, ``model_parameters`` must be provided.
 
     model_parameters : dict-like, optional
-        In case you computed the model parameters for any specified components.
-        Result keys will be the same as the input keys with each component in
-        ``model_parameters``, so it can easily be used when some parameters
-        are unknown.
-        Provide either a dict or a ``pd.DataFrame`` as follows:
+        In case you computed the model parameters for any specified
+        components. Result keys will be the same as the input keys with each
+        component in ``model_parameters``, so it can easily be used when some
+        parameters are unknown. Provide either a dict or a ``pd.DataFrame`` as
+        follows:
 
         .. code-block:: python
 

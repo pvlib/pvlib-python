@@ -265,27 +265,32 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     cell_type : string, optional
         Specifies material of the cell in order to infer model parameters.
         Allowed types are ``monosi``, ``polysi`` and ``asi``, either lower or
-        upper case. If None, the parameters must be provided.
+        upper case. If not specified, ``model_parameters`` must be provided.
 
-        In case you want to specify your model parameters and components
-        use a dict or a ``pd.DataFrame`` as follows:
     model_parameters : dict-like, optional
+        In case you computed the model parameters for any specified components.
+        Result keys will be the same as the input keys with each component in
+        ``model_parameters``, so it can easily be used when some parameters
+        are unknown.
+        Provide either a dict or a ``pd.DataFrame`` as follows:
 
         .. code-block:: python
 
             # Using a dict
+            # Return keys are the same as specifying 'cell_type'
             model_parameters = {
                 'direct': {'c': c1, 'a': a1, 'b': b1},
                 'sky_diffuse': {'c': c2, 'a': a2, 'b': b2},
                 'ground_diffuse': {'c': c3, 'a': a3, 'b': b3}
             }
-            # Using a pd.DataFrame
+            # Using a pd.DataFrame and grouping sky and ground diffuse
+            # Yields result with 'direct' & 'diffuse' keys only
             model_parameters = pd.DataFrame({
-                'direct': [a1, b1, c1],
-                'diffuse':  [a2, b2, c2]},
-                index=('a', 'b', 'c'))
+                'direct': [c1, a1, b1],
+                'diffuse':  [c2, a2, b2]},
+                index=('c', 'a', 'b'))
 
-        ``a``, ``b`` and ``c`` must be scalar.
+        ``c``, ``a`` and ``b`` must be scalar.
 
     Returns
     -------
@@ -310,7 +315,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
 
     .. math:: M = c \cdot \exp( a \cdot (K_t - 0.74) + b \cdot (AM - 1.5) )
 
-    where ``a``, ``b`` and ``c`` are the model parameters, different for each
+    where ``c``, ``a`` and ``b`` are the model parameters, different for each
     irradiance component.
 
     References

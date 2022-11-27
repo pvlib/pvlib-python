@@ -66,8 +66,9 @@ def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
     freely to adjust the scale, or to change the module class to a slightly
     higher or lower efficiency.
 
-    All arguments may be scalars or vectors. If multiple arguments
-    are vectors they must be the same length.
+    All arguments may be scalars or array-like. If multiple arguments
+    are array-like they must be the same shape or broadcastable to the
+    same shape.
 
     See also
     --------
@@ -146,24 +147,30 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
         temperature(s). [unitless] or [%]
 
     dict_output : boolean, optional
-        When True, return the result as a dictionary; when False, return
-        the result as an numpy array.
+        When True (default), return the result as a dictionary; when False,
+        return the result as a numpy array.
 
     kwargs :
-        Optional keyword arguments passed to `curve_fit`.
+        Optional keyword arguments passed to `scip.optimize.curve_fit`.
+        These kwargs can over-ride some options set within this function,
+        which could be interesting for very advanced users.
 
     Returns
     -------
-    popt : array
+    popt : array or dict
         Optimal values for the parameters.
 
-    pcov : 2-D array
-        Estimated covariance of popt. See `curve_fit` for details.
+    Notes
+    -----
+    The best fits are obtained when the lab or field data include a wide range
+    of both irradiance and temperature values.  A minimal data set
+    would consist of 6 operating points covering low, medium and high
+    irradiance levels at two operating temperatures.
 
     See also
     --------
     pvlib.pvefficiency.adr
-
+    scipy.optimize.curve_fit
 
     Adapted from https://github.com/adriesse/pvpltools-python
     Copyright (c) 2022, Anton Driesse, PV Performance Labs
@@ -200,6 +207,7 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
                        **fit_options,
                        )
     popt = result[0]
+
     if dict_output:
         return dict(zip(P_NAMES, popt))
     else:

@@ -73,14 +73,17 @@ df['temp_pv'] = pvlib.temperature.faiman(df.poa_global, df.temp_air,
 # Now we're ready to calculate PV array DC output power based
 # on POA irradiance and PV module operating temperature.
 # Among the models available in pvlib-python to do this are:
-# - PVWatts
-# - SAPM
-# - single-diode model variations
-# - and now also the ADR PV efficiency model
+#
+#  - PVWatts
+#  - SAPM
+#  - single-diode model variations
+#
+#  And now also the ADR PV efficiency model
 #
 # Simulation is done in two steps:
-# - first calculate efficiency using the ADR model,
-# - then convert (scale up) efficiency to power.
+#
+#  - first calculate efficiency using the ADR model,
+#  - then convert (scale up) efficiency to power.
 #
 
 # Borrow the ADR model parameters from the other example:

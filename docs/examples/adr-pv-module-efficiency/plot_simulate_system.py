@@ -19,13 +19,13 @@ import pvlib
 from pvlib import iotools, location, pvefficiency
 from pvlib.irradiance import aoi, get_total_irradiance
 
-# %%
+#%%
 #
 # Read a TMY3 file containing weather data and select needed columns
 #
 
 PVLIB_DIR = pvlib.__path__[0]
-DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
+DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.csv')
 
 tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990)
 
@@ -34,7 +34,7 @@ df = pd.DataFrame({'ghi': tmy['GHI'], 'dhi': tmy['DHI'],
                    'temp_air': tmy['DryBulb'], 'wind_speed': tmy['Wspd'],
                    })
 
-# %%
+#%%
 #
 # Shift timestamps to middle of hour and then calculate sun positions
 #
@@ -44,7 +44,7 @@ df.index = df.index - pd.Timedelta(minutes=30)
 loc = location.Location.from_tmy(metadata)
 solpos = loc.get_solarposition(df.index)
 
-# %%
+#%%
 #
 # Determine  total irradiance on a fixed-tilt array
 #
@@ -101,7 +101,7 @@ G_STC = 1000.   # (W/m2)
 
 df['p_mp'] = P_STC * df['eta_rel'] * (df['poa_global'] / G_STC)
 
-# %%
+#%%
 #
 # Show how power and efficiency vary with both irradiance and temperature
 #

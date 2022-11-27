@@ -70,9 +70,10 @@ df = pd.read_csv(StringIO(iec61853data), delim_whitespace=True)
 P_REF = 322.305   # (W) STC value from the table above
 G_REF = 1000.     # (W/m2)
 
-df['eta_rel'] = (df.p_mp / P_REF) / (df.irradiance / G_REF)
+df['eta_rel'] = (df['p_mp'] / P_REF) / (df['irradiance'] / G_REF)
 
-adr_params = fit_pvefficiency_adr(df.irradiance, df.temperature, df.eta_rel)
+adr_params = fit_pvefficiency_adr(df['irradiance'], df['temperature'],
+                                  df['eta_rel'])
 
 for k, v in adr_params.items():
     print('%-5s = %7.4f' % (k, v))
@@ -80,17 +81,19 @@ for k, v in adr_params.items():
 # %%
 #
 # Compare the model output to the original measurements.
-# The chart below shows minor random differences
-# that are most likely evidence of measurement errors.
+# The chart below shows minor differences but due to their random nature
+# they are most likely evidence of the limitations of measurement accuracy.
 #
 
-eta_rel_adr = adr(df.irradiance, df.temperature, **adr_params)
+eta_rel_adr = adr(df['irradiance'], df['temperature'], **adr_params)
 
 plt.figure()
-plt.plot(df.irradiance, df.eta_rel, 'oc')
-plt.plot(df.irradiance, eta_rel_adr, '.k')
+plt.plot(df['irradiance'], df['eta_rel'], 'oc', ms=8)
+plt.plot(df['irradiance'], eta_rel_adr, '.k')
 plt.legend(['Lab measurements', 'ADR model fit'])
 plt.xlabel('Irradiance [W/m²]')
+plt.ylabel('Relative efficiency [-]')
+plt.grid(alpha=0.5)
 plt.show()
 
 # %%

@@ -4,7 +4,10 @@ Simulating PV systems using the ADR module efficiency model
 
 Time series processing with the ADR model is fast and ... efficient!
 
-(WORK IN PROGRESS)
+This example reads a TMY3 weather file, and runs a basic simulation
+on a fixed latitude-tilt system.
+Efficiency is independent of system size, so adjusting the system
+capacity is just a matter of setting the desired value, e.g. P_STC = 5000.
 
 """
 
@@ -13,85 +16,126 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import pvlib
-from pvlib.pvefficiency import adr
-
-# %%
-# Borrow the model parameters from the other example:
-#
-
-adr_parms = {'k_a': 0.99879,
-             'k_d': -5.85188,
-             'tc_d': 0.01939,
-             'k_rs': 0.06962,
-             'k_rsh': 0.21036
-             }
+from pvlib import iotools, location, pvefficiency
+from pvlib.irradiance import aoi, get_total_irradiance
 
 # %%
 #
-# Read an existing PVWATTS simulation output file
-# which contains all the input data we need to run an ADR simulation.
-# this system is 4000 W nominal
-# system losses are 14.08 %
-# therefore P_STC = 3437 W
+# Read a TMY3 file containing weather data and select needed columns
 #
 
-DATADIR = os.path.join(pvlib.__path__[0], 'data')
-DATAFILE = os.path.join(DATADIR, 'pvwatts_8760_rackmount.csv')
+PVLIB_DIR = pvlib.__path__[0]
+DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
 
-df = pd.read_csv(DATAFILE, skiprows=17, nrows=8760)
-df.columns = ['month', 'day', 'hour',
-              'dni', 'dif', 't_amb', 'wind_speed',
-              'poa_global', 't_cell', 'p_dc', 'p_ac']
+tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990)
 
-df['year'] = 2019
-DATECOLS = ['year', 'month', 'day', 'hour']
-df.index = pd.to_datetime(df[DATECOLS])
-df = df.drop(columns=DATECOLS)
+df = pd.DataFrame({'ghi': tmy['GHI'], 'dhi': tmy['DHI'],
+                   'dni': tmy['DNI'], 'dni_extra': tmy['ETRN'],
+                   'temp_air': tmy['DryBulb'], 'wind_speed': tmy['Wspd'],
+                   })
 
 # %%
 #
-# Simulating is done in two steps:
-# first calculate the efficiency, then convert efficiency to power.
+# Shift timestamps to middle of hour and then calculate sun positions
 #
 
-P_REF = 3437.   # (W)
-G_REF = 1000.   # (W/m2)
+df.index = df.index - pd.Timedelta(minutes=30)
 
-df['eta_rel'] = adr(df['poa_global'], df['t_cell'], **adr_parms)
-
-df['p_dc_adr'] = P_REF * df['eta_rel'] * (df['poa_global'] / G_REF)
+loc = location.Location.from_tmy(metadata)
+solpos = loc.get_solarposition(df.index)
 
 # %%
 #
-# Compare the ADR simulated output to PVWATS for one day.
-#
-# NOTE: they are not supposed to be the same because the module simulated
-# by PVWATTS is different from the our ADR example module.
+# Determine  total irradiance on a fixed-tilt array
 #
 
-DEMO_DAY = '2019-08-05'
+TILT = metadata['latitude']
+ORIENT = 180
+
+df['aoi'] = aoi(TILT, ORIENT, solpos.apparent_zenith, solpos.azimuth)
+
+total_irrad = get_total_irradiance(TILT, ORIENT,
+                                   solpos.apparent_zenith, solpos.azimuth,
+                                   df.dni, df.ghi, df.dhi, df.dni_extra)
+
+df['poa_global'] = total_irrad.poa_global
+
+# %%
+#
+# Estimate the expected operating temperature of the PV modules
+#
+
+df['temp_pv'] = pvlib.temperature.faiman(df.poa_global, df.temp_air,
+                                         df.wind_speed)
+
+# %%
+#
+# Now we're ready to calculate PV array DC output power based
+# on POA irradiance and PV module operating temperature.
+# Among the models available in pvlib-python to do this are:
+# - PVWatts
+# - SAPM
+# - single-diode model variations
+# - and now also the ADR PV efficiency model
+#
+# Simulation is done in two steps:
+# - first calculate efficiency using the ADR model,
+# - then convert (scale up) efficiency to power.
+#
+
+# Borrow the ADR model parameters from the other example:
+
+adr_params = {'k_a': 0.99879,
+              'k_d': -5.85188,
+              'tc_d': 0.01939,
+              'k_rs': 0.06962,
+              'k_rsh': 0.21036
+              }
+
+df['eta_rel'] = pvefficiency.adr(df['poa_global'], df['temp_pv'], **adr_params)
+
+# Set the desired array size:
+P_STC = 5000.   # (W)
+# and the irradiance level needed to achieve this output (
+G_STC = 1000.   # (W/m2)
+
+df['p_mp'] = P_STC * df['eta_rel'] * (df['poa_global'] / G_STC)
+
+# %%
+#
+# Show how power and efficiency vary with both irradiance and temperature
+#
 
 plt.figure()
-plt.plot(df['p_dc'][DEMO_DAY])
-plt.plot(df['p_dc_adr'][DEMO_DAY])
-plt.xticks(rotation=30)
-plt.legend(['PVWATTS', 'ADR'])
-plt.ylabel('Power [W]')
+pc = plt.scatter(df['poa_global'], df['eta_rel'], c=df['temp_pv'], cmap='jet')
+plt.colorbar(label='Temperature [C]', ax=plt.gca())
+pc.set_alpha(0.25)
+plt.grid(alpha=0.5)
+plt.ylim(0.48)
+plt.xlabel('Irradiance [W/m²]')
+plt.ylabel('Relative efficiency [-]')
+plt.show()
+
+plt.figure()
+pc = plt.scatter(df['poa_global'], df['p_mp'], c=df['temp_pv'], cmap='jet')
+plt.colorbar(label='Temperature [C]', ax=plt.gca())
+pc.set_alpha(0.25)
+plt.grid(alpha=0.5)
+plt.xlabel('Irradiance [W/m²]')
+plt.ylabel('Array power [W]')
 plt.show()
 
 # %%
 #
-# The colors in the next graph show that the PVWATTS module probably has
-# a larger temperature coefficient than the ADR example module.
+# One day:
 #
 
+DEMO_DAY = '1990-08-05'
+
 plt.figure()
-plt.scatter(df['p_dc'], df['p_dc_adr'],
-            c=df['t_cell'], alpha=.3, cmap='jet')
-plt.plot([0, 4000], [0, 4000], 'k', alpha=.5)
-plt.xlabel('PVWATTS DC array output [W]')
-plt.ylabel('ADR modelled DC array output [W]')
-plt.colorbar(label='T_cell', ax=plt.gca())
+plt.plot(df['p_mp'][DEMO_DAY])
+plt.xticks(rotation=30)
+plt.ylabel('Power [W]')
 plt.show()
 
 # %%

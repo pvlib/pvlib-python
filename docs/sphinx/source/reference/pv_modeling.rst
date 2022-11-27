@@ -187,3 +187,5 @@ Other
 
    pvsystem.retrieve_sam
    pvsystem.scale_voltage_current_power
+   pvefficiency.adr
+   pvefficiency.fit_pvefficiency_adr

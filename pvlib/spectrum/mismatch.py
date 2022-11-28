@@ -359,8 +359,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         raise TypeError('You must pass at least "cell_type" '
                         'or "model_parameters" as arguments!')
     elif model_parameters is not None:  # Use user-defined model parameters
-        # Overwrite components, to later iterate over them,
-        # in case user wants to specify their components
+        # Overwrite components with user-specified ones
         irrad_components = model_parameters.keys()
         # Validate 'model_parameters' sub-dicts keys
         if any([{'a', 'b', 'c'} != set(model_parameters[component].keys())
@@ -379,7 +378,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
 
     modifiers = pd.Series()
 
-    # Values are tested in return order in test_martin_ruiz_spectral_modifier
+    # Calculate mismatch modifier for each irradiation
     for irrad_type in irrad_components:
         _coeffs = _params[irrad_type]
 

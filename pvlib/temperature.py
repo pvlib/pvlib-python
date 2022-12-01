@@ -318,7 +318,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
         in :eq:`pvsyst`.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     eta_m : numeric, default None (deprecated, use module_efficiency instead)
 
@@ -375,7 +375,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     >>> params = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']
     >>> pvsyst_cell(1000, 10, **params)
     37.93103448275862
-    """
+    """                                                            # noQA: E501
 
     if eta_m:
         warn_deprecated(
@@ -413,12 +413,14 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     u0 : numeric, default 25.0
         Combined heat loss factor coefficient. The default value is one
-        determined by Faiman for 7 silicon modules.
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
-        determined by Faiman for 7 silicon modules.
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
 
     Returns
@@ -488,13 +490,15 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
 
     u0 : numeric, default 25.0
         Combined heat loss factor coefficient. The default value is one
-        determined by Faiman for 7 silicon modules.
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
-        determined by Faiman for 7 silicon modules.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     sky_view : numeric, default 1.0
         Effective view factor limiting the radiative exchange between the
@@ -517,8 +521,9 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     All arguments may be scalars or vectors. If multiple arguments
     are vectors they must be the same length.
 
-    If the input `ir_down` is not supplied the model output is the same as the
-    original Faiman model.
+    If the input `ir_down` is `None` the model output is the same as the
+    original Faiman model. Setting `ir_down` to zero does not have the same
+    meaning; it leads to very high radiative loss and low module temperature.
 
     References
     ----------
@@ -535,7 +540,8 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     .. [4] Driesse, A. et al (2022) "Improving Common PV Module Temperature
        Models by Incorporating Radiative Losses to the Sky". SAND2022-11604.
 
-    '''
+    '''                                                            # noQA: E501
+
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2022
 
     u0 = np.asanyarray(u0)

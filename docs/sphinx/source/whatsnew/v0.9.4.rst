@@ -13,9 +13,12 @@ Enhancements
 * Added a function to calculate one of GHI, DHI, and DNI from values of the other two.
   :py:func:`~pvlib.irradiance.complete_irradiance`
   (:issue:`1565`, :pull:`1567`)
-* Add optional ``return_components`` parameter to :py:func:`pvlib.irradiance.haydavies` to return
+* Added optional ``return_components`` parameter to :py:func:`pvlib.irradiance.haydavies` to return
   individual diffuse irradiance components (:issue:`1553`, :pull:`1568`)
-
+* Added a module temperature model that accounts for radiative losses to the sky
+  in a simplified way, using the Faiman model as an example.
+  :py:func:`~pvlib.temperature.faiman_rad`
+  (:issue:`1594`, :pull:`1595`)
 
 Bug fixes
 ~~~~~~~~~
@@ -35,7 +38,6 @@ Benchmarking
 ~~~~~~~~~~~~~
 * Removed ``time_tracker_singleaxis`` function from tracking.py (:issue:`1508`, :pull:`1535`)
 
-
 Requirements
 ~~~~~~~~~~~~
 
@@ -48,3 +50,6 @@ Contributors
 * Marcus Boumans (:ghuser:`bowie2211`)
 * Karel De Brabandere (:ghuser:`kdebrab`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)

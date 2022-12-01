@@ -467,7 +467,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
 
     The Faiman model uses an empirical heat loss factor model [1]_ and is
     adopted in the IEC 61853 standards [2]_ and [3]_.  The radiative loss
-    term was developed in [4]_.
+    term was proposed and developed by Driesse [4]_.
 
     The model can be used to represent cell or module temperature.
 

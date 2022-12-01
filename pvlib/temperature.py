@@ -539,7 +539,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
 
     .. [4] Driesse, A. et al (2022) "Improving Common PV Module Temperature
        Models by Incorporating Radiative Losses to the Sky". SAND2022-11604.
-
+       :doi:`10.2172/1884890`
     '''                                                            # noQA: E501
 
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2022

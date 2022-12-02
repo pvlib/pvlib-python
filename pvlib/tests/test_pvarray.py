@@ -25,7 +25,7 @@ def test_fit_pvefficiency_adr():
     # the fitted parameters vary somewhat by platform during the testing
     # so the tolerance is higher on the parameters than on the efficiencies
     # in the other tests
-    assert_allclose(result, p, rtol=1e-4)
+    assert_allclose(result, p, rtol=1e-3)
 
     result = pvarray.fit_pvefficiency_adr(g, t, e, dict_output=True)
     assert 'k_a' in result

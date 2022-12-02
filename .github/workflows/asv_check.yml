@@ -1,10 +1,15 @@
 name: asv
 
 # CI ASV CHECK is aimed to verify that the benchmarks execute without error.
-on: [pull_request, push]
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+
 
 jobs:
-  quick:
+  quick-benchmarks:
     runs-on: ubuntu-latest
     defaults: 
       run:
@@ -27,8 +32,4 @@ jobs:
         run: |
           cd benchmarks
           asv machine --yes
-          asv run HEAD^! --quick --dry-run --show-stderr | sed "/failed$/ s/^/##[error]/" | tee benchmarks.log
-          if grep "failed" benchmarks.log > /dev/null ; then
-              exit 1
-          fi
-        
+          asv run HEAD^! --quick --dry-run --show-stderr

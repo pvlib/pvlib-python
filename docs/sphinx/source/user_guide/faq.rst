@@ -79,10 +79,10 @@ Why don't my simulation results make sense?
 
 pvlib does not prevent you from using models improperly and generating
 invalid results.  It is on you as the user to understand the models you
-are using.  However, one modeling error that beginners sometimes
-run into is improper time zone localization: calculating solar
+are using and to supply appropriate, correctly-formatted data.  One modeling error that beginners sometimes
+make is improper time zone localization. Calculating solar
 positions is often the first step of a modeling process
-and relies on timestamps being localized to the correct time zone.
+and this step relies on timestamps being localized to the correct time zone.
 A telltale sign of improper time zones is a time shift between solar
 position and the irradiance data (for example, ``solar_elevation``
 peaks at a different time from clear-sky ``ghi``).
@@ -92,7 +92,7 @@ More generally, inspecting the simulation results visually is a good first
 step when investigating strange results.
 Matplotlib and pandas have very powerful plotting capabilities that are great
 for tracking down where things went wrong in a modeling process.  Try plotting
-a few days of intermediate time series in a single plot, looking for
+a few days of intermediate time series results in a single plot, looking for
 inconsistencies like nonzero irradiance when the sun is below the horizon.
 This will give you a clue of where to look for errors in your code.
 

@@ -59,6 +59,4 @@ Contributors
 * Karel De Brabandere (:ghuser:`kdebrab`)
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Anton Driesse (:ghuser:`adriesse`)
-* Cliff Hansen (:ghuser:`cwhanse`)
-* Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Echedey Luis (:ghuser:`echedey-ls`)

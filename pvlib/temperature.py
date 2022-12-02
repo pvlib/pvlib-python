@@ -421,7 +421,7 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
         Combined heat loss factor influenced by wind. The default value is one
         determined by Faiman for 7 silicon modules
         in the Negev desert on an open rack at 30.9° tilt.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     Returns
     -------
@@ -444,7 +444,8 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
 
-    '''
+    '''                                                            # noQA: E501
+
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Dec., 2019
 
     # The following lines may seem odd since u0 & u1 are probably scalar,

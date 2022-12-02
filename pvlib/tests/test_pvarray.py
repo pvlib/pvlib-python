@@ -11,7 +11,7 @@ def test_pvefficiency_adr():
     e = [1.0,  0.949125, 0.928148, 0.876472, 0.855759, 0.803281]
 
     result = pvarray.pvefficiency_adr(g, t, *p)
-    assert_allclose(result, e, rtol=1e-6)
+    assert_allclose(result, e, atol=1e-6)
 
 
 def test_fit_pvefficiency_adr():
@@ -25,7 +25,7 @@ def test_fit_pvefficiency_adr():
     # the fitted parameters vary somewhat by platform during the testing
     # so the tolerance is higher on the parameters than on the efficiencies
     # in the other tests
-    assert_allclose(result, p, rtol=1e-5)
+    assert_allclose(result, p, rtol=1e-4)
 
     result = pvarray.fit_pvefficiency_adr(g, t, e, dict_output=True)
     assert 'k_a' in result
@@ -38,4 +38,4 @@ def test_pvefficiency_adr_round_trip():
 
     p = pvarray.fit_pvefficiency_adr(g, t, e, dict_output=False)
     result = pvarray.pvefficiency_adr(g, t, *p)
-    assert_allclose(result, e, rtol=1e-6)
+    assert_allclose(result, e, atol=1e-6)

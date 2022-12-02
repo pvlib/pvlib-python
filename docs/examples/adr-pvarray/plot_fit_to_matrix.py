@@ -12,6 +12,7 @@ for such measurements and this example shows how the ADR model
 parameters can be determined with just a few lines of code using
 functions in pvlib-python.
 
+Author: Anton Driesse
 """
 
 from io import StringIO

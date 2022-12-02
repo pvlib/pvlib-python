@@ -9,6 +9,7 @@ on a fixed latitude-tilt system.
 Efficiency is independent of system size, so adjusting the system
 capacity is just a matter of setting the desired value, e.g. P_STC = 5000.
 
+Author: Anton Driesse
 """
 
 import os

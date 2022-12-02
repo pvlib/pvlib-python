@@ -190,12 +190,15 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
     P0      = [eta_max,  -6,  0.0, 0, 0]                           # noQA: E221
     P_SCALE = [eta_max,  10,  0.1, 1, 1]
 
+    SIGMA = 1 / np.sqrt(irradiance / 1000)
+
     fit_options = dict(p0=P0,
                        bounds=[P_MIN, P_MAX],
                        method='trf',
                        x_scale=P_SCALE,
                        loss='soft_l1',
                        f_scale=eta_max * 0.05,
+                       sigma=SIGMA,
                        )
 
     fit_options.update(kwargs)

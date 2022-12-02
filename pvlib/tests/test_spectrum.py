@@ -198,7 +198,7 @@ def martin_ruiz_mismatch_data():
             'ground_diffuse': {'c': 0.970, 'a': -2.44e-1, 'b': 1.29e-2}},
         'monosi_custom_params_df': pd.DataFrame({
             'direct': [1.029, -0.313, 0.00524],
-            'diffuse_sky': [0.764, -0.882, -0.0204]},
+            'sky_diffuse': [0.764, -0.882, -0.0204]},
             index=('c', 'a', 'b'))
     }
     return kwargs
@@ -292,7 +292,8 @@ def test_martin_ruiz_mm_model_df(martin_ruiz_mismatch_data):
         airmass_absolute,
         model_parameters=model_parameters)
     assert_allclose(result['direct'], expected['dir'], atol=1e-5)
-    assert_allclose(result['diffuse_sky'], expected['sky'], atol=1e-5)
+    assert_allclose(result['sky_diffuse'], expected['sky'], atol=1e-5)
+    assert_equal(result['ground_diffuse'], None)
 
 
 def test_martin_ruiz_mm_userwarning(martin_ruiz_mismatch_data):

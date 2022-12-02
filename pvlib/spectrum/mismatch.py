@@ -268,11 +268,9 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         upper case. If not specified, ``model_parameters`` must be provided.
 
     model_parameters : dict-like, optional
-        In case you computed the model parameters for any specified
-        components. Result keys will be the same as the input keys with each
-        component in ``model_parameters``, so it can easily be used when some
-        parameters are unknown. Provide either a dict or a ``pd.DataFrame`` as
-        follows:
+        In case you computed the model parameters. In case any component is not
+        specified, result will have a ``None`` value in its corresponding key.
+        Provide either a dict or a ``pd.DataFrame`` as follows:
 
         .. code-block:: python
 
@@ -283,22 +281,24 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
                 'sky_diffuse': {'c': c2, 'a': a2, 'b': b2},
                 'ground_diffuse': {'c': c3, 'a': a3, 'b': b3}
             }
-            # Using a pd.DataFrame and grouping sky and ground diffuse
-            # Yields result with 'direct' & 'diffuse' keys only
+            # Using a pd.DataFrame
             model_parameters = pd.DataFrame({
                 'direct': [c1, a1, b1],
-                'diffuse':  [c2, a2, b2]},
+                'sky_diffuse':  [c2, a2, b2],
+                'ground_diffuse': [c3, a3, b3]},
                 index=('c', 'a', 'b'))
 
         ``c``, ``a`` and ``b`` must be scalar.
 
     Returns
     -------
-    Mismatch modifiers : pd.Series of numeric
+    Mismatch modifiers : pd.Series of numeric or None
         Modifiers for direct, sky diffuse and ground diffuse irradiances, with
         indexes ``direct``, ``sky_diffuse``, ``ground_diffuse``.
         Each mismatch modifier should be multiplied by its corresponding
         POA component.
+        Returns None for a component if provided ``model_parameters`` does not
+        include its coefficients.
 
     Raises
     ------
@@ -333,11 +333,11 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     """
     # Note tests for this function are prefixed with test_martin_ruiz_mm_*
 
-    irrad_components = ('direct', 'sky_diffuse', 'ground_diffuse')
+    IRRAD_COMPONENTS = ('direct', 'sky_diffuse', 'ground_diffuse')
     # Fitting parameters directly from [1]_
     MARTIN_RUIZ_PARAMS = pd.DataFrame(
         index=('monosi', 'polysi', 'asi'),
-        columns=pd.MultiIndex.from_product([irrad_components,
+        columns=pd.MultiIndex.from_product([IRRAD_COMPONENTS,
                                            ('c', 'a', 'b')]),
         data=[  # Direct(c,a,b)  | Sky diffuse(c,a,b) | Ground diffuse(c,a,b)
             [1.029, -.313, 524e-5, .764, -.882, -.0204, .970, -.244, .0129],
@@ -359,11 +359,9 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         raise TypeError('You must pass at least "cell_type" '
                         'or "model_parameters" as arguments!')
     elif model_parameters is not None:  # Use user-defined model parameters
-        # Overwrite components with user-specified ones
-        irrad_components = model_parameters.keys()
         # Validate 'model_parameters' sub-dicts keys
         if any([{'a', 'b', 'c'} != set(model_parameters[component].keys())
-                for component in irrad_components]):
+                for component in model_parameters.keys()]):
             raise ValueError("You must specify model parameters with keys "
                              "'a','b','c' for each irradiation component.")
 
@@ -376,12 +374,15 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     kt_delta = clearness_index - 0.74
     am_delta = airmass_absolute - 1.5
 
-    modifiers = pd.Series()
+    modifiers = pd.Series(index=IRRAD_COMPONENTS, data=[None, None, None])
 
     # Calculate mismatch modifier for each irradiation
-    for irrad_type in irrad_components:
+    for irrad_type in IRRAD_COMPONENTS:
+        # Skip irradiations not specified in 'model_params'
+        if irrad_type not in _params.keys():
+            continue
+        # Else, calculate the mismatch modifier
         _coeffs = _params[irrad_type]
-
         modifier = _coeffs['c'] * np.exp(_coeffs['a'] * kt_delta
                                          + _coeffs['b'] * am_delta)
         modifiers[irrad_type] = modifier

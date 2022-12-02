@@ -17,30 +17,30 @@ Author: Anton Driesse
 """
 
 import numpy as np
-# import pandas as pd
 import matplotlib.pyplot as plt
 
 from pvlib.pvsystem import calcparams_pvsyst, max_power_point
-from pvlib.pvarray import pvefficiency_adr, fit_pvefficiency_adr
+from pvlib.pvarray import fit_pvefficiency_adr, pvefficiency_adr
+
+from timeit import timeit
 
 # %% The text on this line is not displayed
 #
 # Generate a matrix of power values
 #
 
-pvsyst_params = {
-    'alpha_sc': 0.0015,
-    'gamma_ref': 1.20585,
-    'mu_gamma': -9.41066e-05,
-    'I_L_ref': 5.930108567118184,
-    'I_o_ref': 2.9690970560272695e-10,
-    'R_sh_ref': 1144,
-    'R_sh_0': 3850,
-    'R_s': 0.6,
-    'cells_in_series': 96,
-    'R_sh_exp': 5.5,
-    'EgRef': 1.12,
-    }
+pvsyst_params = {'alpha_sc': 0.0015,
+                 'gamma_ref': 1.20585,
+                 'mu_gamma': -9.41066e-05,
+                 'I_L_ref': 5.9301,
+                 'I_o_ref': 2.9691e-10,
+                 'R_sh_ref': 1144,
+                 'R_sh_0': 3850,
+                 'R_s': 0.6,
+                 'cells_in_series': 96,
+                 'R_sh_exp': 5.5,
+                 'EgRef': 1.12,
+                 }
 
 G_REF = 1000
 T_REF = 25
@@ -81,20 +81,19 @@ for k, v in adr_params.items():
 #
 
 eta_rel_adr = pvefficiency_adr(g, t, **adr_params)
+mbe = np.mean(eta_rel_adr - eta_rel_pvs)
+rmse = np.sqrt(np.mean(np.square(eta_rel_adr - eta_rel_pvs)))
 
 plt.figure()
 plt.plot(g.flat, eta_rel_pvs.flat, 'oc', ms=8)
 plt.plot(g.flat, eta_rel_adr.flat, '.k')
-plt.legend(['PVsyst model output', 'ADR model fit'])
+plt.grid(alpha=0.5)
+
 plt.xlabel('Irradiance [W/m²]')
 plt.ylabel('Relative efficiency [-]')
-plt.grid(alpha=0.5)
-plt.show()
-
-mbe = np.mean(eta_rel_adr - eta_rel_pvs)
-rmse = np.sqrt(np.mean(np.square(eta_rel_adr - eta_rel_pvs)))
-# plt.title('RMS difference is %.4f' % (rmse))
+plt.legend(['PVsyst model output', 'ADR model fit'])
 plt.title('Differences: mean %.5f, RMS %.5f' % (mbe, rmse))
+plt.show()
 
 # %%
 #
@@ -104,10 +103,12 @@ plt.title('Differences: mean %.5f, RMS %.5f' % (mbe, rmse))
 g = np.random.uniform(0, 1200, 8760)
 t = np.random.uniform(20,  80, 8760)
 
+
 def run_adr():
     eta_rel = pvefficiency_adr(g, t, **adr_params)
     p_adr = P_REF * eta_rel * (g / G_REF)
     return p_adr
+
 
 def run_pvsyst():
     adjusted_params = calcparams_pvsyst(g, t, **pvsyst_params)
@@ -115,16 +116,15 @@ def run_pvsyst():
     p_pvs = mpp['p_mp']
     return p_pvs
 
-from timeit import timeit, repeat
 
 elapsed_adr = timeit('run_adr()', number=1, globals=globals())
 elapsed_pvs = timeit('run_pvsyst()', number=1, globals=globals())
 
 print('Elapsed time for the PVsyst model: %9.6f s' % elapsed_pvs)
 print('Elapsed time for the ADR    model: %9.6f s' % elapsed_adr)
-print('ADR accelleration ratio:           %9.0f x' % (elapsed_pvs / elapsed_adr))
+print('ADR accelleration ratio:           %9.0f x' % (elapsed_pvs/elapsed_adr))
 
-#%%
+# %%
 #
 # That's fast, but is it accurate?
 # Run them again to compare the simulated power values
@@ -136,17 +136,26 @@ p_adr = run_adr()
 mbe = np.mean(p_adr - p_pvs)
 rmse = np.sqrt(np.mean(np.square(p_adr - p_pvs)))
 
+# sphinx_gallery_thumbnail_number = 2
 plt.figure()
 pc = plt.scatter(p_pvs, p_adr-p_pvs, c=t, cmap='jet')
 plt.colorbar()
 pc.set_alpha(0.25)
+plt.ylim(-1, 1)
 plt.grid(alpha=0.5)
+
 plt.xlabel('Power calculated using the PVsyst model [W]')
 plt.ylabel('ADR model power - PVsyst model power [W]')
-
 plt.title('Differences: mean %.2f W, RMS %.2f W' % (mbe, rmse))
-plt.ylim(-1, 1)
 plt.show()
+
+# %%
+#
+# There are some small systematic differences between the original
+# PVsyst model output and the ADR fit.  But these differences are
+# much smaller than the uncertainty w.r.t. actual output
+# of modules of this type.
+#
 
 # %%
 #

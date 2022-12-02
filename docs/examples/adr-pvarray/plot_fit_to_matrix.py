@@ -84,7 +84,8 @@ for k, v in adr_params.items():
 # they are most likely evidence of the limitations of measurement accuracy.
 #
 
-eta_rel_adr = pvefficiency_adr(df['irradiance'], df['temperature'], **adr_params)
+eta_rel_adr = pvefficiency_adr(df['irradiance'],
+                               df['temperature'], **adr_params)
 
 plt.figure()
 plt.plot(df['irradiance'], df['eta_rel'], 'oc', ms=8)

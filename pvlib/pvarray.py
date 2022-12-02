@@ -1,9 +1,11 @@
 """
-This module contains implementations of PV module efficiency models.
+This module contains implementations of PV module and array electrical models.
 
-These models have a common purpose, which is to predict the efficiency at
-maximum power point as a function of the main operating conditions:
-effective irradiance and module temperature.
+These models are used to predict the electrical behavior of pv modules
+or collections of pv modules (arrays).  The primary inputs are
+effective irradiance and operating temperature and the outputs may range from
+power or efficiency at the maximum power point to complete IV curves.
+Supporting functions and parameter fitting functions may also be found here.
 """
 
 import numpy as np
@@ -11,7 +13,7 @@ from scipy.optimize import curve_fit
 from scipy.special import exp10
 
 
-def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
+def pvefficiency_adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
     '''
     Calculate PV module efficiency using the ADR model.
 
@@ -86,11 +88,11 @@ def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
 
     Examples
     --------
-    >>> adr([1000, 200], 25,
+    >>> pvefficiency_adr([1000, 200], 25,
             k_a=100, k_d=-6.0, tc_d=0.02, k_rs=0.05, k_rsh=0.10)
     array([100.        ,  92.79729308])
 
-    >>> adr([1000, 200], 25,
+    >>> pvefficiency_adr([1000, 200], 25,
             k_a=1.0, k_d=-6.0, tc_d=0.02, k_rs=0.05, k_rsh=0.10)
     array([1.        , 0.92797293])
 
@@ -131,7 +133,7 @@ def adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
 def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
                          **kwargs):
     """
-    Determine the parameters of the adr module efficiency model by non-linear
+    Determine the parameters of the ADR module efficiency model by non-linear
     least-squares fit to lab or field measurements.
 
     Parameters
@@ -169,7 +171,7 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
 
     See also
     --------
-    pvlib.pvefficiency.adr
+    pvlib.pvefficiency.pvefficiency_adr
     scipy.optimize.curve_fit
 
     Adapted from https://github.com/adriesse/pvpltools-python
@@ -199,7 +201,7 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
     fit_options.update(kwargs)
 
     def adr_wrapper(xdata, *params):
-        return adr(*xdata, *params)
+        return pvefficiency_adr(*xdata, *params)
 
     result = curve_fit(adr_wrapper,
                        xdata=[irradiance, temperature],

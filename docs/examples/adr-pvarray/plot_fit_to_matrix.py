@@ -4,8 +4,6 @@ Obtaining ADR model parameters from IEC 61853 matrix measurements
 
 There's a fitting function provided in pvlib to do exactly that.
 
-(WORK IN PROGRESS)
-
 Since PV module efficiency varies with irradiance and temperature
 what better way to train a model than using efficiency measurement
 over a broad range of temperature and irradiance levels?
@@ -20,7 +18,7 @@ from io import StringIO
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from pvlib.pvefficiency import adr, fit_pvefficiency_adr
+from pvlib.pvarray import pvefficiency_adr, fit_pvefficiency_adr
 
 # %% The text on this line is not displayed
 #
@@ -85,7 +83,7 @@ for k, v in adr_params.items():
 # they are most likely evidence of the limitations of measurement accuracy.
 #
 
-eta_rel_adr = adr(df['irradiance'], df['temperature'], **adr_params)
+eta_rel_adr = pvefficiency_adr(df['irradiance'], df['temperature'], **adr_params)
 
 plt.figure()
 plt.plot(df['irradiance'], df['eta_rel'], 'oc', ms=8)

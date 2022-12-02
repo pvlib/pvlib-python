@@ -2,7 +2,7 @@
 Simulating PV systems using the ADR module efficiency model
 ===========================================================
 
-Time series processing with the ADR model is fast and ... efficient!
+Time series processing with the ADR model is really easy.
 
 This example reads a TMY3 weather file, and runs a basic simulation
 on a fixed latitude-tilt system.
@@ -16,8 +16,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import pvlib
-from pvlib import iotools, location, pvefficiency
+from pvlib import iotools, location
 from pvlib.irradiance import aoi, get_total_irradiance
+from pvlib.pvarray import pvefficiency_adr
 
 # %%
 #
@@ -95,7 +96,7 @@ adr_params = {'k_a': 0.99879,
               'k_rsh': 0.21036
               }
 
-df['eta_rel'] = pvefficiency.adr(df['poa_global'], df['temp_pv'], **adr_params)
+df['eta_rel'] = pvefficiency_adr(df['poa_global'], df['temp_pv'], **adr_params)
 
 # Set the desired array size:
 P_STC = 5000.   # (W)

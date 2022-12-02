@@ -327,7 +327,7 @@ below shows a simple example of this.
     mc.results.effective_irradiance = pd.Series(1000, index=[pd.Timestamp('20170401 1200-0700')])
     mc.results.cell_temperature = pd.Series(50, index=[pd.Timestamp('20170401 1200-0700')])
 
-    # run ModelChain.v5_dc and look at the result
+    # run ModelChain.pvwattsv5_dc and look at the result
     mc.pvwattsv5_dc();
     mc.results.dc
 

@@ -1289,13 +1289,13 @@ class ModelChain:
         self._assign_times()
         self.results.solar_position = self.location.get_solarposition(
             self.results.times, method=self.solar_position_method)
-
+        # Calculate the irradiance using the component sum equations,
+        # if needed
         if isinstance(weather, tuple):
             for w in self.results.weather:
                 self._complete_irradiance(w)
         else:
             self._complete_irradiance(self.results.weather)
-
         return self
 
     def _complete_irradiance(self, weather):
@@ -1304,26 +1304,32 @@ class ModelChain:
                    "Results can be too high or negative.\n" +
                    "Help to improve this function on github:\n" +
                    "https://github.com/pvlib/pvlib-python \n")
-
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
                 weather.index, solar_position=self.results.solar_position)
-            weather.loc[:, 'dni'] = pvlib.irradiance.dni(
-                weather.loc[:, 'ghi'], weather.loc[:, 'dhi'],
-                self.results.solar_position.zenith,
-                clearsky_dni=clearsky['dni'],
-                clearsky_tolerance=1.1)
+            complete_irrad_df = pvlib.irradiance.complete_irradiance(
+                solar_zenith=self.results.solar_position.zenith,
+                ghi=weather.ghi,
+                dhi=weather.dhi,
+                dni=None,
+                dni_clear=clearsky.dni)
+            weather.loc[:, 'dni'] = complete_irrad_df.dni
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
-            weather.loc[:, 'ghi'] = (
-                weather.dhi + weather.dni *
-                tools.cosd(self.results.solar_position.zenith)
-            )
+            complete_irrad_df = pvlib.irradiance.complete_irradiance(
+                solar_zenith=self.results.solar_position.zenith,
+                ghi=None,
+                dhi=weather.dhi,
+                dni=weather.dni)
+            weather.loc[:, 'ghi'] = complete_irrad_df.ghi
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
-            weather.loc[:, 'dhi'] = (
-                weather.ghi - weather.dni *
-                tools.cosd(self.results.solar_position.zenith))
+            complete_irrad_df = pvlib.irradiance.complete_irradiance(
+                solar_zenith=self.results.solar_position.zenith,
+                ghi=weather.ghi,
+                dhi=None,
+                dni=weather.dni)
+            weather.loc[:, 'dhi'] = complete_irrad_df.dhi
 
     def _prep_inputs_solar_pos(self, weather):
         """

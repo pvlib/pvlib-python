@@ -18,3 +18,4 @@ User Guide
    comparison_pvlib_matlab
    variables_style_rules
    singlediode
+   faq

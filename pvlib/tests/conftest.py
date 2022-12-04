@@ -151,6 +151,17 @@ requires_siphon = pytest.mark.skipif(not has_siphon,
                                      reason='requires siphon')
 
 try:
+    import matplotlib.pyplot as plt  # noqa: F401
+    import matplotlib
+    matplotlib.use('agg')
+    has_mpl = True
+except ImportError:
+    has_mpl = False
+
+requires_mpl = pytest.mark.skipif(not has_mpl, reason='requires matplotlib')
+
+
+try:
     import netCDF4  # noqa: F401
     has_netCDF4 = True
 except ImportError:

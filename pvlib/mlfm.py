@@ -1,8 +1,27 @@
+<<<<<<< HEAD
 """Analyse, fit + predict PV performance measurements using MPM & LFM."""
+=======
+'''
+This ``mlfm code`` module contains functions to analyse and predict
+performance of PV modules using the mechanistic performance (MPM) and
+loss factors models (LFM). The module also contains functions to display
+performance of PV modules using the mechanistic performance (MPM) and
+loss factors models (LFM)
+
+Authors : Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
+Thanks to Cliff Hansen (Sandia National Laboratories)
+
+https://pvlib-python.readthedocs.io/en/stable/variables_style_rules.html#variables-style-rules
+
+https://github.com/python/peps/blob/master/pep-0008.txt
+'''
+
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 import numpy as np
 import pandas as pd
 from scipy import optimize
 
+<<<<<<< HEAD
 import os
 
 """
@@ -319,6 +338,24 @@ T25C_K = 298.15   # 25C to Kelvin
 #  Define standardised LFM graph colours as a dict ``CLR``
 CLR = {
     # parameter_CLR colour            R   G   B
+=======
+
+#  DEFINE REFERENCE MEASUREMENT CONDITIONS
+# or use existing definitions in pvlib
+
+# NAME  value  comment         unit     PV_LIB name
+#
+T_STC = 25.0  # STC temperature [C]      temperature_ref
+T_HTC = 75.0  # HTC temperature [C]
+G_STC = 1000.0   # STC irradiance  [W/m^2]
+G_LIC = 0.2   # LIC irradiance  [kW/m^2]
+
+
+#  Define standardised MLFM graph colours as a dict ``clr``
+
+clr = {
+    # parameter_clr colour            R   G   B
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     'irradiance':   'darkgreen',   # 000 064 000
     'temp_module':  'red',         # 255 000 000
     'temp_air':     'yellow',      # 245 245 220
@@ -338,28 +375,83 @@ CLR = {
 }
 
 
+<<<<<<< HEAD
 def meas_to_norm(dmeas, ref):
     """
     Convert measured P(W), I(A), V(V), R(Ohms) to values normalized to STC.
+=======
+def mlfm_meas_to_norm(dmeas, ref):
+    '''
+    Convert measured power, current and voltage to normalized values.
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     Parameters
     ----------
     dmeas : DataFrame
+<<<<<<< HEAD
         Measured weather and module electrical values per time or measurement.
         Contains 'poa_global', 'temp_module' and optional 'wind_speed'
 
     ref : dict
         Reference electrical and thermal datasheet module values at STC.
+=======
+        Measurements. Must include columns:
+
+        * `'poa_global'` global plane of array irradiance [W/m^2]
+        * `'temp_module'` module temperature [C]
+        * `'p_mp'` - power at maximum power point [W]
+
+        May include optional columns:
+
+        * `'i_sc'` - current at short circuit condition [A]
+        * `'v_oc'` - voltage at open circuit condition [V]
+        * `'i_mp'` - current at maximum power point [A]. Must be accompanied
+          by `'i_sc'`.
+        * `'v_mp'` - voltage at maximum power point [V]. Must be accompanied
+          by `'v_oc'`.
+        * `'r_sc'` - inverse of slope of IV curve at short circuit condition.
+          Requires both `'i_sc'` and `'v_oc'`. [Ohm]
+        * `'r_oc'` - inverse slope of IV curve at open circuit condition.
+          Requires both `'i_sc'` and `'v_oc'` [Ohm]
+
+    ref : dict
+        Reference values. Must include:
+
+        * `'p_mp'` - Power at maximum power point at Standard Test Condition
+          (STC). [W]
+        * `'gamma_pdc'` - Temperature coefficient of power at STC. [1/C]
+
+        May include:
+
+        * `'i_sc'` - Current at short circuit at STC. Required if `'i_sc'` is
+          present in ``dmeas``. [A]
+        * `'v_oc'` - Voltage at open circuit at STC. Required if `'v_oc'` is
+          present in ``dmeas``. [A]
+        * `'beta_v_oc'` - Temperature coefficient of open circuit voltage at
+          STC. Required if `'v_oc'` is present in ``dmeas``. [1/C]
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     Returns
     -------
     dnorm : DataFrame
+<<<<<<< HEAD
         Normalised multiplicative loss values (values approx 1).
         Contains 'poa_global', 'temp_module' and optional 'wind_speed'
+=======
+        Normalised values.
+
+        * `'pr_dc'` is `'p_mp'` normalised (divided) by reference `'p_mp'` \
+            and by `'poa_global'` in kW/m^2.
+        * `'pr_dc_temp_corr'` is `'pr_dc'` adjusted to 25C.
+        * Columns `'i_sc'`, `'i_mp'`, `'v_oc'`, `'v_mp'`, `'v_oc_temp_corr'`,
+          `'r_sc'`, `'r_oc'`, `'i_ff'`, `'v_ff'` are returned when the
+          the corresponding optional columns are included in ``dmeas``.
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     References
     ----------
     .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
+<<<<<<< HEAD
        'Quantifying Long Term PV Performance and Degradation under Real Outdoor
        and IEC 61853 Test Conditions Using High Quality Module IV Measurements'
        36th EU PVSEC, Marseille, France. September 2019.
@@ -384,11 +476,31 @@ def meas_to_norm(dmeas, ref):
         dnorm['i_sc'] = (dmeas['i_sc'] / ref['i_sc']
                          / (dmeas['poa_global'] / G_STC))
 
+=======
+       "Quantifying Long Term PV Performance and Degradation under Real Outdoor
+       and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
+       36th EU PVSEC, Marseille, France. September 2019
+    '''
+    dnorm = pd.DataFrame()
+
+    dnorm['pr_dc'] = dmeas['p_mp'] / ref['p_mp'] \
+        / (dmeas['poa_global'] / G_STC)
+
+    # temperature corrected
+    dnorm['pr_dc_temp_corr'] = (
+        dnorm['pr_dc'] *
+        (1 - ref['gamma_pdc']*(dmeas['temp_module'] - T_STC)))
+
+    if 'i_sc' in dmeas.columns:
+        dnorm['i_sc'] = dmeas['i_sc'] / (dmeas['poa_global'] / G_STC) \
+            / ref['i_sc']
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
         if 'i_mp' in dmeas.columns:
             dnorm['i_mp'] = dmeas['i_mp'] / dmeas['i_sc']
 
     if 'v_oc' in dmeas.columns:
         dnorm['v_oc'] = dmeas['v_oc'] / ref['v_oc']
+<<<<<<< HEAD
 
         # temperature corrected
         dnorm['v_oc_temp_corr'] = (
@@ -410,6 +522,24 @@ def meas_to_norm(dmeas, ref):
 
         v_r = ((dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc']
                * dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc'])))
+=======
+        if 'v_mp' in dmeas.columns:
+            dnorm['v_mp'] = dmeas['v_mp'] / dmeas['v_oc']
+        # temperature corrected
+        dnorm['v_oc_temp_corr'] = dnorm['v_oc'] * \
+            (1 - ref['beta_v_oc']*(dmeas['temp_module'] - T_STC))
+
+    if all(c in dmeas.columns for c in ['i_sc', 'v_oc', 'r_sc', 'r_oc']):
+        #  create temporary variables (i_r, v_r) from
+        #  intercept of r_sc (at i_sc) with r_oc (at v_oc)
+        #  to make maths easier
+
+        i_r = ((dmeas['i_sc'] * dmeas['r_sc'] - dmeas['v_oc']) /
+               (dmeas['r_sc'] - dmeas['r_oc']))
+
+        v_r = ((dmeas['r_sc'] * (dmeas['v_oc'] - dmeas['i_sc'] *
+               dmeas['r_oc']) / (dmeas['r_sc'] - dmeas['r_oc'])))
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
         # calculate normalised resistances r_sc and r_oc
         dnorm['r_sc'] = i_r / dmeas['i_sc']  # norm_r @ isc
@@ -422,6 +552,7 @@ def meas_to_norm(dmeas, ref):
     return dnorm
 
 
+<<<<<<< HEAD
 def mpm_a_calc(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     """
     Predict norm LFM values from weather data (g,t,w) in ``dmeas``.
@@ -458,6 +589,60 @@ def mpm_a_calc(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     -------
     mpm_a_out : Series
         Predicted values of mpm coefficient.
+=======
+def mlfm_norm_to_stack(dnorm, fill_factor):
+    '''
+    Converts normalised values to stacked subtractive normalized losses.
+
+    Normalized values can reveal losses via scatter plots vs. irradiance or
+    temperature.
+
+    Stacked subtractive losses can show relative loss proportions. Stacked
+    losses partition the difference between the normalized power and the
+    power that corresponds to the reference fill factor.
+
+    Parameters
+    ----------
+    dnorm : DataFrame
+        Normalised values. Must include columns:
+
+        * `'pr_dc'` normalized power at the maximum power point.
+        * `'i_sc'` normalized short circuit current.
+        * `'i_mp'` normalized current at maximum power point.
+        * `'v_oc'` normalized open circuit voltage.
+        * `'v_mp'` normalized voltage at maximum power point.
+        * `'v_oc_temp_corr'` normalized open circuit voltage adjusted to 25C.
+
+        May include optional columns:
+
+        * `'v_ff'` normalized multiplicative loss in fill factor apportioned
+          to voltage.
+        * `'i_ff'` normalized multiplicative loss in fill factor apportioned
+          to current.
+        * `'r_oc'` normalized slope of IV curve at open circuit.
+        * `'r_sc'` normalized slope of IV curve at short circuit.
+
+        fill_factor : float
+            Reference value of fill factor for IV curve at STC conditions.
+
+    Returns
+    -------
+    dstack : DataFrame
+        Stacked subtractive normalized losses. Includes columns:
+
+        * `'pr_dc'` equal to `dnorm['pr_dc']`.
+        * `'i_sc'`
+        * `'r_sc'`
+        * `'i_mp'`
+        * `'i_v'`
+        * `'v_mp'`
+        * `'v_oc'`
+        * `'temp_module_corr'`
+
+    See also
+    --------
+    mlfm_meas_to_norm
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     References
     ----------
@@ -465,6 +650,7 @@ def mpm_a_calc(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
        "Quantifying Long Term PV Performance and Degradation under Real Outdoor
        and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
        36th EU PVSEC, Marseille, France. September 2019
+<<<<<<< HEAD
 
     """
     mpm_a_out = (
@@ -502,6 +688,165 @@ def mpm_a_fit(data, var_to_fit):
     var_to_fit : string
         Column name in ``data`` containing variable being fitted.
         e.g. pr_dc, i_mp, v_mp, v_oc ...
+=======
+    '''
+
+    # create an empty DataFrame to put stack results
+    dstack = pd.DataFrame()
+
+    # create a gap to differentiate i and v losses : gap width~0.01
+    gap = 0.01
+
+    inv_ff = 1 / fill_factor
+
+    if all(c in dnorm.columns for c in ['v_ff', 'r_oc', 'i_ff', 'r_sc']):
+
+        # include effects of series and shunt resistances in stacked losses
+        # find factor to transform multiplicative to subtractive losses
+        # correction factor to scale losses to keep 1/ff --> pr_dc
+
+        # product
+        prod = inv_ff * (
+            dnorm['i_sc'] * dnorm['r_sc'] * dnorm['i_ff'] *
+            dnorm['v_ff'] * dnorm['r_oc'] * dnorm['v_oc']
+        )
+
+        # total
+        tot = inv_ff + (
+            dnorm['i_sc'] + dnorm['r_sc'] + dnorm['i_ff'] +
+            dnorm['v_ff'] + dnorm['r_oc'] + dnorm['v_oc'] - 6
+        )
+
+        # correction factor
+        corr = (inv_ff - prod) / (inv_ff - tot)
+
+        # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
+        # accounting for series and shunt resistance losses
+        dstack['pr_dc'] = +dnorm['pr_dc']  # initialise
+        dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
+        dstack['r_sc'] = -(dnorm['r_sc'] - 1) * corr
+        dstack['i_ff'] = -(dnorm['i_ff'] - 1) * corr - gap/2
+        dstack['i_v'] = gap
+        dstack['v_ff'] = -(dnorm['v_ff'] - 1) * corr - gap/2
+        dstack['r_oc'] = -(dnorm['r_oc'] - 1) * corr
+        dstack['v_oc'] = -(dnorm['v_oc'] - 1) * corr
+        dstack['temp_module_corr'] = (
+            -(dnorm['v_oc'] - dnorm['v_oc_temp_corr']) * corr)
+
+        return dstack
+
+    # subtractive losses without series and shunt resistance effects
+    # find factor to transform multiplicative to subtractive losses
+    # correction factor to scale losses to keep 1/ff --> pr_dc
+
+    prod = inv_ff * (
+        dnorm['i_sc'] * dnorm['i_mp'] *
+        dnorm['v_mp'] * dnorm['v_oc']
+    )
+
+    tot = inv_ff + (
+        dnorm['i_sc'] + dnorm['i_mp'] +
+        dnorm['v_mp'] + dnorm['v_oc'] - 4
+    )
+
+    corr = (inv_ff - prod) / (inv_ff - tot)
+
+    # put mlfm values in a stack from pr_dc (bottom) to 1/ff_ref (top)
+    dstack['pr_dc'] = + dnorm['pr_dc']  # initialise
+    dstack['i_sc'] = -(dnorm['i_sc'] - 1) * corr
+    dstack['i_mp'] = -(dnorm['i_mp'] - 1) * corr - gap/2
+    dstack['i_v'] = gap
+    dstack['v_mp'] = -(dnorm['v_mp'] - 1) * corr - gap/2
+    dstack['v_oc'] = -(dnorm['v_oc'] - 1) * corr
+
+    dstack['temp_module_corr'] = (
+        - (dnorm['v_oc'] - dnorm['v_oc_temp_corr']) * corr)
+
+    return dstack
+
+
+def mlfm_6(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
+    r'''
+    Predict normalised LFM values from data in ``dmeas``.
+
+    The normalized LFM values are given by
+
+    .. math::
+
+        c_1 + c_2 (T_m - 25) + c_3 \log10(G_{POA}) + c_4 G_{POA}
+        + c_5 WS + c_6 / G_{POA}
+
+    where :math:`G_{POA}` is global plane-of-array (POA) irradiance in kW/m2,
+    :math:`T_m` is module temperature in C and :math:`WS` is wind speed in
+    m/s.
+
+    Parameters
+    ----------
+    dmeas : DataFrame
+        Must include columns:
+
+        * `'poa_global'` global plane of array irradiance. [W/m^2]
+        * `'temp_module'` module temperature. [C]
+
+        May include optional column:
+
+        * `'wind_speed'` wind speed [m/s].
+
+    c_1 : float
+        Constant term in model.
+    c_2 : float
+        Temperature coefficient in model. [1/C]
+    c_3 : float
+        Coefficient for low light log irradiance drop.
+    c_4 : float
+        Coefficient for high light linear irradiance drop.
+    c_5 : float, default 0
+        Coefficient for wind speed dependence.
+    c_6 : float, default 0
+        Coefficient for dependence on inverse irradiance.
+
+    Returns
+    -------
+    mlfm_6 : Series
+        Predicted values.
+
+    References
+    ----------
+    .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
+       "Quantifying Long Term PV Performance and Degradation under Real Outdoor
+       and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
+       36th EU PVSEC, Marseille, France. September 2019
+     '''
+    mlfm_out = c_1 + c_2 * (dmeas['temp_module'] - T_STC) + \
+        c_3 * np.log10(dmeas['poa_global'] / G_STC) + \
+        c_4 * (dmeas['poa_global'] / G_STC) + \
+        c_6 / (dmeas['poa_global'] / G_STC)
+    if 'wind_speed' in dmeas.columns:
+        mlfm_out += c_5 * dmeas['wind_speed']
+    return mlfm_out
+
+
+def mlfm_fit(data, var_to_fit):
+    '''
+    Fit MLFM to data.
+
+    Parameters
+    ----------
+    data : DataFrame
+        Must include columns:
+
+        * 'poa_global' global plane of array irradiance. [W/m^2]
+        * 'temp_module' module temperature. [C]
+
+        Must include column named ``var_to_fit``.
+
+        May include optional column:
+
+            * 'wind_speed' wind speed [m/s].
+
+    var_to_fit : string
+        Column name in ``data`` containing variable being fit.
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     Returns
     -------
@@ -517,6 +862,7 @@ def mpm_a_fit(data, var_to_fit):
     coeff_err : list
         Standard deviation of error in each model coefficient.
 
+<<<<<<< HEAD
     See Also
     --------
     mpm_a_calc
@@ -527,10 +873,23 @@ def mpm_a_fit(data, var_to_fit):
 
     c5_zero = 'wind_speed' not in data.columns
     # if wind_speed is not present, add it and force it to 0
+=======
+    See also
+    --------
+    mlfm_6
+    '''
+
+    # drop missing data
+    data = data.dropna()
+
+    c5_zero = 'wind_speed' not in data.columns
+    # if wind_speed is not present, add it
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     if c5_zero:
         data['wind_speed'] = 0.
 
     # define function name
+<<<<<<< HEAD
     func = mpm_a_calc
 
     # setup initial values and initial boundary conditions
@@ -551,22 +910,53 @@ def mpm_a_fit(data, var_to_fit):
     )
 
     # if data had no wind_speed measurements then c_5 coefficient is
+=======
+    func = mlfm_6
+
+    # setup initial values and initial boundary conditions
+
+    # initial   c1    c2    c3    c4    c5   c6<0
+    p_0 = (1.0, 0.01, 0.01, 0.01, 0.01, -0.01)
+    # boundaries
+    bounds = ([ -2,   -2,   -2,   -2,   -2,    -2],
+              [  2,    2,    2,    2,    2,     0])
+
+    coeff, pcov = optimize.curve_fit(
+        f=func,                 # fit function
+        xdata=data,            # input data
+        ydata=data[var_to_fit],  # fit parameter
+        p0=p_0,                 # initial
+        bounds=bounds           # boundaries
+    )
+
+    # if data has no wind_speed measurements then c_5 coefficient is
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     # meaningless but a non-zero value may have been returned.
     if c5_zero:
         coeff[4] = 0.
 
+<<<<<<< HEAD
     # get error of mpm coefficients as sqrt of covariance
+=======
+    # get error of mlfm coefficients as sqrt of covariance
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     perr = np.sqrt(np.diag(pcov))
     coeff_err = list(perr)
 
     # save fit and error to dataframe
+<<<<<<< HEAD
     pred = mpm_a_calc(data, *coeff)
 
+=======
+    pred = mlfm_6(data, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4],
+                  coeff[5])
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     resid = pred - data[var_to_fit]
 
     return pred, coeff, resid, coeff_err
 
 
+<<<<<<< HEAD
 def mpm_b_fit(data, var_to_fit):
     """
     Fit mpm_b to normalised measured data 'var_to_fit' using mpm_b model.
@@ -704,28 +1094,66 @@ def plot_scatter(dnorm, title, qty_lfm_vars, save_figs=False):
     Scatterplot of normalised values (y) vs. irradiance (x).
 
     Electrical quantities are plotted on the left y-axis, temperature
+=======
+def plot_mlfm_scatter(dmeas, dnorm, title):
+    '''
+    Scatterplot of normalised values (y) vs. irradiance (x).
+
+    Electrical quantities are plotted on the left y-axis, and temperature
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     quantities are plotted on the right y-axis.
 
     Parameters
     ----------
+<<<<<<< HEAD
     dnorm : DataFrame
         Normalised multiplicative loss values (values approx 1).
         Contains 'poa_global', 'temp_module' and optional 'wind_speed'
+=======
+    dmeas : DataFrame
+        Measurements. Must include columns:
+
+        * `'poa_global'` global plane of array irradiance [W/m^2]
+        * `'temp_module'` module temperature [C]
+
+        May include optional columns:
+
+        * `'temp_air'` - air temperature [C]
+
+    dnorm : DataFrame
+        Normalised values. May include columns:
+
+        * `'pr_dc_temp_corr'` normalized power at the maximum power point.
+        * `'i_sc'` normalized short circuit current.
+        * `'i_mp'` normalized current at maximum power point.
+        * `'v_mp'` normalized voltage at maximum power point.
+        * `'v_oc_temp_corr'` normalized open circuit voltage adjusted to 25C.
+        * `'v_ff'` normalized multiplicative loss in fill factor apportioned
+          to voltage.
+        * `'i_ff'` normalized multiplicative loss in fill factor apportioned
+          to current.
+        * `'r_oc'` normalized slope of IV curve at open circuit.
+        * `'r_sc'` normalized slope of IV curve at short circuit.
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     title : string
         Title for the figure.
 
+<<<<<<< HEAD
     qty_lfm_vars : int
         number of lfm_vars : 6=iv with rsc, roc ; 4=indoor
 
     save_figs : boolean
         save a high resolution png file of figure
 
+=======
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     Returns
     -------
     fig : Figure
         Instance of matplotlib.figure.Figure
 
+<<<<<<< HEAD
     See Also
     --------
     meas_to_norm
@@ -735,12 +1163,27 @@ def plot_scatter(dnorm, title, qty_lfm_vars, save_figs=False):
         import matplotlib.pyplot as plt
     except ImportError:
         raise ImportError('plot_scatter requires matplotlib')
+=======
+    See also
+    --------
+    mlfm_meas_to_norm
+    '''
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        raise ImportError('plot_mlfm_scatter requires matplotlib')
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     # offset legend to the right to not overlap graph, use ~1.2
     bbox = 1.2
 
+<<<<<<< HEAD
     # set x_axis as irradiance in W/m2
     xdata = dnorm['poa_global']
+=======
+    # set x_axis as irradiance in kW/m2
+    xdata = dmeas['poa_global'] / G_STC
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     fig, ax1 = plt.subplots()
 
@@ -748,6 +1191,7 @@ def plot_scatter(dnorm, title, qty_lfm_vars, save_figs=False):
 
     ax1.set_ylabel('Normalised values')
     ax1.axhline(y=1, c='grey', linewidth=3)  # show 100% line
+<<<<<<< HEAD
 
     # optional normalised y scale usually ~0.8 to 1.1
     ax1.set_ylim(0.8, 1.1)
@@ -803,11 +1247,50 @@ def plot_scatter(dnorm, title, qty_lfm_vars, save_figs=False):
 
     ax1.legend(bbox_to_anchor=(bbox, 1),
                loc='upper left', borderaxespad=0.)
+=======
+    ax1.set_ylim(0.8, 1.1)  # optional normalised y scale
+
+    ax1.set_xlabel('Plane of array irradiance [kW/m$^2$]')
+    ax1.axvline(x=1.0, c='grey', linewidth=3)  # show 1000W/m^2 STC
+    ax1.axvline(x=0.8, c='grey', linewidth=3)  # show 800W/m^2 NOCT
+    ax1.axvline(x=0.2, c='grey', linewidth=3)  # show 200W/m^2 LIC
+
+    lines = {
+        'pr_dc_temp_corr': 'pr_dc',
+        'i_mp': 'i_mp',
+        'v_mp': 'v_mp',
+        'i_sc': 'i_sc',
+        'r_sc': 'r_sc',
+        'r_oc': 'r_oc',
+        'i_ff': 'i_ff',
+        'v_ff': 'v_ff',
+        'v_oc_temp_corr': 'v_oc'}
+    labels = {
+        'pr_dc_temp_corr': 'pr_dc_temp-corr',
+        'i_mp': 'norm_i_mp',
+        'v_mp': 'norm_v_mp',
+        'i_sc': 'norm_i_sc',
+        'r_sc': 'norm_r_sc',
+        'r_oc': 'norm_r_oc',
+        'i_ff': 'norm_i_ff',
+        'v_ff': 'norm_v_ff',
+        'v_oc_temp_corr': 'norm_v_oc_temp_corr'}
+
+    # plot the mlfm parameters depending on qty_mlfm_vars
+    for k in lines.keys():
+        try:
+            ax1.scatter(xdata, dnorm[k], c=clr[lines[k]], label=labels[k])
+        except KeyError:
+            pass
+
+    ax1.legend(bbox_to_anchor=(bbox, 1), loc='upper left', borderaxespad=0.)
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     # y2axis plot met on right y axis
     ax2 = ax1.twinx()
     ax2.set_ylabel('Temperature (C/100)')
 
+<<<<<<< HEAD
     # set wide limits 0 to 4 so they don't overlap with LFM params
     ax2.set_ylim(0, 4)
 
@@ -815,10 +1298,20 @@ def plot_scatter(dnorm, title, qty_lfm_vars, save_figs=False):
                 dnorm['temp_module']/T_MAX,
                 c=CLR['temp_module'],
                 label='temp_module C/' + str(T_MAX))
+=======
+    # set wide limits 0 to 4 so they don't overlap mlfm params
+    ax2.set_ylim(0, 4)
+
+    ax2.scatter(xdata,
+                dmeas['temp_module']/100,
+                c=clr['temp_module'],
+                label='temp_module C/100')
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     # temp_air may not exist particularly for indoor measurements
     try:
         ax2.scatter(xdata,
+<<<<<<< HEAD
                     dnorm['temp_air']/T_MAX,
                     c=CLR['temp_air'],
                     label='temp_air C/' + str(T_MAX))
@@ -834,11 +1327,21 @@ def plot_scatter(dnorm, title, qty_lfm_vars, save_figs=False):
         plt.savefig(os.path.join('mlfm_data', 'output',
                     'scatter_' + title[:len(title)-4]), dpi=300)
 
+=======
+                    dmeas['temp_air']/100,
+                    c=clr['temp_air'],
+                    label='temp_air C/100')
+    except KeyError:
+        pass
+
+    ax2.legend(bbox_to_anchor=(bbox, 0.5), loc='upper left', borderaxespad=0.)
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     plt.show()
 
     return fig
 
 
+<<<<<<< HEAD
 def plot_stack(dstack, fill_factor, title,
                xaxis_labels=0, is_i_sc_self_ref=False,
                save_figs=False
@@ -850,6 +1353,36 @@ def plot_stack(dstack, fill_factor, title,
     ----------
     dstack : DataFrame
         Stacked subtractive losses.
+=======
+def plot_mlfm_stack(dmeas, dnorm, dstack, fill_factor, title,
+                    xaxis_labels=0, is_i_sc_self_ref=False,
+                    is_v_oc_temp_module_corr=True):
+
+    '''
+    Plot stacked subtractive losses.
+
+    Parameters
+    ----------
+    dmeas : DataFrame
+        Measurements. Must include columns:
+
+        * `'poa_global'` global plane of array irradiance [W/m^2]
+        * `'temp_module'` module temperature [C]
+
+        May include optional columns:
+
+        * `'temp_air'` - air temperature [C]
+
+    dnorm : DataFrame
+        Normalised values. Must contain column `'pr_dc'`.
+
+    dstack : DataFrame
+        Stacked subtractive losses. Must contain columns `'v_oc'`, `'v_mp'`,
+        `'i_v'`, `'i_mp'`, `'i_sc'`, `'temp_module_corr'`. If optional columns
+        `'r_oc'` and `'v_ff'` are present, these columns are plotted instead
+        of `'v_mp'`. If optional columns `'r_sc'` and `'i_ff'` are present,
+        these columns are plotted instead of `'i_mp'`.
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     fill_factor : float
         Reference value of fill factor for IV curve at STC conditions.
@@ -861,6 +1394,7 @@ def plot_stack(dstack, fill_factor, title,
         Number of x-axis labels to show. Default 0 shows all.
 
     is_i_sc_self_ref : bool, default False
+<<<<<<< HEAD
        Self-correct ``i_sc`` to remove angle of incidence,
        spectrum, snow or soiling.
 
@@ -869,12 +1403,20 @@ def plot_stack(dstack, fill_factor, title,
 
     # is_v_oc_temp_module_corr : bool, default True
     #    Calculate loss due to temperature and subtract from ``v_oc`` loss.
+=======
+       Self-correct `'i_sc'` to remove angle of incidence,
+       spectrum, snow or soiling.
+
+    is_v_oc_temp_module_corr : bool, default True
+       Calculate loss due to temperature and subtract from `'v_oc'` loss.
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     Returns
     -------
     fig : Figure
         Instance of matplotlib.figure.Figure
 
+<<<<<<< HEAD
     See Also
     --------
     norm_to_stack
@@ -895,13 +1437,36 @@ def plot_stack(dstack, fill_factor, title,
         ydata = [dstack['pr_dc'] + (dstack['i_sc'] * (is_i_sc_self_ref)),
                  dstack['v_oc_temp_corr'],
                  dstack['temp_module_corr'],
+=======
+    See also
+    --------
+    mlfm_norm_to_stack
+    '''
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        raise ImportError('plt_mlfm_stack requires matplotlib')
+
+    stack6 = ['i_sc', 'r_sc', 'i_ff', 'i_v', 'v_ff', 'r_oc', 'v_oc']
+    stack4 = ['i_sc', 'i_mp', 'i_v', 'v_mp', 'v_oc']
+
+    if all([c in dstack.columns for c in stack6]):
+        # data order from bottom to top
+        ydata = [dnorm['pr_dc'] + (dstack['i_sc'] * (is_i_sc_self_ref)),
+                 dstack['temp_module_corr'] * (is_v_oc_temp_module_corr),
+                 dstack['v_oc'] - (
+                     dstack['temp_module_corr'] * (is_v_oc_temp_module_corr)),
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
                  dstack['r_oc'],
                  dstack['v_ff'],
                  dstack['i_v'],
                  dstack['i_ff'],
                  dstack['r_sc'],
                  dstack['i_sc'] * (not is_i_sc_self_ref)]
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
         labels = [
             'pr_dc',
             'stack_t_mod',
@@ -912,6 +1477,7 @@ def plot_stack(dstack, fill_factor, title,
             'stack_i_ff',
             'stack_r_sc',
             'stack_i_sc']
+<<<<<<< HEAD
 
         color_map = [
             'white',  # colour to bottom of graph
@@ -933,11 +1499,33 @@ def plot_stack(dstack, fill_factor, title,
         ydata = [dstack['pr_dc'] + (dstack['i_sc'] * (is_i_sc_self_ref)),
                  dstack['v_oc_temp_corr'],
                  dstack['temp_module_corr'],
+=======
+        color_map = [
+            'white',  # colour to bottom of graph
+            clr['temp_module'],
+            clr['v_oc'],
+            clr['r_oc'],
+            clr['v_ff'],
+            clr['i_v'],
+            clr['i_ff'],
+            clr['r_sc'],
+            clr['i_sc']]
+
+    if all([c in dstack.columns for c in stack4]):
+        # data order from bottom to top
+        ydata = [dnorm['pr_dc'] + (dstack['i_sc'] * (is_i_sc_self_ref)),
+                 dstack['temp_module_corr'] * (is_v_oc_temp_module_corr),
+                 dstack['v_oc'] - (
+                     dstack['temp_module_corr'] * (is_v_oc_temp_module_corr)),
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
                  dstack['v_mp'],
                  dstack['i_v'],
                  dstack['i_mp'],
                  dstack['i_sc'] * (not is_i_sc_self_ref)]
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
         labels = [
             'pr_dc',
             'stack_t_mod',
@@ -946,6 +1534,7 @@ def plot_stack(dstack, fill_factor, title,
             '- - -',
             'stack_i_mp',
             'stack_i_sc']
+<<<<<<< HEAD
 
         color_map = [
             'white',  # colour to bottom of graph
@@ -955,12 +1544,26 @@ def plot_stack(dstack, fill_factor, title,
             CLR['i_v'],
             CLR['i_mp'],
             CLR['i_sc']]
+=======
+        color_map = [
+            'white',  # colour to bottom of graph
+            clr['temp_module'],
+            clr['v_oc'],
+            clr['v_mp'],
+            clr['i_v'],
+            clr['i_mp'],
+            clr['i_sc']]
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 
     # offset legend right, use ~1.2
     bbox = 1.2
 
     # select x axis usually date_time
+<<<<<<< HEAD
     xdata = dstack.index.values
+=======
+    xdata = dmeas.index.values
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     fig, ax1 = plt.subplots()
 
     ax1.set_title(title)
@@ -971,10 +1574,17 @@ def plot_stack(dstack, fill_factor, title,
 
     ax1.axhline(y=1/fill_factor, c='grey', lw=3)  # show initial 1/FF
     ax1.axhline(y=1, c='grey', lw=3)  # show 100% line
+<<<<<<< HEAD
     ax1.set_ylabel('stacked lfm losses')
 
     # find number of x date values
     x_ticks = dstack.shape[0]
+=======
+    ax1.set_ylabel('stacked mlfm losses')
+
+    # find number of x date values
+    x_ticks = dmeas.shape[0]
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     plt.xticks(np.arange(0, x_ticks), rotation=90)
 
     # if (xaxis_labels > 0 and xaxis_labels < x_ticks):
@@ -1009,6 +1619,7 @@ def plot_stack(dstack, fill_factor, title,
 
     # plot met data on right y axis
     ax2 = ax1.twinx()
+<<<<<<< HEAD
     ax2.set_ylabel('poa_global (kW/m^2), temp_module (C/ ' + str(T_MAX))
     ax2.set_ylim(0, 4)  # set so doesn't overlap lfm params
 
@@ -1021,12 +1632,27 @@ def plot_stack(dstack, fill_factor, title,
     try:
         plt.plot(xdata, dstack['temp_air']/100,
                  c=CLR['temp_air'], label='temp_air/ ' + str(T_MAX))
+=======
+    ax2.set_ylabel('poa_global (kW/m^2), temp_module (C/100)')
+    ax2.set_ylim(0, 4)  # set so doesn't overlap mlfm params
+
+    plt.plot(xdata, dmeas['poa_global'] / G_STC,
+             c=clr['irradiance'], label='poa_global (kW/m^2)')
+    plt.plot(xdata, dmeas['temp_module'] / 100,
+             c=clr['temp_module'], label='temp_module / 100')
+
+    # temp_air may not exist particularly for indoor measurements
+    try:
+        plt.plot(xdata, dmeas['temp_air']/100,
+                 c=clr['temp_air'], label='temp_air/100')
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
     except KeyError:
         pass
 
     ax2.legend(bbox_to_anchor=(bbox, 0.3), loc='upper left', borderaxespad=0.)
     ax1.set_xticklabels(xax2, rotation=90)
 
+<<<<<<< HEAD
     # remove '.csv', high resolution= 300 dots per inch
     plt.savefig(os.path.join('mlfm_data', 'output',
                 'stack_' + title[:len(title)-4]), dpi=300)
@@ -1162,6 +1788,12 @@ def meas_to_stack_lin(dmeas, ref, qty_lfm_vars, gap=0.01):
 
 
 """
+=======
+    return fig
+
+
+REFS = """
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 The Loss Factors Model (LFM) and Mechanistic Performance Model (MPM)
 together known as "MLFM" have been developed by SRCL and Gantner Instruments
 (previously Oerlikon Solar and Tel Solar) since 2011 MLFM and 2017 MPM
@@ -1198,6 +1830,7 @@ https://pvpmc.sandia.gov/download/7879/
 .. [6] W.Marion et al (NREL)
 'New Data Set for Validating PV Module Performance Models'.
 https://www.researchgate.net/publication/286746041_New_data_set_for_validating_PV_module_performance_models
+<<<<<<< HEAD
 Many more papers are available at www.steveransome.com
 
 .. [7] Steve Ransome (SRCL)
@@ -1210,4 +1843,8 @@ http://www.steveransome.com/pubs/2206_PVSC49_philadelphia_4_presented.pdf
 to serve GW-scale photovoltaic power plant and energy storage requirements'
 https://pvpmc.sandia.gov/download/8574/
 
+=======
+
+Many more papers are available at www.steveransome.com
+>>>>>>> 3107769a0c59d61b66940ec85392605cec41b73a
 """

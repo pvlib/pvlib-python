@@ -107,9 +107,8 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     joined[is_array] = joined[is_array].applymap(
         lambda a: np.asarray(a, dtype=np.float64)
     )
-    is_number = joined.columns.difference(
-        is_array + ['Index', 'Irradiance', 'Sweep direction', 'Datetime']
-    )
+    is_number = ['v_oc', 'i_sc', 'v_mp', 'i_mp', 'p_mp', 'i_x', 'i_xx',
+                 'Temperature']
     joined[is_number] = joined[is_number].applymap(np.float64)
 
     joined['Boltzman'] = 1.380649e-23

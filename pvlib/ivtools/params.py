@@ -102,6 +102,8 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
                   (roots > filtered['v'].min())]
     vmp = roots[np.argmax(mp_fit(roots))]
     pmp = mp_fit(vmp)
+    # imp isn't mentioned for update in the
+    # standard, but this seems to be in the intended spirit
     imp = pmp / vmp
 
     ff = pmp / (voc * isc)

@@ -15,6 +15,8 @@ Enhancements
   (:issue:`1565`, :pull:`1567`)
 * Add optional ``return_components`` parameter to :py:func:`pvlib.irradiance.haydavies` to return
   individual diffuse irradiance components (:issue:`1553`, :pull:`1568`)
+* Add a funtion ``pvlib.ivtools.params.astm_e1036()`` to perform ASTM E1036 extraction of IV
+  curve parameters (:pull:`1585`)
 
 
 Bug fixes
@@ -43,3 +45,4 @@ Contributors
 * Christian Orner (:ghuser:`chrisorner`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * Marcus Boumans (:ghuser:`bowie2211`)
+* Michael Deceglie (:ghuser:`mdeceglie`)

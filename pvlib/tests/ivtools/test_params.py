@@ -33,7 +33,7 @@ def test_astm_e1036(v_array, i_array):
                 'imp': 7.626088301548568,
                 'pmp': 3.7694489853302127,
                 'ff': 0.7517393078504361}
-    assert(result == pytest.approx(expected))
+    assert result == pytest.approx(expected)
 
 
 def test_astm_e1036_est_isc_voc(v_array, i_array):
@@ -52,7 +52,7 @@ def test_astm_e1036_est_isc_voc(v_array, i_array):
                 'imp': 7.626088301548568,
                 'pmp': 3.7694489853302127,
                 'ff': 0.751024747526615}
-    assert(result == pytest.approx(expected))
+    assert result == pytest.approx(expected)
 
 
 def test_astm_e1036_mpfit_limits(v_array, i_array):
@@ -66,7 +66,7 @@ def test_astm_e1036_mpfit_limits(v_array, i_array):
                 'imp': 7.620032530519718,
                 'pmp': 3.769189212299219,
                 'ff': 0.7516875014460312}
-    assert(result == pytest.approx(expected))
+    assert result == pytest.approx(expected)
 
 
 def test_astm_e1036_fit_points(v_array, i_array):
@@ -79,4 +79,4 @@ def test_astm_e1036_fit_points(v_array, i_array):
                 'imp': 7.626088301548568,
                 'pmp': 3.7694489853302127,
                 'ff': 0.7520255886236707}
-    assert(result == pytest.approx(expected))
+    assert result == pytest.approx(expected)

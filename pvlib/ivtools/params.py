@@ -92,6 +92,8 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
 
     # fit polynomial and find max
     mp_fit = Poly.fit(filtered['v'], filtered['p'], 4)
+    # Note that this root finding procedure differs from
+    # the suggestion in the standard
     roots = mp_fit.deriv().roots()
     # only consider real roots
     roots = roots.real[abs(roots.imag) < 1e-5]

@@ -38,6 +38,13 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
         Calculated IV parameters. Keys are 'voc', 'isc', 'vpm', 'imp', 'pmp',
         and 'ff'.
 
+    References
+    ----------
+    .. [1] Standard Test Methods for Electrical Performance of Nonconcentrator
+    Terrestrial Photovoltaic Modules and Arrays Using Reference Cells,
+    ASTM E1036-15(2019), DOI: 10.1520/E1036-15R19
+
+
     Adapted from https://github.com/NREL/iv_params
     Copyright (c) 2022, Alliance for Sustainable Energy, LLC
     All rights reserved.

@@ -19,16 +19,16 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
         Voltage points
     i : array-like
         Current points
-    imax_limits : tuple
+    imax_limits : tuple, default (0.75, 1.15)
         Two-element tuple (low, high) specifying the fraction of estimated
         Imp within which to fit a polynomial for max power calculation
-    vmax_limits : tuple
+    vmax_limits : tuple, default (0.75, 1.15)
         Two-element tuple (low, high) specifying the fraction of estimated
         Vmp within which to fit a polynomial for max power calculation
-    voc_points : int
+    voc_points : int, default 3
         the number of points near open circuit to use for linear fit
         and Voc calculation
-    isc_points : int
+    isc_points : int, default 3
         the number of points near short circuit to use for linear fit and
         Isc calculation
 

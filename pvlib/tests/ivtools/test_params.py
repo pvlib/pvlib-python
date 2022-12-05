@@ -40,6 +40,14 @@ def test_astm_e1036(v_array, i_array):
     assert result == pytest.approx(expected)
 
 
+def test_astm_e1036_fit_order(v_array, i_array):
+    result = params.astm_e1036(v_array, i_array, mp_fit_order=3)
+    fit = result.pop('mp_fit')
+    expected_fit = np.array(
+        [3.64081697, 0.49124176, -0.3720477, -0.26442383])
+    assert fit.coef == pytest.approx(expected_fit)
+
+
 def test_astm_e1036_est_isc_voc(v_array, i_array):
     '''
     Test the case in which Isc and Voc estimates are

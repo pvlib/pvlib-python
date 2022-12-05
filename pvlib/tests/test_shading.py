@@ -45,6 +45,13 @@ def test_masking_angle_scalar(surface_tilt, masking_angle):
         assert np.isclose(masking_angle_actual, angle)
 
 
+def test_masking_angle_zero_gcr(surface_tilt):
+    # scalar inputs and outputs, including zero
+    for tilt in surface_tilt:
+        masking_angle_actual = shading.masking_angle(tilt, 0, 0.25)
+        assert np.isclose(masking_angle_actual, 0)
+
+
 def test_masking_angle_passias_series(surface_tilt, average_masking_angle):
     # pandas series inputs and outputs
     masking_angle_actual = shading.masking_angle_passias(surface_tilt, 0.5)

@@ -33,6 +33,10 @@ def test_astm_e1036(v_array, i_array):
                 'imp': 7.626088301548568,
                 'pmp': 3.7694489853302127,
                 'ff': 0.7517393078504361}
+    fit = result.pop('mp_fit')
+    expected_fit = np.array(
+        [3.6260726, 0.49124176, -0.24644747, -0.26442383, -0.1223237])
+    assert fit.coef == pytest.approx(expected_fit)
     assert result == pytest.approx(expected)
 
 
@@ -52,6 +56,7 @@ def test_astm_e1036_est_isc_voc(v_array, i_array):
                 'imp': 7.626088301548568,
                 'pmp': 3.7694489853302127,
                 'ff': 0.751024747526615}
+    result.pop('mp_fit')
     assert result == pytest.approx(expected)
 
 
@@ -66,6 +71,7 @@ def test_astm_e1036_mpfit_limits(v_array, i_array):
                 'imp': 7.620032530519718,
                 'pmp': 3.769189212299219,
                 'ff': 0.7516875014460312}
+    result.pop('mp_fit')
     assert result == pytest.approx(expected)
 
 
@@ -79,4 +85,5 @@ def test_astm_e1036_fit_points(v_array, i_array):
                 'imp': 7.626088301548568,
                 'pmp': 3.7694489853302127,
                 'ff': 0.7520255886236707}
+    result.pop('mp_fit')
     assert result == pytest.approx(expected)

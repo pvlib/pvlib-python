@@ -35,7 +35,8 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
     Returns
     -------
     dict
-        Calculated IV parameters
+        Calculated IV parameters. Keys are 'voc', 'isc', 'vpm', 'imp', 'pmp',
+        and 'ff'.
 
     Adapted from https://github.com/NREL/iv_params
     Copyright (c) 2022, Alliance for Sustainable Energy, LLC

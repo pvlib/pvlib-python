@@ -102,7 +102,7 @@ A pull request can also quickly become unmanageable if it proposes
 changes to the API in order to implement another feature. Consider
 clearly and concisely documenting all proposed API changes before
 implementing any code. Modifying
-`api.rst <https://github.com/pvlib/pvlib-python/blob/main/docs/sphinx/source/api.rst>`_
+`api.rst <https://github.com/pvlib/pvlib-python/tree/main/docs/sphinx/source/reference>`_
 and/or the latest `whatsnew file <https://github.com/pvlib/pvlib-python/tree/main/docs/sphinx/source/whatsnew>`_
 can help formalize this process.
 
@@ -230,7 +230,7 @@ Documentation
 Documentation must be written in
 `numpydoc format <https://numpydoc.readthedocs.io/>`_ format which is rendered
 using the `Sphinx Napoleon extension
-<https://www.sphinx-doc.org/en/main/usage/extensions/napoleon.html>`_.
+<https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html>`_.
 
 The numpydoc format includes a specification for the allowable input
 types. Python's `duck typing <https://en.wikipedia.org/wiki/Duck_typing>`_

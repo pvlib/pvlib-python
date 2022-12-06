@@ -9,6 +9,7 @@ from pvlib.tools import sind
 from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _get_sample_intervals
 import scipy
+import scipy.constants
 import warnings
 
 
@@ -375,7 +376,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     >>> params = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']
     >>> pvsyst_cell(1000, 10, **params)
     37.93103448275862
-    """                                                            # noQA: E501
+    """  # noQA: E501
 
     if eta_m:
         warn_deprecated(
@@ -436,6 +437,7 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     ----------
     .. [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
        photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+       :doi:`10.1002/pip.813`
 
     .. [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
        rating - Part 2: Spectral responsivity, incidence angle and module
@@ -444,7 +446,11 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
 
-    '''                                                            # noQA: E501
+    See also
+    --------
+    pvlib.temperature.faiman_rad
+
+    '''  # noQA: E501
 
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Dec., 2019
 
@@ -522,14 +528,18 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     All arguments may be scalars or vectors. If multiple arguments
     are vectors they must be the same length.
 
-    If the input `ir_down` is `None` the model output is the same as the
-    original Faiman model. Setting `ir_down` to zero does not have the same
-    meaning; it leads to very high radiative loss and low module temperature.
+    When only irradiance, air temperature and wind speed inputs are provided
+    (`ir_down` is `None`) this function calculates the same device temperature
+    as the original faiman model. When down-welling long-wave radiation data
+    are provided as well (`ir_down` is not None) the default u0 and u1 values
+    from the original model should not be used because a portion of the
+    radiative losses would be double-counted.
 
     References
     ----------
     .. [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
        photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+       :doi:`10.1002/pip.813`
 
     .. [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
        rating - Part 2: Spectral responsivity, incidence angle and module
@@ -541,7 +551,12 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     .. [4] Driesse, A. et al (2022) "Improving Common PV Module Temperature
        Models by Incorporating Radiative Losses to the Sky". SAND2022-11604.
        :doi:`10.2172/1884890`
-    '''                                                            # noQA: E501
+
+    See also
+    --------
+    pvlib.temperature.faiman
+
+    '''  # noQA: E501
 
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2022
 
@@ -550,12 +565,12 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
     emissivity = np.asanyarray(emissivity)
 
     abs_zero = np.array(-273.15)
-    kstefbolz = np.array(5.670367e-8)
+    sigma = np.array(scipy.constants.Stefan_Boltzmann)
 
     if ir_down is None:
         qrad_sky = np.array(0.0)
     else:
-        ir_up = kstefbolz * ((temp_air - abs_zero)**4)
+        ir_up = sigma * ((temp_air - abs_zero)**4)
         qrad_sky = emissivity * sky_view * (ir_up - ir_down)
 
     heat_input = poa_global - qrad_sky

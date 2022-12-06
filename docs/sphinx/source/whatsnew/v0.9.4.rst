@@ -36,6 +36,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Added an FAQ page to the docs: :ref:`faq`. (:issue:`1546`, :pull:`1549`)
 * Fixed equation in :py:func:`pvlib.iam.martin_ruiz` docstring (:issue:`1561`, :pull:`1599`)
 
 Benchmarking

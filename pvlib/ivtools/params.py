@@ -31,7 +31,7 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
     isc_points : int, default 3
         The number of points near short circuit to use for linear fit and
         Isc calculation
-    mp_fit_order=4 : int, default 4
+    mp_fit_order : int, default 4
         The order of the polynomial fit of power vs. voltage near maximum
         power
 

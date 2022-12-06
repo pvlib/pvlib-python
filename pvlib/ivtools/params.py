@@ -1,5 +1,5 @@
 """
-The ``params`` module contains classes and functions to extract parameters
+The ``params`` module contains functions to extract parameters
 (e.g. Isc and Voc) from current-voltage curves.
 """
 import pandas as pd

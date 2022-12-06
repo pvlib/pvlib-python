@@ -180,7 +180,7 @@ Utilities for working with IV curve data
    :toctree: generated/
 
     ivtools.utils.rectify_iv_curve
-    ivtools.params.astm_e1036
+    ivtools.utils.astm_e1036
 
 Other
 -----

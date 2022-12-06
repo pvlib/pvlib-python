@@ -10,8 +10,8 @@ from numpy.polynomial.polynomial import Polynomial as Poly
 def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
                voc_points=3, isc_points=3, mp_fit_order=4):
     '''
-    Extract photovoltaic IV parameters according to ASTM E1036. Assumes the
-    curve is in the first quadrant
+    Extract photovoltaic IV parameters according to ASTM E1036. Assumes that
+    the power producing portion of the curve is in the first quadrant.
 
     Parameters
     ----------

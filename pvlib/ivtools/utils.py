@@ -480,10 +480,6 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
     df['i'] = i
     df['p'] = df['v'] * df['i']
 
-    # first calculate estimates of voc and isc
-    voc = np.nan
-    isc = np.nan
-
     # determine if we can use voc and isc estimates
     i_min_ind = df['i'].abs().idxmin()
     v_min_ind = df['v'].abs().idxmin()
@@ -491,19 +487,18 @@ def astm_e1036(v, i, imax_limits=(0.75, 1.15), vmax_limits=(0.75, 1.15),
     isc_est = df['i'][v_min_ind]
 
     # accept the estimates if they are close enough
+    # if not, perform a linear fit
     if abs(df['i'][i_min_ind]) <= isc_est * 0.001:
         voc = voc_est
-    if abs(df['v'][v_min_ind]) <= voc_est * 0.005:
-        isc = isc_est
-
-    # perform a linear fit if estimates rejected
-    if np.isnan(voc):
+    else:
         df['i_abs'] = df['i'].abs()
         voc_df = df.nsmallest(voc_points, 'i_abs')
         voc_fit = Poly.fit(voc_df['i'], voc_df['v'], 1)
         voc = voc_fit(0)
 
-    if np.isnan(isc):
+    if abs(df['v'][v_min_ind]) <= voc_est * 0.005:
+        isc = isc_est
+    else:
         df['v_abs'] = df['v'].abs()
         isc_df = df.nsmallest(isc_points, 'v_abs')
         isc_fit = Poly.fit(isc_df['v'], isc_df['i'], 1)

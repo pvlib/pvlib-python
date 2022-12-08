@@ -350,13 +350,7 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     df['VH'] = upper
     df['VL'] = lower
 
-
-    # handle all NaN case gracefully
-    with warnings.catch_warnings():
-        warnings.filterwarnings(action='ignore',
-                                message='All-NaN slice encountered')
-        # handle upper == lower here
-        converged = np.nanmax(np.abs(upper - lower)) < atol
+    converged = False
 
     while not converged:
 
@@ -373,10 +367,11 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
         err = abs(df['V2'] - df['V1'])
 
-        converged = np.all(err[~np.isnan(err)] < atol)
-
-        # works with single value because err is np.float64
-#        converged = (err[~np.isnan(err)] < atol).all()
+        # handle all NaN case gracefully
+        with warnings.catch_warnings():
+            warnings.filterwarnings(action='ignore',
+                                    message='All-NaN slice encountered')
+            converged = np.all(err[~np.isnan(err)] < atol)
 
     # best estimate of location of maximum
     df['max'] = 0.5 * (df['V1'] + df['V2'])

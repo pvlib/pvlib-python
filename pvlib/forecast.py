@@ -10,7 +10,6 @@ from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
 from pvlib.irradiance import campbell_norman, get_extra_radiation, disc
-from pvlib.irradiance import _liujordan
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 

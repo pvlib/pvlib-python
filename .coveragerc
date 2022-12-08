@@ -1,2 +1,2 @@
 [run]
-omit = pvlib/_version.py
+omit = pvlib/version.py

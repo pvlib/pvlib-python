@@ -363,3 +363,90 @@ def test_prilliman_nans():
     # original implementation would return some values < 1 here
     expected = pd.Series(1., index=times)
     assert_series_equal(actual, expected)
+
+
+def test_glm_conversions():
+    # it is easiest and sufficient to test conversion from  & to the same model
+    glm = temperature.GenericLinearModel(module_efficiency=0.1,
+                                         absorptance=0.9)
+
+    inp = {'u0': 25.0, 'u1': 6.84}
+    glm.use_faiman(**inp)
+    out = glm.to_faiman()
+    for k, v in inp.items():
+        assert np.isclose(out[k], v)
+
+    inp = {'u_c': 25, 'u_v': 4}
+    glm.use_pvsyst(**inp)
+    out = glm.to_pvsyst()
+    for k, v in inp.items():
+        assert np.isclose(out[k], v)
+
+    # test with optional parameters
+    inp = {'u_c': 25, 'u_v': 4,
+           'module_efficiency': 0.15,
+           'alpha_absorption': 0.95}
+    glm.use_pvsyst(**inp)
+    out = glm.to_pvsyst()
+    for k, v in inp.items():
+        assert np.isclose(out[k], v)
+
+    inp = {'noct': 47}
+    glm.use_noct_sam(**inp)
+    out = glm.to_noct_sam()
+    for k, v in inp.items():
+        assert np.isclose(out[k], v)
+
+    # test with optional parameters
+    inp = {'noct': 47,
+           'module_efficiency': 0.15,
+           'transmittance_absorptance': 0.95}
+    glm.use_noct_sam(**inp)
+    out = glm.to_noct_sam()
+    for k, v in inp.items():
+        assert np.isclose(out[k], v)
+
+    inp = {'a': -3.5, 'b': -0.1}
+    glm.use_sapm(**inp)
+    out = glm.to_sapm()
+    for k, v in inp.items():
+        assert np.isclose(out[k], v)
+
+
+def test_glm_simulations():
+
+    glm = temperature.GenericLinearModel(module_efficiency=0.1,
+                                         absorptance=0.9)
+    wind = np.array([1.4, 1/.51, 5.4])
+    weather = (800, 20, wind)
+
+    inp = {'u0': 20.0, 'u1': 5.0}
+    glm.use_faiman(**inp)
+    out = glm(*weather)
+    expected = temperature.faiman(*weather, **inp)
+    assert np.allclose(out, expected)
+
+    out = glm(*weather)
+    assert np.allclose(out, expected)
+
+    out = glm(*weather, module_efficiency=0.1)
+    assert np.allclose(out, expected)
+
+    inp = glm.get_generic_linear()
+    out = temperature.generic_linear(*weather, **inp)
+    assert np.allclose(out, expected)
+
+
+def test_glm_repr():
+
+    glm = temperature.GenericLinearModel(module_efficiency=0.1,
+                                         absorptance=0.9)
+    inp = {'u0': 20.0, 'u1': 5.0}
+    glm.use_faiman(**inp)
+    expected = ("GenericLinearModel: {"
+                "'u_const': 16.0, "
+                "'du_wind': 4.0, "
+                "'eta': 0.1, "
+                "'alpha': 0.9}")
+
+    assert glm.__repr__() == expected

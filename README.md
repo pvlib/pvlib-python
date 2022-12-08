@@ -93,8 +93,8 @@ but operate independently of it.
 Documentation
 =============
 
-Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/).
-
+Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/),
+including an [FAQ](http://pvlib-python.readthedocs.io/en/stable/user_guide/faq.html) page.
 
 Installation
 ============

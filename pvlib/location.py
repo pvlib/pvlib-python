@@ -4,13 +4,15 @@ This module contains the Location class.
 
 # Will Holmgren, University of Arizona, 2014-2016.
 
+import os
 import datetime
-import warnings
 
 import pandas as pd
 import pytz
+import h5py
 
 from pvlib import solarposition, clearsky, atmosphere, irradiance
+from pvlib.tools import _degrees_to_index
 
 class Location:
     """
@@ -356,3 +358,88 @@ class Location:
                              'one of pyephem, spa, geometric'
                              .format(method))
         return result
+
+
+def lookup_altitude(latitude, longitude):
+    """
+    Look up location altitude from low-resolution altitude map
+    supplied with pvlib. The data for this map comes from multiple open data
+    sources with varying resolutions aggregated by Mapzen.
+
+    More details can be found here
+    https://github.com/tilezen/joerd/blob/master/docs/data-sources.md
+
+    Altitudes from this map are a coarse approximation and can have
+    significant errors (100+ meters) introduced by downsampling and
+    source data resolution.
+
+    Parameters
+    ----------
+    latitude : float.
+        Positive is north of the equator.
+        Use decimal degrees notation.
+
+    longitude : float.
+        Positive is east of the prime meridian.
+        Use decimal degrees notation.
+
+    Returns
+    -------
+    altitude : float
+        The altitude of the location in meters.
+
+    Notes
+    -----------
+    Attributions:
+
+    * ArcticDEM terrain data DEM(s) were created from DigitalGlobe, Inc.,
+      imagery and funded under National Science Foundation awards 1043681,
+      1559691, and 1542736;
+    * Australia terrain data © Commonwealth of Australia
+      (Geoscience Australia) 2017;
+    * Austria terrain data © offene Daten Österreichs - Digitales
+      Geländemodell (DGM) Österreich;
+    * Canada terrain data contains information licensed under the Open
+      Government Licence - Canada;
+    * Europe terrain data produced using Copernicus data and information
+      funded by the European Union - EU-DEM layers;
+    * Global ETOPO1 terrain data U.S. National Oceanic and Atmospheric
+      Administration
+    * Mexico terrain data source: INEGI, Continental relief, 2016;
+    * New Zealand terrain data Copyright 2011 Crown copyright (c) Land
+      Information New Zealand and the New Zealand Government
+      (All rights reserved);
+    * Norway terrain data © Kartverket;
+    * United Kingdom terrain data © Environment Agency copyright and/or
+      database right 2015. All rights reserved;
+    * United States 3DEP (formerly NED) and global GMTED2010 and SRTM
+      terrain data courtesy of the U.S. Geological Survey.
+
+    References
+    ----------
+    .. [1] `Mapzen, Linux foundation project for open data maps
+        <https://www.mapzen.com/>`_
+    .. [2] `Joerd, tool for downloading and processing DEMs, Used by Mapzen
+        <https://github.com/tilezen/joerd/>`_
+    .. [3] `AWS, Open Data Registry Terrain Tiles
+        <https://registry.opendata.aws/terrain-tiles/>`_
+
+    """
+
+    pvlib_path = os.path.dirname(os.path.abspath(__file__))
+    filepath = os.path.join(pvlib_path, 'data', 'Altitude.h5')
+
+    latitude_index = _degrees_to_index(latitude, coordinate='latitude')
+    longitude_index = _degrees_to_index(longitude, coordinate='longitude')
+
+    with h5py.File(filepath, 'r') as alt_h5_file:
+        alt = alt_h5_file['Altitude'][latitude_index, longitude_index]
+
+    # 255 is a special value that means nodata. Fallback to 0 if nodata.
+    if alt == 255:
+        return 0
+    # Altitude is encoded in 28 meter steps from -450 meters to 6561 meters
+    # There are 0-254 possible altitudes, with 255 reserved for nodata.
+    alt *= 28
+    alt -= 450
+    return float(alt)

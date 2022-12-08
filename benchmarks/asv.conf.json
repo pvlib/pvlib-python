@@ -23,10 +23,9 @@
     //
     // "install_command": ["in-dir={env_dir} python -mpip install {wheel_file}"],
     // "uninstall_command": ["return-code=any python -mpip uninstall -y {project}"],
-    // "build_command": [
-    //     "python setup.py build",
-    //     "PIP_NO_BUILD_ISOLATION=false python -mpip wheel --no-deps --no-index -w {build_cache_dir} {build_dir}"
-    // ],
+    "build_command": [
+        "python -m build -o {build_cache_dir}",
+    ],
 
     // List of branches to benchmark. If not provided, defaults to "master"
     // (for git) or "default" (for mercurial).
@@ -114,7 +113,8 @@
     "include": [
         // minimum supported versions
         {
-            "python": "3.6",
+            "python": "3.7",
+            "build": "",
             "numpy": "1.16.0",
             "pandas": "0.25.0",
             "scipy": "1.2.0",
@@ -126,6 +126,7 @@
         // latest versions available
         {
             "python": "3.8",
+            "build": "",
             "numpy": "",
             "pandas": "",
             "scipy": "",

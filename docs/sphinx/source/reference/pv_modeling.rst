@@ -28,6 +28,8 @@ Incident angle modifiers
    iam.interp
    iam.marion_diffuse
    iam.marion_integrate
+   iam.schlick
+   iam.schlick_diffuse
 
 PV temperature models
 ---------------------
@@ -45,6 +47,8 @@ PV temperature models
    temperature.noct_sam
    temperature.prilliman
    pvsystem.PVSystem.get_cell_temperature
+   temperature.generic_linear
+   temperature.GenericLinearModel
 
 Temperature Model Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

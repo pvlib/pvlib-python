@@ -375,12 +375,8 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
     # best estimate of location of maximum
     df['max'] = 0.5 * (df['V1'] + df['V2'])
-    try:
-        func_result = func(df, 'max')
-        x = np.where(np.isnan(func_result), np.nan, df['max'])
-    except KeyError:
-        func_result = np.full_like(upper, np.nan)
-        x = func_result.copy()
+    func_result = func(df, 'max')
+    x = np.where(np.isnan(func_result), np.nan, df['max'])
 
     return func_result, x
 

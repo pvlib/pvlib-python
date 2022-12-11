@@ -141,18 +141,18 @@ def test_faiman_rad_no_ir():
 
 
 def test_faiman_rad_ir():
-    ir_down = [0, 100, 200, 315.6574, 400]
+    ir_down = np.array([0, 100, 200, 315.6574, 400])
     expected = [-11.111, -7.591, -4.071, -0.000, 2.969]
     result = temperature.faiman_rad(0, 0, 0, ir_down)
     assert_allclose(result, expected, atol=0.001)
 
-    sky_view = [1.0, 0.5, 0.0]
+    sky_view = np.array([1.0, 0.5, 0.0])
     expected = [-4.071, -2.036, 0.000]
     result = temperature.faiman_rad(0, 0, 0, ir_down=200,
                                     sky_view=sky_view)
     assert_allclose(result, expected, atol=0.001)
 
-    emissivity = [1.0, 0.88, 0.5, 0.0]
+    emissivity = np.array([1.0, 0.88, 0.5, 0.0])
     expected = [-4.626, -4.071, -2.313, 0.000]
     result = temperature.faiman_rad(0, 0, 0, ir_down=200,
                                     emissivity=emissivity)

@@ -560,15 +560,11 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
 
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2022
 
-    u0 = np.asanyarray(u0)
-    u1 = np.asanyarray(u1)
-    emissivity = np.asanyarray(emissivity)
-
-    abs_zero = np.array(-273.15)
-    sigma = np.array(scipy.constants.Stefan_Boltzmann)
+    abs_zero = -273.15
+    sigma = scipy.constants.Stefan_Boltzmann
 
     if ir_down is None:
-        qrad_sky = np.array(0.0)
+        qrad_sky = 0.0
     else:
         ir_up = sigma * ((temp_air - abs_zero)**4)
         qrad_sky = emissivity * sky_view * (ir_up - ir_down)

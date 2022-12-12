@@ -15,3 +15,5 @@ Incident angle modifiers
    iam.interp
    iam.marion_diffuse
    iam.marion_integrate
+   iam.schlick
+   iam.schlick_diffuse

@@ -46,9 +46,9 @@ We do not know of a similarly easy way to access archives of forecast data.
 This document demonstrates how to use pvlib python to create a PV power
 forecast using these tools. The `forecast
 <http://nbviewer.jupyter.org/github/pvlib/pvlib-python/blob/
-master/docs/tutorials/forecast.ipynb>`_ and `forecast_to_power
+main/docs/tutorials/forecast.ipynb>`_ and `forecast_to_power
 <http://nbviewer.jupyter.org/github/pvlib/pvlib-python/blob/
-master/docs/tutorials/forecast_to_power.ipynb>`_ Jupyter notebooks
+main/docs/tutorials/forecast_to_power.ipynb>`_ Jupyter notebooks
 provide additional example code.
 
 .. warning::

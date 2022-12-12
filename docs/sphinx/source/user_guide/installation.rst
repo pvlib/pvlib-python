@@ -98,7 +98,7 @@ repository <https://github.com/pvlib/pvlib-python>`_ or go to the
 download the zip file of the most recent release. You can also use the
 nbviewer website to choose a tutorial to experiment with. Go to our
 `nbviewer tutorial page
-<http://nbviewer.jupyter.org/github/pvlib/pvlib-python/tree/master/docs/
+<http://nbviewer.jupyter.org/github/pvlib/pvlib-python/tree/main/docs/
 tutorials/>`_.
 
 
@@ -228,7 +228,7 @@ pvlib-python is compatible with Python 3.
 
 pvlib-python requires Pandas, Numpy, and SciPy. The minimum version requirements
 are specified in
-`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
+`setup.py <https://github.com/pvlib/pvlib-python/blob/main/setup.py>`_.
 They are typically releases from several years ago.
 
 A handful of pvlib-python features require additional packages that must

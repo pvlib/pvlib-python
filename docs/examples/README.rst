@@ -1,3 +1,5 @@
+.. _example_gallery:
+
 Example Gallery
 ===============
 

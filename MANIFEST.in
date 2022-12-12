@@ -1,20 +1,7 @@
-include MANIFEST.in
-include AUTHORS.md
-include LICENSE
-include README.md
-include setup.py
-
-# include most everything under pvlib by default
-# better to package too much than not enough
-graft pvlib
-
-# we included pvlib files needed to compile NREL SPA code in graft above,
-# now we exclude the NREL code itself to comply with their license
 global-exclude */spa.c
 global-exclude */spa.h
 prune pvlib/spa_c_files/build
 
-graft docs
 prune docs/sphinx/build
 prune docs/sphinx/source/generated
 # all doc figures created by doc build
@@ -31,5 +18,14 @@ global-exclude .git*
 global-exclude \#*
 global-exclude .ipynb_checkpoints
 
-include versioneer.py
-include pvlib/_version.py
+exclude .coveragerc
+exclude .lgtm.yml
+exclude .stickler.yml
+exclude codecov.yml
+exclude readthedocs.yml
+exclude CODE_OF_CONDUCT.md
+
+prune paper
+prune .github
+prune benchmarks
+prune ci

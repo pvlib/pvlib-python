@@ -216,8 +216,8 @@ def _ground_angle(x, surface_tilt, gcr):
     #  :         \  v      *-.\
     #  :          \<-----P---->\
 
-    x1 = x * sind(surface_tilt)
-    x2 = (x * cosd(surface_tilt) + 1 / gcr)
+    x1 = gcr * x * sind(surface_tilt)
+    x2 = gcr * x * cosd(surface_tilt) + 1
     psi = np.arctan2(x1, x2)  # do this first because it handles 0 / 0
     return np.rad2deg(psi)
 

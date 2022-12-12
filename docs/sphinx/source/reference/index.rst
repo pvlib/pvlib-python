@@ -11,9 +11,9 @@ API reference
    solarposition
    clearsky
    airmass_atmospheric
-   irradiance
+   irradiance/index
    pv_modeling/index
-   effects_on_pv_system_output
+   effects_on_pv_system_output/index
    tracking
    iotools
    forecasting

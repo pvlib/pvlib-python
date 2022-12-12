@@ -8,7 +8,7 @@ Sandia array performance model (SAPM)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    pvsystem.sapm
    pvsystem.sapm_effective_irradiance
@@ -20,7 +20,7 @@ Pvsyst model
 ^^^^^^^^^^^^
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    temperature.pvsyst_cell
    pvsystem.calcparams_pvsyst

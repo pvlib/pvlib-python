@@ -5,7 +5,7 @@ Other
 -----
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    pvsystem.retrieve_sam
    pvsystem.scale_voltage_current_power

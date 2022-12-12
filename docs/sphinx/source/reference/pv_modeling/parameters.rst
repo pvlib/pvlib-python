@@ -7,7 +7,7 @@ Estimating PV model parameters
 Functions for fitting single diode models
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
     ivtools.sdm.fit_cec_sam
     ivtools.sdm.fit_desoto
@@ -17,13 +17,13 @@ Functions for fitting single diode models
 Functions for fitting the single diode equation
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
     ivtools.sde.fit_sandia_simple
 
 Utilities for working with IV curve data
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
     ivtools.utils.rectify_iv_curve

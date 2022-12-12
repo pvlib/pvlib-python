@@ -10,7 +10,7 @@ The :py:class:`~pvsystem.PVSystem` class provides many methods that
 wrap the functions listed below. See its documentation for details.
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    pvsystem.PVSystem
 

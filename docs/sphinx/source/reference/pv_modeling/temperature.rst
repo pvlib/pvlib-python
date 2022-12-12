@@ -5,7 +5,7 @@ PV temperature models
 ---------------------
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    temperature.sapm_cell
    temperature.sapm_module

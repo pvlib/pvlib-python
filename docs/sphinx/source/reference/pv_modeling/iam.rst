@@ -5,7 +5,7 @@ Incident angle modifiers
 ------------------------
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    iam.physical
    iam.ashrae

@@ -7,7 +7,7 @@ Single diode models
 Functions relevant for single diode models.
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    pvsystem.calcparams_cec
    pvsystem.calcparams_desoto
@@ -21,7 +21,7 @@ Functions relevant for single diode models.
 Low-level functions for solving the single diode equation.
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    singlediode.estimate_voc
    singlediode.bishop88
@@ -32,7 +32,7 @@ Low-level functions for solving the single diode equation.
 Functions for fitting diode models
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
     ivtools.sde.fit_sandia_simple
     ivtools.sdm.fit_cec_sam

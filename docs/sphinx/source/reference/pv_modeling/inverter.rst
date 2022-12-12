@@ -5,7 +5,7 @@ Inverter models (DC to AC conversion)
 -------------------------------------
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    pvsystem.PVSystem.get_ac
    inverter.sandia
@@ -17,6 +17,6 @@ Inverter models (DC to AC conversion)
 Functions for fitting inverter models
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    inverter.fit_sandia

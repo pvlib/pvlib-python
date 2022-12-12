@@ -19,7 +19,7 @@ Please see the :ref:`installation` page for installation help.
 
 For examples of how to use pvlib python, please see
 :ref:`package_overview` and our `Jupyter Notebook tutorials
-<http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/master/docs/
+<http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/main/docs/
 tutorials/>`_. The documentation assumes general familiarity with
 Python, NumPy, and Pandas. Google searches will yield many
 excellent tutorials for these packages.
@@ -72,9 +72,9 @@ Additional pvlib python publications include:
 * W.F. Holmgren, R.W. Andrews, A.T. Lorenzo, and J.S. Stein,
   “PVLIB Python 2015,” in 42nd Photovoltaic Specialists Conference, 2015.
   (`paper
-  <https://github.com/pvlib/pvsc2015/blob/master/pvlib_pvsc_42.pdf>`__ and
+  <https://github.com/pvlib/pvsc2015/blob/main/pvlib_pvsc_42.pdf>`__ and
   the `notebook to reproduce the figures
-  <http://nbviewer.ipython.org/github/pvlib/pvsc2015/blob/master/paper.ipynb>`_)
+  <http://nbviewer.ipython.org/github/pvlib/pvsc2015/blob/main/paper.ipynb>`_)
 * J.S. Stein, W.F. Holmgren, J. Forbess, and C.W. Hansen,
   "PVLIB: Open Source Photovoltaic Performance Modeling Functions
   for Matlab and Python," in 43rd Photovoltaic Specialists Conference, 2016.
@@ -85,7 +85,7 @@ Additional pvlib python publications include:
 License
 =======
 
-`BSD 3-clause <https://github.com/pvlib/pvlib-python/blob/master/LICENSE>`_.
+`BSD 3-clause <https://github.com/pvlib/pvlib-python/blob/main/LICENSE>`_.
 
 NumFOCUS
 ========

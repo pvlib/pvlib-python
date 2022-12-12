@@ -2073,7 +2073,7 @@ def test__irrad_for_celltemp():
     assert_series_equal(poa[1], effect_irrad)
 
 
-@fail_on_pvlib_version('0.10.0')
+@fail_on_pvlib_version('0.11.0')
 def test_modelchain_pvwatts_methods_deprecated(pvwatts_dc_pvwatts_ac_system,
                                                location, weather):
     mc = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location)
@@ -2091,7 +2091,7 @@ def test_modelchain_pvwatts_methods_deprecated(pvwatts_dc_pvwatts_ac_system,
         mc.pvwatts_losses()
 
 
-@fail_on_pvlib_version('0.10.0')
+@fail_on_pvlib_version('0.11.0')
 def test_modelchain_pvwatts_modelnames_deprecated(pvwatts_dc_pvwatts_ac_system,
                                                   location):
     with pytest.warns(pvlibDeprecationWarning,

@@ -145,7 +145,7 @@ def test_pvwattsv5_scalars():
     assert_allclose(out, expected)
 
 
-@fail_on_pvlib_version('0.10.0')
+@fail_on_pvlib_version('0.11.0')
 def test_pvwatts_deprecated():
     expected = 85.58556604752516
     with pytest.warns(pvlibDeprecationWarning, match='Use pvwattsv5 instead'):
@@ -199,7 +199,7 @@ def test_pvwattsv5_multi():
     assert_series_equal(pd.Series(expected), out)
 
 
-@fail_on_pvlib_version('0.10.0')
+@fail_on_pvlib_version('0.11.0')
 def test_pvwatts_multi_deprecated():
     pdc = np.array([np.nan, 0, 50, 100]) / 2
     pdc0 = 100

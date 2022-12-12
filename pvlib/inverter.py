@@ -408,7 +408,7 @@ def pvwattsv5(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 pvwatts = deprecated(since='0.9.4',
                      name='pvwatts',
                      alternative='pvwattsv5',
-                     removal='0.10')(pvwattsv5)
+                     removal='0.11')(pvwattsv5)
 
 
 def pvwattsv5_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):

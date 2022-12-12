@@ -9,6 +9,7 @@ from pvlib.tools import sind
 from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _get_sample_intervals
 import scipy
+import scipy.constants
 import warnings
 
 
@@ -318,7 +319,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
         in :eq:`pvsyst`.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     eta_m : numeric, default None (deprecated, use module_efficiency instead)
 
@@ -375,7 +376,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     >>> params = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']
     >>> pvsyst_cell(1000, 10, **params)
     37.93103448275862
-    """
+    """  # noQA: E501
 
     if eta_m:
         warn_deprecated(
@@ -413,12 +414,14 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     u0 : numeric, default 25.0
         Combined heat loss factor coefficient. The default value is one
-        determined by Faiman for 7 silicon modules.
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
-        determined by Faiman for 7 silicon modules.
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     Returns
@@ -434,6 +437,7 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     ----------
     .. [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
        photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+       :doi:`10.1002/pip.813`
 
     .. [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
        rating - Part 2: Spectral responsivity, incidence angle and module
@@ -442,7 +446,12 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
 
-    '''
+    See also
+    --------
+    pvlib.temperature.faiman_rad
+
+    '''  # noQA: E501
+
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Dec., 2019
 
     # The following lines may seem odd since u0 & u1 are probably scalar,
@@ -453,6 +462,115 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     total_loss_factor = u0 + u1 * wind_speed
     heat_input = poa_global
+    temp_difference = heat_input / total_loss_factor
+    return temp_air + temp_difference
+
+
+def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
+               u0=25.0, u1=6.84, sky_view=1.0, emissivity=0.88):
+    r'''
+    Calculate cell or module temperature using the Faiman model augmented
+    with a radiative loss term.
+
+    The Faiman model uses an empirical heat loss factor model [1]_ and is
+    adopted in the IEC 61853 standards [2]_ and [3]_.  The radiative loss
+    term was proposed and developed by Driesse [4]_.
+
+    The model can be used to represent cell or module temperature.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    temp_air : numeric
+        Ambient dry bulb temperature [C].
+
+    wind_speed : numeric, default 1.0
+        Wind speed measured at the same height for which the wind loss
+        factor was determined.  The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT. [m/s]
+
+    ir_down : numeric, default 0.0
+        Downwelling infrared radiation from the sky, measured on a horizontal
+        surface. [W/m^2]
+
+    u0 : numeric, default 25.0
+        Combined heat loss factor coefficient. The default value is one
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
+        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
+
+    u1 : numeric, default 6.84
+        Combined heat loss factor influenced by wind. The default value is one
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+
+    sky_view : numeric, default 1.0
+        Effective view factor limiting the radiative exchange between the
+        module and the sky. For a tilted array the expressions
+        (1 + 3*cos(tilt)) / 4 can be used as a first estimate for sky_view
+        as discussed in [4]_. The default value is for a horizontal module.
+        [unitless]
+
+    emissivity : numeric, default 0.88
+        Infrared emissivity of the module surface facing the sky. The default
+        value represents the middle of a range of values found in the
+        literature. [unitless]
+
+    Returns
+    -------
+    numeric, values in degrees Celsius
+
+    Notes
+    -----
+    All arguments may be scalars or vectors. If multiple arguments
+    are vectors they must be the same length.
+
+    When only irradiance, air temperature and wind speed inputs are provided
+    (`ir_down` is `None`) this function calculates the same device temperature
+    as the original faiman model. When down-welling long-wave radiation data
+    are provided as well (`ir_down` is not None) the default u0 and u1 values
+    from the original model should not be used because a portion of the
+    radiative losses would be double-counted.
+
+    References
+    ----------
+    .. [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+       photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+       :doi:`10.1002/pip.813`
+
+    .. [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
+       rating - Part 2: Spectral responsivity, incidence angle and module
+       operating temperature measurements". IEC, Geneva, 2018.
+
+    .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
+       rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
+
+    .. [4] Driesse, A. et al (2022) "Improving Common PV Module Temperature
+       Models by Incorporating Radiative Losses to the Sky". SAND2022-11604.
+       :doi:`10.2172/1884890`
+
+    See also
+    --------
+    pvlib.temperature.faiman
+
+    '''  # noQA: E501
+
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2022
+
+    abs_zero = -273.15
+    sigma = scipy.constants.Stefan_Boltzmann
+
+    if ir_down is None:
+        qrad_sky = 0.0
+    else:
+        ir_up = sigma * ((temp_air - abs_zero)**4)
+        qrad_sky = emissivity * sky_view * (ir_up - ir_down)
+
+    heat_input = poa_global - qrad_sky
+    total_loss_factor = u0 + u1 * wind_speed
     temp_difference = heat_input / total_loss_factor
     return temp_air + temp_difference
 

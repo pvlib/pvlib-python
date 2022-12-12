@@ -1,11 +1,13 @@
-
 import numpy as np
 import pandas as pd
-from pvlib import mlfm
-from numpy.testing import assert_allclose  # assert_almost_equal,
-import pytest
-from .conftest import requires_mpl, assert_frame_equal
 
+from pvlib import mlfm
+
+import pytest
+
+from conftest import requires_mpl, assert_frame_equal
+
+from numpy.testing import assert_allclose
 
 tolerance = 0.000001
 
@@ -260,3 +262,24 @@ def test_plot_mlfm_stack(measured, normalized, stacked6, stacked4, reference):
     import matplotlib.pyplot as plt
     fig = mlfm.plot_mlfm_stack(m, n, s4, reference['ff'], 'stacked 4 plot')
     assert isinstance(fig, plt.Figure)
+
+
+"""
+
+remove
+
+reference()
+measured()
+normalized()
+stacked6()
+stacked4()
+mlfm_6_coeffs()
+matrix_data()
+mlfm_6_fit()
+test_mlfm_meas_to_norm(mlfm_6_coeffs, reference, measured, normalized)
+test_mlfm_6(measured, mlfm_6_coeffs)
+test_mlfm_norm_to_stack(normalized, reference, stacked6, stacked4)
+test_mlfm_fit(matrix_data, mlfm_6_fit)
+test_plot_mlfm_scatter(measured, normalized)
+test_plot_mlfm_stack(measured, normalized, stacked6, stacked4, reference)
+"""

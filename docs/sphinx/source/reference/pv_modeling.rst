@@ -28,6 +28,8 @@ Incident angle modifiers
    iam.interp
    iam.marion_diffuse
    iam.marion_integrate
+   iam.schlick
+   iam.schlick_diffuse
 
 PV temperature models
 ---------------------
@@ -40,6 +42,7 @@ PV temperature models
    temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
+   temperature.faiman_rad
    temperature.fuentes
    temperature.ross
    temperature.noct_sam

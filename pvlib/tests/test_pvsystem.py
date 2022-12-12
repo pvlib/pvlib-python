@@ -1538,7 +1538,7 @@ def test_PVSystem_get_ac_pvwatts_kwargs(pvwatts_system_kwargs, mocker):
     assert out < pdc
 
 
-@fail_on_pvlib_version('0.10')
+@fail_on_pvlib_version('0.11')
 def test_PVSystem_get_ac_pvwatts_deprecated(pvwatts_system_defaults, mocker):
     mocker.spy(inverter, 'pvwattsv5')
     pdc = 50
@@ -1577,7 +1577,7 @@ def test_PVSystem_get_ac_pvwatts_multi(
         system.get_ac('pvwattsv5', (pdcs, pdcs, pdcs))
 
 
-@fail_on_pvlib_version('0.10')
+@fail_on_pvlib_version('0.11')
 def test_PVSystem_get_ac_pvwatts_multi_deprecated(
         pvwatts_system_defaults, pvwatts_system_kwargs, mocker):
     mocker.spy(inverter, 'pvwatts_multi')
@@ -2039,7 +2039,7 @@ def test_pvwattsv5_dc_series():
     assert_series_equal(expected, out)
 
 
-@fail_on_pvlib_version('0.10.0')
+@fail_on_pvlib_version('0.11.0')
 def test_pvwatts_dc_deprecated():
     irrad_trans = pd.Series([np.nan, 900, 900])
     temp_cell = pd.Series([30, np.nan, 30])
@@ -2070,7 +2070,7 @@ def test_pvwattsv5_losses_series():
     assert_series_equal(expected, out)
 
 
-@fail_on_pvlib_version('0.10.0')
+@fail_on_pvlib_version('0.11.0')
 def test_pvwatts_losses_deprecated():
     expected = 14.075660688264469
     with pytest.warns(pvlibDeprecationWarning,
@@ -2109,7 +2109,7 @@ def test_PVSystem_pvwatts_dcv5(pvwatts_system_defaults, mocker):
     assert_allclose(expected, out, atol=10)
 
 
-@fail_on_pvlib_version('0.10.0')
+@fail_on_pvlib_version('0.11.0')
 def test_PVSystem_pvwatts_dc_deprecated(pvwatts_system_defaults, mocker):
     mocker.spy(pvsystem, 'pvwatts_dc')
     irrad = 900
@@ -2201,7 +2201,7 @@ def test_PVSystem_pvwattsv5_losses(pvwatts_system_defaults, mocker):
     assert out < expected
 
 
-@fail_on_pvlib_version('0.10.0')
+@fail_on_pvlib_version('0.11.0')
 def test_PVSystem_pvwatts_losses_deprecated(pvwatts_system_defaults, mocker):
     mocker.spy(pvsystem, 'pvwatts_losses')
     age = 1

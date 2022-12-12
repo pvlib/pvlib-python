@@ -834,7 +834,7 @@ class ModelChain:
         self.results.dc = _tuple_from_dfs(scaled, "p_mp")
         return self
 
-    @deprecated('0.9.4', alternative='ModelChain.pvwattsv5_dc', removal='0.10')
+    @deprecated('0.9.4', alternative='ModelChain.pvwattsv5_dc', removal='0.11')
     def pvwatts_dc(self):
         return self.pvwattsv5_dc()
 
@@ -906,7 +906,7 @@ class ModelChain:
         return self
 
     @deprecated('0.9.4', alternative='ModelChain.pvwattsv5_inverter',
-                removal='0.10')
+                removal='0.11')
     def pvwatts_inverter(self):
         return self.pvwattsv5_inverter()
 
@@ -1238,7 +1238,7 @@ class ModelChain:
         return self
 
     @deprecated('0.9.4', alternative='ModelChain.pvwattsv5_losses',
-                removal='0.10')
+                removal='0.11')
     def pvwatts_losses(self):
         return self.pvwattsv5_losses()
 

@@ -447,7 +447,7 @@ def pvwattsv5_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 pvwatts_multi = deprecated(since='0.9.4',
                            name='pvwatts_multi',
                            alternative='pvwattsv5_multi',
-                           removal='0.10')(pvwattsv5_multi)
+                           removal='0.11')(pvwattsv5_multi)
 
 
 def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):

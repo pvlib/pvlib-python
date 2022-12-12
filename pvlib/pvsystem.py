@@ -1097,7 +1097,7 @@ class PVSystem:
             in zip(self.arrays, g_poa_effective, temp_cell)
         )
 
-    @deprecated('0.9.4', alternative='PVSystem.pvwattsv5_dc', removal='0.10')
+    @deprecated('0.9.4', alternative='PVSystem.pvwattsv5_dc', removal='0.11')
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
         Calculates DC power according to the PVWatts v5 model using
@@ -1124,7 +1124,7 @@ class PVSystem:
         return pvwattsv5_losses(**kwargs)
 
     @deprecated('0.9.4', alternative='PVSystem.pvwattsv5_losses',
-                removal='0.10')
+                removal='0.11')
     def pvwatts_losses(self):
         """
         Calculates DC power losses according the PVwatts v5 model using
@@ -3263,7 +3263,7 @@ def pvwattsv5_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
 pvwatts_dc = deprecated(since='0.9.4',
                         name='pvwatts_dc',
                         alternative='pvwattsv5_dc',
-                        removal='0.10')(pvwattsv5_dc)
+                        removal='0.11')(pvwattsv5_dc)
 
 
 def pvwattsv5_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
@@ -3323,7 +3323,7 @@ def pvwattsv5_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 pvwatts_losses = deprecated(since='0.9.4',
                             name='pvwatts_losses',
                             alternative='pvwattsv5_losses',
-                            removal='0.10')(pvwattsv5_losses)
+                            removal='0.11')(pvwattsv5_losses)
 
 
 def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,

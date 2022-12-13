@@ -96,11 +96,11 @@ def pvefficiency_adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
             k_a=1.0, k_d=-6.0, tc_d=0.02, k_rs=0.05, k_rsh=0.10)
     array([1.        , 0.92797293])
 
-
-    Adapted from https://github.com/adriesse/pvpltools-python
-    Copyright (c) 2022, Anton Driesse, PV Performance Labs
-    All rights reserved.
     '''
+    # Adapted from https://github.com/adriesse/pvpltools-python
+    # Copyright (c) 2022, Anton Driesse, PV Performance Labs
+    # All rights reserved.
+
     k_a = np.array(k_a)
     k_d = np.array(k_d)
     tc_d = np.array(tc_d)

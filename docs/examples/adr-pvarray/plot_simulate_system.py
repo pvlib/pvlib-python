@@ -31,8 +31,7 @@ DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
 
 tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990)
 
-df = pd.DataFrame({'ghi': tmy['GHI'], 'dhi': tmy['DHI'],
-                   'dni': tmy['DNI'], 'dni_extra': tmy['ETRN'],
+df = pd.DataFrame({'ghi': tmy['GHI'], 'dhi': tmy['DHI'], 'dni': tmy['DNI'],
                    'temp_air': tmy['DryBulb'], 'wind_speed': tmy['Wspd'],
                    })
 
@@ -54,11 +53,9 @@ solpos = loc.get_solarposition(df.index)
 TILT = metadata['latitude']
 ORIENT = 180
 
-df['aoi'] = aoi(TILT, ORIENT, solpos.apparent_zenith, solpos.azimuth)
-
 total_irrad = get_total_irradiance(TILT, ORIENT,
                                    solpos.apparent_zenith, solpos.azimuth,
-                                   df.dni, df.ghi, df.dhi, df.dni_extra)
+                                   df.dni, df.ghi, df.dhi)
 
 df['poa_global'] = total_irrad.poa_global
 
@@ -101,7 +98,7 @@ df['eta_rel'] = pvefficiency_adr(df['poa_global'], df['temp_pv'], **adr_params)
 
 # Set the desired array size:
 P_STC = 5000.   # (W)
-# and the irradiance level needed to achieve this output (
+# and the irradiance level needed to achieve this output:
 G_STC = 1000.   # (W/m2)
 
 df['p_mp'] = P_STC * df['eta_rel'] * (df['poa_global'] / G_STC)

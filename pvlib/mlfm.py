@@ -423,7 +423,7 @@ def meas_to_norm(dmeas, ref):
 
 '''
 def mpm_fit(data, var_to_fit, mpm_sel):
-    
+
     print ("var_to_fit, mpm_sel = ", var_to_fit, mpm_sel)
     """
     Fit mpm to normalised measured data 'var_to_fit' using mpm_sel model.
@@ -451,7 +451,7 @@ def mpm_fit(data, var_to_fit, mpm_sel):
     var_to_fit : string
         Column name in ``data`` containing variable being fitted.
         e.g. pr_dc, i_mp, v_mp, v_oc ...
-        
+
     mpm_sel : char
         MPM version 'a' or 'b'
 
@@ -468,20 +468,20 @@ def mpm_fit(data, var_to_fit, mpm_sel):
 
     coeff_err : list
         Standard deviation of error in each model coefficient.
-         
-    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html   
-         
+
+    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
+
     infodict : dict
         a dictionary of optional outputs with keys
-        nfev - The number of function calls. 
+        nfev - The number of function calls.
         fvec - The function values evaluated at the solution.
         etc.
-    
+
     mesg : string
         A string message giving information about the solution.
-    
+
     ier : int
-        An integer flag. If it is equal to 1, 2, 3 or 4, the solution was found. 
+        An integer flag. If it is equal to 1, 2, 3 or 4, the solution was found.
         Otherwise, the solution was not found.
 
     """
@@ -543,9 +543,9 @@ def mpm_fit(data, var_to_fit, mpm_sel):
 
 
 def mpm_calc(dmeas, mpm_sel, c_1, c_2, c_3, c_4, c_5=0., c_6=0.,):
-    
+
     print("mpm_sel, c_1, c_2, c_3, c_4, = ", mpm_sel, c_1, c_2, c_3, c_4,)
-    
+
     """
     Predict norm LFM values from weather data (g,t,w) in ``dmeas``.
 
@@ -553,12 +553,12 @@ def mpm_calc(dmeas, mpm_sel, c_1, c_2, c_3, c_4, c_5=0., c_6=0.,):
                 const  temp_coeff     low_light   high_light wind  extra
                 |     |              |             |        |      |
         norm = c_1 +c_2*(t_mod-25) +c_3*log10(g) +c_4*g +c_5*ws +c_6/g
-        
+
     if mpm_sel == 'b':
                const  temp_coeff     low_light  improvement high_light   ws
                |     |               |               |           |       |
         norm =c_1 +c_2*(t_mod–25) +c_3*log10(g)*(t_k/t_stc_k) +c_4*g +c_5*ws
-    
+
 
     where :
         g = G_POA (W/m^2) / G_STC --> 'suns'
@@ -570,7 +570,7 @@ def mpm_calc(dmeas, mpm_sel, c_1, c_2, c_3, c_4, c_5=0., c_6=0.,):
     dmeas : DataFrame
         Measured weather and module electrical values per time or measurement.
         Contains 'poa_global', 'temp_module' and optional 'wind_speed'.
-    
+
     mpm_sel :
         mpm_sel : char
         MPM version 'a' or 'b'
@@ -601,10 +601,10 @@ def mpm_calc(dmeas, mpm_sel, c_1, c_2, c_3, c_4, c_5=0., c_6=0.,):
        36th EU PVSEC, Marseille, France. September 2019
 
     """
-    
+
     # print ('mpm_sel = ', mpm_sel)
 
-    
+
     if mpm_sel == 'a':
         mpm_out = (
             c_1
@@ -751,7 +751,7 @@ def mpm_a_fit(data, var_to_fit):
 
     """
     # full_outputboolean, optional
-    If True, this function returns additioal information: 
+    If True, this function returns additioal information:
         infodict, mesg, and ier.
     """
 

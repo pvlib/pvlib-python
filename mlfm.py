@@ -7,7 +7,7 @@ from scipy import optimize
 # import pvlib
 
 """
-ver : 221213t17 <-- delete when finalised 
+ver : 221213t22 <-- delete when finalised 
 
 ``mlfm.py`` module contains functions to analyse, fit, predict and display
 performance of PV modules using the mechanistic performance model (MPM) and

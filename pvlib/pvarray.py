@@ -74,7 +74,7 @@ def pvefficiency_adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
 
     See also
     --------
-    pvlib.pvefficiency.fit_pvefficiency_adr
+    pvlib.pvarray.fit_pvefficiency_adr
 
     References
     ----------
@@ -153,7 +153,7 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
         return the result as a numpy array.
 
     kwargs :
-        Optional keyword arguments passed to `scip.optimize.curve_fit`.
+        Optional keyword arguments passed to `scipy.optimize.curve_fit`.
         These kwargs can over-ride some options set within this function,
         which could be interesting for very advanced users.
 
@@ -171,7 +171,7 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
 
     See also
     --------
-    pvlib.pvefficiency.pvefficiency_adr
+    pvlib.pvarray.pvefficiency_adr
     scipy.optimize.curve_fit
 
     Adapted from https://github.com/adriesse/pvpltools-python

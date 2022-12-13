@@ -11,7 +11,7 @@ a matrix of efficiency values, then determine the ADR model
 parameters to reproduce the behavior of the PVsyst model.
 This way both PVsyst and ADR models can simulate the same PV module type.
 
-To compare simulation speed, we run them using ```timeit```.
+To compare simulation speed, we run them using ``timeit``.
 
 Author: Anton Driesse
 """
@@ -122,7 +122,7 @@ elapsed_pvs = timeit('run_pvsyst()', number=1, globals=globals())
 
 print('Elapsed time for the PVsyst model: %9.6f s' % elapsed_pvs)
 print('Elapsed time for the ADR    model: %9.6f s' % elapsed_adr)
-print('ADR accelleration ratio:           %9.0f x' % (elapsed_pvs/elapsed_adr))
+print('ADR acceleration ratio:           %9.0f x' % (elapsed_pvs/elapsed_adr))
 
 # %%
 #

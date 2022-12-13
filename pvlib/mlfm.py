@@ -167,7 +167,7 @@ ref : dict
     Parameters                                                      [units]
     ----------
     Index
-    * ``module_id`` - unique identifier to match data in dmeas      [alpha num]
+    * ``module_id`` - unique identifier to match data in dmeas     [alpha num]
 
     * ``p_mp``      - Max Power at Standard Test Condition (STC).   [W]
     * ``i_sc``      - Current at short circuit at STC.              [A]
@@ -192,13 +192,13 @@ ref : dict
                           voltage at STC.                           [1/C]
 
     [optional ID related]
-    * ``source``        - Data Source                               [alpha num]
-    * ``site``          - Sitename                                  [alpha num]
-    * ``manufacturer``  - Module manufacturer                       [alpha num]
-    * ``technology``    - Module technology e.g. cSi, HIT, CdTe     [alpha num]
-    * ``module_type``   - Type ID e.g. ABC-123                      [alpha num]
-    * ``module_serial`` - Serial number                             [alpha num]
-    * ``comments``      - General comments                          [alpha num]
+    * ``source``        - Data Source                              [alpha num]
+    * ``site``          - Sitename                                 [alpha num]
+    * ``manufacturer``  - Module manufacturer                      [alpha num]
+    * ``technology``    - Module technology e.g. cSi, HIT, CdTe    [alpha num]
+    * ``module_type``   - Type ID e.g. ABC-123                     [alpha num]
+    * ``module_serial`` - Serial number                            [alpha num]
+    * ``comments``      - General comments                         [alpha num]
 
 
 dnorm : DataFrame
@@ -360,9 +360,9 @@ def meas_to_norm(dmeas, ref):
     References
     ----------
     .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
-       'Quantifying Long Term PV Performance and Degradation under Real Outdoor
-       and IEC 61853 Test Conditions Using High Quality Module IV Measurements'
-       36th EU PVSEC, Marseille, France. September 2019.
+       'Quantifying Long Term PV Performance and Degradation under Real
+       Outdoor and IEC 61853 Test Conditions Using High Quality Module
+       IV Measurements' 36th EU PVSEC, Marseille, France. September 2019.
 
     """
     dnorm = pd.DataFrame()
@@ -421,215 +421,7 @@ def meas_to_norm(dmeas, ref):
 
     return dnorm
 
-'''
-def mpm_fit(data, var_to_fit, mpm_sel):
 
-    print ("var_to_fit, mpm_sel = ", var_to_fit, mpm_sel)
-    """
-    Fit mpm to normalised measured data 'var_to_fit' using mpm_sel model.
-
-   mpm_sel == a :
-            const  temp_coeff     low_light   high_light wind  extra
-             |     |              |             |        |      |
-    fit = = c_1 +c_2*(t_mod-25) +c_3*log10(g) +c_4*g +c_5*ws +c_6/g
-
-   mpm_sel == b:
-        const  temp_coeff     low_light  improvement high_light     ws
-          |     |               |               |           |       |
-    fit =c_1 +c_2*(t_mod–25) +c_3*log10(g)*(t_k/t_stc_k) +c_4*g +c_5*ws
-
-    where :
-        g = G_POA (W/m^2) / G_STC --> 'suns'
-        t_mod = module temperature (C)
-        ws = windspeed (ms^-1)
-
-    Parameters
-    ----------
-    data : DataFrame (see norm)
-        Normalised multiplicative loss values (values approx 1).
-
-    var_to_fit : string
-        Column name in ``data`` containing variable being fitted.
-        e.g. pr_dc, i_mp, v_mp, v_oc ...
-
-    mpm_sel : char
-        MPM version 'a' or 'b'
-
-    Returns
-    -------
-    pred : Series
-        Values predicted by the fitted model.
-
-    coeff : list
-        Model coefficients ``c_1`` to ``c_6``.
-
-    resid : Series
-        Residuals of the fitted model.
-
-    coeff_err : list
-        Standard deviation of error in each model coefficient.
-
-    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
-
-    infodict : dict
-        a dictionary of optional outputs with keys
-        nfev - The number of function calls.
-        fvec - The function values evaluated at the solution.
-        etc.
-
-    mesg : string
-        A string message giving information about the solution.
-
-    ier : int
-        An integer flag. If it is equal to 1, 2, 3 or 4, the solution was found.
-        Otherwise, the solution was not found.
-
-    """
-    # drop any missing data
-    data = data.dropna()
-
-    c5_zero = 'wind_speed' not in data.columns
-    # if wind_speed is not present, add it and force it to 0
-    if c5_zero:
-        data['wind_speed'] = 0.
-
-    # define function name
-    func = mpm_calc # (data, mpm_sel, *coeff)
-
-
-    if mpm_sel == 'a':
-        # setup initial values and initial boundary conditions
-        # init  c1   c2    c3    c4    c5   c6<0
-
-        p_0 = (1.0, 0.01, 0.01, 0.01, 0.01, -0.01)
-        # boundaries
-        bounds = ([-2,  -2,  -2,  -2,  -2,   -2],
-                  [+2,  +2,  +2,  +2,  +2,    0])
-
-    else : # if mpm_sel == 'b':
-        # setup initial values and initial boundary conditions
-        # init  c1   c2    c3    c4    c5
-
-        p_0 = (1.0, 0.01, 0.01, 0.01, 0.01)
-        # boundaries
-        bounds = ([-2,  -2,  -2,  -2,  -2],
-                  [+2,  +2,  +2,  +2,  +2])
-
-    coeff, pcov, infodict, mesg, ier = optimize.curve_fit(
-        f=func,                  # fit function
-        xdata=data,              # input data
-        ydata=data[var_to_fit],  # fit parameter
-        p0=p_0,                  # initial
-        bounds=bounds,           # boundaries
-        full_output=True
-    )
-
-    # if data had no wind_speed measurements then c_5 coefficient is
-    # meaningless but a non-zero value may have been returned.
-    if c5_zero:
-        coeff[4] = 0.
-
-    # get error of mpm coefficients as sqrt of covariance
-    perr = np.sqrt(np.diag(pcov))
-    coeff_err = list(perr)
-
-    # save fit and error to dataframe
-    pred = mpm_calc(data, mpm_sel, *coeff)
-
-    resid = pred - data[var_to_fit]
-
-    return pred, coeff, resid, coeff_err, infodict, mesg, ier
-
-
-
-def mpm_calc(dmeas, mpm_sel, c_1, c_2, c_3, c_4, c_5=0., c_6=0.,):
-
-    print("mpm_sel, c_1, c_2, c_3, c_4, = ", mpm_sel, c_1, c_2, c_3, c_4,)
-
-    """
-    Predict norm LFM values from weather data (g,t,w) in ``dmeas``.
-
-    if mpm_sel == 'a':
-                const  temp_coeff     low_light   high_light wind  extra
-                |     |              |             |        |      |
-        norm = c_1 +c_2*(t_mod-25) +c_3*log10(g) +c_4*g +c_5*ws +c_6/g
-
-    if mpm_sel == 'b':
-               const  temp_coeff     low_light  improvement high_light   ws
-               |     |               |               |           |       |
-        norm =c_1 +c_2*(t_mod–25) +c_3*log10(g)*(t_k/t_stc_k) +c_4*g +c_5*ws
-
-
-    where :
-        g = G_POA (W/m^2) / G_STC --> 'suns'
-        t_mod = module temperature (C)
-        ws = windspeed (ms^-1)
-
-    Parameters                                                          [units]
-    ----------
-    dmeas : DataFrame
-        Measured weather and module electrical values per time or measurement.
-        Contains 'poa_global', 'temp_module' and optional 'wind_speed'.
-
-    mpm_sel :
-        mpm_sel : char
-        MPM version 'a' or 'b'
-
-    c_1 : float
-        Constant term in model.                                            [%]
-    c_2 : float
-        Temperature coefficient in model.                                [1/C]
-    c_3 : float
-        Coefficient for low light log irradiance drop.                  [suns]
-    c_4 : float
-        Coefficient for high light linear irradiance drop.            [1/suns]
-    c_5 : float, default 0
-        Coefficient for wind speed dependence optional.              [1/(m/s)]
-    c_6 : float, default 0                                              [suns]
-        Coefficient for dependence on inverse irradiance.
-
-    Returns
-    -------
-    mpm_out : Series
-        Predicted values of mpm coefficient.
-
-    References
-    ----------
-    .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
-       "Quantifying Long Term PV Performance and Degradation under Real Outdoor
-       and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
-       36th EU PVSEC, Marseille, France. September 2019
-
-    """
-
-    # print ('mpm_sel = ', mpm_sel)
-
-
-    if mpm_sel == 'a':
-        mpm_out = (
-            c_1
-            + c_2 * (dmeas['temp_module'] - T_STC)
-            + c_3 * np.log10(dmeas['poa_global'] / G_STC)
-            + c_4 * (dmeas['poa_global'] / G_STC)
-            + c_6 / (dmeas['poa_global'] / G_STC)
-        )
-
-        if 'wind_speed' in dmeas.columns:
-            mpm_out += c_5 * dmeas['wind_speed']
-
-    else : # if mpm_sel == 1:
-        mpm_out = (
-            c_1
-            + c_2 * (dmeas['temp_module'] - T_STC)
-            + c_3 * ((np.log10(dmeas['poa_global'] / G_STC)
-                      * (dmeas['temp_module'] + T0C_K) / T25C_K))
-            + c_4 * (dmeas['poa_global'] / G_STC)
-        )
-
-    return mpm_out
-
-
-'''
 def mpm_a_calc(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     """
     Predict norm LFM values from weather data (g,t,w) in ``dmeas``.
@@ -643,7 +435,7 @@ def mpm_a_calc(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
         t_mod = module temperature (C)
         ws = windspeed (ms^-1)
 
-    Parameters                                                          [units]
+    Parameters                                                         [units]
     ----------
     dmeas : DataFrame
         Measured weather and module electrical values per time or measurement.
@@ -670,8 +462,9 @@ def mpm_a_calc(dmeas, c_1, c_2, c_3, c_4, c_5=0., c_6=0.):
     References
     ----------
     .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
-       "Quantifying Long Term PV Performance and Degradation under Real Outdoor
-       and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
+       "Quantifying Long Term PV Performance and Degradation under Real
+       Outdoor        and IEC 61853 Test Conditions Using High Quality
+       Module IV Measurements"
        36th EU PVSEC, Marseille, France. September 2019
 
     """
@@ -872,7 +665,7 @@ def mpm_b_calc(dmeas, c_1, c_2, c_3, c_4, c_5=0.):
         t_mod = module temperature (C)
         ws = windspeed (ms^-1)
 
-    Parameters                                                          [units]
+    Parameters                                                         [units]
     ----------
     dmeas : DataFrame
         Measured weather and module electrical values per time or measurement.
@@ -897,8 +690,9 @@ def mpm_b_calc(dmeas, c_1, c_2, c_3, c_4, c_5=0.):
     References
     ----------
     .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
-       "Quantifying Long Term PV Performance and Degradation under Real Outdoor
-       and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
+       "Quantifying Long Term PV Performance and Degradation under Real
+       Outdoor and IEC 61853 Test Conditions Using High Quality Module 
+       IV Measurements"
        36th EU PVSEC, Marseille, France. September 2019
 
     """
@@ -1286,9 +1080,9 @@ def meas_to_stack_lin(dmeas, ref, qty_lfm_vars, gap=0.01):
     References
     ----------
     .. [1] Steve Ransome (SRCL) and Juergen Sutterlueti (Gantner Instruments)
-       "Quantifying Long Term PV Performance and Degradation under Real Outdoor
-       and IEC 61853 Test Conditions Using High Quality Module IV Measurements"
-       36th EU PVSEC, Marseille, France. September 2019
+       "Quantifying Long Term PV Performance and Degradation under Real 
+       Outdoor and IEC 61853 Test Conditions Using High Quality Module 
+       IV Measurements" 36th EU PVSEC, Marseille, France. September 2019
     """
     # create an empty DataFrame to put stack results
     dstack = pd.DataFrame()

@@ -46,8 +46,8 @@ TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
                  'pytest-remotedata']
 EXTRAS_REQUIRE = {
-    'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
-                 'pvfactors', 'siphon', 'statsmodels',
+    'optional': ['cython', 'ephem', 'matplotlib', 'netcdf4', 'nrel-pysam',
+                 'numba', 'pvfactors', 'siphon', 'statsmodels',
                  'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 4.5.0',
             'pydata-sphinx-theme == 0.8.1', 'sphinx-gallery',

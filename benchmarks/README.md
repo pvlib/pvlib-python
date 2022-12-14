@@ -7,7 +7,7 @@ tests are run using
 
 The basic structure of the tests and how to run them is described below.
 We refer readers to the ASV documentation for more details. The AstroPy
-[documentation](https://github.com/astropy/astropy-benchmarks/tree/main)
+[documentation](https://github.com/astropy/astropy-benchmarks/tree/master)
 may also be helpful.
 
 The test configuration is described in [asv.conf.json](asv.conf.json).
@@ -23,7 +23,7 @@ For example, if your feature branch is named ``feature``, a useful asv
 run may be (from the same directory as `asv.conf.json`):
 
 ```
-$ asv run main..feature
+$ asv run master..feature
 ```
 
 This will generate timings for every commit between the two specified
@@ -87,7 +87,7 @@ $ asv preview
 Nightly benchmarking
 --------------------
 
-The benchmarks are run nightly for new commits to pvlib-python/main.
+The benchmarks are run nightly for new commits to pvlib-python/master.
 
 - Timing results: https://pvlib-benchmarker.github.io/pvlib-benchmarks/
 - Information on the process: https://github.com/pvlib-benchmarker/pvlib-benchmarks

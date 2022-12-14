@@ -42,7 +42,6 @@ PV temperature models
    temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
-   temperature.faiman_rad
    temperature.fuentes
    temperature.ross
    temperature.noct_sam
@@ -186,6 +185,31 @@ Utilities for working with IV curve data
    :toctree: generated/
 
     ivtools.utils.rectify_iv_curve
+
+Loss Factors model
+^^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+    mlfm.mlfm_6
+    mlfm.mlfm_meas_to_norm
+    mlfm.mlfm_norm_to stack
+
+Functions for fitting the Loss Factors model
+
+.. autosummary::
+   :toctree: generated/
+
+    mlfm.mlfm_fit
+
+Utilities for plotting
+
+.. autosummary::
+   :toctree: generated/
+
+    mlfm.plot_mlfm_scatter
+    mlfm.plot_mlfm_stack
 
 Other
 -----

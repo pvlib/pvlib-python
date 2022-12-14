@@ -431,7 +431,7 @@ def make_github_url(file_name):
     "/docs/sphinx/source/api.rst" or "generated/pvlib.atmosphere.alt2pres.rst"
     """
 
-    URL_BASE = "https://github.com/pvlib/pvlib-python/blob/main/"
+    URL_BASE = "https://github.com/pvlib/pvlib-python/blob/master/"
 
     # is it a gallery page?
     if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):

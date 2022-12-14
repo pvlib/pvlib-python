@@ -660,7 +660,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
     Calculate cell or module temperature using the Fuentes model.
 
     The Fuentes model is a first-principles heat transfer energy balance
-    model [1]_ that is used in PVWatts for cell temperature modeling [2]_.
+    model [1]_ that is used in PVWatts v5 for cell temperature modeling [2]_.
 
     Parameters
     ----------
@@ -675,17 +675,17 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
 
     noct_installed : float
         The "installed" nominal operating cell temperature as defined in [1]_.
-        PVWatts assumes this value to be 45 C for rack-mounted arrays and
+        PVWatts v5 assumes this value to be 45 C for rack-mounted arrays and
         49 C for roof mount systems with restricted air flow around the
         module.  [C]
 
     module_height : float, default 5.0
-        The height above ground of the center of the module. The PVWatts
+        The height above ground of the center of the module. The PVWatts v5
         default is 5.0 [m]
 
     wind_height : float, default 9.144
         The height above ground at which ``wind_speed`` is measured. The
-        PVWatts defauls is 9.144 [m]
+        PVWatts v5 default is 9.144 [m]
 
     emissivity : float, default 0.84
         The effectiveness of the module at radiating thermal energy. [unitless]
@@ -715,7 +715,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
 
     Notes
     -----
-    This function returns slightly different values from PVWatts at night
+    This function returns slightly different values from PVWatts v5 at night
     and just after dawn. This is because the SAM SSC assumes that module
     temperature equals ambient temperature when irradiance is zero so it can
     skip the heat balance calculation at night.

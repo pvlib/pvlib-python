@@ -1,5 +1,5 @@
 # A secondary test job that only runs the iotools tests if explicitly requested
-# (for pull requests) or on a push to the master branch.
+# (for pull requests) or on a push to the main branch.
 # Because the iotools tests require GitHub secrets, we need to be careful about 
 # malicious PRs accessing the secrets and exposing them externally.
 #
@@ -48,7 +48,7 @@ on:
     types: [labeled]
   push:
     branches:
-    - master
+    - main
 
 jobs:
   test:
@@ -68,7 +68,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         if: github.event_name == 'pull_request_target'
-        # pull_request_target runs in the context of the target branch (pvlib/master),
+        # pull_request_target runs in the context of the target branch (pvlib/main),
         # but what we need is the hypothetical merge commit from the PR:
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"

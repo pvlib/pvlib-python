@@ -17,7 +17,7 @@
 <tr>
   <td>License</td>
   <td>
-    <a href="https://github.com/pvlib/pvlib-python/blob/master/LICENSE">
+    <a href="https://github.com/pvlib/pvlib-python/blob/main/LICENSE">
     <img src="https://img.shields.io/pypi/l/pvlib.svg" alt="license" />
     </a>
 </td>
@@ -28,11 +28,11 @@
     <a href="http://pvlib-python.readthedocs.org/en/stable/">
     <img src="https://readthedocs.org/projects/pvlib-python/badge/?version=stable" alt="documentation build status" />
     </a>
-    <a href="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml?query=branch%3Amaster">
-      <img src="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml/badge.svg?branch=master" alt="GitHub Actions Testing Status" />
+    <a href="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml?query=branch%3Amain">
+      <img src="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml/badge.svg?branch=main" alt="GitHub Actions Testing Status" />
     </a>
     <a href="https://codecov.io/gh/pvlib/pvlib-python">
-    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg" alt="codecov coverage" />
+    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/main/graph/badge.svg" alt="codecov coverage" />
     </a>
   </td>
 </tr>

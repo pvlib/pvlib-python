@@ -4,10 +4,11 @@ import pandas as pd
 from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
-from .conftest import DATA_DIR
+from .conftest import DATA_DIR, fail_on_pvlib_version
 import pytest
 
 from pvlib import inverter
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 def test_adr(adr_inverter_parameters):
@@ -134,60 +135,79 @@ def test_sandia_multi_array(cec_inverter_parameters):
     assert_allclose(pacs, np.array([-0.020000, 132.004278, 250.000000]))
 
 
-def test_pvwatts_scalars():
+def test_pvwattsv5_scalars():
     expected = 85.58556604752516
-    out = inverter.pvwatts(90, 100, 0.95)
+    out = inverter.pvwattsv5(90, 100, 0.95)
     assert_allclose(out, expected)
     # GH 675
     expected = 0.
-    out = inverter.pvwatts(0., 100)
+    out = inverter.pvwattsv5(0., 100)
     assert_allclose(out, expected)
 
 
-def test_pvwatts_possible_negative():
-    # pvwatts could return a negative value for (pdc / pdc0) < 0.006
+@fail_on_pvlib_version('0.11.0')
+def test_pvwatts_deprecated():
+    expected = 85.58556604752516
+    with pytest.warns(pvlibDeprecationWarning, match='Use pvwattsv5 instead'):
+        out = inverter.pvwatts(90, 100, 0.95)
+    assert_allclose(out, expected)
+
+
+def test_pvwattsv5_possible_negative():
+    # pvwattsv5 could return a negative value for (pdc / pdc0) < 0.006
     # unless it is clipped. see GH 541 for more
     expected = 0
-    out = inverter.pvwatts(0.001, 1)
+    out = inverter.pvwattsv5(0.001, 1)
     assert_allclose(out, expected)
 
 
-def test_pvwatts_arrays():
+def test_pvwattsv5_arrays():
     pdc = np.array([[np.nan], [0], [50], [100]])
     pdc0 = 100
     expected = np.array([[np.nan],
                          [0.],
                          [47.60843624],
                          [95.]])
-    out = inverter.pvwatts(pdc, pdc0, 0.95)
+    out = inverter.pvwattsv5(pdc, pdc0, 0.95)
     assert_allclose(out, expected, equal_nan=True)
 
 
-def test_pvwatts_series():
+def test_pvwattsv5_series():
     pdc = pd.Series([np.nan, 0, 50, 100])
     pdc0 = 100
     expected = pd.Series(np.array([np.nan, 0., 47.608436, 95.]))
-    out = inverter.pvwatts(pdc, pdc0, 0.95)
+    out = inverter.pvwattsv5(pdc, pdc0, 0.95)
     assert_series_equal(expected, out)
 
 
-def test_pvwatts_multi():
+def test_pvwattsv5_multi():
     pdc = np.array([np.nan, 0, 50, 100]) / 2
     pdc0 = 100
     expected = np.array([np.nan, 0., 47.608436, 95.])
-    out = inverter.pvwatts_multi((pdc, pdc), pdc0, 0.95)
+    out = inverter.pvwattsv5_multi((pdc, pdc), pdc0, 0.95)
     assert_allclose(expected, out)
     # with 2D array
     pdc_2d = np.array([pdc, pdc])
-    out = inverter.pvwatts_multi(pdc_2d, pdc0, 0.95)
+    out = inverter.pvwattsv5_multi(pdc_2d, pdc0, 0.95)
     assert_allclose(expected, out)
     # with Series
     pdc = pd.Series(pdc)
-    out = inverter.pvwatts_multi((pdc, pdc), pdc0, 0.95)
+    out = inverter.pvwattsv5_multi((pdc, pdc), pdc0, 0.95)
     assert_series_equal(pd.Series(expected), out)
     # with list instead of tuple
-    out = inverter.pvwatts_multi([pdc, pdc], pdc0, 0.95)
+    out = inverter.pvwattsv5_multi([pdc, pdc], pdc0, 0.95)
     assert_series_equal(pd.Series(expected), out)
+
+
+@fail_on_pvlib_version('0.11.0')
+def test_pvwatts_multi_deprecated():
+    pdc = np.array([np.nan, 0, 50, 100]) / 2
+    pdc0 = 100
+    expected = np.array([np.nan, 0., 47.608436, 95.])
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use pvwattsv5_multi instead'):
+        out = inverter.pvwatts_multi((pdc, pdc), pdc0, 0.95)
+    assert_allclose(expected, out)
 
 
 INVERTER_TEST_MEAS = DATA_DIR / 'inverter_fit_snl_meas.csv'

@@ -1521,24 +1521,64 @@ def test_PVSystem_get_ac_sandia_multi(cec_inverter_parameters, mocker):
 
 
 def test_PVSystem_get_ac_pvwatts(pvwatts_system_defaults, mocker):
-    mocker.spy(inverter, 'pvwatts')
+    mocker.spy(inverter, 'pvwattsv5')
     pdc = 50
-    out = pvwatts_system_defaults.get_ac('pvwatts', pdc)
-    inverter.pvwatts.assert_called_once_with(
+    out = pvwatts_system_defaults.get_ac('pvwattsv5', pdc)
+    inverter.pvwattsv5.assert_called_once_with(
         pdc, **pvwatts_system_defaults.inverter_parameters)
     assert out < pdc
 
 
 def test_PVSystem_get_ac_pvwatts_kwargs(pvwatts_system_kwargs, mocker):
-    mocker.spy(inverter, 'pvwatts')
+    mocker.spy(inverter, 'pvwattsv5')
     pdc = 50
-    out = pvwatts_system_kwargs.get_ac('pvwatts', pdc)
-    inverter.pvwatts.assert_called_once_with(
+    out = pvwatts_system_kwargs.get_ac('pvwattsv5', pdc)
+    inverter.pvwattsv5.assert_called_once_with(
         pdc, **pvwatts_system_kwargs.inverter_parameters)
     assert out < pdc
 
 
+@fail_on_pvlib_version('0.11')
+def test_PVSystem_get_ac_pvwatts_deprecated(pvwatts_system_defaults, mocker):
+    mocker.spy(inverter, 'pvwattsv5')
+    pdc = 50
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="model='pvwatts' is now called model='pvwattsv5'"):
+        out = pvwatts_system_defaults.get_ac('pvwatts', pdc)
+    inverter.pvwattsv5.assert_called_once_with(
+        pdc, **pvwatts_system_defaults.inverter_parameters)
+    assert out < pdc
+
+
 def test_PVSystem_get_ac_pvwatts_multi(
+        pvwatts_system_defaults, pvwatts_system_kwargs, mocker):
+    mocker.spy(inverter, 'pvwattsv5_multi')
+    expected = [pd.Series([0.0, 48.123524, 86.400000]),
+                pd.Series([0.0, 45.893550, 85.500000])]
+    systems = [pvwatts_system_defaults, pvwatts_system_kwargs]
+    for base_sys, exp in zip(systems, expected):
+        system = pvsystem.PVSystem(
+            arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180)),
+                    pvsystem.Array(pvsystem.FixedMount(0, 180),)],
+            inverter_parameters=base_sys.inverter_parameters,
+        )
+        pdcs = pd.Series([0., 25., 50.])
+        pacs = system.get_ac('pvwattsv5', (pdcs, pdcs))
+        assert_series_equal(pacs, exp)
+    assert inverter.pvwattsv5_multi.call_count == 2
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.get_ac('pvwattsv5', (pdcs,))
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.get_ac('pvwattsv5', pdcs)
+    with pytest.raises(ValueError,
+                       match="Length mismatch for per-array parameter"):
+        system.get_ac('pvwattsv5', (pdcs, pdcs, pdcs))
+
+
+@fail_on_pvlib_version('0.11')
+def test_PVSystem_get_ac_pvwatts_multi_deprecated(
         pvwatts_system_defaults, pvwatts_system_kwargs, mocker):
     mocker.spy(inverter, 'pvwatts_multi')
     expected = [pd.Series([0.0, 48.123524, 86.400000]),
@@ -1551,21 +1591,14 @@ def test_PVSystem_get_ac_pvwatts_multi(
             inverter_parameters=base_sys.inverter_parameters,
         )
         pdcs = pd.Series([0., 25., 50.])
-        pacs = system.get_ac('pvwatts', (pdcs, pdcs))
+        match = "model='pvwatts' is now called model='pvwattsv5'"
+        with pytest.warns(pvlibDeprecationWarning, match=match):
+            pacs = system.get_ac('pvwatts', (pdcs, pdcs))
         assert_series_equal(pacs, exp)
-    assert inverter.pvwatts_multi.call_count == 2
-    with pytest.raises(ValueError,
-                       match="Length mismatch for per-array parameter"):
-        system.get_ac('pvwatts', (pdcs,))
-    with pytest.raises(ValueError,
-                       match="Length mismatch for per-array parameter"):
-        system.get_ac('pvwatts', pdcs)
-    with pytest.raises(ValueError,
-                       match="Length mismatch for per-array parameter"):
-        system.get_ac('pvwatts', (pdcs, pdcs, pdcs))
+    assert inverter.pvwatts_multi.call_count == 0
 
 
-@pytest.mark.parametrize('model', ['sandia', 'adr', 'pvwatts'])
+@pytest.mark.parametrize('model', ['sandia', 'adr', 'pvwattsv5'])
 def test_PVSystem_get_ac_single_array_tuple_input(
         model,
         pvwatts_system_defaults,
@@ -1573,16 +1606,16 @@ def test_PVSystem_get_ac_single_array_tuple_input(
         adr_inverter_parameters):
     vdcs = {
         'sandia': pd.Series(np.linspace(0, 50, 3)),
-        'pvwatts': None,
+        'pvwattsv5': None,
         'adr': pd.Series([135, 154, 390, 420, 551])
     }
     pdcs = {'adr': pd.Series([135, 1232, 1170, 420, 551]),
             'sandia': pd.Series(np.linspace(0, 11, 3)) * vdcs['sandia'],
-            'pvwatts': 50}
+            'pvwattsv5': 50}
     inverter_parameters = {
         'sandia': cec_inverter_parameters,
         'adr': adr_inverter_parameters,
-        'pvwatts': pvwatts_system_defaults.inverter_parameters
+        'pvwattsv5': pvwatts_system_defaults.inverter_parameters
     }
     expected = {
         'adr': pd.Series([np.nan, 1161.5745, 1116.4459, 382.6679, np.nan]),
@@ -1593,8 +1626,8 @@ def test_PVSystem_get_ac_single_array_tuple_input(
         inverter_parameters=inverter_parameters[model]
     )
     ac = system.get_ac(p_dc=(pdcs[model],), v_dc=(vdcs[model],), model=model)
-    if model == 'pvwatts':
-        assert ac < pdcs['pvwatts']
+    if model == 'pvwattsv5':
+        assert ac < pdcs['pvwattsv5']
     else:
         assert_series_equal(ac, expected[model])
 
@@ -1981,49 +2014,69 @@ def test_Array___repr__():
     assert array.__repr__() == expected
 
 
-def test_pvwatts_dc_scalars():
+def test_pvwattsv5_dc_scalars():
     expected = 88.65
-    out = pvsystem.pvwatts_dc(900, 30, 100, -0.003)
+    out = pvsystem.pvwattsv5_dc(900, 30, 100, -0.003)
     assert_allclose(out, expected)
 
 
-def test_pvwatts_dc_arrays():
+def test_pvwattsv5_dc_arrays():
     irrad_trans = np.array([np.nan, 900, 900])
     temp_cell = np.array([30, np.nan, 30])
     irrad_trans, temp_cell = np.meshgrid(irrad_trans, temp_cell)
     expected = np.array([[nan,  88.65,  88.65],
                          [nan,    nan,    nan],
                          [nan,  88.65,  88.65]])
-    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
+    out = pvsystem.pvwattsv5_dc(irrad_trans, temp_cell, 100, -0.003)
     assert_allclose(out, expected, equal_nan=True)
 
 
-def test_pvwatts_dc_series():
+def test_pvwattsv5_dc_series():
     irrad_trans = pd.Series([np.nan, 900, 900])
     temp_cell = pd.Series([30, np.nan, 30])
     expected = pd.Series(np.array([   nan,    nan,  88.65]))
-    out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
+    out = pvsystem.pvwattsv5_dc(irrad_trans, temp_cell, 100, -0.003)
     assert_series_equal(expected, out)
 
 
-def test_pvwatts_losses_default():
+@fail_on_pvlib_version('0.11.0')
+def test_pvwatts_dc_deprecated():
+    irrad_trans = pd.Series([np.nan, 900, 900])
+    temp_cell = pd.Series([30, np.nan, 30])
+    expected = pd.Series(np.array([   nan,    nan,  88.65]))
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use pvwattsv5_dc instead'):
+        out = pvsystem.pvwatts_dc(irrad_trans, temp_cell, 100, -0.003)
+    assert_series_equal(expected, out)
+
+
+def test_pvwattsv5_losses_default():
     expected = 14.075660688264469
-    out = pvsystem.pvwatts_losses()
+    out = pvsystem.pvwattsv5_losses()
     assert_allclose(out, expected)
 
 
-def test_pvwatts_losses_arrays():
+def test_pvwattsv5_losses_arrays():
     expected = np.array([nan, 14.934904])
     age = np.array([nan, 1])
-    out = pvsystem.pvwatts_losses(age=age)
+    out = pvsystem.pvwattsv5_losses(age=age)
     assert_allclose(out, expected)
 
 
-def test_pvwatts_losses_series():
+def test_pvwattsv5_losses_series():
     expected = pd.Series([nan, 14.934904])
     age = pd.Series([nan, 1])
-    out = pvsystem.pvwatts_losses(age=age)
+    out = pvsystem.pvwattsv5_losses(age=age)
     assert_series_equal(expected, out)
+
+
+@fail_on_pvlib_version('0.11.0')
+def test_pvwatts_losses_deprecated():
+    expected = 14.075660688264469
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use pvwattsv5_losses instead'):
+        out = pvsystem.pvwatts_losses()
+    assert_allclose(out, expected)
 
 
 @pytest.fixture
@@ -2044,30 +2097,43 @@ def pvwatts_system_kwargs():
     return system
 
 
-def test_PVSystem_pvwatts_dc(pvwatts_system_defaults, mocker):
-    mocker.spy(pvsystem, 'pvwatts_dc')
+def test_PVSystem_pvwatts_dcv5(pvwatts_system_defaults, mocker):
+    mocker.spy(pvsystem, 'pvwattsv5_dc')
     irrad = 900
     temp_cell = 30
     expected = 90
-    out = pvwatts_system_defaults.pvwatts_dc(irrad, temp_cell)
-    pvsystem.pvwatts_dc.assert_called_once_with(
+    out = pvwatts_system_defaults.pvwattsv5_dc(irrad, temp_cell)
+    pvsystem.pvwattsv5_dc.assert_called_once_with(
         irrad, temp_cell,
         **pvwatts_system_defaults.arrays[0].module_parameters)
     assert_allclose(expected, out, atol=10)
 
 
-def test_PVSystem_pvwatts_dc_kwargs(pvwatts_system_kwargs, mocker):
+@fail_on_pvlib_version('0.11.0')
+def test_PVSystem_pvwatts_dc_deprecated(pvwatts_system_defaults, mocker):
     mocker.spy(pvsystem, 'pvwatts_dc')
     irrad = 900
     temp_cell = 30
     expected = 90
-    out = pvwatts_system_kwargs.pvwatts_dc(irrad, temp_cell)
-    pvsystem.pvwatts_dc.assert_called_once_with(
+    match = "Use PVSystem.pvwattsv5_dc instead"
+    with pytest.warns(pvlibDeprecationWarning, match=match):
+        out = pvwatts_system_defaults.pvwatts_dc(irrad, temp_cell)
+    assert_allclose(expected, out, atol=10)
+    assert pvsystem.pvwatts_dc.call_count == 0
+
+
+def test_PVSystem_pvwattsv5_dc_kwargs(pvwatts_system_kwargs, mocker):
+    mocker.spy(pvsystem, 'pvwattsv5_dc')
+    irrad = 900
+    temp_cell = 30
+    expected = 90
+    out = pvwatts_system_kwargs.pvwattsv5_dc(irrad, temp_cell)
+    pvsystem.pvwattsv5_dc.assert_called_once_with(
         irrad, temp_cell, **pvwatts_system_kwargs.arrays[0].module_parameters)
     assert_allclose(expected, out, atol=10)
 
 
-def test_PVSystem_multiple_array_pvwatts_dc():
+def test_PVSystem_multiple_array_pvwattsv5_dc():
     array_one_module_parameters = {
         'pdc0': 100, 'gamma_pdc': -0.003, 'temp_ref': 20
     }
@@ -2087,17 +2153,17 @@ def test_PVSystem_multiple_array_pvwatts_dc():
     irrad_two = 500
     temp_cell_one = 30
     temp_cell_two = 20
-    expected_one = pvsystem.pvwatts_dc(irrad_one, temp_cell_one,
-                                       **array_one_module_parameters)
-    expected_two = pvsystem.pvwatts_dc(irrad_two, temp_cell_two,
-                                       **array_two_module_parameters)
-    dc_one, dc_two = system.pvwatts_dc((irrad_one, irrad_two),
-                                       (temp_cell_one, temp_cell_two))
+    expected_one = pvsystem.pvwattsv5_dc(irrad_one, temp_cell_one,
+                                         **array_one_module_parameters)
+    expected_two = pvsystem.pvwattsv5_dc(irrad_two, temp_cell_two,
+                                         **array_two_module_parameters)
+    dc_one, dc_two = system.pvwattsv5_dc((irrad_one, irrad_two),
+                                         (temp_cell_one, temp_cell_two))
     assert dc_one == expected_one
     assert dc_two == expected_two
 
 
-def test_PVSystem_multiple_array_pvwatts_dc_value_error():
+def test_PVSystem_multiple_array_pvwattsv5_dc_value_error():
     system = pvsystem.PVSystem(
         arrays=[pvsystem.Array(pvsystem.FixedMount(0, 180)),
                 pvsystem.Array(pvsystem.FixedMount(0, 180)),
@@ -2105,54 +2171,67 @@ def test_PVSystem_multiple_array_pvwatts_dc_value_error():
     )
     error_message = 'Length mismatch for per-array parameter'
     with pytest.raises(ValueError, match=error_message):
-        system.pvwatts_dc(10, (1, 1, 1))
+        system.pvwattsv5_dc(10, (1, 1, 1))
     with pytest.raises(ValueError, match=error_message):
-        system.pvwatts_dc((10, 10), (1, 1, 1))
+        system.pvwattsv5_dc((10, 10), (1, 1, 1))
     with pytest.raises(ValueError, match=error_message):
-        system.pvwatts_dc((10, 10, 10, 10), (1, 1, 1))
+        system.pvwattsv5_dc((10, 10, 10, 10), (1, 1, 1))
     with pytest.raises(ValueError, match=error_message):
-        system.pvwatts_dc((1, 1, 1), 1)
+        system.pvwattsv5_dc((1, 1, 1), 1)
     with pytest.raises(ValueError, match=error_message):
-        system.pvwatts_dc((1, 1, 1), (1,))
+        system.pvwattsv5_dc((1, 1, 1), (1,))
     with pytest.raises(ValueError, match=error_message):
-        system.pvwatts_dc((1,), 1)
+        system.pvwattsv5_dc((1,), 1)
     with pytest.raises(ValueError, match=error_message):
-        system.pvwatts_dc((1, 1, 1, 1), (1, 1))
+        system.pvwattsv5_dc((1, 1, 1, 1), (1, 1))
     with pytest.raises(ValueError, match=error_message):
-        system.pvwatts_dc(2, 3)
+        system.pvwattsv5_dc(2, 3)
     with pytest.raises(ValueError, match=error_message):
         # ValueError is raised for non-tuple iterable with correct length
-        system.pvwatts_dc((1, 1, 1), pd.Series([1, 2, 3]))
+        system.pvwattsv5_dc((1, 1, 1), pd.Series([1, 2, 3]))
 
 
-def test_PVSystem_pvwatts_losses(pvwatts_system_defaults, mocker):
+def test_PVSystem_pvwattsv5_losses(pvwatts_system_defaults, mocker):
+    mocker.spy(pvsystem, 'pvwattsv5_losses')
+    age = 1
+    pvwatts_system_defaults.losses_parameters = dict(age=age)
+    expected = 15
+    out = pvwatts_system_defaults.pvwattsv5_losses()
+    pvsystem.pvwattsv5_losses.assert_called_once_with(age=age)
+    assert out < expected
+
+
+@fail_on_pvlib_version('0.11.0')
+def test_PVSystem_pvwatts_losses_deprecated(pvwatts_system_defaults, mocker):
     mocker.spy(pvsystem, 'pvwatts_losses')
     age = 1
     pvwatts_system_defaults.losses_parameters = dict(age=age)
     expected = 15
-    out = pvwatts_system_defaults.pvwatts_losses()
-    pvsystem.pvwatts_losses.assert_called_once_with(age=age)
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use PVSystem.pvwattsv5_losses instead'):
+        out = pvwatts_system_defaults.pvwatts_losses()
+    pvsystem.pvwatts_losses.call_count == 0
     assert out < expected
 
 
 @fail_on_pvlib_version('0.10')
 def test_PVSystem_pvwatts_ac(pvwatts_system_defaults, mocker):
-    mocker.spy(inverter, 'pvwatts')
+    mocker.spy(inverter, 'pvwattsv5')
     pdc = 50
     with pytest.warns(pvlibDeprecationWarning):
         out = pvwatts_system_defaults.pvwatts_ac(pdc)
-    inverter.pvwatts.assert_called_once_with(
+    inverter.pvwattsv5.assert_called_once_with(
         pdc, **pvwatts_system_defaults.inverter_parameters)
     assert out < pdc
 
 
 @fail_on_pvlib_version('0.10')
 def test_PVSystem_pvwatts_ac_kwargs(pvwatts_system_kwargs, mocker):
-    mocker.spy(inverter, 'pvwatts')
+    mocker.spy(inverter, 'pvwattsv5')
     pdc = 50
     with pytest.warns(pvlibDeprecationWarning):
         out = pvwatts_system_kwargs.pvwatts_ac(pdc)
-    inverter.pvwatts.assert_called_once_with(
+    inverter.pvwattsv5.assert_called_once_with(
         pdc, **pvwatts_system_kwargs.inverter_parameters)
     assert out < pdc
 

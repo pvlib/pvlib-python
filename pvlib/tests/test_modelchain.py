@@ -344,9 +344,15 @@ def test_with_sapm(sapm_dc_snl_ac_system, location, weather):
 
 def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
     mc = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location)
-    assert mc.dc_model == mc.pvwatts_dc
+    assert mc.dc_model == mc.pvwattsv5_dc
     assert mc.temperature_model == mc.sapm_temp
     mc.run_model(weather)
+
+
+def test_with_pvwatts_invalid_version(pvwatts_dc_pvwatts_ac_system, location):
+    with pytest.raises(ValueError, match='Invalid PVWatts version'):
+        _ = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location,
+                                    version='bad')
 
 
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
@@ -609,13 +615,13 @@ def test_prepare_inputs_missing_irrad_component(
         mc.prepare_inputs(weather)
 
 
-@pytest.mark.parametrize('ac_model', ['sandia', 'pvwatts'])
+@pytest.mark.parametrize('ac_model', ['sandia', 'pvwattsv5'])
 @pytest.mark.parametrize("input_type", [tuple, list])
 def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
                                   pvwatts_dc_pvwatts_ac_system_arrays,
                                   location, ac_model, input_type):
     system = {'sandia': sapm_dc_snl_ac_system_same_arrays,
-              'pvwatts': pvwatts_dc_pvwatts_ac_system_arrays}
+              'pvwattsv5': pvwatts_dc_pvwatts_ac_system_arrays}
     mc = ModelChain(system[ac_model], location, aoi_model='no_loss',
                     spectral_model='no_loss')
     times = pd.date_range('20200101 1200-0700', periods=2, freq='2H')
@@ -1245,7 +1251,7 @@ def poadc(mc):
 
 
 @pytest.mark.parametrize('dc_model', [
-    'sapm', 'cec', 'desoto', 'pvsyst', 'singlediode', 'pvwatts_dc'])
+    'sapm', 'cec', 'desoto', 'pvsyst', 'singlediode', 'pvwattsv5_dc'])
 def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
                         pvsyst_dc_snl_ac_system, pvwatts_dc_pvwatts_ac_system,
                         location, dc_model, weather, mocker):
@@ -1254,19 +1260,19 @@ def test_infer_dc_model(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
                   'desoto': cec_dc_snl_ac_system,
                   'pvsyst': pvsyst_dc_snl_ac_system,
                   'singlediode': cec_dc_snl_ac_system,
-                  'pvwatts_dc': pvwatts_dc_pvwatts_ac_system}
+                  'pvwattsv5_dc': pvwatts_dc_pvwatts_ac_system}
     dc_model_function = {'sapm': 'sapm',
                          'cec': 'calcparams_cec',
                          'desoto': 'calcparams_desoto',
                          'pvsyst': 'calcparams_pvsyst',
                          'singlediode': 'calcparams_desoto',
-                         'pvwatts_dc': 'pvwatts_dc'}
+                         'pvwattsv5_dc': 'pvwattsv5_dc'}
     temp_model_function = {'sapm': 'sapm',
                            'cec': 'sapm',
                            'desoto': 'sapm',
                            'pvsyst': 'pvsyst',
                            'singlediode': 'sapm',
-                           'pvwatts_dc': 'sapm'}
+                           'pvwattsv5_dc': 'sapm'}
     temp_model_params = {'sapm': {'a': -3.40641, 'b': -0.0842075, 'deltaT': 3},
                          'pvsyst': {'u_c': 29.0, 'u_v': 0}}
     system = dc_systems[dc_model]
@@ -1382,8 +1388,8 @@ def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
     assert not mc.results.ac.empty
 
 
-def test_pvwatts_dc_multiple_strings(pvwatts_dc_pvwatts_ac_system, location,
-                                     weather, mocker):
+def test_pvwattsv5_dc_multiple_strings(pvwatts_dc_pvwatts_ac_system, location,
+                                       weather, mocker):
     system = pvwatts_dc_pvwatts_ac_system
     m = mocker.spy(system, 'scale_voltage_current_power')
     mc1 = ModelChain(system, location,
@@ -1406,8 +1412,8 @@ def acdc(mc):
 
 
 @pytest.mark.parametrize('inverter_model', ['sandia', 'adr',
-                                            'pvwatts', 'sandia_multi',
-                                            'pvwatts_multi'])
+                                            'pvwattsv5', 'sandia_multi',
+                                            'pvwattsv5_multi'])
 def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
                    pvwatts_dc_pvwatts_ac_system, cec_dc_snl_ac_arrays,
                    pvwatts_dc_pvwatts_ac_system_arrays,
@@ -1415,14 +1421,14 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
     ac_systems = {'sandia': sapm_dc_snl_ac_system,
                   'sandia_multi': cec_dc_snl_ac_arrays,
                   'adr': cec_dc_adr_ac_system,
-                  'pvwatts': pvwatts_dc_pvwatts_ac_system,
-                  'pvwatts_multi': pvwatts_dc_pvwatts_ac_system_arrays}
+                  'pvwattsv5': pvwatts_dc_pvwatts_ac_system,
+                  'pvwattsv5_multi': pvwatts_dc_pvwatts_ac_system_arrays}
     inverter_to_ac_model = {
         'sandia': 'sandia',
         'sandia_multi': 'sandia',
         'adr': 'adr',
-        'pvwatts': 'pvwatts',
-        'pvwatts_multi': 'pvwatts'}
+        'pvwattsv5': 'pvwattsv5',
+        'pvwattsv5_multi': 'pvwattsv5'}
     ac_model = inverter_to_ac_model[inverter_model]
     system = ac_systems[inverter_model]
 
@@ -1671,14 +1677,14 @@ def test_dc_ohmic_not_a_model(cec_dc_snl_ac_system, location,
                    dc_ohmic_model='not_a_dc_model')
 
 
-def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
-                               mocker):
+def test_losses_models_pvwattsv5(pvwatts_dc_pvwatts_ac_system, location,
+                                 weather, mocker):
     age = 1
     pvwatts_dc_pvwatts_ac_system.losses_parameters = dict(age=age)
-    m = mocker.spy(pvsystem, 'pvwatts_losses')
-    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
-                    aoi_model='no_loss', spectral_model='no_loss',
-                    losses_model='pvwatts')
+    m = mocker.spy(pvsystem, 'pvwattsv5_losses')
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location,
+                    dc_model='pvwattsv5', aoi_model='no_loss',
+                    spectral_model='no_loss', losses_model='pvwattsv5')
     mc.run_model(weather)
     assert m.call_count == 1
     m.assert_called_with(age=age)
@@ -1687,21 +1693,21 @@ def test_losses_models_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather,
     # check that we're applying correction to dc
     # GH 696
     dc_with_loss = mc.results.dc
-    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
-                    aoi_model='no_loss', spectral_model='no_loss',
-                    losses_model='no_loss')
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location,
+                    dc_model='pvwattsv5', aoi_model='no_loss',
+                    spectral_model='no_loss', losses_model='no_loss')
     mc.run_model(weather)
     assert not np.allclose(mc.results.dc, dc_with_loss, equal_nan=True)
 
 
-def test_losses_models_pvwatts_arrays(multi_array_sapm_dc_snl_ac_system,
-                                      location, weather):
+def test_losses_models_pvwattsv5_arrays(multi_array_sapm_dc_snl_ac_system,
+                                        location, weather):
     age = 1
     system_both = multi_array_sapm_dc_snl_ac_system['two_array_system']
     system_both.losses_parameters = dict(age=age)
     mc = ModelChain(system_both, location,
                     aoi_model='no_loss', spectral_model='no_loss',
-                    losses_model='pvwatts')
+                    losses_model='pvwattsv5')
     mc.run_model(weather)
     dc_with_loss = mc.results.dc
     mc = ModelChain(system_both, location,
@@ -1716,7 +1722,8 @@ def test_losses_models_pvwatts_arrays(multi_array_sapm_dc_snl_ac_system,
 def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,
                                mocker):
     m = mocker.spy(sys.modules[__name__], 'constant_losses')
-    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location,
+                    dc_model='pvwattsv5',
                     aoi_model='no_loss', spectral_model='no_loss',
                     losses_model=constant_losses)
     mc.run_model(weather)
@@ -1728,8 +1735,9 @@ def test_losses_models_ext_def(pvwatts_dc_pvwatts_ac_system, location, weather,
 
 def test_losses_models_no_loss(pvwatts_dc_pvwatts_ac_system, location, weather,
                                mocker):
-    m = mocker.spy(pvsystem, 'pvwatts_losses')
-    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location, dc_model='pvwatts',
+    m = mocker.spy(pvsystem, 'pvwattsv5_losses')
+    mc = ModelChain(pvwatts_dc_pvwatts_ac_system, location,
+                    dc_model='pvwattsv5',
                     aoi_model='no_loss', spectral_model='no_loss',
                     losses_model='no_loss')
     assert mc.losses_model == mc.no_extra_losses
@@ -1754,8 +1762,8 @@ def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     with pytest.raises(ValueError):
         ModelChain(cec_dc_snl_ac_system, location, **kwargs)
 
-    kwargs['dc_model'] = 'pvwatts'
-    kwargs['ac_model'] = 'pvwatts'
+    kwargs['dc_model'] = 'pvwattsv5'
+    kwargs['ac_model'] = 'pvwattsv5'
     for array in pvwatts_dc_pvwatts_ac_system.arrays:
         array.module_parameters.pop('pdc0')
 
@@ -1769,7 +1777,7 @@ def test_invalid_dc_model_params(sapm_dc_snl_ac_system, cec_dc_snl_ac_system,
     'temperature_model', 'losses_model'
 ])
 def test_invalid_models(model, sapm_dc_snl_ac_system, location):
-    kwargs = {'dc_model': 'pvwatts', 'ac_model': 'pvwatts',
+    kwargs = {'dc_model': 'pvwattsv5', 'ac_model': 'pvwattsv5',
               'aoi_model': 'no_loss', 'spectral_model': 'no_loss',
               'temperature_model': 'sapm', 'losses_model': 'no_loss'}
     kwargs[model] = 'invalid'
@@ -2063,3 +2071,40 @@ def test__irrad_for_celltemp():
     assert len(poa) == 2
     assert_series_equal(poa[0], effect_irrad)
     assert_series_equal(poa[1], effect_irrad)
+
+
+@fail_on_pvlib_version('0.11.0')
+def test_modelchain_pvwatts_methods_deprecated(pvwatts_dc_pvwatts_ac_system,
+                                               location, weather):
+    mc = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location)
+    mc.run_model(weather)
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use ModelChain.pvwattsv5_dc instead'):
+        mc.pvwatts_dc()
+
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use ModelChain.pvwattsv5_inverter instead'):
+        mc.pvwatts_inverter()
+
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use ModelChain.pvwattsv5_losses instead'):
+        mc.pvwatts_losses()
+
+
+@fail_on_pvlib_version('0.11.0')
+def test_modelchain_pvwatts_modelnames_deprecated(pvwatts_dc_pvwatts_ac_system,
+                                                  location):
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="model='pvwatts' is now called model='pvwattsv5'"):
+        _ = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location,
+                                    dc_model='pvwatts')
+
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="model='pvwatts' is now called model='pvwattsv5'"):
+        _ = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location,
+                                    ac_model='pvwatts')
+
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="model='pvwatts' is now called model='pvwattsv5'"):
+        _ = ModelChain.with_pvwatts(pvwatts_dc_pvwatts_ac_system, location,
+                                    losses_model='pvwatts')

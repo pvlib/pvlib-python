@@ -45,6 +45,8 @@ Enhancements
   in a simplified way, using the Faiman model as an example.
   :py:func:`~pvlib.temperature.faiman_rad`
   (:issue:`1594`, :pull:`1595`)
+* Add a function :py:func:`pvlib.ivtools.utils.astm_e1036` to perform ASTM E1036 extraction of IV
+  curve parameters (:pull:`1585`)
 
 Bug fixes
 ~~~~~~~~~
@@ -78,6 +80,7 @@ Contributors
 * Christian Orner (:ghuser:`chrisorner`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * Marcus Boumans (:ghuser:`bowie2211`)
+* Michael Deceglie (:ghuser:`mdeceglie`)
 * Yu Xie (:ghuser:`xieyupku`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Cliff Hansen (:ghuser:`cwhanse`)

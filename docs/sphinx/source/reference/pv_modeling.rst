@@ -155,6 +155,16 @@ PVWatts model
    inverter.pvwatts
    pvsystem.pvwatts_losses
 
+ADR model
+^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+   pvarray.adr
+   pvarray.fit_pvefficiency_adr
+
+
 Estimating PV model parameters
 ------------------------------
 
@@ -190,5 +200,3 @@ Other
 
    pvsystem.retrieve_sam
    pvsystem.scale_voltage_current_power
-   pvefficiency.adr
-   pvefficiency.fit_pvefficiency_adr

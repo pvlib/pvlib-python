@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 import pvlib
 from pvlib import iotools, location
-from pvlib.irradiance import aoi, get_total_irradiance
+from pvlib.irradiance import get_total_irradiance
 from pvlib.pvarray import pvefficiency_adr
 
 # %%
@@ -100,7 +100,6 @@ df['eta_rel'] = pvefficiency_adr(df['poa_global'], df['temp_pv'], **adr_params)
 P_STC = 5000.   # (W)
 
 # and the irradiance level needed to achieve this output:
-
 G_STC = 1000.   # (W/m2)
 
 df['p_mp'] = P_STC * df['eta_rel'] * (df['poa_global'] / G_STC)

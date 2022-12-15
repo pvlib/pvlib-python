@@ -13,7 +13,7 @@ from scipy.optimize import curve_fit
 from scipy.special import exp10
 
 
-def pvefficiency_adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
+def pvefficiency_adr(effective_irradiance, temp_cell, k_a, k_d, tc_d, k_rs, k_rsh):
     '''
     Calculate PV module efficiency using the ADR model.
 
@@ -22,10 +22,10 @@ def pvefficiency_adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
 
     Parameters
     ----------
-    irradiance : numeric, non-negative
+    effective_irradiance : numeric, non-negative
         The effective irradiance incident on the PV module. [W/m²]
 
-    temperature : numeric
+    temp_cell : numeric
         The PV module operating temperature. [°C]
 
     k_a : numeric
@@ -97,9 +97,8 @@ def pvefficiency_adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
     array([1.        , 0.92797293])
 
     '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs, Dec. 2022
     # Adapted from https://github.com/adriesse/pvpltools-python
-    # Copyright (c) 2022, Anton Driesse, PV Performance Labs
-    # All rights reserved.
 
     k_a = np.array(k_a)
     k_d = np.array(k_d)
@@ -109,11 +108,11 @@ def pvefficiency_adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
 
     # normalize the irradiance
     G_REF = np.array(1000.)
-    s = irradiance / G_REF
+    s = effective_irradiance / G_REF
 
     # obtain the difference from reference temperature
     T_REF = np.array(25.)
-    dt = temperature - T_REF
+    dt = temp_cell - T_REF
 
     # equation 29 in JPV
     s_o     = exp10(k_d + (dt * tc_d))                             # noQA: E221
@@ -130,7 +129,7 @@ def pvefficiency_adr(irradiance, temperature, k_a, k_d, tc_d, k_rs, k_rsh):
     return eta
 
 
-def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
+def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta, dict_output=True,
                          **kwargs):
     """
     Determine the parameters of the ADR module efficiency model by non-linear
@@ -138,10 +137,10 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
 
     Parameters
     ----------
-    irradiance : numeric, non-negative
+    effective_irradiance : numeric, non-negative
         Effective irradiance incident on the PV module. [W/m²]
 
-    temperature : numeric
+    temp_cell : numeric
         PV module operating temperature. [°C]
 
     eta : numeric
@@ -174,12 +173,12 @@ def fit_pvefficiency_adr(irradiance, temperature, eta, dict_output=True,
     pvlib.pvarray.pvefficiency_adr
     scipy.optimize.curve_fit
 
-    Adapted from https://github.com/adriesse/pvpltools-python
-    Copyright (c) 2022, Anton Driesse, PV Performance Labs
-    All rights reserved.
     """
-    irradiance = np.asarray(irradiance, dtype=float).reshape(-1)
-    temperature = np.asarray(temperature, dtype=float).reshape(-1)
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs, Dec. 2022
+    # Adapted from https://github.com/adriesse/pvpltools-python
+
+    irradiance = np.asarray(effective_irradiance, dtype=float).reshape(-1)
+    temperature = np.asarray(temp_cell, dtype=float).reshape(-1)
     eta = np.asarray(eta, dtype=float).reshape(-1)
 
     eta_max = np.max(eta)

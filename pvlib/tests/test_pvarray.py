@@ -5,10 +5,12 @@ from pvlib import pvarray
 
 
 def test_pvefficiency_adr():
-    g = [1000, 200, 1000, 200, 1000, 200, 0, np.nan]
+    g = [1000, 200, 1000, 200, 1000, 200, 0.0, np.nan]
     t = [25, 25, 50, 50, 75, 75, 25, 25]
     params = [1.0, -6.651460, 0.018736, 0.070679, 0.054170]
 
+    # the expected values were calculated using the new function itself
+    # hence this test is primarily a regression test
     eta = [1.0, 0.949125, 0.928148, 0.876472, 0.855759, 0.803281, 0.0, np.nan]
 
     result = pvarray.pvefficiency_adr(g, t, *params)
@@ -20,6 +22,8 @@ def test_fit_pvefficiency_adr():
     t = [25, 25, 50, 50, 75, 75]
     eta = [1.0, 0.949125, 0.928148, 0.876472, 0.855759, 0.803281]
 
+    # the expected values were calculated using the new function itself
+    # hence this test is primarily a regression test
     params = [1.0, -6.651460, 0.018736, 0.070679, 0.054170]
 
     result = pvarray.fit_pvefficiency_adr(g, t, eta, dict_output=False)

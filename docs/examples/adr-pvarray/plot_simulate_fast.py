@@ -8,7 +8,7 @@ Simulation using single-diode models can be slow because the maximum
 power point is usually found by an iterative search.
 In this example we use the PVsyst single diode model to generate
 a matrix of efficiency values, then determine the ADR model
-parameters to reproduce the behavior of the PVsyst model.
+parameters to approximate the behavior of the PVsyst model.
 This way both PVsyst and ADR models can simulate the same PV module type.
 
 To compare simulation speed, we run them using ``timeit``.

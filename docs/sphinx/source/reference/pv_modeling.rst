@@ -107,7 +107,9 @@ Inverter models (DC to AC conversion)
    inverter.sandia_multi
    inverter.adr
    inverter.pvwatts
+   inverter.pvwattsv5
    inverter.pvwatts_multi
+   inverter.pvwattsv5_multi
 
 Functions for fitting inverter models
 
@@ -152,8 +154,11 @@ PVWatts model
    :toctree: generated/
 
    pvsystem.pvwatts_dc
+   pvsystem.pvwattsv5_dc
    inverter.pvwatts
+   inverter.pvwattsv5
    pvsystem.pvwatts_losses
+   pvsystem.pvwattsv5_losses
 
 ADR model
 ^^^^^^^^^
@@ -191,6 +196,7 @@ Utilities for working with IV curve data
    :toctree: generated/
 
     ivtools.utils.rectify_iv_curve
+    ivtools.utils.astm_e1036
 
 Other
 -----

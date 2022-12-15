@@ -153,7 +153,7 @@ plt.show()
 #
 # There are some small systematic differences between the original
 # PVsyst model output and the ADR fit.  But these differences are
-# much smaller than the uncertainty w.r.t. actual output
+# much smaller than the typical uncertainty in measured output
 # of modules of this type.
 #
 

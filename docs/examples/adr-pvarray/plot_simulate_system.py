@@ -1,5 +1,5 @@
 """
-Simulating PV systems using the ADR module efficiency model
+Simulating PV system DC output using the ADR module efficiency model
 ===========================================================
 
 Time series processing with the ADR model is really easy.
@@ -77,7 +77,7 @@ df['temp_pv'] = pvlib.temperature.faiman(df.poa_global, df.temp_air,
 #  - SAPM
 #  - single-diode model variations
 #
-#  And now also the ADR PV efficiency model
+# And now also the ADR PV efficiency model
 #
 # Simulation is done in two steps:
 #
@@ -98,7 +98,9 @@ df['eta_rel'] = pvefficiency_adr(df['poa_global'], df['temp_pv'], **adr_params)
 
 # Set the desired array size:
 P_STC = 5000.   # (W)
+
 # and the irradiance level needed to achieve this output:
+
 G_STC = 1000.   # (W/m2)
 
 df['p_mp'] = P_STC * df['eta_rel'] * (df['poa_global'] / G_STC)

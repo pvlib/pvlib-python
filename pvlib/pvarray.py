@@ -13,7 +13,8 @@ from scipy.optimize import curve_fit
 from scipy.special import exp10
 
 
-def pvefficiency_adr(effective_irradiance, temp_cell, k_a, k_d, tc_d, k_rs, k_rsh):
+def pvefficiency_adr(effective_irradiance, temp_cell,
+                     k_a, k_d, tc_d, k_rs, k_rsh):
     '''
     Calculate PV module efficiency using the ADR model.
 
@@ -80,11 +81,12 @@ def pvefficiency_adr(effective_irradiance, temp_cell, k_a, k_d, tc_d, k_rs, k_rs
     ----------
     .. [1] A. Driesse and J. S. Stein, "From IEC 61853 power measurements
        to PV system simulations", Sandia Report No. SAND2020-3877, 2020.
+       :doi:`10.2172/1615179`
 
     .. [2] A. Driesse, M. Theristis and J. S. Stein, "A New Photovoltaic Module
        Efficiency Model for Energy Prediction and Rating," in IEEE Journal
-       of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021,
-       doi: 10.1109/JPHOTOV.2020.3045677.
+       of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021.
+       :doi:`10.1109/JPHOTOV.2020.3045677`
 
     Examples
     --------
@@ -129,8 +131,8 @@ def pvefficiency_adr(effective_irradiance, temp_cell, k_a, k_d, tc_d, k_rs, k_rs
     return eta
 
 
-def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta, dict_output=True,
-                         **kwargs):
+def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta,
+                         dict_output=True, **kwargs):
     """
     Determine the parameters of the ADR module efficiency model by non-linear
     least-squares fit to lab or field measurements.

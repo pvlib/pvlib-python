@@ -70,7 +70,7 @@ adr_params = fit_pvefficiency_adr(df['irradiance'], df['temperature'],
                                   df['eta_rel'])
 
 for k, v in adr_params.items():
-    print('%-5s = %7.4f' % (k, v))
+    print('%-5s = %8.5f' % (k, v))
 
 # %%
 #
@@ -85,10 +85,12 @@ eta_rel_adr = pvefficiency_adr(df['irradiance'],
 plt.figure()
 plt.plot(df['irradiance'], df['eta_rel'], 'oc', ms=8)
 plt.plot(df['irradiance'], eta_rel_adr, '.k')
-plt.legend(['Lab measurements', 'ADR model fit'])
+plt.legend(['Lab measurements', 'ADR model fit'], loc='lower right')
 plt.xlabel('Irradiance [W/m²]')
 plt.ylabel('Relative efficiency [-]')
 plt.grid(alpha=0.5)
+plt.xlim(0, 1200)
+plt.ylim(0.7, 1.1)
 plt.show()
 
 # %%
@@ -97,9 +99,10 @@ plt.show()
 # ----------
 # .. [1] A. Driesse and J. S. Stein, "From IEC 61853 power measurements
 #    to PV system simulations", Sandia Report No. SAND2020-3877, 2020.
+#    :doi:`10.2172/1615179`
 #
 # .. [2] A. Driesse, M. Theristis and J. S. Stein, "A New Photovoltaic Module
 #    Efficiency Model for Energy Prediction and Rating," in IEEE Journal
-#    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021,
-#    doi: 10.1109/JPHOTOV.2020.3045677.
+#    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021.
+#    :doi:`10.1109/JPHOTOV.2020.3045677`
 #

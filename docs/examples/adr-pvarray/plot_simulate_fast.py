@@ -73,7 +73,7 @@ eta_rel_pvs = (p_mp / P_REF) / (g / G_REF)
 adr_params = fit_pvefficiency_adr(g, t, eta_rel_pvs, dict_output=True)
 
 for k, v in adr_params.items():
-    print('%-5s = %7.4f' % (k, v))
+    print('%-5s = %8.5f' % (k, v))
 
 # %%
 #
@@ -88,10 +88,12 @@ plt.figure()
 plt.plot(g.flat, eta_rel_pvs.flat, 'oc', ms=8)
 plt.plot(g.flat, eta_rel_adr.flat, '.k')
 plt.grid(alpha=0.5)
+plt.xlim(0, 1200)
+plt.ylim(0.7, 1.1)
 
 plt.xlabel('Irradiance [W/m²]')
 plt.ylabel('Relative efficiency [-]')
-plt.legend(['PVsyst model output', 'ADR model fit'])
+plt.legend(['PVsyst model output', 'ADR model fit'], loc='lower right')
 plt.title('Differences: mean %.5f, RMS %.5f' % (mbe, rmse))
 plt.show()
 
@@ -141,7 +143,7 @@ plt.figure()
 pc = plt.scatter(p_pvs, p_adr-p_pvs, c=t, cmap='jet')
 plt.colorbar()
 pc.set_alpha(0.25)
-plt.ylim(-1, 1)
+plt.ylim(-1.4, 1.4)
 plt.grid(alpha=0.5)
 
 plt.xlabel('Power calculated using the PVsyst model [W]')
@@ -163,9 +165,10 @@ plt.show()
 # ----------
 # .. [1] A. Driesse and J. S. Stein, "From IEC 61853 power measurements
 #    to PV system simulations", Sandia Report No. SAND2020-3877, 2020.
+#    :doi:`10.2172/1615179`
 #
 # .. [2] A. Driesse, M. Theristis and J. S. Stein, "A New Photovoltaic Module
 #    Efficiency Model for Energy Prediction and Rating," in IEEE Journal
-#    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021,
-#    doi: 10.1109/JPHOTOV.2020.3045677.
+#    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021.
+#    :doi:`10.1109/JPHOTOV.2020.3045677`
 #

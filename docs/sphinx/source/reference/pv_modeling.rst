@@ -166,7 +166,7 @@ ADR model
 .. autosummary::
    :toctree: generated/
 
-   pvarray.adr
+   pvarray.pvefficiency_adr
    pvarray.fit_pvefficiency_adr
 
 

@@ -87,11 +87,11 @@ df['temp_pv'] = pvlib.temperature.faiman(df.poa_global, df.temp_air,
 
 # Borrow the ADR model parameters from the other example:
 
-adr_params = {'k_a': 0.99879,
-              'k_d': -5.85188,
-              'tc_d': 0.01939,
-              'k_rs': 0.06962,
-              'k_rsh': 0.21036
+adr_params = {'k_a': 0.99924,
+              'k_d': -5.49097,
+              'tc_d': 0.01918,
+              'k_rs': 0.06999,
+              'k_rsh': 0.26144
               }
 
 df['eta_rel'] = pvefficiency_adr(df['poa_global'], df['temp_pv'], **adr_params)
@@ -147,9 +147,10 @@ plt.show()
 # ----------
 # .. [1] A. Driesse and J. S. Stein, "From IEC 61853 power measurements
 #    to PV system simulations", Sandia Report No. SAND2020-3877, 2020.
+#    :doi:`10.2172/1615179`
 #
 # .. [2] A. Driesse, M. Theristis and J. S. Stein, "A New Photovoltaic Module
 #    Efficiency Model for Energy Prediction and Rating," in IEEE Journal
-#    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021,
-#    doi: 10.1109/JPHOTOV.2020.3045677.
+#    of Photovoltaics, vol. 11, no. 2, pp. 527-534, March 2021.
+#    :doi:`10.1109/JPHOTOV.2020.3045677`
 #

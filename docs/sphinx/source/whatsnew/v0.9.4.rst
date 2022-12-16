@@ -70,6 +70,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Added an FAQ page to the docs: :ref:`faq`. (:issue:`1546`, :pull:`1549`)
 * Fixed equation in :py:func:`pvlib.iam.martin_ruiz` docstring (:issue:`1561`, :pull:`1599`)
+* Fixed an error in :py:func:`pvlib.singlediode.bishop88_mpp` docstring (:issue:`1613`, :pull:`1615`)
 
 Benchmarking
 ~~~~~~~~~~~~~

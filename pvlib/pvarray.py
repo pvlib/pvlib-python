@@ -24,7 +24,7 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
     Parameters
     ----------
     effective_irradiance : numeric, non-negative
-        The effective irradiance incident on the PV module. [W/m²]
+        The effective irradiance incident on the PV module. [W/m^2]
 
     temp_cell : numeric
         The PV module operating temperature. [°C]
@@ -34,7 +34,7 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
         reference conditions. This factor allows the model to be used
         with relative or absolute efficiencies, and to accommodate data sets
         which are not perfectly normalized but have a slight bias at
-        the reference conditions. [unitless|%]
+        the reference conditions. [unitless]
 
     k_d : numeric, negative
         “Dark irradiance” or diode coefficient which influences the voltage
@@ -46,11 +46,16 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
         in the model, its value will also reflect secondary temperature
         dependencies that are present in the PV module. [unitless]
 
-    k_rs and k_rsh : numeric
-        Series and shunt resistance loss factors. Because of the normalization
-        they can be read as power loss fractions at reference conditions.
-        For example, if k_rs is 0.05, the internal loss assigned to the
+    k_rs : numeric
+        Series resistance loss coefficient. Because of the normalization
+        it can be read as a power loss fraction at reference conditions.
+        For example, if ``k_rs`` is 0.05, the internal loss assigned to the
         series resistance has a magnitude equal to 5% of the module output.
+        [unitless]
+
+    k_rsh : numeric
+        Shunt resistance loss coefficient. Can be interpreted as a power
+        loss fraction at reference conditions like ``k_rs``.
         [unitless]
 
     Returns
@@ -61,13 +66,13 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
 
     Notes
     -----
-    The efficiency values may be absolute or relative, and may be expressed
+    Efficiency values ``eta`` may be absolute or relative, and may be expressed
     as percent or per unit.  This is determined by the efficiency data
     used to derive values for the 5 model parameters.  The first model
-    parameter k_a is equal to the efficiency at STC and therefore
-    indicates the efficiency scale being used.  k_a can also be changed
-    freely to adjust the scale, or to change the module class to a slightly
-    higher or lower efficiency.
+    parameter ``k_a`` is equal to the efficiency at STC and therefore
+    indicates the efficiency scale being used. ``k_a`` can also be changed
+    freely to adjust the scale, or to change the module to a slightly
+    higher or lower efficiency class.
 
     All arguments may be scalars or array-like. If multiple arguments
     are array-like they must be the same shape or broadcastable to the
@@ -140,7 +145,7 @@ def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta,
     Parameters
     ----------
     effective_irradiance : numeric, non-negative
-        Effective irradiance incident on the PV module. [W/m²]
+        Effective irradiance incident on the PV module. [W/m^2]
 
     temp_cell : numeric
         PV module operating temperature. [°C]

@@ -1,6 +1,6 @@
 """
-Fast simulation using the ADR efficiency model with PVsyst parameters
-=====================================================================
+Fast simulation using the ADR efficiency model starting from PVsyst parameters
+==============================================================================
 
 Would you like to increase simulation speed by a factor of 4000+?
 
@@ -156,7 +156,9 @@ plt.show()
 # There are some small systematic differences between the original
 # PVsyst model output and the ADR fit.  But these differences are
 # much smaller than the typical uncertainty in measured output
-# of modules of this type.
+# of modules of this type. The PVsyst model and the parameters
+# we started with are of course also only approximations of the
+# true module behavior.
 #
 
 # %%

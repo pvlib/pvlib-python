@@ -78,9 +78,11 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     ``resistance_series``, ``resistance_shunt``, ``n``, ``cells_in_series``,
     ``Voltages``, ``Currents``, ``v_oc``, ``i_sc``, ``v_mp``, ``i_mp``,
     ``p_mp``, ``i_x``, ``i_xx`, ``Temperature``, ``Irradiance``,
-    ``Sweep Direction``, ``Datetime``, ``Boltzman``, ``Electron Charge``, and
-    ``Vth``. The columns ``Irradiance``, ``Sweep Direction`` are None or empty
-    strings.
+    ``Sweep Direction``, ``Datetime``, ``Boltzmann``, ``Elementary Charge``,
+    and ``Vth``. The columns ``Irradiance``, ``Sweep Direction`` are None or
+    empty strings.
+
+    The Boltzmann's constant and elementary charge used are from [1]_.
 
     Parameters
     ----------
@@ -93,6 +95,14 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     Returns
     -------
         A data frame.
+
+    References
+    ----------
+    .. [1] BIPM. Le Système international d’unités / The International System
+       of Units (‘The SI Brochure’).
+       Bureau international des poids et mesures, ninth edition, 2019.
+       URL https://www.bipm.org/en/publications/si-brochure,
+       ISBN 978-92-822-2272-0.
     """
     params = pd.read_csv(file_csv)
     curves_metadata = pd.read_json(file_json)
@@ -111,11 +121,11 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
                  'Temperature']
     joined[is_number] = joined[is_number].applymap(np.float64)
 
-    joined['Boltzman'] = 1.380649e-23
-    joined['Electron Charge'] = 1.60217663e-19
+    joined['Boltzmann'] = 1.380649e-23
+    joined['Elementary Charge'] = 1.602176634e-19
     joined['Vth'] = (
-        joined['Boltzman'] * joined['Temperature']
-        / joined['Electron Charge']
+        joined['Boltzmann'] * joined['Temperature']
+        / joined['Elementary Charge']
     )
 
     return joined
@@ -151,11 +161,11 @@ def test_singlediode_precision(method, precise_iv_curves):
 
     assert np.allclose(pc['i_sc'], outs['i_sc'], atol=1e-10, rtol=0)
     assert np.allclose(pc['v_oc'], outs['v_oc'], atol=1e-10, rtol=0)
-    assert np.allclose(pc['i_mp'], outs['i_mp'], atol=5e-8, rtol=0)
-    assert np.allclose(pc['v_mp'], outs['v_mp'], atol=8e-7, rtol=0)
+    assert np.allclose(pc['i_mp'], outs['i_mp'], atol=7e-8, rtol=0)
+    assert np.allclose(pc['v_mp'], outs['v_mp'], atol=1e-6, rtol=0)
     assert np.allclose(pc['p_mp'], outs['p_mp'], atol=1e-10, rtol=0)
     assert np.allclose(pc['i_x'], outs['i_x'], atol=1e-10, rtol=0)
-    assert np.allclose(pc['i_xx'], outs['i_xx'], atol=8e-8, rtol=0)
+    assert np.allclose(pc['i_xx'], outs['i_xx'], atol=9e-8, rtol=0)
 
 
 @pytest.mark.parametrize('method', ['lambertw'])

@@ -73,28 +73,36 @@ def test_newton_fs_495(method, cec_module_fs_495):
 
 def build_precise_iv_curve_dataframe(file_csv, file_json):
     """
-    Reads a precise IV curve parameter set CSV and JSON to create a data frame
-    with these columns: ``Index``, ``photocurrent``, ``saturation_current``,
-    ``resistance_series``, ``resistance_shunt``, ``n``, ``cells_in_series``,
-    ``Voltages``, ``Currents``, ``v_oc``, ``i_sc``, ``v_mp``, ``i_mp``,
-    ``p_mp``, ``i_x``, ``i_xx`, ``Temperature``, ``Irradiance``,
-    ``Sweep Direction``, ``Datetime``, ``Boltzmann``, ``Elementary Charge``,
-    and ``Vth``. The columns ``Irradiance``, ``Sweep Direction`` are None or
-    empty strings.
+    Reads a precise IV curve parameter set CSV and JSON to create a data frame.
+    The CSV contains the parameters of the single diode equation which are used
+    to generate the JSON file data. The data are calculated using the arbitrary
+    precision library `mpmath`_ with 40 decimal digits of precision in order
+    have at least 16 decimal digits of precision when they are stored in JSON.
+    The precision is sufficient for the difference between the left and right
+    side of the single diode equation to be less than :math:`1 \times 10^{-16}`
+    when the numbers from the JSON are read as mpmath floats.
 
     The Boltzmann's constant and elementary charge used are from [1]_.
+
+    .. _mpmath: mpmath.org
 
     Parameters
     ----------
     file_csv: str
-        Path to a CSV file of iv curve parameter sets.
+        Path to a CSV file of IV curve parameter sets.
 
     file_json: str
-        Path to a JSON file of precise iv curves.
+        Path to a JSON file of precise IV curves.
 
     Returns
     -------
-        A data frame.
+        A data frame with these columns: ``Index``, ``photocurrent``,
+        ``saturation_current``, ``resistance_series``, ``resistance_shunt``,
+        ``n``, ``cells_in_series``, ``Voltages``, ``Currents``,
+        ``diode_voltage``, ``v_oc``, ``i_sc``, ``v_mp``, ``i_mp``, ``p_mp``,
+        ``i_x``, ``i_xx`, ``Temperature``, ``Irradiance``, ``Sweep Direction``,
+        ``Datetime``, ``Boltzmann``, ``Elementary Charge``, and ``Vth``. The
+        columns ``Irradiance``, ``Sweep Direction`` are None or empty strings.
 
     References
     ----------

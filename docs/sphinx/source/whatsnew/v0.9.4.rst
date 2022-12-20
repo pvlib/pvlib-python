@@ -5,29 +5,6 @@ v0.9.4 (anticipated December 2022)
 
 Deprecations
 ~~~~~~~~~~~~
-* In anticipation of implementing newer versions of the PVWatts model
-  in the future and to clarify the relevant PVWatts model version for
-  existing functionality, several parts of pvlib have been renamed from
-  `pvwatts` to `pvwattsv5`:
-
-    * ``pvlib.inverter.pvwatts`` is now :py:func:`pvlib.inverter.pvwattsv5`
-    * ``pvlib.inverter.pvwatts_multi`` is now :py:func:`pvlib.inverter.pvwattsv5_multi`
-    * ``pvlib.pvsystem.pvwatts_dc`` is now :py:func:`pvlib.pvsystem.pvwattsv5_dc`
-    * ``pvlib.pvsystem.pvwatts_losses`` is now :py:func:`pvlib.pvsystem.pvwattsv5_losses`
-    * ``pvlib.pvsystem.PVSystem.pvwatts_dc`` is now :py:meth:`pvlib.pvsystem.PVSystem.pvwattsv5_dc`
-    * ``pvlib.pvsystem.PVSystem.pvwatts_losses`` is now :py:meth:`pvlib.pvsystem.PVSystem.pvwattsv5_losses`
-    * ``pvlib.modelchain.ModelChain.pvwatts_dc`` is now :py:meth:`pvlib.modelchain.ModelChain.pvwattsv5_dc`
-    * ``pvlib.modelchain.ModelChain.pvwatts_inverter`` is now :py:meth:`pvlib.modelchain.ModelChain.pvwattsv5_inverter`
-    * ``pvlib.modelchain.ModelChain.pvwatts_losses`` is now :py:meth:`pvlib.modelchain.ModelChain.pvwattsv5_losses`
-
-    * The ``model`` parameter to :py:meth:`pvlib.pvsystem.PVSystem.get_ac` should
-      now be ``'pvwattsv5'`` instead of ``'pvwatts'``.
-    * The ``dc_model``, ``ac_model``, and ``losses_model`` parameters of
-      :py:class:`pvlib.modelchain.ModelChain` should now be ``'pvwattsv5'``
-      instead of ``'pvwatts'``.
-
-  The originals should continue to work for now (emitting a deprecation warning),
-  but will be removed in a future release. (:issue:`1350`, :pull:`1558`)
 
 
 Enhancements

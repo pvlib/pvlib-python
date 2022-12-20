@@ -19,7 +19,7 @@ Deprecations
     * ``pvlib.modelchain.ModelChain.pvwatts_dc`` is now :py:meth:`pvlib.modelchain.ModelChain.pvwattsv5_dc`
     * ``pvlib.modelchain.ModelChain.pvwatts_inverter`` is now :py:meth:`pvlib.modelchain.ModelChain.pvwattsv5_inverter`
     * ``pvlib.modelchain.ModelChain.pvwatts_losses`` is now :py:meth:`pvlib.modelchain.ModelChain.pvwattsv5_losses`
-    
+
     * The ``model`` parameter to :py:meth:`pvlib.pvsystem.PVSystem.get_ac` should
       now be ``'pvwattsv5'`` instead of ``'pvwatts'``.
     * The ``dc_model``, ``ac_model``, and ``losses_model`` parameters of
@@ -47,6 +47,11 @@ Enhancements
   (:issue:`1594`, :pull:`1595`)
 * Add a function :py:func:`pvlib.ivtools.utils.astm_e1036` to perform ASTM E1036 extraction of IV
   curve parameters (:pull:`1585`)
+* Added the ADR PV module efficiency model and a function to find its parameters from field or lab measurements.
+  Three gallery examples are also added to demonstrate how the model can be used for time series simulation.
+  :py:func:`~pvlib.pvarray.pvefficiency_adr`
+  :py:func:`~pvlib.pvarray.fit_pvefficiency_adr`
+  (:issue:`1544`, :pull:`1602`)
 
 Bug fixes
 ~~~~~~~~~

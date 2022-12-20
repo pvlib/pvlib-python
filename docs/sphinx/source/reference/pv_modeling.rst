@@ -160,6 +160,16 @@ PVWatts model
    pvsystem.pvwatts_losses
    pvsystem.pvwattsv5_losses
 
+ADR model
+^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+   pvarray.pvefficiency_adr
+   pvarray.fit_pvefficiency_adr
+
+
 Estimating PV model parameters
 ------------------------------
 

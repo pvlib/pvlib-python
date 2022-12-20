@@ -38,3 +38,12 @@ PVWatts model
    pvsystem.pvwatts_dc
    inverter.pvwatts
    pvsystem.pvwatts_losses
+
+ADR model
+^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated/
+
+   pvarray.pvefficiency_adr
+   pvarray.fit_pvefficiency_adr

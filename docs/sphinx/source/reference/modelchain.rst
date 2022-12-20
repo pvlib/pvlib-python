@@ -81,11 +81,9 @@ ModelChain model definitions.
    modelchain.ModelChain.desoto
    modelchain.ModelChain.pvsyst
    modelchain.ModelChain.pvwatts_dc
-   modelchain.ModelChain.pvwattsv5_dc
    modelchain.ModelChain.sandia_inverter
    modelchain.ModelChain.adr_inverter
    modelchain.ModelChain.pvwatts_inverter
-   modelchain.ModelChain.pvwattsv5_inverter
    modelchain.ModelChain.ashrae_aoi_loss
    modelchain.ModelChain.physical_aoi_loss
    modelchain.ModelChain.sapm_aoi_loss
@@ -100,7 +98,6 @@ ModelChain model definitions.
    modelchain.ModelChain.dc_ohmic_model
    modelchain.ModelChain.no_dc_ohmic_loss
    modelchain.ModelChain.pvwatts_losses
-   modelchain.ModelChain.pvwattsv5_losses
    modelchain.ModelChain.no_extra_losses
 
 Inference methods

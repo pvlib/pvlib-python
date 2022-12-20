@@ -24,6 +24,11 @@ Enhancements
   (:issue:`1594`, :pull:`1595`)
 * Add a function :py:func:`pvlib.ivtools.utils.astm_e1036` to perform ASTM E1036 extraction of IV
   curve parameters (:pull:`1585`)
+* Added the ADR PV module efficiency model and a function to find its parameters from field or lab measurements.
+  Three gallery examples are also added to demonstrate how the model can be used for time series simulation.
+  :py:func:`~pvlib.pvarray.pvefficiency_adr`
+  :py:func:`~pvlib.pvarray.fit_pvefficiency_adr`
+  (:issue:`1544`, :pull:`1602`)
 
 Bug fixes
 ~~~~~~~~~

@@ -73,7 +73,7 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
-
+* Minimum version of scipy advanced from 1.2.0 to 1.4.0 (:issue:`483`, :pull:`1617`)
 
 Contributors
 ~~~~~~~~~~~~

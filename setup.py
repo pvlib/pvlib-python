@@ -31,7 +31,7 @@ Source code: https://github.com/pvlib/pvlib-python
 DISTNAME = 'pvlib'
 LICENSE = 'BSD 3-Clause'
 AUTHOR = 'pvlib python Developers'
-MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
+MAINTAINER_EMAIL = 'pvlib-admin@googlegroups.com'
 URL = 'https://github.com/pvlib/pvlib-python'
 
 INSTALL_REQUIRES = ['numpy >= 1.16.0',

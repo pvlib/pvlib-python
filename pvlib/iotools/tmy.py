@@ -27,8 +27,8 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
         the index increases monotonically.
     map_variables : bool, default None    
         If ``True``, apply standard names to TMY3 columns. Typically this
-        results in stripping the units from the column name and issues deprecationWarning 
-        for recolumn 
+        results in stripping the units from the column name and issues
+        deprecationWarning for recolumn
     recolumn : bool, default True
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
@@ -203,16 +203,17 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
-    
+
     if map_variables:
         data = _recolumn(data)  # rename to standard column names
     elif recolumn:
         if not map_variables:  # silence warning if map_variables is false
-            data = _recolumn(data)  
-        elif map_variables is None: 
-            data = _recolumn(data)     
+            data = _recolumn(data)
+        elif map_variables is None:
+            data = _recolumn(data)
             warnings.warn("recolumn parameter will be retired starting version 0.9.5, please"
-        "use map_variables parameter instead.",DeprecationWarning) 
+            "use map_variables parameter instead.",
+            DeprecationWarning)
             
 
     data = data.tz_localize(int(meta['TZ'] * 3600))

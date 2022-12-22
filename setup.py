@@ -31,14 +31,14 @@ Source code: https://github.com/pvlib/pvlib-python
 DISTNAME = 'pvlib'
 LICENSE = 'BSD 3-Clause'
 AUTHOR = 'pvlib python Developers'
-MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
+MAINTAINER_EMAIL = 'pvlib-admin@googlegroups.com'
 URL = 'https://github.com/pvlib/pvlib-python'
 
 INSTALL_REQUIRES = ['numpy >= 1.16.0',
                     'pandas >= 0.25.0',
                     'pytz',
                     'requests',
-                    'scipy >= 1.2.0',
+                    'scipy >= 1.4.0',
                     'h5py',
                     'importlib-metadata; python_version < "3.8"']
 

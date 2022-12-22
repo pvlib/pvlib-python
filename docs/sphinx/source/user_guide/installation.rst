@@ -60,14 +60,10 @@ using the conda package manager in the
 To install the most recent stable release of pvlib-python in a
 non-editable way, use one of the following commands to install pvlib-python::
 
-    # get the package from the pvlib conda channel
-    # best option for installing pvlib in the base Anaconda distribution
-    conda install -c pvlib pvlib
-
     # get the package from the conda-forge conda channel
-    # best option if using pvlib.forecast module
     # strongly recommend installing in a separate conda env as shown below
-    conda create -n pvlib -c conda-forge pvlib-python; conda activate pvlib
+    # note: both "pvlib" and "pvlib-python" work on conda-forge
+    conda create -n pvlib -c conda-forge pvlib; conda activate pvlib
 
     # get the package from the Python Package Index
     # best option if you know what you are doing
@@ -84,7 +80,7 @@ non-editable way, use one of the following commands to install pvlib-python::
     `ModuleNotFoundError: No module named 'netCDF4'`
     you can either install pvlib with all optional dependencies using
     `pip install pvlib[optional]`, or you can install pvlib from conda-forge
-    `conda create -n pvlib -c conda-forge pvlib-python; conda activate pvlib`.
+    `conda create -n pvlib -c conda-forge pvlib; conda activate pvlib`.
 
 If your system complains that you don't have access privileges or asks
 for a password then you're probably trying to install pvlib into your
@@ -98,7 +94,7 @@ repository <https://github.com/pvlib/pvlib-python>`_ or go to the
 download the zip file of the most recent release. You can also use the
 nbviewer website to choose a tutorial to experiment with. Go to our
 `nbviewer tutorial page
-<http://nbviewer.jupyter.org/github/pvlib/pvlib-python/tree/master/docs/
+<http://nbviewer.jupyter.org/github/pvlib/pvlib-python/tree/main/docs/
 tutorials/>`_.
 
 
@@ -228,7 +224,7 @@ pvlib-python is compatible with Python 3.
 
 pvlib-python requires Pandas, Numpy, and SciPy. The minimum version requirements
 are specified in
-`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
+`setup.py <https://github.com/pvlib/pvlib-python/blob/main/setup.py>`_.
 They are typically releases from several years ago.
 
 A handful of pvlib-python features require additional packages that must

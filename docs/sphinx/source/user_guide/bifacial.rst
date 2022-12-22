@@ -83,6 +83,7 @@ Array geometry is defined by the following:
     - height of row center above ground, ``height``.
     - tilt of the row from horizontal, ``surface_tilt``.
     - azimuth of the row's normal vector, ``surface_azimuth``.
+
 View factors from the ground to the sky are calculated at points spaced along
 a one-dimensional axis on the ground, with the origin under the center of a
 row and the positive direction toward the right. The positive direction is

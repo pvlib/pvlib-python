@@ -29,7 +29,7 @@
 
     // List of branches to benchmark. If not provided, defaults to "master"
     // (for git) or "default" (for mercurial).
-    // "branches": ["master"], // for git
+    "branches": ["main"], // for git
     // "branches": ["default"],    // for mercurial
 
     // The DVCS being used.  If not set, it will be automatically
@@ -117,7 +117,7 @@
             "build": "",
             "numpy": "1.16.0",
             "pandas": "0.25.0",
-            "scipy": "1.2.0",
+            "scipy": "1.4.0",
             // Note: these don't have a minimum in setup.py
             "h5py": "2.10.0",
             "ephem": "3.7.6.0",

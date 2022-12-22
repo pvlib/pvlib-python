@@ -25,7 +25,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
         If supplied, the year of the index will be set to `coerce_year`, except
         for the last index value which will be set to the *next* year so that
         the index increases monotonically.
-    map_variables : bool, default None    
+    map_variables : bool, default None
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name and issues
         deprecationWarning for recolumn
@@ -211,10 +211,9 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
             data = _recolumn(data)
         elif map_variables is None:
             data = _recolumn(data)
-            warnings.warn("recolumn parameter will be retired starting version 0.9.5, please"
-            "use map_variables parameter instead.",
-            DeprecationWarning)
-            
+            warnings.warn(
+                "recolumn parameter will be retired starting version 0.9.5, please"
+            "use map_variables parameter instead.",DeprecationWarning)
 
     data = data.tz_localize(int(meta['TZ'] * 3600))
 

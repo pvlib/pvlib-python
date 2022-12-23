@@ -212,9 +212,9 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
         elif map_variables is None:
             data = _recolumn(data)
             warnings.warn(
-                "recolumn parameter will be retired starting version 0.9.5, please"
-            "use map_variables parameter instead."
-            ,DeprecationWarning)
+            "recolumn parameter will be retired starting version 0.9.5"
+            ", please use map_variables parameter instead.",
+            DeprecationWarning)
 
     data = data.tz_localize(int(meta['TZ'] * 3600))
 

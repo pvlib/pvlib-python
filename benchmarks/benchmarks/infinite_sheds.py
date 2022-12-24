@@ -12,7 +12,7 @@ class InfiniteSheds:
 
     def setup(self):
         self.times = pd.date_range(start='20180601', freq='1min',
-                                   periods=14400)
+                                   periods=8760*25)
         self.location = location.Location(40, -80)
         self.solar_position = self.location.get_solarposition(self.times)
         self.clearsky_irradiance = self.location.get_clearsky(self.times)
@@ -53,6 +53,38 @@ class InfiniteSheds:
 
     def time_get_irradiance_poa_tracking(self):
         infinite_sheds.get_irradiance_poa(
+            surface_tilt=self.tracking['surface_tilt'],
+            surface_azimuth=self.tracking['surface_azimuth'],
+            solar_zenith=self.solar_position['apparent_zenith'],
+            solar_azimuth=self.solar_position['azimuth'],
+            gcr=self.gcr,
+            height=self.height,
+            pitch=self.pitch,
+            ghi=self.clearsky_irradiance['ghi'],
+            dhi=self.clearsky_irradiance['dhi'],
+            dni=self.clearsky_irradiance['dni'],
+            albedo=self.albedo,
+            npoints=self.npoints
+        )
+
+    def time_get_irradiance_fixed(self):
+        infinite_sheds.get_irradiance(
+            surface_tilt=self.surface_tilt,
+            surface_azimuth=self.surface_azimuth,
+            solar_zenith=self.solar_position['apparent_zenith'],
+            solar_azimuth=self.solar_position['azimuth'],
+            gcr=self.gcr,
+            height=self.height,
+            pitch=self.pitch,
+            ghi=self.clearsky_irradiance['ghi'],
+            dhi=self.clearsky_irradiance['dhi'],
+            dni=self.clearsky_irradiance['dni'],
+            albedo=self.albedo,
+            npoints=self.npoints
+        )
+
+    def time_get_irradiance_tracking(self):
+        infinite_sheds.get_irradiance(
             surface_tilt=self.tracking['surface_tilt'],
             surface_azimuth=self.tracking['surface_azimuth'],
             solar_zenith=self.solar_position['apparent_zenith'],

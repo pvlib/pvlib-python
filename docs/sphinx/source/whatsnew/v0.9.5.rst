@@ -32,7 +32,7 @@ Documentation
 
 Benchmarking
 ~~~~~~~~~~~~~
-* Added benchmarks for :py:mod:`pvlib.bifacial.infinite_sheds`
+* Added benchmarks for :py:mod:`pvlib.bifacial.infinite_sheds` (:pull:`1627`)
 
 Requirements
 ~~~~~~~~~~~~

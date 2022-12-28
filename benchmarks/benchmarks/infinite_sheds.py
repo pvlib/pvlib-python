@@ -15,7 +15,10 @@ class InfiniteSheds:
                                    periods=1440)
         self.location = location.Location(40, -80)
         self.solar_position = self.location.get_solarposition(self.times)
-        self.clearsky_irradiance = self.location.get_clearsky(self.times)
+        self.clearsky_irradiance = self.location.get_clearsky(
+            self.times,
+            solar_position=self.solar_position,
+        )
         self.surface_tilt = 20
         self.surface_azimuth = 180
         self.gcr = 0.35

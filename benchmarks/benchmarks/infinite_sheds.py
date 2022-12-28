@@ -12,7 +12,7 @@ class InfiniteSheds:
 
     def setup(self):
         self.times = pd.date_range(start='20180601', freq='1min',
-                                   periods=8760*25)
+                                   periods=1440)
         self.location = location.Location(40, -80)
         self.solar_position = self.location.get_solarposition(self.times)
         self.clearsky_irradiance = self.location.get_clearsky(self.times)

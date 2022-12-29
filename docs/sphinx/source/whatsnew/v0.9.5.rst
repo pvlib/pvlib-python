@@ -12,6 +12,11 @@ the ``pvlib`` `conda channel<https://anaconda.org/pvlib/pvlib>`_.  We recommend
 
 Deprecations
 ~~~~~~~~~~~~
+* Functions for calculating spectral modifiers have been moved to :py:mod:`pvlib.spectrum`:
+  ``pvlib.atmosphere.first_solar_spectral_correction`` is now
+  :py:func:`pvlib.spectrum.first_solar_spectral_correction` and
+  ``pvlib.pvsystem.sapm_spectral_loss`` is now
+  :py:func:`pvlib.spectrum.sapm_spectral_correction`. (:pull:`1628`)
 
 
 Enhancements

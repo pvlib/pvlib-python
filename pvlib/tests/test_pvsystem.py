@@ -14,6 +14,7 @@ from pvlib import inverter, pvsystem
 from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
+from pvlib import spectrum
 from pvlib.location import Location
 from pvlib.pvsystem import FixedMount
 from pvlib import temperature
@@ -253,28 +254,19 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
         system.sapm(500, temp_cell)
 
 
-@pytest.mark.parametrize('airmass,expected', [
-    (1.5, 1.00028714375),
-    (np.array([[10, np.nan]]), np.array([[0.999535, 0]])),
-    (pd.Series([5]), pd.Series([1.0387675]))
-])
-def test_sapm_spectral_loss(sapm_module_params, airmass, expected):
-
-    out = pvsystem.sapm_spectral_loss(airmass, sapm_module_params)
-
-    if isinstance(airmass, pd.Series):
-        assert_series_equal(out, expected, check_less_precise=4)
-    else:
-        assert_allclose(out, expected, atol=1e-4)
+def test_sapm_spectral_loss_deprecated(sapm_module_params):
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use pvlib.spectrum.sapm_spectral_correction'):
+        pvsystem.sapm_spectral_loss(1, sapm_module_params)
 
 
 def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
-    mocker.spy(pvsystem, 'sapm_spectral_loss')
+    mocker.spy(spectrum, 'sapm_spectral_correction')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     airmass = 2
     out = system.sapm_spectral_loss(airmass)
-    pvsystem.sapm_spectral_loss.assert_called_once_with(airmass,
-                                                        sapm_module_params)
+    spectrum.sapm_spectral_correction.assert_called_once_with(
+        airmass, sapm_module_params)
     assert_allclose(out, 1, atol=0.5)
 
 
@@ -302,12 +294,12 @@ def test_PVSystem_multi_array_sapm_spectral_loss(sapm_module_params):
     ])
 def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
                                             coefficients, mocker):
-    mocker.spy(atmosphere, 'first_solar_spectral_correction')
+    mocker.spy(spectrum, 'first_solar_spectral_correction')
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     pw = 3
     airmass_absolute = 3
     out = system.first_solar_spectral_loss(pw, airmass_absolute)
-    atmosphere.first_solar_spectral_correction.assert_called_once_with(
+    spectrum.first_solar_spectral_correction.assert_called_once_with(
         pw, airmass_absolute, module_type, coefficients)
     assert_allclose(out, 1, atol=0.5)
 

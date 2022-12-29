@@ -223,15 +223,18 @@ def test_first_solar_spectral_correction_ambiguous_both():
         spectrum.first_solar_spectral_correction(1, 1, 'cdte',
                                                  coefficients=coeffs)
 
+
 def test_first_solar_spectral_correction_large_airmass():
     # test that airmass > 10 is treated same as airmass==10
     m_eq10 = spectrum.first_solar_spectral_correction(1, 10, 'monosi')
     m_gt10 = spectrum.first_solar_spectral_correction(1, 15, 'monosi')
     assert_allclose(m_eq10, m_gt10)
 
+
 def test_first_solar_spectral_correction_low_airmass():
     with pytest.warns(UserWarning, match='Exceptionally low air mass'):
         _ = spectrum.first_solar_spectral_correction(1, 0.1, 'monosi')
+
 
 def test_first_solar_spectral_correction_range():
     with pytest.warns(UserWarning, match='Exceptionally high pw values'):

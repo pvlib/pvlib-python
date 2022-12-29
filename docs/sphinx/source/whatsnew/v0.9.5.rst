@@ -32,7 +32,7 @@ Documentation
 
 Benchmarking
 ~~~~~~~~~~~~~
-
+* Added benchmarks for :py:mod:`pvlib.bifacial.infinite_sheds` (:pull:`1627`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -40,4 +40,5 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Will Holmgren (:ghuser:`wholmgren`)

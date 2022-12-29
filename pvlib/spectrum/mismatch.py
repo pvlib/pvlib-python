@@ -10,8 +10,6 @@ import os
 
 from warnings import warn
 
-from pvlib._deprecation import deprecated
-
 
 def get_example_spectral_response(wavelength=None):
     '''

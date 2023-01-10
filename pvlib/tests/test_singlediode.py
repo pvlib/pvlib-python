@@ -4,6 +4,7 @@ testing single-diode methods using JW Bishop 1988
 
 import numpy as np
 import pandas as pd
+import scipy
 from pvlib import pvsystem
 from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
@@ -82,8 +83,6 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
     side of the single diode equation to be less than :math:`1 \times 10^{-16}`
     when the numbers from the JSON are read as mpmath floats.
 
-    The Boltzmann's constant and elementary charge used are from [1]_.
-
     .. _mpmath: mpmath.org
 
     Parameters
@@ -103,14 +102,6 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
         ``i_x``, ``i_xx`, ``Temperature``, ``Irradiance``, ``Sweep Direction``,
         ``Datetime``, ``Boltzmann``, ``Elementary Charge``, and ``Vth``. The
         columns ``Irradiance``, ``Sweep Direction`` are None or empty strings.
-
-    References
-    ----------
-    .. [1] BIPM. Le Système international d’unités / The International System
-       of Units (‘The SI Brochure’).
-       Bureau international des poids et mesures, ninth edition, 2019.
-       URL https://www.bipm.org/en/publications/si-brochure,
-       ISBN 978-92-822-2272-0.
     """
     params = pd.read_csv(file_csv)
     curves_metadata = pd.read_json(file_json)
@@ -129,8 +120,8 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
                  'Temperature']
     joined[is_number] = joined[is_number].applymap(np.float64)
 
-    joined['Boltzmann'] = 1.380649e-23
-    joined['Elementary Charge'] = 1.602176634e-19
+    joined['Boltzmann'] = scipy.constants.Boltzmann
+    joined['Elementary Charge'] = scipy.constants.elementary_charge
     joined['Vth'] = (
         joined['Boltzmann'] * joined['Temperature']
         / joined['Elementary Charge']

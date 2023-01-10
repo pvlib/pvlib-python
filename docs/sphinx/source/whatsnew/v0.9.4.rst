@@ -14,9 +14,6 @@ Enhancements
   (:issue:`1565`, :pull:`1567`)
 * Added optional ``return_components`` parameter to :py:func:`pvlib.irradiance.haydavies` to return
   individual diffuse irradiance components (:issue:`1553`, :pull:`1568`)
-* Testing :py:func:`pvlib.pvsystem.singlediode`, :py:func:`pvlib.pvsystem.v_from_i`,
-  and :py:func:`pvlib.pvsystem.i_from_v` against precisely generated IV curve data.
-  (:issue:`411`, :pull:`1573`)
   individual diffuse irradiance components. (:issue:`1553`, :pull:`1568`)
 * Added a module temperature model that accounts for radiative losses to the sky
   in a simplified way, using the Faiman model as an example.
@@ -69,7 +66,6 @@ Contributors
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Echedey Luis (:ghuser:`echedey-ls`)
-* Taos Transue (:ghuser:`reepoi`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Will Holmgren (:ghuser:`wholmgren`)

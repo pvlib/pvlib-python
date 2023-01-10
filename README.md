@@ -50,7 +50,7 @@
 <tr>
   <td>Benchmarks</td>
   <td>
-    <a href="https://pvlib-benchmarker.github.io/pvlib-benchmarks/">
+    <a href="https://pvlib.github.io/pvlib-benchmarks/">
     <img src="https://img.shields.io/badge/benchmarks-asv-lightgrey" />
     </a>
   </td>

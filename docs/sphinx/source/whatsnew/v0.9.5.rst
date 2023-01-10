@@ -1,0 +1,44 @@
+.. _whatsnew_0950:
+
+
+v0.9.5 (anticipated March 2023)
+-------------------------------
+
+Starting with this version, new releases are no longer distributed through
+the ``pvlib`` `conda channel<https://anaconda.org/pvlib/pvlib>`_.  We recommend
+``conda`` users install from the ``conda-forge`` channel instead (see
+:ref:`installation`).
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~~
+* Added benchmarks for :py:mod:`pvlib.bifacial.infinite_sheds` (:pull:`1627`)
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Will Holmgren (:ghuser:`wholmgren`)

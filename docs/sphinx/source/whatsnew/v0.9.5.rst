@@ -5,7 +5,7 @@ v0.9.5 (anticipated March 2023)
 -------------------------------
 
 Starting with this version, new releases are no longer distributed through
-the ``pvlib`` `conda channel<https://anaconda.org/pvlib/pvlib>`_.  We recommend
+the ``pvlib`` `conda channel <https://anaconda.org/pvlib/pvlib>`_.  We recommend
 ``conda`` users install from the ``conda-forge`` channel instead (see
 :ref:`installation`).
 
@@ -36,7 +36,7 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
-
+* Removed unnecessary ``nose`` test requirement (:pull:`1637`)
 
 Contributors
 ~~~~~~~~~~~~

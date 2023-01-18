@@ -51,6 +51,7 @@ EXTRAS_REQUIRE = {
                  'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 4.5.0',
             'pydata-sphinx-theme == 0.8.1', 'sphinx-gallery',
+            'jupyterlite-sphinx==0.7.2',
             'docutils == 0.15.2', 'pillow', 'netcdf4', 'siphon',
             'sphinx-toggleprompt >= 0.0.5', 'pvfactors'],
     'test': TESTS_REQUIRE

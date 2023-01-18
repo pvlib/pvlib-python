@@ -107,6 +107,7 @@ Contents
    reference/index
    whatsnew
    contributing
+   tryitout
 
 
 Indices and tables

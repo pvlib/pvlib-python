@@ -4,6 +4,17 @@ import datetime
 import re
 import pandas as pd
 import warnings
+from pvlib._deprecation import pvlibDeprecationWarning
+
+# Dictionary mapping TMY3 names to pvlib names
+VARIABLE_MAP = {
+    'GHI': 'ghi', 
+    'DNI': 'dni', 
+    'DHI': 'dhi', 
+    'Pressure': 'pressure', 
+    'Wdir': 'wind_direction', 
+    'Wspd': 'wind_speed', 
+} 
 
 
 def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
@@ -203,16 +214,16 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
-
-    if map_variables:
+    if map_variables is None:
         data = _recolumn(data)  # rename to standard column names
-    elif recolumn:
-        if not map_variables:  # silence warning if map_variables is false
-            data = _recolumn(data)
-        elif map_variables is None:
-            data = _recolumn(data)
-            warnings.warn("recolumn parameter will be retired starting version 0.9.5,"
-                    "please use map_variables parameter instead.",DeprecationWarning)
+        warnings.warn(
+            'TMY3 variable names will be renamed to pvlib conventions by '
+            'default starting in pvlib 0.9.5. Specify map_variables=True '
+            'to enable that behavior now, or specify map_variables=False '
+            'to hide this warning.', pvlibDeprecationWarning)
+        map_variables = False
+    if map_variables:
+        data = _recolumn(data).rename(columns=VARIABLE_MAP)
 
     data = data.tz_localize(int(meta['TZ'] * 3600))
 

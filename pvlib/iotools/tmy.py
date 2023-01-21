@@ -8,13 +8,13 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 # Dictionary mapping TMY3 names to pvlib names
 VARIABLE_MAP = {
-    'GHI': 'ghi', 
-    'DNI': 'dni', 
-    'DHI': 'dhi', 
-    'Pressure': 'pressure', 
-    'Wdir': 'wind_direction', 
-    'Wspd': 'wind_speed', 
-} 
+    'GHI': 'ghi',
+    'DNI': 'dni',
+    'DHI': 'dhi',
+    'Pressure': 'pressure',
+    'Wdir': 'wind_direction',
+    'Wspd': 'wind_speed',
+}
 
 
 def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):

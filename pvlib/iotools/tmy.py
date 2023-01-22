@@ -37,9 +37,8 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
         for the last index value which will be set to the *next* year so that
         the index increases monotonically.
     map_variables : bool, default None
-        If ``True``, apply standard names to TMY3 columns. Typically this
-        results in stripping the units from the column name and issues
-        deprecationWarning for recolumn
+        When True, renames columns of the DataFrame to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
     recolumn : bool, default True
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.

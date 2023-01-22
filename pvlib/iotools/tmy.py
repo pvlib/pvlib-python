@@ -214,7 +214,8 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
     if map_variables is None:
-        data = _recolumn(data)  # rename to standard column names
+        if recolumn:
+            data = _recolumn(data)  # rename to standard column names
         warnings.warn(
             'TMY3 variable names will be renamed to pvlib conventions by '
             'default starting in pvlib 0.9.5. Specify map_variables=True '

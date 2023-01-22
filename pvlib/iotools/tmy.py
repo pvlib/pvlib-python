@@ -222,7 +222,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
             'to hide this warning.', pvlibDeprecationWarning)
         map_variables = False
     if map_variables:
-        data = _recolumn(data).rename(columns=VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     data = data.tz_localize(int(meta['TZ'] * 3600))
 

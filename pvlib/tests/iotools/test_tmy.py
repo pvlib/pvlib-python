@@ -24,17 +24,21 @@ def test_read_tmy3_recolumn():
     data, meta = tmy.read_tmy3(TMY3_TESTFILE)
     assert 'GHISource' in data.columns
 
+
 def test_read_tmy3_norecolumn():
     data, _ = tmy.read_tmy3(TMY3_TESTFILE, recolumn=False)
     assert 'GHI source' in data.columns
 
+
 def test_read_tmy3_map_variables():
-    data, meta = tmy.read_tmy3(TMY3_TESTFILE,map_variables=True)
+    data, meta = tmy.read_tmy3(TMY3_TESTFILE, map_variables=True)
     assert 'ghi' in data.columns
 
+
 def test_read_tmy3_map_variables_deprecating_warning():
-    with pytest.warns(pvlibDeprecationWarning, match='TMY3 variable names will be renamed to pvlib conventions'):
+    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed to pvlib'):
         data, meta = tmy.read_tmy3(TMY3_TESTFILE)
+
 
 def test_read_tmy3_coerce_year():
     coerce_year = 1987

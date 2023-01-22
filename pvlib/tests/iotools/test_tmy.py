@@ -36,7 +36,7 @@ def test_read_tmy3_map_variables():
 
 
 def test_read_tmy3_map_variables_deprecating_warning():
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed to pvlib'):
+    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
         data, meta = tmy.read_tmy3(TMY3_TESTFILE)
 
 

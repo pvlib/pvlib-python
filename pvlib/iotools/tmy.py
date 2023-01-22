@@ -8,12 +8,16 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 # Dictionary mapping TMY3 names to pvlib names
 VARIABLE_MAP = {
-    'GHI': 'ghi',
-    'DNI': 'dni',
-    'DHI': 'dhi',
-    'Pressure': 'pressure',
-    'Wdir': 'wind_direction',
-    'Wspd': 'wind_speed',
+    'GHI (W/m^2)': 'ghi',
+    'DNI (W/m^2)': 'dni',
+    'DHI (W/m^2)': 'dhi',
+    'Pressure (mbar)': 'pressure',
+    'Wdir (degrees)': 'wind_direction',
+    'Wspd (m/s)': 'wind_speed',
+    'Dry-bulb (C)': 'temp_air',
+    'Dew-point (C)': 'temp_dew',
+    'RHum (%)': 'relative_humidity',
+    'Alb (unitless)': 'albedo',
 }
 
 

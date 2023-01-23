@@ -164,7 +164,11 @@ def test_singlediode_precision(method, precise_iv_curves):
     assert np.allclose(pc['v_mp'], outs['v_mp'], atol=1e-6, rtol=0)
     assert np.allclose(pc['p_mp'], outs['p_mp'], atol=1e-10, rtol=0)
     assert np.allclose(pc['i_x'], outs['i_x'], atol=1e-10, rtol=0)
-    assert np.allclose(pc['i_xx'], outs['i_xx'], atol=9e-8, rtol=0)
+
+    # This test should pass with atol=9e-8 on MacOS and Windows.
+    # The atol was lowered to pass on Linux when the vectorized umath module
+    # introduced in NumPy 1.22.0 is used.
+    assert np.allclose(pc['i_xx'], outs['i_xx'], atol=1e-6, rtol=0)
 
 
 @pytest.mark.parametrize('method', ['lambertw'])

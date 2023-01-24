@@ -23,7 +23,6 @@ dependencies:
     - pytz
     - requests
     - scipy >= 1.4.0
-    - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - statsmodels
     - pip:

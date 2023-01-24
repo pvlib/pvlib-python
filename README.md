@@ -45,6 +45,9 @@
     <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/alerts">
     <img src="https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm alters" />
     </a>
+    <a href="https://snyk.io/advisor/python/pvlib">
+    <img src="https://snyk.io/advisor/python/pvlib/badge.svg?logo=lgtm&logoWidth=18" alt="pvlib" />
+    </a>
   </td>
 </tr>
 <tr>

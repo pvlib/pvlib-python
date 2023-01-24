@@ -82,7 +82,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == 3.7 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
           verbose: true

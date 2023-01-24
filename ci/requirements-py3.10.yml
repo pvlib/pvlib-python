@@ -8,7 +8,6 @@ dependencies:
     - ephem
     - h5py
     # - netcdf4  # pulls in a different version of numpy with ImportError
-    - nose
     # - numba  # python 3.9 compat in early 2021
     - numpy >= 1.16.0
     - pandas >= 0.25.0
@@ -23,7 +22,7 @@ dependencies:
     - python=3.10
     - pytz
     - requests
-    - scipy >= 1.2.0
+    - scipy >= 1.4.0
     - shapely  # pvfactors dependency
     # - siphon  # conda-forge
     - statsmodels

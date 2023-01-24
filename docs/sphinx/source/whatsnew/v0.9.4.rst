@@ -1,34 +1,7 @@
 .. _whatsnew_0940:
 
-v0.9.4 (anticipated December 2022)
-----------------------------------
-
-Deprecations
-~~~~~~~~~~~~
-* In anticipation of implementing newer versions of the PVWatts model
-  in the future and to clarify the relevant PVWatts model version for
-  existing functionality, several parts of pvlib have been renamed from
-  `pvwatts` to `pvwattsv5`:
-
-    * ``pvlib.inverter.pvwatts`` is now :py:func:`pvlib.inverter.pvwattsv5`
-    * ``pvlib.inverter.pvwatts_multi`` is now :py:func:`pvlib.inverter.pvwattsv5_multi`
-    * ``pvlib.pvsystem.pvwatts_dc`` is now :py:func:`pvlib.pvsystem.pvwattsv5_dc`
-    * ``pvlib.pvsystem.pvwatts_losses`` is now :py:func:`pvlib.pvsystem.pvwattsv5_losses`
-    * ``pvlib.pvsystem.PVSystem.pvwatts_dc`` is now :py:meth:`pvlib.pvsystem.PVSystem.pvwattsv5_dc`
-    * ``pvlib.pvsystem.PVSystem.pvwatts_losses`` is now :py:meth:`pvlib.pvsystem.PVSystem.pvwattsv5_losses`
-    * ``pvlib.modelchain.ModelChain.pvwatts_dc`` is now :py:meth:`pvlib.modelchain.ModelChain.pvwattsv5_dc`
-    * ``pvlib.modelchain.ModelChain.pvwatts_inverter`` is now :py:meth:`pvlib.modelchain.ModelChain.pvwattsv5_inverter`
-    * ``pvlib.modelchain.ModelChain.pvwatts_losses`` is now :py:meth:`pvlib.modelchain.ModelChain.pvwattsv5_losses`
-    
-    * The ``model`` parameter to :py:meth:`pvlib.pvsystem.PVSystem.get_ac` should
-      now be ``'pvwattsv5'`` instead of ``'pvwatts'``.
-    * The ``dc_model``, ``ac_model``, and ``losses_model`` parameters of
-      :py:class:`pvlib.modelchain.ModelChain` should now be ``'pvwattsv5'``
-      instead of ``'pvwatts'``.
-
-  The originals should continue to work for now (emitting a deprecation warning),
-  but will be removed in a future release. (:issue:`1350`, :pull:`1558`)
-
+v0.9.4 (December 20, 2022)
+--------------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -40,17 +13,18 @@ Enhancements
   :py:func:`~pvlib.irradiance.complete_irradiance`.
   (:issue:`1565`, :pull:`1567`)
 * Added optional ``return_components`` parameter to :py:func:`pvlib.irradiance.haydavies` to return
-  individual diffuse irradiance components (:issue:`1553`, :pull:`1568`)
+  individual diffuse irradiance components. (:issue:`1553`, :pull:`1568`)
 * Added a module temperature model that accounts for radiative losses to the sky
   in a simplified way, using the Faiman model as an example.
-  :py:func:`~pvlib.temperature.faiman_rad`
-  (:issue:`1594`, :pull:`1595`)
-* Add a function :py:func:`pvlib.ivtools.utils.astm_e1036` to perform ASTM E1036 extraction of IV
-  curve parameters (:pull:`1585`)
+  :py:func:`~pvlib.temperature.faiman_rad` (:issue:`1594`, :pull:`1595`)
+* Added a function :py:func:`pvlib.ivtools.utils.astm_e1036` to perform ASTM E1036 extraction of IV
+  curve parameters. (:pull:`1585`)
+* Added the ADR PV module efficiency model and a function to find its parameters from field or lab measurements
+  (:py:func:`~pvlib.pvarray.pvefficiency_adr` and :py:func:`~pvlib.pvarray.fit_pvefficiency_adr`).
+  (:issue:`1544`, :pull:`1602`)
 
 Bug fixes
 ~~~~~~~~~
-
 * Fixed bug in :py:func:`pvlib.shading.masking_angle` and :py:func:`pvlib.bifacial.infinite_sheds._ground_angle`
   where zero ``gcr`` input caused a ZeroDivisionError. (:issue:`1576`, :pull:`1589`)
 * Fixed bug in :py:func:`pvlib.tools._golden_sect_DataFrame` so that a result is returned when the search
@@ -58,22 +32,23 @@ Bug fixes
 
 Testing
 ~~~~~~~
-* Corrected a flawed test for :py:func:`~pvlib.irradiance.get_ground_diffuse` (:issue:`1569`, :pull:`1575`)
-
+* Corrected a flawed test for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:issue:`1569`, :pull:`1575`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Added an FAQ page to the docs: :ref:`faq`. (:issue:`1546`, :pull:`1549`)
-* Fixed equation in :py:func:`pvlib.iam.martin_ruiz` docstring (:issue:`1561`, :pull:`1599`)
-* Fixed an error in :py:func:`pvlib.singlediode.bishop88_mpp` docstring (:issue:`1613`, :pull:`1615`)
+* Fixed equation in :py:func:`pvlib.iam.martin_ruiz` docstring. (:issue:`1561`, :pull:`1599`)
+* Fixed an error in :py:func:`pvlib.singlediode.bishop88_mpp` docstring. (:issue:`1613`, :pull:`1615`)
+* Added three gallery examples demonstrating how the new ADR PV model can be used for
+  time series simulation. (:issue:`1544`, :pull:`1602`)
 
 Benchmarking
 ~~~~~~~~~~~~~
-* Removed ``time_tracker_singleaxis`` function from tracking.py (:issue:`1508`, :pull:`1535`)
+* Removed ``time_tracker_singleaxis`` function from tracking.py. (:issue:`1508`, :pull:`1535`)
 
 Requirements
 ~~~~~~~~~~~~
-
+* Minimum version of scipy advanced from 1.2.0 to 1.4.0. (:issue:`483`, :pull:`1617`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -90,3 +65,8 @@ Contributors
 * Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* :ghuser:`avarf`
+* Marios Theristis (:ghuser:`mtheristis`)

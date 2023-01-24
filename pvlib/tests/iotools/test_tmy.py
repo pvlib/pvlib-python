@@ -33,6 +33,15 @@ def test_read_tmy3_norecolumn():
 def test_read_tmy3_map_variables():
     data, meta = tmy.read_tmy3(TMY3_TESTFILE, map_variables=True)
     assert 'ghi' in data.columns
+    assert 'dni' in data.columns
+    assert 'dhi' in data.columns
+    assert 'pressure' in data.columns
+    assert 'wind_direction' in data.columns
+    assert 'wind_speed' in data.columns
+    assert 'temp_air' in data.columns
+    assert 'temp_dew' in data.columns
+    assert 'relative_humidity' in data.columns
+    assert 'albedo' in data.columns
 
 
 def test_read_tmy3_map_variables_deprecating_warning():

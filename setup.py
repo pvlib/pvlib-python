@@ -42,7 +42,7 @@ INSTALL_REQUIRES = ['numpy >= 1.16.0',
                     'h5py',
                     'importlib-metadata; python_version < "3.8"']
 
-TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
+TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
                  'pytest-remotedata']
 EXTRAS_REQUIRE = {

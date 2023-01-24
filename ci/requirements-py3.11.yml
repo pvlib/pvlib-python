@@ -25,5 +25,5 @@ dependencies:
     - scipy >= 1.2.0
     - statsmodels
     - pip:
-        - nrel-pysam>=2.0
+        # - nrel-pysam>=2.0
         - pvfactors==1.5.2

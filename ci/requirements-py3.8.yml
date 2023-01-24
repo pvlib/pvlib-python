@@ -23,9 +23,8 @@ dependencies:
     - pytz
     - requests
     - scipy >= 1.4.0
-    - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - statsmodels
     - pip:
         - nrel-pysam>=2.0
-        - pvfactors==1.4.1
+        - pvfactors==1.5.2

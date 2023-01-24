@@ -24,6 +24,7 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Added Python 3.11 to test suite. (:pull:`1582`)
 
 
 Documentation

@@ -4,12 +4,11 @@ channels:
     - conda-forge
 dependencies:
     - coveralls
-    # - cython
-    # - ephem
+    - cython
+    - ephem
     - h5py
-    # - netcdf4  # ???
-    # - nose
-    # - numba  # ???
+    - netcdf4
+    # - numba  # https://github.com/numba/numba/issues/8304
     - numpy >= 1.16.0
     - pandas >= 0.25.0
     - pip
@@ -24,8 +23,6 @@ dependencies:
     - pytz
     - requests
     - scipy >= 1.2.0
-    # - shapely  # ??? pvfactors dependency
-    # - siphon  # conda-forge
     - statsmodels
     - pip:
         # - nrel-pysam>=2.0  # install error on windows

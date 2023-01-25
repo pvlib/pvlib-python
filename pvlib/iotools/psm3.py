@@ -15,13 +15,12 @@ PSM_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-download.csv"
 TMY_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-tmy-download.csv"
 PSM5MIN_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-5min-download.csv"
 
-# 'relative_humidity', 'total_precipitable_water' are not available
 ATTRIBUTES = (
     'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi', 'surface_albedo',
     'surface_pressure', 'wind_direction', 'wind_speed')
 PVLIB_PYTHON = 'pvlib python'
 
-# Dictionary mapping PSM3 names to pvlib names
+# Dictionary mapping PSM3 response names to pvlib names
 VARIABLE_MAP = {
     'GHI': 'ghi',
     'DHI': 'dhi',
@@ -38,6 +37,20 @@ VARIABLE_MAP = {
     'Wind Speed': 'wind_speed',
     'Surface Albedo': 'albedo',
     'Precipitable Water': 'precipitable_water',
+}
+
+# Dictionary mapping pvlib names to PSM3 request names
+# Note, PSM3 uses different names for the same variables in the response and request
+REQUEST_VARIABLE_MAP = {
+    'temp_air': 'air_temperature',
+    'ghi_clear': 'clearsky_dhi',
+    'dni_clear': 'clearsky_dni',
+    'dhi_clear': 'clearsky_dhi',
+    'temp_dew': 'dew_point',
+    'zenith': 'solar_zenith_angle',
+    'albedo': 'surface_albedo',
+    'pressure': 'surface_pressure',
+    'precipitable_water': 'total_precipitable_water',
 }
 
 
@@ -74,7 +87,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         meteorological fields to fetch. If not specified, defaults to
         ``pvlib.iotools.psm3.ATTRIBUTES``. See references [2]_, [3]_, and [4]_
         for lists of available fields. Alternatively, pvlib names may also be
-        used (e.g. 'ghi' rather than 'GHI'); see :const:`VARIABLE_MAP`.
+        used (e.g. 'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`.
     leap_day : boolean, default False
         include leap day in the results. Only used for single-year requests
         (i.e., it is ignored for tmy/tgy/tdy requests).
@@ -158,12 +171,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # convert to string to accomodate integer years being passed in
     names = str(names)
 
-    # convert pvlib names in attributes to psm3 convention (reverse mapping)
-    # unlike psm3 columns, attributes are lower case and with underscores
-    amap = {value: key.lower().replace(' ', '_') for (key, value) in
-            VARIABLE_MAP.items()}
-    attributes = [amap.get(a, a) for a in attributes]
-    attributes = list(set(attributes))  # remove duplicate values
+    # convert pvlib names in attributes to psm3 convention
+    attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
 
     if (leap_day is None) and (not names.startswith('t')):
         warnings.warn(

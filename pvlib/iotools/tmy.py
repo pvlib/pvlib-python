@@ -174,8 +174,10 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
     ----------
     .. [1] Wilcox, S and Marion, W. "Users Manual for TMY3 Data Sets".
        NREL/TP-581-43156, Revised May 2008.
+       :doi:`10.2172/928611`
     .. [2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005
        Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.
+       :doi:`10.2172/901864`
     .. [3] `SolarAnywhere file formats
        <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
     """  # noqa: E501

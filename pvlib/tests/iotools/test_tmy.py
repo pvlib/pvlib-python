@@ -42,6 +42,9 @@ def test_read_tmy3_map_variables():
     assert 'temp_dew' in data.columns
     assert 'relative_humidity' in data.columns
     assert 'albedo' in data.columns
+    assert 'ghi_extra' in data.columns
+    assert 'dni_extra' in data.columns
+    assert 'precipitable_water' in data.columns
 
 
 def test_read_tmy3_map_variables_deprecating_warning():

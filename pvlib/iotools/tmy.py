@@ -9,7 +9,9 @@ from pvlib._deprecation import pvlibDeprecationWarning
 # Dictionary mapping TMY3 names to pvlib names
 VARIABLE_MAP = {
     'GHI (W/m^2)': 'ghi',
+    'ETR (W/m^2)': 'ghi_extra',
     'DNI (W/m^2)': 'dni',
+    'ETRN (W/m^2)': 'dni_extra',
     'DHI (W/m^2)': 'dhi',
     'Pressure (mbar)': 'pressure',
     'Wdir (degrees)': 'wind_direction',
@@ -18,6 +20,7 @@ VARIABLE_MAP = {
     'Dew-point (C)': 'temp_dew',
     'RHum (%)': 'relative_humidity',
     'Alb (unitless)': 'albedo',
+    'Pwat (cm)': 'precipitable_water'
 }
 
 
@@ -222,7 +225,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
             data = _recolumn(data)  # rename to standard column names
         warnings.warn(
             'TMY3 variable names will be renamed to pvlib conventions by '
-            'default starting in pvlib 0.9.5. Specify map_variables=True '
+            'default starting in pvlib 0.11.0. Specify map_variables=True '
             'to enable that behavior now, or specify map_variables=False '
             'to hide this warning.', pvlibDeprecationWarning)
         map_variables = False

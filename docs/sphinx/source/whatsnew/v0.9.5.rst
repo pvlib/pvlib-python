@@ -25,6 +25,8 @@ Bug fixes
 Testing
 ~~~~~~~
 * Added Python 3.11 to test suite. (:pull:`1582`)
+* Updated PSM3 test data files to match the new version 3.2.2 data returned
+  by the PSM3 API (:issue:`1591`, :pull:`1652`)
 
 
 Documentation

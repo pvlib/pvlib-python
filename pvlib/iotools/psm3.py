@@ -41,7 +41,7 @@ VARIABLE_MAP = {
 
 # Dictionary mapping pvlib names to PSM3 request names
 # Note, PSM3 uses different names for the same variables in the
-# response the request
+# response and the request
 REQUEST_VARIABLE_MAP = {
     'temp_air': 'air_temperature',
     'ghi_clear': 'clearsky_dhi',

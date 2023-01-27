@@ -37,14 +37,6 @@
   </td>
 </tr>
 <tr>
-  <td>Snyk Advisor</td>
-  <td>
-    <a href="https://snyk.io/advisor/python/pvlib">
-    <img src="https://snyk.io/advisor/python/pvlib/badge.svg?logo=lgtm&logoWidth=18" alt="pvlib" />
-    </a>
-  </td>
-</tr>
-<tr>
   <td>Benchmarks</td>
   <td>
     <a href="https://pvlib-benchmarker.github.io/pvlib-benchmarks/">

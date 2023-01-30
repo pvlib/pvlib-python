@@ -135,7 +135,7 @@ def test_loss_townsend():
 
 
 @pytest.mark.parametrize(
-    'poa_global,surface_tilt,slant_height,lower_edge_height,string_factor,expected',
+    'poa_global,surface_tilt,slant_height,lower_edge_height,string_factor,expected',  # noQA: E501
     [
         (np.asarray(
             [60., 80., 100., 125., 175., 225., 225., 210., 175., 125., 90.,
@@ -146,7 +146,7 @@ def test_loss_townsend():
          1.0,
          np.asarray(
             [44, 34, 20, 9, 3, 1, 0, 0, 0, 2, 6, 25], dtype=float)
-        ),
+         ),
         (np.asarray(
             [60., 80., 100., 125., 175., 225., 225., 210., 175., 125., 90.,
              60.], dtype=float) * 1000.,
@@ -156,7 +156,7 @@ def test_loss_townsend():
          0.75,
          np.asarray(
             [22, 16, 9, 4, 1, 0, 0, 0, 0, 1, 2, 12], dtype=float)
-        ),
+         ),
         (np.asarray(
             [60., 80., 100., 125., 175., 225., 225., 210., 175., 125., 90.,
              60.], dtype=float) * 1000.,
@@ -166,32 +166,32 @@ def test_loss_townsend():
          0.75,
          np.asarray(
             [28, 21, 13, 6, 2, 0, 0, 0, 0, 1, 4, 16], dtype=float)
-        ),
+         ),
         (np.asarray(
-             [80., 100., 125., 150., 225., 300., 300., 275., 225., 150., 115.,
-              80.], dtype=float) * 1000.,
+            [80., 100., 125., 150., 225., 300., 300., 275., 225., 150., 115.,
+             80.], dtype=float) * 1000.,
          52.,
          39.5 / 39.37,
          34. / 39.37,
          0.75,
          np.asarray(
              [7, 5, 3, 1, 0, 0, 0, 0, 0, 0, 1, 4], dtype=float)
-        ),
+         ),
         (np.asarray(
-             [80., 100., 125., 150., 225., 300., 300., 275., 225., 150., 115.,
-              80.], dtype=float) * 1000.,
+            [80., 100., 125., 150., 225., 300., 300., 275., 225., 150., 115.,
+             80.], dtype=float) * 1000.,
          60.,
          39.5 / 39.37,
          25. / 39.37,
          1.,
          np.asarray(
              [7, 5, 3, 1, 0, 0, 0, 0, 0, 0, 1, 3], dtype=float)
-        )
+         )
     ]
 )
-def test_loss_townsend_cases(
-    poa_global, surface_tilt, slant_height, lower_edge_height, string_factor,
-    expected):
+
+def test_loss_townsend_cases(poa_global, surface_tilt, slant_height,
+                             lower_edge_height, string_factor, expected):
     # test cases from Townsend, 1/27/2023, addeed by cwh
     # snow_total in inches, convert to cm for pvlib
     snow_total = np.asarray(

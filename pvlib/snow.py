@@ -231,7 +231,7 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
 
     snow_events : array-like
         Number of snowfall events each month. May be int or float type for
-        the average events in a typical month. Referred to as N in [1]_. 
+        the average events in a typical month. Referred to as N in [1]_.
 
     surface_tilt : float
         Tilt angle of the array. [deg]

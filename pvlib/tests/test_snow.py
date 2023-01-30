@@ -195,7 +195,7 @@ def test_loss_townsend_cases(poa_global, surface_tilt, slant_height,
     # snow_total in inches, convert to cm for pvlib
     snow_total = np.asarray(
         [20, 15, 10, 4, 1.5, 0, 0, 0, 0, 1.5, 4, 15], dtype=float) * 2.54
-    # snow events are an overage for each month
+    # snow events are an average for each month
     snow_events = np.asarray(
         [5, 4.2, 2.8, 1.3, 0.8, 0, 0, 0, 0, 0.5, 1.5, 4.5], dtype=float)
     # air temperature in C

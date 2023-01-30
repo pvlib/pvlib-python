@@ -17,11 +17,11 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * Added the optional `string_factor` parameter to
-  :py:func:``pvlib.snow.loss_townsend`` (:issue:`1636`, :pull:`1653`)
+  :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
 
 Bug fixes
 ~~~~~~~~~
-* Added a limit to :py:func:``pvlib.snow.loss_townsend`` to guard against
+* Added a limit to :py:func:`pvlib.snow.loss_townsend` to guard against
   incorrect loss results for systems that are near the ground (:issue:`1636`,
   :pull:`1653`)
 

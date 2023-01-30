@@ -230,7 +230,8 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Snow received each month. Referred to as S in [1]_. [cm]
 
     snow_events : array-like
-        Number of snowfall events each month. Referred to as N in [1]_. [-]
+        Number of snowfall events each month. May be int or float type for
+        the average events in a typical month. Referred to as N in [1]_. 
 
     surface_tilt : float
         Tilt angle of the array. [deg]
@@ -272,6 +273,9 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     table width for ``slant_height``, i.e., the distance from the tracker
     axis to the module edge.
 
+    The parameter `string_factor` is an enhancement added to the model after
+    publication of [1]_ per private communication with the model's author.
+
     References
     ----------
     .. [1] Townsend, Tim & Powers, Loren. (2011). Photovoltaics and snow: An
@@ -305,6 +309,8 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         + 2 / 3 * effective_snow
     )
 
+    # the lower limit of 0.1 in^2 is per private communication with the model's
+    # author. CWH 1/30/2023
     lower_edge_distance = np.clip(
         lower_edge_height_inches**2 - effective_snow_weighted**2, a_min=0.1,
         a_max=None)

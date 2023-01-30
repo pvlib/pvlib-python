@@ -189,7 +189,6 @@ def test_loss_townsend():
          )
     ]
 )
-
 def test_loss_townsend_cases(poa_global, surface_tilt, slant_height,
                              lower_edge_height, string_factor, expected):
     # test cases from Townsend, 1/27/2023, addeed by cwh

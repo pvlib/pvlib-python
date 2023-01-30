@@ -252,8 +252,8 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
 
     string_factor : float, default 1.0
         Multiplier applied to monthly loss fraction. Use 1.0 if the DC array
-        has one string of modules in the slant direction, use 0.75 otherwise.
-        [-]
+        has only one string of modules in the slant direction, use 0.75
+        otherwise. [-]
 
     angle_of_repose : float, default 40
         Piled snow angle, assumed to stabilize at 40°, the midpoint of
@@ -268,7 +268,9 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     -----
     This model has not been validated for tracking arrays; however, for
     tracking arrays [1]_ suggests using the maximum rotation angle in place
-    of ``surface_tilt``.
+    of ``surface_tilt``. The author of [1]_ recommends using one-half the
+    table width for ``slant_height``, i.e., the distance from the tracker
+    axis to the module edge.
 
     References
     ----------

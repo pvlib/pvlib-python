@@ -110,6 +110,7 @@ def test__townsend_effective_snow():
 
 
 def test_loss_townsend():
+    # hand-calculated solution
     snow_total = np.array([25.4, 25.4, 12.7, 2.54, 0, 0, 0, 0, 0, 0, 12.7,
                            25.4])
     snow_events = np.array([2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3])
@@ -120,6 +121,7 @@ def test_loss_townsend():
     poa_global = np.array([350000, 350000, 350000, 350000, 350000, 350000,
                            350000, 350000, 350000, 350000, 350000, 350000])
     angle_of_repose = 40
+    string_factor = 1.0
     slant_height = 2.54
     lower_edge_height = 0.254
     expected = np.array([0.07696253, 0.07992262, 0.06216201, 0.01715392, 0, 0,
@@ -127,7 +129,8 @@ def test_loss_townsend():
     actual = snow.loss_townsend(snow_total, snow_events, surface_tilt,
                                 relative_humidity, temp_air,
                                 poa_global, slant_height,
-                                lower_edge_height, angle_of_repose)
+                                lower_edge_height, string_factor,
+                                angle_of_repose)
     np.testing.assert_allclose(expected, actual, rtol=1e-05)
 
 

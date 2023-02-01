@@ -80,7 +80,6 @@ Finally, start a http server to view the test results:
 
 ```
 $ asv preview
-
 ```
 
 
@@ -89,5 +88,5 @@ Nightly benchmarking
 
 The benchmarks are run nightly for new commits to pvlib-python/main.
 
-- Timing results: https://pvlib-benchmarker.github.io/pvlib-benchmarks/
-- Information on the process: https://github.com/pvlib-benchmarker/pvlib-benchmarks
+- Timing results: https://pvlib.github.io/pvlib-benchmarks/
+- Information on the process: https://github.com/pvlib/pvlib-benchmarks

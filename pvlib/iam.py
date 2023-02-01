@@ -154,7 +154,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     pvlib.iam.sapm
     """
     n1, n3 = 1, n
-    if n_ar in [None, 1]:
+    if n_ar is None or np.allclose(n_ar, n1):
         # no AR coating
         n2 = n
     else:
@@ -177,12 +177,12 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     rho12_p = ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
     rho12_0 = ((n1 - n2) / (n1 + n2)) ** 2
 
-    # transmittance of s-, p-polarized, and normal light through the first interface
+    # transmittance through the first interface
     tau_s = 1 - rho12_s
     tau_p = 1 - rho12_p
     tau_0 = 1 - rho12_0
 
-    if n3 != n2:  # AR coated glass
+    if not np.allclose(n3, n2):  # AR coated glass
         n3costheta2 = n3 * costheta
         # refraction angle of second interface
         sintheta = n2 / n3 * sintheta
@@ -190,18 +190,22 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
         n2costheta3 = n2 * costheta
         n3costheta3 = n3 * costheta
 
-        # reflectance of s-, p-polarized, and normal light by the second interface
-        rho23_s = ((n2costheta2 - n3costheta3) / (n2costheta2 + n3costheta3)) ** 2
-        rho23_p = ((n2costheta3 - n3costheta2) / (n2costheta3 + n3costheta2)) ** 2
+        # reflectance by the second interface
+        rho23_s = (
+            (n2costheta2 - n3costheta3) / (n2costheta2 + n3costheta3)
+        ) ** 2
+        rho23_p = (
+            (n2costheta3 - n3costheta2) / (n2costheta3 + n3costheta2)
+        ) ** 2
         rho23_0 = ((n2 - n3) / (n2 + n3)) ** 2
 
         # transmittance through the coating, including internal reflections
-        # 1 + rho23 * rho12 + (rho23 * rho12)**2 + ... = 1 / (1 - rho23 * rho12)
+        # 1 + rho23*rho12 + (rho23*rho12)^2 + ... = 1/(1 - rho23*rho12)
         tau_s *= (1 - rho23_s) / (1 - rho23_s * rho12_s)
         tau_p *= (1 - rho23_p) / (1 - rho23_p * rho12_p)
         tau_0 *= (1 - rho23_0) / (1 - rho23_0 * rho12_0)
 
-    # transmittance of s-, p-polarized, and normal light after absorption in the glass
+    # transmittance after absorption in the glass
     tau_s *= np.exp(-K * L / costheta)
     tau_p *= np.exp(-K * L / costheta)
     tau_0 *= np.exp(-K * L)

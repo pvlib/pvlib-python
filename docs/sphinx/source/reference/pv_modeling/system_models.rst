@@ -33,7 +33,7 @@ PVWatts model
 ^^^^^^^^^^^^^
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    pvsystem.pvwatts_dc
    inverter.pvwatts
@@ -43,7 +43,7 @@ ADR model
 ^^^^^^^^^
 
 .. autosummary::
-   :toctree: generated/
+   :toctree: ../generated/
 
    pvarray.pvefficiency_adr
    pvarray.fit_pvefficiency_adr

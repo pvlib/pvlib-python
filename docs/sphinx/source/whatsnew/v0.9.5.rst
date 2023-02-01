@@ -28,11 +28,13 @@ Bug fixes
 Testing
 ~~~~~~~
 * Added Python 3.11 to test suite. (:pull:`1582`)
+* Updated PSM3 test data files to match the new version 3.2.2 data returned
+  by the PSM3 API (:issue:`1591`, :pull:`1652`)
 
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Remove LGTM.com integration. (:issue:`1550`, :pull:`1651`)
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -47,3 +49,4 @@ Contributors
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Adam R. Jensen (:ghuser:`adamrjensen`)
+* Pratham Chauhan (:ghuser:`ooprathamm`)

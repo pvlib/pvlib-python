@@ -60,14 +60,10 @@ using the conda package manager in the
 To install the most recent stable release of pvlib-python in a
 non-editable way, use one of the following commands to install pvlib-python::
 
-    # get the package from the pvlib conda channel
-    # best option for installing pvlib in the base Anaconda distribution
-    conda install -c pvlib pvlib
-
     # get the package from the conda-forge conda channel
-    # best option if using pvlib.forecast module
     # strongly recommend installing in a separate conda env as shown below
-    conda create -n pvlib -c conda-forge pvlib-python; conda activate pvlib
+    # note: both "pvlib" and "pvlib-python" work on conda-forge
+    conda create -n pvlib -c conda-forge pvlib; conda activate pvlib
 
     # get the package from the Python Package Index
     # best option if you know what you are doing
@@ -84,7 +80,7 @@ non-editable way, use one of the following commands to install pvlib-python::
     `ModuleNotFoundError: No module named 'netCDF4'`
     you can either install pvlib with all optional dependencies using
     `pip install pvlib[optional]`, or you can install pvlib from conda-forge
-    `conda create -n pvlib -c conda-forge pvlib-python; conda activate pvlib`.
+    `conda create -n pvlib -c conda-forge pvlib; conda activate pvlib`.
 
 If your system complains that you don't have access privileges or asks
 for a password then you're probably trying to install pvlib into your
@@ -178,7 +174,7 @@ referred to as *conda environments*, but they're the same for our purposes.
    ``conda create --name pvlibdev python pandas scipy``
 #. **Activate** the new conda environment: ``conda activate pvlibdev``
 #. **Install** additional packages into your development environment:
-   ``conda install jupyter ipython matplotlib pytest nose flake8``
+   ``conda install jupyter ipython matplotlib pytest flake8``
 
 The `conda documentation <https://conda.io/docs/index.html>`_ has more
 information on how to use conda virtual environments. You can also add

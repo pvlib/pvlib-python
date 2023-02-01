@@ -422,7 +422,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
 
     Returns
     -------
-    OrderedDict or pandas.DataFrame
+    tuple
         max power current ``i_mp`` [A], max power voltage ``v_mp`` [V], and
         max power ``p_mp`` [W]
     """

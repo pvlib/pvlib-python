@@ -7,7 +7,7 @@ Example of bifacial modeling using pvfactors and procedural method
 
 # %%
 # This example shows how to complete a bifacial modeling example using the
-# :py:func:`pvlib.pvsystem.pvwattsv5_dc` with the
+# :py:func:`pvlib.pvsystem.pvwatts_dc` with the
 # :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries` function to
 # transpose GHI data to both front and rear Plane of Array (POA) irradiance.
 
@@ -83,15 +83,15 @@ effective_irrad_bifi = irrad['total_abs_front'] + (irrad['total_abs_back']
 temp_cell = temperature.faiman(effective_irrad_bifi, temp_air=25,
                                wind_speed=1)
 
-# using the pvwattsv5_dc model and parameters detailed above,
+# using the pvwatts_dc model and parameters detailed above,
 # set pdc0 and return DC power for both bifacial and monofacial
 pdc0 = 1
 gamma_pdc = -0.0043
-pdc_bifi = pvsystem.pvwattsv5_dc(effective_irrad_bifi,
-                                 temp_cell,
-                                 pdc0,
-                                 gamma_pdc=gamma_pdc
-                                 ).fillna(0)
+pdc_bifi = pvsystem.pvwatts_dc(effective_irrad_bifi,
+                               temp_cell,
+                               pdc0,
+                               gamma_pdc=gamma_pdc
+                               ).fillna(0)
 pdc_bifi.plot(title='Bifacial Simulation on June Solstice', ylabel='DC Power')
 
 # %%
@@ -99,11 +99,11 @@ pdc_bifi.plot(title='Bifacial Simulation on June Solstice', ylabel='DC Power')
 # irradiance (AOI-corrected), and plot along with bifacial results.
 
 effective_irrad_mono = irrad['total_abs_front']
-pdc_mono = pvsystem.pvwattsv5_dc(effective_irrad_mono,
-                                 temp_cell,
-                                 pdc0,
-                                 gamma_pdc=gamma_pdc
-                                 ).fillna(0)
+pdc_mono = pvsystem.pvwatts_dc(effective_irrad_mono,
+                               temp_cell,
+                               pdc0,
+                               gamma_pdc=gamma_pdc
+                               ).fillna(0)
 
 # plot monofacial results
 plt.figure()

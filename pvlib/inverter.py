@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 from numpy.polynomial.polynomial import polyfit  # different than np.polyfit
 
-from pvlib._deprecation import deprecated
 
 def _sandia_eff(v_dc, p_dc, inverter):
     r'''
@@ -331,9 +330,9 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
     return power_ac
 
 
-def pvwattsv5(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
+def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    NREL's PVWatts v5 inverter model.
+    NREL's PVWatts inverter model.
 
     The PVWatts inverter model [1]_ calculates inverter efficiency :math:`\eta`
     as a function of input DC power
@@ -371,14 +370,14 @@ def pvwattsv5(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     Notes
     -----
     Note that ``pdc0`` is also used as a symbol in
-    :py:func:`pvlib.pvsystem.pvwattsv5_dc`. ``pdc0`` in this function refers to
+    :py:func:`pvlib.pvsystem.pvwatts_dc`. ``pdc0`` in this function refers to
     the DC power input limit of the inverter. ``pdc0`` in
-    :py:func:`pvlib.pvsystem.pvwattsv5_dc` refers to the DC power of the
-    modules at reference conditions.
+    :py:func:`pvlib.pvsystem.pvwatts_dc` refers to the DC power of the modules
+    at reference conditions.
 
     See Also
     --------
-    pvlib.inverter.pvwattsv5_multi
+    pvlib.inverter.pvwatts_multi
 
     References
     ----------
@@ -405,19 +404,13 @@ def pvwattsv5(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     return power_ac
 
 
-pvwatts = deprecated(since='0.9.4',
-                     name='pvwatts',
-                     alternative='pvwattsv5',
-                     removal='0.11')(pvwattsv5)
-
-
-def pvwattsv5_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
+def pvwatts_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     r"""
-    Extend NREL's PVWatts v5 inverter model for multiple MPPT inputs.
+    Extend NREL's PVWatts inverter model for multiple MPP inputs.
 
-    DC input power is summed over MPPT inputs to obtain the DC power
-    input to the PVWatts v5 inverter model.
-    See :py:func:`pvlib.inverter.pvwattsv5` for details.
+    DC input power is summed over MPP inputs to obtain the DC power
+    input to the PVWatts inverter model. See :py:func:`pvlib.inverter.pvwatts`
+    for details.
 
     Parameters
     ----------
@@ -439,15 +432,9 @@ def pvwattsv5_multi(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     See Also
     --------
-    pvlib.inverter.pvwattsv5
+    pvlib.inverter.pvwatts
     """
-    return pvwattsv5(sum(pdc), pdc0, eta_inv_nom, eta_inv_ref)
-
-
-pvwatts_multi = deprecated(since='0.9.4',
-                           name='pvwatts_multi',
-                           alternative='pvwattsv5_multi',
-                           removal='0.11')(pvwattsv5_multi)
+    return pvwatts(sum(pdc), pdc0, eta_inv_nom, eta_inv_ref)
 
 
 def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):

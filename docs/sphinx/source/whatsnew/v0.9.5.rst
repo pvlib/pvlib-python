@@ -28,7 +28,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+Remove LGTM.com integration. (:issue:`1550`, :pull:`1651`)
 
 Benchmarking
 ~~~~~~~~~~~~~

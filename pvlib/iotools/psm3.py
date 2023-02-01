@@ -30,11 +30,11 @@ VARIABLE_MAP = {
     'Clearsky DNI': 'dni_clear',
     'Solar Zenith Angle': 'solar_zenith',
     'Temperature': 'temp_air',
-    'Relative Humidity': 'relative_humidity',
     'Dew point': 'temp_dew',
+    'Relative Humidity': 'relative_humidity',
     'Pressure': 'pressure',
-    'Wind Direction': 'wind_direction',
     'Wind Speed': 'wind_speed',
+    'Wind Direction': 'wind_direction',
     'Surface Albedo': 'albedo',
     'Precipitable Water': 'precipitable_water',
 }
@@ -43,14 +43,20 @@ VARIABLE_MAP = {
 # Note, PSM3 uses different names for the same variables in the
 # response and the request
 REQUEST_VARIABLE_MAP = {
-    'temp_air': 'air_temperature',
+    'ghi': 'ghi',
+    'dhi': 'dhi',
+    'dni': 'dni',
     'ghi_clear': 'clearsky_dhi',
-    'dni_clear': 'clearsky_dni',
     'dhi_clear': 'clearsky_dhi',
-    'temp_dew': 'dew_point',
+    'dni_clear': 'clearsky_dni',
     'zenith': 'solar_zenith_angle',
-    'albedo': 'surface_albedo',
+    'temp_air': 'air_temperature',
+    'temp_dew': 'dew_point',
+    'relative_humidity': 'relative_humidity',
     'pressure': 'surface_pressure',
+    'wind_speed': 'wind_speed',
+    'wind_direction': 'wind_direction',
+    'albedo': 'surface_albedo',
     'precipitable_water': 'total_precipitable_water',
 }
 

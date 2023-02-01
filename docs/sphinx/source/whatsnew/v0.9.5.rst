@@ -20,6 +20,9 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Fixed incorrect mapping of requested parameters names when using the ``get_psm3``
+  function. Also fixed the random reordering of the dataframe columns.
+  (:issue:`1629`, :issue:`1647`, :pull:`1648`)
 
 
 Testing
@@ -43,3 +46,4 @@ Contributors
 ~~~~~~~~~~~~
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Will Holmgren (:ghuser:`wholmgren`)
+* Adam R. Jensen (:ghuser:`adamrjensen`)

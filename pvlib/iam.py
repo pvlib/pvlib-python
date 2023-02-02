@@ -94,10 +94,12 @@ def ashrae(aoi, b=0.05):
 def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     r"""
     Determine the incidence angle modifier using refractive index ``n``,
-    extinction coefficient ``K``, and glazing thickness ``L``.
+    extinction coefficient ``K``, glazing thickness ``L`` and refractive
+    index ``n_ar`` of an eventual anti-reflective coating.
 
     ``iam.physical`` calculates the incidence angle modifier as described in
-    [1]_, Section 3. The calculation is based on a physical model of absorption
+    [1]_, Section 3, with additional support of an anti-reflective coating.
+    The calculation is based on a physical model of reflections, absorption,
     and transmission through a transparent cover.
 
     Parameters

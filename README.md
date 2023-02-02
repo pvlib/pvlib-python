@@ -37,20 +37,9 @@
   </td>
 </tr>
 <tr>
-  <td>Code Quality</td>
-  <td>
-    <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/context:python">
-    <img src="https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm quality grade" />
-    </a>
-    <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/alerts">
-    <img src="https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm alters" />
-    </a>
-  </td>
-</tr>
-<tr>
   <td>Benchmarks</td>
   <td>
-    <a href="https://pvlib-benchmarker.github.io/pvlib-benchmarks/">
+    <a href="https://pvlib.github.io/pvlib-benchmarks/">
     <img src="https://img.shields.io/badge/benchmarks-asv-lightgrey" />
     </a>
   </td>

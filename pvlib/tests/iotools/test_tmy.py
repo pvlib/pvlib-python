@@ -54,14 +54,16 @@ def test_read_tmy3_map_variables_deprecating_warning():
 
 def test_read_tmy3_coerce_year():
     coerce_year = 1987
-    data, _ = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year, map_variables=False)
+    data, _ = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year,
+                            map_variables=False)
     assert (data.index[:-1].year == 1987).all()
     assert data.index[-1].year == 1988
 
 
 def test_read_tmy3_no_coerce_year():
     coerce_year = None
-    data, _ = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year, map_variables=False)
+    data, _ = tmy.read_tmy3(TMY3_TESTFILE, coerce_year=coerce_year,
+                            map_variables=False)
     assert 1997 and 1999 in data.index.year
     assert data.index[-2] == pd.Timestamp('1998-12-31 23:00:00-09:00')
     assert data.index[-1] == pd.Timestamp('1999-01-01 00:00:00-09:00')
@@ -110,7 +112,7 @@ def test_solaranywhere_tmy3(solaranywhere_index):
     # The SolarAnywhere TMY3 format specifies midnight as 00:00 whereas the
     # NREL TMY3 format utilizes 24:00. The SolarAnywhere file is therefore
     # included to test files with  00:00 timestamps are parsed correctly
-    data, meta = tmy.read_tmy3(TMY3_SOLARANYWHERE,map_variables=False)
+    data, meta = tmy.read_tmy3(TMY3_SOLARANYWHERE, map_variables=False)
     pd.testing.assert_index_equal(data.index, solaranywhere_index)
     assert meta['USAF'] == 0
     assert meta['Name'] == 'Burlington  United States'

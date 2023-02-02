@@ -21,7 +21,7 @@ def test_read_tmy3():
 
 
 def test_read_tmy3_recolumn():
-    data, meta = tmy.read_tmy3(TMY3_TESTFILE)
+    data, meta = tmy.read_tmy3(TMY3_TESTFILE, map_variables=False)
     assert 'GHISource' in data.columns
 
 
@@ -49,7 +49,7 @@ def test_read_tmy3_map_variables():
 
 def test_read_tmy3_map_variables_deprecating_warning():
     with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        data, meta = tmy.read_tmy3(TMY3_TESTFILE)
+        data, meta = tmy.read_tmy3(TMY3_TESTFILE, map_variables=False)
 
 
 def test_read_tmy3_coerce_year():
@@ -91,7 +91,8 @@ def test_gh865_read_tmy3_feb_leapyear_hr24():
     assert data.index[1414] == pd.Timestamp('1996-02-28 23:00:00-0500')
     assert data.index[1415] == pd.Timestamp('1996-03-01 00:00:00-0500')
     # now check if it parses correctly when we try to coerce the year
-    data, _ = read_tmy3(TMY3_FEB_LEAPYEAR, coerce_year=1990)
+    data, _ = read_tmy3(TMY3_FEB_LEAPYEAR, coerce_year=1990,
+                        map_variables=False)
     # if get's here w/o an error, then gh865 is fixed, but let's check anyway
     assert all(data.index[:-1].year == 1990)
     assert data.index[-1].year == 1991

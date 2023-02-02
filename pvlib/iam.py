@@ -16,11 +16,11 @@ from pvlib.tools import cosd, sind
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
 _IAM_MODEL_PARAMS = {
-    'ashrae': {'b'},
-    'physical': {'n', 'K', 'L'},
-    'martin_ruiz': {'a_r'},
-    'sapm': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
-    'interp': set()
+    "ashrae": {"b"},
+    "physical": {"n", "K", "L"},
+    "martin_ruiz": {"a_r"},
+    "sapm": {"B0", "B1", "B2", "B3", "B4", "B5"},
+    "interp": set(),
 }
 
 
@@ -80,7 +80,7 @@ def ashrae(aoi, b=0.05):
     """
 
     iam = 1 - b * (1 / np.cos(np.radians(aoi)) - 1)
-    aoi_gte_90 = np.full_like(aoi, False, dtype='bool')
+    aoi_gte_90 = np.full_like(aoi, False, dtype="bool")
     np.greater_equal(np.abs(aoi), 90, where=~np.isnan(aoi), out=aoi_gte_90)
     iam = np.where(aoi_gte_90, 0, iam)
     iam = np.maximum(0, iam)
@@ -155,12 +155,14 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     pvlib.iam.interp
     pvlib.iam.sapm
     """
-    n1, n3 = 1, n
+    n1 = 1
     if n_ar is None or np.allclose(n_ar, n1):
         # no AR coating
-        n2 = n
+        n2 = n3 = n
     else:
+        # AR coating
         n2 = n_ar
+        n3 = n
 
     # incidence angle
     costheta = np.maximum(0, cosd(aoi))  # always >= 0
@@ -219,7 +221,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
 
 
 def martin_ruiz(aoi, a_r=0.16):
-    r'''
+    r"""
     Determine the incidence angle modifier (IAM) using the Martin
     and Ruiz incident angle model.
 
@@ -277,7 +279,7 @@ def martin_ruiz(aoi, a_r=0.16):
     pvlib.iam.ashrae
     pvlib.iam.interp
     pvlib.iam.sapm
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
     aoi_input = aoi
@@ -288,7 +290,7 @@ def martin_ruiz(aoi, a_r=0.16):
     if np.any(np.less_equal(a_r, 0)):
         raise ValueError("The parameter 'a_r' cannot be zero or negative.")
 
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         iam = (1 - np.exp(-cosd(aoi) / a_r)) / (1 - np.exp(-1 / a_r))
         iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
 
@@ -299,7 +301,7 @@ def martin_ruiz(aoi, a_r=0.16):
 
 
 def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
-    '''
+    """
     Determine the incidence angle modifiers (iam) for diffuse sky and
     ground-reflected irradiance using the Martin and Ruiz incident angle model.
 
@@ -363,7 +365,7 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     pvlib.iam.ashrae
     pvlib.iam.interp
     pvlib.iam.sapm
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct. 2019
 
     if isinstance(surface_tilt, pd.Series):
@@ -389,25 +391,27 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     cos = np.cos
 
     # avoid RuntimeWarnings for <, sin, and cos with nan
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         # because sin(pi) isn't exactly zero
         sin_beta = np.where(surface_tilt < 90, sin(beta), sin(pi - beta))
 
         trig_term_sky = sin_beta + (pi - beta - sin_beta) / (1 + cos(beta))
-        trig_term_gnd = sin_beta +      (beta - sin_beta) / (1 - cos(beta))  # noqa: E222 E261 E501
+        trig_term_gnd = sin_beta + (beta - sin_beta) / (
+            1 - cos(beta)
+        )  # noqa: E222 E261 E501
 
     iam_sky = 1 - np.exp(-(c1 + c2 * trig_term_sky) * trig_term_sky / a_r)
     iam_gnd = 1 - np.exp(-(c1 + c2 * trig_term_gnd) * trig_term_gnd / a_r)
 
     if out_index is not None:
-        iam_sky = pd.Series(iam_sky, index=out_index, name='iam_sky')
-        iam_gnd = pd.Series(iam_gnd, index=out_index, name='iam_ground')
+        iam_sky = pd.Series(iam_sky, index=out_index, name="iam_sky")
+        iam_gnd = pd.Series(iam_gnd, index=out_index, name="iam_ground")
 
     return iam_sky, iam_gnd
 
 
-def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
-    r'''
+def interp(aoi, theta_ref, iam_ref, method="linear", normalize=True):
+    r"""
     Determine the incidence angle modifier (IAM) by interpolating a set of
     reference values, which are usually measured values.
 
@@ -453,24 +457,29 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     pvlib.iam.ashrae
     pvlib.iam.martin_ruiz
     pvlib.iam.sapm
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
     from scipy.interpolate import interp1d
 
     # Scipy doesn't give the clearest feedback, so check number of points here.
-    MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
+    MIN_REF_VALS = {"linear": 2, "quadratic": 3, "cubic": 4, 1: 2, 2: 3, 3: 4}
 
     if len(theta_ref) < MIN_REF_VALS.get(method, 2):
-        raise ValueError("Too few reference points defined "
-                         "for interpolation method '%s'." % method)
+        raise ValueError(
+            "Too few reference points defined for interpolation method '%s'."
+            % method
+        )
 
     if np.any(np.less(iam_ref, 0)):
-        raise ValueError("Negative value(s) found in 'iam_ref'. "
-                         "This is not physically possible.")
+        raise ValueError(
+            "Negative value(s) found in 'iam_ref'. This is not physically"
+            " possible."
+        )
 
-    interpolator = interp1d(theta_ref, iam_ref, kind=method,
-                            fill_value='extrapolate')
+    interpolator = interp1d(
+        theta_ref, iam_ref, kind=method, fill_value="extrapolate"
+    )
     aoi_input = aoi
 
     aoi = np.asanyarray(aoi)
@@ -538,13 +547,19 @@ def sapm(aoi, module, upper=None):
     pvlib.iam.interp
     """
 
-    aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
-                 module['B1'], module['B0']]
+    aoi_coeff = [
+        module["B5"],
+        module["B4"],
+        module["B3"],
+        module["B2"],
+        module["B1"],
+        module["B0"],
+    ]
 
     iam = np.polyval(aoi_coeff, aoi)
     iam = np.clip(iam, 0, upper)
     # nan tolerant masking
-    aoi_lt_0 = np.full_like(aoi, False, dtype='bool')
+    aoi_lt_0 = np.full_like(aoi, False, dtype="bool")
     np.less(aoi, 0, where=~np.isnan(aoi), out=aoi_lt_0)
     iam = np.where(aoi_lt_0, 0, iam)
 
@@ -610,21 +625,21 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     """
 
     models = {
-        'physical': physical,
-        'ashrae': ashrae,
-        'sapm': sapm,
-        'martin_ruiz': martin_ruiz,
-        'schlick': schlick,
+        "physical": physical,
+        "ashrae": ashrae,
+        "sapm": sapm,
+        "martin_ruiz": martin_ruiz,
+        "schlick": schlick,
     }
 
     try:
         iam_model = models[model]
     except KeyError:
-        raise ValueError('model must be one of: ' + str(list(models.keys())))
+        raise ValueError("model must be one of: " + str(list(models.keys())))
 
     iam_function = functools.partial(iam_model, **kwargs)
     iam = {}
-    for region in ['sky', 'horizon', 'ground']:
+    for region in ["sky", "horizon", "ground"]:
         iam[region] = marion_integrate(iam_function, surface_tilt, region)
 
     return iam
@@ -695,34 +710,34 @@ def marion_integrate(function, surface_tilt, region, num=None):
     """
 
     if num is None:
-        if region in ['sky', 'ground']:
+        if region in ["sky", "ground"]:
             num = 180
-        elif region == 'horizon':
+        elif region == "horizon":
             num = 1800
         else:
-            raise ValueError(f'Invalid region: {region}')
+            raise ValueError(f"Invalid region: {region}")
 
     beta = np.radians(surface_tilt)
     if isinstance(beta, pd.Series):
         # convert Series to np array for broadcasting later
         beta = beta.values
-    ai = np.pi/num  # angular increment
+    ai = np.pi / num  # angular increment
 
     phi_range = np.linspace(0, np.pi, num, endpoint=False)
-    psi_range = np.linspace(0, 2*np.pi, 2*num, endpoint=False)
+    psi_range = np.linspace(0, 2 * np.pi, 2 * num, endpoint=False)
 
     # the pseudocode in [1] do these checks at the end, but it's
     # faster to do this criteria check up front instead of later.
-    if region == 'sky':
-        mask = phi_range + ai <= np.pi/2
-    elif region == 'horizon':
-        lo = 89.5 * np.pi/180
-        hi = np.pi/2
+    if region == "sky":
+        mask = phi_range + ai <= np.pi / 2
+    elif region == "horizon":
+        lo = 89.5 * np.pi / 180
+        hi = np.pi / 2
         mask = (lo <= phi_range) & (phi_range + ai <= hi)
-    elif region == 'ground':
-        mask = (phi_range >= np.pi/2)
+    elif region == "ground":
+        mask = phi_range >= np.pi / 2
     else:
-        raise ValueError(f'Invalid region: {region}')
+        raise ValueError(f"Invalid region: {region}")
     phi_range = phi_range[mask]
 
     # fast Cartesian product of phi and psi
@@ -733,8 +748,8 @@ def marion_integrate(function, surface_tilt, region, num=None):
     psi_1 = angles[:, [1]]
     phi_2 = phi_1 + ai
     # psi_2 = psi_1 + ai  # not needed
-    phi_avg = phi_1 + 0.5*ai
-    psi_avg = psi_1 + 0.5*ai
+    phi_avg = phi_1 + 0.5 * ai
+    psi_avg = psi_1 + 0.5 * ai
     term_1 = np.cos(beta) * np.cos(phi_avg)
     # The AOI formula includes a term based on the difference between
     # panel azimuth and the photon azimuth, but because we assume each class
@@ -751,18 +766,18 @@ def marion_integrate(function, surface_tilt, region, num=None):
     dAs = ai * (np.cos(phi_1) - np.cos(phi_2))
     cosaoi_dAs = cosaoi * dAs
     # apply the final AOI check, zeroing out non-passing points
-    mask = aoi < np.pi/2
+    mask = aoi < np.pi / 2
     cosaoi_dAs = np.where(mask, cosaoi_dAs, 0)
     numerator = np.sum(function(np.degrees(aoi)) * cosaoi_dAs, axis=0)
     denominator = np.sum(cosaoi_dAs, axis=0)
 
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         # in some cases, no points pass the criteria
         # (e.g. region='ground', surface_tilt=0), so we override the division
         # by zero to set Fd=0.  Also, preserve nans in beta.
-        Fd = np.where((denominator != 0) | ~np.isfinite(beta),
-                      numerator / denominator,
-                      0)
+        Fd = np.where(
+            (denominator != 0) | ~np.isfinite(beta), numerator / denominator, 0
+        )
 
     # preserve input type
     if np.isscalar(surface_tilt):
@@ -871,13 +886,18 @@ def schlick_diffuse(surface_tilt):
     cosB = cosd(surface_tilt)
     sinB = sind(surface_tilt)
     cuk = (2 / (np.pi * (1 + cosB))) * (
-        (30/7)*np.pi - (160/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
-        + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
-        - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
+        (30 / 7) * np.pi
+        - (160 / 21) * np.radians(surface_tilt)
+        - (10 / 3) * np.pi * cosB
+        + (160 / 21) * cosB * sinB
+        - (5 / 3) * np.pi * cosB * sinB**2
+        + (20 / 7) * cosB * sinB**3
+        - (5 / 16) * np.pi * cosB * sinB**4
+        + (16 / 105) * cosB * sinB**5
     )  # Eq 4 in [2]
 
     # relative transmittance of ground-reflected radiation by PV cover:
-    with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6 in [2]
+    with np.errstate(divide="ignore", invalid="ignore"):  # Eq 6 in [2]
         cug = 40 / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
 
     cug = np.where(surface_tilt < 1e-6, 0, cug)

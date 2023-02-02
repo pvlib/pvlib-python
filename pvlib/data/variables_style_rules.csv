@@ -7,6 +7,7 @@ dni_extra;direct normal irradiance at top of atmosphere (extraterrestrial)
 dhi;diffuse horizontal irradiance
 bhi;beam/direct horizontal irradiance
 ghi;global horizontal irradiance
+ghi_extra;Extraterrestrial horizontal radiation recv’d during 60 minutes prior to timestamp
 gri;ground-reflected irradiance
 aoi;angle of incidence between :math:`90\deg` and :math:`90\deg`
 aoi_projection;cos(aoi)
@@ -49,3 +50,5 @@ pac, ac; ac powe.
 eta_inv; inverter efficiency
 eta_inv_ref; reference inverter efficiency
 eta_inv_nom; nominal inverter efficiency
+albedo;The ratio of reflected solar irradiance to global horizontal irradiance, unitless
+precipitable_water;Total precipitable water contained in a column of unit cross section from earth to top of atmosphere

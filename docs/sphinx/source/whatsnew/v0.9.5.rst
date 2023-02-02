@@ -16,7 +16,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added variable mapping of columns when reading TMY3 dataframe using the 
+  ``read_tmy3`` function.
+  (:issue:`1517`, :pull:`1623`)
 
 Bug fixes
 ~~~~~~~~~

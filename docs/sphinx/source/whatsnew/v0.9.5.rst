@@ -12,12 +12,13 @@ the ``pvlib`` `conda channel <https://anaconda.org/pvlib/pvlib>`_.  We recommend
 
 Deprecations
 ~~~~~~~~~~~~
-
-
+* Deprecated the ``recolumn`` argument in :py:func:`pvlib.iotools.read_tmy3` which
+  stripped the units from the original column names. (:issue:`1517`, :pull:`1623`)
+ 
 Enhancements
 ~~~~~~~~~~~~
-* Added variable mapping of columns when reading TMY3 dataframe using the 
-  ``read_tmy3`` function.
+* Added ``map_variables`` argument to the :py:func:`pvlib.iotools.read_tmy3` in
+  order to offer the option of mapping column names to standard pvlib names.
   (:issue:`1517`, :pull:`1623`)
 
 Bug fixes

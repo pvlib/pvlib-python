@@ -95,7 +95,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     r"""
     Determine the incidence angle modifier using refractive index ``n``,
     extinction coefficient ``K``, glazing thickness ``L`` and refractive
-    index ``n_ar`` of an eventual anti-reflective coating.
+    index ``n_ar`` of an optional anti-reflective coating.
 
     ``iam.physical`` calculates the incidence angle modifier as described in
     [1]_, Section 3, with additional support of an anti-reflective coating.
@@ -124,8 +124,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
 
     n_ar : numeric, default None
         The effective index of refraction of the anti-reflective coating
-        (unitless).
-        If n_ar is None, no anti-reflective coating is applied.
+        (unitless). If n_ar is None, no anti-reflective coating is applied.
 
     Returns
     -------

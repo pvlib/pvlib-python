@@ -81,7 +81,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Notes
     -----
-    The CEC model and estimation method  are described in [1]_.
+    The CEC model and estimation method are described in [1]_.
     Inputs ``v_mp``, ``i_mp``, ``v_oc`` and ``i_sc`` are assumed to be from a
     single IV curve at constant irradiance and cell temperature. Irradiance is
     not explicitly used by the fitting procedure. The irradiance level at which

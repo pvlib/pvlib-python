@@ -148,7 +148,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
         Available models include the following:
 
         * 'simple' - secant(apparent zenith angle) -
-          Note that this gives -Inf at zenith=90
+          Note that this gives +Inf at zenith=90
         * 'kasten1966' - See reference [1] -
           requires apparent sun zenith
         * 'youngirvine1967' - See reference [2] -

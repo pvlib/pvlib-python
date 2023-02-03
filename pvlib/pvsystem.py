@@ -2497,8 +2497,8 @@ def sapm(effective_irradiance, temp_cell, module):
                        Imp, Vmp, Ix, and Ixx to effective irradiance
     Isco               Short circuit current at reference condition (amps)
     Impo               Maximum power current at reference condition (amps)
-    Voco               Open circuit voltage at reference condition (amps)
-    Vmpo               Maximum power voltage at reference condition (amps)
+    Voco               Open circuit voltage at reference condition (volts)
+    Vmpo               Maximum power voltage at reference condition (volts)
     Aisc               Short circuit current temperature coefficient at
                        reference condition (1/C)
     Aimp               Maximum power current temperature coefficient at

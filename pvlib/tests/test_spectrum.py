@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pvlib import spectrum
 
-from .conftest import DATA_DIR, assert_series_equal
+from .conftest import DATA_DIR
 
 SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
 
@@ -193,12 +193,12 @@ def martin_ruiz_mismatch_data():
             'sky': [0.94889, 0.91699, 0.88616, 0.85637, 0.82758, 0.79976],
             'gnd': [1.03801, 1.02259, 1.00740, 0.99243, 0.97769, 0.96316]},
         'monosi_model_params_dict': {
-            'direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
-            'sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},
-            'ground_diffuse': {'c': 0.970, 'a': -2.44e-1, 'b': 1.29e-2}},
+            'poa_direct': {'c': 1.029, 'a': -3.13e-1, 'b': 5.24e-3},
+            'poa_sky_diffuse': {'c': 0.764, 'a': -8.82e-1, 'b': -2.04e-2},
+            'poa_ground_diffuse': {'c': 0.970, 'a': -2.44e-1, 'b': 1.29e-2}},
         'monosi_custom_params_df': pd.DataFrame({
-            'direct': [1.029, -0.313, 0.00524],
-            'sky_diffuse': [0.764, -0.882, -0.0204]},
+            'poa_direct': [1.029, -0.313, 0.00524],
+            'poa_sky_diffuse': [0.764, -0.882, -0.0204]},
             index=('c', 'a', 'b'))
     }
     return kwargs
@@ -212,13 +212,13 @@ def test_martin_ruiz_mm_scalar(martin_ruiz_mismatch_data):
                                                     airmass_absolute,
                                                     cell_type='asi')
 
-    assert_approx_equal(result['direct'],
+    assert_approx_equal(result['poa_direct'],
                         martin_ruiz_mismatch_data['asi_expected']['dir'][0],
                         significant=5)
-    assert_approx_equal(result['sky_diffuse'],
+    assert_approx_equal(result['poa_sky_diffuse'],
                         martin_ruiz_mismatch_data['asi_expected']['sky'][0],
                         significant=5)
-    assert_approx_equal(result['ground_diffuse'],
+    assert_approx_equal(result['poa_ground_diffuse'],
                         martin_ruiz_mismatch_data['asi_expected']['gnd'][0],
                         significant=5)
 
@@ -227,17 +227,17 @@ def test_martin_ruiz_mm_series(martin_ruiz_mismatch_data):
     # test with Series input ; only cell_type given
     clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
     airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
-    expected = {
+    expected = pd.DataFrame(data={
         'dir': pd.Series(martin_ruiz_mismatch_data['polysi_expected']['dir']),
         'sky': pd.Series(martin_ruiz_mismatch_data['polysi_expected']['sky']),
-        'gnd': pd.Series(martin_ruiz_mismatch_data['polysi_expected']['gnd'])}
+        'gnd': pd.Series(martin_ruiz_mismatch_data['polysi_expected']['gnd'])})
 
     result = spectrum.martin_ruiz_spectral_modifier(clearness_index,
                                                     airmass_absolute,
                                                     cell_type='polysi')
-    assert_series_equal(result['direct'], expected['dir'], atol=1e-5)
-    assert_series_equal(result['sky_diffuse'], expected['sky'], atol=1e-5)
-    assert_series_equal(result['ground_diffuse'], expected['gnd'], atol=1e-5)
+    assert_allclose(result['poa_direct'], expected['dir'], atol=1e-5)
+    assert_allclose(result['poa_sky_diffuse'], expected['sky'], atol=1e-5)
+    assert_allclose(result['poa_ground_diffuse'], expected['gnd'], atol=1e-5)
 
 
 def test_martin_ruiz_mm_nans(martin_ruiz_mismatch_data):
@@ -249,12 +249,12 @@ def test_martin_ruiz_mm_nans(martin_ruiz_mismatch_data):
     result = spectrum.martin_ruiz_spectral_modifier(clearness_index,
                                                     airmass_absolute,
                                                     cell_type='monosi')
-    assert np.isnan(result['direct'][:5]).all()
-    assert not np.isnan(result['direct'][5:]).any()
-    assert np.isnan(result['sky_diffuse'][:5]).all()
-    assert not np.isnan(result['sky_diffuse'][5:]).any()
-    assert np.isnan(result['ground_diffuse'][:5]).all()
-    assert not np.isnan(result['ground_diffuse'][5:]).any()
+    assert np.isnan(result['poa_direct'][:5]).all()
+    assert not np.isnan(result['poa_direct'][5:]).any()
+    assert np.isnan(result['poa_sky_diffuse'][:5]).all()
+    assert not np.isnan(result['poa_sky_diffuse'][5:]).any()
+    assert np.isnan(result['poa_ground_diffuse'][:5]).all()
+    assert not np.isnan(result['poa_ground_diffuse'][5:]).any()
 
 
 def test_martin_ruiz_mm_model_dict(martin_ruiz_mismatch_data):
@@ -262,19 +262,19 @@ def test_martin_ruiz_mm_model_dict(martin_ruiz_mismatch_data):
     # test custom quantity of components and its names can be given
     clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
     airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
-    expected = {
+    expected = pd.DataFrame(data={
         'dir': pd.Series(martin_ruiz_mismatch_data['monosi_expected']['dir']),
         'sky': pd.Series(martin_ruiz_mismatch_data['monosi_expected']['sky']),
-        'gnd': pd.Series(martin_ruiz_mismatch_data['monosi_expected']['gnd'])}
+        'gnd': pd.Series(martin_ruiz_mismatch_data['monosi_expected']['gnd'])})
     model_parameters = martin_ruiz_mismatch_data['monosi_model_params_dict']
 
     result = spectrum.martin_ruiz_spectral_modifier(
         clearness_index,
         airmass_absolute,
         model_parameters=model_parameters)
-    assert_allclose(result['direct'], expected['dir'], atol=1e-5)
-    assert_allclose(result['sky_diffuse'], expected['sky'], atol=1e-5)
-    assert_allclose(result['ground_diffuse'], expected['gnd'], atol=1e-5)
+    assert_allclose(result['poa_direct'], expected['dir'], atol=1e-5)
+    assert_allclose(result['poa_sky_diffuse'], expected['sky'], atol=1e-5)
+    assert_allclose(result['poa_ground_diffuse'], expected['gnd'], atol=1e-5)
 
 
 def test_martin_ruiz_mm_model_df(martin_ruiz_mismatch_data):
@@ -283,17 +283,17 @@ def test_martin_ruiz_mm_model_df(martin_ruiz_mismatch_data):
     clearness_index = np.array(martin_ruiz_mismatch_data['clearness_index'])
     airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
     model_parameters = martin_ruiz_mismatch_data['monosi_custom_params_df']
-    expected = {
+    expected = pd.DataFrame(data={
         'dir': np.array(martin_ruiz_mismatch_data['monosi_expected']['dir']),
-        'sky': np.array(martin_ruiz_mismatch_data['monosi_expected']['sky'])}
+        'sky': np.array(martin_ruiz_mismatch_data['monosi_expected']['sky'])})
 
     result = spectrum.martin_ruiz_spectral_modifier(
         clearness_index,
         airmass_absolute,
         model_parameters=model_parameters)
-    assert_allclose(result['direct'], expected['dir'], atol=1e-5)
-    assert_allclose(result['sky_diffuse'], expected['sky'], atol=1e-5)
-    assert_equal(result['ground_diffuse'], None)
+    assert_allclose(result['poa_direct'], expected['dir'], atol=1e-5)
+    assert_allclose(result['poa_sky_diffuse'], expected['sky'], atol=1e-5)
+    assert result['poa_ground_diffuse'].isna().all()
 
 
 def test_martin_ruiz_mm_userwarning(martin_ruiz_mismatch_data):

@@ -269,7 +269,8 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
 
     model_parameters : dict-like, optional
         In case you computed the model parameters. In case any component is not
-        specified, result will have a ``None`` value in its corresponding key.
+        specified, result will have a ``np.nan`` value in its
+        corresponding value.
         Provide either a dict or a ``pd.DataFrame`` as follows:
 
         .. code-block:: python
@@ -277,24 +278,25 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
             # Using a dict
             # Return keys are the same as specifying 'cell_type'
             model_parameters = {
-                'direct': {'c': c1, 'a': a1, 'b': b1},
-                'sky_diffuse': {'c': c2, 'a': a2, 'b': b2},
-                'ground_diffuse': {'c': c3, 'a': a3, 'b': b3}
+                'poa_direct': {'c': c1, 'a': a1, 'b': b1},
+                'poa_sky_diffuse': {'c': c2, 'a': a2, 'b': b2},
+                'poa_ground_diffuse': {'c': c3, 'a': a3, 'b': b3}
             }
             # Using a pd.DataFrame
             model_parameters = pd.DataFrame({
-                'direct': [c1, a1, b1],
-                'sky_diffuse':  [c2, a2, b2],
-                'ground_diffuse': [c3, a3, b3]},
+                'poa_direct': [c1, a1, b1],
+                'poa_sky_diffuse':  [c2, a2, b2],
+                'poa_ground_diffuse': [c3, a3, b3]},
                 index=('c', 'a', 'b'))
 
         ``c``, ``a`` and ``b`` must be scalar.
 
     Returns
     -------
-    Mismatch modifiers : pd.Series of numeric or None
-        Modifiers for direct, sky diffuse and ground diffuse irradiances, with
-        indexes ``direct``, ``sky_diffuse``, ``ground_diffuse``.
+    Modifiers : pd.DataFrame (iterable input) or dict (scalar input) of numeric
+        Mismatch modifiers for direct, sky diffuse and ground diffuse
+        irradiances, with indexes ``poa_direct``, ``poa_sky_diffuse``,
+        ``poa_ground_diffuse``.
         Each mismatch modifier should be multiplied by its corresponding
         POA component.
         Returns None for a component if provided ``model_parameters`` does not
@@ -333,7 +335,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     """
     # Note tests for this function are prefixed with test_martin_ruiz_mm_*
 
-    IRRAD_COMPONENTS = ('direct', 'sky_diffuse', 'ground_diffuse')
+    IRRAD_COMPONENTS = ('poa_direct', 'poa_sky_diffuse', 'poa_ground_diffuse')
     # Fitting parameters directly from [1]_
     MARTIN_RUIZ_PARAMS = pd.DataFrame(
         index=('monosi', 'polysi', 'asi'),
@@ -370,11 +372,14 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
             warn('Both "cell_type" and "model_parameters" given! '
                  'Using provided "model_parameters".')
 
-    # Compute difference to avoid recalculating inside loop
+    # Compute difference here to avoid recalculating inside loop
     kt_delta = clearness_index - 0.74
     am_delta = airmass_absolute - 1.5
 
-    modifiers = pd.Series(index=IRRAD_COMPONENTS, data=[None, None, None])
+    if hasattr(kt_delta, '__iter__') or hasattr(am_delta, '__iter__'):
+        modifiers = pd.DataFrame(columns=IRRAD_COMPONENTS)
+    else:
+        modifiers = dict(zip(IRRAD_COMPONENTS, (np.nan,)*3))
 
     # Calculate mismatch modifier for each irradiation
     for irrad_type in IRRAD_COMPONENTS:

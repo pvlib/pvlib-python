@@ -158,9 +158,11 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
         * 'gueymard1993' - See reference [4] -
           requires apparent sun zenith
         * 'young1994' - See reference [5] -
-          requries true sun zenith
+          requires true sun zenith
         * 'pickering2002' - See reference [6] -
           requires apparent sun zenith
+        * 'gueymard2003' - See reference [7] -
+          requires true sun zenith
 
     Returns
     -------
@@ -196,7 +198,12 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
 
     .. [6] Keith A. Pickering. "The Ancient Star Catalog". DIO 12:1, 20,
 
-    .. [7] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
+    .. [7] C. Gueymard, "Direct solar transmittance and irradiance
+       predictions with broadband models. Part I: detailed theoretical
+       performance assessment". Solar Energy, vol 74, pp. 355-379, 2003.
+       :doi:`10.1016/S0038-092X(03)00195-6`
+
+    .. [8] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
        Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
        Sandia Report, (2012).
     '''
@@ -229,6 +236,9 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
     elif 'gueymard1993' == model:
         am = (1.0 / (np.cos(zenith_rad) +
               0.00176759*(z)*((94.37515 - z) ** - 1.21563)))
+    elif 'gueymard2003' == model:
+        am = (1.0 / (np.cos(zenith_rad) +
+              0.48353*(z**0.095846)/(96.741 - z)**1.754))
     else:
         raise ValueError('%s is not a valid model for relativeairmass', model)
 

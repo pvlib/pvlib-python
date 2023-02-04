@@ -57,4 +57,3 @@ Contributors
 * Karel De Brabandere (:ghuser:`kdebrab`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)
-* Adam R. Jensen (:ghuser:`AdamRJensen`)

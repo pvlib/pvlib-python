@@ -294,9 +294,9 @@ def read_ecmwf_macc(filename, latitude, longitude, utc_time_range=None):
         nctime = ecmwf_macc.data['time']
         if utc_time_range:
             start_idx = netCDF4.date2index(
-                utc_time_range[0], nctime, select='before')
+                utc_time_range[0], nctime, select='nearest')
             end_idx = netCDF4.date2index(
-                utc_time_range[-1], nctime, select='after')
+                utc_time_range[-1], nctime, select='nearest')
             time_slice = slice(start_idx, end_idx + 1)
         else:
             time_slice = slice(0, ecmwf_macc.time_size)

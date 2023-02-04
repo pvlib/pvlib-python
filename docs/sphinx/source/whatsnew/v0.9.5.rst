@@ -16,9 +16,11 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
+  support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
 * Add ``model='gueymard2003'``, the airmass model used for REST and REST2,
   to :py:func:`~pvlib.atmosphere.get_relative_airmass`. (:pull:`1655`)
-  
+
 
 Bug fixes
 ~~~~~~~~~
@@ -52,3 +54,7 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Adam R. Jensen (:ghuser:`adamrjensen`)
 * Pratham Chauhan (:ghuser:`ooprathamm`)
+* Karel De Brabandere (:ghuser:`kdebrab`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

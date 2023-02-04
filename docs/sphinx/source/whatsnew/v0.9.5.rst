@@ -16,7 +16,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add ``model='gueymard2003'``, the airmass model used for REST and REST2,
+  to :py:func:`~pvlib.atmosphere.get_relative_airmass`. (:pull:`1655`)
+  
 
 Bug fixes
 ~~~~~~~~~

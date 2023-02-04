@@ -122,9 +122,10 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
         indicates that 0.002 meters (2 mm) is reasonable for most
         glass-covered PV panels.
 
-    n_ar : numeric, default None
-        The effective index of refraction of the anti-reflective coating
-        (unitless). If n_ar is None, no anti-reflective coating is applied.
+    n_ar : numeric, optional
+        The effective index of refraction of the anti-reflective (AR) coating
+        (unitless). If n_ar is None (default), no AR coating is applied.
+        A typical value for the effective index of an AR coating is 1.29.
 
     Returns
     -------

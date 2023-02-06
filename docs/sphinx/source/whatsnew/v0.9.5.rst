@@ -27,6 +27,9 @@ Bug fixes
 * Fixed incorrect mapping of requested parameters names when using the ``get_psm3``
   function. Also fixed the random reordering of the dataframe columns.
   (:issue:`1629`, :issue:`1647`, :pull:`1648`)
+* When using ``utc_time_range`` with :py:func:`pvlib.iotools.read_ecmwf_macc`,
+  the time index subset is now selected with ``nearest`` instead of ``before``
+  and ``after`` for consistency with ``cftime>=1.6.0``. (:issue:`1609`, :pull:`1656`)
 
 
 Testing
@@ -57,3 +60,4 @@ Contributors
 * Karel De Brabandere (:ghuser:`kdebrab`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)
+* Michael Deceglie (:ghuser:`mdeceglie`)

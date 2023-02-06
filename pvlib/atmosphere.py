@@ -162,7 +162,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
         * 'pickering2002' - See reference [6] -
           requires apparent sun zenith
         * 'gueymard2003' - See reference [7] -
-          requires true sun zenith
+          requires apparent sun zenith
 
     Returns
     -------

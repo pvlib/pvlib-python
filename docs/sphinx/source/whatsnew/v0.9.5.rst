@@ -25,14 +25,29 @@ Bug fixes
   incorrect loss results for systems that are near the ground (:issue:`1636`,
   :pull:`1653`)
 
+* Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
+  support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
+
+Bug fixes
+~~~~~~~~~
+* Fixed incorrect mapping of requested parameters names when using the ``get_psm3``
+  function. Also fixed the random reordering of the dataframe columns.
+  (:issue:`1629`, :issue:`1647`, :pull:`1648`)
+* When using ``utc_time_range`` with :py:func:`pvlib.iotools.read_ecmwf_macc`,
+  the time index subset is now selected with ``nearest`` instead of ``before``
+  and ``after`` for consistency with ``cftime>=1.6.0``. (:issue:`1609`, :pull:`1656`)
+
+
 Testing
 ~~~~~~~
 * Added Python 3.11 to test suite. (:pull:`1582`)
+* Updated PSM3 test data files to match the new version 3.2.2 data returned
+  by the PSM3 API (:issue:`1591`, :pull:`1652`)
 
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Remove LGTM.com integration. (:issue:`1550`, :pull:`1651`)
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -47,3 +62,10 @@ Contributors
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Will Holmgren (:ghuser:`wholmgren`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Adam R. Jensen (:ghuser:`adamrjensen`)
+* Pratham Chauhan (:ghuser:`ooprathamm`)
+* Karel De Brabandere (:ghuser:`kdebrab`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Michael Deceglie (:ghuser:`mdeceglie`)

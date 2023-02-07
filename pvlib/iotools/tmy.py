@@ -48,7 +48,9 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
         where applicable. See variable :const:`VARIABLE_MAP`.
     recolumn : bool, default True
         If ``True``, apply standard names to TMY3 columns. Typically this
-        results in stripping the units from the column name.
+        results in stripping the units from the column name. If
+        ``map_variables`` is ``True`` then the ``recolumn`` parameter has no
+        effect.
 
     Returns
     -------
@@ -222,7 +224,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
-    if map_variables is None:
+    if map_variables is not True:
         if recolumn:
             data = _recolumn(data)  # rename to standard column names
         warnings.warn(

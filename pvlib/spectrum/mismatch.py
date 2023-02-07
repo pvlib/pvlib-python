@@ -241,10 +241,9 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
                                   cell_type=None, model_parameters=None):
     r"""
-    Calculate mismatch modifiers for POA direct, sky diffuse and ground diffuse
-    irradiances due to material's spectral response to spectrum characterised
-    by the clearness index and the absolute airmass, with respect to the
-    standard spectrum.
+    Calculate spectral mismatch modifiers for POA direct, sky diffuse and
+    ground diffuse irradiances using the clearness index and the absolute
+    airmass.
 
     .. warning::
         Included model parameters for ``monosi``, ``polysi`` and ``asi`` were

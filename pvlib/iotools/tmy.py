@@ -227,6 +227,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
     if map_variables is not True:
         if recolumn:
             data = _recolumn(data)  # rename to standard column names
+    if map_variables is None:
         warnings.warn(
             'TMY3 variable names will be renamed to pvlib conventions by '
             'default starting in pvlib 0.11.0. Specify map_variables=True '

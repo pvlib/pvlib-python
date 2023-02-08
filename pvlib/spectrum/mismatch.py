@@ -298,8 +298,8 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         ``poa_ground_diffuse``.
         Each mismatch modifier should be multiplied by its corresponding
         POA component.
-        Returns None for a component if provided ``model_parameters`` does not
-        include its coefficients.
+        Returns np.nan for a component if provided ``model_parameters`` does
+        not include its coefficients.
 
     Raises
     ------

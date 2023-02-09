@@ -12,8 +12,7 @@ the ``pvlib`` `conda channel <https://anaconda.org/pvlib/pvlib>`_.  We recommend
 
 Deprecations
 ~~~~~~~~~~~~
-* Deprecated the ``recolumn`` argument in :py:func:`pvlib.iotools.read_tmy3` which
-  stripped the units from the original column names. (:issue:`1517`, :pull:`1623`)
+
  
 Enhancements
 ~~~~~~~~~~~~

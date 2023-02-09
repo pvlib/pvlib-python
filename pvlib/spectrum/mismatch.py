@@ -354,11 +354,11 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
             _params = MARTIN_RUIZ_PARAMS.loc[cell_type_lower]
         else:
             raise NotImplementedError('Cell type parameters not defined in '
-                                      'algorithm! Allowed types are '
+                                      'algorithm. Allowed types are '
                                       f'{tuple(MARTIN_RUIZ_PARAMS.index)}')
     elif cell_type is None and model_parameters is None:
         raise TypeError('You must pass at least "cell_type" '
-                        'or "model_parameters" as arguments!')
+                        'or "model_parameters" as arguments.')
     elif model_parameters is not None:  # Use user-defined model parameters
         # Validate 'model_parameters' sub-dicts keys
         if any([{'a', 'b', 'c'} != set(model_parameters[component].keys())
@@ -368,7 +368,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
 
         _params = model_parameters
         if cell_type is not None:
-            warn('Both "cell_type" and "model_parameters" given! '
+            warn('Both "cell_type" and "model_parameters" given. '
                  'Using provided "model_parameters".')
 
     # Compute difference here to avoid recalculating inside loop

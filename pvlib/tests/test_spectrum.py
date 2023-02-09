@@ -303,7 +303,7 @@ def test_martin_ruiz_mm_userwarning(martin_ruiz_mismatch_data):
     model_parameters = martin_ruiz_mismatch_data['monosi_model_params_dict']
 
     with pytest.warns(UserWarning,
-                      match='Both "cell_type" and "model_parameters" given! '
+                      match='Both "cell_type" and "model_parameters" given. '
                             'Using provided "model_parameters".'):
         _ = spectrum.martin_ruiz_spectral_modifier(
             clearness_index,
@@ -318,7 +318,7 @@ def test_martin_ruiz_mm_error_notimplemented(martin_ruiz_mismatch_data):
     airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
 
     with pytest.raises(NotImplementedError,
-                       match='Cell type parameters not defined in algorithm!'):
+                       match='Cell type parameters not defined in algorithm.'):
         _ = spectrum.martin_ruiz_spectral_modifier(clearness_index,
                                                    airmass_absolute,
                                                    cell_type='')
@@ -331,7 +331,7 @@ def test_martin_ruiz_mm_error_missing_params(martin_ruiz_mismatch_data):
 
     with pytest.raises(TypeError,
                        match='You must pass at least "cell_type" '
-                             'or "model_parameters" as arguments!'):
+                             'or "model_parameters" as arguments.'):
         _ = spectrum.martin_ruiz_spectral_modifier(clearness_index,
                                                    airmass_absolute)
 

@@ -259,7 +259,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     airmass_absolute : numeric
         Absolute airmass. Give attention to algorithm used (``kasten1966`` is
         recommended for default parameters of ``monosi``, ``polysi`` and
-        ``asi``, see reference [1]_).
+        ``asi``, see [1]_).
 
     cell_type : string, optional
         Specifies material of the cell in order to infer model parameters.
@@ -267,9 +267,6 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         upper case. If not specified, ``model_parameters`` must be provided.
 
     model_parameters : dict-like, optional
-        In case you computed the model parameters. In case any component is not
-        specified, result will have a ``np.nan`` value in its
-        corresponding value.
         Provide either a dict or a ``pd.DataFrame`` as follows:
 
         .. code-block:: python
@@ -289,13 +286,16 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
                 index=('c', 'a', 'b'))
 
         ``c``, ``a`` and ``b`` must be scalar.
-
+```suggestion
+        If parameters for an irradiance component (`'poa_direct'`,
+        `'poa_sky_diffuse'`, or `'poa_ground_diffuse'`) are not
+        specified, ``np.nan`` will be returned in the corresponding value.
     Returns
     -------
     Modifiers : pd.DataFrame (iterable input) or dict (scalar input) of numeric
         Mismatch modifiers for direct, sky diffuse and ground diffuse
-        irradiances, with indexes ``poa_direct``, ``poa_sky_diffuse``,
-        ``poa_ground_diffuse``.
+        irradiances, with indexes `'poa_direct'`, `'poa_sky_diffuse'`,
+        `'poa_ground_diffuse'`.
         Each mismatch modifier should be multiplied by its corresponding
         POA component.
         Returns np.nan for a component if provided ``model_parameters`` does

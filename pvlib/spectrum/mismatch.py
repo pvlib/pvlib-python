@@ -286,10 +286,11 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
                 index=('c', 'a', 'b'))
 
         ``c``, ``a`` and ``b`` must be scalar.
-```suggestion
-        If parameters for an irradiance component (`'poa_direct'`,
-        `'poa_sky_diffuse'`, or `'poa_ground_diffuse'`) are not
-        specified, ``np.nan`` will be returned in the corresponding value.
+
+        Unspecified parameters for an irradiance component (`'poa_direct'`,
+        `'poa_sky_diffuse'`, or `'poa_ground_diffuse'`) will cause ``np.nan``
+        to be returned in the corresponding result.
+
     Returns
     -------
     Modifiers : pd.DataFrame (iterable input) or dict (scalar input) of numeric
@@ -298,8 +299,6 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         `'poa_ground_diffuse'`.
         Each mismatch modifier should be multiplied by its corresponding
         POA component.
-        Returns np.nan for a component if provided ``model_parameters`` does
-        not include its coefficients.
 
     Raises
     ------

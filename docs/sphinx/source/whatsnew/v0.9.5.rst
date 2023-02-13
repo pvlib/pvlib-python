@@ -18,6 +18,8 @@ Enhancements
 ~~~~~~~~~~~~
 * Added the optional `string_factor` parameter to
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
+* Improved performance of :py:func:`pvlib.pvsystem.singlediode` when using
+  ``method='lambertw'`` (:issue:`1649`, :pull:`1661`)
 
 Bug fixes
 ~~~~~~~~~

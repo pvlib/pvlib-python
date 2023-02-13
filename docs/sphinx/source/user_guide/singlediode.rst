@@ -25,8 +25,8 @@ where
 * :math:`n` is the diode (ideality) factor (unitless)
 * :math:`Ns` is the number of cells in series. Cells are assumed to be identical.
 * :math:`V_{th}` is the thermal voltage at each cell's junction, given by :math:`V_{th} = \frac{k}{q} T_K`,
-  where :math:`k` is the Boltzmann constant (J/K), :math:`q` is the elementary charge (Couloumb) and
-	:math:`T_k` is the cell temperature in K.
+  where :math:`k` is the Boltzmann constant (J/K), :math:`q` is the elementary charge (Couloumb) and :math:`T_k`
+	is the cell temperature in K.
 
 
 pvlib-python supports two ways to solve the single diode equation:
@@ -64,7 +64,7 @@ Similarly, the voltage can be written as a function of current by defining a var
 
 .. math::
 
-   \psi = \frac{I_0 R_{sh}}{n Ns V_{th}} \exp \left(\frac{\left(I_L + I_0 - I) R_{sh}}{n Ns V_{th}} \right) \right)
+   \psi = \frac{I_0 R_{sh}}{n Ns V_{th}} \exp \left(\frac{\left(I_L + I_0 - I\right) R_{sh}}{n Ns V_{th}} \right)
 
 Then
 
@@ -104,7 +104,7 @@ Combining the two expressions for :math:`\frac{dV}{dI}\Bigr|_{I=I_{mp}}` and rea
 
 .. math::
 
-   \frac{\left(I_L + I_0 - I\right) R_sh} - I R_s - n Ns V_th W\left( \psi \right)}{R_s + \frac{R_{sh}}{1 + W\left( psi \right)}}\Bigr|_{I=I_{mp}} - I_{mp} = 0.
+   \frac{\left(I_L + I_0 - I\right) R_sh - I R_s - n Ns V_th W\left( \psi \right)}{R_s + \frac{R_{sh}}{1 + W\left( psi \right)}}\Bigr|_{I=I_{mp}} - I_{mp} = 0.
 
 The above equation is solved for :math:`I_{mp}` using Newton's method, and then :math:`V_{mp} = V \left( I_{mp} \right)` is computed.
 

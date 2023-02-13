@@ -4,7 +4,6 @@ Low-level functions for solving the single diode equation.
 
 from functools import partial
 import numpy as np
-from pvlib.tools import _golden_sect_DataFrame
 
 from scipy.optimize import brentq, newton
 from scipy.special import lambertw
@@ -640,17 +639,18 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     v_oc = _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
                               saturation_current, photocurrent)
 
-    params = {'r_sh': resistance_shunt,
-              'r_s': resistance_series,
-              'nNsVth': nNsVth,
-              'i_0': saturation_current,
-              'i_l': photocurrent}
+    params = (photocurrent, saturation_current, resistance_series,
+              resistance_shunt, nNsVth)
 
-    # Find the voltage, v_mp, where the power is maximized.
-    # Start the golden section search at v_oc * 1.14
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
-                                        _pwr_optfcn)
-
+    # Compute maximum power point quantities
+    imp_est = 0.8 * photocurrent
+    args, i0 = _prepare_newton_inputs((), params, imp_est)
+    i_mp = newton(func=_imp_zero, x0=i0, fprime=_imp_zero_prime,
+                 args=args)
+    v_mp = _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth,
+                              i_mp, saturation_current, photocurrent)
+    p_mp = i_mp * v_mp
+    
     # Find Imp using Lambert W
     i_mp = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,
                               v_mp, saturation_current, photocurrent)
@@ -677,6 +677,75 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
         out += (ivcurve_i, ivcurve_v)
 
     return out
+
+
+def _w_psi(i, il, io, rsh, a):
+    ''' Computes W(psi), where psi = io * rsh / a exp((il + io - i) * rsh / a)
+    This term is part of the equation V=V(I) solving the single diode equation
+    V = (il + io - i)*rsh - i*rs - a W(psi)
+
+    Parameters
+    ----------
+    i : numeric
+        Current (A)
+    il : numeric
+        Photocurrent (A)
+    io : numeric
+        Saturation current (A)
+    rsh : numeric
+        Shunt resistance (Ohm)
+    a : numeric
+        The product n*Ns*Vth (V).
+
+    Returns
+    -------
+    lambertwterm : numeric
+        The value of W(psi)
+
+    '''
+    gsh = 1. / rsh
+    with np.errstate(over='ignore'):
+        argW = (io / (gsh * a) *
+                np.exp((-i + il + io) /
+                       (gsh * a)))
+    lambertwterm = np.array(lambertw(argW).real)
+
+    idx_inf = np.logical_not(np.isfinite(lambertwterm))
+    if np.any(idx_inf):
+        # Calculate using log(argW) in case argW is really big
+        logargW = (np.log(io) - np.log(gsh) -
+                   np.log(a) +
+                   (-i + il + io) /
+                   (gsh * a))[idx_inf]
+
+        # Six iterations of Newton-Raphson method to solve
+        #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
+        #  evaluation (above) results in NaN from overflow, 3 iterations
+        #  of Newton's method gives approximately 8 digits of precision.
+        w = logargW
+        for _ in range(0, 6):
+            w = w * (1. - np.log(w) + logargW) / (1. + w)
+        lambertwterm[idx_inf] = w
+    return lambertwterm
+
+
+def _imp_est(i, il, io, rs, rsh, a):
+    wma = _w_psi(i, il, io, rsh, a)
+    f = (il + io - i) * rsh - i * rs - a * wma
+    fprime = -rs - rsh / (1 + wma)
+    return -f / fprime
+
+
+def _imp_zero(i, il, io, rs, rsh, a):
+    return _imp_est(i, il, io, rs, rsh, a) - i
+
+
+def _imp_zero_prime(i, il, io, rs, rsh, a):
+    wma = _w_psi(i, il, io, rsh, a)
+    f = (il + io - i) * rsh - i * rs - a * wma
+    fprime = -rs - rsh / (1 + wma)
+    fprime2 = -rsh**2. / a * wma / (1 + wma)**3.
+    return f / fprime**2. * fprime2 - 2.
 
 
 def _pwr_optfcn(df, loc):

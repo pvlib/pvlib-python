@@ -138,3 +138,24 @@ so you can check the tables there for more up-to-date tables.
 For modules, if even the SAM files don't include the module you're looking for
 either, you can calculate CEC module model parameters from
 datasheet information using :py:func:`pvlib.ivtools.sdm.fit_cec_sam`.
+
+
+Which should I use, the CEC or the Sandia PV Module database?
+-------------------------------------------------------------
+
+The CEC PV module database contains parameters for significantly more
+modules, and is more up to date, than the Sandia PV module database.
+Therefore, the CEC PV module database is probably the more useful option
+in most cases.  However, finding parameters for the specific module
+being used is more important than which database they came from.
+
+
+How do I model a system with multiple inverters?
+------------------------------------------------
+
+Currently, pvlib's :ref:`modelchaindoc` and :ref:`pvsystemdoc` only support
+simulating one inverter at a time.  To simulate a system with multiple
+inverters, define one ``PVSystem`` and ``ModelChain`` per inverter and
+run the simulation for each of them individually.  From there you
+can add up the inverter-level outputs to get the total system output.
+

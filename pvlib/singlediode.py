@@ -639,18 +639,21 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     v_oc = _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
                               saturation_current, photocurrent)
 
-    params = (photocurrent, saturation_current, resistance_series,
-              resistance_shunt, nNsVth)
+    conductance_shunt = 1. / resistance_shunt
+    il, io, rs, gsh, a = \
+        np.broadcast_arrays(photocurrent, saturation_current,
+                            resistance_series, conductance_shunt, nNsVth)
 
     # Compute maximum power point quantities
-    imp_est = 0.8 * photocurrent
+    params = (il, io, rs, gsh, a)
+    imp_est = 0.8 * il
     args, i0 = _prepare_newton_inputs((), params, imp_est)
     i_mp = newton(func=_imp_zero, x0=i0, fprime=_imp_zero_prime,
-                 args=args)
+                  args=args)
     v_mp = _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth,
                               i_mp, saturation_current, photocurrent)
     p_mp = i_mp * v_mp
-    
+
     # Find Imp using Lambert W
     i_mp = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,
                               v_mp, saturation_current, photocurrent)
@@ -679,7 +682,7 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     return out
 
 
-def _w_psi(i, il, io, rsh, a):
+def _w_psi(i, il, io, gsh, a):
     ''' Computes W(psi), where psi = io * rsh / a exp((il + io - i) * rsh / a)
     This term is part of the equation V=V(I) solving the single diode equation
     V = (il + io - i)*rsh - i*rs - a W(psi)
@@ -692,8 +695,8 @@ def _w_psi(i, il, io, rsh, a):
         Photocurrent (A)
     io : numeric
         Saturation current (A)
-    rsh : numeric
-        Shunt resistance (Ohm)
+    gsh : numeric
+        Shunt conductance (1/Ohm)
     a : numeric
         The product n*Ns*Vth (V).
 
@@ -703,7 +706,6 @@ def _w_psi(i, il, io, rsh, a):
         The value of W(psi)
 
     '''
-    gsh = 1. / rsh
     with np.errstate(over='ignore'):
         argW = (io / (gsh * a) *
                 np.exp((-i + il + io) /
@@ -729,23 +731,51 @@ def _w_psi(i, il, io, rsh, a):
     return lambertwterm
 
 
-def _imp_est(i, il, io, rs, rsh, a):
-    wma = _w_psi(i, il, io, rsh, a)
-    f = (il + io - i) * rsh - i * rs - a * wma
-    fprime = -rs - rsh / (1 + wma)
+def _imp_est(i, il, io, rs, gsh, a):
+    wma = _w_psi(i, il, io, gsh, a)
+    f = (il + io - i) / gsh - i * rs - a * wma
+    fprime = -rs - 1. / (gsh * (1. + wma))
     return -f / fprime
 
 
-def _imp_zero(i, il, io, rs, rsh, a):
-    return _imp_est(i, il, io, rs, rsh, a) - i
+def _split_on_gsh(gsh):
+    # Determine indices where 0 < Gsh requires implicit model solution
+    idx_p = 0. < gsh
+    # Determine indices where 0 = Gsh allows explicit model solution
+    idx_z = 0. == gsh
+    return idx_p, idx_z
+
+    
+def _imp_zero(i, il, io, rs, gsh, a):
+    ''' Root of this function is at imp
+    '''
+    idx_p, idx_z = _split_on_gsh(gsh)
+    res = np.full_like(i, np.nan, dtype=np.float64)
+
+    if np.any(idx_z):
+        # explicit solution for gsh=0
+        t = il[idx_z] + io[idx_z] - i[idx_z]
+        res[idx_z] = i[idx_z] / t - np.log(t / io[idx_z])
+    if np.any(idx_p):
+        res[idx_p] = _imp_est(i[idx_p], il[idx_p], io[idx_p], rs[idx_p],
+                              gsh[idx_p], a[idx_p]) - i[idx_p]
+    return res
 
 
-def _imp_zero_prime(i, il, io, rs, rsh, a):
-    wma = _w_psi(i, il, io, rsh, a)
-    f = (il + io - i) * rsh - i * rs - a * wma
-    fprime = -rs - rsh / (1 + wma)
-    fprime2 = -rsh**2. / a * wma / (1 + wma)**3.
-    return f / fprime**2. * fprime2 - 2.
+def _imp_zero_prime(i, il, io, rs, gsh, a):
+    idx_p, idx_z = _split_on_gsh(gsh)
+    res = np.full_like(i, np.nan, dtype=np.float64)
+    if np.any(idx_z):
+        # explicit solution for gsh=0
+        t = il[idx_z] + io[idx_z] - i[idx_z]
+        res[idx_z] = 2. / t + i[idx_z] / t**2.
+    if np.any(idx_p):
+        wma = _w_psi(i[idx_p], il[idx_p], io[idx_p], gsh[idx_p], a[idx_p])
+        f = (il[idx_p] + io[idx_p] - i[idx_p]) / gsh[idx_p] - i[idx_p] * rs[idx_p] - a[idx_p] * wma
+        fprime = -rs[idx_p] - 1. / (gsh[idx_p] * (1. + wma))
+        fprime2 = -1. / (gsh[idx_p]**2. * a[idx_p]) * wma / (1 + wma)**3.
+        res[idx_p] = f / fprime**2. * fprime2 - 2.
+    return res
 
 
 def _pwr_optfcn(df, loc):

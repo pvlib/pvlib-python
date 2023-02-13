@@ -28,8 +28,9 @@ class SingleDiode:
         self.io = 10**(-9 + 3. * rng(nsamples))  # 1e-9 to 1e-6 A
         self.rs = 5 * rng(nsamples) + 0.05  # 0.05 to 5.05 Ohm
         self.rsh = 10**(2 + 2 * rng(nsamples))  # 100 to 10000 Ohm
-        self.n = 1 + 0.7 * rng(nsamples)  #  1.0 to 1.7
-        self.nNsVth = 72 * self.n * 0.025  # 72 cells in series, roughly 25C Tcell
+        self.n = 1 + 0.7 * rng(nsamples)  # 1.0 to 1.7
+        # 72 cells in series, roughly 25C Tcell
+        self.nNsVth = 72 * self.n * 0.025
         self.params = (self.il, self.io, self.rs, self.rsh, self.nNsVth)
 
     def bishop88(self):

@@ -745,7 +745,7 @@ def _split_on_gsh(gsh):
     idx_z = 0. == gsh
     return idx_p, idx_z
 
-    
+
 def _imp_zero(i, il, io, rs, gsh, a):
     ''' Root of this function is at imp
     '''
@@ -763,6 +763,8 @@ def _imp_zero(i, il, io, rs, gsh, a):
 
 
 def _imp_zero_prime(i, il, io, rs, gsh, a):
+    ''' Derivative of _imp_zero with respect to current i
+    '''
     idx_p, idx_z = _split_on_gsh(gsh)
     res = np.full_like(i, np.nan, dtype=np.float64)
     if np.any(idx_z):
@@ -771,7 +773,8 @@ def _imp_zero_prime(i, il, io, rs, gsh, a):
         res[idx_z] = 2. / t + i[idx_z] / t**2.
     if np.any(idx_p):
         wma = _w_psi(i[idx_p], il[idx_p], io[idx_p], gsh[idx_p], a[idx_p])
-        f = (il[idx_p] + io[idx_p] - i[idx_p]) / gsh[idx_p] - i[idx_p] * rs[idx_p] - a[idx_p] * wma
+        f = (il[idx_p] + io[idx_p] - i[idx_p]) / gsh[idx_p] - \
+            i[idx_p] * rs[idx_p] - a[idx_p] * wma
         fprime = -rs[idx_p] - 1. / (gsh[idx_p] * (1. + wma))
         fprime2 = -1. / (gsh[idx_p]**2. * a[idx_p]) * wma / (1 + wma)**3.
         res[idx_p] = f / fprime**2. * fprime2 - 2.

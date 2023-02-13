@@ -25,8 +25,8 @@ where
 * :math:`n` is the diode (ideality) factor (unitless)
 * :math:`Ns` is the number of cells in series. Cells are assumed to be identical.
 * :math:`V_{th}` is the thermal voltage at each cell's junction, given by :math:`V_{th} = \frac{k}{q} T_K`,
-   where :math:`k` is the Boltzmann constant (J/K), :math:`q` is the elementary charge (Couloumb) and
-	 :math:`T_k` is the cell temperature in K.
+  where :math:`k` is the Boltzmann constant (J/K), :math:`q` is the elementary charge (Couloumb) and
+	:math:`T_k` is the cell temperature in K.
 
 
 pvlib-python supports two ways to solve the single diode equation:
@@ -64,19 +64,19 @@ Similarly, the voltage can be written as a function of current by defining a var
 
 .. math::
 
-   \psi = \frac{I_0 R_{sh}}{n Ns V_{th}} \exp \left(\frac{\left(I_L + I_0 - I) R_{sh}}{n Ns V_{th}} \right)
+   \psi = \frac{I_0 R_{sh}}{n Ns V_{th}} \exp \left(\frac{\left(I_L + I_0 - I) R_{sh}}{n Ns V_{th}} \right) \right)
 
 Then
 
 .. math::
 
-   V = \left(I_L + I_0 - I) R_sh} - I R_s - n Ns V_th W\left( \psi \right)
+   V = \left(I_L + I_0 - I\right) R_sh - I R_s - n Ns V_th W\left( \psi \right)
 
 When computing :math:`V = V\left( I \right)`, care must be taken to avoid overflow errors because the argument
 of the exponential function in :math:`phi` can become large.
 
 The pvlib function :func:`pvlib.pvsystem.singlediode` uses these expressions :math:`I = I\left(V\right)` and
-:math:`V = V\left( I \right)` to calculate :math:`I_{sc}` and :math:`V_{oc}`, respectively.
+:math:`V = V\left( I \right)` to calculate :math:`I_{sc}` and :math:`V_{oc}` respectively.
 
 To calculate the maximum power point :math:`\left( V_{mp}, I_{mp} \right)` a root-finding method is used.
 
@@ -93,18 +93,18 @@ obtains
 
    \frac{dV}{dI}\Bigr|_{I=I_{mp}} = \frac{-V_{mp}}{I_{mp}}
 
-Differentiating :math:`V = V(I)` above with respect to current, and applying the identity
-:math:`\frac{dW\left( x \right)}{dx} = \frac{W\left( x \right)}{x \left( 1 + W \left( x \right) \right)} obtains
+Differentiating :math:`V = V(I)` with respect to current, and applying the identity
+:math:`\frac{dW\left( x \right)}{dx} = \frac{W\left( x \right)}{x \left( 1 + W \left( x \right) \right)}` obtains
 
 .. math::
 
    \frac{dV}{dI}\Bigr|_{I=I_{mp}} = -\left(R_s + \frac{R_{sh}}{1 + W\left( psi \right)} \right)\Bigr|_{I=I_{mp}}
 
-Combining the two expressions for \frac{dV}{dI}\Bigr|_{I=I_{mp}} and rearranging yields
+Combining the two expressions for :math:`\frac{dV}{dI}\Bigr|_{I=I_{mp}}` and rearranging yields
 
 .. math::
 
-   \frac{\left(I_L + I_0 - I) R_sh} - I R_s - n Ns V_th W\left( \psi \right)}{\left(R_s + \frac{R_{sh}}{1 + W\left( psi \right)} \right)}\Bigr|_{I=I_{mp}} - I_{mp} = 0.
+   \frac{\left(I_L + I_0 - I\right) R_sh} - I R_s - n Ns V_th W\left( \psi \right)}{R_s + \frac{R_{sh}}{1 + W\left( psi \right)}}\Bigr|_{I=I_{mp}} - I_{mp} = 0.
 
 The above equation is solved for :math:`I_{mp}` using Newton's method, and then :math:`V_{mp} = V \left( I_{mp} \right)` is computed.
 

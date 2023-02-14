@@ -30,11 +30,10 @@ where
 
 pvlib-python supports two ways to solve the single diode equation:
 
-1. Lamberts W function
+1. Using the Lambert W function
 2. Bishop's algorithm
 
-The :func:`pvlib.pvsystem.singlediode` function allows the user to choose the
-method using the ``method`` keyword.
+The :func:`pvlib.pvsystem.singlediode` function's ``method`` keyword allows the user to choose the solution method.
 
 Lambert W-Function
 ------------------

@@ -37,8 +37,8 @@ class SingleDiode:
         self.nNsVth = 72 * self.n * 0.025
         self.params = (self.il, self.io, self.rs, self.rsh, self.nNsVth)
 
-    def bishop88(self):
+    def time_bishop88(self):
         b88(*self.params)
 
-    def lambertw(self):
+    def time_lambertw(self):
         _singlediode.lambertw(*self.params)

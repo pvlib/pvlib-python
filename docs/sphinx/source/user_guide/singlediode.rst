@@ -25,9 +25,8 @@ where
 * :math:`n` is the diode (ideality) factor (unitless)
 * :math:`Ns` is the number of cells in series. Cells are assumed to be identical.
 * :math:`V_{th}` is the thermal voltage at each cell's junction, given by :math:`V_{th} = \frac{k}{q} T_K`,
-    where :math:`k` is the Boltzmann constant (J/K), :math:`q` is the elementary charge (Couloumb) and :math:`T_k`
-	  is the cell temperature in K.
-
+  where :math:`k` is the Boltzmann constant (J/K), :math:`q` is the elementary charge (Couloumb) and :math:`T_k`
+  is the cell temperature in K.
 
 pvlib-python supports two ways to solve the single diode equation:
 
@@ -41,7 +40,7 @@ Lambert W-Function
 ------------------
 When ``method='lambertw'``, the Lambert W function is used to find solutions :math:`(V, I)`.
 The Lambert W function is the converse relation of the function :math:`f \left( w \right) = w \exp \left( w \right)`,
-that is, if :math:`y \exp \left( y \right) = x`, then `y = W(x)`.
+that is, if :math:`y \exp \left( y \right) = x`, then :math:`y = W(x)`.
 As previously shown by Jain, Kapoor [1, 2] and Hansen [3], solutions to the single diode equation
 may be written in terms of :math:`W`. Define a variable :math:`\theta` as 
 
@@ -73,14 +72,13 @@ Then
    V = \left(I_L + I_0 - I\right) R_sh - I R_s - n Ns V_th W\left( \psi \right)
 
 When computing :math:`V = V\left( I \right)`, care must be taken to avoid overflow errors because the argument
-of the exponential function in :math:`phi` can become large.
+of the exponential function in :math:`\psi` can become large.
 
 The pvlib function :func:`pvlib.pvsystem.singlediode` uses these expressions :math:`I = I\left(V\right)` and
 :math:`V = V\left( I \right)` to calculate :math:`I_{sc}` and :math:`V_{oc}` respectively.
 
-To calculate the maximum power point :math:`\left( V_{mp}, I_{mp} \right)` a root-finding method is used.
-
-At the maximum power point, the derivative of power with respect to current (or voltage) is zero. Differentiating
+To calculate the maximum power point :math:`\left( V_{mp}, I_{mp} \right)` a root-finding method is used. At the
+maximum power point, the derivative of power with respect to current (or voltage) is zero. Differentiating
 the equation :math:`P = V I` and evaluating at the maximum power current
 
 .. math::
@@ -100,11 +98,11 @@ Differentiating :math:`V = V(I)` with respect to current, and applying the ident
 
    \frac{dV}{dI}\Bigr|_{I=I_{mp}} = -\left(R_s + \frac{R_{sh}}{1 + W\left( \psi \right)} \right)\Bigr|_{I=I_{mp}}
 
-Combining the two expressions for :math:`\frac{dV}{dI}\Bigr|_{I=I_{mp}}` and rearranging yields
+Equating the two expressions for :math:`\frac{dV}{dI}\Bigr|_{I=I_{mp}}` and rearranging yields
 
 .. math::
 
-   \frac{\left(I_L + I_0 - I\right) R_{sh} - I R_s - n Ns V_th W\left( \psi \right)}{R_s + \frac{R_{sh}}{1 + W\left( \psi \right)}}\Bigr|_{I=I_{mp}} - I_{mp} = 0.
+   \frac{\left(I_L + I_0 - I\right) R_{sh} - I R_s - n Ns V_{th} W\left( \psi \right)}{R_s + \frac{R_{sh}}{1 + W\left( \psi \right)}}\Bigr|_{I=I_{mp}} - I_{mp} = 0.
 
 The above equation is solved for :math:`I_{mp}` using Newton's method, and then :math:`V_{mp} = V \left( I_{mp} \right)` is computed.
 
@@ -113,10 +111,12 @@ Bishop's Algorithm
 ------------------
 The function :func:`pvlib.singlediode.bishop88` uses an explicit solution [4]
 that finds points on the IV curve by first solving for pairs :math:`(V_d, I)`
-where :math:`V_d` is the diode voltage :math:`V_d = V + I Rs`. Then the voltage
-is backed out from :math:`V_d`. Points with specific voltage, such as open
-circuit, are located using the bisection search method, ``brentq``, bounded
-by a zero diode voltage and an estimate of open circuit voltage given by
+where :math:`V_d` is the diode voltage :math:`V_d = V + I R_s`. Then the voltage
+is backed out from :math:`V_d`. Points with specific voltage or current are located
+using either Newton's or Brent's method, ``method='newton'`` or ``method='brentq'``,
+respectvely.
+
+For example, to find the open circuit voltage, we start with an estimate given by
 
 .. math::
 

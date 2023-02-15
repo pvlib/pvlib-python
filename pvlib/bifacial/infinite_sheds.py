@@ -280,8 +280,7 @@ def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):
     given by
 
     .. math ::
-        \\large{f_{gr} = \frac{1}{2} \\left(\\cos\\left(\\psi_t\\right) -
-        \\cos \\left(\\beta\\right) \\right)
+        \\large{f_{gr} = \frac{1 - \\cos\\left(\\beta - \\psi_t\\right)}{2}
 
     where :math:`\\psi_t` is the angle from horizontal of the line from point
     x to the bottom of the facing row, and :math:`\\beta` is the surface tilt.

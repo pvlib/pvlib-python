@@ -507,7 +507,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
             raise ValueError(f'must supply dni_extra for {model} model')
         # call haydavies function and request components to help adjust dni/dhi
         sky_diffuse_components = haydavies(0, 180, dhi, dni, dni_extra,
-                                           projection_ratio=1,
+                                           solar_zenith, solar_azimuth,
                                            return_components=True)
         dhi = dhi - sky_diffuse_components['circumsolar']
         dni = (ghi - dhi) / cosd(solar_zenith)

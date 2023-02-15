@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 import os
-from warnings import warn
 
 
 def get_example_spectral_response(wavelength=None):
@@ -238,8 +237,8 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
     return smm
 
 
-def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
-                                  cell_type=None, model_parameters=None):
+def martin_ruiz(clearness_index, airmass_absolute, module_type=None,
+                model_parameters=None):
     r"""
     Calculate spectral mismatch modifiers for POA direct, sky diffuse and
     ground diffuse irradiances using the clearness index and the absolute
@@ -261,7 +260,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         recommended for default parameters of ``monosi``, ``polysi`` and
         ``asi``, see [1]_).
 
-    cell_type : string, optional
+    module_type : string, optional
         Specifies material of the cell in order to infer model parameters.
         Allowed types are ``monosi``, ``polysi`` and ``asi``, either lower or
         upper case. If not specified, ``model_parameters`` must be provided.
@@ -272,7 +271,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         .. code-block:: python
 
             # Using a dict
-            # Return keys are the same as specifying 'cell_type'
+            # Return keys are the same as specifying 'module_type'
             model_parameters = {
                 'poa_direct': {'c': c1, 'a': a1, 'b': b1},
                 'poa_sky_diffuse': {'c': c2, 'a': a2, 'b': b2},
@@ -305,9 +304,9 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     ValueError
         If ``model_parameters`` is not suitable. See examples given above.
     TypeError
-        If neither ``cell_type`` nor ``model_parameters`` are given.
+        If neither ``module_type`` nor ``model_parameters`` are given.
     NotImplementedError
-        If ``cell_type`` is not found in internal table of parameters.
+        If ``module_type`` is not found in internal table of parameters.
 
     Notes
     -----
@@ -322,7 +321,7 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
     ----------
     .. [1] Martín, N. and Ruiz, J.M. (1999), A new method for the spectral
        characterisation of PV modules. Prog. Photovolt: Res. Appl., 7: 299-310.
-       :doi:10.1002/(SICI)1099-159X(199907/08)7:4<299::AID-PIP260>3.0.CO;2-0
+       :doi:`10.1002/(SICI)1099-159X(199907/08)7:4<299::AID-PIP260>3.0.CO;2-0`
 
     See Also
     --------
@@ -346,38 +345,38 @@ def martin_ruiz_spectral_modifier(clearness_index, airmass_absolute,
         ])
 
     # Argument validation and choose components and model parameters
-    if cell_type is not None and model_parameters is None:
+    if module_type is not None and model_parameters is None:
         # Infer parameters from cell material
-        cell_type_lower = cell_type.lower()
-        if cell_type_lower in MARTIN_RUIZ_PARAMS.index:
-            _params = MARTIN_RUIZ_PARAMS.loc[cell_type_lower]
+        module_type_lower = module_type.lower()
+        if module_type_lower in MARTIN_RUIZ_PARAMS.index:
+            _params = MARTIN_RUIZ_PARAMS.loc[module_type_lower]
         else:
             raise NotImplementedError('Cell type parameters not defined in '
                                       'algorithm. Allowed types are '
                                       f'{tuple(MARTIN_RUIZ_PARAMS.index)}')
-    elif cell_type is None and model_parameters is None:
-        raise TypeError('You must pass at least "cell_type" '
-                        'or "model_parameters" as arguments.')
-    elif model_parameters is not None:  # Use user-defined model parameters
+    elif model_parameters is not None and module_type is None:
+        # Use user-defined model parameters
         # Validate 'model_parameters' sub-dicts keys
         if any([{'a', 'b', 'c'} != set(model_parameters[component].keys())
                 for component in model_parameters.keys()]):
             raise ValueError("You must specify model parameters with keys "
                              "'a','b','c' for each irradiation component.")
-
         _params = model_parameters
-        if cell_type is not None:
-            warn('Both "cell_type" and "model_parameters" given. '
-                 'Using provided "model_parameters".')
+    elif module_type is None and model_parameters is None:
+        raise TypeError('You must pass at least "module_type" '
+                        'or "model_parameters" as arguments.')
+    elif model_parameters is not None and module_type is not None:
+        raise TypeError('Cannot resolve input: must supply only one of '
+                        '"module_type" or "model_parameters"')
+
+    if np.isscalar(clearness_index) and np.isscalar(airmass_absolute):
+        modifiers = dict(zip(IRRAD_COMPONENTS, (np.nan,)*3))
+    else:
+        modifiers = pd.DataFrame(columns=IRRAD_COMPONENTS)
 
     # Compute difference here to avoid recalculating inside loop
     kt_delta = clearness_index - 0.74
     am_delta = airmass_absolute - 1.5
-
-    if hasattr(kt_delta, '__iter__') or hasattr(am_delta, '__iter__'):
-        modifiers = pd.DataFrame(columns=IRRAD_COMPONENTS)
-    else:
-        modifiers = dict(zip(IRRAD_COMPONENTS, (np.nan,)*3))
 
     # Calculate mismatch modifier for each irradiation
     for irrad_type in IRRAD_COMPONENTS:

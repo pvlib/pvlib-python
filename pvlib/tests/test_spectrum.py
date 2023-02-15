@@ -176,7 +176,7 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
 
 @pytest.fixture
 def martin_ruiz_mismatch_data():
-    # Data to run tests of martin_ruiz_spectral_modifier
+    # Data to run tests of spectrum.martin_ruiz
     kwargs = {
         'clearness_index': [0.56, 0.612, 0.664, 0.716, 0.768, 0.82],
         'airmass_absolute': [2, 1.8, 1.6, 1.4, 1.2, 1],
@@ -205,12 +205,12 @@ def martin_ruiz_mismatch_data():
 
 
 def test_martin_ruiz_mm_scalar(martin_ruiz_mismatch_data):
-    # test scalar input ; only cell_type given
+    # test scalar input ; only module_type given
     clearness_index = martin_ruiz_mismatch_data['clearness_index'][0]
     airmass_absolute = martin_ruiz_mismatch_data['airmass_absolute'][0]
-    result = spectrum.martin_ruiz_spectral_modifier(clearness_index,
-                                                    airmass_absolute,
-                                                    cell_type='asi')
+    result = spectrum.martin_ruiz(clearness_index,
+                                  airmass_absolute,
+                                  module_type='asi')
 
     assert_approx_equal(result['poa_direct'],
                         martin_ruiz_mismatch_data['asi_expected']['dir'][0],
@@ -224,7 +224,7 @@ def test_martin_ruiz_mm_scalar(martin_ruiz_mismatch_data):
 
 
 def test_martin_ruiz_mm_series(martin_ruiz_mismatch_data):
-    # test with Series input ; only cell_type given
+    # test with Series input ; only module_type given
     clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
     airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
     expected = pd.DataFrame(data={
@@ -232,23 +232,21 @@ def test_martin_ruiz_mm_series(martin_ruiz_mismatch_data):
         'sky': pd.Series(martin_ruiz_mismatch_data['polysi_expected']['sky']),
         'gnd': pd.Series(martin_ruiz_mismatch_data['polysi_expected']['gnd'])})
 
-    result = spectrum.martin_ruiz_spectral_modifier(clearness_index,
-                                                    airmass_absolute,
-                                                    cell_type='polysi')
+    result = spectrum.martin_ruiz(clearness_index, airmass_absolute,
+                                  module_type='polysi')
     assert_allclose(result['poa_direct'], expected['dir'], atol=1e-5)
     assert_allclose(result['poa_sky_diffuse'], expected['sky'], atol=1e-5)
     assert_allclose(result['poa_ground_diffuse'], expected['gnd'], atol=1e-5)
 
 
 def test_martin_ruiz_mm_nans(martin_ruiz_mismatch_data):
-    # test NaN in, NaN out ; only cell_type given
+    # test NaN in, NaN out ; only module_type given
     clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
     airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
     airmass_absolute[:5] = np.nan
 
-    result = spectrum.martin_ruiz_spectral_modifier(clearness_index,
-                                                    airmass_absolute,
-                                                    cell_type='monosi')
+    result = spectrum.martin_ruiz(clearness_index, airmass_absolute,
+                                  module_type='monosi')
     assert np.isnan(result['poa_direct'][:5]).all()
     assert not np.isnan(result['poa_direct'][5:]).any()
     assert np.isnan(result['poa_sky_diffuse'][:5]).all()
@@ -268,7 +266,7 @@ def test_martin_ruiz_mm_model_dict(martin_ruiz_mismatch_data):
         'gnd': pd.Series(martin_ruiz_mismatch_data['monosi_expected']['gnd'])})
     model_parameters = martin_ruiz_mismatch_data['monosi_model_params_dict']
 
-    result = spectrum.martin_ruiz_spectral_modifier(
+    result = spectrum.martin_ruiz(
         clearness_index,
         airmass_absolute,
         model_parameters=model_parameters)
@@ -287,7 +285,7 @@ def test_martin_ruiz_mm_model_df(martin_ruiz_mismatch_data):
         'dir': np.array(martin_ruiz_mismatch_data['monosi_expected']['dir']),
         'sky': np.array(martin_ruiz_mismatch_data['monosi_expected']['sky'])})
 
-    result = spectrum.martin_ruiz_spectral_modifier(
+    result = spectrum.martin_ruiz(
         clearness_index,
         airmass_absolute,
         model_parameters=model_parameters)
@@ -296,44 +294,15 @@ def test_martin_ruiz_mm_model_df(martin_ruiz_mismatch_data):
     assert result['poa_ground_diffuse'].isna().all()
 
 
-def test_martin_ruiz_mm_userwarning(martin_ruiz_mismatch_data):
-    # test warning is raised with both 'cell_type' and 'model_parameters'
-    clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
-    airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
-    model_parameters = martin_ruiz_mismatch_data['monosi_model_params_dict']
-
-    with pytest.warns(UserWarning,
-                      match='Both "cell_type" and "model_parameters" given. '
-                            'Using provided "model_parameters".'):
-        _ = spectrum.martin_ruiz_spectral_modifier(
-            clearness_index,
-            airmass_absolute,
-            cell_type='asi',
-            model_parameters=model_parameters)
-
-
 def test_martin_ruiz_mm_error_notimplemented(martin_ruiz_mismatch_data):
-    # test exception is raised when cell_type does not exist in algorithm
+    # test exception is raised when module_type does not exist in algorithm
     clearness_index = np.array(martin_ruiz_mismatch_data['clearness_index'])
     airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
 
     with pytest.raises(NotImplementedError,
                        match='Cell type parameters not defined in algorithm.'):
-        _ = spectrum.martin_ruiz_spectral_modifier(clearness_index,
-                                                   airmass_absolute,
-                                                   cell_type='')
-
-
-def test_martin_ruiz_mm_error_missing_params(martin_ruiz_mismatch_data):
-    # test exception is raised when missing cell_type and model_parameters
-    clearness_index = np.array(martin_ruiz_mismatch_data['clearness_index'])
-    airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
-
-    with pytest.raises(TypeError,
-                       match='You must pass at least "cell_type" '
-                             'or "model_parameters" as arguments.'):
-        _ = spectrum.martin_ruiz_spectral_modifier(clearness_index,
-                                                   airmass_absolute)
+        _ = spectrum.martin_ruiz(clearness_index, airmass_absolute,
+                                 module_type='')
 
 
 def test_martin_ruiz_mm_error_model_keys(martin_ruiz_mismatch_data):
@@ -345,7 +314,30 @@ def test_martin_ruiz_mm_error_model_keys(martin_ruiz_mismatch_data):
     with pytest.raises(ValueError,
                        match="You must specify model parameters with keys "
                              "'a','b','c' for each irradiation component."):
-        _ = spectrum.martin_ruiz_spectral_modifier(
-            clearness_index,
-            airmass_absolute,
-            model_parameters=model_parameters)
+        _ = spectrum.martin_ruiz(clearness_index, airmass_absolute,
+                                 model_parameters=model_parameters)
+
+
+def test_martin_ruiz_mm_error_missing_params(martin_ruiz_mismatch_data):
+    # test exception is raised when missing module_type and model_parameters
+    clearness_index = np.array(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
+
+    with pytest.raises(TypeError,
+                       match='You must pass at least "module_type" '
+                             'or "model_parameters" as arguments.'):
+        _ = spectrum.martin_ruiz(clearness_index, airmass_absolute)
+
+
+def test_martin_ruiz_mm_error_too_many_arguments(martin_ruiz_mismatch_data):
+    # test warning is raised with both 'module_type' and 'model_parameters'
+    clearness_index = pd.Series(martin_ruiz_mismatch_data['clearness_index'])
+    airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
+    model_parameters = martin_ruiz_mismatch_data['monosi_model_params_dict']
+
+    with pytest.raises(TypeError,
+                       match='Cannot resolve input: must supply only one of '
+                             '"module_type" or "model_parameters"'):
+        _ = spectrum.martin_ruiz(clearness_index, airmass_absolute,
+                                 module_type='asi',
+                                 model_parameters=model_parameters)

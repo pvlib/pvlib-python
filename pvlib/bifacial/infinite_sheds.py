@@ -7,8 +7,7 @@ import pandas as pd
 from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial import utils
 from pvlib.shading import masking_angle
-from pvlib.irradiance import beam_component, aoi, aoi_projection, haydavies
-from collections import OrderedDict
+from pvlib.irradiance import beam_component, aoi, haydavies
 
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
                          pitch, max_rows=10, npoints=100):

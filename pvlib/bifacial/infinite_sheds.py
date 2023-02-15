@@ -127,8 +127,7 @@ def _vf_row_sky_integ(f_x, surface_tilt, gcr, npoints=100):
     given by
 
     .. math ::
-        \\large{f_{sky} = \frac{1}{2} \\left(\\cos\\left(\\psi_t\\right) +
-        \\cos \\left(\\beta\\right) \\right)
+        \\large{f_{sky} = \frac{1 + \\cos\\left(\\psi_t + \\beta\\right)}{2}
 
     where :math:`\\psi_t` is the angle from horizontal of the line from point
     x to the top of the facing row, and :math:`\\beta` is the surface tilt.
@@ -139,18 +138,17 @@ def _vf_row_sky_integ(f_x, surface_tilt, gcr, npoints=100):
     """
     # handle Series inputs
     surface_tilt = np.array(surface_tilt)
-    cst = cosd(surface_tilt)
     # shaded portion
     x = np.linspace(0, f_x, num=npoints)
     psi_t_shaded = masking_angle(surface_tilt, gcr, x)
-    y = 0.5 * (cosd(psi_t_shaded) + cst)
+    y = 0.5 * (cosd(psi_t_shaded + surface_tilt) + 1)
     # integrate view factors from each point in the discretization. This is an
     # improvement over the algorithm described in [2]
     vf_shade_sky_integ = np.trapz(y, x, axis=0)
     # unshaded portion
     x = np.linspace(f_x, 1., num=npoints)
     psi_t_unshaded = masking_angle(surface_tilt, gcr, x)
-    y = 0.5 * (cosd(psi_t_unshaded) + cst)
+    y = 0.5 * (cosd(psi_t_unshaded + surface_tilt) + 1)
     vf_noshade_sky_integ = np.trapz(y, x, axis=0)
     return vf_shade_sky_integ, vf_noshade_sky_integ
 
@@ -243,12 +241,11 @@ def _vf_row_ground(x, surface_tilt, gcr):
         View factor from the point at x to the ground. [unitless]
 
     """
-    cst = cosd(surface_tilt)
     # angle from horizontal at the point x on the row slant height to the
     # bottom of the facing row
     psi_t_shaded = _ground_angle(x, surface_tilt, gcr)
     # view factor from the point on the row to the ground
-    return 0.5 * (cosd(psi_t_shaded) - cst)
+    return 0.5 * (1 - cosd(psi_t_shaded - surface_tilt))
 
 
 def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):

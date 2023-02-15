@@ -20,6 +20,9 @@ Enhancements
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
 * Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
   support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
+* Added :py:func:`pvlib.spectrum.martin_ruiz`, a spectral
+  mismatch correction factor for POA components, dependant in module type,
+  airmass and clearness index (:pull:`1658`)
 
 Bug fixes
 ~~~~~~~~~
@@ -64,3 +67,4 @@ Contributors
 * Mark Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Michael Deceglie (:ghuser:`mdeceglie`)
+* Echedey Luis (:ghuser:`echedey-ls`)

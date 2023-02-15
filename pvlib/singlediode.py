@@ -4,7 +4,6 @@ Low-level functions for solving the single diode equation.
 
 from functools import partial
 import numpy as np
-from pvlib.tools import _golden_sect_DataFrame
 
 from scipy.optimize import brentq, newton
 from scipy.special import lambertw
@@ -640,16 +639,20 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     v_oc = _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
                               saturation_current, photocurrent)
 
-    params = {'r_sh': resistance_shunt,
-              'r_s': resistance_series,
-              'nNsVth': nNsVth,
-              'i_0': saturation_current,
-              'i_l': photocurrent}
+    conductance_shunt = 1. / resistance_shunt
+    il, io, rs, gsh, a = \
+        np.broadcast_arrays(photocurrent, saturation_current,
+                            resistance_series, conductance_shunt, nNsVth)
 
-    # Find the voltage, v_mp, where the power is maximized.
-    # Start the golden section search at v_oc * 1.14
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
-                                        _pwr_optfcn)
+    # Compute maximum power point quantities
+    params = (il, io, rs, gsh, a)
+    imp_est = 0.8 * il
+    args, i0 = _prepare_newton_inputs((), params, imp_est)
+    i_mp = newton(func=_imp_zero, x0=i0, fprime=_imp_zero_prime,
+                  args=args)
+    v_mp = _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth,
+                              i_mp, saturation_current, photocurrent)
+    p_mp = i_mp * v_mp
 
     # Find Imp using Lambert W
     i_mp = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,
@@ -677,6 +680,105 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
         out += (ivcurve_i, ivcurve_v)
 
     return out
+
+
+def _w_psi(i, il, io, gsh, a):
+    ''' Computes W(psi), where psi = io * rsh / a exp((il + io - i) * rsh / a)
+    This term is part of the equation V=V(I) solving the single diode equation
+    V = (il + io - i)*rsh - i*rs - a W(psi)
+
+    Parameters
+    ----------
+    i : numeric
+        Current (A)
+    il : numeric
+        Photocurrent (A)
+    io : numeric
+        Saturation current (A)
+    gsh : numeric
+        Shunt conductance (1/Ohm)
+    a : numeric
+        The product n*Ns*Vth (V).
+
+    Returns
+    -------
+    lambertwterm : numeric
+        The value of W(psi)
+
+    '''
+    with np.errstate(over='ignore'):
+        argW = (io / (gsh * a) *
+                np.exp((-i + il + io) /
+                       (gsh * a)))
+    lambertwterm = np.array(lambertw(argW).real)
+
+    idx_inf = np.logical_not(np.isfinite(lambertwterm))
+    if np.any(idx_inf):
+        # Calculate using log(argW) in case argW is really big
+        logargW = (np.log(io) - np.log(gsh) -
+                   np.log(a) +
+                   (-i + il + io) /
+                   (gsh * a))[idx_inf]
+
+        # Six iterations of Newton-Raphson method to solve
+        #  w+log(w)=logargW. The initial guess is w=logargW. Where direct
+        #  evaluation (above) results in NaN from overflow, 3 iterations
+        #  of Newton's method gives approximately 8 digits of precision.
+        w = logargW
+        for _ in range(0, 6):
+            w = w * (1. - np.log(w) + logargW) / (1. + w)
+        lambertwterm[idx_inf] = w
+    return lambertwterm
+
+
+def _imp_est(i, il, io, rs, gsh, a):
+    wma = _w_psi(i, il, io, gsh, a)
+    f = (il + io - i) / gsh - i * rs - a * wma
+    fprime = -rs - 1. / (gsh * (1. + wma))
+    return -f / fprime
+
+
+def _split_on_gsh(gsh):
+    # Determine indices where 0 < Gsh requires implicit model solution
+    idx_p = 0. < gsh
+    # Determine indices where 0 = Gsh allows explicit model solution
+    idx_z = 0. == gsh
+    return idx_p, idx_z
+
+
+def _imp_zero(i, il, io, rs, gsh, a):
+    ''' Root of this function is at imp
+    '''
+    idx_p, idx_z = _split_on_gsh(gsh)
+    res = np.full_like(i, np.nan, dtype=np.float64)
+
+    if np.any(idx_z):
+        # explicit solution for gsh=0
+        t = il[idx_z] + io[idx_z] - i[idx_z]
+        res[idx_z] = i[idx_z] / t - np.log(t / io[idx_z])
+    if np.any(idx_p):
+        res[idx_p] = _imp_est(i[idx_p], il[idx_p], io[idx_p], rs[idx_p],
+                              gsh[idx_p], a[idx_p]) - i[idx_p]
+    return res
+
+
+def _imp_zero_prime(i, il, io, rs, gsh, a):
+    ''' Derivative of _imp_zero with respect to current i
+    '''
+    idx_p, idx_z = _split_on_gsh(gsh)
+    res = np.full_like(i, np.nan, dtype=np.float64)
+    if np.any(idx_z):
+        # explicit solution for gsh=0
+        t = il[idx_z] + io[idx_z] - i[idx_z]
+        res[idx_z] = 2. / t + i[idx_z] / t**2.
+    if np.any(idx_p):
+        wma = _w_psi(i[idx_p], il[idx_p], io[idx_p], gsh[idx_p], a[idx_p])
+        f = (il[idx_p] + io[idx_p] - i[idx_p]) / gsh[idx_p] - \
+            i[idx_p] * rs[idx_p] - a[idx_p] * wma
+        fprime = -rs[idx_p] - 1. / (gsh[idx_p] * (1. + wma))
+        fprime2 = -1. / (gsh[idx_p]**2. * a[idx_p]) * wma / (1 + wma)**3.
+        res[idx_p] = f / fprime**2. * fprime2 - 2.
+    return res
 
 
 def _pwr_optfcn(df, loc):

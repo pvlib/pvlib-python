@@ -68,7 +68,7 @@ Then
 
 .. math::
 
-   V = \left(I_L + I_0 - I\right) R_sh - I R_s - n Ns V_th W\left( \psi \right)
+   V = \left(I_L + I_0 - I\right) R_{sh} - I R_s - n Ns V_{th} W\left( \psi \right)
 
 When computing :math:`V = V\left( I \right)`, care must be taken to avoid overflow errors because the argument
 of the exponential function in :math:`\psi` can become large.
@@ -82,7 +82,7 @@ the equation :math:`P = V I` and evaluating at the maximum power current
 
 .. math::
 
-   0 = \frac{dP}{dI} \Bigr|_{I=I_{mp}} = \left(V + \frac{dV}{dI}\right) \Bigr|_{I=I_{mp}}
+   0 = \frac{dP}{dI} \Bigr|_{I=I_{mp}} = \left(V + I \frac{dV}{dI}\right) \Bigr|_{I=I_{mp}}
 
 obtains
 

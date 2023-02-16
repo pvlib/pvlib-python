@@ -305,6 +305,8 @@ def martin_ruiz(clearness_index, airmass_absolute, module_type=None,
         If ``model_parameters`` is not suitable. See examples given above.
     TypeError
         If neither ``module_type`` nor ``model_parameters`` are given.
+    TypeError
+        If both ``module_type`` and ``model_parameters`` are provided.
     NotImplementedError
         If ``module_type`` is not found in internal table of parameters.
 

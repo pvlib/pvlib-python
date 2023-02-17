@@ -20,6 +20,8 @@ Enhancements
   support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
 * Added the optional `string_factor` parameter to
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
+* Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
+  support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
 * Add ``model='gueymard2003'``, the airmass model used for REST and REST2,
   to :py:func:`~pvlib.atmosphere.get_relative_airmass`. (:pull:`1655`)
 
@@ -29,10 +31,6 @@ Bug fixes
 * Added a limit to :py:func:`pvlib.snow.loss_townsend` to guard against
   incorrect loss results for systems that are near the ground (:issue:`1636`,
   :pull:`1653`)
-
-
-Bug fixes
-~~~~~~~~~
 * Fixed incorrect mapping of requested parameters names when using the ``get_psm3``
   function. Also fixed the random reordering of the dataframe columns.
   (:issue:`1629`, :issue:`1647`, :pull:`1648`)

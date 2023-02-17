@@ -158,4 +158,7 @@ simulating one inverter at a time.  To simulate a system with multiple
 inverters, define one ``PVSystem`` and ``ModelChain`` per inverter and
 run the simulation for each of them individually.  From there you
 can add up the inverter-level outputs to get the total system output.
+If the modules, mounting, stringing, and inverters are all identical, then you
+may simply multiply the ``ModelChainResult.ac`` by the number of inverters
+to get the total system output.
 

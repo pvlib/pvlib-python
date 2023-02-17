@@ -147,18 +147,28 @@ The CEC PV module database contains parameters for significantly more
 modules, and is more up to date, than the Sandia PV module database.
 Therefore, the CEC PV module database is probably the more useful option
 in most cases.  However, finding parameters for the specific module
-being used is more important than which database they came from.
+being used is usually more important than which database they came from.
+
+Besides which modules each database includes, another consideration is the
+different modeling capabilities each parameter set provides.  The CEC model
+produces a continuous IV curve while the Sandia model calculates only a few
+specific points of interest on the curve.  For typical simulations where
+only the maximum power point is of interest, either model will suffice.
 
 
 How do I model a system with multiple inverters?
 ------------------------------------------------
 
 Currently, pvlib's :ref:`modelchaindoc` and :ref:`pvsystemdoc` only support
-simulating one inverter at a time.  To simulate a system with multiple
-inverters, define one ``PVSystem`` and ``ModelChain`` per inverter and
+simulating one inverter at a time.  To calculate total power for multiple inverters,
+there are two options:
+
+If the modules, mounting, stringing, and inverters are all identical for each
+inverter, then you may simply simulate one inverter and multiply the
+``ModelChainResult.ac`` by the number of inverters to get the total system output.
+
+If the inverters or their arrays are not all identical,
+define one ``PVSystem`` and ``ModelChain`` per inverter and
 run the simulation for each of them individually.  From there you
 can add up the inverter-level outputs to get the total system output.
-If the modules, mounting, stringing, and inverters are all identical, then you
-may simply multiply the ``ModelChainResult.ac`` by the number of inverters
-to get the total system output.
 

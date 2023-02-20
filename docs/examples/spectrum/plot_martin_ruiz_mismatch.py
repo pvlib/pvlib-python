@@ -66,14 +66,7 @@ poa_ground_diffuse = irradiance.get_ground_diffuse(surface_tilt,
 aoi = irradiance.aoi(surface_tilt, surface_azimuth,
                      solar_pos['apparent_zenith'], solar_pos['azimuth'])
 
-# %%
-# Let's consider this the irradiance components without spectral modifiers.
-# We can calculate the mismatch before and then create a "poa_irrad" var for
-# modified components directly, but we want to show the output difference.
-# Also, note that :py:func:`pvlib.spectrum.martin_ruiz` result is designed to
-# make it easy to multiply each modifier and the irradiance component with a
-# single line of code, if you get this dataframe before.
-
+# Get dataframe with all components and global (includes 'poa_direct')
 poa_irrad = irradiance.poa_components(aoi, weather_data['dni'],
                                       poa_sky_diffuse, poa_ground_diffuse)
 

@@ -256,17 +256,16 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
 
 def test_sapm_spectral_loss_deprecated(sapm_module_params):
     with pytest.warns(pvlibDeprecationWarning,
-                      match='Use pvlib.spectrum.sapm_spectral_correction'):
+                      match='Use pvlib.spectrum.sapm'):
         pvsystem.sapm_spectral_loss(1, sapm_module_params)
 
 
 def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
-    mocker.spy(spectrum, 'sapm_spectral_correction')
+    mocker.spy(spectrum, 'sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     airmass = 2
     out = system.sapm_spectral_loss(airmass)
-    spectrum.sapm_spectral_correction.assert_called_once_with(
-        airmass, sapm_module_params)
+    spectrum.sapm.assert_called_once_with(airmass, sapm_module_params)
     assert_allclose(out, 1, atol=0.5)
 
 
@@ -294,12 +293,12 @@ def test_PVSystem_multi_array_sapm_spectral_loss(sapm_module_params):
     ])
 def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
                                             coefficients, mocker):
-    mocker.spy(spectrum, 'first_solar_spectral_correction')
+    mocker.spy(spectrum, 'first_solar')
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     pw = 3
     airmass_absolute = 3
     out = system.first_solar_spectral_loss(pw, airmass_absolute)
-    spectrum.first_solar_spectral_correction.assert_called_once_with(
+    spectrum.first_solar.assert_called_once_with(
         pw, airmass_absolute, module_type, coefficients)
     assert_allclose(out, 1, atol=0.5)
 

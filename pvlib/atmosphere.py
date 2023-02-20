@@ -323,8 +323,8 @@ def gueymard94_pw(temp_air, relative_humidity):
 
 first_solar_spectral_correction = deprecated(
     since='0.9.5',
-    alternative='pvlib.spectrum.first_solar_spectral_correction'
-)(pvlib.spectrum.first_solar_spectral_correction)
+    alternative='pvlib.spectrum.first_solar'
+)(pvlib.spectrum.first_solar)
 
 
 def bird_hulstrom80_aod_bb(aod380, aod500):

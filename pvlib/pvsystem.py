@@ -672,7 +672,7 @@ class PVSystem:
     @_unwrap_single_value
     def sapm_spectral_loss(self, airmass_absolute):
         """
-        Use the :py:func:`pvlib.spectrum.sapm_spectral_correction` function,
+        Use the :py:func:`pvlib.spectrum.sapm` function,
         the input parameters, and ``self.module_parameters`` to calculate F1.
 
         Parameters
@@ -686,8 +686,7 @@ class PVSystem:
             The SAPM spectral loss coefficient.
         """
         return tuple(
-            spectrum.sapm_spectral_correction(airmass_absolute,
-                                              array.module_parameters)
+            spectrum.sapm(airmass_absolute, array.module_parameters)
             for array in self.arrays
         )
 
@@ -885,7 +884,7 @@ class PVSystem:
     @_unwrap_single_value
     def first_solar_spectral_loss(self, pw, airmass_absolute):
         """
-        Use :py:func:`pvlib.spectrum.first_solar_spectral_correction` to
+        Use :py:func:`pvlib.spectrum.first_solar` to
         calculate the spectral loss modifier. The model coefficients are
         specific to the module's cell type, and are determined by searching
         for one of the following keys in self.module_parameters (in order):
@@ -926,9 +925,8 @@ class PVSystem:
                 module_type = array._infer_cell_type()
                 coefficients = None
 
-            return spectrum.first_solar_spectral_correction(
-                pw, airmass_absolute,
-                module_type, coefficients
+            return spectrum.first_solar(
+                pw, airmass_absolute, module_type, coefficients
             )
         return tuple(
             itertools.starmap(_spectral_correction, zip(self.arrays, pw))
@@ -2601,8 +2599,8 @@ def sapm(effective_irradiance, temp_cell, module):
 
 sapm_spectral_loss = deprecated(
     since='0.9.5',
-    alternative='pvlib.spectrum.sapm_spectral_correction'
-)(spectrum.sapm_spectral_correction)
+    alternative='pvlib.spectrum.sapm'
+)(spectrum.sapm)
 
 
 def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
@@ -2662,11 +2660,11 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     See also
     --------
     pvlib.iam.sapm
-    pvlib.spectrum.sapm_spectral_correction
+    pvlib.spectrum.sapm
     pvlib.pvsystem.sapm
     """
 
-    F1 = spectrum.sapm_spectral_correction(airmass_absolute, module)
+    F1 = spectrum.sapm(airmass_absolute, module)
     F2 = iam.sapm(aoi, module)
 
     Ee = F1 * (poa_direct * F2 + module['FD'] * poa_diffuse)

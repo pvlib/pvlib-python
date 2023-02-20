@@ -14,9 +14,9 @@ Deprecations
 ~~~~~~~~~~~~
 * Functions for calculating spectral modifiers have been moved to :py:mod:`pvlib.spectrum`:
   ``pvlib.atmosphere.first_solar_spectral_correction`` is now
-  :py:func:`pvlib.spectrum.first_solar_spectral_correction` and
+  :py:func:`pvlib.spectrum.first_solar` and
   ``pvlib.pvsystem.sapm_spectral_loss`` is now
-  :py:func:`pvlib.spectrum.sapm_spectral_correction`. (:pull:`1628`)
+  :py:func:`pvlib.spectrum.sapm`. (:pull:`1628`)
 
 
 Enhancements

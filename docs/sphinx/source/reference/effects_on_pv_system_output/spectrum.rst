@@ -10,5 +10,5 @@ Spectrum
    spectrum.get_example_spectral_response
    spectrum.get_am15g
    spectrum.calc_spectral_mismatch_field
-   spectrum.first_solar_spectral_correction
-   spectrum.sapm_spectral_correction
+   spectrum.first_solar
+   spectrum.sapm

@@ -27,9 +27,9 @@ How to use this correction factor to adjust the POA global irradiance.
 # Calculating the incident and modified global irradiance
 # -------------------------------------------------------
 #
-# This mismatch modifier is applied to the irradiance components, so first
-# step is to get them. We define an hypothetical POA surface and use a TMY to
-# compute them from a TMY.
+# Mismatch modifiers are applied to the irradiance components, so first
+# step is to get them. We define an hypothetical POA surface and use TMY to
+# compute sky diffuse, ground reflected and direct irradiance.
 
 import matplotlib.pyplot as plt
 from pvlib import spectrum, irradiance, iotools, location
@@ -78,7 +78,7 @@ poa_irrad = irradiance.poa_components(aoi, weather_data['dni'],
                                       poa_sky_diffuse, poa_ground_diffuse)
 
 # %%
-# Here comes the modifier. Let's calculate it with the airmass and clearness
+# Here come the modifiers. Let's calculate them with the airmass and clearness
 # index.
 # First, let's find the airmass and the clearness index.
 # Little caution: default values for this model were fitted obtaining the
@@ -96,7 +96,7 @@ spectral_modifiers = spectrum.martin_ruiz(clearness_index,
 # %%
 # And then we can find the 3 modified components of the POA irradiance
 # by means of a simple multiplication.
-# Note, however, that neither this does modify ``poa_global`` nor
+# Note, however, that this does not modify ``poa_global`` nor
 # ``poa_diffuse``, so we should update the dataframe afterwards.
 
 poa_irrad_modified = poa_irrad * spectral_modifiers

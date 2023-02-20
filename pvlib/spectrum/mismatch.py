@@ -330,7 +330,7 @@ def martin_ruiz(clearness_index, airmass_absolute, module_type=None,
     pvlib.irradiance.clearness_index
     pvlib.atmosphere.get_relative_airmass
     pvlib.atmosphere.get_absolute_airmass
-    pvlib.atmosphere.first_solar_spectral_correction
+    pvlib.atmosphere.first_solar
     """
     # Note tests for this function are prefixed with test_martin_ruiz_mm_*
 

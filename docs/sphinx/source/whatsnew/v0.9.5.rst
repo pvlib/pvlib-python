@@ -19,6 +19,11 @@ Enhancements
 * Added the optional `string_factor` parameter to
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
 
+* Added `haydavies` sky-diffuse transposition model to
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
+  (:pull:`1668`)
+
 Bug fixes
 ~~~~~~~~~
 * Added a limit to :py:func:`pvlib.snow.loss_townsend` to guard against
@@ -69,3 +74,5 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Michael Deceglie (:ghuser:`mdeceglie`)
+* Saurabh Aneja (:ghuser:`spaneja`)
+* John Moseley (:ghuser:`johnMoseleyArray`)

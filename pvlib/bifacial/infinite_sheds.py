@@ -501,7 +501,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     --------
     get_irradiance
     """
-    if model=='haydavies':
+    if model == 'haydavies':
         if dni_extra is None:
             raise ValueError(f'must supply dni_extra for {model} model')
         # call haydavies function and request components to help adjust dni/dhi
@@ -658,10 +658,10 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 
     albedo : numeric
         Surface albedo. [unitless]
-        
+
     dni_extra : numeric
         Extraterrestrial direct normal irradiance. [W/m2]
-        
+
     model : str
         Irradiance model - can be one of 'isotropic' or 'haydavies'.
 
@@ -742,7 +742,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         surface_tilt=surface_tilt, surface_azimuth=surface_azimuth,
         solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
         gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
-        albedo=albedo, dni_extra=dni_extra, model=model,iam=iam_front,
+        albedo=albedo, dni_extra=dni_extra, model=model, iam=iam_front,
         npoints=npoints)
     # back side POA irradiance
     irrad_back = get_irradiance_poa(

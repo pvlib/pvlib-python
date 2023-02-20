@@ -352,7 +352,8 @@ def test_get_irradiance_limiting_gcr():
     assert np.isclose(result['poa_front_sky_diffuse'],
                       result['poa_back_sky_diffuse'])
     assert np.isclose(result['poa_front_ground_diffuse'],
-                      result['poa_back_ground_diffuse']) 
+                      result['poa_back_ground_diffuse'])
+
 
 def test_get_irradiance_with_haydavies():
     # singleton inputs
@@ -374,7 +375,7 @@ def test_get_irradiance_with_haydavies():
     npoints = 100
     result = infinite_sheds.get_irradiance(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-        gcr, height, pitch, ghi, dhi, dni, albedo, dni_extra, model, 
+        gcr, height, pitch, ghi, dhi, dni, albedo, dni_extra, model,
         iam_front, iam_back, bifaciality=0.8, shade_factor=-0.02,
         transmission_factor=0, npoints=npoints)
     expected_front_diffuse = np.array([151.38])
@@ -384,3 +385,10 @@ def test_get_irradiance_with_haydavies():
     assert np.isclose(result['poa_front_diffuse'], expected_front_diffuse)
     assert np.isclose(result['poa_front_direct'], expected_front_direct)
     assert np.isclose(result['poa_global'], result['poa_front'])
+    # test for when dni_extra is not supplied
+    with pytest.raises(ValueError):
+        result = infinite_sheds.get_irradiance(
+            surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+            gcr, height, pitch, ghi, dhi, dni, albedo, None, model,
+            iam_front, iam_back, bifaciality=0.8, shade_factor=-0.02,
+            transmission_factor=0, npoints=npoints)

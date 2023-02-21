@@ -457,10 +457,11 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     albedo : numeric
         Surface albedo. [unitless]
 
-    dni_extra : numeric
-        Extraterrestrial direct normal irradiance. [W/m2]
+    dni_extra : numeric, optional
+        Extraterrestrial direct normal irradiance. Required when
+        ``model='haydavies'``. [W/m2]
 
-    model : str
+    model : str, default 'isotropic'
         Irradiance model - can be one of 'isotropic' or 'haydavies'.
 
     iam : numeric, default 1.0
@@ -504,12 +505,23 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     if model == 'haydavies':
         if dni_extra is None:
             raise ValueError(f'must supply dni_extra for {model} model')
-        # call haydavies function and request components to help adjust dni/dhi
-        sky_diffuse_components = haydavies(0, 180, dhi, dni, dni_extra,
-                                           solar_zenith, solar_azimuth,
-                                           return_components=True)
-        dhi = dhi - sky_diffuse_components['circumsolar']
-        dni = (ghi - dhi) / cosd(solar_zenith)
+        # Call haydavies first time within the horizontal plane - to subtract
+        # circumsolar_horizontal from DHI
+        sky_diffuse_comps_horizontal = haydavies(0, 180, dhi, dni, dni_extra,
+                                                 solar_zenith, solar_azimuth,
+                                                 return_components=True)
+        circumsolar_horizontal = sky_diffuse_comps_horizontal['circumsolar']
+
+        # Call haydavies a second time where circumsolar_normal is facing
+        # directly towards sun, and can be added to DNI
+        sky_diffuse_comps_normal = haydavies(solar_zenith, solar_azimuth, dhi,
+                                             dni, dni_extra, solar_zenith,
+                                             solar_azimuth,
+                                             return_components=True)
+        circumsolar_normal = sky_diffuse_comps_normal['circumsolar']
+
+        dhi = dhi - circumsolar_horizontal
+        dni = dni + circumsolar_normal
 
     # Calculate some geometric quantities
     # rows to consider in front and behind current row
@@ -659,10 +671,11 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     albedo : numeric
         Surface albedo. [unitless]
 
-    dni_extra : numeric
-        Extraterrestrial direct normal irradiance. [W/m2]
+    dni_extra : numeric, optional
+        Extraterrestrial direct normal irradiance. Required when
+        ``model='haydavies'``. [W/m2]
 
-    model : str
+    model : str, default 'isotropic'
         Irradiance model - can be one of 'isotropic' or 'haydavies'.
 
     iam_front : numeric, default 1.0

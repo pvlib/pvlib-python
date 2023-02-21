@@ -386,7 +386,7 @@ def test_get_irradiance_with_haydavies():
     assert np.isclose(result['poa_front_direct'], expected_front_direct)
     assert np.isclose(result['poa_global'], result['poa_front'])
     # test for when dni_extra is not supplied
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match='supply dni_extra for haydavies'):
         result = infinite_sheds.get_irradiance(
             surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
             gcr, height, pitch, ghi, dhi, dni, albedo, None, model,

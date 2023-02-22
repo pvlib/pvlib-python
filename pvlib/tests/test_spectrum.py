@@ -195,65 +195,65 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
          [ 1.11225204, 0.93665901, 0.78487953],
          [ 1.14555295, 0.97084011, 0.81994083]]))
 ])
-def test_first_solar(module_type, expect):
+def test_spectral_factor_firstsolar(module_type, expect):
     ams = np.array([1, 3, 5])
     pws = np.array([1, 3, 5])
     ams, pws = np.meshgrid(ams, pws)
-    out = spectrum.first_solar(pws, ams, module_type)
+    out = spectrum.spectral_factor_firstsolar(pws, ams, module_type)
     assert_allclose(out, expect, atol=0.001)
 
 
-def test_first_solar_supplied():
+def test_spectral_factor_firstsolar_supplied():
     # use the cdte coeffs
     coeffs = (0.87102, -0.040543, -0.00929202, 0.10052, 0.073062, -0.0034187)
-    out = spectrum.first_solar(1, 1, coefficients=coeffs)
+    out = spectrum.spectral_factor_firstsolar(1, 1, coefficients=coeffs)
     expected = 0.99134828
     assert_allclose(out, expected, atol=1e-3)
 
 
-def test_first_solar_ambiguous():
+def test_spectral_factor_firstsolar_ambiguous():
     with pytest.raises(TypeError):
-        spectrum.first_solar(1, 1)
+        spectrum.spectral_factor_firstsolar(1, 1)
 
 
-def test_first_solar_ambiguous_both():
+def test_spectral_factor_firstsolar_ambiguous_both():
     # use the cdte coeffs
     coeffs = (0.87102, -0.040543, -0.00929202, 0.10052, 0.073062, -0.0034187)
     with pytest.raises(TypeError):
-        spectrum.first_solar(1, 1, 'cdte', coefficients=coeffs)
+        spectrum.spectral_factor_firstsolar(1, 1, 'cdte', coefficients=coeffs)
 
 
-def test_first_solar_large_airmass():
+def test_spectral_factor_firstsolar_large_airmass():
     # test that airmass > 10 is treated same as airmass==10
-    m_eq10 = spectrum.first_solar(1, 10, 'monosi')
-    m_gt10 = spectrum.first_solar(1, 15, 'monosi')
+    m_eq10 = spectrum.spectral_factor_firstsolar(1, 10, 'monosi')
+    m_gt10 = spectrum.spectral_factor_firstsolar(1, 15, 'monosi')
     assert_allclose(m_eq10, m_gt10)
 
 
-def test_first_solar_low_airmass():
+def test_spectral_factor_firstsolar_low_airmass():
     with pytest.warns(UserWarning, match='Exceptionally low air mass'):
-        _ = spectrum.first_solar(1, 0.1, 'monosi')
+        _ = spectrum.spectral_factor_firstsolar(1, 0.1, 'monosi')
 
 
-def test_first_solar_range():
+def test_spectral_factor_firstsolar_range():
     with pytest.warns(UserWarning, match='Exceptionally high pw values'):
-        out = spectrum.first_solar(np.array([.1, 3, 10]),
-                                                       np.array([1, 3, 5]),
-                                                       module_type='monosi')
+        out = spectrum.spectral_factor_firstsolar(np.array([.1, 3, 10]),
+                                                  np.array([1, 3, 5]),
+                                                  module_type='monosi')
     expected = np.array([0.96080878, 1.03055092, np.nan])
     assert_allclose(out, expected, atol=1e-3)
     with pytest.warns(UserWarning, match='Exceptionally high pw values'):
-        out = spectrum.first_solar(6, 1.5, max_pw=5,
-                                                       module_type='monosi')
+        out = spectrum.spectral_factor_firstsolar(6, 1.5, max_pw=5,
+                                                  module_type='monosi')
     with pytest.warns(UserWarning, match='Exceptionally low pw values'):
-        out = spectrum.first_solar(np.array([0, 3, 8]),
-                                                       np.array([1, 3, 5]),
-                                                       module_type='monosi')
+        out = spectrum.spectral_factor_firstsolar(np.array([0, 3, 8]),
+                                                  np.array([1, 3, 5]),
+                                                  module_type='monosi')
     expected = np.array([0.96080878, 1.03055092, 1.04932727])
     assert_allclose(out, expected, atol=1e-3)
     with pytest.warns(UserWarning, match='Exceptionally low pw values'):
-        out = spectrum.first_solar(0.2, 1.5, min_pw=1,
-                                                       module_type='monosi')
+        out = spectrum.spectral_factor_firstsolar(0.2, 1.5, min_pw=1,
+                                                  module_type='monosi')
 
 
 @pytest.mark.parametrize('airmass,expected', [
@@ -261,9 +261,9 @@ def test_first_solar_range():
     (np.array([[10, np.nan]]), np.array([[0.999535, 0]])),
     (pd.Series([5]), pd.Series([1.0387675]))
 ])
-def test_sapm(sapm_module_params, airmass, expected):
+def test_spectral_factor_sapm(sapm_module_params, airmass, expected):
 
-    out = spectrum.sapm(airmass, sapm_module_params)
+    out = spectrum.spectral_factor_sapm(airmass, sapm_module_params)
 
     if isinstance(airmass, pd.Series):
         assert_series_equal(out, expected, check_less_precise=4)

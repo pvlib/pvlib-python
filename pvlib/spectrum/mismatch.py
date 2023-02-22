@@ -239,8 +239,8 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
     return smm
 
 
-def first_solar(pw, airmass_absolute, module_type=None, coefficients=None,
-                min_pw=0.1, max_pw=8):
+def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
+                               coefficients=None, min_pw=0.1, max_pw=8):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) airmass.
@@ -409,7 +409,7 @@ def first_solar(pw, airmass_absolute, module_type=None, coefficients=None,
     return modifier
 
 
-def sapm(airmass_absolute, module):
+def spectral_factor_sapm(airmass_absolute, module):
     """
     Calculates the SAPM spectral loss coefficient, F1.
 

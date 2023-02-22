@@ -89,7 +89,7 @@ def test_gueymard94_pw():
 
 def test_first_solar_spectral_correction_deprecated():
     with pytest.warns(pvlibDeprecationWarning,
-                      match='Use pvlib.spectrum.first_solar'):
+                      match='Use pvlib.spectrum.spectral_factor_firstsolar'):
         atmosphere.first_solar_spectral_correction(1, 1, 'cdte')
 
 

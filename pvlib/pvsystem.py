@@ -672,7 +672,7 @@ class PVSystem:
     @_unwrap_single_value
     def sapm_spectral_loss(self, airmass_absolute):
         """
-        Use the :py:func:`pvlib.spectrum.sapm` function,
+        Use the :py:func:`pvlib.spectrum.spectral_factor_sapm` function,
         the input parameters, and ``self.module_parameters`` to calculate F1.
 
         Parameters
@@ -686,7 +686,8 @@ class PVSystem:
             The SAPM spectral loss coefficient.
         """
         return tuple(
-            spectrum.sapm(airmass_absolute, array.module_parameters)
+            spectrum.spectral_factor_sapm(airmass_absolute,
+                                          array.module_parameters)
             for array in self.arrays
         )
 
@@ -884,7 +885,7 @@ class PVSystem:
     @_unwrap_single_value
     def first_solar_spectral_loss(self, pw, airmass_absolute):
         """
-        Use :py:func:`pvlib.spectrum.first_solar` to
+        Use :py:func:`pvlib.spectrum.spectral_factor_firstsolar` to
         calculate the spectral loss modifier. The model coefficients are
         specific to the module's cell type, and are determined by searching
         for one of the following keys in self.module_parameters (in order):
@@ -925,7 +926,7 @@ class PVSystem:
                 module_type = array._infer_cell_type()
                 coefficients = None
 
-            return spectrum.first_solar(
+            return spectrum.spectral_factor_firstsolar(
                 pw, airmass_absolute, module_type, coefficients
             )
         return tuple(
@@ -2599,8 +2600,8 @@ def sapm(effective_irradiance, temp_cell, module):
 
 sapm_spectral_loss = deprecated(
     since='0.9.5',
-    alternative='pvlib.spectrum.sapm'
-)(spectrum.sapm)
+    alternative='pvlib.spectrum.spectral_factor_sapm'
+)(spectrum.spectral_factor_sapm)
 
 
 def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
@@ -2660,11 +2661,11 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     See also
     --------
     pvlib.iam.sapm
-    pvlib.spectrum.sapm
+    pvlib.spectrum.spectral_factor_sapm
     pvlib.pvsystem.sapm
     """
 
-    F1 = spectrum.sapm(airmass_absolute, module)
+    F1 = spectrum.spectral_factor_sapm(airmass_absolute, module)
     F2 = iam.sapm(aoi, module)
 
     Ee = F1 * (poa_direct * F2 + module['FD'] * poa_diffuse)

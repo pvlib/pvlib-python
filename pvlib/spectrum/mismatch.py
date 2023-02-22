@@ -316,8 +316,8 @@ def martin_ruiz(clearness_index, airmass_absolute, module_type=None,
 
     .. math:: M = c \cdot \exp( a \cdot (K_t - 0.74) + b \cdot (AM - 1.5) )
 
-    where ``c``, ``a`` and ``b`` are the model parameters, different for each
-    irradiance component.
+    where :math:`c`, :math:`a` and :math:`b` are the model parameters,
+    different for each irradiance component.
 
     References
     ----------

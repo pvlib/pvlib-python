@@ -265,7 +265,8 @@ def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     airmass = 2
     out = system.sapm_spectral_loss(airmass)
-    spectrum.spectral_factor_sapm.assert_called_once_with(airmass, sapm_module_params)
+    spectrum.spectral_factor_sapm.assert_called_once_with(airmass,
+                                                          sapm_module_params)
     assert_allclose(out, 1, atol=0.5)
 
 

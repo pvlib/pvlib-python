@@ -246,8 +246,9 @@ def martin_ruiz(clearness_index, airmass_absolute, module_type=None,
 
     .. warning::
         Included model parameters for ``monosi``, ``polysi`` and ``asi`` were
-        estimated using the airmass model ``kasten1966`` [1]_. It is heavily
-        recommended to use the same model in order to not introduce errors.
+        estimated using the airmass model ``kasten1966`` [1]_.
+        The same airmass model *must* be used to calculate the airmass input
+        values to this function in order to not introduce errors.
         See :py:func:`~pvlib.atmosphere.get_relative_airmass`.
 
     Parameters
@@ -256,14 +257,14 @@ def martin_ruiz(clearness_index, airmass_absolute, module_type=None,
         Clearness index of the sky.
 
     airmass_absolute : numeric
-        Absolute airmass. Give attention to algorithm used (``kasten1966`` is
-        recommended for default parameters of ``monosi``, ``polysi`` and
-        ``asi``, see [1]_).
+        Absolute airmass. ``kasten1966`` airmass algorithm must be used
+        for default parameters of ``monosi``, ``polysi`` and ``asi``,
+        see [1]_.
 
     module_type : string, optional
         Specifies material of the cell in order to infer model parameters.
         Allowed types are ``monosi``, ``polysi`` and ``asi``, either lower or
-        upper case. If not specified, ``model_parameters`` must be provided.
+        upper case. If not specified, ``model_parameters`` has to be provided.
 
     model_parameters : dict-like, optional
         Provide either a dict or a ``pd.DataFrame`` as follows:
@@ -303,9 +304,9 @@ def martin_ruiz(clearness_index, airmass_absolute, module_type=None,
     ------
     ValueError
         If ``model_parameters`` is not suitable. See examples given above.
-    TypeError
+    ValueError
         If neither ``module_type`` nor ``model_parameters`` are given.
-    TypeError
+    ValueError
         If both ``module_type`` and ``model_parameters`` are provided.
     NotImplementedError
         If ``module_type`` is not found in internal table of parameters.
@@ -365,11 +366,11 @@ def martin_ruiz(clearness_index, airmass_absolute, module_type=None,
                              "'a','b','c' for each irradiation component.")
         _params = model_parameters
     elif module_type is None and model_parameters is None:
-        raise TypeError('You must pass at least "module_type" '
-                        'or "model_parameters" as arguments.')
+        raise ValueError('You must pass at least "module_type" '
+                         'or "model_parameters" as arguments.')
     elif model_parameters is not None and module_type is not None:
-        raise TypeError('Cannot resolve input: must supply only one of '
-                        '"module_type" or "model_parameters"')
+        raise ValueError('Cannot resolve input: must supply only one of '
+                         '"module_type" or "model_parameters"')
 
     if np.isscalar(clearness_index) and np.isscalar(airmass_absolute):
         modifiers = dict(zip(IRRAD_COMPONENTS, (np.nan,)*3))

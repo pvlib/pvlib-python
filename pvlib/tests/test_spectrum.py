@@ -323,7 +323,7 @@ def test_martin_ruiz_mm_error_missing_params(martin_ruiz_mismatch_data):
     clearness_index = np.array(martin_ruiz_mismatch_data['clearness_index'])
     airmass_absolute = np.array(martin_ruiz_mismatch_data['airmass_absolute'])
 
-    with pytest.raises(TypeError,
+    with pytest.raises(ValueError,
                        match='You must pass at least "module_type" '
                              'or "model_parameters" as arguments.'):
         _ = spectrum.martin_ruiz(clearness_index, airmass_absolute)
@@ -335,7 +335,7 @@ def test_martin_ruiz_mm_error_too_many_arguments(martin_ruiz_mismatch_data):
     airmass_absolute = pd.Series(martin_ruiz_mismatch_data['airmass_absolute'])
     model_parameters = martin_ruiz_mismatch_data['monosi_model_params_dict']
 
-    with pytest.raises(TypeError,
+    with pytest.raises(ValueError,
                        match='Cannot resolve input: must supply only one of '
                              '"module_type" or "model_parameters"'):
         _ = spectrum.martin_ruiz(clearness_index, airmass_absolute,

@@ -11,7 +11,6 @@ import numpy as np
 from scipy import constants
 from scipy import optimize
 from scipy.special import lambertw
-from scipy.misc import derivative
 
 from pvlib.pvsystem import calcparams_pvsyst, singlediode, v_from_i
 from pvlib.singlediode import bishop88_mpp
@@ -1344,5 +1343,11 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
             I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
             temp_ref)
     pmp = maxp(temp_ref, *args)
-    gamma_pdc = derivative(maxp, temp_ref, args=args)
+
+    # first order centered difference at temp_ref
+    dx = 1e-3
+    x0 = temp_ref
+    dy = maxp(x0+dx, *args) - maxp(x0-dx, *args)
+    gamma_pdc = dy / (2*dx)
+
     return gamma_pdc / pmp

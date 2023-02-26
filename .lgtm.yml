@@ -1,6 +1,0 @@
-path_classifiers:
-    generated:
-        - pvlib/_version.py
-    library:
-        - versioneer.py
-        - pvlib/_deprecation.py

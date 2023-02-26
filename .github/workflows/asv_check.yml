@@ -1,0 +1,35 @@
+name: asv
+
+# CI ASV CHECK is aimed to verify that the benchmarks execute without error.
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+
+jobs:
+  quick-benchmarks:
+    runs-on: ubuntu-latest
+    defaults: 
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
+      - name: Install asv
+        run: pip install asv==0.4.2
+
+      - name: Run asv benchmarks
+        run: |
+          cd benchmarks
+          asv machine --yes
+          asv run HEAD^! --quick --dry-run --show-stderr

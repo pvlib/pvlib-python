@@ -12,9 +12,10 @@ import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
+import pvlib  # used to avoid dni name collision in complete_irradiance
 
 
-# see References section of grounddiffuse function
+# see References section of get_ground_diffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
                    'grass': 0.20,
                    'fresh grass': 0.26,
@@ -182,6 +183,9 @@ def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
         tools.sind(surface_tilt) * tools.sind(solar_zenith) *
         tools.cosd(solar_azimuth - surface_azimuth))
 
+    # GH 1185
+    projection = np.clip(projection, -1, 1)
+
     try:
         projection.name = 'aoi_projection'
     except AttributeError:
@@ -301,9 +305,9 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 def get_total_irradiance(surface_tilt, surface_azimuth,
                          solar_zenith, solar_azimuth,
                          dni, ghi, dhi, dni_extra=None, airmass=None,
-                         albedo=.25, surface_type=None,
+                         albedo=0.25, surface_type=None,
                          model='isotropic',
-                         model_perez='allsitescomposite1990', **kwargs):
+                         model_perez='allsitescomposite1990'):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
@@ -323,38 +327,51 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from horizontal.
+        Panel tilt from horizontal. [degree]
     surface_azimuth : numeric
-        Panel azimuth from north.
+        Panel azimuth from north. [degree]
     solar_zenith : numeric
-        Solar zenith angle.
+        Solar zenith angle. [degree]
     solar_azimuth : numeric
-        Solar azimuth angle.
+        Solar azimuth angle. [degree]
     dni : numeric
-        Direct Normal Irradiance
+        Direct Normal Irradiance. [W/m2]
     ghi : numeric
-        Global horizontal irradiance
+        Global horizontal irradiance. [W/m2]
     dhi : numeric
-        Diffuse horizontal irradiance
+        Diffuse horizontal irradiance. [W/m2]
     dni_extra : None or numeric, default None
-        Extraterrestrial direct normal irradiance
+        Extraterrestrial direct normal irradiance. [W/m2]
     airmass : None or numeric, default None
-        Airmass
+        Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
-        Surface albedo
-    surface_type : None or String, default None
-        Surface type. See grounddiffuse.
-    model : String, default 'isotropic'
-        Irradiance model.
-    model_perez : String, default 'allsitescomposite1990'
-        Used only if model='perez'. See :py:func:`perez`.
+        Ground surface albedo. [unitless]
+    surface_type : None or str, default None
+        Surface type. See :py:func:`~pvlib.irradiance.get_ground_diffuse` for
+        the list of accepted values.
+    model : str, default 'isotropic'
+        Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
+        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``.
+    model_perez : str, default 'allsitescomposite1990'
+        Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
 
     Returns
     -------
     total_irrad : OrderedDict or DataFrame
         Contains keys/columns ``'poa_global', 'poa_direct', 'poa_diffuse',
         'poa_sky_diffuse', 'poa_ground_diffuse'``.
+
+    Notes
+    -----
+    Models ``'haydavies'``, ``'reindl'``, or ``'perez'`` require
+    ``'dni_extra'``. Values can be calculated using
+    :py:func:`~pvlib.irradiance.get_extra_radiation`.
+
+    The ``'perez'`` model requires relative airmass (``airmass``) as input. If
+    ``airmass`` is not provided, it is calculated using the defaults in
+    :py:func:`~pvlib.atmosphere.get_relative_airmass`.
     """
+
     poa_sky_diffuse = get_sky_diffuse(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
@@ -387,34 +404,56 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     Parameters
     ----------
     surface_tilt : numeric
-        Panel tilt from horizontal.
+        Panel tilt from horizontal. [degree]
     surface_azimuth : numeric
-        Panel azimuth from north.
+        Panel azimuth from north. [degree]
     solar_zenith : numeric
-        Solar zenith angle.
+        Solar zenith angle. [degree]
     solar_azimuth : numeric
-        Solar azimuth angle.
+        Solar azimuth angle. [degree]
     dni : numeric
-        Direct Normal Irradiance
+        Direct Normal Irradiance. [W/m2]
     ghi : numeric
-        Global horizontal irradiance
+        Global horizontal irradiance. [W/m2]
     dhi : numeric
-        Diffuse horizontal irradiance
+        Diffuse horizontal irradiance. [W/m2]
     dni_extra : None or numeric, default None
-        Extraterrestrial direct normal irradiance
+        Extraterrestrial direct normal irradiance. [W/m2]
     airmass : None or numeric, default None
-        Airmass
-    model : String, default 'isotropic'
-        Irradiance model.
-    model_perez : String, default 'allsitescomposite1990'
-        See perez.
+        Relative airmass (not adjusted for pressure). [unitless]
+    model : str, default 'isotropic'
+        Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
+        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``.
+    model_perez : str, default 'allsitescomposite1990'
+        Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
 
     Returns
     -------
     poa_sky_diffuse : numeric
+        Sky diffuse irradiance in the plane of array. [W/m2]
+
+    Raises
+    ------
+    ValueError
+        If model is one of ``'haydavies'``, ``'reindl'``, or ``'perez'`` and
+        ``dni_extra`` is ``None``.
+
+    Notes
+    -----
+    Models ``'haydavies'``, ``'reindl'``, and ``'perez``` require 'dni_extra'.
+    Values can be calculated using
+    :py:func:`~pvlib.irradiance.get_extra_radiation`.
+
+    The ``'perez'`` model requires relative airmass (``airmass``) as input. If
+    ``airmass`` is not provided, it is calculated using the defaults in
+    :py:func:`~pvlib.atmosphere.get_relative_airmass`.
     """
 
     model = model.lower()
+
+    if (model in {'haydavies', 'reindl', 'perez'}) and (dni_extra is None):
+        raise ValueError(f'dni_extra is required for model {model}')
+
     if model == 'isotropic':
         sky = isotropic(surface_tilt, dhi)
     elif model == 'klucher':
@@ -429,6 +468,8 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     elif model == 'king':
         sky = king(surface_tilt, dhi, ghi, solar_zenith)
     elif model == 'perez':
+        if airmass is None:
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
         sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                     solar_zenith, solar_azimuth, airmass,
                     model=model_perez)
@@ -501,7 +542,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
-    irradiance, albedo, and surface tilt
+    irradiance, albedo, and surface tilt.
 
     Function to determine the portion of irradiance on a tilted surface
     due to ground reflections. Any of the inputs may be DataFrames or
@@ -515,7 +556,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     ghi : numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance. [W/m^2]
 
     albedo : numeric, default 0.25
         Ground reflectance, typically 0.1-0.4 for surfaces on Earth
@@ -531,7 +572,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Returns
     -------
     grounddiffuse : numeric
-        Ground reflected irradiances in W/m^2.
+        Ground reflected irradiance. [W/m^2]
 
 
     References
@@ -699,7 +740,8 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
 
 def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-              solar_zenith=None, solar_azimuth=None, projection_ratio=None):
+              solar_zenith=None, solar_azimuth=None, projection_ratio=None,
+              return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     Hay & Davies' 1980 model
@@ -750,10 +792,33 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         projection. Must supply ``solar_zenith`` and ``solar_azimuth``
         or supply ``projection_ratio``.
 
+    return_components : bool, default False
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
+
     Returns
     --------
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by `return_components` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
     sky_diffuse : numeric
-        The sky diffuse component of the solar radiation.
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * sky_diffuse: Total sky diffuse
+            * isotropic
+            * circumsolar
+            * horizon
+
+    Notes
+    ------
+    When supplying ``projection_ratio``, consider constraining its values
+    when zenith angle approaches 90 degrees or angle of incidence
+    projection is negative. See code for details.
 
     References
     -----------
@@ -784,10 +849,25 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     term1 = 1 - AI
     term2 = 0.5 * (1 + tools.cosd(surface_tilt))
 
-    sky_diffuse = dhi * (AI * Rb + term1 * term2)
-    sky_diffuse = np.maximum(sky_diffuse, 0)
+    poa_isotropic = np.maximum(dhi * term1 * term2, 0)
+    poa_circumsolar = np.maximum(dhi * (AI * Rb), 0)
+    sky_diffuse = poa_isotropic + poa_circumsolar
 
-    return sky_diffuse
+    if return_components:
+        diffuse_components = OrderedDict()
+        diffuse_components['sky_diffuse'] = sky_diffuse
+
+        # Calculate the individual components
+        diffuse_components['isotropic'] = poa_isotropic
+        diffuse_components['circumsolar'] = poa_circumsolar
+        diffuse_components['horizon'] = np.where(
+            np.isnan(diffuse_components['isotropic']), np.nan, 0.)
+
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+        return diffuse_components
+    else:
+        return sky_diffuse
 
 
 def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
@@ -1086,7 +1166,6 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     F1 = np.maximum(F1, 0)
 
     F2 = (F2c[ebin, 0] + F2c[ebin, 1] * delta + F2c[ebin, 2] * z)
-    F2 = np.maximum(F2, 0)
 
     A = aoi_projection(surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth)
@@ -1431,7 +1510,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     model.
 
     Implements the modified DISC model known as "DIRINT" introduced in
-    [1]. DIRINT predicts direct normal irradiance (DNI) from measured
+    [1]_. DIRINT predicts direct normal irradiance (DNI) from measured
     global horizontal irradiance (GHI). DIRINT improves upon the DISC
     model by using time-series GHI data and dew point temperature
     information. The effectiveness of the DIRINT model improves with
@@ -1673,11 +1752,11 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     """
     Determine DNI from GHI using the DIRINDEX model.
 
-    The DIRINDEX model [1] modifies the DIRINT model implemented in
-    :py:func:``pvlib.irradiance.dirint`` by taking into account information
+    The DIRINDEX model [1]_ modifies the DIRINT model implemented in
+    :py:func:`pvlib.irradiance.dirint` by taking into account information
     from a clear sky model. It is recommended that ``ghi_clearsky`` be
     calculated using the Ineichen clear sky model
-    :py:func:``pvlib.clearsky.ineichen`` with ``perez_enhancement=True``.
+    :py:func:`pvlib.clearsky.ineichen` with ``perez_enhancement=True``.
 
     The pvlib implementation limits the clearness index to 1.
 
@@ -1827,10 +1906,10 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         applied.
 
     albedo : numeric, default 0.25
-        Surface albedo
+        Ground surface albedo. [unitless]
 
-    model : String, default 'isotropic'
-        Irradiance model.
+    model : String, default 'perez'
+        Irradiance model.  See :py:func:`get_sky_diffuse` for allowed values.
 
     model_perez : String, default 'allsitescomposite1990'
         Used only if model='perez'. See :py:func:`perez`.
@@ -1845,7 +1924,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
 
     Returns
     -------
-    data : OrderedDict or DataFrame
+    data : DataFrame
         Contains the following keys/columns:
 
             * ``ghi``: the modeled global horizontal irradiance in W/m^2.
@@ -2958,3 +3037,67 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
             (zenith < zenith_threshold_for_zero_dni) &
             (dni > max_dni)] = max_dni
     return dni
+
+
+def complete_irradiance(solar_zenith,
+                        ghi=None,
+                        dhi=None,
+                        dni=None,
+                        dni_clear=None):
+    r"""
+    Use the component sum equations to calculate the missing series, using
+    the other available time series. One of the three parameters (ghi, dhi,
+    dni) is passed as None, and the other associated series passed are used to
+    calculate the missing series value.
+
+    The "component sum" or "closure" equation relates the three
+    primary irradiance components as follows:
+
+    .. math::
+
+       GHI = DHI + DNI \cos(\theta_z)
+
+    Parameters
+    ----------
+    solar_zenith : Series
+        Zenith angles in decimal degrees, with datetime index.
+        Angles must be >=0 and <=180. Must have the same datetime index
+        as ghi, dhi, and dni series, when available.
+    ghi : Series, optional
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as dni, dhi, and zenith series, when available.
+    dhi : Series, optional
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as ghi, dni, and zenith series, when available.
+    dni : Series, optional
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as ghi, dhi, and zenith series, when available.
+    dni_clear : Series, optional
+        Pandas series of clearsky dni data. Must have the same datetime index
+        as ghi, dhi, dni, and zenith series, when available. See
+        :py:func:`dni` for details.
+
+    Returns
+    -------
+    component_sum_df : Dataframe
+        Pandas series of 'ghi', 'dhi', and 'dni' columns with datetime index
+    """
+    if ghi is not None and dhi is not None and dni is None:
+        dni = pvlib.irradiance.dni(ghi, dhi, solar_zenith,
+                                   clearsky_dni=dni_clear,
+                                   clearsky_tolerance=1.1)
+    elif dni is not None and dhi is not None and ghi is None:
+        ghi = (dhi + dni * tools.cosd(solar_zenith))
+    elif dni is not None and ghi is not None and dhi is None:
+        dhi = (ghi - dni * tools.cosd(solar_zenith))
+    else:
+        raise ValueError(
+            "Please check that exactly one of ghi, dhi and dni parameters "
+            "is set to None"
+        )
+    # Merge the outputs into a master dataframe containing 'ghi', 'dhi',
+    # and 'dni' columns
+    component_sum_df = pd.DataFrame({'ghi': ghi,
+                                     'dhi': dhi,
+                                     'dni': dni})
+    return component_sum_df

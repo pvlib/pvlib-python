@@ -1,8 +1,8 @@
 import pytest
 import pandas
 
-import conftest
-from conftest import fail_on_pvlib_version
+from pvlib.tests import conftest
+from pvlib.tests.conftest import fail_on_pvlib_version
 
 from pvlib._deprecation import pvlibDeprecationWarning, deprecated
 
@@ -52,22 +52,21 @@ def test_use_fixture_with_decorator(some_data):
                                            'assert_frame_equal'])
 @pytest.mark.parametrize('pd_version', ['1.0.0', '1.1.0'])
 @pytest.mark.parametrize('check_less_precise', [True, False])
-def test__check_pandas_assert_kwargs(mocker, monkeypatch,
-                                     function_name, pd_version,
+def test__check_pandas_assert_kwargs(mocker, function_name, pd_version,
                                      check_less_precise):
     # test that conftest._check_pandas_assert_kwargs returns appropriate
     # kwargs for the assert_x_equal functions
 
-    # patch the pandas assert; not interested in actually calling them:
-    def patched_assert(*args, **kwargs):
-        pass
+    # NOTE: be careful about mixing mocker.patch and pytest.MonkeyPatch!
+    # they do not coordinate their cleanups, so it is safest to only
+    # use one or the other.  GH #1447
 
-    monkeypatch.setattr(pandas.testing, function_name, patched_assert)
-    # then attach a spy to it so we can see what args it is called with:
-    mocked_function = mocker.spy(pandas.testing, function_name)
+    # patch the pandas assert; not interested in actually calling them,
+    # plus we want to spy on how they get called.
+    spy = mocker.patch('pandas.testing.' + function_name)
     # patch pd.__version__ to exercise the two branches in
     # conftest._check_pandas_assert_kwargs
-    monkeypatch.setattr(pandas, '__version__', pd_version)
+    mocker.patch('pandas.__version__', new=pd_version)
 
     # finally, run the function and check what args got passed to pandas:
     assert_function = getattr(conftest, function_name)
@@ -79,4 +78,4 @@ def test__check_pandas_assert_kwargs(mocker, monkeypatch,
     else:
         expected_kwargs = {'check_less_precise': check_less_precise}
 
-    mocked_function.assert_called_with(*args, **expected_kwargs)
+    spy.assert_called_once_with(*args, **expected_kwargs)

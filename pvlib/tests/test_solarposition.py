@@ -5,14 +5,14 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from conftest import assert_frame_equal, assert_series_equal
+from .conftest import assert_frame_equal, assert_series_equal
 from numpy.testing import assert_allclose
 import pytest
 
 from pvlib.location import Location
 from pvlib import solarposition, spa
 
-from conftest import requires_ephem, requires_spa_c, requires_numba
+from .conftest import requires_ephem, requires_spa_c, requires_numba
 
 
 # setup times and locations to be tested.
@@ -23,31 +23,6 @@ tus = Location(32.2, -111, 'US/Arizona', 700)  # no DST issues possible
 times_localized = times.tz_localize(tus.tz)
 
 tol = 5
-
-
-@pytest.fixture()
-def golden():
-    return Location(39.742476, -105.1786, 'America/Denver', 1830.14)
-
-
-@pytest.fixture()
-def golden_mst():
-    return Location(39.742476, -105.1786, 'MST', 1830.14)
-
-
-@pytest.fixture()
-def expected_solpos():
-    return _expected_solpos_df()
-
-
-# hack to make tests work without too much modification while avoiding
-# pytest 4.0 inability to call features directly
-def _expected_solpos_df():
-    return pd.DataFrame({'elevation': 39.872046,
-                         'apparent_zenith': 50.111622,
-                         'azimuth': 194.340241,
-                         'apparent_elevation': 39.888378},
-                        index=['2003-10-17T12:30:30Z'])
 
 
 @pytest.fixture()
@@ -188,7 +163,7 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden):
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
-    for col, data in result.iteritems():
+    for col, data in result.items():
         result_rounded[col] = data.dt.round('1s')
 
     assert_frame_equal(frame, result_rounded)
@@ -201,7 +176,7 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden):
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
-    for col, data in result.iteritems():
+    for col, data in result.items():
         result_rounded[col] = data.dt.round('s').tz_convert('MST')
 
     assert_frame_equal(expected_rise_set_spa, result_rounded)
@@ -216,7 +191,7 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
         temperature=11, horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
-    for col, data in result.iteritems():
+    for col, data in result.items():
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
     assert_frame_equal(expected_rise_set_ephem, result_rounded)
 
@@ -229,21 +204,18 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     expected = pd.DataFrame(index=times,
                             columns=['sunrise', 'sunset'],
                             dtype='datetime64[ns]')
-    expected['sunrise'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
-    expected['sunset'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunset']])
-    expected['transit'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
+    idx_sunrise = pd.to_datetime(['2015-01-02', '2015-01-03', '2015-01-03',
+                                  '2015-01-03']).tz_localize('MST')
+    expected['sunrise'] = \
+        expected_rise_set_ephem.loc[idx_sunrise, 'sunrise'].tolist()
+    idx_sunset = pd.to_datetime(['2015-01-02', '2015-01-02', '2015-01-02',
+                                 '2015-01-03']).tz_localize('MST')
+    expected['sunset'] = \
+        expected_rise_set_ephem.loc[idx_sunset, 'sunset'].tolist()
+    idx_transit = pd.to_datetime(['2015-01-02', '2015-01-02', '2015-01-03',
+                                  '2015-01-03']).tz_localize('MST')
+    expected['transit'] = \
+        expected_rise_set_ephem.loc[idx_transit, 'transit'].tolist()
 
     result = solarposition.sun_rise_set_transit_ephem(times,
                                                       golden.latitude,
@@ -255,7 +227,7 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
                                                       horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
-    for col, data in result.iteritems():
+    for col, data in result.items():
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
     assert_frame_equal(expected, result_rounded)
 
@@ -268,21 +240,18 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     expected = pd.DataFrame(index=times,
                             columns=['sunrise', 'sunset'],
                             dtype='datetime64[ns]')
-    expected['sunrise'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunrise'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'sunrise']])
-    expected['sunset'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'sunset']])
-    expected['transit'] = pd.Series(index=times, data=[
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 1), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 2), 'transit'],
-        expected_rise_set_ephem.loc[datetime.datetime(2015, 1, 3), 'transit']])
+    idx_sunrise = pd.to_datetime(['2015-01-01', '2015-01-02', '2015-01-02',
+                                  '2015-01-03']).tz_localize('MST')
+    expected['sunrise'] = \
+        expected_rise_set_ephem.loc[idx_sunrise, 'sunrise'].tolist()
+    idx_sunset = pd.to_datetime(['2015-01-01', '2015-01-01', '2015-01-02',
+                                 '2015-01-02']).tz_localize('MST')
+    expected['sunset'] = \
+        expected_rise_set_ephem.loc[idx_sunset, 'sunset'].tolist()
+    idx_transit = pd.to_datetime(['2015-01-01', '2015-01-01', '2015-01-02',
+                                  '2015-01-03']).tz_localize('MST')
+    expected['transit'] = \
+        expected_rise_set_ephem.loc[idx_transit, 'transit'].tolist()
 
     result = solarposition.sun_rise_set_transit_ephem(
         times,
@@ -290,14 +259,14 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
         altitude=golden.altitude, pressure=0, temperature=11, horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
-    for col, data in result.iteritems():
+    for col, data in result.items():
         result_rounded[col] = data.dt.round('min').tz_convert('MST')
     assert_frame_equal(expected, result_rounded)
 
     # test with different timezone
     times = times.tz_convert('UTC')
     expected = expected.tz_convert('UTC')  # resuse result from previous
-    for col, data in expected.iteritems():
+    for col, data in expected.items():
         expected[col] = data.dt.tz_convert('UTC')
     result = solarposition.sun_rise_set_transit_ephem(
         times,
@@ -305,7 +274,7 @@ def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
         altitude=golden.altitude, pressure=0, temperature=11, horizon='-0:34')
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)
-    for col, data in result.iteritems():
+    for col, data in result.items():
         result_rounded[col] = data.dt.round('min').tz_convert(times.tz)
     assert_frame_equal(expected, result_rounded)
 
@@ -455,7 +424,7 @@ def test_get_solarposition_error(golden):
 
 
 @pytest.mark.parametrize("pressure, expected", [
-    (82000, _expected_solpos_df()),
+    (82000, 'expected_solpos'),
     (90000, pd.DataFrame(
         np.array([[39.88997,   50.11003,  194.34024,   39.87205,   14.64151,
                    50.12795]]),
@@ -463,13 +432,16 @@ def test_get_solarposition_error(golden):
                  'elevation', 'equation_of_time', 'zenith'],
         index=['2003-10-17T12:30:30Z']))
     ])
-def test_get_solarposition_pressure(pressure, expected, golden):
+def test_get_solarposition_pressure(
+        pressure, expected, golden, expected_solpos):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude,
                                                  pressure=pressure,
                                                  temperature=11)
+    if isinstance(expected, str) and expected == 'expected_solpos':
+        expected = expected_solpos
     this_expected = expected.copy()
     this_expected.index = times
     this_expected = np.round(this_expected, 5)
@@ -478,7 +450,7 @@ def test_get_solarposition_pressure(pressure, expected, golden):
 
 
 @pytest.mark.parametrize("altitude, expected", [
-    (1830.14, _expected_solpos_df()),
+    (1830.14, 'expected_solpos'),
     (2000, pd.DataFrame(
         np.array([[39.88788,   50.11212,  194.34024,   39.87205,   14.64151,
                    50.12795]]),
@@ -486,13 +458,16 @@ def test_get_solarposition_pressure(pressure, expected, golden):
                  'elevation', 'equation_of_time', 'zenith'],
         index=['2003-10-17T12:30:30Z']))
     ])
-def test_get_solarposition_altitude(altitude, expected, golden):
+def test_get_solarposition_altitude(
+        altitude, expected, golden, expected_solpos):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
                           periods=1, freq='D', tz=golden.tz)
     ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                  golden.longitude,
                                                  altitude=altitude,
                                                  temperature=11)
+    if isinstance(expected, str) and expected == 'expected_solpos':
+        expected = expected_solpos
     this_expected = expected.copy()
     this_expected.index = times
     this_expected = np.round(this_expected, 5)

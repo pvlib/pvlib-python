@@ -260,6 +260,11 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     2-5                 kasten1966 kasten1966 kastenyoung1989
     =================== ========== ========== ===============
 
+    This implementation also deviates from the reference by including a
+    check for angles of incidence greater than 90 degrees; without this,
+    the model might return negative spectral irradiance values when the
+    sun is behind the plane of array.
+
     References
     ----------
     .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
@@ -357,10 +362,16 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     Is = (Ir + Ia + Ig) * Cs  # Eq 3-1
 
     # calculate spectral irradiance on a tilted surface, Eq 3-18
-    Ibeam = Id * cosd(aoi)
+    # Note: clipping cosd(aoi) to >=0 is not in the reference, but is necessary
+    # to prevent nonsense values when the sun is behind the plane of array.
+    # The same constraint is applied in irradiance.haydavies when not
+    # supplying `projection_ratio`.
+    aoi_projection_nn = np.maximum(cosd(aoi), 0)  # GH 1348
+    Ibeam = Id * aoi_projection_nn
 
-    # don't need surface_azimuth if we provide projection_ratio
-    projection_ratio = cosd(aoi) / cosZ
+    # don't need surface_azimuth if we provide projection_ratio.
+    # Also constrain cos zenith to avoid blowup, as in irradiance.haydavies
+    projection_ratio = aoi_projection_nn / np.maximum(cosZ, 0.01745)
     Isky = pvlib.irradiance.haydavies(surface_tilt=surface_tilt,
                                       surface_azimuth=None,
                                       dhi=Is,

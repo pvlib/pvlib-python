@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from conftest import assert_series_equal
+from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
-from conftest import DATA_DIR
+from .conftest import DATA_DIR
 import pytest
 
 from pvlib import inverter
@@ -106,16 +106,16 @@ def test_sandia_multi(cec_inverter_parameters):
     pdcs = idcs * vdcs
     pacs = inverter.sandia_multi((vdcs, vdcs), (pdcs, pdcs),
                                  cec_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004278, 250.000000]))
     # with lists instead of tuples
     pacs = inverter.sandia_multi([vdcs, vdcs], [pdcs, pdcs],
                                  cec_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    assert_series_equal(pacs, pd.Series([-0.020000, 132.004278, 250.000000]))
     # with arrays instead of tuples
     pacs = inverter.sandia_multi(np.array([vdcs, vdcs]),
                                  np.array([pdcs, pdcs]),
                                  cec_inverter_parameters)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
+    assert_allclose(pacs, np.array([-0.020000, 132.004278, 250.000000]))
 
 
 def test_sandia_multi_length_error(cec_inverter_parameters):
@@ -184,10 +184,10 @@ def test_pvwatts_multi():
     # with Series
     pdc = pd.Series(pdc)
     out = inverter.pvwatts_multi((pdc, pdc), pdc0, 0.95)
-    assert_series_equal(expected, out)
+    assert_series_equal(pd.Series(expected), out)
     # with list instead of tuple
     out = inverter.pvwatts_multi([pdc, pdc], pdc0, 0.95)
-    assert_series_equal(expected, out)
+    assert_series_equal(pd.Series(expected), out)
 
 
 INVERTER_TEST_MEAS = DATA_DIR / 'inverter_fit_snl_meas.csv'

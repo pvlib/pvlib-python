@@ -8,7 +8,7 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from conftest import assert_frame_equal, assert_series_equal
+from .conftest import assert_frame_equal, assert_series_equal
 
 from pvlib.location import Location
 from pvlib import clearsky
@@ -16,7 +16,7 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-from conftest import requires_tables, DATA_DIR
+from .conftest import DATA_DIR
 
 
 def test_ineichen_series():
@@ -189,7 +189,6 @@ def test_ineichen_altitude():
     assert_frame_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -202,7 +201,6 @@ def test_lookup_linke_turbidity():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_leapyear():
     times = pd.date_range(start='2016-06-24', end='2016-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -215,7 +213,6 @@ def test_lookup_linke_turbidity_leapyear():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_nointerp():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
@@ -226,7 +223,6 @@ def test_lookup_linke_turbidity_nointerp():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
                           freq='1M', tz='America/Phoenix')
@@ -237,7 +233,6 @@ def test_lookup_linke_turbidity_months():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_months_leapyear():
     times = pd.date_range(start='2016-04-01', end='2016-07-01',
                           freq='1M', tz='America/Phoenix')
@@ -248,7 +243,6 @@ def test_lookup_linke_turbidity_months_leapyear():
     assert_series_equal(expected, out)
 
 
-@requires_tables
 def test_lookup_linke_turbidity_nointerp_months():
     times = pd.date_range(start='2014-04-10', end='2014-07-10',
                           freq='1M', tz='America/Phoenix')
@@ -480,7 +474,6 @@ def test_simplified_solis_nans_series():
     assert_frame_equal(expected, out)
 
 
-@requires_tables
 def test_linke_turbidity_corners():
     """Test Linke turbidity corners out of bounds."""
     months = pd.DatetimeIndex('%d/1/2016' % (m + 1) for m in range(12))
@@ -516,13 +509,6 @@ def test_linke_turbidity_corners():
         monthly_lt_nointerp(-91, -122)  # exceeds min latitude
     with pytest.raises(IndexError):
         monthly_lt_nointerp(38.2, -181)  # exceeds min longitude
-
-
-def test_degrees_to_index_1():
-    """Test that _degrees_to_index raises an error when something other than
-    'latitude' or 'longitude' is passed."""
-    with pytest.raises(IndexError):  # invalid value for coordinate argument
-        clearsky._degrees_to_index(degrees=22.0, coordinate='width')
 
 
 @pytest.fixture
@@ -604,6 +590,17 @@ def test_detect_clearsky_window(detect_clearsky_data):
     expected = expected['Clear or not'].copy()
     expected.iloc[-3:] = True
     assert_series_equal(expected, clear_samples,
+                        check_dtype=False, check_names=False)
+
+
+def test_detect_clearsky_time_interval(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    u = np.arange(0, len(cs), 2)
+    cs2 = cs.iloc[u]
+    expected2 = expected.iloc[u]
+    clear_samples = clearsky.detect_clearsky(
+        expected2['GHI'], cs2['ghi'], window_length=6)
+    assert_series_equal(expected2['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 
 
@@ -752,6 +749,30 @@ def test_bird():
     assert np.allclose(
         testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
     )
+    # repeat test with albedo as a Series
+    alb_series = pd.Series(0.2, index=times)
+    irrads = clearsky.bird(
+        zenith, airmass, aod_380nm, aod_500nm, h2o_cm, o3_cm, press_mB * 100.,
+        etr, b_a, alb_series
+    )
+    Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
+    direct_beam = pd.Series(np.where(dawn, Eb, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Beam'].where(dusk, 0.), direct_beam[1:48], rtol=1e-3
+    )
+    direct_horz = pd.Series(np.where(dawn, Ebh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Direct Hz'].where(dusk, 0.), direct_horz[1:48], rtol=1e-3
+    )
+    global_horz = pd.Series(np.where(dawn, Gh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Global Hz'].where(dusk, 0.), global_horz[1:48], rtol=1e-3
+    )
+    diffuse_horz = pd.Series(np.where(dawn, Dh, 0.), index=times).fillna(0.)
+    assert np.allclose(
+        testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
+    )
+
     # test keyword parameters
     irrads2 = clearsky.bird(
         zenith, airmass, aod_380nm, aod_500nm, h2o_cm, dni_extra=etr
@@ -787,4 +808,3 @@ def test_bird():
         [Eb3, Ebh3, Gh3, Dh3],
         testdata2[['Direct Beam', 'Direct Hz', 'Global Hz', 'Dif Hz']].iloc[11],
         rtol=1e-3)
-    return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=times)

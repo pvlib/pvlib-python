@@ -4,7 +4,7 @@ import numpy as np
 from numpy import nan
 from numpy.testing import assert_allclose
 import pandas as pd
-from conftest import assert_series_equal
+from .conftest import assert_series_equal
 import pytest
 
 from pvlib import atmosphere
@@ -169,7 +169,6 @@ def test_kasten96_lt():
     )
     lt = atmosphere.kasten96_lt(*np.meshgrid(amp, pwat, aod_bb))
     assert np.allclose(lt, lt_expected, 1e-3)
-    return lt
 
 
 def test_angstrom_aod():

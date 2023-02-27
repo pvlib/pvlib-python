@@ -19,10 +19,11 @@ Enhancements
 * Added the optional `string_factor` parameter to
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
 
-* Added `haydavies` sky-diffuse transposition model to
+* Added an optional ``model`` parameter to
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
-  (:pull:`1668`)
+  to enable use of the hay-davies sky diffuse irradiance model
+  instead of the default isotropic model. (:pull:`1668`)
 
 Bug fixes
 ~~~~~~~~~

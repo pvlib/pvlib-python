@@ -93,6 +93,15 @@ lower edge.
 
 This model is influenced by the 2D model published by Marion, *et al.* in [2].
 
+Notes
+-----
+If ``model='isotropic'`` (the default), ``dhi`` is assumed to be isotropically
+distributed across the sky dome as in [1]_. This implementation provides an
+optional extension to [1]_ to model sky anisotropy: if ``model='haydavies'``,
+the input ``dhi`` is decomposed into circumsolar and isotropic components using
+:py:func:`~pvlib.irradiance.haydavies`, with the circumsolar component treated
+as additional ``dni`` for transposition and shading purposes.
+
 References
 ----------
 .. [1] Mikofski, M., Darawali, R., Hamer, M., Neubert, A., and Newmiller,

@@ -2278,15 +2278,14 @@ def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
         \mathit{DF} = \frac{1}{1 + \exp\left(-5 + 8.6 k_t\right)}
 
-    where :math:`k_t` is the clearness index.
 
     Parameters
     ----------
     ghi: numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance. [W/m^2]
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
-    datetime_or_doy : int, float, array, pd.DatetimeIndex
+    datetime_or_doy : int, float, numpy.ndarray, pandas.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
     min_cos_zenith : numeric, default 0.065

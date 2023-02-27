@@ -400,7 +400,7 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
 
 def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                        solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
-                       albedo, dni_extra=None, model='isotropic', iam=1.0,
+                       albedo, model='isotropic', dni_extra=None, iam=1.0,
                        npoints=100):
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
@@ -457,12 +457,12 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     albedo : numeric
         Surface albedo. [unitless]
 
+    model : str, default 'isotropic'
+        Irradiance model - can be one of 'isotropic' or 'haydavies'.
+
     dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. Required when
         ``model='haydavies'``. [W/m2]
-
-    model : str, default 'isotropic'
-        Irradiance model - can be one of 'isotropic' or 'haydavies'.
 
     iam : numeric, default 1.0
         Incidence angle modifier, the fraction of direct irradiance incident
@@ -608,7 +608,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
 
 def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
-                   albedo, dni_extra=None, model='isotropic', iam_front=1.0,
+                   albedo, model='isotropic', dni_extra=None, iam_front=1.0,
                    iam_back=1.0, bifaciality=0.8, shade_factor=-0.02,
                    transmission_factor=0, npoints=100):
     """
@@ -671,12 +671,12 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     albedo : numeric
         Surface albedo. [unitless]
 
+    model : str, default 'isotropic'
+        Irradiance model - can be one of 'isotropic' or 'haydavies'.
+
     dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. Required when
         ``model='haydavies'``. [W/m2]
-
-    model : str, default 'isotropic'
-        Irradiance model - can be one of 'isotropic' or 'haydavies'.
 
     iam_front : numeric, default 1.0
         Incidence angle modifier, the fraction of direct irradiance incident
@@ -755,14 +755,14 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         surface_tilt=surface_tilt, surface_azimuth=surface_azimuth,
         solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
         gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
-        albedo=albedo, dni_extra=dni_extra, model=model, iam=iam_front,
+        albedo=albedo, model=model, dni_extra=dni_extra, iam=iam_front,
         npoints=npoints)
     # back side POA irradiance
     irrad_back = get_irradiance_poa(
         surface_tilt=backside_tilt, surface_azimuth=backside_sysaz,
         solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
         gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
-        albedo=albedo, dni_extra=dni_extra, model=model, iam=iam_back,
+        albedo=albedo, model=model, dni_extra=dni_extra, iam=iam_back,
         npoints=npoints)
 
     colmap_front = {

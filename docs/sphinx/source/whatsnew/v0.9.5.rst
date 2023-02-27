@@ -32,6 +32,8 @@ Bug fixes
 * When using ``utc_time_range`` with :py:func:`pvlib.iotools.read_ecmwf_macc`,
   the time index subset is now selected with ``nearest`` instead of ``before``
   and ``after`` for consistency with ``cftime>=1.6.0``. (:issue:`1609`, :pull:`1656`)
+* :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` no longer raises
+  a scipy deprecation warning (and is slightly more accurate) (:issue:`1644`, :pull:`1674`)
 
 
 Testing

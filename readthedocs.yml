@@ -41,3 +41,6 @@ python:
 
     # pin requirements (recommended)
     - requirements: docs/requirements.txt
+
+    - method: pip
+      path: .

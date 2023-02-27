@@ -10,9 +10,10 @@ diffuse components from measured global horizontal irradiance.
 # This example demonstrates how to use diffuse fraction estimation methods to
 # obtain direct and diffuse components from measured global horizontal
 # irradiance (GHI). Irradiance sensors such as pyranometers typically only
-# measure GHI. Therefore pvlib provides several correlations to estimate the
-# diffuse fraction of the GHI, that can be used to resolve the diffuse and
-# direct components.
+# measure GHI. pvlib provides several functions that can be used
+# to separate GHI into the diffuse and direct components. The separate
+# components are needed to estimate the total irradiance on a tilted
+# surface.
 
 import pathlib
 from matplotlib import pyplot as plt

@@ -39,8 +39,10 @@ solpos = get_solarposition(
     temperature=greensboro.DryBulb)
 
 # %%
+# pvlib Decomposition Functions
+# -----------------------------
 # Methods for separating DHI into diffuse and direct components include:
-# **DISC**, **DIRINT**, **Erbs** and **Boland**.
+# `DISC`_, `DIRINT`_, `Erbs`_, and `Boland`_.
 
 # %%
 # DISC
@@ -89,7 +91,7 @@ out_erbs = out_erbs.rename(columns={'dni': 'dni_erbs', 'dhi': 'dhi_erbs'})
 
 # %%
 # Boland
-# ----
+# ------
 #
 # The Boland method, :py:func:`~pvlib.irradiance.boland` is a single logistic
 # exponential correlation that is continuously differentiable and bounded
@@ -103,20 +105,20 @@ out_boland = out_boland.rename(
 # Combine everything together.
 
 dni_renames = {
-    'DNI': 'TMY', 'dni_disc': 'DISC', 'dni_dirint': 'DIRINT',
+    'DNI': 'TMY3', 'dni_disc': 'DISC', 'dni_dirint': 'DIRINT',
     'dni_erbs': 'Erbs', 'dni_boland': 'Boland'}
 dni = [
     greensboro.DNI, out_disc.dni_disc, out_dirint.dni_dirint,
     out_erbs.dni_erbs, out_boland.dni_boland]
 dni = pd.concat(dni, axis=1).rename(columns=dni_renames)
 dhi_renames = {
-    'DHI': 'TMY', 'dhi_disc': 'DISC', 'dhi_dirint': 'DIRINT',
+    'DHI': 'TMY3', 'dhi_disc': 'DISC', 'dhi_dirint': 'DIRINT',
     'dhi_erbs': 'Erbs', 'dhi_boland': 'Boland'}
 dhi = [
     greensboro.DHI, out_disc.dhi_disc, out_dirint.dhi_dirint,
     out_erbs.dhi_erbs, out_boland.dhi_boland]
 dhi = pd.concat(dhi, axis=1).rename(columns=dhi_renames)
-ghi_kt = pd.concat([greensboro.GHI/1366.1, out_erbs.kt], axis=1)
+ghi_kt = pd.concat([greensboro.GHI/1000.0, out_erbs.kt], axis=1)
 
 # %%
 # Finally, let's plot them for a few winter days and compare
@@ -132,7 +134,7 @@ ax[1].grid(which="both")
 ax[1].set_ylabel('DHI $[W/m^2]$')
 ghi_kt[JAN6AM:JAN6PM].plot(ax=ax[2])
 ax[2].grid(which='both')
-ax[2].set_ylabel(r'$\frac{GHI}{G_{SC}}, k_t$')
+ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
 f.tight_layout()
 
 # %%
@@ -172,6 +174,14 @@ f.tight_layout()
 # %%
 # Conclusion
 # ----------
+# This example has compared several decomposition models to a TMY3 file for
+# Greensboro, North Carolina. However, DNI and DHI in the TMY3 file are
+# themselves the output of a model (either METSTAT or SUNY), and so differences
+# between *e.g.* DISC output and TMY3 shouldn't be regarded as an error in the
+# DISC model. Therefore, it's not a reasonable expectation to assume that the
+# four models should reproduce the TMY3 values. We refer those interested to
+# the `TMY3`_ and `NSRDB`_ user manuals.
+#
 # The Erbs and Boland are correlations with only kt, which is derived from the
 # horizontal component of the extra-terrestrial irradiance. Therefore at low
 # sun elevation (zenith ~ 90-deg), especially near sunset, this causes kt to
@@ -179,10 +189,14 @@ f.tight_layout()
 # setting ``min_cos_zenith`` and ``max_clearness_index`` which each have
 # reasonable defaults, but there are still concerning spikes at sunset for Jan.
 # 5th & 7th, April 4th, 5th, & 7th, and July 6th & 7th. The DISC & DIRINT
-# methods differ from Erbs and Boland be including airmass, which seems to
+# methods differ from Erbs and Boland by including airmass, which seems to
 # reduce DNI spikes over 1000[W/m^2], but still have errors at other times.
 #
 # Another difference is that DISC & DIRINT return DNI whereas Erbs & Boland
 # calculate the diffuse fraction which is then used to derive DNI from GHI and
 # the solar zenith, which exacerbates errors at low sun elevation due to the
-# relation: DNI = GHI*(1 - DF)/cos(zenith).
+# relation:
+# :math:`DNI = GHI \frac{1 - \mathit{DF}}{\cos \left(\mathit{zenith} \right)}`.
+#
+# .. _TMY3: https://www.nrel.gov/docs/fy08osti/43156.pdf
+# .. _NSRDB: https://www.nrel.gov/docs/fy12osti/54824.pdf

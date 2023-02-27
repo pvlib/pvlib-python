@@ -10,10 +10,9 @@ diffuse components from measured global horizontal irradiance.
 # This example demonstrates how to use diffuse fraction estimation methods to
 # obtain direct and diffuse components from measured global horizontal
 # irradiance (GHI). Irradiance sensors such as pyranometers typically only
-# measure GHI. pvlib provides several functions that can be used
-# to separate GHI into the diffuse and direct components. The separate
-# components are needed to estimate the total irradiance on a tilted
-# surface.
+# measure GHI. pvlib provides several functions that can be used to separate
+# GHI into the diffuse and direct components. The separate components are
+# needed to estimate the total irradiance on a tilted surface.
 
 import pathlib
 from matplotlib import pyplot as plt
@@ -37,6 +36,10 @@ solpos = get_solarposition(
     greensboro.index, latitude=metadata['latitude'],
     longitude=metadata['longitude'], altitude=metadata['altitude'],
     pressure=greensboro.Pressure*100, temperature=greensboro.DryBulb)
+
+# %%
+# Methods for separating DHI into diffuse and direct components include:
+# **DISC**, **DIRINT**, **Erbs** and **Boland**.
 
 # %%
 # DISC
@@ -112,7 +115,7 @@ dhi = [
     greensboro.DHI, out_disc.dhi_disc, out_dirint.dhi_dirint,
     out_erbs.dhi_erbs, out_boland.dhi_boland]
 dhi = pd.concat(dhi, axis=1).rename(columns=dhi_renames)
-ghi_kt = pd.concat([greensboro.GHI/1000.0, out_erbs.kt], axis=1)
+ghi_kt = pd.concat([greensboro.GHI/1367.0, out_erbs.kt], axis=1)
 
 # %%
 # Finally, let's plot them for a few winter days and compare

@@ -2271,7 +2271,8 @@ def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     The Boland model [1]_, [2]_ estimates the diffuse fraction, DF, from global
     horizontal irradiance, GHI, through an empirical relationship between DF
-    and the ratio of GHI to extraterrestrial irradiance or clearness index, kt.
+    and the clearness index, :math:`k_t`, the ratio of GHI to extraterrestrial
+    irradiance.
 
     .. math::
 
@@ -2308,13 +2309,13 @@ def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     References
     ----------
-    .. [1] John Boland, Lynne Scott, and Mark Luther, Modelling the diffuse
+    .. [1] J. Boland, B. Ridley (2008) Models of Diffuse Solar Fraction. In:
+       Badescu V. (eds) Modeling Solar Radiation at the Earth’s Surface.
+       Springer, Berlin, Heidelberg. :doi:`10.1007/978-3-540-77455-6_8`
+    .. [2] John Boland, Lynne Scott, and Mark Luther, Modelling the diffuse
        fraction of global solar radiation on a horizontal surface,
        Environmetrics 12(2), pp 103-116, 2001,
        :doi:`10.1002/1099-095X(200103)12:2%3C103::AID-ENV447%3E3.0.CO;2-2`
-    .. [2] J. Boland, B. Ridley (2008) Models of Diffuse Solar Fraction. In:
-       Badescu V. (eds) Modeling Solar Radiation at the Earth’s Surface.
-       Springer, Berlin, Heidelberg. :doi:`10.1007/978-3-540-77455-6_8`
 
     See also
     --------

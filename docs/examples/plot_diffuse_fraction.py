@@ -35,7 +35,8 @@ greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
 solpos = get_solarposition(
     greensboro.index, latitude=metadata['latitude'],
     longitude=metadata['longitude'], altitude=metadata['altitude'],
-    pressure=greensboro.Pressure*100, temperature=greensboro.DryBulb)
+    pressure=greensboro.Pressure*100,  # convert from millibar to Pa
+    temperature=greensboro.DryBulb)
 
 # %%
 # Methods for separating DHI into diffuse and direct components include:
@@ -45,7 +46,7 @@ solpos = get_solarposition(
 # DISC
 # ----
 #
-# DISC :py:meth:`~pvlib.irradiance.disc` is an empirical correlation developed
+# DISC :py:func:`~pvlib.irradiance.disc` is an empirical correlation developed
 # at SERI (now NREL) in 1987. The direct normal irradiance (DNI) is related to
 # clearness index (kt) by two polynomials split at kt = 0.6, then combined with
 # an exponential relation with airmass.
@@ -61,7 +62,7 @@ out_disc['dhi_disc'] = (
 # DIRINT
 # ------
 #
-# DIRINT :py:meth:`~pvlib.irradiance.dirint` is a modification of DISC
+# DIRINT :py:func:`~pvlib.irradiance.dirint` is a modification of DISC
 # developed by Richard Perez and Pierre Ineichen in 1992.
 
 dni_dirint = irradiance.dirint(
@@ -78,7 +79,7 @@ out_dirint = pd.DataFrame(
 # Erbs
 # ----
 #
-# The Erbs method, :py:meth:`~pvlib.irradiance.erbs` developed by Daryl Gregory
+# The Erbs method, :py:func:`~pvlib.irradiance.erbs` developed by Daryl Gregory
 # Erbs at the University of Wisconsin in 1982 is a piecewise correlation that
 # splits kt into 3 regions: linear for kt <= 0.22, a 4th order polynomial
 # between 0.22 < kt <= 0.8, and a horizontal line for kt > 0.8.
@@ -90,7 +91,7 @@ out_erbs = out_erbs.rename(columns={'dni': 'dni_erbs', 'dhi': 'dhi_erbs'})
 # Boland
 # ----
 #
-# The Boland method, :py:meth:`~pvlib.irradiance.boland` is a single logistic
+# The Boland method, :py:func:`~pvlib.irradiance.boland` is a single logistic
 # exponential correlation that is continuously differentiable and bounded
 # between zero and one.
 
@@ -115,7 +116,7 @@ dhi = [
     greensboro.DHI, out_disc.dhi_disc, out_dirint.dhi_dirint,
     out_erbs.dhi_erbs, out_boland.dhi_boland]
 dhi = pd.concat(dhi, axis=1).rename(columns=dhi_renames)
-ghi_kt = pd.concat([greensboro.GHI/1367.0, out_erbs.kt], axis=1)
+ghi_kt = pd.concat([greensboro.GHI/1366.1, out_erbs.kt], axis=1)
 
 # %%
 # Finally, let's plot them for a few winter days and compare
@@ -131,7 +132,7 @@ ax[1].grid(which="both")
 ax[1].set_ylabel('DHI $[W/m^2]$')
 ghi_kt[JAN6AM:JAN6PM].plot(ax=ax[2])
 ax[2].grid(which='both')
-ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
+ax[2].set_ylabel(r'$\frac{GHI}{G_{SC}}, k_t$')
 f.tight_layout()
 
 # %%

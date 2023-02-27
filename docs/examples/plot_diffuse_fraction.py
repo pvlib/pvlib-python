@@ -9,10 +9,7 @@ diffuse components from measured global horizontal irradiance.
 # %%
 # This example demonstrates how to use diffuse fraction estimation methods to
 # obtain direct and diffuse components from measured global horizontal
-# irradiance (GHI). PV systems are often tilted to optimize performance, so the
-# entire diffuse sky dome may not be visible to the PV surface. Determining the
-# total irradiance incident on the plane of the array requires transposing the
-# diffuse component, but irradiance sensors such as pyranometers typically only
+# irradiance (GHI). Irradiance sensors such as pyranometers typically only
 # measure GHI. Therefore pvlib provides several correlations to estimate the
 # diffuse fraction of the GHI, that can be used to resolve the diffuse and
 # direct components.

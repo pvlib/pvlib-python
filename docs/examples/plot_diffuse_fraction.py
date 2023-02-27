@@ -102,7 +102,15 @@ out_boland = out_boland.rename(
     columns={'dni': 'dni_boland', 'dhi': 'dhi_boland'})
 
 # %%
-# Combine everything together.
+# Comparison Plots
+# ----------------
+# In the plots below we compare the four decomposition models to the TMY3 file
+# for Greensboro, North Carolina. We also compare the clearness index, kt, with
+# GHI normalized by a reference irradiance, E0 = 1000 [W/m^2], to highlight
+# spikes caused when cosine of zenith approaches zero, particularly at sunset.
+#
+# First we combine the dataframes for the decomposition models and the TMY3
+# file together to make plotting easier.
 
 dni_renames = {
     'DNI': 'TMY3', 'dni_disc': 'DISC', 'dni_dirint': 'DIRINT',
@@ -121,6 +129,8 @@ dhi = pd.concat(dhi, axis=1).rename(columns=dhi_renames)
 ghi_kt = pd.concat([greensboro.GHI/1000.0, out_erbs.kt], axis=1)
 
 # %%
+# Winter
+# ++++++
 # Finally, let's plot them for a few winter days and compare
 
 JAN6AM, JAN6PM = '1990-01-04 00:00:00-05:00', '1990-01-07 23:59:59-05:00'
@@ -138,6 +148,8 @@ ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
 f.tight_layout()
 
 # %%
+# Spring
+# ++++++
 # And a few spring days ...
 
 APR6AM, APR6PM = '1990-04-04 00:00:00-05:00', '1990-04-07 23:59:59-05:00'
@@ -155,6 +167,8 @@ ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
 f.tight_layout()
 
 # %%
+# Summer
+# ++++++
 # And few summer days to finish off the seasons.
 
 JUL6AM, JUL6PM = '1990-07-04 00:00:00-05:00', '1990-07-07 23:59:59-05:00'
@@ -174,29 +188,26 @@ f.tight_layout()
 # %%
 # Conclusion
 # ----------
-# This example has compared several decomposition models to a TMY3 file for
-# Greensboro, North Carolina. However, DNI and DHI in the TMY3 file are
-# themselves the output of a model (either METSTAT or SUNY), and so differences
-# between *e.g.* DISC output and TMY3 shouldn't be regarded as an error in the
-# DISC model. Therefore, it's not a reasonable expectation to assume that the
-# four models should reproduce the TMY3 values. We refer those interested to
-# the `TMY3`_ and `NSRDB`_ user manuals.
+# This example compares several decomposition models to a TMY3 file for
+# Greensboro, North Carolina. However, DNI and DHI in TMY3 files are themselves
+# the output of models (either METSTAT or SUNY), and so differences between
+# *e.g.* DISC output and the TMY3 file shouldn't be regarded as errors, and
+# it's not a reasonable expectation to assume that the four models should
+# reproduce the TMY3 values. We refer those interested to the `TMY3`_ and
+# `NSRDB`_ user manuals.
 #
-# The Erbs and Boland are correlations with only kt, which is derived from the
-# horizontal component of the extra-terrestrial irradiance. Therefore at low
-# sun elevation (zenith ~ 90-deg), especially near sunset, this causes kt to
-# explode as the denominator approaches zero. This is controlled in pvlib by
-# setting ``min_cos_zenith`` and ``max_clearness_index`` which each have
-# reasonable defaults, but there are still concerning spikes at sunset for Jan.
-# 5th & 7th, April 4th, 5th, & 7th, and July 6th & 7th. The DISC & DIRINT
-# methods differ from Erbs and Boland by including airmass, which seems to
-# reduce DNI spikes over 1000[W/m^2], but still have errors at other times.
+# The Erbs and Boland models are correlations with only kt, which is derived
+# from the horizontal component of the extra-terrestrial irradiance. At low sun
+# elevation (zenith near 90 degrees), especially near sunset, kt can explode
+# because the denominator (extra-terrestrial irradiance) approaches zero. In
+# pvlib this behavior is moderated by ``min_cos_zenith`` and
+# ``max_clearness_index`` which each have reasonable defaults. Even so, near
+# sunset there are still spikes in kt and DNI from Erbs and Boland for Jan. 5th
+# & 7th, April 4th, 5th, & 7th, and July 6th & 7th.
 #
-# Another difference is that DISC & DIRINT return DNI whereas Erbs & Boland
-# calculate the diffuse fraction which is then used to derive DNI from GHI and
-# the solar zenith, which exacerbates errors at low sun elevation due to the
-# relation:
-# :math:`DNI = GHI \frac{1 - \mathit{DF}}{\cos \left(\mathit{zenith} \right)}`.
+# By contrast, the DISC and DIRINT methods estimate DNI first by means of
+# correlations, which include additional variables such as airmass. These methods
+# seem to reduce DNI spikes over 1000 [W/m^2].
 #
 # .. _TMY3: https://www.nrel.gov/docs/fy08osti/43156.pdf
 # .. _NSRDB: https://www.nrel.gov/docs/fy12osti/54824.pdf

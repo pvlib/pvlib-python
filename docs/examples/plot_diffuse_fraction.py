@@ -206,8 +206,8 @@ f.tight_layout()
 # & 7th, April 4th, 5th, & 7th, and July 6th & 7th.
 #
 # By contrast, the DISC and DIRINT methods estimate DNI first by means of
-# correlations, which include additional variables such as airmass. These methods
-# seem to reduce DNI spikes over 1000 [W/m^2].
+# correlations, which include additional variables such as airmass. These
+# methods seem to reduce DNI spikes over 1000 [W/m^2].
 #
 # .. _TMY3: https://www.nrel.gov/docs/fy08osti/43156.pdf
 # .. _NSRDB: https://www.nrel.gov/docs/fy12osti/54824.pdf

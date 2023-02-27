@@ -18,6 +18,8 @@ from pvlib.singlediode import bishop88_mpp
 from pvlib.ivtools.utils import rectify_iv_curve, _numdiff
 from pvlib.ivtools.sde import _fit_sandia_cocontent
 
+from pvlib.tools import _first_order_centered_difference
+
 
 CONSTANTS = {'E0': 1000.0, 'T0': 25.0, 'k': constants.k, 'q': constants.e}
 
@@ -1343,11 +1345,6 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
             I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
             temp_ref)
     pmp = maxp(temp_ref, *args)
-
-    # first order centered difference at temp_ref
-    dx = 1e-3
-    x0 = temp_ref
-    dy = maxp(x0+dx, *args) - maxp(x0-dx, *args)
-    gamma_pdc = dy / (2*dx)
+    gamma_pdc = _first_order_centered_difference(maxp, x0=temp_ref, args=args)
 
     return gamma_pdc / pmp

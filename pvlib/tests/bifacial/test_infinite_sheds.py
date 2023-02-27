@@ -389,6 +389,6 @@ def test_get_irradiance_with_haydavies():
     with pytest.raises(ValueError, match='supply dni_extra for haydavies'):
         result = infinite_sheds.get_irradiance(
             surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
-            gcr, height, pitch, ghi, dhi, dni, albedo,model,  None,
+            gcr, height, pitch, ghi, dhi, dni, albedo, model, None,
             iam_front, iam_back, bifaciality=0.8, shade_factor=-0.02,
             transmission_factor=0, npoints=npoints)

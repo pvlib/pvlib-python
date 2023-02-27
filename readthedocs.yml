@@ -1,46 +1,7 @@
-# .readthedocs.yaml
-# Read the Docs configuration file
-# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
-
-# Required
-version: 2
-
-# Set the version of Python and other tools you might need
-build:
-  os: ubuntu-22.04
-  tools:
-    python: "3.9"
-
-# Build documentation in the docs/ directory with Sphinx
-sphinx:
-  configuration: docs/sphinx/source/conf.py
-
-# If using Sphinx, optionally build your docs in additional formats such as PDF
-# formats:
-#    - pdf
-
-# Optionally declare the Python requirements required to build your docs
 python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - doc
-
-    # python.version deprecated in v2 replaced by build.tools.python
-    # version: 3  
-
-    # setup_py_install replaced by python.install in v2
+    version: 3
     # only use the packages specified in setup.py
-
-    # renamed to python.system_packages in v2
-    # use_system_site_packages: false
-
-    # replaced by python.install in v2
-    # pip_install: true
-
-    # pin requirements (recommended)
-    - requirements: docs/requirements.txt
-
-    - method: pip
-      path: .
+    use_system_site_packages: false
+    pip_install: true
+    extra_requirements:
+        - doc

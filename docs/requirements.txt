@@ -1,0 +1,17 @@
+numpy>=1.16.0
+pandas>=0.25.0
+pytz
+requests
+scipy>=1.4.0
+h5py
+ipython
+matplotlib
+sphinx==4.5.0
+pydata-sphinx-theme==0.8.1
+sphinx-gallery
+docutils==0.15.2
+pillow
+netcdf4
+siphon
+sphinx-toggleprompt>=0.0.5
+pvfactors==1.5.2

@@ -4,7 +4,7 @@ modeling.
 """
 import numpy as np
 from pvlib.tools import sind, cosd, tand
-
+import time
 
 def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     """
@@ -104,7 +104,7 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
         Position on the ground between two rows, as a fraction of the pitch.
         x = 0 corresponds to the point on the ground directly below the
         center point of a row. Positive x is towards the right. [unitless]
-    rotation : float
+    rotation : numeric
         Rotation angle of the row's right edge relative to row center.
         [degree]
     gcr : float
@@ -124,26 +124,32 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
         Fraction of sky dome visible from each point on the ground. [unitless]
     wedge_angles : array
         Angles defining each wedge of sky that is blocked by a row. Shape is
-        (2, len(x), 2*max_rows+1). ``wedge_angles[0,:,:]`` is the
-        starting angle of each wedge, ``wedge_angles[1,:,:]`` is the end angle.
-        [degree]
+        (2, len(x), len(rotation), 2*max_rows+1). ``wedge_angles[0,:,:,:]``
+        is the starting angle of each wedge, ``wedge_angles[1,:,:,:]`` is the
+        end angle. [degree]
     """
-    x = np.atleast_1d(x)  # handle float
+    # handle floats:
+    st = time.perf_counter()
+    x = np.atleast_1d(x)[:, np.newaxis, np.newaxis]
+    rotation = np.atleast_1d(rotation)[np.newaxis, :, np.newaxis]
     all_k = np.arange(-max_rows, max_rows + 1)
     width = gcr * pitch / 2.
+    distance_to_row_centers = (all_k - x) * pitch
+    dy = width * sind(rotation)
+    dx = width * cosd(rotation)
     # angles from x to right edge of each row
-    a1 = height + width * sind(rotation)
-    b1 = (all_k - x[:, np.newaxis]) * pitch + width * cosd(rotation)
-    phi_1 = np.degrees(np.arctan2(a1, b1))
+    a1 = height + dy
+    b1 = distance_to_row_centers + dx
+    phi_1 = np.arctan2(a1, b1)  # dimensions: (x, rotation, row)
     # angles from x to left edge of each row
-    a2 = height - width * sind(rotation)
-    b2 = (all_k - x[:, np.newaxis]) * pitch - width * cosd(rotation)
-    phi_2 = np.degrees(np.arctan2(a2, b2))
-    phi = np.stack([phi_1, phi_2])
-    swap = phi[0, :, :] > phi[1, :, :]
-    # swap where phi_1 > phi_2 so that phi_1[0,:,:] is the lesser angle
+    a2 = height - dy
+    b2 = distance_to_row_centers - dx
+    phi_2 = np.arctan2(a2, b2)  # dimensions: (x, rotation, row)
+    phi = np.stack([phi_1, phi_2])  # dimensions: (row edge, x, rotation, row)
+    swap = phi_1 > phi_2
+    # swap where phi_1 > phi_2 so that phi[0,:,:,:] is the lesser angle
     phi = np.where(swap, phi[::-1], phi)
     # right edge of next row - left edge of previous row
-    wedge_vfs = 0.5 * (cosd(phi[1, :, 1:]) - cosd(phi[0, :, :-1]))
-    vf = np.sum(np.where(wedge_vfs > 0, wedge_vfs, 0.), axis=1)
-    return vf, phi
+    wedge_vfs = 0.5 * (np.cos(phi[1, :, :, 1:]) - np.cos(phi[0, :, :, :-1]))
+    vf = np.sum(np.clip(wedge_vfs, a_min=0., a_max=None), axis=-1)
+    return vf, np.degrees(phi)

@@ -38,17 +38,10 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
 
     Returns
     -------
-    fgnd_sky : float
+    fgnd_sky : numeric
         Integration of view factor over the length between adjacent, interior
-        rows. [unitless]
-    fz : ndarray
-        Fraction of distance from the previous row to the next row. [unitless]
-    fz_sky : ndarray
-        View factors at discrete points between adjacent, interior rows.
-        [unitless]
-
+        rows.  Shape matches that of ``surface_tilt``. [unitless]
     """
-    # TODO: vectorize over surface_tilt
     # Abuse utils._vf_ground_sky_2d by supplying surface_tilt in place
     # of a signed rotation. This is OK because
     # 1) z span the full distance between 2 rows, and
@@ -57,12 +50,9 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
     # The VFs to the sky will thus be symmetric around z=0.5
     z = np.linspace(0, 1, npoints)
     rotation = np.atleast_1d(surface_tilt)
-    fz_sky = np.zeros((len(rotation), npoints))
-    for k, r in enumerate(rotation):
-        vf, _ = utils._vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
-        fz_sky[k, :] = vf
+    fz_sky, _ = utils._vf_ground_sky_2d(z, rotation, gcr, pitch, height, max_rows)
     # calculate the integrated view factor for all of the ground between rows
-    return np.trapz(fz_sky, z, axis=1)
+    return np.trapz(fz_sky, z, axis=0)
 
 
 def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
@@ -469,7 +459,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         on the surface that is not reflected away. [unitless]
 
     npoints : int, default 100
-        Number of points used to discretize distance along the ground.
+        Number of discretization points for calculating integrated viewfactors.
 
     Returns
     -------
@@ -701,7 +691,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         etc. A negative value is a reduction in back irradiance. [unitless]
 
     npoints : int, default 100
-        Number of points used to discretize distance along the ground.
+        Number of discretization points for calculating integrated viewfactors.
 
     Returns
     -------

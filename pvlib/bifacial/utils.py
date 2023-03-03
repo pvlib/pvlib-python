@@ -119,8 +119,9 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
 
     Returns
     -------
-    vf : numeric
-        Fraction of sky dome visible from each point on the ground. [unitless]
+    vf : array
+        Fraction of sky dome visible from each point on the ground.
+        Shape is (len(x), len(rotation)). [unitless]
     wedge_angles : array
         Angles defining each wedge of sky that is blocked by a row. Shape is
         (2, len(x), len(rotation), 2*max_rows+1). ``wedge_angles[0,:,:,:]``

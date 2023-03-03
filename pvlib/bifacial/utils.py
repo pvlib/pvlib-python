@@ -4,7 +4,6 @@ modeling.
 """
 import numpy as np
 from pvlib.tools import sind, cosd, tand
-import time
 
 def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     """
@@ -129,7 +128,6 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
         end angle. [degree]
     """
     # handle floats:
-    st = time.perf_counter()
     x = np.atleast_1d(x)[:, np.newaxis, np.newaxis]
     rotation = np.atleast_1d(rotation)[np.newaxis, :, np.newaxis]
     all_k = np.arange(-max_rows, max_rows + 1)

@@ -12,8 +12,8 @@ from pvlib.irradiance import beam_component, aoi, haydavies
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
                          pitch, max_rows=10, npoints=100):
     """
-    Integrated and per-point view factors from the ground to the sky at points
-    between interior rows of the array.
+    Integrated view factor from the ground to the sky underneath
+    interior rows of the array.
 
     Parameters
     ----------

@@ -35,7 +35,7 @@ def test_system_fixed_tilt():
     c22 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # right edge row 0
     c23 = (0 - sqr3) / np.sqrt(1.25**2 + (0 - sqr3)**2)  # right edge row 1
     vf_2 = 0.5 * (c23 - c22 + c21 - c20)  # vf at point 1
-    vfs_ground_sky = np.array([vf_0, vf_1, vf_2])
+    vfs_ground_sky = np.array([[vf_0], [vf_1], [vf_2]])
     return syst, pts, vfs_ground_sky
 
 

@@ -20,12 +20,14 @@ Enhancements
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
 * Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
   support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
-
 * Added an optional ``model`` parameter to
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   to enable use of the hay-davies sky diffuse irradiance model
   instead of the default isotropic model. (:pull:`1668`)
+* Improved execution speed of the infinite sheds model by 10-25% for
+  simulations with time series surface orientation. (:issue:`1680`, :pull:`1682`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -74,3 +76,4 @@ Contributors
 * Michael Deceglie (:ghuser:`mdeceglie`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * John Moseley (:ghuser:`johnMoseleyArray`)
+* Areeba Turabi (:ghuser:`aturabi`)

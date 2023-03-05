@@ -2283,7 +2283,7 @@ def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     ----------
     ghi: numeric
         Global horizontal irradiance. [W/m^2]
-    zenith: numeric
+    solar_zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
     datetime_or_doy : int, float, numpy.ndarray, pandas.DatetimeIndex
         Day of year or array of days of year e.g.

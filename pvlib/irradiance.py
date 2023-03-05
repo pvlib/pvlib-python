@@ -2330,7 +2330,7 @@ def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     # Boland equation
     df = 1.0 / (1.0 + np.exp(-5.0 + 8.6 * kt))
-    # NOTE: [1] has different coefficients, for different time intervals
+    # NOTE: [2] has different coefficients, for different time intervals
     # 15-min: df = 1 / (1 + exp(8.645 * (kt - 0.613)))
     # 1-hour: df = 1 / (1 + exp(7.997 * (kt - 0.586)))
 

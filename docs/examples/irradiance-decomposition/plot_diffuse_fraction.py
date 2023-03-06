@@ -16,7 +16,6 @@ diffuse components from measured global horizontal irradiance.
 
 import pathlib
 from matplotlib import pyplot as plt
-import numpy as np
 import pandas as pd
 from pvlib.iotools import read_tmy3
 from pvlib.solarposition import get_solarposition

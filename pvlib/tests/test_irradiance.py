@@ -810,14 +810,14 @@ def test_boland():
     zenith = pd.Series([120, 85, 10, 10], index=index)
     expected = pd.DataFrame(np.array(
         [[0.0,        0.0,        0.0],
-         [103.735879, 40.958822,  0.405724],
-         [776.006568, 235.782716, 0.718133],
-         [845.794317, 167.055199, 0.768214]]),
+         [81.9448546, 42.8580353, 0.405723511],
+         [723.764990, 287.230626, 0.718132729],
+         [805.020419, 207.209650, 0.768214312]]),
         columns=['dni', 'dhi', 'kt'], index=index)
 
     out = irradiance.boland(ghi, zenith, index)
 
-    assert_frame_equal(np.round(out, 0), np.round(expected, 0))
+    assert np.allclose(out, expected)
 
 
 def test_erbs_min_cos_zenith_max_zenith():

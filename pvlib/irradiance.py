@@ -2265,7 +2265,8 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     return data
 
 
-def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
+def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
+           min_cos_zenith=0.065, max_zenith=87):
     r"""
     Estimate DNI and DHI from GHI using the Boland clearness index model.
 
@@ -2276,7 +2277,7 @@ def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     .. math::
 
-        \mathit{DF} = \frac{1}{1 + \exp\left(-5 + 8.6 k_t\right)}
+        \mathit{DF} = \frac{1}{1 + \exp\left(A \left(k_t - B\right)\right)}
 
 
     Parameters
@@ -2288,6 +2289,10 @@ def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     datetime_or_doy : int, float, numpy.ndarray, pandas.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+    a_coeff : float, default 8.645
+        logistic curve fit coefficient
+    b_coeff : float, default 0.613
+        logistic curve fit coefficient
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
         clearness index :math:`k_t`. Equivalent to zenith = 86.273 degrees.
@@ -2321,23 +2326,34 @@ def boland(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     dirint
     disc
     erbs
+
+    Notes
+    -----
+    Boland diffuse fraction differs from other decomposition algorithms by use
+    of a logistic function to fit the entire range of clearness index,
+    :math:`k_t`. Parameters ``a_coeff`` and ``b_coeff`` are reported in [2]_
+    for different time intervals:
+
+    * 15-minute: ``a = 8.645`` and ``b = 0.613``
+    * 1-hour:  ``a = 7.997`` and ``b = 0.586``
     """
 
     dni_extra = get_extra_radiation(datetime_or_doy)
 
-    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
-                         max_clearness_index=1)
+    kt = clearness_index(
+        ghi, solar_zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+        max_clearness_index=1)
 
     # Boland equation
-    df = 1.0 / (1.0 + np.exp(-5.0 + 8.6 * kt))
+    df = 1.0 / (1.0 + np.exp(a_coeff * (kt - b_coeff)))
     # NOTE: [2] has different coefficients, for different time intervals
     # 15-min: df = 1 / (1 + exp(8.645 * (kt - 0.613)))
     # 1-hour: df = 1 / (1 + exp(7.997 * (kt - 0.586)))
 
     dhi = df * ghi
 
-    dni = (ghi - dhi) / tools.cosd(zenith)
-    bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = (ghi - dhi) / tools.cosd(solar_zenith)
+    bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
     dni = np.where(bad_values, 0, dni)
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)

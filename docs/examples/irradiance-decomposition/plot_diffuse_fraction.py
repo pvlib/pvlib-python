@@ -58,11 +58,11 @@ solpos.index = greensboro.index  # reset index to end of the hour
 out_disc = irradiance.disc(
     greensboro.GHI, solpos.zenith, greensboro.index, greensboro.Pressure*100)
 # use "complete sum" AKA "closure" equations: DHI = GHI - DNI * cos(zenith)
-df = irradiance.complete_irradiance(
+df_disc = irradiance.complete_irradiance(
     solar_zenith=solpos.apparent_zenith, ghi=greensboro.GHI, dni=out_disc.dni,
     dhi=None)
 out_disc = out_disc.rename(columns={'dni': 'dni_disc'})
-out_disc['dhi_disc'] = df.dhi
+out_disc['dhi_disc'] = df_disc.dhi
 
 # %%
 # DIRINT
@@ -75,11 +75,12 @@ dni_dirint = irradiance.dirint(
     greensboro.GHI, solpos.zenith, greensboro.index, greensboro.Pressure*100,
     temp_dew=greensboro.DewPoint)
 # use "complete sum" AKA "closure" equations: DHI = GHI - DNI * cos(zenith)
-df = irradiance.complete_irradiance(
+df_dirint = irradiance.complete_irradiance(
     solar_zenith=solpos.apparent_zenith, ghi=greensboro.GHI, dni=dni_dirint,
     dhi=None)
 out_dirint = pd.DataFrame(
-    {'dni_dirint': dni_dirint, 'dhi_dirint': df.dhi}, index=greensboro.index)
+    {'dni_dirint': dni_dirint, 'dhi_dirint': df_dirint.dhi},
+    index=greensboro.index)
 
 # %%
 # Erbs
@@ -137,16 +138,16 @@ ghi_kt = pd.concat([greensboro.GHI/1000.0, out_erbs.kt], axis=1)
 # ++++++
 # Finally, let's plot them for a few winter days and compare
 
-JAN_AM, JAN_PM = '1990-01-04 00:00:00-05:00', '1990-01-07 23:59:59-05:00'
+JAN04, JAN07 = '1990-01-04 00:00:00-05:00', '1990-01-07 23:59:59-05:00'
 f, ax = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
-dni[JAN_AM:JAN_PM].plot(ax=ax[0])
+dni[JAN04:JAN07].plot(ax=ax[0])
 ax[0].grid(which="both")
 ax[0].set_ylabel('DNI $[W/m^2]$')
 ax[0].set_title('Comparison of Diffuse Fraction Estimation Methods')
-dhi[JAN_AM:JAN_PM].plot(ax=ax[1])
+dhi[JAN04:JAN07].plot(ax=ax[1])
 ax[1].grid(which="both")
 ax[1].set_ylabel('DHI $[W/m^2]$')
-ghi_kt[JAN_AM:JAN_PM].plot(ax=ax[2])
+ghi_kt[JAN04:JAN07].plot(ax=ax[2])
 ax[2].grid(which='both')
 ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
 f.tight_layout()
@@ -156,16 +157,16 @@ f.tight_layout()
 # ++++++
 # And a few spring days ...
 
-APR_AM, APR_PM = '1990-04-04 00:00:00-05:00', '1990-04-07 23:59:59-05:00'
+APR04, APR07 = '1990-04-04 00:00:00-05:00', '1990-04-07 23:59:59-05:00'
 f, ax = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
-dni[APR_AM:APR_PM].plot(ax=ax[0])
+dni[APR04:APR07].plot(ax=ax[0])
 ax[0].grid(which="both")
 ax[0].set_ylabel('DNI $[W/m^2]$')
 ax[0].set_title('Comparison of Diffuse Fraction Estimation Methods')
-dhi[APR_AM:APR_PM].plot(ax=ax[1])
+dhi[APR04:APR07].plot(ax=ax[1])
 ax[1].grid(which="both")
 ax[1].set_ylabel('DHI $[W/m^2]$')
-ghi_kt[APR_AM:APR_PM].plot(ax=ax[2])
+ghi_kt[APR04:APR07].plot(ax=ax[2])
 ax[2].grid(which='both')
 ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
 f.tight_layout()
@@ -175,16 +176,16 @@ f.tight_layout()
 # ++++++
 # And few summer days to finish off the seasons.
 
-JUL_AM, JUL_PM = '1990-07-04 00:00:00-05:00', '1990-07-07 23:59:59-05:00'
+JUL04, JUL07 = '1990-07-04 00:00:00-05:00', '1990-07-07 23:59:59-05:00'
 f, ax = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
-dni[JUL_AM:JUL_PM].plot(ax=ax[0])
+dni[JUL04:JUL07].plot(ax=ax[0])
 ax[0].grid(which="both")
 ax[0].set_ylabel('DNI $[W/m^2]$')
 ax[0].set_title('Comparison of Diffuse Fraction Estimation Methods')
-dhi[JUL_AM:JUL_PM].plot(ax=ax[1])
+dhi[JUL04:JUL07].plot(ax=ax[1])
 ax[1].grid(which="both")
 ax[1].set_ylabel('DHI $[W/m^2]$')
-ghi_kt[JUL_AM:JUL_PM].plot(ax=ax[2])
+ghi_kt[JUL04:JUL07].plot(ax=ax[2])
 ax[2].grid(which='both')
 ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
 f.tight_layout()

@@ -55,10 +55,12 @@ solpos = get_solarposition(
 
 out_disc = irradiance.disc(
     greensboro.GHI, solpos.zenith, greensboro.index, greensboro.Pressure*100)
+# use "complete sum" AKA "closure" equations: DHI = GHI - DNI * cos(zenith)
+df = irradiance.complete_irradiance(
+    solar_zenith=solpos.apparent_zenith, ghi=greensboro.GHI, dni=out_disc.dni,
+    dhi=None)
 out_disc = out_disc.rename(columns={'dni': 'dni_disc'})
-out_disc['dhi_disc'] = (
-    greensboro.GHI
-    - out_disc.dni_disc*np.cos(np.radians(solpos.apparent_zenith)))
+out_disc['dhi_disc'] = df.dhi
 
 # %%
 # DIRINT
@@ -70,12 +72,12 @@ out_disc['dhi_disc'] = (
 dni_dirint = irradiance.dirint(
     greensboro.GHI, solpos.zenith, greensboro.index, greensboro.Pressure*100,
     temp_dew=greensboro.DewPoint)
-dhi_dirint = (
-    greensboro.GHI
-    - dni_dirint*np.cos(np.radians(solpos.apparent_zenith)))
+# use "complete sum" AKA "closure" equations: DHI = GHI - DNI * cos(zenith)
+df = irradiance.complete_irradiance(
+    solar_zenith=solpos.apparent_zenith, ghi=greensboro.GHI, dni=dni_dirint,
+    dhi=None)
 out_dirint = pd.DataFrame(
-    {'dni_dirint': dni_dirint, 'dhi_dirint': dhi_dirint},
-    index=greensboro.index)
+    {'dni_dirint': dni_dirint, 'dhi_dirint': df.dhi}, index=greensboro.index)
 
 # %%
 # Erbs

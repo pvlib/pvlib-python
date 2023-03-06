@@ -32,11 +32,14 @@ greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
 
 # Many of the diffuse fraction estimation methods require the "true" zenith, so
 # we calculate the solar positions for the 1990 at Greensboro, NC.
+# NOTE: TMY3 files timestamps indicate the end of the hour, so shift indices
+# back 30-minutes to calculate solar position at center of the interval
 solpos = get_solarposition(
-    greensboro.index, latitude=metadata['latitude'],
+    greensboro.index.shift(freq="-30T"), latitude=metadata['latitude'],
     longitude=metadata['longitude'], altitude=metadata['altitude'],
     pressure=greensboro.Pressure*100,  # convert from millibar to Pa
     temperature=greensboro.DryBulb)
+solpos.index = greensboro.index  # reset index to end of the hour
 
 # %%
 # pvlib Decomposition Functions
@@ -135,16 +138,16 @@ ghi_kt = pd.concat([greensboro.GHI/1000.0, out_erbs.kt], axis=1)
 # ++++++
 # Finally, let's plot them for a few winter days and compare
 
-JAN6AM, JAN6PM = '1990-01-04 00:00:00-05:00', '1990-01-07 23:59:59-05:00'
+JAN_AM, JAN_PM = '1990-01-04 00:00:00-05:00', '1990-01-07 23:59:59-05:00'
 f, ax = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
-dni[JAN6AM:JAN6PM].plot(ax=ax[0])
+dni[JAN_AM:JAN_PM].plot(ax=ax[0])
 ax[0].grid(which="both")
 ax[0].set_ylabel('DNI $[W/m^2]$')
 ax[0].set_title('Comparison of Diffuse Fraction Estimation Methods')
-dhi[JAN6AM:JAN6PM].plot(ax=ax[1])
+dhi[JAN_AM:JAN_PM].plot(ax=ax[1])
 ax[1].grid(which="both")
 ax[1].set_ylabel('DHI $[W/m^2]$')
-ghi_kt[JAN6AM:JAN6PM].plot(ax=ax[2])
+ghi_kt[JAN_AM:JAN_PM].plot(ax=ax[2])
 ax[2].grid(which='both')
 ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
 f.tight_layout()
@@ -154,16 +157,16 @@ f.tight_layout()
 # ++++++
 # And a few spring days ...
 
-APR6AM, APR6PM = '1990-04-04 00:00:00-05:00', '1990-04-07 23:59:59-05:00'
+APR_AM, APR_PM = '1990-04-04 00:00:00-05:00', '1990-04-07 23:59:59-05:00'
 f, ax = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
-dni[APR6AM:APR6PM].plot(ax=ax[0])
+dni[APR_AM:APR_PM].plot(ax=ax[0])
 ax[0].grid(which="both")
 ax[0].set_ylabel('DNI $[W/m^2]$')
 ax[0].set_title('Comparison of Diffuse Fraction Estimation Methods')
-dhi[APR6AM:APR6PM].plot(ax=ax[1])
+dhi[APR_AM:APR_PM].plot(ax=ax[1])
 ax[1].grid(which="both")
 ax[1].set_ylabel('DHI $[W/m^2]$')
-ghi_kt[APR6AM:APR6PM].plot(ax=ax[2])
+ghi_kt[APR_AM:APR_PM].plot(ax=ax[2])
 ax[2].grid(which='both')
 ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
 f.tight_layout()
@@ -173,16 +176,16 @@ f.tight_layout()
 # ++++++
 # And few summer days to finish off the seasons.
 
-JUL6AM, JUL6PM = '1990-07-04 00:00:00-05:00', '1990-07-07 23:59:59-05:00'
+JUL_AM, JUL_PM = '1990-07-04 00:00:00-05:00', '1990-07-07 23:59:59-05:00'
 f, ax = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
-dni[JUL6AM:JUL6PM].plot(ax=ax[0])
+dni[JUL_AM:JUL_PM].plot(ax=ax[0])
 ax[0].grid(which="both")
 ax[0].set_ylabel('DNI $[W/m^2]$')
 ax[0].set_title('Comparison of Diffuse Fraction Estimation Methods')
-dhi[JUL6AM:JUL6PM].plot(ax=ax[1])
+dhi[JUL_AM:JUL_PM].plot(ax=ax[1])
 ax[1].grid(which="both")
 ax[1].set_ylabel('DHI $[W/m^2]$')
-ghi_kt[JUL6AM:JUL6PM].plot(ax=ax[2])
+ghi_kt[JUL_AM:JUL_PM].plot(ax=ax[2])
 ax[2].grid(which='both')
 ax[2].set_ylabel(r'$\frac{GHI}{E0}, k_t$')
 f.tight_layout()

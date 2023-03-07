@@ -1,33 +1,36 @@
 import numpy as np
 
 def lcoe(production=None, cap_cost=None, fixed_om=None):
-        """
-        Levelized cost of electricity as described on pp.43 and 47-48 by [1]   
-        Parameters
-        ----------
-        production : np.array, or pd.Series, default None
-            Annual production [kWh/kW installed]
-        cap_cost : np.array, or pd.Series, default None
-            Initial and annual payments on capital costs [$/kW installed]
-        fixed_om : np.array, or pd.Series, default None
-            Annual payments on operations and maintenance costs [$/kW installed]
-            
-        Returns
-        ----------
-        LCOE [cents/kWh]
 
-        References
-        ----------
-        .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic Evaluation of Energy Efficiency and Renewable Energy Technologies", NREL/TP-462-5173, 1995.
-        """        
-        if len(production)!=len(cap_cost) or len(cap_cost)!=len(fixed_om):
-            raise ValueError("Unequal input array lengths")      
-        cost = cap_cost + fixed_om            
-        return np.round(np.nansum(cost)*100/np.nansum(production),2)
+    """
+    Levelized cost of electricity as described on pp.43 and 47-48 by [1]
+    Parameters
+    ----------
+    production : np.array, or pd.Series, default None
+        Annual production [kWh/kW installed]
+    cap_cost : np.array, or pd.Series, default None
+        Initial and annual payments on capital costs [$/kW installed]
+    fixed_om : np.array, or pd.Series, default None
+        Annual payments on operations and maintenance costs [$/kW installed]
+
+    Returns
+    ----------
+    LCOE [cents/kWh]
+
+    References
+    ----------
+    .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic
+    Evaluation of Energy Efficiency and Renewable Energy Technologies",
+    NREL/TP-462-5173, 1995.
+    """
+  
+    cost = cap_cost + fixed_om         
+    return np.nansum(cost)*100/np.nansum(production)
 
 def crf(rate, n_years):
+
     """
-    Capital recovery factor as described on pp. 23 by [1]    
+    Capital recovery factor as described on pp. 23 by [1]
     Parameters
     ----------
     rate : float
@@ -41,11 +44,15 @@ def crf(rate, n_years):
         Capital recovery factor
     References
     ----------
-    .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic Evaluation of Energy Efficiency and Renewable Energy Technologies", NREL/TP-462-5173, 1995.
-    """ 
-    return np.round((rate*(1+rate)**n_years)/((1+rate)**n_years-1),8)
+    .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic
+    Evaluation of Energy Efficiency and Renewable Energy Technologies",
+    NREL/TP-462-5173, 1995.
+    """
+
+    return (rate*(1+rate)**n_years)/((1+rate)**n_years-1)
 
 def nominal_to_real(nominal, rate):
+
     """
     Inflation-adjusted rate described on pp. 6 by [1]
     Parameters
@@ -61,11 +68,15 @@ def nominal_to_real(nominal, rate):
 
     References
     ----------
-    .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic Evaluation of Energy Efficiency and Renewable Energy Technologies", NREL/TP-462-5173, 1995.
-    """ 
-    return np.round((1+nominal)/(1+rate)-1, 8)
+    .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic
+    Evaluation of Energy Efficiency and Renewable Energy Technologies",
+    NREL/TP-462-5173, 1995.
+    """
+
+    return (1+nominal)/(1+rate)-1
 
 def real_to_nominal(real, rate):
+
     """
     Rate without adjusting for inflation as described on pp. 6 by [1]
     Parameters
@@ -81,13 +92,16 @@ def real_to_nominal(real, rate):
 
     References
     ----------
-    .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic Evaluation of Energy Efficiency and Renewable Energy Technologies", NREL/TP-462-5173, 1995.
-    """ 
+    .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic
+    Evaluation of Energy Efficiency and Renewable Energy Technologies",
+    NREL/TP-462-5173, 1995.
+    """
 
-    return np.round((real+1)*(1+rate)-1, 8)
+    return (real+1)*(1+rate)-1
 
 def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
-    """        
+
+    """
     Parameters
     ----------
     loan_frac : float
@@ -108,9 +122,12 @@ def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
 
     References
     ----------
-    .. [1] S. Blumsack, "Weighted Average Cost of Capital", The Pennsylvania State University, Available: http://www.e-education.psu.edu/eme801/node/585
-    """ 
+    .. [1] S. Blumsack, "Weighted Average Cost of Capital", The Pennsylvania
+    State University, Available:
+    http://www.e-education.psu.edu/eme801/node/585
+    """
+
     numerator = (1 + ((1 - loan_frac)*((1 + rroi)*(1 + inflation_rate)-1))
-                + loan_frac*((1 + rint)*(1 + inflation_rate) - 1)*(1 - tax_rate))
+        + loan_frac*((1 + rint)*(1 + inflation_rate) - 1)*(1 - tax_rate))
     denominator = 1 + inflation_rate
-    return np.round(numerator/denominator -1, 8)
+    return numerator/denominator -1

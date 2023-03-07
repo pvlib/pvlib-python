@@ -16,10 +16,10 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-import sys
-sys.path.insert(0,"\\Users\\eccoope\\pvlib-python-forked\\pvlib")
-import clearsky
-sys.path.insert(0,"\\Users\\eccoope\\pvlib-python-forked\\pvlib\\tests")
+# import sys
+# sys.path.insert(0,"\\Users\\eccoope\\pvlib-python-forked\\pvlib")
+# import clearsky
+# sys.path.insert(0,"\\Users\\eccoope\\pvlib-python-forked\\pvlib\\tests")
 from conftest import DATA_DIR, assert_frame_equal, assert_series_equal
 
 def test_ineichen_series():

@@ -26,11 +26,11 @@ Enhancements
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   to enable use of the hay-davies sky diffuse irradiance model
   instead of the default isotropic model. (:pull:`1668`)
-* Added :py:mod:`pvlib.financial` module (:pull`1687`) with functions
+* Added :py:mod:`pvlib.financial` module with functions
   :py:func:`~pvlib.financial.lcoe`, :py:func:`~pvlib.financial.crf`,
   :py:func:`~pvlib.financial.nominal_to_real`,
   :py:func:`~pvlib.financial.real_to_nominal`, and
-  :py:func:`~pvlib.financial.wacc`
+  :py:func:`~pvlib.financial.wacc` (:pull`1687`)
 
 Bug fixes
 ~~~~~~~~~
@@ -53,10 +53,11 @@ Testing
 * Updated PSM3 test data files to match the new version 3.2.2 data returned
   by the PSM3 API (:issue:`1591`, :pull:`1652`)
 
-
 Documentation
 ~~~~~~~~~~~~~
 * Remove LGTM.com integration. (:issue:`1550`, :pull:`1651`)
+* Added two examples demonstrating how :py:mod:`pvlib.financial` can
+  be used (:pull`1687`)
 
 Benchmarking
 ~~~~~~~~~~~~~

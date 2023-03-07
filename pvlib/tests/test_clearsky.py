@@ -8,7 +8,7 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from .conftest import assert_frame_equal, assert_series_equal
+from pvlib.tests.conftest import assert_frame_equal, assert_series_equal, DATA_DIR
 
 from pvlib.location import Location
 from pvlib import clearsky
@@ -16,8 +16,11 @@ from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
 
-from .conftest import DATA_DIR
-
+import sys
+sys.path.insert(0,"\\Users\\eccoope\\pvlib-python-forked\\pvlib")
+import clearsky
+sys.path.insert(0,"\\Users\\eccoope\\pvlib-python-forked\\pvlib\\tests")
+from conftest import DATA_DIR, assert_frame_equal, assert_series_equal
 
 def test_ineichen_series():
     times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h',
@@ -532,14 +535,13 @@ def detect_clearsky_data():
     cs = loc.get_clearsky(expected.index, linke_turbidity=2.658197)
     return expected, cs
 
-
 def test_detect_clearsky(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
         expected['GHI'], cs['ghi'], times=cs.index, window_length=10)
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
-
+# test_detect_clearsky(detect_clearsky_data())
 
 def test_detect_clearsky_defaults(detect_clearsky_data):
     expected, cs = detect_clearsky_data
@@ -547,7 +549,7 @@ def test_detect_clearsky_defaults(detect_clearsky_data):
         expected['GHI'], cs['ghi'])
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
-
+# test_detect_clearsky_defaults(detect_clearsky_data())
 
 def test_detect_clearsky_components(detect_clearsky_data):
     expected, cs = detect_clearsky_data
@@ -558,7 +560,7 @@ def test_detect_clearsky_components(detect_clearsky_data):
                         check_dtype=False, check_names=False)
     assert isinstance(components, OrderedDict)
     assert np.allclose(alpha, 0.9633903181941296)
-
+# test_detect_clearsky_components(detect_clearsky_data())
 
 def test_detect_clearsky_iterations(detect_clearsky_data):
     expected, cs = detect_clearsky_data
@@ -572,8 +574,9 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
         expected['GHI'], cs['ghi']*alpha, max_iterations=20)
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
+# test_detect_clearsky_iterations(detect_clearsky_data())
 
-
+# neither expected nor clear_samples are all True
 def test_detect_clearsky_kwargs(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -582,7 +585,13 @@ def test_detect_clearsky_kwargs(detect_clearsky_data):
         upper_line_length=1000, var_diff=10, slope_dev=1000)
     assert clear_samples.all()
 
-
+# expected, cs = detect_clearsky_data()
+# clear_samples = clearsky.detect_clearsky(
+#         expected['GHI'], cs['ghi'], times=cs.index, window_length=10,
+#         mean_diff=1000, max_diff=1000, lower_line_length=-1000,
+#         upper_line_length=1000, var_diff=10, slope_dev=1000)
+    
+# Mine returns three False values at the end whereas expected has three True values
 def test_detect_clearsky_window(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -591,8 +600,8 @@ def test_detect_clearsky_window(detect_clearsky_data):
     expected.iloc[-3:] = True
     assert_series_equal(expected, clear_samples,
                         check_dtype=False, check_names=False)
-
-
+test_detect_clearsky_window(detect_clearsky_data())
+# Passed
 def test_detect_clearsky_time_interval(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     u = np.arange(0, len(cs), 2)
@@ -603,7 +612,7 @@ def test_detect_clearsky_time_interval(detect_clearsky_data):
     assert_series_equal(expected2['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 
-
+# Passed
 def test_detect_clearsky_arrays(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -612,7 +621,7 @@ def test_detect_clearsky_arrays(detect_clearsky_data):
     assert isinstance(clear_samples, np.ndarray)
     assert (clear_samples == expected['Clear or not'].values).all()
 
-
+# N/A ?
 def test_detect_clearsky_irregular_times(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     times = cs.index.values.copy()
@@ -622,7 +631,7 @@ def test_detect_clearsky_irregular_times(detect_clearsky_data):
         clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values,
                                  times, 10)
 
-
+# Passed
 def test_detect_clearsky_missing_index(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     with pytest.raises(ValueError):

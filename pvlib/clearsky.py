@@ -579,9 +579,9 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
     """
 
     data_mean = data.values[H].mean(axis=0)
-    data_mean = _to_centered_series(data_mean, data.index, samples_per_window)
+    data_mean = _to_centered_series(data_mean, data.index, samples_per_window, H)
     data_max = data.values[H].max(axis=0)
-    data_max = _to_centered_series(data_max, data.index, samples_per_window)
+    data_max = _to_centered_series(data_max, data.index, samples_per_window, H)
     # shift to get forward difference, .diff() is backward difference instead
     data_diff = data.diff().shift(-1)
     data_slope = data_diff / sample_interval
@@ -594,27 +594,36 @@ def _slope_nstd_windowed(slopes, data, H, samples_per_window, sample_interval):
     with np.errstate(divide='ignore', invalid='ignore'):
         nstd = slopes[H[:-1, ]].std(ddof=1, axis=0) \
             / data.values[H].mean(axis=0)
-    return _to_centered_series(nstd, data.index, samples_per_window)
+    return _to_centered_series(nstd, data.index, samples_per_window, H)
 
 
 def _max_diff_windowed(data, H, samples_per_window):
     raw = np.diff(data)
     raw = np.abs(raw[H[:-1, ]]).max(axis=0)
-    return _to_centered_series(raw, data.index, samples_per_window)
+    return _to_centered_series(raw, data.index, samples_per_window, H)
 
 
 def _line_length_windowed(data, H, samples_per_window,
                           sample_interval):
     raw = np.sqrt(np.diff(data)**2. + sample_interval**2.)
     raw = np.sum(raw[H[:-1, ]], axis=0)
-    return _to_centered_series(raw, data.index, samples_per_window)
+    return _to_centered_series(raw, data.index, samples_per_window, H)
 
 
-def _to_centered_series(vals, idx, samples_per_window):
-    vals = np.pad(vals, ((0, len(idx) - len(vals)),), mode='constant',
-                  constant_values=np.nan)
-    shift = samples_per_window // 2  # align = 'center' only
-    return pd.Series(index=idx, data=vals).shift(shift)
+def _to_centered_series(vals, idx, samples_per_window, H):
+    # Get center of interval using zero-indexing
+    center_row = samples_per_window//2 - 1
+    
+    # Maintain tz that is stripped when idx is put in H
+    if idx.tz is not None:
+        c = pd.DatetimeIndex(idx.values[H][center_row,:],\
+                             tz = 'UTC').tz_convert(idx.tz)
+    else:
+        c = idx.values[H][center_row,:]
+
+    centered = pd.Series(index = idx, dtype = 'object')
+    centered.loc[c] = vals
+    return centered
 
 
 def _clear_sample_index(clear_windows, samples_per_window, align, H):
@@ -639,6 +648,7 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     idx = clear_windows.shift(shift)
     # drop rows at the end corresponding to windows past the end of data
     idx = idx.drop(clear_windows.index[1 - samples_per_window:])
+    idx = idx[idx.isna() == False]
     idx = idx.astype(bool)  # shift changed type to object
     clear_samples = np.unique(H[:, idx])
     return clear_samples
@@ -776,6 +786,17 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     # generate matrix of integers for creating windows with indexing
     H = hankel(np.arange(samples_per_window),
                np.arange(samples_per_window-1, len(times)))
+    
+    # Put DatetimeIndex in Hankel matrix
+    time_h = times.values[H]
+    # Identify maximum time step between consecutive Timestamps for each column
+    time_h_diff_max = np.max(np.diff(time_h, axis = 0)/\
+        np.timedelta64(1, '60s'), axis = 0)
+    # Identify column indices where max time step > sample_interval
+    gaps = list(np.ravel(np.argwhere(time_h_diff_max > sample_interval)))    
+    keep_columns = [i for i in range(len(times) - (samples_per_window -1)) if i not in gaps]
+    # Remove columns with temporal gaps
+    H = H[:, keep_columns]
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_slope_nstd, meas_slope = _calc_stats(
@@ -802,14 +823,26 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         line_diff = meas_line_length - clear_line_length
         slope_max_diff = _max_diff_windowed(
             meas - scaled_clear, H, samples_per_window)
+
         # evaluate comparison criteria
-        c1 = np.abs(meas_mean - alpha*clear_mean) < mean_diff
-        c2 = np.abs(meas_max - alpha*clear_max) < max_diff
-        c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
-        c4 = meas_slope_nstd < var_diff
-        c5 = slope_max_diff < slope_dev
-        c6 = (clear_mean != 0) & ~np.isnan(clear_mean)
-        clear_windows = c1 & c2 & c3 & c4 & c5 & c6
+        c1 = np.abs(meas_mean - alpha*clear_mean).apply(lambda x: \
+            x < mean_diff if np.isnan(x) == False else None)
+        c2 = np.abs(meas_max - alpha*clear_max).apply(lambda x: \
+            x < max_diff if np.isnan(x) == False else None)
+        c3 = np.logical_and(np.abs(line_diff).apply(lambda x: lambda x: \
+                x > lower_line_length if np.isnan(x) == False else None),\
+                np.abs(line_diff).apply(lambda x: lambda x: \
+                x < upper_line_length if np.isnan(x) == False else None))
+        c4 = meas_slope_nstd.apply(lambda x: x < var_diff \
+            if np.isnan(x) == False else None)
+        c5 = slope_max_diff.apply(lambda x: x < slope_dev \
+            if np.isnan(x) == False else None)
+        c6 = np.logical_and(clear_mean != 0, clear_mean.isna() == False)
+
+        # np.logical_and() maintains NaNs
+        clear_windows = pd.Series(index = times, 
+                                 data = np.logical_and.reduce([c1,c2, c3,\
+                                    c4, c5, c6]))
 
         # create array to return
         clear_samples = np.full_like(meas, False, dtype='bool')
@@ -817,6 +850,7 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         idx = _clear_sample_index(clear_windows, samples_per_window, 'center',
                                   H)
         clear_samples[idx] = True
+        clear_samples[pd.Index(gaps)] = None
 
         # find a new alpha
         previous_alpha = alpha

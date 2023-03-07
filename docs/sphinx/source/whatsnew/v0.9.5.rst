@@ -30,7 +30,7 @@ Enhancements
   :py:func:`~pvlib.financial.lcoe`, :py:func:`~pvlib.financial.crf`,
   :py:func:`~pvlib.financial.nominal_to_real`,
   :py:func:`~pvlib.financial.real_to_nominal`, and
-  :py:func:`~pvlib.financial.wacc` (:pull`1687`)
+  :py:func:`~pvlib.financial.wacc` (:pull:`1687`)
 
 Bug fixes
 ~~~~~~~~~
@@ -57,7 +57,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Remove LGTM.com integration. (:issue:`1550`, :pull:`1651`)
 * Added two examples demonstrating how :py:mod:`pvlib.financial` can
-  be used (:pull`1687`)
+  be used (:pull:`1687`)
 
 Benchmarking
 ~~~~~~~~~~~~~

@@ -138,6 +138,7 @@ def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
     """
 
     numerator = (1 + ((1 - loan_frac)*((1 + rroi)*(1 + inflation_rate)-1))
-                 + loan_frac*((1 + rint)*(1 + inflation_rate) - 1)*(1 - tax_rate))
+                 + loan_frac*((1 + rint)*(1 + inflation_rate)
+                              - 1)*(1 - tax_rate))
     denominator = 1 + inflation_rate
     return numerator/denominator - 1

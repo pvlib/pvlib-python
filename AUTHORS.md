@@ -1,12 +1,12 @@
 About the Copyright Holders
 ===========================
 
-*   Copyright (c) 2013, Sandia National Laboratories
+*   Copyright (c) 2013, National Technology & Engineering Solutions of Sandia, LLC (NTESS)
 
     Sandia National Laboratories developed pvlib python based on code in
     PVLib MATLAB.
 
-*   Copyright (c) 2014-2018, pvlib python Development Team
+*   Copyright (c) 2014, pvlib python Development Team
 
     The pvlib python Development Team is the collection of developers of the
     pvlib python project.
@@ -23,8 +23,8 @@ the pvlib python source code, in its entirety, is not the copyright of any singl
 person or institution. Instead, it is the collective copyright of the
 entire pvlib python Development Team. If individual contributors want to maintain
 a record of what changes/contributions they have specific copyright on,
-they should indicate their copyright in the commit message of the change
-when they commit the change to the pvlib python repository.
+they should indicate their copyright using in-line comments in the code submitted
+to the pvlib python repository.
 
 License
 =======

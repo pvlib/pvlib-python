@@ -30,14 +30,11 @@ cf = 0.15357857
 # Constant annual energy production
 energy = np.full(n, cf*8760)
 
-# Discount rate
+# Real discount rate
 discount_rate = 0.03
 
-# Debt tenor
-debt_tenor = n
-
 # Capital recovery factor
-my_crf = financial.crf(discount_rate, debt_tenor)
+my_crf = financial.crf(discount_rate, n)
 
 # CAPEX
 capex = 2443.45
@@ -46,7 +43,7 @@ capex = 2443.45
 loan_frac = 1
 
 # Annual capital costs
-cap_cost = np.array([capex*loan_frac*my_crf for i in range(debt_tenor)])
+cap_cost = np.array([capex*loan_frac*my_crf for i in range(n)])
 
 # Constant annual O&M
 fixed_om = pd.Series(data=[26.98 for j in range(n)])

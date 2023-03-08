@@ -4,14 +4,15 @@ import numpy as np
 def lcoe(production=None, cap_cost=None, fixed_om=None):
 
     """
-    Levelized cost of electricity as described on pp.43 and 47-48 by
+    Real levelized cost of electricity as described on pp.43 and 47-48 by
     [1](https://www.nrel.gov/docs/legosti/old/5173.pdf)
     Parameters
     ----------
     production : np.array, or pd.Series, default None
         Annual production [kWh/kW installed]
     cap_cost : np.array, or pd.Series, default None
-        Initial and annual payments on capital costs [$/kW installed]
+        Initial and annual payments on capital costs using real discount rates
+        [$/kW installed]
     fixed_om : np.array, or pd.Series, default None
         Annual payments on operations and maintenance costs [$/kW installed]
 
@@ -34,18 +35,18 @@ def crf(rate, n_years):
 
     """
     Capital recovery factor as described on pp. 23 by
-    [1](https://www.nrel.gov/docs/legosti/old/5173.pdf)
+    [1](https://www.nrel.gov/docs/legosti/old/5173.pdf) using real rates
     Parameters
     ----------
     rate : float
-        Rate at which CRF is calculated
+        Real (as opposed to nominal) rate at which CRF is calculated
     n_years: int
         Number of years over which CRF is calculated
 
     Returns
     ----------
     crf : float
-        Capital recovery factor
+        Real capital recovery factor
     References
     ----------
     .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic
@@ -112,7 +113,8 @@ def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
 
     """
     Weighted average cost of capital as described by
-    [1](https://atb.nrel.gov/electricity/2022/index)
+    [1](https://atb.nrel.gov/electricity/2022/index) using real
+    rates
     Parameters
     ----------
     loan_frac : float
@@ -129,7 +131,7 @@ def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
     Returns
     ----------
     wacc : float
-        Weighted average cost of capital
+        Real weighted average cost of capital
 
     References
     ----------

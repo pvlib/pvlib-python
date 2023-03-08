@@ -9,13 +9,14 @@ def test_lcoe_series():
     production = pd.Series(data=[cf*8670 for j in range(n)])
     capex, loan_frac, my_crf, debt_tenor = 1000, 0.5, 0.05, n
     cap_cost = pd.Series(data=[capex*loan_frac*my_crf for i in
-        range(debt_tenor)] + [0 for j in range(debt_tenor, n)])
+                               range(debt_tenor)] 
+                         + [0 for j in range(debt_tenor, n)])
     base_om = 25
     fixed_om = pd.Series(data=[base_om for j in range(n)])
 
     expected = 1.1534025374855825
     out = financial.lcoe(production=production, cap_cost=cap_cost,
-        fixed_om=fixed_om)
+                         fixed_om=fixed_om)
 
     assert_allclose(expected, out)
 
@@ -25,12 +26,12 @@ def test_lcoe_arrays():
     production = np.full(n, cf*8670)
     capex, loan_frac, my_crf, debt_tenor = 1000, 0.5, 0.05, n
     cap_cost = np.array([capex*loan_frac*my_crf for i in range(debt_tenor)]
-        + [0 for j in range(debt_tenor, n)])
+                        + [0 for j in range(debt_tenor, n)])
     base_om = 25
     fixed_om = np.full(n, base_om)
     expected = 1.1534025374855825
     out = financial.lcoe(production=production, cap_cost=cap_cost,
-        fixed_om=fixed_om)
+                         fixed_om=fixed_om)
     assert_allclose(expected, out)
 
 
@@ -39,7 +40,7 @@ def test_lcoe_nans():
     production = np.full(n, cf*8670)
     capex, loan_frac, my_crf, debt_tenor = 1000, 0.5, 0.05, n
     cap_cost = np.array([capex*loan_frac*my_crf for i in range(debt_tenor)]
-        + [0 for j in range(debt_tenor, n)])
+                        + [0 for j in range(debt_tenor, n)])
     base_om = 25.
     fixed_om = np.full(n, base_om)
     cap_cost[1] = np.nan
@@ -47,7 +48,7 @@ def test_lcoe_nans():
     production[3] = np.nan
     expected = 1.092697140775815
     out = financial.lcoe(production=production, cap_cost=cap_cost,
-        fixed_om=fixed_om)
+                         fixed_om=fixed_om)
     assert_allclose(expected, out)
 
 

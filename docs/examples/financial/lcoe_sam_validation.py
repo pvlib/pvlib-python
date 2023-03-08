@@ -10,16 +10,17 @@ using the approach implemented by NREL's SAM software
 # :py:meth:`pvlib.financial.lcoe`, :py:meth:`pvlib.financial.wacc`,
 # :py:meth:`pvlib.financial.nominal_to_real`, and
 # :py:meth:`pvlib.financial.crf` to generate a Series of annual cost and
-# production data, and a numerical LCOETMY GHI, DNI, and DHI irradiance data
+# production data, and a real LCOE. TMY GHI, DNI, and DHI irradiance data
 # for Albuquerque is loaded from the NSRDB and
 # :py:meth:`pvlib.location.get_solarposition` is used with
 # :py:meth:`pvlib.irradiance.get_total_irradiance`to calculate POA
 # irradiance. DC energy production is calculated with
 # :py:meth:`pvlib.pvsystem.pvwatts_dc` to get annual AC power output.
 # Capital cost is calculated using the FCR method described here:
-# http://samrepo.nrelcloud.org/help/index.html?fin_lcoefcr.htm. Construction
-# interest is assumed to be zero. Input values with an asterisk were sourced
-# from NREL's ATB projections for a residential system in 2022 with moderate
+# http://samrepo.nrelcloud.org/help/index.html?fin_lcoefcr.htm with real
+# discount rates. Construction interest is assumed to be zero. Input values
+# with an asterisk were sourced from NREL's ATB projections for a residential
+# system in 2022 with moderate
 # technological advancement or the set of financial assumptions under which
 # NREL produces the ATB. Monthly POA output [kWh/m^2], annual AC output [kWh],
 # and LCOE should match values calculated by SAM.
@@ -191,4 +192,4 @@ print('Annual payment on capital cost is $' + str(np.round(cap_cost[0], 2)))
 my_lcoe = financial.lcoe(production=production, cap_cost=cap_cost,
                          fixed_om=fixed_op_cost)
 
-print('LCOE = ' + str(my_lcoe) + str(' cents/kWh'))
+print('Real LCOE = ' + str(my_lcoe) + str(' cents/kWh'))

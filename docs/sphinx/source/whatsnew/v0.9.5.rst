@@ -16,9 +16,6 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Testing :py:func:`pvlib.pvsystem.singlediode`, :py:func:`pvlib.pvsystem.v_from_i`,
-  and :py:func:`pvlib.pvsystem.i_from_v` against precisely generated IV curve data.
-  (:issue:`411`, :pull:`1573`)
 * Added the optional `string_factor` parameter to
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
 * Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
@@ -29,6 +26,9 @@ Enhancements
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   to enable use of the hay-davies sky diffuse irradiance model
   instead of the default isotropic model. (:pull:`1668`)
+* Testing :py:func:`pvlib.pvsystem.singlediode`, :py:func:`pvlib.pvsystem.v_from_i`,
+  and :py:func:`pvlib.pvsystem.i_from_v` against precisely generated IV curve data.
+  (:issue:`411`, :pull:`1573`)
 
 Bug fixes
 ~~~~~~~~~
@@ -68,7 +68,6 @@ Contributors
 ~~~~~~~~~~~~
 * Kevin Anderson (:ghuser:`kanderso-nrel`)
 * Will Holmgren (:ghuser:`wholmgren`)
-* Taos Transue (:ghuser:`reepoi`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Adam R. Jensen (:ghuser:`adamrjensen`)
 * Pratham Chauhan (:ghuser:`ooprathamm`)
@@ -78,3 +77,4 @@ Contributors
 * Michael Deceglie (:ghuser:`mdeceglie`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * John Moseley (:ghuser:`johnMoseleyArray`)
+* Taos Transue (:ghuser:`reepoi`)

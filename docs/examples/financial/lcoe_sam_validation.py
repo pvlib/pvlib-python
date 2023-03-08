@@ -83,7 +83,7 @@ poa_irrad = irradiance.get_total_irradiance(surface_tilt=tilt,
                                             =solar_position['zenith'],
                                             solar_azimuth
                                             =solar_position['azimuth'],
-                                            albedo=data['Surface 
+                                            albedo=data['Surface/
                                                         Albedo'])['poa_global']
 
 # Calulate and display daily/monthly stats

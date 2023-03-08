@@ -1,9 +1,11 @@
 import numpy as np
 
+
 def lcoe(production=None, cap_cost=None, fixed_om=None):
 
     """
-    Levelized cost of electricity as described on pp.43 and 47-48 by [1]
+    Levelized cost of electricity as described on pp.43 and 47-48 by
+    [1](https://www.nrel.gov/docs/legosti/old/5173.pdf)
     Parameters
     ----------
     production : np.array, or pd.Series, default None
@@ -23,14 +25,16 @@ def lcoe(production=None, cap_cost=None, fixed_om=None):
     Evaluation of Energy Efficiency and Renewable Energy Technologies",
     NREL/TP-462-5173, 1995.
     """
-  
-    cost = cap_cost + fixed_om         
+
+    cost = cap_cost + fixed_om
     return np.nansum(cost)*100/np.nansum(production)
+
 
 def crf(rate, n_years):
 
     """
-    Capital recovery factor as described on pp. 23 by [1]
+    Capital recovery factor as described on pp. 23 by
+    [1](https://www.nrel.gov/docs/legosti/old/5173.pdf)
     Parameters
     ----------
     rate : float
@@ -51,10 +55,12 @@ def crf(rate, n_years):
 
     return (rate*(1+rate)**n_years)/((1+rate)**n_years-1)
 
+
 def nominal_to_real(nominal, rate):
 
     """
-    Inflation-adjusted rate described on pp. 6 by [1]
+    Inflation-adjusted rate described on pp. 6 by
+    [1](https://www.nrel.gov/docs/legosti/old/5173.pdf)
     Parameters
     ----------
     nominal : float
@@ -75,10 +81,12 @@ def nominal_to_real(nominal, rate):
 
     return (1+nominal)/(1+rate)-1
 
+
 def real_to_nominal(real, rate):
 
     """
-    Rate without adjusting for inflation as described on pp. 6 by [1]
+    Rate without adjusting for inflation as described on pp. 6 by
+    [1](https://www.nrel.gov/docs/legosti/old/5173.pdf)
     Parameters
     ----------
     real : float
@@ -99,9 +107,12 @@ def real_to_nominal(real, rate):
 
     return (real+1)*(1+rate)-1
 
+
 def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
 
     """
+    Weighted average cost of capital as described by
+    [1](https://atb.nrel.gov/electricity/2022/index)
     Parameters
     ----------
     loan_frac : float
@@ -122,12 +133,11 @@ def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
 
     References
     ----------
-    .. [1] S. Blumsack, "Weighted Average Cost of Capital", The Pennsylvania
-    State University, Available:
-    http://www.e-education.psu.edu/eme801/node/585
+    .. [1] NREL, "Equations and Variables in the ATB", Available:
+    https://atb.nrel.gov/electricity/2022/index
     """
 
     numerator = (1 + ((1 - loan_frac)*((1 + rroi)*(1 + inflation_rate)-1))
-        + loan_frac*((1 + rint)*(1 + inflation_rate) - 1)*(1 - tax_rate))
+                 + loan_frac*((1 + rint)*(1 + inflation_rate) - 1)*(1 - tax_rate))
     denominator = 1 + inflation_rate
-    return numerator/denominator -1
+    return numerator/denominator - 1

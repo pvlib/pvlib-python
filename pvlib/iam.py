@@ -11,7 +11,7 @@ irradiance to the module's surface.
 import numpy as np
 import pandas as pd
 import functools
-from pvlib.tools import cosd, sind, tand, asind
+from pvlib.tools import cosd, sind
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
@@ -91,21 +91,22 @@ def ashrae(aoi, b=0.05):
     return iam
 
 
-def physical(aoi, n=1.526, K=4., L=0.002):
+def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     r"""
     Determine the incidence angle modifier using refractive index ``n``,
-    extinction coefficient ``K``, and glazing thickness ``L``.
+    extinction coefficient ``K``, glazing thickness ``L`` and refractive
+    index ``n_ar`` of an optional anti-reflective coating.
 
     ``iam.physical`` calculates the incidence angle modifier as described in
-    [1]_, Section 3. The calculation is based on a physical model of absorbtion
+    [1]_, Section 3, with additional support of an anti-reflective coating.
+    The calculation is based on a physical model of reflections, absorption,
     and transmission through a transparent cover.
 
     Parameters
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees. Angles of 0 are replaced with 1e-06
-        to ensure non-nan results. Angles of nan will result in nan.
+        sun-beam vector in degrees. Angles of nan will result in nan.
 
     n : numeric, default 1.526
         The effective index of refraction (unitless). Reference [1]_
@@ -120,6 +121,11 @@ def physical(aoi, n=1.526, K=4., L=0.002):
         The glazing thickness in units of meters. Reference [1]_
         indicates that 0.002 meters (2 mm) is reasonable for most
         glass-covered PV panels.
+
+    n_ar : numeric, optional
+        The effective index of refraction of the anti-reflective (AR) coating
+        (unitless). If n_ar is None (default), no AR coating is applied.
+        A typical value for the effective index of an AR coating is 1.29.
 
     Returns
     -------
@@ -149,48 +155,65 @@ def physical(aoi, n=1.526, K=4., L=0.002):
     pvlib.iam.interp
     pvlib.iam.sapm
     """
-    zeroang = 1e-06
+    n1, n3 = 1, n
+    if n_ar is None or np.allclose(n_ar, n1):
+        # no AR coating
+        n2 = n
+    else:
+        n2 = n_ar
 
-    # hold a new reference to the input aoi object since we're going to
-    # overwrite the aoi reference below, but we'll need it for the
-    # series check at the end of the function
-    aoi_input = aoi
+    # incidence angle
+    costheta = np.maximum(0, cosd(aoi))  # always >= 0
+    sintheta = np.sqrt(1 - costheta**2)  # always >= 0
+    n1costheta1 = n1 * costheta
+    n2costheta1 = n2 * costheta
 
-    aoi = np.where(aoi == 0, zeroang, aoi)
+    # refraction angle of first interface
+    sintheta = n1 / n2 * sintheta
+    costheta = np.sqrt(1 - sintheta**2)
+    n1costheta2 = n1 * costheta
+    n2costheta2 = n2 * costheta
 
-    # angle of reflection
-    thetar_deg = asind(1.0 / n * (sind(aoi)))
+    # reflectance of s-, p-polarized, and normal light by the first interface
+    rho12_s = ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
+    rho12_p = ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
+    rho12_0 = ((n1 - n2) / (n1 + n2)) ** 2
 
-    # reflectance and transmittance for normal incidence light
-    rho_zero = ((1-n) / (1+n)) ** 2
-    tau_zero = np.exp(-K*L)
+    # transmittance through the first interface
+    tau_s = 1 - rho12_s
+    tau_p = 1 - rho12_p
+    tau_0 = 1 - rho12_0
 
-    # reflectance for parallel and perpendicular polarized light
-    rho_para = (tand(thetar_deg - aoi) / tand(thetar_deg + aoi)) ** 2
-    rho_perp = (sind(thetar_deg - aoi) / sind(thetar_deg + aoi)) ** 2
+    if not np.allclose(n3, n2):  # AR coated glass
+        n3costheta2 = n3 * costheta
+        # refraction angle of second interface
+        sintheta = n2 / n3 * sintheta
+        costheta = np.sqrt(1 - sintheta**2)
+        n2costheta3 = n2 * costheta
+        n3costheta3 = n3 * costheta
 
-    # transmittance for non-normal light
-    tau = np.exp(-K * L / cosd(thetar_deg))
+        # reflectance by the second interface
+        rho23_s = (
+            (n2costheta2 - n3costheta3) / (n2costheta2 + n3costheta3)
+        ) ** 2
+        rho23_p = (
+            (n2costheta3 - n3costheta2) / (n2costheta3 + n3costheta2)
+        ) ** 2
+        rho23_0 = ((n2 - n3) / (n2 + n3)) ** 2
 
-    # iam is ratio of non-normal to normal incidence transmitted light
-    # after deducting the reflected portion of each
-    iam = ((1 - (rho_para + rho_perp) / 2) / (1 - rho_zero) * tau / tau_zero)
+        # transmittance through the coating, including internal reflections
+        # 1 + rho23*rho12 + (rho23*rho12)^2 + ... = 1/(1 - rho23*rho12)
+        tau_s *= (1 - rho23_s) / (1 - rho23_s * rho12_s)
+        tau_p *= (1 - rho23_p) / (1 - rho23_p * rho12_p)
+        tau_0 *= (1 - rho23_0) / (1 - rho23_0 * rho12_0)
 
-    with np.errstate(invalid='ignore'):
-        # angles near zero produce nan, but iam is defined as one
-        small_angle = 1e-06
-        iam = np.where(np.abs(aoi) < small_angle, 1.0, iam)
+    # transmittance after absorption in the glass
+    tau_s *= np.exp(-K * L / costheta)
+    tau_p *= np.exp(-K * L / costheta)
+    tau_0 *= np.exp(-K * L)
 
-        # angles at 90 degrees can produce tiny negative values,
-        # which should be zero. this is a result of calculation precision
-        # rather than the physical model
-        iam = np.where(iam < 0, 0, iam)
-
-        # for light coming from behind the plane, none can enter the module
-        iam = np.where(aoi > 90, 0, iam)
-
-    if isinstance(aoi_input, pd.Series):
-        iam = pd.Series(iam, index=aoi_input.index)
+    # incidence angle modifier
+    iam = (tau_s + tau_p) / 2 / tau_0
 
     return iam
 

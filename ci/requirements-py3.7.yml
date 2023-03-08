@@ -8,7 +8,6 @@ dependencies:
     - ephem
     - h5py
     - netcdf4
-    - nose
     - numba
     - numpy >= 1.16.0
     - pandas >= 0.25.0
@@ -24,9 +23,8 @@ dependencies:
     - pytz
     - requests
     - scipy >= 1.4.0
-    - shapely  # pvfactors dependency
     - siphon  # conda-forge
     - statsmodels
     - pip:
         - nrel-pysam>=2.0
-        - pvfactors==1.4.1
+        - pvfactors==1.5.2

@@ -42,13 +42,29 @@ def test_physical():
     expected = np.array([0, 0.8893998, 0.98797788, 0.99926198, 1, 0.99926198,
                          0.98797788, 0.8893998, 0, np.nan])
     iam = _iam.physical(aoi, 1.526, 0.002, 4)
-    assert_allclose(iam, expected, equal_nan=True)
+    assert_allclose(iam, expected, atol=1e-7, equal_nan=True)
 
     # GitHub issue 397
     aoi = pd.Series(aoi)
     iam = _iam.physical(aoi, 1.526, 0.002, 4)
     expected = pd.Series(expected)
     assert_series_equal(iam, expected)
+
+
+def test_physical_ar():
+    aoi = np.array([0, 22.5, 45, 67.5, 90, 100, np.nan])
+    expected = np.array([1, 0.99944171, 0.9917463, 0.91506158, 0, 0, np.nan])
+    iam = _iam.physical(aoi, n_ar=1.29)
+    assert_allclose(iam, expected, atol=1e-7, equal_nan=True)
+
+
+def test_physical_noar():
+    aoi = np.array([0, 22.5, 45, 67.5, 90, 100, np.nan])
+    expected = _iam.physical(aoi)
+    iam0 = _iam.physical(aoi, n_ar=1)
+    iam1 = _iam.physical(aoi, n_ar=1.526)
+    assert_allclose(iam0, expected, equal_nan=True)
+    assert_allclose(iam1, expected, equal_nan=True)
 
 
 def test_physical_scalar():

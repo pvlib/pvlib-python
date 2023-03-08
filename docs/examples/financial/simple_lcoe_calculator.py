@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 from pvlib import financial
 
+# Analysis period
 n = 20
 
 # Capacity factor
@@ -52,7 +53,7 @@ fixed_om = pd.Series(data=[26.98 for j in range(n)])
 
 # Put data in table and display
 table = pd.DataFrame(columns=['Production [kWh/kW]', 'Capital cost [$/kW]',
-    'O&M [$/kW]'])
+                              'O&M [$/kW]'])
 table['Production [kWh/kW]'] = energy
 table['Capital cost [$/kW]'] = cap_cost
 table['O&M [$/kW]'] = fixed_om
@@ -62,6 +63,6 @@ table
 # %%
 # Get LCOE
 
-my_lcoe = financial.lcoe(production=energy, cap_cost=cap_cost,\
-    fixed_om=fixed_om)
+my_lcoe = financial.lcoe(production=energy, cap_cost=cap_cost,
+                         fixed_om=fixed_om)
 print('LCOE = ' + str(my_lcoe) + str(' cents/kWh'))

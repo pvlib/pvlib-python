@@ -54,24 +54,37 @@ data_file = DATA_DIR / 'albuquerque_tmy.csv'
 data = pd.read_csv(data_file, skiprows=[0, 1])
 
 # Set DatetimeIndex for data
-data.set_index(pd.DatetimeIndex(data[['Month', 'Day', 'Hour', 'Minute']]\
-    .apply(lambda x: datetime.datetime(2022, x['Month'], x['Day'],
-    x['Hour'], x['Minute']), axis=1)), inplace=True)
+data.set_index(pd.DatetimeIndex(data[['Month', 'Day', 'Hour','Minute']]
+                                .apply(lambda x: 
+                                       datetime.datetime(2022,x['Month'],
+                                                         x['Day'], 
+                                                         x['Hour'],
+                                                         x['Minute']),
+                                       axis=1)), inplace=True)
 
 # loc.get_solarposition() assumes UTC unless times is localized
 # but Albuquerque is in Etc/GMT-7
 temp = loc.get_solarposition(times=pd.date_range(start=data.index[0]
- + pd.Timedelta(7, 'h'), end=data.index[-1] + pd.Timedelta(7, 'h'),
- freq='1H'))
+                                                 + pd.Timedelta(7, 'h'),
+                                                 end=data.index[-1]
+                                                 + pd.Timedelta(7, 'h'),
+                                                 freq='1H'))
 # Shift index back to align with Etc/GMT-7
 solar_position = temp.set_index(temp.index.shift(periods=-7, freq='1H'))
 
 # Get POA and apply AOI modifier to direct and diffuse components
-poa_irrad = irradiance.get_total_irradiance(surface_tilt=tilt, 
-surface_azimuth=surface_azimuth, dni=data['DNI'], ghi=data['GHI'],
-dhi=data['DHI'], solar_zenith=solar_position['zenith'],
-solar_azimuth=solar_position['azimuth'],
-albedo=data['Surface Albedo'])['poa_global']
+poa_irrad = irradiance.get_total_irradiance(surface_tilt=tilt,
+                                            surface_azimuth=
+                                            surface_azimuth,
+                                            dni=data['DNI'],
+                                            ghi=data['GHI'],
+                                            dhi=data['DHI'],
+                                            solar_zenith
+                                            =solar_position['zenith'],
+                                            solar_azimuth
+                                            =solar_position['azimuth'],
+                                            albedo=data['Surface 
+                                                        Albedo'])['poa_global']
 
 # Calulate and display daily/monthly stats
 daily_ghi = data['GHI'].groupby(data.index.map(lambda x: x.date())).sum().\
@@ -80,7 +93,7 @@ daily_dhi = data['DHI'].groupby(data.index.map(lambda x: x.date())).sum().\
     mean()/1000
 daily_dni = data['DNI'].groupby(data.index.map(lambda x: x.date())).sum().\
     mean()/1000
-monthly_poa = poa_irrad.groupby(poa_irrad.index.map(lambda x:x.date().month)).\
+monthly_poa = poa_irrad.groupby(poa_irrad.index.map(lambda x: x.date().month)).\
     sum()/1000
 
 print('Daily average GHI is ' + str(np.round(daily_ghi, 3)) + ' kWh/m^2')
@@ -94,11 +107,11 @@ losses = pvsystem.pvwatts_losses()/100
 
 # Get cell temperature
 cell_temp = temperature.pvsyst_cell(poa_irrad, data['Temperature'],
-data['Wind Speed'])
+                                    data['Wind Speed'])
 
 # Get hourly DC output using PVWatts [W DC]
-dc_power = pvsystem.pvwatts_dc(poa_irrad, cell_temp, installed_dc, -0.0037)*\
-    (1-losses)
+dc_power = pvsystem.pvwatts_dc(poa_irrad, cell_temp, installed_dc,
+                               -0.0037) * (1 - losses)
 
 # Get hourly AC output using PVWatts [W AC]
 ac_power = inverter.pvwatts(dc_power, installed_dc/1.1)
@@ -176,6 +189,6 @@ print('Annual payment on capital cost is $' + str(np.round(cap_cost[0], 2)))
 
 # Call lcoe()
 my_lcoe = financial.lcoe(production=production, cap_cost=cap_cost,
-          fixed_om=fixed_op_cost)
+                         fixed_om=fixed_op_cost)
 
 print('LCOE = ' + str(my_lcoe) + str(' cents/kWh'))

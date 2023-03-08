@@ -122,17 +122,12 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     vf : array
         Fraction of sky dome visible from each point on the ground.
         Shape is (len(x), len(rotation)). [unitless]
-    wedge_angles : array
-        Angles defining each wedge of sky that is blocked by a row. Shape is
-        (2, len(x), len(rotation), 2*max_rows+1). ``wedge_angles[0,:,:,:]``
-        is the starting angle of each wedge, ``wedge_angles[1,:,:,:]`` is the
-        end angle. [degree]
     """
     # This function creates large float64 arrays of size
     # (2*len(x)*len(rotation)*len(max_rows)) or ~100 MB for
-    # typical time series inputs.  This function uses `del` to
-    # allow python to recapture intermediate variables and
-    # reduce peak memory usage.
+    # typical time series inputs.  This function makes heavy
+    # use of numpy's out parameter to avoid allocating new
+    # memory.  Unfortunately that comes at the cost of readability.
 
     # handle floats:
     x = np.atleast_1d(x)[:, np.newaxis, np.newaxis]
@@ -143,29 +138,27 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     dy = width * sind(rotation)
     dx = width * cosd(rotation)
 
+    phi = np.empty((2, x.shape[0], rotation.shape[1], len(all_k)))
+
     # angles from x to right edge of each row
     a1 = height + dy
-    b1 = distance_to_row_centers + dx
-    phi_1 = np.arctan2(a1, b1)  # dimensions: (x, rotation, row)
-    del a1, b1  # reduce max memory usage
+    phi[0] = distance_to_row_centers + dx
+    np.arctan2(a1, phi[0], out=phi[0])
 
     # angles from x to left edge of each row
     a2 = height - dy
-    b2 = distance_to_row_centers - dx
-    phi_2 = np.arctan2(a2, b2)  # dimensions: (x, rotation, row)
-    del a2, b2  # reduce max memory usage
+    phi[1] = distance_to_row_centers - dx
+    np.arctan2(a2, phi[1], out=phi[1])
 
-    phi = np.stack([phi_1, phi_2])  # dimensions: (row edge, x, rotation, row)
-    swap = phi_1 > phi_2
-    del phi_1, phi_2  # reduce max memory usage
-
-    # swap where phi_1 > phi_2 so that phi[0,:,:,:] is the lesser angle
-    phi = np.where(swap, phi[::-1], phi)
-    del swap  # reduce max memory usage
+    # swap angles so that phi[0,:,:,:] is the lesser angle
+    phi.sort(axis=0)
 
     # right edge of next row - left edge of previous row
-    wedge_vfs = 0.5 * (np.cos(phi[1, :, :, 1:]) - np.cos(phi[0, :, :, :-1]))
-    vf = np.sum(np.clip(wedge_vfs, a_min=0., a_max=None), axis=-1)
-    del wedge_vfs  # reduce max memory usage
-
-    return vf, np.degrees(phi)
+    next_edge = phi[1, :, :, 1:]
+    np.cos(next_edge, out=next_edge)
+    prev_edge = phi[0, :, :, :-1]
+    np.cos(prev_edge, out=prev_edge)
+    np.subtract(next_edge, prev_edge, out=next_edge)
+    np.clip(next_edge, a_min=0., a_max=None, out=next_edge)
+    vf = np.sum(next_edge, axis=-1) / 2
+    return vf

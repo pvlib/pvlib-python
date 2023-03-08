@@ -50,8 +50,7 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
     # The VFs to the sky will thus be symmetric around z=0.5
     z = np.linspace(0, 1, npoints)
     rotation = np.atleast_1d(surface_tilt)
-    fz_sky, _ = utils._vf_ground_sky_2d(z, rotation, gcr, pitch, height,
-                                        max_rows)
+    fz_sky = utils._vf_ground_sky_2d(z, rotation, gcr, pitch, height, max_rows)
     # calculate the integrated view factor for all of the ground between rows
     return np.trapz(fz_sky, z, axis=0)
 

@@ -142,12 +142,12 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
 
     # angles from x to right edge of each row
     a1 = height + dy
-    phi[0] = distance_to_row_centers + dx
+    np.add(distance_to_row_centers, dx, out=phi[0])
     np.arctan2(a1, phi[0], out=phi[0])
 
     # angles from x to left edge of each row
     a2 = height - dy
-    phi[1] = distance_to_row_centers - dx
+    np.subtract(distance_to_row_centers, dx, out=phi[1])
     np.arctan2(a2, phi[1], out=phi[1])
 
     # swap angles so that phi[0,:,:,:] is the lesser angle

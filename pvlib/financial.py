@@ -139,7 +139,7 @@ def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
     References
     ----------
     .. [1] NREL, "Equations and Variables in the ATB", Available:
-    https://atb.nrel.gov/electricity/2022/index
+       https://atb.nrel.gov/electricity/2022/index
     """
 
     numerator = (1 + ((1 - loan_frac)*((1 + rroi)*(1 + inflation_rate)-1))

@@ -23,8 +23,8 @@ def lcoe(production=None, cap_cost=None, fixed_om=None):
     References
     ----------
     .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic
-    Evaluation of Energy Efficiency and Renewable Energy Technologies",
-    NREL/TP-462-5173, 1995.
+      Evaluation of Energy Efficiency and Renewable Energy Technologies",
+      NREL/TP-462-5173, 1995.
     """
 
     cost = cap_cost + fixed_om

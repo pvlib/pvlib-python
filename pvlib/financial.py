@@ -34,10 +34,11 @@ def lcoe(production=None, cap_cost=None, fixed_om=None):
 
 
 def crf(rate, n_years):
-
     """
-    Capital recovery factor as described on pp. 23 by
-    [1](https://www.nrel.gov/docs/legosti/old/5173.pdf) using real rates
+    Capital recovery factor.
+
+    Described in [1]_, pp. 23.
+
     Parameters
     ----------
     rate : float
@@ -49,11 +50,12 @@ def crf(rate, n_years):
     ----------
     crf : float
         Real capital recovery factor
+
     References
     ----------
     .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic
-    Evaluation of Energy Efficiency and Renewable Energy Technologies",
-    NREL/TP-462-5173, 1995.
+       Evaluation of Energy Efficiency and Renewable Energy Technologies",
+       NREL/TP-462-5173, 1995.
     """
 
     return (rate*(1+rate)**n_years)/((1+rate)**n_years-1)
@@ -62,8 +64,9 @@ def crf(rate, n_years):
 def nominal_to_real(nominal, rate):
 
     """
-    Inflation-adjusted rate described on pp. 6 by
-    [1](https://www.nrel.gov/docs/legosti/old/5173.pdf)
+    Convert nominal to real (inflation-adjusted) rate.
+
+    Described in [1]_, pp. 6.
     Parameters
     ----------
     nominal : float
@@ -78,8 +81,8 @@ def nominal_to_real(nominal, rate):
     References
     ----------
     .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic
-    Evaluation of Energy Efficiency and Renewable Energy Technologies",
-    NREL/TP-462-5173, 1995.
+       Evaluation of Energy Efficiency and Renewable Energy Technologies",
+       NREL/TP-462-5173, 1995.
     """
 
     return (1+nominal)/(1+rate)-1

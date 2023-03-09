@@ -86,8 +86,10 @@ def nominal_to_real(nominal, rate):
 def real_to_nominal(real, rate):
 
     """
-    Rate without adjusting for inflation as described on pp. 6 by
-    [1](https://www.nrel.gov/docs/legosti/old/5173.pdf)
+    Convert real (inflation-adjusted) rate to nominal rate.
+
+    Described by [1]_, pp. 6.
+
     Parameters
     ----------
     real : float

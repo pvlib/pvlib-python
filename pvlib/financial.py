@@ -2,7 +2,6 @@ import numpy as np
 
 
 def lcoe(production=None, cap_cost=None, fixed_om=None):
-
     """
     Real levelized cost of electricity (LCOE).
 

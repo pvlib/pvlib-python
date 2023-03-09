@@ -102,8 +102,8 @@ def real_to_nominal(real, rate):
     References
     ----------
     .. [1] W. Short, D. J. Packey, and T. Holt, "A Manual for the Economic
-    Evaluation of Energy Efficiency and Renewable Energy Technologies",
-    NREL/TP-462-5173, 1995.
+       Evaluation of Energy Efficiency and Renewable Energy Technologies",
+       NREL/TP-462-5173, 1995.
     """
 
     return (real+1)*(1+rate)-1

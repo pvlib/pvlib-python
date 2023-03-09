@@ -9,7 +9,7 @@ def test_lcoe_series():
     production = pd.Series(data=[cf*8670 for j in range(n)])
     capex, loan_frac, my_crf, debt_tenor = 1000, 0.5, 0.05, n
     cap_cost = pd.Series(data=[capex*loan_frac*my_crf for i in
-                               range(debt_tenor)] 
+                               range(debt_tenor)]
                          + [0 for j in range(debt_tenor, n)])
     base_om = 25
     fixed_om = pd.Series(data=[base_om for j in range(n)])

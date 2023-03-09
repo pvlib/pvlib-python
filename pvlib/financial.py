@@ -112,9 +112,10 @@ def real_to_nominal(real, rate):
 def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
 
     """
-    Weighted average cost of capital as described by
-    [1](https://atb.nrel.gov/electricity/2022/index) using real
-    rates
+    Weighted average cost of capital (WACC).
+
+    The average expected rate that is paid to finance assets [1]_.
+
     Parameters
     ----------
     loan_frac : float

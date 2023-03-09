@@ -25,9 +25,11 @@ Enhancements
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   to enable use of the hay-davies sky diffuse irradiance model
   instead of the default isotropic model. (:pull:`1668`)
-* Improved execution speed of the infinite sheds model by 10-25% for
-  simulations with time series surface orientation. (:issue:`1680`, :pull:`1682`)
-
+* Added an optional ``vectorize`` parameter to 
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` which,
+  when set to ``True``, enables faster calculation but with increased
+  memory usage. (:issue:`1680`, :pull:`1682`)
 
 Bug fixes
 ~~~~~~~~~

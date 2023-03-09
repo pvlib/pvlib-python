@@ -127,7 +127,9 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     # (2*len(x)*len(rotation)*len(max_rows)) or ~100 MB for
     # typical time series inputs.  This function makes heavy
     # use of numpy's out parameter to avoid allocating new
-    # memory.  Unfortunately that comes at the cost of readability.
+    # memory.  Unfortunately that comes at the cost of some
+    # readability: because arrays get reused to avoid new allocations,
+    # variable names don't always match what they hold.
 
     # handle floats:
     x = np.atleast_1d(x)[:, np.newaxis, np.newaxis]
@@ -142,6 +144,7 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
 
     # angles from x to right edge of each row
     a1 = height + dy
+    # temporarily store one leg of the triangle in phi:
     np.add(distance_to_row_centers, dx, out=phi[0])
     np.arctan2(a1, phi[0], out=phi[0])
 
@@ -153,11 +156,15 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     # swap angles so that phi[0,:,:,:] is the lesser angle
     phi.sort(axis=0)
 
-    # right edge of next row - left edge of previous row
+    # now re-use phi's memory again, this time storing cos(phi).
     next_edge = phi[1, :, :, 1:]
     np.cos(next_edge, out=next_edge)
     prev_edge = phi[0, :, :, :-1]
     np.cos(prev_edge, out=prev_edge)
+    # right edge of next row - left edge of previous row, again
+    # reusing memory so that the difference is stored in next_edge.
+    # Note that the 0.5 view factor coefficient is applied after summing
+    # as a minor speed optimization.
     np.subtract(next_edge, prev_edge, out=next_edge)
     np.clip(next_edge, a_min=0., a_max=None, out=next_edge)
     vf = np.sum(next_edge, axis=-1) / 2

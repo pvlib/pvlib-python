@@ -20,6 +20,8 @@ Enhancements
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
 * Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
   support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
+* Add ``model='gueymard2003'``, the airmass model used for REST and REST2,
+  to :py:func:`~pvlib.atmosphere.get_relative_airmass`. (:pull:`1655`)
 * Added an optional ``model`` parameter to
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
@@ -30,6 +32,7 @@ Enhancements
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` which,
   when set to ``True``, enables faster calculation but with increased
   memory usage. (:issue:`1680`, :pull:`1682`)
+
 
 Bug fixes
 ~~~~~~~~~

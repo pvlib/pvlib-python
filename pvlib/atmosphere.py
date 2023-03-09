@@ -161,7 +161,7 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
           requires true sun zenith
         * 'pickering2002' - See reference [6] -
           requires apparent sun zenith
-        * 'gueymard2003' - See reference [7] -
+        * 'gueymard2003' - See references [7] and [8] -
           requires apparent sun zenith
 
     Returns
@@ -203,7 +203,12 @@ def get_relative_airmass(zenith, model='kastenyoung1989'):
        performance assessment". Solar Energy, vol 74, pp. 355-379, 2003.
        :doi:`10.1016/S0038-092X(03)00195-6`
 
-    .. [8] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
+    .. [8] C. Gueymard (2019). Clear-Sky Radiation Models and Aerosol Effects.
+       In: Polo, J., Martín-Pomares, L., Sanfilippo, A. (eds) Solar Resources
+       Mapping. Green Energy and Technology. Springer, Cham.
+       :doi:`10.1007/978-3-319-97484-2_5`
+
+    .. [9] Matthew J. Reno, Clifford W. Hansen and Joshua S. Stein, "Global
        Horizontal Irradiance Clear Sky Models: Implementation and Analysis"
        Sandia Report, (2012).
     '''

@@ -84,8 +84,8 @@ poa_irrad = irradiance.get_total_irradiance(surface_tilt=tilt,
                                             =solar_position['zenith'],
                                             solar_azimuth
                                             =solar_position['azimuth'],
-                                            albedo=data['Surface/
-                                                        Albedo'])['poa_global']
+                                            albedo=data['Surface Albedo'])\
+                                            ['poa_global']
 
 # Calulate and display daily/monthly stats
 daily_ghi = data['GHI'].groupby(data.index.map(lambda x: x.date())).sum().\

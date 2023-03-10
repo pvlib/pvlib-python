@@ -142,7 +142,7 @@ def wacc(loan_frac, rroi, rint, inflation_rate, tax_rate):
     Returns
     ----------
     wacc : float
-        Real weighted average cost of capital
+        Weighted average cost of capital
 
     References
     ----------

@@ -55,10 +55,10 @@ data_file = DATA_DIR / 'albuquerque_tmy.csv'
 data = pd.read_csv(data_file, skiprows=[0, 1])
 
 # Set DatetimeIndex for data
-data.set_index(pd.DatetimeIndex(data[['Month', 'Day', 'Hour','Minute']]
-                                .apply(lambda x: 
-                                       datetime.datetime(2022,x['Month'],
-                                                         x['Day'], 
+data.set_index(pd.DatetimeIndex(data[['Month', 'Day', 'Hour', 'Minute']]
+                                .apply(lambda x:
+                                       datetime.datetime(2022, x['Month'],
+                                                         x['Day'],
                                                          x['Hour'],
                                                          x['Minute']),
                                        axis=1)), inplace=True)
@@ -75,17 +75,18 @@ solar_position = temp.set_index(temp.index.shift(periods=-7, freq='1H'))
 
 # Get POA and apply AOI modifier to direct and diffuse components
 poa_irrad = irradiance.get_total_irradiance(surface_tilt=tilt,
-                                            surface_azimuth=
+                                            surface_azimuth=\
                                             surface_azimuth,
                                             dni=data['DNI'],
                                             ghi=data['GHI'],
                                             dhi=data['DHI'],
-                                            solar_zenith
-                                            =solar_position['zenith'],
-                                            solar_azimuth
-                                            =solar_position['azimuth'],
-                                            albedo=data['Surface Albedo'])\
-                                            ['poa_global']
+                                            solar_zenith=\
+                                            solar_position['zenith'],
+                                            solar_azimuth=\
+                                            solar_position['azimuth'],
+                                            albedo=\
+                                            data['Surface Albedo']\
+                                           )['poa_global']
 
 # Calulate and display daily/monthly stats
 daily_ghi = data['GHI'].groupby(data.index.map(lambda x: x.date())).sum().\
@@ -94,7 +95,8 @@ daily_dhi = data['DHI'].groupby(data.index.map(lambda x: x.date())).sum().\
     mean()/1000
 daily_dni = data['DNI'].groupby(data.index.map(lambda x: x.date())).sum().\
     mean()/1000
-monthly_poa = poa_irrad.groupby(poa_irrad.index.map(lambda x: x.date().month)).\
+monthly_poa = poa_irrad.groupby(poa_irrad.index.map(lambda x:
+                                                    x.date().month)).\
     sum()/1000
 
 print('Daily average GHI is ' + str(np.round(daily_ghi, 3)) + ' kWh/m^2')

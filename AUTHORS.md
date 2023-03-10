@@ -1,19 +1,19 @@
 About the Copyright Holders
 ===========================
 
-*   Copyright (c) 2023, pvlib-python Contributors
-*   Copyright (c) 2014, pvlib python Development Team
-*   Copyright (c) 2013, Sandia National Laboratories
+*   Copyright (c) 2023 pvlib python Contributors
+*   Copyright (c) 2014 PVLIB python Development Team
+*   Copyright (c) 2013 Sandia National Laboratories
+
+    The pvlib python Contributors comprises all authors of content of the pvlib python project.
+    A complete list of contributors can be found in the documentation.
+
+    The PVLIB python Development Team is the collection of developers of the
+    pvlib python project. Members of this team are included in the pvlib python Contributors.
 
     Sandia National Laboratories originally developed pvlib python based on code in
     PVLib MATLAB.
 
-    The pvlib python Development Team is the collection of developers of the
-    pvlib python project.
-
-    The pvlib-python Contributors comprises all authors of content of the pvlib python project
-
-A complete list of contributors can be found in the documentation.
 
 Our Copyright Policy
 ====================

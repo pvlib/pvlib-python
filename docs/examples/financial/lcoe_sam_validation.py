@@ -74,19 +74,12 @@ temp = loc.get_solarposition(times=pd.date_range(start=data.index[0]
 solar_position = temp.set_index(temp.index.shift(periods=-7, freq='1H'))
 
 # Get POA and apply AOI modifier to direct and diffuse components
-poa_irrad = irradiance.get_total_irradiance(surface_tilt=tilt,
-                                            surface_azimuth=\
-                                            surface_azimuth,
-                                            dni=data['DNI'],
-                                            ghi=data['GHI'],
-                                            dhi=data['DHI'],
-                                            solar_zenith=\
-                                            solar_position['zenith'],
-                                            solar_azimuth=\
-                                            solar_position['azimuth'],
-                                            albedo=\
-                                            data['Surface Albedo']\
-                                           )['poa_global']
+poa_irrad = irradiance.get_total_irradiance(
+  surface_tilt=tilt, surface_azimuth=surface_azimuth,
+  dni=data['DNI'], ghi=data['GHI'], dhi=data['DHI'],
+  solar_zenith=solar_position['zenith'],
+  solar_azimuth=solar_position['azimuth'],
+  albedo=data['Surface Albedo'])['poa_global']
 
 # Calulate and display daily/monthly stats
 daily_ghi = data['GHI'].groupby(data.index.map(lambda x: x.date())).sum().\

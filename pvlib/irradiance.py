@@ -2272,12 +2272,12 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
 
     The Boland model [1]_, [2]_ estimates the diffuse fraction, DF, from global
     horizontal irradiance, GHI, through an empirical relationship between DF
-    and the clearness index, :math:`k_t`, the ratio of GHI to extraterrestrial
-    irradiance.
+    and the clearness index, :math:`k_t`, the ratio of GHI to horizontal
+    extraterrestrial irradiance.
 
     .. math::
 
-        \mathit{DF} = \frac{1}{1 + \exp\left(A \left(k_t - B\right)\right)}
+        \mathit{DF} = \frac{1}{1 + \exp\left(a \left(k_t - b\right)\right)}
 
 
     Parameters
@@ -2286,13 +2286,13 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
         Global horizontal irradiance. [W/m^2]
     solar_zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
-    datetime_or_doy : int, float, numpy.ndarray, pandas.DatetimeIndex
+    datetime_or_doy : numeric, pandas.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
     a_coeff : float, default 8.645
-        logistic curve fit coefficient
+        Logistic curve fit coefficient.
     b_coeff : float, default 0.613
-        logistic curve fit coefficient
+        Logistic curve fit coefficient.
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
         clearness index :math:`k_t`. Equivalent to zenith = 86.273 degrees.

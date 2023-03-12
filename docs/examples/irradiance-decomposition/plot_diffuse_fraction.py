@@ -201,14 +201,15 @@ f.tight_layout()
 # reproduce the TMY3 values. We refer those interested to the `TMY3`_ and
 # `NSRDB`_ user manuals.
 #
-# The Erbs and Boland models are correlations only based on the clearness index kt,
-# which is the ratio of GHI to the the horizontal component of the extra-terrestrial
-# irradiance. At low sun elevation (zenith near 90 degrees), especially near sunset,
-# kt can explode because the denominator (extra-terrestrial irradiance) approaches
-# zero. In pvlib this behavior is moderated by ``min_cos_zenith`` and
-# ``max_clearness_index`` which each have reasonable defaults. Even so, near
-# sunset there are still spikes in kt and DNI from Erbs and Boland for Jan. 5th
-# & 7th, April 4th, 5th, & 7th, and July 6th & 7th.
+# The Erbs and Boland models are correlations only based on the clearness index
+# kt, which is the ratio of GHI to the the horizontal component of the
+# extra-terrestrial irradiance. At low sun elevation (zenith near 90 degrees),
+# especially near sunset, kt can explode because the denominator
+# (extra-terrestrial irradiance) approaches zero. In pvlib this behavior is
+# moderated by ``min_cos_zenith`` and ``max_clearness_index`` which each have
+# reasonable defaults. Even so, near sunset there are still spikes in kt and
+# DNI from Erbs and Boland for Jan. 5th & 7th, April 4th, 5th, & 7th, and July
+# 6th & 7th.
 #
 # By contrast, the DISC and DIRINT methods estimate DNI first by means of
 # correlations, which include additional variables such as airmass. These

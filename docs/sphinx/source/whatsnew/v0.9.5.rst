@@ -26,13 +26,14 @@ Enhancements
   differentiable and bounded between zero and one. (:pull:`1179`)
 * Add ``model='gueymard2003'``, the airmass model used for REST and REST2,
   to :py:func:`~pvlib.atmosphere.get_relative_airmass`. (:pull:`1655`)
-
-
 * Added an optional ``model`` parameter to
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   to enable use of the hay-davies sky diffuse irradiance model
   instead of the default isotropic model. (:pull:`1668`)
+* Use [Horner's Method](https://en.wikipedia.org/wiki/Horner%27s_method)
+  to evaluate polynomials in :py:func:`~pvlib.irradiance.disc`, may
+  decrease runtime by 20%. (:issue:`1180`, :pull:`1183`)
 
 Bug fixes
 ~~~~~~~~~

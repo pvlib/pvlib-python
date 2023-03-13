@@ -1,14 +1,18 @@
 import numpy as np
 import pandas as pd
 from pvlib.iotools import tmy
-from conftest import DATA_DIR
+from ..conftest import DATA_DIR
+import pytest
 
 # test the API works
 from pvlib.iotools import read_tmy3
 
-TMY3_TESTFILE = DATA_DIR / '703165TY.csv'
 TMY2_TESTFILE = DATA_DIR / '12839.tm2'
+# TMY3 format (two files below) represents midnight as 24:00
+TMY3_TESTFILE = DATA_DIR / '703165TY.csv'
 TMY3_FEB_LEAPYEAR = DATA_DIR / '723170TYA.CSV'
+# The SolarAnywhere TMY3 format (file below) represents midnight as 00:00
+TMY3_SOLARANYWHERE = DATA_DIR / 'Burlington, United States SolarAnywhere Time Series 2021 Lat_44_465 Lon_-73_205 TMY3 format.csv'  # noqa: E501
 
 
 def test_read_tmy3():
@@ -67,8 +71,28 @@ def test_gh865_read_tmy3_feb_leapyear_hr24():
     assert all(data.index[:-1].year == 1990)
     assert data.index[-1].year == 1991
     # let's do a quick sanity check, are the indices monotonically increasing?
-    assert all(np.diff(data.index.astype(int)) == 3600000000000)
+    assert all(np.diff(data.index.view(np.int64)) == 3600000000000)
     # according to the TMY3 manual, each record corresponds to the previous
     # hour so check that the 1st hour is 1AM and the last hour is midnite
     assert data.index[0].hour == 1
     assert data.index[-1].hour == 0
+
+
+@pytest.fixture
+def solaranywhere_index():
+    return pd.date_range('2021-01-01 01:00:00-05:00', periods=8760, freq='1h')
+
+
+def test_solaranywhere_tmy3(solaranywhere_index):
+    # The SolarAnywhere TMY3 format specifies midnight as 00:00 whereas the
+    # NREL TMY3 format utilizes 24:00. The SolarAnywhere file is therefore
+    # included to test files with  00:00 timestamps are parsed correctly
+    data, meta = tmy.read_tmy3(TMY3_SOLARANYWHERE)
+    pd.testing.assert_index_equal(data.index, solaranywhere_index)
+    assert meta['USAF'] == 0
+    assert meta['Name'] == 'Burlington  United States'
+    assert meta['State'] == 'NA'
+    assert meta['TZ'] == -5.0
+    assert meta['latitude'] == 44.465
+    assert meta['longitude'] == -73.205
+    assert meta['altitude'] == 41.0

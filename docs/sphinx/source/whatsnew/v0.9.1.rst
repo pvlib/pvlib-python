@@ -1,0 +1,90 @@
+.. _whatsnew_0910:
+
+v0.9.1 (March 29, 2022)
+-----------------------
+
+Deprecations
+~~~~~~~~~~~~
+* Moved :py:func:`pvlib.bifacial.pvfactors_timeseries` to
+  :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries`.
+  :py:mod:`pvlib.bifacial` is now a sub-package. (:pull:`717`)
+* :py:func:`pvlib.modelchain.basic_chain` is deprecated.
+  See :py:meth:`pvlib.modelchain.ModelChain.with_pvwatts` and
+  :py:meth:`pvlib.modelchain.ModelChain.with_sapm` for alternative simplified
+  :py:class:`~pvlib.modelchain.ModelChain` interfaces, although note that the
+  inputs do not directly translate. (:pull:`1401`)
+* All functionality in the ``pvlib.forecast`` module is deprecated.
+  For details, see :ref:`forecasts`. (:issue:`1057`, :pull:`1426`)
+
+Enhancements
+~~~~~~~~~~~~
+* Added ``map_variables`` option to :py:func:`pvlib.iotools.get_psm3` and
+  :py:func:`pvlib.iotools.read_psm3` (:pull:`1374`)
+* Added ``pvlib.bifacial.infinite_sheds``, containing a model for irradiance
+  on front and back surfaces of bifacial arrays. (:pull:`717`)
+* Added ``map_variables`` option to :func:`~pvlib.iotools.read_crn` (:pull:`1368`)
+* Added :py:func:`pvlib.temperature.prilliman` for modeling cell temperature
+  at short time steps (:issue:`1081`, :pull:`1391`)
+
+Bug fixes
+~~~~~~~~~
+* Address round-off effects in :py:func:`pvlib.ivtools.utils._schumaker_qspline`
+  (:issue:`1311`, :pull:`1315`)
+* Fixed a bug in :py:func:`pvlib.spectrum.spectrl2` where negative spectral irradiance
+  values were returned when the sun is behind the plane of array (:issue:`1348`, :pull:`1349`)
+* Fixed bug in :py:func:`pvlib.iotools.get_pvgis_hourly` where the ``optimal_surface_tilt``
+  argument was not being passed to the ``optimalinclination`` request parameter (:pull:`1356`)
+* Fixed bug in :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries` where scalar ``surface_tilt``
+  and ``surface_azimuth`` inputs caused an error (:issue:`1127`, :issue:`1332`, :pull:`1361`) 
+* Added -99999 to list of values to map to nan in :func:`~pvlib.iotools.read_crn`
+  (:issue:`1372`, :pull:`1368`)
+* Changed the metadata entry for the wind speed unit to "Wind Speed Units" in
+  the PSM3 iotools function (:pull:`1375`)
+* Improved convergence when determining the maximum power point using
+  for :py:func:`pvlib.pvsystem.singlediode` with ``method='lambertw'``. Tolerance
+  is determined for the voltage at the maximum power point, and is improved
+  from 0.01 V to 1e-8 V. (:issue:`1087`, :pull:`1089`)
+
+Testing
+~~~~~~~
+* Updated test values to match the new values returned by the PVGIS TMY API. The difference
+  is very minor (0.01 W/m2, affecting only a few beam irradiance values) (:pull:`1396`)
+
+Documentation
+~~~~~~~~~~~~~
+* Fix documentation return error in :py:meth:`pvlib.forecast.ForecastModel.cloud_cover_to_transmittance_linear`
+  (:issue:`1367`, :pull:`1370`)
+* Add gallery example illustrating bifacial simulation using the
+  :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries` function and either
+  :py:class:`pvlib.modelchain.ModelChain` or procedural functions.
+  (:pull:`1394`)
+* Fix some typos (:pull:`1414`)
+* Clarify the descriptions of ``delta_t`` in several solar position functions
+  (:pull:`1429`)
+* Changed $C$ to $\\degree C$ in the plot_singlediode.py file (:pull:`1434`)
+
+Requirements
+~~~~~~~~~~~~
+* numpy >= 1.16.0 is now required for all python versions. (:pull:`1400`)
+* Fix an installation issue with ``dataclasses`` on python 3.6
+  (:issue:`1302`, :pull:`1422`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* :ghuser:`Antoine-0`
+* :ghuser:`Carlosbogo`
+* Christian Weickhmann (:ghuser:`cweickhmann`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Johann Loux (:ghuser:`JoLo90`)
+* Saurabh Aneja (:ghuser:`spaneja`)
+* Jack Kelly (:ghuser:`JackKelly`)
+* Somasree Majumder(:ghuser:`soma2000-lang`)
+* Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Mark Mikofksi (:ghuser:`mikofski`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Uday Guntupalli (:ghuser:`uguntupalli`)
+* Shashwata Roy (:ghuser:`RoyCoding8`)

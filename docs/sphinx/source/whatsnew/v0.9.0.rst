@@ -1,7 +1,7 @@
 .. _whatsnew_0900:
 
-v0.9.0 (MONTH DAY YEAR)
------------------------
+v0.9.0 (September 1, 2021)
+--------------------------
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
@@ -40,6 +40,25 @@ Breaking changes
   ``ModelChain.adrinverter`` changed to ``ModelChain.adr_inverter``.
   (:pull:`1150`)
 
+* The ``orientation_strategy`` parameter has been removed from the various
+  :py:class:`pvlib.modelchain.ModelChain` constructors and ``surface_tilt``,
+  ``surface_azimuth`` are now required parameters for
+  :py:func:`pvlib.modelchain.basic_chain` (:issue:`1028`, :pull:`1181`)
+
+* Removed the ``**kwargs`` parameters from :py:meth:`~pvlib.pvsystem.PVSystem.sapm` and
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and
+  :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_cec` (:issue:`1118`, :pull:`1222`)
+
+* Switched the order of the outputs from the PSM3 iotools, notably
+  :py:func:`~pvlib.iotools.get_psm3` and :py:func:`~pvlib.iotools.read_psm3`
+  (:issue:`1245`, :pull:`1268`)
+
+* Changed the naming of the inputs ``startdate``/``enddate`` to ``start``/``end`` in
+  :py:func:`~pvlib.iotools.get_ecmwf_macc`
+  (:issue:`1245`, :pull:`1268`)
+
+* Change the naming of the inputs ``lat``/``lon`` to ``latitude``/``longitude`` in
+  :py:func:`~pvlib.iotools.get_pvgis_tmy` (:issue:`1245`, :pull:`1268`)
 
 Deprecations
 ~~~~~~~~~~~~
@@ -55,21 +74,72 @@ Deprecations
   * ``ModelChain.dc``
   * ``ModelChain.diode_params``
   * ``ModelChain.effective_irradiance``
+  * ``ModelChain.losses``
   * ``ModelChain.solar_position``
   * ``ModelChain.spectral_modifier``
   * ``ModelChain.total_irrad``
   * ``ModelChain.tracking``
+  * ``ModelChain.weather``
+  * ``ModelChain.times``
+
+* The following ``PVSystem`` cell temperature methods have been deprecated
+  and consolidated into the new wrapper method
+  :py:meth:`~pvlib.pvsystem.PVSystem.get_cell_temperature` (:pull:`1211`):
+
+  * :py:meth:`~pvlib.pvsystem.PVSystem.sapm_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.pvsyst_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.faiman_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.fuentes_celltemp`
+  * :py:meth:`~pvlib.pvsystem.PVSystem.noct_sam_celltemp`
+
+* The ``eta_m`` parameter for :py:func:`~pvlib.temperature.pvsyst_cell` is
+  replaced by parameter ``module_efficiency``. (:issue:`1188`, :pull:`1218`)
+
+* The following attributes of :py:class:`pvlib.pvsystem.PVSystem` and
+  :py:class:`pvlib.tracking.SingleAxisTracker` have been deprecated in
+  favor of the corresponding :py:class:`pvlib.pvsystem.Array` attributes:
+
+  * ``PVSystem.albedo``
+  * ``PVSystem.module``
+  * ``PVSystem.module_parameters``
+  * ``PVSystem.module_type``
+  * ``PVSystem.modules_per_string``
+  * ``PVSystem.racking_model``
+  * ``PVSystem.strings_per_inverter``
+  * ``PVSystem.surface_tilt``
+  * ``PVSystem.surface_azimuth``
+  * ``PVSystem.temperature_model_parameters``
+
+* The :py:class:`pvlib.tracking.SingleAxisTracker` class is deprecated and
+  replaced by using :py:class:`pvlib.pvsystem.PVSystem` with the new
+  :py:class:`pvlib.pvsystem.SingleAxisTrackerMount` (:pull:`1176`)
+
 
 Enhancements
 ~~~~~~~~~~~~
-* Add :func:`~pvlib.iotools.read_bsrn` for reading BSRN solar radiation data
-  files. (:pull:`1145`, :issue:`1015`)
+* Added :func:`~pvlib.iotools.read_pvgis_hourly` and
+  :func:`~pvlib.iotools.get_pvgis_hourly` for reading and retrieving hourly
+  solar radiation data and PV power output from PVGIS. (:pull:`1186`,
+  :issue:`849`)
+* Added ``map_variables`` option to :func:`~pvlib.iotools.get_pvgis_tmy` and
+  :func:`~pvlib.iotools.read_pvgis_tmy` (:issue:`1250`, :pull:`1268`)
+* Add :func:`~pvlib.iotools.get_bsrn` and :func:`~pvlib.iotools.read_bsrn`
+  for retrieving and reading BSRN solar radiation data files.
+  (:pull:`1254`, :pull:`1145`, :issue:`1015`)
+* Add :func:`~pvlib.iotools.get_cams`,
+  :func:`~pvlib.iotools.parse_cams`, and
+  :func:`~pvlib.iotools.read_cams`
+  for retrieving, parsing, and reading CAMS Radiation and McClear time-series
+  files. (:pull:`1175`)
 * In :py:class:`~pvlib.modelchain.ModelChain`, attributes which contain
   output of models are now collected into ``ModelChain.results``.
   (:pull:`1076`, :issue:`1067`)
 * Added :py:class:`~pvlib.pvsystem.Array` class to represent an array of
   modules separately from a :py:class:`~pvlib.pvsystem.PVSystem`.
   (:pull:`1076`, :issue:`1067`)
+* Added :py:class:`~pvlib.pvsystem.FixedMount` and
+  :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount` classes to use with
+  the new :py:class:`~pvlib.pvsystem.Array` class (:pull:`1176`)
 * Added capability for modeling a PV system with multiple arrays in
   :py:class:`~pvlib.pvsystem.PVSystem`. Updates the ``PVSystem`` API
   to operate on and return tuples where each element of the tuple corresponds
@@ -96,28 +166,75 @@ Enhancements
 * :py:meth:`~pvlib.pvsystem.PVSystem.get_ac` is added to calculate AC power
   from DC power. Use parameter ``model`` to specify which inverter model to use.
   (:pull:`1147`, :issue:`998`, :pull:`1150`)
+* Added :py:func:`~pvlib.temperature.noct_sam`, a cell temperature model
+  implemented in SAM. (:pull:`1177`, :pull:`1195`)
+* Added :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` to calculate
+  the temperature coefficient of power for the pvsyst module model.
+  (:pull:`1190`)
+* :py:func:`~pvlib.irradiance.get_total_irradiance` and
+  :py:func:`~pvlib.irradiance.get_sky_diffuse` now fill in ``airmass``
+  if required and not provided. These functions now raise a ``ValueError``
+  if ``dni_extra`` is required and not provided. (:issue:`949`, :pull:`1225`)
 
 Bug fixes
 ~~~~~~~~~
+* Corrected an error in :py:func:`~pvlib.irradiance.perez` where the horizon
+  irradiance component was prevented from taking negative values. Negative
+  values are intentional according to the original publication. Changes in
+  output are expected to be small and primarily occur at low irradiance
+  conditions.
+  (:issue:`1238`, :pull:`1239`)
 * Pass weather data to solar position calculations in
   :py:meth:`~pvlib.modelchain.ModelChain.prepare_inputs_from_poa`.
   (:issue:`1065`, :pull:`1140`)
 * Reindl model fixed to generate sky_diffuse=0 when GHI=0.
   (:issue:`1153`, :pull:`1154`)
+* Fix floating point round-off issue in
+  :py:func:`~pvlib.irradiance.aoi_projection` (:issue:`1185`, :pull:`1191`)
+* Update GFS product names for GFS v16. (:issue:`1202`, :pull:`1203`)
+* Take into account ``EgRef``, ``dEgdT``, ``irrad_ref`` and ``temp_ref`` when
+  calling :py:func:`~pvlib.pvsystem.calcparams_cec`. (:issue:`1215`, :pull:`1216`)
+* Corrected methodology error in :py:func:`~pvlib.scaling.wvm`. Tracks with
+  fix in PVLib for MATLAB. (:issue:`1206`, :pull:`1213`)
+* Corrected an error affecting :py:func:`~pvlib.clearsky.detect_clearsky`
+  when data time step is not one minute. Error was introduced in v0.8.1.
+  (:issue:`1241`, :pull:`1242`)
+* Corrected error affecting :py:func:`~pvlib.scaling._compute_wavelet` when
+  passing a pandas time series with a sampling rate faster than 1 second.
+  (:issue:`1257`, :pull:`1258`)
+* Changed deprecated use of ``.astype()`` to ``.view()`` in :py:mod:`~pvlib.solarposition`.
+  (:pull:`1256`, :issue:`1261`, :pull:`1262`)
+* Fix :py:func:`~pvlib.tracking.singleaxis` AOI wrong when sun behind module.
+  (:pull:`1273`, :issue:`1221`)
+* Fix :py:meth:`~pvlib.forecast.ForecastModel.get_data` failure to correct for
+  non-UTC timezones. (:issue:`1237`, :pull:`1285`)
+* Fixed :py:class:`~pvlib.forecast.HRRR` by changing model name to reflect change on the server. (:issue:`1291`,
+  :pull:`1292`)
 
 Testing
 ~~~~~~~
+* Added ``__init__.py`` to ``pvlib/tests`` and subdirectories. This follows
+  pytest recommendations for package layout and imports from ``conftest.py``.
+  Solves issue with test discovery in vscode. (:pull:`1204`)
 
 Documentation
 ~~~~~~~~~~~~~
-
 * Update intro tutorial to highlight the use of historical meteorological data
-  and to make the procedural and object oriented results match exactly.
-* Update documentation links in :py:func:`pvlib.iotools.get_psm3`
+  and to make the procedural and OO results match exactly. (:issue:`1116`, :pull:`1144`)
+* Add a gallery example showing how to appropriately use interval-averaged
+  weather data for modeling. (:pull:`1152`)
+* Update documentation links in :py:func:`pvlib.iotools.get_psm3` (:pull:`1169`)
+* Use ``Mount`` classes in ``introtutorial`` and ``pvsystem`` docs pages (:pull:`1267`)
+* Clarified how statistics are calculated for :py:func:`pvlib.clearsky.detect_clearsky`
+  (:issue:`1070`, :pull:`1243`)
+* Add gallery examples using the new ``Mount`` classes (:pull:`1266`)
+* Add "powered by pvlib" logos (:pull:`1277`)
 
 Requirements
 ~~~~~~~~~~~~
-* ``dataclasses`` is required for python 3.6
+* ``dataclasses`` is required for python 3.6 (:pull:`1076`)
+* ``h5py`` is now a required dependency.  This replaces ``tables``, which was formerly
+  an optional dependency.  (:pull:`1299`, :issue:`1252`, :issue:`1286`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -131,3 +248,16 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Joshua Stein (:ghuser:`jsstein`)
 * Tony Lorenzo (:ghuser:`alorenzo175`)
+* Damjan Postolovski (:ghuser:`dpostolovski`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Joe Ranalli (:ghuser:`jranalli`)
+* Chas Schweizer (:ghuser:`cpr-chas`)
+* Yoann Louvet (:ghuser:`YoannUniKS`)
+* Brandon Carpenter (:ghuser:`hashstat`)
+* :ghuser:`kahemker`
+* :ghuser:`zhammond147`
+* :ghuser:`PeterGrant`
+* :ghuser:`rockstaedt`
+* :ghuser:`MichaelHopwood`
+* :ghuser:`EricDuminil`
+* :ghuser:`FeiYao-Edinburgh`

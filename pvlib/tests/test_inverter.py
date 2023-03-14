@@ -39,12 +39,12 @@ def test_adr_float(adr_inverter_parameters):
 def test_adr_invalid_and_night(sam_data):
     # also tests if inverter.adr can read the output from pvsystem.retrieve_sam
     inverters = sam_data['adrinverter']
-    testinv = 'Zigor__Sunzet_3_TL_US__240V_'
+    testinv = 'Zigor__Sunzet_3_TL_US_240V__CEC_2011_'
     vdcs = np.array([39.873036, 0., np.nan, 420])
     pdcs = np.array([188.09182, 0., 420, np.nan])
 
     pacs = inverter.adr(vdcs, pdcs, inverters[testinv])
-    assert_allclose(pacs, np.array([np.nan, -0.954, np.nan, np.nan]))
+    assert_allclose(pacs, np.array([np.nan, -0.25, np.nan, np.nan]))
 
 
 def test_sandia(cec_inverter_parameters):

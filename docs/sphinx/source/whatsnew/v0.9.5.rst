@@ -29,8 +29,8 @@ Enhancements
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   to enable use of the hay-davies sky diffuse irradiance model
   instead of the default isotropic model. (:pull:`1668`)
-* Update the ADR inverter database by appending the ADR equivalents of all
-  inverters in the current (2019) Sandia inverter database. (:pull:`1695`)
+* Update the ADR inverter model parameter database by appending the ADR equivalents of all
+  inverters in the current (2019) Sandia inverter model parameter database. (:pull:`1695`)
 
 Bug fixes
 ~~~~~~~~~

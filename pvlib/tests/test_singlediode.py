@@ -74,16 +74,15 @@ def test_newton_fs_495(method, cec_module_fs_495):
 
 def build_precise_iv_curve_dataframe(file_csv, file_json):
     """
-    Reads a precise IV curve parameter set CSV and JSON to create a data frame.
+    Reads a precise IV curve parameter set CSV and JSON to create a DataFrame.
     The CSV contains the parameters of the single diode equation which are used
-    to generate the JSON file data. The data are calculated using the arbitrary
-    precision library `mpmath`_ with 40 decimal digits of precision in order
-    have at least 16 decimal digits of precision when they are stored in JSON.
-    The precision is sufficient for the difference between the left and right
-    side of the single diode equation to be less than :math:`1 \times 10^{-16}`
-    when the numbers from the JSON are read as mpmath floats.
-
-    .. _mpmath: mpmath.org
+    to generate the JSON data. The data are calculated using [1]_ with 40
+    decimal digits of precision in order have at least 16 decimal digits of
+    precision when they are stored in JSON. The precision is sufficient for the
+    difference between the left and right side of the single diode equation to
+    be less than :math:`1 \times 10^{-16}` when the numbers from the JSON are
+    read as mpmath floats. The code to generate these IV curve data is from
+    [2]_. The data and tests that use this function were added in :pull:`1573`.
 
     Parameters
     ----------
@@ -95,13 +94,23 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
 
     Returns
     -------
-        A data frame with these columns: ``Index``, ``photocurrent``,
+        A DataFrame with these columns: ``Index``, ``photocurrent``,
         ``saturation_current``, ``resistance_series``, ``resistance_shunt``,
         ``n``, ``cells_in_series``, ``Voltages``, ``Currents``,
         ``diode_voltage``, ``v_oc``, ``i_sc``, ``v_mp``, ``i_mp``, ``p_mp``,
         ``i_x``, ``i_xx`, ``Temperature``, ``Irradiance``, ``Sweep Direction``,
         ``Datetime``, ``Boltzmann``, ``Elementary Charge``, and ``Vth``. The
         columns ``Irradiance``, ``Sweep Direction`` are None or empty strings.
+
+    References
+    ----------
+    .. [1] The mpmath development team. (2023). mpmath: a Python library for
+       arbitrary-precision floating-point arithmetic (version 1.2.1).
+       `mpmath <mpmath.org>`_
+
+    .. [2] The ivcurves development team. (2022). Code to generate precise
+       solutions to the single diode equation.
+       `ivcurves <github.com/cwhanse/ivcurves>`_
     """
     params = pd.read_csv(file_csv)
     curves_metadata = pd.read_json(file_json)

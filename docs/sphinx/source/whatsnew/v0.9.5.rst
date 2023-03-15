@@ -26,9 +26,6 @@ Enhancements
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   to enable use of the hay-davies sky diffuse irradiance model
   instead of the default isotropic model. (:pull:`1668`)
-* Testing :py:func:`pvlib.pvsystem.singlediode`, :py:func:`pvlib.pvsystem.v_from_i`,
-  and :py:func:`pvlib.pvsystem.i_from_v` against precisely generated IV curve data.
-  (:issue:`411`, :pull:`1573`)
 
 Bug fixes
 ~~~~~~~~~
@@ -50,6 +47,9 @@ Testing
 * Added Python 3.11 to test suite. (:pull:`1582`)
 * Updated PSM3 test data files to match the new version 3.2.2 data returned
   by the PSM3 API (:issue:`1591`, :pull:`1652`)
+* Testing :py:func:`pvlib.pvsystem.singlediode`, :py:func:`pvlib.pvsystem.v_from_i`,
+  and :py:func:`pvlib.pvsystem.i_from_v` against precisely generated IV curve data.
+  (:issue:`411`, :pull:`1573`)
 
 
 Documentation
@@ -77,4 +77,5 @@ Contributors
 * Michael Deceglie (:ghuser:`mdeceglie`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * John Moseley (:ghuser:`johnMoseleyArray`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
 * Taos Transue (:ghuser:`reepoi`)

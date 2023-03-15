@@ -1484,17 +1484,17 @@ def _disc_kn(clearness_index, airmass, max_airmass=12):
     is_clear = (kt <= 0.6)
     # Use Horner's method to compute polynomials efficiently
     a = np.where(
-            is_clear,
-            0.512 + kt*(-1.56 + kt*(2.286 - 2.222*kt)),
-            -5.743 + kt*(21.77 + kt*(-27.49 + 11.56*kt)))
+        is_clear,
+        0.512 + kt*(-1.56 + kt*(2.286 - 2.222*kt)),
+        -5.743 + kt*(21.77 + kt*(-27.49 + 11.56*kt)))
     b = np.where(
-            is_clear,
-            0.37 + 0.962*kt,
-            41.4 + kt*(-118.5 + kt*(66.05 + 31.9*kt)))
+        is_clear,
+        0.37 + 0.962*kt,
+        41.4 + kt*(-118.5 + kt*(66.05 + 31.9*kt)))
     c = np.where(
-            is_clear,
-            -0.28 + kt*(0.932 - 2.048*kt),
-            -47.01 + kt*(184.2 + kt*(-222.0 + 73.81*kt)))
+        is_clear,
+        -0.28 + kt*(0.932 - 2.048*kt),
+        -47.01 + kt*(184.2 + kt*(-222.0 + 73.81*kt)))
 
     delta_kn = a + b * np.exp(c*am)
 

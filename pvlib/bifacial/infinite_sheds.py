@@ -12,7 +12,7 @@ from pvlib.irradiance import beam_component, aoi, haydavies
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
                          pitch, max_rows=10, npoints=100, vectorize=False):
     """
-    Integrated view factor from the ground to the sky underneath
+    Integrated view factor to the sky from the ground underneath
     interior rows of the array.
 
     Parameters
@@ -469,7 +469,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         on the surface that is not reflected away. [unitless]
 
     npoints : int, default 100
-        Number of discretization points for calculating integrated viewfactors.
+        Number of discretization points for calculating integrated view factors.
 
     vectorize : bool, default False
         If True, vectorize the view factor calculation across ``surface_tilt``.
@@ -706,7 +706,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         etc. A negative value is a reduction in back irradiance. [unitless]
 
     npoints : int, default 100
-        Number of discretization points for calculating integrated viewfactors.
+        Number of discretization points for calculating integrated view factors.
 
     vectorize : bool, default False
         If True, vectorize the view factor calculation across ``surface_tilt``.

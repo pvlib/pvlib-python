@@ -81,3 +81,5 @@ Contributors
 * Saurabh Aneja (:ghuser:`spaneja`)
 * John Moseley (:ghuser:`johnMoseleyArray`)
 * Emma Cooper (:ghuser:`eccoope`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Taos Transue (:ghuser:`reepoi`)

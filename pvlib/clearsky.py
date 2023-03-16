@@ -654,7 +654,7 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     return clear_samples
 
 
-def detect_clearsky(measured, clearsky, times=None, window_length=10,
+def detect_clearsky(measured, clear_sky, times=None, window_length=10,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
@@ -775,10 +775,10 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     else:
         meas = measured
 
-    if not isinstance(clearsky, pd.Series):
-        clear = pd.Series(clearsky, index=times)
+    if not isinstance(clear_sky, pd.Series):
+        clear = pd.Series(clear_sky, index=times)
     else:
-        clear = clearsky
+        clear = clear_sky
 
     sample_interval, samples_per_window = \
         tools._get_sample_intervals(times, window_length)
@@ -825,21 +825,35 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
             meas - scaled_clear, H, samples_per_window)
 
         # evaluate comparison criteria
-        c1 = np.abs(meas_mean - alpha*clear_mean).apply(lambda x: \
-            x < mean_diff if np.isnan(x) == False else None)
-        c2 = np.abs(meas_max - alpha*clear_max).apply(lambda x: \
-            x < max_diff if np.isnan(x) == False else None)
-        c3 = np.logical_and(np.abs(line_diff).apply(lambda x: lambda x: \
-                x > lower_line_length if np.isnan(x) == False else None),\
-                np.abs(line_diff).apply(lambda x: lambda x: \
-                x < upper_line_length if np.isnan(x) == False else None))
-        c4 = meas_slope_nstd.apply(lambda x: x < var_diff \
-            if np.isnan(x) == False else None)
-        c5 = slope_max_diff.apply(lambda x: x < slope_dev \
-            if np.isnan(x) == False else None)
-        c6 = np.logical_and(clear_mean != 0, clear_mean.isna() == False)
+        # Condition 1
+        c1 = np.abs(meas_mean - alpha*clear_mean)
+        c1_where_nan = c1[c1.isna()].index
+        c1 = c1 < mean_diff
+        c1[c1_where_nan] = np.nan
+        # Condition 2
+        c2 = np.abs(meas_max - alpha*clear_max)
+        c2_where_nan = c2[c2.isna()].index
+        c2 = c2 < max_diff
+        c2[c2_where_nan] = np.nan
+        # Condition 3a & 3b
+        c3_where_nan = line_diff[line_diff.isna()].index
+        c3a = line_diff > lower_line_length
+        c3b = line_diff < upper_line_length
+        c3 = np.logical_and(c3a, c3b)
+        c3[c3_where_nan] = np.nan
+        # Condition 4
+        c4_where_nan = meas_slope_nstd[meas_slope_nstd.isna()].index
+        c4 = meas_slope_nstd < var_diff
+        c4[c4_where_nan] = np.nan
+        # Condition 5
+        c5_where_nan = slope_max_diff[slope_max_diff.isna()].index
+        c5 = slope_max_diff < slope_dev
+        c5[c5_where_nan] = np.nan
+        # Condition 6
+        c6 = clear_mean != 0
+        c6[clear_mean[clear_mean.isna()].index] = np.nan
 
-        # np.logical_and() maintains NaNs
+         # np.logical_and() maintains NaNs
         clear_windows = pd.Series(index = times, 
                                  data = np.logical_and.reduce([c1,c2, c3,\
                                     c4, c5, c6]))
@@ -854,8 +868,10 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
         # find a new alpha
         previous_alpha = alpha
-        clear_meas = meas[clear_samples]
-        clear_clear = clear[clear_samples]
+        # Must be explicit w/ '==' as clear_windows is a non-boolean array if
+        # it contains NaNs
+        clear_meas = meas[clear_windows == True]
+        clear_clear = clear[clear_windows == True]
 
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
@@ -870,7 +886,7 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     # be polite about returning the same type as was input
     if ispandas:
-        clear_samples = pd.Series(clear_samples, index=times)
+        clear_samples = pd.Series(clear_windows, index=times)
 
     if return_components:
         components = OrderedDict()

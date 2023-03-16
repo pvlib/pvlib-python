@@ -535,6 +535,7 @@ def detect_clearsky_data():
     cs = loc.get_clearsky(expected.index, linke_turbidity=2.658197)
     return expected, cs
 
+
 def test_detect_clearsky(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -543,6 +544,7 @@ def test_detect_clearsky(detect_clearsky_data):
                         check_dtype=False, check_names=False)
 # test_detect_clearsky(detect_clearsky_data())
 
+
 def test_detect_clearsky_defaults(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -550,6 +552,7 @@ def test_detect_clearsky_defaults(detect_clearsky_data):
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 # test_detect_clearsky_defaults(detect_clearsky_data())
+
 
 def test_detect_clearsky_components(detect_clearsky_data):
     expected, cs = detect_clearsky_data
@@ -561,6 +564,7 @@ def test_detect_clearsky_components(detect_clearsky_data):
     assert isinstance(components, OrderedDict)
     assert np.allclose(alpha, 0.9633903181941296)
 # test_detect_clearsky_components(detect_clearsky_data())
+
 
 def test_detect_clearsky_iterations(detect_clearsky_data):
     expected, cs = detect_clearsky_data
@@ -575,6 +579,7 @@ def test_detect_clearsky_iterations(detect_clearsky_data):
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
 # test_detect_clearsky_iterations(detect_clearsky_data())
+
 
 # neither expected nor clear_samples are all True
 def test_detect_clearsky_kwargs(detect_clearsky_data):
@@ -621,15 +626,17 @@ def test_detect_clearsky_arrays(detect_clearsky_data):
     assert isinstance(clear_samples, np.ndarray)
     assert (clear_samples == expected['Clear or not'].values).all()
 
-# N/A ?
-def test_detect_clearsky_irregular_times(detect_clearsky_data):
-    expected, cs = detect_clearsky_data
-    times = cs.index.values.copy()
-    times[0] += 10**9
-    times = pd.DatetimeIndex(times)
-    with pytest.raises(NotImplementedError):
-        clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values,
-                                 times, 10)
+def test_detect_clearsky_meas_irregular_times(detect_clearsky_data):
+    data, cs = detect_clearsky_data
+    data.drop(index=data.index[15], inplace=True)
+    out = clearsky.detect_clearsky(data['GHI'], cs['ghi'])
+    expected = pd.Series(index=data.index, data=np.array([
+        np.nan, np.nan, np.nan, np.nan, True, True, True, False, False, False,
+        np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+        np.nan, True, False, False, False, False, np.nan, np.nan, np.nan,
+        np.nan, np.nan], dtype=object))
+    assert_series_equal(expected, out, check_dtype=False,
+                        check_names=False)
 
 # Passed
 def test_detect_clearsky_missing_index(detect_clearsky_data):

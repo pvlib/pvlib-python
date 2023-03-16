@@ -31,7 +31,7 @@ Enhancements
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   to enable use of the hay-davies sky diffuse irradiance model
   instead of the default isotropic model. (:pull:`1668`)
-* Use `Horner's Method<https://en.wikipedia.org/wiki/Horner%27s_method>`_
+* Use `Horner's Method <https://en.wikipedia.org/wiki/Horner%27s_method>`_
   to evaluate polynomials in :py:func:`~pvlib.irradiance.disc`, may
   decrease runtime by 20%. (:issue:`1180`, :pull:`1183`)
 

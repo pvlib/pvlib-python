@@ -35,7 +35,8 @@ def zeniths():
                           ['kastenyoung1989', [nan, 36.467,  5.586,  1.000]],
                           ['gueymard1993', [nan, 36.431,  5.581,  1.000]],
                           ['young1994', [nan, 30.733,  5.541,  1.000]],
-                          ['pickering2002', [nan, 37.064,  5.581,  1.000]]])
+                          ['pickering2002', [nan, 37.064,  5.581,  1.000]],
+                          ['gueymard2003', [nan, 36.676, 5.590, 1.000]]])
 def test_airmass(model, expected, zeniths):
     out = atmosphere.get_relative_airmass(zeniths, model)
     expected = np.array(expected)

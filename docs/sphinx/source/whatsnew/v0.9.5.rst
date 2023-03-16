@@ -20,6 +20,19 @@ Enhancements
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
 * Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
   support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
+* :py:func:`~pvlib.irradiance.boland` is another diffuse fraction, DF,
+  estimation method similar to Erbs but uses a single logistic exponential
+  correlation between DF and clearness index, kt, that is continuously
+  differentiable and bounded between zero and one. (:pull:`1179`)
+* Add ``model='gueymard2003'``, the airmass model used for REST and REST2,
+  to :py:func:`~pvlib.atmosphere.get_relative_airmass`. (:pull:`1655`)
+
+
+* Added an optional ``model`` parameter to
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
+  to enable use of the hay-davies sky diffuse irradiance model
+  instead of the default isotropic model. (:pull:`1668`)
 
 Bug fixes
 ~~~~~~~~~
@@ -32,6 +45,8 @@ Bug fixes
 * When using ``utc_time_range`` with :py:func:`pvlib.iotools.read_ecmwf_macc`,
   the time index subset is now selected with ``nearest`` instead of ``before``
   and ``after`` for consistency with ``cftime>=1.6.0``. (:issue:`1609`, :pull:`1656`)
+* :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` no longer raises
+  a scipy deprecation warning (and is slightly more accurate) (:issue:`1644`, :pull:`1674`)
 
 
 Testing
@@ -39,6 +54,9 @@ Testing
 * Added Python 3.11 to test suite. (:pull:`1582`)
 * Updated PSM3 test data files to match the new version 3.2.2 data returned
   by the PSM3 API (:issue:`1591`, :pull:`1652`)
+* Testing :py:func:`pvlib.pvsystem.singlediode`, :py:func:`pvlib.pvsystem.v_from_i`,
+  and :py:func:`pvlib.pvsystem.i_from_v` against precisely generated IV curve data.
+  (:issue:`411`, :pull:`1573`)
 
 
 Documentation
@@ -64,3 +82,7 @@ Contributors
 * Mark Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Michael Deceglie (:ghuser:`mdeceglie`)
+* Saurabh Aneja (:ghuser:`spaneja`)
+* John Moseley (:ghuser:`johnMoseleyArray`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Taos Transue (:ghuser:`reepoi`)

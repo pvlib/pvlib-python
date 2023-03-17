@@ -20,10 +20,12 @@ Enhancements
   :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
 * Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
   support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
+* :py:func:`~pvlib.irradiance.boland` is another diffuse fraction, DF,
+  estimation method similar to Erbs but uses a single logistic exponential
+  correlation between DF and clearness index, kt, that is continuously
+  differentiable and bounded between zero and one. (:pull:`1179`)
 * Add ``model='gueymard2003'``, the airmass model used for REST and REST2,
   to :py:func:`~pvlib.atmosphere.get_relative_airmass`. (:pull:`1655`)
-
-
 * Added an optional ``model`` parameter to
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
@@ -31,6 +33,9 @@ Enhancements
   instead of the default isotropic model. (:pull:`1668`)
 * Update the ADR inverter model parameter database by appending the ADR equivalents of all
   inverters in the current (2019) Sandia inverter model parameter database. (:pull:`1695`)
+* Use `Horner's Method <https://en.wikipedia.org/wiki/Horner%27s_method>`_
+  to evaluate polynomials in :py:func:`~pvlib.irradiance.disc`, may
+  decrease runtime by 20%. (:issue:`1180`, :pull:`1183`)
 
 Bug fixes
 ~~~~~~~~~
@@ -52,6 +57,9 @@ Testing
 * Added Python 3.11 to test suite. (:pull:`1582`)
 * Updated PSM3 test data files to match the new version 3.2.2 data returned
   by the PSM3 API (:issue:`1591`, :pull:`1652`)
+* Testing :py:func:`pvlib.pvsystem.singlediode`, :py:func:`pvlib.pvsystem.v_from_i`,
+  and :py:func:`pvlib.pvsystem.i_from_v` against precisely generated IV curve data.
+  (:issue:`411`, :pull:`1573`)
 
 
 Documentation
@@ -79,3 +87,5 @@ Contributors
 * Michael Deceglie (:ghuser:`mdeceglie`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * John Moseley (:ghuser:`johnMoseleyArray`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Taos Transue (:ghuser:`reepoi`)

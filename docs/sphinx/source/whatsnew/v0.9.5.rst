@@ -36,7 +36,11 @@ Enhancements
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` which,
   when set to ``True``, enables faster calculation but with increased
   memory usage. (:issue:`1680`, :pull:`1682`)
-
+* Update the ADR inverter model parameter database by appending the ADR equivalents of all
+  inverters in the current (2019) Sandia inverter model parameter database. (:pull:`1695`)
+* Use `Horner's Method <https://en.wikipedia.org/wiki/Horner%27s_method>`_
+  to evaluate polynomials in :py:func:`~pvlib.irradiance.disc`, may
+  decrease runtime by 20%. (:issue:`1180`, :pull:`1183`)
 
 Bug fixes
 ~~~~~~~~~

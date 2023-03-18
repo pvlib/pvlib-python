@@ -12,7 +12,7 @@ the ``pvlib`` `conda channel <https://anaconda.org/pvlib/pvlib>`_.  We recommend
 
 Enhancements
 ~~~~~~~~~~~~
-* Added the optional `string_factor` parameter to
+* Added the optional ``string_factor`` parameter to
   :py:func:`pvlib.snow.loss_townsend`. (:issue:`1636`, :pull:`1653`)
 * Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
   support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
@@ -43,8 +43,9 @@ Bug fixes
 * Added a limit to :py:func:`pvlib.snow.loss_townsend` to guard against
   incorrect loss results for systems that are near the ground. (:issue:`1636`,
   :pull:`1653`)
-* Fixed incorrect mapping of requested parameters names when using the ``get_psm3``
-  function. Also fixed the random reordering of the dataframe columns.
+* Fixed incorrect mapping of requested parameters names when using
+  :py:func:`pvlib.iotools.get_psm3`.
+  Also fixed the random reordering of the dataframe columns.
   (:issue:`1629`, :issue:`1647`, :pull:`1648`)
 * When using ``utc_time_range`` with :py:func:`pvlib.iotools.read_ecmwf_macc`,
   the time index subset is now selected with ``nearest`` instead of ``before``

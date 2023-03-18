@@ -1839,6 +1839,69 @@ class SingleAxisTrackerMount(AbstractMount):
         return tracking_data
 
 
+def format_return_values(return_types):
+    def format_val(r, rtype):
+        if rtype[0] == 'dict-like':
+            if isinstance(r, (dict, OrderedDict)):
+                pass
+            elif isinstance(r, pd.Series):
+                r.name = rtype[1]
+        elif rtype[0] == 'numeric':
+            if isinstance(r, (int, float, np.ndarray)):
+                pass
+            elif isinstance(r, pd.Series):
+                r.name = rtype[1]
+        elif rtype[0] == 'array-like':
+            if isinstance(r, np.ndarray):
+                pass
+            elif isinstance(r, pd.Series):
+                r.name = rtype[1]
+        return r
+
+    def decorator(func):
+        @functools.wraps(func)
+        def f(*args, **kwargs):
+            x = func(*args, **kwargs)
+            if isinstance(x, tuple):
+                return tuple(format_val(r, rt) for r, rt in zip(x, return_types))
+            return format_val(x, return_types[0])
+        return f
+    return decorator
+
+
+def format_args(func):
+    """
+    Decorator for functions that take dict-like, numeric, or array-like
+    arguments.
+
+    If a pd.Series is passed to the function, pd.Series.name is cleared
+    using pd.Series.rename. This does not rename the original pd.Series
+    passed, and does not copy its data.
+
+    This still allows the function to give a name to it later.
+    """
+    @functools.wraps(func)
+    def f(*args, **kwargs):
+        formatted_args = []
+        for a in args:
+            if isinstance(a, pd.Series):
+                a = a.rename(None)
+            formatted_args.append(a)
+        for k, v in kwargs.items():
+            if isinstance(v, pd.Series):
+                kwargs[k] = v.rename(None)
+        return func(*formatted_args, **kwargs)
+    return f
+
+
+# @format_return_values([
+    # ('numeric', 'photocurrent'),
+    # ('numeric', 'saturation_current'),
+    # ('numeric', 'resistance_series'),
+    # ('numeric', 'resistance_shunt'),
+    # ('numeric', 'nNsVth')
+# ])
+@format_args
 def calcparams_desoto(effective_irradiance, temp_cell,
                       alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
                       EgRef=1.121, dEgdT=-0.0002677,

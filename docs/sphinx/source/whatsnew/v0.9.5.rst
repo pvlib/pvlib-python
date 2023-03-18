@@ -1,7 +1,7 @@
 .. _whatsnew_0950:
 
 
-v0.9.5 (March 17, 2023)
+v0.9.5 (March 18, 2023)
 -----------------------
 
 Starting with this version, new releases are no longer distributed through

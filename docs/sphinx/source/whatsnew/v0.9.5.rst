@@ -1,8 +1,8 @@
 .. _whatsnew_0950:
 
 
-v0.9.5 (anticipated March 2023)
--------------------------------
+v0.9.5 (March 17, 2023)
+-----------------------
 
 Starting with this version, new releases are no longer distributed through
 the ``pvlib`` `conda channel <https://anaconda.org/pvlib/pvlib>`_.  We recommend
@@ -10,14 +10,10 @@ the ``pvlib`` `conda channel <https://anaconda.org/pvlib/pvlib>`_.  We recommend
 :ref:`installation`).
 
 
-Deprecations
-~~~~~~~~~~~~
-
-
 Enhancements
 ~~~~~~~~~~~~
 * Added the optional `string_factor` parameter to
-  :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
+  :py:func:`pvlib.snow.loss_townsend`. (:issue:`1636`, :pull:`1653`)
 * Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
   support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
 * :py:func:`~pvlib.irradiance.boland` is another diffuse fraction, DF,
@@ -45,7 +41,7 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Added a limit to :py:func:`pvlib.snow.loss_townsend` to guard against
-  incorrect loss results for systems that are near the ground (:issue:`1636`,
+  incorrect loss results for systems that are near the ground. (:issue:`1636`,
   :pull:`1653`)
 * Fixed incorrect mapping of requested parameters names when using the ``get_psm3``
   function. Also fixed the random reordering of the dataframe columns.
@@ -54,18 +50,16 @@ Bug fixes
   the time index subset is now selected with ``nearest`` instead of ``before``
   and ``after`` for consistency with ``cftime>=1.6.0``. (:issue:`1609`, :pull:`1656`)
 * :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` no longer raises
-  a scipy deprecation warning (and is slightly more accurate) (:issue:`1644`, :pull:`1674`)
-
+  a scipy deprecation warning (and is slightly more accurate). (:issue:`1644`, :pull:`1674`)
 
 Testing
 ~~~~~~~
 * Added Python 3.11 to test suite. (:pull:`1582`)
 * Updated PSM3 test data files to match the new version 3.2.2 data returned
-  by the PSM3 API (:issue:`1591`, :pull:`1652`)
+  by the PSM3 API. (:issue:`1591`, :pull:`1652`)
 * Testing :py:func:`pvlib.pvsystem.singlediode`, :py:func:`pvlib.pvsystem.v_from_i`,
   and :py:func:`pvlib.pvsystem.i_from_v` against precisely generated IV curve data.
   (:issue:`411`, :pull:`1573`)
-
 
 Documentation
 ~~~~~~~~~~~~~
@@ -73,11 +67,11 @@ Documentation
 
 Benchmarking
 ~~~~~~~~~~~~~
-* Added benchmarks for :py:mod:`pvlib.bifacial.infinite_sheds` (:pull:`1627`)
+* Added benchmarks for :py:mod:`pvlib.bifacial.infinite_sheds`. (:pull:`1627`)
 
 Requirements
 ~~~~~~~~~~~~
-* Removed unnecessary ``nose`` test requirement (:pull:`1637`)
+* Removed unnecessary ``nose`` test requirement. (:pull:`1637`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -95,3 +89,5 @@ Contributors
 * Areeba Turabi (:ghuser:`aturabi`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Taos Transue (:ghuser:`reepoi`)
+* Tim Townsend
+* Tom Arjannikov (:ghuser:`Arjannikov`)

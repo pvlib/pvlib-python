@@ -1896,7 +1896,7 @@ def format_args(func):
 
 def match_type_scalar_to_numeric(a, ref):
     if isinstance(ref, (np.ndarray, pd.Series)):
-        a = np.full(ref.shape[0], a, dtype=ref.dtype)
+        a = np.full(ref.shape[0], a, dtype=type(a))
         if isinstance(ref, pd.Series):
             a = pd.Series(data=a, index=ref.index)
     return a
@@ -2110,6 +2110,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     return IL, I0, Rs, Rsh, nNsVth
 
 
+@format_args
 def calcparams_cec(effective_irradiance, temp_cell,
                    alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
                    Adjust, EgRef=1.121, dEgdT=-0.0002677,
@@ -2226,6 +2227,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
                              irrad_ref=irrad_ref, temp_ref=temp_ref)
 
 
+@format_args
 def calcparams_pvsyst(effective_irradiance, temp_cell,
                       alpha_sc, gamma_ref, mu_gamma,
                       I_L_ref, I_o_ref,

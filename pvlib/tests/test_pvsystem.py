@@ -746,12 +746,14 @@ def test_Array__infer_cell_type():
 
 def test_calcparams_desoto(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
-    effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
-    temp_cell = pd.Series([25, 25, 50], index=times)
+    df = pd.DataFrame({
+        'effective_irradiance': [0.0, 800.0, 800.0],
+        'temp_cell': [25, 25, 50]
+    }, index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                  effective_irradiance,
-                                  temp_cell,
+                                  df['effective_irradiance'],
+                                  df['temp_cell'],
                                   alpha_sc=cec_module_params['alpha_sc'],
                                   a_ref=cec_module_params['a_ref'],
                                   I_L_ref=cec_module_params['I_L_ref'],
@@ -765,21 +767,32 @@ def test_calcparams_desoto(cec_module_params):
                         check_less_precise=3)
     assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
                         check_less_precise=3)
-    assert_allclose(Rs, 0.094)
+    assert_series_equal(Rs, pd.Series([0.094, 0.094, 0.094], index=times),
+                        check_less_precise=3)
     assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
                         check_less_precise=3)
     assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
                         check_less_precise=3)
 
+    pdSeries_names = set(df.columns)
+
+    assert IL.name not in pdSeries_names
+    assert I0.name not in pdSeries_names
+    assert Rs.name not in pdSeries_names
+    assert Rsh.name not in pdSeries_names
+    assert nNsVth.name not in pdSeries_names
+
 
 def test_calcparams_cec(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
-    effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
-    temp_cell = pd.Series([25, 25, 50], index=times)
+    df = pd.DataFrame({
+        'effective_irradiance': [0.0, 800.0, 800.0],
+        'temp_cell': [25, 25, 50]
+    }, index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_cec(
-                                  effective_irradiance,
-                                  temp_cell,
+                                  df['effective_irradiance'],
+                                  df['temp_cell'],
                                   alpha_sc=cec_module_params['alpha_sc'],
                                   a_ref=cec_module_params['a_ref'],
                                   I_L_ref=cec_module_params['I_L_ref'],
@@ -794,11 +807,20 @@ def test_calcparams_cec(cec_module_params):
                         check_less_precise=3)
     assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
                         check_less_precise=3)
-    assert_allclose(Rs, 0.094)
+    assert_series_equal(Rs, pd.Series([0.094, 0.094, 0.094], index=times),
+                        check_less_precise=3)
     assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
                         check_less_precise=3)
     assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
                         check_less_precise=3)
+
+    pdSeries_names = set(df.columns)
+
+    assert IL.name not in pdSeries_names
+    assert I0.name not in pdSeries_names
+    assert Rs.name not in pdSeries_names
+    assert Rsh.name not in pdSeries_names
+    assert nNsVth.name not in pdSeries_names
 
 
 def test_calcparams_cec_extra_params_propagation(cec_module_params, mocker):
@@ -840,12 +862,14 @@ def test_calcparams_cec_extra_params_propagation(cec_module_params, mocker):
 
 def test_calcparams_pvsyst(pvsyst_module_params):
     times = pd.date_range(start='2015-01-01', periods=2, freq='12H')
-    effective_irradiance = pd.Series([0.0, 800.0], index=times)
-    temp_cell = pd.Series([25, 50], index=times)
+    df = pd.DataFrame({
+        'effective_irradiance': [0.0, 800.0],
+        'temp_cell': [25, 50]
+    }, index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
-        effective_irradiance,
-        temp_cell,
+        df['effective_irradiance'],
+        df['temp_cell'],
         alpha_sc=pvsyst_module_params['alpha_sc'],
         gamma_ref=pvsyst_module_params['gamma_ref'],
         mu_gamma=pvsyst_module_params['mu_gamma'],
@@ -861,11 +885,20 @@ def test_calcparams_pvsyst(pvsyst_module_params):
         IL.round(decimals=3), pd.Series([0.0, 4.8200], index=times))
     assert_series_equal(
         I0.round(decimals=3), pd.Series([0.0, 1.47e-7], index=times))
-    assert_allclose(Rs, 0.500)
+    assert_series_equal(
+        Rs.round(decimals=3), pd.Series([0.500, 0.500], index=times))
     assert_series_equal(
         Rsh.round(decimals=3), pd.Series([1000.0, 305.757], index=times))
     assert_series_equal(
         nNsVth.round(decimals=4), pd.Series([1.6186, 1.7961], index=times))
+
+    pdSeries_names = set(df.columns)
+
+    assert IL.name not in pdSeries_names
+    assert I0.name not in pdSeries_names
+    assert Rs.name not in pdSeries_names
+    assert Rsh.name not in pdSeries_names
+    assert nNsVth.name not in pdSeries_names
 
 
 def test_PVSystem_calcparams_desoto(cec_module_params, mocker):

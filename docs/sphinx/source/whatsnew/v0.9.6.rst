@@ -1,0 +1,38 @@
+.. _whatsnew_0960:
+
+
+v0.9.6 (Anticipated June 2023)
+------------------------------
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Benchmarking
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+

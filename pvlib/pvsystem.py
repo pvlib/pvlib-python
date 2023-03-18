@@ -1894,6 +1894,14 @@ def format_args(func):
     return f
 
 
+def match_type_scalar_to_numeric(a, ref):
+    if isinstance(ref, (np.ndarray, pd.Series)):
+        a = np.full(ref.shape[0], a, dtype=ref.dtype)
+        if isinstance(ref, pd.Series):
+            a = pd.Series(data=a, index=ref.index)
+    return a
+
+
 # @format_return_values([
     # ('numeric', 'photocurrent'),
     # ('numeric', 'saturation_current'),
@@ -1973,7 +1981,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     saturation_current : numeric
         Diode saturation curent in amperes
 
-    resistance_series : float
+    resistance_series : numeric
         Series resistance in ohms
 
     resistance_shunt : numeric
@@ -2096,7 +2104,8 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # use errstate to silence divide by warning
     with np.errstate(divide='ignore'):
         Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
-    Rs = R_s
+
+    Rs = match_type_scalar_to_numeric(R_s, temp_cell)
 
     return IL, I0, Rs, Rsh, nNsVth
 
@@ -2177,7 +2186,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
     saturation_current : numeric
         Diode saturation curent in amperes
 
-    resistance_series : float
+    resistance_series : numeric
         Series resistance in ohms
 
     resistance_shunt : numeric
@@ -2294,7 +2303,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     saturation_current : numeric
         Diode saturation current in amperes
 
-    resistance_series : float
+    resistance_series : numeric
         Series resistance in ohms
 
     resistance_shunt : numeric
@@ -2351,7 +2360,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
         np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
 
-    Rs = R_s
+    Rs = match_type_scalar_to_numeric(R_s, temp_cell)
 
     return IL, I0, Rs, Rsh, nNsVth
 

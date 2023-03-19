@@ -499,7 +499,7 @@ def match_type_array_like(x, type_of):
         return pd.Series(data=x)
 
 
-def match_type_numeric(x, type_of, match_size=True):
+def match_type_numeric(x, type_of, match_shape=True):
     """
     Convert a numeric-type value to the numeric Python type of another. The
     dtype of the converted value is preserved.
@@ -512,9 +512,12 @@ def match_type_numeric(x, type_of, match_size=True):
     type_of: numeric
         The value with tye type to convert to.
 
-    match_size: bool, default True
-        If ``x`` is a scalar and ``type_of`` is an array-like, return an
-        array-like of ``type_of.size`` that contains ``x`` repeated.
+    match_shape: bool, default True
+        Let ``x = args[i]`` for some ``i``.
+        If ``x`` is a scalar and ``args[0]`` is an array-like, convert ``x`` to
+        an array-like with shape ``args[0].shape`` if
+        ``type(args[0]) is np.ndarray`` or with shape ``(args[0].size,)`` if
+        ``type(args[0]) is pd.Series``.
 
     Returns
     -------
@@ -536,14 +539,14 @@ def match_type_numeric(x, type_of, match_size=True):
         return _scalar_out(x)
     if type_of_is_array_like:
         if isinstance(type_of, np.ndarray):
-            shape = type_of.shape if match_size else 1
+            shape = type_of.shape if match_shape else 1
             return np.full(shape, x, dtype=type(x))
-        index = type_of.index if match_size else [type_of.index[0]]
+        index = type_of.index if match_shape else [type_of.index[0]]
         return pd.Series(data=x, index=index)
     return x  # x and type_of are both scalars
 
 
-def match_type_all_numeric(*args, match_size=True):
+def match_type_all_numeric(*args, match_shape=True):
     """
     Convert all numeric-type values to the Python type of the first numeric
     value passed. The dtype of the converted values is preserved. See
@@ -554,9 +557,12 @@ def match_type_all_numeric(*args, match_size=True):
     args: tuple(numeric)
         A tuple of numeric-type values.
 
-    match_size: bool, default True
-        If ``x`` is a scalar and ``type_of`` is an array-like, return an
-        array-like of ``type_of.size`` that contains ``x`` repeated.
+    match_shape: bool, default True
+        Let ``x = args[i]`` for some ``i``.
+        If ``x`` is a scalar and ``args[0]`` is an array-like, convert ``x`` to
+        an array-like with shape ``args[0].shape`` if
+        ``type(args[0]) is np.ndarray`` or with shape ``(args[0].size,)`` if
+        ``type(args[0]) is pd.Series``.
 
     Returns
     -------
@@ -564,7 +570,7 @@ def match_type_all_numeric(*args, match_size=True):
         All of the passed values converted to the numeric Python type of the
         first value passed.
     """
-    return args[0], *(match_type_numeric(x, args[0], match_size=match_size)
+    return args[0], *(match_type_numeric(x, args[0], match_shape=match_shape)
                       for x in args[1:])
 
 

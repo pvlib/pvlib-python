@@ -156,7 +156,7 @@ def test_match_type_numeric_scalar_to_scalar(x, type_of, content_equal):
     assert content_equal(x, x_matched)
 
 
-@pytest.mark.parametrize('x, type_of, match_size, content_equal', [
+@pytest.mark.parametrize('x, type_of, match_shape, content_equal', [
     # scalar to array with shape (N,)
     (1, np.array([1]), True, lambda a, b: a == b.item()),
     (1, np.array([1, 2]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=int), b)),
@@ -187,8 +187,8 @@ def test_match_type_numeric_scalar_to_scalar(x, type_of, content_equal):
     (1, np.array([[1], [1]]), False, lambda a, b: a == b.item()),
     (1, np.array([[[1], [1]], [[1], [1]]]), False, lambda a, b: a == b.item())
 ])
-def test_match_type_numeric_scalar_to_array_like(x, type_of, match_size, content_equal):
-    x_matched = tools.match_type_numeric(x, type_of, match_size=match_size)
+def test_match_type_numeric_scalar_to_array_like(x, type_of, match_shape, content_equal):
+    x_matched = tools.match_type_numeric(x, type_of, match_shape=match_shape)
 
     assert type(x_matched) is type(type_of)
     assert content_equal(x, x_matched)
@@ -230,17 +230,17 @@ def test_match_type_all_numeric(args, expected_type):
     assert all(map(expected_type, tools.match_type_all_numeric(*args)))
 
 
-@pytest.mark.parametrize('args, match_size', [
+@pytest.mark.parametrize('args, match_shape', [
     ((np.array([1, 2]), 1), True),
     ((pd.Series([1, 2]), 1), True),
     ((np.array([1, 2]), 1), False),
     ((pd.Series([1, 2]), 1), False)
 ])
-def test_match_type_all_numeric_match_size(args, match_size):
-    first, second = tools.match_type_all_numeric(*args, match_size=match_size)
+def test_match_type_all_numeric_match_size(args, match_shape):
+    first, second = tools.match_type_all_numeric(*args, match_shape=match_shape)
 
     assert type(first) is type(second)
-    if match_size:
+    if match_shape:
         assert first.size == second.size
     else:
         assert second.size == 1

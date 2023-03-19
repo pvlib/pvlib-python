@@ -469,3 +469,85 @@ def _first_order_centered_difference(f, x0, dx=DX, args=()):
     # removal in scipy 1.12.0
     df = f(x0+dx, *args) - f(x0-dx, *args)
     return df / 2 / dx
+
+
+def match_type_array_like(x, type_of):
+    """
+    Convert an array-like value to the Python type of another.
+
+    The dtype of the converted value is preserved.
+
+    Parameters
+    ----------
+    x: numeric
+        The value whose Python type will be converted.
+
+    type_of: numeric
+        The value thie the Python type that ``x`` will be converted to.
+
+    Returns
+    -------
+        The vlaue of ``x`` now stroed in the Python type of ``type_of``.
+    """
+    if type(x) is type(type_of):
+        return x
+    if isinstance(type_of, np.ndarray):
+        return x.to_numpy()
+    try:
+        return pd.Series(data=x, index=type_of.index)
+    except ValueError:  # data and index length do not match
+        return pd.Series(data=x)
+
+
+def match_type_numeric(x, type_of, match_size=True):
+    """
+    Convert a numeric-type value to the Python type of another.
+
+    The dtype of the converted value is preserved.
+
+    Parameters
+    ----------
+    x: numeric
+        The value whose Python type will be converted.
+
+    type_of: numeric
+        The value with the Python type that ``x`` will be converted to.
+
+    match_size: bool
+        If ``x`` is a scalar and ``type_of`` is an array-like, return an
+        array-like of ``type_of.size`` that contains ``x`` repeated.
+
+    Returns
+    -------
+    numeric
+        The value of ``x`` now stored in the Python type of ``type_of``.
+    """
+    a_is_array_like = isinstance(x, (np.ndarray, pd.Series))
+    type_of_is_array_like = isinstance(type_of, (np.ndarray, pd.Series))
+    if a_is_array_like and type_of_is_array_like:
+        return match_type_array_like(x, type_of)
+    if a_is_array_like:
+        return _scalar_out(x)
+    if type_of_is_array_like:
+        if isinstance(type_of, np.ndarray):
+            size = type_of.size if match_size else 1
+            return np.full(size, x, dtype=type(x))
+        index = type_of.index if match_size else [type_of.index[0]]
+        return pd.Series(data=x, index=index)
+    return x  # x and type_of are both scalars
+
+
+def match_type_all_numeric(*args):
+    """
+    Convert all numeric-type values to the Python type of the first numeric
+    value passed.
+
+    The dtype of the converted values is preserved.
+
+    Returns
+    -------
+    tuple(numeric)
+        All of the passed values now stored in the Python type of the first
+        value passed.
+    """
+    return args[0], *(match_type_numeric(x, args[0]) for x in args[1:])

@@ -1,7 +1,9 @@
 import pytest
+from .conftest import assert_series_equal
 
 from pvlib import tools
 import numpy as np
+import pandas as pd
 
 
 @pytest.mark.parametrize('keys, input_dict, expected', [
@@ -95,3 +97,109 @@ def test_degrees_to_index_1():
     'latitude' or 'longitude' is passed."""
     with pytest.raises(IndexError):  # invalid value for coordinate argument
         tools._degrees_to_index(degrees=22.0, coordinate='width')
+
+
+def get_match_type_array_like_test_cases():
+    return [
+        # identity
+        (np.array([1]), np.array([1]), lambda a, b: np.array_equal(a, b)),
+        (np.array([1]), np.array([1.]), lambda a, b: np.array_equal(a, b)),
+        (np.array([1.]), np.array([1]), lambda a, b: np.array_equal(a, b)),
+        (np.array([1.]), np.array([1.]), lambda a, b: np.array_equal(a, b)),
+        (pd.Series([1]), pd.Series([1]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        (pd.Series([1]), pd.Series([1.]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        (pd.Series([1.]), pd.Series([1]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        (pd.Series([1.]), pd.Series([1.]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        # np.ndarray to pd.Series
+        (np.array([1]), pd.Series([1]), lambda a, b: np.array_equal(a, b.to_numpy())),
+        (np.array([1]), pd.Series([1.]), lambda a, b: np.array_equal(a, b.to_numpy())),
+        (np.array([1.]), pd.Series([1]), lambda a, b: np.array_equal(a, b.to_numpy())),
+        (np.array([1.]), pd.Series([1.]), lambda a, b: np.array_equal(a, b.to_numpy())),
+        # pd.Series to np.ndarray
+        (pd.Series([1]), np.array([1]), lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1]), np.array([1.]), lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1.]), np.array([1]), lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1.]), np.array([1.]), lambda a, b: np.array_equal(a.to_numpy(), b)),
+        # x shorter than type_of
+        (np.array([1]), np.array([1, 2]), lambda a, b: np.array_equal(a, b)),
+        (np.array([1]), pd.Series([1, 2]), lambda a, b: np.array_equal(a, b.to_numpy())),
+        (pd.Series([1]), np.array([1, 2]), lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1]), pd.Series([1, 2]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        # x longer than type_of
+        (np.array([1, 2]), np.array([1]), lambda a, b: np.array_equal(a, b)),
+        (np.array([1, 2]), pd.Series([1]), lambda a, b: np.array_equal(a, b.to_numpy())),
+        (pd.Series([1, 2]), np.array([1]), lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1, 2]), pd.Series([1]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy()))
+    ]
+
+
+@pytest.mark.parametrize('x, type_of, content_equal', get_match_type_array_like_test_cases())
+def test_match_type_array_like(x, type_of, content_equal):
+    x_matched = tools.match_type_array_like(x, type_of)
+
+    assert type(x_matched) is type(type_of)
+    assert content_equal(x, x_matched)
+
+
+@pytest.mark.parametrize('x, type_of, content_equal', [
+    (1, 1, lambda a, b: a == b),
+    (1., 1., lambda a, b: a == b),
+    ('numpy', 'numpy', lambda a, b: a == b)
+])
+def test_match_type_numeric_scalar_to_scalar(x, type_of, content_equal):
+    x_matched = tools.match_type_numeric(x, type_of)
+
+    assert type(x) is type(x_matched)
+    assert content_equal(x, x_matched)
+
+
+@pytest.mark.parametrize('x, type_of, match_size, content_equal', [
+    (1, np.array([1]), True, lambda a, b: a == b.item()),
+    (1, np.array([1, 2]), True, lambda a, b: np.array_equal([a, a], b)),
+    (1, np.array([1, 2]), False, lambda a, b: a == b.item()),
+    (1, np.array([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
+    (1, pd.Series([1]), True, lambda a, b: a == b.item()),
+    (1, pd.Series([1, 2]), True, lambda a, b: np.array_equal([a, a], b)),
+    (1, pd.Series([1., 2.]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=np.float64), b)),
+    (1, pd.Series([1, 2]), False, lambda a, b: a == b.item()),
+    (1, pd.Series([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
+    (1., np.array([1]), True, lambda a, b: a == b.item()),
+    (1., np.array([1, 2]), True, lambda a, b: np.array_equal([a, a], b)),
+    (1., np.array([1, 2]), False, lambda a, b: a == b.item()),
+    (1., np.array([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
+    (1., pd.Series([1]), True, lambda a, b: a == b.item()),
+    (1., pd.Series([1, 2]), True, lambda a, b: np.array_equal([a, a], b)),
+    (1., pd.Series([1., 2.]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=np.float64), b)),
+    (1., pd.Series([1, 2]), False, lambda a, b: a == b.item()),
+    (1., pd.Series([1., 2.]), False, lambda a, b: np.float64(a) == b.item())
+])
+def test_match_type_numeric_scalar_to_array_like(x, type_of, match_size, content_equal):
+    x_matched = tools.match_type_numeric(x, type_of, match_size=match_size)
+
+    assert type(x_matched) is type(type_of)
+    assert content_equal(x, x_matched)
+
+
+@pytest.mark.parametrize('x, type_of, content_equal', [
+    (np.array([1]), 1, lambda a, b: a.item() == b),
+    (np.array([1.]), 1, lambda a, b: a.item() == b),
+    (np.array([1]), 1., lambda a, b: a.item() == b),
+    (np.array([1.]), 1., lambda a, b: a.item() == b),
+    (pd.Series([1]), 1, lambda a, b: a.item() == b),
+    (pd.Series([1.]), 1, lambda a, b: a.item() == b),
+    (pd.Series([1]), 1., lambda a, b: a.item() == b),
+    (pd.Series([1.]), 1., lambda a, b: a.item() == b)
+])
+def test_match_type_numeric_array_like_to_scalar(x, type_of, content_equal):
+    x_matched = tools.match_type_numeric(x, type_of)
+
+    assert type(x.item()) is type(x_matched)
+    assert content_equal(x, x_matched)
+
+
+@pytest.mark.parametrize('x, type_of, content_equal', get_match_type_array_like_test_cases())
+def test_match_type_numeric_array_like_to_array_like(x, type_of, content_equal):
+    x_matched = tools.match_type_numeric(x, type_of)
+
+    assert type(x_matched) is type(type_of)
+    assert content_equal(x, x_matched)

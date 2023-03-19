@@ -21,6 +21,7 @@ from pvlib._deprecation import deprecated
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
 from pvlib.tools import _build_kwargs, _build_args
+import pvlib.tools as tools
 
 
 # a dict of required parameter names for each DC power model
@@ -1894,14 +1895,6 @@ def format_args(func):
     return f
 
 
-def match_type_scalar_to_numeric(a, ref):
-    if isinstance(ref, (np.ndarray, pd.Series)):
-        a = np.full(ref.shape[0], a, dtype=type(a))
-        if isinstance(ref, pd.Series):
-            a = pd.Series(data=a, index=ref.index)
-    return a
-
-
 # @format_return_values([
     # ('numeric', 'photocurrent'),
     # ('numeric', 'saturation_current'),
@@ -2105,12 +2098,11 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     with np.errstate(divide='ignore'):
         Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
 
-    Rs = match_type_scalar_to_numeric(R_s, temp_cell)
+    Rs = R_s
 
-    return IL, I0, Rs, Rsh, nNsVth
+    return tools.match_type_all_numeric(IL, I0, Rs, Rsh, nNsVth)
 
 
-@format_args
 def calcparams_cec(effective_irradiance, temp_cell,
                    alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
                    Adjust, EgRef=1.121, dEgdT=-0.0002677,
@@ -2362,9 +2354,9 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     Rsh = Rsh_base + (R_sh_0 - Rsh_base) * \
         np.exp(-R_sh_exp * effective_irradiance / irrad_ref)
 
-    Rs = match_type_scalar_to_numeric(R_s, temp_cell)
+    Rs = R_s
 
-    return IL, I0, Rs, Rsh, nNsVth
+    return tools.match_type_all_numeric(IL, I0, Rs, Rsh, nNsVth)
 
 
 def retrieve_sam(name=None, path=None):

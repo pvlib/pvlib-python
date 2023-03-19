@@ -9,6 +9,7 @@ from pvlib.bifacial import utils
 from pvlib.shading import masking_angle
 from pvlib.irradiance import beam_component, aoi, haydavies
 
+
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
                          pitch, max_rows=10, npoints=100, vectorize=False):
     """
@@ -163,7 +164,7 @@ def _poa_sky_diffuse_pv(f_x, dhi, vf_shade_sky_integ, vf_noshade_sky_integ):
     Parameters
     ----------
     f_x : numeric
-        Fraction of row slant height from the bottom that is shaded from 
+        Fraction of row slant height from the bottom that is shaded from
         direct irradiance. [unitless]
     dhi : numeric
         Diffuse horizontal irradiance (DHI). [W/m^2]

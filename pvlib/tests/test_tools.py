@@ -157,6 +157,7 @@ def test_match_type_numeric_scalar_to_scalar(x, type_of, content_equal):
 
 
 @pytest.mark.parametrize('x, type_of, match_size, content_equal', [
+    # scalar to array with shape (N,)
     (1, np.array([1]), True, lambda a, b: a == b.item()),
     (1, np.array([1, 2]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=int), b)),
     (1, np.array([1, 2]), False, lambda a, b: a == b.item()),
@@ -174,7 +175,17 @@ def test_match_type_numeric_scalar_to_scalar(x, type_of, content_equal):
     (1., pd.Series([1, 2]), True, lambda a, b: np.array_equal([a, a], b)),
     (1., pd.Series([1., 2.]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=np.float64), b)),
     (1., pd.Series([1, 2]), False, lambda a, b: a == b.item()),
-    (1., pd.Series([1., 2.]), False, lambda a, b: np.float64(a) == b.item())
+    (1., pd.Series([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
+    # scalar to np.ndarray with any shape. this does not work for pd.Series
+    # because they only have shape (N,)
+    (1, np.array([[1]]), True, lambda a, b: np.array_equal([[a]], b)),
+    (1, np.array([[1, 1]]), True, lambda a, b: np.array_equal([[a, a]], b)),
+    (1, np.array([[1], [1]]), True, lambda a, b: np.array_equal([[a], [a]], b)),
+    (1, np.array([[[1], [1]], [[1], [1]]]), True, lambda a, b: np.array_equal([[[a], [a]], [[a], [a]]], b)),
+    (1, np.array([[1]]), False, lambda a, b: a == b.item()),
+    (1, np.array([[1, 1]]), False, lambda a, b: a == b.item()),
+    (1, np.array([[1], [1]]), False, lambda a, b: a == b.item()),
+    (1, np.array([[[1], [1]], [[1], [1]]]), False, lambda a, b: a == b.item())
 ])
 def test_match_type_numeric_scalar_to_array_like(x, type_of, match_size, content_equal):
     x_matched = tools.match_type_numeric(x, type_of, match_size=match_size)

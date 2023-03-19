@@ -536,8 +536,8 @@ def match_type_numeric(x, type_of, match_size=True):
         return _scalar_out(x)
     if type_of_is_array_like:
         if isinstance(type_of, np.ndarray):
-            size = type_of.size if match_size else 1
-            return np.full(size, x, dtype=type(x))
+            shape = type_of.shape if match_size else 1
+            return np.full(shape, x, dtype=type(x))
         index = type_of.index if match_size else [type_of.index[0]]
         return pd.Series(data=x, index=index)
     return x  # x and type_of are both scalars

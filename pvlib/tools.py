@@ -473,21 +473,20 @@ def _first_order_centered_difference(f, x0, dx=DX, args=()):
 
 def match_type_array_like(x, type_of):
     """
-    Convert an array-like value to the Python type of another.
-
-    The dtype of the converted value is preserved.
+    Convert an array-like value to the array-like Python type of another. The
+    dtype of the converted value is preserved.
 
     Parameters
     ----------
-    x: numeric
-        The value whose Python type will be converted.
+    x: array-like
+        The value whose type will be converted.
 
-    type_of: numeric
-        The value thie the Python type that ``x`` will be converted to.
+    type_of: array-like
+        The value with the type to convert to.
 
     Returns
     -------
-        The vlaue of ``x`` now stroed in the Python type of ``type_of``.
+        ``x`` converted to the array-like Python type of ``type_of``.
     """
     if type(x) is type(type_of):
         return x
@@ -495,32 +494,38 @@ def match_type_array_like(x, type_of):
         return x.to_numpy()
     try:
         return pd.Series(data=x, index=type_of.index)
-    except ValueError:  # data and index length do not match
+    except ValueError:  # data and index have different lengths
         return pd.Series(data=x)
 
 
 def match_type_numeric(x, type_of, match_size=True):
     """
-    Convert a numeric-type value to the Python type of another.
-
-    The dtype of the converted value is preserved.
+    Convert a numeric-type value to the numeric Python type of another. The
+    dtype of the converted value is preserved.
 
     Parameters
     ----------
     x: numeric
-        The value whose Python type will be converted.
+        The value whose type will be converted.
 
     type_of: numeric
-        The value with the Python type that ``x`` will be converted to.
+        The value with tye type to convert to.
 
-    match_size: bool
+    match_size: bool, default True
         If ``x`` is a scalar and ``type_of`` is an array-like, return an
         array-like of ``type_of.size`` that contains ``x`` repeated.
 
     Returns
     -------
     numeric
-        The value of ``x`` now stored in the Python type of ``type_of``.
+        ``x`` converted to the numeric Python type of ``type_of``.
+
+    Notes
+    -----
+        If ``x`` and ``type_of`` are both scalars, no type conversion is done
+        because that could change the dtype of ``x``. For example, if
+        ``type(x) is int`` and ``type(type_of)`` is float, the return type is
+        still ``int``.
     """
     a_is_array_like = isinstance(x, (np.ndarray, pd.Series))
     type_of_is_array_like = isinstance(type_of, (np.ndarray, pd.Series))
@@ -537,17 +542,26 @@ def match_type_numeric(x, type_of, match_size=True):
     return x  # x and type_of are both scalars
 
 
-def match_type_all_numeric(*args):
+def match_type_all_numeric(*args, match_size=True):
     """
     Convert all numeric-type values to the Python type of the first numeric
-    value passed.
+    value passed. The dtype of the converted values is preserved. See
+    :py:func:`pvlib.tools.match_type_numeric` for more details.
 
-    The dtype of the converted values is preserved.
+    Parameters
+    ----------
+    args: tuple(numeric)
+        A tuple of numeric-type values.
+
+    match_size: bool, default True
+        If ``x`` is a scalar and ``type_of`` is an array-like, return an
+        array-like of ``type_of.size`` that contains ``x`` repeated.
 
     Returns
     -------
     tuple(numeric)
-        All of the passed values now stored in the Python type of the first
-        value passed.
+        All of the passed values converted to the numeric Python type of the
+        first value passed.
     """
-    return args[0], *(match_type_numeric(x, args[0]) for x in args[1:])
+    return args[0], *(match_type_numeric(x, args[0], match_size=match_size)
+                      for x in args[1:])

@@ -133,7 +133,9 @@ def get_match_type_array_like_test_cases():
     ]
 
 
-@pytest.mark.parametrize('x, type_of, content_equal', get_match_type_array_like_test_cases())
+@pytest.mark.parametrize('x, type_of, content_equal', [
+    *get_match_type_array_like_test_cases()
+])
 def test_match_type_array_like(x, type_of, content_equal):
     x_matched = tools.match_type_array_like(x, type_of)
 
@@ -143,8 +145,9 @@ def test_match_type_array_like(x, type_of, content_equal):
 
 @pytest.mark.parametrize('x, type_of, content_equal', [
     (1, 1, lambda a, b: a == b),
-    (1., 1., lambda a, b: a == b),
-    ('numpy', 'numpy', lambda a, b: a == b)
+    (1, 1., lambda a, b: a == b),
+    (1., 1, lambda a, b: a == b),
+    (1., 1., lambda a, b: a == b)
 ])
 def test_match_type_numeric_scalar_to_scalar(x, type_of, content_equal):
     x_matched = tools.match_type_numeric(x, type_of)
@@ -155,11 +158,11 @@ def test_match_type_numeric_scalar_to_scalar(x, type_of, content_equal):
 
 @pytest.mark.parametrize('x, type_of, match_size, content_equal', [
     (1, np.array([1]), True, lambda a, b: a == b.item()),
-    (1, np.array([1, 2]), True, lambda a, b: np.array_equal([a, a], b)),
+    (1, np.array([1, 2]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=int), b)),
     (1, np.array([1, 2]), False, lambda a, b: a == b.item()),
     (1, np.array([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
     (1, pd.Series([1]), True, lambda a, b: a == b.item()),
-    (1, pd.Series([1, 2]), True, lambda a, b: np.array_equal([a, a], b)),
+    (1, pd.Series([1, 2]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=int), b)),
     (1, pd.Series([1., 2.]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=np.float64), b)),
     (1, pd.Series([1, 2]), False, lambda a, b: a == b.item()),
     (1, pd.Series([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
@@ -197,9 +200,36 @@ def test_match_type_numeric_array_like_to_scalar(x, type_of, content_equal):
     assert content_equal(x, x_matched)
 
 
-@pytest.mark.parametrize('x, type_of, content_equal', get_match_type_array_like_test_cases())
+@pytest.mark.parametrize('x, type_of, content_equal', [
+    *get_match_type_array_like_test_cases()
+])
 def test_match_type_numeric_array_like_to_array_like(x, type_of, content_equal):
     x_matched = tools.match_type_numeric(x, type_of)
 
     assert type(x_matched) is type(type_of)
     assert content_equal(x, x_matched)
+
+
+@pytest.mark.parametrize('args, expected_type', [
+    ((1, np.array([1]), pd.Series([1])), np.isscalar),
+    ((np.array([1]), 1, np.array([1]), pd.Series([1])), lambda a: isinstance(a, np.ndarray)),
+    ((pd.Series([1]), 1, np.array([1]), pd.Series([1])), lambda a: isinstance(a, pd.Series)),
+])
+def test_match_type_all_numeric(args, expected_type):
+    assert all(map(expected_type, tools.match_type_all_numeric(*args)))
+
+
+@pytest.mark.parametrize('args, match_size', [
+    ((np.array([1, 2]), 1), True),
+    ((pd.Series([1, 2]), 1), True),
+    ((np.array([1, 2]), 1), False),
+    ((pd.Series([1, 2]), 1), False)
+])
+def test_match_type_all_numeric_match_size(args, match_size):
+    first, second = tools.match_type_all_numeric(*args, match_size=match_size)
+
+    assert type(first) is type(second)
+    if match_size:
+        assert first.size == second.size
+    else:
+        assert second.size == 1

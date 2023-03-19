@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytz
 import warnings
+import functools
 
 
 def cosd(angle):
@@ -565,3 +566,28 @@ def match_type_all_numeric(*args, match_size=True):
     """
     return args[0], *(match_type_numeric(x, args[0], match_size=match_size)
                       for x in args[1:])
+
+
+def args_clear_pdSeries_name(func):
+    """
+    Decorator for functions that take dict-like, numeric, or array-like
+    arguments.
+
+    If a pd.Series is passed to the function, pd.Series.name is cleared
+    using pd.Series.rename. This does not rename the original pd.Series
+    passed, and does not copy its data.
+
+    This still allows the decorated function to name returned pd.Series.
+    """
+    @functools.wraps(func)
+    def f(*args, **kwargs):
+        formatted_args = []
+        for a in args:
+            if isinstance(a, pd.Series):
+                a = a.rename(None)
+            formatted_args.append(a)
+        for k, v in kwargs.items():
+            if isinstance(v, pd.Series):
+                kwargs[k] = v.rename(None)
+        return func(*formatted_args, **kwargs)
+    return f

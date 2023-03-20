@@ -1,7 +1,7 @@
 .. _whatsnew:
 
 **********
-What's New
+resolved issue #1677 : LakshyaDevelops
 **********
 
 These are new features and improvements of note in each release.

@@ -144,12 +144,18 @@ def _vf_row_sky_integ(f_x, surface_tilt, gcr, npoints=100):
     y = 0.5 * (cosd(psi_t_shaded + surface_tilt) + 1)
     # integrate view factors from each point in the discretization. This is an
     # improvement over the algorithm described in [2]
-    vf_shade_sky_integ = np.trapz(y, x, axis=0)
+    vf_shade_sky_integ = np.where(
+        f_x<1e-6,
+        0.5 * (cosd(masking_angle(surface_tilt, gcr, 0.) + surface_tilt) + 1),
+        1 / f_x * np.trapz(y, x, axis=0))
     # unshaded portion
     x = np.linspace(f_x, 1., num=npoints)
     psi_t_unshaded = masking_angle(surface_tilt, gcr, x)
     y = 0.5 * (cosd(psi_t_unshaded + surface_tilt) + 1)
-    vf_noshade_sky_integ = np.trapz(y, x, axis=0)
+    vf_noshade_sky_integ = np.where(
+        (1 - f_x)<1e-6,
+        0.5 * (cosd(surface_tilt) + 1),
+        1 / (1 - f_x) * np.trapz(y, x, axis=0))
     return vf_shade_sky_integ, vf_noshade_sky_integ
 
 

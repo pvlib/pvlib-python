@@ -1,5 +1,4 @@
 import pytest
-from .conftest import assert_series_equal
 
 from pvlib import tools
 import numpy as np
@@ -106,30 +105,50 @@ def get_match_type_array_like_test_cases():
         (np.array([1]), np.array([1.]), lambda a, b: np.array_equal(a, b)),
         (np.array([1.]), np.array([1]), lambda a, b: np.array_equal(a, b)),
         (np.array([1.]), np.array([1.]), lambda a, b: np.array_equal(a, b)),
-        (pd.Series([1]), pd.Series([1]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
-        (pd.Series([1]), pd.Series([1.]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
-        (pd.Series([1.]), pd.Series([1]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
-        (pd.Series([1.]), pd.Series([1.]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        (pd.Series([1]), pd.Series([1]),
+         lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        (pd.Series([1]), pd.Series([1.]),
+         lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        (pd.Series([1.]), pd.Series([1]),
+         lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        (pd.Series([1.]), pd.Series([1.]),
+         lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
         # np.ndarray to pd.Series
-        (np.array([1]), pd.Series([1]), lambda a, b: np.array_equal(a, b.to_numpy())),
-        (np.array([1]), pd.Series([1.]), lambda a, b: np.array_equal(a, b.to_numpy())),
-        (np.array([1.]), pd.Series([1]), lambda a, b: np.array_equal(a, b.to_numpy())),
-        (np.array([1.]), pd.Series([1.]), lambda a, b: np.array_equal(a, b.to_numpy())),
+        (np.array([1]), pd.Series([1]),
+         lambda a, b: np.array_equal(a, b.to_numpy())),
+        (np.array([1]), pd.Series([1.]),
+         lambda a, b: np.array_equal(a, b.to_numpy())),
+        (np.array([1.]), pd.Series([1]),
+         lambda a, b: np.array_equal(a, b.to_numpy())),
+        (np.array([1.]), pd.Series([1.]),
+         lambda a, b: np.array_equal(a, b.to_numpy())),
         # pd.Series to np.ndarray
-        (pd.Series([1]), np.array([1]), lambda a, b: np.array_equal(a.to_numpy(), b)),
-        (pd.Series([1]), np.array([1.]), lambda a, b: np.array_equal(a.to_numpy(), b)),
-        (pd.Series([1.]), np.array([1]), lambda a, b: np.array_equal(a.to_numpy(), b)),
-        (pd.Series([1.]), np.array([1.]), lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1]), np.array([1]),
+         lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1]), np.array([1.]),
+         lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1.]), np.array([1]),
+         lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1.]), np.array([1.]),
+         lambda a, b: np.array_equal(a.to_numpy(), b)),
         # x shorter than type_of
-        (np.array([1]), np.array([1, 2]), lambda a, b: np.array_equal(a, b)),
-        (np.array([1]), pd.Series([1, 2]), lambda a, b: np.array_equal(a, b.to_numpy())),
-        (pd.Series([1]), np.array([1, 2]), lambda a, b: np.array_equal(a.to_numpy(), b)),
-        (pd.Series([1]), pd.Series([1, 2]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
+        (np.array([1]), np.array([1, 2]),
+         lambda a, b: np.array_equal(a, b)),
+        (np.array([1]), pd.Series([1, 2]),
+         lambda a, b: np.array_equal(a, b.to_numpy())),
+        (pd.Series([1]), np.array([1, 2]),
+         lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1]), pd.Series([1, 2]),
+         lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy())),
         # x longer than type_of
-        (np.array([1, 2]), np.array([1]), lambda a, b: np.array_equal(a, b)),
-        (np.array([1, 2]), pd.Series([1]), lambda a, b: np.array_equal(a, b.to_numpy())),
-        (pd.Series([1, 2]), np.array([1]), lambda a, b: np.array_equal(a.to_numpy(), b)),
-        (pd.Series([1, 2]), pd.Series([1]), lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy()))
+        (np.array([1, 2]), np.array([1]),
+         lambda a, b: np.array_equal(a, b)),
+        (np.array([1, 2]), pd.Series([1]),
+         lambda a, b: np.array_equal(a, b.to_numpy())),
+        (pd.Series([1, 2]), np.array([1]),
+         lambda a, b: np.array_equal(a.to_numpy(), b)),
+        (pd.Series([1, 2]), pd.Series([1]),
+         lambda a, b: np.array_equal(a.to_numpy(), b.to_numpy()))
     ]
 
 
@@ -159,12 +178,15 @@ def test_match_type_numeric_scalar_to_scalar(x, type_of, content_equal):
 @pytest.mark.parametrize('x, type_of, match_shape, content_equal', [
     # scalar to array with shape (N,)
     (1, np.array([1]), True, lambda a, b: a == b.item()),
-    (1, np.array([1, 2]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=int), b)),
+    (1, np.array([1, 2]), True,
+     lambda a, b: np.array_equal(np.array([a, a], dtype=int), b)),
     (1, np.array([1, 2]), False, lambda a, b: a == b.item()),
     (1, np.array([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
     (1, pd.Series([1]), True, lambda a, b: a == b.item()),
-    (1, pd.Series([1, 2]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=int), b)),
-    (1, pd.Series([1., 2.]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=np.float64), b)),
+    (1, pd.Series([1, 2]), True,
+     lambda a, b: np.array_equal(np.array([a, a], dtype=int), b)),
+    (1, pd.Series([1., 2.]), True,
+     lambda a, b: np.array_equal(np.array([a, a], dtype=np.float64), b)),
     (1, pd.Series([1, 2]), False, lambda a, b: a == b.item()),
     (1, pd.Series([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
     (1., np.array([1]), True, lambda a, b: a == b.item()),
@@ -173,21 +195,25 @@ def test_match_type_numeric_scalar_to_scalar(x, type_of, content_equal):
     (1., np.array([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
     (1., pd.Series([1]), True, lambda a, b: a == b.item()),
     (1., pd.Series([1, 2]), True, lambda a, b: np.array_equal([a, a], b)),
-    (1., pd.Series([1., 2.]), True, lambda a, b: np.array_equal(np.array([a, a], dtype=np.float64), b)),
+    (1., pd.Series([1., 2.]), True,
+     lambda a, b: np.array_equal(np.array([a, a], dtype=np.float64), b)),
     (1., pd.Series([1, 2]), False, lambda a, b: a == b.item()),
     (1., pd.Series([1., 2.]), False, lambda a, b: np.float64(a) == b.item()),
     # scalar to np.ndarray with any shape. this does not work for pd.Series
     # because they only have shape (N,)
     (1, np.array([[1]]), True, lambda a, b: np.array_equal([[a]], b)),
     (1, np.array([[1, 1]]), True, lambda a, b: np.array_equal([[a, a]], b)),
-    (1, np.array([[1], [1]]), True, lambda a, b: np.array_equal([[a], [a]], b)),
-    (1, np.array([[[1], [1]], [[1], [1]]]), True, lambda a, b: np.array_equal([[[a], [a]], [[a], [a]]], b)),
+    (1, np.array([[1], [1]]), True,
+     lambda a, b: np.array_equal([[a], [a]], b)),
+    (1, np.array([[[1], [1]], [[1], [1]]]), True,
+     lambda a, b: np.array_equal([[[a], [a]], [[a], [a]]], b)),
     (1, np.array([[1]]), False, lambda a, b: a == b.item()),
     (1, np.array([[1, 1]]), False, lambda a, b: a == b.item()),
     (1, np.array([[1], [1]]), False, lambda a, b: a == b.item()),
     (1, np.array([[[1], [1]], [[1], [1]]]), False, lambda a, b: a == b.item())
 ])
-def test_match_type_numeric_scalar_to_array_like(x, type_of, match_shape, content_equal):
+def test_match_type_numeric_scalar_to_array_like(x, type_of, match_shape,
+                                                 content_equal):
     x_matched = tools.match_type_numeric(x, type_of, match_shape=match_shape)
 
     assert type(x_matched) is type(type_of)
@@ -214,7 +240,8 @@ def test_match_type_numeric_array_like_to_scalar(x, type_of, content_equal):
 @pytest.mark.parametrize('x, type_of, content_equal', [
     *get_match_type_array_like_test_cases()
 ])
-def test_match_type_numeric_array_like_to_array_like(x, type_of, content_equal):
+def test_match_type_numeric_array_like_to_array_like(x, type_of,
+                                                     content_equal):
     x_matched = tools.match_type_numeric(x, type_of)
 
     assert type(x_matched) is type(type_of)
@@ -223,8 +250,10 @@ def test_match_type_numeric_array_like_to_array_like(x, type_of, content_equal):
 
 @pytest.mark.parametrize('args, expected_type', [
     ((1, np.array([1]), pd.Series([1])), np.isscalar),
-    ((np.array([1]), 1, np.array([1]), pd.Series([1])), lambda a: isinstance(a, np.ndarray)),
-    ((pd.Series([1]), 1, np.array([1]), pd.Series([1])), lambda a: isinstance(a, pd.Series)),
+    ((np.array([1]), 1, np.array([1]), pd.Series([1])),
+     lambda a: isinstance(a, np.ndarray)),
+    ((pd.Series([1]), 1, np.array([1]), pd.Series([1])),
+     lambda a: isinstance(a, pd.Series))
 ])
 def test_match_type_all_numeric(args, expected_type):
     assert all(map(expected_type, tools.match_type_all_numeric(*args)))
@@ -237,7 +266,8 @@ def test_match_type_all_numeric(args, expected_type):
     ((pd.Series([1, 2]), 1), False)
 ])
 def test_match_type_all_numeric_match_size(args, match_shape):
-    first, second = tools.match_type_all_numeric(*args, match_shape=match_shape)
+    first, second = tools.match_type_all_numeric(*args,
+                                                 match_shape=match_shape)
 
     assert type(first) is type(second)
     if match_shape:

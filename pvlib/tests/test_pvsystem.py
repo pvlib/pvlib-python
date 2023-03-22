@@ -752,16 +752,17 @@ def test_calcparams_desoto(cec_module_params):
     }, index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                  df['effective_irradiance'],
-                                  df['temp_cell'],
-                                  alpha_sc=cec_module_params['alpha_sc'],
-                                  a_ref=cec_module_params['a_ref'],
-                                  I_L_ref=cec_module_params['I_L_ref'],
-                                  I_o_ref=cec_module_params['I_o_ref'],
-                                  R_sh_ref=cec_module_params['R_sh_ref'],
-                                  R_s=cec_module_params['R_s'],
-                                  EgRef=1.121,
-                                  dEgdT=-0.0002677)
+        df['effective_irradiance'],
+        df['temp_cell'],
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
 
     assert_series_equal(IL, pd.Series([0.0, 6.036, 6.096], index=times),
                         check_less_precise=3)
@@ -791,17 +792,18 @@ def test_calcparams_cec(cec_module_params):
     }, index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_cec(
-                                  df['effective_irradiance'],
-                                  df['temp_cell'],
-                                  alpha_sc=cec_module_params['alpha_sc'],
-                                  a_ref=cec_module_params['a_ref'],
-                                  I_L_ref=cec_module_params['I_L_ref'],
-                                  I_o_ref=cec_module_params['I_o_ref'],
-                                  R_sh_ref=cec_module_params['R_sh_ref'],
-                                  R_s=cec_module_params['R_s'],
-                                  Adjust=cec_module_params['Adjust'],
-                                  EgRef=1.121,
-                                  dEgdT=-0.0002677)
+        df['effective_irradiance'],
+        df['temp_cell'],
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        Adjust=cec_module_params['Adjust'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
 
     assert_series_equal(IL, pd.Series([0.0, 6.036, 6.0896], index=times),
                         check_less_precise=3)

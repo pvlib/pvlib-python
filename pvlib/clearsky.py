@@ -644,11 +644,17 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     #     shift = - (samples_per_window // 2)
     # else:
     #     shift = 0
-    shift = -(samples_per_window // 2)
+    # Account for the row # on which the interval is centered not actually
+    # being in row samples_per_window // 2
+    # if samples_per_window is even
+    if samples_per_window % 2 == 0:
+        shift = -(samples_per_window // 2 - 1)
+    else:
+        shift = -(samples_per_window // 2)
     idx = clear_windows.shift(shift)
     # drop rows at the end corresponding to windows past the end of data
     idx = idx.drop(clear_windows.index[1 - samples_per_window:])
-    idx = idx[idx.isna() == False]
+    # idx = idx[idx.isna() == False]
     idx = idx.astype(bool)  # shift changed type to object
     clear_samples = np.unique(H[:, idx])
     return clear_samples

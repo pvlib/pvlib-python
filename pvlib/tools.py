@@ -570,8 +570,12 @@ def match_type_all_numeric(*args, match_shape=True):
         All of the passed values converted to the numeric Python type of the
         first value passed.
     """
-    return args[0], *(match_type_numeric(x, args[0], match_shape=match_shape)
-                      for x in args[1:])
+    type_of = args[0]
+    converted_values = type_of, *(
+        match_type_numeric(x, type_of, match_shape=match_shape)
+        for x in args[1:]
+    )
+    return converted_values
 
 
 def args_clear_pdSeries_name(func):

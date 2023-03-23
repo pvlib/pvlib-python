@@ -133,7 +133,7 @@ def test__vf_row_ground(test_system):
         c = cosd(surface_tilt)
         def p(fx, a, c):
             return np.sqrt(a*a + 2*a*c*fx + fx*fx)
-        return 0.5*(1 - (a*c - fx)/p(fx, a, c))
+        return 0.5*(1 - (a*c + fx)/p(fx, a, c))
 
     expected_vfs = analytic(x, ts['gcr'], ts['surface_tilt'])
     assert np.allclose(vfs, expected_vfs)
@@ -148,11 +148,18 @@ def test__vf_row_ground_integ(test_system):
         f_x, surface_tilt, gcr)
 
     def analytic(fx0, fx1, gcr, surface_tilt):
-        a = 1/gcr
-        c = cosd(surface_tilt)
         def p(fx, a, c):
             return np.sqrt(a*a + 2*a*c*fx + fx*fx)
-        return 0.5*(1 - p(fx1, a, c) + p(fx0, a, c))
+        eps = 1e-6
+        a = 1 / gcr
+        c = cosd(surface_tilt)
+        u = fx1 - fx0
+        with np.errstate(divide='ignore'):
+            result = np.where(np.abs(u)<eps,
+                              0.5 * (1 - (a*c + fx0) / p(fx0, a, c)),
+                              0.5 * (1 - (p(fx1, a, c) - p(fx0, a, c)) / u)
+                              )
+        return result
 
     expected_shade = analytic(0, f_x, gcr, surface_tilt)
     expected_noshade = analytic(f_x, 1., gcr, surface_tilt)

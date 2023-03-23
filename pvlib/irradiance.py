@@ -3117,3 +3117,51 @@ def complete_irradiance(solar_zenith,
                                      'dhi': dhi,
                                      'dni': dni})
     return component_sum_df
+
+
+def pvl_louche(ghi, zenith, datetime_or_doy):
+    """
+    Determine DNI and GHI from GHI using louche model.
+
+    Parameters
+    ----------
+    ghi : Series
+        Global horizontal irradiance.
+
+    zenith : Series
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. Angles must be >=0 and <=180.
+
+    datetime_or_doy : numeric, pandas.DatetimeIndex
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+
+    Returns
+    -------
+    dni : Series
+        The modeled direct normal irradiance.
+
+    dhi : Series
+        The modeled diffused horizontal irradiance
+
+    kt : Series
+        Clearness index
+
+    References
+    -------
+    .. [1] Louche A, Notton G, Poggi P, Simmonnot G. Correlations for direct normal and global horizontal irradiation on French Mediterranean site. Solar Energy 1991;46:261-6
+
+    """
+    # this is the I0 calculation from the reference
+    # SSC uses solar constant = 1366.1
+    I0 = get_extra_radiation(datetime_or_doy)
+
+    I0h = I0*tools.cosd(zenith)
+    Kt = ghi/I0h
+    pd.Series.clip(Kt, 0, inplace=True)
+    kb = -10.627*Kt**5 + 15.307*Kt**4 - 5.205 * \
+        Kt**3 + 0.994*Kt**2 - 0.059*Kt + 0.002
+    dni = kb*I0
+    dhi = ghi-dni*tools.cosd(zenith)
+
+    return dni, dhi, Kt

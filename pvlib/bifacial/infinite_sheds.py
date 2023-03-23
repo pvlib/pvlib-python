@@ -302,7 +302,10 @@ def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):
     y = _vf_row_ground(x, surface_tilt, gcr)
     # integrate view factors along the shaded portion of the row slant height.
     # This is an improvement over the algorithm described in [2]
-    vf_shade_ground_integ = np.trapz(y, x, axis=0)
+    vf_shade_ground_integ = np.where(
+        f_x<1e-6,
+        _vf_row_ground(f_x, surface_tilt, gcr),
+        1 / f_x * np.trapz(y, x, axis=0))
 
     # unshaded portion of row slant height
     x = np.linspace(f_x, 1., num=npoints)
@@ -310,7 +313,10 @@ def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):
     y = _vf_row_ground(x, surface_tilt, gcr)
     # integrate view factors along the unshaded portion.
     # This is an improvement over the algorithm described in [2]
-    vf_noshade_ground_integ = np.trapz(y, x, axis=0)
+    vf_noshade_ground_integ = np.where(
+        (1 - f_x)<1e-6,
+        _vf_row_ground(1., surface_tilt, gcr),
+        1 / (1 - f_x) * np.trapz(y, x, axis=0))
 
     return vf_shade_ground_integ, vf_noshade_ground_integ
 

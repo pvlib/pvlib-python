@@ -246,6 +246,7 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
     assert_allclose(result['horizon'], expected['horizon'][-1], atol=1e-4)
     assert isinstance(result, dict)
 
+
 def test_reindl(irrad_data, ephem_data, dni_et):
     result = irradiance.reindl(
         40, 180, irrad_data['dhi'], irrad_data['dni'], irrad_data['ghi'],
@@ -903,8 +904,12 @@ def test_dirindex(times):
     assert np.allclose(out, expected_out, rtol=tolerance, atol=0,
                        equal_nan=True)
     tol_dirint = 0.2
-    assert np.allclose(out.values, dirint_close_values, rtol=tol_dirint, atol=0,
-                       equal_nan=True)
+    assert np.allclose(
+        out.values,
+        dirint_close_values,
+        rtol=tol_dirint,
+        atol=0,
+        equal_nan=True)
 
 
 def test_dirindex_min_cos_zenith_max_zenith():
@@ -1207,14 +1212,11 @@ def test_complete_irradiance():
 
 def test_pvl_louche():
     times = pd.DatetimeIndex(['2016-07-19 06:11:00'], tz='America/Phoenix')
-    out_dni,out_dhi,out_kt = irradiance.pvl_louche(ghi=1.0, zenith=89.99,
-                          datetime_or_doy=times)
-    expected_dni=pd.Series(np.array([0.00000000e+00]),index=times)
+    out_dni, out_dhi, out_kt = irradiance.pvl_louche(ghi=1.0, zenith=89.99,
+                                                     datetime_or_doy=times)
+    expected_dni = pd.Series(np.array([0.00000000e+00]), index=times)
     # expected_dhi=pd.Series(np.array([8.72544336e+02]),index=times)
-    expected_kt=pd.Series(np.array([1.16046346e-02]),index=times)
-    assert_series_equal(out_dni,expected_dni)
+    expected_kt = pd.Series(np.array([1.16046346e-02]), index=times)
+    assert_series_equal(out_dni, expected_dni)
     # assert_series_equal(out_dhi,expected_dhi)
-    assert_series_equal(out_kt,expected_kt)
-
-
-    
+    assert_series_equal(out_kt, expected_kt)

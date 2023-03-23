@@ -125,13 +125,17 @@ def test__ground_angle_zero_gcr():
 def test__vf_row_ground(test_system):
     ts, _, _ = test_system
     x = np.array([0., 0.5, 1.0])
-    sqr3 = np.sqrt(3)
     vfs = infinite_sheds._vf_row_ground(
         x, ts['surface_tilt'], ts['gcr'])
-    expected_vfs = np.array([
-        0.5 * (1. - sqr3 / 2),
-        0.5 * ((4 + sqr3 / 2) / np.sqrt(17 + 4 * sqr3) - sqr3 / 2),
-        0.5 * ((4 + sqr3) / np.sqrt(20 + 8 * sqr3) - sqr3 / 2)])
+
+    def analytic(fx, gcr, surface_tilt):
+        a = 1/gcr
+        c = cosd(surface_tilt)
+        def p(fx, a, c):
+            return np.sqrt(a*a + 2*a*c*fx + fx*fx)
+        return 0.5*(1 - (a*c - fx)/p(fx, a, c))
+
+    expected_vfs = analytic(x, ts['gcr'], ts['surface_tilt'])
     assert np.allclose(vfs, expected_vfs)
 
 
@@ -143,18 +147,15 @@ def test__vf_row_ground_integ(test_system):
     shaded, noshade = infinite_sheds._vf_row_ground_integ(
         f_x, surface_tilt, gcr)
 
-    def analytic(x, surface_tilt, gcr):
+    def analytic(fx0, fx1, gcr, surface_tilt):
+        a = 1/gcr
         c = cosd(surface_tilt)
-        a = 1. / gcr
-        dx = np.sqrt(a**2 + 2 * a * c * x + x**2)
-        return c * dx - a * (c**2 - 1) * np.arctanh((a * c + x) / dx)
+        def p(fx, a, c):
+            return np.sqrt(a*a + 2*a*c*fx + fx*fx)
+        return 0.5*(1 - p(fx1, a, c) + p(fx0, a, c))
 
-    expected_shade = 0.5 * (analytic(f_x, surface_tilt, gcr)
-                            - analytic(0., surface_tilt, gcr)
-                            - f_x * cosd(surface_tilt))
-    expected_noshade = 0.5 * (analytic(1., surface_tilt, gcr)
-                              - analytic(f_x, surface_tilt, gcr)
-                              - (1. - f_x) * cosd(surface_tilt))
+    expected_shade = analytic(0, f_x, gcr, surface_tilt)
+    expected_noshade = analytic(f_x, 1., gcr, surface_tilt)
     assert np.allclose(shaded, expected_shade)
     assert np.allclose(noshade, expected_noshade)
 

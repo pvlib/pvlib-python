@@ -804,6 +804,22 @@ def test_erbs():
     assert_frame_equal(np.round(out, 0), np.round(expected, 0))
 
 
+def test_boland():
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
+    ghi = pd.Series([0, 50, 1000, 1000], index=index)
+    zenith = pd.Series([120, 85, 10, 10], index=index)
+    expected = pd.DataFrame(np.array(
+        [[0.0,        0.0,        0.0],
+         [81.9448546, 42.8580353, 0.405723511],
+         [723.764990, 287.230626, 0.718132729],
+         [805.020419, 207.209650, 0.768214312]]),
+        columns=['dni', 'dhi', 'kt'], index=index)
+
+    out = irradiance.boland(ghi, zenith, index)
+
+    assert np.allclose(out, expected)
+
+
 def test_erbs_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings

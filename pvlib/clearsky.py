@@ -577,7 +577,7 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
        sky irradiance in time series of GHI measurements" Renewable Energy,
        v90, p. 520-531, 2016.
     """
-
+    
     data_mean = data.values[H].mean(axis=0)
     data_mean = _to_centered_series(data_mean, data.index, samples_per_window, H)
     data_max = data.values[H].max(axis=0)
@@ -611,22 +611,31 @@ def _line_length_windowed(data, H, samples_per_window,
 
 
 def _to_centered_series(vals, idx, samples_per_window, H):
-    # Get center of interval using zero-indexing
-    center_row = samples_per_window//2 - 1
-    
-    # Maintain tz that is stripped when idx is put in H
-    if idx.tz is not None:
-        c = pd.DatetimeIndex(idx.values[H][center_row,:],\
-                             tz = 'UTC').tz_convert(idx.tz)
+    # Get center of interval using zero-indexing, round down to nearest
+    # index if there are an even number of rows
+    if samples_per_window % 2 == 0:
+        center_row = samples_per_window//2 - 1
     else:
+        center_row = samples_per_window//2
+    
+    try:
+        # Maintain tz that is stripped when idx is put in H
+        if idx.tz is not None:
+            c = pd.DatetimeIndex(idx.values[H][center_row,:],
+                                tz = 'UTC').tz_convert(idx.tz)
+        else:
+            c = idx.values[H][center_row,:]
+    # If the index is a range
+    except AttributeError:
         c = idx.values[H][center_row,:]
 
+    # Assign summary values for each interval to the indices of the center row
     centered = pd.Series(index = idx, dtype = 'object')
     centered.loc[c] = vals
     return centered
 
 
-def _clear_sample_index(clear_windows, samples_per_window, align, H):
+def _clear_sample_index(clear_windows, samples_per_window, gaps, H, align):
     """
     Returns indices of clear samples in clear windows
     """
@@ -644,19 +653,22 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     #     shift = - (samples_per_window // 2)
     # else:
     #     shift = 0
+
     # Account for the row # on which the interval is centered not actually
-    # being in row samples_per_window // 2
-    # if samples_per_window is even
+    # being in row samples_per_window // 2 if samples_per_window is even
     if samples_per_window % 2 == 0:
         shift = -(samples_per_window // 2 - 1)
     else:
         shift = -(samples_per_window // 2)
-    idx = clear_windows.shift(shift)
+    clear_cols = clear_windows.shift(shift)
     # drop rows at the end corresponding to windows past the end of data
-    idx = idx.drop(clear_windows.index[1 - samples_per_window:])
-    # idx = idx[idx.isna() == False]
-    idx = idx.astype(bool)  # shift changed type to object
-    clear_samples = np.unique(H[:, idx])
+    clear_cols = clear_cols.drop(clear_windows.index[1 - samples_per_window:])
+    clear_cols = clear_cols.astype(bool)  # shift changed type to object
+    # Boolean mask for column indices of intervals with temporal gaps
+    gap_cols = [True if c not in gaps else False for c in range(0,
+                len(clear_windows) - (samples_per_window - 1))]
+    mask = np.logical_and(clear_cols, gap_cols)
+    clear_samples = np.unique(H[:, mask])
     return clear_samples
 
 
@@ -739,8 +751,6 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
     ------
     ValueError
         If measured is not a Series and times is not provided
-    NotImplementedError
-        If timestamps are not equally spaced
 
     References
     ----------
@@ -764,6 +774,11 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
         * option to return individual test components and clearsky scaling
           parameter
         * uses centered windows (Matlab function uses left-aligned windows)
+
+    2023-03-24 - This algorithm does accept data with skipped or missing
+    timestamps. The DatetimeIndex (either times or index of measured)
+    provided still must be regular, i.e. the length of intervals between
+    points are equal except in the case that data is missing. 
     """
 
     if times is None:
@@ -783,6 +798,13 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
 
     if not isinstance(clear_sky, pd.Series):
         clear = pd.Series(clear_sky, index=times)
+    # This clause is designed to address cases where measured has missing time
+    # steps - if this is the case, clear should be set to have the same
+    # missing time intervals as measured. Not doing this may cause issues with
+    # arrays of different lengths when evaluating comparison criteria and
+    # when indexing the Hankel matrix to construct clear_samples
+    elif len(clear_sky.index) != len(times):
+        clear = pd.Series(clear_sky, index=times)
     else:
         clear = clear_sky
 
@@ -793,16 +815,14 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
     H = hankel(np.arange(samples_per_window),
                np.arange(samples_per_window-1, len(times)))
     
-    # Put DatetimeIndex in Hankel matrix
+    # Identify intervals with missing indices
     time_h = times.values[H]
-    # Identify maximum time step between consecutive Timestamps for each column
+    # Get maximum time step (in minutes) between consecutive Timestamps
+    # for each column
     time_h_diff_max = np.max(np.diff(time_h, axis = 0)/\
         np.timedelta64(1, '60s'), axis = 0)
-    # Identify column indices where max time step > sample_interval
-    gaps = list(np.ravel(np.argwhere(time_h_diff_max > sample_interval)))    
-    keep_columns = [i for i in range(len(times) - (samples_per_window -1)) if i not in gaps]
-    # Remove columns with temporal gaps
-    H = H[:, keep_columns]
+    # Get column indices where max time step > sample_interval
+    gaps = np.ravel(np.argwhere(time_h_diff_max > sample_interval))
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_slope_nstd, meas_slope = _calc_stats(
@@ -860,17 +880,17 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
         c6[clear_mean[clear_mean.isna()].index] = np.nan
 
          # np.logical_and() maintains NaNs
-        clear_windows = pd.Series(index = times, 
-                                 data = np.logical_and.reduce([c1,c2, c3,\
-                                    c4, c5, c6]))
+        clear_windows = pd.Series(index = times,
+                                  data = np.logical_and.reduce([
+                                  c1,c2, c3,c4,c5, c6]))
 
         # create array to return
-        clear_samples = np.full_like(meas, False, dtype='bool')
+        # dtype='bool' removed because it typecast NaNs to False values
+        clear_samples = np.full_like(meas, False)
         # find the samples contained in any window classified as clear
-        idx = _clear_sample_index(clear_windows, samples_per_window, 'center',
-                                  H)
+        idx = _clear_sample_index(clear_windows, samples_per_window, gaps, H,
+                                  'center')
         clear_samples[idx] = True
-        clear_samples[pd.Index(gaps)] = None
 
         # find a new alpha
         previous_alpha = alpha
@@ -892,7 +912,7 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
 
     # be polite about returning the same type as was input
     if ispandas:
-        clear_samples = pd.Series(clear_windows, index=times)
+        clear_samples = pd.Series(clear_samples, index=times)
 
     if return_components:
         components = OrderedDict()

@@ -577,9 +577,10 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
        sky irradiance in time series of GHI measurements" Renewable Energy,
        v90, p. 520-531, 2016.
     """
-    
+
     data_mean = data.values[H].mean(axis=0)
-    data_mean = _to_centered_series(data_mean, data.index, samples_per_window, H)
+    data_mean = _to_centered_series(data_mean, data.index, samples_per_window,
+                                    H)
     data_max = data.values[H].max(axis=0)
     data_max = _to_centered_series(data_max, data.index, samples_per_window, H)
     # shift to get forward difference, .diff() is backward difference instead
@@ -617,20 +618,20 @@ def _to_centered_series(vals, idx, samples_per_window, H):
         center_row = samples_per_window//2 - 1
     else:
         center_row = samples_per_window//2
-    
+
     try:
         # Maintain tz that is stripped when idx is put in H
         if idx.tz is not None:
-            c = pd.DatetimeIndex(idx.values[H][center_row,:],
-                                tz = 'UTC').tz_convert(idx.tz)
+            c = pd.DatetimeIndex(idx.values[H][center_row, :],
+                                 tz = 'UTC').tz_convert(idx.tz)
         else:
-            c = idx.values[H][center_row,:]
+            c = idx.values[H][center_row, :]
     # If the index is a range
     except AttributeError:
-        c = idx.values[H][center_row,:]
+        c = idx.values[H][center_row, :]
 
     # Assign summary values for each interval to the indices of the center row
-    centered = pd.Series(index = idx, dtype = 'object')
+    centered = pd.Series(index=idx, dtype='object')
     centered.loc[c] = vals
     return centered
 
@@ -778,7 +779,7 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
     2023-03-24 - This algorithm does accept data with skipped or missing
     timestamps. The DatetimeIndex (either times or index of measured)
     provided still must be regular, i.e. the length of intervals between
-    points are equal except in the case that data is missing. 
+    points are equal except in the case that data is missing.
     """
 
     if times is None:
@@ -814,13 +815,13 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
     # generate matrix of integers for creating windows with indexing
     H = hankel(np.arange(samples_per_window),
                np.arange(samples_per_window-1, len(times)))
-    
+
     # Identify intervals with missing indices
     time_h = times.values[H]
     # Get maximum time step (in minutes) between consecutive Timestamps
     # for each column
-    time_h_diff_max = np.max(np.diff(time_h, axis = 0)/\
-        np.timedelta64(1, '60s'), axis = 0)
+    time_h_diff_max = np.max(np.diff(time_h, axis=0)/
+                             np.timedelta64(1, '60s'), axis = 0)
     # Get column indices where max time step > sample_interval
     gaps = np.ravel(np.argwhere(time_h_diff_max > sample_interval))
 
@@ -879,10 +880,10 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
         c6 = clear_mean != 0
         c6[clear_mean[clear_mean.isna()].index] = np.nan
 
-         # np.logical_and() maintains NaNs
-        clear_windows = pd.Series(index = times,
-                                  data = np.logical_and.reduce([
-                                  c1,c2, c3,c4,c5, c6]))
+        # np.logical_and() maintains NaNs
+        clear_windows = pd.Series(index=times,
+                                  data=np.logical_and.reduce([
+                                  c1, c2, c3, c4,c5, c6]))
 
         # create array to return
         # dtype='bool' removed because it typecast NaNs to False values
@@ -894,10 +895,8 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
 
         # find a new alpha
         previous_alpha = alpha
-        # Must be explicit w/ '==' as clear_windows is a non-boolean array if
-        # it contains NaNs
-        clear_meas = meas[clear_windows == True]
-        clear_clear = clear[clear_windows == True]
+        clear_meas = meas[idx]
+        clear_clear = clear[idx]
 
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))

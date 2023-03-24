@@ -448,3 +448,14 @@ def _degrees_to_index(degrees, coordinate):
         index = int(np.around(index))
 
     return index
+
+
+EPS = np.finfo('float64').eps  # machine precision NumPy-1.20
+DX = EPS**(1/3)  # optimal differential element
+
+
+def _first_order_centered_difference(f, x0, dx=DX, args=()):
+    # simple replacement for scipy.misc.derivative, which is scheduled for
+    # removal in scipy 1.12.0
+    df = f(x0+dx, *args) - f(x0-dx, *args)
+    return df / 2 / dx

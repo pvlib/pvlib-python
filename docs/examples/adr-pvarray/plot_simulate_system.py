@@ -1,6 +1,6 @@
 """
 Simulating PV system DC output using the ADR module efficiency model
-===========================================================
+====================================================================
 
 Time series processing with the ADR model is really easy.
 

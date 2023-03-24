@@ -5,7 +5,6 @@ modeling.
 import numpy as np
 from pvlib.tools import sind, cosd, tand
 
-
 def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     """
     Tangent of the angle between the zenith vector and the sun vector
@@ -104,7 +103,7 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
         Position on the ground between two rows, as a fraction of the pitch.
         x = 0 corresponds to the point on the ground directly below the
         center point of a row. Positive x is towards the right. [unitless]
-    rotation : float
+    rotation : numeric
         Rotation angle of the row's right edge relative to row center.
         [degree]
     gcr : float
@@ -120,33 +119,56 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
 
     Returns
     -------
-    vf : numeric
-        Fraction of sky dome visible from each point on the ground. [unitless]
-    wedge_angles : array
-        Angles defining each wedge of sky that is blocked by a row. Shape is
-        (2, len(x), 2*max_rows+1). ``wedge_angles[0,:,:]`` is the
-        starting angle of each wedge, ``wedge_angles[1,:,:]`` is the end angle.
-        [degree]
+    vf : array
+        Fraction of sky dome visible from each point on the ground.
+        Shape is (len(x), len(rotation)). [unitless]
     """
-    x = np.atleast_1d(x)  # handle float
+    # This function creates large float64 arrays of size
+    # (2*len(x)*len(rotation)*len(max_rows)) or ~100 MB for
+    # typical time series inputs.  This function makes heavy
+    # use of numpy's out parameter to avoid allocating new
+    # memory.  Unfortunately that comes at the cost of some
+    # readability: because arrays get reused to avoid new allocations,
+    # variable names don't always match what they hold.
+
+    # handle floats:
+    x = np.atleast_1d(x)[:, np.newaxis, np.newaxis]
+    rotation = np.atleast_1d(rotation)[np.newaxis, :, np.newaxis]
     all_k = np.arange(-max_rows, max_rows + 1)
     width = gcr * pitch / 2.
+    distance_to_row_centers = (all_k - x) * pitch
+    dy = width * sind(rotation)
+    dx = width * cosd(rotation)
+
+    phi = np.empty((2, x.shape[0], rotation.shape[1], len(all_k)))
+
     # angles from x to right edge of each row
-    a1 = height + width * sind(rotation)
-    b1 = (all_k - x[:, np.newaxis]) * pitch + width * cosd(rotation)
-    phi_1 = np.degrees(np.arctan2(a1, b1))
+    a1 = height + dy
+    # temporarily store one leg of the triangle in phi:
+    np.add(distance_to_row_centers, dx, out=phi[0])
+    np.arctan2(a1, phi[0], out=phi[0])
+
     # angles from x to left edge of each row
-    a2 = height - width * sind(rotation)
-    b2 = (all_k - x[:, np.newaxis]) * pitch - width * cosd(rotation)
-    phi_2 = np.degrees(np.arctan2(a2, b2))
-    phi = np.stack([phi_1, phi_2])
-    swap = phi[0, :, :] > phi[1, :, :]
-    # swap where phi_1 > phi_2 so that phi_1[0,:,:] is the lesser angle
-    phi = np.where(swap, phi[::-1], phi)
-    # right edge of next row - left edge of previous row
-    wedge_vfs = 0.5 * (cosd(phi[1, :, 1:]) - cosd(phi[0, :, :-1]))
-    vf = np.sum(np.where(wedge_vfs > 0, wedge_vfs, 0.), axis=1)
-    return vf, phi
+    a2 = height - dy
+    np.subtract(distance_to_row_centers, dx, out=phi[1])
+    np.arctan2(a2, phi[1], out=phi[1])
+
+    # swap angles so that phi[0,:,:,:] is the lesser angle
+    phi.sort(axis=0)
+
+    # now re-use phi's memory again, this time storing cos(phi).
+    next_edge = phi[1, :, :, 1:]
+    np.cos(next_edge, out=next_edge)
+    prev_edge = phi[0, :, :, :-1]
+    np.cos(prev_edge, out=prev_edge)
+    # right edge of next row - left edge of previous row, again
+    # reusing memory so that the difference is stored in next_edge.
+    # Note that the 0.5 view factor coefficient is applied after summing
+    # as a minor speed optimization.
+    np.subtract(next_edge, prev_edge, out=next_edge)
+    np.clip(next_edge, a_min=0., a_max=None, out=next_edge)
+    vf = np.sum(next_edge, axis=-1) / 2
+    return vf
 
 
 def _vf_poly(x, gcr, surface_tilt, delta):
@@ -314,3 +336,6 @@ def vf_row_ground_2d_integ(x0, x1, gcr, surface_tilt):
                           0.5*(1 - 1/u * (p1 - p0))
                           )
     return result
+=======
+
+>>>>>>> 7a2ec9b4765124463bf0ddd0a49dcfedc4cbcad7

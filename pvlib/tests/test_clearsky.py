@@ -8,7 +8,7 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from pvlib.tests.conftest import assert_frame_equal, assert_series_equal, DATA_DIR
+from .conftest import assert_frame_equal, assert_series_equal, DATA_DIR
 
 from pvlib.location import Location
 from pvlib import clearsky
@@ -620,7 +620,7 @@ def test_detect_clearsky_missing_index1():
     clear_samples = clearsky.detect_clearsky(
         meas, cs)
     assert_series_equal(expected, clear_samples, check_dtype=False,
-    check_names=False)
+                        check_names=False)
 
 
 def test_detect_clearsky_missing_index2():
@@ -632,7 +632,7 @@ def test_detect_clearsky_missing_index2():
     clear_samples = clearsky.detect_clearsky(
         meas, cs)
     assert_series_equal(expected, clear_samples, check_dtype=False,
-    check_names=False)
+                        check_names=False)
 
 
 def test_detect_clearsky_missing_index3():

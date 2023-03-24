@@ -15,8 +15,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-* Corrects an error (:issue:`1665`) in view factor calculations which are part of
-  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`
+* Corrects an error in view factor calculations which are part of
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` (:issue:`1665`, :pull:`1666`)
 
 
 Testing

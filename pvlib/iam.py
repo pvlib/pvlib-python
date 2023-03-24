@@ -215,6 +215,12 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     # incidence angle modifier
     iam = (tau_s + tau_p) / 2 / tau_0
 
+    # for light coming from behind the plane, none can enter the module (necessary only when n2 = 1)
+    if np.isclose(n2, 1).any():
+        iam = np.where(aoi >= 90, 0, iam)
+        if isinstance(aoi, pd.Series):
+            iam = pd.Series(iam, index=aoi.index)
+
     return iam
 
 

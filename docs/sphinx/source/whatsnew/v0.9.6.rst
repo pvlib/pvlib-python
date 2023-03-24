@@ -15,6 +15,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Corrects an error (:issue:`1665`) in view factor calculations which are part of
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`
 
 
 Testing
@@ -35,4 +37,6 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)
+* Cliff Hansen (:ghuser:`cwhanse`)
 

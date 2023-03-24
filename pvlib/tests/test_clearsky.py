@@ -554,8 +554,7 @@ def test_detect_clearsky_components(detect_clearsky_data):
     assert_series_equal(expected['Clear or not'], clear_samples,
                         check_dtype=False, check_names=False)
     assert isinstance(components, OrderedDict)
-    assert np.allclose(alpha, 0.9634310110595476)
-    # assert np.allclose(alpha, 0.9633903181941296)
+    assert np.allclose(alpha, 0.9633903181941296)
 
 
 def test_detect_clearsky_iterations(detect_clearsky_data):

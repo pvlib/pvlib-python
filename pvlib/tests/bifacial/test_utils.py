@@ -120,7 +120,7 @@ def test_vf_row_sky_2d_integ(test_system_fixed_tilt):
     x = np.arange(fx0[1], fx1[1], 1e-4)
     phi_y = masking_angle(ts['surface_tilt'], ts['gcr'], x)
     y = 0.5 * (1 + cosd(ts['surface_tilt'] + phi_y))
-    y1 = np.trapz(y, x) / (fx1[1] - fx0[1]) 
+    y1 = np.trapz(y, x) / (fx1[1] - fx0[1])
     expected = np.array([y0, y1])
     assert np.allclose(vf, expected, rtol=1e-3)
 
@@ -155,6 +155,6 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     x = np.arange(fx0[1], fx1[1], 1e-4)
     phi_y = infinite_sheds._ground_angle(x, ts['surface_tilt'], ts['gcr'])
     y = 0.5 * (1 - cosd(phi_y - ts['surface_tilt']))
-    y1 = np.trapz(y, x) / (fx1[1] - fx0[1]) 
+    y1 = np.trapz(y, x) / (fx1[1] - fx0[1])
     expected = np.array([y0, y1])
     assert np.allclose(vf, expected, rtol=1e-2)

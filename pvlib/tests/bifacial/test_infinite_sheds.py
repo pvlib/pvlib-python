@@ -69,14 +69,14 @@ def test__vf_row_sky_integ(test_system):
         Average of view factor (by integration) between fx0 < fx1
         '''
         def p(x, a, c):
-            return np.sqrt(a*a - 2*a*c*(1-x) +(1-x)*(1-x))
+            return np.sqrt(a*a - 2*a*c*(1-x) + (1-x)*(1-x))
         eps = 1e-6
         a = 1 / gcr
         c = cosd(surface_tilt)
         u = fx1 - fx0
         with np.errstate(divide='ignore'):
-            result = np.where(np.abs(u)<eps,
-                              0.5*(1 + (a*c - (1 -fx0))/p(fx0, a, c)),
+            result = np.where(np.abs(u) < eps,
+                              0.5*(1 + (a*c - (1 -fx0)) / p(fx0, a, c)),
                               0.5*(1 + 1/u*(p(fx1, a, c) - p(fx0, a, c)))
                               )
         return result
@@ -86,7 +86,6 @@ def test__vf_row_sky_integ(test_system):
             x, surface_tilt, gcr, npoints=100)
         shaded.append(s)
         noshade.append(ns)
-
 
     expected_noshade = analytic(f_x, 1, gcr, surface_tilt)
     assert np.allclose(noshade, expected_noshade)
@@ -130,10 +129,10 @@ def test__vf_row_ground(test_system):
         x, ts['surface_tilt'], ts['gcr'])
 
     def analytic(fx, gcr, surface_tilt):
-        a = 1/gcr
-        c = cosd(surface_tilt)
         def p(fx, a, c):
             return np.sqrt(a*a + 2*a*c*fx + fx*fx)
+        a = 1/gcr
+        c = cosd(surface_tilt)
         return 0.5*(1 - (a*c + fx)/p(fx, a, c))
 
     expected_vfs = analytic(x, ts['gcr'], ts['surface_tilt'])

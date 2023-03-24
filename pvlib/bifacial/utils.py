@@ -336,6 +336,3 @@ def vf_row_ground_2d_integ(x0, x1, gcr, surface_tilt):
                           0.5*(1 - 1/u * (p1 - p0))
                           )
     return result
-=======
-
->>>>>>> 7a2ec9b4765124463bf0ddd0a49dcfedc4cbcad7

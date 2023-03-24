@@ -147,3 +147,170 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     wedge_vfs = 0.5 * (cosd(phi[1, :, 1:]) - cosd(phi[0, :, :-1]))
     vf = np.sum(np.where(wedge_vfs > 0, wedge_vfs, 0.), axis=1)
     return vf, phi
+
+
+def _vf_poly(x, gcr, surface_tilt, delta):
+    r'''
+    A term common to many 2D view factor calculations
+
+    Parameters
+    ----------
+    x : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x=0 corresponds to the bottom of the row. [unitless]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+    delta : -1 or +1
+        A sign indicator for the linear term of the polynomial
+
+    Returns
+    -------
+    numeric
+    '''
+    a = 1 / gcr
+    c = cosd(surface_tilt)
+    return np.sqrt(a*a + 2*delta*a*c*x + x*x)
+
+
+def vf_row_sky_2d(x, gcr, surface_tilt):
+    r'''
+    Calculate the view factor to the sky from a point x on a row surface.
+
+    Assumes a PV system of infinitely long rows with uniform pitch on
+    horizontal ground. The view to the sky is restricted by the row's surface
+    tilt and the top of the adjacent row.
+
+    Parameters
+    ----------
+    x : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x=0 corresponds to the bottom of the row. [unitless]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+
+    Returns
+    -------
+    vf : numeric
+        Fraction of the sky dome visible from the point x. [unitless]
+
+    '''
+    p = _vf_poly(1 - x, gcr, surface_tilt, -1)
+    return 0.5*(1 + (1/gcr * cosd(surface_tilt) - (1 - x)) / p)
+
+
+def vf_row_sky_2d_integ(x0, x1, gcr, surface_tilt):
+    r'''
+    Calculate the average view factor to the sky from a segment of the row
+    surface between x0 and x1.
+
+    Assumes a PV system of infinitely long rows with uniform pitch on
+    horizontal ground. The view to the sky is restricted by the row's surface
+    tilt and the top of the adjacent row.
+
+    Parameters
+    ----------
+    x0 : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x0=0 corresponds to the bottom of the row. x0 should be less than x1.
+        [unitless]
+    x1 : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x1 should be greater than x0. [unitless]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+
+    Returns
+    -------
+    vf : numeric
+        Average fraction of the sky dome visible from points in the segment
+        from x0 to x1. [unitless]
+
+    '''
+    u = np.abs(x1 - x0)
+    p0 = _vf_poly(1 - x0, gcr, surface_tilt, -1)
+    p1 = _vf_poly(1 - x1, gcr, surface_tilt, -1)
+    with np.errstate(divide='ignore'):
+        result = np.where(u<1e-6,
+                          vf_row_sky_2d(x0, gcr, surface_tilt),
+                          0.5*(1 + 1/u * (p1 - p0))
+                          )
+    return result
+
+
+def vf_row_ground_2d(x, gcr, surface_tilt):
+    r'''
+    Calculate the view factor to the ground from a point x on a row surface.
+
+    Assumes a PV system of infinitely long rows with uniform pitch on
+    horizontal ground. The view to the ground is restricted by the row's
+    tilt and the bottom of the facing row.
+
+    Parameters
+    ----------
+    x : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x=0 corresponds to the bottom of the row. [unitless]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+
+    Returns
+    -------
+    vf : numeric
+        Fraction of the sky dome visible from the point x. [unitless]
+
+    '''
+    p = _vf_poly(x, gcr, surface_tilt, 1)
+    return 0.5 * (1 - (1/gcr * cosd(surface_tilt) + x)/p)
+
+
+def vf_row_ground_2d_integ(x0, x1, gcr, surface_tilt):
+    r'''
+    Calculate the average view factor to the ground from a segment of the row
+    surface between x0 and x1.
+
+    Assumes a PV system of infinitely long rows with uniform pitch on
+    horizontal ground. The view to the ground is restricted by the row's
+    tilt and the bottom of the facing row.
+
+    Parameters
+    ----------
+    x0 : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x0=0 corresponds to the bottom of the row. x0 should be less than x1.
+        [unitless]
+    x1 : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x1 should be greater than x0. [unitless]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+
+    Returns
+    -------
+    vf : numeric
+        Fraction of the sky dome visible from the point x. [unitless]
+
+    '''
+    u = np.abs(x1 - x0)
+    p0 = _vf_poly(x0, gcr, surface_tilt, 1)
+    p1 = _vf_poly(x1, gcr, surface_tilt, 1)
+    with np.errstate(divide='ignore'):
+        result = np.where(u<1e-6,
+                          vf_row_ground_2d(x0, gcr, surface_tilt),
+                          0.5*(1 - 1/u * (p1 - p0))
+                          )
+    return result

@@ -3149,7 +3149,10 @@ def pvl_louche(ghi, solar_zenith, datetime_or_doy):
 
     References
     -------
-    .. [1] Louche A, Notton G, Poggi P, Simmonnot G. Correlations for direct normal and global horizontal irradiation on French Mediterranean site. Solar Energy 1991;46:261-6
+    .. [1] Louche A, Notton G, Poggi P, Simmonnot G. Correlations for direct
+    normal and global horizontal irradiation on French Mediterranean site.
+    Solar Energy
+    1991;46:261-6
 
     """
     bool = np.logical_or(solar_zenith > 180, solar_zenith < 0)

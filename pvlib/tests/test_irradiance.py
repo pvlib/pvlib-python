@@ -1211,12 +1211,19 @@ def test_complete_irradiance():
 
 
 def test_pvl_louche():
-    times = pd.DatetimeIndex(['2016-07-19 06:11:00'], tz='America/Phoenix')
-    out_dni, out_dhi, out_kt = irradiance.pvl_louche(ghi=1.0, zenith=89.99,
-                                                     datetime_or_doy=times)
-    expected_dni = pd.Series(np.array([0.00000000e+00]), index=times)
-    # expected_dhi=pd.Series(np.array([8.72544336e+02]),index=times)
-    expected_kt = pd.Series(np.array([1.16046346e-02]), index=times)
-    assert_series_equal(out_dni, expected_dni)
-    # assert_series_equal(out_dhi,expected_dhi)
-    assert_series_equal(out_kt, expected_kt)
+    
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620']*3)
+    ghi = pd.Series([0, 50, 1000, 1000, 1000, 1000], index=index)
+    zenith = pd.Series([120, 85, 10, 10, 182, -2], index=index)
+    expected = pd.DataFrame(np.array(
+        [[2.827964,     1.413982,        0.000000],
+         [130.089669, 38.661938, 0.405724],
+         [828.498650, 184.088106, 0.718133],
+         [887.407348, 126.074364, 0.768214],
+         [np.NaN, np.NaN, np.NaN],
+         [np.NaN, np.NaN, np.NaN]]),
+        columns=['dni', 'dhi', 'kt'], index=index)
+
+    out = irradiance.pvl_louche(ghi, zenith, index)
+
+    assert np.allclose(out, expected)

@@ -3135,12 +3135,12 @@ def pvl_louche(ghi, solar_zenith, datetime_or_doy):
     datetime_or_doy : numeric, pandas.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
-        
+
     Returns
     -------
     data: OrderedDict or DataFrame
         Contains the following keys/columns:
-            
+
             * ``dni``: the modeled direct normal irradiance in W/m^2.
             * ``dhi``: the modeled diffuse horizontal irradiance in
               W/m^2.
@@ -3152,13 +3152,13 @@ def pvl_louche(ghi, solar_zenith, datetime_or_doy):
     .. [1] Louche A, Notton G, Poggi P, Simmonnot G. Correlations for direct normal and global horizontal irradiation on French Mediterranean site. Solar Energy 1991;46:261-6
 
     """
-    bool=np.logical_or(solar_zenith>180,solar_zenith < 0)
-    solar_zenith=np.where(bool,np.NaN,solar_zenith)
+    bool = np.logical_or(solar_zenith > 180, solar_zenith < 0)
+    solar_zenith = np.where(bool, np.NaN, solar_zenith)
 
     if np.isscalar(datetime_or_doy):
-        bool=(np.any(datetime_or_doy>366 or datetime_or_doy < 1,axis=0))
+        bool = (np.any(datetime_or_doy > 366 or datetime_or_doy < 1, axis=0))
         print(bool)
-        datetime_or_doy=np.where(bool,np.NaN,datetime_or_doy)
+        datetime_or_doy = np.where(bool, np.NaN, datetime_or_doy)
 
     # this is the I0 calculation from the reference
     # SSC uses solar constant = 1366.1
@@ -3172,10 +3172,10 @@ def pvl_louche(ghi, solar_zenith, datetime_or_doy):
     dni = kb*I0
     dhi = ghi-dni*tools.cosd(solar_zenith)
 
-    data=OrderedDict()
-    data['dni']=dni
-    data['dhi']=dhi
-    data['kt']=Kt
+    data = OrderedDict()
+    data['dni'] = dni
+    data['dhi'] = dhi
+    data['kt'] = Kt
 
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         data = pd.DataFrame(data, index=datetime_or_doy)

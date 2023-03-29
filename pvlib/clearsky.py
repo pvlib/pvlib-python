@@ -623,7 +623,7 @@ def _to_centered_series(vals, idx, samples_per_window, H):
         # Maintain tz that is stripped when idx is put in H
         if idx.tz is not None:
             c = pd.DatetimeIndex(idx.values[H][center_row, :],
-                                 tz = 'UTC').tz_convert(idx.tz)
+                                 tz='UTC').tz_convert(idx.tz)
         else:
             c = idx.values[H][center_row, :]
     # If the index is a range
@@ -820,8 +820,8 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
     time_h = times.values[H]
     # Get maximum time step (in minutes) between consecutive Timestamps
     # for each column
-    time_h_diff_max = np.max(np.diff(time_h, axis=0)/
-                             np.timedelta64(1, '60s'), axis = 0)
+    time_h_diff_max = np.max(np.diff(time_h, axis=0) /
+                             np.timedelta64(1, '60s'), axis=0)
     # Get column indices where max time step > sample_interval
     gaps = np.ravel(np.argwhere(time_h_diff_max > sample_interval))
 
@@ -881,9 +881,8 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
         c6[clear_mean[clear_mean.isna()].index] = np.nan
 
         # np.logical_and() maintains NaNs
-        clear_windows = pd.Series(index=times,
-                                  data=np.logical_and.reduce([
-                                  c1, c2, c3, c4,c5, c6]))
+        clear_windows = pd.Series(
+            index=times, data=np.logical_and.reduce([c1, c2, c3, c4, c5, c6]))
 
         # create array to return
         # dtype='bool' removed because it typecast NaNs to False values

@@ -11,7 +11,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Lakshya Garg (:ghuser:`Lakshyadevelops` :pull:`1705`)
 
 Bug fixes
 ~~~~~~~~~

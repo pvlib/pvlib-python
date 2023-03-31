@@ -3146,6 +3146,10 @@ def pvl_louche(ghi, solar_zenith, datetime_or_doy):
               W/m^2.
             * ``kt``: Ratio of global to extraterrestrial irradiance
               on a horizontal plane.
+    Notes
+    -----
+    solar_zenith angles should be between 0 and 90 degrees else NaN will be
+    returned. doy should be between 1 and 366 else NaN will be returned.
 
     References
     -------

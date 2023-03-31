@@ -3121,14 +3121,14 @@ def complete_irradiance(solar_zenith,
 
 def pvl_louche(ghi, solar_zenith, datetime_or_doy):
     """
-    Determine DNI and GHI from GHI using louche model.
+    Determine DNI and GHI from GHI using Louche model.
 
     Parameters
     ----------
     ghi : Series
         Global horizontal irradiance. [W/m^2]
 
-    zenith : Series
+    solar_zenith : Series
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=180.
 
@@ -3151,29 +3151,26 @@ def pvl_louche(ghi, solar_zenith, datetime_or_doy):
     -------
     .. [1] Louche A, Notton G, Poggi P, Simmonnot G. Correlations for direct
     normal and global horizontal irradiation on French Mediterranean site.
-    Solar Energy
-    1991;46:261-6
+    Solar Energy 1991;46:261-6
 
     """
-    bool = np.logical_or(solar_zenith > 180, solar_zenith < 0)
+    bool = np.logical_or(solar_zenith > 90, solar_zenith < 0)
     solar_zenith = np.where(bool, np.NaN, solar_zenith)
 
     if np.isscalar(datetime_or_doy):
         bool = (np.any(datetime_or_doy > 366 or datetime_or_doy < 1, axis=0))
-        print(bool)
         datetime_or_doy = np.where(bool, np.NaN, datetime_or_doy)
 
     # this is the I0 calculation from the reference
     # SSC uses solar constant = 1366.1
     I0 = get_extra_radiation(datetime_or_doy)
 
-    I0h = I0*tools.cosd(solar_zenith)
-    Kt = ghi/I0h
-    pd.Series.clip(Kt, 0, inplace=True)
+    Kt = clearness_index(ghi, solar_zenith, I0)
+
     kb = -10.627*Kt**5 + 15.307*Kt**4 - 5.205 * \
         Kt**3 + 0.994*Kt**2 - 0.059*Kt + 0.002
     dni = kb*I0
-    dhi = ghi-dni*tools.cosd(solar_zenith)
+    dhi = ghi - dni*tools.cosd(solar_zenith)
 
     data = OrderedDict()
     data['dni'] = dni

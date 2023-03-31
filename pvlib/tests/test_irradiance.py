@@ -1212,15 +1212,14 @@ def test_complete_irradiance():
 
 def test_pvl_louche():
 
-    index = pd.DatetimeIndex(['20190101']*3 + ['20190620']*3)
-    ghi = pd.Series([0, 50, 1000, 1000, 1000, 1000], index=index)
-    zenith = pd.Series([120, 85, 10, 10, 182, -2], index=index)
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620']*2)
+    ghi = pd.Series([0, 50, 1000, 1000, 1000], index=index)
+    zenith = pd.Series([91, 85, 10, 10, -2], index=index)
     expected = pd.DataFrame(np.array(
-        [[2.827964,     1.413982,        -0.000000],
+        [[np.NaN, np.NaN, np.NaN],
          [130.089669, 38.661938, 0.405724],
          [828.498650, 184.088106, 0.718133],
          [887.407348, 126.074364, 0.768214],
-         [np.NaN, np.NaN, np.NaN],
          [np.NaN, np.NaN, np.NaN]]),
         columns=['dni', 'dhi', 'kt'], index=index)
 

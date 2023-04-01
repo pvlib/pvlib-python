@@ -3130,7 +3130,7 @@ def pvl_louche(ghi, solar_zenith, datetime_or_doy):
 
     solar_zenith : Series
         True (not refraction-corrected) zenith angles in decimal
-        degrees. Angles must be >=0 and <=180.
+        degrees. Angles must be >=0 and <=90.
 
     datetime_or_doy : numeric, pandas.DatetimeIndex
         Day of year or array of days of year e.g.

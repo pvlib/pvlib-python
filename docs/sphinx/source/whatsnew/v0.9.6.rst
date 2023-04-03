@@ -16,7 +16,10 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Corrects an error in view factor calculations which are part of
-  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` (:issue:`1665`, :pull:`1666`)
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`. The error
+  affects rear surface irradiance by a few W/m2. As part of the correction,
+  average view factors are now computed by exact formulas rather than by
+  numerical integration. (:issue:`1665`, :pull:`1666`)
 
 
 Testing

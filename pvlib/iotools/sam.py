@@ -113,10 +113,10 @@ def write_sam(data, metadata, savefile='SAM_WeatherFile.csv',
     savedata['Tdry'] = temp_amb
 
     if 'dni' in data:
-        savedata['DHI'] = data.dni.values
+        savedata['DNI'] = data.dni.values
 
     if 'dhi' in data:
-        savedata['DNI'] = data.dhi.values
+        savedata['DHI'] = data.dhi.values
 
     if 'ghi' in data:
         savedata['GHI'] = data.ghi.values

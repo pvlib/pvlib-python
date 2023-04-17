@@ -23,7 +23,8 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Updated the description of the interval parameter in
+  :py:func:`pvlib.iotools.get_psm3`. (:issue:`1702`, :pull:`1712`)
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -35,4 +36,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Adam R. Jensen (:ghuser:`adamrjensen`)

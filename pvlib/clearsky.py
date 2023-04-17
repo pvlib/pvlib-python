@@ -824,6 +824,8 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
                              np.timedelta64(1, '60s'), axis = 0)
     # Get column indices where max time step > sample_interval
     gaps = np.ravel(np.argwhere(time_h_diff_max > sample_interval))
+    # Get column indices where at least one of the values is a NaN
+    gaps = set().union(*[gaps, np.ravel(np.argwhere(np.isnan(meas.values[H].mean(axis=0))))])
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_slope_nstd, meas_slope = _calc_stats(
@@ -856,34 +858,33 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
         c1 = np.abs(meas_mean - alpha*clear_mean)
         c1_where_nan = c1[c1.isna()].index
         c1 = c1 < mean_diff
-        c1[c1_where_nan] = np.nan
         # Condition 2
         c2 = np.abs(meas_max - alpha*clear_max)
         c2_where_nan = c2[c2.isna()].index
         c2 = c2 < max_diff
-        c2[c2_where_nan] = np.nan
         # Condition 3a & 3b
         c3_where_nan = line_diff[line_diff.isna()].index
         c3a = line_diff > lower_line_length
         c3b = line_diff < upper_line_length
         c3 = np.logical_and(c3a, c3b)
-        c3[c3_where_nan] = np.nan
         # Condition 4
         c4_where_nan = meas_slope_nstd[meas_slope_nstd.isna()].index
         c4 = meas_slope_nstd < var_diff
-        c4[c4_where_nan] = np.nan
         # Condition 5
         c5_where_nan = slope_max_diff[slope_max_diff.isna()].index
         c5 = slope_max_diff < slope_dev
-        c5[c5_where_nan] = np.nan
         # Condition 6
         c6 = clear_mean != 0
-        c6[clear_mean[clear_mean.isna()].index] = np.nan
+        c6_where_nan = clear_mean[clear_mean.isna()].index
 
         # np.logical_and() maintains NaNs
         clear_windows = pd.Series(index=times,
                                   data=np.logical_and.reduce([
                                   c1, c2, c3, c4,c5, c6]))
+        windows_where_nan = pd.DatetimeIndex(set().union(*[
+                            c1_where_nan,c2_where_nan, c3_where_nan,
+                            c4_where_nan, c5_where_nan, c6_where_nan]))
+        clear_windows[windows_where_nan] = np.nan
 
         # create array to return
         # dtype='bool' removed because it typecast NaNs to False values
@@ -892,6 +893,10 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
         idx = _clear_sample_index(clear_windows, samples_per_window, gaps, H,
                                   'center')
         clear_samples[idx] = True
+
+        # Assign NaN to datapoints that were originally NaNs
+        where_nan = np.argwhere(np.isnan(meas.values))
+        clear_samples[where_nan] = np.nan
 
         # find a new alpha
         previous_alpha = alpha

@@ -96,7 +96,7 @@ def test_get_sample_intervals():
     data = pd.read_csv(
         data_file, index_col=0, parse_dates=True, comment='#')
     sample_interval, samples_per_window = tools._get_sample_intervals(
-                                          data.index, 10)
+        data.index, 10)
     assert np.allclose(sample_interval, 1)
     assert np.allclose(samples_per_window, 10)
 

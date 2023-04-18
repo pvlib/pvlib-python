@@ -8,10 +8,11 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from .conftest import assert_frame_equal, assert_series_equal, DATA_DIR
+from tests.conftest import assert_frame_equal, assert_series_equal, DATA_DIR
 
 from pvlib.location import Location
-from pvlib import clearsky
+# from pvlib import clearsky
+import clearsky
 from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
@@ -645,6 +646,27 @@ def test_detect_clearsky_missing_index3():
     assert_series_equal(expected, clear_samples, check_dtype=False,
     check_names=False)
 
+def test_detect_clearsky_nans1():
+    # Test for 1 NaN value - should mark as NaN
+    data_file = DATA_DIR / 'detect_clearsky_data_nans1.csv'
+    data = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    meas, cs, expected = data['GHI'], data['CS'], data['Clear or not']
+    clear_samples = clearsky.detect_clearsky(
+        meas, cs)
+    assert_series_equal(expected, clear_samples, check_dtype=False,
+    check_names=False)
+
+def test_detect_clearsky_nans2():
+    # Test for 1 NaN value - should mark as NaN
+    data_file = DATA_DIR / 'detect_clearsky_data_nans2.csv'
+    data = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    meas, cs, expected = data['GHI'], data['CS'], data['Clear or not']
+    clear_samples = clearsky.detect_clearsky(
+        meas, cs)
+    assert_series_equal(expected, clear_samples, check_dtype=False,
+    check_names=False)
 
 @pytest.fixture
 def detect_clearsky_helper_data():

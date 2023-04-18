@@ -8,11 +8,10 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from tests.conftest import assert_frame_equal, assert_series_equal, DATA_DIR
+from .conftest import assert_frame_equal, assert_series_equal, DATA_DIR
 
 from pvlib.location import Location
-# from pvlib import clearsky
-import clearsky
+from pvlib import clearsky
 from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance

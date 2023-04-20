@@ -11,7 +11,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added compatibility with missing timesteps to
+  :py:func`pvlib.clearsky.detect_clearsky`. (:issue:`1678`,
+  :pull:`1708`)
 
 Bug fixes
 ~~~~~~~~~
@@ -37,3 +39,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Adam R. Jensen (:ghuser:`adamrjensen`)
+* Emma C. Cooper (:ghuser:`eccoope`)

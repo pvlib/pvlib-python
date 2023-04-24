@@ -3,7 +3,6 @@ import numpy as np
 from pvlib.iotools import download_SRTM
 from ..conftest import DATA_DIR
 
-from pvlib._deprecation import pvlibDeprecationWarning
 
 NM_lat, NM_lon = 35, -107
 NM_elevations = [1418, 2647, 3351]

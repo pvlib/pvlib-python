@@ -11,7 +11,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added horizon retrieval from PVGIS function in 
+  :py:func:`pvlib.iotools.pvgis.get_pvgis_horizon`. (:issue:`1290`, :pull:`1395`)
+* Added SRTM Digital Elevation Model retrieval from CGIAR in
+  :py:func:`pvlib.iotools.cgiar.download_SRTM`. (:issue:`1290`, :pull:`1395`)
 
 Bug fixes
 ~~~~~~~~~

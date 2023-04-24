@@ -808,4 +808,3 @@ def test_bird():
         [Eb3, Ebh3, Gh3, Dh3],
         testdata2[['Direct Beam', 'Direct Hz', 'Global Hz', 'Dif Hz']].iloc[11],
         rtol=1e-3)
-    return pd.DataFrame({'Eb': Eb, 'Ebh': Ebh, 'Gh': Gh, 'Dh': Dh}, index=times)

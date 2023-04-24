@@ -11,7 +11,7 @@ irradiance to the module's surface.
 import numpy as np
 import pandas as pd
 import functools
-from pvlib.tools import cosd, sind, tand, asind
+from pvlib.tools import cosd, sind
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
@@ -91,21 +91,22 @@ def ashrae(aoi, b=0.05):
     return iam
 
 
-def physical(aoi, n=1.526, K=4., L=0.002):
+def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     r"""
     Determine the incidence angle modifier using refractive index ``n``,
-    extinction coefficient ``K``, and glazing thickness ``L``.
+    extinction coefficient ``K``, glazing thickness ``L`` and refractive
+    index ``n_ar`` of an optional anti-reflective coating.
 
     ``iam.physical`` calculates the incidence angle modifier as described in
-    [1]_, Section 3. The calculation is based on a physical model of absorbtion
+    [1]_, Section 3, with additional support of an anti-reflective coating.
+    The calculation is based on a physical model of reflections, absorption,
     and transmission through a transparent cover.
 
     Parameters
     ----------
     aoi : numeric
         The angle of incidence between the module normal vector and the
-        sun-beam vector in degrees. Angles of 0 are replaced with 1e-06
-        to ensure non-nan results. Angles of nan will result in nan.
+        sun-beam vector in degrees. Angles of nan will result in nan.
 
     n : numeric, default 1.526
         The effective index of refraction (unitless). Reference [1]_
@@ -120,6 +121,11 @@ def physical(aoi, n=1.526, K=4., L=0.002):
         The glazing thickness in units of meters. Reference [1]_
         indicates that 0.002 meters (2 mm) is reasonable for most
         glass-covered PV panels.
+
+    n_ar : numeric, optional
+        The effective index of refraction of the anti-reflective (AR) coating
+        (unitless). If n_ar is None (default), no AR coating is applied.
+        A typical value for the effective index of an AR coating is 1.29.
 
     Returns
     -------
@@ -149,48 +155,65 @@ def physical(aoi, n=1.526, K=4., L=0.002):
     pvlib.iam.interp
     pvlib.iam.sapm
     """
-    zeroang = 1e-06
+    n1, n3 = 1, n
+    if n_ar is None or np.allclose(n_ar, n1):
+        # no AR coating
+        n2 = n
+    else:
+        n2 = n_ar
 
-    # hold a new reference to the input aoi object since we're going to
-    # overwrite the aoi reference below, but we'll need it for the
-    # series check at the end of the function
-    aoi_input = aoi
+    # incidence angle
+    costheta = np.maximum(0, cosd(aoi))  # always >= 0
+    sintheta = np.sqrt(1 - costheta**2)  # always >= 0
+    n1costheta1 = n1 * costheta
+    n2costheta1 = n2 * costheta
 
-    aoi = np.where(aoi == 0, zeroang, aoi)
+    # refraction angle of first interface
+    sintheta = n1 / n2 * sintheta
+    costheta = np.sqrt(1 - sintheta**2)
+    n1costheta2 = n1 * costheta
+    n2costheta2 = n2 * costheta
 
-    # angle of reflection
-    thetar_deg = asind(1.0 / n * (sind(aoi)))
+    # reflectance of s-, p-polarized, and normal light by the first interface
+    rho12_s = ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
+    rho12_p = ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
+    rho12_0 = ((n1 - n2) / (n1 + n2)) ** 2
 
-    # reflectance and transmittance for normal incidence light
-    rho_zero = ((1-n) / (1+n)) ** 2
-    tau_zero = np.exp(-K*L)
+    # transmittance through the first interface
+    tau_s = 1 - rho12_s
+    tau_p = 1 - rho12_p
+    tau_0 = 1 - rho12_0
 
-    # reflectance for parallel and perpendicular polarized light
-    rho_para = (tand(thetar_deg - aoi) / tand(thetar_deg + aoi)) ** 2
-    rho_perp = (sind(thetar_deg - aoi) / sind(thetar_deg + aoi)) ** 2
+    if not np.allclose(n3, n2):  # AR coated glass
+        n3costheta2 = n3 * costheta
+        # refraction angle of second interface
+        sintheta = n2 / n3 * sintheta
+        costheta = np.sqrt(1 - sintheta**2)
+        n2costheta3 = n2 * costheta
+        n3costheta3 = n3 * costheta
 
-    # transmittance for non-normal light
-    tau = np.exp(-K * L / cosd(thetar_deg))
+        # reflectance by the second interface
+        rho23_s = (
+            (n2costheta2 - n3costheta3) / (n2costheta2 + n3costheta3)
+        ) ** 2
+        rho23_p = (
+            (n2costheta3 - n3costheta2) / (n2costheta3 + n3costheta2)
+        ) ** 2
+        rho23_0 = ((n2 - n3) / (n2 + n3)) ** 2
 
-    # iam is ratio of non-normal to normal incidence transmitted light
-    # after deducting the reflected portion of each
-    iam = ((1 - (rho_para + rho_perp) / 2) / (1 - rho_zero) * tau / tau_zero)
+        # transmittance through the coating, including internal reflections
+        # 1 + rho23*rho12 + (rho23*rho12)^2 + ... = 1/(1 - rho23*rho12)
+        tau_s *= (1 - rho23_s) / (1 - rho23_s * rho12_s)
+        tau_p *= (1 - rho23_p) / (1 - rho23_p * rho12_p)
+        tau_0 *= (1 - rho23_0) / (1 - rho23_0 * rho12_0)
 
-    with np.errstate(invalid='ignore'):
-        # angles near zero produce nan, but iam is defined as one
-        small_angle = 1e-06
-        iam = np.where(np.abs(aoi) < small_angle, 1.0, iam)
+    # transmittance after absorption in the glass
+    tau_s *= np.exp(-K * L / costheta)
+    tau_p *= np.exp(-K * L / costheta)
+    tau_0 *= np.exp(-K * L)
 
-        # angles at 90 degrees can produce tiny negative values,
-        # which should be zero. this is a result of calculation precision
-        # rather than the physical model
-        iam = np.where(iam < 0, 0, iam)
-
-        # for light coming from behind the plane, none can enter the module
-        iam = np.where(aoi > 90, 0, iam)
-
-    if isinstance(aoi_input, pd.Series):
-        iam = pd.Series(iam, index=aoi_input.index)
+    # incidence angle modifier
+    iam = (tau_s + tau_p) / 2 / tau_0
 
     return iam
 
@@ -227,7 +250,7 @@ def martin_ruiz(aoi, a_r=0.16):
 
     .. math::
 
-       IAM = \frac{1 - \exp(-\cos(\frac{aoi}{a_r}))}
+       IAM = \frac{1 - \exp(-\frac{\cos(aoi)}{a_r})}
        {1 - \exp(\frac{-1}{a_r})}
 
     which is presented as :math:`AL(\alpha) = 1 - IAM` in equation 4 of [1]_,
@@ -352,7 +375,6 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
 
     # avoid undefined results for horizontal or upside-down surfaces
     zeroang = 1e-06
-
 
     surface_tilt = np.where(surface_tilt == 0, zeroang, surface_tilt)
     surface_tilt = np.where(surface_tilt == 180, 180 - zeroang, surface_tilt)
@@ -541,7 +563,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     ----------
     model : str
         The IAM function to evaluate across solid angle. Must be one of
-        `'ashrae', 'physical', 'martin_ruiz', 'sapm'`.
+        `'ashrae', 'physical', 'martin_ruiz', 'sapm', 'schlick'`.
 
     surface_tilt : numeric
         Surface tilt angles in decimal degrees.
@@ -592,6 +614,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
         'ashrae': ashrae,
         'sapm': sapm,
         'martin_ruiz': martin_ruiz,
+        'schlick': schlick,
     }
 
     try:
@@ -748,3 +771,123 @@ def marion_integrate(function, surface_tilt, region, num=None):
         Fd = pd.Series(Fd, surface_tilt.index)
 
     return Fd
+
+
+def schlick(aoi):
+    """
+    Determine incidence angle modifier (IAM) for direct irradiance using the
+    Schlick approximation to the Fresnel equations.
+
+    The Schlick approximation was proposed in [1]_ as a computationally
+    efficient alternative to computing the Fresnel factor in computer
+    graphics contexts.  This implementation is a normalized form of the
+    equation in [1]_ so that it can be used as a PV IAM model.
+    Unlike other IAM models, this model has no ability to describe
+    different reflection profiles.
+
+    In PV contexts, the Schlick approximation has been used as an analytically
+    integrable alternative to the Fresnel equations for estimating IAM
+    for diffuse irradiance [2]_.
+
+    Parameters
+    ----------
+    aoi : numeric
+        The angle of incidence (AOI) between the module normal vector and the
+        sun-beam vector. Angles of nan will result in nan. [degrees]
+
+    Returns
+    -------
+    iam : numeric
+        The incident angle modifier.
+
+    References
+    ----------
+    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
+       rendering. Computer graphics forum 13 (1994).
+
+    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
+       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
+       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
+       :doi:`10.1016/j.rser.2022.112362`
+
+    See Also
+    --------
+    pvlib.iam.schlick_diffuse
+    """
+    iam = 1 - (1 - cosd(aoi)) ** 5
+    iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
+
+    # preserve input type
+    if np.isscalar(aoi):
+        iam = iam.item()
+    elif isinstance(aoi, pd.Series):
+        iam = pd.Series(iam, aoi.index)
+
+    return iam
+
+
+def schlick_diffuse(surface_tilt):
+    """
+    Determine the incidence angle modifiers (IAM) for diffuse sky and
+    ground-reflected irradiance on a tilted surface using the Schlick
+    incident angle model.
+
+    The diffuse iam values are calculated using an analytical integration
+    of the Schlick equation [1]_ over the portion of an isotropic sky and
+    isotropic foreground that is visible from the tilted surface [2]_.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angle measured from horizontal (e.g. surface facing
+        up = 0, surface facing horizon = 90). [degrees]
+
+    Returns
+    -------
+    iam_sky : numeric
+        The incident angle modifier for sky diffuse.
+
+    iam_ground : numeric
+        The incident angle modifier for ground-reflected diffuse.
+
+    References
+    ----------
+    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
+       rendering. Computer graphics forum 13 (1994).
+
+    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
+       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
+       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
+       :doi:`10.1016/j.rser.2022.112362`
+
+    See Also
+    --------
+    pvlib.iam.schlick
+    """
+    # these calculations are as in [2]_, but with the refractive index
+    # weighting coefficient w set to 1.0 (so it is omitted)
+
+    # relative transmittance of sky diffuse radiation by PV cover:
+    cosB = cosd(surface_tilt)
+    sinB = sind(surface_tilt)
+    cuk = (2 / (np.pi * (1 + cosB))) * (
+        (30/7)*np.pi - (160/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
+        + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
+        - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
+    )  # Eq 4 in [2]
+
+    # relative transmittance of ground-reflected radiation by PV cover:
+    with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6 in [2]
+        cug = 40 / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
+
+    cug = np.where(surface_tilt < 1e-6, 0, cug)
+
+    # respect input types:
+    if np.isscalar(surface_tilt):
+        cuk = cuk.item()
+        cug = cug.item()
+    elif isinstance(surface_tilt, pd.Series):
+        cuk = pd.Series(cuk, surface_tilt.index)
+        cug = pd.Series(cug, surface_tilt.index)
+
+    return cuk, cug

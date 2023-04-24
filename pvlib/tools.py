@@ -341,6 +341,8 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     --------
     pvlib.singlediode._pwr_optfcn
     """
+    if np.any(upper - lower < 0.):
+        raise ValueError('upper >= lower is required')
 
     phim1 = (np.sqrt(5) - 1) / 2
 
@@ -349,16 +351,8 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     df['VL'] = lower
 
     converged = False
-    iterations = 0
 
-    # handle all NaN case gracefully
-    with warnings.catch_warnings():
-        warnings.filterwarnings(action='ignore',
-                                message='All-NaN slice encountered')
-        iterlimit = 1 + np.nanmax(
-            np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
-
-    while not converged and (iterations <= iterlimit):
+    while not converged:
 
         phi = phim1 * (df['VH'] - df['VL'])
         df['V1'] = df['VL'] + phi
@@ -373,22 +367,16 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
         err = abs(df['V2'] - df['V1'])
 
-        # works with single value because err is np.float64
-        converged = (err[~np.isnan(err)] < atol).all()
-        # err will be less than atol before iterations hit the limit
-        # but just to be safe
-        iterations += 1
+        # handle all NaN case gracefully
+        with warnings.catch_warnings():
+            warnings.filterwarnings(action='ignore',
+                                    message='All-NaN slice encountered')
+            converged = np.all(err[~np.isnan(err)] < atol)
 
-    if iterations > iterlimit:
-        raise Exception("Iterations exceeded maximum. Check that func",
-                        " is not NaN in (lower, upper)")  # pragma: no cover
-
-    try:
-        func_result = func(df, 'V1')
-        x = np.where(np.isnan(func_result), np.nan, df['V1'])
-    except KeyError:
-        func_result = np.full_like(upper, np.nan)
-        x = func_result.copy()
+    # best estimate of location of maximum
+    df['max'] = 0.5 * (df['V1'] + df['V2'])
+    func_result = func(df, 'max')
+    x = np.where(np.isnan(func_result), np.nan, df['max'])
 
     return func_result, x
 
@@ -470,3 +458,14 @@ def _degrees_to_index(degrees, coordinate):
         index = int(np.around(index))
 
     return index
+
+
+EPS = np.finfo('float64').eps  # machine precision NumPy-1.20
+DX = EPS**(1/3)  # optimal differential element
+
+
+def _first_order_centered_difference(f, x0, dx=DX, args=()):
+    # simple replacement for scipy.misc.derivative, which is scheduled for
+    # removal in scipy 1.12.0
+    df = f(x0+dx, *args) - f(x0-dx, *args)
+    return df / 2 / dx

@@ -17,7 +17,7 @@
 <tr>
   <td>License</td>
   <td>
-    <a href="https://github.com/pvlib/pvlib-python/blob/master/LICENSE">
+    <a href="https://github.com/pvlib/pvlib-python/blob/main/LICENSE">
     <img src="https://img.shields.io/pypi/l/pvlib.svg" alt="license" />
     </a>
 </td>
@@ -28,29 +28,18 @@
     <a href="http://pvlib-python.readthedocs.org/en/stable/">
     <img src="https://readthedocs.org/projects/pvlib-python/badge/?version=stable" alt="documentation build status" />
     </a>
-    <a href="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml?query=branch%3Amaster">
-      <img src="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml/badge.svg?branch=master" alt="GitHub Actions Testing Status" />
+    <a href="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml?query=branch%3Amain">
+      <img src="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml/badge.svg?branch=main" alt="GitHub Actions Testing Status" />
     </a>
     <a href="https://codecov.io/gh/pvlib/pvlib-python">
-    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg" alt="codecov coverage" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td>Code Quality</td>
-  <td>
-    <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/context:python">
-    <img src="https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm quality grade" />
-    </a>
-    <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/alerts">
-    <img src="https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm alters" />
+    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/main/graph/badge.svg" alt="codecov coverage" />
     </a>
   </td>
 </tr>
 <tr>
   <td>Benchmarks</td>
   <td>
-    <a href="https://pvlib-benchmarker.github.io/pvlib-benchmarks/">
+    <a href="https://pvlib.github.io/pvlib-benchmarks/">
     <img src="https://img.shields.io/badge/benchmarks-asv-lightgrey" />
     </a>
   </td>
@@ -93,8 +82,8 @@ but operate independently of it.
 Documentation
 =============
 
-Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/).
-
+Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/),
+including an [FAQ](http://pvlib-python.readthedocs.io/en/stable/user_guide/faq.html) page.
 
 Installation
 ============

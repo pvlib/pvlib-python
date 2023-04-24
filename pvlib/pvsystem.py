@@ -10,6 +10,7 @@ import itertools
 import os
 from urllib.request import urlopen
 import numpy as np
+from scipy import constants
 import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
@@ -2004,8 +2005,8 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          Source: [4]
     '''
 
-    # Boltzmann constant in eV/K
-    k = 8.617332478e-05
+    # Boltzmann constant in eV/K, 8.617332478e-05
+    k = constants.value('Boltzmann constant in eV/K')
 
     # reference temperature
     Tref_K = temp_ref + 273.15
@@ -2262,10 +2263,10 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     '''
 
     # Boltzmann constant in J/K
-    k = 1.38064852e-23
+    k = constants.k
 
     # elementary charge in coulomb
-    q = 1.6021766e-19
+    q = constants.e
 
     # reference temperature
     Tref_K = temp_ref + 273.15
@@ -2376,7 +2377,8 @@ def retrieve_sam(name=None, path=None):
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
         elif name == 'adrinverter':
-            csvdata = os.path.join(data_path, 'adr-library-2013-10-01.csv')
+            csvdata = os.path.join(
+                data_path, 'adr-library-cec-inverters-2019-03-05.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
@@ -2537,8 +2539,8 @@ def sapm(effective_irradiance, temp_cell, module):
     temp_ref = 25
     irrad_ref = 1000
 
-    q = 1.60218e-19  # Elementary charge in units of coulombs
-    kb = 1.38066e-23  # Boltzmann's constant in units of J/K
+    q = constants.e  # Elementary charge in units of coulombs
+    kb = constants.k  # Boltzmann's constant in units of J/K
 
     # avoid problem with integer input
     Ee = np.array(effective_irradiance, dtype='float64') / irrad_ref

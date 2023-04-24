@@ -83,6 +83,7 @@ Array geometry is defined by the following:
     - height of row center above ground, ``height``.
     - tilt of the row from horizontal, ``surface_tilt``.
     - azimuth of the row's normal vector, ``surface_azimuth``.
+
 View factors from the ground to the sky are calculated at points spaced along
 a one-dimensional axis on the ground, with the origin under the center of a
 row and the positive direction toward the right. The positive direction is
@@ -90,7 +91,15 @@ considered to be towards the "front" of the array. Array height differs in this
 code from the description in [1], where array height is described at the row's
 lower edge.
 
+If ``model='isotropic'`` (the default), ``dhi`` is assumed to be isotropically
+distributed across the sky dome as in [1]_. This implementation provides an
+optional extension to [1]_ to model sky anisotropy: if ``model='haydavies'``,
+the input ``dhi`` is decomposed into circumsolar and isotropic components using
+:py:func:`~pvlib.irradiance.haydavies`, with the circumsolar component treated
+as additional ``dni`` for transposition and shading purposes.
+
 This model is influenced by the 2D model published by Marion, *et al.* in [2].
+
 
 References
 ----------

@@ -5,8 +5,9 @@ tests for :mod:`pvlib.iotools.ecmwf_macc`
 import os
 import datetime
 import numpy as np
+import pandas as pd
 import pytest
-from ..conftest import requires_netCDF4, DATA_DIR
+from ..conftest import requires_netCDF4, DATA_DIR, assert_index_equal
 from pvlib.iotools import ecmwf_macc
 
 TESTDATA = 'aod550_tcwv_20121101_test.nc'
@@ -54,10 +55,9 @@ def test_read_ecmwf_macc(expected_test_data):
     """Test reading ECMWF_MACC data from netCDF4 file."""
     data = ecmwf_macc.read_ecmwf_macc(
         expected_test_data, 38, -122)
-    expected_times = [
-        1351738800, 1351749600, 1351760400, 1351771200, 1351782000, 1351792800,
-        1351803600, 1351814400]
-    assert np.allclose(data.index.view(np.int64) // 1000000000, expected_times)
+    expected_times = pd.date_range('2012-11-01 03:00', '2012-11-02 00:00',
+                                   freq='3h').astype("datetime64[ns]")
+    assert_index_equal(data.index.astype("datetime64[ns]"), expected_times)
     expected_aod = np.array([
         0.39531226, 0.22371339, 0.18373083, 0.15010143, 0.130809, 0.11172834,
         0.09741255, 0.0921606])

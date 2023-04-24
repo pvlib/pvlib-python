@@ -52,8 +52,8 @@ def masking_angle(surface_tilt, gcr, slant_height):
     # The original equation (8 in [1]) requires pitch and collector width,
     # but it's easy to non-dimensionalize it to make it a function of GCR
     # by factoring out B from the argument to arctan.
-    numerator = (1 - slant_height) * sind(surface_tilt)
-    denominator = 1/gcr - (1 - slant_height) * cosd(surface_tilt)
+    numerator = gcr * (1 - slant_height) * sind(surface_tilt)
+    denominator = 1 - gcr * (1 - slant_height) * cosd(surface_tilt)
     phi = np.arctan(numerator / denominator)
     return np.degrees(phi)
 

@@ -42,13 +42,29 @@ def test_physical():
     expected = np.array([0, 0.8893998, 0.98797788, 0.99926198, 1, 0.99926198,
                          0.98797788, 0.8893998, 0, np.nan])
     iam = _iam.physical(aoi, 1.526, 0.002, 4)
-    assert_allclose(iam, expected, equal_nan=True)
+    assert_allclose(iam, expected, atol=1e-7, equal_nan=True)
 
     # GitHub issue 397
     aoi = pd.Series(aoi)
     iam = _iam.physical(aoi, 1.526, 0.002, 4)
     expected = pd.Series(expected)
     assert_series_equal(iam, expected)
+
+
+def test_physical_ar():
+    aoi = np.array([0, 22.5, 45, 67.5, 90, 100, np.nan])
+    expected = np.array([1, 0.99944171, 0.9917463, 0.91506158, 0, 0, np.nan])
+    iam = _iam.physical(aoi, n_ar=1.29)
+    assert_allclose(iam, expected, atol=1e-7, equal_nan=True)
+
+
+def test_physical_noar():
+    aoi = np.array([0, 22.5, 45, 67.5, 90, 100, np.nan])
+    expected = _iam.physical(aoi)
+    iam0 = _iam.physical(aoi, n_ar=1)
+    iam1 = _iam.physical(aoi, n_ar=1.526)
+    assert_allclose(iam0, expected, equal_nan=True)
+    assert_allclose(iam1, expected, equal_nan=True)
 
 
 def test_physical_scalar():
@@ -322,3 +338,48 @@ def test_marion_integrate_invalid():
 
     with pytest.raises(ValueError):
         _iam.marion_integrate(_iam.ashrae, 0, 'bad', 180)
+
+
+def test_schlick():
+    idx = pd.date_range('2019-01-01', freq='h', periods=9)
+    aoi = pd.Series([-180, -135, -90, -45, 0, 45, 90, 135, 180], idx)
+    expected = pd.Series([0, 0, 0, 0.99784451, 1.0, 0.99784451, 0, 0, 0], idx)
+
+    # scalars
+    for aoi_scalar, expected_scalar in zip(aoi, expected):
+        actual = _iam.schlick(aoi_scalar)
+        assert_allclose(expected_scalar, actual)
+
+    # numpy arrays
+    actual = _iam.schlick(aoi.values)
+    assert_allclose(expected.values, actual)
+
+    # pandas Series
+    actual = _iam.schlick(aoi)
+    assert_series_equal(expected, actual)
+
+
+def test_schlick_diffuse():
+    surface_tilt = np.array([0, 20, 70, 90])
+    # expected values calculated with marion_integrate and schlick
+    expected_sky = np.array([0.95238092, 0.96249934, 0.96228167, 0.95238094])
+    expected_ground = np.array([0, 0.62693858, 0.93218737, 0.95238094])
+
+    # numpy arrays
+    actual_sky, actual_ground = _iam.schlick_diffuse(surface_tilt)
+    assert_allclose(expected_sky, actual_sky)
+    assert_allclose(expected_ground, actual_ground, rtol=1e-6)
+
+    # scalars
+    for i in range(len(surface_tilt)):
+        actual_sky, actual_ground = _iam.schlick_diffuse(surface_tilt[i])
+        assert_allclose(expected_sky[i], actual_sky)
+        assert_allclose(expected_ground[i], actual_ground, rtol=1e-6)
+
+    # pandas Series
+    idx = pd.date_range('2019-01-01', freq='h', periods=len(surface_tilt))
+    actual_sky, actual_ground = _iam.schlick_diffuse(pd.Series(surface_tilt,
+                                                               idx))
+    assert_series_equal(pd.Series(expected_sky, idx), actual_sky)
+    assert_series_equal(pd.Series(expected_ground, idx), actual_ground,
+                        rtol=1e-6)

@@ -19,7 +19,6 @@ global-exclude \#*
 global-exclude .ipynb_checkpoints
 
 exclude .coveragerc
-exclude .lgtm.yml
 exclude .stickler.yml
 exclude codecov.yml
 exclude readthedocs.yml

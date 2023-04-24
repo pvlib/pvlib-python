@@ -522,7 +522,7 @@ def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
 @pytest.mark.remote_data
 def test_read_pvgis_horizon():
     df = get_pvgis_horizon(35.171051, -106.465158)
-    az, elv = df.horizon_azimuth, df.horizon_angles
+    elv = df.horizon_angles
     assert all(np.isclose(elv, data_horizon_abq))
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):

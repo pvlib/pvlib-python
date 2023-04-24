@@ -1,9 +1,8 @@
 import pytest
-import requests
 import numpy as np
 from pvlib.iotools import download_SRTM
-from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal,
-                        fail_on_pvlib_version)
+from ..conftest import DATA_DIR
+
 from pvlib._deprecation import pvlibDeprecationWarning
 
 NM_lat, NM_lon = 35, -107

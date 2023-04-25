@@ -13,4 +13,4 @@ NM_points = ((1000, 2000, 3000),
 @pytest.mark.remote_data
 def test_cgiar_download():
     DEM, file_path = download_SRTM(35, -107, path_to_save=DATA_DIR)
-    assert np.allclose(DEM[NM_points], NM_elevations)
+    np.testing.assert_allclose(DEM[NM_points], NM_elevations)

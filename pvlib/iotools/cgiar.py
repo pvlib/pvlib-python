@@ -17,19 +17,19 @@ def _lat_lon_to_query(longitude, latitude, srtm_arc_sec=3):
     r'''Converts latitude, longitude from the format used as
     input to the other functions to format used by CGIAR
     ----------
-    longitude : numeric
+    longitude : float
         longitude value, negative W of prime meridian
-    latitude: numeric
+    latitude: float
         latitude value
-    srtm_arc_sec: numeric {1,3}
+    srtm_arc_sec: int, {3,1}
         The resolution (arc-seconds) of the desired DEM.
         Either 1 or 3
 
     Returns
     -------
-    rounded_lon : numeric
+    rounded_lon : int
         Rounded/adjusted longitude value
-    rounded_lat : numeric
+    rounded_lat : int
         Rounded/adjusted latitude value
 
     '''

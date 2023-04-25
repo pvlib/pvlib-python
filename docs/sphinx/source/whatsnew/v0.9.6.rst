@@ -40,3 +40,12 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Adam R. Jensen (:ghuser:`adamrjensen`)
+* Ben Pierce (:ghuser:`bgpierc`)
+* Joseph Palakapilly (:ghuser:`JPalakapillyKWH`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Karel De Brabandere (:ghuser:`kdebrab`)
+* Josh Stein (:ghuser:`jsstein`)
+* Kevin Anderson (:ghuser:`kandersolar`)

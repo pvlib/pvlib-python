@@ -668,7 +668,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     return data, months_selected, inputs, meta
 
 
-def get_pvgis_horizon(latitude, longitude, proxies=None, url=URL):
+def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     r'''
     Get horizon data from PVGIS
 
@@ -678,10 +678,10 @@ def get_pvgis_horizon(latitude, longitude, proxies=None, url=URL):
         Latitude in degrees north
     longitude : float
         Longitude in degrees east
-    proxies: dict
-        Dictionary of proxies to access through a corporate network
     url: string
         Base URL for PVGIS
+    kwargs:
+        Passed to requests.get
 
     Returns
     -------
@@ -690,7 +690,7 @@ def get_pvgis_horizon(latitude, longitude, proxies=None, url=URL):
     '''
     res = requests.get(url +
                        f'printhorizon?lat={latitude}&lon={longitude}',
-                       proxies=proxies, verify=False)
+                       **kwargs)
     res.raise_for_status()
     string = str(io.BytesIO(res.content).read().decode('UTF-8'))
     # the horizon data is given in a different format then the others

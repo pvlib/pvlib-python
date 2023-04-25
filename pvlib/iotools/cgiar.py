@@ -47,13 +47,15 @@ def download_SRTM(latitude, longitude, srtm_arc_sec=3,
                   path_to_save="./", proxies=None):
     r'''Downloads a SRTM DEM tile from CGIAR,
     saves it to a path, and loads it as an array
+
+    Parameters
     ----------
     latitude: numeric
         latitude value to be included in the DEM
     longitude : numeric
         longitude value to be included in the DEM,
         negative W of prime meridian
-    srtm_arc_sec: numeric, {1,3}
+    srtm_arc_sec : int, {3, 1}
         The resolution (arc-seconds) of the desired DEM.
         Either 1 or 3
     path_to_save: string

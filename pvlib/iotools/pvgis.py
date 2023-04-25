@@ -671,6 +671,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
 def get_pvgis_horizon(latitude, longitude, proxies=None, url=URL):
     r'''
     Get horizon data from PVGIS
+
     Parameters
     ----------
     latitude : float

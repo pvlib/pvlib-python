@@ -44,7 +44,7 @@ def _lat_lon_to_query(longitude, latitude, srtm_arc_sec=3):
 
 
 def download_SRTM(latitude, longitude, srtm_arc_sec=3,
-                  path_to_save="./", proxies=None):
+                  path_to_save="./", **kwargs):
     r'''Downloads a SRTM DEM tile from CGIAR,
     saves it to a path, and loads it as an array
 
@@ -62,6 +62,8 @@ def download_SRTM(latitude, longitude, srtm_arc_sec=3,
         The base path to save the DEM as a .tif file
     proxies: dict
         Proxy table for a corporate network
+    kwargs:
+        Passed to requests.get
 
     Returns
     -------
@@ -77,7 +79,7 @@ def download_SRTM(latitude, longitude, srtm_arc_sec=3,
     org_url = 'https://srtm.csi.cgiar.org/'
     base_url = org_url + 'wp-content/uploads/files/srtm_5x5/TIFF/'
     query_URL = base_url + f'srtm_{long:02d}_{lat:02d}.zip'
-    res = requests.get(query_URL, proxies=proxies, verify=False)
+    res = requests.get(query_URL, **kwargs)
     res.raise_for_status()
 
     # unzip download

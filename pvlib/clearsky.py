@@ -825,7 +825,9 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
     # Get column indices where max time step > sample_interval
     gaps = np.ravel(np.argwhere(time_h_diff_max > sample_interval))
     # Get column indices where at least one of the values is a NaN
-    gaps = set().union(*[gaps, np.ravel(np.argwhere(np.isnan(meas.values[H].mean(axis=0))))])
+    gaps = set().union(*[
+      gaps, np.ravel(np.argwhere(np.isnan(meas\
+                                          .values[H].mean(axis=0))))])
 
     # calculate measurement statistics
     meas_mean, meas_max, meas_slope_nstd, meas_slope = _calc_stats(
@@ -881,8 +883,8 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
         clear_windows = pd.Series(
             index=times, data=np.logical_and.reduce([c1, c2, c3, c4, c5, c6]))
         windows_where_nan = pd.DatetimeIndex(set().union(*[
-                            c1_where_nan,c2_where_nan, c3_where_nan,
-                            c4_where_nan, c5_where_nan, c6_where_nan]))
+          c1_where_nan,c2_where_nan, c3_where_nan, c4_where_nan, c5_where_nan,
+          c6_where_nan]))
         clear_windows[windows_where_nan] = np.nan
 
         # create array to return

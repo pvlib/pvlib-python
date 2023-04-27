@@ -2377,7 +2377,8 @@ def retrieve_sam(name=None, path=None):
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
         elif name == 'adrinverter':
-            csvdata = os.path.join(data_path, 'adr-library-2013-10-01.csv')
+            csvdata = os.path.join(
+                data_path, 'adr-library-cec-inverters-2019-03-05.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations

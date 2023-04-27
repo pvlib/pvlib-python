@@ -654,8 +654,9 @@ def test_detect_clearsky_nans1():
     clear_samples = clearsky.detect_clearsky(
         meas, cs)
     assert_series_equal(expected, clear_samples, check_dtype=False,
-    check_names=False)
+                        check_names=False)
 
+    
 def test_detect_clearsky_nans2():
     # Test for 1 NaN value - should mark as NaN
     data_file = DATA_DIR / 'detect_clearsky_data_nans2.csv'
@@ -665,7 +666,7 @@ def test_detect_clearsky_nans2():
     clear_samples = clearsky.detect_clearsky(
         meas, cs)
     assert_series_equal(expected, clear_samples, check_dtype=False,
-    check_names=False)
+                        check_names=False)
 
 @pytest.fixture
 def detect_clearsky_helper_data():

@@ -1686,7 +1686,7 @@ class ModelChain:
             self.temperature_model()
         return self
 
-    def _prepare_temperature(self, data=None):
+    def _prepare_temperature(self, data):
         """
         Sets cell_temperature using inputs in data and the specified
         temperature model.
@@ -1878,7 +1878,7 @@ class ModelChain:
 
         return self
 
-    def _run_from_effective_irrad(self, data=None):
+    def _run_from_effective_irrad(self, data):
         """
         Executes the temperature, DC, losses and AC models.
 

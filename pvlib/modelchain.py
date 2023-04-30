@@ -1907,7 +1907,7 @@ class ModelChain:
 
         return self
 
-    def run_model_from_effective_irradiance(self, data=None):
+    def run_model_from_effective_irradiance(self, data):
         """
         Run the model starting with effective irradiance in the plane of array.
 

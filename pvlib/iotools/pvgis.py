@@ -668,7 +668,8 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     return data, months_selected, inputs, meta
 
 
-def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
+def get_pvgis_horizon(latitude, longitude,
+                      url=URL, **kwargs):
     r'''
     Get horizon data from PVGIS
 
@@ -678,7 +679,7 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
         Latitude in degrees north
     longitude : float
         Longitude in degrees east
-    url: string
+    url: str, default 
         Base URL for PVGIS
     kwargs:
         Passed to requests.get
@@ -687,21 +688,24 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     -------
     df : pd.DataFrame
         Pandas dataframe of the retrived horizon
-    '''
-    res = requests.get(url +
-                       f'printhorizon?lat={latitude}&lon={longitude}',
-                       **kwargs)
-    res.raise_for_status()
-    # the horizon data is given in a different format then the others
-    # numpy has an easier time decoding it
-    array = np.genfromtxt(io.StringIO(res.text),
-                          skip_header=4, skip_footer=7)
-    df = pd.DataFrame(array)
 
-    # Set the column names
-    df.columns = ['horizon_azimuth', 'horizon_angles',
-                  'azimuth_sun_winter_solstice',
-                  'elevation_sun_winter_solstice',
-                  'azimuth_sun_summer_solstice',
-                  'elevation_sun_summer_solstice']
-    return df[['horizon_azimuth', 'horizon_angles']]
+    References
+    ----------
+    .. [1] `PVGIS horizon profile tool
+       <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
+    '''
+    params = {'lat': latitude, 'lon': longitude,
+              'outputformat': outputformat}
+    res = requests.get(url + 'printhorizon', params=params,
+                       **kwargs)
+    if not res.ok:
+        try:
+            err_msg = res.json()
+        except Exception:
+            res.raise_for_status()
+        else:
+            raise requests.HTTPError(err_msg['message'])
+    json_output =  res.json()
+    df = pd.DataFrame(json_output['outputs']['horizon_profile'])
+    df.columns = ['horizon_azimuth', 'horizon_angles']
+    return df

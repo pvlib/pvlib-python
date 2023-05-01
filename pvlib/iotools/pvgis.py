@@ -695,7 +695,7 @@ def get_pvgis_horizon(latitude, longitude,
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
     '''
     params = {'lat': latitude, 'lon': longitude,
-              'outputformat': outputformat}
+              'outputformat': 'json'}
     res = requests.get(url + 'printhorizon', params=params,
                        **kwargs)
     if not res.ok:

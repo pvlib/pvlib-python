@@ -679,7 +679,7 @@ def get_pvgis_horizon(latitude, longitude,
         Latitude in degrees north
     longitude : float
         Longitude in degrees east
-    url: str, default 
+    url: str, default: :const:`pvlib.iotools.pvgis.URL`
         Base URL for PVGIS
     kwargs:
         Passed to requests.get

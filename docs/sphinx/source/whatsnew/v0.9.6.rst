@@ -16,7 +16,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* `data` can no longer be left unspecified in
+  :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
 
 Testing
 ~~~~~~~
@@ -47,3 +48,4 @@ Contributors
 * Karel De Brabandere (:ghuser:`kdebrab`)
 * Josh Stein (:ghuser:`jsstein`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Siddharth Kaul (:ghuser:`k10blogger`)

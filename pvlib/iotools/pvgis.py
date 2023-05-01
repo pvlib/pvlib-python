@@ -19,7 +19,6 @@ import json
 from pathlib import Path
 import requests
 import pandas as pd
-import numpy as np
 from pvlib.iotools import read_epw, parse_epw
 import warnings
 from pvlib._deprecation import pvlibDeprecationWarning

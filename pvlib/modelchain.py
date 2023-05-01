@@ -1699,7 +1699,7 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame, default None
+        data : DataFrame
             May contain columns ``'cell_temperature'`` or
             ``'module_temperaure'``.
 
@@ -1884,7 +1884,7 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame, or tuple of DataFrame, default None
+        data : DataFrame, or tuple of DataFrame
             If optional column ``'cell_temperature'`` is provided, these values
             are used instead of `temperature_model`. If optional column
             `module_temperature` is provided, `temperature_model` must be

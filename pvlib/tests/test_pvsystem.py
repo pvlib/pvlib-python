@@ -1082,7 +1082,7 @@ def test_v_from_i(fixture_v_from_i, method, atol):
     V = pvsystem.v_from_i(I, IL, I0, Rs, Rsh, nNsVth, method=method)
 
     assert isinstance(V, type(V_expected))
-    if isinstance(V, type(np.ndarray)):
+    if isinstance(V, np.ndarray):
         assert isinstance(V.dtype, type(V_expected.dtype))
         assert V.shape == V_expected.shape
     assert_allclose(V, V_expected, atol=atol)
@@ -1108,7 +1108,7 @@ def test_i_from_v_from_i(fixture_v_from_i):
     I = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth)
 
     assert isinstance(I, type(I_expected))
-    if isinstance(I, type(np.ndarray)):
+    if isinstance(I, np.ndarray):
         assert isinstance(I.dtype, type(I_expected.dtype))
         assert I.shape == I_expected.shape
     assert_allclose(I, I_expected, atol=atol)
@@ -1203,7 +1203,7 @@ def test_i_from_v(fixture_i_from_v, method, atol):
     I = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth, method=method)
 
     assert isinstance(I, type(I_expected))
-    if isinstance(I, type(np.ndarray)):
+    if isinstance(I, np.ndarray):
         assert isinstance(I.dtype, type(I_expected.dtype))
         assert I.shape == I_expected.shape
     assert_allclose(I, I_expected, atol=atol)

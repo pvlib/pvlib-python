@@ -692,10 +692,9 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
                        f'printhorizon?lat={latitude}&lon={longitude}',
                        **kwargs)
     res.raise_for_status()
-    string = str(io.BytesIO(res.content).read().decode('UTF-8'))
     # the horizon data is given in a different format then the others
     # numpy has an easier time decoding it
-    array = np.genfromtxt(io.StringIO(string),
+    array = np.genfromtxt(io.StringIO(res.text),
                           skip_header=4, skip_footer=7)
     df = pd.DataFrame(array)
 
@@ -705,4 +704,4 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
                   'elevation_sun_winter_solstice',
                   'azimuth_sun_summer_solstice',
                   'elevation_sun_summer_solstice']
-    return df
+    return df[['horizon_azimuth', 'horizon_angles']]

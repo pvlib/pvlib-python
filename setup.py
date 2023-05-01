@@ -48,7 +48,7 @@ TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock',
 EXTRAS_REQUIRE = {
     'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
                  'pvfactors', 'siphon', 'statsmodels',
-                 'cftime >= 1.1.1', 'scikit-image'],
+                 'cftime >= 1.1.1'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 4.5.0',
             'pydata-sphinx-theme == 0.8.1', 'sphinx-gallery',
             'docutils == 0.15.2', 'pillow', 'netcdf4', 'siphon',

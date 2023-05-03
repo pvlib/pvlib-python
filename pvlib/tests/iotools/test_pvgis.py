@@ -513,7 +513,8 @@ def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
 @pytest.mark.remote_data
 def test_read_pvgis_horizon():
     pvgis_data = get_pvgis_horizon(35.171051, -106.465158)
-    horizon_data = pd.read_csv(DATA_DIR / 'test_read_pvgis_horizon.csv')
+    horizon_data = pd.read_csv(DATA_DIR / 'test_read_pvgis_horizon.csv',
+                               index_col = 0)
     assert_frame_equal(pvgis_data, horizon_data)
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):

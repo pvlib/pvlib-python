@@ -65,15 +65,6 @@ data_pv_json = [
     [1187.2, 129.59, 8.06, 0.97, 0.97, 0.0],
     [3950.1, 423.28, 14.8, 1.89, 0.69, 0.0]]
 
-data_horizon = pd.Series([9.9, 13.0, 14.5, 15.7, 14.9, 15.3,
-                    15.7, 15.7, 13.0, 11.5, 11.1, 11.5,
-                    10.3, 11.5, 10.3, 9.5, 10.7, 11.8,
-                    11.8, 8.8, 8.4, 7.3, 5.7, 5.7, 4.6,
-                    3.4, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 1.1, 1.9, 3.8, 5.0,
-                    6.5, 9.2, 9.9], name='horizon_angles')
-
 inputs_radiation_csv = {'latitude': 45.0, 'longitude': 8.0, 'elevation': 250.0,
                         'radiation_database': 'PVGIS-SARAH',
                         'Slope': '30 deg.', 'Azimuth': '0 deg.'}
@@ -521,9 +512,9 @@ def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
 
 @pytest.mark.remote_data
 def test_read_pvgis_horizon():
-    df = get_pvgis_horizon(35.171051, -106.465158)
-    elv = df.horizon_angles
-    assert_series_equal(elv, data_horizon)
+    pvgis_data = get_pvgis_horizon(35.171051, -106.465158)
+    horizon_data = pd.read_csv(DATA_DIR / 'test_read_pvgis_horizon.csv')
+    assert_frame_equal(pvgis_data, horizon_data)
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'

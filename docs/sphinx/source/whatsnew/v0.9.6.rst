@@ -19,7 +19,8 @@ Bug fixes
 
 Testing
 ~~~~~~~
-
+* Removed Stickler-CI integration as the service has ceased operation.
+  (:issue:`1722`, :pull:`1723`)
 
 Documentation
 ~~~~~~~~~~~~~

@@ -65,7 +65,7 @@ data_pv_json = [
     [1187.2, 129.59, 8.06, 0.97, 0.97, 0.0],
     [3950.1, 423.28, 14.8, 1.89, 0.69, 0.0]]
 
-data_horizon_abq = pd.Series([9.9, 13.0, 14.5, 15.7, 14.9, 15.3,
+data_horizon = pd.Series([9.9, 13.0, 14.5, 15.7, 14.9, 15.3,
                     15.7, 15.7, 13.0, 11.5, 11.1, 11.5,
                     10.3, 11.5, 10.3, 9.5, 10.7, 11.8,
                     11.8, 8.8, 8.4, 7.3, 5.7, 5.7, 4.6,
@@ -523,7 +523,7 @@ def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
 def test_read_pvgis_horizon():
     df = get_pvgis_horizon(35.171051, -106.465158)
     elv = df.horizon_angles
-    assert_series_equal(elv, data_horizon_abq)
+    assert_series_equal(elv, data_horizon)
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'

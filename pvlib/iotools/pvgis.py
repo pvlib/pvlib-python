@@ -703,4 +703,5 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     json_output = res.json()
     df = pd.DataFrame(json_output['outputs']['horizon_profile'])
     df.columns = ['horizon_azimuth', 'horizon_angles']
+    df['horizon_azimuth'] += 180
     return df

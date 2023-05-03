@@ -11,7 +11,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Added horizon retrieval from PVGIS function in 
+* Added function to retrieve horizon data from PVGIS 
   :py:func:`pvlib.iotools.get_pvgis_horizon`. (:issue:`1290`, :pull:`1395`)
 
 Bug fixes

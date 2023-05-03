@@ -667,10 +667,8 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     return data, months_selected, inputs, meta
 
 
-def get_pvgis_horizon(latitude, longitude,
-                      url=URL, **kwargs):
-    r'''
-    Get horizon data from PVGIS
+def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
+    """Get horizon data from PVGIS.
 
     Parameters
     ----------
@@ -692,11 +690,9 @@ def get_pvgis_horizon(latitude, longitude,
     ----------
     .. [1] `PVGIS horizon profile tool
        <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
-    '''
-    params = {'lat': latitude, 'lon': longitude,
-              'outputformat': 'json'}
-    res = requests.get(url + 'printhorizon', params=params,
-                       **kwargs)
+    """
+    params = {'lat': latitude, 'lon': longitude, 'outputformat': 'json'}
+    res = requests.get(url + 'printhorizon', params=params, **kwargs)
     if not res.ok:
         try:
             err_msg = res.json()
@@ -704,7 +700,7 @@ def get_pvgis_horizon(latitude, longitude,
             res.raise_for_status()
         else:
             raise requests.HTTPError(err_msg['message'])
-    json_output =  res.json()
+    json_output = res.json()
     df = pd.DataFrame(json_output['outputs']['horizon_profile'])
     df.columns = ['horizon_azimuth', 'horizon_angles']
     return df

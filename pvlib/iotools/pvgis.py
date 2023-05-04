@@ -683,7 +683,7 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
 
     Returns
     -------
-    df : pd.DataFrame
+    data : pd.DataFrame
         Pandas dataframe of the retrived horizon
 
     References
@@ -703,5 +703,6 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     json_output = res.json()
     df = pd.DataFrame(json_output['outputs']['horizon_profile'])
     df.columns = ['horizon_azimuth', 'horizon_angles']
+    # Convert azimuth to pvlib convention (north=0, south=180)
     df['horizon_azimuth'] += 180
     return df

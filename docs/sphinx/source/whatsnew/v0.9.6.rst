@@ -1,0 +1,46 @@
+.. _whatsnew_0960:
+
+
+v0.9.6 (Anticipated June 2023)
+------------------------------
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+* added functions `pvlib.tracking.tracker_shaded_fraction` and
+  `pvlib.tracking.linear_shade_loss` to calculate row-to-row shade and apply
+  linear shade loss for thin film CdTe modules like First Solar.
+  (:issue:`1689`, :pull:`1690`)
+
+Bug fixes
+~~~~~~~~~
+* `data` can no longer be left unspecified in
+  :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`.
+  (:issue:`1713`, :pull:`1720`)
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+* Updated the description of the interval parameter in
+  :py:func:`pvlib.iotools.get_psm3`. (:issue:`1702`, :pull:`1712`)
+
+Benchmarking
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`adamrjensen`)
+* Siddharth Kaul (:ghuser:`k10blogger`)
+* Mark A. Mikofski (:ghuser:`mikofski`)

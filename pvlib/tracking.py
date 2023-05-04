@@ -477,9 +477,17 @@ def linear_shade_loss(shade_fraction, diffuse_fraction):
         The fraction of power lost due to linear shading. A value of 1 is all
         power lost and zero is no loss.
 
-    References
-    ----------
-    Mark A. Mikofski, "First Solar Irradiance Shade Losses on Sloped Terrain,"
-    PVPMC, 2023
+    See also
+    --------
+    pvlib.tracking.tracker_shaded_fraction
+
+    Example
+    -------
+    >>> from pvlib import tracking
+    >>> fs = tracking.tracker_shaded_fraction(45.0, 0.8, 45.0, 0)
+    >>> loss = tracking.linear_shade_loss(fs, 0.2)
+    >>> P_no_shade = 100  # [kWdc]  DC output from modules
+    >>> P_linear_shade = P_no_shade * (1-loss)  # [kWdc] output after loss
+    # 90.71067811865476 [kWdc]
     """
-    return 1 - shade_fraction * (1 - diffuse_fraction)
+    return shade_fraction * (1 - diffuse_fraction)

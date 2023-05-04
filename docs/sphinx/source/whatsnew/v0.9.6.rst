@@ -38,6 +38,7 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Lakshya Garg (:ghuser:`Lakshyadevelops`)
 * Adam R. Jensen (:ghuser:`adamrjensen`)
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Kshitiz Gupta (:ghuser:`kshitiz305`)

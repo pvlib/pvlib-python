@@ -17,8 +17,7 @@ Bug fixes
 ~~~~~~~~~
 * `data` can no longer be left unspecified in
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
-* `broken links in PVLib docs`in
-   docs/sphinx/source/index.rst updating nbviewer.ipython.org  :(:issue:`1721`)(:pull:`1726`)
+
 Testing
 ~~~~~~~
 
@@ -27,6 +26,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Updated the description of the interval parameter in
   :py:func:`pvlib.iotools.get_psm3`. (:issue:`1702`, :pull:`1712`)
+* Fixed outdated nbviewer links. (:issue:`1721`, :pull:`1726`)
 
 Benchmarking
 ~~~~~~~~~~~~~

@@ -14,7 +14,7 @@ Enhancements
 * added functions `pvlib.tracking.tracker_shaded_fraction` and
   `pvlib.tracking.linear_shade_loss` to calculate row-to-row shade and apply
   linear shade loss for thin film CdTe modules like First Solar.
-  (:issue:`1689`, :pull:`1690`)
+  (:issue:`1689`, :issue:`1690`, :pull:`1725`)
 
 Bug fixes
 ~~~~~~~~~

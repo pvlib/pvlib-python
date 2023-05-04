@@ -476,7 +476,7 @@ def test_calc_surface_orientation_special():
 
 @pytest.fixture
 def expected_fs():
-    # trivial case, 80% gcr, no slope, trackers & psz at 45-deg, 
+    # trivial case, 80% gcr, no slope, trackers & psz at 45-deg
     z = np.sqrt(2*0.8*0.8)
     return 1 - 1/z
 

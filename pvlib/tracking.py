@@ -730,7 +730,7 @@ def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
     # ratio of shadow, z, to pitch, P
     zp = gcr * np.sin(angle_z) / np.sin(angle_gcr)
     # there's only row-to-row shade loss if the shadow on the ground, z, is
-    # longer than row-to-row pitch projected on the ground, P*cos(theta_g)
+    # longer than row-to-row pitch projected on the ground, P/cos(theta_g)
     zp_cos_g = zp*np.cos(theta_g_rad)
     # shade fraction
     fs = 0 if zp_cos_g <= 1 else 1 - 1/zp_cos_g

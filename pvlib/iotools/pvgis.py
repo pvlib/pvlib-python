@@ -701,8 +701,8 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
         else:
             raise requests.HTTPError(err_msg['message'])
     json_output = res.json()
-    df = pd.DataFrame(json_output['outputs']['horizon_profile'])
-    df.columns = ['horizon_azimuth', 'horizon_angles']
+    data = pd.DataFrame(json_output['outputs']['horizon_profile'])
+    data.columns = ['horizon_azimuth', 'horizon_elevation']
     # Convert azimuth to pvlib convention (north=0, south=180)
-    df['horizon_azimuth'] += 180
-    return df
+    data['horizon_azimuth'] += 180
+    return data

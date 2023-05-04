@@ -406,3 +406,80 @@ def calc_cross_axis_tilt(
     # equation 26
     beta_c = _calc_beta_c(v, delta_gamma, axis_tilt)
     return np.degrees(beta_c)
+
+
+def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
+                            cross_axis_slope):
+    """
+    Shade fraction (FS) for trackers with a common angle on an east-west slope.
+
+    Parameters
+    ----------
+    tracker_theta : numeric
+        The tracker rotation angle in degrees from horizontal.
+    gcr : float
+        The ground coverage ratio as a fraction equal to the collector width
+        over the horizontal row-to-row pitch.
+    projected_solar_zenith : numeric
+        Zenith angle in degrees of the solar vector projected into the plane
+        perpendicular to the tracker axes.
+    cross_axis_slope : float
+        Angle of the plane containing the tracker axes in degrees from
+        horizontal.
+
+    Returns
+    -------
+    shade_fraction : numeric
+        The fraction of the collector width shaded by an adjacent row. A
+        value of 1 is completely shaded and zero is no shade.
+
+    References
+    ----------
+    Mark A. Mikofski, "First Solar Irradiance Shade Losses on Sloped Terrain,"
+    PVPMC, 2023
+    """
+    theta_g_rad = np.radians(cross_axis_slope)
+    # angle opposite shadow cast on the ground, z
+    angle_z = (
+        np.pi / 2 - np.radians(tracker_theta)
+        + np.radians(projected_solar_zenith))
+    # angle opposite the collector width, L
+    angle_gcr = (
+        np.pi / 2 - np.radians(projected_solar_zenith)
+        - theta_g_rad)
+    # ratio of shadow, z, to pitch, P
+    zp = gcr * np.sin(angle_z) / np.sin(angle_gcr)
+    # there's only row-to-row shade loss if the shadow on the ground, z, is
+    # longer than row-to-row pitch projected on the ground, P*cos(theta_g)
+    zp_cos_g = zp*np.cos(theta_g_rad)
+    # shade fraction
+    fs = 0 if zp_cos_g <= 1 else 1 - 1/zp_cos_g
+    return fs
+
+
+def linear_shade_loss(shade_fraction, diffuse_fraction):
+    """
+    Fraction of power lost to linear shade loss applicable to CdTe modules like
+    First Solar.
+
+    Parameters
+    ----------
+    shade_fraction : numeric
+        The fraction of the collector width shaded by an adjacent row. A
+        value of 1 is completely shaded and zero is no shade.
+    diffuse_fraction : numeric
+        The ratio of diffuse plane of array (poa) irradiance to global poa.
+        A value of 1 is completely diffuse and zero is no diffuse.
+
+    Returns
+    -------
+    linear_shade_loss : numeric
+        The fraction of power lost due to linear shading. A value of 1 is all
+        power lost and zero is no loss.
+
+    References
+    ----------
+    Mark A. Mikofski, "First Solar Irradiance Shade Losses on Sloped Terrain,"
+    PVPMC, 2023
+    """
+    return 1 - shade_fraction * (1 - diffuse_fraction)

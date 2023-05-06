@@ -472,28 +472,3 @@ def test_calc_surface_orientation_special():
         # in a modulo-360 sense.
         np.testing.assert_allclose(np.round(out['surface_azimuth'], 4) % 360,
                                    expected_azimuths, rtol=1e-5, atol=1e-5)
-
-
-@pytest.fixture
-def expected_fs():
-    # trivial case, 80% gcr, no slope, trackers & psz at 45-deg
-    z = np.sqrt(2*0.8*0.8)
-    return 1 - 1/z
-
-
-def test_tracker_shade_fraction(expected_fs):
-    """closes gh1690"""
-    fs = tracking.tracker_shaded_fraction(45.0, 0.8, 45.0, 0)
-    assert np.isclose(fs, expected_fs)
-    # same trivial case with 40%, shadow is only 0.565-m long < 1-m r2r P
-    zero_fs = tracking.tracker_shaded_fraction(45.0, 0.4, 45.0, 0)
-    assert np.isclose(zero_fs, 0)
-
-
-def test_linear_shade_loss(expected_fs):
-    loss = tracking.linear_shade_loss(expected_fs, 0.2)
-    assert np.isclose(loss, 0.09289321881345258)
-    loss_no_df = tracking.linear_shade_loss(expected_fs, 0)
-    assert np.isclose(loss_no_df, expected_fs)
-    no_loss = tracking.linear_shade_loss(expected_fs, 1.0)
-    assert np.isclose(no_loss, 0)

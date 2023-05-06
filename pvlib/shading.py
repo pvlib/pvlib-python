@@ -396,8 +396,9 @@ def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
 
 def linear_shade_loss(shade_fraction, diffuse_fraction):
     """
-    Fraction of power lost to linear shade loss applicable to CdTe modules like
-    First Solar.
+    Fraction of power lost to linear shade loss applicable to monolithic thin
+    film modules like First Solar CdTe, where the shadow is perpendicular to
+    cell scribe lines.
 
     Parameters
     ----------

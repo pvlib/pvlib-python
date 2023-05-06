@@ -347,7 +347,7 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
 
 def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
                             cross_axis_slope=0):
-    """
+    r"""
     Shade fraction (FS) for trackers with a common angle on an east-west slope.
 
     Parameters
@@ -369,6 +369,34 @@ def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
     shade_fraction : numeric
         The fraction of the collector width shaded by an adjacent row. A
         value of 1 is completely shaded and zero is no shade.
+
+    See also
+    --------
+    pvlib.shading.linear_shade_loss
+
+
+    The shaded fraction is derived using trigonometery and similar triangles
+    from the tracker rotation :math:`\beta`, the ground slope :math:`\theta_g`,
+    the projected solar zenith (psz) :math:`\theta`, the collector width
+    :math:`L`, the row-to-row pitch :math:`P`, and the shadow length :math:`z`
+    as shown in the image below.
+
+    .. image:: /_images/FSLR_irrad_shade_loss_slope_terrain.png
+
+    The ratio of the shadow length to the pitch, :math:`z/P`, is given by the
+    following relation where the ground coverage ratio (GCR) is :math:`L/P`:
+
+    .. math::
+       \frac{z/P}{\sin{\left(\frac{\pi}{2}-\beta+\theta\right)}}
+       = \frac{GCR}{\sin{\left(\frac{\pi}{2}-\theta-\theta_g\right)}}
+
+    Then the shaded fraction :math:`w/L` is derived from :math:`z/P` as
+    follows:
+
+    .. math::
+       \frac{w}{L} = 1 - \frac{P}{z\cos{\theta_g}}
+
+    Finally, shade is zero if :math:`z\cos{\theta_g}/P \le 1`.
 
     References
     ----------

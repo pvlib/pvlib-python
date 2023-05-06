@@ -30,6 +30,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Updated the description of the interval parameter in
   :py:func:`pvlib.iotools.get_psm3`. (:issue:`1702`, :pull:`1712`)
+* Fixed outdated nbviewer links. (:issue:`1721`, :pull:`1726`)
 
 Benchmarking
 ~~~~~~~~~~~~~
@@ -41,6 +42,9 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Lakshya Garg (:ghuser:`Lakshyadevelops`)
 * Adam R. Jensen (:ghuser:`adamrjensen`)
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Mark A. Mikofski (:ghuser:`mikofski`)
+* Kshitiz Gupta (:ghuser:`kshitiz305`)
+* Stefan de Lange (:ghuser:`langestefan`)

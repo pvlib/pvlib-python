@@ -948,7 +948,16 @@ class PVSystem:
                  resistance_series, resistance_shunt, nNsVth):
         """Wrapper around the :py:func:`pvlib.pvsystem.i_from_v` function.
 
-        See :py:func:`pvsystem.i_from_v` for details
+        See :py:func:`pvlib.pvsystem.i_from_v` for details.
+
+        .. versionchanged:: 0.10.0
+           The function's arguments have been reordered. In earlier versions,
+           the argument order is
+
+           .. code-block:: python
+
+              i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
+                       saturation_current, photocurrent, method='lambertw')
         """
         return i_from_v(voltage, photocurrent, saturation_current,
                         resistance_series, resistance_shunt, nNsVth)
@@ -2977,6 +2986,15 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
     the caller's responsibility to ensure that the arguments are all float64
     and within the proper ranges.
 
+    .. versionchanged:: 0.10.0
+       The function's arguments have been reordered. In earlier versions,
+       the argument order is
+
+       .. code-block:: python
+
+          v_from_i(resistance_shunt, resistance_series, nNsVth, current,
+                   saturation_current, photocurrent, method='lambertw')
+
     Parameters
     ----------
     current : numeric
@@ -3064,6 +3082,15 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
     Inputs to this function can include scalars and pandas.Series, but it is
      the caller's responsibility to ensure that the arguments are all float64
      and within the proper ranges.
+
+    .. versionchanged:: 0.10.0
+       The function's arguments have been reordered. In earlier versions,
+       the argument order is
+
+       .. code-block:: python
+
+          i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
+                   saturation_current, photocurrent, method='lambertw')
 
     Parameters
     ----------

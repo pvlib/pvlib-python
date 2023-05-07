@@ -3028,8 +3028,8 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
     '''
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_v_from_i(
-            resistance_shunt, resistance_series, nNsVth, current,
-            saturation_current, photocurrent
+            current, photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth
         )
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
@@ -3116,8 +3116,8 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
     '''
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_i_from_v(
-            resistance_shunt, resistance_series, nNsVth, voltage,
-            saturation_current, photocurrent
+            voltage, photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth
         )
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'

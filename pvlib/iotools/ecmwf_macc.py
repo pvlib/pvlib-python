@@ -4,6 +4,8 @@ Read data from ECMWF MACC Reanalysis.
 
 import threading
 import pandas as pd
+import warnings
+from pvlib._deprecation import pvlibDeprecationWarning
 
 try:
     import netCDF4
@@ -168,6 +170,11 @@ def get_ecmwf_macc(filename, params, start, end, lookup_params=True,
     t = threading.Thread(target=target, daemon=True,
                          args=(server, startdate, enddate, params, filename))
     t.start()
+
+    warnings.warn(
+        'The ``get_ecmwf_macc`` function is deprecated starting in pvlib'
+        'v0.9.6. The function will be removed starting in pvlib v0.10.0',
+        pvlibDeprecationWarning)
     return t
 
 
@@ -309,4 +316,10 @@ def read_ecmwf_macc(filename, latitude, longitude, utc_time_range=None):
             df['precipitable_water'] = df[ECMWF_MACC.TCWV] / 10.0
     finally:
         ecmwf_macc.data.close()
+
+    warnings.warn(
+        'The ``read_ecmwf_macc`` function is deprecated starting in pvlib'
+        'v0.9.6. The function will be removed starting in pvlib v0.10.0',
+        pvlibDeprecationWarning)
+
     return pd.DataFrame(df, index=times.astype('datetime64[s]'))

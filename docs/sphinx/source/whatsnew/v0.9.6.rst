@@ -7,6 +7,10 @@ v0.9.6 (Anticipated June 2023)
 
 Deprecations
 ~~~~~~~~~~~~
+* The ``pvlib.iotools.get_ecmwf_macc`` and ``pvlib.iotools.read_ecmwf_macc`` functions
+  are deprecated. The reason is that ECMWF has retired the dataset. Users are recommended
+  to use alternative newer reanalysis datasets such as ERA5 or MERRA-2.
+  (:issue:`XXXX`, :pull:`YYYY`)
 
 
 Enhancements

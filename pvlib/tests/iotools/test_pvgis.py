@@ -515,6 +515,7 @@ def test_read_pvgis_horizon():
     pvgis_data = get_pvgis_horizon(35.171051, -106.465158)
     horizon_data = pd.read_csv(DATA_DIR / 'test_read_pvgis_horizon.csv',
                                index_col=0)
+    horizon_data.set_index('horizon_azimuth', inplace=True)
     assert_frame_equal(pvgis_data, horizon_data)
 
 

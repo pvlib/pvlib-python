@@ -517,6 +517,13 @@ def test_read_pvgis_horizon():
                                index_col=0)
     assert_frame_equal(pvgis_data, horizon_data)
 
+
+@pytest.mark.remote_data
+def test_read_pvgis_horizon_invalid_coords():
+    with pytest.warns(UserWarning, match='lat: Incorrect value'):
+        _ = get_pvgis_horizon(100, 50)  # unfeasible latitude
+
+
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
     actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)

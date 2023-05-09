@@ -705,4 +705,5 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     data.columns = ['horizon_azimuth', 'horizon_elevation']
     # Convert azimuth to pvlib convention (north=0, south=180)
     data['horizon_azimuth'] += 180
+    data.set_index('horizon_azimuth', inplace=True)
     return data

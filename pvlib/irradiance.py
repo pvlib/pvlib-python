@@ -2193,6 +2193,8 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     --------
     dirint
     disc
+    orgill_hollands
+    bolland
     """
 
     dni_extra = get_extra_radiation(datetime_or_doy)
@@ -2230,6 +2232,82 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     return data
 
+def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, 
+                    max_zenith=87):
+    """
+    Estimate DNI and DHI from GHI using the Orgill and Hollands [1] model. 
+    
+    The Orgill and Hollands model [1] estimates the diffuse fraction DF from 
+    global horizontal irradiance through an empirical relationship between 
+    hourly DF observations (in Toronto, Canada) and the ratio of GHI to 
+    extraterrestrial irradiance, Kt. 
+    
+    Parameters
+    ----------
+    ghi: numeric
+        Global horizontal irradiance in W/m^2.
+    zenith: numeric
+        True (not refraction-corrected) zenith angles in decimal degrees.
+    datetime_or_doy : int, float, array, pd.DatetimeIndex
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
+     
+    Returns
+    -------
+    None.
+
+    References
+    -------
+    [1] Orgill, J.F., Hollands, K.G.T., Correlation equation for hourly diffuse
+    radiation on a horizontal surface, Solar Energy 19(4), pp 357–359, 1977. 
+    Eqs. 3(a), 3(b) and 3(c)
+    
+    See also
+    --------
+    dirint
+    disc
+    erbs
+    bolland
+
+    """
+    dni_extra = get_extra_radiation(datetime_or_doy)
+
+    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+                         max_clearness_index=1)
+
+    # For Kt < 0.35, set the diffuse fraction
+    df = 1 - 0.249*kt
+
+    # For Kt >= 0.35 and Kt <= 0.75, set the diffuse fraction
+    df = np.where((kt >= 0.35) & (kt <= 0.75),
+                  1.557 - 1.84*kt,df)
+
+    # For Kt > 0.75, set the diffuse fraction
+    df = np.where(kt > 0.75, 0.177, df)
+
+    dhi = df * ghi
+
+    dni = (ghi - dhi) / tools.cosd(zenith)
+    bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
+    # ensure that closure relationship remains valid
+    dhi = np.where(bad_values, ghi, dhi)
+
+    data = OrderedDict()
+    data['dni'] = dni
+    data['dhi'] = dhi
+    data['kt'] = kt
+
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        data = pd.DataFrame(data, index=datetime_or_doy)
+
+    return data
 
 def campbell_norman(zenith, transmittance, pressure=101325.0,
                     dni_extra=1367.0):

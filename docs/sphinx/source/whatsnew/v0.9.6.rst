@@ -17,6 +17,8 @@ Bug fixes
 ~~~~~~~~~
 * `data` can no longer be left unspecified in
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
+* fix ``d2mutau`` and ``NsVbi`` were hardcoded in :py:func:`pvlib.pvsystem.max_power_point` instead of
+  passing through the arguments to the function.
 
 Testing
 ~~~~~~~
@@ -43,4 +45,5 @@ Contributors
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
+* Mark Mikofski (:ghuser:`mikofski`)
 

@@ -520,9 +520,8 @@ def test_read_pvgis_horizon():
 
 
 @pytest.mark.remote_data
-@pytest.mark.xfail(strict=True, reason='Ensure PVGIS raises exception')
 def test_read_pvgis_horizon_invalid_coords():
-    with pytest.warns(UserWarning, match='lat: Incorrect value'):
+    with pytest.raises(requests.HTTPError, match='lat: Incorrect value'):
         _ = get_pvgis_horizon(100, 50)  # unfeasible latitude
 
 

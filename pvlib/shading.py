@@ -348,7 +348,7 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
 def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
                             cross_axis_slope=0):
     r"""
-    Shade fraction (FS) for trackers with a common angle on an east-west slope.
+    Shaded fraction for trackers with a common angle on an east-west slope.
 
     Parameters
     ----------
@@ -366,7 +366,7 @@ def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
 
     Returns
     -------
-    shade_fraction : numeric
+    shaded_fraction : numeric
         The fraction of the collector width shaded by an adjacent row. A
         value of 1 is completely shaded and zero is no shade.
 
@@ -417,12 +417,12 @@ def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
     # there's only row-to-row shade loss if the shadow on the ground, z, is
     # longer than row-to-row pitch projected on the ground, P*cos(theta_g)
     zp_cos_g = zp*np.cos(theta_g_rad)
-    # shade fraction
+    # shaded fraction (fs)
     fs = np.where(zp_cos_g <= 1, 0, 1 - 1/zp_cos_g)
     return fs
 
 
-def linear_shade_loss(shade_fraction, diffuse_fraction):
+def linear_shade_loss(shaded_fraction, diffuse_fraction):
     """
     Fraction of power lost to linear shade loss applicable to monolithic thin
     film modules like First Solar CdTe, where the shadow is perpendicular to
@@ -430,7 +430,7 @@ def linear_shade_loss(shade_fraction, diffuse_fraction):
 
     Parameters
     ----------
-    shade_fraction : numeric
+    shaded_fraction : numeric
         The fraction of the collector width shaded by an adjacent row. A
         value of 1 is completely shaded and zero is no shade.
     diffuse_fraction : numeric
@@ -456,4 +456,4 @@ def linear_shade_loss(shade_fraction, diffuse_fraction):
     >>> P_linear_shade = P_no_shade * (1-loss)  # [kWdc] output after loss
     # 90.71067811865476 [kWdc]
     """
-    return shade_fraction * (1 - diffuse_fraction)
+    return shaded_fraction * (1 - diffuse_fraction)

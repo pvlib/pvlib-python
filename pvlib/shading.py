@@ -191,3 +191,117 @@ def sky_diffuse_passias(masking_angle):
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
     """
     return 1 - cosd(masking_angle/2)**2
+
+
+def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
+                            cross_axis_slope=0):
+    r"""
+    Shaded fraction for trackers with a common angle on an east-west slope.
+
+    Parameters
+    ----------
+    tracker_theta : numeric
+        The tracker rotation angle in degrees from horizontal.
+    gcr : float
+        The ground coverage ratio as a fraction equal to the collector width
+        over the horizontal row-to-row pitch.
+    projected_solar_zenith : numeric
+        Zenith angle in degrees of the solar vector projected into the plane
+        perpendicular to the tracker axes.
+    cross_axis_slope : float, default 0
+        Angle of the plane containing the tracker axes in degrees from
+        horizontal.
+
+    Returns
+    -------
+    shaded_fraction : numeric
+        The fraction of the collector width shaded by an adjacent row. A
+        value of 1 is completely shaded and zero is no shade.
+
+    See also
+    --------
+    pvlib.shading.linear_shade_loss
+
+
+    The shaded fraction is derived using trigonometery and similar triangles
+    from the tracker rotation :math:`\beta`, the ground slope :math:`\theta_g`,
+    the projected solar zenith (psz) :math:`\theta`, the collector width
+    :math:`L`, the row-to-row pitch :math:`P`, and the shadow length :math:`z`
+    as shown in the image below.
+
+    .. image:: /_images/FSLR_irrad_shade_loss_slope_terrain.png
+
+    The ratio of the shadow length to the pitch, :math:`z/P`, is given by the
+    following relation where the ground coverage ratio (GCR) is :math:`L/P`:
+
+    .. math::
+       \frac{z/P}{\sin{\left(\frac{\pi}{2}-\beta+\theta\right)}}
+       = \frac{GCR}{\sin{\left(\frac{\pi}{2}-\theta-\theta_g\right)}}
+
+    Then the shaded fraction :math:`w/L` is derived from :math:`z/P` as
+    follows:
+
+    .. math::
+       \frac{w}{L} = 1 - \frac{P}{z\cos{\theta_g}}
+
+    Finally, shade is zero if :math:`z\cos{\theta_g}/P \le 1`.
+
+    References
+    ----------
+    Mark A. Mikofski, "First Solar Irradiance Shade Losses on Sloped Terrain,"
+    PVPMC, 2023
+    """
+    theta_g_rad = np.radians(cross_axis_slope)
+    # angle opposite shadow cast on the ground, z
+    angle_z = (
+        np.pi / 2 - np.radians(tracker_theta)
+        + np.radians(projected_solar_zenith))
+    # angle opposite the collector width, L
+    angle_gcr = (
+        np.pi / 2 - np.radians(projected_solar_zenith)
+        - theta_g_rad)
+    # ratio of shadow, z, to pitch, P
+    zp = gcr * np.sin(angle_z) / np.sin(angle_gcr)
+    # there's only row-to-row shade loss if the shadow on the ground, z, is
+    # longer than row-to-row pitch projected on the ground, P*cos(theta_g)
+    zp_cos_g = zp*np.cos(theta_g_rad)
+    # shaded fraction (fs)
+    fs = np.where(zp_cos_g <= 1, 0, 1 - 1/zp_cos_g)
+    return fs
+
+
+def linear_shade_loss(shaded_fraction, diffuse_fraction):
+    """
+    Fraction of power lost to linear shade loss applicable to monolithic thin
+    film modules like First Solar CdTe, where the shadow is perpendicular to
+    cell scribe lines.
+
+    Parameters
+    ----------
+    shaded_fraction : numeric
+        The fraction of the collector width shaded by an adjacent row. A
+        value of 1 is completely shaded and zero is no shade.
+    diffuse_fraction : numeric
+        The ratio of diffuse plane of array (poa) irradiance to global poa.
+        A value of 1 is completely diffuse and zero is no diffuse.
+
+    Returns
+    -------
+    linear_shade_loss : numeric
+        The fraction of power lost due to linear shading. A value of 1 is all
+        power lost and zero is no loss.
+
+    See also
+    --------
+    pvlib.shading.tracker_shaded_fraction
+
+    Example
+    -------
+    >>> from pvlib import shading
+    >>> fs = shading.tracker_shaded_fraction(45.0, 0.8, 45.0, 0)
+    >>> loss = shading.linear_shade_loss(fs, 0.2)
+    >>> P_no_shade = 100  # [kWdc]  DC output from modules
+    >>> P_linear_shade = P_no_shade * (1-loss)  # [kWdc] output after loss
+    # 90.71067811865476 [kWdc]
+    """
+    return shaded_fraction * (1 - diffuse_fraction)

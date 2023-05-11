@@ -76,3 +76,46 @@ def test_sky_diffuse_passias_scalar(average_masking_angle, shading_loss):
     for angle, loss in zip(average_masking_angle, shading_loss):
         actual_loss = shading.sky_diffuse_passias(angle)
         assert np.isclose(loss, actual_loss)
+
+
+@pytest.fixture
+def expected_fs():
+    # trivial case, 80% gcr, no slope, trackers & psz at 45-deg
+    z0 = np.sqrt(2*0.8*0.8)
+    # another trivial case, 60% gcr, no slope, trackers & psz at 60-deg
+    z1 = 2*0.6
+    # 30-deg isosceles, 60% gcr, no slope, 30-deg trackers, psz at 60-deg
+    z2 = 0.6*np.sqrt(3)
+    z = np.array([z0, z1, z2])
+    return 1 - 1/z
+
+
+def test_tracker_shade_fraction(expected_fs):
+    """closes gh1690"""
+    fs = shading.tracker_shaded_fraction(45.0, 0.8, 45.0)
+    assert np.isclose(fs, expected_fs[0])
+    # same trivial case with 40%, shadow is only 0.565-m long < 1-m r2r P
+    zero_fs = shading.tracker_shaded_fraction(45.0, 0.4, 45.0)
+    assert np.isclose(zero_fs, 0)
+    # test vectors
+    tracker_theta = [45.0, 60.0, 30.0]
+    gcr = [0.8, 0.6, 0.6]
+    psz = [45.0, 60.0, 60.0]
+    slope = [0]*3
+    fs_vec = shading.tracker_shaded_fraction(
+        tracker_theta, gcr, psz, slope)
+    assert np.allclose(fs_vec, expected_fs)
+
+
+def test_linear_shade_loss(expected_fs):
+    loss = shading.linear_shade_loss(expected_fs[0], 0.2)
+    assert np.isclose(loss, 0.09289321881345258)
+    # if no diffuse, shade fraction is the loss
+    loss_no_df = shading.linear_shade_loss(expected_fs[0], 0)
+    assert np.isclose(loss_no_df, expected_fs[0])
+    # if all diffuse, no shade loss
+    no_loss = shading.linear_shade_loss(expected_fs[0], 1.0)
+    assert np.isclose(no_loss, 0)
+    vec_loss = shading.linear_shade_loss(expected_fs, 0.2)
+    expected_loss = np.array([0.09289322, 0.13333333, 0.03019964])
+    assert np.allclose(vec_loss, expected_loss)

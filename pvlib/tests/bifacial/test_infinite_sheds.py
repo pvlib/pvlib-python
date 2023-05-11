@@ -42,7 +42,8 @@ def test_system():
     return syst, pts, vfs_ground_sky
 
 
-def test__vf_ground_sky_integ(test_system):
+@pytest.mark.parametrize("vectorize", [True, False])
+def test__vf_ground_sky_integ(test_system, vectorize):
     ts, pts, vfs_gnd_sky = test_system
     # pass rotation here since max_rows=1 for the hand-solved case in
     # the fixture test_system, which means the ground-to-sky view factor
@@ -50,7 +51,7 @@ def test__vf_ground_sky_integ(test_system):
     vf_integ = infinite_sheds._vf_ground_sky_integ(
         ts['rotation'], ts['surface_azimuth'],
         ts['gcr'], ts['height'], ts['pitch'],
-        max_rows=1, npoints=3)
+        max_rows=1, npoints=3, vectorize=vectorize)
     expected_vf_integ = np.trapz(vfs_gnd_sky, pts)
     assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
 
@@ -262,7 +263,8 @@ def test__backside_tilt():
     assert np.allclose(back_az, np.array([0., 330., 90., 180.]))
 
 
-def test_get_irradiance():
+@pytest.mark.parametrize("vectorize", [True, False])
+def test_get_irradiance(vectorize):
     # singleton inputs
     solar_zenith = 0.
     solar_azimuth = 180.
@@ -282,7 +284,7 @@ def test_get_irradiance():
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
         bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
-        npoints=npoints)
+        npoints=npoints, vectorize=vectorize)
     expected_front_diffuse = np.array([300.])
     expected_front_direct = np.array([700.])
     expected_front_global = expected_front_diffuse + expected_front_direct
@@ -300,11 +302,11 @@ def test_get_irradiance():
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni, albedo, iam_front, iam_back,
         bifaciality=0.8, shade_factor=-0.02, transmission_factor=0,
-        npoints=npoints)
+        npoints=npoints, vectorize=vectorize)
     result_front = infinite_sheds.get_irradiance_poa(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         gcr, height, pitch, ghi, dhi, dni,
-        albedo, iam=iam_front)
+        albedo, iam=iam_front, vectorize=vectorize)
     assert isinstance(result, pd.DataFrame)
     expected_poa_global = pd.Series(
         [1000., 500., result_front['poa_global'][2] * (1 + 0.8 * 0.98),
@@ -353,3 +355,42 @@ def test_get_irradiance_limiting_gcr():
                       result['poa_back_sky_diffuse'])
     assert np.isclose(result['poa_front_ground_diffuse'],
                       result['poa_back_ground_diffuse'])
+
+
+def test_get_irradiance_with_haydavies():
+    # singleton inputs
+    solar_zenith = 0.
+    solar_azimuth = 180.
+    surface_tilt = 0.
+    surface_azimuth = 180.
+    gcr = 0.5
+    height = 1.
+    pitch = 1.
+    ghi = 1000.
+    dhi = 300.
+    dni = 700.
+    albedo = 0.
+    dni_extra = 1413.
+    model = 'haydavies'
+    iam_front = 1.0
+    iam_back = 1.0
+    npoints = 100
+    result = infinite_sheds.get_irradiance(
+        surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+        gcr, height, pitch, ghi, dhi, dni, albedo, model, dni_extra,
+        iam_front, iam_back, bifaciality=0.8, shade_factor=-0.02,
+        transmission_factor=0, npoints=npoints)
+    expected_front_diffuse = np.array([151.38])
+    expected_front_direct = np.array([848.62])
+    expected_front_global = expected_front_diffuse + expected_front_direct
+    assert np.isclose(result['poa_front'], expected_front_global)
+    assert np.isclose(result['poa_front_diffuse'], expected_front_diffuse)
+    assert np.isclose(result['poa_front_direct'], expected_front_direct)
+    assert np.isclose(result['poa_global'], result['poa_front'])
+    # test for when dni_extra is not supplied
+    with pytest.raises(ValueError, match='supply dni_extra for haydavies'):
+        result = infinite_sheds.get_irradiance(
+            surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+            gcr, height, pitch, ghi, dhi, dni, albedo, model, None,
+            iam_front, iam_back, bifaciality=0.8, shade_factor=-0.02,
+            transmission_factor=0, npoints=npoints)

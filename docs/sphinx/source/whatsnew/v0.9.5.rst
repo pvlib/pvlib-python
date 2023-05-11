@@ -13,7 +13,8 @@ the ``pvlib`` `conda channel <https://anaconda.org/pvlib/pvlib>`_.  We recommend
 Deprecations
 ~~~~~~~~~~~~
 * Removed the ``get_ecmwf_macc`` and ``read_ecmwf_macc`` iotools functions as the
-  MACC dataset is outdated (covers the period 2003-2012).
+  MACC dataset is being removed by ECMWF (data period 2003-2012). Instead, ECMWF
+  recommends to use CAMS global reanalysis (EAC4) from the Atmosphere Data Store (ADS).
   (:issue:`1609`, :pull:`1654`)
 
 Enhancements

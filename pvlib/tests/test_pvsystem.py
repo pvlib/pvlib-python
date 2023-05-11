@@ -1266,9 +1266,11 @@ def test_mpp_recombination():
         R_s=pvsyst_fs_495['R_s'],
         cells_in_series=pvsyst_fs_495['cells_in_series'],
         EgRef=pvsyst_fs_495['EgRef'])
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth,
+    out = pvsystem.max_power_point(
+        IL, I0, Rs, Rsh, nNsVth,
         d2mutau=pvsyst_fs_495['d2mutau'],
-        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'], method='brentq')
+        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
+        method='brentq')
     expected_imp = pvsyst_fs_495['I_mp_ref']
     expected_vmp = pvsyst_fs_495['V_mp_ref']
     expected_pmp = expected_imp*expected_vmp
@@ -1278,9 +1280,11 @@ def test_mpp_recombination():
     assert isinstance(out, dict)
     for k, v in out.items():
         assert np.isclose(v, expected[k], 0.1)
-    out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth,
+    out = pvsystem.max_power_point(
+        IL, I0, Rs, Rsh, nNsVth,
         d2mutau=pvsyst_fs_495['d2mutau'],
-        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'], method='newton')
+        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
+        method='newton')
     for k, v in out.items():
         assert np.isclose(v, expected[k], 0.1)
 

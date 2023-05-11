@@ -2232,16 +2232,16 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     return data
 
-def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, 
+
+def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
                     max_zenith=87):
-    """
-    Estimate DNI and DHI from GHI using the Orgill and Hollands [1] model. 
-    
-    The Orgill and Hollands model [1] estimates the diffuse fraction DF from 
-    global horizontal irradiance through an empirical relationship between 
-    hourly DF observations (in Toronto, Canada) and the ratio of GHI to 
-    extraterrestrial irradiance, Kt. 
-    
+    """Estimate DNI and DHI from GHI using the Orgill and Hollands [1] model.
+
+    The Orgill and Hollands model [1] estimates the diffuse fraction DF from
+    global horizontal irradiance through an empirical relationship between
+    hourly DF observations (in Toronto, Canada) and the ratio of GHI to
+    extraterrestrial irradiance, Kt.
+
     Parameters
     ----------
     ghi: numeric
@@ -2257,18 +2257,18 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
     max_zenith : numeric, default 87
         Maximum value of zenith to allow in DNI calculation. DNI will be
         set to 0 for times with zenith values greater than `max_zenith`.
-     
+
     Returns
     -------
     None.
 
     References
-    -------
+    ----------
     [1] Orgill, J.F., Hollands, K.G.T., Correlation equation for hourly diffuse
-    radiation on a horizontal surface, Solar Energy 19(4), pp 357–359, 1977. 
+    radiation on a horizontal surface, Solar Energy 19(4), pp 357–359, 1977.
     Eqs. 3(a), 3(b) and 3(c)
-    
-    See also
+
+    See Also
     --------
     dirint
     disc
@@ -2286,7 +2286,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
 
     # For Kt >= 0.35 and Kt <= 0.75, set the diffuse fraction
     df = np.where((kt >= 0.35) & (kt <= 0.75),
-                  1.557 - 1.84*kt,df)
+                  1.557 - 1.84*kt, df)
 
     # For Kt > 0.75, set the diffuse fraction
     df = np.where(kt > 0.75, 0.177, df)
@@ -2308,6 +2308,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
         data = pd.DataFrame(data, index=datetime_or_doy)
 
     return data
+
 
 def campbell_norman(zenith, transmittance, pressure=101325.0,
                     dni_extra=1367.0):

@@ -19,7 +19,7 @@ Please see the :ref:`installation` page for installation help.
 
 For examples of how to use pvlib python, please see
 :ref:`package_overview` and our `Jupyter Notebook tutorials
-<http://nbviewer.ipython.org/github/pvlib/pvlib-python/tree/main/docs/
+<http://nbviewer.org/github/pvlib/pvlib-python/tree/main/docs/
 tutorials/>`_. The documentation assumes general familiarity with
 Python, NumPy, and Pandas. Google searches will yield many
 excellent tutorials for these packages.
@@ -74,7 +74,7 @@ Additional pvlib python publications include:
   (`paper
   <https://github.com/pvlib/pvsc2015/blob/main/pvlib_pvsc_42.pdf>`__ and
   the `notebook to reproduce the figures
-  <http://nbviewer.ipython.org/github/pvlib/pvsc2015/blob/main/paper.ipynb>`_)
+  <http://nbviewer.org/github/pvlib/pvsc2015/blob/main/paper.ipynb>`_)
 * J.S. Stein, W.F. Holmgren, J. Forbess, and C.W. Hansen,
   "PVLIB: Open Source Photovoltaic Performance Modeling Functions
   for Matlab and Python," in 43rd Photovoltaic Specialists Conference, 2016.

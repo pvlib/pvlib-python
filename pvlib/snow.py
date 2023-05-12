@@ -219,7 +219,7 @@ def _townsend_effective_snow(snow_total, snow_events):
 
 def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
                   temp_air, poa_global, slant_height, lower_edge_height,
-                  angle_of_repose=40):
+                  string_factor=1.0, angle_of_repose=40):
     '''
     Calculates monthly snow loss based on the Townsend monthly snow loss
     model [1]_.
@@ -230,7 +230,8 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Snow received each month. Referred to as S in [1]_. [cm]
 
     snow_events : array-like
-        Number of snowfall events each month. Referred to as N in [1]_. [-]
+        Number of snowfall events each month. May be int or float type for
+        the average events in a typical month. Referred to as N in [1]_.
 
     surface_tilt : float
         Tilt angle of the array. [deg]
@@ -250,6 +251,11 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     lower_edge_height : float
         Distance from array lower edge to the ground. [m]
 
+    string_factor : float, default 1.0
+        Multiplier applied to monthly loss fraction. Use 1.0 if the DC array
+        has only one string of modules in the slant direction, use 0.75
+        otherwise. [-]
+
     angle_of_repose : float, default 40
         Piled snow angle, assumed to stabilize at 40°, the midpoint of
         25°-55° avalanching slope angles. [deg]
@@ -263,7 +269,12 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     -----
     This model has not been validated for tracking arrays; however, for
     tracking arrays [1]_ suggests using the maximum rotation angle in place
-    of ``surface_tilt``.
+    of ``surface_tilt``. The author of [1]_ recommends using one-half the
+    table width for ``slant_height``, i.e., the distance from the tracker
+    axis to the module edge.
+
+    The parameter `string_factor` is an enhancement added to the model after
+    publication of [1]_ per private communication with the model's author.
 
     References
     ----------
@@ -273,13 +284,22 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
        :doi:`10.1109/PVSC.2011.6186627`
     '''
 
+    # unit conversions from cm and m to in, from C to K, and from % to fraction
+    # doing this early to facilitate comparison of this code with [1]
+    snow_total_inches = snow_total / 2.54  # to inches
+    relative_humidity_fraction = relative_humidity / 100.
+    poa_global_kWh = poa_global / 1000.
+    slant_height_inches = slant_height * 39.37
+    lower_edge_height_inches = lower_edge_height * 39.37
+    temp_air_kelvin = temp_air + 273.15
+
     C1 = 5.7e04
     C2 = 0.51
 
-    snow_total_prev = np.roll(snow_total, 1)
+    snow_total_prev = np.roll(snow_total_inches, 1)
     snow_events_prev = np.roll(snow_events, 1)
 
-    effective_snow = _townsend_effective_snow(snow_total, snow_events)
+    effective_snow = _townsend_effective_snow(snow_total_inches, snow_events)
     effective_snow_prev = _townsend_effective_snow(
         snow_total_prev,
         snow_events_prev
@@ -288,37 +308,38 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         1 / 3 * effective_snow_prev
         + 2 / 3 * effective_snow
     )
-    effective_snow_weighted_m = effective_snow_weighted / 100
 
-    lower_edge_height_clipped = np.maximum(lower_edge_height, 0.01)
+    # the lower limit of 0.1 in^2 is per private communication with the model's
+    # author. CWH 1/30/2023
+    lower_edge_distance = np.clip(
+        lower_edge_height_inches**2 - effective_snow_weighted**2, a_min=0.1,
+        a_max=None)
     gamma = (
-        slant_height
-        * effective_snow_weighted_m
+        slant_height_inches
+        * effective_snow_weighted
         * cosd(surface_tilt)
-        / (lower_edge_height_clipped**2 - effective_snow_weighted_m**2)
+        / lower_edge_distance
         * 2
         * tand(angle_of_repose)
     )
 
     ground_interference_term = 1 - C2 * np.exp(-gamma)
-    relative_humidity_fraction = relative_humidity / 100
-    temp_air_kelvin = temp_air + 273.15
-    effective_snow_weighted_in = effective_snow_weighted / 2.54
-    poa_global_kWh = poa_global / 1000
 
     # Calculate Eqn. 3 in the reference.
     # Although the reference says Eqn. 3 calculates percentage loss, the y-axis
     # of Figure 7 indicates Eqn. 3 calculates fractional loss. Since the slope
     # of the line in Figure 7 is the same as C1 in Eqn. 3, it is assumed that
     # Eqn. 3 calculates fractional loss.
+
     loss_fraction = (
         C1
-        * effective_snow_weighted_in
+        * effective_snow_weighted
         * cosd(surface_tilt)**2
         * ground_interference_term
         * relative_humidity_fraction
         / temp_air_kelvin**2
         / poa_global_kWh**0.67
+        * string_factor
     )
 
     return np.clip(loss_fraction, 0, 1)

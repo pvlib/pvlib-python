@@ -10,10 +10,6 @@ the ``pvlib`` `conda channel <https://anaconda.org/pvlib/pvlib>`_.  We recommend
 :ref:`installation`).
 
 
-Deprecations
-~~~~~~~~~~~~
-
-
 Enhancements
 ~~~~~~~~~~~~
 * Added the optional ``string_factor`` parameter to

@@ -784,7 +784,7 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
             Water for CPV Performance Modeling.
             "IEEE Journal of Photovoltaics 2016, 6(6), 1598-1604.
             https://doi.org/10.1109/jphotov.2016.2606702
-    
+
         """
 
     # Experimental coefficients
@@ -817,7 +817,7 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
                         + ' coefficients input is mandatory')
     else:
         pass
-    
+
     # Evaluate Spectral Shift
     coeff = coefficients
     ama = airmass_absolute

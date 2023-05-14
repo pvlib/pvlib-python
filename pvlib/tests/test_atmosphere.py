@@ -197,7 +197,7 @@ def test_bird_hulstrom80_aod_bb():
     ('monosi', np.array([0.9935, 0.9987, 1.0264, 1.0074, 0.9999, 1.0263])),
     ('cigs', np.array([1.0014, 1.0011, 1.0270, 1.0082, 1.0029, 1.026])),
 ])
-def test_AM_AOD_PW_spectral_correction(module_type, expected):
+def test_caballero_spectral_correction(module_type, expected):
     ams = np.array([3.0, 1.5, 3.0, 1.5, 1.5, 3.0])
     aods = np.array([1.0, 1.0, 0.02, 0.02, 0.08, 0.08])
     pws = np.array([1.42, 1.42, 1.42, 1.42, 4.0, 1.0])
@@ -208,7 +208,7 @@ def test_AM_AOD_PW_spectral_correction(module_type, expected):
     assert np.allclose(expected, out, atol=1e-3)
 
 
-def test_AM_AOD_PW_spectral_correction_supplied():
+def test_caballero_spectral_correction_supplied():
     # use the cdte coeffs
     coeffs = (
         1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
@@ -219,7 +219,7 @@ def test_AM_AOD_PW_spectral_correction_supplied():
     assert_allclose(out, expected, atol=1e-3)
 
 
-def test_AM_AOD_PW_spectral_correction_supplied_ambiguous():
+def test_caballero_spectral_correction_supplied_ambiguous():
     dummy_coeffs = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
     with pytest.raises(TypeError):
         atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1,
@@ -227,7 +227,7 @@ def test_AM_AOD_PW_spectral_correction_supplied_ambiguous():
                                                  coefficients=dummy_coeffs)
 
 
-def test_AM_AOD_PW_spectral_correction_supplied_ambiguous_1():
+def test_caballero_spectral_correction_supplied_ambiguous_1():
     with pytest.raises(TypeError):
         atmosphere.AM_AOD_PW_spectral_correction(1, 1, 1,
                                                  module_type=None,

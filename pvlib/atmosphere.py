@@ -685,7 +685,7 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
     return - np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
 
 
-def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
+def caballero_spectral_correction(airmass_absolute, aod500, pw,
                                   module_type=None, coefficients=None,
                                   aod500_ref=0.084, pw_ref=1.42):
     r"""
@@ -697,11 +697,11 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
     the effect on module short circuit current of variation in the
     spectral irradiance, :math:`MM` is estimated from absolute
     (pressure-adjusted) AM, :math:`ama`, AOD at 500 nm, :math:`aod500`
-    and PW, :math:`pw`.
+    and PW, :math:`pw` [1].
 
     The best fit polynomial for each atmospheric parameter (AM, AOD, PW)
     and PV technology under study has been obtained from synthetic spectra
-    generated with SMARTS [1], considering the following boundary
+    generated with SMARTS [2], considering the following boundary
     conditions:
 
        * :math:`1.0 <= ama <= 5.0`
@@ -718,8 +718,8 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
 
     Finally, the spectral mismatch factor was calculated for each
     of the PV technologies and a multivariable regression adjustment
-    as a function of AM, AOD and PW was performed according to [2] and [3].
-    As such, the polynomial adjustment coefficients included in [3]
+    as a function of AM, AOD and PW was performed according to [3] and [1].
+    As such, the polynomial adjustment coefficients included in [1]
     were obtained.
 
 
@@ -768,23 +768,23 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
 
     References
     ----------
-    .. [1] Gueymard, Christian. SMARTS2: a simple model of the
-        atmospheric radiative transfer of sunshine: algorithms
-        and performance assessment. Cocoa, FL:
-        Florida Solar Energy Center, 1995.
-    .. [2] Theristis, M., Fernández, E., Almonacid, F., and
-            Pérez-Higueras, Pedro. "Spectral Corrections Based
-            on Air Mass, Aerosol Optical Depth and Precipitable
-            Water for CPV Performance Modeling.
-            "IEEE Journal of Photovoltaics 2016, 6(6), 1598-1604.
-            https://doi.org/10.1109/jphotov.2016.2606702
-    .. [3] Caballero, J.A., Fernández, E., Theristis, M.,
+    .. [1] Caballero, J.A., Fernández, E., Theristis, M.,
         Almonacid, F., and Nofuentes, G. "Spectral Corrections Based on
         Air Mass, Aerosol Optical Depth and Precipitable Water
         for PV Performance Modeling.
         " IEEE Journal of Photovoltaics 2018, 8(2), 552-558.
         https://doi.org/10.1109/jphotov.2017.2787019
-
+    .. [2] Gueymard, Christian. SMARTS2: a simple model of the
+        atmospheric radiative transfer of sunshine: algorithms
+        and performance assessment. Cocoa, FL:
+        Florida Solar Energy Center, 1995.
+    .. [3] Theristis, M., Fernández, E., Almonacid, F., and
+            Pérez-Higueras, Pedro. "Spectral Corrections Based
+            on Air Mass, Aerosol Optical Depth and Precipitable
+            Water for CPV Performance Modeling.
+            "IEEE Journal of Photovoltaics 2016, 6(6), 1598-1604.
+            https://doi.org/10.1109/jphotov.2016.2606702
+    
         """
 
     # Experimental coefficients
@@ -809,17 +809,15 @@ def AM_AOD_PW_spectral_correction(airmass_absolute, aod500, pw,
         1.0637, -0.0491, 0.0180, -0.0047, 0.0004, -0.0773,
         0.0583, -0.0159, 0.01251, 0.0109, 1, 0)
 
-    if module_type is not None and coefficients is None:
-        coefficients = _coefficients[module_type.lower()]
-    elif module_type is None and coefficients is not None:
-        pass
-    elif module_type is None and coefficients is None:
-        raise ValueError('No valid input provided, both module_type'
+    if module_type is None and coefficients is None:
+        raise TypeError('Invalid input provided, both module_type'
                         + 'and coefficients are None')
+    elif coefficients is None:
+        raise TypeError('Cannot resolve input, providing the'
+                        + ' coefficients input is mandatory')
     else:
-        raise TypeError('Cannot resolve input, must supply only one'
-                        + 'of module_type and coefficients')
-
+        pass
+    
     # Evaluate Spectral Shift
     coeff = coefficients
     ama = airmass_absolute

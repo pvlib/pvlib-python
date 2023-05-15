@@ -21,3 +21,5 @@ Utility functions for bifacial modeling
    bifacial.utils.vf_row_sky_2d_integ
    bifacial.utils.vf_row_ground_2d
    bifacial.utils.vf_row_ground_2d_integ
+   bifacial.utils.vf_ground_sky_2d
+   bifacial.utils.vf_ground_sky_2d_integ

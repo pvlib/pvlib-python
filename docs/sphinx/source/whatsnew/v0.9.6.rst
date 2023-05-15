@@ -11,6 +11,14 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Exposes several functions useful for bifacial and shading calculations (:pull:`1666`):
+  * :py:func:`pvlib.bifacial.utils.bifacial.utils.vf_row_sky_2d1
+  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d_integ
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d_integ
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ
+  * :py:func:`pvlib.shading.ground_angle`
 
 
 Bug fixes
@@ -20,7 +28,6 @@ Bug fixes
   affects rear surface irradiance by a few W/m2. As part of the correction,
   average view factors are now computed by exact formulas rather than by
   numerical integration. (:issue:`1665`, :pull:`1666`)
-
 * `data` can no longer be left unspecified in
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
 

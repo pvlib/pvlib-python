@@ -41,23 +41,6 @@ def test_system():
     return syst, pts, vfs_ground_sky
 
 
-def test__ground_angle(test_system):
-    ts, _, _ = test_system
-    x = np.array([0., 0.5, 1.0])
-    angles = infinite_sheds._ground_angle(
-        x, ts['surface_tilt'], ts['gcr'])
-    expected_angles = np.array([0., 5.866738789543952, 9.896090638982903])
-    assert np.allclose(angles, expected_angles)
-
-
-def test__ground_angle_zero_gcr():
-    surface_tilt = 30.0
-    x = np.array([0.0, 0.5, 1.0])
-    angles = infinite_sheds._ground_angle(x, surface_tilt, 0)
-    expected_angles = np.array([0, 0, 0])
-    assert np.allclose(angles, expected_angles)
-
-
 def test__poa_ground_shadows():
     poa_ground, f_gnd_beam, df, vf_gnd_sky = (300., 0.5, 0.5, 0.2)
     result = infinite_sheds._poa_ground_shadows(

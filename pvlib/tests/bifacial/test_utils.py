@@ -3,8 +3,8 @@ test bifical.utils
 """
 import numpy as np
 import pytest
-from pvlib.bifacial import utils, infinite_sheds
-from pvlib.shading import masking_angle
+from pvlib.bifacial import utils
+from pvlib.shading import masking_angle, ground_angle
 from pvlib.tools import cosd
 
 
@@ -148,7 +148,7 @@ def test_vf_row_ground_2d(test_system_fixed_tilt):
     # with array input
     fx = np.array([0., 0.5, 1.0])
     vf = utils.vf_row_ground_2d(fx, ts['gcr'], ts['surface_tilt'])
-    phi = infinite_sheds._ground_angle(fx, ts['surface_tilt'], ts['gcr'])
+    phi = ground_angle(fx, ts['surface_tilt'], ts['gcr'])
     expected = 0.5 * (1 - cosd(phi - ts['surface_tilt']))
     assert np.allclose(vf, expected)
 
@@ -164,10 +164,10 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     fx1 = np.array([0., 0.8])
     vf = utils.vf_row_ground_2d_integ(fx0, fx1, ts['gcr'],
                                       ts['surface_tilt'])
-    phi = infinite_sheds._ground_angle(fx0[0], ts['surface_tilt'], ts['gcr'])
+    phi = ground_angle(fx0[0], ts['surface_tilt'], ts['gcr'])
     y0 = 0.5 * (1 - cosd(phi - ts['surface_tilt']))
     x = np.arange(fx0[1], fx1[1], 1e-4)
-    phi_y = infinite_sheds._ground_angle(x, ts['surface_tilt'], ts['gcr'])
+    phi_y = ground_angle(x, ts['surface_tilt'], ts['gcr'])
     y = 0.5 * (1 - cosd(phi_y - ts['surface_tilt']))
     y1 = np.trapz(y, x) / (fx1[1] - fx0[1])
     expected = np.array([y0, y1])

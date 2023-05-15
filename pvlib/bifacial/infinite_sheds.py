@@ -9,7 +9,6 @@ from pvlib.bifacial import utils
 from pvlib.irradiance import beam_component, aoi, haydavies
 
 
-
 def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     """
     Reduce ground-reflected irradiance to the tilted plane (poa_ground) to
@@ -91,47 +90,6 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
     """
     vf_integ = utils.vf_row_sky_2d_integ(0., 1., gcr, surface_tilt)
     return dhi * vf_integ
-
-
-def _ground_angle(x, surface_tilt, gcr):
-    """
-    Angle from horizontal of the line from a point x on the row slant length
-    to the bottom of the facing row.
-
-    The angles are clockwise from horizontal, rather than the usual
-    counterclockwise direction.
-
-    Parameters
-    ----------
-    x : numeric
-        fraction of row slant length from bottom, ``x = 0`` is at the row
-        bottom, ``x = 1`` is at the top of the row.
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-    gcr : float
-        ground coverage ratio, ratio of row slant length to row spacing.
-        [unitless]
-
-    Returns
-    -------
-    psi : numeric
-        Angle [degree].
-    """
-    #  : \\            \
-    #  :  \\            \
-    #  :   \\            \
-    #  :    \\            \  facing row
-    #  :     \\.___________\
-    #  :       \  ^*-.  psi \
-    #  :        \  x   *-.   \
-    #  :         \  v      *-.\
-    #  :          \<-----P---->\
-
-    x1 = gcr * x * sind(surface_tilt)
-    x2 = gcr * x * cosd(surface_tilt) + 1
-    psi = np.arctan2(x1, x2)  # do this first because it handles 0 / 0
-    return np.rad2deg(psi)
 
 
 def _poa_ground_pv(poa_ground, gcr, surface_tilt):

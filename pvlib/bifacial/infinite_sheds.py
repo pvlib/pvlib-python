@@ -95,9 +95,22 @@ def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
 
 
 def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
-    """
-    Sky diffuse POA from averaged view factors combined for both shaded and
-    unshaded parts of the surface.
+    r"""
+    Integrated view factors from the shaded and unshaded parts of
+    the row slant height to the sky.
+
+    Parameters
+    ----------
+    f_x : numeric
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+    gcr : float
+        Ratio of row slant length to row spacing (pitch). [unitless]
+    npoints : int, default 100
+        Number of points for integration. [unitless]
 
     A detailed calculation would be
 
@@ -114,6 +127,9 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
 
     Parameters
     ----------
+    f_x : numeric
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
     dhi : numeric
         Diffuse horizontal irradiance (DHI). [W/m^2]
     gcr : float
@@ -177,20 +193,6 @@ def _poa_ground_pv(poa_ground, gcr, surface_tilt):
     """
     Reduce ground-reflected irradiance to account for limited view of the
     ground from the row surface.
-
-    A detailed calculation would be
-
-        poa_ground *
-          (f_x * vf_shade_ground_integ + (1 - f_x) * vf_noshade_ground_integ)
-
-    where vf_shade_ground_integ is the average view factor between 0 and f_x
-    (the shaded portion). But the average view factor is
-
-        1/(f_x - 0) Integral_0^f_x vf(x) dx
-
-    so the detailed calculation is equivalent to
-
-        poa_ground * 1/(1 - 0) Integral_0^1 vf(x) dx
 
     Parameters
     ----------

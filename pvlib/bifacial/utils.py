@@ -5,6 +5,7 @@ modeling.
 import numpy as np
 from pvlib.tools import sind, cosd, tand
 
+
 def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     """
     Tangent of the angle between the zenith vector and the sun vector
@@ -89,7 +90,7 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 
-def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
+def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     r"""
     Calculate the fraction of the sky dome visible from point x on the ground.
 
@@ -169,6 +170,62 @@ def _vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     np.clip(next_edge, a_min=0., a_max=None, out=next_edge)
     vf = np.sum(next_edge, axis=-1) / 2
     return vf
+
+
+def vf_ground_sky_2d_integ(surface_tilt, surface_azimuth, gcr, height,
+                           pitch, max_rows=10, npoints=100, vectorize=False):
+    """
+    Integrated view factor to the sky from the ground underneath
+    interior rows of the array.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees east of north
+        (e.g. North = 0, South = 180, East = 90, West = 270).
+        ``surface_azimuth`` must be >=0 and <=360.
+    gcr : float
+        Ratio of row slant length to row spacing (pitch). [unitless]
+    height : float
+        Height of the center point of the row above the ground; must be in the
+        same units as ``pitch``.
+    pitch : float
+        Distance between two rows. Must be in the same units as ``height``.
+    max_rows : int, default 10
+        Maximum number of rows to consider in front and behind the current row.
+    npoints : int, default 100
+        Number of points used to discretize distance along the ground.
+    vectorize : bool, default False
+        If True, vectorize the view factor calculation across ``surface_tilt``.
+        This increases speed with the cost of increased memory usage.
+
+    Returns
+    -------
+    fgnd_sky : numeric
+        Integration of view factor over the length between adjacent, interior
+        rows.  Shape matches that of ``surface_tilt``. [unitless]
+    """
+    # Abuse utils._vf_ground_sky_2d by supplying surface_tilt in place
+    # of a signed rotation. This is OK because
+    # 1) z span the full distance between 2 rows, and
+    # 2) max_rows is set to be large upstream, and
+    # 3) _vf_ground_sky_2d considers [-max_rows, +max_rows]
+    # The VFs to the sky will thus be symmetric around z=0.5
+    z = np.linspace(0, 1, npoints)
+    rotation = np.atleast_1d(surface_tilt)
+    if vectorize:
+        fz_sky = vf_ground_sky_2d(z, rotation, gcr, pitch, height,
+                                         max_rows)
+    else:
+        fz_sky = np.zeros((npoints, len(rotation)))
+        for k, r in enumerate(rotation):
+            vf = vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
+            fz_sky[:, k] = vf[:, 0]  # remove spurious rotation dimension
+    # calculate the integrated view factor for all of the ground between rows
+    return np.trapz(fz_sky, z, axis=0)
 
 
 def _vf_poly(x, gcr, surface_tilt, delta):

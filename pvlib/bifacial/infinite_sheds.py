@@ -9,61 +9,6 @@ from pvlib.bifacial import utils
 from pvlib.irradiance import beam_component, aoi, haydavies
 
 
-def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
-                         pitch, max_rows=10, npoints=100, vectorize=False):
-    """
-    Integrated view factor to the sky from the ground underneath
-    interior rows of the array.
-
-    Parameters
-    ----------
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
-    surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees east of north
-        (e.g. North = 0, South = 180, East = 90, West = 270).
-        ``surface_azimuth`` must be >=0 and <=360.
-    gcr : float
-        Ratio of row slant length to row spacing (pitch). [unitless]
-    height : float
-        Height of the center point of the row above the ground; must be in the
-        same units as ``pitch``.
-    pitch : float
-        Distance between two rows. Must be in the same units as ``height``.
-    max_rows : int, default 10
-        Maximum number of rows to consider in front and behind the current row.
-    npoints : int, default 100
-        Number of points used to discretize distance along the ground.
-    vectorize : bool, default False
-        If True, vectorize the view factor calculation across ``surface_tilt``.
-        This increases speed with the cost of increased memory usage.
-
-    Returns
-    -------
-    fgnd_sky : numeric
-        Integration of view factor over the length between adjacent, interior
-        rows.  Shape matches that of ``surface_tilt``. [unitless]
-    """
-    # Abuse utils._vf_ground_sky_2d by supplying surface_tilt in place
-    # of a signed rotation. This is OK because
-    # 1) z span the full distance between 2 rows, and
-    # 2) max_rows is set to be large upstream, and
-    # 3) _vf_ground_sky_2d considers [-max_rows, +max_rows]
-    # The VFs to the sky will thus be symmetric around z=0.5
-    z = np.linspace(0, 1, npoints)
-    rotation = np.atleast_1d(surface_tilt)
-    if vectorize:
-        fz_sky = utils._vf_ground_sky_2d(z, rotation, gcr, pitch, height,
-                                         max_rows)
-    else:
-        fz_sky = np.zeros((npoints, len(rotation)))
-        for k, r in enumerate(rotation):
-            vf = utils._vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
-            fz_sky[:, k] = vf[:, 0]  # remove spurious rotation dimension
-    # calculate the integrated view factor for all of the ground between rows
-    return np.trapz(fz_sky, z, axis=0)
-
 
 def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
     """
@@ -419,7 +364,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # adjacent rows interior to the array
     # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
     # center rather than at row lower edge as in [1].
-    vf_gnd_sky = _vf_ground_sky_integ(
+    vf_gnd_sky = utils.vf_ground_sky_2d_integ(
         surface_tilt, surface_azimuth, gcr, height, pitch, max_rows, npoints,
         vectorize)
     # fraction of row slant height that is shaded from direct irradiance

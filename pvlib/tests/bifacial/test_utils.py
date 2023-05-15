@@ -81,13 +81,27 @@ def test__unshaded_ground_fraction(
 def test__vf_ground_sky_2d(test_system_fixed_tilt):
     # vector input
     ts, pts, vfs_gnd_sky = test_system_fixed_tilt
-    vfs = utils._vf_ground_sky_2d(pts, ts['rotation'], ts['gcr'],
-                                  ts['pitch'], ts['height'], max_rows=1)
+    vfs = utils.vf_ground_sky_2d(pts, ts['rotation'], ts['gcr'],
+                                 ts['pitch'], ts['height'], max_rows=1)
     assert np.allclose(vfs, vfs_gnd_sky, rtol=0.1)  # middle point vf is off
     # test with singleton x
-    vf = utils._vf_ground_sky_2d(pts[0], ts['rotation'], ts['gcr'],
-                                 ts['pitch'], ts['height'], max_rows=1)
+    vf = utils.vf_ground_sky_2d(pts[0], ts['rotation'], ts['gcr'],
+                                ts['pitch'], ts['height'], max_rows=1)
     assert np.isclose(vf, vfs_gnd_sky[0])
+
+
+@pytest.mark.parametrize("vectorize", [True, False])
+def test_vf_ground_sky_2d_integ(test_system_fixed_tilt, vectorize):
+    ts, pts, vfs_gnd_sky = test_system_fixed_tilt
+    # pass rotation here since max_rows=1 for the hand-solved case in
+    # the fixture test_system, which means the ground-to-sky view factor
+    # isn't summed over enough rows for symmetry to hold.
+    vf_integ = utils.vf_ground_sky_2d_integ(
+        ts['rotation'], ts['surface_azimuth'],
+        ts['gcr'], ts['height'], ts['pitch'],
+        max_rows=1, npoints=3, vectorize=vectorize)
+    expected_vf_integ = np.trapz(vfs_gnd_sky, pts, axis=0)
+    assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
 
 
 def test_vf_row_sky_2d(test_system_fixed_tilt):

@@ -5,7 +5,6 @@ test infinite sheds
 import numpy as np
 import pandas as pd
 from pvlib.bifacial import infinite_sheds
-from pvlib.tools import cosd
 from ..conftest import assert_series_equal
 
 import pytest
@@ -40,20 +39,6 @@ def test_system():
     vf_2 = 0.5 * (c23 - c22 + c21 - c20)  # vf at point 1
     vfs_ground_sky = np.array([vf_0, vf_1, vf_2])
     return syst, pts, vfs_ground_sky
-
-
-@pytest.mark.parametrize("vectorize", [True, False])
-def test__vf_ground_sky_integ(test_system, vectorize):
-    ts, pts, vfs_gnd_sky = test_system
-    # pass rotation here since max_rows=1 for the hand-solved case in
-    # the fixture test_system, which means the ground-to-sky view factor
-    # isn't summed over enough rows for symmetry to hold.
-    vf_integ = infinite_sheds._vf_ground_sky_integ(
-        ts['rotation'], ts['surface_azimuth'],
-        ts['gcr'], ts['height'], ts['pitch'],
-        max_rows=1, npoints=3, vectorize=vectorize)
-    expected_vf_integ = np.trapz(vfs_gnd_sky, pts)
-    assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
 
 
 def test__ground_angle(test_system):

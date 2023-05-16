@@ -779,11 +779,11 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
         and performance assessment. Cocoa, FL:
         Florida Solar Energy Center, 1995.
     .. [3] Theristis, M., Fernández, E., Almonacid, F., and
-            Pérez-Higueras, Pedro. "Spectral Corrections Based
-            on Air Mass, Aerosol Optical Depth and Precipitable
-            Water for CPV Performance Modeling.
-            "IEEE Journal of Photovoltaics 2016, 6(6), 1598-1604.
-            https://doi.org/10.1109/jphotov.2016.2606702
+       Pérez-Higueras, Pedro. "Spectral Corrections Based
+       on Air Mass, Aerosol Optical Depth and Precipitable
+       Water for CPV Performance Modeling."
+       IEEE Journal of Photovoltaics 2016, 6(6), 1598-1604.
+       https://doi.org/10.1109/jphotov.2016.2606702
 
         """
 

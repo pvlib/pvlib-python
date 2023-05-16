@@ -117,18 +117,16 @@ def test_get_psm3_check_leap_day(nrel_api_key):
     assert len(data_2012) == (8760 + 24)
 
 
-@pytest.mark.parametrize('latitude, longitude, api_key, names, interval, url',
-                         [(LATITUDE, LONGITUDE, 'BAD', 'tmy-2017', 60, None),
-                          (51, -5, nrel_api_key, 'tmy-2017', 60, None),
-                          (LATITUDE, LONGITUDE, nrel_api_key, 'bad', 60, None),
-                          (LATITUDE, LONGITUDE, nrel_api_key, '2017', 15, None),
-                          (LATITUDE, LONGITUDE, nrel_api_key, '2017', 60,
-                           'https://developer.nrel.gov/api/nsrdb/v2/bad'),
+@pytest.mark.parametrize('latitude, longitude, api_key, names, interval',
+                         [(LATITUDE, LONGITUDE, 'BAD', 'tmy-2017', 60),
+                          (51, -5, nrel_api_key, 'tmy-2017', 60),
+                          (LATITUDE, LONGITUDE, nrel_api_key, 'bad', 60),
+                          (LATITUDE, LONGITUDE, nrel_api_key, '2017', 15),
                           ])
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_psm3_tmy_errors(
-    latitude, longitude, api_key, names, interval, url
+    latitude, longitude, api_key, names, interval
 ):
     """Test get_psm3() for multiple erroneous input scenarios.
 
@@ -137,11 +135,10 @@ def test_get_psm3_tmy_errors(
     * Bad latitude/longitude -> Coordinates were not found in the NSRDB.
     * Bad name -> Name is not one of the available options.
     * Bad interval, single year -> Intervals can only be 30 or 60 minutes.
-    * Bad url -> Not Found.
     """
     with pytest.raises(HTTPError) as excinfo:
         psm3.get_psm3(latitude, longitude, api_key, PVLIB_EMAIL,
-                      names=names, interval=interval, url=url, leap_day=False,
+                      names=names, interval=interval, leap_day=False,
                       map_variables=False)
     # ensure the HTTPError caught isn't due to overuse of the API key
     assert "OVER_RATE_LIMIT" not in str(excinfo.value)

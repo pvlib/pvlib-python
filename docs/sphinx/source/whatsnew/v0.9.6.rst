@@ -5,6 +5,12 @@ v0.9.6 (Anticipated June 2023)
 ------------------------------
 
 
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* For consistency with the rest of pvlib, the ``tilt`` parameter is renamed
+  to ``surface_tilt`` in :py:func:`pvlib.soiling.hsu`. (:issue:`1717`, :pull:`1738`)
+  
+
 Deprecations
 ~~~~~~~~~~~~
 

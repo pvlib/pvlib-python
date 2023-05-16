@@ -77,7 +77,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     .. versionchanged:: 0.10.0
        The default endpoint for hourly single-year datasets is now v3.2.2.
        The previous datasets can still be accessed (for now) by setting
-       the ``url`` parameter to the original API endpoint 
+       the ``url`` parameter to the original API endpoint
        (``"https://developer.nrel.gov/api/nsrdb/v2/solar/psm3-download.csv"``).
 
     Parameters

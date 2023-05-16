@@ -11,6 +11,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add optional encoding parameter to :py:func:`pvlib.iotools.read_tmy3`.
+  (:issue:`1732`, :pull:`1737`)
 
 
 Bug fixes

@@ -810,10 +810,10 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
         0.0583, -0.0159, 0.01251, 0.0109, 1, 0)
 
     if module_type is None and coefficients is None:
-        raise TypeError('Invalid input provided, both module_type'
+        raise ValueError('Invalid input provided, both module_type'
                         + 'and coefficients are None')
     elif module_type is not None and coefficients is None:
-        raise TypeError('Cannot resolve input, providing the'
+        raise ValueError('Cannot resolve input, providing the'
                         + ' coefficients input is mandatory')
     else:
         pass

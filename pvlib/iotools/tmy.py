@@ -164,7 +164,11 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
     with open(str(filename), 'r', encoding=encoding) as fbuf:
-        firstline, data = _parse_tmy3(fbuf)
+        # header information on the 1st line (0 indexing)
+        firstline = fbuf.readline()
+        # use pandas to read the csv file buffer
+        # header is actually the second line, but tell pandas to look for
+        data = pd.read_csv(fbuf, header=0)
 
     meta = dict(zip(head, firstline.rstrip('\n').split(",")))
     # convert metadata strings to numeric types
@@ -203,15 +207,6 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     data = data.tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
-
-
-def _parse_tmy3(fbuf):
-    # header information on the 1st line (0 indexing)
-    firstline = fbuf.readline()
-    # use pandas to read the csv file buffer
-    # header is actually the second line, but tell pandas to look for
-    data = pd.read_csv(fbuf, header=0)
-    return firstline, data
 
 
 def _recolumn(tmy3_dataframe):

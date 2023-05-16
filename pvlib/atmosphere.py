@@ -695,7 +695,7 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
 
     Estimates a spectral mismatch modifier :math:`M` representing
     the effect on module short circuit current of variation in the
-    spectral irradiance, :math:`MM` is estimated from absolute
+    spectral irradiance. :math:`M` is estimated from absolute
     (pressure-adjusted) AM, :math:`ama`, AOD at 500 nm, :math:`aod500`
     and PW, :math:`pw` [1].
 

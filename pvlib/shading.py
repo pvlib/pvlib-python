@@ -10,7 +10,7 @@ from pvlib.tools import sind, cosd
 
 def ground_angle(surface_tilt, gcr, slant_height):
     """
-    Angle from horizontal of the line from a point x on the row slant length
+    Angle from horizontal of the line from a point on the row slant length
     to the bottom of the facing row.
 
     The angles are clockwise from horizontal, rather than the usual
@@ -25,7 +25,7 @@ def ground_angle(surface_tilt, gcr, slant_height):
         ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
     slant_height : numeric
-        The distance up the module's slant height to evaluate the masking
+        The distance up the module's slant height to evaluate the ground
         angle, as a fraction [0-1] of the module slant height [unitless].
 
     Returns

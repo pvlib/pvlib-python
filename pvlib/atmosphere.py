@@ -736,7 +736,7 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
 
     module_type : None or string, default None
         a string specifying a cell type. Values of 'cdte', 'monosi', 'cigs',
-        'multisi','asi' and 'pervovskite'. If provided,
+        'multisi','asi' and 'perovskite'. If provided,
         module_type selects default coefficients for the following modules:
 
             * 'cdte' - anonymous CdTe module.

@@ -701,7 +701,7 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
 
     The best fit polynomial for each atmospheric parameter (AM, AOD, PW)
     and PV technology under study has been obtained from synthetic spectra
-    generated with SMARTS [2], considering the following boundary
+    generated with SMARTS [2]_, considering the following boundary
     conditions:
 
        * :math:`1.0 <= ama <= 5.0`

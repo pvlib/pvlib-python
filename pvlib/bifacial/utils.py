@@ -278,7 +278,7 @@ def vf_row_sky_2d(surface_tilt, gcr, x):
     return 0.5*(1 + (1/gcr * cosd(surface_tilt) - (1 - x)) / p)
 
 
-def vf_row_sky_2d_integ(surface_tilt, gcr, x0, x1):
+def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
     r'''
     Calculate the average view factor to the sky from a segment of the row
     surface between x0 and x1.
@@ -294,11 +294,11 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0, x1):
         = 0, surface facing horizon = 90. [degree]
     gcr : numeric
         Ratio of the row slant length to the row spacing (pitch). [unitless]
-    x0 : numeric
+    x0 : numeric, default 0
         Position on the row's slant length, as a fraction of the slant length.
         x0=0 corresponds to the bottom of the row. x0 should be less than x1.
         [unitless]
-    x1 : numeric
+    x1 : numeric, default 1
         Position on the row's slant length, as a fraction of the slant length.
         x1 should be greater than x0. [unitless]
 
@@ -349,7 +349,7 @@ def vf_row_ground_2d(surface_tilt, gcr, x):
     return 0.5 * (1 - (1/gcr * cosd(surface_tilt) + x)/p)
 
 
-def vf_row_ground_2d_integ(surface_tilt, gcr, x0, x1):
+def vf_row_ground_2d_integ(surface_tilt, gcr, x0=0, x1=1):
     r'''
     Calculate the average view factor to the ground from a segment of the row
     surface between x0 and x1.
@@ -365,18 +365,19 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, x0, x1):
         = 0, surface facing horizon = 90. [degree]
     gcr : numeric
         Ratio of the row slant length to the row spacing (pitch). [unitless]
-    x0 : numeric
+    x0 : numeric, default 0.
         Position on the row's slant length, as a fraction of the slant length.
         x0=0 corresponds to the bottom of the row. x0 should be less than x1.
         [unitless]
-    x1 : numeric
+    x1 : numeric, default 1.
         Position on the row's slant length, as a fraction of the slant length.
         x1 should be greater than x0. [unitless]
 
     Returns
     -------
     vf : numeric
-        Fraction of the sky dome visible from the point x. [unitless]
+        Integrated view factor to the visible ground on the interval (x0, x1).
+        [unitless]
 
     '''
     u = np.abs(x1 - x0)

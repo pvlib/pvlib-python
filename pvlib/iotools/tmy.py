@@ -5,7 +5,7 @@ import re
 import pandas as pd
 
 
-def read_tmy3(filename, coerce_year=None, recolumn=True):
+def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     """Read a TMY3 file into a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged
@@ -27,6 +27,8 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     recolumn : bool, default True
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
+    encoding : optional
+        Encoding of the file.
 
     Returns
     -------
@@ -160,7 +162,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True):
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
     try:
-        with open(str(filename), 'r') as fbuf:
+        with open(str(filename), 'r', encoding=encoding) as fbuf:
             firstline, data = _parse_tmy3(fbuf)
     # SolarAnywhere files contain non-UTF8 characters and may require
     # encoding='iso-8859-1' in order to be parsed

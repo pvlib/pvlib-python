@@ -28,7 +28,9 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
     encoding : str, optional
-        Encoding of the file.
+        Encoding of the file. For files that contain non-UTF8 characters it may
+        be necessary to specify an alternative encoding, e.g., for
+        SolarAnywhere TMY3 files the encoding should be 'iso-8859-1'.
 
     Returns
     -------
@@ -161,14 +163,8 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     """  # noqa: E501
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
-    try:
-        with open(str(filename), 'r', encoding=encoding) as fbuf:
-            firstline, data = _parse_tmy3(fbuf)
-    # SolarAnywhere files contain non-UTF8 characters and may require
-    # encoding='iso-8859-1' in order to be parsed
-    except UnicodeDecodeError:
-        with open(str(filename), 'r', encoding='iso-8859-1') as fbuf:
-            firstline, data = _parse_tmy3(fbuf)
+    with open(str(filename), 'r', encoding=encoding) as fbuf:
+        firstline, data = _parse_tmy3(fbuf)
 
     meta = dict(zip(head, firstline.rstrip('\n').split(",")))
     # convert metadata strings to numeric types

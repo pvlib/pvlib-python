@@ -718,7 +718,7 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
 
     Finally, the spectral mismatch factor was calculated for each
     of the PV technologies and a multivariable regression adjustment
-    as a function of AM, AOD and PW was performed according to [3] and [1].
+    as a function of AM, AOD and PW was performed according to [3] and [1]_.
     As such, the polynomial adjustment coefficients included in [1]
     were obtained.
 

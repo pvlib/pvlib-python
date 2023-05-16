@@ -697,7 +697,7 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
     the effect on module short circuit current of variation in the
     spectral irradiance. :math:`M` is estimated from absolute
     (pressure-adjusted) AM, :math:`ama`, AOD at 500 nm, :math:`aod500`
-    and PW, :math:`pw` [1].
+    and PW, :math:`pw` [1]_.
 
     The best fit polynomial for each atmospheric parameter (AM, AOD, PW)
     and PV technology under study has been obtained from synthetic spectra

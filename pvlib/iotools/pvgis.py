@@ -45,7 +45,7 @@ VARIABLE_MAP = {
 
 def get_pvgis_hourly(latitude, longitude, start=None, end=None,
                      raddatabase=None, components=True,
-                     surface_tilt=0, surface_azimuth=0,
+                     surface_tilt=0, surface_azimuth=180,
                      outputformat='json',
                      usehorizon=True, userhorizon=None,
                      pvcalculation=False,
@@ -76,9 +76,10 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         Otherwise only global irradiance is returned.
     surface_tilt: float, default: 0
         Tilt angle from horizontal plane. Ignored for two-axis tracking.
-    surface_azimuth: float, default: 0
-        Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
-        -90: east. Ignored for tracking systems.
+    surface_azimuth: float, default: 180
+        Orientation (azimuth angle) of the (fixed) plane. Counter-clockwise
+        from north (north=0, south=180). This is offset 180 degrees from
+        the convention used by PVGIS. Ignored for tracking systems.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None
@@ -136,6 +137,12 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 
+    Info
+    ----
+    The `surface_azimuth` parameter follows the pvlib convention, which is
+    counterclockwise from north. However, when using the PVGIS website, the
+    corresponding parameter (`aspect`) is offset by 180 degrees.
+
     Hint
     ----
     PVGIS provides access to a number of different solar radiation datasets,
@@ -191,7 +198,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     """  # noqa: E501
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
-              'angle': surface_tilt, 'aspect': surface_azimuth,
+              'angle': surface_tilt, 'aspect': surface_azimuth-180,
               'pvcalculation': int(pvcalculation),
               'pvtechchoice': pvtechchoice, 'mountingplace': mountingplace,
               'trackingtype': trackingtype, 'components': int(components),

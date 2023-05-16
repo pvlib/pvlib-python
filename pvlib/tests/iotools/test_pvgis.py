@@ -206,14 +206,14 @@ def test_read_pvgis_hourly_bad_extension():
 
 
 args_radiation_csv = {
-    'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'csv',
+    'surface_tilt': 30, 'surface_azimuth': 180, 'outputformat': 'csv',
     'usehorizon': False, 'userhorizon': None, 'raddatabase': 'PVGIS-SARAH',
     'start': 2016, 'end': 2016, 'pvcalculation': False, 'components': True}
 
 url_hourly_radiation_csv = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=csv&angle=30&aspect=0&usehorizon=0&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&raddatabase=PVGIS-SARAH&startyear=2016&endyear=2016'  # noqa: E501
 
 args_pv_json = {
-    'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'json',
+    'surface_tilt': 30, 'surface_azimuth': 180, 'outputformat': 'json',
     'usehorizon': True, 'userhorizon': None, 'raddatabase': 'PVGIS-SARAH2',
     'start': pd.Timestamp(2013, 1, 1), 'end': pd.Timestamp(2014, 5, 1),
     'pvcalculation': True, 'peakpower': 10, 'pvtechchoice': 'CIS', 'loss': 5,

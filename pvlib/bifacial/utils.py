@@ -90,7 +90,7 @@ def _unshaded_ground_fraction(surface_tilt, surface_azimuth, solar_zenith,
     return f_gnd_beam  # 1 - min(1, abs()) < 1 always
 
 
-def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
+def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     r"""
     Calculate the fraction of the sky dome visible from point x on the ground.
 
@@ -100,15 +100,15 @@ def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
 
     Parameters
     ----------
-    x : numeric
-        Position on the ground between two rows, as a fraction of the pitch.
-        x = 0 corresponds to the point on the ground directly below the
-        center point of a row. Positive x is towards the right. [unitless]
     rotation : numeric
         Rotation angle of the row's right edge relative to row center.
         [degree]
     gcr : float
         Ratio of the row slant length to the row spacing (pitch). [unitless]
+    x : numeric
+        Position on the ground between two rows, as a fraction of the pitch.
+        x = 0 corresponds to the point on the ground directly below the
+        center point of a row. Positive x is towards the right. [unitless]
     height : float
         Height of the center point of the row above the ground; must be in the
         same units as ``pitch``.
@@ -172,8 +172,8 @@ def vf_ground_sky_2d(x, rotation, gcr, pitch, height, max_rows=10):
     return vf
 
 
-def vf_ground_sky_2d_integ(surface_tilt, surface_azimuth, gcr, height,
-                           pitch, max_rows=10, npoints=100, vectorize=False):
+def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
+                           npoints=100, vectorize=False):
     """
     Integrated view factor to the sky from the ground underneath
     interior rows of the array.
@@ -183,10 +183,6 @@ def vf_ground_sky_2d_integ(surface_tilt, surface_azimuth, gcr, height,
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
-    surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees east of north
-        (e.g. North = 0, South = 180, East = 90, West = 270).
-        ``surface_azimuth`` must be >=0 and <=360.
     gcr : float
         Ratio of row slant length to row spacing (pitch). [unitless]
     height : float
@@ -217,31 +213,30 @@ def vf_ground_sky_2d_integ(surface_tilt, surface_azimuth, gcr, height,
     z = np.linspace(0, 1, npoints)
     rotation = np.atleast_1d(surface_tilt)
     if vectorize:
-        fz_sky = vf_ground_sky_2d(z, rotation, gcr, pitch, height,
-                                         max_rows)
+        fz_sky = vf_ground_sky_2d(rotation, gcr, z, pitch, height, max_rows)
     else:
         fz_sky = np.zeros((npoints, len(rotation)))
         for k, r in enumerate(rotation):
-            vf = vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
+            vf = vf_ground_sky_2d(r, gcr, z, pitch, height, max_rows)
             fz_sky[:, k] = vf[:, 0]  # remove spurious rotation dimension
     # calculate the integrated view factor for all of the ground between rows
     return np.trapz(fz_sky, z, axis=0)
 
 
-def _vf_poly(x, gcr, surface_tilt, delta):
+def _vf_poly(surface_tilt, gcr, x, delta):
     r'''
     A term common to many 2D view factor calculations
 
     Parameters
     ----------
-    x : numeric
-        Position on the row's slant length, as a fraction of the slant length.
-        x=0 corresponds to the bottom of the row. [unitless]
-    gcr : numeric
-        Ratio of the row slant length to the row spacing (pitch). [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
+    x : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x=0 corresponds to the bottom of the row. [unitless]
     delta : -1 or +1
         A sign indicator for the linear term of the polynomial
 
@@ -254,7 +249,7 @@ def _vf_poly(x, gcr, surface_tilt, delta):
     return np.sqrt(a*a + 2*delta*a*c*x + x*x)
 
 
-def vf_row_sky_2d(x, gcr, surface_tilt):
+def vf_row_sky_2d(surface_tilt, gcr, x):
     r'''
     Calculate the view factor to the sky from a point x on a row surface.
 
@@ -264,14 +259,14 @@ def vf_row_sky_2d(x, gcr, surface_tilt):
 
     Parameters
     ----------
-    x : numeric
-        Position on the row's slant length, as a fraction of the slant length.
-        x=0 corresponds to the bottom of the row. [unitless]
-    gcr : numeric
-        Ratio of the row slant length to the row spacing (pitch). [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
+    x : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x=0 corresponds to the bottom of the row. [unitless]
 
     Returns
     -------
@@ -279,11 +274,11 @@ def vf_row_sky_2d(x, gcr, surface_tilt):
         Fraction of the sky dome visible from the point x. [unitless]
 
     '''
-    p = _vf_poly(1 - x, gcr, surface_tilt, -1)
+    p = _vf_poly(surface_tilt, gcr, 1 - x, -1)
     return 0.5*(1 + (1/gcr * cosd(surface_tilt) - (1 - x)) / p)
 
 
-def vf_row_sky_2d_integ(x0, x1, gcr, surface_tilt):
+def vf_row_sky_2d_integ(surface_tilt, gcr, x0, x1):
     r'''
     Calculate the average view factor to the sky from a segment of the row
     surface between x0 and x1.
@@ -294,6 +289,11 @@ def vf_row_sky_2d_integ(x0, x1, gcr, surface_tilt):
 
     Parameters
     ----------
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
     x0 : numeric
         Position on the row's slant length, as a fraction of the slant length.
         x0=0 corresponds to the bottom of the row. x0 should be less than x1.
@@ -301,11 +301,6 @@ def vf_row_sky_2d_integ(x0, x1, gcr, surface_tilt):
     x1 : numeric
         Position on the row's slant length, as a fraction of the slant length.
         x1 should be greater than x0. [unitless]
-    gcr : numeric
-        Ratio of the row slant length to the row spacing (pitch). [unitless]
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
 
     Returns
     -------
@@ -315,17 +310,17 @@ def vf_row_sky_2d_integ(x0, x1, gcr, surface_tilt):
 
     '''
     u = np.abs(x1 - x0)
-    p0 = _vf_poly(1 - x0, gcr, surface_tilt, -1)
-    p1 = _vf_poly(1 - x1, gcr, surface_tilt, -1)
+    p0 = _vf_poly(surface_tilt, gcr, 1 - x0, -1)
+    p1 = _vf_poly(surface_tilt, gcr, 1 - x1, -1)
     with np.errstate(divide='ignore'):
         result = np.where(u < 1e-6,
-                          vf_row_sky_2d(x0, gcr, surface_tilt),
+                          vf_row_sky_2d(surface_tilt, gcr, x0),
                           0.5*(1 + 1/u * (p1 - p0))
                           )
     return result
 
 
-def vf_row_ground_2d(x, gcr, surface_tilt):
+def vf_row_ground_2d(surface_tilt, gcr, x):
     r'''
     Calculate the view factor to the ground from a point x on a row surface.
 
@@ -335,26 +330,26 @@ def vf_row_ground_2d(x, gcr, surface_tilt):
 
     Parameters
     ----------
-    x : numeric
-        Position on the row's slant length, as a fraction of the slant length.
-        x=0 corresponds to the bottom of the row. [unitless]
-    gcr : numeric
-        Ratio of the row slant length to the row spacing (pitch). [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
+    x : numeric
+        Position on the row's slant length, as a fraction of the slant length.
+        x=0 corresponds to the bottom of the row. [unitless]
 
     Returns
     -------
     vf : numeric
-        Fraction of the sky dome visible from the point x. [unitless]
+        View factor to the visible ground from the point x. [unitless]
 
     '''
-    p = _vf_poly(x, gcr, surface_tilt, 1)
+    p = _vf_poly(surface_tilt, gcr, x, 1)
     return 0.5 * (1 - (1/gcr * cosd(surface_tilt) + x)/p)
 
 
-def vf_row_ground_2d_integ(x0, x1, gcr, surface_tilt):
+def vf_row_ground_2d_integ(surface_tilt, gcr, x0, x1):
     r'''
     Calculate the average view factor to the ground from a segment of the row
     surface between x0 and x1.
@@ -365,6 +360,11 @@ def vf_row_ground_2d_integ(x0, x1, gcr, surface_tilt):
 
     Parameters
     ----------
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+    gcr : numeric
+        Ratio of the row slant length to the row spacing (pitch). [unitless]
     x0 : numeric
         Position on the row's slant length, as a fraction of the slant length.
         x0=0 corresponds to the bottom of the row. x0 should be less than x1.
@@ -372,11 +372,6 @@ def vf_row_ground_2d_integ(x0, x1, gcr, surface_tilt):
     x1 : numeric
         Position on the row's slant length, as a fraction of the slant length.
         x1 should be greater than x0. [unitless]
-    gcr : numeric
-        Ratio of the row slant length to the row spacing (pitch). [unitless]
-    surface_tilt : numeric
-        Surface tilt angle in degrees from horizontal, e.g., surface facing up
-        = 0, surface facing horizon = 90. [degree]
 
     Returns
     -------
@@ -385,11 +380,11 @@ def vf_row_ground_2d_integ(x0, x1, gcr, surface_tilt):
 
     '''
     u = np.abs(x1 - x0)
-    p0 = _vf_poly(x0, gcr, surface_tilt, 1)
-    p1 = _vf_poly(x1, gcr, surface_tilt, 1)
+    p0 = _vf_poly(surface_tilt, gcr, x0, 1)
+    p1 = _vf_poly(surface_tilt, gcr, x1, 1)
     with np.errstate(divide='ignore'):
         result = np.where(u < 1e-6,
-                          vf_row_ground_2d(x0, gcr, surface_tilt),
+                          vf_row_ground_2d(surface_tilt, gcr, x0),
                           0.5*(1 - 1/u * (p1 - p0))
                           )
     return result

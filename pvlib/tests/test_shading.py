@@ -22,7 +22,7 @@ def test__ground_angle(test_system):
     ts = test_system
     x = np.array([0., 0.5, 1.0])
     angles = shading.ground_angle(
-        x, ts['surface_tilt'], ts['gcr'])
+        ts['surface_tilt'], ts['gcr'], x)
     expected_angles = np.array([0., 5.866738789543952, 9.896090638982903])
     assert np.allclose(angles, expected_angles)
 
@@ -30,7 +30,7 @@ def test__ground_angle(test_system):
 def test__ground_angle_zero_gcr():
     surface_tilt = 30.0
     x = np.array([0.0, 0.5, 1.0])
-    angles = shading.ground_angle(x, surface_tilt, 0)
+    angles = shading.ground_angle(surface_tilt, 0, x)
     expected_angles = np.array([0, 0, 0])
     assert np.allclose(angles, expected_angles)
 

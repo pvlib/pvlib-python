@@ -88,7 +88,7 @@ def _poa_sky_diffuse_pv(dhi, gcr, surface_tilt):
     poa_sky_diffuse_pv : numeric
         Total sky diffuse irradiance incident on the PV surface. [W/m^2]
     """
-    vf_integ = utils.vf_row_sky_2d_integ(0., 1., gcr, surface_tilt)
+    vf_integ = utils.vf_row_sky_2d_integ(surface_tilt, gcr, 0., 1.)
     return dhi * vf_integ
 
 
@@ -115,7 +115,7 @@ def _poa_ground_pv(poa_ground, gcr, surface_tilt):
     numeric
         Ground diffuse irradiance on the row plane. [W/m^2]
     """
-    vf_integ = utils.vf_row_ground_2d_integ(0., 1., gcr, surface_tilt)
+    vf_integ = utils.vf_row_ground_2d_integ(surface_tilt, gcr, 0., 1.)
     return poa_ground * vf_integ
 
 
@@ -323,7 +323,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
     # center rather than at row lower edge as in [1].
     vf_gnd_sky = utils.vf_ground_sky_2d_integ(
-        surface_tilt, surface_azimuth, gcr, height, pitch, max_rows, npoints,
+        surface_tilt, gcr, height, pitch, max_rows, npoints,
         vectorize)
     # fraction of row slant height that is shaded from direct irradiance
     f_x = _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,

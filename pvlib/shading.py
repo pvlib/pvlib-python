@@ -8,7 +8,7 @@ import pandas as pd
 from pvlib.tools import sind, cosd
 
 
-def ground_angle(x, surface_tilt, gcr):
+def ground_angle(surface_tilt, gcr, slant_height):
     """
     Angle from horizontal of the line from a point x on the row slant length
     to the bottom of the facing row.
@@ -18,15 +18,15 @@ def ground_angle(x, surface_tilt, gcr):
 
     Parameters
     ----------
-    x : numeric
-        fraction of row slant length from bottom, ``x = 0`` is at the row
-        bottom, ``x = 1`` is at the top of the row.
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
     gcr : float
         ground coverage ratio, ratio of row slant length to row spacing.
         [unitless]
+    slant_height : numeric
+        The distance up the module's slant height to evaluate the masking
+        angle, as a fraction [0-1] of the module slant height [unitless].
 
     Returns
     -------
@@ -43,9 +43,9 @@ def ground_angle(x, surface_tilt, gcr):
     #  :         \  v      *-.\
     #  :          \<-----P---->\
 
-    x1 = gcr * x * sind(surface_tilt)
-    x2 = gcr * x * cosd(surface_tilt) + 1
-    psi = np.arctan2(x1, x2)  # do this first because it handles 0 / 0
+    x1 = gcr * slant_height * sind(surface_tilt)
+    x2 = gcr * slant_height * cosd(surface_tilt) + 1
+    psi = np.arctan2(x1, x2)  # do this before rad2deg because it handles 0 / 0
     return np.rad2deg(psi)
 
 

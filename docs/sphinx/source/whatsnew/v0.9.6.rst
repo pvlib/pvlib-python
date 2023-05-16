@@ -12,6 +12,7 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * Exposes several functions useful for bifacial and shading calculations (:pull:`1666`):
+
   * :py:func:`pvlib.bifacial.utils.bifacial.utils.vf_row_sky_2d1
   * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d_integ
   * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d

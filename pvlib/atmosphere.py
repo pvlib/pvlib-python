@@ -771,8 +771,8 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
     .. [1] Caballero, J.A., Fernández, E., Theristis, M.,
         Almonacid, F., and Nofuentes, G. "Spectral Corrections Based on
         Air Mass, Aerosol Optical Depth and Precipitable Water
-        for PV Performance Modeling.
-        " IEEE Journal of Photovoltaics 2018, 8(2), 552-558.
+        for PV Performance Modeling."
+        IEEE Journal of Photovoltaics 2018, 8(2), 552-558.
         https://doi.org/10.1109/jphotov.2017.2787019
     .. [2] Gueymard, Christian. SMARTS2: a simple model of the
         atmospheric radiative transfer of sunshine: algorithms

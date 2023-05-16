@@ -156,8 +156,10 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     ----------
     .. [1] Wilcox, S and Marion, W. "Users Manual for TMY3 Data Sets".
        NREL/TP-581-43156, Revised May 2008.
+       :doi: `10.2172/928611`
     .. [2] Wilcox, S. (2007). National Solar Radiation Database 1991 2005
        Update: Users Manual. 472 pp.; NREL Report No. TP-581-41364.
+       :doi: `10.2172/901864`
     .. [3] `SolarAnywhere file formats
        <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
     """  # noqa: E501
@@ -378,6 +380,7 @@ def read_tmy2(filename):
     ----------
     .. [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
        for TMY2s". NREL 1995.
+       :doi: `10.2172/87130`
     """  # noqa: E501
     # paste in the column info as one long line
     string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'  # noqa: E501

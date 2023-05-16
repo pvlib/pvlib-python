@@ -30,7 +30,7 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
         Amount of rain in an accumulation period needed to clean the PV
         modules. [mm]
 
-    surface_tilt : float
+    surface_tilt : numeric
         Tilt of the PV panels from horizontal. [degree]
 
     pm2_5 : numeric

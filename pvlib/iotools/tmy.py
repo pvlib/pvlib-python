@@ -224,9 +224,19 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=True):
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
-    if map_variables is not True:
-        if recolumn:
-            data = _recolumn(data)  # rename to standard column names
+    # shouldnt' specify both recolumn and map_variables
+    if (type(recolumn) is bool) & (type(map_variables) is bool):
+        raise ValueError(
+            'Specify only map_variables and do not pass a value for '
+            'the recolumn parameter. Starting in pvlib 0.11.0, the '
+            'recolumn parameter will be deprecated and replaced by '
+            'the map_variable parameter. By default, the map_variable '
+            'will be set to True and TMY3 variable names will be renamed '
+            'to pvlib conventions.')
+    elif map_variables is False:
+        pass
+    elif (map_variables is None) & ((recolumn is True) | (recolumn is None)):
+        data = _recolumn(data)  # rename to standard column names
     if map_variables is None:
         warnings.warn(
             'TMY3 variable names will be renamed to pvlib conventions by '

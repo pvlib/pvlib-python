@@ -21,13 +21,18 @@ def test_read_tmy3():
 
 
 def test_read_tmy3_recolumn():
-    data, meta = tmy.read_tmy3(TMY3_TESTFILE, map_variables=False)
+    data, meta = tmy.read_tmy3(TMY3_TESTFILE)
     assert 'GHISource' in data.columns
 
 
 def test_read_tmy3_norecolumn():
-    data, _ = tmy.read_tmy3(TMY3_TESTFILE, recolumn=False, map_variables=False)
+    data, _ = tmy.read_tmy3(TMY3_TESTFILE, map_variables=False)
     assert 'GHI source' in data.columns
+
+
+def test_read_tmy3_raise_valueerror():
+    with pytest.raises(ValueError, match='Specify only map_variables'):
+        _ = tmy.read_tmy3(TMY3_TESTFILE, recolumn=True, map_variables=True)
 
 
 def test_read_tmy3_map_variables():

@@ -1,0 +1,85 @@
+.. _whatsnew_0920:
+
+v0.9.2 (August 19, 2022)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+* albedo can now be provided as a column in the `weather` DataFrame input to
+  :py:meth:`pvlib.modelchain.ModelChain.run_model`. (:issue:`1387`, :pull:`1478`)
+* albedo is now available as an input to :py:meth:`pvlib.pvsystem.PVSystem.get_irradiance`
+  and :py:meth:`pvlib.pvsystem.Array.get_irradiance`. (:pull:`1478`)
+* :py:func:`pvlib.iotools.read_surfrad` now also accepts remote files
+  with https links in addition to files on the SURFRAD FTP server.
+  (:pull:`1459`)
+* Add :py:func:`pvlib.tracking.calc_surface_orientation` for calculating
+  single-axis tracker ``surface_tilt`` and ``surface_azimuth`` from
+  rotation angles. (:issue:`1471`, :pull:`1480`)
+* Improve error message about uneven time intervals for
+  :py:func:`~pvlib.clearsky.detect_clearsky` and :py:func:`~pvlib.temperature.prilliman`.
+  (:issue:`1476`, :pull:`1490`)
+* Add support for `PEP517 <https://peps.python.org/pep-0517/>`_ & `PEP518 <https://peps.python.org/pep-0518/>`_
+  with setuptools build backend. (:pull:`1495`)
+
+
+Bug fixes
+~~~~~~~~~
+* :py:func:`pvlib.irradiance.get_total_irradiance` and
+  :py:func:`pvlib.solarposition.spa_python` now raise an error instead
+  of silently ignoring unknown parameters. (:pull:`1437`)
+* Fix a bug in :py:func:`pvlib.solarposition.sun_rise_set_transit_ephem`
+  where passing localized timezones with large UTC offsets could return
+  rise/set/transit times for the wrong day in recent versions of ``ephem``.
+  (:issue:`1449`, :pull:`1448`)
+* :py:func:`pvlib.iotools.read_tmy3` is now able to accept midnight
+  timestamps as either 24:00 (which is the standard) as well as 00:00.
+  Previously 00:00 timestamps would incorrectly be moved one day forward.
+  (:pull:`1494`)
+* :py:func:`pvlib.iotools.get_psm3` now raises a deprecation warning if
+  the ``leap_day`` parameter is not specified in a single-year request.
+  Starting in pvlib 0.11.0 ``leap_day`` will default to True instead of False.
+  (:issue:`1481`, :pull:`1511`)
+
+Testing
+~~~~~~~
+* Switched CI testing provider from Azure to GitHub Actions. (:pull:`1306`)
+* Speed up CI setup using micromamba instead of conda. (:pull:`1493`)
+* Drop python 3.6 (reached end of life Dec 2021) and add 3.10 to test matrix. (:pull:`1507`)
+
+Documentation
+~~~~~~~~~~~~~
+* Added a reference to :py:func:`pvlib.inverter.sandia_multi`. (:pull:`1479`)
+* Add gallery example of simulating rearside irradiance for a fixed-tilt
+  array with pvfactors. (:pull:`1470`)
+* Updated reference links to CAMS Radiation. (:issue:`1515`, :pull:`1529`)
+
+Benchmarking
+~~~~~~~~~~~~~
+* Updated version of numba in asv.conf from 0.36.1 to 0.40.0 to solve numba/numpy conflict. (:issue:`1439`, :pull:`1440`)
+* Added benchmarks for the ``pvlib.scaling`` module. (:pull:`1445`)
+* Added a basic CI asv check. (:issue:`1446`, :pull:`1454`)
+
+Requirements
+~~~~~~~~~~~~
+* Python 3.7 or greater. (:pull:`1507`)
+* Minimum pandas version increased to v0.25.0, released July 18, 2019. (:pull:`1448`)
+
+Contributors
+~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
+* Chencheng Luo (:ghuser:`roger-lcc`)
+* Prajwal Borkar (:ghuser:`PrajwalBorkar`) 
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Jules Chéron (:ghuser:`jules-ch`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Stephen Schneider (:ghuser:`sjschneider`)
+* :ghuser:`Kaesekopf`
+* :ghuser:`hf-kklein`
+* Mark Campanelli (:ghuser:`campanelli-sunpower`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Kristen Wagner (:ghuser:`kwagnercpr`)
+* Mark Mikofski (:ghuser:`mikofski`)

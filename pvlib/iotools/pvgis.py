@@ -26,7 +26,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
 # Dictionary mapping PVGIS names to pvlib names
-PVGIS_VARIABLE_MAP = {
+VARIABLE_MAP = {
     'G(h)': 'ghi',
     'Gb(n)': 'dni',
     'Gd(h)': 'dhi',
@@ -83,9 +83,9 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         Include effects of horizon
     userhorizon: list of float, default: None
         Optional user specified elevation of horizon in degrees, at equally
-        spaced azimuth clockwise from north, only valid if `usehorizon` is
-        true, if `usehorizon` is true but `userhorizon` is `None` then PVGIS
-        will calculate the horizon [4]_
+        spaced azimuth clockwise from north, only valid if ``usehorizon`` is
+        true, if ``usehorizon`` is true but ``userhorizon`` is ``None`` then
+        PVGIS will calculate the horizon [4]_
     pvcalculation: bool, default: False
         Return estimate of hourly PV production.
     peakpower: float, default: None
@@ -110,12 +110,13 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     outputformat: str, default: 'json'
         Must be in ``['json', 'csv']``. See PVGIS hourly data
         documentation [2]_ for more info.
-    url: str, default: const:`pvlib.iotools.pvgis.URL`
+    url: str, default: :const:`pvlib.iotools.pvgis.URL`
         Base url of PVGIS API. ``seriescalc`` is appended to get hourly data
-        endpoint.
+        endpoint. Note, a specific PVGIS version can be specified, e.g.,
+        https://re.jrc.ec.europa.eu/api/v5_2/
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
     timeout: int, default: 30
         Time in seconds to wait for server response before timeout
 
@@ -138,10 +139,10 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     Hint
     ----
     PVGIS provides access to a number of different solar radiation datasets,
-    including satellite-based (SARAH, CMSAF, and NSRDB PSM3) and re-analysis
-    products (ERA5 and COSMO). Each data source has a different geographical
-    coverage and time stamp convention, e.g., SARAH and CMSAF provide
-    instantaneous values, whereas values from ERA5 are averages for the hour.
+    including satellite-based (SARAH, SARAH2, and NSRDB PSM3) and re-analysis
+    products (ERA5). Each data source has a different geographical coverage and
+    time stamp convention, e.g., SARAH and SARAH2 provide instantaneous values,
+    whereas values from ERA5 are averages for the hour.
 
     Notes
     -----
@@ -172,6 +173,12 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     --------
     pvlib.iotools.read_pvgis_hourly, pvlib.iotools.get_pvgis_tmy
 
+    Examples
+    --------
+    >>> # Retrieve two years of irradiance data from PVGIS:
+    >>> data, meta, inputs = pvlib.iotools.get_pvgis_hourly(  # doctest: +SKIP
+    >>>    latitude=45, longitude=8, start=2015, end=2016)  # doctest: +SKIP
+
     References
     ----------
     .. [1] `PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
@@ -190,7 +197,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
               'trackingtype': trackingtype, 'components': int(components),
               'usehorizon': int(usehorizon),
               'optimalangles': int(optimalangles),
-              'optimalinclination': int(optimalangles), 'loss': loss}
+              'optimalinclination': int(optimal_surface_tilt), 'loss': loss}
     # pvgis only takes 0 for False, and 1 for True, not strings
     if userhorizon is not None:
         params['userhorizon'] = ','.join(str(x) for x in userhorizon)
@@ -228,7 +235,7 @@ def _parse_pvgis_hourly_json(src, map_variables):
     data = data.drop('time', axis=1)
     data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
     return data, inputs, metadata
 
 
@@ -270,7 +277,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
     # All columns should have the dtype=float, except 'Int' which should be
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})
@@ -291,13 +298,13 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         Name, path, or buffer of hourly data file downloaded from PVGIS.
     pvgis_format : str, default None
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
-        parameter in the PVGIS API. If `filename` is a file and
-        `pvgis_format` is ``None`` then the file extension will be used to
-        determine the PVGIS format to parse. If `filename` is a buffer, then
-        `pvgis_format` is required and must be in ``['csv', 'json']``.
+        parameter in the PVGIS API. If ``filename`` is a file and
+        ``pvgis_format`` is ``None`` then the file extension will be used to
+        determine the PVGIS format to parse. If ``filename`` is a buffer, then
+        ``pvgis_format`` is required and must be in ``['csv', 'json']``.
     map_variables: bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -311,11 +318,11 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     Raises
     ------
     ValueError
-        if `pvgis_format` is ``None`` and the file extension is neither
-        ``.csv`` nor ``.json`` or if `pvgis_format` is provided as
+        if ``pvgis_format`` is ``None`` and the file extension is neither
+        ``.csv`` nor ``.json`` or if ``pvgis_format`` is provided as
         input but isn't in ``['csv', 'json']``
     TypeError
-        if `pvgis_format` is ``None`` and `filename` is a buffer
+        if ``pvgis_format`` is ``None`` and ``filename`` is a buffer
 
     See Also
     --------
@@ -369,8 +376,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
                   map_variables=None, timeout=30):
     """
-    Get TMY data from PVGIS. For more information see the PVGIS [1]_ TMY tool
-    documentation [2]_.
+    Get TMY data from PVGIS.
+
+    For more information see the PVGIS [1]_ TMY tool documentation [2]_.
 
     Parameters
     ----------
@@ -385,18 +393,18 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         include effects of horizon
     userhorizon : list of float, default None
         optional user specified elevation of horizon in degrees, at equally
-        spaced azimuth clockwise from north, only valid if `usehorizon` is
-        true, if `usehorizon` is true but `userhorizon` is `None` then PVGIS
-        will calculate the horizon [3]_
+        spaced azimuth clockwise from north, only valid if ``usehorizon`` is
+        true, if ``usehorizon`` is true but ``userhorizon`` is ``None`` then
+        PVGIS will calculate the horizon [3]_
     startyear : int, default None
         first year to calculate TMY
     endyear : int, default None
         last year to calculate TMY, must be at least 10 years from first year
-    url : str, default :const:`pvlib.iotools.pvgis.URL`
+    url : str, default: :const:`pvlib.iotools.pvgis.URL`
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable const:`VARIABLE_MAP`.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 
@@ -411,6 +419,16 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     metadata : list or dict
         file metadata, ``None`` for basic
 
+    Note
+    ----
+    The PVGIS website uses 10 years of data to generate the TMY, whereas the
+    API accessed by this function defaults to using all available years. This
+    means that the TMY returned by this function may not be identical to the
+    one generated by the website. To replicate the website requests, specify
+    the corresponding 10 year period using ``startyear`` and ``endyear``.
+    Specifying ``endyear`` also avoids the TMY changing when new data becomes
+    available.
+
     Raises
     ------
     requests.HTTPError
@@ -418,13 +436,12 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 
-    See also
+    See Also
     --------
     read_pvgis_tmy
 
     References
     ----------
-
     .. [1] `PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
     .. [2] `PVGIS TMY tool <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
     .. [3] `PVGIS horizon profile tool
@@ -482,7 +499,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         )
         map_variables = False
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data, months_selected, inputs, meta
 
@@ -548,15 +565,15 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         Name, path, or buffer of file downloaded from PVGIS.
     pvgis_format : str, default None
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
-        parameter in the PVGIS TMY API. If `filename` is a file and
-        `pvgis_format` is ``None`` then the file extension will be used to
+        parameter in the PVGIS TMY API. If ``filename`` is a file and
+        ``pvgis_format`` is ``None`` then the file extension will be used to
         determine the PVGIS format to parse. For PVGIS files from the API with
-        ``outputformat='basic'``, please set `pvgis_format` to ``'basic'``. If
-        `filename` is a buffer, then `pvgis_format` is required and must be in
-        ``['csv', 'epw', 'json', 'basic']``.
+        ``outputformat='basic'``, please set ``pvgis_format`` to ``'basic'``.
+        If ``filename`` is a buffer, then ``pvgis_format`` is required and must
+        be in ``['csv', 'epw', 'json', 'basic']``.
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
 
     Returns
@@ -573,13 +590,13 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     Raises
     ------
     ValueError
-        if `pvgis_format` is ``None`` and the file extension is neither
-        ``.csv``, ``.json``, nor ``.epw``, or if `pvgis_format` is provided as
-        input but isn't in ``['csv', 'epw', 'json', 'basic']``
+        if ``pvgis_format`` is ``None`` and the file extension is neither
+        ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided
+        as input but isn't in ``['csv', 'epw', 'json', 'basic']``
     TypeError
-        if `pvgis_format` is ``None`` and `filename` is a buffer
+        if ``pvgis_format`` is ``None`` and ``filename`` is a buffer
 
-    See also
+    See Also
     --------
     get_pvgis_tmy
     """
@@ -645,7 +662,6 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         )
         map_variables = False
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data, months_selected, inputs, meta
-

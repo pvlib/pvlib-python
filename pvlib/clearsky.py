@@ -14,6 +14,7 @@ from scipy.linalg import hankel
 import h5py
 
 from pvlib import atmosphere, tools
+from pvlib.tools import _degrees_to_index
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -284,67 +285,6 @@ def _calendar_month_middles(year):
          np.cumsum(mdays) - np.array(mdays) / 2.,  # this year
          [ydays + calendar.mdays[1] / 2.0]])  # Jan next year
     return middles
-
-
-def _degrees_to_index(degrees, coordinate):
-    """Transform input degrees to an output index integer. The Linke
-    turbidity lookup tables have three dimensions, latitude, longitude, and
-    month. Specify a degree value and either 'latitude' or 'longitude' to get
-    the appropriate index number for the first two of these index numbers.
-
-    Parameters
-    ----------
-    degrees : float or int
-        Degrees of either latitude or longitude.
-    coordinate : string
-        Specify whether degrees arg is latitude or longitude. Must be set to
-        either 'latitude' or 'longitude' or an error will be raised.
-
-    Returns
-    -------
-    index : np.int16
-        The latitude or longitude index number to use when looking up values
-        in the Linke turbidity lookup table.
-    """
-    # Assign inputmin, inputmax, and outputmax based on degree type.
-    if coordinate == 'latitude':
-        inputmin = 90
-        inputmax = -90
-        outputmax = 2160
-    elif coordinate == 'longitude':
-        inputmin = -180
-        inputmax = 180
-        outputmax = 4320
-    else:
-        raise IndexError("coordinate must be 'latitude' or 'longitude'.")
-
-    inputrange = inputmax - inputmin
-    scale = outputmax/inputrange  # number of indices per degree
-    center = inputmin + 1 / scale / 2  # shift to center of index
-    outputmax -= 1  # shift index to zero indexing
-    index = (degrees - center) * scale
-    err = IndexError('Input, %g, is out of range (%g, %g).' %
-                     (degrees, inputmin, inputmax))
-
-    # If the index is still out of bounds after rounding, raise an error.
-    # 0.500001 is used in comparisons instead of 0.5 to allow for a small
-    # margin of error which can occur when dealing with floating point numbers.
-    if index > outputmax:
-        if index - outputmax <= 0.500001:
-            index = outputmax
-        else:
-            raise err
-    elif index < 0:
-        if -index <= 0.500001:
-            index = 0
-        else:
-            raise err
-    # If the index wasn't set to outputmax or 0, round it and cast it as an
-    # integer so it can be used in integer-based indexing.
-    else:
-        index = int(np.around(index))
-
-    return index
 
 
 def haurwitz(apparent_zenith):
@@ -647,8 +587,6 @@ def _calc_stats(data, samples_per_window, sample_interval, H):
     data_slope = data_diff / sample_interval
     data_slope_nstd = _slope_nstd_windowed(data_slope.values[:-1], data, H,
                                            samples_per_window, sample_interval)
-    data_slope_nstd = data_slope_nstd
-
     return data_mean, data_max, data_slope_nstd, data_slope
 
 
@@ -677,23 +615,6 @@ def _to_centered_series(vals, idx, samples_per_window):
                   constant_values=np.nan)
     shift = samples_per_window // 2  # align = 'center' only
     return pd.Series(index=idx, data=vals).shift(shift)
-
-
-def _get_sample_intervals(times, win_length):
-    """ Calculates time interval and samples per window for Reno-style clear
-    sky detection functions
-    """
-    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
-
-    # determine if we can proceed
-    if times.inferred_freq and len(np.unique(deltas)) == 1:
-        sample_interval = times[1] - times[0]
-        sample_interval = sample_interval.seconds / 60  # in minutes
-        samples_per_window = int(win_length / sample_interval)
-        return sample_interval, samples_per_window
-    else:
-        raise NotImplementedError('algorithm does not yet support unequal '
-                                  'times. consider resampling your data.')
 
 
 def _clear_sample_index(clear_windows, samples_per_window, align, H):
@@ -849,8 +770,8 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     else:
         clear = clearsky
 
-    sample_interval, samples_per_window = _get_sample_intervals(times,
-                                                                window_length)
+    sample_interval, samples_per_window = \
+        tools._get_sample_intervals(times, window_length)
 
     # generate matrix of integers for creating windows with indexing
     H = hankel(np.arange(samples_per_window),
@@ -979,8 +900,8 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
         Extraterrestrial radiation [W/m^2], defaults to 1364[W/m^2]
     asymmetry : numeric
         Asymmetry factor, defaults to 0.85
-    albedo : numeric
-        Albedo, defaults to 0.2
+    albedo : numeric, default 0.2
+        Ground surface albedo. [unitless]
 
     Returns
     -------

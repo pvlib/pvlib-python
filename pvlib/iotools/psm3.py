@@ -1,4 +1,3 @@
-
 """
 Get PSM3 TMY
 see https://developer.nrel.gov/docs/solar/nsrdb/psm3_data_download/
@@ -8,24 +7,65 @@ import io
 import requests
 import pandas as pd
 from json import JSONDecodeError
+import warnings
+from pvlib._deprecation import pvlibDeprecationWarning
 
 NSRDB_API_BASE = "https://developer.nrel.gov"
 PSM_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-download.csv"
 TMY_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-tmy-download.csv"
 PSM5MIN_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-5min-download.csv"
 
-# 'relative_humidity', 'total_precipitable_water' are not available
 ATTRIBUTES = (
     'air_temperature', 'dew_point', 'dhi', 'dni', 'ghi', 'surface_albedo',
     'surface_pressure', 'wind_direction', 'wind_speed')
 PVLIB_PYTHON = 'pvlib python'
 
+# Dictionary mapping PSM3 response names to pvlib names
+VARIABLE_MAP = {
+    'GHI': 'ghi',
+    'DHI': 'dhi',
+    'DNI': 'dni',
+    'Clearsky GHI': 'ghi_clear',
+    'Clearsky DHI': 'dhi_clear',
+    'Clearsky DNI': 'dni_clear',
+    'Solar Zenith Angle': 'solar_zenith',
+    'Temperature': 'temp_air',
+    'Dew point': 'temp_dew',
+    'Relative Humidity': 'relative_humidity',
+    'Pressure': 'pressure',
+    'Wind Speed': 'wind_speed',
+    'Wind Direction': 'wind_direction',
+    'Surface Albedo': 'albedo',
+    'Precipitable Water': 'precipitable_water',
+}
+
+# Dictionary mapping pvlib names to PSM3 request names
+# Note, PSM3 uses different names for the same variables in the
+# response and the request
+REQUEST_VARIABLE_MAP = {
+    'ghi': 'ghi',
+    'dhi': 'dhi',
+    'dni': 'dni',
+    'ghi_clear': 'clearsky_dhi',
+    'dhi_clear': 'clearsky_dhi',
+    'dni_clear': 'clearsky_dni',
+    'zenith': 'solar_zenith_angle',
+    'temp_air': 'air_temperature',
+    'temp_dew': 'dew_point',
+    'relative_humidity': 'relative_humidity',
+    'pressure': 'surface_pressure',
+    'wind_speed': 'wind_speed',
+    'wind_direction': 'wind_direction',
+    'albedo': 'surface_albedo',
+    'precipitable_water': 'total_precipitable_water',
+}
+
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
-             attributes=ATTRIBUTES, leap_day=False, full_name=PVLIB_PYTHON,
-             affiliation=PVLIB_PYTHON, timeout=30):
+             attributes=ATTRIBUTES, leap_day=None, full_name=PVLIB_PYTHON,
+             affiliation=PVLIB_PYTHON, map_variables=None, timeout=30):
     """
-    Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API.  The NSRDB
+    Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API. The NSRDB
     is described in [1]_ and the PSM3 API is described in [2]_, [3]_, and [4]_.
 
     .. versionchanged:: 0.9.0
@@ -48,19 +88,23 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         PSM3 API parameter specifing year or TMY variant to download, see notes
         below for options
     interval : int, {60, 5, 15, 30}
-        interval size in minutes, must be 5, 15, 30 or 60.  Only used for
-        single-year requests (i.e., it is ignored for tmy/tgy/tdy requests).
+        interval size in minutes, must be 5, 15, 30 or 60. Must be 60 for
+        typical year requests (i.e., tmy/tgy/tdy).
     attributes : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
         ``pvlib.iotools.psm3.ATTRIBUTES``. See references [2]_, [3]_, and [4]_
-        for lists of available fields.
+        for lists of available fields. Alternatively, pvlib names may also be
+        used (e.g. 'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`.
     leap_day : boolean, default False
-        include leap day in the results.  Only used for single-year requests
+        include leap day in the results. Only used for single-year requests
         (i.e., it is ignored for tmy/tgy/tdy requests).
     full_name : str, default 'pvlib python'
         optional
     affiliation : str, default 'pvlib python'
         optional
+    map_variables: boolean, optional
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 
@@ -96,14 +140,15 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     +===========+=============================================================+
     | Year      | 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, |
     |           | 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, |
-    |           | 2018, 2019                                                  |
+    |           | 2018, 2019, 2020                                            |
     +-----------+-------------------------------------------------------------+
     | TMY       | tmy, tmy-2016, tmy-2017, tdy-2017, tgy-2017,                |
     |           | tmy-2018, tdy-2018, tgy-2018, tmy-2019, tdy-2019, tgy-2019  |
+    |           | tmy-2020, tdy-2020, tgy-2020                                |
     +-----------+-------------------------------------------------------------+
 
     .. warning:: PSM3 is limited to data found in the NSRDB, please consult the
-        references below for locations with available data.  Additionally,
+        references below for locations with available data. Additionally,
         querying data with < 30-minute resolution uses a different API endpoint
         with fewer available fields (see [4]_).
 
@@ -132,6 +177,17 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     # convert to string to accomodate integer years being passed in
     names = str(names)
+
+    # convert pvlib names in attributes to psm3 convention
+    attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
+
+    if (leap_day is None) and (not names.startswith('t')):
+        warnings.warn(
+            'The ``get_psm3`` function will default to leap_day=True '
+            'starting in pvlib 0.11.0. Specify leap_day=True '
+            'to enable this behavior now, or specify leap_day=False '
+            'to hide this warning.', pvlibDeprecationWarning)
+        leap_day = False
 
     # required query-string parameters for request to PSM3 API
     params = {
@@ -167,12 +223,12 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # the CSV is in the response content as a UTF-8 bytestring
     # to use pandas we need to create a file buffer from the response
     fbuf = io.StringIO(response.content.decode('utf-8'))
-    return parse_psm3(fbuf)
+    return parse_psm3(fbuf, map_variables)
 
 
-def parse_psm3(fbuf):
+def parse_psm3(fbuf, map_variables=None):
     """
-    Parse an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
+    Parse an NSRDB PSM3 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
 
     .. versionchanged:: 0.9.0
@@ -184,6 +240,9 @@ def parse_psm3(fbuf):
     ----------
     fbuf: file-like object
         File-like object containing data to read.
+    map_variables: bool
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable VARIABLE_MAP.
 
     Returns
     -------
@@ -223,7 +282,7 @@ def parse_psm3(fbuf):
     * Relative Humidity Units
     * Precipitable Water Units
     * Wind Direction Units
-    * Wind Speed
+    * Wind Speed Units
     * Cloud Type -15
     * Cloud Type 0
     * Cloud Type 1
@@ -262,7 +321,7 @@ def parse_psm3(fbuf):
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
     .. [2] `Standard Time Series Data File Format
-       <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
+       <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
     # The first 2 lines of the response are headers with metadata
     metadata_fields = fbuf.readline().split(',')
@@ -296,12 +355,25 @@ def parse_psm3(fbuf):
     tz = 'Etc/GMT%+d' % -metadata['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
 
+    if map_variables is None:
+        warnings.warn(
+            'PSM3 variable names will be renamed to pvlib conventions by '
+            'default starting in pvlib 0.11.0. Specify map_variables=True '
+            'to enable that behavior now, or specify map_variables=False '
+            'to hide this warning.', pvlibDeprecationWarning)
+        map_variables = False
+    if map_variables:
+        data = data.rename(columns=VARIABLE_MAP)
+        metadata['latitude'] = metadata.pop('Latitude')
+        metadata['longitude'] = metadata.pop('Longitude')
+        metadata['altitude'] = metadata.pop('Elevation')
+
     return data, metadata
 
 
-def read_psm3(filename):
+def read_psm3(filename, map_variables=None):
     """
-    Read an NSRDB PSM3 weather file (formatted as SAM CSV).  The NSRDB
+    Read an NSRDB PSM3 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
 
     .. versionchanged:: 0.9.0
@@ -313,6 +385,9 @@ def read_psm3(filename):
     ----------
     filename: str
         Filename of a file containing data to read.
+    map_variables: bool
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable VARIABLE_MAP.
 
     Returns
     -------
@@ -331,8 +406,8 @@ def read_psm3(filename):
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
     .. [2] `Standard Time Series Data File Format
-       <https://rredc.nrel.gov/solar/old_data/nsrdb/2005-2012/wfcsv.pdf>`_
+       <https://web.archive.org/web/20170207203107/https://sam.nrel.gov/sites/default/files/content/documents/pdf/wfcsv.pdf>`_
     """
     with open(str(filename), 'r') as fbuf:
-        content = parse_psm3(fbuf)
+        content = parse_psm3(fbuf, map_variables)
     return content

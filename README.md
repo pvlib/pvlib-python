@@ -17,7 +17,7 @@
 <tr>
   <td>License</td>
   <td>
-    <a href="https://github.com/pvlib/pvlib-python/blob/master/LICENSE">
+    <a href="https://github.com/pvlib/pvlib-python/blob/main/LICENSE">
     <img src="https://img.shields.io/pypi/l/pvlib.svg" alt="license" />
     </a>
 </td>
@@ -28,38 +28,27 @@
     <a href="http://pvlib-python.readthedocs.org/en/stable/">
     <img src="https://readthedocs.org/projects/pvlib-python/badge/?version=stable" alt="documentation build status" />
     </a>
-    <a href="https://dev.azure.com/solararbiter/pvlib%20python/_build/latest?definitionId=4&branchName=master">
-      <img src="https://dev.azure.com/solararbiter/pvlib%20python/_apis/build/status/pvlib.pvlib-python?branchName=master" alt="Azure Pipelines build status" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td>Code Quality</td>
-  <td>
-    <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/context:python">
-    <img src="https://img.shields.io/lgtm/grade/python/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm quality grade" />
-    </a>
-    <a href="https://lgtm.com/projects/g/pvlib/pvlib-python/alerts">
-    <img src="https://img.shields.io/lgtm/alerts/g/pvlib/pvlib-python.svg?logo=lgtm&logoWidth=18" alt="lgtm alters" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td>Coverage</td>
-  <td>
-    <a href="https://coveralls.io/r/pvlib/pvlib-python">
-    <img src="https://img.shields.io/coveralls/pvlib/pvlib-python.svg" alt="coveralls coverage" />
+    <a href="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml?query=branch%3Amain">
+      <img src="https://github.com/pvlib/pvlib-python/actions/workflows/pytest.yml/badge.svg?branch=main" alt="GitHub Actions Testing Status" />
     </a>
     <a href="https://codecov.io/gh/pvlib/pvlib-python">
-    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/master/graph/badge.svg" alt="codecov coverage" />
+    <img src="https://codecov.io/gh/pvlib/pvlib-python/branch/main/graph/badge.svg" alt="codecov coverage" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Benchmarks</td>
+  <td>
+    <a href="https://pvlib.github.io/pvlib-benchmarks/">
+    <img src="https://img.shields.io/badge/benchmarks-asv-lightgrey" />
     </a>
   </td>
 </tr>
 <tr>
   <td>Publications</td>
   <td>
-    <a href="https://doi.org/10.5281/zenodo.3762635">
-    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.3762635.svg" alt="zenodo reference">
+    <a href="https://doi.org/10.5281/zenodo.593284">
+    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.593284.svg" alt="zenodo reference">
     </a>
     <a href="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1">
     <img src="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg" alt="JOSS reference" />
@@ -93,14 +82,14 @@ but operate independently of it.
 Documentation
 =============
 
-Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/).
-
+Full documentation can be found at [readthedocs](http://pvlib-python.readthedocs.io/en/stable/),
+including an [FAQ](http://pvlib-python.readthedocs.io/en/stable/user_guide/faq.html) page.
 
 Installation
 ============
 
 pvlib-python releases may be installed using the ``pip`` and ``conda`` tools.
-Please see the [Installation page](http://pvlib-python.readthedocs.io/en/stable/installation.html) of the documentation for complete instructions.
+Please see the [Installation page](https://pvlib-python.readthedocs.io/en/stable/user_guide/installation.html) of the documentation for complete instructions.
 
 
 Contributing

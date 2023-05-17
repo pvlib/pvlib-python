@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from pvlib import atmosphere, solarposition, tools
+import pvlib  # used to avoid dni name collision in complete_irradiance
 
 
 # see References section of get_ground_diffuse function
@@ -304,9 +305,9 @@ def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
 def get_total_irradiance(surface_tilt, surface_azimuth,
                          solar_zenith, solar_azimuth,
                          dni, ghi, dhi, dni_extra=None, airmass=None,
-                         albedo=.25, surface_type=None,
+                         albedo=0.25, surface_type=None,
                          model='isotropic',
-                         model_perez='allsitescomposite1990', **kwargs):
+                         model_perez='allsitescomposite1990'):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
@@ -344,7 +345,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     airmass : None or numeric, default None
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
-        Surface albedo. [unitless]
+        Ground surface albedo. [unitless]
     surface_type : None or str, default None
         Surface type. See :py:func:`~pvlib.irradiance.get_ground_diffuse` for
         the list of accepted values.
@@ -739,7 +740,8 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
 
 def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-              solar_zenith=None, solar_azimuth=None, projection_ratio=None):
+              solar_zenith=None, solar_azimuth=None, projection_ratio=None,
+              return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     Hay & Davies' 1980 model
@@ -790,10 +792,33 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         projection. Must supply ``solar_zenith`` and ``solar_azimuth``
         or supply ``projection_ratio``.
 
+    return_components : bool, default False
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
+
     Returns
     --------
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by `return_components` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
     sky_diffuse : numeric
-        The sky diffuse component of the solar radiation.
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * sky_diffuse: Total sky diffuse
+            * isotropic
+            * circumsolar
+            * horizon
+
+    Notes
+    ------
+    When supplying ``projection_ratio``, consider constraining its values
+    when zenith angle approaches 90 degrees or angle of incidence
+    projection is negative. See code for details.
 
     References
     -----------
@@ -824,10 +849,25 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     term1 = 1 - AI
     term2 = 0.5 * (1 + tools.cosd(surface_tilt))
 
-    sky_diffuse = dhi * (AI * Rb + term1 * term2)
-    sky_diffuse = np.maximum(sky_diffuse, 0)
+    poa_isotropic = np.maximum(dhi * term1 * term2, 0)
+    poa_circumsolar = np.maximum(dhi * (AI * Rb), 0)
+    sky_diffuse = poa_isotropic + poa_circumsolar
 
-    return sky_diffuse
+    if return_components:
+        diffuse_components = OrderedDict()
+        diffuse_components['sky_diffuse'] = sky_diffuse
+
+        # Calculate the individual components
+        diffuse_components['isotropic'] = poa_isotropic
+        diffuse_components['circumsolar'] = poa_circumsolar
+        diffuse_components['horizon'] = np.where(
+            np.isnan(diffuse_components['isotropic']), np.nan, 0.)
+
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+        return diffuse_components
+    else:
+        return sky_diffuse
 
 
 def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
@@ -1441,24 +1481,24 @@ def _disc_kn(clearness_index, airmass, max_airmass=12):
 
     am = np.minimum(am, max_airmass)  # GH 450
 
-    # powers of kt will be used repeatedly, so compute only once
-    kt2 = kt * kt  # about the same as kt ** 2
-    kt3 = kt2 * kt  # 5-10x faster than kt ** 3
-
-    bools = (kt <= 0.6)
-    a = np.where(bools,
-                 0.512 - 1.56*kt + 2.286*kt2 - 2.222*kt3,
-                 -5.743 + 21.77*kt - 27.49*kt2 + 11.56*kt3)
-    b = np.where(bools,
-                 0.37 + 0.962*kt,
-                 41.4 - 118.5*kt + 66.05*kt2 + 31.9*kt3)
-    c = np.where(bools,
-                 -0.28 + 0.932*kt - 2.048*kt2,
-                 -47.01 + 184.2*kt - 222.0*kt2 + 73.81*kt3)
+    is_cloudy = (kt <= 0.6)
+    # Use Horner's method to compute polynomials efficiently
+    a = np.where(
+        is_cloudy,
+        0.512 + kt*(-1.56 + kt*(2.286 - 2.222*kt)),
+        -5.743 + kt*(21.77 + kt*(-27.49 + 11.56*kt)))
+    b = np.where(
+        is_cloudy,
+        0.37 + 0.962*kt,
+        41.4 + kt*(-118.5 + kt*(66.05 + 31.9*kt)))
+    c = np.where(
+        is_cloudy,
+        -0.28 + kt*(0.932 - 2.048*kt),
+        -47.01 + kt*(184.2 + kt*(-222.0 + 73.81*kt)))
 
     delta_kn = a + b * np.exp(c*am)
 
-    Knc = 0.866 - 0.122*am + 0.0121*am**2 - 0.000653*am**3 + 1.4e-05*am**4
+    Knc = 0.866 + am*(-0.122 + am*(0.0121 + am*(-0.000653 + 1.4e-05*am)))
     Kn = Knc - delta_kn
     return Kn, am
 
@@ -1866,7 +1906,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         applied.
 
     albedo : numeric, default 0.25
-        Surface albedo
+        Ground surface albedo. [unitless]
 
     model : String, default 'perez'
         Irradiance model.  See :py:func:`get_sky_diffuse` for allowed values.
@@ -2210,6 +2250,110 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     dni = (ghi - dhi) / tools.cosd(zenith)
     bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
+    # ensure that closure relationship remains valid
+    dhi = np.where(bad_values, ghi, dhi)
+
+    data = OrderedDict()
+    data['dni'] = dni
+    data['dhi'] = dhi
+    data['kt'] = kt
+
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        data = pd.DataFrame(data, index=datetime_or_doy)
+
+    return data
+
+
+def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
+           min_cos_zenith=0.065, max_zenith=87):
+    r"""
+    Estimate DNI and DHI from GHI using the Boland clearness index model.
+
+    The Boland model [1]_, [2]_ estimates the diffuse fraction, DF, from global
+    horizontal irradiance, GHI, through an empirical relationship between DF
+    and the clearness index, :math:`k_t`, the ratio of GHI to horizontal
+    extraterrestrial irradiance.
+
+    .. math::
+
+        \mathit{DF} = \frac{1}{1 + \exp\left(a \left(k_t - b\right)\right)}
+
+
+    Parameters
+    ----------
+    ghi: numeric
+        Global horizontal irradiance. [W/m^2]
+    solar_zenith: numeric
+        True (not refraction-corrected) zenith angles in decimal degrees.
+    datetime_or_doy : numeric, pandas.DatetimeIndex
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+    a_coeff : float, default 8.645
+        Logistic curve fit coefficient.
+    b_coeff : float, default 0.613
+        Logistic curve fit coefficient.
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index :math:`k_t`. Equivalent to zenith = 86.273 degrees.
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
+
+    Returns
+    -------
+    data : OrderedDict or DataFrame
+        Contains the following keys/columns:
+
+            * ``dni``: the modeled direct normal irradiance in W/m^2.
+            * ``dhi``: the modeled diffuse horizontal irradiance in
+              W/m^2.
+            * ``kt``: Ratio of global to extraterrestrial irradiance
+              on a horizontal plane.
+
+    References
+    ----------
+    .. [1] J. Boland, B. Ridley (2008) Models of Diffuse Solar Fraction. In:
+       Badescu V. (eds) Modeling Solar Radiation at the Earth’s Surface.
+       Springer, Berlin, Heidelberg. :doi:`10.1007/978-3-540-77455-6_8`
+    .. [2] John Boland, Lynne Scott, and Mark Luther, Modelling the diffuse
+       fraction of global solar radiation on a horizontal surface,
+       Environmetrics 12(2), pp 103-116, 2001,
+       :doi:`10.1002/1099-095X(200103)12:2%3C103::AID-ENV447%3E3.0.CO;2-2`
+
+    See also
+    --------
+    dirint
+    disc
+    erbs
+
+    Notes
+    -----
+    Boland diffuse fraction differs from other decomposition algorithms by use
+    of a logistic function to fit the entire range of clearness index,
+    :math:`k_t`. Parameters ``a_coeff`` and ``b_coeff`` are reported in [2]_
+    for different time intervals:
+
+    * 15-minute: ``a = 8.645`` and ``b = 0.613``
+    * 1-hour:  ``a = 7.997`` and ``b = 0.586``
+    """
+
+    dni_extra = get_extra_radiation(datetime_or_doy)
+
+    kt = clearness_index(
+        ghi, solar_zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+        max_clearness_index=1)
+
+    # Boland equation
+    df = 1.0 / (1.0 + np.exp(a_coeff * (kt - b_coeff)))
+    # NOTE: [2] has different coefficients, for different time intervals
+    # 15-min: df = 1 / (1 + exp(8.645 * (kt - 0.613)))
+    # 1-hour: df = 1 / (1 + exp(7.997 * (kt - 0.586)))
+
+    dhi = df * ghi
+
+    dni = (ghi - dhi) / tools.cosd(solar_zenith)
+    bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
     dni = np.where(bad_values, 0, dni)
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)
@@ -2909,3 +3053,67 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
             (zenith < zenith_threshold_for_zero_dni) &
             (dni > max_dni)] = max_dni
     return dni
+
+
+def complete_irradiance(solar_zenith,
+                        ghi=None,
+                        dhi=None,
+                        dni=None,
+                        dni_clear=None):
+    r"""
+    Use the component sum equations to calculate the missing series, using
+    the other available time series. One of the three parameters (ghi, dhi,
+    dni) is passed as None, and the other associated series passed are used to
+    calculate the missing series value.
+
+    The "component sum" or "closure" equation relates the three
+    primary irradiance components as follows:
+
+    .. math::
+
+       GHI = DHI + DNI \cos(\theta_z)
+
+    Parameters
+    ----------
+    solar_zenith : Series
+        Zenith angles in decimal degrees, with datetime index.
+        Angles must be >=0 and <=180. Must have the same datetime index
+        as ghi, dhi, and dni series, when available.
+    ghi : Series, optional
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as dni, dhi, and zenith series, when available.
+    dhi : Series, optional
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as ghi, dni, and zenith series, when available.
+    dni : Series, optional
+        Pandas series of dni data, with datetime index. Must have the same
+        datetime index as ghi, dhi, and zenith series, when available.
+    dni_clear : Series, optional
+        Pandas series of clearsky dni data. Must have the same datetime index
+        as ghi, dhi, dni, and zenith series, when available. See
+        :py:func:`dni` for details.
+
+    Returns
+    -------
+    component_sum_df : Dataframe
+        Pandas series of 'ghi', 'dhi', and 'dni' columns with datetime index
+    """
+    if ghi is not None and dhi is not None and dni is None:
+        dni = pvlib.irradiance.dni(ghi, dhi, solar_zenith,
+                                   clearsky_dni=dni_clear,
+                                   clearsky_tolerance=1.1)
+    elif dni is not None and dhi is not None and ghi is None:
+        ghi = (dhi + dni * tools.cosd(solar_zenith))
+    elif dni is not None and ghi is not None and dhi is None:
+        dhi = (ghi - dni * tools.cosd(solar_zenith))
+    else:
+        raise ValueError(
+            "Please check that exactly one of ghi, dhi and dni parameters "
+            "is set to None"
+        )
+    # Merge the outputs into a master dataframe containing 'ghi', 'dhi',
+    # and 'dni' columns
+    component_sum_df = pd.DataFrame({'ghi': ghi,
+                                     'dhi': dhi,
+                                     'dni': dni})
+    return component_sum_df

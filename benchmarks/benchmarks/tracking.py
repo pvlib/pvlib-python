@@ -17,7 +17,6 @@ class SingleAxis:
         self.solar_position = solarposition.get_solarposition(self.times,
                                                               self.lat,
                                                               self.lon)
-        self.tracker = tracking.SingleAxisTracker()
 
     def time_singleaxis(self):
         with np.errstate(invalid='ignore'):
@@ -28,8 +27,3 @@ class SingleAxis:
                                 max_angle=60,
                                 backtrack=True,
                                 gcr=0.45)
-
-    def time_tracker_singleaxis(self):
-        with np.errstate(invalid='ignore'):
-            self.tracker.singleaxis(self.solar_position.apparent_zenith,
-                                    self.solar_position.azimuth)

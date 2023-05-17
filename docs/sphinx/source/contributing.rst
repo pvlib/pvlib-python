@@ -102,8 +102,8 @@ A pull request can also quickly become unmanageable if it proposes
 changes to the API in order to implement another feature. Consider
 clearly and concisely documenting all proposed API changes before
 implementing any code. Modifying
-`api.rst <https://github.com/pvlib/pvlib-python/blob/master/docs/sphinx/source/api.rst>`_
-and/or the latest `whatsnew file <https://github.com/pvlib/pvlib-python/tree/master/docs/sphinx/source/whatsnew>`_
+`api.rst <https://github.com/pvlib/pvlib-python/tree/main/docs/sphinx/source/reference>`_
+and/or the latest `whatsnew file <https://github.com/pvlib/pvlib-python/tree/main/docs/sphinx/source/whatsnew>`_
 can help formalize this process.
 
 Questions about related issues frequently come up in the process of
@@ -150,13 +150,14 @@ a timely manner is to:
 
 #. Start by creating an issue. The issue should be well-defined and
    actionable.
-#. Ask the maintainers to tag the issue with the appropriate milestone.
+#. Ask the `maintainers <https://github.com/orgs/pvlib/people>`_ to tag
+   the issue with the appropriate milestone.
 #. Make a limited-scope pull request. It can be a lot of work to check all of
    the boxes in `pull request guidelines
-   <https://github.com/pvlib/pvlib-python/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_,
+   <https://github.com/pvlib/pvlib-python/blob/main/.github/PULL_REQUEST_TEMPLATE.md>`_,
    especially for pull requests with a lot of new primary code.
    See :ref:`pull-request-scope`.
-#. Tag pvlib community members or ``@pvlib/maintainer`` when the pull
+#. Tag pvlib community members or ``@pvlib`` when the pull
    request is ready for review. (see :ref:`pull-request-reviews`)
 
 
@@ -166,7 +167,7 @@ Pull request reviews
 --------------------
 
 The pvlib community and maintainers will review your pull request in a
-timely fashion. Please "ping" ``@pvlib/maintainer`` if it seems that
+timely fashion. Please "ping" ``@pvlib`` if it seems that
 your pull request has been forgotten at any point in the pull request
 process.
 
@@ -216,7 +217,7 @@ We typically use GitHub's
 "`squash and merge <https://help.github.com/articles/about-pull-request-merges/#squash-and-merge-your-pull-request-commits>`_"
 feature to merge your pull request into pvlib. GitHub will condense the
 commit history of your branch into a single commit when merging into
-pvlib-python/master (the commit history on your branch remains
+pvlib-python/main (the commit history on your branch remains
 unchanged). Therefore, you are free to make commits that are as big or
 small as you'd like while developing your pull request.
 
@@ -257,7 +258,7 @@ Read the Docs build it for you.  Building the docs locally requires installing
 pvlib python as an editable library (see :ref:`installation` for instructions).
 First, install the ``doc`` dependencies specified in the
 ``EXTRAS_REQUIRE`` section of
-`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_.
+`setup.py <https://github.com/pvlib/pvlib-python/blob/main/setup.py>`_.
 An easy way to do this is with::
 
     pip install pvlib[doc]
@@ -287,7 +288,7 @@ Example Gallery
 
 The example gallery uses `sphinx-gallery <https://sphinx-gallery.github.io/>`_
 and is generated from script files in the
-`docs/examples <https://github.com/pvlib/pvlib-python/tree/master/docs/examples>`_
+`docs/examples <https://github.com/pvlib/pvlib-python/tree/main/docs/examples>`_
 directory.  sphinx-gallery will execute example files that start with
 ``plot_`` and capture the output.
 
@@ -324,7 +325,7 @@ Testing
 Developers **must** include comprehensive tests for any additions or
 modifications to pvlib. New unit test code should be placed in the
 corresponding test module in the
-`pvlib/tests <https://github.com/pvlib/pvlib-python/tree/master/pvlib/tests>`_
+`pvlib/tests <https://github.com/pvlib/pvlib-python/tree/main/pvlib/tests>`_
 directory.
 
 A pull request will automatically run the tests for you on a variety of
@@ -333,7 +334,7 @@ typically more efficient to run and debug the tests in your own local
 environment.
 
 To run the tests locally, install the ``test`` dependencies specified in the
-`setup.py <https://github.com/pvlib/pvlib-python/blob/master/setup.py>`_
+`setup.py <https://github.com/pvlib/pvlib-python/blob/main/setup.py>`_
 file. See :ref:`installation` instructions for more information.
 
 pvlib's unit tests can easily be run by executing ``pytest`` on the
@@ -491,7 +492,7 @@ tests are run using the `airspeed velocity
 performance tests for most contributions at this time. Pull request
 reviewers will provide further information if a performance test is
 necessary. See our `README
-<https://github.com/pvlib/pvlib-python/tree/master/benchmarks/README.md>`_
+<https://github.com/pvlib/pvlib-python/tree/main/benchmarks/README.md>`_
 for instructions on running the benchmarks.
 
 
@@ -506,4 +507,4 @@ contributing.html>`_ for inspiration.
 Code of Conduct
 ~~~~~~~~~~~~~~~
 All contributors are expected to adhere to the `Contributor Code of Conduct
-<https://github.com/pvlib/pvlib-python/blob/master/CODE_OF_CONDUCT.md#contributor-covenant-code-of-conduct>`_.
+<https://github.com/pvlib/pvlib-python/blob/main/CODE_OF_CONDUCT.md#contributor-covenant-code-of-conduct>`_.

@@ -11,6 +11,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added ``map_variables`` argument to the :py:func:`pvlib.iotools.read_tmy3` in
+  order to offer the option of mapping column names to standard pvlib names.
+  (:issue:`1517`, :pull:`1623`)
 
 
 Bug fixes
@@ -43,4 +46,5 @@ Contributors
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
+* :ghuser:`ooprathamm`
 

@@ -10,19 +10,6 @@ the ``pvlib`` `conda channel <https://anaconda.org/pvlib/pvlib>`_.  We recommend
 :ref:`installation`).
 
 
-Deprecations
-~~~~~~~~~~~~
-
- 
-Enhancements
-~~~~~~~~~~~~
-* Added ``map_variables`` argument to the :py:func:`pvlib.iotools.read_tmy3` in
-  order to offer the option of mapping column names to standard pvlib names.
-  (:issue:`1517`, :pull:`1623`)
-* Added the optional `string_factor` parameter to
-  :py:func:`pvlib.snow.loss_townsend` (:issue:`1636`, :pull:`1653`)
-* Added optional ``n_ar`` parameter to :py:func:`pvlib.iam.physical` to
-  support an anti-reflective coating. (:issue:`1501`, :pull:`1616`)
 Enhancements
 ~~~~~~~~~~~~
 * Added the optional ``string_factor`` parameter to
@@ -56,8 +43,6 @@ Bug fixes
 * Added a limit to :py:func:`pvlib.snow.loss_townsend` to guard against
   incorrect loss results for systems that are near the ground. (:issue:`1636`,
   :pull:`1653`)
-* Fixed incorrect mapping of requested parameters names when using the ``get_psm3``
-  function. Also fixed the random reordering of the dataframe columns.
 * Fixed incorrect mapping of requested parameters names when using
   :py:func:`pvlib.iotools.get_psm3`.
   Also fixed the random reordering of the dataframe columns.

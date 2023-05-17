@@ -44,7 +44,7 @@ SUMMATION_PERIOD_TO_TIME_STEP = {'0 year 0 month 0 day 0 h 1 min 0 s': '1min',
 def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
              altitude=None, time_step='1h', time_ref='UT', verbose=False,
              integrated=False, label=None, map_variables=True,
-             server='www.soda-is.com', timeout=30):
+             server='api.soda-solardata.com', timeout=30):
     """
     Retrieve time-series of radiation and/or clear-sky global, beam, and
     diffuse radiation from CAMS (see [1]_). Data is retrieved from SoDa [2]_.

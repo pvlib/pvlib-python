@@ -5,15 +5,20 @@ v0.9.6 (Anticipated June 2023)
 ------------------------------
 
 
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Modified the `surface_azimuth` parameter in :py:func:`pvlib.iotools.get_pvigs_hourly` to conform to the
+  pvlib azimuth convention (counterclockwise from north). Previously 0 degrees represented south.
+  (:issue:`1724`, :pull:`1739`)
+
+
 Deprecations
 ~~~~~~~~~~~~
 
 
 Enhancements
 ~~~~~~~~~~~~
-* Modified the `surface_azimuth` parameter in :py:func:`pvlib.iotools.get_pvigs_hourly` to conform to the
-  pvlib azimuth convention (counterclockwise from north). Previously 0 degrees represented south.
-  (:issue:`1724`, :pull:`1739`)
+
 
 Bug fixes
 ~~~~~~~~~

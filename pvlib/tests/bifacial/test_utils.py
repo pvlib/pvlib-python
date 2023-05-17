@@ -35,7 +35,7 @@ def test_system_fixed_tilt():
     c22 = (-2 - sqr3) / np.sqrt(1.25**2 + (2 + sqr3)**2)  # right edge row 0
     c23 = (0 - sqr3) / np.sqrt(1.25**2 + (0 - sqr3)**2)  # right edge row 1
     vf_2 = 0.5 * (c23 - c22 + c21 - c20)  # vf at point 1
-    vfs_ground_sky = np.array([vf_0, vf_1, vf_2])
+    vfs_ground_sky = np.array([[vf_0], [vf_1], [vf_2]])
     return syst, pts, vfs_ground_sky
 
 
@@ -79,10 +79,10 @@ def test__unshaded_ground_fraction(
 def test__vf_ground_sky_2d(test_system_fixed_tilt):
     # vector input
     ts, pts, vfs_gnd_sky = test_system_fixed_tilt
-    vfs, _ = utils._vf_ground_sky_2d(pts, ts['rotation'], ts['gcr'],
-                                     ts['pitch'], ts['height'], max_rows=1)
+    vfs = utils._vf_ground_sky_2d(pts, ts['rotation'], ts['gcr'],
+                                  ts['pitch'], ts['height'], max_rows=1)
     assert np.allclose(vfs, vfs_gnd_sky, rtol=0.1)  # middle point vf is off
     # test with singleton x
-    vf, _ = utils._vf_ground_sky_2d(pts[0], ts['rotation'], ts['gcr'],
-                                    ts['pitch'], ts['height'], max_rows=1)
+    vf = utils._vf_ground_sky_2d(pts[0], ts['rotation'], ts['gcr'],
+                                 ts['pitch'], ts['height'], max_rows=1)
     assert np.isclose(vf, vfs_gnd_sky[0])

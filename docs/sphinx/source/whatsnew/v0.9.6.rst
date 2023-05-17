@@ -1,0 +1,46 @@
+.. _whatsnew_0960:
+
+
+v0.9.6 (Anticipated June 2023)
+------------------------------
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+* `data` can no longer be left unspecified in
+  :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+* Updated the description of the interval parameter in
+  :py:func:`pvlib.iotools.get_psm3`. (:issue:`1702`, :pull:`1712`)
+* Fixed outdated nbviewer links. (:issue:`1721`, :pull:`1726`)
+
+Benchmarking
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Lakshya Garg (:ghuser:`Lakshyadevelops`)
+* Adam R. Jensen (:ghuser:`adamrjensen`)
+* Siddharth Kaul (:ghuser:`k10blogger`)
+* Kshitiz Gupta (:ghuser:`kshitiz305`)
+* Stefan de Lange (:ghuser:`langestefan`)
+

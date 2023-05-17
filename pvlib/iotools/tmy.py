@@ -30,7 +30,8 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     encoding : str, optional
         Encoding of the file. For files that contain non-UTF8 characters it may
         be necessary to specify an alternative encoding, e.g., for
-        SolarAnywhere TMY3 files the encoding should be 'iso-8859-1'.
+        SolarAnywhere TMY3 files the encoding should be 'iso-8859-1'. Users
+        may also consider using the 'utf-8-sig' encoding.
 
     Returns
     -------
@@ -183,7 +184,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     # get the date column as a pd.Series of numpy datetime64
     data_ymd = pd.to_datetime(data['Date (MM/DD/YYYY)'], format='%m/%d/%Y')
     # shift the time column so that midnite is 00:00 instead of 24:00
-    shifted_hour = data['Time (HH:MM)'].str[:2].astype(int) % 24
+    shifted_hour = data['Time (HH:MM)'].str.split(':').str[0].astype(int) % 24
     # shift the dates at midnight (24:00) so they correspond to the next day.
     # If midnight is specified as 00:00 do not shift date.
     data_ymd[data['Time (HH:MM)'].str[:2] == '24'] += datetime.timedelta(days=1)  # noqa: E501

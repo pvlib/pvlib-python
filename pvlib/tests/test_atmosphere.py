@@ -202,7 +202,7 @@ def test_caballero_spectral_correction(module_type, expected):
     aods = np.array([1.0, 1.0, 0.02, 0.02, 0.08, 0.08])
     pws = np.array([1.42, 1.42, 1.42, 1.42, 4.0, 1.0])
     out = atmosphere.caballero_spectral_correction(ams, aods, pws,
-                                                   module_type=module_type,
+                                                   module_type=module_type, coefficients=expected,
                                                    aod500_ref=0.084,
                                                    pw_ref=1.42)
     assert np.allclose(expected, out, atol=1e-3)
@@ -221,14 +221,14 @@ def test_caballero_spectral_correction_supplied():
 
 def test_caballero_spectral_correction_supplied_ambiguous():
     dummy_coeffs = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         atmosphere.caballero_spectral_correction(1, 1, 1,
                                                  module_type='cdte',
                                                  coefficients=dummy_coeffs)
 
 
 def test_caballero_spectral_correction_supplied_ambiguous_1():
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         atmosphere.caballero_spectral_correction(1, 1, 1,
                                                  module_type=None,
                                                  coefficients=None)

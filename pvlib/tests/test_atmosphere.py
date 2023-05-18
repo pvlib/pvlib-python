@@ -202,7 +202,8 @@ def test_caballero_spectral_correction(module_type, expected):
     aods = np.array([1.0, 1.0, 0.02, 0.02, 0.08, 0.08])
     pws = np.array([1.42, 1.42, 1.42, 1.42, 4.0, 1.0])
     out = atmosphere.caballero_spectral_correction(ams, aods, pws,
-                                                   module_type=module_type, coefficients=expected,
+                                                   module_type=module_type,
+                                                   coefficients=expected,
                                                    aod500_ref=0.084,
                                                    pw_ref=1.42)
     assert np.allclose(expected, out, atol=1e-3)

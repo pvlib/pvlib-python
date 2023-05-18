@@ -215,9 +215,11 @@ def test_caballero_spectral_correction_supplied():
         1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
         -0.0182, 0, 0.0095, 0.0068, 0, 1)
     out = atmosphere.caballero_spectral_correction(1,
-                                                   1, 1, coefficients=coeffs)
-    expected = 1.0021964
-    assert_allclose(out, expected, atol=1e-3)
+                                                   1, 1, module_type='cdte',
+                                                   coefficients=coeffs,
+                                                   aod500_ref=0.084, pw_ref=1.42)
+    Vexpected = 1.0021964
+    assert_allclose(out, Vexpected, atol=1e-3)
 
 
 def test_caballero_spectral_correction_supplied_ambiguous():

@@ -5,7 +5,7 @@ v0.10.0
 -------
 
 
-Breaking Changes
+Breaking changes
 ~~~~~~~~~~~~~~~~
 * Reorder arguments of :py:func:`pvlib.pvsystem.PVSystem.i_from_v`,
   :py:func:`pvlib.pvsystem.i_from_v`, :py:func:`pvlib.pvsystem.v_from_i`,

@@ -232,8 +232,12 @@ def test_caballero_spectral_correction_supplied_ambiguous():
 
 
 def test_caballero_spectral_correction_supplied_ambiguous_1():
+    # use the cdte coeffs
+    coeffs = (
+        1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
+        -0.0182, 0, 0.0095, 0.0068, 0, 1)
     with pytest.raises(ValueError):
         atmosphere.caballero_spectral_correction(1, 1, 1,
                                                  module_type=None,
-                                                 coefficients=None,
+                                                 coefficients=coeffs,
                                                  aod500_ref=0.084, pw_ref=1.42)

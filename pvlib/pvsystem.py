@@ -951,13 +951,7 @@ class PVSystem:
         See :py:func:`pvlib.pvsystem.i_from_v` for details.
 
         .. versionchanged:: 0.10.0
-           The function's arguments have been reordered. In earlier versions,
-           the argument order is
-
-           .. code-block:: python
-
-              i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-                       saturation_current, photocurrent, method='lambertw')
+           The function's arguments have been reordered.
         """
         return i_from_v(voltage, photocurrent, saturation_current,
                         resistance_series, resistance_shunt, nNsVth)
@@ -2987,13 +2981,7 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
     and within the proper ranges.
 
     .. versionchanged:: 0.10.0
-       The function's arguments have been reordered. In earlier versions,
-       the argument order is
-
-       .. code-block:: python
-
-          v_from_i(resistance_shunt, resistance_series, nNsVth, current,
-                   saturation_current, photocurrent, method='lambertw')
+       The function's arguments have been reordered.
 
     Parameters
     ----------
@@ -3074,23 +3062,17 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
     Device current at the given device voltage for the single diode model.
 
     Uses the single diode model (SDM) as described in, e.g.,
-     Jain and Kapoor 2004 [1]_.
+    Jain and Kapoor 2004 [1]_.
     The solution is per Eq 2 of [1] except when resistance_series=0,
-     in which case the explict solution for current is used.
+    in which case the explict solution for current is used.
     Ideal device parameters are specified by resistance_shunt=np.inf and
-     resistance_series=0.
+    resistance_series=0.
     Inputs to this function can include scalars and pandas.Series, but it is
-     the caller's responsibility to ensure that the arguments are all float64
-     and within the proper ranges.
+    the caller's responsibility to ensure that the arguments are all float64
+    and within the proper ranges.
 
     .. versionchanged:: 0.10.0
-       The function's arguments have been reordered. In earlier versions,
-       the argument order is
-
-       .. code-block:: python
-
-          i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-                   saturation_current, photocurrent, method='lambertw')
+       The function's arguments have been reordered.
 
     Parameters
     ----------

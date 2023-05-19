@@ -203,7 +203,6 @@ def test_caballero_spectral_correction(module_type, expected):
     pws = np.array([1.42, 1.42, 1.42, 1.42, 4.0, 1.0])
     out = atmosphere.caballero_spectral_correction(ams, aods, pws,
                                                    module_type=module_type,
-                                                   coefficients=expected,
                                                    aod500_ref=0.084,
                                                    pw_ref=1.42)
     assert np.allclose(expected, out, atol=1e-3)
@@ -214,23 +213,28 @@ def test_caballero_spectral_correction_supplied():
     coeffs = (
         1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
         -0.0182, 0, 0.0095, 0.0068, 0, 1)
-    out = atmosphere.caballero_spectral_correction(1,
-                                                   1, 1, module_type='cdte',
+    out = atmosphere.caballero_spectral_correction(1, 1, 1,
                                                    coefficients=coeffs,
-                                                   aod500_ref=0.084, pw_ref=1.42)
-    Vexpected = 1.0021964
-    assert_allclose(out, Vexpected, atol=1e-3)
+                                                   aod500_ref=0.084,
+                                                   pw_ref=1.42)
+    expected = 1.0021964
+    assert_allclose(out, expected, atol=1e-3)
 
 
-def test_caballero_spectral_correction_supplied_ambiguous():
+def test_caballero_spectral_correction_supplied_redundant():
+    # Error when specifying both module_type and coefficients
+    coeffs = (
+        1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
+        -0.0182, 0, 0.0095, 0.0068, 0, 1)
     with pytest.raises(ValueError):
         atmosphere.caballero_spectral_correction(1, 1, 1,
                                                  module_type='cdte',
-                                                 coefficients=None,
+                                                 coefficients=coeffs,
                                                  aod500_ref=0.084, pw_ref=1.42)
 
 
-def test_caballero_spectral_correction_supplied_ambiguous_1():
+def test_caballero_spectral_correction_supplied_ambiguous():
+    # Error when specifying neither module_type nor coefficients
     with pytest.raises(ValueError):
         atmosphere.caballero_spectral_correction(1, 1, 1,
                                                  module_type=None,

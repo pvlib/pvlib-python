@@ -768,8 +768,8 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
         pw values are frequently high.
 
     aod500_ref : numeric, default 0.084
-        atmospheric aerosol optical depth at 500nm value related to the AM1.5G ASTMG-173-03
-        reference spectrum. [unitless]
+        atmospheric aerosol optical depth at 500nm value related to the
+        AM1.5G ASTMG-173-03 reference spectrum. [unitless]
 
     pw_ref : numeric, default 1.42
         atmospheric precipitable water value related to the AM1.5G ASTMG-173-03

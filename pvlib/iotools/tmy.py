@@ -48,9 +48,8 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
         where applicable. See variable :const:`VARIABLE_MAP`.
     recolumn : bool (deprecated, use map_variables instead)
         If ``True``, apply standard names to TMY3 columns. Typically this
-        results in stripping the units from the column name. If
-        ``map_variables`` is ``True`` then the ``recolumn`` parameter has no
-        effect.
+        results in stripping the units from the column name. 
+        Cannot be used in combination with ``map_variables``.
 
     Returns
     -------

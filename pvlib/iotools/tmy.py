@@ -225,27 +225,25 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
     # shouldnt' specify both recolumn and map_variables
-    if (type(recolumn) is bool) & (type(map_variables) is bool):
-        raise ValueError(
-            'Specify only map_variables and do not pass a value for '
-            'the recolumn parameter. Starting in pvlib 0.11.0, the '
-            'recolumn parameter will be deprecated and replaced by '
-            'the map_variable parameter. By default, the map_variable '
-            'will be set to True and TMY3 variable names will be renamed '
-            'to pvlib conventions.')
-    elif map_variables is False:
-        pass
-    elif (map_variables is None) & ((recolumn is True) | (recolumn is None)):
-        data = _recolumn(data)  # rename to standard column names
-    if map_variables is None:
+    if recolumn is not None and map_variables is not None:
+        msg = "`map_variables` and `recolumn` cannot both be specified"
+        raise ValueError(msg)
+    elif map_variables is None and recolumn is not None:
+        warnings.warn(
+            'The recolumn parameter is deprecated and will be removed in '
+            'pvlib 0.11.0. Use `map_variables` instead, although note that '
+            'its behavior is different from `recolumn`.',
+            pvlibDeprecationWarning)
+    elif map_variables is None and recolumn is None:
         warnings.warn(
             'TMY3 variable names will be renamed to pvlib conventions by '
             'default starting in pvlib 0.11.0. Specify map_variables=True '
             'to enable that behavior now, or specify map_variables=False '
             'to hide this warning.', pvlibDeprecationWarning)
-        map_variables = False
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
+    elif recolumn or (recolumn is None and map_variables is None):
+        data = _recolumn(data)
 
     data = data.tz_localize(int(meta['TZ'] * 3600))
 

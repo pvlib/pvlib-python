@@ -8,6 +8,10 @@ v0.9.6 (Anticipated June 2023)
 Deprecations
 ~~~~~~~~~~~~
 
+* The ``recolumn`` parameter in :py:func:`pvlib.iotools.read_tmy3`, which maps
+  TMY3 column names to nonstandard alternatives, is now deprecated.
+  We encourage using ``map_variables`` (which produces standard pvlib names) instead.
+  (:issue:`1517`, :pull:`1623`)
 
 Enhancements
 ~~~~~~~~~~~~

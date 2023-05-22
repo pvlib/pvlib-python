@@ -11,6 +11,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Update the URL used in the :py:func:`pvlib.iotools.get_cams` function. The new URL supports load-balancing
+  and redirects to the fastest server. (:issue:`1688`, :pull:`1740`)
 * :py:func:`pvlib.iotools.get_psm3` now has a ``url`` parameter to give the user
   the option of controlling what NSRDB endpoint is used. (:pull:`1736`)
 * :py:func:`pvlib.iotools.get_psm3` now uses the new NSRDB 3.2.2 endpoint for

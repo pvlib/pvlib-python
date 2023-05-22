@@ -183,6 +183,8 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
 
     # get the date column as a pd.Series of numpy datetime64
     data_ymd = pd.to_datetime(data['Date (MM/DD/YYYY)'], format='%m/%d/%Y')
+    # extract minutes
+    minutes = data['Time (HH:MM)'].str.split(':').str[1].astype(int)
     # shift the time column so that midnite is 00:00 instead of 24:00
     shifted_hour = data['Time (HH:MM)'].str.split(':').str[0].astype(int) % 24
     # shift the dates at midnight (24:00) so they correspond to the next day.
@@ -202,7 +204,8 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
         data_ymd.iloc[-1] = data_ymd.iloc[-1].replace(year=coerce_year+1)
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
-    data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
+    data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h') \
+        + pd.to_timedelta(minutes, unit='min')
 
     if recolumn:
         data = _recolumn(data)  # rename to standard column names

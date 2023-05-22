@@ -216,7 +216,7 @@ wavelengths [Bir80]_, and is implemented in
 
     In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
 
-    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999)  # read TMY data
+    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999, map_variables=True)
 
     In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])

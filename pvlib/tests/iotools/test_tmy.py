@@ -4,6 +4,7 @@ from pvlib.iotools import tmy
 from pvlib._deprecation import pvlibDeprecationWarning
 from ..conftest import DATA_DIR
 import pytest
+import warnings
 
 # test the API works
 from pvlib.iotools import read_tmy3
@@ -21,7 +22,9 @@ def test_read_tmy3():
 
 
 def test_read_tmy3_recolumn():
-    data, meta = tmy.read_tmy3(TMY3_TESTFILE)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        data, meta = tmy.read_tmy3(TMY3_TESTFILE, recolumn=True)
     assert 'GHISource' in data.columns
 
 

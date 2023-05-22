@@ -154,6 +154,13 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     time stamp convention, e.g., SARAH and SARAH2 provide instantaneous values,
     whereas values from ERA5 are averages for the hour.
 
+    Warning
+    -------
+    The azimuth orientation specified in the output metadata does not
+    correspond to the pvlib convention, but is offset 180 degrees. This is
+    despite the fact that the input parameter `surface_tilt` has to be
+    specified according to the pvlib convention.
+
     Notes
     -----
     data includes the following fields:

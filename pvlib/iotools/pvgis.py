@@ -57,12 +57,6 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
 
     PVGIS data is freely available at [1]_.
 
-    .. versionchanged:: 0.10.0
-       The `surface_azimuth` parameter now follows the pvlib convention, which
-       is counterclockwise from north. However, the convention used by the
-       PVGIS website and pvlib<=0.9.6 is offset by 180 degrees.
-
-
     Parameters
     ----------
     latitude: float
@@ -86,6 +80,11 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         Orientation (azimuth angle) of the (fixed) plane. Counter-clockwise
         from north (north=0, south=180). This is offset 180 degrees from
         the convention used by PVGIS. Ignored for tracking systems.
+
+        .. versionchanged:: 0.10.0
+           The `surface_azimuth` parameter now follows the pvlib convention, which
+           is counterclockwise from north. However, the convention used by the
+           PVGIS website and pvlib<=0.9.6 is offset by 180 degrees.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None

@@ -332,6 +332,13 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     metadata : dict
         metadata
 
+    Warning
+    -------
+    The azimuth orientation specified in the output metadata does not
+    correspond to the pvlib convention, but is offset 180 degrees. This is
+    despite the fact that the input parameter `surface_tilt` has to be
+    specified according to the pvlib convention.
+
     Raises
     ------
     ValueError

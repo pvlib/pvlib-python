@@ -234,7 +234,8 @@ wavelengths [Bir80]_, and is implemented in
        ...:     columns={0: 'airmass_relative', 1: 'airmass_absolute'})
 
     In [1]: tl_calculated = atmosphere.kasten96_lt(
-       ...:     airmass.airmass_absolute, tmy_data['precipitable_water'], tmy_data['AOD'])
+       ...:     airmass.airmass_absolute, tmy_data['precipitable_water'],
+       ...:     tmy_data['AOD (unitless)'])
 
     In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1).rename(
        ...:     columns={0:'Historic', 1:'Calculated'})

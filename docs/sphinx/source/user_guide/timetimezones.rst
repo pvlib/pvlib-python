@@ -287,7 +287,7 @@ print just a few of the rows and columns of the large dataframe.
 
     tmy3_data.index.tz
 
-    tmy3_data.loc[tmy3_data.index[0:3], ['ghi', 'dni', 'AOD']]
+    tmy3_data.loc[tmy3_data.index[0:3], ['ghi', 'dni', 'AOD (unitless)']]
 
 The :py:func:`~pvlib.iotools.read_tmy2` function also returns a DataFrame
 with a localized DatetimeIndex.

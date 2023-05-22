@@ -11,6 +11,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Update the URL used in the :py:func:`pvlib.iotools.get_cams` function. The new URL supports load-balancing
+  and redirects to the fastest server. (:issue:`1688`, :pull:`1740`)
 
 
 Bug fixes

@@ -40,7 +40,7 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     data : DataFrame
         A pandas dataframe with the columns described in the table
         below. For more detailed descriptions of each component, please
-        consult the TMY3 User's Manual ([1]_), especially tables 1-1
+        consult the TMY3 User's Manual [1]_, especially tables 1-1
         through 1-6.
 
     metadata : dict
@@ -282,7 +282,7 @@ def read_tmy2(filename):
     data : DataFrame
         A dataframe with the columns described in the table below. For a
         more detailed descriptions of each component, please consult the
-        TMY2 User's Manual ([1]_), especially tables 3-1 through 3-6, and
+        TMY2 User's Manual [1]_, especially tables 3-1 through 3-6, and
         Appendix B.
 
     metadata : dict
@@ -384,7 +384,7 @@ def read_tmy2(filename):
     ----------
     .. [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
        for TMY2s". NREL 1995.
-       :doi: `10.2172/87130`
+       :doi:`10.2172/87130`
     """  # noqa: E501
     # paste in the column info as one long line
     string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'  # noqa: E501

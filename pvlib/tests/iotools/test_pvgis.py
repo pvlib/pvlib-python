@@ -512,7 +512,7 @@ def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
 
 @pytest.mark.remote_data
 def test_read_pvgis_horizon():
-    pvgis_data = get_pvgis_horizon(35.171051, -106.465158)
+    pvgis_data, _ = get_pvgis_horizon(35.171051, -106.465158)
     horizon_data = pd.read_csv(DATA_DIR / 'test_read_pvgis_horizon.csv',
                                index_col=0)
     horizon_data.set_index('horizon_azimuth', inplace=True)
@@ -522,7 +522,7 @@ def test_read_pvgis_horizon():
 @pytest.mark.remote_data
 def test_read_pvgis_horizon_invalid_coords():
     with pytest.raises(requests.HTTPError, match='lat: Incorrect value'):
-        _ = get_pvgis_horizon(100, 50)  # unfeasible latitude
+        _, _ = get_pvgis_horizon(100, 50)  # unfeasible latitude
 
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):

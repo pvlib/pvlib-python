@@ -377,6 +377,9 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     df['max'] = 0.5 * (df['V1'] + df['V2'])
     func_result = func(df, 'max')
     x = np.where(np.isnan(func_result), np.nan, df['max'])
+    if np.isscalar(df['max']):
+        # np.where always returns an ndarray, converting scalars to 0d-arrays
+        x = x.item()
 
     return func_result, x
 

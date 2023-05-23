@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from pvlib._deprecation import deprecated
+from pvlib._deprecation import deprecated, warn_deprecated
 
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
@@ -2711,7 +2711,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
                 resistance_shunt, nNsVth, ivcurve_pnts=None,
                 method='lambertw'):
     r"""
-    Solve the single-diode equation to obtain a photovoltaic IV curve.
+    Solve the single diode equation to obtain a photovoltaic IV curve.
 
     Solves the single diode equation [1]_
 
@@ -2724,11 +2724,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             \frac{V + I R_s}{R_{sh}}
 
     for :math:`I` and :math:`V` when given :math:`I_L, I_0, R_s, R_{sh},` and
-    :math:`n N_s V_{th}` which are described later. Returns a DataFrame
-    which contains the 5 points on the I-V curve specified in
-    [3]_. If all :math:`I_L, I_0, R_s, R_{sh},` and
-    :math:`n N_s V_{th}` are scalar, a single curve is returned, if any
-    are Series (of the same length), multiple IV curves are calculated.
+    :math:`n N_s V_{th}` which are described later. The five points on the I-V
+    curve specified in [3]_ are returned. If :math:`I_L, I_0, R_s, R_{sh},` and
+    :math:`n N_s V_{th}` are all scalars, a single curve is returned. If any
+    are array-like (of the same length), multiple IV curves are calculated.
 
     The input parameters can be calculated from meteorological data using a
     function for a single diode model, e.g.,
@@ -2766,35 +2765,33 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         Number of points in the desired IV curve. If None or 0, no points on
         the IV curves will be produced.
 
+        .. deprecated:: 0.10.0
+           Use :py:func:`pvlib.pvsystem.v_from_i` and
+           :py:func:`pvlib.pvsystem.i_from_v` instead.
+
     method : str, default 'lambertw'
         Determines the method used to calculate points on the IV curve. The
         options are ``'lambertw'``, ``'newton'``, or ``'brentq'``.
 
     Returns
     -------
-    OrderedDict or DataFrame
+    dict or pandas.DataFrame
+        The returned dict-like object always contains the keys/columns:
 
-    The returned dict-like object always contains the keys/columns:
+            * i_sc - short circuit current in amperes.
+            * v_oc - open circuit voltage in volts.
+            * i_mp - current at maximum power point in amperes.
+            * v_mp - voltage at maximum power point in volts.
+            * p_mp - power at maximum power point in watts.
+            * i_x - current, in amperes, at ``v = 0.5*v_oc``.
+            * i_xx - current, in amperes, at ``V = 0.5*(v_oc+v_mp)``.
 
-        * i_sc - short circuit current in amperes.
-        * v_oc - open circuit voltage in volts.
-        * i_mp - current at maximum power point in amperes.
-        * v_mp - voltage at maximum power point in volts.
-        * p_mp - power at maximum power point in watts.
-        * i_x - current, in amperes, at ``v = 0.5*v_oc``.
-        * i_xx - current, in amperes, at ``V = 0.5*(v_oc+v_mp)``.
+        A dict is returned when the input parameters are scalars or
+        ``ivcurve_pnts > 0``. If ``ivcurve_pnts > 0``, the output dictionary
+        will also include the keys:
 
-    If ivcurve_pnts is greater than 0, the output dictionary will also
-    include the keys:
-
-        * i - IV curve current in amperes.
-        * v - IV curve voltage in volts.
-
-    The output will be an OrderedDict if photocurrent is a scalar,
-    array, or ivcurve_pnts is not None.
-
-    The output will be a DataFrame if photocurrent is a Series and
-    ivcurve_pnts is None.
+            * i - IV curve current in amperes.
+            * v - IV curve voltage in volts.
 
     See also
     --------
@@ -2841,22 +2838,25 @@ def singlediode(photocurrent, saturation_current, resistance_series,
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        https://doi.org/10.1016/0379-6787(88)90059-2
     """
+    if ivcurve_pnts:
+        warn_deprecated('0.10.0', name='pvlib.pvsystem.singlediode',
+                        alternative=('pvlib.pvsystem.v_from_i and '
+                                     'pvlib.pvsystem.i_from_v'),
+                        obj_type='parameter ivcurve_pnts',
+                        removal='0.11.0')
+    args = (photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth)  # collect args
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
     if method.lower() == 'lambertw':
-        out = _singlediode._lambertw(
-            photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth, ivcurve_pnts
-        )
-        i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx = out[:7]
+        out = _singlediode._lambertw(*args, ivcurve_pnts)
+        points = out[:7]
         if ivcurve_pnts:
             ivcurve_i, ivcurve_v = out[7:]
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
-        args = (photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth)  # collect args
         v_oc = _singlediode.bishop88_v_from_i(
             0.0, *args, method=method.lower()
         )
@@ -2872,6 +2872,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         i_xx = _singlediode.bishop88_i_from_v(
             (v_oc + v_mp) / 2.0, *args, method=method.lower()
         )
+        points = i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx
 
         # calculate the IV curve if requested using bishop88
         if ivcurve_pnts:
@@ -2880,22 +2881,23 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             )
             ivcurve_i, ivcurve_v, _ = _singlediode.bishop88(vd, *args)
 
-    out = OrderedDict()
-    out['i_sc'] = i_sc
-    out['v_oc'] = v_oc
-    out['i_mp'] = i_mp
-    out['v_mp'] = v_mp
-    out['p_mp'] = p_mp
-    out['i_x'] = i_x
-    out['i_xx'] = i_xx
+    columns = ('i_sc', 'v_oc', 'i_mp', 'v_mp', 'p_mp', 'i_x', 'i_xx')
 
-    if ivcurve_pnts:
+    if all(map(np.isscalar, args)) or ivcurve_pnts:
+        out = {c: p for c, p in zip(columns, points)}
 
-        out['v'] = ivcurve_v
-        out['i'] = ivcurve_i
+        if ivcurve_pnts:
+            out.update(i=ivcurve_i, v=ivcurve_v)
 
-    if isinstance(photocurrent, pd.Series) and not ivcurve_pnts:
-        out = pd.DataFrame(out, index=photocurrent.index)
+        return out
+
+    points = np.atleast_1d(*points)  # convert scalars to 1d-arrays
+    points = np.vstack(points).T  # collect rows into DataFrame columns
+
+    # save the first available pd.Series index, otherwise set to None
+    index = next((a.index for a in args if isinstance(a, pd.Series)), None)
+
+    out = pd.DataFrame(points, columns=columns, index=index)
 
     return out
 
@@ -2936,7 +2938,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
 
     Returns
     -------
-    OrderedDict or pandas.Datafrane
+    OrderedDict or pandas.DataFrame
         ``(i_mp, v_mp, p_mp)``
 
     Notes

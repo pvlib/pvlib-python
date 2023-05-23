@@ -11,7 +11,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* `Added a function :py:func:`pvlib.atmosphere.caballero_spectral_correction` to estimate a spectral mismatch modifier based on absolute (pressure-adjusted)
+   airmass (AM), aerosol optical depth (AOD) at 500 nm and precipitable water (PW). (:pull:`1296`)
 
 Bug fixes
 ~~~~~~~~~
@@ -43,4 +44,5 @@ Contributors
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
+* Jose Antonio Caballero (:ghuser:`Jacc0027`)
 

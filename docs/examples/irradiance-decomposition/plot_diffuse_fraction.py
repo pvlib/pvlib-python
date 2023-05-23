@@ -27,7 +27,8 @@ import pvlib
 # of data measured from 1990 to 2010. Therefore we change the timestamps to a
 # common year, 1990.
 DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
-greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990, map_variables=True)
+greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+                                 map_variables=True)
 
 # Many of the diffuse fraction estimation methods require the "true" zenith, so
 # we calculate the solar positions for the 1990 at Greensboro, NC.

@@ -44,7 +44,8 @@ class SeasonalTiltMount(pvsystem.AbstractMount):
 # like we expect:
 
 DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
-tmy, metadata = iotools.read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990, map_variables=True)
+tmy, metadata = iotools.read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+                                  map_variables=True)
 # shift from TMY3 right-labeled index to left-labeled index:
 tmy.index = tmy.index - pd.Timedelta(hours=1)
 weather = pd.DataFrame({

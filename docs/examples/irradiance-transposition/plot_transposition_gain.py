@@ -32,7 +32,8 @@ import pathlib
 DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
 
 # get TMY3 dataset
-tmy, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990, map_variables=True)
+tmy, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+                          map_variables=True)
 # TMY3 datasets are right-labeled (AKA "end of interval") which means the last
 # interval of Dec 31, 23:00 to Jan 1 00:00 is labeled Jan 1 00:00. When rolling
 # up hourly irradiance to monthly insolation, a spurious January value is

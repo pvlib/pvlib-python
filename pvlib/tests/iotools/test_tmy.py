@@ -34,7 +34,7 @@ def test_read_tmy3_norecolumn():
 
 
 def test_read_tmy3_raise_valueerror():
-    with pytest.raises(ValueError, match='map_variables` and `recolumn` cannot both be specified'):
+    with pytest.raises(ValueError, match='`map_variables` and `recolumn`'):
         _ = tmy.read_tmy3(TMY3_TESTFILE, recolumn=True, map_variables=True)
 
 

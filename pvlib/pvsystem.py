@@ -2784,7 +2784,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             * v_mp - voltage at maximum power point in volts.
             * p_mp - power at maximum power point in watts.
             * i_x - current, in amperes, at ``v = 0.5*v_oc``.
-            * i_xx - current, in amperes, at ``V = 0.5*(v_oc+v_mp)``.
+            * i_xx - current, in amperes, at ``v = 0.5*(v_oc+v_mp)``.
 
         A dict is returned when the input parameters are scalars or
         ``ivcurve_pnts > 0``. If ``ivcurve_pnts > 0``, the output dictionary

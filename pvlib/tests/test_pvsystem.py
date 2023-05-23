@@ -1093,7 +1093,7 @@ def test_i_from_v_from_i(fixture_v_from_i):
     Rsh = fixture_v_from_i['Rsh']
     Rs = fixture_v_from_i['Rs']
     nNsVth = fixture_v_from_i['nNsVth']
-    I = fixture_v_from_i['I']
+    current = fixture_v_from_i['I']
     I0 = fixture_v_from_i['I0']
     IL = fixture_v_from_i['IL']
     V = fixture_v_from_i['V_expected']
@@ -1103,15 +1103,15 @@ def test_i_from_v_from_i(fixture_v_from_i):
 
     I_expected = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth,
                                    method='lambertw')
-    assert_allclose(I, I_expected, atol=atol)
+    assert_allclose(current, I_expected, atol=atol)
 
-    I = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth)
+    current = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth)
 
-    assert isinstance(I, type(I_expected))
-    if isinstance(I, np.ndarray):
-        assert isinstance(I.dtype, type(I_expected.dtype))
-        assert I.shape == I_expected.shape
-    assert_allclose(I, I_expected, atol=atol)
+    assert isinstance(current, type(I_expected))
+    if isinstance(current, np.ndarray):
+        assert isinstance(current.dtype, type(I_expected.dtype))
+        assert current.shape == I_expected.shape
+    assert_allclose(current, I_expected, atol=atol)
 
 
 @pytest.fixture(params=[
@@ -1200,13 +1200,13 @@ def test_i_from_v(fixture_i_from_v, method, atol):
     IL = fixture_i_from_v['IL']
     I_expected = fixture_i_from_v['I_expected']
 
-    I = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth, method=method)
+    current = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth, method=method)
 
-    assert isinstance(I, type(I_expected))
-    if isinstance(I, np.ndarray):
-        assert isinstance(I.dtype, type(I_expected.dtype))
-        assert I.shape == I_expected.shape
-    assert_allclose(I, I_expected, atol=atol)
+    assert isinstance(current, type(I_expected))
+    if isinstance(current, np.ndarray):
+        assert isinstance(current.dtype, type(I_expected.dtype))
+        assert current.shape == I_expected.shape
+    assert_allclose(current, I_expected, atol=atol)
 
 
 def test_PVSystem_i_from_v(mocker):

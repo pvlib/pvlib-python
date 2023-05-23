@@ -675,8 +675,9 @@ def _pwr_optfcn(df, loc):
     Function to find power from ``i_from_v``.
     '''
 
-    I = _lambertw_i_from_v(df[loc], df['photocurrent'],
-                           df['saturation_current'], df['resistance_series'],
-                           df['resistance_shunt'], df['nNsVth'])
+    current = _lambertw_i_from_v(df[loc], df['photocurrent'],
+                                 df['saturation_current'],
+                                 df['resistance_series'],
+                                 df['resistance_shunt'], df['nNsVth'])
 
-    return I * df[loc]
+    return current * df[loc]

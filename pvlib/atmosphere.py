@@ -836,7 +836,7 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
     else:
         coeff = coefficients
 
-    # Evaluate Spectral Shift
+    # Evaluate spectral correction factor
     ama = airmass_absolute
     modifier = (
         coeff[0] + (ama) * coeff[1] + (ama * ama) * coeff[2]

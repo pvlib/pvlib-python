@@ -647,20 +647,26 @@ def longitude_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
 
 @jcompile('float64(float64, float64, float64, float64, float64, float64)',
           nopython=True)
-def obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
+def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
+    delta_psi_sum = 0.0
     delta_eps_sum = 0.0
     for row in range(NUTATION_YTERM_ARRAY.shape[0]):
+        a = NUTATION_ABCD_ARRAY[row, 0]
+        b = NUTATION_ABCD_ARRAY[row, 1]
         c = NUTATION_ABCD_ARRAY[row, 2]
         d = NUTATION_ABCD_ARRAY[row, 3]
-        argcos = (NUTATION_YTERM_ARRAY[row, 0]*x0 +
-                  NUTATION_YTERM_ARRAY[row, 1]*x1 +
-                  NUTATION_YTERM_ARRAY[row, 2]*x2 +
-                  NUTATION_YTERM_ARRAY[row, 3]*x3 +
-                  NUTATION_YTERM_ARRAY[row, 4]*x4)
-        term = (c + d * julian_ephemeris_century) * np.cos(np.radians(argcos))
-        delta_eps_sum += term
+        arg = np.radians(
+            NUTATION_YTERM_ARRAY[row, 0]*x0 +
+            NUTATION_YTERM_ARRAY[row, 1]*x1 +
+            NUTATION_YTERM_ARRAY[row, 2]*x2 +
+            NUTATION_YTERM_ARRAY[row, 3]*x3 +
+            NUTATION_YTERM_ARRAY[row, 4]*x4
+        )
+        delta_psi_sum += (a + b * julian_ephemeris_century) * np.sin(arg)
+        delta_eps_sum += (c + d * julian_ephemeris_century) * np.cos(arg)
+    delta_psi = delta_psi_sum*1.0/36000000
     delta_eps = delta_eps_sum*1.0/36000000
-    return delta_eps
+    return delta_psi, delta_eps
 
 
 @jcompile('float64(float64)', nopython=True)
@@ -931,8 +937,8 @@ def solar_position_loop(unixtime, loc_args, out):
         x2 = mean_anomaly_moon(jce)
         x3 = moon_argument_latitude(jce)
         x4 = moon_ascending_longitude(jce)
-        delta_psi = longitude_nutation(jce, x0, x1, x2, x3, x4)
-        delta_epsilon = obliquity_nutation(jce, x0, x1, x2, x3, x4)
+        delta_psi, delta_epsilon = \
+            longitude_obliquity_nutation(jce, x0, x1, x2, x3, x4)
         epsilon0 = mean_ecliptic_obliquity(jme)
         epsilon = true_ecliptic_obliquity(epsilon0, delta_epsilon)
         delta_tau = aberration_correction(R)
@@ -1043,8 +1049,8 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     x2 = mean_anomaly_moon(jce)
     x3 = moon_argument_latitude(jce)
     x4 = moon_ascending_longitude(jce)
-    delta_psi = longitude_nutation(jce, x0, x1, x2, x3, x4)
-    delta_epsilon = obliquity_nutation(jce, x0, x1, x2, x3, x4)
+    delta_psi, delta_epsilon = \
+        longitude_obliquity_nutation(jce, x0, x1, x2, x3, x4)
     epsilon0 = mean_ecliptic_obliquity(jme)
     epsilon = true_ecliptic_obliquity(epsilon0, delta_epsilon)
     delta_tau = aberration_correction(R)

@@ -477,27 +477,32 @@ def heliocentric_longitude(jme):
     l4 = 0.0
     l5 = 0.0
 
-    for row in range(HELIO_LONG_TABLE.shape[1]):
+    for row in range(64):
         l0 += (HELIO_LONG_TABLE[0, row, 0]
                * np.cos(HELIO_LONG_TABLE[0, row, 1]
                         + HELIO_LONG_TABLE[0, row, 2] * jme)
                )
+    for row in range(34):
         l1 += (HELIO_LONG_TABLE[1, row, 0]
                * np.cos(HELIO_LONG_TABLE[1, row, 1]
                         + HELIO_LONG_TABLE[1, row, 2] * jme)
                )
+    for row in range(20):
         l2 += (HELIO_LONG_TABLE[2, row, 0]
                * np.cos(HELIO_LONG_TABLE[2, row, 1]
                         + HELIO_LONG_TABLE[2, row, 2] * jme)
                )
+    for row in range(7):
         l3 += (HELIO_LONG_TABLE[3, row, 0]
                * np.cos(HELIO_LONG_TABLE[3, row, 1]
                         + HELIO_LONG_TABLE[3, row, 2] * jme)
                )
+    for row in range(3):
         l4 += (HELIO_LONG_TABLE[4, row, 0]
                * np.cos(HELIO_LONG_TABLE[4, row, 1]
                         + HELIO_LONG_TABLE[4, row, 2] * jme)
                )
+    for row in range(1):
         l5 += (HELIO_LONG_TABLE[5, row, 0]
                * np.cos(HELIO_LONG_TABLE[5, row, 1]
                         + HELIO_LONG_TABLE[5, row, 2] * jme)
@@ -535,23 +540,27 @@ def heliocentric_radius_vector(jme):
     r2 = 0.0
     r3 = 0.0
     r4 = 0.0
-    for row in range(HELIO_RADIUS_TABLE.shape[1]):
+    for row in range(40):
         r0 += (HELIO_RADIUS_TABLE[0, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[0, row, 1]
                         + HELIO_RADIUS_TABLE[0, row, 2] * jme)
                )
+    for row in range(10):
         r1 += (HELIO_RADIUS_TABLE[1, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[1, row, 1]
                         + HELIO_RADIUS_TABLE[1, row, 2] * jme)
                )
+    for row in range(6):
         r2 += (HELIO_RADIUS_TABLE[2, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[2, row, 1]
                         + HELIO_RADIUS_TABLE[2, row, 2] * jme)
                )
+    for row in range(2):
         r3 += (HELIO_RADIUS_TABLE[3, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[3, row, 1]
                         + HELIO_RADIUS_TABLE[3, row, 2] * jme)
                )
+    for row in range(1):
         r4 += (HELIO_RADIUS_TABLE[4, row, 0]
                * np.cos(HELIO_RADIUS_TABLE[4, row, 1]
                         + HELIO_RADIUS_TABLE[4, row, 2] * jme)

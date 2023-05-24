@@ -81,86 +81,82 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
     ===============   ======  ===================
 
 
-    ========================  ======  =========================================
-    **Mapped field names are returned when the map_variables argument is True**
-    ---------------------------------------------------------------------------
-
-    =====================       ======================================================================================================================================================
+    ========================       ======================================================================================================================================================
     field                       description
-    =====================       ======================================================================================================================================================
+    ========================       ======================================================================================================================================================
     **† denotes variables that are mapped when `map_variables` is True**
-    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    Index                       A pandas datetime index. NOTE, the index is timezone aware, and times are set to local standard time (daylight savings is not included)
-    ghi_extra†                  Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    dni_extra†                  Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    ghi†                        Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    GHI source                  See [1]_, Table 1-4
-    GHI uncert (%)              Uncertainty based on random and bias error estimates see [2]_
-    dni†                        Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
-    DNI source                  See [1]_, Table 1-4
-    DNI uncert (%)              Uncertainty based on random and bias error estimates see [2]_
-    dhi†                        Amount of diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    DHI source                  See [1]_, Table 1-4
-    DHI uncert (%)              Uncertainty based on random and bias error estimates see [2]_
-    GH illum (lx)               Avg. total horizontal illuminance recv'd during the 60 minutes prior to timestamp, lx
-    GH illum source             See [1]_, Table 1-4
-    GH illum uncert (%)         Uncertainty based on random and bias error estimates see [2]_
-    DN illum (lx)               Avg. direct normal illuminance recv'd during the 60 minutes prior to timestamp, lx
-    DN illum source             See [1]_, Table 1-4
-    DN illum uncert (%)         Uncertainty based on random and bias error estimates see [2]_
-    DH illum (lx)               Avg. horizontal diffuse illuminance recv'd during the 60 minutes prior to timestamp, lx
-    DH illum source             See [1]_, Table 1-4
-    DH illum uncert (%)         Uncertainty based on random and bias error estimates see [2]_
-    Zenith lum (cd/m^2)         Avg. luminance at the sky's zenith during the 60 minutes prior to timestamp, cd/m^2
-    Zenith lum source           See [1]_, Table 1-4
-    Zenith lum uncert (%)       Uncertainty based on random and bias error estimates see [1]_ section 2.10
-    TotCld (tenths)             Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky
-    TotCld source               See [1]_, Table 1-5
-    TotCld uncert (code)        See [1]_, Table 1-6
-    OpqCld (tenths)             Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky
-    OpqCld source               See [1]_, Table 1-5
-    OpqCld uncert (code)        See [1]_, Table 1-6
-    temp_air†                   Dry bulb temperature at the time indicated, deg C
-    Dry-bulb source             See [1]_, Table 1-5
-    Dry-bulb uncert (code)      See [1]_, Table 1-6
-    temp_dew†                   Dew-point temperature at the time indicated, deg C
-    Dew-point source            See [1]_, Table 1-5
-    Dew-point uncert (code)     See [1]_, Table 1-6
-    relative_humidity†          Relatitudeive humidity at the time indicated, percent
-    RHum source                 See [1]_, Table 1-5
-    RHum uncert (code)          See [1]_, Table 1-6
-    pressure†                   Station pressure at the time indicated, 1 mbar
-    Pressure source             See [1]_, Table 1-5
-    Pressure uncert (code)      See [1]_, Table 1-6
-    wind_direction†             Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm)
-    Wdir source                 See [1]_, Table 1-5
-    Wdir uncert (code)          See [1]_, Table 1-6
-    wind_speed†                 Wind speed at the time indicated, meter/second
-    Wspd source                 See [1]_, Table 1-5
-    Wspd uncert (code)          See [1]_, Table 1-6
-    Hvis (m)                    Distance to discernable remote objects at time indicated (7777=unlimited), meter
-    Hvis source                 See [1]_, Table 1-5
-    Hvis uncert (coe)           See [1]_, Table 1-6
-    CeilHgt (m)                 Height of cloud base above local terrain (7777=unlimited), meter
-    CeilHgt source              See [1]_, Table 1-5
-    CeilHgt uncert (code)       See [1]_, Table 1-6
-    precipitable_water†         Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm
-    Pwat source                 See [1]_, Table 1-5
-    Pwat uncert (code)          See [1]_, Table 1-6
-    AOD                         The broadband aerosol optical depth per unit of air mass due to extinction by aerosol component of atmosphere, unitless
-    AOD source                  See [1]_, Table 1-5
-    AOD uncert (code)           See [1]_, Table 1-6
-    albedo†                     The ratio of reflected solar irradiance to global horizontal irradiance, unitless
-    Alb source                  See [1]_, Table 1-5
-    Alb uncert (code)           See [1]_, Table 1-6
-    Lprecip depth (mm)          The amount of liquid precipitation observed at indicated time for the period indicated in the liquid precipitation quantity field, millimeter
-    Lprecip quantity (hr)       The period of accumulatitudeion for the liquid precipitation depth field, hour
-    Lprecip source              See [1]_, Table 1-5
-    Lprecip uncert (code)       See [1]_, Table 1-6
-    PresWth (METAR code)        Present weather code, see [2]_.
-    PresWth source              Present weather code source, see [2]_.
-    PresWth uncert (code)       Present weather code uncertainty, see [2]_.
-    =====================       ======================================================================================================================================================
+    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Index                          A pandas datetime index. NOTE, the index is timezone aware, and times are set to local standard time (daylight savings is not included)
+    ghi_extra†                     Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+    dni_extra†                     Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+    ghi†                           Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+    GHI source                     See [1]_, Table 1-4
+    GHI uncert (%)                 Uncertainty based on random and bias error estimates see [2]_
+    dni†                           Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
+    DNI source                     See [1]_, Table 1-4
+    DNI uncert (%)                 Uncertainty based on random and bias error estimates see [2]_
+    dhi†                           Amount of diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+    DHI source                     See [1]_, Table 1-4
+    DHI uncert (%)                 Uncertainty based on random and bias error estimates see [2]_
+    GH illum (lx)                  Avg. total horizontal illuminance recv'd during the 60 minutes prior to timestamp, lx
+    GH illum source                See [1]_, Table 1-4
+    GH illum uncert (%)            Uncertainty based on random and bias error estimates see [2]_
+    DN illum (lx)                  Avg. direct normal illuminance recv'd during the 60 minutes prior to timestamp, lx
+    DN illum source                See [1]_, Table 1-4
+    DN illum uncert (%)            Uncertainty based on random and bias error estimates see [2]_
+    DH illum (lx)                  Avg. horizontal diffuse illuminance recv'd during the 60 minutes prior to timestamp, lx
+    DH illum source                See [1]_, Table 1-4
+    DH illum uncert (%)            Uncertainty based on random and bias error estimates see [2]_
+    Zenith lum (cd/m^2)            Avg. luminance at the sky's zenith during the 60 minutes prior to timestamp, cd/m^2
+    Zenith lum source              See [1]_, Table 1-4
+    Zenith lum uncert (%)          Uncertainty based on random and bias error estimates see [1]_ section 2.10
+    TotCld (tenths)                Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky
+    TotCld source                  See [1]_, Table 1-5
+    TotCld uncert (code)           See [1]_, Table 1-6
+    OpqCld (tenths)                Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky
+    OpqCld source                  See [1]_, Table 1-5
+    OpqCld uncert (code)           See [1]_, Table 1-6
+    temp_air†                      Dry bulb temperature at the time indicated, deg C
+    Dry-bulb source                See [1]_, Table 1-5
+    Dry-bulb uncert (code)         See [1]_, Table 1-6
+    temp_dew†                      Dew-point temperature at the time indicated, deg C
+    Dew-point source              See [1]_, Table 1-5
+    Dew-point uncert (code)        See [1]_, Table 1-6
+    relative_humidity†             Relatitudeive humidity at the time indicated, percent
+    RHum source                    See [1]_, Table 1-5
+    RHum uncert (code)             See [1]_, Table 1-6
+    pressure†                      Station pressure at the time indicated, 1 mbar
+    Pressure source                See [1]_, Table 1-5
+    Pressure uncert (code)        See [1]_, Table 1-6
+    wind_direction†                Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm)
+    Wdir source                    See [1]_, Table 1-5
+    Wdir uncert (code)             See [1]_, Table 1-6
+    wind_speed†                    Wind speed at the time indicated, meter/second
+    Wspd source                    See [1]_, Table 1-5
+    Wspd uncert (code)             See [1]_, Table 1-6
+    Hvis (m)                       Distance to discernable remote objects at time indicated (7777=unlimited), meter
+    Hvis source                    See [1]_, Table 1-5
+    Hvis uncert (coe)              See [1]_, Table 1-6
+    CeilHgt (m)                    Height of cloud base above local terrain (7777=unlimited), meter
+    CeilHgt source                 See [1]_, Table 1-5
+    CeilHgt uncert (code)          See [1]_, Table 1-6
+    precipitable_water†            Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm
+    Pwat source                    See [1]_, Table 1-5
+    Pwat uncert (code)             See [1]_, Table 1-6
+    AOD                            The broadband aerosol optical depth per unit of air mass due to extinction by aerosol component of atmosphere, unitless
+    AOD source                     See [1]_, Table 1-5
+    AOD uncert (code)              See [1]_, Table 1-6
+    albedo†                        The ratio of reflected solar irradiance to global horizontal irradiance, unitless
+    Alb source                     See [1]_, Table 1-5
+    Alb uncert (code)              See [1]_, Table 1-6
+    Lprecip depth (mm)             The amount of liquid precipitation observed at indicated time for the period indicated in the liquid precipitation quantity field, millimeter
+    Lprecip quantity (hr)          The period of accumulatitudeion for the liquid precipitation depth field, hour
+    Lprecip source                 See [1]_, Table 1-5
+    Lprecip uncert (code)          See [1]_, Table 1-6
+    PresWth (METAR code)           Present weather code, see [2]_.
+    PresWth source                 Present weather code source, see [2]_.
+    PresWth uncert (code)          Present weather code uncertainty, see [2]_.
+    ========================       ======================================================================================================================================================
 
     .. admonition:: Midnight representation
 

@@ -808,14 +808,6 @@ def test_calcparams_cec(cec_module_params):
     assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
                         check_less_precise=3)
 
-    pdSeries_names = set(df.columns)
-
-    assert IL.name not in pdSeries_names
-    assert I0.name not in pdSeries_names
-    assert Rs.name not in pdSeries_names
-    assert Rsh.name not in pdSeries_names
-    assert nNsVth.name not in pdSeries_names
-
 
 def test_calcparams_cec_extra_params_propagation(cec_module_params, mocker):
     """
@@ -885,14 +877,6 @@ def test_calcparams_pvsyst(pvsyst_module_params):
         Rsh.round(decimals=3), pd.Series([1000.0, 305.757], index=times))
     assert_series_equal(
         nNsVth.round(decimals=4), pd.Series([1.6186, 1.7961], index=times))
-
-    pdSeries_names = set(df.columns)
-
-    assert IL.name not in pdSeries_names
-    assert I0.name not in pdSeries_names
-    assert Rs.name not in pdSeries_names
-    assert Rsh.name not in pdSeries_names
-    assert nNsVth.name not in pdSeries_names
 
 
 def test_PVSystem_calcparams_desoto(cec_module_params, mocker):

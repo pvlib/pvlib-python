@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import pytz
 import warnings
-import functools
 
 
 def cosd(angle):

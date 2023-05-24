@@ -8,6 +8,10 @@ v0.9.6 (Anticipated June 2023)
 Deprecations
 ~~~~~~~~~~~~
 
+* The ``recolumn`` parameter in :py:func:`pvlib.iotools.read_tmy3`, which maps
+  TMY3 column names to nonstandard alternatives, is now deprecated.
+  We encourage using ``map_variables`` (which produces standard pvlib names) instead.
+  (:issue:`1517`, :pull:`1623`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -21,6 +25,15 @@ Enhancements
   * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ
   * :py:func:`pvlib.shading.ground_angle`
 
+* Added ``map_variables`` argument to the :py:func:`pvlib.iotools.read_tmy3` in
+  order to offer the option of mapping column names to standard pvlib names.
+  (:issue:`1517`, :pull:`1623`)
+* Update the URL used in the :py:func:`pvlib.iotools.get_cams` function. The new URL supports load-balancing
+  and redirects to the fastest server. (:issue:`1688`, :pull:`1740`)
+* :py:func:`pvlib.iotools.get_psm3` now has a ``url`` parameter to give the user
+  the option of controlling what NSRDB endpoint is used. (:pull:`1736`)
+* :py:func:`pvlib.iotools.get_psm3` now uses the new NSRDB 3.2.2 endpoint for
+  hourly and half-hourly single-year datasets. (:issue:`1591`, :pull:`1736`)
 
 Bug fixes
 ~~~~~~~~~
@@ -59,4 +72,6 @@ Contributors
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
+* :ghuser:`ooprathamm`
+* Kevin Anderson (:ghuser:`kandersolar`)
 

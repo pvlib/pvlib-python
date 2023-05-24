@@ -518,11 +518,12 @@ def heliocentric_longitude(jme):
 def heliocentric_latitude(jme):
     b0 = 0.0
     b1 = 0.0
-    for row in range(HELIO_LAT_TABLE.shape[1]):
+    for row in range(5):
         b0 += (HELIO_LAT_TABLE[0, row, 0]
                * np.cos(HELIO_LAT_TABLE[0, row, 1]
                         + HELIO_LAT_TABLE[0, row, 2] * jme)
                )
+    for row in range(2):
         b1 += (HELIO_LAT_TABLE[1, row, 0]
                * np.cos(HELIO_LAT_TABLE[1, row, 1]
                         + HELIO_LAT_TABLE[1, row, 2] * jme)

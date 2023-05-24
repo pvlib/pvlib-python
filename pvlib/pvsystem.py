@@ -944,14 +944,17 @@ class PVSystem:
                            resistance_series, resistance_shunt, nNsVth,
                            ivcurve_pnts=ivcurve_pnts)
 
-    def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
-                 saturation_current, photocurrent):
+    def i_from_v(self, voltage, photocurrent, saturation_current,
+                 resistance_series, resistance_shunt, nNsVth):
         """Wrapper around the :py:func:`pvlib.pvsystem.i_from_v` function.
 
-        See :py:func:`pvsystem.i_from_v` for details
+        See :py:func:`pvlib.pvsystem.i_from_v` for details.
+
+        .. versionchanged:: 0.10.0
+           The function's arguments have been reordered.
         """
-        return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-                        saturation_current, photocurrent)
+        return i_from_v(voltage, photocurrent, saturation_current,
+                        resistance_series, resistance_shunt, nNsVth)
 
     def get_ac(self, model, p_dc, v_dc=None):
         r"""Calculates AC power from p_dc using the inverter model indicated
@@ -2964,8 +2967,8 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     return out
 
 
-def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
-             saturation_current, photocurrent, method='lambertw'):
+def v_from_i(current, photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth, method='lambertw'):
     '''
     Device voltage at the given device current for the single diode model.
 
@@ -2979,17 +2982,33 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     the caller's responsibility to ensure that the arguments are all float64
     and within the proper ranges.
 
+    .. versionchanged:: 0.10.0
+       The function's arguments have been reordered.
+
     Parameters
     ----------
-    resistance_shunt : numeric
-        Shunt resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rsh``.
-        0 < resistance_shunt <= numpy.inf
+    current : numeric
+        The current in amperes under desired IV curve conditions.
+
+    photocurrent : numeric
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
+
+    saturation_current : numeric
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
         0 <= resistance_series < numpy.inf
+
+    resistance_shunt : numeric
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
+        0 < resistance_shunt <= numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -3000,19 +3019,6 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
         0 < nNsVth
-
-    current : numeric
-        The current in amperes under desired IV curve conditions.
-
-    saturation_current : numeric
-        Diode saturation current in amperes under desired IV curve
-        conditions. Often abbreviated ``I_0``.
-        0 < saturation_current
-
-    photocurrent : numeric
-        Light-generated current (photocurrent) in amperes under desired
-        IV curve conditions. Often abbreviated ``I_L``.
-        0 <= photocurrent
 
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
@@ -3030,8 +3036,8 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     '''
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_v_from_i(
-            resistance_shunt, resistance_series, nNsVth, current,
-            saturation_current, photocurrent
+            current, photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth
         )
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
@@ -3052,32 +3058,48 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         return V
 
 
-def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-             saturation_current, photocurrent, method='lambertw'):
+def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth, method='lambertw'):
     '''
     Device current at the given device voltage for the single diode model.
 
     Uses the single diode model (SDM) as described in, e.g.,
-     Jain and Kapoor 2004 [1]_.
+    Jain and Kapoor 2004 [1]_.
     The solution is per Eq 2 of [1] except when resistance_series=0,
-     in which case the explict solution for current is used.
+    in which case the explict solution for current is used.
     Ideal device parameters are specified by resistance_shunt=np.inf and
-     resistance_series=0.
+    resistance_series=0.
     Inputs to this function can include scalars and pandas.Series, but it is
-     the caller's responsibility to ensure that the arguments are all float64
-     and within the proper ranges.
+    the caller's responsibility to ensure that the arguments are all float64
+    and within the proper ranges.
+
+    .. versionchanged:: 0.10.0
+       The function's arguments have been reordered.
 
     Parameters
     ----------
-    resistance_shunt : numeric
-        Shunt resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rsh``.
-        0 < resistance_shunt <= numpy.inf
+    voltage : numeric
+        The voltage in Volts under desired IV curve conditions.
+
+    photocurrent : numeric
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
+
+    saturation_current : numeric
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
         0 <= resistance_series < numpy.inf
+
+    resistance_shunt : numeric
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
+        0 < resistance_shunt <= numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -3088,19 +3110,6 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
         0 < nNsVth
-
-    voltage : numeric
-        The voltage in Volts under desired IV curve conditions.
-
-    saturation_current : numeric
-        Diode saturation current in amperes under desired IV curve
-        conditions. Often abbreviated ``I_0``.
-        0 < saturation_current
-
-    photocurrent : numeric
-        Light-generated current (photocurrent) in amperes under desired
-        IV curve conditions. Often abbreviated ``I_L``.
-        0 <= photocurrent
 
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
@@ -3118,8 +3127,8 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     '''
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_i_from_v(
-            resistance_shunt, resistance_series, nNsVth, voltage,
-            saturation_current, photocurrent
+            voltage, photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth
         )
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'

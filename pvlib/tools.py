@@ -472,132 +472,23 @@ def _first_order_centered_difference(f, x0, dx=DX, args=()):
     return df / 2 / dx
 
 
-def match_type_array_like(x, type_of):
+def get_pandas_index(*args):
     """
-    Convert an array-like value to the array-like Python type of another. The
-    dtype of the converted value is preserved.
-
-    Parameters
-    ----------
-    x: array-like
-        The value whose type will be converted.
-
-    type_of: array-like
-        The value with the type to convert to.
-
-    Returns
-    -------
-        ``x`` converted to the array-like Python type of ``type_of``.
-    """
-    if type(x) is type(type_of):
-        return x
-    if isinstance(type_of, np.ndarray):
-        return x.to_numpy()
-    try:
-        return pd.Series(data=x, index=type_of.index)
-    except ValueError:  # data and index have different lengths
-        return pd.Series(data=x)
-
-
-def match_type_numeric(x, type_of, match_shape=True):
-    """
-    Convert a numeric-type value to the numeric Python type of another. The
-    dtype of the converted value is preserved.
-
-    Parameters
-    ----------
-    x: numeric
-        The value whose type will be converted.
-
-    type_of: numeric
-        The value with tye type to convert to.
-
-    match_shape: bool, default True
-        Let ``x = args[i]`` for some ``i``.
-        If ``x`` is a scalar and ``args[0]`` is an array-like, convert ``x`` to
-        an array-like with shape ``args[0].shape`` if
-        ``type(args[0]) is np.ndarray`` or with shape ``(args[0].size,)`` if
-        ``type(args[0]) is pd.Series``.
-
-    Returns
-    -------
-    numeric
-        ``x`` converted to the numeric Python type of ``type_of``.
-
-    Notes
-    -----
-        If ``x`` and ``type_of`` are both scalars, no type conversion is done
-        because that could change the dtype of ``x``. For example, if
-        ``type(x) is int`` and ``type(type_of)`` is float, the return type is
-        still ``int``.
-    """
-    a_is_array_like = isinstance(x, (np.ndarray, pd.Series))
-    type_of_is_array_like = isinstance(type_of, (np.ndarray, pd.Series))
-    if a_is_array_like and type_of_is_array_like:
-        return match_type_array_like(x, type_of)
-    if a_is_array_like:
-        return _scalar_out(x)
-    if type_of_is_array_like:
-        if isinstance(type_of, np.ndarray):
-            shape = type_of.shape if match_shape else 1
-            return np.full(shape, x, dtype=type(x))
-        index = type_of.index if match_shape else [type_of.index[0]]
-        return pd.Series(data=x, index=index)
-    return x  # x and type_of are both scalars
-
-
-def match_type_all_numeric(*args, match_shape=True):
-    """
-    Convert all numeric-type values to the Python type of the first numeric
-    value passed. The dtype of the converted values is preserved. See
-    :py:func:`pvlib.tools.match_type_numeric` for more details.
-
-    Parameters
-    ----------
-    args: tuple(numeric)
-        A tuple of numeric-type values.
-
-    match_shape: bool, default True
-        Let ``x = args[i]`` for some ``i``.
-        If ``x`` is a scalar and ``args[0]`` is an array-like, convert ``x`` to
-        an array-like with shape ``args[0].shape`` if
-        ``type(args[0]) is np.ndarray`` or with shape ``(args[0].size,)`` if
-        ``type(args[0]) is pd.Series``.
-
-    Returns
-    -------
-    tuple(numeric)
-        All of the passed values converted to the numeric Python type of the
-        first value passed.
-    """
-    type_of = args[0]
-    converted_values = type_of, *(
-        match_type_numeric(x, type_of, match_shape=match_shape)
-        for x in args[1:]
-    )
-    return converted_values
-
-
-def args_clear_pdSeries_name(func):
-    """
-    Decorator for functions that take dict-like, numeric, or array-like
+    Get the index of the first pandas DataFrame or Series in a list of
     arguments.
 
-    If a pd.Series is passed to the function, pd.Series.name is cleared
-    using pd.Series.rename. This does not rename the original pd.Series
-    passed, and does not copy its data.
+    Parameters
+    ----------
+    args: positional arguments
+        The numeric values to scan for a pandas index.
 
-    This still allows the decorated function to name returned pd.Series.
+    Returns
+    -------
+    A pandas index or None
+        None is returned if there are no pandas DataFrames or Series is the
+        args list.
     """
-    @functools.wraps(func)
-    def f(*args, **kwargs):
-        formatted_args = []
-        for a in args:
-            if isinstance(a, pd.Series):
-                a = a.rename(None)
-            formatted_args.append(a)
-        for k, v in kwargs.items():
-            if isinstance(v, pd.Series):
-                kwargs[k] = v.rename(None)
-        return func(*formatted_args, **kwargs)
-    return f
+    return next(
+        (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))),
+        None
+    )

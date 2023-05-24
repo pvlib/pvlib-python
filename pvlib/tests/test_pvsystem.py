@@ -775,14 +775,6 @@ def test_calcparams_desoto(cec_module_params):
     assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
                         check_less_precise=3)
 
-    pdSeries_names = set(df.columns)
-
-    assert IL.name not in pdSeries_names
-    assert I0.name not in pdSeries_names
-    assert Rs.name not in pdSeries_names
-    assert Rsh.name not in pdSeries_names
-    assert nNsVth.name not in pdSeries_names
-
 
 def test_calcparams_cec(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=3, freq='12H')

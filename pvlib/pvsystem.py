@@ -1843,7 +1843,6 @@ class SingleAxisTrackerMount(AbstractMount):
         return tracking_data
 
 
-@tools.args_clear_pdSeries_name
 def calcparams_desoto(effective_irradiance, temp_cell,
                       alpha_sc, a_ref, I_L_ref, I_o_ref, R_sh_ref, R_s,
                       EgRef=1.121, dEgdT=-0.0002677,
@@ -2041,7 +2040,17 @@ def calcparams_desoto(effective_irradiance, temp_cell,
 
     Rs = R_s
 
-    return tools.match_type_all_numeric(IL, I0, Rs, Rsh, nNsVth)
+    numeric_args = (effective_irradiance, temp_cell)
+    out = (IL, I0, Rs, Rsh, nNsVth)
+
+    if all(map(np.isscalar, numeric_args)):
+        return out
+
+    index = tools.get_pandas_index(*numeric_args)
+    if index is not None:
+        return tuple(pd.Series(a, index=index).rename(None) for a in out)
+
+    return np.broadcast_arrays(*out)
 
 
 def calcparams_cec(effective_irradiance, temp_cell,
@@ -2160,7 +2169,6 @@ def calcparams_cec(effective_irradiance, temp_cell,
                              irrad_ref=irrad_ref, temp_ref=temp_ref)
 
 
-@tools.args_clear_pdSeries_name
 def calcparams_pvsyst(effective_irradiance, temp_cell,
                       alpha_sc, gamma_ref, mu_gamma,
                       I_L_ref, I_o_ref,
@@ -2297,7 +2305,17 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
 
     Rs = R_s
 
-    return tools.match_type_all_numeric(IL, I0, Rs, Rsh, nNsVth)
+    numeric_args = (effective_irradiance, temp_cell)
+    out = (IL, I0, Rs, Rsh, nNsVth)
+
+    if all(map(np.isscalar, numeric_args)):
+        return out
+
+    index = tools.get_pandas_index(*numeric_args)
+    if index is not None:
+        return tuple(pd.Series(a, index=index).rename(None) for a in out)
+
+    return np.broadcast_arrays(*out)
 
 
 def retrieve_sam(name=None, path=None):

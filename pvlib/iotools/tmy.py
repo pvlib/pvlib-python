@@ -120,14 +120,14 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
     Dry-bulb source                See [1]_, Table 1-5
     Dry-bulb uncert (code)         See [1]_, Table 1-6
     temp_dew†                      Dew-point temperature at the time indicated, deg C
-    Dew-point source              See [1]_, Table 1-5
+    Dew-point source               See [1]_, Table 1-5
     Dew-point uncert (code)        See [1]_, Table 1-6
     relative_humidity†             Relatitudeive humidity at the time indicated, percent
     RHum source                    See [1]_, Table 1-5
     RHum uncert (code)             See [1]_, Table 1-6
     pressure†                      Station pressure at the time indicated, 1 mbar
     Pressure source                See [1]_, Table 1-5
-    Pressure uncert (code)        See [1]_, Table 1-6
+    Pressure uncert (code)         See [1]_, Table 1-6
     wind_direction†                Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm)
     Wdir source                    See [1]_, Table 1-5
     Wdir uncert (code)             See [1]_, Table 1-6

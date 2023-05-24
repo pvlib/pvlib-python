@@ -1,6 +1,6 @@
 """
 Simulating PV system DC output using the ADR module efficiency model
-===========================================================
+====================================================================
 
 Time series processing with the ADR model is really easy.
 
@@ -29,10 +29,12 @@ from pvlib.pvarray import pvefficiency_adr
 PVLIB_DIR = pvlib.__path__[0]
 DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
 
-tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990)
+tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990,
+                                  map_variables=True)
 
-df = pd.DataFrame({'ghi': tmy['GHI'], 'dhi': tmy['DHI'], 'dni': tmy['DNI'],
-                   'temp_air': tmy['DryBulb'], 'wind_speed': tmy['Wspd'],
+df = pd.DataFrame({'ghi': tmy['ghi'], 'dhi': tmy['dhi'], 'dni': tmy['dni'],
+                   'temp_air': tmy['temp_air'],
+                   'wind_speed': tmy['wind_speed'],
                    })
 
 # %%

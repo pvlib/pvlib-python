@@ -2233,8 +2233,8 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     return data
 
 
-def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
-                    max_zenith=87):
+def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
+                    min_cos_zenith=0.065, max_zenith=87):
     """Estimate DNI and DHI from GHI using the Orgill and Hollands model.
 
     The Orgill and Hollands model [1]_ estimates the diffuse fraction DF from
@@ -2251,6 +2251,8 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
     datetime_or_doy : int, float, array, pd.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+    dni_extra : None or numeric, default None
+        Extraterrestrial direct normal irradiance. [W/m2]
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
         clearness index `kt`. Equivalent to zenith = 86.273 degrees.
@@ -2264,9 +2266,9 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
 
     References
     ----------
-    .. [1] Orgill, J.F., Hollands, K.G.T., Correlation equation for hourly diffuse
-       radiation on a horizontal surface, Solar Energy 19(4), pp 357–359, 1977.
-       Eqs. 3(a), 3(b) and 3(c)
+    .. [1] Orgill, J.F., Hollands, K.G.T., Correlation equation for hourly
+    diffuse radiation on a horizontal surface, Solar Energy 19(4), pp 357–359,
+    1977. Eqs. 3(a), 3(b) and 3(c)
 
     See Also
     --------
@@ -2276,7 +2278,8 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
     boland
 
     """
-    dni_extra = get_extra_radiation(datetime_or_doy)
+    if dni_extra is None:
+        dni_extra = get_extra_radiation(datetime_or_doy)
 
     kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
                          max_clearness_index=1)

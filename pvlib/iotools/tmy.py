@@ -3,6 +3,25 @@
 import datetime
 import re
 import pandas as pd
+import warnings
+from pvlib._deprecation import pvlibDeprecationWarning
+
+# Dictionary mapping TMY3 names to pvlib names
+VARIABLE_MAP = {
+    'GHI (W/m^2)': 'ghi',
+    'ETR (W/m^2)': 'ghi_extra',
+    'DNI (W/m^2)': 'dni',
+    'ETRN (W/m^2)': 'dni_extra',
+    'DHI (W/m^2)': 'dhi',
+    'Pressure (mbar)': 'pressure',
+    'Wdir (degrees)': 'wind_direction',
+    'Wspd (m/s)': 'wind_speed',
+    'Dry-bulb (C)': 'temp_air',
+    'Dew-point (C)': 'temp_dew',
+    'RHum (%)': 'relative_humidity',
+    'Alb (unitless)': 'albedo',
+    'Pwat (cm)': 'precipitable_water'
+}
 
 
 def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
@@ -24,9 +43,13 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
         If supplied, the year of the index will be set to `coerce_year`, except
         for the last index value which will be set to the *next* year so that
         the index increases monotonically.
-    recolumn : bool, default True
+    map_variables : bool, default None
+        When True, renames columns of the DataFrame to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
+    recolumn : bool (deprecated, use map_variables instead)
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
+        Cannot be used in combination with ``map_variables``.
     encoding : str, optional
         Encoding of the file. For files that contain non-UTF8 characters it may
         be necessary to specify an alternative encoding, e.g., for
@@ -62,80 +85,83 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     USAF              Int     USAF identifier
     ===============   ======  ===================
 
-    =====================       ======================================================================================================================================================
-    field                       description
-    =====================       ======================================================================================================================================================
-    Index                       A pandas datetime index. NOTE, the index is timezone aware, and times are set to local standard time (daylight savings is not included)
-    ETR                         Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    ETRN                        Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    GHI                         Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    GHISource                   See [1]_, Table 1-4
-    GHIUncertainty              Uncertainty based on random and bias error estimates see [2]_
-    DNI                         Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
-    DNISource                   See [1]_, Table 1-4
-    DNIUncertainty              Uncertainty based on random and bias error estimates see [2]_
-    DHI                         Amount of diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-    DHISource                   See [1]_, Table 1-4
-    DHIUncertainty              Uncertainty based on random and bias error estimates see [2]_
-    GHillum                     Avg. total horizontal illuminance recv'd during the 60 minutes prior to timestamp, lx
-    GHillumSource               See [1]_, Table 1-4
-    GHillumUncertainty          Uncertainty based on random and bias error estimates see [2]_
-    DNillum                     Avg. direct normal illuminance recv'd during the 60 minutes prior to timestamp, lx
-    DNillumSource               See [1]_, Table 1-4
-    DNillumUncertainty          Uncertainty based on random and bias error estimates see [2]_
-    DHillum                     Avg. horizontal diffuse illuminance recv'd during the 60 minutes prior to timestamp, lx
-    DHillumSource               See [1]_, Table 1-4
-    DHillumUncertainty          Uncertainty based on random and bias error estimates see [2]_
-    Zenithlum                   Avg. luminance at the sky's zenith during the 60 minutes prior to timestamp, cd/m^2
-    ZenithlumSource             See [1]_, Table 1-4
-    ZenithlumUncertainty        Uncertainty based on random and bias error estimates see [1]_ section 2.10
-    TotCld                      Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky
-    TotCldSource                See [1]_, Table 1-5
-    TotCldUncertainty           See [1]_, Table 1-6
-    OpqCld                      Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky
-    OpqCldSource                See [1]_, Table 1-5
-    OpqCldUncertainty           See [1]_, Table 1-6
-    DryBulb                     Dry bulb temperature at the time indicated, deg C
-    DryBulbSource               See [1]_, Table 1-5
-    DryBulbUncertainty          See [1]_, Table 1-6
-    DewPoint                    Dew-point temperature at the time indicated, deg C
-    DewPointSource              See [1]_, Table 1-5
-    DewPointUncertainty         See [1]_, Table 1-6
-    RHum                        Relatitudeive humidity at the time indicated, percent
-    RHumSource                  See [1]_, Table 1-5
-    RHumUncertainty             See [1]_, Table 1-6
-    Pressure                    Station pressure at the time indicated, 1 mbar
-    PressureSource              See [1]_, Table 1-5
-    PressureUncertainty         See [1]_, Table 1-6
-    Wdir                        Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm)
-    WdirSource                  See [1]_, Table 1-5
-    WdirUncertainty             See [1]_, Table 1-6
-    Wspd                        Wind speed at the time indicated, meter/second
-    WspdSource                  See [1]_, Table 1-5
-    WspdUncertainty             See [1]_, Table 1-6
-    Hvis                        Distance to discernable remote objects at time indicated (7777=unlimited), meter
-    HvisSource                  See [1]_, Table 1-5
-    HvisUncertainty             See [1]_, Table 1-6
-    CeilHgt                     Height of cloud base above local terrain (7777=unlimited), meter
-    CeilHgtSource               See [1]_, Table 1-5
-    CeilHgtUncertainty          See [1]_, Table 1-6
-    Pwat                        Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm
-    PwatSource                  See [1]_, Table 1-5
-    PwatUncertainty             See [1]_, Table 1-6
-    AOD                         The broadband aerosol optical depth per unit of air mass due to extinction by aerosol component of atmosphere, unitless
-    AODSource                   See [1]_, Table 1-5
-    AODUncertainty              See [1]_, Table 1-6
-    Alb                         The ratio of reflected solar irradiance to global horizontal irradiance, unitless
-    AlbSource                   See [1]_, Table 1-5
-    AlbUncertainty              See [1]_, Table 1-6
-    Lprecipdepth                The amount of liquid precipitation observed at indicated time for the period indicated in the liquid precipitation quantity field, millimeter
-    Lprecipquantity             The period of accumulatitudeion for the liquid precipitation depth field, hour
-    LprecipSource               See [1]_, Table 1-5
-    LprecipUncertainty          See [1]_, Table 1-6
-    PresWth                     Present weather code, see [2]_.
-    PresWthSource               Present weather code source, see [2]_.
-    PresWthUncertainty          Present weather code uncertainty, see [2]_.
-    =====================       ======================================================================================================================================================
+
+    ========================       ======================================================================================================================================================
+    field                          description
+    ========================       ======================================================================================================================================================
+    **† denotes variables that are mapped when `map_variables` is True**
+    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Index                          A pandas datetime index. NOTE, the index is timezone aware, and times are set to local standard time (daylight savings is not included)
+    ghi_extra†                     Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+    dni_extra†                     Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+    ghi†                           Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+    GHI source                     See [1]_, Table 1-4
+    GHI uncert (%)                 Uncertainty based on random and bias error estimates see [2]_
+    dni†                           Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
+    DNI source                     See [1]_, Table 1-4
+    DNI uncert (%)                 Uncertainty based on random and bias error estimates see [2]_
+    dhi†                           Amount of diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+    DHI source                     See [1]_, Table 1-4
+    DHI uncert (%)                 Uncertainty based on random and bias error estimates see [2]_
+    GH illum (lx)                  Avg. total horizontal illuminance recv'd during the 60 minutes prior to timestamp, lx
+    GH illum source                See [1]_, Table 1-4
+    GH illum uncert (%)            Uncertainty based on random and bias error estimates see [2]_
+    DN illum (lx)                  Avg. direct normal illuminance recv'd during the 60 minutes prior to timestamp, lx
+    DN illum source                See [1]_, Table 1-4
+    DN illum uncert (%)            Uncertainty based on random and bias error estimates see [2]_
+    DH illum (lx)                  Avg. horizontal diffuse illuminance recv'd during the 60 minutes prior to timestamp, lx
+    DH illum source                See [1]_, Table 1-4
+    DH illum uncert (%)            Uncertainty based on random and bias error estimates see [2]_
+    Zenith lum (cd/m^2)            Avg. luminance at the sky's zenith during the 60 minutes prior to timestamp, cd/m^2
+    Zenith lum source              See [1]_, Table 1-4
+    Zenith lum uncert (%)          Uncertainty based on random and bias error estimates see [1]_ section 2.10
+    TotCld (tenths)                Amount of sky dome covered by clouds or obscuring phenonema at time stamp, tenths of sky
+    TotCld source                  See [1]_, Table 1-5
+    TotCld uncert (code)           See [1]_, Table 1-6
+    OpqCld (tenths)                Amount of sky dome covered by clouds or obscuring phenonema that prevent observing the sky at time stamp, tenths of sky
+    OpqCld source                  See [1]_, Table 1-5
+    OpqCld uncert (code)           See [1]_, Table 1-6
+    temp_air†                      Dry bulb temperature at the time indicated, deg C
+    Dry-bulb source                See [1]_, Table 1-5
+    Dry-bulb uncert (code)         See [1]_, Table 1-6
+    temp_dew†                      Dew-point temperature at the time indicated, deg C
+    Dew-point source               See [1]_, Table 1-5
+    Dew-point uncert (code)        See [1]_, Table 1-6
+    relative_humidity†             Relatitudeive humidity at the time indicated, percent
+    RHum source                    See [1]_, Table 1-5
+    RHum uncert (code)             See [1]_, Table 1-6
+    pressure†                      Station pressure at the time indicated, 1 mbar
+    Pressure source                See [1]_, Table 1-5
+    Pressure uncert (code)         See [1]_, Table 1-6
+    wind_direction†                Wind direction at time indicated, degrees from north (360 = north; 0 = undefined,calm)
+    Wdir source                    See [1]_, Table 1-5
+    Wdir uncert (code)             See [1]_, Table 1-6
+    wind_speed†                    Wind speed at the time indicated, meter/second
+    Wspd source                    See [1]_, Table 1-5
+    Wspd uncert (code)             See [1]_, Table 1-6
+    Hvis (m)                       Distance to discernable remote objects at time indicated (7777=unlimited), meter
+    Hvis source                    See [1]_, Table 1-5
+    Hvis uncert (coe)              See [1]_, Table 1-6
+    CeilHgt (m)                    Height of cloud base above local terrain (7777=unlimited), meter
+    CeilHgt source                 See [1]_, Table 1-5
+    CeilHgt uncert (code)          See [1]_, Table 1-6
+    precipitable_water†            Total precipitable water contained in a column of unit cross section from earth to top of atmosphere, cm
+    Pwat source                    See [1]_, Table 1-5
+    Pwat uncert (code)             See [1]_, Table 1-6
+    AOD                            The broadband aerosol optical depth per unit of air mass due to extinction by aerosol component of atmosphere, unitless
+    AOD source                     See [1]_, Table 1-5
+    AOD uncert (code)              See [1]_, Table 1-6
+    albedo†                        The ratio of reflected solar irradiance to global horizontal irradiance, unitless
+    Alb source                     See [1]_, Table 1-5
+    Alb uncert (code)              See [1]_, Table 1-6
+    Lprecip depth (mm)             The amount of liquid precipitation observed at indicated time for the period indicated in the liquid precipitation quantity field, millimeter
+    Lprecip quantity (hr)          The period of accumulatitudeion for the liquid precipitation depth field, hour
+    Lprecip source                 See [1]_, Table 1-5
+    Lprecip uncert (code)          See [1]_, Table 1-6
+    PresWth (METAR code)           Present weather code, see [2]_.
+    PresWth source                 Present weather code source, see [2]_.
+    PresWth uncert (code)          Present weather code uncertainty, see [2]_.
+    ========================       ======================================================================================================================================================
 
     .. admonition:: Midnight representation
 
@@ -206,9 +232,26 @@ def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
     data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h') \
         + pd.to_timedelta(minutes, unit='min')
-
-    if recolumn:
-        data = _recolumn(data)  # rename to standard column names
+    # shouldnt' specify both recolumn and map_variables
+    if recolumn is not None and map_variables is not None:
+        msg = "`map_variables` and `recolumn` cannot both be specified"
+        raise ValueError(msg)
+    elif map_variables is None and recolumn is not None:
+        warnings.warn(
+            'The recolumn parameter is deprecated and will be removed in '
+            'pvlib 0.11.0. Use `map_variables` instead, although note that '
+            'its behavior is different from `recolumn`.',
+            pvlibDeprecationWarning)
+    elif map_variables is None and recolumn is None:
+        warnings.warn(
+            'TMY3 variable names will be renamed to pvlib conventions by '
+            'default starting in pvlib 0.11.0. Specify map_variables=True '
+            'to enable that behavior now, or specify map_variables=False '
+            'to hide this warning.', pvlibDeprecationWarning)
+    if map_variables:
+        data = data.rename(columns=VARIABLE_MAP)
+    elif recolumn or (recolumn is None and map_variables is None):
+        data = _recolumn(data)
 
     data = data.tz_localize(int(meta['TZ'] * 3600))
 

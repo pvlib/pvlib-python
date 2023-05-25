@@ -2194,7 +2194,7 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     dirint
     disc
     orgill_hollands
-    bolland
+    boland
     """
 
     dni_extra = get_extra_radiation(datetime_or_doy)

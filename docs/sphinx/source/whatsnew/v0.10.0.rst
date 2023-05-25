@@ -21,7 +21,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Added .pan/.ond reader function :py:func:'pvlib.iotools.panond'
+* Added .pan/.ond reader function
+:py:func:`pvlib.iotools.panond`
+(:issue:`1747` )
 
 Bug fixes
 ~~~~~~~~~

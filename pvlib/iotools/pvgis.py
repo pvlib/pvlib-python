@@ -45,7 +45,7 @@ VARIABLE_MAP = {
 
 def get_pvgis_hourly(latitude, longitude, start=None, end=None,
                      raddatabase=None, components=True,
-                     surface_tilt=0, surface_azimuth=0,
+                     surface_tilt=0, surface_azimuth=180,
                      outputformat='json',
                      usehorizon=True, userhorizon=None,
                      pvcalculation=False,
@@ -76,9 +76,15 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         Otherwise only global irradiance is returned.
     surface_tilt: float, default: 0
         Tilt angle from horizontal plane. Ignored for two-axis tracking.
-    surface_azimuth: float, default: 0
-        Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
-        -90: east. Ignored for tracking systems.
+    surface_azimuth: float, default: 180
+        Orientation (azimuth angle) of the (fixed) plane. Counter-clockwise
+        from north (north=0, south=180). This is offset 180 degrees from
+        the convention used by PVGIS. Ignored for tracking systems.
+
+        .. versionchanged:: 0.10.0
+           The `surface_azimuth` parameter now follows the pvlib convention, which
+           is counterclockwise from north. However, the convention used by the
+           PVGIS website and pvlib<=0.9.5 is offset by 180 degrees.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None
@@ -144,6 +150,13 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     time stamp convention, e.g., SARAH and SARAH2 provide instantaneous values,
     whereas values from ERA5 are averages for the hour.
 
+    Warning
+    -------
+    The azimuth orientation specified in the output metadata does not
+    correspond to the pvlib convention, but is offset 180 degrees. This is
+    despite the fact that the input parameter `surface_tilt` has to be
+    specified according to the pvlib convention.
+
     Notes
     -----
     data includes the following fields:
@@ -191,7 +204,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     """  # noqa: E501
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
-              'angle': surface_tilt, 'aspect': surface_azimuth,
+              'angle': surface_tilt, 'aspect': surface_azimuth-180,
               'pvcalculation': int(pvcalculation),
               'pvtechchoice': pvtechchoice, 'mountingplace': mountingplace,
               'trackingtype': trackingtype, 'components': int(components),
@@ -314,6 +327,11 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         the inputs
     metadata : dict
         metadata
+
+    Warning
+    -------
+    The azimuth orientation specified in the output metadata does not
+    correspond to the pvlib convention, but is offset 180 degrees.
 
     Raises
     ------

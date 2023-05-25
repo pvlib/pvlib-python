@@ -456,43 +456,32 @@ def julian_ephemeris_millennium(julian_ephemeris_century):
     return jme
 
 
+@jcompile(nopython=True)
+def sum_mult_cos_add_mult(arr, x):
+    # shared calculation used for heliocentric longitude, latitude, and radius
+    s = 0
+    for row in range(arr.shape[0]):
+        s += arr[row, 0] * np.cos(arr[row, 1] + arr[row, 2] * x)
+    return s
+
 @jcompile('float64(float64)', nopython=True)
 def heliocentric_longitude(jme):
-    l0 = 0.0
-    l1 = 0.0
-    l2 = 0.0
-    l3 = 0.0
-    l4 = 0.0
-    l5 = 0.0
-
-    for row in range(L0.shape[0]):
-        l0 += L0[row, 0] * np.cos(L0[row, 1] + L0[row, 2] * jme)
-    for row in range(L1.shape[0]):
-        l1 += L1[row, 0] * np.cos(L1[row, 1] + L1[row, 2] * jme)
-    for row in range(L2.shape[0]):
-        l2 += L2[row, 0] * np.cos(L2[row, 1] + L2[row, 2] * jme)
-    for row in range(L3.shape[0]):
-        l3 += L3[row, 0] * np.cos(L3[row, 1] + L3[row, 2] * jme)
-    for row in range(L4.shape[0]):
-        l4 += L4[row, 0] * np.cos(L4[row, 1] + L4[row, 2] * jme)
-    for row in range(L5.shape[0]):
-        l5 += L5[row, 0] * np.cos(L5[row, 1] + L5[row, 2] * jme)
+    l0 = sum_mult_cos_add_mult(L0, jme)
+    l1 = sum_mult_cos_add_mult(L1, jme)
+    l2 = sum_mult_cos_add_mult(L2, jme)
+    l3 = sum_mult_cos_add_mult(L3, jme)
+    l4 = sum_mult_cos_add_mult(L4, jme)
+    l5 = sum_mult_cos_add_mult(L5, jme)
 
     l_rad = (l0 + l1 * jme + l2 * jme**2 + l3 * jme**3 + l4 * jme**4 +
              l5 * jme**5)/10**8
     l = np.rad2deg(l_rad)
     return l % 360
 
-
 @jcompile('float64(float64)', nopython=True)
 def heliocentric_latitude(jme):
-    b0 = 0.0
-    b1 = 0.0
-    for row in range(B0.shape[0]):
-        b0 += B0[row, 0] * np.cos(B0[row, 1] + B0[row, 2] * jme)
-    for row in range(B1.shape[0]):
-        b1 += B1[row, 0] * np.cos(B1[row, 1] + B1[row, 2] * jme)
-
+    b0 = sum_mult_cos_add_mult(B0, jme)
+    b1 = sum_mult_cos_add_mult(B1, jme)
 
     b_rad = (b0 + b1 * jme)/10**8
     b = np.rad2deg(b_rad)
@@ -501,21 +490,11 @@ def heliocentric_latitude(jme):
 
 @jcompile('float64(float64)', nopython=True)
 def heliocentric_radius_vector(jme):
-    r0 = 0.0
-    r1 = 0.0
-    r2 = 0.0
-    r3 = 0.0
-    r4 = 0.0
-    for row in range(R0.shape[0]):
-        r0 += R0[row, 0] * np.cos(R0[row, 1] + R0[row, 2] * jme)
-    for row in range(R1.shape[0]):
-        r1 += R1[row, 0] * np.cos(R1[row, 1] + R1[row, 2] * jme)
-    for row in range(R2.shape[0]):
-        r2 += R2[row, 0] * np.cos(R2[row, 1] + R2[row, 2] * jme)
-    for row in range(R3.shape[0]):
-        r3 += R3[row, 0] * np.cos(R3[row, 1] + R3[row, 2] * jme)
-    for row in range(R4.shape[0]):
-        r4 += R4[row, 0] * np.cos(R4[row, 1] + R4[row, 2] * jme)
+    r0 = sum_mult_cos_add_mult(R0, jme)
+    r1 = sum_mult_cos_add_mult(R1, jme)
+    r2 = sum_mult_cos_add_mult(R2, jme)
+    r3 = sum_mult_cos_add_mult(R3, jme)
+    r4 = sum_mult_cos_add_mult(R4, jme)
 
     r = (r0 + r1 * jme + r2 * jme**2 + r3 * jme**3 + r4 * jme**4)/10**8
     return r

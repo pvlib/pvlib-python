@@ -468,14 +468,6 @@ def julian_ephemeris_millennium(julian_ephemeris_century):
     return jme
 
 
-def mult_cos_add_mult(a, b, c, jme, scratch):
-    np.multiply(c, jme, out=scratch)
-    np.add(b, scratch, out=scratch)
-    np.cos(scratch, out=scratch)
-    np.multiply(a, scratch, out=scratch)
-    return scratch
-
-
 @jcompile('float64(float64)', nopython=True)
 def heliocentric_longitude(jme):
     l0 = 0.0
@@ -485,38 +477,36 @@ def heliocentric_longitude(jme):
     l4 = 0.0
     l5 = 0.0
 
-    scratch = np.empty_like(jme)
-
     for row in range(64):
-        l0 += mult_cos_add_mult(HELIO_LONG_TABLE[0, row, 0],
-                                HELIO_LONG_TABLE[0, row, 1],
-                                HELIO_LONG_TABLE[0, row, 2],
-                                jme, scratch)
+        l0 += (HELIO_LONG_TABLE[0, row, 0]
+               * np.cos(HELIO_LONG_TABLE[0, row, 1]
+                        + HELIO_LONG_TABLE[0, row, 2] * jme)
+               )
     for row in range(34):
-        l1 += mult_cos_add_mult(HELIO_LONG_TABLE[1, row, 0],
-                                HELIO_LONG_TABLE[1, row, 1],
-                                HELIO_LONG_TABLE[1, row, 2],
-                                jme, scratch)
+        l1 += (HELIO_LONG_TABLE[1, row, 0]
+               * np.cos(HELIO_LONG_TABLE[1, row, 1]
+                        + HELIO_LONG_TABLE[1, row, 2] * jme)
+               )
     for row in range(20):
-        l2 += mult_cos_add_mult(HELIO_LONG_TABLE[2, row, 0],
-                                HELIO_LONG_TABLE[2, row, 1],
-                                HELIO_LONG_TABLE[2, row, 2],
-                                jme, scratch)
+        l2 += (HELIO_LONG_TABLE[2, row, 0]
+               * np.cos(HELIO_LONG_TABLE[2, row, 1]
+                        + HELIO_LONG_TABLE[2, row, 2] * jme)
+               )
     for row in range(7):
-        l3 += mult_cos_add_mult(HELIO_LONG_TABLE[3, row, 0],
-                                HELIO_LONG_TABLE[3, row, 1],
-                                HELIO_LONG_TABLE[3, row, 2],
-                                jme, scratch)
+        l3 += (HELIO_LONG_TABLE[3, row, 0]
+               * np.cos(HELIO_LONG_TABLE[3, row, 1]
+                        + HELIO_LONG_TABLE[3, row, 2] * jme)
+               )
     for row in range(3):
-        l4 += mult_cos_add_mult(HELIO_LONG_TABLE[4, row, 0],
-                                HELIO_LONG_TABLE[4, row, 1],
-                                HELIO_LONG_TABLE[4, row, 2],
-                                jme, scratch)
+        l4 += (HELIO_LONG_TABLE[4, row, 0]
+               * np.cos(HELIO_LONG_TABLE[4, row, 1]
+                        + HELIO_LONG_TABLE[4, row, 2] * jme)
+               )
     for row in range(1):
-        l5 += mult_cos_add_mult(HELIO_LONG_TABLE[5, row, 0],
-                                HELIO_LONG_TABLE[5, row, 1],
-                                HELIO_LONG_TABLE[5, row, 2],
-                                jme, scratch)
+        l5 += (HELIO_LONG_TABLE[5, row, 0]
+               * np.cos(HELIO_LONG_TABLE[5, row, 1]
+                        + HELIO_LONG_TABLE[5, row, 2] * jme)
+               )
 
     l_rad = (l0 + l1 * jme + l2 * jme**2 + l3 * jme**3 + l4 * jme**4 +
              l5 * jme**5)/10**8
@@ -528,18 +518,16 @@ def heliocentric_longitude(jme):
 def heliocentric_latitude(jme):
     b0 = 0.0
     b1 = 0.0
-    scratch = np.empty_like(jme)
-
     for row in range(5):
-        b0 += mult_cos_add_mult(HELIO_LAT_TABLE[0, row, 0],
-                                HELIO_LAT_TABLE[0, row, 1],
-                                HELIO_LAT_TABLE[0, row, 2],
-                                jme, scratch)
+        b0 += (HELIO_LAT_TABLE[0, row, 0]
+               * np.cos(HELIO_LAT_TABLE[0, row, 1]
+                        + HELIO_LAT_TABLE[0, row, 2] * jme)
+               )
     for row in range(2):
-        b1 += mult_cos_add_mult(HELIO_LAT_TABLE[1, row, 0],
-                                HELIO_LAT_TABLE[1, row, 1],
-                                HELIO_LAT_TABLE[1, row, 2],
-                                jme, scratch)
+        b1 += (HELIO_LAT_TABLE[1, row, 0]
+               * np.cos(HELIO_LAT_TABLE[1, row, 1]
+                        + HELIO_LAT_TABLE[1, row, 2] * jme)
+               )
 
     b_rad = (b0 + b1 * jme)/10**8
     b = np.rad2deg(b_rad)
@@ -553,33 +541,31 @@ def heliocentric_radius_vector(jme):
     r2 = 0.0
     r3 = 0.0
     r4 = 0.0
-    scratch = np.empty_like(jme)
-
     for row in range(40):
-        r0 += mult_cos_add_mult(HELIO_RADIUS_TABLE[0, row, 0],
-                                HELIO_RADIUS_TABLE[0, row, 1],
-                                HELIO_RADIUS_TABLE[0, row, 2],
-                                jme, scratch)
+        r0 += (HELIO_RADIUS_TABLE[0, row, 0]
+               * np.cos(HELIO_RADIUS_TABLE[0, row, 1]
+                        + HELIO_RADIUS_TABLE[0, row, 2] * jme)
+               )
     for row in range(10):
-        r1 += mult_cos_add_mult(HELIO_RADIUS_TABLE[1, row, 0],
-                                HELIO_RADIUS_TABLE[1, row, 1],
-                                HELIO_RADIUS_TABLE[1, row, 2],
-                                jme, scratch)
+        r1 += (HELIO_RADIUS_TABLE[1, row, 0]
+               * np.cos(HELIO_RADIUS_TABLE[1, row, 1]
+                        + HELIO_RADIUS_TABLE[1, row, 2] * jme)
+               )
     for row in range(6):
-        r2 += mult_cos_add_mult(HELIO_RADIUS_TABLE[2, row, 0],
-                                HELIO_RADIUS_TABLE[2, row, 1],
-                                HELIO_RADIUS_TABLE[2, row, 2],
-                                jme, scratch)
+        r2 += (HELIO_RADIUS_TABLE[2, row, 0]
+               * np.cos(HELIO_RADIUS_TABLE[2, row, 1]
+                        + HELIO_RADIUS_TABLE[2, row, 2] * jme)
+               )
     for row in range(2):
-        r3 += mult_cos_add_mult(HELIO_RADIUS_TABLE[3, row, 0],
-                                HELIO_RADIUS_TABLE[3, row, 1],
-                                HELIO_RADIUS_TABLE[3, row, 2],
-                                jme, scratch)
+        r3 += (HELIO_RADIUS_TABLE[3, row, 0]
+               * np.cos(HELIO_RADIUS_TABLE[3, row, 1]
+                        + HELIO_RADIUS_TABLE[3, row, 2] * jme)
+               )
     for row in range(1):
-        r4 += mult_cos_add_mult(HELIO_RADIUS_TABLE[4, row, 0],
-                                HELIO_RADIUS_TABLE[4, row, 1],
-                                HELIO_RADIUS_TABLE[4, row, 2],
-                                jme, scratch)
+        r4 += (HELIO_RADIUS_TABLE[4, row, 0]
+               * np.cos(HELIO_RADIUS_TABLE[4, row, 1]
+                        + HELIO_RADIUS_TABLE[4, row, 2] * jme)
+               )
 
     r = (r0 + r1 * jme + r2 * jme**2 + r3 * jme**3 + r4 * jme**4)/10**8
     return r

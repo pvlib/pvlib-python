@@ -9,8 +9,9 @@ import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
 from pvlib.iotools import get_pvgis_hourly, read_pvgis_hourly
+from pvlib.iotools import get_pvgis_horizon
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal,
-                        fail_on_pvlib_version)
+                        fail_on_pvlib_version, assert_series_equal)
 from pvlib._deprecation import pvlibDeprecationWarning
 
 
@@ -507,6 +508,23 @@ def test_get_pvgis_tmy_error():
 def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
     actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
     assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_read_pvgis_horizon():
+    pvgis_data, _ = get_pvgis_horizon(35.171051, -106.465158)
+    horizon_data = pd.read_csv(DATA_DIR / 'test_read_pvgis_horizon.csv',
+                               index_col=0)
+    horizon_data = horizon_data['horizon_elevation']
+    assert_series_equal(pvgis_data, horizon_data)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_read_pvgis_horizon_invalid_coords():
+    with pytest.raises(requests.HTTPError, match='lat: Incorrect value'):
+        _, _ = get_pvgis_horizon(100, 50)  # unfeasible latitude
 
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):

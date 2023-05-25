@@ -665,3 +665,57 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         data = data.rename(columns=VARIABLE_MAP)
 
     return data, months_selected, inputs, meta
+
+
+def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
+    """Get horizon data from PVGIS.
+
+    Parameters
+    ----------
+    latitude : float
+        Latitude in degrees north
+    longitude : float
+        Longitude in degrees east
+    url: str, default: :const:`pvlib.iotools.pvgis.URL`
+        Base URL for PVGIS
+    kwargs:
+        Passed to requests.get
+
+    Returns
+    -------
+    data : pd.Series
+        Pandas Series of the retrived horizon elevation angles. Index is the
+        corresponding horizon azimuth angles.
+    metadata : dict
+        Metadata returned by PVGIS.
+
+    Notes
+    -----
+    The horizon azimuths are specified clockwise from north, e.g., south=180.
+    This is the standard pvlib convention, although the PVGIS website specifies
+    south=0.
+
+    References
+    ----------
+    .. [1] `PVGIS horizon profile tool
+       <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
+    """
+    params = {'lat': latitude, 'lon': longitude, 'outputformat': 'json'}
+    res = requests.get(url + 'printhorizon', params=params, **kwargs)
+    if not res.ok:
+        try:
+            err_msg = res.json()
+        except Exception:
+            res.raise_for_status()
+        else:
+            raise requests.HTTPError(err_msg['message'])
+    json_output = res.json()
+    metadata = json_output['meta']
+    data = pd.DataFrame(json_output['outputs']['horizon_profile'])
+    data.columns = ['horizon_azimuth', 'horizon_elevation']
+    # Convert azimuth to pvlib convention (north=0, south=180)
+    data['horizon_azimuth'] += 180
+    data.set_index('horizon_azimuth', inplace=True)
+    data = data['horizon_elevation']  # convert to pd.Series
+    data = data[data.index < 360]  # remove duplicate north point (0 and 360)
+    return data, metadata

@@ -644,24 +644,6 @@ def moon_ascending_longitude(julian_ephemeris_century):
 
 @jcompile('float64(float64, float64, float64, float64, float64, float64)',
           nopython=True)
-def longitude_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
-    delta_psi_sum = 0
-    for row in range(NUTATION_YTERM_ARRAY.shape[0]):
-        a = NUTATION_ABCD_ARRAY[row, 0]
-        b = NUTATION_ABCD_ARRAY[row, 1]
-        argsin = (NUTATION_YTERM_ARRAY[row, 0]*x0 +
-                  NUTATION_YTERM_ARRAY[row, 1]*x1 +
-                  NUTATION_YTERM_ARRAY[row, 2]*x2 +
-                  NUTATION_YTERM_ARRAY[row, 3]*x3 +
-                  NUTATION_YTERM_ARRAY[row, 4]*x4)
-        term = (a + b * julian_ephemeris_century) * np.sin(np.radians(argsin))
-        delta_psi_sum += term
-    delta_psi = delta_psi_sum*1.0/36000000
-    return delta_psi
-
-
-@jcompile('float64(float64, float64, float64, float64, float64, float64)',
-          nopython=True)
 def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     delta_psi_sum = 0.0
     delta_eps_sum = 0.0

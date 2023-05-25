@@ -27,7 +27,7 @@ def num_type(value):
         except ValueError:  # Otherwise leave as string
             value_out = value
             return value_out
-        
+
 
 def element_type(element):
     """

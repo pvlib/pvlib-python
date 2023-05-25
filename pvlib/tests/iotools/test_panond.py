@@ -1,9 +1,9 @@
-from ... import iotools
+from ...iotools import read_panond, parse_panond
 import io
 # Not sure if I am creating these test scenarios correctly
 
 fn_file = 'C:/Users/Contractor1/Downloads/CPS SCH275KTL-DO-US-800-250kW_275kVA_1.OND'
-ond_file = iotools.read_panond(fn_file)
+ond_file = read_panond(fn_file)
 
 fn_str = """PVObject_=pvGInverter
   Comment=ChintPower	CPS SCH275KTL-DO/US-800	Manufacturer 2020
@@ -153,10 +153,10 @@ fn_str = """PVObject_=pvGInverter
 End of PVObject pvGcomperter
 """
 f_obj = io.StringIO(fn_str)
-ond_str = iotools.parse_panond(f_obj)
+ond_str = parse_panond(f_obj)
 
 fn_file = 'C:/Users/Contractor1/Downloads/ET-M772BH550GL.PAN'
-mod_file = iotools.read_panond(fn_file)
+mod_file = read_panond(fn_file)
 
 fn_str = """PVObject_=pvModule
   Version=7.2
@@ -235,6 +235,6 @@ fn_str = """PVObject_=pvModule
 End of PVObject pvModule
 """
 f_obj = io.StringIO(fn_str)
-mod_str = iotools.parse_panond(f_obj)
+mod_str = parse_panond(f_obj)
 
 stop = 1

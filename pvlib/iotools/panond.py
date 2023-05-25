@@ -57,7 +57,8 @@ def parse_panond(fbuf):
       new_level = {}
       current_level[key] = new_level
       dict_levels = dict_levels[: indent_lvl_1 + 1] + [new_level]
-      #TODO: add value of indentation as a key in that new level
+      current_level = dict_levels[indent_lvl_1 + 1]
+      current_level[key] = value
 
     elif indent_lvl_2 <= indent_lvl_1: # add key/value to dict
       current_level = dict_levels[indent_lvl_1]
@@ -76,5 +77,3 @@ def read_panond(file):
   content = parse_panond(fbuf)
 
   return content
-
-

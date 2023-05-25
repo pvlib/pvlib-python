@@ -4,10 +4,11 @@ Get .PAN or .OND file data into a nested dictionary.
 
 import io
 
-def num_type(value):
-    
 
-    # Determine if a value is float, int or leave as string
+def num_type(value):
+    """
+    Determine if a value is float, int or a string
+    """
     if '.' in value:
         try:  # Detect float
             value_out = float(value)
@@ -26,11 +27,12 @@ def num_type(value):
         except ValueError:  # Otherwise leave as string
             value_out = value
             return value_out
-
+        
 
 def element_type(element):
-    # Determine if an element is a list then pass to num_type()
-
+    """
+    Determine if an element is a list then pass to num_type()
+    """
     if ',' in element:  # Detect a list
         values = element.split(',')
         element_out = []
@@ -86,11 +88,10 @@ def parse_panond(fbuf):
         indent_lvl_2 = (len(lines[i + 1]) - len(lines[i + 1].lstrip(' '))) // 2
         line_data = lines[i].split('=')
         key = line_data[0].strip()
-        # value = element_type(line_data[1].strip()) if len(line_data) > 1 else None
         if len(line_data) > 1:
             value = element_type(line_data[1].strip())
         else:
-            value = element_type = None
+            value = None
         # add a level to the dict. The key here will be ignored.
         # Not vital to file function.
         if indent_lvl_2 > indent_lvl_1:

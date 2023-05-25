@@ -2273,7 +2273,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
     dirint
     disc
     erbs
-    bolland
+    boland
 
     """
     dni_extra = get_extra_radiation(datetime_or_doy)

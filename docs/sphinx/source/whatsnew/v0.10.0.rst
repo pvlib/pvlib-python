@@ -120,6 +120,7 @@ Enhancements
   :py:func:`~pvlib.iotools.get_acis_station_data`, and
   :py:func:`~pvlib.iotools.get_acis_available_stations`. (:issue:`1293`, :pull:`1767`)
 
+* Added .pan/.ond reader function :py:func:'pvlib.iotools.panond'
 
 Bug fixes
 ~~~~~~~~~
@@ -184,3 +185,4 @@ Contributors
 * Devon Watt (:ghuser:`d-watt`)
 * Todd Karin (:ghuser:`toddkarin`)
 * Corey Pullium (:ghuser:`cpullium`)
+* Connor Krening (:ghuser:'ckrening')

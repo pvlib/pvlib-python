@@ -32,7 +32,7 @@ Enhancements
   hourly and half-hourly single-year datasets. (:issue:`1591`, :pull:`1736`)
 * :py:mod:`pvlib.spa`, and :py:func:`pvlib.solarposition.get_solarposition`/
   :py:meth:`pvlib.location.Location.get_solarposition` with ``method='nrel_numpy'``
-  or ``method='nrel_numba'``, are now roughly twice as fast as before. (:pull:`1748`)
+  or ``method='nrel_numba'``, are now 50-100% faster than before. (:pull:`1748`)
 
 
 Bug fixes

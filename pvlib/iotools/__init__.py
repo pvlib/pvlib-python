@@ -22,4 +22,4 @@ from pvlib.iotools.bsrn import parse_bsrn  # noqa: F401
 from pvlib.iotools.sodapro import get_cams  # noqa: F401
 from pvlib.iotools.sodapro import read_cams  # noqa: F401
 from pvlib.iotools.sodapro import parse_cams  # noqa: F401
-from pvlib.iotools.pvsyst import read_panond, parse_panond
+from pvlib.iotools.panond import read_panond, parse_panond

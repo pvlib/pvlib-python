@@ -942,7 +942,7 @@ def _update_io(voc, iph, io, rs, rsh, nnsvth):
 
     while maxerr > eps and k < niter:
         # Predict Voc
-        pvoc = v_from_i(0., iph, tio, rs, rsh, nnsvth)
+        pvoc = v_from_i(rsh, rs, nnsvth, 0., tio, iph)
 
         # Difference in Voc
         dvoc = pvoc - voc

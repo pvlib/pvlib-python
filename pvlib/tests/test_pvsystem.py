@@ -1079,12 +1079,11 @@ def test_v_from_i(fixture_v_from_i, method, atol):
     IL = fixture_v_from_i['IL']
     V_expected = fixture_v_from_i['V_expected']
 
-    V = pvsystem.v_from_i(I, IL, I0, Rs, Rsh, nNsVth, method=method)
-
-    assert isinstance(V, type(V_expected))
-    if isinstance(V, np.ndarray):
-        assert isinstance(V.dtype, type(V_expected.dtype))
-        assert V.shape == V_expected.shape
+    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL, method=method)
+    assert(isinstance(V, type(V_expected)))
+    if isinstance(V, type(np.ndarray)):
+        assert(isinstance(V.dtype, type(V_expected.dtype)))
+        assert(V.shape == V_expected.shape)
     assert_allclose(V, V_expected, atol=atol)
 
 
@@ -1093,7 +1092,7 @@ def test_i_from_v_from_i(fixture_v_from_i):
     Rsh = fixture_v_from_i['Rsh']
     Rs = fixture_v_from_i['Rs']
     nNsVth = fixture_v_from_i['nNsVth']
-    current = fixture_v_from_i['I']
+    I = fixture_v_from_i['I']
     I0 = fixture_v_from_i['I0']
     IL = fixture_v_from_i['IL']
     V = fixture_v_from_i['V_expected']
@@ -1101,17 +1100,15 @@ def test_i_from_v_from_i(fixture_v_from_i):
     # Convergence criteria
     atol = 1.e-11
 
-    I_expected = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth,
+    I_expected = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL,
                                    method='lambertw')
-    assert_allclose(current, I_expected, atol=atol)
-
-    current = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth)
-
-    assert isinstance(current, type(I_expected))
-    if isinstance(current, np.ndarray):
-        assert isinstance(current.dtype, type(I_expected.dtype))
-        assert current.shape == I_expected.shape
-    assert_allclose(current, I_expected, atol=atol)
+    assert_allclose(I, I_expected, atol=atol)
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
+    assert(isinstance(I, type(I_expected)))
+    if isinstance(I, type(np.ndarray)):
+        assert(isinstance(I.dtype, type(I_expected.dtype)))
+        assert(I.shape == I_expected.shape)
+    assert_allclose(I, I_expected, atol=atol)
 
 
 @pytest.fixture(params=[
@@ -1200,42 +1197,41 @@ def test_i_from_v(fixture_i_from_v, method, atol):
     IL = fixture_i_from_v['IL']
     I_expected = fixture_i_from_v['I_expected']
 
-    current = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth, method=method)
-
-    assert isinstance(current, type(I_expected))
-    if isinstance(current, np.ndarray):
-        assert isinstance(current.dtype, type(I_expected.dtype))
-        assert current.shape == I_expected.shape
-    assert_allclose(current, I_expected, atol=atol)
+    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method=method)
+    assert(isinstance(I, type(I_expected)))
+    if isinstance(I, type(np.ndarray)):
+        assert(isinstance(I.dtype, type(I_expected.dtype)))
+        assert(I.shape == I_expected.shape)
+    assert_allclose(I, I_expected, atol=atol)
 
 
 def test_PVSystem_i_from_v(mocker):
     system = pvsystem.PVSystem()
     m = mocker.patch('pvlib.pvsystem.i_from_v', autospec=True)
-    args = (7.5049875193450521, 7, 6e-7, 0.1, 20, 0.5)
+    args = (20, 0.1, 0.5, 7.5049875193450521, 6e-7, 7)
     system.i_from_v(*args)
     m.assert_called_once_with(*args)
 
 
 def test_i_from_v_size():
     with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
+        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
     with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
+        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0,
                           method='brentq')
     with pytest.raises(ValueError):
-        pvsystem.i_from_v([7.5] * 3, np.array([7., 7.]), 6e-7, 0.1, 20, 0.5,
+        pvsystem.i_from_v(20, 0.1, 0.5, [7.5] * 3, 6.0e-7, np.array([7., 7.]),
                           method='newton')
 
 
 def test_v_from_i_size():
     with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
+        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0)
     with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
+        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0,
                           method='brentq')
     with pytest.raises(ValueError):
-        pvsystem.v_from_i([3.] * 3, np.array([7., 7.]), 6e-7, [0.1], 20, 0.5,
+        pvsystem.v_from_i(20, [0.1], 0.5, [3.0] * 3, 6.0e-7, np.array([7., 7.]),
                           method='newton')
 
 
@@ -1332,8 +1328,8 @@ def test_singlediode_array():
 
     sd = pvsystem.singlediode(photocurrent, saturation_current,
                               resistance_series, resistance_shunt, nNsVth)
-    expected = pvsystem.i_from_v(sd['v_mp'], photocurrent, saturation_current,
-                                 resistance_series, resistance_shunt, nNsVth,
+    expected = pvsystem.i_from_v(resistance_shunt, resistance_series, nNsVth,
+                                 sd['v_mp'], saturation_current, photocurrent,
                                  method='lambertw')
     assert_allclose(sd['i_mp'], expected, atol=1e-8)
 
@@ -1408,19 +1404,20 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                          [3.0107985972, 2.8841320056, 0.],
                                          [6.0072629615, 5.7462022810, 0.]]))])
 
+
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)
 
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
 
-    expected['i_mp'] = pvsystem.i_from_v(out['v_mp'], IL, I0, Rs, Rsh, nNsVth,
+    expected['i_mp'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v_mp'], I0, IL,
                                          method='lambertw')
-    expected['v_mp'] = pvsystem.v_from_i(out['i_mp'], IL, I0, Rs, Rsh, nNsVth,
+    expected['v_mp'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i_mp'], I0, IL,
                                          method='lambertw')
-    expected['i'] = pvsystem.i_from_v(out['v'].T, IL, I0, Rs, Rsh, nNsVth,
-                                      method='lambertw').T
-    expected['v'] = pvsystem.v_from_i(out['i'].T, IL, I0, Rs, Rsh, nNsVth,
-                                      method='lambertw').T
+    expected['i'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v'].T, I0, IL,
+                                         method='lambertw').T
+    expected['v'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i'].T, I0, IL,
+                                         method='lambertw').T
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-6)

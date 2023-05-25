@@ -346,7 +346,7 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
     phim1 = (np.sqrt(5) - 1) / 2
 
-    df = params.copy()  # shallow copy to avoid modifying caller's dict
+    df = params
     df['VH'] = upper
     df['VL'] = lower
 

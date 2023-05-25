@@ -45,7 +45,7 @@ VARIABLE_MAP = {
 
 def get_pvgis_hourly(latitude, longitude, start=None, end=None,
                      raddatabase=None, components=True,
-                     surface_tilt=0, surface_azimuth=180,
+                     surface_tilt=0, surface_azimuth=0,
                      outputformat='json',
                      usehorizon=True, userhorizon=None,
                      pvcalculation=False,
@@ -76,15 +76,9 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         Otherwise only global irradiance is returned.
     surface_tilt: float, default: 0
         Tilt angle from horizontal plane. Ignored for two-axis tracking.
-    surface_azimuth: float, default: 180
-        Orientation (azimuth angle) of the (fixed) plane. Counter-clockwise
-        from north (north=0, south=180). This is offset 180 degrees from
-        the convention used by PVGIS. Ignored for tracking systems.
-
-        .. versionchanged:: 0.10.0
-           The `surface_azimuth` parameter now follows the pvlib convention, which
-           is counterclockwise from north. However, the convention used by the
-           PVGIS website and pvlib<=0.9.5 is offset by 180 degrees.
+    surface_azimuth: float, default: 0
+        Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
+        -90: east. Ignored for tracking systems.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None
@@ -150,13 +144,6 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     time stamp convention, e.g., SARAH and SARAH2 provide instantaneous values,
     whereas values from ERA5 are averages for the hour.
 
-    Warning
-    -------
-    The azimuth orientation specified in the output metadata does not
-    correspond to the pvlib convention, but is offset 180 degrees. This is
-    despite the fact that the input parameter `surface_tilt` has to be
-    specified according to the pvlib convention.
-
     Notes
     -----
     data includes the following fields:
@@ -204,7 +191,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     """  # noqa: E501
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
-              'angle': surface_tilt, 'aspect': surface_azimuth-180,
+              'angle': surface_tilt, 'aspect': surface_azimuth,
               'pvcalculation': int(pvcalculation),
               'pvtechchoice': pvtechchoice, 'mountingplace': mountingplace,
               'trackingtype': trackingtype, 'components': int(components),
@@ -327,11 +314,6 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         the inputs
     metadata : dict
         metadata
-
-    Warning
-    -------
-    The azimuth orientation specified in the output metadata does not
-    correspond to the pvlib convention, but is offset 180 degrees.
 
     Raises
     ------
@@ -683,57 +665,3 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         data = data.rename(columns=VARIABLE_MAP)
 
     return data, months_selected, inputs, meta
-
-
-def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
-    """Get horizon data from PVGIS.
-
-    Parameters
-    ----------
-    latitude : float
-        Latitude in degrees north
-    longitude : float
-        Longitude in degrees east
-    url: str, default: :const:`pvlib.iotools.pvgis.URL`
-        Base URL for PVGIS
-    kwargs:
-        Passed to requests.get
-
-    Returns
-    -------
-    data : pd.Series
-        Pandas Series of the retrived horizon elevation angles. Index is the
-        corresponding horizon azimuth angles.
-    metadata : dict
-        Metadata returned by PVGIS.
-
-    Notes
-    -----
-    The horizon azimuths are specified clockwise from north, e.g., south=180.
-    This is the standard pvlib convention, although the PVGIS website specifies
-    south=0.
-
-    References
-    ----------
-    .. [1] `PVGIS horizon profile tool
-       <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
-    """
-    params = {'lat': latitude, 'lon': longitude, 'outputformat': 'json'}
-    res = requests.get(url + 'printhorizon', params=params, **kwargs)
-    if not res.ok:
-        try:
-            err_msg = res.json()
-        except Exception:
-            res.raise_for_status()
-        else:
-            raise requests.HTTPError(err_msg['message'])
-    json_output = res.json()
-    metadata = json_output['meta']
-    data = pd.DataFrame(json_output['outputs']['horizon_profile'])
-    data.columns = ['horizon_azimuth', 'horizon_elevation']
-    # Convert azimuth to pvlib convention (north=0, south=180)
-    data['horizon_azimuth'] += 180
-    data.set_index('horizon_azimuth', inplace=True)
-    data = data['horizon_elevation']  # convert to pd.Series
-    data = data[data.index < 360]  # remove duplicate north point (0 and 360)
-    return data, metadata

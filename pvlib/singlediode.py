@@ -495,12 +495,12 @@ def _prepare_newton_inputs(i_or_v_tup, args, v0):
     return args, v0
 
 
-def _lambertw_v_from_i(current, photocurrent, saturation_current,
-                       resistance_series, resistance_shunt, nNsVth):
+def _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, current,
+                       saturation_current, photocurrent):
     # Record if inputs were all scalar
     output_is_scalar = all(map(np.isscalar,
-                               (current, photocurrent, saturation_current,
-                                resistance_series, resistance_shunt, nNsVth)))
+                               [resistance_shunt, resistance_series, nNsVth,
+                                current, saturation_current, photocurrent]))
 
     # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
     #  is generally more numerically stable
@@ -509,9 +509,9 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
     # Ensure that we are working with read-only views of numpy arrays
     # Turns Series into arrays so that we don't have to worry about
     #  multidimensional broadcasting failing
-    I, IL, I0, Rs, Gsh, a = \
-        np.broadcast_arrays(current, photocurrent, saturation_current,
-                            resistance_series, conductance_shunt, nNsVth)
+    Gsh, Rs, a, I, I0, IL = \
+        np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
+                            current, saturation_current, photocurrent)
 
     # Intitalize output V (I might not be float64)
     V = np.full_like(I, np.nan, dtype=np.float64)
@@ -572,12 +572,12 @@ def _lambertw_v_from_i(current, photocurrent, saturation_current,
         return V
 
 
-def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
-                       resistance_series, resistance_shunt, nNsVth):
+def _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
+                       saturation_current, photocurrent):
     # Record if inputs were all scalar
     output_is_scalar = all(map(np.isscalar,
-                               (voltage, photocurrent, saturation_current,
-                                resistance_series, resistance_shunt, nNsVth)))
+                               [resistance_shunt, resistance_series, nNsVth,
+                                voltage, saturation_current, photocurrent]))
 
     # This transforms Gsh=1/Rsh, including ideal Rsh=np.inf into Gsh=0., which
     #  is generally more numerically stable
@@ -586,9 +586,9 @@ def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
     # Ensure that we are working with read-only views of numpy arrays
     # Turns Series into arrays so that we don't have to worry about
     #  multidimensional broadcasting failing
-    V, IL, I0, Rs, Gsh, a = \
-        np.broadcast_arrays(voltage, photocurrent, saturation_current,
-                            resistance_series, conductance_shunt, nNsVth)
+    Gsh, Rs, a, V, I0, IL = \
+        np.broadcast_arrays(conductance_shunt, resistance_series, nNsVth,
+                            voltage, saturation_current, photocurrent)
 
     # Intitalize output I (V might not be float64)
     I = np.full_like(V, np.nan, dtype=np.float64)           # noqa: E741, N806
@@ -632,29 +632,36 @@ def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
 
 def _lambertw(photocurrent, saturation_current, resistance_series,
               resistance_shunt, nNsVth, ivcurve_pnts=None):
-    # collect args
-    params = {'photocurrent': photocurrent,
-              'saturation_current': saturation_current,
-              'resistance_series': resistance_series,
-              'resistance_shunt': resistance_shunt, 'nNsVth': nNsVth}
-
     # Compute short circuit current
-    i_sc = _lambertw_i_from_v(0., **params)
+    i_sc = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth, 0.,
+                              saturation_current, photocurrent)
 
     # Compute open circuit voltage
-    v_oc = _lambertw_v_from_i(0., **params)
+    v_oc = _lambertw_v_from_i(resistance_shunt, resistance_series, nNsVth, 0.,
+                              saturation_current, photocurrent)
+
+    params = {'r_sh': resistance_shunt,
+              'r_s': resistance_series,
+              'nNsVth': nNsVth,
+              'i_0': saturation_current,
+              'i_l': photocurrent}
 
     # Find the voltage, v_mp, where the power is maximized.
     # Start the golden section search at v_oc * 1.14
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
+    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
+                                        _pwr_optfcn)
 
     # Find Imp using Lambert W
-    i_mp = _lambertw_i_from_v(v_mp, **params)
+    i_mp = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,
+                              v_mp, saturation_current, photocurrent)
 
     # Find Ix and Ixx using Lambert W
-    i_x = _lambertw_i_from_v(0.5 * v_oc, **params)
+    i_x = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,
+                             0.5 * v_oc, saturation_current, photocurrent)
 
-    i_xx = _lambertw_i_from_v(0.5 * (v_oc + v_mp), **params)
+    i_xx = _lambertw_i_from_v(resistance_shunt, resistance_series, nNsVth,
+                              0.5 * (v_oc + v_mp), saturation_current,
+                              photocurrent)
 
     out = (i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx)
 
@@ -663,7 +670,9 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
         ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
                      np.linspace(0, 1, ivcurve_pnts))
 
-        ivcurve_i = _lambertw_i_from_v(ivcurve_v.T, **params).T
+        ivcurve_i = _lambertw_i_from_v(resistance_shunt, resistance_series,
+                                       nNsVth, ivcurve_v.T, saturation_current,
+                                       photocurrent).T
 
         out += (ivcurve_i, ivcurve_v)
 
@@ -675,9 +684,7 @@ def _pwr_optfcn(df, loc):
     Function to find power from ``i_from_v``.
     '''
 
-    current = _lambertw_i_from_v(df[loc], df['photocurrent'],
-                                 df['saturation_current'],
-                                 df['resistance_series'],
-                                 df['resistance_shunt'], df['nNsVth'])
+    I = _lambertw_i_from_v(df['r_sh'], df['r_s'],           # noqa: E741, N806
+                           df['nNsVth'], df[loc], df['i_0'], df['i_l'])
 
-    return current * df[loc]
+    return I * df[loc]

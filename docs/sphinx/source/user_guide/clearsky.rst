@@ -216,26 +216,25 @@ wavelengths [Bir80]_, and is implemented in
 
     In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
 
-    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999, map_variables=True)
+    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999)  # read TMY data
 
     In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])
 
     In [1]: solpos = solarposition.get_solarposition(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'],
-       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['pressure']*mbars,
-       ...:     temperature=tmy_data['temp_air'])
+       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['Pressure']*mbars,
+       ...:     temperature=tmy_data['DryBulb'])
 
     In [1]: am_rel = atmosphere.get_relative_airmass(solpos.apparent_zenith)
 
-    In [1]: am_abs = atmosphere.get_absolute_airmass(am_rel, tmy_data['pressure']*mbars)
+    In [1]: am_abs = atmosphere.get_absolute_airmass(am_rel, tmy_data['Pressure']*mbars)
 
     In [1]: airmass = pd.concat([am_rel, am_abs], axis=1).rename(
        ...:     columns={0: 'airmass_relative', 1: 'airmass_absolute'})
 
     In [1]: tl_calculated = atmosphere.kasten96_lt(
-       ...:     airmass.airmass_absolute, tmy_data['precipitable_water'],
-       ...:     tmy_data['AOD (unitless)'])
+       ...:     airmass.airmass_absolute, tmy_data['Pwat'], tmy_data['AOD'])
 
     In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1).rename(
        ...:     columns={0:'Historic', 1:'Calculated'})

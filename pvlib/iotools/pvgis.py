@@ -683,10 +683,17 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
 
     Returns
     -------
-    data : pd.DataFrame
-        Pandas dataframe of the retrived horizon
+    data : pd.Series
+        Pandas Series of the retrived horizon elevation angles. Index is the
+        corresponding horizon azimuth angles.
     metadata : dict
-        Metadata returned by PVGIS
+        Metadata returned by PVGIS.
+
+    Notes
+    -----
+    The horizon azimuths are specified clockwise from north, e.g., south=180.
+    This is the standard pvlib convention, although the PVGIS website specifies
+    south=0.
 
     References
     ----------
@@ -709,4 +716,5 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
     # Convert azimuth to pvlib convention (north=0, south=180)
     data['horizon_azimuth'] += 180
     data.set_index('horizon_azimuth', inplace=True)
+    data = data['horizon_elevation']  # convert to pd.Series
     return data, metadata

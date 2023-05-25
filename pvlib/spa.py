@@ -767,7 +767,7 @@ def parallax_sun_right_ascension(xterm, equatorial_horizontal_parallax,
         np.radians(equatorial_horizontal_parallax)
     local_hour_angle_rad = np.radians(local_hour_angle)
     num = (-xterm * np.sin(equatorial_horizontal_parallax_rad)
-           * np.sin(np.radians(local_hour_angle_rad)))
+           * np.sin(local_hour_angle_rad))
     denom = (np.cos(np.radians(geocentric_sun_declination))
              - xterm * np.sin(equatorial_horizontal_parallax_rad)
              * np.cos(local_hour_angle_rad))

@@ -2,11 +2,12 @@
 test iotools for panond
 """
 
-from ...iotools import read_panond, parse_panond
+from pvlib.iotools import read_panond, parse_panond
+from pvlib.tests.conftest import DATA_DIR
 import io
 # Not sure if I am creating these test scenarios correctly
 
-fn_file = 'C:/Users/Contractor1/Downloads/CPS SCH275KTL-DO-US-800-250kW_275kVA_1.OND'
+fn_file = DATA_DIR / 'CPS SCH275KTL-DO-US-800-250kW_275kVA_1.OND'
 ond_file = read_panond(fn_file)
 
 fn_str = """PVObject_=pvGInverter
@@ -159,7 +160,7 @@ End of PVObject pvGcomperter
 f_obj = io.StringIO(fn_str)
 ond_str = parse_panond(f_obj)
 
-fn_file = 'C:/Users/Contractor1/Downloads/ET-M772BH550GL.PAN'
+fn_file = DATA_DIR / 'ET-M772BH550GL.PAN'
 mod_file = read_panond(fn_file)
 
 fn_str = """PVObject_=pvModule
@@ -240,5 +241,3 @@ End of PVObject pvModule
 """
 f_obj = io.StringIO(fn_str)
 mod_str = parse_panond(f_obj)
-
-stop = 1

@@ -716,22 +716,26 @@ def apparent_sidereal_time(mean_sidereal_time, longitude_nutation,
 def geocentric_sun_right_ascension(apparent_sun_longitude,
                                    true_ecliptic_obliquity,
                                    geocentric_latitude):
-    num = (np.sin(np.radians(apparent_sun_longitude))
-           * np.cos(np.radians(true_ecliptic_obliquity))
+    true_ecliptic_obliquity = np.radians(true_ecliptic_obliquity)
+    apparent_sun_longitude_rad = np.radians(apparent_sun_longitude)
+    num = (np.sin(apparent_sun_longitude_rad)
+           * np.cos(true_ecliptic_obliquity)
            - np.tan(np.radians(geocentric_latitude))
-           * np.sin(np.radians(true_ecliptic_obliquity)))
-    alpha = np.degrees(np.arctan2(num, np.cos(
-        np.radians(apparent_sun_longitude))))
+           * np.sin(true_ecliptic_obliquity))
+    alpha = np.degrees(np.arctan2(num, np.cos(apparent_sun_longitude_rad)))
     return alpha % 360
 
 
 @jcompile('float64(float64, float64, float64)', nopython=True)
 def geocentric_sun_declination(apparent_sun_longitude, true_ecliptic_obliquity,
                                geocentric_latitude):
-    delta = np.degrees(np.arcsin(np.sin(np.radians(geocentric_latitude)) *
-                                 np.cos(np.radians(true_ecliptic_obliquity)) +
-                                 np.cos(np.radians(geocentric_latitude)) *
-                                 np.sin(np.radians(true_ecliptic_obliquity)) *
+    geocentric_latitude_rad = np.radians(geocentric_latitude)
+    true_ecliptic_obliquity_rad = np.radians(true_ecliptic_obliquity)
+    
+    delta = np.degrees(np.arcsin(np.sin(geocentric_latitude_rad) *
+                                 np.cos(true_ecliptic_obliquity_rad) +
+                                 np.cos(geocentric_latitude_rad) *
+                                 np.sin(true_ecliptic_obliquity_rad) *
                                  np.sin(np.radians(apparent_sun_longitude))))
     return delta
 
@@ -773,11 +777,14 @@ def yterm(u, observer_latitude, observer_elevation):
 @jcompile('float64(float64, float64,float64, float64)', nopython=True)
 def parallax_sun_right_ascension(xterm, equatorial_horizontal_parallax,
                                  local_hour_angle, geocentric_sun_declination):
-    num = (-xterm * np.sin(np.radians(equatorial_horizontal_parallax))
-           * np.sin(np.radians(local_hour_angle)))
+    equatorial_horizontal_parallax_rad = \
+        np.radians(equatorial_horizontal_parallax)
+    local_hour_angle_rad = np.radians(local_hour_angle)
+    num = (-xterm * np.sin(equatorial_horizontal_parallax_rad)
+           * np.sin(np.radians(local_hour_angle_rad)))
     denom = (np.cos(np.radians(geocentric_sun_declination))
-             - xterm * np.sin(np.radians(equatorial_horizontal_parallax))
-             * np.cos(np.radians(local_hour_angle)))
+             - xterm * np.sin(equatorial_horizontal_parallax_rad)
+             * np.cos(local_hour_angle_rad))
     delta_alpha = np.degrees(np.arctan2(num, denom))
     return delta_alpha
 
@@ -795,11 +802,13 @@ def topocentric_sun_declination(geocentric_sun_declination, xterm, yterm,
                                 equatorial_horizontal_parallax,
                                 parallax_sun_right_ascension,
                                 local_hour_angle):
-    num = ((np.sin(np.radians(geocentric_sun_declination)) - yterm
-            * np.sin(np.radians(equatorial_horizontal_parallax)))
+    geocentric_sun_declination_rad = np.radians(geocentric_sun_declination)
+    equatorial_horizontal_parallax_rad = np.radians(equatorial_horizontal_parallax)
+    num = ((np.sin(geocentric_sun_declination_rad) - yterm
+            * np.sin(equatorial_horizontal_parallax_rad))
            * np.cos(np.radians(parallax_sun_right_ascension)))
-    denom = (np.cos(np.radians(geocentric_sun_declination)) - xterm
-             * np.sin(np.radians(equatorial_horizontal_parallax))
+    denom = (np.cos(geocentric_sun_declination_rad) - xterm
+             * np.sin(equatorial_horizontal_parallax_rad)
              * np.cos(np.radians(local_hour_angle)))
     delta = np.degrees(np.arctan2(num, denom))
     return delta
@@ -817,11 +826,13 @@ def topocentric_elevation_angle_without_atmosphere(observer_latitude,
                                                    topocentric_sun_declination,
                                                    topocentric_local_hour_angle
                                                    ):
+    observer_latitude_rad = np.radians(observer_latitude)
+    topocentric_sun_declination_rad = np.radians(topocentric_sun_declination)
     e0 = np.degrees(np.arcsin(
-        np.sin(np.radians(observer_latitude))
-        * np.sin(np.radians(topocentric_sun_declination))
-        + np.cos(np.radians(observer_latitude))
-        * np.cos(np.radians(topocentric_sun_declination))
+        np.sin(observer_latitude_rad)
+        * np.sin(topocentric_sun_declination_rad)
+        + np.cos(observer_latitude_rad)
+        * np.cos(topocentric_sun_declination_rad)
         * np.cos(np.radians(topocentric_local_hour_angle))))
     return e0
 
@@ -859,11 +870,13 @@ def topocentric_zenith_angle(topocentric_elevation_angle):
 def topocentric_astronomers_azimuth(topocentric_local_hour_angle,
                                     topocentric_sun_declination,
                                     observer_latitude):
-    num = np.sin(np.radians(topocentric_local_hour_angle))
-    denom = (np.cos(np.radians(topocentric_local_hour_angle))
-             * np.sin(np.radians(observer_latitude))
+    topocentric_local_hour_angle_rad = np.radians(topocentric_local_hour_angle)
+    observer_latitude_rad = np.radians(observer_latitude)
+    num = np.sin(topocentric_local_hour_angle_rad)
+    denom = (np.cos(topocentric_local_hour_angle_rad)
+             * np.sin(observer_latitude_rad)
              - np.tan(np.radians(topocentric_sun_declination))
-             * np.cos(np.radians(observer_latitude)))
+             * np.cos(observer_latitude_rad))
     gamma = np.degrees(np.arctan2(num, denom))
     return gamma % 360
 

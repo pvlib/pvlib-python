@@ -2235,9 +2235,9 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
 def orgill_hollands(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065,
                     max_zenith=87):
-    """Estimate DNI and DHI from GHI using the Orgill and Hollands [1] model.
+    """Estimate DNI and DHI from GHI using the Orgill and Hollands model.
 
-    The Orgill and Hollands model [1] estimates the diffuse fraction DF from
+    The Orgill and Hollands model [1]_ estimates the diffuse fraction DF from
     global horizontal irradiance through an empirical relationship between
     hourly DF observations (in Toronto, Canada) and the ratio of GHI to
     extraterrestrial irradiance, Kt.

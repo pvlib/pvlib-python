@@ -121,6 +121,9 @@ Enhancements
   :py:func:`~pvlib.iotools.get_acis_available_stations`. (:issue:`1293`, :pull:`1767`)
 
 * Added .pan/.ond reader function :py:func:'pvlib.iotools.panond'
+* Added .pan/.ond reader function
+:py:func:`pvlib.iotools.panond`
+(:issue:`1747` )
 
 Bug fixes
 ~~~~~~~~~

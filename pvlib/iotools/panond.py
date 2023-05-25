@@ -1,3 +1,7 @@
+"""
+Get .PAN or .OND file data into a nested dictionary.
+"""
+
 import io
 
 def num_type(value):
@@ -37,7 +41,33 @@ def element_type(element):
 
 
 def parse_panond(fbuf):
-  # Parse a .pan or .ond file provided a file-like object 
+  """
+    Parse a .pan or .ond text file into a nested dictionary.
+
+    Parameters
+    ----------
+    fbuf : File-like object
+        Buffer of a .pan or .ond file
+    
+    Returns
+    -------
+    comp : Nested Dictionary
+        Contents of the .pan or .ond file following the indentation of the file. 
+        The value of datatypes are assumed during reading. The value units are
+        the default used by PVsyst.
+
+    Raises
+    ------
+
+    Notes
+    -----
+
+    See Also
+    --------
+
+    References
+    ----------
+    """
   comp = {} # Component
   dict_levels = [comp]
   
@@ -68,7 +98,33 @@ def parse_panond(fbuf):
 
 
 def read_panond(file):
-  # Read a .pan file or string into a nested dictionary.
+  """
+    Retrieve Module or Inverter data from a .pan or .ond text file, respectively.
+
+    Parameters
+    ----------
+    file : string or path object
+        Name or path of a .pan/.ond file
+    
+    Returns
+    -------
+    content : Nested Dictionary
+        Contents of the .pan or .ond file following the indentation of the file. 
+        The value of datatypes are assumed during reading. The value units are
+        the default used by PVsyst.
+
+    Raises
+    ------
+
+    Notes
+    -----
+
+    See Also
+    --------
+
+    References
+    ----------
+    """
 
   with open(file, "r", encoding='utf-8-sig') as file:
       f_content = file.read()

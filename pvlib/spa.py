@@ -557,7 +557,8 @@ def moon_ascending_longitude(julian_ephemeris_century):
     return x4
 
 
-@jcompile('UniTuple(float64, 2)(float64, float64, float64, float64, float64, float64)',
+@jcompile('UniTuple(float64, 2)'  # syntax for returning a 2-tuple of float64
+          '(float64, float64, float64, float64, float64, float64)',
           nopython=True)
 def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
     delta_psi_sum = 0.0
@@ -633,6 +634,7 @@ def geocentric_sun_right_ascension(apparent_sun_longitude,
                                    geocentric_latitude):
     true_ecliptic_obliquity = np.radians(true_ecliptic_obliquity)
     apparent_sun_longitude_rad = np.radians(apparent_sun_longitude)
+
     num = (np.sin(apparent_sun_longitude_rad)
            * np.cos(true_ecliptic_obliquity)
            - np.tan(np.radians(geocentric_latitude))
@@ -646,7 +648,7 @@ def geocentric_sun_declination(apparent_sun_longitude, true_ecliptic_obliquity,
                                geocentric_latitude):
     geocentric_latitude_rad = np.radians(geocentric_latitude)
     true_ecliptic_obliquity_rad = np.radians(true_ecliptic_obliquity)
-    
+
     delta = np.degrees(np.arcsin(np.sin(geocentric_latitude_rad) *
                                  np.cos(true_ecliptic_obliquity_rad) +
                                  np.cos(geocentric_latitude_rad) *
@@ -695,6 +697,7 @@ def parallax_sun_right_ascension(xterm, equatorial_horizontal_parallax,
     equatorial_horizontal_parallax_rad = \
         np.radians(equatorial_horizontal_parallax)
     local_hour_angle_rad = np.radians(local_hour_angle)
+
     num = (-xterm * np.sin(equatorial_horizontal_parallax_rad)
            * np.sin(local_hour_angle_rad))
     denom = (np.cos(np.radians(geocentric_sun_declination))
@@ -718,7 +721,9 @@ def topocentric_sun_declination(geocentric_sun_declination, xterm, yterm,
                                 parallax_sun_right_ascension,
                                 local_hour_angle):
     geocentric_sun_declination_rad = np.radians(geocentric_sun_declination)
-    equatorial_horizontal_parallax_rad = np.radians(equatorial_horizontal_parallax)
+    equatorial_horizontal_parallax_rad = \
+        np.radians(equatorial_horizontal_parallax)
+
     num = ((np.sin(geocentric_sun_declination_rad) - yterm
             * np.sin(equatorial_horizontal_parallax_rad))
            * np.cos(np.radians(parallax_sun_right_ascension)))

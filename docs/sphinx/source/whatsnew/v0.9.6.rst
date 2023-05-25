@@ -13,12 +13,6 @@ Enhancements
 ~~~~~~~~~~~~
 * Add optional encoding parameter to :py:func:`pvlib.iotools.read_tmy3`.
   (:issue:`1732`, :pull:`1737`)
-* Update the URL used in the :py:func:`pvlib.iotools.get_cams` function. The new URL supports load-balancing
-  and redirects to the fastest server. (:issue:`1688`, :pull:`1740`)
-* :py:func:`pvlib.iotools.get_psm3` now has a ``url`` parameter to give the user
-  the option of controlling what NSRDB endpoint is used. (:pull:`1736`)
-* :py:func:`pvlib.iotools.get_psm3` now uses the new NSRDB 3.2.2 endpoint for
-  hourly and half-hourly single-year datasets. (:issue:`1591`, :pull:`1736`)
 
 
 Bug fixes
@@ -52,4 +46,3 @@ Contributors
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
 * Andy Lam (:ghuser:`@andylam598`)
-* Kevin Anderson (:ghuser:`kandersolar`)

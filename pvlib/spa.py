@@ -559,7 +559,7 @@ def moon_ascending_longitude(julian_ephemeris_century):
 
 @jcompile(
     'void(float64, float64, float64, float64, float64, float64, float64[:])',
-     nopython=True)
+    nopython=True)
 def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4,
                                  out):
     delta_psi_sum = 0.0

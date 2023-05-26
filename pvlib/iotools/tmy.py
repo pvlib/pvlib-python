@@ -24,7 +24,7 @@ VARIABLE_MAP = {
 }
 
 
-def read_tmy3(filename, coerce_year=None, recolumn=True, encoding=None):
+def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
     """Read a TMY3 file into a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged

@@ -459,7 +459,7 @@ def julian_ephemeris_millennium(julian_ephemeris_century):
 @jcompile(nopython=True)
 def sum_mult_cos_add_mult(arr, x):
     # shared calculation used for heliocentric longitude, latitude, and radius
-    s = 0
+    s = 0.
     for row in range(arr.shape[0]):
         s += arr[row, 0] * np.cos(arr[row, 1] + arr[row, 2] * x)
     return s
@@ -557,10 +557,11 @@ def moon_ascending_longitude(julian_ephemeris_century):
     return x4
 
 
-@jcompile('UniTuple(float64, 2)'  # syntax for returning a 2-tuple of float64
-          '(float64, float64, float64, float64, float64, float64)',
-          nopython=True)
-def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
+@jcompile(
+    'void(float64, float64, float64, float64, float64, float64, float64[:])',
+     nopython=True)
+def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4,
+                                 out):
     delta_psi_sum = 0.0
     delta_eps_sum = 0.0
     for row in range(NUTATION_YTERM_ARRAY.shape[0]):
@@ -579,7 +580,13 @@ def longitude_obliquity_nutation(julian_ephemeris_century, x0, x1, x2, x3, x4):
         delta_eps_sum += (c + d * julian_ephemeris_century) * np.cos(arg)
     delta_psi = delta_psi_sum*1.0/36000000
     delta_eps = delta_eps_sum*1.0/36000000
-    return delta_psi, delta_eps
+    # seems like we ought to be able to return a tuple here instead
+    # of resorting to `out`, but returning a UniTuple from this
+    # function caused calculations elsewhere to give the wrong result.
+    # very difficult to investigate since it did not occur when using
+    # object mode.  issue was observed on numba 0.56.4
+    out[0] = delta_psi
+    out[1] = delta_eps
 
 
 @jcompile('float64(float64)', nopython=True)
@@ -632,13 +639,13 @@ def apparent_sidereal_time(mean_sidereal_time, longitude_nutation,
 def geocentric_sun_right_ascension(apparent_sun_longitude,
                                    true_ecliptic_obliquity,
                                    geocentric_latitude):
-    true_ecliptic_obliquity = np.radians(true_ecliptic_obliquity)
+    true_ecliptic_obliquity_rad = np.radians(true_ecliptic_obliquity)
     apparent_sun_longitude_rad = np.radians(apparent_sun_longitude)
 
     num = (np.sin(apparent_sun_longitude_rad)
-           * np.cos(true_ecliptic_obliquity)
+           * np.cos(true_ecliptic_obliquity_rad)
            - np.tan(np.radians(geocentric_latitude))
-           * np.sin(true_ecliptic_obliquity))
+           * np.sin(true_ecliptic_obliquity_rad))
     alpha = np.degrees(np.arctan2(num, np.cos(apparent_sun_longitude_rad)))
     return alpha % 360
 
@@ -867,8 +874,10 @@ def solar_position_loop(unixtime, loc_args, out):
         x2 = mean_anomaly_moon(jce)
         x3 = moon_argument_latitude(jce)
         x4 = moon_ascending_longitude(jce)
-        delta_psi, delta_epsilon = \
-            longitude_obliquity_nutation(jce, x0, x1, x2, x3, x4)
+        l_o_nutation = np.empty((2,))
+        longitude_obliquity_nutation(jce, x0, x1, x2, x3, x4, l_o_nutation)
+        delta_psi = l_o_nutation[0]
+        delta_epsilon = l_o_nutation[1]
         epsilon0 = mean_ecliptic_obliquity(jme)
         epsilon = true_ecliptic_obliquity(epsilon0, delta_epsilon)
         delta_tau = aberration_correction(R)
@@ -979,8 +988,10 @@ def solar_position_numpy(unixtime, lat, lon, elev, pressure, temp, delta_t,
     x2 = mean_anomaly_moon(jce)
     x3 = moon_argument_latitude(jce)
     x4 = moon_ascending_longitude(jce)
-    delta_psi, delta_epsilon = \
-        longitude_obliquity_nutation(jce, x0, x1, x2, x3, x4)
+    l_o_nutation = np.empty((2, len(x0)))
+    longitude_obliquity_nutation(jce, x0, x1, x2, x3, x4, l_o_nutation)
+    delta_psi = l_o_nutation[0]
+    delta_epsilon = l_o_nutation[1]
     epsilon0 = mean_ecliptic_obliquity(jme)
     epsilon = true_ecliptic_obliquity(epsilon0, delta_epsilon)
     delta_tau = aberration_correction(R)

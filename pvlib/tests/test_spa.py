@@ -155,7 +155,9 @@ class SpaBase:
         assert_almost_equal(X4, self.spa.moon_ascending_longitude(JCE), 6)
 
     def longitude_obliquity_nutation(self):
-        _dPsi, _dEpsilon = self.spa.longitude_nutation(JCE, X0, X1, X2, X3, X4)
+        out = np.empty((2,))
+        self.spa.longitude_obliquity_nutation(JCE, X0, X1,X2, X3, X4, out)
+        _dPsi, _dEpsilon = out[0], out[1]
         assert_almost_equal(dPsi, _dPsi, 6)
         assert_almost_equal(dEpsilon, _dEpsilon, 6)
 

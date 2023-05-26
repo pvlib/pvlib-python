@@ -23,6 +23,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add optional encoding parameter to :py:func:`pvlib.iotools.read_tmy3`.
+  (:issue:`1732`, :pull:`1737`)
 * Added function to retrieve horizon data from PVGIS 
   :py:func:`pvlib.iotools.get_pvgis_horizon`. (:issue:`1290`, :pull:`1395`)
 * Added ``map_variables`` argument to the :py:func:`pvlib.iotools.read_tmy3` in
@@ -74,5 +76,6 @@ Contributors
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
+* Andy Lam (:ghuser:`@andylam598`)
 * :ghuser:`ooprathamm`
 * Kevin Anderson (:ghuser:`kandersolar`)

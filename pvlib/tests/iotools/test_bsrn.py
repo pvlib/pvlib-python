@@ -5,6 +5,7 @@ tests for :mod:`pvlib.iotools.bsrn`
 import pandas as pd
 import pytest
 import os
+import tempfile
 from pvlib.iotools import read_bsrn, get_bsrn
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
                         requires_bsrn_credentials)
@@ -78,6 +79,7 @@ def test_read_bsrn_logical_records_not_found():
 def test_get_bsrn(expected_index, bsrn_credentials):
     # Retrieve irradiance data from the BSRN FTP server
     # the TAM station is chosen due to its small file sizes
+    temp_dir = tempfile.TemporaryDirectory()  # create temporary directory
     username, password = bsrn_credentials
     data, metadata = get_bsrn(
         start=pd.Timestamp(2016, 6, 1),
@@ -85,13 +87,18 @@ def test_get_bsrn(expected_index, bsrn_credentials):
         station='tam',
         username=username,
         password=password,
-        local_path='')
+        save_path=temp_dir.name)
     assert_index_equal(expected_index, data.index)
     assert 'ghi' in data.columns
     assert 'dni_std' in data.columns
     assert 'dhi_min' in data.columns
     assert 'lwd_max' in data.columns
     assert 'relative_humidity' in data.columns
+    # test that a local file was saved and is read correctly
+    data2, metadata2 = read_bsrn(os.path.join(temp_dir.name, 'tam0616.dat.gz'))
+    assert_index_equal(expected_index, data2.index)
+    assert 'ghi' in data2.columns
+    temp_dir.cleanup()  # explicitly remove temporary directory
 
 
 @requires_bsrn_credentials

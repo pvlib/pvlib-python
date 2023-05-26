@@ -10,11 +10,11 @@ from xml.etree.ElementTree import ParseError
 
 from pvlib.location import Location
 from pvlib.irradiance import campbell_norman, get_extra_radiation, disc
-from pvlib.irradiance import _liujordan
 from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 
 import warnings
+from pvlib._deprecation import deprecated
 
 
 warnings.warn(
@@ -22,7 +22,15 @@ warnings.warn(
     'The API may change, the functionality may be consolidated into an io '
     'module, or the module may be separated into its own package.')
 
+_forecast_deprecated = deprecated(
+    since='0.9.1',
+    removal='a future release',
+    addendum='For details, see https://pvlib-python.readthedocs.io/en/stable/user_guide/forecasts.html'  # noqa: E501
+)
 
+# don't decorate the base class to prevent the subclasses from showing
+# duplicate warnings:
+# @_forecast_deprecated
 class ForecastModel:
     """
     An object for querying and holding forecast model information for
@@ -512,10 +520,10 @@ class ForecastModel:
     def cloud_cover_to_transmittance_linear(self, cloud_cover, offset=0.75,
                                             **kwargs):
         """
-        Convert cloud cover to atmospheric transmittance using a linear
-        model.
+        Convert cloud cover (percentage) to atmospheric transmittance
+        using a linear model.
 
-        0% cloud cover returns offset.
+        0% cloud cover returns "offset".
 
         100% cloud cover returns 0.
 
@@ -524,14 +532,15 @@ class ForecastModel:
         cloud_cover : numeric
             Cloud cover in %.
         offset : numeric, default 0.75
-            Determines the maximum transmittance.
+            Determines the maximum transmittance. [unitless]
         kwargs
             Not used.
 
         Returns
         -------
-        ghi : numeric
-            Estimated GHI.
+        transmittance : numeric
+            The fraction of extraterrestrial irradiance that reaches
+            the ground. [unitless]
         """
         transmittance = ((100.0 - cloud_cover) / 100.0) * offset
 
@@ -683,6 +692,7 @@ class ForecastModel:
         return wind_speed
 
 
+@_forecast_deprecated
 class GFS(ForecastModel):
     """
     Subclass of the ForecastModel class representing GFS
@@ -784,6 +794,7 @@ class GFS(ForecastModel):
         return data[self.output_variables]
 
 
+@_forecast_deprecated
 class HRRR_ESRL(ForecastModel):                                 # noqa: N801
     """
     Subclass of the ForecastModel class representing
@@ -874,6 +885,7 @@ class HRRR_ESRL(ForecastModel):                                 # noqa: N801
         return data[self.output_variables]
 
 
+@_forecast_deprecated
 class NAM(ForecastModel):
     """
     Subclass of the ForecastModel class representing NAM
@@ -955,6 +967,7 @@ class NAM(ForecastModel):
         return data[self.output_variables]
 
 
+@_forecast_deprecated
 class HRRR(ForecastModel):
     """
     Subclass of the ForecastModel class representing HRRR
@@ -986,7 +999,7 @@ class HRRR(ForecastModel):
 
     def __init__(self, set_type='best'):
         model_type = 'Forecast Model Data'
-        model = 'NCEP HRRR CONUS 2.5km'
+        model = 'HRRR CONUS 2.5km Forecasts'
 
         self.variables = {
             'temp_air': 'Temperature_height_above_ground',
@@ -1043,6 +1056,7 @@ class HRRR(ForecastModel):
         return data[self.output_variables]
 
 
+@_forecast_deprecated
 class NDFD(ForecastModel):
     """
     Subclass of the ForecastModel class representing NDFD forecast
@@ -1111,6 +1125,7 @@ class NDFD(ForecastModel):
         return data[self.output_variables]
 
 
+@_forecast_deprecated
 class RAP(ForecastModel):
     """
     Subclass of the ForecastModel class representing RAP forecast model.

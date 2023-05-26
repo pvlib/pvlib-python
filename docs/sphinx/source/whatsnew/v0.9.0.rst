@@ -1,7 +1,7 @@
 .. _whatsnew_0900:
 
-v0.9.0 (MONTH DAY YEAR)
------------------------
+v0.9.0 (September 1, 2021)
+--------------------------
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
@@ -208,6 +208,8 @@ Bug fixes
   (:pull:`1273`, :issue:`1221`)
 * Fix :py:meth:`~pvlib.forecast.ForecastModel.get_data` failure to correct for
   non-UTC timezones. (:issue:`1237`, :pull:`1285`)
+* Fixed :py:class:`~pvlib.forecast.HRRR` by changing model name to reflect change on the server. (:issue:`1291`,
+  :pull:`1292`)
 
 Testing
 ~~~~~~~
@@ -231,7 +233,8 @@ Documentation
 Requirements
 ~~~~~~~~~~~~
 * ``dataclasses`` is required for python 3.6 (:pull:`1076`)
-* ``tables`` is now required instead of optional (:issue:`1286`, :pull:`1287`)
+* ``h5py`` is now a required dependency.  This replaces ``tables``, which was formerly
+  an optional dependency.  (:pull:`1299`, :issue:`1252`, :issue:`1286`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -251,3 +254,10 @@ Contributors
 * Chas Schweizer (:ghuser:`cpr-chas`)
 * Yoann Louvet (:ghuser:`YoannUniKS`)
 * Brandon Carpenter (:ghuser:`hashstat`)
+* :ghuser:`kahemker`
+* :ghuser:`zhammond147`
+* :ghuser:`PeterGrant`
+* :ghuser:`rockstaedt`
+* :ghuser:`MichaelHopwood`
+* :ghuser:`EricDuminil`
+* :ghuser:`FeiYao-Edinburgh`

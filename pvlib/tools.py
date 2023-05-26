@@ -6,6 +6,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import pytz
+import warnings
 
 
 def cosd(angle):
@@ -81,6 +82,25 @@ def asind(number):
     """
 
     res = np.degrees(np.arcsin(number))
+    return res
+
+
+def acosd(number):
+    """
+    Inverse Cosine returning an angle in degrees
+
+    Parameters
+    ----------
+    number : float
+        Input number
+
+    Returns
+    -------
+    result : float
+        arccos result
+    """
+
+    res = np.degrees(np.arccos(number))
     return res
 
 
@@ -277,51 +297,70 @@ def _build_args(keys, input_dict, dict_name):
 
 # Created April,2014
 # Author: Rob Andrews, Calama Consulting
-
-def _golden_sect_DataFrame(params, VL, VH, func):
+# Modified: November, 2020 by C. W. Hansen, to add atol and change exit
+# criteria
+def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     """
-    Vectorized golden section search for finding MPP from a dataframe
-    timeseries.
+    Vectorized golden section search for finding maximum of a function of a
+    single variable.
 
     Parameters
     ----------
-    params : dict
-        Dictionary containing scalars or arrays
-        of inputs to the function to be optimized.
-        Each row should represent an independent optimization.
+    params : dict of numeric
+        Parameters to be passed to `func`. Each entry must be of the same
+        length.
 
-    VL: float
-        Lower bound of the optimization
+    lower: numeric
+        Lower bound for the optimization. Must be the same length as each
+        entry of params.
 
-    VH: float
-        Upper bound of the optimization
+    upper: numeric
+        Upper bound for the optimization. Must be the same length as each
+        entry of params.
 
     func: function
-        Function to be optimized must be in the form f(array-like, x)
+        Function to be optimized. Must be in the form
+        result = f(dict or DataFrame, str), where result is a dict or DataFrame
+        that also contains the function output, and str is the key
+        corresponding to the function's input variable.
 
     Returns
     -------
-    func(df,'V1') : DataFrame
-        function evaluated at the optimal point
+    numeric
+        function evaluated at the optimal points
 
-    df['V1']: Dataframe
-        Dataframe of optimal points
+    numeric
+        optimal points
 
     Notes
     -----
-    This function will find the MAXIMUM of a function
+    This function will find the points where the function is maximized.
+    Returns nan where lower or upper is nan, or where func evaluates to nan.
+
+    See also
+    --------
+    pvlib.singlediode._pwr_optfcn
     """
 
-    df = params
-    df['VH'] = VH
-    df['VL'] = VL
+    phim1 = (np.sqrt(5) - 1) / 2
 
-    errflag = True
+    df = params
+    df['VH'] = upper
+    df['VL'] = lower
+
+    converged = False
     iterations = 0
 
-    while errflag:
+    # handle all NaN case gracefully
+    with warnings.catch_warnings():
+        warnings.filterwarnings(action='ignore',
+                                message='All-NaN slice encountered')
+        iterlimit = 1 + np.nanmax(
+            np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
 
-        phi = (np.sqrt(5)-1)/2*(df['VH']-df['VL'])
+    while not converged and (iterations <= iterlimit):
+
+        phi = phim1 * (df['VH'] - df['VL'])
         df['V1'] = df['VL'] + phi
         df['V2'] = df['VH'] - phi
 
@@ -332,15 +371,102 @@ def _golden_sect_DataFrame(params, VL, VH, func):
         df['VL'] = df['V2']*df['SW_Flag'] + df['VL']*(~df['SW_Flag'])
         df['VH'] = df['V1']*~df['SW_Flag'] + df['VH']*(df['SW_Flag'])
 
-        err = df['V1'] - df['V2']
-        try:
-            errflag = (abs(err) > .01).any()
-        except ValueError:
-            errflag = (abs(err) > .01)
+        err = abs(df['V2'] - df['V1'])
 
+        # works with single value because err is np.float64
+        converged = (err[~np.isnan(err)] < atol).all()
+        # err will be less than atol before iterations hit the limit
+        # but just to be safe
         iterations += 1
 
-        if iterations > 50:
-            raise Exception("EXCEPTION:iterations exceeded maximum (50)")
+    if iterations > iterlimit:
+        raise Exception("Iterations exceeded maximum. Check that func",
+                        " is not NaN in (lower, upper)")  # pragma: no cover
 
-    return func(df, 'V1'), df['V1']
+    try:
+        func_result = func(df, 'V1')
+        x = np.where(np.isnan(func_result), np.nan, df['V1'])
+    except KeyError:
+        func_result = np.full_like(upper, np.nan)
+        x = func_result.copy()
+
+    return func_result, x
+
+
+def _get_sample_intervals(times, win_length):
+    """ Calculates time interval and samples per window for Reno-style clear
+    sky detection functions
+    """
+    deltas = np.diff(times.values) / np.timedelta64(1, '60s')
+
+    # determine if we can proceed
+    if times.inferred_freq and len(np.unique(deltas)) == 1:
+        sample_interval = times[1] - times[0]
+        sample_interval = sample_interval.seconds / 60  # in minutes
+        samples_per_window = int(win_length / sample_interval)
+        return sample_interval, samples_per_window
+    else:
+        message = (
+            'algorithm does not yet support unequal time intervals. consider '
+            'resampling your data and checking for gaps from missing '
+            'periods, leap days, etc.'
+        )
+        raise NotImplementedError(message)
+
+
+def _degrees_to_index(degrees, coordinate):
+    """Transform input degrees to an output index integer.
+    Specify a degree value and either 'latitude' or 'longitude' to get
+    the appropriate index number for these two index numbers.
+    Parameters
+    ----------
+    degrees : float or int
+        Degrees of either latitude or longitude.
+    coordinate : string
+        Specify whether degrees arg is latitude or longitude. Must be set to
+        either 'latitude' or 'longitude' or an error will be raised.
+    Returns
+    -------
+    index : np.int16
+        The latitude or longitude index number to use when looking up values
+        in the Linke turbidity lookup table.
+    """
+    # Assign inputmin, inputmax, and outputmax based on degree type.
+    if coordinate == 'latitude':
+        inputmin = 90
+        inputmax = -90
+        outputmax = 2160
+    elif coordinate == 'longitude':
+        inputmin = -180
+        inputmax = 180
+        outputmax = 4320
+    else:
+        raise IndexError("coordinate must be 'latitude' or 'longitude'.")
+
+    inputrange = inputmax - inputmin
+    scale = outputmax/inputrange  # number of indices per degree
+    center = inputmin + 1 / scale / 2  # shift to center of index
+    outputmax -= 1  # shift index to zero indexing
+    index = (degrees - center) * scale
+    err = IndexError('Input, %g, is out of range (%g, %g).' %
+                     (degrees, inputmin, inputmax))
+
+    # If the index is still out of bounds after rounding, raise an error.
+    # 0.500001 is used in comparisons instead of 0.5 to allow for a small
+    # margin of error which can occur when dealing with floating point numbers.
+    if index > outputmax:
+        if index - outputmax <= 0.500001:
+            index = outputmax
+        else:
+            raise err
+    elif index < 0:
+        if -index <= 0.500001:
+            index = 0
+        else:
+            raise err
+    # If the index wasn't set to outputmax or 0, round it and cast it as an
+    # integer so it can be used in integer-based indexing.
+    else:
+        index = int(np.around(index))
+
+    return index

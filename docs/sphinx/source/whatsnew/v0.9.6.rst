@@ -11,7 +11,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Lakshya Garg (:ghuser:`Lakshyadevelops` :pull:`1705`)
+* Added a new irradiance decomposition model :py:func:`pvlib.irradiance.louche`. (:pull:`1705`)
 
 Bug fixes
 ~~~~~~~~~
@@ -35,4 +35,5 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Lakshya Garg (:ghuser:`Lakshyadevelops` :pull:`1705`)
 

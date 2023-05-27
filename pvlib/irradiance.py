@@ -3119,16 +3119,16 @@ def complete_irradiance(solar_zenith,
     return component_sum_df
 
 
-def pvl_louche(ghi, solar_zenith, datetime_or_doy):
+def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     """
     Determine DNI and GHI from GHI using Louche model.
 
     Parameters
     ----------
-    ghi : Series
+    ghi : numeric
         Global horizontal irradiance. [W/m^2]
 
-    solar_zenith : Series
+    solar_zenith : numeric
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=90.
 
@@ -3159,12 +3159,6 @@ def pvl_louche(ghi, solar_zenith, datetime_or_doy):
        Solar Energy 1991;46:261-6. :doi:`10.1016/0038-092X(91)90072-5`
 
     """
-    bool = np.logical_or(solar_zenith > 90, solar_zenith < 0)
-    solar_zenith = np.where(bool, np.NaN, solar_zenith)
-
-    if np.isscalar(datetime_or_doy):
-        bool = (np.any(datetime_or_doy > 366 or datetime_or_doy < 1, axis=0))
-        datetime_or_doy = np.where(bool, np.NaN, datetime_or_doy)
 
     # this is the I0 calculation from the reference
     # SSC uses solar constant = 1366.1
@@ -3176,6 +3170,11 @@ def pvl_louche(ghi, solar_zenith, datetime_or_doy):
         Kt**3 + 0.994*Kt**2 - 0.059*Kt + 0.002
     dni = kb*I0
     dhi = ghi - dni*tools.cosd(solar_zenith)
+
+    bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
+    # ensure that closure relationship remains valid
+    dhi = np.where(bad_values, ghi, dhi)
 
     data = OrderedDict()
     data['dni'] = dni

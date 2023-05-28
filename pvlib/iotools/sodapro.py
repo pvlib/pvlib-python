@@ -417,7 +417,7 @@ def get_mines_horizon(latitude, longitude, altitude=None, ground_offset=0,
         'identifier': 'compute_horizon_srtm',
         'version': '1.0.0',
         'ground_offset': ground_offset,
-        }
+    }
 
     # The DataInputs parameter of the URL has to be manually formatted and
     # added to the base URL as it contains sub-parameters seperated by

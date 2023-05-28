@@ -10,16 +10,6 @@ import numpy as np
 from pvlib.ivtools.utils import _schumaker_qspline
 
 
-# set constant for numpy.linalg.lstsq parameter rcond
-# rcond=-1 for numpy<1.14, rcond=None for numpy>=1.14
-# TODO remove after minimum numpy version >= 1.14
-minor = int(np.__version__.split('.')[1])
-if minor < 14:
-    RCOND = -1
-else:
-    RCOND = None
-
-
 def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
                       vlim=0.2, ilim=0.1):
     r"""
@@ -116,7 +106,7 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     .. math::
 
         I &\approx \frac{I_{L}}{1 + G_{p} R_{s}}
-        - \frac{G_{p}}{1 + G_{p}R_{s}} V
+        - \frac{G_{p}}{1 + G_{p}R_{s}} V \\
         &= \beta_{0} + \beta_{1} V
 
     4. The exponential portion of the IV curve is defined by
@@ -228,7 +218,7 @@ def _sandia_beta3_beta4(voltage, current, beta0, beta1, ilim, i_sc):
     x = np.array([np.ones_like(voltage), voltage, current]).T
     # Select points where y > ilim * i_sc to regress log(y) onto x
     idx = (y > ilim * i_sc)
-    result = np.linalg.lstsq(x[idx], np.log(y[idx]), rcond=RCOND)
+    result = np.linalg.lstsq(x[idx], np.log(y[idx]), rcond=None)
     coef = result[0]
     beta3 = coef[1].item()
     beta4 = coef[2].item()
@@ -444,7 +434,7 @@ def _cocontent_regress(v, i, voc, isc, cci):
     sx = np.vstack((s[:, 0], s[:, 1], s[:, 0] * s[:, 1], s[:, 0] * s[:, 0],
                     s[:, 1] * s[:, 1], col1)).T
 
-    gamma = np.linalg.lstsq(sx, scc, rcond=RCOND)[0]
+    gamma = np.linalg.lstsq(sx, scc, rcond=None)[0]
     # coefficients from regression in rotated coordinates
 
     # Principle components transformation steps
@@ -473,5 +463,5 @@ def _cocontent_regress(v, i, voc, isc, cci):
 
     # translate from coefficients in rotated space (gamma) to coefficients in
     # original coordinates (beta)
-    beta = np.linalg.lstsq(np.dot(mb, ma), gamma[0:5], rcond=RCOND)[0]
+    beta = np.linalg.lstsq(np.dot(mb, ma), gamma[0:5], rcond=None)[0]
     return beta

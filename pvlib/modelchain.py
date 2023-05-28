@@ -1686,7 +1686,7 @@ class ModelChain:
             self.temperature_model()
         return self
 
-    def _prepare_temperature(self, data=None):
+    def _prepare_temperature(self, data):
         """
         Sets cell_temperature using inputs in data and the specified
         temperature model.
@@ -1699,7 +1699,7 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame, default None
+        data : DataFrame
             May contain columns ``'cell_temperature'`` or
             ``'module_temperaure'``.
 
@@ -1878,13 +1878,13 @@ class ModelChain:
 
         return self
 
-    def _run_from_effective_irrad(self, data=None):
+    def _run_from_effective_irrad(self, data):
         """
         Executes the temperature, DC, losses and AC models.
 
         Parameters
         ----------
-        data : DataFrame, or tuple of DataFrame, default None
+        data : DataFrame, or tuple of DataFrame
             If optional column ``'cell_temperature'`` is provided, these values
             are used instead of `temperature_model`. If optional column
             `module_temperature` is provided, `temperature_model` must be
@@ -1907,7 +1907,7 @@ class ModelChain:
 
         return self
 
-    def run_model_from_effective_irradiance(self, data=None):
+    def run_model_from_effective_irradiance(self, data):
         """
         Run the model starting with effective irradiance in the plane of array.
 

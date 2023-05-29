@@ -106,7 +106,7 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     .. math::
 
         I &\approx \frac{I_{L}}{1 + G_{p} R_{s}}
-        - \frac{G_{p}}{1 + G_{p}R_{s}} V
+        - \frac{G_{p}}{1 + G_{p}R_{s}} V \\
         &= \beta_{0} + \beta_{1} V
 
     4. The exponential portion of the IV curve is defined by

@@ -3121,7 +3121,7 @@ def complete_irradiance(solar_zenith,
 
 def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     """
-    Determine DNI and GHI from GHI using Louche model.
+    Determine DNI and DHI from GHI using the Louche model.
 
     Parameters
     ----------
@@ -3146,11 +3146,6 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
               W/m^2.
             * ``kt``: Ratio of global to extraterrestrial irradiance
               on a horizontal plane.
-    Notes
-    -----
-    `solar_zenith` angles should be between 0 and 90 degrees else NaN will be
-    returned. Day of year (doy) should be between 1 and 366 else NaN will be
-    returned.
 
     References
     -------

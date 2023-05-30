@@ -1224,4 +1224,4 @@ def test_louche():
 
     out = irradiance.louche(ghi, zenith, index)
 
-    assert assert_frame_equal(out, expected) is None
+    assert_frame_equal(out, expected)

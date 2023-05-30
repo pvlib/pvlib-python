@@ -3160,8 +3160,6 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
 
     """
 
-    # this is the I0 calculation from the reference
-    # SSC uses solar constant = 1366.1
     I0 = get_extra_radiation(datetime_or_doy)
 
     Kt = clearness_index(ghi, solar_zenith, I0)

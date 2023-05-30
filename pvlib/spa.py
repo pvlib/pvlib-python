@@ -456,6 +456,9 @@ def julian_ephemeris_millennium(julian_ephemeris_century):
     return jme
 
 
+# omit type signature here; specifying read-only arrays requires use of the
+# numba.types API, meaning numba must be available to import.
+# https://github.com/numba/numba/issues/4511
 @jcompile(nopython=True)
 def sum_mult_cos_add_mult(arr, x):
     # shared calculation used for heliocentric longitude, latitude, and radius

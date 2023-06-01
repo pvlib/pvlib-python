@@ -27,7 +27,8 @@ import pvlib
 # of data measured from 1990 to 2010. Therefore we change the timestamps to a
 # common year, 1990.
 DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
-greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
+greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+                                 map_variables=True)
 
 # Many of the diffuse fraction estimation methods require the "true" zenith, so
 # we calculate the solar positions for the 1990 at Greensboro, NC.
@@ -36,8 +37,8 @@ greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
 solpos = get_solarposition(
     greensboro.index.shift(freq="-30T"), latitude=metadata['latitude'],
     longitude=metadata['longitude'], altitude=metadata['altitude'],
-    pressure=greensboro.Pressure*100,  # convert from millibar to Pa
-    temperature=greensboro.DryBulb)
+    pressure=greensboro.pressure*100,  # convert from millibar to Pa
+    temperature=greensboro.temp_air)
 solpos.index = greensboro.index  # reset index to end of the hour
 
 # %%
@@ -56,10 +57,10 @@ solpos.index = greensboro.index  # reset index to end of the hour
 # an exponential relation with airmass.
 
 out_disc = irradiance.disc(
-    greensboro.GHI, solpos.zenith, greensboro.index, greensboro.Pressure*100)
+    greensboro.ghi, solpos.zenith, greensboro.index, greensboro.pressure*100)
 # use "complete sum" AKA "closure" equations: DHI = GHI - DNI * cos(zenith)
 df_disc = irradiance.complete_irradiance(
-    solar_zenith=solpos.apparent_zenith, ghi=greensboro.GHI, dni=out_disc.dni,
+    solar_zenith=solpos.apparent_zenith, ghi=greensboro.ghi, dni=out_disc.dni,
     dhi=None)
 out_disc = out_disc.rename(columns={'dni': 'dni_disc'})
 out_disc['dhi_disc'] = df_disc.dhi
@@ -72,11 +73,11 @@ out_disc['dhi_disc'] = df_disc.dhi
 # developed by Richard Perez and Pierre Ineichen in 1992.
 
 dni_dirint = irradiance.dirint(
-    greensboro.GHI, solpos.zenith, greensboro.index, greensboro.Pressure*100,
-    temp_dew=greensboro.DewPoint)
+    greensboro.ghi, solpos.zenith, greensboro.index, greensboro.pressure*100,
+    temp_dew=greensboro.temp_dew)
 # use "complete sum" AKA "closure" equation: DHI = GHI - DNI * cos(zenith)
 df_dirint = irradiance.complete_irradiance(
-    solar_zenith=solpos.apparent_zenith, ghi=greensboro.GHI, dni=dni_dirint,
+    solar_zenith=solpos.apparent_zenith, ghi=greensboro.ghi, dni=dni_dirint,
     dhi=None)
 out_dirint = pd.DataFrame(
     {'dni_dirint': dni_dirint, 'dhi_dirint': df_dirint.dhi},
@@ -91,7 +92,7 @@ out_dirint = pd.DataFrame(
 # splits kt into 3 regions: linear for kt <= 0.22, a 4th order polynomial
 # between 0.22 < kt <= 0.8, and a horizontal line for kt > 0.8.
 
-out_erbs = irradiance.erbs(greensboro.GHI, solpos.zenith, greensboro.index)
+out_erbs = irradiance.erbs(greensboro.ghi, solpos.zenith, greensboro.index)
 out_erbs = out_erbs.rename(columns={'dni': 'dni_erbs', 'dhi': 'dhi_erbs'})
 
 # %%
@@ -102,7 +103,7 @@ out_erbs = out_erbs.rename(columns={'dni': 'dni_erbs', 'dhi': 'dhi_erbs'})
 # exponential correlation that is continuously differentiable and bounded
 # between zero and one.
 
-out_boland = irradiance.boland(greensboro.GHI, solpos.zenith, greensboro.index)
+out_boland = irradiance.boland(greensboro.ghi, solpos.zenith, greensboro.index)
 out_boland = out_boland.rename(
     columns={'dni': 'dni_boland', 'dhi': 'dhi_boland'})
 
@@ -118,20 +119,20 @@ out_boland = out_boland.rename(
 # file together to make plotting easier.
 
 dni_renames = {
-    'DNI': 'TMY3', 'dni_disc': 'DISC', 'dni_dirint': 'DIRINT',
+    'dni': 'TMY3', 'dni_disc': 'DISC', 'dni_dirint': 'DIRINT',
     'dni_erbs': 'Erbs', 'dni_boland': 'Boland'}
 dni = [
-    greensboro.DNI, out_disc.dni_disc, out_dirint.dni_dirint,
+    greensboro.dni, out_disc.dni_disc, out_dirint.dni_dirint,
     out_erbs.dni_erbs, out_boland.dni_boland]
 dni = pd.concat(dni, axis=1).rename(columns=dni_renames)
 dhi_renames = {
-    'DHI': 'TMY3', 'dhi_disc': 'DISC', 'dhi_dirint': 'DIRINT',
+    'dhi': 'TMY3', 'dhi_disc': 'DISC', 'dhi_dirint': 'DIRINT',
     'dhi_erbs': 'Erbs', 'dhi_boland': 'Boland'}
 dhi = [
-    greensboro.DHI, out_disc.dhi_disc, out_dirint.dhi_dirint,
+    greensboro.dhi, out_disc.dhi_disc, out_dirint.dhi_dirint,
     out_erbs.dhi_erbs, out_boland.dhi_boland]
 dhi = pd.concat(dhi, axis=1).rename(columns=dhi_renames)
-ghi_kt = pd.concat([greensboro.GHI/1000.0, out_erbs.kt], axis=1)
+ghi_kt = pd.concat([greensboro.ghi/1000.0, out_erbs.kt], axis=1)
 
 # %%
 # Winter

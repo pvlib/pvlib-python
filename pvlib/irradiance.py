@@ -3117,3 +3117,64 @@ def complete_irradiance(solar_zenith,
                                      'dhi': dhi,
                                      'dni': dni})
     return component_sum_df
+
+
+def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
+    """
+    Determine DNI and DHI from GHI using the Louche model.
+
+    Parameters
+    ----------
+    ghi : numeric
+        Global horizontal irradiance. [W/m^2]
+
+    solar_zenith : numeric
+        True (not refraction-corrected) zenith angles in decimal
+        degrees. Angles must be >=0 and <=90.
+
+    datetime_or_doy : numeric, pandas.DatetimeIndex
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+
+    Returns
+    -------
+    data: OrderedDict or DataFrame
+        Contains the following keys/columns:
+
+            * ``dni``: the modeled direct normal irradiance in W/m^2.
+            * ``dhi``: the modeled diffuse horizontal irradiance in
+              W/m^2.
+            * ``kt``: Ratio of global to extraterrestrial irradiance
+              on a horizontal plane.
+
+    References
+    -------
+    .. [1] Louche A, Notton G, Poggi P, Simonnot G. Correlations for direct
+       normal and global horizontal irradiation on a French Mediterranean site.
+       Solar Energy 1991;46:261-6. :doi:`10.1016/0038-092X(91)90072-5`
+
+    """
+
+    I0 = get_extra_radiation(datetime_or_doy)
+
+    Kt = clearness_index(ghi, solar_zenith, I0)
+
+    kb = -10.627*Kt**5 + 15.307*Kt**4 - 5.205 * \
+        Kt**3 + 0.994*Kt**2 - 0.059*Kt + 0.002
+    dni = kb*I0
+    dhi = ghi - dni*tools.cosd(solar_zenith)
+
+    bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
+    # ensure that closure relationship remains valid
+    dhi = np.where(bad_values, ghi, dhi)
+
+    data = OrderedDict()
+    data['dni'] = dni
+    data['dhi'] = dhi
+    data['kt'] = Kt
+
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        data = pd.DataFrame(data, index=datetime_or_doy)
+
+    return data

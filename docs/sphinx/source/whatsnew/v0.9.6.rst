@@ -46,7 +46,7 @@ Bug fixes
 
 Testing
 ~~~~~~~
-* Migrated to using mamba-org/setup-micromamba. (:issue:`1746`, :pull:`1758`)
+* Migrated to mamba-org/setup-micromamba. (:issue:`1746`, :pull:`1758`)
 
 Documentation
 ~~~~~~~~~~~~~

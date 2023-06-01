@@ -46,7 +46,7 @@ Bug fixes
 
 Testing
 ~~~~~~~
-
+* Migrated to mamba-org/setup-micromamba. (:issue:`1746`, :pull:`1758`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -81,4 +81,5 @@ Contributors
 * Andy Lam (:ghuser:`@andylam598`)
 * :ghuser:`ooprathamm`
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Devon Watt (:ghuser:`d-watt`)
 

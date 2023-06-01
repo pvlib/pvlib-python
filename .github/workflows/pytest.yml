@@ -43,10 +43,11 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: ${{ env.REQUIREMENTS }}
-          cache-environment: true
+          cache-downloads: true
           create-args: >-
             python=${{ matrix.python-version }}
-          channel-priority: flexible
+          condarc: |
+            channel-priority: flexible
         env:
           # build requirement filename.  First replacement is for the python
           # version, second is to add "-min" if needed

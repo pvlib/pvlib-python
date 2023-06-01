@@ -81,5 +81,5 @@ Contributors
 * Andy Lam (:ghuser:`@andylam598`)
 * :ghuser:`ooprathamm`
 * Kevin Anderson (:ghuser:`kandersolar`)
-* Devon Watt (:guser:`d-watt`)
+* Devon Watt (:ghuser:`d-watt`)
 

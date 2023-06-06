@@ -33,7 +33,9 @@ def element_type(element):
     """
     Determine if an element is a list then pass to num_type()
     """
-    if ',' in element:  # Detect a list
+    if ',' in element:  # Detect a list.
+        # .pan/.ond don't use ',' to indicate 1000. If that changes,
+        # a new method of list detection needs to be found.
         values = element.split(',')
         element_out = []
         for val in values:  # Determine datatype of each value
@@ -66,6 +68,46 @@ def parse_panond(fbuf):
 
     Notes
     -----
+    The parser was intended for use with .pan and .ond files that were created
+    for use by PVsyst. At time of publication, no documentation for these
+    files was available. So, this parser is based on inferred logic, rather
+    than anything specified by PVsyst. 
+    
+    The parser assumes that the file being parsed uses indendation of two
+    spaces ('  ') to create new level in a nested dicitonary, and that
+    key/values pairs of interest are separated using '='. This further means
+    that lines not containing '=' were ommitted from the final returned
+    dictionary.
+
+    Additionally, the indented lines often contain values themselves. This
+    leads to a conflict with the .pan/.ond file and the ability of nested
+    dicitonaries to capture that information. The solution implemented here is
+    to repeat that key to the new nested dictioary within that new level.
+    Example below.
+
+    Sample file:
+
+    'level1 = first level
+    key1 = value1
+      level2 = second level
+      key2 = value2'
+    
+    output:
+
+    {
+    level1: first level
+    key1: value1,
+    level2:{
+        level2: second level,
+        key2: value2    
+        }
+    }
+
+    The parser takes an additional step to infer the datatype present in
+    each value. The .pan/.ond files appear to have intentially left datatype
+    indicators (e.g. floats have '.' decimals). However, there is still the
+    possibility that the datatype applied from this parser is incorrect. In
+    that event the user would need to convert to the desired datatype.
 
     See Also
     --------
@@ -84,15 +126,19 @@ def parse_panond(fbuf):
             continue
         # Reading blank lines. Stopping one short to avoid index error.
         # Last line never contains important data.
+        # Creating variables to assist new level in dictionary creation logic
         indent_lvl_1 = (len(lines[i]) - len(lines[i].lstrip(' '))) // 2
         indent_lvl_2 = (len(lines[i + 1]) - len(lines[i + 1].lstrip(' '))) // 2
+        # Split the line into key/value pair
         line_data = lines[i].split('=')
         key = line_data[0].strip()
+        # Logical to make sure there is a value to extract
         if len(line_data) > 1:
             value = element_type(line_data[1].strip())
         else:
             value = None
-        # add a level to the dict. The key here will be ignored.
+        # add a level to the dict. If a key/value pair triggers the new level,
+        # the key/value will be repeated in the new dict level.
         # Not vital to file function.
         if indent_lvl_2 > indent_lvl_1:
             current_level = dict_levels[indent_lvl_1]
@@ -131,6 +177,9 @@ def read_panond(file):
 
     Notes
     -----
+    The read function simply converts a file path to a file-like object and
+    passes it to the parser. At time of creation, tested .pan/.ond files used
+    UTF-8 encoding.
 
     See Also
     --------

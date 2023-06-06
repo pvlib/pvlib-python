@@ -71,8 +71,8 @@ def parse_panond(fbuf):
     The parser was intended for use with .pan and .ond files that were created
     for use by PVsyst. At time of publication, no documentation for these
     files was available. So, this parser is based on inferred logic, rather
-    than anything specified by PVsyst. 
-    
+    than anything specified by PVsyst.
+
     The parser assumes that the file being parsed uses indendation of two
     spaces ('  ') to create new level in a nested dicitonary, and that
     key/values pairs of interest are separated using '='. This further means
@@ -91,7 +91,7 @@ def parse_panond(fbuf):
     key1 = value1
       level2 = second level
       key2 = value2'
-    
+
     output:
 
     {
@@ -99,7 +99,7 @@ def parse_panond(fbuf):
     key1: value1,
     level2:{
         level2: second level,
-        key2: value2    
+        key2: value2
         }
     }
 

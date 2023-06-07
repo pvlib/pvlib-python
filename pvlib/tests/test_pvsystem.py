@@ -1426,6 +1426,13 @@ def test_singlediode_series_ivcurve(cec_module_params):
         assert_allclose(v, expected[k], atol=1e-6)
 
 
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+def test_singlediode_ivcurvepnts_deprecation_warning(method):
+    with pytest.warns(pvlibDeprecationWarning):
+        pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
+                             method=method)
+
+
 def test_scale_voltage_current_power():
     data = pd.DataFrame(
         np.array([[2, 1.5, 10, 8, 12, 0.5, 1.5]]),

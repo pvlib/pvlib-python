@@ -29,7 +29,7 @@ Examples of modeling IV curves using a single-diode circuit equivalent model.
 # -----------------------
 # This example uses :py:meth:`pvlib.pvsystem.calcparams_desoto` to calculate
 # the 5 electrical parameters needed to solve the single-diode equation.
-# :py:meth:`pvlib.pvsystem.singlediode` is then used to generate the IV curves.
+# :py:meth:`pvlib.pvsystem.singlediode` and :py:meth:`pvlib.pvsystem.i_from_v` are used to generate the IV curves.
 
 from pvlib import pvsystem
 import numpy as np

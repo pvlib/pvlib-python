@@ -24,7 +24,7 @@ Enhancements
 * The return values of :py:func:`pvlib.pvsystem.calcparams_desoto`,
   :py:func:`pvlib.pvsystem.calcparams_cec`, and
   :py:func:`pvlib.pvsystem.calcparams_pvsyst` are all numeric types and have
-  the same Python type. (:issue:`1626`, :pull:`1700`)
+  the same Python type as the `effective_irradiance` and `temp_cell` parameters. (:issue:`1626`, :pull:`1700`)
 
 
 Bug fixes

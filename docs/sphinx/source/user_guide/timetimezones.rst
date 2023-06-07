@@ -272,7 +272,7 @@ Let's first examine how pvlib handles time when it imports a TMY3 file.
     # some gymnastics to find the example file
     pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvlib)))
     file_abspath = os.path.join(pvlib_abspath, 'data', '703165TY.csv')
-    tmy3_data, tmy3_metadata = pvlib.iotools.read_tmy3(file_abspath)
+    tmy3_data, tmy3_metadata = pvlib.iotools.read_tmy3(file_abspath, map_variables=True)
 
     tmy3_metadata
 
@@ -287,7 +287,7 @@ print just a few of the rows and columns of the large dataframe.
 
     tmy3_data.index.tz
 
-    tmy3_data.loc[tmy3_data.index[0:3], ['GHI', 'DNI', 'AOD']]
+    tmy3_data.loc[tmy3_data.index[0:3], ['ghi', 'dni', 'AOD (unitless)']]
 
 The :py:func:`~pvlib.iotools.read_tmy2` function also returns a DataFrame
 with a localized DatetimeIndex.

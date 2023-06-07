@@ -154,13 +154,12 @@ class SpaBase:
     def test_moon_ascending_longitude(self):
         assert_almost_equal(X4, self.spa.moon_ascending_longitude(JCE), 6)
 
-    def test_longitude_nutation(self):
-        assert_almost_equal(dPsi, self.spa.longitude_nutation(
-            JCE, X0, X1, X2, X3, X4), 6)
-
-    def test_obliquity_nutation(self):
-        assert_almost_equal(dEpsilon, self.spa.obliquity_nutation(
-            JCE, X0, X1, X2, X3, X4), 6)
+    def test_longitude_obliquity_nutation(self):
+        out = np.empty((2,))
+        self.spa.longitude_obliquity_nutation(JCE, X0, X1, X2, X3, X4, out)
+        _dPsi, _dEpsilon = out[0], out[1]
+        assert_almost_equal(dPsi, _dPsi, 6)
+        assert_almost_equal(dEpsilon, _dEpsilon, 6)
 
     def test_mean_ecliptic_obliquity(self):
         assert_almost_equal(epsilon0, self.spa.mean_ecliptic_obliquity(JME), 6)

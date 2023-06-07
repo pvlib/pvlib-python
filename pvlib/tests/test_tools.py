@@ -2,6 +2,7 @@ import pytest
 
 from pvlib import tools
 import numpy as np
+import pathlib
 
 
 @pytest.mark.parametrize('keys, input_dict, expected', [
@@ -95,3 +96,22 @@ def test_degrees_to_index_1():
     'latitude' or 'longitude' is passed."""
     with pytest.raises(IndexError):  # invalid value for coordinate argument
         tools._degrees_to_index(degrees=22.0, coordinate='width')
+
+
+def test_dataset_passes():
+    expected_dataset = '723170TYA.CSV'
+    assert tools.dataset(expected_dataset).endswith(expected_dataset)
+    assert tools.dataset(pathlib.Path(expected_dataset)) \
+        .endswith(expected_dataset)
+
+
+def test_dataset_fails_on_type():
+    for input_value in (123456789.123, 10, np.array(5), None):
+        pytest.raises(TypeError, tools.dataset, input_value)
+
+
+def test_dataset_fails_on_not_found():
+    error_prompt = "Dataset has not been found in pvlib. " \
+                   "Please check dataset name."
+    with pytest.raises(IOError, match=error_prompt):
+        tools.dataset("_Texto_cualquiera.-formato-")

@@ -479,7 +479,7 @@ def dataset(dataset):
     Return a filepath to a dataset bundled with PVLIB with name `dataset`.
     This utility is intended to be used in tests and examples.
     """
-    if not isinstance(dataset, str) or not isinstance(dataset, os.PathLike):
+    if not isinstance(dataset, str) and not isinstance(dataset, os.PathLike):
         raise TypeError
 
     dataset = os.path.join(pvlib.__path__[0], 'data', dataset)

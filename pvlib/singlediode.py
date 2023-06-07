@@ -2,15 +2,19 @@
 Low-level functions for solving the single diode equation.
 """
 
-from functools import partial
+import warnings
 import numpy as np
 from pvlib.tools import _golden_sect_DataFrame
 
 from scipy.optimize import brentq, newton
 from scipy.special import lambertw
 
-# set keyword arguments for all uses of newton in this module
-newton = partial(newton, tol=1e-6, maxiter=100, fprime2=None)
+# newton method default parameters for this module
+NEWTON_DEFAULT_PARAMS = {
+    'tol': 1e-6,
+    'maxiter': 100,
+    'fprime2': None
+}
 
 # intrinsic voltage per cell junction for a:Si, CdTe, Mertens et al.
 VOLTAGE_BUILTIN = 0.9  # [V]
@@ -206,7 +210,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
                       d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
-                      method='newton'):
+                      method='newton', **kwargs):
     """
     Find current given any voltage.
 
@@ -257,14 +261,21 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth, d2mutau, NsVbi,
             breakdown_factor, breakdown_voltage, breakdown_exp)
+    method = method.lower()
 
     def fv(x, v, *a):
         # calculate voltage residual given diode voltage "x"
         return bishop88(x, *a)[1] - v
 
-    if method.lower() == 'brentq':
+    if method == 'brentq':
         # first bound the search using voc
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+
+        # get tolerances from kwargs
+        # default values are from scipy v1.10.1
+        xtol = kwargs.pop('xtol', 2e-12)
+        rtol = kwargs.pop('rtol', 4 * np.finfo(float).eps)
+        maxiter = kwargs.pop('maxiter', 100)
 
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
@@ -274,19 +285,34 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
             return brentq(fv, 0.0, voc,
                           args=(v, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
                                 breakdown_factor, breakdown_voltage,
-                                breakdown_exp))
+                                breakdown_exp),
+                          xtol=xtol, rtol=rtol, maxiter=maxiter)
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, voltage, *args)
-    elif method.lower() == 'newton':
+    elif method == 'newton':
+        # get tolerances from kwargs
+        tol = kwargs.pop('tol', NEWTON_DEFAULT_PARAMS['tol'])
+        rtol = kwargs.pop('rtol', 0)  # scipy v1.10.1 default
+        maxiter = kwargs.pop('maxiter', NEWTON_DEFAULT_PARAMS['maxiter'])
+
         # make sure all args are numpy arrays if max size > 1
         # if voltage is an array, then make a copy to use for initial guess, v0
         args, v0 = _prepare_newton_inputs((voltage,), args, voltage)
         vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=v0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
-                    args=args)
+                    args=args,
+                    tol=tol, rtol=rtol, maxiter=maxiter)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
+    
+    # Warn user if any of their arguments was not used
+    # Intended to warn on mistype (e.g., xtol vs tol)
+    if len(kwargs) is not 0:
+        warnings.warn(f'Unused arguments {kwargs} in function call. ' \
+                      'They were not passed to scipy solver {method}. ' \
+                      'Please check scipy documentation.')
+
     return bishop88(vd, *args)[0]
 
 

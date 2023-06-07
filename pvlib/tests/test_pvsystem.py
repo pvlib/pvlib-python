@@ -744,6 +744,49 @@ def test_Array__infer_cell_type():
     assert array._infer_cell_type() is None
 
 
+def test_calcparams_desoto_all_scalars(cec_module_params):
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
+        effective_irradiance=800.0,
+        temp_cell=25,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
+
+    assert np.isclose(IL, 6.036, atol=1e-4, rtol=0)
+    assert np.isclose(I0, 1.94e-9, atol=1e-4, rtol=0)
+    assert np.isclose(Rs, 0.094, atol=1e-4, rtol=0)
+    assert np.isclose(Rsh, 19.65, atol=1e-4, rtol=0)
+    assert np.isclose(nNsVth, 0.473, atol=1e-4, rtol=0)
+
+
+def test_calcparams_cec_all_scalars(cec_module_params):
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_cec(
+        effective_irradiance=800.0,
+        temp_cell=25,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        Adjust=cec_module_params['Adjust'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
+
+    assert np.isclose(IL, 6.036, atol=1e-4, rtol=0)
+    assert np.isclose(I0, 1.94e-9, atol=1e-4, rtol=0)
+    assert np.isclose(Rs, 0.094, atol=1e-4, rtol=0)
+    assert np.isclose(Rsh, 19.65, atol=1e-4, rtol=0)
+    assert np.isclose(nNsVth, 0.473, atol=1e-4, rtol=0)
+
+
 def test_calcparams_desoto(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
     df = pd.DataFrame({
@@ -890,21 +933,23 @@ def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
     IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(effective_irradiance,
                                                        temp_cell)
     pvsystem.calcparams_desoto.assert_called_once_with(
-                                  effective_irradiance,
-                                  temp_cell,
-                                  alpha_sc=cec_module_params['alpha_sc'],
-                                  a_ref=cec_module_params['a_ref'],
-                                  I_L_ref=cec_module_params['I_L_ref'],
-                                  I_o_ref=cec_module_params['I_o_ref'],
-                                  R_sh_ref=cec_module_params['R_sh_ref'],
-                                  R_s=cec_module_params['R_s'],
-                                  EgRef=module_parameters['EgRef'],
-                                  dEgdT=module_parameters['dEgdT'])
+        effective_irradiance,
+        temp_cell,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=module_parameters['EgRef'],
+        dEgdT=module_parameters['dEgdT']
+    )
+
     assert_allclose(IL, np.array([0.0, 6.036]), atol=1)
-    assert_allclose(I0, 2.0e-9, atol=1.0e-9)
-    assert_allclose(Rs, 0.1, atol=0.1)
+    assert_allclose(I0, np.array([2.0e-9, 2.0e-9]), atol=1.0e-9)
+    assert_allclose(Rs, np.array([0.1, 0.1]), atol=0.1)
     assert_allclose(Rsh, np.array([np.inf, 20]), atol=1)
-    assert_allclose(nNsVth, 0.5, atol=0.1)
+    assert_allclose(nNsVth, np.array([0.5, 0.5]), atol=0.1)
 
 
 def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
@@ -916,23 +961,24 @@ def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
     IL, I0, Rs, Rsh, nNsVth = system.calcparams_pvsyst(effective_irradiance,
                                                        temp_cell)
     pvsystem.calcparams_pvsyst.assert_called_once_with(
-                                  effective_irradiance,
-                                  temp_cell,
-                                  alpha_sc=pvsyst_module_params['alpha_sc'],
-                                  gamma_ref=pvsyst_module_params['gamma_ref'],
-                                  mu_gamma=pvsyst_module_params['mu_gamma'],
-                                  I_L_ref=pvsyst_module_params['I_L_ref'],
-                                  I_o_ref=pvsyst_module_params['I_o_ref'],
-                                  R_sh_ref=pvsyst_module_params['R_sh_ref'],
-                                  R_sh_0=pvsyst_module_params['R_sh_0'],
-                                  R_s=pvsyst_module_params['R_s'],
-                    cells_in_series=pvsyst_module_params['cells_in_series'],
-                                  EgRef=pvsyst_module_params['EgRef'],
-                                  R_sh_exp=pvsyst_module_params['R_sh_exp'])
+        effective_irradiance,
+        temp_cell,
+        alpha_sc=pvsyst_module_params['alpha_sc'],
+        gamma_ref=pvsyst_module_params['gamma_ref'],
+        mu_gamma=pvsyst_module_params['mu_gamma'],
+        I_L_ref=pvsyst_module_params['I_L_ref'],
+        I_o_ref=pvsyst_module_params['I_o_ref'],
+        R_sh_ref=pvsyst_module_params['R_sh_ref'],
+        R_sh_0=pvsyst_module_params['R_sh_0'],
+        R_s=pvsyst_module_params['R_s'],
+        cells_in_series=pvsyst_module_params['cells_in_series'],
+        EgRef=pvsyst_module_params['EgRef'],
+        R_sh_exp=pvsyst_module_params['R_sh_exp']
+    )
 
     assert_allclose(IL, np.array([0.0, 4.8200]), atol=1)
     assert_allclose(I0, np.array([0.0, 1.47e-7]), atol=1.0e-5)
-    assert_allclose(Rs, 0.5, atol=0.1)
+    assert_allclose(Rs, np.array([0.5, 0.5]), atol=0.1)
     assert_allclose(Rsh, np.array([1000, 305.757]), atol=50)
     assert_allclose(nNsVth, np.array([1.6186, 1.7961]), atol=0.1)
 

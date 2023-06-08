@@ -376,7 +376,7 @@ derived from surface relative humidity using functions such as
 :py:func:`pvlib.atmosphere.gueymard94_pw`.
 Numerous gridded products from satellites, weather models, and climate models
 contain one or both of aerosols and precipitable water. Consider data
-from the `ECMWF ERA5 <https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5>`_,
+from the `ECMWF ERA5 <https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5>`_,
 `NASA MERRA-2 <https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/>`_,
 and `SoDa <http://www.soda-pro.com/web-services/radiation/cams-mcclear>`_.
 

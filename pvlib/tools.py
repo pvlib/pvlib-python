@@ -474,7 +474,7 @@ def _first_order_centered_difference(f, x0, dx=DX, args=()):
     return df / 2 / dx
 
 
-def dataset(dataset):
+def locate_example_dataset(dataset):
     """
     Return a filepath to a dataset bundled with PVLIB with name `dataset`.
     This utility is intended to be used in tests and examples.

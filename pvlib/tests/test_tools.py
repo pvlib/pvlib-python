@@ -98,15 +98,16 @@ def test_degrees_to_index_1():
         tools._degrees_to_index(degrees=22.0, coordinate='width')
 
 
-def test_dataset_passes():
+def test_locate_example_dataset_passes():
     expected_dataset = '723170TYA.CSV'
-    assert tools.dataset(expected_dataset).endswith(expected_dataset)
-    assert tools.dataset(pathlib.Path(expected_dataset)) \
+    assert tools.locate_example_dataset(expected_dataset) \
+        .endswith(expected_dataset)
+    assert tools.locate_example_dataset(pathlib.Path(expected_dataset)) \
         .endswith(expected_dataset)
 
 
-def test_dataset_fails_on_not_found():
+def test_locate_example_dataset_fails_on_not_found():
     error_prompt = "Dataset has not been found in pvlib. " \
                    "Please check dataset name."
     with pytest.raises(IOError, match=error_prompt):
-        tools.dataset("_Texto_cualquiera.-formato-")
+        tools.locate_example_dataset("_Texto_cualquiera.-formato-")

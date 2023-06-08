@@ -64,7 +64,8 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
 
     Raises
     ------
-    RuntimeError if parameter extraction is not successful.
+    RuntimeError
+        if parameter extraction is not successful.
 
     Notes
     -----
@@ -289,8 +290,10 @@ def _fit_sandia_cocontent(voltage, current, nsvth):
 
     Raises
     ------
-    ValueError if ``voltage`` and ``current`` are different lengths.
-    ValueError if ``len(voltage)`` < 6
+    ValueError
+        if ``voltage`` and ``current`` are different lengths.
+    ValueError
+        if ``len(voltage)`` < 6
 
     Notes
     -----

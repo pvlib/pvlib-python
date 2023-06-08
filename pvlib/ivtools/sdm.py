@@ -76,9 +76,10 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Raises
     ------
-        ImportError if NREL-PySAM is not installed.
-
-        RuntimeError if parameter extraction is not successful.
+    ImportError
+        if NREL-PySAM is not installed.
+    RuntimeError
+        if parameter extraction is not successful.
 
     Notes
     -----

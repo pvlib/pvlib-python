@@ -484,7 +484,7 @@ def get_pandas_index(*args):
     Returns
     -------
     A pandas index or None
-        None is returned if there are no pandas DataFrames or Series is the
+        None is returned if there are no pandas DataFrames or Series in the
         args list.
     """
     return next(

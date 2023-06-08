@@ -271,12 +271,6 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         # first bound the search using voc
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
-        # get tolerances from kwargs
-        # default values are from scipy v1.10.1
-        xtol = kwargs.pop('xtol', 2e-12)
-        rtol = kwargs.pop('rtol', 4 * np.finfo(float).eps)
-        maxiter = kwargs.pop('maxiter', 100)
-
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
         # arguments for possible array input
@@ -286,15 +280,15 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
                           args=(v, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
                                 breakdown_factor, breakdown_voltage,
                                 breakdown_exp),
-                          xtol=xtol, rtol=rtol, maxiter=maxiter)
+                          **kwargs)
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, voltage, *args)
     elif method == 'newton':
         # get tolerances from kwargs
-        tol = kwargs.pop('tol', NEWTON_DEFAULT_PARAMS['tol'])
-        rtol = kwargs.pop('rtol', 0)  # scipy v1.10.1 default
-        maxiter = kwargs.pop('maxiter', NEWTON_DEFAULT_PARAMS['maxiter'])
+        kwargs['tol'] = kwargs.pop('tol', NEWTON_DEFAULT_PARAMS['tol'])
+        kwargs['maxiter'] = kwargs.pop('maxiter',
+                            NEWTON_DEFAULT_PARAMS['maxiter'])
 
         # make sure all args are numpy arrays if max size > 1
         # if voltage is an array, then make a copy to use for initial guess, v0
@@ -302,16 +296,9 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=v0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
                     args=args,
-                    tol=tol, rtol=rtol, maxiter=maxiter)
+                    **kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
-    
-    # Warn user if any of their arguments was not used
-    # Intended to warn on mistype (e.g., xtol vs tol)
-    if len(kwargs) is not 0:
-        warnings.warn(f'Unused arguments {kwargs} in function call. ' \
-                      'They were not passed to scipy solver {method}. ' \
-                      'Please check scipy documentation.')
 
     return bishop88(vd, *args)[0]
 

@@ -107,6 +107,7 @@ def test_locate_example_dataset_passes():
            .name == expected_dataset
     assert tools.locate_example_dataset(pathlib.Path(expected_dataset)) \
            .name == expected_dataset
+    assert tools.locate_example_dataset(expected_dataset).exists()
 
 
 def test_locate_example_dataset_fails_on_not_found():

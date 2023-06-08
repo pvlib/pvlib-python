@@ -2047,10 +2047,11 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         return out
 
     index = tools.get_pandas_index(*numeric_args)
-    if index is not None:
-        return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
-    return np.broadcast_arrays(*out)
+    if index is None:
+        return np.broadcast_arrays(*out)
+
+    return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
 
 def calcparams_cec(effective_irradiance, temp_cell,
@@ -2312,10 +2313,11 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
         return out
 
     index = tools.get_pandas_index(*numeric_args)
-    if index is not None:
-        return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
-    return np.broadcast_arrays(*out)
+    if index is None:
+        return np.broadcast_arrays(*out)
+
+    return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
 
 def retrieve_sam(name=None, path=None):

@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import itertools
 
 import numpy as np
 from numpy import nan, array
@@ -742,6 +743,128 @@ def test_Array__infer_cell_type():
     array = pvsystem.Array(mount=pvsystem.FixedMount(0, 180),
                            module_parameters={})
     assert array._infer_cell_type() is None
+
+
+def _calcparams_correct_Python_type_numeric_type_cases():
+    """
+    An auxilary function used in the unit tests named
+    ``test_calcparams_*_returns_correct_Python_type``.
+
+    Returns
+    -------
+        Returns a list of tuples of functions intended for transforming a
+        Python scalar into a numeric type: scalar, np.ndarray, or pandas.Series
+    """
+    return list(itertools.product(*(2 * [[
+        # scalars (e.g. Python floats)
+        lambda x: x,
+        # np.ndarrays (0d and 1d-arrays)
+        np.array,
+        lambda x: np.array([x]),
+        # pd.Series (1d-arrays)
+        pd.Series
+    ]])))
+
+
+def _calcparams_correct_Python_type_check(out_value, numeric_args):
+    """
+    An auxilary function used in the unit tests named
+    ``test_calcparams_*_returns_correct_Python_type``.
+
+    Parameters
+    ----------
+    out_value: numeric
+        A value returned by a pvsystem.calcparams_ function.
+
+    numeric_args: numeric
+        An iterable of the numeric-type arguments to the pvsystem.calcparams_
+        functions: ``effective_irradiance`` and ``temp_cell``.
+
+    Returns
+    -------
+        bool indicating whether ``out_value`` has the correct Python type
+        based on the Python types of ``effective_irradiance`` and
+        ``temp_cell``.
+    """
+    if any(isinstance(a, pd.Series) for a in numeric_args):
+        return isinstance(out_value, pd.Series)
+    elif any(isinstance(a, np.ndarray) for a in numeric_args):
+        return isinstance(out_value, np.ndarray)  # 0d or 1d-arrays
+    return np.isscalar(out_value)
+
+
+@pytest.mark.parametrize('numeric_type_funcs',
+                         _calcparams_correct_Python_type_numeric_type_cases())
+def test_calcparams_desoto_returns_correct_Python_type(numeric_type_funcs,
+                                                       cec_module_params):
+    numeric_args = dict(
+        effective_irradiance=numeric_type_funcs[0](800.0),
+        temp_cell=numeric_type_funcs[1](25),
+    )
+    out = pvsystem.calcparams_desoto(
+        **numeric_args,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
+
+    assert all(_calcparams_correct_Python_type_check(a, numeric_args.values())
+               for a in out)
+
+
+@pytest.mark.parametrize('numeric_type_funcs',
+                         _calcparams_correct_Python_type_numeric_type_cases())
+def test_calcparams_cec_returns_correct_Python_type(numeric_type_funcs,
+                                                    cec_module_params):
+    numeric_args = dict(
+        effective_irradiance=numeric_type_funcs[0](800.0),
+        temp_cell=numeric_type_funcs[1](25),
+    )
+    out = pvsystem.calcparams_desoto(
+        **numeric_args,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
+
+    assert all(_calcparams_correct_Python_type_check(a, numeric_args.values())
+               for a in out)
+
+
+@pytest.mark.parametrize('numeric_type_funcs',
+                         _calcparams_correct_Python_type_numeric_type_cases())
+def test_calcparams_pvsyst_returns_correct_Python_type(numeric_type_funcs,
+                                                       pvsyst_module_params):
+    numeric_args = dict(
+        effective_irradiance=numeric_type_funcs[0](800.0),
+        temp_cell=numeric_type_funcs[1](25),
+    )
+    out = pvsystem.calcparams_pvsyst(
+        **numeric_args,
+        alpha_sc=pvsyst_module_params['alpha_sc'],
+        gamma_ref=pvsyst_module_params['gamma_ref'],
+        mu_gamma=pvsyst_module_params['mu_gamma'],
+        I_L_ref=pvsyst_module_params['I_L_ref'],
+        I_o_ref=pvsyst_module_params['I_o_ref'],
+        R_sh_ref=pvsyst_module_params['R_sh_ref'],
+        R_sh_0=pvsyst_module_params['R_sh_0'],
+        R_s=pvsyst_module_params['R_s'],
+        cells_in_series=pvsyst_module_params['cells_in_series'],
+        EgRef=pvsyst_module_params['EgRef']
+    )
+
+    assert all(_calcparams_correct_Python_type_check(a, numeric_args.values())
+               for a in out)
 
 
 def test_calcparams_desoto_all_scalars(cec_module_params):

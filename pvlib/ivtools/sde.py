@@ -124,8 +124,8 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
     .. math::
 
         \log(\beta_{0} - \beta_{1} V - I)
-        &\approx \log(\frac{I_{0}}{1 + G_{p} R_{s}} + \frac{V}{nN_sV_{th}}
-        + \frac{I R_{s}}{nN_sV_{th}}) \\
+        &\approx \log(\frac{I_{0}}{1 + G_{p} R_{s}}) + \frac{V}{nN_sV_{th}}
+        + \frac{I R_{s}}{nN_sV_{th}} \\
         &= \beta_{2} + \beta_{3} V + \beta_{4} I
 
     6. Calculate values for ``IL, I0, Rs, Rsh,`` and ``nNsVth`` from the

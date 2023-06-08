@@ -33,13 +33,13 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 from pvlib.iotools import read_tmy3
 from pvlib.soiling import kimber
-from pvlib.tools import dataset
+from pvlib.tools import locate_example_dataset
 
-# get full path to the data directory
-DATASET_DIR = dataset('723170TYA.CSV')
+# get full path to the dataset file
+tmy_filepath = locate_example_dataset('723170TYA.CSV')
 
 # get TMY3 data with rain
-greensboro, _ = read_tmy3(DATASET_DIR, coerce_year=1990,
+greensboro, _ = read_tmy3(tmy_filepath, coerce_year=1990,
                           map_variables=True)
 # get the rain data
 greensboro_rain = greensboro['Lprecip depth (mm)']
@@ -64,3 +64,5 @@ plt.legend(['daily rainfall [in]', 'soiling [%]'])
 plt.tight_layout()
 
 plt.show()
+
+# %%

@@ -16,7 +16,6 @@ API reference
    effects_on_pv_system_output/index
    tracking
    iotools
-   forecasting
    modelchain
    bifacial
    scaling

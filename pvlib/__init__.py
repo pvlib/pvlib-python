@@ -4,7 +4,6 @@ from pvlib import (  # noqa: F401
     atmosphere,
     bifacial,
     clearsky,
-    # forecast
     iam,
     inverter,
     iotools,

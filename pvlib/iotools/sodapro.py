@@ -386,7 +386,7 @@ def get_mines_horizon(latitude, longitude, altitude=None, ground_offset=0,
     altitude: float, optional
         Altitude in meters. If None, then the altitude is determined from the
         NASA SRTM database.
-    ground_offset: float, optional
+    ground_offset: float, default 0
         Vertical offset in meters for the point of view for which to calculate
         horizon profile.
     url: str, default: 'http://toolbox.1.webservice-energy.org/service/wps'
@@ -410,7 +410,7 @@ def get_mines_horizon(latitude, longitude, altitude=None, ground_offset=0,
     if altitude is None:  # API will then infer altitude
         altitude = -999
 
-    # Manual formatting of the input parameters seperating each by a semicolon
+    # Manual formatting of the input parameters separating each by a semicolon
     data_inputs = f"latitude={latitude};longitude={longitude};altitude={altitude}"  # noqa: E501
 
     params = {
@@ -441,7 +441,7 @@ def get_mines_horizon(latitude, longitude, altitude=None, ground_offset=0,
     # message.
 
     meta = {'data_provider': 'MINES ParisTech - Armines (France)',
-            'databse': 'Shuttle Radar Topography Mission (SRTM)',
+            'database': 'Shuttle Radar Topography Mission (SRTM)',
             'latitude': latitude, 'longitude': longitude, 'altitude': altitude,
             'ground_offset': ground_offset}
 

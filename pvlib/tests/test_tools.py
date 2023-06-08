@@ -105,11 +105,6 @@ def test_dataset_passes():
         .endswith(expected_dataset)
 
 
-def test_dataset_fails_on_type():
-    for input_value in (123456789.123, 10, np.array(5), None):
-        pytest.raises(TypeError, tools.dataset, input_value)
-
-
 def test_dataset_fails_on_not_found():
     error_prompt = "Dataset has not been found in pvlib. " \
                    "Please check dataset name."

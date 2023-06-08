@@ -404,7 +404,7 @@ def get_mines_horizon(latitude, longitude, altitude=None, ground_offset=0,
 
     Notes
     -----
-    The azimuthal resolution is one degree. Also, the reutned horizon
+    The azimuthal resolution is one degree. Also, the returned horizon
     elevations can also be negative.
     """
     if altitude is None:  # API will then infer altitude

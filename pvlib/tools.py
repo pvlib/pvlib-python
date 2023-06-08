@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytz
 import warnings
-import os.path
+import pathlib
 
 
 def cosd(angle):
@@ -479,8 +479,8 @@ def locate_example_dataset(dataset):
     Return a filepath to a dataset bundled with PVLIB with name `dataset`.
     This utility is intended to be used in tests and examples.
     """
-    dataset = os.path.join(pvlib.__path__[0], 'data', dataset)
-    if not os.path.exists(dataset):
-        raise IOError("Dataset has not been found in pvlib. "
-                      "Please check dataset name.")
+    dataset = pathlib.Path(pvlib.__path__[0], 'data', dataset)
+    if not dataset.exists():
+        raise ValueError("Dataset has not been found in pvlib. "
+                         "Please check dataset name.")
     return dataset

@@ -1,5 +1,6 @@
 import pytest
 
+import pvlib
 from pvlib import tools
 import numpy as np
 import pathlib
@@ -100,14 +101,19 @@ def test_degrees_to_index_1():
 
 def test_locate_example_dataset_passes():
     expected_dataset = '723170TYA.CSV'
+    assert pathlib.Path(pvlib.__path__[0], 'data',
+                        expected_dataset).exists()
     assert tools.locate_example_dataset(expected_dataset) \
-        .endswith(expected_dataset)
+           .name == expected_dataset
     assert tools.locate_example_dataset(pathlib.Path(expected_dataset)) \
-        .endswith(expected_dataset)
+           .name == expected_dataset
 
 
 def test_locate_example_dataset_fails_on_not_found():
     error_prompt = "Dataset has not been found in pvlib. " \
                    "Please check dataset name."
-    with pytest.raises(IOError, match=error_prompt):
-        tools.locate_example_dataset("_Texto_cualquiera.-formato-")
+    nonexistent_file = "_Texto_cualquiera.-formato-"
+    assert not pathlib.Path(pvlib.__path__[0], 'data',
+                            nonexistent_file).exists()
+    with pytest.raises(ValueError, match=error_prompt):
+        tools.locate_example_dataset(nonexistent_file)

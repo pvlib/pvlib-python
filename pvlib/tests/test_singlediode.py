@@ -410,15 +410,19 @@ def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
     assert np.isclose(vsc_88, 0.0, *tol)
 
 
-# @pytest.mark.parametrize('method', ['newton', 'brentq'])
-# def test_bishop88_warnings(method):
-#     """test warnings raised for incorrect kwargs"""
-#     kwargs = {
-#         'method': method,
-#         'tol': 1e-4,
-#         'xtol': 1e-4,
-#         'rtol': 1e-3,
-#         'maxiter': 35
-#     }
-#     pytest.warns(UserWarning, bishop88_i_from_v,
-#                  args=(<¿¿??>), kwargs=kwargs)
+@pytest.mark.parametrize('method, kwargs', [
+    ('newton', {
+        'tol': 1e-3,
+        'rtol': 1e-3,
+        'maxiter': 20,
+    }),
+    ('brentq', {
+        'xtol': 1e-3,
+        'rtol': 1e-3,
+        'maxiter': 20,
+    })
+])
+def test_bishop88_kwargs(method, kwargs):
+    """test kwargs modifying optimizer does not break anything"""
+    # bishop88_i_from_v(method=method, **kwargs)
+    assert False

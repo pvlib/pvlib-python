@@ -140,7 +140,8 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
        0 86758 909 4
     .. [2] C. B. Jones, C. W. Hansen, "Single Diode Parameter Extraction from
        In-Field Photovoltaic I-V Curves on a Single Board Computer", 46th IEEE
-       Photovoltaic Specialist Conference, Chicago, IL, 2019
+       Photovoltaic Specialist Conference, Chicago, IL, 2019.
+       :doi:`10.1109/PVSC40753.2019.8981330`
     """
 
     # If not provided, extract v_oc, i_sc, v_mp and i_mp from the IV curve data

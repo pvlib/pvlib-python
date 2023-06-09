@@ -250,7 +250,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
-    kwargs : keyword arguments
+    kwargs : dict
         Passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.
@@ -347,7 +347,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
-    kwargs : keyword arguments
+    kwargs : dict
         Passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.
@@ -439,7 +439,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
-    kwargs : keyword arguments
+    kwargs : dict
         Passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.

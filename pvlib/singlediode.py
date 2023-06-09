@@ -288,8 +288,6 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, voltage, *args)
     elif method == 'newton':
-        
-
         # make sure all args are numpy arrays if max size > 1
         # if voltage is an array, then make a copy to use for initial guess, v0
         args, v0, kwargs = _prepare_newton_inputs((voltage,), args, voltage,
@@ -308,7 +306,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
                       d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
-                      method='newton'):
+                      method='newton', **kwargs):
     """
     Find voltage given any current.
 
@@ -349,6 +347,10 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
+    kwargs : keyword arguments
+        Passed to root finder method. See
+        :py:func:`scipy:scipy.optimize.brentq` and
+        :py:func:`scipy:scipy.optimize.newton` parameters.
 
     Returns
     -------
@@ -359,6 +361,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth, d2mutau, NsVbi, breakdown_factor,
             breakdown_voltage, breakdown_exp)
+    method = method.lower()
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
@@ -366,7 +369,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         # calculate current residual given diode voltage "x"
         return bishop88(x, *a)[0] - i
 
-    if method.lower() == 'brentq':
+    if method == 'brentq':
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
         # arguments for possible array input
@@ -375,17 +378,20 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
             return brentq(fi, 0.0, voc,
                           args=(i, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
                                 breakdown_factor, breakdown_voltage,
-                                breakdown_exp))
+                                breakdown_exp),
+                          **kwargs)
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, current, *args)
-    elif method.lower() == 'newton':
+    elif method == 'newton':
         # make sure all args are numpy arrays if max size > 1
         # if voc_est is an array, then make a copy to use for initial guess, v0
-        args, v0 = _prepare_newton_inputs((current,), args, voc_est)
+        args, v0, kwargs = _prepare_newton_inputs((current,), args, voc_est,
+                                                  kwargs)
         vd = newton(func=lambda x, *a: fi(x, current, *a), x0=v0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
-                    args=args)
+                    args=args,
+                    **kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
     return bishop88(vd, *args)[1]
@@ -394,7 +400,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 def bishop88_mpp(photocurrent, saturation_current, resistance_series,
                  resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
                  breakdown_factor=0., breakdown_voltage=-5.5,
-                 breakdown_exp=3.28, method='newton'):
+                 breakdown_exp=3.28, method='newton', **kwargs):
     """
     Find max power point.
 
@@ -433,6 +439,10 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
+    kwargs : keyword arguments
+        Passed to root finder method. See
+        :py:func:`scipy:scipy.optimize.brentq` and
+        :py:func:`scipy:scipy.optimize.newton` parameters.
 
     Returns
     -------
@@ -444,29 +454,31 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth, d2mutau, NsVbi, breakdown_factor,
             breakdown_voltage, breakdown_exp)
+    method = method.lower()
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
     def fmpp(x, *a):
         return bishop88(x, *a, gradients=True)[6]
 
-    if method.lower() == 'brentq':
+    if method == 'brentq':
         # break out arguments for numpy.vectorize to handle broadcasting
         vec_fun = np.vectorize(
             lambda voc, iph, isat, rs, rsh, gamma, d2mutau, NsVbi, vbr_a, vbr,
             vbr_exp: brentq(fmpp, 0.0, voc,
                             args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
-                                  vbr_a, vbr, vbr_exp))
+                                  vbr_a, vbr, vbr_exp),
+                            **kwargs)
         )
         vd = vec_fun(voc_est, *args)
-    elif method.lower() == 'newton':
+    elif method == 'newton':
         # make sure all args are numpy arrays if max size > 1
         # if voc_est is an array, then make a copy to use for initial guess, v0
-        args, v0 = _prepare_newton_inputs((), args, voc_est)
+        args, v0, kwargs = _prepare_newton_inputs((), args, voc_est, kwargs)
         vd = newton(
             func=fmpp, x0=v0,
-            fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args
-        )
+            fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args,
+            **kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
     return bishop88(vd, *args)

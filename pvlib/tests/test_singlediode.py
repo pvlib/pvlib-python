@@ -444,12 +444,12 @@ def bishop88_arguments():
     ('newton', {
         'tol': 1e-3,
         'rtol': 1e-3,
-        'maxiter': 20,
+        'maxiter': 30,
     }),
     ('brentq', {
         'xtol': 1e-3,
         'rtol': 1e-3,
-        'maxiter': 20,
+        'maxiter': 30,
     })
 ])
 def test_bishop88_kwargs_pass(method, kwargs):
@@ -470,36 +470,36 @@ def test_bishop88_kwargs_pass(method, kwargs):
     # get arguments common to all bishop88_.* functions
     bishop88_args = bishop88_arguments()
 
-    # mpp_88 = bishop88_mpp(**bishop88_args, method=method, **kwargs)
-    # assert np.isclose(mpp_88[2], expected['pmp'], **tol)
+    mpp_88 = bishop88_mpp(**bishop88_args, method=method, **kwargs)
+    assert np.isclose(mpp_88[2], expected['pmp'], **tol)
 
     isc_88 = bishop88_i_from_v(0, **bishop88_args, method=method,
                                **kwargs)
     assert np.isclose(isc_88, expected['isc'], **tol)
 
-    # voc_88 = bishop88_v_from_i(0, **bishop88_args, method=method,
-    #                            **kwargs)
-    # assert np.isclose(voc_88, expected['voc'], **tol)
+    voc_88 = bishop88_v_from_i(0, **bishop88_args, method=method,
+                               **kwargs)
+    assert np.isclose(voc_88, expected['voc'], **tol)
 
-    # ioc_88 = bishop88_i_from_v(voc_88, **bishop88_args, method=method,
-    #                            **kwargs)
-    # assert np.isclose(ioc_88, 0.0, **tol)
+    ioc_88 = bishop88_i_from_v(voc_88, **bishop88_args, method=method,
+                               **kwargs)
+    assert np.isclose(ioc_88, 0.0, **tol)
 
-    # vsc_88 = bishop88_v_from_i(isc_88, **bishop88_args, method=method,
-    #                            **kwargs)
-    # assert np.isclose(vsc_88, 0.0, **tol)
+    vsc_88 = bishop88_v_from_i(isc_88, **bishop88_args, method=method,
+                               **kwargs)
+    assert np.isclose(vsc_88, 0.0, **tol)
 
 
 @pytest.mark.parametrize('method, kwargs', [
     ('newton', {
-        'tol': 1e-3,
-        'rtol': 1e-3,
+        'tol': 1e-4,
+        'rtol': 1e-4,
         'maxiter': 20,
         '_inexistent_param': "0.01"
     }),
     ('brentq', {
-        'xtol': 1e-3,
-        'rtol': 1e-3,
+        'xtol': 1e-4,
+        'rtol': 1e-4,
         'maxiter': 20,
         '_inexistent_param': "0.01"
     })
@@ -509,11 +509,11 @@ def test_bishop88_kwargs_fails(method, kwargs):
     # get arguments common to all bishop88_.* functions
     bishop88_args = bishop88_arguments()
 
-    # pytest.raises(TypeError, bishop88_mpp,
-    #               **bishop88_args, method=method, **kwargs)
+    pytest.raises(TypeError, bishop88_mpp,
+                  **bishop88_args, method=method, **kwargs)
 
     pytest.raises(TypeError, bishop88_i_from_v,
                   0, **bishop88_args, method=method, **kwargs)
 
-    # pytest.raises(TypeError, bishop88_v_from_i,
-    #               0, **bishop88_args, method=method, **kwargs)
+    pytest.raises(TypeError, bishop88_v_from_i,
+                  0, **bishop88_args, method=method, **kwargs)

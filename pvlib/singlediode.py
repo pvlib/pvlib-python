@@ -250,6 +250,9 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
+    kwargs : keyword arguments
+        Passed to root finder method. See :ref:`scipy:scipy.optimize.brentq`
+        and :ref:`scipy:scipy.optimize.newton` parameters.
 
     Returns
     -------
@@ -287,7 +290,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         # get tolerances from kwargs
         kwargs['tol'] = kwargs.pop('tol', NEWTON_DEFAULT_PARAMS['tol'])
         kwargs['maxiter'] = kwargs.pop('maxiter',
-                            NEWTON_DEFAULT_PARAMS['maxiter'])
+                                       NEWTON_DEFAULT_PARAMS['maxiter'])
 
         # make sure all args are numpy arrays if max size > 1
         # if voltage is an array, then make a copy to use for initial guess, v0

@@ -2360,6 +2360,7 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
 
         \mathit{DF} = \frac{1}{1 + \exp\left(a \left(k_t - b\right)\right)}
 
+
     Parameters
     ----------
     ghi: numeric
@@ -2402,9 +2403,11 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
        :doi:`10.1002/1099-095X(200103)12:2%3C103::AID-ENV447%3E3.0.CO;2-2`
 
     See also
+    --------
     dirint
     disc
     erbs
+    orgill_hollands
 
     Notes
     -----
@@ -2433,7 +2436,6 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
 
     dni = (ghi - dhi) / tools.cosd(solar_zenith)
     bad_values = (solar_zenith > max_zenith) | (ghi < 0) | (dni < 0)
-
     dni = np.where(bad_values, 0, dni)
     # ensure that closure relationship remains valid
     dhi = np.where(bad_values, ghi, dhi)

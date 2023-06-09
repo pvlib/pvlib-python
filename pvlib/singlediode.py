@@ -11,8 +11,7 @@ from scipy.special import lambertw
 # newton method default parameters for this module
 NEWTON_DEFAULT_PARAMS = {
     'tol': 1e-6,
-    'maxiter': 100,
-    'fprime2': None
+    'maxiter': 100
 }
 
 # intrinsic voltage per cell junction for a:Si, CdTe, Mertens et al.

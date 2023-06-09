@@ -28,7 +28,7 @@ except ImportError:
 
 times = (pd.date_range('2003-10-17 12:30:30', periods=1, freq='D')
            .tz_localize('MST'))
-unixtimes = np.array(times.tz_convert('UTC').astype(np.int64)*1.0/10**9)
+unixtimes = np.array(times.tz_convert('UTC').view(np.int64)*1.0/10**9)
 
 lat = 39.742476
 lon = -105.1786
@@ -154,13 +154,12 @@ class SpaBase:
     def test_moon_ascending_longitude(self):
         assert_almost_equal(X4, self.spa.moon_ascending_longitude(JCE), 6)
 
-    def test_longitude_nutation(self):
-        assert_almost_equal(dPsi, self.spa.longitude_nutation(
-            JCE, X0, X1, X2, X3, X4), 6)
-
-    def test_obliquity_nutation(self):
-        assert_almost_equal(dEpsilon, self.spa.obliquity_nutation(
-            JCE, X0, X1, X2, X3, X4), 6)
+    def test_longitude_obliquity_nutation(self):
+        out = np.empty((2,))
+        self.spa.longitude_obliquity_nutation(JCE, X0, X1, X2, X3, X4, out)
+        _dPsi, _dEpsilon = out[0], out[1]
+        assert_almost_equal(dPsi, _dPsi, 6)
+        assert_almost_equal(dEpsilon, _dEpsilon, 6)
 
     def test_mean_ecliptic_obliquity(self):
         assert_almost_equal(epsilon0, self.spa.mean_ecliptic_obliquity(JME), 6)
@@ -266,15 +265,15 @@ class SpaBase:
         times = pd.DatetimeIndex([dt.datetime(1996, 7, 5, 0),
                                   dt.datetime(2004, 12, 4, 0)]
                                  ).tz_localize(
-                                     'UTC').astype(np.int64)*1.0/10**9
+                                     'UTC').view(np.int64)*1.0/10**9
         sunrise = pd.DatetimeIndex([dt.datetime(1996, 7, 5, 7, 8, 15),
                                     dt.datetime(2004, 12, 4, 4, 38, 57)]
                                    ).tz_localize(
-                                       'UTC').astype(np.int64)*1.0/10**9
+                                       'UTC').view(np.int64)*1.0/10**9
         sunset = pd.DatetimeIndex([dt.datetime(1996, 7, 5, 17, 1, 4),
                                    dt.datetime(2004, 12, 4, 19, 2, 2)]
                                   ).tz_localize(
-                                      'UTC').astype(np.int64)*1.0/10**9
+                                      'UTC').view(np.int64)*1.0/10**9
         times = np.array(times)
         sunrise = np.array(sunrise)
         sunset = np.array(sunset)
@@ -284,13 +283,13 @@ class SpaBase:
 
         times = pd.DatetimeIndex([dt.datetime(1994, 1, 2), ]
                                  ).tz_localize(
-                                     'UTC').astype(np.int64)*1.0/10**9
+                                     'UTC').view(np.int64)*1.0/10**9
         sunset = pd.DatetimeIndex([dt.datetime(1994, 1, 2, 16, 59, 55), ]
                                   ).tz_localize(
-                                      'UTC').astype(np.int64)*1.0/10**9
+                                      'UTC').view(np.int64)*1.0/10**9
         sunrise = pd.DatetimeIndex([dt.datetime(1994, 1, 2, 7, 8, 12), ]
                                    ).tz_localize(
-                                       'UTC').astype(np.int64)*1.0/10**9
+                                       'UTC').view(np.int64)*1.0/10**9
         times = np.array(times)
         sunrise = np.array(sunrise)
         sunset = np.array(sunset)
@@ -305,19 +304,19 @@ class SpaBase:
                                   dt.datetime(2015, 8, 2),
                                   dt.datetime(2015, 12, 2)],
                                  ).tz_localize(
-                                     'UTC').astype(np.int64)*1.0/10**9
+                                     'UTC').view(np.int64)*1.0/10**9
         sunrise = pd.DatetimeIndex([dt.datetime(2015, 1, 2, 7, 19),
                                     dt.datetime(2015, 4, 2, 5, 43),
                                     dt.datetime(2015, 8, 2, 5, 1),
                                     dt.datetime(2015, 12, 2, 7, 1)],
                                    ).tz_localize(
-                                       'MST').astype(np.int64)*1.0/10**9
+                                       'MST').view(np.int64)*1.0/10**9
         sunset = pd.DatetimeIndex([dt.datetime(2015, 1, 2, 16, 49),
                                    dt.datetime(2015, 4, 2, 18, 24),
                                    dt.datetime(2015, 8, 2, 19, 10),
                                    dt.datetime(2015, 12, 2, 16, 38)],
                                   ).tz_localize(
-                                      'MST').astype(np.int64)*1.0/10**9
+                                      'MST').view(np.int64)*1.0/10**9
         times = np.array(times)
         sunrise = np.array(sunrise)
         sunset = np.array(sunset)
@@ -331,18 +330,18 @@ class SpaBase:
                                   dt.datetime(2015, 8, 2),
                                   dt.datetime(2015, 12, 2)],
                                  ).tz_localize(
-                                     'UTC').astype(np.int64)*1.0/10**9
+                                     'UTC').view(np.int64)*1.0/10**9
         sunrise = pd.DatetimeIndex([dt.datetime(2015, 1, 2, 7, 36),
                                     dt.datetime(2015, 4, 2, 5, 58),
                                     dt.datetime(2015, 8, 2, 5, 13),
                                     dt.datetime(2015, 12, 2, 7, 17)],
-                                   ).tz_localize('Asia/Shanghai').astype(
+                                   ).tz_localize('Asia/Shanghai').view(
                                        np.int64)*1.0/10**9
         sunset = pd.DatetimeIndex([dt.datetime(2015, 1, 2, 17, 0),
                                    dt.datetime(2015, 4, 2, 18, 39),
                                    dt.datetime(2015, 8, 2, 19, 28),
                                    dt.datetime(2015, 12, 2, 16, 50)],
-                                  ).tz_localize('Asia/Shanghai').astype(
+                                  ).tz_localize('Asia/Shanghai').view(
                                       np.int64)*1.0/10**9
         times = np.array(times)
         sunrise = np.array(sunrise)
@@ -355,7 +354,7 @@ class SpaBase:
     def test_earthsun_distance(self):
         times = (pd.date_range('2003-10-17 12:30:30', periods=1, freq='D')
                    .tz_localize('MST'))
-        unixtimes = times.tz_convert('UTC').astype(np.int64)*1.0/10**9
+        unixtimes = times.tz_convert('UTC').view(np.int64)*1.0/10**9
         unixtimes = np.array(unixtimes)
         result = self.spa.earthsun_distance(unixtimes, 64.0, 1)
         assert_almost_equal(R, result, 6)

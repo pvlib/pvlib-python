@@ -1,0 +1,29 @@
+name: test_env
+channels:
+    - defaults
+    - conda-forge
+dependencies:
+    - coveralls
+    - cython
+    - ephem
+    - h5py
+    - netcdf4
+    # - numba  # https://github.com/numba/numba/issues/8304
+    - numpy >= 1.16.0
+    - pandas >= 0.25.0
+    - pip
+    - pytest
+    - pytest-cov
+    - pytest-mock
+    - requests-mock
+    - pytest-timeout
+    - pytest-rerunfailures
+    - pytest-remotedata
+    - python=3.11
+    - pytz
+    - requests
+    - scipy >= 1.2.0
+    - statsmodels
+    - pip:
+        # - nrel-pysam>=2.0
+        - pvfactors==1.5.2

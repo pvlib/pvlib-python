@@ -337,7 +337,7 @@ def gueymard94_pw(temp_air, relative_humidity):
 
 
 first_solar_spectral_correction = deprecated(
-    since='0.9.6',
+    since='0.10.0',
     alternative='pvlib.spectrum.spectral_factor_firstsolar'
 )(pvlib.spectrum.spectral_factor_firstsolar)
 

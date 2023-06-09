@@ -422,7 +422,54 @@ def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
         'maxiter': 20,
     })
 ])
-def test_bishop88_kwargs(method, kwargs):
+def test_bishop88_kwargs_pass(method, kwargs):
     """test kwargs modifying optimizer does not break anything"""
-    # bishop88_i_from_v(method=method, **kwargs)
-    assert False
+    # build test tolerances from the kwargs passed to the method
+    tol = {
+        'atol': np.nanmax([kwargs.get('tol', np.nan),
+                           kwargs.get('xtol', np.nan)]),
+        'rtol': kwargs.get('rtol')
+    }
+    poa, temp_cell, expected = (  # reference conditions
+        get_pvsyst_fs_495()['irrad_ref'],
+        get_pvsyst_fs_495()['temp_ref'],
+        {
+            'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *
+                    get_pvsyst_fs_495()['V_mp_ref']),
+            'isc': get_pvsyst_fs_495()['I_sc_ref'],
+            'voc': get_pvsyst_fs_495()['V_oc_ref']
+        }
+    )
+
+    pvsyst_fs_495 = get_pvsyst_fs_495()
+    # evaluate PVSyst model with thin-film recombination loss current
+    # at reference conditions
+    x = pvsystem.calcparams_pvsyst(
+        effective_irradiance=poa, temp_cell=temp_cell,
+        alpha_sc=pvsyst_fs_495['alpha_sc'],
+        gamma_ref=pvsyst_fs_495['gamma_ref'],
+        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
+        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
+        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
+        R_s=pvsyst_fs_495['R_s'],
+        cells_in_series=pvsyst_fs_495['cells_in_series'],
+        EgRef=pvsyst_fs_495['EgRef']
+    )
+    y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
+             NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
+    # Now, (*x, **y) comprise cell parameters
+
+    # mpp_88 = bishop88_mpp(*x, **y, method=method, **kwargs)
+    # assert np.isclose(mpp_88[2], expected['pmp'], **tol)
+
+    isc_88 = bishop88_i_from_v(0, *x, **y, method=method, **kwargs)
+    assert np.isclose(isc_88, expected['isc'], **tol)
+
+    # voc_88 = bishop88_v_from_i(0, *x, **y, method=method, **kwargs)
+    # assert np.isclose(voc_88, expected['voc'], **tol)
+
+    # ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method, **kwargs)
+    # assert np.isclose(ioc_88, 0.0, **tol)
+
+    # vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method, **kwargs)
+    # assert np.isclose(vsc_88, 0.0, **tol)

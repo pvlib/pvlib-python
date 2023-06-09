@@ -21,6 +21,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add :py:func:`pvlib.tools.locate_example_dataset` to get example and test
+  files under `pvlib/data` path.
+  (:issue:`924`, :pull:`1763`)
 
 
 Bug fixes

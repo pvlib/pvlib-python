@@ -252,7 +252,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
        if ``breakdown_factor`` is not 0.
     kwargs : keyword arguments
         Passed to root finder method. See
-        :py:func:`scipy:optimize.brentq` and
+        :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.
 
     Returns

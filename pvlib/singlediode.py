@@ -288,14 +288,12 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, voltage, *args)
     elif method == 'newton':
-        # get tolerances from kwargs
-        kwargs['tol'] = kwargs.pop('tol', NEWTON_DEFAULT_PARAMS['tol'])
-        kwargs['maxiter'] = kwargs.pop('maxiter',
-                                       NEWTON_DEFAULT_PARAMS['maxiter'])
+        
 
         # make sure all args are numpy arrays if max size > 1
         # if voltage is an array, then make a copy to use for initial guess, v0
-        args, v0 = _prepare_newton_inputs((voltage,), args, voltage)
+        args, v0, kwargs = _prepare_newton_inputs((voltage,), args, voltage,
+                                                  kwargs)
         vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=v0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
                     args=args,
@@ -498,7 +496,7 @@ def _get_size_and_shape(args):
     return size, shape
 
 
-def _prepare_newton_inputs(i_or_v_tup, args, v0):
+def _prepare_newton_inputs(i_or_v_tup, args, v0, kwargs):
     # broadcast arguments for newton method
     # the first argument should be a tuple, eg: (i,), (v,) or ()
     size, shape = _get_size_and_shape(i_or_v_tup + args)
@@ -508,7 +506,12 @@ def _prepare_newton_inputs(i_or_v_tup, args, v0):
     # copy v0 to a new array and broadcast it to the shape of max size
     if shape is not None:
         v0 = np.broadcast_to(v0, shape).copy()
-    return args, v0
+
+    # set abs tolerance and maxiter from kwargs if not provided
+    kwargs['tol'] = kwargs.pop('tol', NEWTON_DEFAULT_PARAMS['tol'])
+    kwargs['maxiter'] = kwargs.pop('maxiter', NEWTON_DEFAULT_PARAMS['maxiter'])
+
+    return args, v0, kwargs
 
 
 def _lambertw_v_from_i(current, photocurrent, saturation_current,

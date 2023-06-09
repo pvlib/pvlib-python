@@ -170,11 +170,11 @@ def test_read_psm3():
 def test_read_psm3_map_variables():
     """test read_psm3 map_variables=True"""
     data, metadata = psm3.read_psm3(MANUAL_TEST_DATA, map_variables=True)
-    columns_mapped = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'dhi', 'dni',
-                      'ghi', 'dhi_clear', 'dni_clear', 'ghi_clear',
+    columns_mapped = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'dhi', 'ghi',
+                      'dni', 'ghi_clear', 'dhi_clear', 'dni_clear',
                       'Cloud Type', 'Dew Point', 'solar_zenith',
                       'Fill Flag', 'albedo', 'wind_speed',
-                      'precipitable_water', 'wind_direction',
+                      'wind_direction', 'precipitable_water',
                       'relative_humidity', 'temp_air', 'pressure']
     data, metadata = psm3.read_psm3(MANUAL_TEST_DATA, map_variables=True)
     assert_index_equal(data.columns, pd.Index(columns_mapped))

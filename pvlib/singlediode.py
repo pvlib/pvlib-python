@@ -2,7 +2,6 @@
 Low-level functions for solving the single diode equation.
 """
 
-import warnings
 import numpy as np
 from pvlib.tools import _golden_sect_DataFrame
 

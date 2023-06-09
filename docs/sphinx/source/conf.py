@@ -365,6 +365,11 @@ sphinx_gallery_conf = {
     # Modules for which function/class level galleries are created. In
     # this case only pvlib, could include others though.  must be tuple of str
     'doc_module': ('pvlib',),
+
+    # objects to exclude from implicit backreferences
+    # https://sphinx-gallery.github.io/stable/configuration.html
+    # Section #add-mini-galleries-for-api-documentation
+    'exclude_implicit_doc': {r'pvlib\.tools\.locate_example_dataset'},
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html

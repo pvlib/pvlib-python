@@ -4,6 +4,25 @@
 Forecasting
 ***********
 
+.. warning::
+
+    The ``pvlib.forecast`` module is deprecated as of version ``0.9.1``.
+
+    Because none of the current pvlib team members are able to continue
+    maintaining it, the functionality in ``pvlib.forecast`` is deprecated
+    and will be removed without replacement in a future version.  If you
+    are interested in maintaining this functionality, please let us know.
+
+    You can fetch forecast data yourself using ``siphon`` (see the
+    docs below this warning) and the code from pvlib v0.9.0 as a reference:
+    https://github.com/pvlib/pvlib-python/blob/v0.9.0/pvlib/forecast.py
+
+    The `Solar Forecast Arbiter Core
+    <https://solarforecastarbiter-core.readthedocs.io/en/stable/reference-forecasts.html>`_
+    offers similar (and more robust) forecast processing functionality
+    and may be a suitable replacement for some users.
+
+
 pvlib python provides a set of functions and classes that make it easy
 to obtain weather forecast data and convert that data into a PV power
 forecast. Users can retrieve standardized weather forecast data relevant
@@ -27,9 +46,9 @@ We do not know of a similarly easy way to access archives of forecast data.
 This document demonstrates how to use pvlib python to create a PV power
 forecast using these tools. The `forecast
 <http://nbviewer.jupyter.org/github/pvlib/pvlib-python/blob/
-master/docs/tutorials/forecast.ipynb>`_ and `forecast_to_power
+main/docs/tutorials/forecast.ipynb>`_ and `forecast_to_power
 <http://nbviewer.jupyter.org/github/pvlib/pvlib-python/blob/
-master/docs/tutorials/forecast_to_power.ipynb>`_ Jupyter notebooks
+main/docs/tutorials/forecast_to_power.ipynb>`_ Jupyter notebooks
 provide additional example code.
 
 .. warning::

@@ -7,14 +7,14 @@ import pandas as pd
 from pvlib.tools import cosd, sind, tand
 from pvlib.bifacial import utils
 from pvlib.shading import masking_angle
-from pvlib.irradiance import beam_component, aoi
+from pvlib.irradiance import beam_component, aoi, haydavies
 
 
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
-                         pitch, max_rows=10, npoints=100):
+                         pitch, max_rows=10, npoints=100, vectorize=False):
     """
-    Integrated and per-point view factors from the ground to the sky at points
-    between interior rows of the array.
+    Integrated view factor to the sky from the ground underneath
+    interior rows of the array.
 
     Parameters
     ----------
@@ -36,20 +36,16 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
         Maximum number of rows to consider in front and behind the current row.
     npoints : int, default 100
         Number of points used to discretize distance along the ground.
+    vectorize : bool, default False
+        If True, vectorize the view factor calculation across ``surface_tilt``.
+        This increases speed with the cost of increased memory usage.
 
     Returns
     -------
-    fgnd_sky : float
+    fgnd_sky : numeric
         Integration of view factor over the length between adjacent, interior
-        rows. [unitless]
-    fz : ndarray
-        Fraction of distance from the previous row to the next row. [unitless]
-    fz_sky : ndarray
-        View factors at discrete points between adjacent, interior rows.
-        [unitless]
-
+        rows.  Shape matches that of ``surface_tilt``. [unitless]
     """
-    # TODO: vectorize over surface_tilt
     # Abuse utils._vf_ground_sky_2d by supplying surface_tilt in place
     # of a signed rotation. This is OK because
     # 1) z span the full distance between 2 rows, and
@@ -58,12 +54,16 @@ def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
     # The VFs to the sky will thus be symmetric around z=0.5
     z = np.linspace(0, 1, npoints)
     rotation = np.atleast_1d(surface_tilt)
-    fz_sky = np.zeros((len(rotation), npoints))
-    for k, r in enumerate(rotation):
-        vf, _ = utils._vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
-        fz_sky[k, :] = vf
+    if vectorize:
+        fz_sky = utils._vf_ground_sky_2d(z, rotation, gcr, pitch, height,
+                                         max_rows)
+    else:
+        fz_sky = np.zeros((npoints, len(rotation)))
+        for k, r in enumerate(rotation):
+            vf = utils._vf_ground_sky_2d(z, r, gcr, pitch, height, max_rows)
+            fz_sky[:, k] = vf[:, 0]  # remove spurious rotation dimension
     # calculate the integrated view factor for all of the ground between rows
-    return np.trapz(fz_sky, z, axis=1)
+    return np.trapz(fz_sky, z, axis=0)
 
 
 def _poa_ground_shadows(poa_ground, f_gnd_beam, df, vf_gnd_sky):
@@ -103,7 +103,8 @@ def _vf_row_sky_integ(f_x, surface_tilt, gcr, npoints=100):
     Parameters
     ----------
     f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
@@ -163,7 +164,8 @@ def _poa_sky_diffuse_pv(f_x, dhi, vf_shade_sky_integ, vf_noshade_sky_integ):
     Parameters
     ----------
     f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
     dhi : numeric
         Diffuse horizontal irradiance (DHI). [W/m^2]
     vf_shade_sky_integ : numeric
@@ -216,8 +218,8 @@ def _ground_angle(x, surface_tilt, gcr):
     #  :         \  v      *-.\
     #  :          \<-----P---->\
 
-    x1 = x * sind(surface_tilt)
-    x2 = (x * cosd(surface_tilt) + 1 / gcr)
+    x1 = gcr * x * sind(surface_tilt)
+    x2 = gcr * x * cosd(surface_tilt) + 1
     psi = np.arctan2(x1, x2)  # do this first because it handles 0 / 0
     return np.rad2deg(psi)
 
@@ -258,7 +260,8 @@ def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):
     Parameters
     ----------
     f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
@@ -321,7 +324,8 @@ def _poa_ground_pv(f_x, poa_ground, f_gnd_pv_shade, f_gnd_pv_noshade):
     Parameters
     ----------
     f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
     poa_ground : numeric
         Ground-reflected irradiance that would reach the row surface if the
         full ground was visible. poa_gnd_sky accounts for limited view of the
@@ -401,7 +405,8 @@ def _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
 
 def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
                        solar_azimuth, gcr, height, pitch, ghi, dhi, dni,
-                       albedo, iam=1.0, npoints=100):
+                       albedo, model='isotropic', dni_extra=None, iam=1.0,
+                       npoints=100, vectorize=False):
     r"""
     Calculate plane-of-array (POA) irradiance on one side of a row of modules.
 
@@ -457,12 +462,24 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     albedo : numeric
         Surface albedo. [unitless]
 
+    model : str, default 'isotropic'
+        Irradiance model - can be one of 'isotropic' or 'haydavies'.
+
+    dni_extra : numeric, optional
+        Extraterrestrial direct normal irradiance. Required when
+        ``model='haydavies'``. [W/m2]
+
     iam : numeric, default 1.0
         Incidence angle modifier, the fraction of direct irradiance incident
         on the surface that is not reflected away. [unitless]
 
     npoints : int, default 100
-        Number of points used to discretize distance along the ground.
+        Number of discretization points for calculating integrated view
+        factors.
+
+    vectorize : bool, default False
+        If True, vectorize the view factor calculation across ``surface_tilt``.
+        This increases speed with the cost of increased memory usage.
 
     Returns
     -------
@@ -495,6 +512,27 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     --------
     get_irradiance
     """
+    if model == 'haydavies':
+        if dni_extra is None:
+            raise ValueError(f'must supply dni_extra for {model} model')
+        # Call haydavies first time within the horizontal plane - to subtract
+        # circumsolar_horizontal from DHI
+        sky_diffuse_comps_horizontal = haydavies(0, 180, dhi, dni, dni_extra,
+                                                 solar_zenith, solar_azimuth,
+                                                 return_components=True)
+        circumsolar_horizontal = sky_diffuse_comps_horizontal['circumsolar']
+
+        # Call haydavies a second time where circumsolar_normal is facing
+        # directly towards sun, and can be added to DNI
+        sky_diffuse_comps_normal = haydavies(solar_zenith, solar_azimuth, dhi,
+                                             dni, dni_extra, solar_zenith,
+                                             solar_azimuth,
+                                             return_components=True)
+        circumsolar_normal = sky_diffuse_comps_normal['circumsolar']
+
+        dhi = dhi - circumsolar_horizontal
+        dni = dni + circumsolar_normal
+
     # Calculate some geometric quantities
     # rows to consider in front and behind current row
     # ensures that view factors to the sky are computed to within 5 degrees
@@ -509,7 +547,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
     # method differs from [1], Eq. 7 and Eq. 8; height is defined at row
     # center rather than at row lower edge as in [1].
     vf_gnd_sky = _vf_ground_sky_integ(
-        surface_tilt, surface_azimuth, gcr, height, pitch, max_rows, npoints)
+        surface_tilt, surface_azimuth, gcr, height, pitch, max_rows, npoints,
+        vectorize)
     # fraction of row slant height that is shaded from direct irradiance
     f_x = _shaded_fraction(solar_zenith, solar_azimuth, surface_tilt,
                            surface_azimuth, gcr)
@@ -580,9 +619,9 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
 
 def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    gcr, height, pitch, ghi, dhi, dni,
-                   albedo, iam_front=1.0, iam_back=1.0,
-                   bifaciality=0.8, shade_factor=-0.02,
-                   transmission_factor=0, npoints=100):
+                   albedo, model='isotropic', dni_extra=None, iam_front=1.0,
+                   iam_back=1.0, bifaciality=0.8, shade_factor=-0.02,
+                   transmission_factor=0, npoints=100, vectorize=False):
     """
     Get front and rear irradiance using the infinite sheds model.
 
@@ -643,6 +682,13 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     albedo : numeric
         Surface albedo. [unitless]
 
+    model : str, default 'isotropic'
+        Irradiance model - can be one of 'isotropic' or 'haydavies'.
+
+    dni_extra : numeric, optional
+        Extraterrestrial direct normal irradiance. Required when
+        ``model='haydavies'``. [W/m2]
+
     iam_front : numeric, default 1.0
         Incidence angle modifier, the fraction of direct irradiance incident
         on the front surface that is not reflected away. [unitless]
@@ -666,7 +712,12 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         etc. A negative value is a reduction in back irradiance. [unitless]
 
     npoints : int, default 100
-        Number of points used to discretize distance along the ground.
+        Number of discretization points for calculating integrated view
+        factors.
+
+    vectorize : bool, default False
+        If True, vectorize the view factor calculation across ``surface_tilt``.
+        This increases speed with the cost of increased memory usage.
 
     Returns
     -------
@@ -720,13 +771,15 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         surface_tilt=surface_tilt, surface_azimuth=surface_azimuth,
         solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
         gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
-        albedo=albedo, iam=iam_front, npoints=npoints)
+        albedo=albedo, model=model, dni_extra=dni_extra, iam=iam_front,
+        npoints=npoints, vectorize=vectorize)
     # back side POA irradiance
     irrad_back = get_irradiance_poa(
         surface_tilt=backside_tilt, surface_azimuth=backside_sysaz,
         solar_zenith=solar_zenith, solar_azimuth=solar_azimuth,
         gcr=gcr, height=height, pitch=pitch, ghi=ghi, dhi=dhi, dni=dni,
-        albedo=albedo, iam=iam_back, npoints=npoints)
+        albedo=albedo, model=model, dni_extra=dni_extra, iam=iam_back,
+        npoints=npoints, vectorize=vectorize)
 
     colmap_front = {
         'poa_global': 'poa_front',

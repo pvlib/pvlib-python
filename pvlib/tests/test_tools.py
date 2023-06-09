@@ -45,6 +45,22 @@ def test__golden_sect_DataFrame_vector():
     v, x = tools._golden_sect_DataFrame(params, lower, upper,
                                         _obj_test_golden_sect)
     assert np.allclose(x, expected, atol=1e-8)
+    # some upper and lower bounds equal
+    params = {'c': np.array([1., 2., 1.]), 'n': np.array([1., 1., 1.])}
+    lower = np.array([0., 0.001, 1.])
+    upper = np.array([1., 1.2, 1.])
+    expected = np.array([0.5, 0.25, 1.0])  # x values for maxima
+    v, x = tools._golden_sect_DataFrame(params, lower, upper,
+                                        _obj_test_golden_sect)
+    assert np.allclose(x, expected, atol=1e-8)
+    # all upper and lower bounds equal, arrays of length 1
+    params = {'c': np.array([1.]), 'n': np.array([1.])}
+    lower = np.array([1.])
+    upper = np.array([1.])
+    expected = np.array([1.])  # x values for maxima
+    v, x = tools._golden_sect_DataFrame(params, lower, upper,
+                                        _obj_test_golden_sect)
+    assert np.allclose(x, expected, atol=1e-8)
 
 
 def test__golden_sect_DataFrame_nans():
@@ -72,3 +88,10 @@ def test__golden_sect_DataFrame_nans():
     v, x = tools._golden_sect_DataFrame(params, lower, upper,
                                         _obj_test_golden_sect)
     assert np.allclose(x, expected, atol=1e-8, equal_nan=True)
+
+
+def test_degrees_to_index_1():
+    """Test that _degrees_to_index raises an error when something other than
+    'latitude' or 'longitude' is passed."""
+    with pytest.raises(IndexError):  # invalid value for coordinate argument
+        tools._degrees_to_index(degrees=22.0, coordinate='width')

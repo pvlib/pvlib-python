@@ -26,7 +26,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
 # Dictionary mapping PVGIS names to pvlib names
-PVGIS_VARIABLE_MAP = {
+VARIABLE_MAP = {
     'G(h)': 'ghi',
     'Gb(n)': 'dni',
     'Gd(h)': 'dhi',
@@ -45,7 +45,7 @@ PVGIS_VARIABLE_MAP = {
 
 def get_pvgis_hourly(latitude, longitude, start=None, end=None,
                      raddatabase=None, components=True,
-                     surface_tilt=0, surface_azimuth=0,
+                     surface_tilt=0, surface_azimuth=180,
                      outputformat='json',
                      usehorizon=True, userhorizon=None,
                      pvcalculation=False,
@@ -76,9 +76,15 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         Otherwise only global irradiance is returned.
     surface_tilt: float, default: 0
         Tilt angle from horizontal plane. Ignored for two-axis tracking.
-    surface_azimuth: float, default: 0
-        Orientation (azimuth angle) of the (fixed) plane. 0=south, 90=west,
-        -90: east. Ignored for tracking systems.
+    surface_azimuth: float, default: 180
+        Orientation (azimuth angle) of the (fixed) plane. Counter-clockwise
+        from north (north=0, south=180). This is offset 180 degrees from
+        the convention used by PVGIS. Ignored for tracking systems.
+
+        .. versionchanged:: 0.10.0
+           The `surface_azimuth` parameter now follows the pvlib convention, which
+           is counterclockwise from north. However, the convention used by the
+           PVGIS website and pvlib<=0.9.5 is offset by 180 degrees.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None
@@ -112,10 +118,11 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         documentation [2]_ for more info.
     url: str, default: :const:`pvlib.iotools.pvgis.URL`
         Base url of PVGIS API. ``seriescalc`` is appended to get hourly data
-        endpoint.
+        endpoint. Note, a specific PVGIS version can be specified, e.g.,
+        https://re.jrc.ec.europa.eu/api/v5_2/
     map_variables: bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
     timeout: int, default: 30
         Time in seconds to wait for server response before timeout
 
@@ -138,10 +145,17 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     Hint
     ----
     PVGIS provides access to a number of different solar radiation datasets,
-    including satellite-based (SARAH, CMSAF, and NSRDB PSM3) and re-analysis
-    products (ERA5 and COSMO). Each data source has a different geographical
-    coverage and time stamp convention, e.g., SARAH and CMSAF provide
-    instantaneous values, whereas values from ERA5 are averages for the hour.
+    including satellite-based (SARAH, SARAH2, and NSRDB PSM3) and re-analysis
+    products (ERA5). Each data source has a different geographical coverage and
+    time stamp convention, e.g., SARAH and SARAH2 provide instantaneous values,
+    whereas values from ERA5 are averages for the hour.
+
+    Warning
+    -------
+    The azimuth orientation specified in the output metadata does not
+    correspond to the pvlib convention, but is offset 180 degrees. This is
+    despite the fact that the input parameter `surface_tilt` has to be
+    specified according to the pvlib convention.
 
     Notes
     -----
@@ -172,6 +186,12 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     --------
     pvlib.iotools.read_pvgis_hourly, pvlib.iotools.get_pvgis_tmy
 
+    Examples
+    --------
+    >>> # Retrieve two years of irradiance data from PVGIS:
+    >>> data, meta, inputs = pvlib.iotools.get_pvgis_hourly(  # doctest: +SKIP
+    >>>    latitude=45, longitude=8, start=2015, end=2016)  # doctest: +SKIP
+
     References
     ----------
     .. [1] `PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
@@ -184,7 +204,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     """  # noqa: E501
     # use requests to format the query string by passing params dictionary
     params = {'lat': latitude, 'lon': longitude, 'outputformat': outputformat,
-              'angle': surface_tilt, 'aspect': surface_azimuth,
+              'angle': surface_tilt, 'aspect': surface_azimuth-180,
               'pvcalculation': int(pvcalculation),
               'pvtechchoice': pvtechchoice, 'mountingplace': mountingplace,
               'trackingtype': trackingtype, 'components': int(components),
@@ -228,7 +248,7 @@ def _parse_pvgis_hourly_json(src, map_variables):
     data = data.drop('time', axis=1)
     data = data.astype(dtype={'Int': 'int'})  # The 'Int' column to be integer
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
     return data, inputs, metadata
 
 
@@ -270,7 +290,7 @@ def _parse_pvgis_hourly_csv(src, map_variables):
     data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
     data = data.drop('time', axis=1)
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
     # All columns should have the dtype=float, except 'Int' which should be
     # integer. It is necessary to convert to float, before converting to int
     data = data.astype(float).astype(dtype={'Int': 'int'})
@@ -297,7 +317,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         ``pvgis_format`` is required and must be in ``['csv', 'json']``.
     map_variables: bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -307,6 +327,11 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         the inputs
     metadata : dict
         metadata
+
+    Warning
+    -------
+    The azimuth orientation specified in the output metadata does not
+    correspond to the pvlib convention, but is offset 180 degrees.
 
     Raises
     ------
@@ -369,8 +394,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None, url=URL,
                   map_variables=None, timeout=30):
     """
-    Get TMY data from PVGIS. For more information see the PVGIS [1]_ TMY tool
-    documentation [2]_.
+    Get TMY data from PVGIS.
+
+    For more information see the PVGIS [1]_ TMY tool documentation [2]_.
 
     Parameters
     ----------
@@ -396,7 +422,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable const:`VARIABLE_MAP`.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 
@@ -428,13 +454,12 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         the error message in the response will be raised as an exception,
         otherwise raise whatever ``HTTP/1.1`` error occurred
 
-    See also
+    See Also
     --------
     read_pvgis_tmy
 
     References
     ----------
-
     .. [1] `PVGIS <https://ec.europa.eu/jrc/en/pvgis>`_
     .. [2] `PVGIS TMY tool <https://ec.europa.eu/jrc/en/PVGIS/tools/tmy>`_
     .. [3] `PVGIS horizon profile tool
@@ -492,7 +517,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         )
         map_variables = False
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data, months_selected, inputs, meta
 
@@ -566,7 +591,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         be in ``['csv', 'epw', 'json', 'basic']``.
     map_variables: bool
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable PVGIS_VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
 
     Returns
@@ -584,12 +609,12 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
     ------
     ValueError
         if ``pvgis_format`` is ``None`` and the file extension is neither
-        ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided as
-        input but isn't in ``['csv', 'epw', 'json', 'basic']``
+        ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided
+        as input but isn't in ``['csv', 'epw', 'json', 'basic']``
     TypeError
         if ``pvgis_format`` is ``None`` and ``filename`` is a buffer
 
-    See also
+    See Also
     --------
     get_pvgis_tmy
     """
@@ -655,7 +680,60 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         )
         map_variables = False
     if map_variables:
-        data = data.rename(columns=PVGIS_VARIABLE_MAP)
+        data = data.rename(columns=VARIABLE_MAP)
 
     return data, months_selected, inputs, meta
 
+
+def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
+    """Get horizon data from PVGIS.
+
+    Parameters
+    ----------
+    latitude : float
+        Latitude in degrees north
+    longitude : float
+        Longitude in degrees east
+    url: str, default: :const:`pvlib.iotools.pvgis.URL`
+        Base URL for PVGIS
+    kwargs:
+        Passed to requests.get
+
+    Returns
+    -------
+    data : pd.Series
+        Pandas Series of the retrived horizon elevation angles. Index is the
+        corresponding horizon azimuth angles.
+    metadata : dict
+        Metadata returned by PVGIS.
+
+    Notes
+    -----
+    The horizon azimuths are specified clockwise from north, e.g., south=180.
+    This is the standard pvlib convention, although the PVGIS website specifies
+    south=0.
+
+    References
+    ----------
+    .. [1] `PVGIS horizon profile tool
+       <https://ec.europa.eu/jrc/en/PVGIS/tools/horizon>`_
+    """
+    params = {'lat': latitude, 'lon': longitude, 'outputformat': 'json'}
+    res = requests.get(url + 'printhorizon', params=params, **kwargs)
+    if not res.ok:
+        try:
+            err_msg = res.json()
+        except Exception:
+            res.raise_for_status()
+        else:
+            raise requests.HTTPError(err_msg['message'])
+    json_output = res.json()
+    metadata = json_output['meta']
+    data = pd.DataFrame(json_output['outputs']['horizon_profile'])
+    data.columns = ['horizon_azimuth', 'horizon_elevation']
+    # Convert azimuth to pvlib convention (north=0, south=180)
+    data['horizon_azimuth'] += 180
+    data.set_index('horizon_azimuth', inplace=True)
+    data = data['horizon_elevation']  # convert to pd.Series
+    data = data[data.index < 360]  # remove duplicate north point (0 and 360)
+    return data, metadata

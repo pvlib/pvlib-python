@@ -18,6 +18,7 @@ from pvlib.location import Location
 from pvlib.pvsystem import FixedMount
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
+from pvlib.tools import cosd
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -1078,11 +1079,12 @@ def test_v_from_i(fixture_v_from_i, method, atol):
     IL = fixture_v_from_i['IL']
     V_expected = fixture_v_from_i['V_expected']
 
-    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL, method=method)
-    assert(isinstance(V, type(V_expected)))
-    if isinstance(V, type(np.ndarray)):
-        assert(isinstance(V.dtype, type(V_expected.dtype)))
-        assert(V.shape == V_expected.shape)
+    V = pvsystem.v_from_i(I, IL, I0, Rs, Rsh, nNsVth, method=method)
+
+    assert isinstance(V, type(V_expected))
+    if isinstance(V, np.ndarray):
+        assert isinstance(V.dtype, type(V_expected.dtype))
+        assert V.shape == V_expected.shape
     assert_allclose(V, V_expected, atol=atol)
 
 
@@ -1091,7 +1093,7 @@ def test_i_from_v_from_i(fixture_v_from_i):
     Rsh = fixture_v_from_i['Rsh']
     Rs = fixture_v_from_i['Rs']
     nNsVth = fixture_v_from_i['nNsVth']
-    I = fixture_v_from_i['I']
+    current = fixture_v_from_i['I']
     I0 = fixture_v_from_i['I0']
     IL = fixture_v_from_i['IL']
     V = fixture_v_from_i['V_expected']
@@ -1099,15 +1101,17 @@ def test_i_from_v_from_i(fixture_v_from_i):
     # Convergence criteria
     atol = 1.e-11
 
-    I_expected = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL,
+    I_expected = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth,
                                    method='lambertw')
-    assert_allclose(I, I_expected, atol=atol)
-    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
-    assert(isinstance(I, type(I_expected)))
-    if isinstance(I, type(np.ndarray)):
-        assert(isinstance(I.dtype, type(I_expected.dtype)))
-        assert(I.shape == I_expected.shape)
-    assert_allclose(I, I_expected, atol=atol)
+    assert_allclose(current, I_expected, atol=atol)
+
+    current = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth)
+
+    assert isinstance(current, type(I_expected))
+    if isinstance(current, np.ndarray):
+        assert isinstance(current.dtype, type(I_expected.dtype))
+        assert current.shape == I_expected.shape
+    assert_allclose(current, I_expected, atol=atol)
 
 
 @pytest.fixture(params=[
@@ -1196,41 +1200,42 @@ def test_i_from_v(fixture_i_from_v, method, atol):
     IL = fixture_i_from_v['IL']
     I_expected = fixture_i_from_v['I_expected']
 
-    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method=method)
-    assert(isinstance(I, type(I_expected)))
-    if isinstance(I, type(np.ndarray)):
-        assert(isinstance(I.dtype, type(I_expected.dtype)))
-        assert(I.shape == I_expected.shape)
-    assert_allclose(I, I_expected, atol=atol)
+    current = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth, method=method)
+
+    assert isinstance(current, type(I_expected))
+    if isinstance(current, np.ndarray):
+        assert isinstance(current.dtype, type(I_expected.dtype))
+        assert current.shape == I_expected.shape
+    assert_allclose(current, I_expected, atol=atol)
 
 
 def test_PVSystem_i_from_v(mocker):
     system = pvsystem.PVSystem()
     m = mocker.patch('pvlib.pvsystem.i_from_v', autospec=True)
-    args = (20, 0.1, 0.5, 7.5049875193450521, 6e-7, 7)
+    args = (7.5049875193450521, 7, 6e-7, 0.1, 20, 0.5)
     system.i_from_v(*args)
     m.assert_called_once_with(*args)
 
 
 def test_i_from_v_size():
     with pytest.raises(ValueError):
-        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
+        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0,
+        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
                           method='brentq')
     with pytest.raises(ValueError):
-        pvsystem.i_from_v(20, 0.1, 0.5, [7.5] * 3, 6.0e-7, np.array([7., 7.]),
+        pvsystem.i_from_v([7.5] * 3, np.array([7., 7.]), 6e-7, 0.1, 20, 0.5,
                           method='newton')
 
 
 def test_v_from_i_size():
     with pytest.raises(ValueError):
-        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0)
+        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0,
+        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
                           method='brentq')
     with pytest.raises(ValueError):
-        pvsystem.v_from_i(20, [0.1], 0.5, [3.0] * 3, 6.0e-7, np.array([7., 7.]),
+        pvsystem.v_from_i([3.] * 3, np.array([7., 7.]), 6e-7, [0.1], 20, 0.5,
                           method='newton')
 
 
@@ -1327,8 +1332,8 @@ def test_singlediode_array():
 
     sd = pvsystem.singlediode(photocurrent, saturation_current,
                               resistance_series, resistance_shunt, nNsVth)
-    expected = pvsystem.i_from_v(resistance_shunt, resistance_series, nNsVth,
-                                 sd['v_mp'], saturation_current, photocurrent,
+    expected = pvsystem.i_from_v(sd['v_mp'], photocurrent, saturation_current,
+                                 resistance_series, resistance_shunt, nNsVth,
                                  method='lambertw')
     assert_allclose(sd['i_mp'], expected, atol=1e-8)
 
@@ -1403,20 +1408,19 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                          [3.0107985972, 2.8841320056, 0.],
                                          [6.0072629615, 5.7462022810, 0.]]))])
 
-
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)
 
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
 
-    expected['i_mp'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v_mp'], I0, IL,
+    expected['i_mp'] = pvsystem.i_from_v(out['v_mp'], IL, I0, Rs, Rsh, nNsVth,
                                          method='lambertw')
-    expected['v_mp'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i_mp'], I0, IL,
+    expected['v_mp'] = pvsystem.v_from_i(out['i_mp'], IL, I0, Rs, Rsh, nNsVth,
                                          method='lambertw')
-    expected['i'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v'].T, I0, IL,
-                                         method='lambertw').T
-    expected['v'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i'].T, I0, IL,
-                                         method='lambertw').T
+    expected['i'] = pvsystem.i_from_v(out['v'].T, IL, I0, Rs, Rsh, nNsVth,
+                                      method='lambertw').T
+    expected['v'] = pvsystem.v_from_i(out['i'].T, IL, I0, Rs, Rsh, nNsVth,
+                                      method='lambertw').T
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-6)
@@ -1673,51 +1677,70 @@ def test_PVSystem_multiple_array_get_aoi():
     assert aoi_one > 0
 
 
-def test_PVSystem_get_irradiance():
-    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
+@pytest.fixture
+def solar_pos():
     times = pd.date_range(start='20160101 1200-0700',
                           end='20160101 1800-0700', freq='6H')
     location = Location(latitude=32, longitude=-111)
-    solar_position = location.get_solarposition(times)
-    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
-                          index=times)
+    return location.get_solarposition(times)
 
-    irradiance = system.get_irradiance(solar_position['apparent_zenith'],
-                                       solar_position['azimuth'],
+
+def test_PVSystem_get_irradiance(solar_pos):
+    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
+    irrads = pd.DataFrame({'dni':[900,0], 'ghi':[600,0], 'dhi':[100,0]},
+                          index=solar_pos.index)
+
+    irradiance = system.get_irradiance(solar_pos['apparent_zenith'],
+                                       solar_pos['azimuth'],
                                        irrads['dni'],
                                        irrads['ghi'],
                                        irrads['dhi'])
 
     expected = pd.DataFrame(data=np.array(
-        [[ 883.65494055,  745.86141676,  137.79352379,  126.397131  ,
-              11.39639279],
-           [   0.        ,   -0.        ,    0.        ,    0.        ,    0.        ]]),
+        [[883.65494055, 745.86141676, 137.79352379, 126.397131, 11.39639279],
+         [0., -0., 0., 0., 0.]]),
                             columns=['poa_global', 'poa_direct',
                                      'poa_diffuse', 'poa_sky_diffuse',
                                      'poa_ground_diffuse'],
-                            index=times)
-
+                            index=solar_pos.index)
     assert_frame_equal(irradiance, expected, check_less_precise=2)
 
 
-def test_PVSystem_get_irradiance_model(mocker):
+def test_PVSystem_get_irradiance_albedo(solar_pos):
+    system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
+    irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0],
+                           'albedo': [0.5, 0.5]},
+                          index=solar_pos.index)
+    # albedo as a Series
+    irradiance = system.get_irradiance(solar_pos['apparent_zenith'],
+                                       solar_pos['azimuth'],
+                                       irrads['dni'],
+                                       irrads['ghi'],
+                                       irrads['dhi'],
+                                       albedo=irrads['albedo'])
+    expected = pd.DataFrame(data=np.array(
+        [[895.05134334, 745.86141676, 149.18992658, 126.397131, 22.79279558],
+         [0., -0., 0., 0., 0.]]),
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse'],
+        index=solar_pos.index)
+    assert_frame_equal(irradiance, expected, check_less_precise=2)
+
+
+def test_PVSystem_get_irradiance_model(mocker, solar_pos):
     spy_perez = mocker.spy(irradiance, 'perez')
     spy_haydavies = mocker.spy(irradiance, 'haydavies')
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
-    location = Location(latitude=32, longitude=-111)
-    solar_position = location.get_solarposition(times)
     irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
-                          index=times)
-    system.get_irradiance(solar_position['apparent_zenith'],
-                          solar_position['azimuth'],
+                          index=solar_pos.index)
+    system.get_irradiance(solar_pos['apparent_zenith'],
+                          solar_pos['azimuth'],
                           irrads['dni'],
                           irrads['ghi'],
                           irrads['dhi'])
     spy_haydavies.assert_called_once()
-    system.get_irradiance(solar_position['apparent_zenith'],
-                          solar_position['azimuth'],
+    system.get_irradiance(solar_pos['apparent_zenith'],
+                          solar_pos['azimuth'],
                           irrads['dni'],
                           irrads['ghi'],
                           irrads['dhi'],
@@ -1725,31 +1748,28 @@ def test_PVSystem_get_irradiance_model(mocker):
     spy_perez.assert_called_once()
 
 
-def test_PVSystem_multi_array_get_irradiance():
+def test_PVSystem_multi_array_get_irradiance(solar_pos):
     array_one = pvsystem.Array(pvsystem.FixedMount(surface_tilt=32,
                                                    surface_azimuth=135))
     array_two = pvsystem.Array(pvsystem.FixedMount(surface_tilt=5,
                                                    surface_azimuth=150))
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
-    location = Location(latitude=32, longitude=-111)
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
-    solar_position = location.get_solarposition(times)
+
     irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
-                          index=times)
+                          index=solar_pos.index)
     array_one_expected = array_one.get_irradiance(
-        solar_position['apparent_zenith'],
-        solar_position['azimuth'],
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
         irrads['dni'], irrads['ghi'], irrads['dhi']
     )
     array_two_expected = array_two.get_irradiance(
-        solar_position['apparent_zenith'],
-        solar_position['azimuth'],
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
         irrads['dni'], irrads['ghi'], irrads['dhi']
     )
     array_one_irrad, array_two_irrad = system.get_irradiance(
-        solar_position['apparent_zenith'],
-        solar_position['azimuth'],
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
         irrads['dni'], irrads['ghi'], irrads['dhi']
     )
     assert_frame_equal(
@@ -1760,7 +1780,7 @@ def test_PVSystem_multi_array_get_irradiance():
     )
 
 
-def test_PVSystem_multi_array_get_irradiance_multi_irrad():
+def test_PVSystem_multi_array_get_irradiance_multi_irrad(solar_pos):
     """Test a system with two identical arrays but different irradiance.
 
     Because only the irradiance is different we expect the same output
@@ -1771,39 +1791,36 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad():
     array_one = pvsystem.Array(pvsystem.FixedMount(0, 180))
     array_two = pvsystem.Array(pvsystem.FixedMount(0, 180))
     system = pvsystem.PVSystem(arrays=[array_one, array_two])
-    location = Location(latitude=32, longitude=-111)
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
-    solar_position = location.get_solarposition(times)
+
     irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
-                          index=times)
+                          index=solar_pos.index)
     irrads_two = pd.DataFrame(
         {'dni': [0, 900], 'ghi': [0, 600], 'dhi': [0, 100]},
-        index=times
+        index=solar_pos.index
     )
     array_irrad = system.get_irradiance(
-        solar_position['apparent_zenith'],
-        solar_position['azimuth'],
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
         (irrads['dhi'], irrads['dhi']),
         (irrads['ghi'], irrads['ghi']),
         (irrads['dni'], irrads['dni'])
     )
     assert_frame_equal(array_irrad[0], array_irrad[1])
     array_irrad = system.get_irradiance(
-        solar_position['apparent_zenith'],
-        solar_position['azimuth'],
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
         (irrads['dhi'], irrads_two['dhi']),
         (irrads['ghi'], irrads_two['ghi']),
         (irrads['dni'], irrads_two['dni'])
     )
     array_one_expected = array_one.get_irradiance(
-        solar_position['apparent_zenith'],
-        solar_position['azimuth'],
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
         irrads['dhi'], irrads['ghi'], irrads['dni']
     )
     array_two_expected = array_two.get_irradiance(
-        solar_position['apparent_zenith'],
-        solar_position['azimuth'],
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
         irrads_two['dhi'], irrads_two['ghi'], irrads_two['dni']
     )
     assert not array_irrad[0].equals(array_irrad[1])
@@ -1812,21 +1829,59 @@ def test_PVSystem_multi_array_get_irradiance_multi_irrad():
     with pytest.raises(ValueError,
                        match="Length mismatch for per-array parameter"):
         system.get_irradiance(
-            solar_position['apparent_zenith'],
-            solar_position['azimuth'],
+            solar_pos['apparent_zenith'],
+            solar_pos['azimuth'],
             (irrads['dhi'], irrads_two['dhi'], irrads['dhi']),
             (irrads['ghi'], irrads_two['ghi']),
             irrads['dni']
         )
     array_irrad = system.get_irradiance(
-        solar_position['apparent_zenith'],
-        solar_position['azimuth'],
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
         (irrads['dhi'], irrads_two['dhi']),
         irrads['ghi'],
         irrads['dni']
     )
     assert_frame_equal(array_irrad[0], array_one_expected)
     assert not array_irrad[0].equals(array_irrad[1])
+
+
+def test_Array_get_irradiance(solar_pos):
+    array = pvsystem.Array(pvsystem.FixedMount(surface_tilt=32,
+                                               surface_azimuth=135))
+    irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0]},
+                          index=solar_pos.index)
+    # defaults for kwargs
+    modeled = array.get_irradiance(
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
+        irrads['dni'], irrads['ghi'], irrads['dhi']
+    )
+    expected = pd.DataFrame(
+        data=np.array(
+            [[883.65494055, 745.86141676, 137.79352379, 126.397131,
+              11.39639279],
+             [0., -0., 0., 0., 0.]]),
+        columns=['poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse',
+                 'poa_ground_diffuse'],
+        index=solar_pos.index
+    )
+    assert_frame_equal(modeled, expected, check_less_precise=5)
+    # with specified kwargs, use isotropic sky diffuse because it's easier
+    modeled = array.get_irradiance(
+        solar_pos['apparent_zenith'],
+        solar_pos['azimuth'],
+        irrads['dni'], irrads['ghi'], irrads['dhi'],
+        albedo=0.5, model='isotropic'
+    )
+    sky_diffuse = irradiance.isotropic(array.mount.surface_tilt, irrads['dhi'])
+    ground_diff = irradiance.get_ground_diffuse(
+        array.mount.surface_tilt, irrads['ghi'], 0.5, surface_type=None)
+    aoi = irradiance.aoi(array.mount.surface_tilt, array.mount.surface_azimuth,
+                         solar_pos['apparent_zenith'], solar_pos['azimuth'])
+    direct = irrads['dni'] * cosd(aoi)
+    expected = sky_diffuse + ground_diff + direct
+    assert_series_equal(expected, expected, check_less_precise=5)
 
 
 @fail_on_pvlib_version('0.10')

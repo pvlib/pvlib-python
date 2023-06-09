@@ -10,6 +10,7 @@ import itertools
 import os
 from urllib.request import urlopen
 import numpy as np
+from scipy import constants
 import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
@@ -134,7 +135,7 @@ class PVSystem:
         a single array is created from the other parameters (e.g.
         `surface_tilt`, `surface_azimuth`). Must contain at least one Array,
         if length of arrays is 0 a ValueError is raised. If `arrays` is
-        specified the following parameters are ignored:
+        specified the following PVSystem parameters are ignored:
 
         - `surface_tilt`
         - `surface_azimuth`
@@ -157,13 +158,14 @@ class PVSystem:
         North=0, East=90, South=180, West=270.
 
     albedo : None or float, default None
-        The ground albedo. If ``None``, will attempt to use
-        ``surface_type`` and ``irradiance.SURFACE_ALBEDOS``
-        to lookup albedo.
+        Ground surface albedo. If ``None``, then ``surface_type`` is used
+        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        If ``surface_type`` is also None then a ground surface albedo
+        of 0.25 is used.
 
     surface_type : None or string, default None
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
-        for valid values.
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for
+        valid values.
 
     module : None or string, default None
         The model name of the modules.
@@ -333,30 +335,33 @@ class PVSystem:
 
     @_unwrap_single_value
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
-                       **kwargs):
+                       dni_extra=None, airmass=None, albedo=None,
+                       model='haydavies', **kwargs):
         """
         Uses the :py:func:`irradiance.get_total_irradiance` function to
-        calculate the plane of array irradiance components on a tilted
-        surface defined by ``self.surface_tilt``,
-        ``self.surface_azimuth``, and ``self.albedo``.
+        calculate the plane of array irradiance components on the tilted
+        surfaces defined by each array's ``surface_tilt`` and
+        ``surface_azimuth``.
 
         Parameters
         ----------
-        solar_zenith : float or Series.
+        solar_zenith : float or Series
             Solar zenith angle.
-        solar_azimuth : float or Series.
+        solar_azimuth : float or Series
             Solar azimuth angle.
         dni : float or Series or tuple of float or Series
-            Direct Normal Irradiance
+            Direct Normal Irradiance. [W/m2]
         ghi : float or Series or tuple of float or Series
-            Global horizontal irradiance
+            Global horizontal irradiance. [W/m2]
         dhi : float or Series or tuple of float or Series
-            Diffuse horizontal irradiance
-        dni_extra : None, float or Series, default None
-            Extraterrestrial direct normal irradiance
+            Diffuse horizontal irradiance. [W/m2]
+        dni_extra : None, float, Series or tuple of float or Series,\
+            default None
+            Extraterrestrial direct normal irradiance. [W/m2]
         airmass : None, float or Series, default None
-            Airmass
+            Airmass. [unitless]
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
 
@@ -376,17 +381,24 @@ class PVSystem:
         poa_irradiance : DataFrame or tuple of DataFrame
             Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
             'poa_sky_diffuse', 'poa_ground_diffuse'``.
+
+        See also
+        --------
+        pvlib.irradiance.get_total_irradiance
         """
         dni = self._validate_per_array(dni, system_wide=True)
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)
+
+        albedo = self._validate_per_array(albedo, system_wide=True)
+
         return tuple(
             array.get_irradiance(solar_zenith, solar_azimuth,
                                  dni, ghi, dhi,
-                                 dni_extra, airmass, model,
-                                 **kwargs)
-            for array, dni, ghi, dhi in zip(
-                self.arrays, dni, ghi, dhi
+                                 dni_extra=dni_extra, airmass=airmass,
+                                 albedo=albedo, model=model, **kwargs)
+            for array, dni, ghi, dhi, albedo in zip(
+                self.arrays, dni, ghi, dhi, albedo
             )
         )
 
@@ -932,14 +944,17 @@ class PVSystem:
                            resistance_series, resistance_shunt, nNsVth,
                            ivcurve_pnts=ivcurve_pnts)
 
-    def i_from_v(self, resistance_shunt, resistance_series, nNsVth, voltage,
-                 saturation_current, photocurrent):
+    def i_from_v(self, voltage, photocurrent, saturation_current,
+                 resistance_series, resistance_shunt, nNsVth):
         """Wrapper around the :py:func:`pvlib.pvsystem.i_from_v` function.
 
-        See :py:func:`pvsystem.i_from_v` for details
+        See :py:func:`pvlib.pvsystem.i_from_v` for details.
+
+        .. versionchanged:: 0.10.0
+           The function's arguments have been reordered.
         """
-        return i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-                        saturation_current, photocurrent)
+        return i_from_v(voltage, photocurrent, saturation_current,
+                        resistance_series, resistance_shunt, nNsVth)
 
     def get_ac(self, model, p_dc, v_dc=None):
         r"""Calculates AC power from p_dc using the inverter model indicated
@@ -1258,14 +1273,14 @@ class Array:
         If not provided, a FixedMount with zero tilt is used.
 
     albedo : None or float, default None
-        The ground albedo. If ``None``, will attempt to use
-        ``surface_type`` to look up an albedo value in
-        ``irradiance.SURFACE_ALBEDOS``. If a surface albedo
-        cannot be found then 0.25 is used.
+        Ground surface albedo. If ``None``, then ``surface_type`` is used
+        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        If ``surface_type`` is also None then a ground surface albedo
+        of 0.25 is used.
 
     surface_type : None or string, default None
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS``
-        for valid values.
+        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for valid
+        values.
 
     module : None or string, default None
         The model name of the modules.
@@ -1425,15 +1440,14 @@ class Array:
                               solar_zenith, solar_azimuth)
 
     def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
-                       **kwargs):
+                       dni_extra=None, airmass=None, albedo=None,
+                       model='haydavies', **kwargs):
         """
         Get plane of array irradiance components.
 
         Uses the :py:func:`pvlib.irradiance.get_total_irradiance` function to
         calculate the plane of array irradiance components for a surface
-        defined by ``self.surface_tilt`` and ``self.surface_azimuth`` with
-        albedo ``self.albedo``.
+        defined by ``self.surface_tilt`` and ``self.surface_azimuth``.
 
         Parameters
         ----------
@@ -1442,15 +1456,17 @@ class Array:
         solar_azimuth : float or Series.
             Solar azimuth angle.
         dni : float or Series
-            Direct Normal Irradiance
-        ghi : float or Series
+            Direct normal irradiance. [W/m2]
+        ghi : float or Series. [W/m2]
             Global horizontal irradiance
         dhi : float or Series
-            Diffuse horizontal irradiance
+            Diffuse horizontal irradiance. [W/m2]
         dni_extra : None, float or Series, default None
-            Extraterrestrial direct normal irradiance
+            Extraterrestrial direct normal irradiance. [W/m2]
         airmass : None, float or Series, default None
-            Airmass
+            Airmass. [unitless]
+        albedo : None, float or Series, default None
+            Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
 
@@ -1463,7 +1479,14 @@ class Array:
         poa_irradiance : DataFrame
             Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
             'poa_sky_diffuse', 'poa_ground_diffuse'``.
+
+        See also
+        --------
+        :py:func:`pvlib.irradiance.get_total_irradiance`
         """
+        if albedo is None:
+            albedo = self.albedo
+
         # not needed for all models, but this is easier
         if dni_extra is None:
             dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
@@ -1478,8 +1501,8 @@ class Array:
                                                dni, ghi, dhi,
                                                dni_extra=dni_extra,
                                                airmass=airmass,
+                                               albedo=albedo,
                                                model=model,
-                                               albedo=self.albedo,
                                                **kwargs)
 
     def get_iam(self, aoi, iam_model='physical'):
@@ -1985,8 +2008,8 @@ def calcparams_desoto(effective_irradiance, temp_cell,
          Source: [4]
     '''
 
-    # Boltzmann constant in eV/K
-    k = 8.617332478e-05
+    # Boltzmann constant in eV/K, 8.617332478e-05
+    k = constants.value('Boltzmann constant in eV/K')
 
     # reference temperature
     Tref_K = temp_ref + 273.15
@@ -2243,10 +2266,10 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     '''
 
     # Boltzmann constant in J/K
-    k = 1.38064852e-23
+    k = constants.k
 
     # elementary charge in coulomb
-    q = 1.6021766e-19
+    q = constants.e
 
     # reference temperature
     Tref_K = temp_ref + 273.15
@@ -2357,7 +2380,8 @@ def retrieve_sam(name=None, path=None):
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
         elif name == 'adrinverter':
-            csvdata = os.path.join(data_path, 'adr-library-2013-10-01.csv')
+            csvdata = os.path.join(
+                data_path, 'adr-library-cec-inverters-2019-03-05.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
@@ -2518,8 +2542,8 @@ def sapm(effective_irradiance, temp_cell, module):
     temp_ref = 25
     irrad_ref = 1000
 
-    q = 1.60218e-19  # Elementary charge in units of coulombs
-    kb = 1.38066e-23  # Boltzmann's constant in units of J/K
+    q = constants.e  # Elementary charge in units of coulombs
+    kb = constants.k  # Boltzmann's constant in units of J/K
 
     # avoid problem with integer input
     Ee = np.array(effective_irradiance, dtype='float64') / irrad_ref
@@ -2941,8 +2965,8 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
     return out
 
 
-def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
-             saturation_current, photocurrent, method='lambertw'):
+def v_from_i(current, photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth, method='lambertw'):
     '''
     Device voltage at the given device current for the single diode model.
 
@@ -2956,17 +2980,33 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     the caller's responsibility to ensure that the arguments are all float64
     and within the proper ranges.
 
+    .. versionchanged:: 0.10.0
+       The function's arguments have been reordered.
+
     Parameters
     ----------
-    resistance_shunt : numeric
-        Shunt resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rsh``.
-        0 < resistance_shunt <= numpy.inf
+    current : numeric
+        The current in amperes under desired IV curve conditions.
+
+    photocurrent : numeric
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
+
+    saturation_current : numeric
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
         0 <= resistance_series < numpy.inf
+
+    resistance_shunt : numeric
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
+        0 < resistance_shunt <= numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -2977,19 +3017,6 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
         0 < nNsVth
-
-    current : numeric
-        The current in amperes under desired IV curve conditions.
-
-    saturation_current : numeric
-        Diode saturation current in amperes under desired IV curve
-        conditions. Often abbreviated ``I_0``.
-        0 < saturation_current
-
-    photocurrent : numeric
-        Light-generated current (photocurrent) in amperes under desired
-        IV curve conditions. Often abbreviated ``I_L``.
-        0 <= photocurrent
 
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
@@ -3007,8 +3034,8 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
     '''
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_v_from_i(
-            resistance_shunt, resistance_series, nNsVth, current,
-            saturation_current, photocurrent
+            current, photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth
         )
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
@@ -3029,32 +3056,48 @@ def v_from_i(resistance_shunt, resistance_series, nNsVth, current,
         return V
 
 
-def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
-             saturation_current, photocurrent, method='lambertw'):
+def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
+             resistance_shunt, nNsVth, method='lambertw'):
     '''
     Device current at the given device voltage for the single diode model.
 
     Uses the single diode model (SDM) as described in, e.g.,
-     Jain and Kapoor 2004 [1]_.
+    Jain and Kapoor 2004 [1]_.
     The solution is per Eq 2 of [1] except when resistance_series=0,
-     in which case the explict solution for current is used.
+    in which case the explict solution for current is used.
     Ideal device parameters are specified by resistance_shunt=np.inf and
-     resistance_series=0.
+    resistance_series=0.
     Inputs to this function can include scalars and pandas.Series, but it is
-     the caller's responsibility to ensure that the arguments are all float64
-     and within the proper ranges.
+    the caller's responsibility to ensure that the arguments are all float64
+    and within the proper ranges.
+
+    .. versionchanged:: 0.10.0
+       The function's arguments have been reordered.
 
     Parameters
     ----------
-    resistance_shunt : numeric
-        Shunt resistance in ohms under desired IV curve conditions.
-        Often abbreviated ``Rsh``.
-        0 < resistance_shunt <= numpy.inf
+    voltage : numeric
+        The voltage in Volts under desired IV curve conditions.
+
+    photocurrent : numeric
+        Light-generated current (photocurrent) in amperes under desired
+        IV curve conditions. Often abbreviated ``I_L``.
+        0 <= photocurrent
+
+    saturation_current : numeric
+        Diode saturation current in amperes under desired IV curve
+        conditions. Often abbreviated ``I_0``.
+        0 < saturation_current
 
     resistance_series : numeric
         Series resistance in ohms under desired IV curve conditions.
         Often abbreviated ``Rs``.
         0 <= resistance_series < numpy.inf
+
+    resistance_shunt : numeric
+        Shunt resistance in ohms under desired IV curve conditions.
+        Often abbreviated ``Rsh``.
+        0 < resistance_shunt <= numpy.inf
 
     nNsVth : numeric
         The product of three components. 1) The usual diode ideal factor
@@ -3065,19 +3108,6 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
         temp_cell is the temperature of the p-n junction in Kelvin, and
         q is the charge of an electron (coulombs).
         0 < nNsVth
-
-    voltage : numeric
-        The voltage in Volts under desired IV curve conditions.
-
-    saturation_current : numeric
-        Diode saturation current in amperes under desired IV curve
-        conditions. Often abbreviated ``I_0``.
-        0 < saturation_current
-
-    photocurrent : numeric
-        Light-generated current (photocurrent) in amperes under desired
-        IV curve conditions. Often abbreviated ``I_L``.
-        0 <= photocurrent
 
     method : str
         Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
@@ -3095,8 +3125,8 @@ def i_from_v(resistance_shunt, resistance_series, nNsVth, voltage,
     '''
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_i_from_v(
-            resistance_shunt, resistance_series, nNsVth, voltage,
-            saturation_current, photocurrent
+            voltage, photocurrent, saturation_current, resistance_series,
+            resistance_shunt, nNsVth
         )
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
@@ -3293,7 +3323,7 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
 
     See Also
     --------
-    :py:func:`~pvlib.pvsystem.dc_ohmic_losses`
+    pvlib.pvsystem.dc_ohmic_losses
 
     References
     ----------
@@ -3328,7 +3358,7 @@ def dc_ohmic_losses(resistance, current):
 
     See Also
     --------
-    :py:func:`~pvlib.pvsystem.dc_ohms_from_percent`
+    pvlib.pvsystem.dc_ohms_from_percent
 
     References
     ----------

@@ -21,6 +21,11 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Allow passing keyword arguments to :py:func:`scipy:scipy.optimize.brentq` and
+  :py:func:`scipy:scipy.optimize.newton` solvers in :py:func:`bishop88_mpp`,
+  :py:func:`bishop88_i_from_v` and :py:func:`bishop88_v_from_i`. Among others,
+  tolerance and number of iterations can be set.
+  (:issue:`1249`, :pull:`1764`)
 
 
 Bug fixes
@@ -45,3 +50,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Taos Transue (:ghuser:`reepoi`)
+* Echedey Luis (:ghuser:`echedey-ls`)

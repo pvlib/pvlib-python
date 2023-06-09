@@ -410,6 +410,36 @@ def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
     assert np.isclose(vsc_88, 0.0, *tol)
 
 
+def bishop88_arguments():
+    pvsyst_fs_495 = get_pvsyst_fs_495()
+    # evaluate PVSyst model with thin-film recombination loss current
+    # at reference conditions
+    x = pvsystem.calcparams_pvsyst(
+        effective_irradiance=pvsyst_fs_495['irrad_ref'],
+        temp_cell=pvsyst_fs_495['temp_ref'],
+        alpha_sc=pvsyst_fs_495['alpha_sc'],
+        gamma_ref=pvsyst_fs_495['gamma_ref'],
+        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
+        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
+        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
+        R_s=pvsyst_fs_495['R_s'],
+        cells_in_series=pvsyst_fs_495['cells_in_series'],
+        EgRef=pvsyst_fs_495['EgRef']
+    )
+    y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
+             NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
+    # Convert (*x, **y) in a bishop88_.* call to dict of arguments
+    args_dict = {
+        'photocurrent': x[0],
+        'saturation_current': x[1],
+        'resistance_series': x[2],
+        'resistance_shunt': x[3],
+        'nNsVth': x[4],
+    }
+    args_dict.update(y)
+    return args_dict
+
+
 @pytest.mark.parametrize('method, kwargs', [
     ('newton', {
         'tol': 1e-3,
@@ -430,46 +460,60 @@ def test_bishop88_kwargs_pass(method, kwargs):
                            kwargs.get('xtol', np.nan)]),
         'rtol': kwargs.get('rtol')
     }
-    poa, temp_cell, expected = (  # reference conditions
-        get_pvsyst_fs_495()['irrad_ref'],
-        get_pvsyst_fs_495()['temp_ref'],
-        {
-            'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *
-                    get_pvsyst_fs_495()['V_mp_ref']),
-            'isc': get_pvsyst_fs_495()['I_sc_ref'],
-            'voc': get_pvsyst_fs_495()['V_oc_ref']
-        }
-    )
+    expected = {  # from reference conditions
+        'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *
+                get_pvsyst_fs_495()['V_mp_ref']),
+        'isc': get_pvsyst_fs_495()['I_sc_ref'],
+        'voc': get_pvsyst_fs_495()['V_oc_ref']
+    }
 
-    pvsyst_fs_495 = get_pvsyst_fs_495()
-    # evaluate PVSyst model with thin-film recombination loss current
-    # at reference conditions
-    x = pvsystem.calcparams_pvsyst(
-        effective_irradiance=poa, temp_cell=temp_cell,
-        alpha_sc=pvsyst_fs_495['alpha_sc'],
-        gamma_ref=pvsyst_fs_495['gamma_ref'],
-        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
-        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
-        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
-        R_s=pvsyst_fs_495['R_s'],
-        cells_in_series=pvsyst_fs_495['cells_in_series'],
-        EgRef=pvsyst_fs_495['EgRef']
-    )
-    y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
-             NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
-    # Now, (*x, **y) comprise cell parameters
+    # get arguments common to all bishop88_.* functions
+    bishop88_args = bishop88_arguments()
 
-    # mpp_88 = bishop88_mpp(*x, **y, method=method, **kwargs)
+    # mpp_88 = bishop88_mpp(**bishop88_args, method=method, **kwargs)
     # assert np.isclose(mpp_88[2], expected['pmp'], **tol)
 
-    isc_88 = bishop88_i_from_v(0, *x, **y, method=method, **kwargs)
+    isc_88 = bishop88_i_from_v(0, **bishop88_args, method=method,
+                               **kwargs)
     assert np.isclose(isc_88, expected['isc'], **tol)
 
-    # voc_88 = bishop88_v_from_i(0, *x, **y, method=method, **kwargs)
+    # voc_88 = bishop88_v_from_i(0, **bishop88_args, method=method,
+    #                            **kwargs)
     # assert np.isclose(voc_88, expected['voc'], **tol)
 
-    # ioc_88 = bishop88_i_from_v(voc_88, *x, **y, method=method, **kwargs)
+    # ioc_88 = bishop88_i_from_v(voc_88, **bishop88_args, method=method,
+    #                            **kwargs)
     # assert np.isclose(ioc_88, 0.0, **tol)
 
-    # vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method, **kwargs)
+    # vsc_88 = bishop88_v_from_i(isc_88, **bishop88_args, method=method,
+    #                            **kwargs)
     # assert np.isclose(vsc_88, 0.0, **tol)
+
+
+@pytest.mark.parametrize('method, kwargs', [
+    ('newton', {
+        'tol': 1e-3,
+        'rtol': 1e-3,
+        'maxiter': 20,
+        '_inexistent_param': "0.01"
+    }),
+    ('brentq', {
+        'xtol': 1e-3,
+        'rtol': 1e-3,
+        'maxiter': 20,
+        '_inexistent_param': "0.01"
+    })
+])
+def test_bishop88_kwargs_fails(method, kwargs):
+    """test invalid kwargs passed onto the optimizer fail"""
+    # get arguments common to all bishop88_.* functions
+    bishop88_args = bishop88_arguments()
+
+    # pytest.raises(TypeError, bishop88_mpp,
+    #               **bishop88_args, method=method, **kwargs)
+
+    pytest.raises(TypeError, bishop88_i_from_v,
+                  0, **bishop88_args, method=method, **kwargs)
+
+    # pytest.raises(TypeError, bishop88_v_from_i,
+    #               0, **bishop88_args, method=method, **kwargs)

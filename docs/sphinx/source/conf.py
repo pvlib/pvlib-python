@@ -369,7 +369,7 @@ sphinx_gallery_conf = {
     # objects to exclude from implicit backreferences
     # https://sphinx-gallery.github.io/stable/configuration.html
     # Section #add-mini-galleries-for-api-documentation
-    'exclude_implicit_doc': {r'pvlib\.tools\.locate_example_dataset'},
+    'exclude_implicit_doc': {r'pvlib\.tools\.get_test_dataset_path'},
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html

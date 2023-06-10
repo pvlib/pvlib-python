@@ -208,7 +208,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
                       d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
-                      method='newton', **kwargs):
+                      method='newton', **method_kwargs):
     """
     Find current given any voltage.
 
@@ -249,7 +249,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
-    kwargs : dict
+    method_kwargs : dict
         Passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.
@@ -282,19 +282,19 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
                           args=(v, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
                                 breakdown_factor, breakdown_voltage,
                                 breakdown_exp),
-                          **kwargs)
+                          **method_kwargs)
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, voltage, *args)
     elif method == 'newton':
         # make sure all args are numpy arrays if max size > 1
         # if voltage is an array, then make a copy to use for initial guess, v0
-        args, v0, kwargs = _prepare_newton_inputs((voltage,), args, voltage,
-                                                  kwargs)
+        args, v0, method_kwargs = \
+            _prepare_newton_inputs((voltage,), args, voltage, method_kwargs)
         vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=v0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
                     args=args,
-                    **kwargs)
+                    **method_kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -305,7 +305,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
                       d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
-                      method='newton', **kwargs):
+                      method='newton', **method_kwargs):
     """
     Find voltage given any current.
 
@@ -346,7 +346,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
-    kwargs : dict
+    method_kwargs : dict
         Passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.
@@ -378,19 +378,19 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
                           args=(i, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
                                 breakdown_factor, breakdown_voltage,
                                 breakdown_exp),
-                          **kwargs)
+                          **method_kwargs)
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, current, *args)
     elif method == 'newton':
         # make sure all args are numpy arrays if max size > 1
         # if voc_est is an array, then make a copy to use for initial guess, v0
-        args, v0, kwargs = _prepare_newton_inputs((current,), args, voc_est,
-                                                  kwargs)
+        args, v0, method_kwargs = \
+            _prepare_newton_inputs((current,), args, voc_est, method_kwargs)
         vd = newton(func=lambda x, *a: fi(x, current, *a), x0=v0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
                     args=args,
-                    **kwargs)
+                    **method_kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
     return bishop88(vd, *args)[1]
@@ -399,7 +399,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 def bishop88_mpp(photocurrent, saturation_current, resistance_series,
                  resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
                  breakdown_factor=0., breakdown_voltage=-5.5,
-                 breakdown_exp=3.28, method='newton', **kwargs):
+                 breakdown_exp=3.28, method='newton', **method_kwargs):
     """
     Find max power point.
 
@@ -438,7 +438,7 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
-    kwargs : dict
+    method_kwargs : dict
         Passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.
@@ -467,17 +467,18 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
             vbr_exp: brentq(fmpp, 0.0, voc,
                             args=(iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
                                   vbr_a, vbr, vbr_exp),
-                            **kwargs)
+                            **method_kwargs)
         )
         vd = vec_fun(voc_est, *args)
     elif method == 'newton':
         # make sure all args are numpy arrays if max size > 1
         # if voc_est is an array, then make a copy to use for initial guess, v0
-        args, v0, kwargs = _prepare_newton_inputs((), args, voc_est, kwargs)
+        args, v0, method_kwargs = \
+            _prepare_newton_inputs((), args, voc_est, method_kwargs)
         vd = newton(
             func=fmpp, x0=v0,
             fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args,
-            **kwargs)
+            **method_kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
     return bishop88(vd, *args)
@@ -507,7 +508,7 @@ def _get_size_and_shape(args):
     return size, shape
 
 
-def _prepare_newton_inputs(i_or_v_tup, args, v0, kwargs):
+def _prepare_newton_inputs(i_or_v_tup, args, v0, method_kwargs):
     # broadcast arguments for newton method
     # the first argument should be a tuple, eg: (i,), (v,) or ()
     size, shape = _get_size_and_shape(i_or_v_tup + args)
@@ -518,11 +519,13 @@ def _prepare_newton_inputs(i_or_v_tup, args, v0, kwargs):
     if shape is not None:
         v0 = np.broadcast_to(v0, shape).copy()
 
-    # set abs tolerance and maxiter from kwargs if not provided
-    kwargs['tol'] = kwargs.pop('tol', NEWTON_DEFAULT_PARAMS['tol'])
-    kwargs['maxiter'] = kwargs.pop('maxiter', NEWTON_DEFAULT_PARAMS['maxiter'])
+    # set abs tolerance and maxiter from method_kwargs if not provided
+    method_kwargs['tol'] = \
+        method_kwargs.pop('tol', NEWTON_DEFAULT_PARAMS['tol'])
+    method_kwargs['maxiter'] = \
+        method_kwargs.pop('maxiter', NEWTON_DEFAULT_PARAMS['maxiter'])
 
-    return args, v0, kwargs
+    return args, v0, method_kwargs
 
 
 def _lambertw_v_from_i(current, photocurrent, saturation_current,

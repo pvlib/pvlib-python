@@ -440,7 +440,7 @@ def bishop88_arguments():
     return args_dict
 
 
-@pytest.mark.parametrize('method, kwargs', [
+@pytest.mark.parametrize('method, method_kwargs', [
     ('newton', {
         'tol': 1e-3,
         'rtol': 1e-3,
@@ -452,13 +452,13 @@ def bishop88_arguments():
         'maxiter': 30,
     })
 ])
-def test_bishop88_kwargs_pass(method, kwargs):
-    """test kwargs modifying optimizer does not break anything"""
-    # build test tolerances from the kwargs passed to the method
+def test_bishop88_kwargs_pass(method, method_kwargs):
+    """test method_kwargs modifying optimizer does not break anything"""
+    # build test tolerances from method_kwargs
     tol = {
-        'atol': np.nanmax([kwargs.get('tol', np.nan),
-                           kwargs.get('xtol', np.nan)]),
-        'rtol': kwargs.get('rtol')
+        'atol': np.nanmax([method_kwargs.get('tol', np.nan),
+                           method_kwargs.get('xtol', np.nan)]),
+        'rtol': method_kwargs.get('rtol')
     }
     expected = {  # from reference conditions
         'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *
@@ -470,27 +470,27 @@ def test_bishop88_kwargs_pass(method, kwargs):
     # get arguments common to all bishop88_.* functions
     bishop88_args = bishop88_arguments()
 
-    mpp_88 = bishop88_mpp(**bishop88_args, method=method, **kwargs)
+    mpp_88 = bishop88_mpp(**bishop88_args, method=method, **method_kwargs)
     assert np.isclose(mpp_88[2], expected['pmp'], **tol)
 
     isc_88 = bishop88_i_from_v(0, **bishop88_args, method=method,
-                               **kwargs)
+                               **method_kwargs)
     assert np.isclose(isc_88, expected['isc'], **tol)
 
     voc_88 = bishop88_v_from_i(0, **bishop88_args, method=method,
-                               **kwargs)
+                               **method_kwargs)
     assert np.isclose(voc_88, expected['voc'], **tol)
 
     ioc_88 = bishop88_i_from_v(voc_88, **bishop88_args, method=method,
-                               **kwargs)
+                               **method_kwargs)
     assert np.isclose(ioc_88, 0.0, **tol)
 
     vsc_88 = bishop88_v_from_i(isc_88, **bishop88_args, method=method,
-                               **kwargs)
+                               **method_kwargs)
     assert np.isclose(vsc_88, 0.0, **tol)
 
 
-@pytest.mark.parametrize('method, kwargs', [
+@pytest.mark.parametrize('method, method_kwargs', [
     ('newton', {
         'tol': 1e-4,
         'rtol': 1e-4,
@@ -504,16 +504,16 @@ def test_bishop88_kwargs_pass(method, kwargs):
         '_inexistent_param': "0.01"
     })
 ])
-def test_bishop88_kwargs_fails(method, kwargs):
-    """test invalid kwargs passed onto the optimizer fail"""
+def test_bishop88_kwargs_fails(method, method_kwargs):
+    """test invalid method_kwargs passed onto the optimizer fail"""
     # get arguments common to all bishop88_.* functions
     bishop88_args = bishop88_arguments()
 
     pytest.raises(TypeError, bishop88_mpp,
-                  **bishop88_args, method=method, **kwargs)
+                  **bishop88_args, method=method, **method_kwargs)
 
     pytest.raises(TypeError, bishop88_i_from_v,
-                  0, **bishop88_args, method=method, **kwargs)
+                  0, **bishop88_args, method=method, **method_kwargs)
 
     pytest.raises(TypeError, bishop88_v_from_i,
-                  0, **bishop88_args, method=method, **kwargs)
+                  0, **bishop88_args, method=method, **method_kwargs)

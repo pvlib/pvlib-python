@@ -5,13 +5,49 @@ v0.9.6 (Anticipated June 2023)
 ------------------------------
 
 
+Breaking Changes
+~~~~~~~~~~~~~~~~
+* Modified the ``surface_azimuth`` parameter in :py:func:`pvlib.iotools.get_pvgis_hourly` to conform to the
+  pvlib azimuth convention (counterclockwise from north). Previously 0 degrees represented south.
+  (:issue:`1724`, :pull:`1739`)
+* For consistency with the rest of pvlib, the ``tilt`` parameter is renamed
+  to ``surface_tilt`` in :py:func:`pvlib.soiling.hsu`. (:issue:`1717`, :pull:`1738`)
+
 Deprecations
 ~~~~~~~~~~~~
+* Functions for calculating spectral modifiers have been moved to :py:mod:`pvlib.spectrum`:
+  :py:func:`pvlib.atmosphere.first_solar_spectral_correction` is deprecated and
+  replaced by :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`, and
+  :py:func:`pvlib.pvsystem.sapm_spectral_loss` is deprecated and replaced by
+  :py:func:`~pvlib.spectrum.spectral_factor_sapm`. (:pull:`1628`)
+* Removed the ``get_ecmwf_macc`` and ``read_ecmwf_macc`` iotools functions as the
+  MACC dataset has been `removed by ECMWF <https://confluence.ecmwf.int/display/DAC/Decommissioning+of+ECMWF+Public+Datasets+Service>`_
+  (data period 2003-2012). Instead, ECMWF recommends to use CAMS global
+  reanalysis (EAC4) from the Atmosphere Data Store (ADS). See also :py:func:`pvlib.iotools.get_cams`.
+  (:issue:`1691`, :pull:`1654`)
 
+* The ``recolumn`` parameter in :py:func:`pvlib.iotools.read_tmy3`, which maps
+  TMY3 column names to nonstandard alternatives, is now deprecated.
+  We encourage using ``map_variables`` (which produces standard pvlib names) instead.
+  (:issue:`1517`, :pull:`1623`)
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added a new irradiance decomposition model :py:func:`pvlib.irradiance.louche`. (:pull:`1705`)
+* Add optional encoding parameter to :py:func:`pvlib.iotools.read_tmy3`.
+  (:issue:`1732`, :pull:`1737`)
+* Added function to retrieve horizon data from PVGIS 
+  :py:func:`pvlib.iotools.get_pvgis_horizon`. (:issue:`1290`, :pull:`1395`)
+* Added ``map_variables`` argument to the :py:func:`pvlib.iotools.read_tmy3` in
+  order to offer the option of mapping column names to standard pvlib names.
+  (:issue:`1517`, :pull:`1623`)
+* Update the URL used in the :py:func:`pvlib.iotools.get_cams` function. The new URL supports load-balancing
+  and redirects to the fastest server. (:issue:`1688`, :pull:`1740`)
+* :py:func:`pvlib.iotools.get_psm3` now has a ``url`` parameter to give the user
+  the option of controlling what NSRDB endpoint is used. (:pull:`1736`)
+* :py:func:`pvlib.iotools.get_psm3` now uses the new NSRDB 3.2.2 endpoint for
+  hourly and half-hourly single-year datasets. (:issue:`1591`, :pull:`1736`)
+* The default solar position algorithm (NREL SPA) is now 50-100% faster. (:pull:`1748`)
 
 Bug fixes
 ~~~~~~~~~
@@ -22,7 +58,7 @@ Bug fixes
 
 Testing
 ~~~~~~~
-
+* Migrated to mamba-org/setup-micromamba. (:issue:`1746`, :pull:`1758`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -42,8 +78,20 @@ Contributors
 ~~~~~~~~~~~~
 * Lakshya Garg (:ghuser:`Lakshyadevelops`)
 * Adam R. Jensen (:ghuser:`adamrjensen`)
+* Ben Pierce (:ghuser:`bgpierc`)
+* Joseph Palakapilly (:ghuser:`JPalakapillyKWH`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Karel De Brabandere (:ghuser:`kdebrab`)
+* Josh Stein (:ghuser:`jsstein`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
-* Mark Mikofski (:ghuser:`mikofski`)
+* Andy Lam (:ghuser:`@andylam598`)
+* :ghuser:`ooprathamm`
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Devon Watt (:ghuser:`d-watt`)
 

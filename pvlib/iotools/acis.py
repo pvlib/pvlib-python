@@ -40,7 +40,7 @@ def get_acis_precipitation(latitude, longitude, start, end, dataset,
 
     Returns
     -------
-    data : pandas.DataFrame
+    data : pandas.Series
         Daily rainfall [mm]
     metadata : dict
         Coordinates for the selected grid cell

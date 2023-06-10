@@ -1279,14 +1279,14 @@ def test_mpp_recombination():
                 'p_mp': expected_pmp}
     assert isinstance(out, dict)
     for k, v in out.items():
-        assert np.isclose(v, expected[k], 0.1)
+        assert np.isclose(v, expected[k], 0.01)
     out = pvsystem.max_power_point(
         IL, I0, Rs, Rsh, nNsVth,
         d2mutau=pvsyst_fs_495['d2mutau'],
         NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
         method='newton')
     for k, v in out.items():
-        assert np.isclose(v, expected[k], 0.1)
+        assert np.isclose(v, expected[k], 0.01)
 
 
 def test_mpp_array():

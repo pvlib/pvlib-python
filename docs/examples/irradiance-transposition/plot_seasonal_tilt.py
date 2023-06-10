@@ -12,11 +12,9 @@ Example of a custom Mount class.
 # to use a custom Mount class to use the Seasonal Tilt strategy
 # with :py:class:`~pvlib.modelchain.ModelChain`.
 
-import pvlib
-from pvlib import pvsystem, location, modelchain, iotools
+from pvlib import pvsystem, location, modelchain, iotools, tools
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
 import pandas as pd
-import pathlib
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 
@@ -43,8 +41,8 @@ class SeasonalTiltMount(pvsystem.AbstractMount):
 # First let's grab some weather data and make sure our mount produces tilts
 # like we expect:
 
-DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
-tmy, metadata = iotools.read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+tmy3_filepath = tools.get_test_dataset_path('723170TYA.CSV')
+tmy, metadata = iotools.read_tmy3(tmy3_filepath, coerce_year=1990,
                                   map_variables=True)
 # shift from TMY3 right-labeled index to left-labeled index:
 tmy.index = tmy.index - pd.Timedelta(hours=1)

@@ -21,18 +21,18 @@ Example of soiling using the HSU model.
 # PM2.5 and PM10 data come from the EPA. First, let's read in the
 # weather data and run the HSU soiling model:
 
-import pathlib
 from matplotlib import pyplot as plt
 from pvlib import soiling
 import pvlib
 import pandas as pd
 
-# get full path to the data directory
-DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
+# get full path to the example file
+soiling_hsu_filepath = \
+    pvlib.tools.get_test_dataset_path('soiling_hsu_example_inputs.csv')
 
 # read rainfall, PM2.5, and PM10 data from file
-imperial_county = pd.read_csv(DATA_DIR / 'soiling_hsu_example_inputs.csv',
-                              index_col=0, parse_dates=True)
+imperial_county = pd.read_csv(soiling_hsu_filepath, index_col=0,
+                              parse_dates=True)
 rainfall = imperial_county['rain']
 depo_veloc = {'2_5': 0.0009, '10': 0.004}  # default values from [1] (m/s)
 rain_accum_period = pd.Timedelta('1h')     # default

@@ -3,7 +3,6 @@ The ``clearsky`` module contains several methods
 to calculate clear sky GHI, DNI, and DHI.
 """
 
-import os
 from collections import OrderedDict
 import calendar
 
@@ -14,7 +13,7 @@ from scipy.linalg import hankel
 import h5py
 
 from pvlib import atmosphere, tools
-from pvlib.tools import _degrees_to_index
+from pvlib.tools import _degrees_to_index, get_test_dataset_path
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
@@ -189,8 +188,7 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     # 1st column: 179.9583 W, 2nd column: 179.875 W
 
     if filepath is None:
-        pvlib_path = os.path.dirname(os.path.abspath(__file__))
-        filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
+        filepath = get_test_dataset_path('LinkeTurbidities.h5')
 
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')

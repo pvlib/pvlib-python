@@ -98,6 +98,7 @@ def test_degrees_to_index_1():
     with pytest.raises(IndexError):  # invalid value for coordinate argument
         tools._degrees_to_index(degrees=22.0, coordinate='width')
 
+
 @pytest.mark.parametrize('location', [tuple(), ('data',)])
 def test_get_test_dataset_path_passes(location):
     expected_dataset = '723170TYA.CSV'

@@ -14,20 +14,18 @@ diffuse components from measured global horizontal irradiance.
 # GHI into the diffuse and direct components. The separate components are
 # needed to estimate the total irradiance on a tilted surface.
 
-import pathlib
 from matplotlib import pyplot as plt
 import pandas as pd
 from pvlib.iotools import read_tmy3
 from pvlib.solarposition import get_solarposition
-from pvlib import irradiance
-import pvlib
+from pvlib import irradiance, tools
 
 # For this example we use the Greensboro, North Carolina, TMY3 file which is
 # in the pvlib data directory. TMY3 are made from the median months from years
 # of data measured from 1990 to 2010. Therefore we change the timestamps to a
 # common year, 1990.
-DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
-greensboro, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+tmy3_filepath = tools.get_test_dataset_path('723170TYA.CSV')
+greensboro, metadata = read_tmy3(tmy3_filepath, coerce_year=1990,
                                  map_variables=True)
 
 # Many of the diffuse fraction estimation methods require the "true" zenith, so

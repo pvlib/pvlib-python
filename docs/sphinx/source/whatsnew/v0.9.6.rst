@@ -48,6 +48,8 @@ Enhancements
 * :py:func:`pvlib.iotools.get_psm3` now uses the new NSRDB 3.2.2 endpoint for
   hourly and half-hourly single-year datasets. (:issue:`1591`, :pull:`1736`)
 * The default solar position algorithm (NREL SPA) is now 50-100% faster. (:pull:`1748`)
+* Added function to retrieve precipitation from the ACIS service from NOAA's RCCs:
+  :py:func:`~pvlib.iotools.get_precipitation_acis`. (:issue:`1293`, :pull:`1777`)
 
 Bug fixes
 ~~~~~~~~~

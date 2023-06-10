@@ -98,23 +98,23 @@ def test_degrees_to_index_1():
     with pytest.raises(IndexError):  # invalid value for coordinate argument
         tools._degrees_to_index(degrees=22.0, coordinate='width')
 
-
-def test_locate_example_dataset_passes():
+@pytest.mark.parametrize('location', [tuple(), ('data',)])
+def test_get_test_dataset_path_passes(location):
     expected_dataset = '723170TYA.CSV'
     assert pathlib.Path(pvlib.__path__[0], 'data',
                         expected_dataset).exists()
-    assert tools.locate_example_dataset(expected_dataset) \
+    assert tools.get_test_dataset_path(expected_dataset, *location) \
            .name == expected_dataset
-    assert tools.locate_example_dataset(pathlib.Path(expected_dataset)) \
+    assert tools.get_test_dataset_path(pathlib.Path(expected_dataset)) \
            .name == expected_dataset
-    assert tools.locate_example_dataset(expected_dataset).exists()
+    assert tools.get_test_dataset_path(expected_dataset).exists()
 
 
-def test_locate_example_dataset_fails_on_not_found():
-    error_prompt = "Dataset has not been found in pvlib. " \
+def test_get_test_dataset_path_fails_on_not_found():
+    error_prompt = "Dataset has not been found in pvlib at .*. " \
                    "Please check dataset name."
     nonexistent_file = "_Texto_cualquiera.-formato-"
     assert not pathlib.Path(pvlib.__path__[0], 'data',
                             nonexistent_file).exists()
     with pytest.raises(ValueError, match=error_prompt):
-        tools.locate_example_dataset(nonexistent_file)
+        tools.get_test_dataset_path(nonexistent_file)

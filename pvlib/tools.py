@@ -474,7 +474,7 @@ def _first_order_centered_difference(f, x0, dx=DX, args=()):
     return df / 2 / dx
 
 
-def locate_example_dataset(dataset):
+def get_test_dataset_path(dataset, location='data'):
     """
     Return a filepath to a dataset bundled with PVLIB with name `dataset`.
     This utility is intended to be used in tests and examples:
@@ -482,20 +482,28 @@ def locate_example_dataset(dataset):
         .. ipython:: python
 
             import pvlib
-            pvlib.tools.locate_example_dataset('surfrad-slv16001.dat')
+            pvlib.tools.get_test_dataset_path('surfrad-slv16001.dat')
 
     Parameters
     ----------
     dataset : str or PurePath
-        Name of dataset file
+        Name of dataset file.
+    location : str or PurePath, default 'data'
+        PVLIB subfolder where dataset can be found.
+        This value can be:
+        +-------------------------+------------------------------+
+        | ``location``            | Description                  |
+        +=========================+==============================+
+        | ``'data'`` (default)    | currently all files are here |
+        +-------------------------+------------------------------+
 
     Returns
     -------
     path : PurePath
         Path pointing to dataset file in PVLIB.
     """
-    dataset = pathlib.Path(pvlib.__path__[0], 'data', dataset)
+    dataset = pathlib.Path(pvlib.__path__[0], location, dataset)
     if not dataset.exists():
-        raise ValueError("Dataset has not been found in pvlib. "
-                         "Please check dataset name.")
+        raise ValueError(f"Dataset has not been found in pvlib at {dataset}. "
+                         "Please check dataset name and location.")
     return dataset

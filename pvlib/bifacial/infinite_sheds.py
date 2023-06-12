@@ -9,6 +9,7 @@ from pvlib.bifacial import utils
 from pvlib.shading import masking_angle
 from pvlib.irradiance import beam_component, aoi, haydavies
 
+
 def _vf_ground_sky_integ(surface_tilt, surface_azimuth, gcr, height,
                          pitch, max_rows=10, npoints=100, vectorize=False):
     """
@@ -102,7 +103,8 @@ def _vf_row_sky_integ(f_x, surface_tilt, gcr, npoints=100):
     Parameters
     ----------
     f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
@@ -162,7 +164,8 @@ def _poa_sky_diffuse_pv(f_x, dhi, vf_shade_sky_integ, vf_noshade_sky_integ):
     Parameters
     ----------
     f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
     dhi : numeric
         Diffuse horizontal irradiance (DHI). [W/m^2]
     vf_shade_sky_integ : numeric
@@ -257,7 +260,8 @@ def _vf_row_ground_integ(f_x, surface_tilt, gcr, npoints=100):
     Parameters
     ----------
     f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
     surface_tilt : numeric
         Surface tilt angle in degrees from horizontal, e.g., surface facing up
         = 0, surface facing horizon = 90. [degree]
@@ -320,7 +324,8 @@ def _poa_ground_pv(f_x, poa_ground, f_gnd_pv_shade, f_gnd_pv_noshade):
     Parameters
     ----------
     f_x : numeric
-        Fraction of row slant height from the bottom that is shaded. [unitless]
+        Fraction of row slant height from the bottom that is shaded from
+        direct irradiance. [unitless]
     poa_ground : numeric
         Ground-reflected irradiance that would reach the row surface if the
         full ground was visible. poa_gnd_sky accounts for limited view of the

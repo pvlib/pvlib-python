@@ -1,0 +1,47 @@
+.. _whatsnew_01000:
+
+
+v0.10.0
+-------
+
+
+Breaking changes
+~~~~~~~~~~~~~~~~
+* Reorder arguments of :py:func:`pvlib.pvsystem.PVSystem.i_from_v`,
+  :py:func:`pvlib.pvsystem.i_from_v`, :py:func:`pvlib.pvsystem.v_from_i`,
+  :py:func:`pvlib.singlediode._lambertw_i_from_v`, and
+  :py:func:`pvlib.singlediode._lambertw_v_from_i` to match
+  :py:func:`pvlib.pvsystem.singlediode`.
+  (:issue:`1718`, :pull:`1719`)
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+Benchmarking
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Taos Transue (:ghuser:`reepoi`)

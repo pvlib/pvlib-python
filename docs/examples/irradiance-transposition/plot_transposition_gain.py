@@ -32,7 +32,8 @@ import pathlib
 DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
 
 # get TMY3 dataset
-tmy, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
+tmy, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+                          map_variables=True)
 # TMY3 datasets are right-labeled (AKA "end of interval") which means the last
 # interval of Dec 31, 23:00 to Jan 1 00:00 is labeled Jan 1 00:00. When rolling
 # up hourly irradiance to monthly insolation, a spurious January value is
@@ -60,9 +61,9 @@ def calculate_poa(tmy, solar_position, surface_tilt, surface_azimuth):
     poa = irradiance.get_total_irradiance(
         surface_tilt=surface_tilt,
         surface_azimuth=surface_azimuth,
-        dni=tmy['DNI'],
-        ghi=tmy['GHI'],
-        dhi=tmy['DHI'],
+        dni=tmy['dni'],
+        ghi=tmy['ghi'],
+        dhi=tmy['dhi'],
         solar_zenith=solar_position['apparent_zenith'],
         solar_azimuth=solar_position['azimuth'],
         model='isotropic')
@@ -97,7 +98,7 @@ poa_irradiance = calculate_poa(tmy,
 df_monthly['SAT-0.4'] = poa_irradiance.resample('m').sum()
 
 # calculate the percent difference from GHI
-ghi_monthly = tmy['GHI'].resample('m').sum()
+ghi_monthly = tmy['ghi'].resample('m').sum()
 df_monthly = 100 * (df_monthly.divide(ghi_monthly, axis=0) - 1)
 
 df_monthly.plot()

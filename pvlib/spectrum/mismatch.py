@@ -320,7 +320,7 @@ def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
     Returns
     -------
     modifier: array-like
-        spectral mismatch factor (unitless) which is can be multiplied
+        spectral mismatch factor (unitless) which is multiplied
         with broadband irradiance reaching a module's cells to estimate
         effective irradiance, i.e., the irradiance that is converted to
         electrical current.
@@ -448,85 +448,50 @@ def spectral_factor_sapm(airmass_absolute, module):
     return spectral_loss
 
 
-def caballero_spectral_correction(airmass_absolute, aod500, pw,
-                                  module_type=None, coefficients=None,
-                                  aod500_ref=0.084, pw_ref=1.42):
+def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
+                              module_type=None, coefficients=None):
     r"""
-    Spectral mismatch modifier based on absolute (pressure-adjusted)
-    airmass (AM), aerosol optical depth (AOD) at 500 nm and
-    precipitable water (PW).
+    Estimate a technology-specific spectral mismatch modifier from
+    airmass, aerosol optical depth, and atmospheric precipitable water,
+    using the Caballero model.
 
-    Estimates a spectral mismatch modifier :math:`M` representing
-    the effect on module short circuit current of variation in the
-    spectral irradiance. :math:`M` is estimated from absolute
-    (pressure-adjusted) AM, :math:`ama`, AOD at 500 nm, :math:`aod500`
-    and PW, :math:`pw` [1]_.
-
-    The best fit polynomial for each atmospheric parameter (AM, AOD, PW)
-    and PV technology under study has been obtained from synthetic spectra
-    generated with SMARTS [2]_, considering the following boundary
-    conditions:
-
-       * :math:`1.0 <= ama <= 5.0`
-       * :math:`0.05 <= aod500 <= 0.6`
-       * :math:`0.25 \textrm{cm} <= pw <= 4 \textrm{cm}`
-       * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
-       * All other parameters fixed at G173 standard
-
-    Elevation (deg), AOD and PW data were recorded in the city of Jaén,
-    Spain for one year synchronously with both, broadband and
-    spectroradiometric measurements of 30º tilted global irradiance
-    south-facing logged in 5-min intervals. AM was estimated through
-    elevation data.
-
-    Finally, the spectral mismatch factor was calculated for each
-    of the PV technologies and a multivariable regression adjustment
-    as a function of AM, AOD and PW was performed according to [3] and [1]_.
-    As such, the polynomial adjustment coefficients included in [1]
-    were obtained.
-
+    The model structure was motivated by examining the effect of these three
+    atmospheric parameters on simulated irradiance spectra and spectral
+    modifiers.  However, the coefficient values reported in [1]_ and
+    available here via the ``module_type`` parameter were determined
+    by fitting the model equations to spectral factors calculated from
+    global tilted spectral irradiance measurements taken in the city of
+    Jaén, Spain.  See [1]_ for details.
 
     Parameters
     ----------
-    airmass_absolute : array-like
-        absolute (pressure-adjusted) airmass. [unitless]
-
-    aod500 : array-like
-        atmospheric aerosol optical depth at 500 nm. [unitless]
-
-    pw : array-like
+    precipitable_water : numeric
         atmospheric precipitable water. [cm]
 
-    module_type : None or string, default None
-        a string specifying a cell type. Values of 'cdte', 'monosi', 'cigs',
-        'multisi','asi' and 'perovskite'. If provided,
-        module_type selects default coefficients for the following modules:
+    airmass_absolute : numeric
+        absolute (pressure-adjusted) airmass. [unitless]
 
-            * 'cdte' - anonymous CdTe module.
-            * 'monosi', - anonymous sc-si module.
-            * 'multisi', - anonymous mc-si- module.
-            * 'cigs' - anonymous copper indium gallium selenide module.
-            * 'asi' - anonymous amorphous silicon module.
-            * 'perovskite' - anonymous pervoskite module.
+    aod500 : numeric
+        atmospheric aerosol optical depth at 500 nm. [unitless]
 
-    coefficients : None or array-like, optional
-        the coefficients employed have been obtained with experimental
-        data in the city of Jaén, Spain. It is pending to verify if such
-        coefficients vary in places with extreme climates where AOD and
-        pw values are frequently high.
+    module_type : str, optional
+        One of the following PV technology strings from [1]_:
 
-    aod500_ref : numeric, default 0.084
-        atmospheric aerosol optical depth at 500nm value related to the
-        AM1.5G ASTMG-173-03 reference spectrum. [unitless]
+        * ``'cdte'`` - anonymous CdTe module.
+        * ``'monosi'``, - anonymous sc-si module.
+        * ``'multisi'``, - anonymous mc-si- module.
+        * ``'cigs'`` - anonymous copper indium gallium selenide module.
+        * ``'asi'`` - anonymous amorphous silicon module.
+        * ``'perovskite'`` - anonymous pervoskite module.
 
-    pw_ref : numeric, default 1.42
-        atmospheric precipitable water value related to the AM1.5G ASTMG-173-03
-        reference spectrum. [cm]
+    coefficients : array-like, optional
+        user-defined coefficients, if not using one of the default coefficient
+        sets via the ``module_type`` parameter.
 
     Returns
     -------
-    modifier: array-like
-        spectral mismatch factor (unitless) which is can be multiplied
+    modifier: numeric
+        spectral mismatch factor (unitless) which is multiplied
         with broadband irradiance reaching a module's cells to estimate
         effective irradiance, i.e., the irradiance that is converted to
         electrical current.
@@ -538,22 +503,18 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
         Air Mass, Aerosol Optical Depth and Precipitable Water
         for PV Performance Modeling."
         IEEE Journal of Photovoltaics 2018, 8(2), 552-558.
-        https://doi.org/10.1109/jphotov.2017.2787019
-    .. [2] Gueymard, Christian. SMARTS2: a simple model of the
-        atmospheric radiative transfer of sunshine: algorithms
-        and performance assessment. Cocoa, FL:
-        Florida Solar Energy Center, 1995.
-    .. [3] Theristis, M., Fernández, E., Almonacid, F., and
-       Pérez-Higueras, Pedro. "Spectral Corrections Based
-       on Air Mass, Aerosol Optical Depth and Precipitable
-       Water for CPV Performance Modeling."
-       IEEE Journal of Photovoltaics 2016, 6(6), 1598-1604.
-       https://doi.org/10.1109/jphotov.2016.2606702
+        :doi:`10.1109/jphotov.2017.2787019`
+    """
 
-        """
+    if module_type is None and coefficients is None:
+        raise ValueError('Must provide either `module_type` or `coefficients`')
+    if module_type is not None and coefficients is not None:
+        raise ValueError('Only one of `module_type` and `coefficients` should '
+                         'be provided')
 
-    # Experimental coefficients
-
+    # Experimental coefficients from [1]_.
+    # The extra 0/1 coefficients at the end are used to enable/disable
+    # terms to match the different equation forms in Table 1.
     _coefficients = {}
     _coefficients['cdte'] = (
         1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
@@ -574,11 +535,6 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
         1.0637, -0.0491, 0.0180, -0.0047, 0.0004, -0.0773,
         0.0583, -0.0159, 0.01251, 0.0109, 1, 0)
 
-    if module_type is None and coefficients is None:
-        raise ValueError('Must provide either `module_type` or `coefficients`')
-    if module_type is not None and coefficients is not None:
-        raise ValueError('Only one of `module_type` and `coefficients` should '
-                         'be provided')
     if module_type is not None:
         coeff = _coefficients[module_type]
     else:
@@ -586,13 +542,27 @@ def caballero_spectral_correction(airmass_absolute, aod500, pw,
 
     # Evaluate spectral correction factor
     ama = airmass_absolute
-    modifier = (
-        coeff[0] + (ama) * coeff[1] + (ama * ama) * coeff[2]
-        + (ama * ama * ama) * coeff[3] + (ama * ama * ama * ama) * coeff[4]
-        + (aod500 - aod500_ref) * coeff[5]
-        + ((aod500 - aod500_ref) * (ama) * coeff[6]) * coeff[10]
-        + ((aod500 - aod500_ref) * (np.log(ama)) * coeff[6]) * coeff[11]
-        + (aod500 - aod500_ref) * (ama * ama) * coeff[7]
-        + (pw - pw_ref) * coeff[8] + (pw - pw_ref) * (np.log(ama)) * coeff[9])
+    aod500_ref = 0.084
+    pw_ref = 1.4164
 
+    f_AM = (
+        coeff[0]
+        + coeff[1] * ama
+        + coeff[2] * ama**2
+        + coeff[3] * ama**3
+        + coeff[4] * ama**4
+    )
+    # Eq 6, with Table 1
+    f_AOD = (aod500 - aod500_ref) * (
+        coeff[5]
+        + coeff[10] * coeff[6] * ama
+        + coeff[11] * coeff[6] * np.log(ama)
+        + coeff[7] * ama**2
+    )
+    # Eq 7, with Table 1
+    f_PW = (precipitable_water - pw_ref) * (
+        coeff[8]
+        + coeff[9] * np.log(ama)
+    )
+    modifier = f_AM + f_AOD + f_PW  # Eq 5
     return modifier

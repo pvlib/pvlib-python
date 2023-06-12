@@ -175,8 +175,12 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     n2costheta2 = n2 * costheta
 
     # reflectance of s-, p-polarized, and normal light by the first interface
-    rho12_s = ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
-    rho12_p = ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
+    with np.errstate(divide='ignore', invalid='ignore'):
+        rho12_s = \
+            ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
+        rho12_p = \
+            ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
+
     rho12_0 = ((n1 - n2) / (n1 + n2)) ** 2
 
     # transmittance through the first interface
@@ -208,8 +212,10 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
         tau_0 *= (1 - rho23_0) / (1 - rho23_0 * rho12_0)
 
     # transmittance after absorption in the glass
-    tau_s *= np.exp(-K * L / costheta)
-    tau_p *= np.exp(-K * L / costheta)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        tau_s *= np.exp(-K * L / costheta)
+        tau_p *= np.exp(-K * L / costheta)
+
     tau_0 *= np.exp(-K * L)
 
     # incidence angle modifier

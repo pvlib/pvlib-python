@@ -29,7 +29,7 @@ Additional functions for quantities closely related to solar position.
    solarposition.calc_time
    solarposition.pyephem_earthsun_distance
    solarposition.nrel_earthsun_distance
-   spa.calculate_deltat
+   solarposition.calculate_deltat
 
 
 Functions for calculating sunrise, sunset and transit times.

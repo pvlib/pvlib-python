@@ -60,8 +60,8 @@ def test_read_srml_dt_index(url, year, month):
     ('2001', '2001'),
     ('2017', 'dni_7')
 ])
-def test_map_columns(column, expected):
-    assert srml.map_columns(column) == expected
+def test__map_columns(column, expected):
+    assert srml._map_columns(column) == expected
 
 
 @pytest.mark.remote_data

@@ -27,9 +27,9 @@ MIDC_RAW_SHORT_HEADER_TESTFILE = (
 #                          '?site=UAT&begin=20181018&end=20181019')
 
 
-def test_midc_format_index():
+def test_midc__format_index():
     data = pd.read_csv(MIDC_TESTFILE)
-    data = midc.format_index(data)
+    data = midc._format_index(data)
     start = pd.Timestamp("20181014 00:00")
     start = start.tz_localize("MST")
     end = pd.Timestamp("20181014 23:59")
@@ -39,16 +39,16 @@ def test_midc_format_index():
     assert data.index[-1] == end
 
 
-def test_midc_format_index_tz_conversion():
+def test_midc__format_index_tz_conversion():
     data = pd.read_csv(MIDC_TESTFILE)
     data = data.rename(columns={'MST': 'PST'})
-    data = midc.format_index(data)
+    data = midc._format_index(data)
     assert data.index[0].tz == pytz.timezone('Etc/GMT+8')
 
 
-def test_midc_format_index_raw():
+def test_midc__format_index_raw():
     data = pd.read_csv(MIDC_RAW_TESTFILE)
-    data = midc.format_index_raw(data)
+    data = midc._format_index_raw(data)
     start = pd.Timestamp('20181018 00:00')
     start = start.tz_localize('MST')
     end = pd.Timestamp('20181018 23:59')

@@ -15,6 +15,11 @@ Breaking Changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Functions for calculating spectral modifiers have been moved to :py:mod:`pvlib.spectrum`:
+  :py:func:`pvlib.atmosphere.first_solar_spectral_correction` is deprecated and
+  replaced by :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`, and
+  :py:func:`pvlib.pvsystem.sapm_spectral_loss` is deprecated and replaced by
+  :py:func:`~pvlib.spectrum.spectral_factor_sapm`. (:pull:`1628`)
 * Removed the ``get_ecmwf_macc`` and ``read_ecmwf_macc`` iotools functions as the
   MACC dataset has been `removed by ECMWF <https://confluence.ecmwf.int/display/DAC/Decommissioning+of+ECMWF+Public+Datasets+Service>`_
   (data period 2003-2012). Instead, ECMWF recommends to use CAMS global
@@ -50,6 +55,8 @@ Bug fixes
 ~~~~~~~~~
 * `data` can no longer be left unspecified in
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
+* ``d2mutau`` and ``NsVbi`` were hardcoded in :py:func:`pvlib.pvsystem.max_power_point` instead of
+  passing through the arguments to the function. (:pull:`1733`)
 
 Testing
 ~~~~~~~

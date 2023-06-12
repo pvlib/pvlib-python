@@ -212,7 +212,7 @@ def test_get_clearsky_valueerror(times):
 def test_from_tmy_3():
     from pvlib.tests.iotools.test_tmy import TMY3_TESTFILE
     from pvlib.iotools import read_tmy3
-    data, meta = read_tmy3(TMY3_TESTFILE)
+    data, meta = read_tmy3(TMY3_TESTFILE, map_variables=True)
     loc = Location.from_tmy(meta, data)
     assert loc.name is not None
     assert loc.altitude != 0

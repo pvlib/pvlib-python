@@ -22,7 +22,6 @@ from pvlib import (  # noqa: F401
     snow,
     soiling,
     solarposition,
-    spa,
     temperature,
     tools,
     tracking,

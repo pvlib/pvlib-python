@@ -1245,4 +1245,3 @@ def earthsun_distance(unixtime, delta_t, numthreads):
 
     return R
 
-

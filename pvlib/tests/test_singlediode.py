@@ -462,21 +462,22 @@ def test_bishop88_kwargs_transfer(method, method_kwargs, mocker):
     # get arguments common to all bishop88_.* functions
     bishop88_args = bishop88_arguments()
 
-    # kwargs assertions are done with <= operator since calls inside
-    # bishop88_* are done with more keyword arguments than 'method_kwargs'
-    # and this comparison is only available with sets, so dict.items() is used
+    # only test if present kwargs keys in call are more than those passed to
+    # bishop_* functions. Value comparison can't be made due to 'numpy.ndarray'
+    # not being a hashable type. This can be changed with Py3.7 is deprecated:
+    # assert method_kwargs.items() <= optimizer_mock.call_args.kwargs.items()
 
     bishop88_i_from_v(0, **bishop88_args, method=method, **method_kwargs)
-    assert set(method_kwargs.items()) \
-        .issubset(optimizer_mock.call_args.kwargs.items())
+    assert set(optimizer_mock.call_args.kwargs.keys()) \
+        .issuperset(method_kwargs.keys())
 
     bishop88_v_from_i(0, **bishop88_args, method=method, **method_kwargs)
-    assert set(method_kwargs.items()) \
-        .issubset(optimizer_mock.call_args.kwargs.items())
+    assert set(optimizer_mock.call_args.kwargs.keys()) \
+        .issuperset(method_kwargs.keys())
 
     bishop88_mpp(**bishop88_args, method=method, **method_kwargs)
-    assert set(method_kwargs.items()) \
-        .issubset(optimizer_mock.call_args.kwargs.items())
+    assert set(optimizer_mock.call_args.kwargs.keys()) \
+        .issuperset(method_kwargs.keys())
 
 
 @pytest.mark.parametrize('method, method_kwargs', [

@@ -467,13 +467,16 @@ def test_bishop88_kwargs_transfer(method, method_kwargs, mocker):
     # and this comparison is only available with sets, so dict.items() is used
 
     bishop88_i_from_v(0, **bishop88_args, method=method, **method_kwargs)
-    assert method_kwargs.items() <= optimizer_mock.call_args.kwargs.items()
+    assert set(method_kwargs.items()) \
+        .issubset(optimizer_mock.call_args.kwargs.items())
 
     bishop88_v_from_i(0, **bishop88_args, method=method, **method_kwargs)
-    assert method_kwargs.items() <= optimizer_mock.call_args.kwargs.items()
+    assert set(method_kwargs.items()) \
+        .issubset(optimizer_mock.call_args.kwargs.items())
 
     bishop88_mpp(**bishop88_args, method=method, **method_kwargs)
-    assert method_kwargs.items() <= optimizer_mock.call_args.kwargs.items()
+    assert set(method_kwargs.items()) \
+        .issubset(optimizer_mock.call_args.kwargs.items())
 
 
 @pytest.mark.parametrize('method, method_kwargs', [

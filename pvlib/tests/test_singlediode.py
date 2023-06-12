@@ -6,9 +6,11 @@ import numpy as np
 import pandas as pd
 import scipy
 from pvlib import pvsystem
+from pvlib import singlediode
 from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
 import pytest
+import pytest_mock
 from .conftest import DATA_DIR
 
 POA = 888
@@ -442,52 +444,36 @@ def bishop88_arguments():
 
 @pytest.mark.parametrize('method, method_kwargs', [
     ('newton', {
-        'tol': 1e-3,
-        'rtol': 1e-3,
+        'tol': 1e-8,
+        'rtol': 1e-8,
         'maxiter': 30,
     }),
     ('brentq', {
-        'xtol': 1e-3,
-        'rtol': 1e-3,
+        'xtol': 1e-8,
+        'rtol': 1e-8,
         'maxiter': 30,
     })
 ])
-def test_bishop88_kwargs_pass(method, method_kwargs):
+def test_bishop88_kwargs_transfer(method, method_kwargs, mocker):
     """test method_kwargs modifying optimizer does not break anything"""
-    # build test tolerances from method_kwargs
-    tol = {
-        'atol': np.nanmax([method_kwargs.get('tol', np.nan),
-                           method_kwargs.get('xtol', np.nan)]),
-        'rtol': method_kwargs.get('rtol')
-    }
-    expected = {  # from reference conditions
-        'pmp': (get_pvsyst_fs_495()['I_mp_ref'] *
-                get_pvsyst_fs_495()['V_mp_ref']),
-        'isc': get_pvsyst_fs_495()['I_sc_ref'],
-        'voc': get_pvsyst_fs_495()['V_oc_ref']
-    }
+    # patch method namespace at singlediode module namespace
+    optimizer_mock = mocker.patch('pvlib.singlediode.' + method)
 
     # get arguments common to all bishop88_.* functions
     bishop88_args = bishop88_arguments()
 
-    mpp_88 = bishop88_mpp(**bishop88_args, method=method, **method_kwargs)
-    assert np.isclose(mpp_88[2], expected['pmp'], **tol)
+    # kwargs assertions are done with <= operator since calls inside
+    # bishop88_* are done with more keyword arguments than 'method_kwargs'
+    # and this comparison is only available with sets, so dict.items() is used
 
-    isc_88 = bishop88_i_from_v(0, **bishop88_args, method=method,
-                               **method_kwargs)
-    assert np.isclose(isc_88, expected['isc'], **tol)
+    bishop88_i_from_v(0, **bishop88_args, method=method, **method_kwargs)
+    assert method_kwargs.items() <= optimizer_mock.call_args.kwargs.items()
 
-    voc_88 = bishop88_v_from_i(0, **bishop88_args, method=method,
-                               **method_kwargs)
-    assert np.isclose(voc_88, expected['voc'], **tol)
+    bishop88_v_from_i(0, **bishop88_args, method=method, **method_kwargs)
+    assert method_kwargs.items() <= optimizer_mock.call_args.kwargs.items()
 
-    ioc_88 = bishop88_i_from_v(voc_88, **bishop88_args, method=method,
-                               **method_kwargs)
-    assert np.isclose(ioc_88, 0.0, **tol)
-
-    vsc_88 = bishop88_v_from_i(isc_88, **bishop88_args, method=method,
-                               **method_kwargs)
-    assert np.isclose(vsc_88, 0.0, **tol)
+    bishop88_mpp(**bishop88_args, method=method, **method_kwargs)
+    assert method_kwargs.items() <= optimizer_mock.call_args.kwargs.items()
 
 
 @pytest.mark.parametrize('method, method_kwargs', [
@@ -509,11 +495,11 @@ def test_bishop88_kwargs_fails(method, method_kwargs):
     # get arguments common to all bishop88_.* functions
     bishop88_args = bishop88_arguments()
 
-    pytest.raises(TypeError, bishop88_mpp,
-                  **bishop88_args, method=method, **method_kwargs)
-
     pytest.raises(TypeError, bishop88_i_from_v,
                   0, **bishop88_args, method=method, **method_kwargs)
 
     pytest.raises(TypeError, bishop88_v_from_i,
                   0, **bishop88_args, method=method, **method_kwargs)
+    
+    pytest.raises(TypeError, bishop88_mpp,
+                  **bishop88_args, method=method, **method_kwargs)

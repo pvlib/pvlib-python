@@ -298,7 +298,13 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
-    return bishop88(vd, *args)[0]
+    # When 'full_output' parameter is specified, returned 'vd' is a tuple with
+    # many elements, where the root is the first one. So we use it to output
+    # the bishop88 result and return tuple(scalar, tuple with method results)
+    if method_kwargs.get('full_output') is True:
+        return (bishop88(vd[0], *args)[0], vd)
+    else:
+        return bishop88(vd, *args)[0]
 
 
 def bishop88_v_from_i(current, photocurrent, saturation_current,
@@ -393,7 +399,14 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
                     **method_kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
-    return bishop88(vd, *args)[1]
+
+    # When 'full_output' parameter is specified, returned 'vd' is a tuple with
+    # many elements, where the root is the first one. So we use it to output
+    # the bishop88 result and return tuple(scalar, tuple with method results)
+    if method_kwargs.get('full_output') is True:
+        return (bishop88(vd[0], *args)[1], vd)
+    else:
+        return bishop88(vd, *args)[1]
 
 
 def bishop88_mpp(photocurrent, saturation_current, resistance_series,
@@ -481,7 +494,15 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
             **method_kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
-    return bishop88(vd, *args)
+
+    # When 'full_output' parameter is specified, returned 'vd' is a tuple with
+    # many elements, where the root is the first one. So we use it to output
+    # the bishop88 result and return
+    # tuple(tuple with bishop88 solution, tuple with method results)
+    if method_kwargs.get('full_output') is True:
+        return (bishop88(vd[0], *args), vd)
+    else:
+        return bishop88(vd, *args)
 
 
 def _get_size_and_shape(args):

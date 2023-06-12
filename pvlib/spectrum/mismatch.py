@@ -239,8 +239,9 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
     return smm
 
 
-def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
-                               coefficients=None, min_pw=0.1, max_pw=8):
+def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
+                               module_type=None, coefficients=None,
+                               min_pw=0.1, max_pw=8):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) airmass.
@@ -277,21 +278,13 @@ def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
 
     Parameters
     ----------
-    pw : array-like
+    precipitable_water : numeric
         atmospheric precipitable water. [cm]
 
-    airmass_absolute : array-like
+    airmass_absolute : numeric
         absolute (pressure-adjusted) airmass. [unitless]
 
-    min_pw : float, default 0.1
-        minimum atmospheric precipitable water. Any pw value lower than min_pw
-        is set to min_pw to avoid model divergence. [cm]
-
-    max_pw : float, default 8
-        maximum atmospheric precipitable water. Any pw value higher than max_pw
-        is set to NaN to avoid model divergence. [cm]
-
-    module_type : None or string, default None
+    module_type : str, optional
         a string specifying a cell type. Values of 'cdte', 'monosi', 'xsi',
         'multisi', and 'polysi' (can be lower or upper case). If provided,
         module_type selects default coefficients for the following modules:
@@ -307,7 +300,7 @@ def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
         Manufacturer 2 Model C from [3]_. The spectral response (SR) of CIGS
         and a-Si modules used to derive coefficients can be found in [4]_
 
-    coefficients : None or array-like, default None
+    coefficients : array-like, optional
         Allows for entry of user-defined spectral correction
         coefficients. Coefficients must be of length 6. Derivation of
         coefficients requires use of SMARTS and PV module quantum
@@ -316,6 +309,14 @@ def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
         correction to a particular PV module. Note that the parameters for
         modules with very similar quantum efficiency should be similar,
         in most cases limiting the need for module specific coefficients.
+
+    min_pw : float, default 0.1
+        minimum atmospheric precipitable water. Any pw value lower than min_pw
+        is set to min_pw to avoid model divergence. [cm]
+
+    max_pw : float, default 8
+        maximum atmospheric precipitable water. Any pw value higher than max_pw
+        is set to NaN to avoid model divergence. [cm]
 
     Returns
     -------
@@ -347,7 +348,7 @@ def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
     # *** Pw ***
     # Replace Pw Values below 0.1 cm with 0.1 cm to prevent model from
     # diverging"
-    pw = np.atleast_1d(pw)
+    pw = np.atleast_1d(precipitable_water)
     pw = pw.astype('float64')
     if np.min(pw) < min_pw:
         pw = np.maximum(pw, min_pw)

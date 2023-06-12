@@ -17,4 +17,3 @@ Airmass and atmospheric models
    atmosphere.kasten96_lt
    atmosphere.angstrom_aod_at_lambda
    atmosphere.angstrom_alpha
-   atmosphere.caballero_spectral_correction

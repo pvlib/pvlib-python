@@ -33,8 +33,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* `Added a function :py:func:`pvlib.atmosphere.caballero_spectral_correction` to estimate a spectral mismatch modifier based on absolute (pressure-adjusted)
-   airmass (AM), aerosol optical depth (AOD) at 500 nm and precipitable water (PW). (:pull:`1296`)
+* Added a function :py:func:`pvlib.spectrum.spectral_factor_caballero`
+  to estimate spectral mismatch modifiers from atmospheric conditions. (:pull:`1296`)
 * Added a new irradiance decomposition model :py:func:`pvlib.irradiance.louche`. (:pull:`1705`)
 * Add optional encoding parameter to :py:func:`pvlib.iotools.read_tmy3`.
   (:issue:`1732`, :pull:`1737`)

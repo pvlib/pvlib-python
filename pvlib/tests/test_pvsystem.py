@@ -1515,20 +1515,6 @@ def test_PVSystem_get_ac_sandia(cec_inverter_parameters, mocker):
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
-@fail_on_pvlib_version('0.10')
-def test_PVSystem_snlinverter(cec_inverter_parameters):
-    system = pvsystem.PVSystem(
-        inverter=cec_inverter_parameters['Name'],
-        inverter_parameters=cec_inverter_parameters,
-    )
-    vdcs = pd.Series(np.linspace(0,50,3))
-    idcs = pd.Series(np.linspace(0,11,3))
-    pdcs = idcs * vdcs
-    with pytest.warns(pvlibDeprecationWarning):
-        pacs = system.snlinverter(vdcs, pdcs)
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
-
-
 def test_PVSystem_get_ac_sandia_multi(cec_inverter_parameters, mocker):
     inv_fun = mocker.spy(inverter, 'sandia_multi')
     system = pvsystem.PVSystem(
@@ -2169,28 +2155,6 @@ def test_PVSystem_pvwatts_losses(pvwatts_system_defaults, mocker):
     assert out < expected
 
 
-@fail_on_pvlib_version('0.10')
-def test_PVSystem_pvwatts_ac(pvwatts_system_defaults, mocker):
-    mocker.spy(inverter, 'pvwatts')
-    pdc = 50
-    with pytest.warns(pvlibDeprecationWarning):
-        out = pvwatts_system_defaults.pvwatts_ac(pdc)
-    inverter.pvwatts.assert_called_once_with(
-        pdc, **pvwatts_system_defaults.inverter_parameters)
-    assert out < pdc
-
-
-@fail_on_pvlib_version('0.10')
-def test_PVSystem_pvwatts_ac_kwargs(pvwatts_system_kwargs, mocker):
-    mocker.spy(inverter, 'pvwatts')
-    pdc = 50
-    with pytest.warns(pvlibDeprecationWarning):
-        out = pvwatts_system_kwargs.pvwatts_ac(pdc)
-    inverter.pvwatts.assert_called_once_with(
-        pdc, **pvwatts_system_kwargs.inverter_parameters)
-    assert out < pdc
-
-
 def test_PVSystem_num_arrays():
     system_one = pvsystem.PVSystem()
     system_two = pvsystem.PVSystem(arrays=[
@@ -2356,26 +2320,6 @@ def test_Array_dc_ohms_from_percent(mocker):
         array = pvsystem.Array(pvsystem.FixedMount(0, 180),
                                array_losses_parameters={'dc_ohmic_percent': 3})
         out = array.dc_ohms_from_percent()
-
-
-@pytest.mark.parametrize('funcname', ['sapm_celltemp', 'pvsyst_celltemp',
-                                      'faiman_celltemp', 'fuentes_celltemp',
-                                      'noct_sam_celltemp'])
-def test_PVSystem_temperature_deprecated(funcname):
-    temp_model_params = {
-        'a': -3.47, 'b': -0.0594, 'deltaT': 3,  # sapm
-        'noct_installed': 45,  # fuentes
-        'module_efficiency': 0.2, 'noct': 45,  # noct_sam
-    }
-    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
-    func = getattr(system, funcname)
-    index = pd.date_range('2019-01-01', freq='h', periods=5)
-    temps = pd.Series(25, index)
-    irrads = pd.Series(1000, index)
-    winds = pd.Series(1, index)
-
-    with pytest.warns(pvlibDeprecationWarning):
-        func(irrads, temps, winds)
 
 
 @pytest.mark.parametrize('model,keys', [

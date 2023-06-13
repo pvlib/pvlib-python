@@ -636,39 +636,6 @@ class PVSystem:
             in zip(self.arrays, effective_irradiance, temp_cell)
         )
 
-    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
-                removal='0.10.0')
-    def sapm_celltemp(self, poa_global, temp_air, wind_speed):
-        """Uses :py:func:`pvlib.temperature.sapm_cell` to calculate cell
-        temperatures.
-
-        Parameters
-        ----------
-        poa_global : numeric or tuple of numeric
-            Total incident irradiance in W/m^2.
-
-        temp_air : numeric or tuple of numeric
-            Ambient dry bulb temperature in degrees C.
-
-        wind_speed : numeric or tuple of numeric
-            Wind speed in m/s at a height of 10 meters.
-
-        Returns
-        -------
-        numeric or tuple of numeric
-            values in degrees C.
-
-        Notes
-        -----
-        The `temp_air` and `wind_speed` parameters may be passed as tuples
-        to provide different values for each Array in the system. If not
-        passed as a tuple then the same value is used for input to each Array.
-        If passed as a tuple the length must be the same as the number of
-        Arrays.
-        """
-        return self.get_cell_temperature(poa_global, temp_air, wind_speed,
-                                         model='sapm')
-
     @_unwrap_single_value
     def sapm_spectral_loss(self, airmass_absolute):
         """
@@ -729,158 +696,6 @@ class PVSystem:
             for array, poa_direct, poa_diffuse, aoi
             in zip(self.arrays, poa_direct, poa_diffuse, aoi)
         )
-
-    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
-                removal='0.10.0')
-    def pvsyst_celltemp(self, poa_global, temp_air, wind_speed=1.0):
-        """Uses :py:func:`pvlib.temperature.pvsyst_cell` to calculate cell
-        temperature.
-
-        Parameters
-        ----------
-        poa_global : numeric or tuple of numeric
-            Total incident irradiance in W/m^2.
-
-        temp_air : numeric or tuple of numeric
-            Ambient dry bulb temperature in degrees C.
-
-        wind_speed : numeric or tuple of numeric, default 1.0
-            Wind speed in m/s measured at the same height for which the wind
-            loss factor was determined.  The default value is 1.0, which is
-            the wind speed at module height used to determine NOCT.
-
-        Returns
-        -------
-        numeric or tuple of numeric
-            values in degrees C.
-
-        Notes
-        -----
-        The `temp_air` and `wind_speed` parameters may be passed as tuples
-        to provide different values for each Array in the system. If not
-        passed as a tuple then the same value is used for input to each Array.
-        If passed as a tuple the length must be the same as the number of
-        Arrays.
-        """
-        return self.get_cell_temperature(poa_global, temp_air, wind_speed,
-                                         model='pvsyst')
-
-    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
-                removal='0.10.0')
-    def faiman_celltemp(self, poa_global, temp_air, wind_speed=1.0):
-        """
-        Use :py:func:`pvlib.temperature.faiman` to calculate cell temperature.
-
-        Parameters
-        ----------
-        poa_global : numeric or tuple of numeric
-            Total incident irradiance [W/m^2].
-
-        temp_air : numeric or tuple of numeric
-            Ambient dry bulb temperature [C].
-
-        wind_speed : numeric or tuple of numeric, default 1.0
-            Wind speed in m/s measured at the same height for which the wind
-            loss factor was determined.  The default value 1.0 m/s is the wind
-            speed at module height used to determine NOCT. [m/s]
-
-        Returns
-        -------
-        numeric or tuple of numeric
-            values in degrees C.
-
-        Notes
-        -----
-        The `temp_air` and `wind_speed` parameters may be passed as tuples
-        to provide different values for each Array in the system. If not
-        passed as a tuple then the same value is used for input to each Array.
-        If passed as a tuple the length must be the same as the number of
-        Arrays.
-        """
-        return self.get_cell_temperature(poa_global, temp_air, wind_speed,
-                                         model='faiman')
-
-    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
-                removal='0.10.0')
-    def fuentes_celltemp(self, poa_global, temp_air, wind_speed):
-        """
-        Use :py:func:`pvlib.temperature.fuentes` to calculate cell temperature.
-
-        Parameters
-        ----------
-        poa_global : pandas Series or tuple of Series
-            Total incident irradiance [W/m^2]
-
-        temp_air : pandas Series or tuple of Series
-            Ambient dry bulb temperature [C]
-
-        wind_speed : pandas Series or tuple of Series
-            Wind speed [m/s]
-
-        Returns
-        -------
-        temperature_cell : Series or tuple of Series
-            The modeled cell temperature [C]
-
-        Notes
-        -----
-        The Fuentes thermal model uses the module surface tilt for convection
-        modeling. The SAM implementation of PVWatts hardcodes the surface tilt
-        value at 30 degrees, ignoring whatever value is used for irradiance
-        transposition.  If you want to match the PVWatts behavior you can
-        either leave ``surface_tilt`` unspecified to use the PVWatts default
-        of 30, or specify a ``surface_tilt`` value in the Array's
-        ``temperature_model_parameters``.
-
-        The `temp_air`, `wind_speed`, and `surface_tilt` parameters may be
-        passed as tuples
-        to provide different values for each Array in the system. If not
-        passed as a tuple then the same value is used for input to each Array.
-        If passed as a tuple the length must be the same as the number of
-        Arrays.
-        """
-        return self.get_cell_temperature(poa_global, temp_air, wind_speed,
-                                         model='fuentes')
-
-    @deprecated('0.9', alternative='PVSystem.get_cell_temperature',
-                removal='0.10.0')
-    def noct_sam_celltemp(self, poa_global, temp_air, wind_speed,
-                          effective_irradiance=None):
-        """
-        Use :py:func:`pvlib.temperature.noct_sam` to calculate cell
-        temperature.
-
-        Parameters
-        ----------
-        poa_global : numeric or tuple of numeric
-            Total incident irradiance in W/m^2.
-
-        temp_air : numeric or tuple of numeric
-            Ambient dry bulb temperature in degrees C.
-
-        wind_speed : numeric or tuple of numeric
-            Wind speed in m/s at a height of 10 meters.
-
-        effective_irradiance : numeric, tuple of numeric, or None.
-            The irradiance that is converted to photocurrent. If None,
-            assumed equal to ``poa_global``. [W/m^2]
-
-        Returns
-        -------
-        temperature_cell : numeric or tuple of numeric
-            The modeled cell temperature [C]
-
-        Notes
-        -----
-        The `temp_air` and `wind_speed` parameters may be passed as tuples
-        to provide different values for each Array in the system. If not
-        passed as a tuple then the same value is used for input to each Array.
-        If passed as a tuple the length must be the same as the number of
-        Arrays.
-        """
-        return self.get_cell_temperature(
-            poa_global, temp_air, wind_speed, model='noct_sam',
-            effective_irradiance=effective_irradiance)
 
     @_unwrap_single_value
     def first_solar_spectral_loss(self, pw, airmass_absolute):
@@ -1027,24 +842,6 @@ class PVSystem:
                 model + ' is not a valid AC power model.',
                 ' model must be one of "sandia", "adr" or "pvwatts"')
 
-    @deprecated('0.9', alternative='PVSystem.get_ac', removal='0.10')
-    def snlinverter(self, v_dc, p_dc):
-        """Uses :py:func:`pvlib.inverter.sandia` to calculate AC power based on
-        ``self.inverter_parameters`` and the input voltage and power.
-
-        See :py:func:`pvlib.inverter.sandia` for details
-        """
-        return inverter.sandia(v_dc, p_dc, self.inverter_parameters)
-
-    @deprecated('0.9', alternative='PVSystem.get_ac', removal='0.10')
-    def adrinverter(self, v_dc, p_dc):
-        """Uses :py:func:`pvlib.inverter.adr` to calculate AC power based on
-        ``self.inverter_parameters`` and the input voltage and power.
-
-        See :py:func:`pvlib.inverter.adr` for details
-        """
-        return inverter.adr(v_dc, p_dc, self.inverter_parameters)
-
     @_unwrap_single_value
     def scale_voltage_current_power(self, data):
         """
@@ -1103,21 +900,6 @@ class PVSystem:
                                 'nameplate_rating', 'age', 'availability'],
                                self.losses_parameters)
         return pvwatts_losses(**kwargs)
-
-    @deprecated('0.9', alternative='PVSystem.get_ac', removal='0.10')
-    def pvwatts_ac(self, pdc):
-        """
-        Calculates AC power according to the PVWatts model using
-        :py:func:`pvlib.inverter.pvwatts`, `self.module_parameters["pdc0"]`,
-        and `eta_inv_nom=self.inverter_parameters["eta_inv_nom"]`.
-
-        See :py:func:`pvlib.inverter.pvwatts` for details.
-        """
-        kwargs = _build_kwargs(['eta_inv_nom', 'eta_inv_ref'],
-                               self.inverter_parameters)
-
-        return inverter.pvwatts(pdc, self.inverter_parameters['pdc0'],
-                                **kwargs)
 
     @_unwrap_single_value
     def dc_ohms_from_percent(self):

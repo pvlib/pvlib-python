@@ -825,7 +825,7 @@ def test_calcparams_cec_returns_correct_Python_type(numeric_type_funcs,
         effective_irradiance=numeric_type_funcs[0](800.0),
         temp_cell=numeric_type_funcs[1](25),
     )
-    out = pvsystem.calcparams_desoto(
+    out = pvsystem.calcparams_cec(
         **numeric_args,
         alpha_sc=cec_module_params['alpha_sc'],
         a_ref=cec_module_params['a_ref'],
@@ -833,6 +833,7 @@ def test_calcparams_cec_returns_correct_Python_type(numeric_type_funcs,
         I_o_ref=cec_module_params['I_o_ref'],
         R_sh_ref=cec_module_params['R_sh_ref'],
         R_s=cec_module_params['R_s'],
+        Adjust=cec_module_params['Adjust'],
         EgRef=1.121,
         dEgdT=-0.0002677
     )
@@ -908,6 +909,28 @@ def test_calcparams_cec_all_scalars(cec_module_params):
     assert np.isclose(Rs, 0.094, atol=1e-4, rtol=0)
     assert np.isclose(Rsh, 19.65, atol=1e-4, rtol=0)
     assert np.isclose(nNsVth, 0.473, atol=1e-4, rtol=0)
+
+
+def test_calcparams_pvsyst_all_scalars(pvsyst_module_params):
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
+        effective_irradiance=800.0,
+        temp_cell=50,
+        alpha_sc=pvsyst_module_params['alpha_sc'],
+        gamma_ref=pvsyst_module_params['gamma_ref'],
+        mu_gamma=pvsyst_module_params['mu_gamma'],
+        I_L_ref=pvsyst_module_params['I_L_ref'],
+        I_o_ref=pvsyst_module_params['I_o_ref'],
+        R_sh_ref=pvsyst_module_params['R_sh_ref'],
+        R_sh_0=pvsyst_module_params['R_sh_0'],
+        R_s=pvsyst_module_params['R_s'],
+        cells_in_series=pvsyst_module_params['cells_in_series'],
+        EgRef=pvsyst_module_params['EgRef'])
+
+    assert np.isclose(IL, 4.8200, atol=1e-4, rtol=0)
+    assert np.isclose(I0, 1.47e-7, atol=1e-4, rtol=0)
+    assert np.isclose(Rs, 0.500, atol=1e-4, rtol=0)
+    assert np.isclose(Rsh, 305.757, atol=1e-4, rtol=0)
+    assert np.isclose(nNsVth, 1.7961, atol=1e-4, rtol=0)
 
 
 def test_calcparams_desoto(cec_module_params):

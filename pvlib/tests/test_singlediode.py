@@ -515,3 +515,21 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     assert isinstance(ret_val[1], tuple)  # second is output from optimizer
     # any root finder returns at least 2 elements with full_output=True
     assert len(ret_val[1]) >= 2
+
+    ret_val = bishop88_v_from_i(0, **bishop88_arguments, method=method,
+                                **method_kwargs)
+    assert isinstance(ret_val, tuple)  # ret_val must be a tuple
+    assert len(ret_val) == 2  # of two elements
+    assert isinstance(ret_val[0], float)  # first one has bishop88 result
+    assert isinstance(ret_val[1], tuple)  # second is output from optimizer
+    # any root finder returns at least 2 elements with full_output=True
+    assert len(ret_val[1]) >= 2
+
+    ret_val = bishop88_mpp(**bishop88_arguments, method=method,
+                           **method_kwargs)
+    assert isinstance(ret_val, tuple)  # ret_val must be a tuple
+    assert len(ret_val) == 2  # of two elements
+    assert isinstance(ret_val[0], float)  # first one has bishop88 result
+    assert isinstance(ret_val[1], tuple)  # second is output from optimizer
+    # any root finder returns at least 2 elements with full_output=True
+    assert len(ret_val[1]) >= 2

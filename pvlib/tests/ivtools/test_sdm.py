@@ -101,13 +101,15 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     temp_cell = np.array([15., 25., 35., 45.])
     ee = np.tile(effective_irradiance, len(temp_cell))
     tc = np.repeat(temp_cell, len(effective_irradiance))
-    iph, io, rs, rsh, nnsvth = pvsystem.calcparams_desoto(
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
         ee, tc, alpha_sc=specs['alpha_sc'], **params)
-    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
-        sim_ivcurves = pvsystem.singlediode(iph, io, rs, rsh, nnsvth,
-                                            ivcurve_pnts=300)
-    sim_ivcurves['ee'] = ee
-    sim_ivcurves['tc'] = tc
+    ivcurve_params = dict(photocurrent=IL, saturation_current=I0,
+                          resistance_series=Rs, resistance_shunt=Rsh,
+                          nNsVth=nNsVth)
+    sim_ivcurves = pvsystem.singlediode(**ivcurve_params).to_dict('series')
+    v = np.linspace(0., sim_ivcurves['v_oc'], 300)
+    i = pvsystem.i_from_v(voltage=v, **ivcurve_params)
+    sim_ivcurves.update(v=v.T, i=i.T, ee=ee, tc=tc)
 
     result = sdm.fit_desoto_sandia(sim_ivcurves, specs)
     modeled = pd.Series(index=params.keys(), data=np.nan)

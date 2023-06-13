@@ -15,7 +15,7 @@ VARIABLE_MAP = {
     '100': 'ghi',
     '201': 'dni',
     '300': 'dhi',
-    '920': 'wind_dir',
+    '920': 'wind_direction',
     '921': 'wind_speed',
     '930': 'temp_air',
     '931': 'temp_dew',

@@ -422,7 +422,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable const:`VARIABLE_MAP`.
+        where applicable. See variable :const:`VARIABLE_MAP`.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 

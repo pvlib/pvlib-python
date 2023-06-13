@@ -17,7 +17,9 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
-
+* :func:`~pvlib.iotools.get_pvgis_tmy` and :func:`~pvlib.iotools.read_pvgis_tmy`
+  now rename columns to standard pvlib names by default (``map_variables=True``)
+  (:pull:`1772`)
 
 Enhancements
 ~~~~~~~~~~~~
@@ -45,3 +47,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Taos Transue (:ghuser:`reepoi`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

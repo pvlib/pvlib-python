@@ -1429,6 +1429,7 @@ def test_singlediode_series_ivcurve(cec_module_params):
         assert_allclose(v, expected[k], atol=1e-6)
 
 
+@fail_on_pvlib_version('0.11')
 @pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
 def test_singlediode_ivcurvepnts_deprecation_warning(method):
     with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):

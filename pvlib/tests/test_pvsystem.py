@@ -15,11 +15,14 @@ from pvlib import inverter, pvsystem
 from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
+from pvlib import spectrum
 from pvlib.location import Location
 from pvlib.pvsystem import FixedMount
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import cosd
+from pvlib.singlediode import VOLTAGE_BUILTIN
+from pvlib.tests.test_singlediode import get_pvsyst_fs_495
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -254,28 +257,19 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
         system.sapm(500, temp_cell)
 
 
-@pytest.mark.parametrize('airmass,expected', [
-    (1.5, 1.00028714375),
-    (np.array([[10, np.nan]]), np.array([[0.999535, 0]])),
-    (pd.Series([5]), pd.Series([1.0387675]))
-])
-def test_sapm_spectral_loss(sapm_module_params, airmass, expected):
-
-    out = pvsystem.sapm_spectral_loss(airmass, sapm_module_params)
-
-    if isinstance(airmass, pd.Series):
-        assert_series_equal(out, expected, check_less_precise=4)
-    else:
-        assert_allclose(out, expected, atol=1e-4)
+def test_sapm_spectral_loss_deprecated(sapm_module_params):
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use pvlib.spectrum.spectral_factor_sapm'):
+        pvsystem.sapm_spectral_loss(1, sapm_module_params)
 
 
 def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
-    mocker.spy(pvsystem, 'sapm_spectral_loss')
+    mocker.spy(spectrum, 'spectral_factor_sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     airmass = 2
     out = system.sapm_spectral_loss(airmass)
-    pvsystem.sapm_spectral_loss.assert_called_once_with(airmass,
-                                                        sapm_module_params)
+    spectrum.spectral_factor_sapm.assert_called_once_with(airmass,
+                                                          sapm_module_params)
     assert_allclose(out, 1, atol=0.5)
 
 
@@ -303,12 +297,12 @@ def test_PVSystem_multi_array_sapm_spectral_loss(sapm_module_params):
     ])
 def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
                                             coefficients, mocker):
-    mocker.spy(atmosphere, 'first_solar_spectral_correction')
+    mocker.spy(spectrum, 'spectral_factor_firstsolar')
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     pw = 3
     airmass_absolute = 3
     out = system.first_solar_spectral_loss(pw, airmass_absolute)
-    atmosphere.first_solar_spectral_correction.assert_called_once_with(
+    spectrum.spectral_factor_firstsolar.assert_called_once_with(
         pw, airmass_absolute, module_type, coefficients)
     assert_allclose(out, 1, atol=0.5)
 
@@ -1455,6 +1449,43 @@ def test_mpp_floats():
     out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.isclose(v, expected[k])
+
+
+def test_mpp_recombination():
+    """test max_power_point"""
+    pvsyst_fs_495 = get_pvsyst_fs_495()
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
+        effective_irradiance=pvsyst_fs_495['irrad_ref'],
+        temp_cell=pvsyst_fs_495['temp_ref'],
+        alpha_sc=pvsyst_fs_495['alpha_sc'],
+        gamma_ref=pvsyst_fs_495['gamma_ref'],
+        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
+        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
+        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
+        R_s=pvsyst_fs_495['R_s'],
+        cells_in_series=pvsyst_fs_495['cells_in_series'],
+        EgRef=pvsyst_fs_495['EgRef'])
+    out = pvsystem.max_power_point(
+        IL, I0, Rs, Rsh, nNsVth,
+        d2mutau=pvsyst_fs_495['d2mutau'],
+        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
+        method='brentq')
+    expected_imp = pvsyst_fs_495['I_mp_ref']
+    expected_vmp = pvsyst_fs_495['V_mp_ref']
+    expected_pmp = expected_imp*expected_vmp
+    expected = {'i_mp': expected_imp,
+                'v_mp': expected_vmp,
+                'p_mp': expected_pmp}
+    assert isinstance(out, dict)
+    for k, v in out.items():
+        assert np.isclose(v, expected[k], 0.01)
+    out = pvsystem.max_power_point(
+        IL, I0, Rs, Rsh, nNsVth,
+        d2mutau=pvsyst_fs_495['d2mutau'],
+        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
+        method='newton')
+    for k, v in out.items():
+        assert np.isclose(v, expected[k], 0.01)
 
 
 def test_mpp_array():

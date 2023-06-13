@@ -24,7 +24,8 @@ VARIABLE_MAP = {
 }
 
 
-def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
+def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None,
+              encoding=None):
     """Read a TMY3 file into a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged
@@ -50,6 +51,11 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
         Cannot be used in combination with ``map_variables``.
+    encoding : str, optional
+        Encoding of the file. For files that contain non-UTF8 characters it may
+        be necessary to specify an alternative encoding, e.g., for
+        SolarAnywhere TMY3 files the encoding should be 'iso-8859-1'. Users
+        may also consider using the 'utf-8-sig' encoding.
 
     Returns
     -------
@@ -58,7 +64,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
     data : DataFrame
         A pandas dataframe with the columns described in the table
         below. For more detailed descriptions of each component, please
-        consult the TMY3 User's Manual ([1]_), especially tables 1-1
+        consult the TMY3 User's Manual [1]_, especially tables 1-1
         through 1-6.
 
     metadata : dict
@@ -187,14 +193,12 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
     """  # noqa: E501
     head = ['USAF', 'Name', 'State', 'TZ', 'latitude', 'longitude', 'altitude']
 
-    try:
-        with open(str(filename), 'r') as fbuf:
-            firstline, data = _parse_tmy3(fbuf)
-    # SolarAnywhere files contain non-UTF8 characters and may require
-    # encoding='iso-8859-1' in order to be parsed
-    except UnicodeDecodeError:
-        with open(str(filename), 'r', encoding='iso-8859-1') as fbuf:
-            firstline, data = _parse_tmy3(fbuf)
+    with open(str(filename), 'r', encoding=encoding) as fbuf:
+        # header information on the 1st line (0 indexing)
+        firstline = fbuf.readline()
+        # use pandas to read the csv file buffer
+        # header is actually the second line, but tell pandas to look for
+        data = pd.read_csv(fbuf, header=0)
 
     meta = dict(zip(head, firstline.rstrip('\n').split(",")))
     # convert metadata strings to numeric types
@@ -206,8 +210,10 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
 
     # get the date column as a pd.Series of numpy datetime64
     data_ymd = pd.to_datetime(data['Date (MM/DD/YYYY)'], format='%m/%d/%Y')
+    # extract minutes
+    minutes = data['Time (HH:MM)'].str.split(':').str[1].astype(int)
     # shift the time column so that midnite is 00:00 instead of 24:00
-    shifted_hour = data['Time (HH:MM)'].str[:2].astype(int) % 24
+    shifted_hour = data['Time (HH:MM)'].str.split(':').str[0].astype(int) % 24
     # shift the dates at midnight (24:00) so they correspond to the next day.
     # If midnight is specified as 00:00 do not shift date.
     data_ymd[data['Time (HH:MM)'].str[:2] == '24'] += datetime.timedelta(days=1)  # noqa: E501
@@ -225,7 +231,8 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
         data_ymd.iloc[-1] = data_ymd.iloc[-1].replace(year=coerce_year+1)
     # NOTE: as of pvlib-0.6.3, min req is pandas-0.18.1, so pd.to_timedelta
     # unit must be in (D,h,m,s,ms,us,ns), but pandas>=0.24 allows unit='hour'
-    data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h')
+    data.index = data_ymd + pd.to_timedelta(shifted_hour, unit='h') \
+        + pd.to_timedelta(minutes, unit='min')
     # shouldnt' specify both recolumn and map_variables
     if recolumn is not None and map_variables is not None:
         msg = "`map_variables` and `recolumn` cannot both be specified"
@@ -250,15 +257,6 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None):
     data = data.tz_localize(int(meta['TZ'] * 3600))
 
     return data, meta
-
-
-def _parse_tmy3(fbuf):
-    # header information on the 1st line (0 indexing)
-    firstline = fbuf.readline()
-    # use pandas to read the csv file buffer
-    # header is actually the second line, but tell pandas to look for
-    data = pd.read_csv(fbuf, header=0)
-    return firstline, data
 
 
 def _recolumn(tmy3_dataframe):
@@ -328,7 +326,7 @@ def read_tmy2(filename):
     data : DataFrame
         A dataframe with the columns described in the table below. For a
         more detailed descriptions of each component, please consult the
-        TMY2 User's Manual ([1]_), especially tables 3-1 through 3-6, and
+        TMY2 User's Manual [1]_, especially tables 3-1 through 3-6, and
         Appendix B.
 
     metadata : dict
@@ -430,6 +428,7 @@ def read_tmy2(filename):
     ----------
     .. [1] Marion, W and Urban, K. "Wilcox, S and Marion, W. "User's Manual
        for TMY2s". NREL 1995.
+       :doi:`10.2172/87130`
     """  # noqa: E501
     # paste in the column info as one long line
     string = '%2d%2d%2d%2d%4d%4d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d%3d%1s%1d%4d%1s%1d%5d%1s%1d%10d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d'  # noqa: E501

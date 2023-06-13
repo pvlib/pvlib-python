@@ -20,6 +20,5 @@ filterwarnings =[
     "ignore:`np.int` is a deprecated alias:DeprecationWarning:.*(numba|scipy):",
     "ignore:`np.bool` is a deprecated alias:DeprecationWarning:.*numba:",
     # warnings from netcdf4, but reported as coming from pvlib
-    "ignore:`np.bool` is a deprecated alias:DeprecationWarning:.*(ecmwf_macc|forecast):",
-    "ignore:tostring() is deprecated:DeprecationWarning:.*ecmwf_macc:"
+    "ignore:`np.bool` is a deprecated alias:DeprecationWarning:.*forecast:"
     ]

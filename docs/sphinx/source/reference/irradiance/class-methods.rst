@@ -9,4 +9,3 @@ Methods for irradiance calculations
    pvsystem.PVSystem.get_irradiance
    pvsystem.PVSystem.get_aoi
    pvsystem.PVSystem.get_iam
-   tracking.SingleAxisTracker.get_irradiance

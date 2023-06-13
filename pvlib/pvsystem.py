@@ -187,7 +187,6 @@ class PVSystem:
     See also
     --------
     pvlib.location.Location
-    pvlib.tracking.SingleAxisTracker
     """
 
     def __init__(self,

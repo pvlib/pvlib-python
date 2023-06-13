@@ -6,11 +6,9 @@ import numpy as np
 import pandas as pd
 import scipy
 from pvlib import pvsystem
-from pvlib import singlediode
 from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
 import pytest
-import pytest_mock
 from .conftest import DATA_DIR
 
 POA = 888
@@ -412,6 +410,7 @@ def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
     assert np.isclose(vsc_88, 0.0, *tol)
 
 
+@pytest.fixture
 def bishop88_arguments():
     pvsyst_fs_495 = get_pvsyst_fs_495()
     # evaluate PVSyst model with thin-film recombination loss current
@@ -454,30 +453,26 @@ def bishop88_arguments():
         'maxiter': 30,
     })
 ])
-def test_bishop88_kwargs_transfer(method, method_kwargs, mocker):
+def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
+                                  bishop88_arguments):
     """test method_kwargs modifying optimizer does not break anything"""
     # patch method namespace at singlediode module namespace
     optimizer_mock = mocker.patch('pvlib.singlediode.' + method)
 
-    # get arguments common to all bishop88_.* functions
-    bishop88_args = bishop88_arguments()
+    # check kwargs passed to bishop_.* are a subset of the call args
+    # since they are called with more keyword arguments
 
-    # only test if present kwargs keys in call are more than those passed to
-    # bishop_* functions. Value comparison can't be made due to 'numpy.ndarray'
-    # not being a hashable type. This can be changed with Py3.7 is deprecated:
-    # assert method_kwargs.items() <= optimizer_mock.call_args.kwargs.items()
+    bishop88_i_from_v(0, **bishop88_arguments, method=method, **method_kwargs)
+    _, kwargs = optimizer_mock.call_args
+    assert method_kwargs.items() <= kwargs.items()
 
-    bishop88_i_from_v(0, **bishop88_args, method=method, **method_kwargs)
-    assert set(optimizer_mock.call_args.kwargs.keys()) \
-        .issuperset(method_kwargs.keys())
+    bishop88_v_from_i(0, **bishop88_arguments, method=method, **method_kwargs)
+    _, kwargs = optimizer_mock.call_args
+    assert method_kwargs.items() <= kwargs.items()
 
-    bishop88_v_from_i(0, **bishop88_args, method=method, **method_kwargs)
-    assert set(optimizer_mock.call_args.kwargs.keys()) \
-        .issuperset(method_kwargs.keys())
-
-    bishop88_mpp(**bishop88_args, method=method, **method_kwargs)
-    assert set(optimizer_mock.call_args.kwargs.keys()) \
-        .issuperset(method_kwargs.keys())
+    bishop88_mpp(**bishop88_arguments, method=method, **method_kwargs)
+    _, kwargs = optimizer_mock.call_args
+    assert method_kwargs.items() <= kwargs.items()
 
 
 @pytest.mark.parametrize('method, method_kwargs', [
@@ -494,16 +489,14 @@ def test_bishop88_kwargs_transfer(method, method_kwargs, mocker):
         '_inexistent_param': "0.01"
     })
 ])
-def test_bishop88_kwargs_fails(method, method_kwargs):
+def test_bishop88_kwargs_fails(method, method_kwargs, bishop88_arguments):
     """test invalid method_kwargs passed onto the optimizer fail"""
-    # get arguments common to all bishop88_.* functions
-    bishop88_args = bishop88_arguments()
 
     pytest.raises(TypeError, bishop88_i_from_v,
-                  0, **bishop88_args, method=method, **method_kwargs)
+                  0, **bishop88_arguments, method=method, **method_kwargs)
 
     pytest.raises(TypeError, bishop88_v_from_i,
-                  0, **bishop88_args, method=method, **method_kwargs)
-    
+                  0, **bishop88_arguments, method=method, **method_kwargs)
+
     pytest.raises(TypeError, bishop88_mpp,
-                  **bishop88_args, method=method, **method_kwargs)
+                  **bishop88_arguments, method=method, **method_kwargs)

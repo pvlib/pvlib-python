@@ -464,13 +464,6 @@ class ModelChain:
         Name of ModelChain instance.
     """
 
-    # list of deprecated attributes
-    _deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
-                         'aoi', 'aoi_modifier', 'spectral_modifier',
-                         'cell_temperature', 'effective_irradiance',
-                         'dc', 'ac', 'diode_params', 'tracking',
-                         'weather', 'times', 'losses']
-
     def __init__(self, system, location,
                  clearsky_model='ineichen',
                  transposition_model='haydavies',
@@ -502,26 +495,6 @@ class ModelChain:
 
         self.results = ModelChainResult()
 
-    def __getattr__(self, key):
-        if key in ModelChain._deprecated_attrs:
-            msg = f'ModelChain.{key} is deprecated and will' \
-                  f' be removed in v0.10. Use' \
-                  f' ModelChain.results.{key} instead'
-            warnings.warn(msg, pvlibDeprecationWarning)
-            return getattr(self.results, key)
-        # __getattr__ is only called if __getattribute__ fails.
-        # In that case we should check if key is a deprecated attribute,
-        # and fail with an AttributeError if it is not.
-        raise AttributeError
-
-    def __setattr__(self, key, value):
-        if key in ModelChain._deprecated_attrs:
-            msg = f'ModelChain.{key} is deprecated from v0.9. Use' \
-                  f' ModelChain.results.{key} instead'
-            warnings.warn(msg, pvlibDeprecationWarning)
-            setattr(self.results, key, value)
-        else:
-            super().__setattr__(key, value)
 
     @classmethod
     def with_pvwatts(cls, system, location,

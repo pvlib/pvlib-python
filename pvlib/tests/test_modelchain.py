@@ -6,7 +6,6 @@ import pandas as pd
 from pvlib import iam, modelchain, pvsystem, temperature, inverter
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
-from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
@@ -753,50 +752,6 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
         'model': 'noct_sam'}
 
 
-def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
-    with pytest.warns(pvlibDeprecationWarning):
-        system = SingleAxisTracker(
-            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
-            temperature_model_parameters=(
-                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-            ),
-            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
-    mocker.spy(system, 'singleaxis')
-    mc = ModelChain(system, location)
-    mc.run_model(weather)
-    assert system.singleaxis.call_count == 1
-    assert (mc.results.tracking.columns == ['tracker_theta',
-                                            'aoi',
-                                            'surface_azimuth',
-                                            'surface_tilt']).all()
-    assert mc.results.ac[0] > 0
-    assert np.isnan(mc.results.ac[1])
-    assert isinstance(mc.results.dc, pd.DataFrame)
-
-
-def test_run_model_tracker_list(
-        sapm_dc_snl_ac_system, location, weather, mocker):
-    with pytest.warns(pvlibDeprecationWarning):
-        system = SingleAxisTracker(
-            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
-            temperature_model_parameters=(
-                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-            ),
-            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
-    mocker.spy(system, 'singleaxis')
-    mc = ModelChain(system, location)
-    mc.run_model([weather])
-    assert system.singleaxis.call_count == 1
-    assert (mc.results.tracking.columns == ['tracker_theta',
-                                            'aoi',
-                                            'surface_azimuth',
-                                            'surface_tilt']).all()
-    assert mc.results.ac[0] > 0
-    assert np.isnan(mc.results.ac[1])
-    assert isinstance(mc.results.dc, tuple)
-    assert len(mc.results.dc) == 1
-
-
 def test__assign_total_irrad(sapm_dc_snl_ac_system, location, weather,
                              total_irrad):
     data = pd.concat([weather, total_irrad], axis=1)
@@ -1045,27 +1000,6 @@ def test_run_model_from_poa_arrays_solar_position_weather(
     # mc uses only the first weather data for solar position corrections
     assert_series_equal(m.call_args[1]['temperature'], data['temp_air'])
     assert_series_equal(m.call_args[1]['pressure'], data['pressure'])
-
-
-def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
-                                     total_irrad):
-    with pytest.warns(pvlibDeprecationWarning):
-        system = SingleAxisTracker(
-            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
-            temperature_model_parameters=(
-                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-            ),
-            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
-    mc = ModelChain(system, location, aoi_model='no_loss',
-                    spectral_model='no_loss')
-    ac = mc.run_model_from_poa(total_irrad).results.ac
-    assert (mc.results.tracking.columns == ['tracker_theta',
-                                            'aoi',
-                                            'surface_azimuth',
-                                            'surface_tilt']).all()
-    expected = pd.Series(np.array([149.280238, 96.678385]),
-                         index=total_irrad.index)
-    assert_series_equal(ac, expected)
 
 
 @pytest.mark.parametrize("input_type", [lambda x: x[0], tuple, list])

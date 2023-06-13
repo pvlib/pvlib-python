@@ -258,6 +258,8 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     -------
     current : numeric
         current (I) at the specified voltage (V). [A]
+    optimizer_return : optional, present if ``full_output = True``
+        see root finder documentation for selected method
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
@@ -361,6 +363,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     -------
     voltage : numeric
         voltage (V) at the specified current (I) in volts [V]
+    optimizer_return : optional, present if ``full_output = True``
+        see root finder documentation for selected method
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
@@ -461,6 +465,8 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     tuple
         max power current ``i_mp`` [A], max power voltage ``v_mp`` [V], and
         max power ``p_mp`` [W]
+    optimizer_return : optional, present if ``full_output = True``
+        see root finder documentation for selected method
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,

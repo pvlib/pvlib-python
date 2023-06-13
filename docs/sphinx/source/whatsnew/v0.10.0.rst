@@ -15,7 +15,7 @@ Breaking changes
   (:issue:`1718`, :pull:`1719`)
 * Map wind direction to `wind_direction` instead of `wind_dir` in
   :py:func:`pvlib.iotools.read_srml` and :py:func:`pvlib.iotools.get_srml`
-  (:pul:`1773`)
+  (:pull:`1773`)
 
 Deprecations
 ~~~~~~~~~~~~
@@ -23,7 +23,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added `map_variables` parameter to :py:func:`pvlib.iotools.read_srml`
+  and :py:func:`pvlib.iotools.get_srml` (:pull:`1773`)
 
 Bug fixes
 ~~~~~~~~~

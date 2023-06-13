@@ -6,6 +6,7 @@ from numpy.testing import assert_allclose
 
 from pvlib.ivtools import sdm
 from pvlib import pvsystem
+from pvlib._deprecation import pvlibDeprecationWarning
 
 from pvlib.tests.conftest import requires_pysam, requires_statsmodels
 
@@ -102,7 +103,9 @@ def test_fit_desoto_sandia(cec_params_cansol_cs5p_220p):
     tc = np.repeat(temp_cell, len(effective_irradiance))
     iph, io, rs, rsh, nnsvth = pvsystem.calcparams_desoto(
         ee, tc, alpha_sc=specs['alpha_sc'], **params)
-    sim_ivcurves = pvsystem.singlediode(iph, io, rs, rsh, nnsvth, 300)
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        sim_ivcurves = pvsystem.singlediode(iph, io, rs, rsh, nnsvth,
+                                            ivcurve_pnts=300)
     sim_ivcurves['ee'] = ee
     sim_ivcurves['tc'] = tc
 

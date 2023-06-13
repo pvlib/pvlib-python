@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from pvlib import pvsystem
 from pvlib.ivtools import sde
+from pvlib._deprecation import pvlibDeprecationWarning
 
 
 @pytest.fixture
@@ -11,12 +12,13 @@ def get_test_iv_params():
 
 def test_fit_sandia_simple(get_test_iv_params, get_bad_iv_curves):
     test_params = get_test_iv_params
-    testcurve = pvsystem.singlediode(photocurrent=test_params['IL'],
-                                     saturation_current=test_params['I0'],
-                                     resistance_shunt=test_params['Rsh'],
-                                     resistance_series=test_params['Rs'],
-                                     nNsVth=test_params['nNsVth'],
-                                     ivcurve_pnts=300)
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        testcurve = pvsystem.singlediode(photocurrent=test_params['IL'],
+                                         saturation_current=test_params['I0'],
+                                         resistance_shunt=test_params['Rsh'],
+                                         resistance_series=test_params['Rs'],
+                                         nNsVth=test_params['nNsVth'],
+                                         ivcurve_pnts=300)
     expected = tuple(test_params[k] for k in ['IL', 'I0', 'Rs', 'Rsh',
                      'nNsVth'])
     result = sde.fit_sandia_simple(voltage=testcurve['v'],

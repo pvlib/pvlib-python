@@ -1358,8 +1358,9 @@ def test_singlediode_floats():
 
 
 def test_singlediode_floats_ivcurve():
-    out = pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
-                               method='lambertw')
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        out = pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
+                                   method='lambertw')
     expected = {'i_xx': 4.264060478,
                 'i_mp': 6.136267360,
                 'v_oc': 8.106300147,
@@ -1391,8 +1392,9 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
-    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
-                               method='lambertw')
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
+                                   method='lambertw')
 
     expected = OrderedDict([('i_sc', array([0., 3.01079860, 6.00726296])),
                             ('v_oc', array([0., 9.96959733, 10.29603253])),
@@ -1411,7 +1413,8 @@ def test_singlediode_series_ivcurve(cec_module_params):
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)
 
-    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
 
     expected['i_mp'] = pvsystem.i_from_v(out['v_mp'], IL, I0, Rs, Rsh, nNsVth,
                                          method='lambertw')
@@ -1428,7 +1431,7 @@ def test_singlediode_series_ivcurve(cec_module_params):
 
 @pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
 def test_singlediode_ivcurvepnts_deprecation_warning(method):
-    with pytest.warns(pvlibDeprecationWarning):
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
         pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
                              method=method)
 

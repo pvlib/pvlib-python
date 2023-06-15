@@ -241,7 +241,8 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
 def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
                                module_type=None, coefficients=None,
-                               min_pw=0.1, max_pw=8):
+                               min_precipitable_water=0.1,
+                               max_precipitable_water=8):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) airmass.
@@ -310,18 +311,20 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         modules with very similar quantum efficiency should be similar,
         in most cases limiting the need for module specific coefficients.
 
-    min_pw : float, default 0.1
-        minimum atmospheric precipitable water. Any pw value lower than min_pw
-        is set to min_pw to avoid model divergence. [cm]
+    min_precipitable_water : float, default 0.1
+        minimum atmospheric precipitable water. Any ``precipitable_water``
+        value lower than ``min_precipitable_water``
+        is set to ``min_precipitable_water`` to avoid model divergence. [cm]
 
-    max_pw : float, default 8
-        maximum atmospheric precipitable water. Any pw value higher than max_pw
-        is set to NaN to avoid model divergence. [cm]
+    max_precipitable_water : float, default 8
+        maximum atmospheric precipitable water. Any ``precipitable_water``
+        value greater than ``max_precipitable_water``
+        is set to ``np.nan`` to avoid model divergence. [cm]
 
     Returns
     -------
     modifier: array-like
-        spectral mismatch factor (unitless) which is can be multiplied
+        spectral mismatch factor (unitless) which can be multiplied
         with broadband irradiance reaching a module's cells to estimate
         effective irradiance, i.e., the irradiance that is converted to
         electrical current.
@@ -350,14 +353,14 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     # diverging"
     pw = np.atleast_1d(precipitable_water)
     pw = pw.astype('float64')
-    if np.min(pw) < min_pw:
-        pw = np.maximum(pw, min_pw)
-        warn(f'Exceptionally low pw values replaced with {min_pw} cm to '
-             'prevent model divergence')
+    if np.min(pw) < min_precipitable_water:
+        pw = np.maximum(pw, min_precipitable_water)
+        warn('Exceptionally low pw values replaced with '
+             f'{min_precipitable_water} cm to prevent model divergence')
 
     # Warn user about Pw data that is exceptionally high
-    if np.max(pw) > max_pw:
-        pw[pw > max_pw] = np.nan
+    if np.max(pw) > max_precipitable_water:
+        pw[pw > max_precipitable_water] = np.nan
         warn('Exceptionally high pw values replaced by np.nan: '
              'check input data.')
 

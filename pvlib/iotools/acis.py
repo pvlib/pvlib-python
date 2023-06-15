@@ -6,12 +6,14 @@ import numpy as np
 def get_acis_precipitation(latitude, longitude, start, end, dataset,
                            url="https://data.rcc-acis.org/GridData", **kwargs):
     """
-    Retrieve daily gridded precipitation data from the Applied Climate
+    Retrieve estimated daily precipitation data from the Applied Climate
     Information System (ACIS).
 
     The Applied Climate Information System (ACIS) was developed and is
     maintained by the NOAA Regional Climate Centers (RCCs) and brings together
-    climate data from many sources.
+    climate data from many sources.  This function accesses precipitation
+    datasets covering the United States, although the exact domain
+    varies by dataset [1]_.
 
     Parameters
     ----------
@@ -31,7 +33,7 @@ def get_acis_precipitation(latitude, longitude, start, end, dataset,
         * 3: NRCC Hi-Res
         * 21: PRISM
     
-        See [1]_ for the full list of options.
+        See [2]_ for the full list of options.
 
     url : str, default: 'https://data.rcc-acis.org/GridData'
         API endpoint URL
@@ -65,8 +67,8 @@ def get_acis_precipitation(latitude, longitude, start, end, dataset,
 
     References
     ----------
-    .. [1] `ACIS Web Services <http://www.rcc-acis.org/docs_webservices.html>`_
-    .. [2] `ACIS Gridded Data <http://www.rcc-acis.org/docs_gridded.html>`_
+    .. [1] `ACIS Gridded Data <http://www.rcc-acis.org/docs_gridded.html>`_
+    .. [2] `ACIS Web Services <http://www.rcc-acis.org/docs_webservices.html>`_
     .. [3] `NRCC <http://www.nrcc.cornell.edu/>`_
     .. [4] `Multisensor Precipitation Estimates
            <https://www.weather.gov/marfc/Multisensor_Precipitation>`_
@@ -78,12 +80,17 @@ def get_acis_precipitation(latitude, longitude, start, end, dataset,
     ]
     params = {
         'loc': f"{longitude},{latitude}",
+        # use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
         'sdate': pd.to_datetime(start).strftime('%Y-%m-%d'),
         'edate': pd.to_datetime(end).strftime('%Y-%m-%d'),
         'grid': str(dataset),
         'elems': elems,
         'output': 'json',
-        'meta': ["ll"],  # "elev" should work, but it errors for some databases
+        # [2]_ lists "ll" (lat/lon) and "elev" (elevation) as the available
+        # options for "meta".  However, including "elev" when dataset=2
+        # results in an "unknown meta elev" error.  "ll" works on all
+        # datasets.  There doesn't seem to be any other metadata available.
+        'meta': ["ll"],
     }
     response = requests.post(url, json=params,
                              headers={"Content-Type": "application/json"},

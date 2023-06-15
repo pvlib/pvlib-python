@@ -10,6 +10,9 @@ Breaking Changes
 * Modified the ``surface_azimuth`` parameter in :py:func:`pvlib.iotools.get_pvgis_hourly` to conform to the
   pvlib azimuth convention (counterclockwise from north). Previously 0 degrees represented south.
   (:issue:`1724`, :pull:`1739`)
+* For consistency with the rest of pvlib, the ``pw`` parameters are renamed to
+  ``precipitable_water`` in :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
+  (:pull:`1768`)
 * For consistency with the rest of pvlib, the ``tilt`` parameter is renamed
   to ``surface_tilt`` in :py:func:`pvlib.soiling.hsu`. (:issue:`1717`, :pull:`1738`)
 

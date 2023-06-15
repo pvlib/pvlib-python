@@ -49,7 +49,7 @@ Enhancements
   hourly and half-hourly single-year datasets. (:issue:`1591`, :pull:`1736`)
 * The default solar position algorithm (NREL SPA) is now 50-100% faster. (:pull:`1748`)
 * Added function to retrieve daily precipitation estimates from the ACIS service
-  from NOAA's RCCs: :py:func:`~pvlib.iotools.get_acis_precipitation`. (:issue:`1293`, :pull:`1777`)
+  from NOAA's RCCs: :py:func:`~pvlib.iotools.get_acis_precipitation`. (:issue:`1293`, :pull:`1767`)
 
 Bug fixes
 ~~~~~~~~~

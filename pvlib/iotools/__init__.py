@@ -20,4 +20,8 @@ from pvlib.iotools.bsrn import parse_bsrn  # noqa: F401
 from pvlib.iotools.sodapro import get_cams  # noqa: F401
 from pvlib.iotools.sodapro import read_cams  # noqa: F401
 from pvlib.iotools.sodapro import parse_cams  # noqa: F401
-from pvlib.iotools.acis import get_acis_precipitation  # noqa: F401
+from pvlib.iotools.acis import get_acis_prism  # noqa: F401
+from pvlib.iotools.acis import get_acis_nrcc  # noqa: F401
+from pvlib.iotools.acis import get_acis_mpe  # noqa: F401
+from pvlib.iotools.acis import get_acis_station_data  # noqa: F401
+from pvlib.iotools.acis import get_acis_available_stations  # noqa: F401

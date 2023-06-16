@@ -409,7 +409,7 @@ def get_acis_available_stations(latitude_range, longitude_range,
         in decimal degrees, between -180 and 180, east is positive
     start : datetime-like, optional
         If specified, return only stations that have data between ``start`` and
-        ``end.  If not specified, all stations in the region are returned.
+        ``end``.  If not specified, all stations in the region are returned.
     end : datetime-like, optional
         See ``start``
     url : str, default: 'https://data.rcc-acis.org/StnMeta'
@@ -475,6 +475,7 @@ def get_acis_available_stations(latitude_range, longitude_range,
 
     metadata = payload['meta']
     for station_record in metadata:
+        station_record['altitude'] = station_record.pop('elev')
         station_record['longitude'], station_record['latitude'] = \
             station_record.pop('ll')
 

@@ -44,7 +44,7 @@ def test_get_acis_prism():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 @pytest.mark.parametrize('grid, expected', [
     (1, [[0.51, 5, 0, 2.5, 0, 62, 0]]),
-    (3, [[0.51, 5, -1, 2, 0, 63, 0]])
+    (3, [[0.51, 5, -1, 2.0, 0, 63, 0]])
 ])
 def test_get_acis_nrcc(grid, expected):
     # map_variables=True

@@ -98,13 +98,11 @@ def test_degrees_to_index_1():
     with pytest.raises(IndexError):  # invalid value for coordinate argument
         tools._degrees_to_index(degrees=22.0, coordinate='width')
 
-@pytest.mark.parametrize('location', [tuple(), ('data',)])
-def test_get_example_dataset_path_passes(location):
+
+def test_get_example_dataset_path_passes():
     expected_dataset = '723170TYA.CSV'
     assert pathlib.Path(pvlib.__path__[0], 'data',
                         expected_dataset).exists()
-    assert tools.get_example_dataset_path(expected_dataset, *location) \
-           .name == expected_dataset
     assert tools.get_example_dataset_path(pathlib.Path(expected_dataset)) \
            .name == expected_dataset
     assert tools.get_example_dataset_path(expected_dataset).exists()

@@ -491,7 +491,6 @@ def get_test_dataset_path(dataset, location='data'):
     location : str or PurePath, default 'data'
         PVLIB subfolder where dataset can be found.
         This value can be:
-        
         +-------------------------+------------------------------+
         | ``location``            | Description                  |
         +=========================+==============================+

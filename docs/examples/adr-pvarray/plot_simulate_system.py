@@ -12,12 +12,11 @@ capacity is just a matter of setting the desired value, e.g. P_STC = 5000.
 Author: Anton Driesse
 """
 
-import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
 import pvlib
-from pvlib import iotools, location
+from pvlib import iotools, location, tools
 from pvlib.irradiance import get_total_irradiance
 from pvlib.pvarray import pvefficiency_adr
 
@@ -26,10 +25,9 @@ from pvlib.pvarray import pvefficiency_adr
 # Read a TMY3 file containing weather data and select needed columns
 #
 
-PVLIB_DIR = pvlib.__path__[0]
-DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
+tmy3_filepath = tools.get_test_dataset_path('723170TYA.CSV')
 
-tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990,
+tmy, metadata = iotools.read_tmy3(tmy3_filepath, coerce_year=1990,
                                   map_variables=True)
 
 df = pd.DataFrame({'ghi': tmy['ghi'], 'dhi': tmy['dhi'], 'dni': tmy['dni'],

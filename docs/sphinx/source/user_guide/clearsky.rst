@@ -30,6 +30,8 @@ We'll need these imports for the examples below.
 
 .. ipython::
 
+    In [1]: import os
+
     In [1]: import itertools
 
     In [1]: import matplotlib.pyplot as plt
@@ -38,7 +40,7 @@ We'll need these imports for the examples below.
 
     In [1]: import pvlib
 
-    In [1]: from pvlib import clearsky, atmosphere, solarposition, tools
+    In [1]: from pvlib import clearsky, atmosphere, solarposition
 
     In [1]: from pvlib.location import Location
 
@@ -128,9 +130,13 @@ the year. You could run it in a loop to create plots for all months.
 
     In [1]: import calendar
 
+    In [1]: import os
+
     In [1]: import h5py
 
-    In [1]: filepath = tools.get_test_dataset_path('LinkeTurbidities.h5')
+    In [1]: pvlib_path = os.path.dirname(os.path.abspath(pvlib.clearsky.__file__))
+
+    In [1]: filepath = os.path.join(pvlib_path, 'data', 'LinkeTurbidities.h5')
 
     In [1]: def plot_turbidity_map(month, vmin=1, vmax=100):
        ...:     plt.figure();
@@ -204,11 +210,13 @@ wavelengths [Bir80]_, and is implemented in
 
 .. ipython::
 
+    In [1]: pvlib_data = os.path.join(os.path.dirname(pvlib.__file__), 'data')
+
     In [1]: mbars = 100  # conversion factor from mbars to Pa
 
-    In [1]: tmy_file_path = tools.get_test_dataset_path('703165TY.csv')  # TMY file
+    In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
 
-    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file_path, coerce_year=1999, map_variables=True)
+    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999, map_variables=True)
 
     In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])

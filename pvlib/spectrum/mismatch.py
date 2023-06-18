@@ -6,6 +6,7 @@ import pvlib
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
+import os
 
 from warnings import warn
 
@@ -118,9 +119,10 @@ def get_am15g(wavelength=None):
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
 
-    am15g_file = pvlib.tools.get_test_dataset_path('astm_g173_am15g.csv')
+    pvlib_path = pvlib.__path__[0]
+    filepath = os.path.join(pvlib_path, 'data', 'astm_g173_am15g.csv')
 
-    am15g = pd.read_csv(am15g_file, index_col=0).squeeze()
+    am15g = pd.read_csv(filepath, index_col=0).squeeze()
 
     if wavelength is not None:
         interpolator = interp1d(am15g.index, am15g,

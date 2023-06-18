@@ -7,6 +7,7 @@ from collections import OrderedDict
 import functools
 import io
 import itertools
+import os
 from urllib.request import urlopen
 import numpy as np
 from scipy import constants
@@ -19,7 +20,7 @@ from pvlib._deprecation import deprecated
 
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
-from pvlib.tools import _build_kwargs, _build_args, get_test_dataset_path
+from pvlib.tools import _build_kwargs, _build_args
 
 
 # a dict of required parameter names for each DC power model
@@ -2370,19 +2371,24 @@ def retrieve_sam(name=None, path=None):
 
     if name is not None:
         name = name.lower()
+        data_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'data')
         if name == 'cecmod':
-            csvdata = 'sam-library-cec-modules-2019-03-05.csv'
+            csvdata = os.path.join(
+                data_path, 'sam-library-cec-modules-2019-03-05.csv')
         elif name == 'sandiamod':
-            csvdata = 'sam-library-sandia-modules-2015-6-30.csv'
+            csvdata = os.path.join(
+                data_path, 'sam-library-sandia-modules-2015-6-30.csv')
         elif name == 'adrinverter':
-            csvdata = 'adr-library-cec-inverters-2019-03-05.csv'
+            csvdata = os.path.join(
+                data_path, 'adr-library-cec-inverters-2019-03-05.csv')
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
-            csvdata = 'sam-library-cec-inverters-2019-03-05.csv'
+            csvdata = os.path.join(
+                data_path, 'sam-library-cec-inverters-2019-03-05.csv')
         else:
             raise ValueError(f'invalid name {name}')
-        csvdata = get_test_dataset_path(csvdata)
     elif path is not None:
         if path.startswith('http'):
             response = urlopen(path)

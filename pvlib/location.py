@@ -4,6 +4,7 @@ This module contains the Location class.
 
 # Will Holmgren, University of Arizona, 2014-2016.
 
+import os
 import datetime
 
 import pandas as pd
@@ -11,8 +12,7 @@ import pytz
 import h5py
 
 from pvlib import solarposition, clearsky, atmosphere, irradiance
-from pvlib.tools import _degrees_to_index, get_test_dataset_path
-
+from pvlib.tools import _degrees_to_index
 
 class Location:
     """
@@ -426,7 +426,8 @@ def lookup_altitude(latitude, longitude):
 
     """
 
-    filepath = get_test_dataset_path('Altitude.h5')
+    pvlib_path = os.path.dirname(os.path.abspath(__file__))
+    filepath = os.path.join(pvlib_path, 'data', 'Altitude.h5')
 
     latitude_index = _degrees_to_index(latitude, coordinate='latitude')
     longitude_index = _degrees_to_index(longitude, coordinate='longitude')

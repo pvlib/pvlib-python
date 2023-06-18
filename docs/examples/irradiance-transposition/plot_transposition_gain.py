@@ -19,19 +19,21 @@ Calculating the gain in insolation of a tilted module over a flat module.
 # insolation is calculated for each strategy to show how orientation affects
 # seasonal irradiance collection.
 
+import pvlib
 from pvlib import location
 from pvlib import irradiance
 from pvlib import tracking
-from pvlib import tools
 from pvlib.iotools import read_tmy3
 import pandas as pd
 from matplotlib import pyplot as plt
+import pathlib
 
-# get full path to the example file
-tmy3_filepath = tools.get_test_dataset_path('723170TYA.CSV')
+# get full path to the data directory
+DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
 
 # get TMY3 dataset
-tmy, metadata = read_tmy3(tmy3_filepath, coerce_year=1990, map_variables=True)
+tmy, metadata = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+                          map_variables=True)
 # TMY3 datasets are right-labeled (AKA "end of interval") which means the last
 # interval of Dec 31, 23:00 to Jan 1 00:00 is labeled Jan 1 00:00. When rolling
 # up hourly irradiance to monthly insolation, a spurious January value is

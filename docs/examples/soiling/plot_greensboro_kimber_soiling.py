@@ -33,10 +33,10 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 from pvlib.iotools import read_tmy3
 from pvlib.soiling import kimber
-from pvlib.tools import get_test_dataset_path
+from pvlib.tools import get_example_dataset_path
 
 # get full path to the dataset file
-tmy_filepath = get_test_dataset_path('723170TYA.CSV')
+tmy_filepath = get_example_dataset_path('723170TYA.CSV')
 
 # get TMY3 data with rain
 greensboro, _ = read_tmy3(tmy_filepath, coerce_year=1990,

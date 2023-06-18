@@ -41,7 +41,7 @@ class SeasonalTiltMount(pvsystem.AbstractMount):
 # First let's grab some weather data and make sure our mount produces tilts
 # like we expect:
 
-tmy3_filepath = tools.get_test_dataset_path('723170TYA.CSV')
+tmy3_filepath = tools.get_example_dataset_path('723170TYA.CSV')
 tmy, metadata = iotools.read_tmy3(tmy3_filepath, coerce_year=1990,
                                   map_variables=True)
 

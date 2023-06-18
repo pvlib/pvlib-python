@@ -28,7 +28,7 @@ import pandas as pd
 
 # get full path to the example file
 soiling_hsu_filepath = \
-    pvlib.tools.get_test_dataset_path('soiling_hsu_example_inputs.csv')
+    pvlib.tools.get_example_dataset_path('soiling_hsu_example_inputs.csv')
 
 # read rainfall, PM2.5, and PM10 data from file
 imperial_county = pd.read_csv(soiling_hsu_filepath, index_col=0,

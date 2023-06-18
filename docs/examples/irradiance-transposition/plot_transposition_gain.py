@@ -28,7 +28,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 # get full path to the example file
-tmy3_filepath = tools.get_test_dataset_path('723170TYA.CSV')
+tmy3_filepath = tools.get_example_dataset_path('723170TYA.CSV')
 
 # get TMY3 dataset
 tmy, metadata = read_tmy3(tmy3_filepath, coerce_year=1990, map_variables=True)

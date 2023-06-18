@@ -51,4 +51,4 @@ Functions for locating the example data files included in pvlib.
 .. autosummary::
    :toctree: generated/
 
-   tools.get_test_dataset_path
+   tools.get_example_dataset_path

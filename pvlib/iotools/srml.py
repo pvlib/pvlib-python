@@ -51,14 +51,14 @@ def read_srml(filename, map_variables=True):
     the time of the row until the time of the next row. This is consistent
     with pandas' default labeling behavior.
 
-    See SRML's `Archival Files`_ page for more information.
-
-    .. _Archival Files: http://solardat.uoregon.edu/ArchivalFiles.html
+    See [2]_ for more information concerning the file format.
 
     References
     ----------
     .. [1] University of Oregon Solar Radiation Monitoring Laboratory
        `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
+    .. [2] `Archival (short interval) data files
+       <http://solardat.uoregon.edu/ArchivalFiles.html>`_
     """
     tsv_data = pd.read_csv(filename, delimiter='\t')
     data = format_index(tsv_data)
@@ -222,3 +222,76 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO',
     url = "http://solardat.uoregon.edu/download/Archive/"
     data = read_srml(url + file_name, map_variables=map_variables)
     return data
+
+
+def get_srml(station, start, end, filetype='PO', map_variables=True,
+             url="http://solardat.uoregon.edu/download/Archive/"):
+    """Request data from UoO SRML and read it into a Dataframe.
+
+    The Univeristy of Oregon Solar Radiation Monitoring Laboratory (SRML) is
+    described in [1]_.
+
+    Parameters
+    ----------
+    station : str
+        The name of the SRML station to request.
+    start : datetime like
+        First day of the requested period
+    end : datetime like
+        Last day of the requested period
+    filetype : string, default: 'PO'
+        SRML file type to gather. See notes for explanation.
+    map_variables : bool, default: True
+        When true, renames columns of the DataFrame to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
+    url : str, default: 'http://solardat.uoregon.edu/download/Archive/'
+        API endpoint URL
+
+    Returns
+    -------
+    data : pd.DataFrame
+        Dataframe with data from SRML.
+    meta : dict
+        Metadata. Currently no metadata is parsed.
+
+    Notes
+    -----
+    File types designate the time interval of a file and if it contains
+    raw or processed data. For instance, `RO` designates raw, one minute
+    data and `PO` designates processed one minute data. The availability
+    of file types varies between sites. Below is a table of file types
+    and their time intervals. See [1] for site information.
+
+    ============= ============ ==================
+    time interval raw filetype processed filetype
+    ============= ============ ==================
+    1 minute      RO           PO
+    5 minute      RF           PF
+    15 minute     RQ           PQ
+    hourly        RH           PH
+    ============= ============ ==================
+
+    References
+    ----------
+    .. [1] University of Oregon Solar Radiation Measurement Laboratory
+       `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
+    """
+    # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
+    start = pd.to_datetime(start)
+    end = pd.to_datetime(end)
+
+    # Generate list of months
+    months = pd.date_range(
+        start, end.replace(day=1) + pd.DateOffset(months=1), freq='1M')
+    months_str = months.strftime('%y%m')
+
+    # Generate list of filenames
+    filenames = [f"{station}{filetype}{m}.txt" for m in months_str]
+
+    dfs = [read_srml(url + f, map_variables=map_variables) for f in filenames]
+
+    data = pd.concat(dfs, axis='rows')
+
+    meta = {}
+
+    return data, meta

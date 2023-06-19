@@ -28,6 +28,12 @@ Enhancements
 ~~~~~~~~~~~~
 * Added `map_variables` parameter to :py:func:`pvlib.iotools.read_srml`
   and :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
+* Added :func:`pvlib.iotools.get_srml` that is similar to
+  :func:`read_srml_month_from_solardat` but is able to fetch multiple months
+  of data using the `start` and `end` parameters.
+  (:pull:`XXXX`)
+
+
 
 Bug fixes
 ~~~~~~~~~

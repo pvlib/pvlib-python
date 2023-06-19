@@ -3,7 +3,7 @@ Radiation Monitoring Laboratory (SRML) data.
 """
 import numpy as np
 import pandas as pd
-import requests
+import urllib
 import warnings
 
 
@@ -28,8 +28,9 @@ VARIABLE_MAP = {
 
 def read_srml(filename, map_variables=True):
     """
-    Read University of Oregon SRML 1min .tsv file into pandas dataframe.  The
-    SRML is described in [1]_.
+    Read University of Oregon SRML 1min .tsv file into pandas dataframe.
+
+    The SRML is described in [1]_.
 
     Parameters
     ----------
@@ -172,8 +173,9 @@ def format_index(df):
 
 def read_srml_month_from_solardat(station, year, month, filetype='PO',
                                   map_variables=True):
-    """Request a month of SRML data from solardat and read it into
-    a Dataframe.  The SRML is described in [1]_.
+    """Request a month of SRML data and read it into a Dataframe.
+
+    The SRML is described in [1]_.
 
     Parameters
     ----------
@@ -297,7 +299,7 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
         try:
             dfi = read_srml(url + f, map_variables=map_variables)
             dfs.append(dfi)
-        except requests.HTTPError:
+        except urllib.error.HTTPError:
             warnings.warn(f"The following file was not found: {f}")
 
     data = pd.concat(dfs, axis='rows')

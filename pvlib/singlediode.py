@@ -249,17 +249,35 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
-    method_kwargs : dict
-        Passed to root finder method. See
+    **method_kwargs :
+        Keyword arguments passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.
+        ``full_output=True`` is allowed. See examples section.
 
     Returns
     -------
     current : numeric
         current (I) at the specified voltage (V). [A]
-    optimizer_return : optional, present if ``full_output = True``
-        see root finder documentation for selected method
+    optimizer_output : optional, present if ``full_output=True``
+        see root finder documentation for selected method.
+        Found root is diode voltage in [1]_.
+
+    Examples
+    --------
+    Use default values:
+
+    >>> i = bishop88_i_from_v(<mandatory args>)
+
+    Specify tolerances and maximum number of iterations:
+
+    >>> i = bishop88_i_from_v(<mandatory args>,
+                              tol=1e-3, rtol=1e-3, maxiter=20)
+
+    Retrieve full output from the root finder:
+
+    >>> i, method_output = bishop88_i_from_v(<mandatory args>,
+                                             full_output=True)
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
@@ -354,8 +372,8 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
-    method_kwargs : dict
-        Passed to root finder method. See
+    **method_kwargs :
+        Keyword arguments passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.
 
@@ -363,8 +381,25 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     -------
     voltage : numeric
         voltage (V) at the specified current (I) in volts [V]
-    optimizer_return : optional, present if ``full_output = True``
-        see root finder documentation for selected method
+    optimizer_output : optional, present if ``full_output=True``
+        see root finder documentation for selected method.
+        Found root is diode voltage in [1]_.
+
+    Examples
+    --------
+    Use default values:
+
+    >>> v = bishop88_v_from_i(<mandatory args>)
+
+    Specify tolerances and maximum number of iterations:
+
+    >>> v = bishop88_v_from_i(<mandatory args>,
+                              tol=1e-3, rtol=1e-3, maxiter=20)
+
+    Retrieve full output from the root finder:
+
+    >>> v, method_output = bishop88_v_from_i(<mandatory args>,
+                                             full_output=True)
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
@@ -455,8 +490,8 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
        if ``breakdown_factor`` is not 0.
-    method_kwargs : dict
-        Passed to root finder method. See
+    **method_kwargs :
+        Keyword arguments passed to root finder method. See
         :py:func:`scipy:scipy.optimize.brentq` and
         :py:func:`scipy:scipy.optimize.newton` parameters.
 
@@ -465,8 +500,25 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     tuple
         max power current ``i_mp`` [A], max power voltage ``v_mp`` [V], and
         max power ``p_mp`` [W]
-    optimizer_return : optional, present if ``full_output = True``
-        see root finder documentation for selected method
+    optimizer_output : optional, present if ``full_output=True``
+        see root finder documentation for selected method.
+        Found root is diode voltage in [1]_.
+
+    Examples
+    --------
+    Use default values:
+
+    >>> i_mp, v_mp, p_mp = bishop88_mpp(<mandatory args>)
+
+    Specify tolerances and maximum number of iterations:
+
+    >>> i_mp, v_mp, p_mp = bishop88_mpp(<mandatory args>,
+                                        tol=1e-3, rtol=1e-3, maxiter=20)
+
+    Retrieve full output from the root finder:
+
+    >>> (i_mp, v_mp, p_mp), method_output = bishop88_mpp(<mandatory args>,
+                                                         full_output=True)
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,

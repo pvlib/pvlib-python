@@ -107,6 +107,45 @@ def test_retrieve_sam_raise_no_parameters():
     assert 'A name or path must be provided!' == str(error.value)
 
 
+def test_retrieve_sam_cecmod_version():
+    """
+    Test the expected data is retrieved from the CEC module database. In
+    particular, check for a known module in the database and check for the
+    expected keys for that module.
+    """
+    data = pvsystem.retrieve_sam('cecmod', version='2019-03-05')
+    keys = [
+        'BIPV',
+        'Date',
+        'T_NOCT',
+        'A_c',
+        'N_s',
+        'I_sc_ref',
+        'V_oc_ref',
+        'I_mp_ref',
+        'V_mp_ref',
+        'alpha_sc',
+        'beta_oc',
+        'a_ref',
+        'I_L_ref',
+        'I_o_ref',
+        'R_s',
+        'R_sh_ref',
+        'Adjust',
+        'gamma_r',
+        'Version',
+        'STC',
+        'PTC',
+        'Technology',
+        'Bifacial',
+        'Length',
+        'Width',
+    ]
+    module = 'Itek_Energy_LLC_iT_300_HE'
+    assert module in data
+    assert set(data[module].keys()) == set(keys)
+
+
 def test_retrieve_sam_cecmod():
     """
     Test the expected data is retrieved from the CEC module database. In
@@ -140,10 +179,18 @@ def test_retrieve_sam_cecmod():
         'Bifacial',
         'Length',
         'Width',
+        'Manufacturer',
     ]
-    module = 'Itek_Energy_LLC_iT_300_HE'
+    # nothing special about this module; OK to switch to another
+    # if this one disappears from the CEC file
+    module = 'JA_Solar_JAM5_72_165'
     assert module in data
     assert set(data[module].keys()) == set(keys)
+
+
+def test_retrieve_sam_bad_version():
+    with pytest.raises(ValueError, match="'version' must be one of"):
+        _ = pvsystem.retrieve_sam('cecmod', version='no good')
 
 
 def test_retrieve_sam_cecinverter():
@@ -153,6 +200,38 @@ def test_retrieve_sam_cecinverter():
     expected keys for that inverter.
     """
     data = pvsystem.retrieve_sam('cecinverter')
+    keys = [
+        'Vac',
+        'Paco',
+        'Pdco',
+        'Vdco',
+        'Pso',
+        'C0',
+        'C1',
+        'C2',
+        'C3',
+        'Pnt',
+        'Vdcmax',
+        'Idcmax',
+        'Mppt_low',
+        'Mppt_high',
+        'CEC_Date',
+        'CEC_hybrid',
+    ]
+    # nothing special about this inverter; OK to switch to another
+    # if this one disappears from the CEC file
+    inverter = 'Yaskawa_Solectria_Solar__XGI_1500_166_166__600V_'
+    assert inverter in data
+    assert set(data[inverter].keys()) == set(keys)
+
+
+def test_retrieve_sam_cecinverter_version():
+    """
+    Test the expected data is retrieved from the CEC inverter database. In
+    particular, check for a known inverter in the database and check for the
+    expected keys for that inverter.
+    """
+    data = pvsystem.retrieve_sam('cecinverter', version='2019-03-05')
     keys = [
         'Vac',
         'Paco',

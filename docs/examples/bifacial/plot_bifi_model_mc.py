@@ -50,7 +50,7 @@ temp_model_parameters = PARAMS['sapm']['open_rack_glass_glass']
 cec_modules = pvsystem.retrieve_sam('CECMod')
 cec_module = cec_modules['Trina_Solar_TSM_300DEG5C_07_II_']
 cec_inverters = pvsystem.retrieve_sam('cecinverter')
-cec_inverter = cec_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
+cec_inverter = cec_inverters['Enphase_Energy_Inc___IQ6_60_ACM_US__208V_']
 
 # create a location for site, and get solar position and clearsky data
 site_location = location.Location(lat, lon, tz=tz, name='Greensboro, NC')

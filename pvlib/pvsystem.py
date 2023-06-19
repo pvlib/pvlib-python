@@ -2296,7 +2296,26 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     return IL, I0, Rs, Rsh, nNsVth
 
 
-def retrieve_sam(name=None, path=None):
+def _get_cec_version_or_latest(data_path, filename_prefix, version):
+    matches = list(filter(lambda fn: fn.startswith(filename_prefix),
+                          os.listdir(data_path)))
+    if version is None:
+        # assume the lexicographic max is the latest version:
+        return max(matches)
+
+    filename = filename_prefix + version + ".csv"
+    if not os.path.exists(os.path.join(data_path, filename)):
+        versions = [
+            match.replace(filename_prefix, "").replace(".csv", "")
+            for match in matches
+        ]
+        raise ValueError("'version' must be one of "
+                         f"{versions}, not '{version}'")
+
+    return filename
+
+
+def retrieve_sam(name=None, path=None, version=None):
     '''
     Retrieve latest module and inverter info from a local file or the
     SAM website.
@@ -2326,6 +2345,11 @@ def retrieve_sam(name=None, path=None):
     path : None or string, default None
         Path to the SAM file. May also be a URL.
 
+    version : str, optional
+        Used in combination with ``name`` to select a particular version of
+        the CEC lists. If not specified, the latest version is returned.
+        Ignored for non-CEC databases.
+
     Returns
     -------
     samfile : DataFrame
@@ -2336,7 +2360,7 @@ def retrieve_sam(name=None, path=None):
     Raises
     ------
     ValueError
-        If no name or path is provided.
+        If no name or path is provided, or an invalid version is provided.
 
     Notes
     -----
@@ -2350,23 +2374,25 @@ def retrieve_sam(name=None, path=None):
 
     >>> from pvlib import pvsystem
     >>> invdb = pvsystem.retrieve_sam('CECInverter')
-    >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
+    >>> inverter = invdb.ABB__PVI_6000_OUTD_US_Z_M_A__277V_
     >>> inverter
-    Vac           277.000000
-    Paco         6000.000000
-    Pdco         6165.670000
-    Vdco          361.123000
-    Pso            36.792300
+    Vac                  277
+    Pso              35.3609
+    Paco              6000.0
+    Pdco             6196.81
+    Vdco               400.0
     C0             -0.000002
-    C1             -0.000047
-    C2             -0.001861
-    C3              0.000721
-    Pnt             0.070000
-    Vdcmax        600.000000
-    Idcmax         32.000000
-    Mppt_low      200.000000
-    Mppt_high     500.000000
-    Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
+    C1             -0.000024
+    C2             -0.000044
+    C3             -0.001749
+    Pnt                 0.32
+    Vdcmax             480.0
+    Idcmax            15.492
+    Mppt_low           100.0
+    Mppt_high          480.0
+    CEC_Date      10/15/2018
+    CEC_hybrid             N
+    Name: ABB__PVI_6000_OUTD_US_Z_M_A__277V_, dtype: object
     '''
 
     if name is not None:
@@ -2374,8 +2400,10 @@ def retrieve_sam(name=None, path=None):
         data_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), 'data')
         if name == 'cecmod':
-            csvdata = os.path.join(
-                data_path, 'sam-library-cec-modules-2019-03-05.csv')
+            fn = _get_cec_version_or_latest(data_path,
+                                            'sam-library-cec-modules-',
+                                            version)
+            csvdata = os.path.join(data_path, fn)
         elif name == 'sandiamod':
             csvdata = os.path.join(
                 data_path, 'sam-library-sandia-modules-2015-6-30.csv')
@@ -2385,8 +2413,10 @@ def retrieve_sam(name=None, path=None):
         elif name in ['cecinverter', 'sandiainverter']:
             # Allowing either, to provide for old code,
             # while aligning with current expectations
-            csvdata = os.path.join(
-                data_path, 'sam-library-cec-inverters-2019-03-05.csv')
+            fn = _get_cec_version_or_latest(data_path,
+                                            'sam-library-cec-inverters-',
+                                            version)
+            csvdata = os.path.join(data_path, fn)
         else:
             raise ValueError(f'invalid name {name}')
     elif path is not None:

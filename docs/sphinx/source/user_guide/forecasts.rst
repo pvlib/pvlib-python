@@ -469,7 +469,7 @@ for details.
     sandia_modules = retrieve_sam('sandiamod')
     cec_inverters = retrieve_sam('cecinverter')
     module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-    inverter = cec_inverters['SMA_America__SC630CP_US__with_ABB_EcoDry_Ultra_transformer_']
+    inverter = cec_inverters['Enphase_Energy_Inc___IQ6_60_ACM_US__208V_']
     temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
     # model a big tracker for more fun

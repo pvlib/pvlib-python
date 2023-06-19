@@ -172,7 +172,7 @@ def format_index(df):
     return df
 
 
-@deprecated('0.10.0', alternative='pvlib.iotools.get_srml')
+@deprecated('0.10.0', alternative='pvlib.iotools.get_srml', removal='0.11.0')
 def read_srml_month_from_solardat(station, year, month, filetype='PO',
                                   map_variables=True):
     """Request a month of SRML data and read it into a Dataframe.
@@ -281,8 +281,9 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     ----------
     .. [1] University of Oregon Solar Radiation Measurement Laboratory
        `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
-    .. [2] `Station ID codes - Solar Radiation Measurement Laboratory
-       http://solardat.uoregon.edu/StationIDCodes.html>`_
+    .. [2] Station ID codes - Solar Radiation Measurement Laboratory
+       `http://solardat.uoregon.edu/StationIDCodes.html
+       <http://solardat.uoregon.edu/StationIDCodes.html>`_
     """
     # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
     start = pd.to_datetime(start)

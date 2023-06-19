@@ -4,7 +4,7 @@ import pytest
 
 from pvlib.iotools import srml
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
-                        assert_frame_equal)
+                        assert_frame_equal, fail_on_pvlib_version)
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 
@@ -77,13 +77,15 @@ def test_map_columns(column, expected):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_read_srml_month_from_solardat():
+def test_get_srml():
     url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
     file_data = srml.read_srml(url)
-    requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
+    requested, _ = srml.get_srml(station='EU', start='2018-01-01',
+                                 end='2018-01-31')
     assert file_data.equals(requested)
 
 
+@fail_on_pvlib_version('0.11')
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_15_minute_dt_index():
@@ -97,6 +99,7 @@ def test_15_minute_dt_index():
     assert (data.index[3::4].minute == 45).all()
 
 
+@fail_on_pvlib_version('0.11')
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_hourly_dt_index():

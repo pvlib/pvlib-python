@@ -3,6 +3,8 @@ Radiation Monitoring Laboratory (SRML) data.
 """
 import numpy as np
 import pandas as pd
+import requests
+import warnings
 
 
 # VARIABLE_MAP is a dictionary mapping SRML data element numbers to their
@@ -229,12 +231,12 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     """Request data from UoO SRML and read it into a Dataframe.
 
     The Univeristy of Oregon Solar Radiation Monitoring Laboratory (SRML) is
-    described in [1]_.
+    described in [1]_. A list of stations can be found in [2]_.
 
     Parameters
     ----------
     station : str
-        The name of the SRML station to request.
+        Two letter station abbreviation.
     start : datetime like
         First day of the requested period
     end : datetime like
@@ -275,6 +277,8 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     ----------
     .. [1] University of Oregon Solar Radiation Measurement Laboratory
        `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
+    .. [2] `Station ID codes - Solar Radiation Measurement Laboratory
+       http://solardat.uoregon.edu/StationIDCodes.html>`_
     """
     # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
     start = pd.to_datetime(start)
@@ -288,7 +292,13 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     # Generate list of filenames
     filenames = [f"{station}{filetype}{m}.txt" for m in months_str]
 
-    dfs = [read_srml(url + f, map_variables=map_variables) for f in filenames]
+    dfs = []  # Initialize list of monthly dataframes
+    for f in filenames:
+        try:
+            dfi = read_srml(url + f, map_variables=map_variables)
+            dfs.append(dfi)
+        except requests.HTTPError:
+            warnings.warn(f"The following file was not found: {f}")
 
     data = pd.concat(dfs, axis='rows')
 

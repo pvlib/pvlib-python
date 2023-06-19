@@ -6,6 +6,7 @@ import pandas as pd
 import urllib
 import warnings
 
+from pvlib._deprecation import deprecated
 
 # VARIABLE_MAP is a dictionary mapping SRML data element numbers to their
 # pvlib names. For most variables, only the first three digits are used,
@@ -171,6 +172,7 @@ def format_index(df):
     return df
 
 
+@deprecated('0.10.0', alternative='pvlib.iotools.get_srml')
 def read_srml_month_from_solardat(station, year, month, filetype='PO',
                                   map_variables=True):
     """Request a month of SRML data and read it into a Dataframe.

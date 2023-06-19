@@ -265,19 +265,26 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
 
     Examples
     --------
+    Using the following arguments:
+
+    >>> args = {'photocurrent': 1.5743233463848496,
+    ...         'saturation_current': 9.62e-10, 'resistance_series': 4.6,
+    ...         'resistance_shunt': 5000.0, 'nNsVth': 4.106701846714363,
+    ...         'd2mutau': 1.31, 'NsVbi': 97.2}
+
     Use default values:
 
-    >>> i = bishop88_i_from_v(<mandatory args>)
+    >>> i = bishop88_i_from_v(0.0, **args)
 
     Specify tolerances and maximum number of iterations:
 
-    >>> i = bishop88_i_from_v(<mandatory args>,
-                              tol=1e-3, rtol=1e-3, maxiter=20)
+    >>> i = bishop88_i_from_v(0.0, **args,
+    ...                       tol=1e-3, rtol=1e-3, maxiter=20)
 
     Retrieve full output from the root finder:
 
-    >>> i, method_output = bishop88_i_from_v(<mandatory args>,
-                                             full_output=True)
+    >>> i, method_output = bishop88_i_from_v(0.0, **args,
+    ...                                      full_output=True)
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
@@ -387,19 +394,26 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 
     Examples
     --------
+    Using the following arguments:
+
+    >>> args = {'photocurrent': 1.5743233463848496,
+    ...         'saturation_current': 9.62e-10, 'resistance_series': 4.6,
+    ...         'resistance_shunt': 5000.0, 'nNsVth': 4.106701846714363,
+    ...         'd2mutau': 1.31, 'NsVbi': 97.2}
+
     Use default values:
 
-    >>> v = bishop88_v_from_i(<mandatory args>)
+    >>> v = bishop88_v_from_i(0.0, **args)
 
     Specify tolerances and maximum number of iterations:
 
-    >>> v = bishop88_v_from_i(<mandatory args>,
-                              tol=1e-3, rtol=1e-3, maxiter=20)
+    >>> v = bishop88_v_from_i(0.0, **args,
+    ...                       tol=1e-3, rtol=1e-3, maxiter=20)
 
     Retrieve full output from the root finder:
 
-    >>> v, method_output = bishop88_v_from_i(<mandatory args>,
-                                             full_output=True)
+    >>> v, method_output = bishop88_v_from_i(0.0, **args,
+    ...                                      full_output=True)
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
@@ -506,19 +520,26 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
 
     Examples
     --------
+    Using the following arguments:
+
+    >>> args = {'photocurrent': 1.5743233463848496,
+    ...         'saturation_current': 9.62e-10, 'resistance_series': 4.6,
+    ...         'resistance_shunt': 5000.0, 'nNsVth': 4.106701846714363,
+    ...         'd2mutau': 1.31, 'NsVbi': 97.2}
+
     Use default values:
 
-    >>> i_mp, v_mp, p_mp = bishop88_mpp(<mandatory args>)
+    >>> i_mp, v_mp, p_mp = bishop88_mpp(**args)
 
     Specify tolerances and maximum number of iterations:
 
-    >>> i_mp, v_mp, p_mp = bishop88_mpp(<mandatory args>,
-                                        tol=1e-3, rtol=1e-3, maxiter=20)
+    >>> i_mp, v_mp, p_mp = bishop88_mpp(**args,
+    ...                                 tol=1e-3, rtol=1e-3, maxiter=20)
 
     Retrieve full output from the root finder:
 
-    >>> (i_mp, v_mp, p_mp), method_output = bishop88_mpp(<mandatory args>,
-                                                         full_output=True)
+    >>> (i_mp, v_mp, p_mp), method_output = bishop88_mpp(**args,
+    ...                                                  full_output=True)
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,

@@ -58,6 +58,9 @@ Bug fixes
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
 * ``d2mutau`` and ``NsVbi`` were hardcoded in :py:func:`pvlib.pvsystem.max_power_point` instead of
   passing through the arguments to the function. (:pull:`1733`)
+* :py:func:`pvlib.iam.physical` no longer returns NaN when ``n=1`` and ``aoi>90``.
+  This bug was introduced in v0.9.5.  (:issue:`1706`, :pull:`1707`)
+  
 
 Testing
 ~~~~~~~

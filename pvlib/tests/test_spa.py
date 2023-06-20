@@ -347,7 +347,7 @@ class NumpySpaTest(unittest.TestCase, SpaBase):
     @classmethod
     def setUpClass(self):
         os.environ['PVLIB_USE_NUMBA'] = '0'
-        import pvlib._spa as spa
+        import pvlib.spa as spa
         spa = reload(spa)
         self.spa = spa
 
@@ -367,7 +367,7 @@ class NumbaSpaTest(unittest.TestCase, SpaBase):
     def setUpClass(self):
         os.environ['PVLIB_USE_NUMBA'] = '1'
         if numba_version_int >= 17:
-            import pvlib._spa as spa
+            import pvlib.spa as spa
             spa = reload(spa)
             self.spa = spa
 

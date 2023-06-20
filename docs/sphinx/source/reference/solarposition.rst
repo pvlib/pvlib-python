@@ -43,6 +43,14 @@ Functions for calculating sunrise, sunset and transit times.
    solarposition.sun_rise_set_transit_geometric
 
 
+The spa module contains the implementation of the built-in NREL SPA
+algorithm.
+
+.. autosummary::
+   :toctree: generated/
+
+   spa
+
 Correlations and analytical expressions for low precision solar position
 calculations.
 

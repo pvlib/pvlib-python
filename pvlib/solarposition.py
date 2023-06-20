@@ -247,10 +247,10 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 def _spa_python_import(how):
     """Compile spa.py appropriately"""
 
-    from pvlib import _spa
+    from pvlib import spa
 
     # check to see if the spa module was compiled with numba
-    using_numba = _spa.USE_NUMBA
+    using_numba = spa.USE_NUMBA
 
     if how == 'numpy' and using_numba:
         # the spa module was compiled to numba code, so we need to
@@ -259,19 +259,19 @@ def _spa_python_import(how):
         # to not compile with numba
         warnings.warn('Reloading spa to use numpy')
         os.environ['PVLIB_USE_NUMBA'] = '0'
-        _spa = reload(_spa)
+        spa = reload(spa)
         del os.environ['PVLIB_USE_NUMBA']
     elif how == 'numba' and not using_numba:
         # The spa module was not compiled to numba code, so set
         # PVLIB_USE_NUMBA so it does compile to numba on reload.
         warnings.warn('Reloading spa to use numba')
         os.environ['PVLIB_USE_NUMBA'] = '1'
-        _spa = reload(_spa)
+        spa = reload(spa)
         del os.environ['PVLIB_USE_NUMBA']
     elif how != 'numba' and how != 'numpy':
         raise ValueError("how must be either 'numba' or 'numpy'")
 
-    return _spa
+    return spa
 
 
 def spa_python(time, latitude, longitude,

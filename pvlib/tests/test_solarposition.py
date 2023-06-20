@@ -10,7 +10,7 @@ from numpy.testing import assert_allclose
 import pytest
 
 from pvlib.location import Location
-from pvlib import solarposition, _spa
+from pvlib import solarposition, spa
 
 from .conftest import requires_ephem, requires_spa_c, requires_numba
 
@@ -560,11 +560,11 @@ def test_declination():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
                           freq="H")
     atmos_refract = 0.5667
-    delta_t = solarposition.calculate_deltat(times.year, times.month)
+    delta_t = spa.calculate_deltat(times.year, times.month)
     unixtime = np.array([calendar.timegm(t.timetuple()) for t in times])
-    _, _, declination = _spa.solar_position(
-        unixtime, 37.8, -122.25, 100, 1013.25, 25, delta_t, atmos_refract,
-        sst=True)
+    _, _, declination = spa.solar_position(unixtime, 37.8, -122.25, 100,
+                                           1013.25, 25, delta_t, atmos_refract,
+                                           sst=True)
     declination = np.deg2rad(declination)
     declination_rng = declination.max() - declination.min()
     declination_1 = solarposition.declination_cooper69(times.dayofyear)
@@ -769,36 +769,3 @@ def test_spa_python_numba_physical_dst(expected_solpos, golden):
                                               temperature=11, delta_t=67,
                                               atmos_refract=0.5667,
                                               how='numpy', numthreads=1)
-
-
-def test_calculate_deltat():
-    year_array = np.array([-499, 500, 1000, 1500, 1800, 1860, 1900, 1950,
-                           1970, 1985, 1990, 2000, 2005, 2050, 2150])
-    # `month_array` is used with `year_array` in `test_calculate_deltat`.
-    # Both arrays need to have the same length for the test, hence the duplicates.
-    month_array = np.array([1, 2, 3, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12, 12, 12])
-    dt_actual = 54.413442486
-    dt_actual_array = np.array([1.7184831e+04, 5.7088051e+03, 1.5730419e+03,
-                                1.9801820e+02, 1.3596506e+01, 7.8316585e+00,
-                                -2.1171894e+00, 2.9289261e+01, 4.0824887e+01,
-                                5.4724581e+01, 5.7426651e+01, 6.4108015e+01,
-                                6.5038015e+01, 9.4952955e+01, 3.3050693e+02])
-    year = 1985
-    month = 2
-
-    mix_year_array = np.full((10), year)
-    mix_month_array = np.full((10), month)
-    mix_year_actual = np.full((10), dt_actual)
-    mix_month_actual = mix_year_actual
-
-    result_mix_year = solarposition.calculate_deltat(mix_year_array, month)
-    np.testing.assert_almost_equal(mix_year_actual, result_mix_year)
-
-    result_mix_month = solarposition.calculate_deltat(year, mix_month_array)
-    np.testing.assert_almost_equal(mix_month_actual, result_mix_month)
-
-    result_array = solarposition.calculate_deltat(year_array, month_array)
-    np.testing.assert_almost_equal(dt_actual_array, result_array, 3)
-
-    result_scalar = solarposition.calculate_deltat(year, month)
-    np.testing.assert_almost_equal(dt_actual, result_scalar)

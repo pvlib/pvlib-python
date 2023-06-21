@@ -266,6 +266,7 @@ def _getmcattr(self, attr):
         pass
     return out
 
+
 # Type for fields that vary between arrays
 T = TypeVar('T')
 
@@ -397,7 +398,6 @@ class ModelChainResult:
             value = self._result_type(value)
         super().__setattr__(key, value)
 
-
     def __repr__(self):
         system_front_attrs = ['weather', 'solar_position', 'airmass']
         per_array_attrs = ['tracking', 'aoi', 'aoi_modifier', 'total_irrad',
@@ -410,18 +410,28 @@ class ModelChainResult:
             num_arrays = len(self.dc)
         else:
             num_arrays = 1
-        desc1 = ('ModelChainResult: \n  ' + '\n  '.join(
-            f'{attr} \n {_getmcattr(self, attr)} \n'
-            for attr in system_front_attrs)) + '\n'
-        desc2 = ('\n'.join(
-            f'--------------- \n  Array {j} \n' + '\n'.join(
-                f'  {attr} \n {_getmcattr(self, attr)} \n'
-                for attr in per_array_attrs) + '--------------- \n'
+
+        if num_arrays is 1:
+            front_attrs = [f'{attr} \n {_getmcattr(self, attr).head()} \n'
+                           if all(hasattr(self, 'head'), hasattr(self, attr))
+                           else 
+                               f'{attr} \n {_getmcattr(self, attr)} \n'
+                               if hasattr(self, attr)
+                           for attr in system_front_attrs]
+            array_attrs = [f'  {attr} \n {_getmcattr(self, attr)} \n'
+                           for attr in per_array_attrs:
+                           if hasattr(self, attr)]
+
+        desc1 = ('ModelChainResult: \n  ')
+        desc2 = ('\n'.join(front_attrs) + '\n')
+        desc3 = ('\n'.join(
+            f'--------------- \n  Array {j} \n --------------- \n'
+            + '\n'.join(array_attrs) + '\n \n'
             for j in range(num_arrays)))
-        desc3 = ('\n  ' + '\n  '.join(
+        desc4 = ('\n  ' + '\n  '.join(
             f'{attr} \n {_getmcattr(self, attr)} \n'
             for attr in system_back_attrs))
-        return(desc1 + desc2 + desc3)
+        return(desc1 + desc2 + desc3 + desc4)
 
 
 class ModelChain:

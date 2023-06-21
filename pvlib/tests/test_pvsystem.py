@@ -14,11 +14,14 @@ from pvlib import inverter, pvsystem
 from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
+from pvlib import spectrum
 from pvlib.location import Location
 from pvlib.pvsystem import FixedMount
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import cosd
+from pvlib.singlediode import VOLTAGE_BUILTIN
+from pvlib.tests.test_singlediode import get_pvsyst_fs_495
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -253,28 +256,19 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
         system.sapm(500, temp_cell)
 
 
-@pytest.mark.parametrize('airmass,expected', [
-    (1.5, 1.00028714375),
-    (np.array([[10, np.nan]]), np.array([[0.999535, 0]])),
-    (pd.Series([5]), pd.Series([1.0387675]))
-])
-def test_sapm_spectral_loss(sapm_module_params, airmass, expected):
-
-    out = pvsystem.sapm_spectral_loss(airmass, sapm_module_params)
-
-    if isinstance(airmass, pd.Series):
-        assert_series_equal(out, expected, check_less_precise=4)
-    else:
-        assert_allclose(out, expected, atol=1e-4)
+def test_sapm_spectral_loss_deprecated(sapm_module_params):
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use pvlib.spectrum.spectral_factor_sapm'):
+        pvsystem.sapm_spectral_loss(1, sapm_module_params)
 
 
 def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
-    mocker.spy(pvsystem, 'sapm_spectral_loss')
+    mocker.spy(spectrum, 'spectral_factor_sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     airmass = 2
     out = system.sapm_spectral_loss(airmass)
-    pvsystem.sapm_spectral_loss.assert_called_once_with(airmass,
-                                                        sapm_module_params)
+    spectrum.spectral_factor_sapm.assert_called_once_with(airmass,
+                                                          sapm_module_params)
     assert_allclose(out, 1, atol=0.5)
 
 
@@ -302,12 +296,12 @@ def test_PVSystem_multi_array_sapm_spectral_loss(sapm_module_params):
     ])
 def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
                                             coefficients, mocker):
-    mocker.spy(atmosphere, 'first_solar_spectral_correction')
+    mocker.spy(spectrum, 'spectral_factor_firstsolar')
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     pw = 3
     airmass_absolute = 3
     out = system.first_solar_spectral_loss(pw, airmass_absolute)
-    atmosphere.first_solar_spectral_correction.assert_called_once_with(
+    spectrum.spectral_factor_firstsolar.assert_called_once_with(
         pw, airmass_absolute, module_type, coefficients)
     assert_allclose(out, 1, atol=0.5)
 
@@ -1079,11 +1073,12 @@ def test_v_from_i(fixture_v_from_i, method, atol):
     IL = fixture_v_from_i['IL']
     V_expected = fixture_v_from_i['V_expected']
 
-    V = pvsystem.v_from_i(Rsh, Rs, nNsVth, I, I0, IL, method=method)
-    assert(isinstance(V, type(V_expected)))
-    if isinstance(V, type(np.ndarray)):
-        assert(isinstance(V.dtype, type(V_expected.dtype)))
-        assert(V.shape == V_expected.shape)
+    V = pvsystem.v_from_i(I, IL, I0, Rs, Rsh, nNsVth, method=method)
+
+    assert isinstance(V, type(V_expected))
+    if isinstance(V, np.ndarray):
+        assert isinstance(V.dtype, type(V_expected.dtype))
+        assert V.shape == V_expected.shape
     assert_allclose(V, V_expected, atol=atol)
 
 
@@ -1092,7 +1087,7 @@ def test_i_from_v_from_i(fixture_v_from_i):
     Rsh = fixture_v_from_i['Rsh']
     Rs = fixture_v_from_i['Rs']
     nNsVth = fixture_v_from_i['nNsVth']
-    I = fixture_v_from_i['I']
+    current = fixture_v_from_i['I']
     I0 = fixture_v_from_i['I0']
     IL = fixture_v_from_i['IL']
     V = fixture_v_from_i['V_expected']
@@ -1100,15 +1095,17 @@ def test_i_from_v_from_i(fixture_v_from_i):
     # Convergence criteria
     atol = 1.e-11
 
-    I_expected = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL,
+    I_expected = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth,
                                    method='lambertw')
-    assert_allclose(I, I_expected, atol=atol)
-    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL)
-    assert(isinstance(I, type(I_expected)))
-    if isinstance(I, type(np.ndarray)):
-        assert(isinstance(I.dtype, type(I_expected.dtype)))
-        assert(I.shape == I_expected.shape)
-    assert_allclose(I, I_expected, atol=atol)
+    assert_allclose(current, I_expected, atol=atol)
+
+    current = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth)
+
+    assert isinstance(current, type(I_expected))
+    if isinstance(current, np.ndarray):
+        assert isinstance(current.dtype, type(I_expected.dtype))
+        assert current.shape == I_expected.shape
+    assert_allclose(current, I_expected, atol=atol)
 
 
 @pytest.fixture(params=[
@@ -1197,41 +1194,42 @@ def test_i_from_v(fixture_i_from_v, method, atol):
     IL = fixture_i_from_v['IL']
     I_expected = fixture_i_from_v['I_expected']
 
-    I = pvsystem.i_from_v(Rsh, Rs, nNsVth, V, I0, IL, method=method)
-    assert(isinstance(I, type(I_expected)))
-    if isinstance(I, type(np.ndarray)):
-        assert(isinstance(I.dtype, type(I_expected.dtype)))
-        assert(I.shape == I_expected.shape)
-    assert_allclose(I, I_expected, atol=atol)
+    current = pvsystem.i_from_v(V, IL, I0, Rs, Rsh, nNsVth, method=method)
+
+    assert isinstance(current, type(I_expected))
+    if isinstance(current, np.ndarray):
+        assert isinstance(current.dtype, type(I_expected.dtype))
+        assert current.shape == I_expected.shape
+    assert_allclose(current, I_expected, atol=atol)
 
 
 def test_PVSystem_i_from_v(mocker):
     system = pvsystem.PVSystem()
     m = mocker.patch('pvlib.pvsystem.i_from_v', autospec=True)
-    args = (20, 0.1, 0.5, 7.5049875193450521, 6e-7, 7)
+    args = (7.5049875193450521, 7, 6e-7, 0.1, 20, 0.5)
     system.i_from_v(*args)
     m.assert_called_once_with(*args)
 
 
 def test_i_from_v_size():
     with pytest.raises(ValueError):
-        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0)
+        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.i_from_v(20, [0.1] * 2, 0.5, [7.5] * 3, 6.0e-7, 7.0,
+        pvsystem.i_from_v([7.5] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
                           method='brentq')
     with pytest.raises(ValueError):
-        pvsystem.i_from_v(20, 0.1, 0.5, [7.5] * 3, 6.0e-7, np.array([7., 7.]),
+        pvsystem.i_from_v([7.5] * 3, np.array([7., 7.]), 6e-7, 0.1, 20, 0.5,
                           method='newton')
 
 
 def test_v_from_i_size():
     with pytest.raises(ValueError):
-        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0)
+        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5)
     with pytest.raises(ValueError):
-        pvsystem.v_from_i(20, [0.1] * 2, 0.5, [3.0] * 3, 6.0e-7, 7.0,
+        pvsystem.v_from_i([3.] * 3, 7., 6e-7, [0.1] * 2, 20, 0.5,
                           method='brentq')
     with pytest.raises(ValueError):
-        pvsystem.v_from_i(20, [0.1], 0.5, [3.0] * 3, 6.0e-7, np.array([7., 7.]),
+        pvsystem.v_from_i([3.] * 3, np.array([7., 7.]), 6e-7, [0.1], 20, 0.5,
                           method='newton')
 
 
@@ -1248,6 +1246,43 @@ def test_mpp_floats():
     out = pvsystem.max_power_point(IL, I0, Rs, Rsh, nNsVth, method='newton')
     for k, v in out.items():
         assert np.isclose(v, expected[k])
+
+
+def test_mpp_recombination():
+    """test max_power_point"""
+    pvsyst_fs_495 = get_pvsyst_fs_495()
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
+        effective_irradiance=pvsyst_fs_495['irrad_ref'],
+        temp_cell=pvsyst_fs_495['temp_ref'],
+        alpha_sc=pvsyst_fs_495['alpha_sc'],
+        gamma_ref=pvsyst_fs_495['gamma_ref'],
+        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
+        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
+        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
+        R_s=pvsyst_fs_495['R_s'],
+        cells_in_series=pvsyst_fs_495['cells_in_series'],
+        EgRef=pvsyst_fs_495['EgRef'])
+    out = pvsystem.max_power_point(
+        IL, I0, Rs, Rsh, nNsVth,
+        d2mutau=pvsyst_fs_495['d2mutau'],
+        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
+        method='brentq')
+    expected_imp = pvsyst_fs_495['I_mp_ref']
+    expected_vmp = pvsyst_fs_495['V_mp_ref']
+    expected_pmp = expected_imp*expected_vmp
+    expected = {'i_mp': expected_imp,
+                'v_mp': expected_vmp,
+                'p_mp': expected_pmp}
+    assert isinstance(out, dict)
+    for k, v in out.items():
+        assert np.isclose(v, expected[k], 0.01)
+    out = pvsystem.max_power_point(
+        IL, I0, Rs, Rsh, nNsVth,
+        d2mutau=pvsyst_fs_495['d2mutau'],
+        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
+        method='newton')
+    for k, v in out.items():
+        assert np.isclose(v, expected[k], 0.01)
 
 
 def test_mpp_array():
@@ -1328,8 +1363,8 @@ def test_singlediode_array():
 
     sd = pvsystem.singlediode(photocurrent, saturation_current,
                               resistance_series, resistance_shunt, nNsVth)
-    expected = pvsystem.i_from_v(resistance_shunt, resistance_series, nNsVth,
-                                 sd['v_mp'], saturation_current, photocurrent,
+    expected = pvsystem.i_from_v(sd['v_mp'], photocurrent, saturation_current,
+                                 resistance_series, resistance_shunt, nNsVth,
                                  method='lambertw')
     assert_allclose(sd['i_mp'], expected, atol=1e-8)
 
@@ -1404,20 +1439,19 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                          [3.0107985972, 2.8841320056, 0.],
                                          [6.0072629615, 5.7462022810, 0.]]))])
 
-
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)
 
     out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
 
-    expected['i_mp'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v_mp'], I0, IL,
+    expected['i_mp'] = pvsystem.i_from_v(out['v_mp'], IL, I0, Rs, Rsh, nNsVth,
                                          method='lambertw')
-    expected['v_mp'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i_mp'], I0, IL,
+    expected['v_mp'] = pvsystem.v_from_i(out['i_mp'], IL, I0, Rs, Rsh, nNsVth,
                                          method='lambertw')
-    expected['i'] = pvsystem.i_from_v(Rsh, Rs, nNsVth, out['v'].T, I0, IL,
-                                         method='lambertw').T
-    expected['v'] = pvsystem.v_from_i(Rsh, Rs, nNsVth, out['i'].T, I0, IL,
-                                         method='lambertw').T
+    expected['i'] = pvsystem.i_from_v(out['v'].T, IL, I0, Rs, Rsh, nNsVth,
+                                      method='lambertw').T
+    expected['v'] = pvsystem.v_from_i(out['i'].T, IL, I0, Rs, Rsh, nNsVth,
+                                      method='lambertw').T
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-6)

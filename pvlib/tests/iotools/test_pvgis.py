@@ -9,8 +9,9 @@ import pytest
 import requests
 from pvlib.iotools import get_pvgis_tmy, read_pvgis_tmy
 from pvlib.iotools import get_pvgis_hourly, read_pvgis_hourly
+from pvlib.iotools import get_pvgis_horizon
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_frame_equal,
-                        fail_on_pvlib_version)
+                        fail_on_pvlib_version, assert_series_equal)
 from pvlib._deprecation import pvlibDeprecationWarning
 
 
@@ -206,14 +207,14 @@ def test_read_pvgis_hourly_bad_extension():
 
 
 args_radiation_csv = {
-    'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'csv',
+    'surface_tilt': 30, 'surface_azimuth': 180, 'outputformat': 'csv',
     'usehorizon': False, 'userhorizon': None, 'raddatabase': 'PVGIS-SARAH',
     'start': 2016, 'end': 2016, 'pvcalculation': False, 'components': True}
 
 url_hourly_radiation_csv = 'https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8&outputformat=csv&angle=30&aspect=0&usehorizon=0&pvtechchoice=crystSi&mountingplace=free&trackingtype=0&components=1&raddatabase=PVGIS-SARAH&startyear=2016&endyear=2016'  # noqa: E501
 
 args_pv_json = {
-    'surface_tilt': 30, 'surface_azimuth': 0, 'outputformat': 'json',
+    'surface_tilt': 30, 'surface_azimuth': 180, 'outputformat': 'json',
     'usehorizon': True, 'userhorizon': None, 'raddatabase': 'PVGIS-SARAH2',
     'start': pd.Timestamp(2013, 1, 1), 'end': pd.Timestamp(2014, 5, 1),
     'pvcalculation': True, 'peakpower': 10, 'pvtechchoice': 'CIS', 'loss': 5,
@@ -364,17 +365,6 @@ def pvgis_tmy_mapped_columns():
             'wind_speed', 'wind_direction', 'pressure']
 
 
-@fail_on_pvlib_version('0.10')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_pvgis_tmy_variable_map_deprecating_warning_0_10():
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        _ = get_pvgis_tmy(45, 8)
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.epw'
-        _ = read_pvgis_tmy(fn)
-
-
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
@@ -507,6 +497,23 @@ def test_get_pvgis_tmy_error():
 def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
     actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
     assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_read_pvgis_horizon():
+    pvgis_data, _ = get_pvgis_horizon(35.171051, -106.465158)
+    horizon_data = pd.read_csv(DATA_DIR / 'test_read_pvgis_horizon.csv',
+                               index_col=0)
+    horizon_data = horizon_data['horizon_elevation']
+    assert_series_equal(pvgis_data, horizon_data)
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_read_pvgis_horizon_invalid_coords():
+    with pytest.raises(requests.HTTPError, match='lat: Incorrect value'):
+        _, _ = get_pvgis_horizon(100, 50)  # unfeasible latitude
 
 
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):

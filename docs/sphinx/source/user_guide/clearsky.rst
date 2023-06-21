@@ -216,25 +216,26 @@ wavelengths [Bir80]_, and is implemented in
 
     In [1]: tmy_file = os.path.join(pvlib_data, '703165TY.csv')  # TMY file
 
-    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999)  # read TMY data
+    In [1]: tmy_data, tmy_header = read_tmy3(tmy_file, coerce_year=1999, map_variables=True)
 
     In [1]: tl_historic = clearsky.lookup_linke_turbidity(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'])
 
     In [1]: solpos = solarposition.get_solarposition(time=tmy_data.index,
        ...:     latitude=tmy_header['latitude'], longitude=tmy_header['longitude'],
-       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['Pressure']*mbars,
-       ...:     temperature=tmy_data['DryBulb'])
+       ...:     altitude=tmy_header['altitude'], pressure=tmy_data['pressure']*mbars,
+       ...:     temperature=tmy_data['temp_air'])
 
     In [1]: am_rel = atmosphere.get_relative_airmass(solpos.apparent_zenith)
 
-    In [1]: am_abs = atmosphere.get_absolute_airmass(am_rel, tmy_data['Pressure']*mbars)
+    In [1]: am_abs = atmosphere.get_absolute_airmass(am_rel, tmy_data['pressure']*mbars)
 
     In [1]: airmass = pd.concat([am_rel, am_abs], axis=1).rename(
        ...:     columns={0: 'airmass_relative', 1: 'airmass_absolute'})
 
     In [1]: tl_calculated = atmosphere.kasten96_lt(
-       ...:     airmass.airmass_absolute, tmy_data['Pwat'], tmy_data['AOD'])
+       ...:     airmass.airmass_absolute, tmy_data['precipitable_water'],
+       ...:     tmy_data['AOD (unitless)'])
 
     In [1]: tl = pd.concat([tl_historic, tl_calculated], axis=1).rename(
        ...:     columns={0:'Historic', 1:'Calculated'})
@@ -376,7 +377,8 @@ derived from surface relative humidity using functions such as
 :py:func:`pvlib.atmosphere.gueymard94_pw`.
 Numerous gridded products from satellites, weather models, and climate models
 contain one or both of aerosols and precipitable water. Consider data
-from the `ECMWF <https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Public+Datasets>`_
+from the `ECMWF ERA5 <https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5>`_,
+`NASA MERRA-2 <https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/>`_,
 and `SoDa <http://www.soda-pro.com/web-services/radiation/cams-mcclear>`_.
 
 Aerosol optical depth (AOD) is a function of wavelength, and the Simplified

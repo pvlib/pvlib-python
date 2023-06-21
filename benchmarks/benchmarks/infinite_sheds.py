@@ -10,7 +10,11 @@ from pvlib import location, tracking
 
 class InfiniteSheds:
 
-    def setup(self):
+    # benchmark variant parameters (run both vectorize=True and False)
+    params = [True, False]
+    param_names = ['vectorize']
+
+    def setup(self, vectorize):
         self.times = pd.date_range(start='20180601', freq='1min',
                                    periods=1440)
         self.location = location.Location(40, -80)
@@ -38,7 +42,7 @@ class InfiniteSheds:
                 gcr=self.gcr
             )
 
-    def time_get_irradiance_poa_fixed(self):
+    def time_get_irradiance_poa_fixed(self, vectorize):
         infinite_sheds.get_irradiance_poa(
             surface_tilt=self.surface_tilt,
             surface_azimuth=self.surface_azimuth,
@@ -51,10 +55,11 @@ class InfiniteSheds:
             dhi=self.clearsky_irradiance['dhi'],
             dni=self.clearsky_irradiance['dni'],
             albedo=self.albedo,
-            npoints=self.npoints
+            npoints=self.npoints,
+            vectorize=vectorize,
         )
 
-    def time_get_irradiance_poa_tracking(self):
+    def time_get_irradiance_poa_tracking(self, vectorize):
         infinite_sheds.get_irradiance_poa(
             surface_tilt=self.tracking['surface_tilt'],
             surface_azimuth=self.tracking['surface_azimuth'],
@@ -67,10 +72,11 @@ class InfiniteSheds:
             dhi=self.clearsky_irradiance['dhi'],
             dni=self.clearsky_irradiance['dni'],
             albedo=self.albedo,
-            npoints=self.npoints
+            npoints=self.npoints,
+            vectorize=vectorize,
         )
 
-    def time_get_irradiance_fixed(self):
+    def time_get_irradiance_fixed(self, vectorize):
         infinite_sheds.get_irradiance(
             surface_tilt=self.surface_tilt,
             surface_azimuth=self.surface_azimuth,
@@ -83,10 +89,11 @@ class InfiniteSheds:
             dhi=self.clearsky_irradiance['dhi'],
             dni=self.clearsky_irradiance['dni'],
             albedo=self.albedo,
-            npoints=self.npoints
+            npoints=self.npoints,
+            vectorize=vectorize,
         )
 
-    def time_get_irradiance_tracking(self):
+    def time_get_irradiance_tracking(self, vectorize):
         infinite_sheds.get_irradiance(
             surface_tilt=self.tracking['surface_tilt'],
             surface_azimuth=self.tracking['surface_azimuth'],
@@ -99,5 +106,6 @@ class InfiniteSheds:
             dhi=self.clearsky_irradiance['dhi'],
             dni=self.clearsky_irradiance['dni'],
             albedo=self.albedo,
-            npoints=self.npoints
+            npoints=self.npoints,
+            vectorize=vectorize,
         )

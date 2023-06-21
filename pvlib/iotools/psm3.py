@@ -88,8 +88,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         PSM3 API parameter specifing year or TMY variant to download, see notes
         below for options
     interval : int, {60, 5, 15, 30}
-        interval size in minutes, must be 5, 15, 30 or 60. Only used for
-        single-year requests (i.e., it is ignored for tmy/tgy/tdy requests).
+        interval size in minutes, must be 5, 15, 30 or 60. Must be 60 for
+        typical year requests (i.e., tmy/tgy/tdy).
     attributes : list of str, optional
         meteorological fields to fetch. If not specified, defaults to
         ``pvlib.iotools.psm3.ATTRIBUTES``. See references [2]_, [3]_, and [4]_

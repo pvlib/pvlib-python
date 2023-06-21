@@ -1,0 +1,39 @@
+.. _whatsnew_0960:
+
+
+v0.9.6 (Anticipated June 2023)
+------------------------------
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+* Updated the description of the interval parameter in
+  :py:func:`pvlib.iotools.get_psm3`. (:issue:`1702`, :pull:`1712`)
+
+Benchmarking
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`adamrjensen`)

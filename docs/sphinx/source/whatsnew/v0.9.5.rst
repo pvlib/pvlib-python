@@ -27,11 +27,6 @@ Enhancements
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa`
   to enable use of the hay-davies sky diffuse irradiance model
   instead of the default isotropic model. (:pull:`1668`)
-* Added :py:mod:`pvlib.financial` module with functions
-  :py:func:`~pvlib.financial.lcoe`, :py:func:`~pvlib.financial.crf`,
-  :py:func:`~pvlib.financial.nominal_to_real`,
-  :py:func:`~pvlib.financial.real_to_nominal`, and
-  :py:func:`~pvlib.financial.wacc` (:pull:`1687`)
 * Added an optional ``vectorize`` parameter to 
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` which,
@@ -95,7 +90,6 @@ Contributors
 * Michael Deceglie (:ghuser:`mdeceglie`)
 * Saurabh Aneja (:ghuser:`spaneja`)
 * John Moseley (:ghuser:`johnMoseleyArray`)
-* Emma Cooper (:ghuser:`eccoope`)
 * Areeba Turabi (:ghuser:`aturabi`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Taos Transue (:ghuser:`reepoi`)

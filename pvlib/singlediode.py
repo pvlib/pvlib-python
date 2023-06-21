@@ -208,7 +208,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
                       d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
-                      method='newton', method_kwargs={}):
+                      method='newton', method_kwargs=None):
     """
     Find current given any voltage.
 
@@ -278,12 +278,12 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
 
     Specify tolerances and maximum number of iterations:
 
-    >>> i = bishop88_i_from_v(0.0, **args,
+    >>> i = bishop88_i_from_v(0.0, **args, method='newton',
     ...     method_kwargs={'tol': 1e-3, 'rtol': 1e-3, 'maxiter': 20})
 
     Retrieve full output from the root finder:
 
-    >>> i, method_output = bishop88_i_from_v(0.0, **args,
+    >>> i, method_output = bishop88_i_from_v(0.0, **args, method='newton',
     ...     method_kwargs={'full_output': True})
     """
     # collect args
@@ -291,6 +291,11 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
             resistance_shunt, nNsVth, d2mutau, NsVbi,
             breakdown_factor, breakdown_voltage, breakdown_exp)
     method = method.lower()
+
+    # method_kwargs create dict if not provided
+    # this pattern avoids bugs with Mutable Default Parameters
+    if not method_kwargs:
+        method_kwargs = {}
 
     def fv(x, v, *a):
         # calculate voltage residual given diode voltage "x"
@@ -338,7 +343,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
                       d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
-                      method='newton', method_kwargs={}):
+                      method='newton', method_kwargs=None):
     """
     Find voltage given any current.
 
@@ -408,12 +413,12 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 
     Specify tolerances and maximum number of iterations:
 
-    >>> v = bishop88_v_from_i(0.0, **args,
+    >>> v = bishop88_v_from_i(0.0, **args, method='newton',
     ...     method_kwargs={'tol': 1e-3, 'rtol': 1e-3, 'maxiter': 20})
 
     Retrieve full output from the root finder:
 
-    >>> v, method_output = bishop88_v_from_i(0.0, **args,
+    >>> v, method_output = bishop88_v_from_i(0.0, **args, method='newton',
     ...     method_kwargs={'full_output': True})
     """
     # collect args
@@ -421,6 +426,12 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
             resistance_shunt, nNsVth, d2mutau, NsVbi, breakdown_factor,
             breakdown_voltage, breakdown_exp)
     method = method.lower()
+
+    # method_kwargs create dict if not provided
+    # this pattern avoids bugs with Mutable Default Parameters
+    if not method_kwargs:
+        method_kwargs = {}
+
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 
@@ -466,7 +477,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 def bishop88_mpp(photocurrent, saturation_current, resistance_series,
                  resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
                  breakdown_factor=0., breakdown_voltage=-5.5,
-                 breakdown_exp=3.28, method='newton', method_kwargs={}):
+                 breakdown_exp=3.28, method='newton', method_kwargs=None):
     """
     Find max power point.
 
@@ -535,19 +546,25 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
 
     Specify tolerances and maximum number of iterations:
 
-    >>> i_mp, v_mp, p_mp = bishop88_mpp(**args,
+    >>> i_mp, v_mp, p_mp = bishop88_mpp(**args, method='newton',
     ...     method_kwargs={'tol': 1e-3, 'rtol': 1e-3, 'maxiter': 20})
 
     Retrieve full output from the root finder:
 
     >>> (i_mp, v_mp, p_mp), method_output = bishop88_mpp(**args,
-    ...     method_kwargs={'full_output': True})
+    ...     method='newton', method_kwargs={'full_output': True})
     """
     # collect args
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth, d2mutau, NsVbi, breakdown_factor,
             breakdown_voltage, breakdown_exp)
     method = method.lower()
+
+    # method_kwargs create dict if not provided
+    # this pattern avoids bugs with Mutable Default Parameters
+    if not method_kwargs:
+        method_kwargs = {}
+
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
 

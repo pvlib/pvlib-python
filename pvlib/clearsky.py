@@ -13,7 +13,8 @@ from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
 import h5py
 
-from pvlib import atmosphere, tools
+# from pvlib 
+import atmosphere, tools
 from pvlib.tools import _degrees_to_index
 
 
@@ -700,7 +701,7 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
     ----------
     measured : array or Series
         Time series of measured GHI. [W/m2]
-    clearsky : array or Series
+    clear_sky : array or Series
         Time series of the expected clearsky GHI. [W/m2]
     times : DatetimeIndex or None, default None.
         Times of measured and clearsky values. If None the index of measured

@@ -667,6 +667,32 @@ def test_detect_clearsky_nans2():
         meas, cs)
     assert_series_equal(expected, clear_samples, check_dtype=False,
                         check_names=False)
+    
+def test_detect_clearsky_diff_index_lengths(detect_clearsky_data):
+    '''
+    Intended to test the following if/else clauses
+    
+    if not isinstance(clear_sky, pd.Series):
+        clear = pd.Series(clear_sky, index=times)
+    # This clause is designed to address cases where measured has missing time
+    # steps - if this is the case, clear should be set to have the same
+    # missing time intervals as measured. Not doing this may cause issues with
+    # arrays of different lengths when evaluating comparison criteria and
+    # when indexing the Hankel matrix to construct clear_samples
+    elif len(clear_sky.index) != len(times):
+        clear = pd.Series(clear_sky, index=times)
+    else:
+        clear = clear_sky
+    '''
+    expected, cs = detect_clearsky_data
+    expected.drop(index=expected.index[10], inplace=True)
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], times=expected.index,
+        window_length=10)
+    new_expected = np.array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 0.,
+                              0., 0., 0., 1., 1., 1., 1., 1., 1., 1., 1.,
+                              1., 1., 1., 0., 0., 0., 0.])
+    assert (clear_samples.values == new_expected).all()
 
 @pytest.fixture
 def detect_clearsky_helper_data():

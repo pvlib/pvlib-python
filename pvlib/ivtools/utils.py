@@ -150,12 +150,12 @@ def rectify_iv_curve(voltage, current, decimals=None):
     ``rectify_iv_curve`` ensures that the IV curve lies in the first quadrant
     of the (voltage, current) plane. The returned IV curve:
 
-      * increases in voltage
-      * contains no negative current or voltage values
-      * contains no NaNs
-      * contains no points with duplicate voltage values. Where voltage
-        values are repeated, a single data point is substituted with current
-        equal to the average of current at duplicated voltages.
+    * increases in voltage
+    * contains no negative current or voltage values
+    * contains no NaNs
+    * contains no points with duplicate voltage values. Where voltage
+      values are repeated, a single data point is substituted with current
+      equal to the average of current at duplicated voltages.
     """
 
     df = pd.DataFrame(data=np.vstack((voltage, current)).T, columns=['v', 'i'])

@@ -14,7 +14,8 @@ def prepare_curves(params, num_pts):
         params = params[np.newaxis,:]
 
     # get range of currents from 0 to max_isc
-    max_isc = np.max(pvlib.singlediode.bishop88_i_from_v(0.0, *params.T))
+    max_isc = np.max(pvlib.singlediode.bishop88_i_from_v(0.0, *params.T,
+              method='newton')
     currents = np.linspace(0, max_isc, num=num_pts, endpoint=True)
 
     # prepare inputs for bishop88
@@ -26,7 +27,8 @@ def prepare_curves(params, num_pts):
 
     # get voltages for each curve
     # transpose result so each row contains voltages for a single curve
-    voltages = pvlib.singlediode.bishop88_v_from_i(bishop_inputs, *params.T).T
+    voltages = pvlib.singlediode.bishop88_v_from_i(bishop_inputs, *params.T,
+               method='newton').T
 
     return currents, voltages
 

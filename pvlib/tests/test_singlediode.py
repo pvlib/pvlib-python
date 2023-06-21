@@ -462,15 +462,18 @@ def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
     # check kwargs passed to bishop_.* are a subset of the call args
     # since they are called with more keyword arguments
 
-    bishop88_i_from_v(0, **bishop88_arguments, method=method, **method_kwargs)
+    bishop88_i_from_v(0, **bishop88_arguments, method=method,
+                      method_kwargs=method_kwargs)
     _, kwargs = optimizer_mock.call_args
     assert method_kwargs.items() <= kwargs.items()
 
-    bishop88_v_from_i(0, **bishop88_arguments, method=method, **method_kwargs)
+    bishop88_v_from_i(0, **bishop88_arguments, method=method,
+                      method_kwargs=method_kwargs)
     _, kwargs = optimizer_mock.call_args
     assert method_kwargs.items() <= kwargs.items()
 
-    bishop88_mpp(**bishop88_arguments, method=method, **method_kwargs)
+    bishop88_mpp(**bishop88_arguments, method=method,
+                 method_kwargs=method_kwargs)
     _, kwargs = optimizer_mock.call_args
     assert method_kwargs.items() <= kwargs.items()
 
@@ -493,13 +496,16 @@ def test_bishop88_kwargs_fails(method, method_kwargs, bishop88_arguments):
     """test invalid method_kwargs passed onto the optimizer fail"""
 
     pytest.raises(TypeError, bishop88_i_from_v,
-                  0, **bishop88_arguments, method=method, **method_kwargs)
+                  0, **bishop88_arguments, method=method,
+                  method_kwargs=method_kwargs)
 
     pytest.raises(TypeError, bishop88_v_from_i,
-                  0, **bishop88_arguments, method=method, **method_kwargs)
+                  0, **bishop88_arguments, method=method,
+                  method_kwargs=method_kwargs)
 
     pytest.raises(TypeError, bishop88_mpp,
-                  **bishop88_arguments, method=method, **method_kwargs)
+                  **bishop88_arguments, method=method,
+                  method_kwargs=method_kwargs)
 
 
 @pytest.mark.parametrize('method', ['newton', 'brentq'])
@@ -508,7 +514,7 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     method_kwargs = {'full_output': True}
 
     ret_val = bishop88_i_from_v(0, **bishop88_arguments, method=method,
-                                **method_kwargs)
+                                method_kwargs=method_kwargs)
     assert isinstance(ret_val, tuple)  # ret_val must be a tuple
     assert len(ret_val) == 2  # of two elements
     assert isinstance(ret_val[0], float)  # first one has bishop88 result
@@ -517,7 +523,7 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     assert len(ret_val[1]) >= 2
 
     ret_val = bishop88_v_from_i(0, **bishop88_arguments, method=method,
-                                **method_kwargs)
+                                method_kwargs=method_kwargs)
     assert isinstance(ret_val, tuple)  # ret_val must be a tuple
     assert len(ret_val) == 2  # of two elements
     assert isinstance(ret_val[0], float)  # first one has bishop88 result
@@ -526,7 +532,7 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     assert len(ret_val[1]) >= 2
 
     ret_val = bishop88_mpp(**bishop88_arguments, method=method,
-                           **method_kwargs)
+                           method_kwargs=method_kwargs)
     assert isinstance(ret_val, tuple)  # ret_val must be a tuple
     assert len(ret_val) == 2  # of two elements
     assert isinstance(ret_val[0], tuple)  # first one has bishop88 result

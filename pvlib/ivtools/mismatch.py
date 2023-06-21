@@ -63,11 +63,14 @@ def combine_curves(currents, voltages):
     imp = currents[mpp_idx]
     pmp = powers[mpp_idx]
 
+    # we're assuming voltages are decreasing, so combined_voltages
+    # should also be decreasing
+    if not np.all(np.diff(combined_voltages) < 0):
+        raise ValueError("Each row of voltages must be decreasing.")
+
     # get isc
-    # np.interp requires second argument is increasing
-    assert np.all(np.diff(combined_voltages) < 0)
-    # FIXME not sure if I can guarantee that combined_voltages is
-    # decreasing for all inputs
+    # np.interp requires second argument is increasing, so flip
+    # combined_voltages and currents
     isc = np.interp(0., np.flip(combined_voltages), np.flip(currents))
 
     # get voc

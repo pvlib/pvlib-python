@@ -365,17 +365,6 @@ def pvgis_tmy_mapped_columns():
             'wind_speed', 'wind_direction', 'pressure']
 
 
-@fail_on_pvlib_version('0.10')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_pvgis_tmy_variable_map_deprecating_warning_0_10():
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        _ = get_pvgis_tmy(45, 8)
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.epw'
-        _ = read_pvgis_tmy(fn)
-
-
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,

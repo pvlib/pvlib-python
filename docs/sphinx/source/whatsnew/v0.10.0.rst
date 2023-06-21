@@ -13,7 +13,12 @@ Breaking changes
   :py:func:`pvlib.singlediode._lambertw_v_from_i` to match
   :py:func:`pvlib.pvsystem.singlediode`.
   (:issue:`1718`, :pull:`1719`)
-
+* Map wind direction to `wind_direction` instead of `wind_dir` in
+  :py:func:`pvlib.iotools.read_srml` and
+  :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
+* :func:`~pvlib.iotools.get_pvgis_tmy` and :func:`~pvlib.iotools.read_pvgis_tmy`
+  now rename columns to standard pvlib names by default (``map_variables=True``)
+  (:pull:`1772`)
 
 Deprecations
 ~~~~~~~~~~~~
@@ -21,7 +26,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added `map_variables` parameter to :py:func:`pvlib.iotools.read_srml`
+  and :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
 
 Bug fixes
 ~~~~~~~~~
@@ -45,3 +51,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Taos Transue (:ghuser:`reepoi`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

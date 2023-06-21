@@ -307,6 +307,8 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
 
     data = pd.concat(dfs, axis='rows')
 
-    meta = {}
+    meta = {'filetype': filetype,
+            'station': station,
+            'filenames': filenames}
 
     return data, meta

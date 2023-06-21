@@ -4,7 +4,7 @@ import pytest
 
 from pvlib.iotools import srml
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
-                        assert_frame_equal, fail_on_pvlib_version)
+                        fail_on_pvlib_version)
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 
@@ -88,6 +88,16 @@ def test_get_srml():
 @fail_on_pvlib_version('0.11')
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_read_srml_month_from_solardat():
+    url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
+    file_data = srml.read_srml(url)
+    requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
+    assert file_data.equals(requested)
+
+
+@fail_on_pvlib_version('0.11')
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_15_minute_dt_index():
     data = srml.read_srml_month_from_solardat('TW', 2019, 4, 'RQ')
     start = pd.Timestamp('20190401 00:00')
@@ -113,33 +123,28 @@ def test_hourly_dt_index():
     assert (data.index.minute == 0).all()
 
 
-@pytest.fixture
-def index_hourly():
-    return pd.date_range(start='1986-04-01', end='1986-05-31 23:59',
-                         freq='1h', tz='Etc/GMT+8')
-
-
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_srml_hourly(index_hourly):
+def test_get_srml_hourly():
     data, meta = data, meta = srml.get_srml(station='CD', start='1986-04-01',
                                             end='1986-05-31', filetype='PH')
-    assert_index_equal(data.index, index_hourly)
-
-
-@pytest.fixture
-def index_minute():
-    return pd.date_range(start='2018-01-01', end='2018-01-31 23:59',
-                         freq='1min', tz='Etc/GMT+8')
+    expected_index = pd.date_range(start='1986-04-01', end='1986-05-31 23:59',
+                                   freq='1h', tz='Etc/GMT+8')
+    assert_index_equal(data.index, expected_index)
 
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_srml_minute(index_minute):
+def test_get_srml_minute():
     data_read = srml.read_srml(srml_testfile)
     data_get, meta = srml.get_srml(station='EU', start='2018-01-01',
                                    end='2018-01-31', filetype='PO')
-    assert_index_equal(data_get.index, index_minute)
+    expected_index = pd.date_range(start='2018-01-01', end='2018-01-31 23:59',
+                                   freq='1min', tz='Etc/GMT+8')
+    assert_index_equal(data_get.index, expected_index)
     assert all([c in data_get.columns for c in data_read.columns])
     # Check that all indices in example file are present in remote file
     assert data_read.index.isin(data_get.index).all()
+    assert meta['station'] == 'EU'
+    assert meta['filetype'] == 'PO'
+    assert meta['filenames'] == ['EUPO1801.txt']

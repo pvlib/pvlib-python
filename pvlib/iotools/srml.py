@@ -234,7 +234,7 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
              url="http://solardat.uoregon.edu/download/Archive/"):
     """Request data from UoO SRML and read it into a Dataframe.
 
-    The Univeristy of Oregon Solar Radiation Monitoring Laboratory (SRML) is
+    The University of Oregon Solar Radiation Monitoring Laboratory (SRML) is
     described in [1]_. A list of stations can be found in [2]_.
 
     Parameters

@@ -13,8 +13,7 @@ from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
 import h5py
 
-# from pvlib 
-import atmosphere, tools
+from pvlib import atmosphere, tools
 from pvlib.tools import _degrees_to_index
 
 
@@ -674,7 +673,7 @@ def _clear_sample_index(clear_windows, samples_per_window, gaps, H, align):
     return clear_samples
 
 
-def detect_clearsky(measured, clear_sky, times=None, window_length=10,
+def detect_clearsky(measured, clearsky, times=None, window_length=10,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
@@ -701,7 +700,7 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
     ----------
     measured : array or Series
         Time series of measured GHI. [W/m2]
-    clear_sky : array or Series
+    clearsky : array or Series
         Time series of the expected clearsky GHI. [W/m2]
     times : DatetimeIndex or None, default None.
         Times of measured and clearsky values. If None the index of measured
@@ -798,17 +797,17 @@ def detect_clearsky(measured, clear_sky, times=None, window_length=10,
     else:
         meas = measured
 
-    if not isinstance(clear_sky, pd.Series):
-        clear = pd.Series(clear_sky, index=times)
+    if not isinstance(clearsky, pd.Series):
+        clear = pd.Series(clearsky, index=times)
     # This clause is designed to address cases where measured has missing time
     # steps - if this is the case, clear should be set to have the same
     # missing time intervals as measured. Not doing this may cause issues with
     # arrays of different lengths when evaluating comparison criteria and
     # when indexing the Hankel matrix to construct clear_samples
-    elif len(clear_sky.index) != len(times):
-        clear = pd.Series(clear_sky, index=times)
+    elif len(clearsky.index) != len(times):
+        clear = pd.Series(clearsky, index=times)
     else:
-        clear = clear_sky
+        clear = clearsky
 
     sample_interval, samples_per_window = \
         tools._get_sample_intervals(times, window_length)

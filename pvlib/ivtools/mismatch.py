@@ -3,8 +3,8 @@ The `mismatch` module contains functions for combining curves in
 series using the single diode model.
 """
 
-import pvlib
 import numpy as np
+from pvlib.singlediode import bishop88_i_from_v, bishop88_v_from_i
 
 
 def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
@@ -58,11 +58,11 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     Notes
     -----
     This function assumes a simplified reverse bias model. When using
-    :func:`pvlib.pvsystem.bishop88_v_from_i`, `breakdown_factor` is left
-    at the default value, which excludes the reverse bias term from the
-    model. Instead, any returned voltages that are less than
+    :func:`pvlib.singlediode.bishop88_v_from_i`, `breakdown_factor` is
+    left at the default value, which excludes the reverse bias term from
+    the model. Instead, any returned voltages that are less than
     `breakdown_voltage` are replaced by `breakdown_voltage`, yielding a
-    vertical asymptote at `breakdown_voltage`.
+    vertical line at `breakdown_voltage`.
 
     """
 

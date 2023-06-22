@@ -79,7 +79,7 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
 
     # get range of currents from 0 to max_isc
     max_isc = np.max(pvlib.singlediode.bishop88_i_from_v(0.0, *params.T,
-              method='newton')
+              method='newton'))
     currents = np.linspace(0, max_isc, num=num_pts, endpoint=True)
 
     # prepare inputs for bishop88

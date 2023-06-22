@@ -68,21 +68,21 @@ def parse_panond(fbuf):
 
     Notes
     -----
-    The parser was intended for use with .pan and .ond files that were created
+    The parser is intended for use with .pan and .ond files that were created
     for use by PVsyst. At time of publication, no documentation for these
     files was available. So, this parser is based on inferred logic, rather
     than anything specified by PVsyst.
 
     The parser assumes that the file being parsed uses indendation of two
-    spaces ('  ') to create new level in a nested dicitonary, and that
+    spaces ('  ') to create new level in a nested dictionary, and that
     key/values pairs of interest are separated using '='. This further means
-    that lines not containing '=' were ommitted from the final returned
+    that lines not containing '=' were omitted from the final returned
     dictionary.
 
     Additionally, the indented lines often contain values themselves. This
-    leads to a conflict with the .pan/.ond file and the ability of nested
-    dicitonaries to capture that information. The solution implemented here is
-    to repeat that key to the new nested dictioary within that new level.
+    leads to a conflict with the .pan/.ond file and the ability of nested a
+    dictionary to capture that information. The solution implemented here is
+    to repeat that key to the new nested dictionary within that new level.
     Example below.
 
     Sample file:
@@ -177,9 +177,9 @@ def read_panond(file):
 
     Notes
     -----
-    The read function simply converts a file path to a file-like object and
-    passes it to the parser. At time of creation, tested .pan/.ond files used
-    UTF-8 encoding.
+    The read_panond function simply converts a file path to a file-like object,
+    passes it to parse-panond, and returns the file content. At time of
+    creation, tested .pan/.ond files used UTF-8 encoding.
 
     See Also
     --------

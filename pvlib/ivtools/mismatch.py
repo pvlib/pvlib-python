@@ -64,14 +64,7 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     `breakdown_voltage` are replaced by `breakdown_voltage`, yielding a
     vertical asymptote at `breakdown_voltage`.
 
-
     """
-    # params is an n x 5 array where each row corresponds to one of
-    # the n curves' five defining parameters (photocurrent, saturation
-    # current, series resistance, shunt resistance, nNsVth)
-    # num_pts is the number of points you want calculated for each curve
-    # (this will also be the number of points in the aggregate curve)
-    # breakdown_voltage is the asymptote we use left of the y-axis
 
     # in case params is a list containing scalars, add a dimension
     if len(np.shape(params)) == 1:
@@ -90,6 +83,8 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     # there is a row for each current value
 
     # get voltages for each curve
+    # (note: expecting to vectorize for both the inputted currents and
+    # the inputted curve parameters)
     # transpose result so each row contains voltages for a single curve
     voltages = pvlib.singlediode.bishop88_v_from_i(bishop_inputs, *params.T,
                method='newton').T
@@ -152,10 +147,6 @@ def combine_curves(currents, voltages):
     in.
 
     """
-    # currents is a 1D array that contains a range from 0 to max_isc
-    # voltages is a 2D array where each row corresponds to the
-    # associated voltages of a single curve (should be n by
-    # len(currents), where n is the number of curves we're summing over)
 
     currents = np.asarray(currents)
     voltages = np.asarray(voltages)
@@ -180,7 +171,6 @@ def combine_curves(currents, voltages):
     # should also be decreasing
     if not np.all(np.diff(combined_voltages) < 0):
         raise ValueError("Each row of voltages array must be decreasing.")
-
     # get isc
     # np.interp requires second argument is increasing, so flip
     # combined_voltages and currents

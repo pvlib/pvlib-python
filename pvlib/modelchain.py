@@ -450,7 +450,8 @@ class ModelChainResult:
 
         else:
             array_attrs[0] = \
-                ([f'  {attr} \n {_df_head(_getmcattr(self, attr))} \n'
+                ([f'  {attr} \n' +
+                  f'{_df_head(_getmcattr(self, attr))} \n'
                  for attr in per_array_attrs
                  if hasattr(self, attr)])
 

@@ -18,6 +18,14 @@ Functions relevant for single diode models.
    pvsystem.max_power_point
    ivtools.sdm.pvsyst_temperature_coeff
 
+Functions for combining IV curves in series.
+
+.. autosummary:: 
+   :toctree: ../generated/
+
+   ivtools.mismatch.prepare_curves
+   ivtools.mismatch.combine_curves
+
 Low-level functions for solving the single diode equation.
 
 .. autosummary::

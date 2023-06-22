@@ -639,10 +639,8 @@ def _prepare_newton_inputs(i_or_v_tup, args, v0, method_kwargs):
         v0 = np.broadcast_to(v0, shape).copy()
 
     # set abs tolerance and maxiter from method_kwargs if not provided
-    method_kwargs['tol'] = \
-        method_kwargs.pop('tol', NEWTON_DEFAULT_PARAMS['tol'])
-    method_kwargs['maxiter'] = \
-        method_kwargs.pop('maxiter', NEWTON_DEFAULT_PARAMS['maxiter'])
+    # apply defaults, but giving priority to user-specified values
+    method_kwargs = {**NEWTON_DEFAULT_PARAMS, **method_kwargs}
 
     return args, v0, method_kwargs
 

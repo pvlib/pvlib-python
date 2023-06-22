@@ -10,7 +10,8 @@ from pvlib.singlediode import bishop88_i_from_v, bishop88_v_from_i
 def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     """
     Calculates currents and voltages on IV curves with the given
-    parameters, using the single diode equation.
+    parameters, using the single diode equation. Returns values
+    in format needed for inputs to :func:`combine_curves`.
 
     Parameters
     ----------
@@ -42,27 +43,27 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
 
     breakdown_voltage : float
         Vertical asymptote to use left of the y-axis. Any voltages that
-        are smaller than `breakdown_voltage` will be overwritten by it.
+        are smaller than ``breakdown_voltage`` will be replaced by it.
 
     Returns
     -------
     tuple
         currents : np.ndarray
-            A 1D array of current values. Has shape (`num_pts`,).
+            A 1D array of current values. Has shape (``num_pts``,).
 
         voltages : np.ndarray
             A 2D array of voltage values, where each row corresponds to
-            a single IV curve. Has shape (:math:`n`, `num_pts`), where
+            a single IV curve. Has shape (:math:`n`, ``num_pts``), where
             :math:`n` is the number of IV curves passed in.
 
     Notes
     -----
     This function assumes a simplified reverse bias model. When using
-    :func:`pvlib.singlediode.bishop88_v_from_i`, `breakdown_factor` is
+    :func:`pvlib.singlediode.bishop88_v_from_i`, ``breakdown_factor`` is
     left at the default value, which excludes the reverse bias term from
     the model. Instead, any returned voltages that are less than
-    `breakdown_voltage` are replaced by `breakdown_voltage`, yielding a
-    vertical line at `breakdown_voltage`.
+    ``breakdown_voltage`` are replaced by it, yielding a vertical line
+    at ``breakdown_voltage``.
 
     """
 
@@ -109,7 +110,7 @@ def combine_curves(currents, voltages):
     voltages : array-like
         A 2D array-like object. Each row corresponds to a single IV
         curve and contains the voltages for that curve that are
-        associated to elements of `currents`. Each row must be
+        associated to elements of ``currents``. Each row must be
         decreasing.
 
     Returns

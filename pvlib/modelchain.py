@@ -415,6 +415,9 @@ class ModelChainResult:
             except:
                 return df
 
+        # weather can be a single DataFrame or a tuple. If single we'll print
+        # it with the System attributes. If a tuple, we'll
+        # print it for each Array
         one_weather = isinstance(self.weather, pd.DataFrame)
 
         if one_weather:
@@ -434,10 +437,13 @@ class ModelChainResult:
 
         array_attrs = {k: [] for k in range(num_arrays)}
 
+        # if/else here avoids various exceptions
         if num_arrays > 1:
             for k in range(num_arrays):
                 for attr in per_array_attrs:
                     if hasattr(self, attr):
+                        # attribute value may not be a tuple even with
+                        # several arrays
                         if type(_getmcattr(self, attr)) is tuple:
                             s = (f'  {attr} \n' +
                                  f'{_df_head(_getmcattr(self, attr)[k])}' +

@@ -399,39 +399,76 @@ class ModelChainResult:
         super().__setattr__(key, value)
 
     def __repr__(self):
-        system_front_attrs = ['weather', 'solar_position', 'airmass']
+        # once per MC
+        mc_front_attrs = ['solar_position', 'airmass']
+        # per array
         per_array_attrs = ['tracking', 'aoi', 'aoi_modifier', 'total_irrad',
             'spectral_modifier', 'effective_irradiance', 'cell_temperature',
             'dc', 'dc_ohmic_losses'
             ]
+        # once per MC
         system_back_attrs = ['losses', 'ac']
+
+        def _df_head(df):
+            try:
+                return df.head()
+            except:
+                return df
+
+        one_weather = isinstance(self.weather, pd.DataFrame)
+
+        if one_weather:
+            mc_front_attrs.insert(0, 'weather')
+        else:
+            per_array_attrs.insert(0, 'weather')
+        # once per MC
+        front_attrs = [f'{attr} \n {_df_head(_getmcattr(self, attr))} \n'
+                       for attr in mc_front_attrs
+                       if hasattr(self, attr)]
+
 
         if type(self.dc) is tuple:
             num_arrays = len(self.dc)
         else:
             num_arrays = 1
 
-        if num_arrays is 1:
-            front_attrs = [f'{attr} \n {_getmcattr(self, attr).head()} \n'
-                           if all(hasattr(self, 'head'), hasattr(self, attr))
-                           else 
-                               f'{attr} \n {_getmcattr(self, attr)} \n'
-                               if hasattr(self, attr)
-                           for attr in system_front_attrs]
-            array_attrs = [f'  {attr} \n {_getmcattr(self, attr)} \n'
-                           for attr in per_array_attrs:
-                           if hasattr(self, attr)]
+        array_attrs = {k: [] for k in range(num_arrays)}
 
-        desc1 = ('ModelChainResult: \n  ')
-        desc2 = ('\n'.join(front_attrs) + '\n')
-        desc3 = ('\n'.join(
-            f'--------------- \n  Array {j} \n --------------- \n'
-            + '\n'.join(array_attrs) + '\n \n'
-            for j in range(num_arrays)))
-        desc4 = ('\n  ' + '\n  '.join(
-            f'{attr} \n {_getmcattr(self, attr)} \n'
+        if num_arrays > 1:
+            for k in range(num_arrays):
+                for attr in per_array_attrs:
+                    if hasattr(self, attr):
+                        if type(_getmcattr(self, attr)) is tuple:
+                            s = (f'  {attr} \n' +
+                                 f'{_df_head(_getmcattr(self, attr)[k])}' +
+                                 ' \n')
+                        else:
+                            s = (f'  {attr} \n' +
+                                 f'{_df_head(_getmcattr(self, attr))}' +
+                                 ' \n')
+                        array_attrs[k].append(s)
+
+        else:
+            array_attrs[0] = \
+                ([f'  {attr} \n {_df_head(_getmcattr(self, attr))} \n'
+                 for attr in per_array_attrs
+                 if hasattr(self, attr)])
+
+
+        desc1 = ('=== ModelChainResult === \n')
+        desc2 = ('\n '.join(front_attrs) + '\n ')
+        desc3 = (f'\n Number of Arrays: {num_arrays} \n')
+        desc4 = ('\n'.join([
+            f'------------------- \n  Array {j} \n' +
+            '------------------- \n' +
+            '\n'.join(array_attrs[j])
+            for j in range(num_arrays)]) +
+            '\n End of Arrays \n' +
+            '------------------- \n')
+        desc5 = ('\n  ' + '\n'.join(
+            f'  {attr} \n' + f'{_df_head(_getmcattr(self, attr))} \n '
             for attr in system_back_attrs))
-        return(desc1 + desc2 + desc3 + desc4)
+        return(desc1 + desc2 + desc3 + desc4 + desc5)
 
 
 class ModelChain:

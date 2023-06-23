@@ -99,27 +99,27 @@ def expect_vr():
                      2.0726611, 1.5653324, 1.2812714, 1.1389995])
 
 
-def test__latlon_to_xy_zero():
+def test_latlon_to_xy_zero():
     coord = [0, 0]
     pos_e = [0, 0]
-    pos = scaling._latlon_to_xy(coord)
+    pos = scaling.latlon_to_xy(coord)
     assert_almost_equal(pos, pos_e, decimal=1)
 
 
-def test__latlon_to_xy_single(coordinates, positions):
+def test_latlon_to_xy_single(coordinates, positions):
     # Must test against central value, because latlon_to_xy uses the mean
     coord = coordinates[1]
-    pos = scaling._latlon_to_xy(coord)
+    pos = scaling.latlon_to_xy(coord)
     assert_almost_equal(pos, positions[1], decimal=1)
 
 
-def test__latlon_to_xy_array(coordinates, positions):
-    pos = scaling._latlon_to_xy(coordinates)
+def test_latlon_to_xy_array(coordinates, positions):
+    pos = scaling.latlon_to_xy(coordinates)
     assert_almost_equal(pos, positions, decimal=1)
 
 
-def test__latlon_to_xy_list(coordinates, positions):
-    pos = scaling._latlon_to_xy(coordinates.tolist())
+def test_latlon_to_xy_list(coordinates, positions):
+    pos = scaling.latlon_to_xy(coordinates.tolist())
     assert_almost_equal(pos, positions, decimal=1)
 
 

@@ -146,7 +146,7 @@ def _compute_vr(positions, cloud_speed, tmscales):
     return vr
 
 
-def _latlon_to_xy(coordinates):
+def latlon_to_xy(coordinates):
     """
     Convert latitude and longitude in degrees to a coordinate system measured
     in meters from zero deg latitude, zero deg longitude.

@@ -18,8 +18,8 @@ Breaking Changes
 * For consistency with the rest of pvlib, the ``tilt`` parameter is renamed
   to ``surface_tilt`` in :py:func:`pvlib.soiling.hsu`. (:issue:`1717`, :pull:`1738`)
 * Several undocumented functions in :py:mod:`pvlib.iotools.midc`,
-  :py:mod:`pvlib.iotools.srml`, :py:mod:`pvlib.iotools.surfrad`, and
-  :py:mod:`pvlib.scaling` are now private. (:issue:`1756`, :pull:`1769`)
+  :py:mod:`pvlib.iotools.srml`, and :py:mod:`pvlib.iotools.surfrad`
+  are now private. (:issue:`1756`, :pull:`1769`)
 * The following, originally deprecated in :ref:`whatsnew_0900`, is now removed:  (:pull:`1770`)
 
   - The :py:class:`pvlib.tracking.SingleAxisTracker` class

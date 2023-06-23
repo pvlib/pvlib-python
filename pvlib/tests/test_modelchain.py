@@ -2065,11 +2065,7 @@ def test__irrad_for_celltemp():
     assert_series_equal(poa[1], effect_irrad)
 
 
-@pytest.mark.parametrize('strategy, strategy_str', [
-    ('south_at_latitude_tilt', 'south_at_latitude_tilt'),
-    (None, 'None')])  # GitHub issue 352
-def test_ModelChain___repr__(sapm_dc_snl_ac_system, location, strategy,
-                             strategy_str):
+def test_ModelChain___repr__(sapm_dc_snl_ac_system, location):
 
     mc = ModelChain(sapm_dc_snl_ac_system, location,
                     name='my mc')

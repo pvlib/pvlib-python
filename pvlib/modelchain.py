@@ -253,6 +253,33 @@ def get_orientation(strategy, **kwargs):
     return surface_tilt, surface_azimuth
 
 
+def _getmcattr(self, attr):
+    """
+    Helper for __repr__ methods, needed to avoid recursion in property
+    lookups
+    """
+    out = getattr(self, attr)
+    try:
+        out = out.__name__
+    except AttributeError:
+        pass
+    return out
+
+
+def _mcr_repr(obj):
+    '''
+    Helper for ModelChainResult.__repr__
+    '''
+    if isinstance(obj, tuple):
+        return "Tuple (" + ", ".join([_mcr_repr(o) for o in obj]) + ")"
+    if isinstance(obj, pd.DataFrame):
+        return "DataFrame ({} rows x {} columns)".format(*obj.shape)
+    if isinstance(obj, pd.Series):
+        return "Series (length {})".format(len(obj))
+    # scalar, None, other?
+    return repr(obj)
+
+    
 # Type for fields that vary between arrays
 T = TypeVar('T')
 
@@ -383,6 +410,33 @@ class ModelChainResult:
         if key in ModelChainResult._per_array_fields:
             value = self._result_type(value)
         super().__setattr__(key, value)
+
+    def __repr__(self):
+        mc_attrs = dir(self)
+
+        def _head(obj):
+            try:
+                return obj[:3]
+            except:
+                return obj
+
+        if type(self.dc) is tuple:
+            num_arrays = len(self.dc)
+        else:
+            num_arrays = 1
+
+        desc1 = ('=== ModelChainResult === \n')
+        desc2 = (f'Number of Arrays: {num_arrays} \n')
+        attr = 'times'
+        desc3 = ('times (first 3)\n' +
+                 f'{_head(_getmcattr(self, attr))}' +
+                 '\n')
+        lines = []
+        for attr in mc_attrs:
+            if not (attr.startswith('_') or attr=='times'):
+                lines.append(f' {attr}: ' + _mcr_repr(getattr(self, attr)))
+        desc4 = '\n'.join(lines)
+        return (desc1 + desc2 + desc3 + desc4)
 
 
 class ModelChain:
@@ -650,18 +704,8 @@ class ModelChain:
             'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
             'spectral_model', 'temperature_model', 'losses_model'
         ]
-
-        def getmcattr(self, attr):
-            """needed to avoid recursion in property lookups"""
-            out = getattr(self, attr)
-            try:
-                out = out.__name__
-            except AttributeError:
-                pass
-            return out
-
         return ('ModelChain: \n  ' + '\n  '.join(
-            f'{attr}: {getmcattr(self, attr)}' for attr in attrs))
+            f'{attr}: {_getmcattr(self, attr)}' for attr in attrs))
 
     @property
     def dc_model(self):

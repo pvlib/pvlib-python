@@ -31,6 +31,8 @@ Enhancements
 ~~~~~~~~~~~~
 * Added `map_variables` parameter to :py:func:`pvlib.iotools.read_srml`
   and :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
+* Improved `ModelChainResult.__repr__` (:pull:`1236`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -55,3 +57,5 @@ Contributors
 ~~~~~~~~~~~~
 * Taos Transue (:ghuser:`reepoi`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+

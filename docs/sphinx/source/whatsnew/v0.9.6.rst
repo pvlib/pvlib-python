@@ -49,6 +49,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added a function :py:func:`pvlib.spectrum.spectral_factor_caballero`
+  to estimate spectral mismatch modifiers from atmospheric conditions. (:pull:`1296`)
 * Added a new irradiance decomposition model :py:func:`pvlib.irradiance.louche`. (:pull:`1705`)
 * Add optional encoding parameter to :py:func:`pvlib.iotools.read_tmy3`.
   (:issue:`1732`, :pull:`1737`)
@@ -112,6 +114,7 @@ Contributors
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
+* Jose Antonio Caballero (:ghuser:`Jacc0027`)
 * Andy Lam (:ghuser:`@andylam598`)
 * :ghuser:`ooprathamm`
 * Kevin Anderson (:ghuser:`kandersolar`)

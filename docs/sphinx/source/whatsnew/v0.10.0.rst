@@ -22,6 +22,9 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* The ``ivcurve_pnts`` parameter of :py:func:`pvlib.pvsystem.singlediode` is
+  deprecated. Use :py:func:`pvlib.pvsystem.v_from_i` and
+  :py:func:`pvlib.pvsystem.i_from_v` instead. (:issue:`1626`, :pull:`1743`)
 
 
 Enhancements

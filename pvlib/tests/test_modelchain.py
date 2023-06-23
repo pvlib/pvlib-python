@@ -2063,3 +2063,40 @@ def test__irrad_for_celltemp():
     assert len(poa) == 2
     assert_series_equal(poa[0], effect_irrad)
     assert_series_equal(poa[1], effect_irrad)
+
+
+@pytest.mark.parametrize('strategy, strategy_str', [
+    ('south_at_latitude_tilt', 'south_at_latitude_tilt'),
+    (None, 'None')])  # GitHub issue 352
+def test_ModelChain___repr__(sapm_dc_snl_ac_system, location, strategy,
+                             strategy_str):
+
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    name='my mc')
+
+    expected = '\n'.join([
+        'ModelChain: ',
+        '  name: my mc',
+        '  clearsky_model: ineichen',
+        '  transposition_model: haydavies',
+        '  solar_position_method: nrel_numpy',
+        '  airmass_model: kastenyoung1989',
+        '  dc_model: sapm',
+        '  ac_model: sandia_inverter',
+        '  aoi_model: sapm_aoi_loss',
+        '  spectral_model: sapm_spectral_loss',
+        '  temperature_model: sapm_temp',
+        '  losses_model: no_extra_losses'
+    ])
+
+    assert mc.__repr__() == expected
+
+
+def test_ModelChainResult___repr__(sapm_dc_snl_ac_system, location, weather):
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.run_model(weather)
+    mcres = mc.results.__repr__()
+    mc_attrs = dir(mc.results)
+    mc_attrs = [a for a in mc_attrs if not a.startswith('_')]
+    assert all([a in mcres for a in mc_attrs])
+    

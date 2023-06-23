@@ -413,11 +413,7 @@ class ModelChainResult:
         super().__setattr__(key, value)
 
     def __repr__(self):
-        # once per MC
-        mc_attrs = ['weather', 'solar_position', 'airmass', 'tracking', 'aoi',
-                    'aoi_modifier', 'total_irrad', 'spectral_modifier',
-                    'effective_irradiance', 'cell_temperature', 'diode_params',
-                    'dc', 'dc_ohmic_losses', 'losses', 'ac']
+        mc_attrs = dir(self)
 
         def _head(obj):
             try:
@@ -433,12 +429,12 @@ class ModelChainResult:
         desc1 = ('=== ModelChainResult === \n')
         desc2 = (f'Number of Arrays: {num_arrays} \n')
         attr = 'times'
-        desc3 = ('Times (first 3)\n' +
+        desc3 = ('times (first 3)\n' +
                  f'{_head(_getmcattr(self, attr))}' +
                  '\n')
         lines = []
         for attr in mc_attrs:
-            if hasattr(self, attr):
+            if not (attr.startswith('_') or attr=='times'):
                 lines.append(f' {attr}: ' + _mcr_repr(getattr(self, attr)))
         desc4 = '\n'.join(lines)
         return (desc1 + desc2 + desc3 + desc4)

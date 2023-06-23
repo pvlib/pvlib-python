@@ -7,11 +7,27 @@ v0.9.6 (Anticipated June 2023)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* After being deprecated for over a year, the :py:mod:`pvlib.forecast` module
+  is now removed entirely.  (:pull:`1766`)
 * Modified the ``surface_azimuth`` parameter in :py:func:`pvlib.iotools.get_pvgis_hourly` to conform to the
   pvlib azimuth convention (counterclockwise from north). Previously 0 degrees represented south.
   (:issue:`1724`, :pull:`1739`)
+* For consistency with the rest of pvlib, the ``pw`` parameters are renamed to
+  ``precipitable_water`` in :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
+  (:pull:`1768`)
 * For consistency with the rest of pvlib, the ``tilt`` parameter is renamed
   to ``surface_tilt`` in :py:func:`pvlib.soiling.hsu`. (:issue:`1717`, :pull:`1738`)
+* The following, originally deprecated in :ref:`whatsnew_0900`, is now removed:  (:pull:`1770`)
+
+  - The :py:class:`pvlib.tracking.SingleAxisTracker` class
+  - The various model-specific :py:class:`~pvlib.pvsystem.PVSystem` inverter
+    and cell temperature methods
+  - Attribute "pass-through" from :py:class:`~pvlib.modelchain.ModelChain`
+    to :py:class:`~pvlib.modelchain.ModelChainResult`
+  - Attribute "pass-through" from :py:class:`~pvlib.pvsystem.PVSystem`
+    to :py:class:`~pvlib.pvsystem.Array`
+  - The ``eta_m`` parameter in :py:func:`pvlib.temperature.pvsyst_cell`
+
 
 Deprecations
 ~~~~~~~~~~~~
@@ -57,6 +73,9 @@ Bug fixes
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
 * ``d2mutau`` and ``NsVbi`` were hardcoded in :py:func:`pvlib.pvsystem.max_power_point` instead of
   passing through the arguments to the function. (:pull:`1733`)
+* :py:func:`pvlib.iam.physical` no longer returns NaN when ``n=1`` and ``aoi>90``.
+  This bug was introduced in v0.9.5.  (:issue:`1706`, :pull:`1707`)
+  
 
 Testing
 ~~~~~~~
@@ -74,6 +93,9 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
+* With the removal of :py:mod:`pvlib.forecast`, the following packages are no
+  longer listed as (optional) dependencies: ``netCDF4``, ``cftime``, and ``siphon``.
+  (:pull:`1766`)
 
 
 Contributors

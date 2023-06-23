@@ -78,8 +78,7 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
         params = params[np.newaxis,:]
 
     # get range of currents from 0 to max_isc
-    max_isc = np.max(pvlib.singlediode.bishop88_i_from_v(0.0, *params.T,
-              method='newton'))
+    max_isc = np.max(bishop88_i_from_v(0.0, *params.T, method='newton'))
     currents = np.linspace(max_isc, 0, num=num_pts, endpoint=True)
 
     # prepare inputs for bishop88
@@ -93,8 +92,7 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     # (note: expecting to vectorize for both the inputted currents and
     # the inputted curve parameters)
     # transpose result so each row contains voltages for a single curve
-    voltages = pvlib.singlediode.bishop88_v_from_i(bishop_inputs, *params.T,
-               method='newton').T
+    voltages = bishop88_v_from_i(bishop_inputs, *params.T, method='newton').T
 
     # any voltages in array that are smaller than breakdown_voltage are
     # clipped to be breakdown_voltage

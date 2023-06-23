@@ -13,8 +13,8 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     parameters, using the single diode equation, and a simple
     model for reverse bias behavior.
 
-    The current values are linearly spaced from 0 to the maximum Isc for
-    all curves. All curves have the same current values.
+    The current values are linearly spaced from the maximum Isc for all
+    curves to 0. All curves have the same current values.
 
     Returns values in format needed for inputs to
     :func:`combine_curves`.
@@ -80,7 +80,7 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     # get range of currents from 0 to max_isc
     max_isc = np.max(pvlib.singlediode.bishop88_i_from_v(0.0, *params.T,
               method='newton'))
-    currents = np.linspace(0, max_isc, num=num_pts, endpoint=True)
+    currents = np.linspace(max_isc, 0, num=num_pts, endpoint=True)
 
     # prepare inputs for bishop88
     bishop_inputs = np.array([[currents[idx]]*len(params) for idx in
@@ -110,14 +110,14 @@ def combine_curves(currents, voltages):
     Parameters
     ----------
     currents : array-like
-        A 1D array-like object. Its first element must be zero, and it
-        should be increasing.
+        A 1D array-like object. Its last element must be zero, and it
+        should be decreasing.
 
     voltages : array-like
         A 2D array-like object. Each row corresponds to a single IV
         curve and contains the voltages for that curve that are
         associated to elements of ``currents``. Each row must be
-        decreasing.
+        increasing.
 
     Returns
     -------
@@ -146,7 +146,7 @@ def combine_curves(currents, voltages):
 
     Notes
     -----
-    If the combined curve does not cross the y-axis, then the last (and
+    If the combined curve does not cross the y-axis, then the first (and
     hence largest) current is returned for short circuit current.
 
     The maximum power point that is returned is the maximum power point
@@ -174,20 +174,20 @@ def combine_curves(currents, voltages):
     imp = currents[mpp_idx]
     pmp = powers[mpp_idx]
 
-    # we're assuming voltages are decreasing, so combined_voltages
-    # should also be decreasing
-    if not np.all(np.diff(combined_voltages) < 0):
-        raise ValueError("Each row of voltages array must be decreasing.")
+    # we're assuming voltages are increasing, so combined_voltages
+    # should also be increasing
+    if not np.all(np.diff(combined_voltages) > 0):
+        raise ValueError("Each row of voltages array must be increasing.")
     # get isc
-    # np.interp requires second argument is increasing, so flip
-    # combined_voltages and currents
-    isc = np.interp(0., np.flip(combined_voltages), np.flip(currents))
+    # note that np.interp requires second argument is increasing (which
+    # we just checked)
+    isc = np.interp(0., combined_voltages, currents)
 
-    # the first element of currents must be zero
-    if currents[0] != 0:
-        raise ValueError("First element of currents array must be zero.")
+    # the last element of currents must be zero
+    if currents[-1] != 0:
+        raise ValueError("Last element of currents array must be zero.")
     # get voc
-    voc = combined_voltages[0]
+    voc = combined_voltages[-1]
 
     return {'i_sc': isc, 'v_oc': voc, 'i_mp': imp, 'v_mp': vmp, 'p_mp': pmp,
             'i': currents, 'v': combined_voltages}

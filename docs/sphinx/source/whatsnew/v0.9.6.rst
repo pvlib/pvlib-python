@@ -7,6 +7,8 @@ v0.9.6 (Anticipated June 2023)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* After being deprecated for over a year, the :py:mod:`pvlib.forecast` module
+  is now removed entirely.  (:pull:`1766`)
 * Modified the ``surface_azimuth`` parameter in :py:func:`pvlib.iotools.get_pvgis_hourly` to conform to the
   pvlib azimuth convention (counterclockwise from north). Previously 0 degrees represented south.
   (:issue:`1724`, :pull:`1739`)
@@ -78,6 +80,9 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
+* With the removal of :py:mod:`pvlib.forecast`, the following packages are no
+  longer listed as (optional) dependencies: ``netCDF4``, ``cftime``, and ``siphon``.
+  (:pull:`1766`)
 
 
 Contributors

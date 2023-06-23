@@ -20,8 +20,6 @@ of sources and file formats relevant to solar energy modeling.
    iotools.read_surfrad
    iotools.read_midc
    iotools.read_midc_raw_data_from_nrel
-   iotools.read_ecmwf_macc
-   iotools.get_ecmwf_macc
    iotools.read_crn
    iotools.read_solrad
    iotools.get_psm3

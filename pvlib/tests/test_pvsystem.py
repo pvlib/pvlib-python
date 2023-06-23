@@ -14,11 +14,14 @@ from pvlib import inverter, pvsystem
 from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
+from pvlib import spectrum
 from pvlib.location import Location
 from pvlib.pvsystem import FixedMount
 from pvlib import temperature
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import cosd
+from pvlib.singlediode import VOLTAGE_BUILTIN
+from pvlib.tests.test_singlediode import get_pvsyst_fs_495
 
 
 @pytest.mark.parametrize('iam_model,model_params', [
@@ -253,28 +256,19 @@ def test_PVSystem_multi_array_sapm(sapm_module_params):
         system.sapm(500, temp_cell)
 
 
-@pytest.mark.parametrize('airmass,expected', [
-    (1.5, 1.00028714375),
-    (np.array([[10, np.nan]]), np.array([[0.999535, 0]])),
-    (pd.Series([5]), pd.Series([1.0387675]))
-])
-def test_sapm_spectral_loss(sapm_module_params, airmass, expected):
-
-    out = pvsystem.sapm_spectral_loss(airmass, sapm_module_params)
-
-    if isinstance(airmass, pd.Series):
-        assert_series_equal(out, expected, check_less_precise=4)
-    else:
-        assert_allclose(out, expected, atol=1e-4)
+def test_sapm_spectral_loss_deprecated(sapm_module_params):
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use pvlib.spectrum.spectral_factor_sapm'):
+        pvsystem.sapm_spectral_loss(1, sapm_module_params)
 
 
 def test_PVSystem_sapm_spectral_loss(sapm_module_params, mocker):
-    mocker.spy(pvsystem, 'sapm_spectral_loss')
+    mocker.spy(spectrum, 'spectral_factor_sapm')
     system = pvsystem.PVSystem(module_parameters=sapm_module_params)
     airmass = 2
     out = system.sapm_spectral_loss(airmass)
-    pvsystem.sapm_spectral_loss.assert_called_once_with(airmass,
-                                                        sapm_module_params)
+    spectrum.spectral_factor_sapm.assert_called_once_with(airmass,
+                                                          sapm_module_params)
     assert_allclose(out, 1, atol=0.5)
 
 
@@ -302,12 +296,12 @@ def test_PVSystem_multi_array_sapm_spectral_loss(sapm_module_params):
     ])
 def test_PVSystem_first_solar_spectral_loss(module_parameters, module_type,
                                             coefficients, mocker):
-    mocker.spy(atmosphere, 'first_solar_spectral_correction')
+    mocker.spy(spectrum, 'spectral_factor_firstsolar')
     system = pvsystem.PVSystem(module_parameters=module_parameters)
     pw = 3
     airmass_absolute = 3
     out = system.first_solar_spectral_loss(pw, airmass_absolute)
-    atmosphere.first_solar_spectral_correction.assert_called_once_with(
+    spectrum.spectral_factor_firstsolar.assert_called_once_with(
         pw, airmass_absolute, module_type, coefficients)
     assert_allclose(out, 1, atol=0.5)
 
@@ -1254,6 +1248,43 @@ def test_mpp_floats():
         assert np.isclose(v, expected[k])
 
 
+def test_mpp_recombination():
+    """test max_power_point"""
+    pvsyst_fs_495 = get_pvsyst_fs_495()
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
+        effective_irradiance=pvsyst_fs_495['irrad_ref'],
+        temp_cell=pvsyst_fs_495['temp_ref'],
+        alpha_sc=pvsyst_fs_495['alpha_sc'],
+        gamma_ref=pvsyst_fs_495['gamma_ref'],
+        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
+        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
+        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
+        R_s=pvsyst_fs_495['R_s'],
+        cells_in_series=pvsyst_fs_495['cells_in_series'],
+        EgRef=pvsyst_fs_495['EgRef'])
+    out = pvsystem.max_power_point(
+        IL, I0, Rs, Rsh, nNsVth,
+        d2mutau=pvsyst_fs_495['d2mutau'],
+        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
+        method='brentq')
+    expected_imp = pvsyst_fs_495['I_mp_ref']
+    expected_vmp = pvsyst_fs_495['V_mp_ref']
+    expected_pmp = expected_imp*expected_vmp
+    expected = {'i_mp': expected_imp,
+                'v_mp': expected_vmp,
+                'p_mp': expected_pmp}
+    assert isinstance(out, dict)
+    for k, v in out.items():
+        assert np.isclose(v, expected[k], 0.01)
+    out = pvsystem.max_power_point(
+        IL, I0, Rs, Rsh, nNsVth,
+        d2mutau=pvsyst_fs_495['d2mutau'],
+        NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'],
+        method='newton')
+    for k, v in out.items():
+        assert np.isclose(v, expected[k], 0.01)
+
+
 def test_mpp_array():
     """test max_power_point"""
     IL, I0, Rs, Rsh, nNsVth = (np.array([7, 7]), 6e-7, .1, 20, .5)
@@ -1358,8 +1389,9 @@ def test_singlediode_floats():
 
 
 def test_singlediode_floats_ivcurve():
-    out = pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
-                               method='lambertw')
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        out = pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
+                                   method='lambertw')
     expected = {'i_xx': 4.264060478,
                 'i_mp': 6.136267360,
                 'v_oc': 8.106300147,
@@ -1391,8 +1423,9 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
-    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
-                               method='lambertw')
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
+                                   method='lambertw')
 
     expected = OrderedDict([('i_sc', array([0., 3.01079860, 6.00726296])),
                             ('v_oc', array([0., 9.96959733, 10.29603253])),
@@ -1411,7 +1444,8 @@ def test_singlediode_series_ivcurve(cec_module_params):
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)
 
-    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
 
     expected['i_mp'] = pvsystem.i_from_v(out['v_mp'], IL, I0, Rs, Rsh, nNsVth,
                                          method='lambertw')
@@ -1424,6 +1458,14 @@ def test_singlediode_series_ivcurve(cec_module_params):
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-6)
+
+
+@fail_on_pvlib_version('0.11')
+@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
+def test_singlediode_ivcurvepnts_deprecation_warning(method):
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
+                             method=method)
 
 
 def test_scale_voltage_current_power():
@@ -1481,20 +1523,6 @@ def test_PVSystem_get_ac_sandia(cec_inverter_parameters, mocker):
     pdcs = idcs * vdcs
     pacs = system.get_ac('sandia', pdcs, v_dc=vdcs)
     inv_fun.assert_called_once()
-    assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
-
-
-@fail_on_pvlib_version('0.10')
-def test_PVSystem_snlinverter(cec_inverter_parameters):
-    system = pvsystem.PVSystem(
-        inverter=cec_inverter_parameters['Name'],
-        inverter_parameters=cec_inverter_parameters,
-    )
-    vdcs = pd.Series(np.linspace(0,50,3))
-    idcs = pd.Series(np.linspace(0,11,3))
-    pdcs = idcs * vdcs
-    with pytest.warns(pvlibDeprecationWarning):
-        pacs = system.snlinverter(vdcs, pdcs)
     assert_series_equal(pacs, pd.Series([-0.020000, 132.004308, 250.000000]))
 
 
@@ -1640,9 +1668,6 @@ def test_PVSystem_get_ac_invalid(cec_inverter_parameters):
 def test_PVSystem_creation():
     pv_system = pvsystem.PVSystem(module='blah', inverter='blarg')
     # ensure that parameter attributes are dict-like. GH 294
-    with pytest.warns(pvlibDeprecationWarning):
-        pv_system.module_parameters['pdc0'] = 1
-
     pv_system.inverter_parameters['Paco'] = 1
 
 
@@ -1884,30 +1909,6 @@ def test_Array_get_irradiance(solar_pos):
     assert_series_equal(expected, expected, check_less_precise=5)
 
 
-@fail_on_pvlib_version('0.10')
-@pytest.mark.parametrize('attr', ['module_parameters', 'module', 'module_type',
-                                  'temperature_model_parameters', 'albedo',
-                                  'surface_tilt', 'surface_azimuth',
-                                  'racking_model', 'modules_per_string',
-                                  'strings_per_inverter'])
-def test_PVSystem_multi_array_attributes(attr):
-    array_one = pvsystem.Array(pvsystem.FixedMount())
-    array_two = pvsystem.Array(pvsystem.FixedMount())
-    system = pvsystem.PVSystem(arrays=[array_one, array_two])
-    with pytest.raises(AttributeError):
-        getattr(system, attr)
-
-    with pytest.raises(AttributeError):
-        setattr(system, attr, 'dummy')
-
-    system = pvsystem.PVSystem()
-    with pytest.warns(pvlibDeprecationWarning):
-        getattr(system, attr)
-
-    with pytest.warns(pvlibDeprecationWarning):
-        setattr(system, attr, 'dummy')
-
-
 def test_PVSystem___repr__():
     system = pvsystem.PVSystem(
         module='blah', inverter='blarg', name='pv ftw',
@@ -2138,28 +2139,6 @@ def test_PVSystem_pvwatts_losses(pvwatts_system_defaults, mocker):
     assert out < expected
 
 
-@fail_on_pvlib_version('0.10')
-def test_PVSystem_pvwatts_ac(pvwatts_system_defaults, mocker):
-    mocker.spy(inverter, 'pvwatts')
-    pdc = 50
-    with pytest.warns(pvlibDeprecationWarning):
-        out = pvwatts_system_defaults.pvwatts_ac(pdc)
-    inverter.pvwatts.assert_called_once_with(
-        pdc, **pvwatts_system_defaults.inverter_parameters)
-    assert out < pdc
-
-
-@fail_on_pvlib_version('0.10')
-def test_PVSystem_pvwatts_ac_kwargs(pvwatts_system_kwargs, mocker):
-    mocker.spy(inverter, 'pvwatts')
-    pdc = 50
-    with pytest.warns(pvlibDeprecationWarning):
-        out = pvwatts_system_kwargs.pvwatts_ac(pdc)
-    inverter.pvwatts.assert_called_once_with(
-        pdc, **pvwatts_system_kwargs.inverter_parameters)
-    assert out < pdc
-
-
 def test_PVSystem_num_arrays():
     system_one = pvsystem.PVSystem()
     system_two = pvsystem.PVSystem(arrays=[
@@ -2325,26 +2304,6 @@ def test_Array_dc_ohms_from_percent(mocker):
         array = pvsystem.Array(pvsystem.FixedMount(0, 180),
                                array_losses_parameters={'dc_ohmic_percent': 3})
         out = array.dc_ohms_from_percent()
-
-
-@pytest.mark.parametrize('funcname', ['sapm_celltemp', 'pvsyst_celltemp',
-                                      'faiman_celltemp', 'fuentes_celltemp',
-                                      'noct_sam_celltemp'])
-def test_PVSystem_temperature_deprecated(funcname):
-    temp_model_params = {
-        'a': -3.47, 'b': -0.0594, 'deltaT': 3,  # sapm
-        'noct_installed': 45,  # fuentes
-        'module_efficiency': 0.2, 'noct': 45,  # noct_sam
-    }
-    system = pvsystem.PVSystem(temperature_model_parameters=temp_model_params)
-    func = getattr(system, funcname)
-    index = pd.date_range('2019-01-01', freq='h', periods=5)
-    temps = pd.Series(25, index)
-    irrads = pd.Series(1000, index)
-    winds = pd.Series(1, index)
-
-    with pytest.warns(pvlibDeprecationWarning):
-        func(irrads, temps, winds)
 
 
 @pytest.mark.parametrize('model,keys', [

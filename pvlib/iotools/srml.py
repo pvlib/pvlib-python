@@ -15,7 +15,7 @@ VARIABLE_MAP = {
     '100': 'ghi',
     '201': 'dni',
     '300': 'dhi',
-    '920': 'wind_dir',
+    '920': 'wind_direction',
     '921': 'wind_speed',
     '930': 'temp_air',
     '931': 'temp_dew',
@@ -24,7 +24,7 @@ VARIABLE_MAP = {
 }
 
 
-def read_srml(filename):
+def read_srml(filename, map_variables=True):
     """
     Read University of Oregon SRML 1min .tsv file into pandas dataframe.  The
     SRML is described in [1]_.
@@ -33,13 +33,14 @@ def read_srml(filename):
     ----------
     filename: str
         filepath or url to read for the tsv file.
+    map_variables: bool, default: True
+        When true, renames columns of the DataFrame to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
     data: Dataframe
-        A dataframe with datetime index and all of the variables listed
-        in the `VARIABLE_MAP` dict inside of the map_columns function,
-        along with their associated quality control flags.
+        A dataframe with datetime index
 
     Notes
     -----
@@ -60,11 +61,12 @@ def read_srml(filename):
        `http://solardat.uoregon.edu/ <http://solardat.uoregon.edu/>`_
     """
     tsv_data = pd.read_csv(filename, delimiter='\t')
-    data = format_index(tsv_data)
+    data = _format_index(tsv_data)
     # Drop day of year and time columns
     data = data[data.columns[2:]]
 
-    data = data.rename(columns=map_columns)
+    if map_variables:
+        data = data.rename(columns=_map_columns)
 
     # Quality flag columns are all labeled 0 in the original data. They
     # appear immediately after their associated variable and are suffixed
@@ -90,7 +92,7 @@ def read_srml(filename):
     return data
 
 
-def map_columns(col):
+def _map_columns(col):
     """Map data element numbers to pvlib names.
 
     Parameters
@@ -118,7 +120,7 @@ def map_columns(col):
         return col
 
 
-def format_index(df):
+def _format_index(df):
     """Create a datetime index from day of year, and time columns.
 
     Parameters
@@ -166,7 +168,8 @@ def format_index(df):
     return df
 
 
-def read_srml_month_from_solardat(station, year, month, filetype='PO'):
+def read_srml_month_from_solardat(station, year, month, filetype='PO',
+                                  map_variables=True):
     """Request a month of SRML data from solardat and read it into
     a Dataframe.  The SRML is described in [1]_.
 
@@ -180,6 +183,9 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO'):
         Month to request data for.
     filetype: string
         SRML file type to gather. See notes for explanation.
+    map_variables: bool, default: True
+        When true, renames columns of the DataFrame to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -214,5 +220,5 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO'):
         year=year % 100,
         month=month)
     url = "http://solardat.uoregon.edu/download/Archive/"
-    data = read_srml(url + file_name)
+    data = read_srml(url + file_name, map_variables=map_variables)
     return data

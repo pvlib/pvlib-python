@@ -28,6 +28,16 @@ def test_read_srml_columns_exist():
     assert '7008_flag' in data.columns
 
 
+def test_read_srml_map_variables_false():
+    data = srml.read_srml(srml_testfile, map_variables=False)
+    assert '1000' in data.columns
+    assert '1000_flag' in data.columns
+    assert '2010' in data.columns
+    assert '2010_flag' in data.columns
+    assert '7008' in data.columns
+    assert '7008_flag' in data.columns
+
+
 def test_read_srml_nans_exist():
     data = srml.read_srml(srml_testfile)
     assert isnan(data['dni_0'][1119])
@@ -60,8 +70,8 @@ def test_read_srml_dt_index(url, year, month):
     ('2001', '2001'),
     ('2017', 'dni_7')
 ])
-def test_map_columns(column, expected):
-    assert srml.map_columns(column) == expected
+def test__map_columns(column, expected):
+    assert srml._map_columns(column) == expected
 
 
 @pytest.mark.remote_data

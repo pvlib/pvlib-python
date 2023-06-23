@@ -267,6 +267,20 @@ def _getmcattr(self, attr):
     return out
 
 
+def _mcr_repr(obj):
+    '''
+    Helper for ModelChainResult.__repr__
+    '''
+    if isinstance(obj, tuple):
+        return "Tuple (" + ", ".join([_mcr_repr(o) for o in obj]) + ")"
+    if isinstance(obj, pd.DataFrame):
+        return "DataFrame ({} rows x {} columns)".format(*obj.shape)
+    if isinstance(obj, pd.Series):
+        return "Series (length {})".format(len(obj))
+    # scalar, None, other?
+    return repr(obj)
+
+    
 # Type for fields that vary between arrays
 T = TypeVar('T')
 
@@ -400,82 +414,34 @@ class ModelChainResult:
 
     def __repr__(self):
         # once per MC
-        mc_front_attrs = ['solar_position', 'airmass']
-        # per array
-        per_array_attrs = ['tracking', 'aoi', 'aoi_modifier', 'total_irrad',
-            'spectral_modifier', 'effective_irradiance', 'cell_temperature',
-            'dc', 'dc_ohmic_losses'
-            ]
-        # once per MC
-        system_back_attrs = ['losses', 'ac']
+        mc_attrs = ['weather', 'solar_position', 'airmass', 'tracking', 'aoi',
+                    'aoi_modifier', 'total_irrad', 'spectral_modifier',
+                    'effective_irradiance', 'cell_temperature', 'diode_params',
+                    'dc', 'dc_ohmic_losses', 'losses', 'ac']
 
-        def _df_head(df):
+        def _head(obj):
             try:
-                return df.head()
+                return obj[:3]
             except:
-                return df
-
-        # weather can be a single DataFrame or a tuple. If single we'll print
-        # it with the System attributes. If a tuple, we'll
-        # print it for each Array
-        one_weather = isinstance(self.weather, pd.DataFrame)
-
-        if one_weather:
-            mc_front_attrs.insert(0, 'weather')
-        else:
-            per_array_attrs.insert(0, 'weather')
-        # once per MC
-        front_attrs = [f'{attr} \n {_df_head(_getmcattr(self, attr))} \n'
-                       for attr in mc_front_attrs
-                       if hasattr(self, attr)]
-
+                return obj
 
         if type(self.dc) is tuple:
             num_arrays = len(self.dc)
         else:
             num_arrays = 1
 
-        array_attrs = {k: [] for k in range(num_arrays)}
-
-        # if/else here avoids various exceptions
-        if num_arrays > 1:
-            for k in range(num_arrays):
-                for attr in per_array_attrs:
-                    if hasattr(self, attr):
-                        # attribute value may not be a tuple even with
-                        # several arrays
-                        if type(_getmcattr(self, attr)) is tuple:
-                            s = (f'  {attr} \n' +
-                                 f'{_df_head(_getmcattr(self, attr)[k])}' +
-                                 ' \n')
-                        else:
-                            s = (f'  {attr} \n' +
-                                 f'{_df_head(_getmcattr(self, attr))}' +
-                                 ' \n')
-                        array_attrs[k].append(s)
-
-        else:
-            array_attrs[0] = \
-                ([f'  {attr} \n' +
-                  f'{_df_head(_getmcattr(self, attr))} \n'
-                 for attr in per_array_attrs
-                 if hasattr(self, attr)])
-
-
         desc1 = ('=== ModelChainResult === \n')
-        desc2 = ('\n '.join(front_attrs) + '\n ')
-        desc3 = (f'\n Number of Arrays: {num_arrays} \n')
-        desc4 = ('\n'.join([
-            f'------------------- \n  Array {j} \n' +
-            '------------------- \n' +
-            '\n'.join(array_attrs[j])
-            for j in range(num_arrays)]) +
-            '\n End of Arrays \n' +
-            '------------------- \n')
-        desc5 = ('\n  ' + '\n'.join(
-            f'  {attr} \n' + f'{_df_head(_getmcattr(self, attr))} \n '
-            for attr in system_back_attrs))
-        return(desc1 + desc2 + desc3 + desc4 + desc5)
+        desc2 = (f'Number of Arrays: {num_arrays} \n')
+        attr = 'times'
+        desc3 = ('Times (first 3)\n' +
+                 f'{_head(_getmcattr(self, attr))}' +
+                 '\n')
+        lines = []
+        for attr in mc_attrs:
+            if hasattr(self, attr):
+                lines.append(f' {attr}: ' + _mcr_repr(getattr(self, attr)))
+        desc4 = '\n'.join(lines)
+        return (desc1 + desc2 + desc3 + desc4)
 
 
 class ModelChain:

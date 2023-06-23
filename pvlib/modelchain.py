@@ -14,8 +14,7 @@ from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
 
 from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
-                   temperature, tools)
-from pvlib.tracking import SingleAxisTracker
+                   temperature)
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
@@ -465,13 +464,6 @@ class ModelChain:
         Name of ModelChain instance.
     """
 
-    # list of deprecated attributes
-    _deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
-                         'aoi', 'aoi_modifier', 'spectral_modifier',
-                         'cell_temperature', 'effective_irradiance',
-                         'dc', 'ac', 'diode_params', 'tracking',
-                         'weather', 'times', 'losses']
-
     def __init__(self, system, location,
                  clearsky_model='ineichen',
                  transposition_model='haydavies',
@@ -503,26 +495,6 @@ class ModelChain:
 
         self.results = ModelChainResult()
 
-    def __getattr__(self, key):
-        if key in ModelChain._deprecated_attrs:
-            msg = f'ModelChain.{key} is deprecated and will' \
-                  f' be removed in v0.10. Use' \
-                  f' ModelChain.results.{key} instead'
-            warnings.warn(msg, pvlibDeprecationWarning)
-            return getattr(self.results, key)
-        # __getattr__ is only called if __getattribute__ fails.
-        # In that case we should check if key is a deprecated attribute,
-        # and fail with an AttributeError if it is not.
-        raise AttributeError
-
-    def __setattr__(self, key, value):
-        if key in ModelChain._deprecated_attrs:
-            msg = f'ModelChain.{key} is deprecated from v0.9. Use' \
-                  f' ModelChain.results.{key} instead'
-            warnings.warn(msg, pvlibDeprecationWarning)
-            setattr(self.results, key, value)
-        else:
-            super().__setattr__(key, value)
 
     @classmethod
     def with_pvwatts(cls, system, location,
@@ -1535,27 +1507,11 @@ class ModelChain:
         self._prep_inputs_solar_pos(weather)
         self._prep_inputs_airmass()
         self._prep_inputs_albedo(weather)
+        self._prep_inputs_fixed()
 
-        # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
-        # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
-        # have different method signatures. Use partial to handle
-        # the differences.
-        if isinstance(self.system, SingleAxisTracker):
-            self._prep_inputs_tracking()
-            get_irradiance = partial(
-                self.system.get_irradiance,
-                self.results.tracking['surface_tilt'],
-                self.results.tracking['surface_azimuth'],
-                self.results.solar_position['apparent_zenith'],
-                self.results.solar_position['azimuth'])
-        else:
-            self._prep_inputs_fixed()
-            get_irradiance = partial(
-                self.system.get_irradiance,
-                self.results.solar_position['apparent_zenith'],
-                self.results.solar_position['azimuth'])
-
-        self.results.total_irrad = get_irradiance(
+        self.results.total_irrad = self.system.get_irradiance(
+            self.results.solar_position['apparent_zenith'],
+            self.results.solar_position['azimuth'],
             _tuple_from_dfs(self.results.weather, 'dni'),
             _tuple_from_dfs(self.results.weather, 'ghi'),
             _tuple_from_dfs(self.results.weather, 'dhi'),
@@ -1636,10 +1592,7 @@ class ModelChain:
         self._prep_inputs_solar_pos(data)
         self._prep_inputs_airmass()
 
-        if isinstance(self.system, SingleAxisTracker):
-            self._prep_inputs_tracking()
-        else:
-            self._prep_inputs_fixed()
+        self._prep_inputs_fixed()
 
         return self
 

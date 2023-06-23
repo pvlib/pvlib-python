@@ -17,6 +17,17 @@ Breaking Changes
   (:pull:`1768`)
 * For consistency with the rest of pvlib, the ``tilt`` parameter is renamed
   to ``surface_tilt`` in :py:func:`pvlib.soiling.hsu`. (:issue:`1717`, :pull:`1738`)
+* The following, originally deprecated in :ref:`whatsnew_0900`, is now removed:  (:pull:`1770`)
+
+  - The :py:class:`pvlib.tracking.SingleAxisTracker` class
+  - The various model-specific :py:class:`~pvlib.pvsystem.PVSystem` inverter
+    and cell temperature methods
+  - Attribute "pass-through" from :py:class:`~pvlib.modelchain.ModelChain`
+    to :py:class:`~pvlib.modelchain.ModelChainResult`
+  - Attribute "pass-through" from :py:class:`~pvlib.pvsystem.PVSystem`
+    to :py:class:`~pvlib.pvsystem.Array`
+  - The ``eta_m`` parameter in :py:func:`pvlib.temperature.pvsyst_cell`
+
 
 Deprecations
 ~~~~~~~~~~~~

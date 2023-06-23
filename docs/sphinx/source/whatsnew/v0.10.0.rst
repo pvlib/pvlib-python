@@ -56,3 +56,4 @@ Contributors
 ~~~~~~~~~~~~
 * Taos Transue (:ghuser:`reepoi`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Abigail Jones (:ghuser:`ajonesr`)

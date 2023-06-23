@@ -54,12 +54,12 @@ Enhancements
 ~~~~~~~~~~~~
 * Exposes several functions useful for bifacial and shading calculations (:pull:`1666`):
 
-  * :py:func:`pvlib.bifacial.utils.bifacial.utils.vf_row_sky_2d1
-  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d_integ
-  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d
-  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d_integ
-  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d
-  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ
+  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d_integ`
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d_integ`
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ`
   * :py:func:`pvlib.shading.ground_angle`
 
 * Added a function :py:func:`pvlib.spectrum.spectral_factor_caballero`

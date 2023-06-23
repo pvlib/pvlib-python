@@ -10,8 +10,13 @@ from pvlib.singlediode import bishop88_i_from_v, bishop88_v_from_i
 def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     """
     Calculates currents and voltages on IV curves with the given
-    parameters, using the single diode equation. Returns values
-    in format needed for inputs to :func:`combine_curves`.
+    parameters, using the single diode equation, and a simple
+    model for reverse bias behavior.
+    
+    The current values are linearly spaced from 0 to the maximum Isc for all curves.
+    All curves have the same current values.
+    
+    Returns values in format needed for inputs to :func:`combine_curves`.
 
     Parameters
     ----------

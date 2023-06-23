@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import itertools
 
 import numpy as np
 from numpy import nan, array
@@ -738,28 +739,220 @@ def test_Array__infer_cell_type():
     assert array._infer_cell_type() is None
 
 
+def _calcparams_correct_Python_type_numeric_type_cases():
+    """
+    An auxilary function used in the unit tests named
+    ``test_calcparams_*_returns_correct_Python_type``.
+
+    Returns
+    -------
+        Returns a list of tuples of functions intended for transforming a
+        Python scalar into a numeric type: scalar, np.ndarray, or pandas.Series
+    """
+    return list(itertools.product(*(2 * [[
+        # scalars (e.g. Python floats)
+        lambda x: x,
+        # np.ndarrays (0d and 1d-arrays)
+        np.array,
+        lambda x: np.array([x]),
+        # pd.Series (1d-arrays)
+        pd.Series
+    ]])))
+
+
+def _calcparams_correct_Python_type_check(out_value, numeric_args):
+    """
+    An auxilary function used in the unit tests named
+    ``test_calcparams_*_returns_correct_Python_type``.
+
+    Parameters
+    ----------
+    out_value: numeric
+        A value returned by a pvsystem.calcparams_ function.
+
+    numeric_args: numeric
+        An iterable of the numeric-type arguments to the pvsystem.calcparams_
+        functions: ``effective_irradiance`` and ``temp_cell``.
+
+    Returns
+    -------
+        bool indicating whether ``out_value`` has the correct Python type
+        based on the Python types of ``effective_irradiance`` and
+        ``temp_cell``.
+    """
+    if any(isinstance(a, pd.Series) for a in numeric_args):
+        return isinstance(out_value, pd.Series)
+    elif any(isinstance(a, np.ndarray) for a in numeric_args):
+        return isinstance(out_value, np.ndarray)  # 0d or 1d-arrays
+    return np.isscalar(out_value)
+
+
+@pytest.mark.parametrize('numeric_type_funcs',
+                         _calcparams_correct_Python_type_numeric_type_cases())
+def test_calcparams_desoto_returns_correct_Python_type(numeric_type_funcs,
+                                                       cec_module_params):
+    numeric_args = dict(
+        effective_irradiance=numeric_type_funcs[0](800.0),
+        temp_cell=numeric_type_funcs[1](25),
+    )
+    out = pvsystem.calcparams_desoto(
+        **numeric_args,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
+
+    assert all(_calcparams_correct_Python_type_check(a, numeric_args.values())
+               for a in out)
+
+
+@pytest.mark.parametrize('numeric_type_funcs',
+                         _calcparams_correct_Python_type_numeric_type_cases())
+def test_calcparams_cec_returns_correct_Python_type(numeric_type_funcs,
+                                                    cec_module_params):
+    numeric_args = dict(
+        effective_irradiance=numeric_type_funcs[0](800.0),
+        temp_cell=numeric_type_funcs[1](25),
+    )
+    out = pvsystem.calcparams_cec(
+        **numeric_args,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        Adjust=cec_module_params['Adjust'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
+
+    assert all(_calcparams_correct_Python_type_check(a, numeric_args.values())
+               for a in out)
+
+
+@pytest.mark.parametrize('numeric_type_funcs',
+                         _calcparams_correct_Python_type_numeric_type_cases())
+def test_calcparams_pvsyst_returns_correct_Python_type(numeric_type_funcs,
+                                                       pvsyst_module_params):
+    numeric_args = dict(
+        effective_irradiance=numeric_type_funcs[0](800.0),
+        temp_cell=numeric_type_funcs[1](25),
+    )
+    out = pvsystem.calcparams_pvsyst(
+        **numeric_args,
+        alpha_sc=pvsyst_module_params['alpha_sc'],
+        gamma_ref=pvsyst_module_params['gamma_ref'],
+        mu_gamma=pvsyst_module_params['mu_gamma'],
+        I_L_ref=pvsyst_module_params['I_L_ref'],
+        I_o_ref=pvsyst_module_params['I_o_ref'],
+        R_sh_ref=pvsyst_module_params['R_sh_ref'],
+        R_sh_0=pvsyst_module_params['R_sh_0'],
+        R_s=pvsyst_module_params['R_s'],
+        cells_in_series=pvsyst_module_params['cells_in_series'],
+        EgRef=pvsyst_module_params['EgRef']
+    )
+
+    assert all(_calcparams_correct_Python_type_check(a, numeric_args.values())
+               for a in out)
+
+
+def test_calcparams_desoto_all_scalars(cec_module_params):
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
+        effective_irradiance=800.0,
+        temp_cell=25,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
+
+    assert np.isclose(IL, 6.036, atol=1e-4, rtol=0)
+    assert np.isclose(I0, 1.94e-9, atol=1e-4, rtol=0)
+    assert np.isclose(Rs, 0.094, atol=1e-4, rtol=0)
+    assert np.isclose(Rsh, 19.65, atol=1e-4, rtol=0)
+    assert np.isclose(nNsVth, 0.473, atol=1e-4, rtol=0)
+
+
+def test_calcparams_cec_all_scalars(cec_module_params):
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_cec(
+        effective_irradiance=800.0,
+        temp_cell=25,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        Adjust=cec_module_params['Adjust'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
+
+    assert np.isclose(IL, 6.036, atol=1e-4, rtol=0)
+    assert np.isclose(I0, 1.94e-9, atol=1e-4, rtol=0)
+    assert np.isclose(Rs, 0.094, atol=1e-4, rtol=0)
+    assert np.isclose(Rsh, 19.65, atol=1e-4, rtol=0)
+    assert np.isclose(nNsVth, 0.473, atol=1e-4, rtol=0)
+
+
+def test_calcparams_pvsyst_all_scalars(pvsyst_module_params):
+    IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
+        effective_irradiance=800.0,
+        temp_cell=50,
+        alpha_sc=pvsyst_module_params['alpha_sc'],
+        gamma_ref=pvsyst_module_params['gamma_ref'],
+        mu_gamma=pvsyst_module_params['mu_gamma'],
+        I_L_ref=pvsyst_module_params['I_L_ref'],
+        I_o_ref=pvsyst_module_params['I_o_ref'],
+        R_sh_ref=pvsyst_module_params['R_sh_ref'],
+        R_sh_0=pvsyst_module_params['R_sh_0'],
+        R_s=pvsyst_module_params['R_s'],
+        cells_in_series=pvsyst_module_params['cells_in_series'],
+        EgRef=pvsyst_module_params['EgRef'])
+
+    assert np.isclose(IL, 4.8200, atol=1e-4, rtol=0)
+    assert np.isclose(I0, 1.47e-7, atol=1e-4, rtol=0)
+    assert np.isclose(Rs, 0.500, atol=1e-4, rtol=0)
+    assert np.isclose(Rsh, 305.757, atol=1e-4, rtol=0)
+    assert np.isclose(nNsVth, 1.7961, atol=1e-4, rtol=0)
+
+
 def test_calcparams_desoto(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
-    effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
-    temp_cell = pd.Series([25, 25, 50], index=times)
+    df = pd.DataFrame({
+        'effective_irradiance': [0.0, 800.0, 800.0],
+        'temp_cell': [25, 25, 50]
+    }, index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
-                                  effective_irradiance,
-                                  temp_cell,
-                                  alpha_sc=cec_module_params['alpha_sc'],
-                                  a_ref=cec_module_params['a_ref'],
-                                  I_L_ref=cec_module_params['I_L_ref'],
-                                  I_o_ref=cec_module_params['I_o_ref'],
-                                  R_sh_ref=cec_module_params['R_sh_ref'],
-                                  R_s=cec_module_params['R_s'],
-                                  EgRef=1.121,
-                                  dEgdT=-0.0002677)
+        df['effective_irradiance'],
+        df['temp_cell'],
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
 
     assert_series_equal(IL, pd.Series([0.0, 6.036, 6.096], index=times),
                         check_less_precise=3)
     assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
                         check_less_precise=3)
-    assert_allclose(Rs, 0.094)
+    assert_series_equal(Rs, pd.Series([0.094, 0.094, 0.094], index=times),
+                        check_less_precise=3)
     assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
                         check_less_precise=3)
     assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
@@ -768,27 +961,31 @@ def test_calcparams_desoto(cec_module_params):
 
 def test_calcparams_cec(cec_module_params):
     times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
-    effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
-    temp_cell = pd.Series([25, 25, 50], index=times)
+    df = pd.DataFrame({
+        'effective_irradiance': [0.0, 800.0, 800.0],
+        'temp_cell': [25, 25, 50]
+    }, index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_cec(
-                                  effective_irradiance,
-                                  temp_cell,
-                                  alpha_sc=cec_module_params['alpha_sc'],
-                                  a_ref=cec_module_params['a_ref'],
-                                  I_L_ref=cec_module_params['I_L_ref'],
-                                  I_o_ref=cec_module_params['I_o_ref'],
-                                  R_sh_ref=cec_module_params['R_sh_ref'],
-                                  R_s=cec_module_params['R_s'],
-                                  Adjust=cec_module_params['Adjust'],
-                                  EgRef=1.121,
-                                  dEgdT=-0.0002677)
+        df['effective_irradiance'],
+        df['temp_cell'],
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        Adjust=cec_module_params['Adjust'],
+        EgRef=1.121,
+        dEgdT=-0.0002677
+    )
 
     assert_series_equal(IL, pd.Series([0.0, 6.036, 6.0896], index=times),
                         check_less_precise=3)
     assert_series_equal(I0, pd.Series([0.0, 1.94e-9, 7.419e-8], index=times),
                         check_less_precise=3)
-    assert_allclose(Rs, 0.094)
+    assert_series_equal(Rs, pd.Series([0.094, 0.094, 0.094], index=times),
+                        check_less_precise=3)
     assert_series_equal(Rsh, pd.Series([np.inf, 19.65, 19.65], index=times),
                         check_less_precise=3)
     assert_series_equal(nNsVth, pd.Series([0.473, 0.473, 0.5127], index=times),
@@ -834,12 +1031,14 @@ def test_calcparams_cec_extra_params_propagation(cec_module_params, mocker):
 
 def test_calcparams_pvsyst(pvsyst_module_params):
     times = pd.date_range(start='2015-01-01', periods=2, freq='12H')
-    effective_irradiance = pd.Series([0.0, 800.0], index=times)
-    temp_cell = pd.Series([25, 50], index=times)
+    df = pd.DataFrame({
+        'effective_irradiance': [0.0, 800.0],
+        'temp_cell': [25, 50]
+    }, index=times)
 
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_pvsyst(
-        effective_irradiance,
-        temp_cell,
+        df['effective_irradiance'],
+        df['temp_cell'],
         alpha_sc=pvsyst_module_params['alpha_sc'],
         gamma_ref=pvsyst_module_params['gamma_ref'],
         mu_gamma=pvsyst_module_params['mu_gamma'],
@@ -855,7 +1054,8 @@ def test_calcparams_pvsyst(pvsyst_module_params):
         IL.round(decimals=3), pd.Series([0.0, 4.8200], index=times))
     assert_series_equal(
         I0.round(decimals=3), pd.Series([0.0, 1.47e-7], index=times))
-    assert_allclose(Rs, 0.500)
+    assert_series_equal(
+        Rs.round(decimals=3), pd.Series([0.500, 0.500], index=times))
     assert_series_equal(
         Rsh.round(decimals=3), pd.Series([1000.0, 305.757], index=times))
     assert_series_equal(
@@ -873,21 +1073,23 @@ def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
     IL, I0, Rs, Rsh, nNsVth = system.calcparams_desoto(effective_irradiance,
                                                        temp_cell)
     pvsystem.calcparams_desoto.assert_called_once_with(
-                                  effective_irradiance,
-                                  temp_cell,
-                                  alpha_sc=cec_module_params['alpha_sc'],
-                                  a_ref=cec_module_params['a_ref'],
-                                  I_L_ref=cec_module_params['I_L_ref'],
-                                  I_o_ref=cec_module_params['I_o_ref'],
-                                  R_sh_ref=cec_module_params['R_sh_ref'],
-                                  R_s=cec_module_params['R_s'],
-                                  EgRef=module_parameters['EgRef'],
-                                  dEgdT=module_parameters['dEgdT'])
+        effective_irradiance,
+        temp_cell,
+        alpha_sc=cec_module_params['alpha_sc'],
+        a_ref=cec_module_params['a_ref'],
+        I_L_ref=cec_module_params['I_L_ref'],
+        I_o_ref=cec_module_params['I_o_ref'],
+        R_sh_ref=cec_module_params['R_sh_ref'],
+        R_s=cec_module_params['R_s'],
+        EgRef=module_parameters['EgRef'],
+        dEgdT=module_parameters['dEgdT']
+    )
+
     assert_allclose(IL, np.array([0.0, 6.036]), atol=1)
-    assert_allclose(I0, 2.0e-9, atol=1.0e-9)
-    assert_allclose(Rs, 0.1, atol=0.1)
+    assert_allclose(I0, np.array([2.0e-9, 2.0e-9]), atol=1.0e-9)
+    assert_allclose(Rs, np.array([0.1, 0.1]), atol=0.1)
     assert_allclose(Rsh, np.array([np.inf, 20]), atol=1)
-    assert_allclose(nNsVth, 0.5, atol=0.1)
+    assert_allclose(nNsVth, np.array([0.5, 0.5]), atol=0.1)
 
 
 def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
@@ -899,23 +1101,24 @@ def test_PVSystem_calcparams_pvsyst(pvsyst_module_params, mocker):
     IL, I0, Rs, Rsh, nNsVth = system.calcparams_pvsyst(effective_irradiance,
                                                        temp_cell)
     pvsystem.calcparams_pvsyst.assert_called_once_with(
-                                  effective_irradiance,
-                                  temp_cell,
-                                  alpha_sc=pvsyst_module_params['alpha_sc'],
-                                  gamma_ref=pvsyst_module_params['gamma_ref'],
-                                  mu_gamma=pvsyst_module_params['mu_gamma'],
-                                  I_L_ref=pvsyst_module_params['I_L_ref'],
-                                  I_o_ref=pvsyst_module_params['I_o_ref'],
-                                  R_sh_ref=pvsyst_module_params['R_sh_ref'],
-                                  R_sh_0=pvsyst_module_params['R_sh_0'],
-                                  R_s=pvsyst_module_params['R_s'],
-                    cells_in_series=pvsyst_module_params['cells_in_series'],
-                                  EgRef=pvsyst_module_params['EgRef'],
-                                  R_sh_exp=pvsyst_module_params['R_sh_exp'])
+        effective_irradiance,
+        temp_cell,
+        alpha_sc=pvsyst_module_params['alpha_sc'],
+        gamma_ref=pvsyst_module_params['gamma_ref'],
+        mu_gamma=pvsyst_module_params['mu_gamma'],
+        I_L_ref=pvsyst_module_params['I_L_ref'],
+        I_o_ref=pvsyst_module_params['I_o_ref'],
+        R_sh_ref=pvsyst_module_params['R_sh_ref'],
+        R_sh_0=pvsyst_module_params['R_sh_0'],
+        R_s=pvsyst_module_params['R_s'],
+        cells_in_series=pvsyst_module_params['cells_in_series'],
+        EgRef=pvsyst_module_params['EgRef'],
+        R_sh_exp=pvsyst_module_params['R_sh_exp']
+    )
 
     assert_allclose(IL, np.array([0.0, 4.8200]), atol=1)
     assert_allclose(I0, np.array([0.0, 1.47e-7]), atol=1.0e-5)
-    assert_allclose(Rs, 0.5, atol=0.1)
+    assert_allclose(Rs, np.array([0.5, 0.5]), atol=0.1)
     assert_allclose(Rsh, np.array([1000, 305.757]), atol=50)
     assert_allclose(nNsVth, np.array([1.6186, 1.7961]), atol=0.1)
 

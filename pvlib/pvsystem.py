@@ -21,6 +21,7 @@ from pvlib._deprecation import deprecated, warn_deprecated
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
 from pvlib.tools import _build_kwargs, _build_args
+import pvlib.tools as tools
 
 
 # a dict of required parameter names for each DC power model
@@ -1540,7 +1541,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     saturation_current : numeric
         Diode saturation curent in amperes
 
-    resistance_series : float
+    resistance_series : numeric
         Series resistance in ohms
 
     resistance_shunt : numeric
@@ -1663,9 +1664,21 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     # use errstate to silence divide by warning
     with np.errstate(divide='ignore'):
         Rsh = R_sh_ref * (irrad_ref / effective_irradiance)
+
     Rs = R_s
 
-    return IL, I0, Rs, Rsh, nNsVth
+    numeric_args = (effective_irradiance, temp_cell)
+    out = (IL, I0, Rs, Rsh, nNsVth)
+
+    if all(map(np.isscalar, numeric_args)):
+        return out
+
+    index = tools.get_pandas_index(*numeric_args)
+
+    if index is None:
+        return np.broadcast_arrays(*out)
+
+    return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
 
 def calcparams_cec(effective_irradiance, temp_cell,
@@ -1744,7 +1757,7 @@ def calcparams_cec(effective_irradiance, temp_cell,
     saturation_current : numeric
         Diode saturation curent in amperes
 
-    resistance_series : float
+    resistance_series : numeric
         Series resistance in ohms
 
     resistance_shunt : numeric
@@ -1861,7 +1874,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     saturation_current : numeric
         Diode saturation current in amperes
 
-    resistance_series : float
+    resistance_series : numeric
         Series resistance in ohms
 
     resistance_shunt : numeric
@@ -1920,7 +1933,18 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
 
     Rs = R_s
 
-    return IL, I0, Rs, Rsh, nNsVth
+    numeric_args = (effective_irradiance, temp_cell)
+    out = (IL, I0, Rs, Rsh, nNsVth)
+
+    if all(map(np.isscalar, numeric_args)):
+        return out
+
+    index = tools.get_pandas_index(*numeric_args)
+
+    if index is None:
+        return np.broadcast_arrays(*out)
+
+    return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
 
 def retrieve_sam(name=None, path=None):

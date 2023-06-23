@@ -29,6 +29,11 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* The return values of :py:func:`pvlib.pvsystem.calcparams_desoto`,
+  :py:func:`pvlib.pvsystem.calcparams_cec`, and
+  :py:func:`pvlib.pvsystem.calcparams_pvsyst` are all numeric types and have
+  the same Python type as the `effective_irradiance` and `temp_cell` parameters. (:issue:`1626`, :pull:`1700`)
+
 * Added `map_variables` parameter to :py:func:`pvlib.iotools.read_srml`
   and :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
 * Allow passing keyword arguments to :py:func:`scipy:scipy.optimize.brentq` and

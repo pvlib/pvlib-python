@@ -12,11 +12,12 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     Calculates currents and voltages on IV curves with the given
     parameters, using the single diode equation, and a simple
     model for reverse bias behavior.
-    
-    The current values are linearly spaced from 0 to the maximum Isc for all curves.
-    All curves have the same current values.
-    
-    Returns values in format needed for inputs to :func:`combine_curves`.
+
+    The current values are linearly spaced from 0 to the maximum Isc for
+    all curves. All curves have the same current values.
+
+    Returns values in format needed for inputs to
+    :func:`combine_curves`.
 
     Parameters
     ----------
@@ -161,7 +162,7 @@ def combine_curves(currents, voltages):
 
     # for each current, add the associated voltages of all the curves
     # in our setup, this means summing each column of the voltage array
-    combined_voltages = np.sum(clipped_voltages, axis=0)
+    combined_voltages = np.sum(voltages, axis=0)
 
     # combined_voltages should now have same shape as currents
     assert np.shape(combined_voltages) == np.shape(currents)

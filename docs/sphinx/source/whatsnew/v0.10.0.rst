@@ -22,6 +22,9 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* The ``ivcurve_pnts`` parameter of :py:func:`pvlib.pvsystem.singlediode` is
+  deprecated. Use :py:func:`pvlib.pvsystem.v_from_i` and
+  :py:func:`pvlib.pvsystem.i_from_v` instead. (:issue:`1626`, :pull:`1743`)
 
 
 Enhancements
@@ -35,6 +38,8 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_v_from_i`. Among others,
   tolerance and number of iterations can be set.
   (:issue:`1249`, :pull:`1764`)
+* Improved `ModelChainResult.__repr__` (:pull:`1236`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -60,3 +65,4 @@ Contributors
 * Taos Transue (:ghuser:`reepoi`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Cliff Hansen (:ghuser:`cwhanse`)

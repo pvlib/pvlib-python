@@ -51,6 +51,18 @@ def test_physical():
     assert_series_equal(iam, expected)
 
 
+def test_physical_n1_L0():
+    aoi = np.array([0, 22.5, 45, 67.5, 90, 100, np.nan])
+    expected = np.array([1, 1, 1, 1, 0, 0, np.nan])
+    iam = _iam.physical(aoi, n=1, L=0)
+    assert_allclose(iam, expected, equal_nan=True)
+
+    aoi = pd.Series(aoi)
+    expected = pd.Series(expected)
+    iam = _iam.physical(aoi, n=1, L=0)
+    assert_series_equal(iam, expected)
+
+
 def test_physical_ar():
     aoi = np.array([0, 22.5, 45, 67.5, 90, 100, np.nan])
     expected = np.array([1, 0.99944171, 0.9917463, 0.91506158, 0, 0, np.nan])

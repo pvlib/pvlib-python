@@ -331,8 +331,9 @@ class Location:
         method : str, default 'pyephem'
             'pyephem', 'spa', or 'geometric'
 
-        kwargs are passed to the relevant functions. See
-        solarposition.sun_rise_set_transit_<method> for details.
+        kwargs :
+            Passed to the relevant functions. See
+            solarposition.sun_rise_set_transit_<method> for details.
 
         Returns
         -------

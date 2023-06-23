@@ -8,6 +8,7 @@ import scipy
 from pvlib import pvsystem
 from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
+from pvlib._deprecation import pvlibDeprecationWarning
 import pytest
 from .conftest import DATA_DIR
 
@@ -176,7 +177,10 @@ def test_ivcurve_pnts_precision(method, precise_iv_curves):
     x, pc = precise_iv_curves
     pc_i, pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
     ivcurve_pnts = len(pc['Currents'][0])
-    outs = pvsystem.singlediode(method=method, ivcurve_pnts=ivcurve_pnts, **x)
+
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        outs = pvsystem.singlediode(method=method, ivcurve_pnts=ivcurve_pnts,
+                                    **x)
 
     assert np.allclose(pc_i, outs['i'], atol=1e-10, rtol=0)
     assert np.allclose(pc_v, outs['v'], atol=1e-10, rtol=0)

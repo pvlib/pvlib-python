@@ -73,8 +73,9 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
 
     """
 
+    params = np.asarray(params)
     # in case params is a list containing scalars, add a dimension
-    if len(np.shape(params)) == 1:
+    if params.ndim == 1:
         params = params[np.newaxis,:]
 
     # get range of currents from 0 to max_isc

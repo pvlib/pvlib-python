@@ -52,6 +52,16 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Exposes several functions useful for bifacial and shading calculations (:pull:`1666`):
+
+  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d_integ`
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d_integ`
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ`
+  * :py:func:`pvlib.shading.ground_angle`
+
 * Added a function :py:func:`pvlib.spectrum.spectral_factor_caballero`
   to estimate spectral mismatch modifiers from atmospheric conditions. (:pull:`1296`)
 * Added a new irradiance decomposition model :py:func:`pvlib.irradiance.louche`. (:pull:`1705`)
@@ -72,6 +82,11 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Corrects an error in view factor calculations which are part of
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`. The error
+  affects rear surface irradiance by a few W/m2. As part of the correction,
+  average view factors are now computed by exact formulas rather than by
+  numerical integration. (:issue:`1665`, :pull:`1666`)
 * `data` can no longer be left unspecified in
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
 * ``d2mutau`` and ``NsVbi`` were hardcoded in :py:func:`pvlib.pvsystem.max_power_point` instead of
@@ -103,6 +118,8 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Lakshya Garg (:ghuser:`Lakshyadevelops`)
 * Adam R. Jensen (:ghuser:`adamrjensen`)
 * Ben Pierce (:ghuser:`bgpierc`)

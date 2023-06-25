@@ -271,3 +271,47 @@ def test_spectral_factor_sapm(sapm_module_params, airmass, expected):
         assert_series_equal(out, expected, check_less_precise=4)
     else:
         assert_allclose(out, expected, atol=1e-4)
+
+
+@pytest.mark.parametrize("module_type,expected", [
+    ('asi', np.array([0.9108, 0.9897, 0.9707, 1.0265, 1.0798, 0.9537])),
+    ('perovskite', np.array([0.9422, 0.9932, 0.9868, 1.0183, 1.0604, 0.9737])),
+    ('cdte', np.array([0.9824, 1.0000, 1.0065, 1.0117, 1.042, 0.9979])),
+    ('multisi', np.array([0.9907, 0.9979, 1.0203, 1.0081, 1.0058, 1.019])),
+    ('monosi', np.array([0.9935, 0.9987, 1.0264, 1.0074, 0.9999, 1.0263])),
+    ('cigs', np.array([1.0014, 1.0011, 1.0270, 1.0082, 1.0029, 1.026])),
+])
+def test_spectral_factor_caballero(module_type, expected):
+    ams = np.array([3.0, 1.5, 3.0, 1.5, 1.5, 3.0])
+    aods = np.array([1.0, 1.0, 0.02, 0.02, 0.08, 0.08])
+    pws = np.array([1.42, 1.42, 1.42, 1.42, 4.0, 1.0])
+    out = spectrum.spectral_factor_caballero(pws, ams, aods,
+                                             module_type=module_type)
+    assert np.allclose(expected, out, atol=1e-3)
+
+
+def test_spectral_factor_caballero_supplied():
+    # use the cdte coeffs
+    coeffs = (
+        1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
+        -0.0182, 0, 0.0095, 0.0068, 0, 1)
+    out = spectrum.spectral_factor_caballero(1, 1, 1, coefficients=coeffs)
+    expected = 1.0021964
+    assert_allclose(out, expected, atol=1e-3)
+
+
+def test_spectral_factor_caballero_supplied_redundant():
+    # Error when specifying both module_type and coefficients
+    coeffs = (
+        1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
+        -0.0182, 0, 0.0095, 0.0068, 0, 1)
+    with pytest.raises(ValueError):
+        spectrum.spectral_factor_caballero(1, 1, 1, module_type='cdte',
+                                           coefficients=coeffs)
+
+
+def test_spectral_factor_caballero_supplied_ambiguous():
+    # Error when specifying neither module_type nor coefficients
+    with pytest.raises(ValueError):
+        spectrum.spectral_factor_caballero(1, 1, 1, module_type=None,
+                                           coefficients=None)

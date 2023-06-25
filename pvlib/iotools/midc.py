@@ -102,7 +102,7 @@ TZ_MAP = {
 }
 
 
-def format_index(data):
+def _format_index(data):
     """Create DatetimeIndex for the Dataframe localized to the timezone provided
     as the label of the second (time) column.
 
@@ -126,7 +126,7 @@ def format_index(data):
     return data
 
 
-def format_index_raw(data):
+def _format_index_raw(data):
     """Create DatetimeIndex for the Dataframe localized to the timezone provided
     as the label of the third column.
 
@@ -200,9 +200,9 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
     """
     data = pd.read_csv(filename, **kwargs)
     if raw_data:
-        data = format_index_raw(data)
+        data = _format_index_raw(data)
     else:
-        data = format_index(data)
+        data = _format_index(data)
     data = data.rename(columns=variable_map)
     return data
 

@@ -65,12 +65,12 @@ def read_srml(filename, map_variables=True):
        <http://solardat.uoregon.edu/ArchivalFiles.html>`_
     """
     tsv_data = pd.read_csv(filename, delimiter='\t')
-    data = format_index(tsv_data)
+    data = _format_index(tsv_data)
     # Drop day of year and time columns
     data = data[data.columns[2:]]
 
     if map_variables:
-        data = data.rename(columns=map_columns)
+        data = data.rename(columns=_map_columns)
 
     # Quality flag columns are all labeled 0 in the original data. They
     # appear immediately after their associated variable and are suffixed
@@ -96,7 +96,7 @@ def read_srml(filename, map_variables=True):
     return data
 
 
-def map_columns(col):
+def _map_columns(col):
     """Map data element numbers to pvlib names.
 
     Parameters
@@ -124,7 +124,7 @@ def map_columns(col):
         return col
 
 
-def format_index(df):
+def _format_index(df):
     """Create a datetime index from day of year, and time columns.
 
     Parameters

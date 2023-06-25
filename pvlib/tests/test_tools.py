@@ -2,6 +2,7 @@ import pytest
 
 from pvlib import tools
 import numpy as np
+import pandas as pd
 
 
 @pytest.mark.parametrize('keys, input_dict, expected', [
@@ -95,3 +96,27 @@ def test_degrees_to_index_1():
     'latitude' or 'longitude' is passed."""
     with pytest.raises(IndexError):  # invalid value for coordinate argument
         tools._degrees_to_index(degrees=22.0, coordinate='width')
+
+
+@pytest.mark.parametrize('args, args_idx', [
+    # no pandas.Series or pandas.DataFrame args
+    ((1,), None),
+    (([1],), None),
+    ((np.array(1),), None),
+    ((np.array([1]),), None),
+    # has pandas.Series or pandas.DataFrame args
+    ((pd.DataFrame([1], index=[1]),), 0),
+    ((pd.Series([1], index=[1]),), 0),
+    ((1, pd.Series([1], index=[1]),), 1),
+    ((1, pd.DataFrame([1], index=[1]),), 1),
+    # first pandas.Series or pandas.DataFrame is used
+    ((1, pd.Series([1], index=[1]), pd.DataFrame([2], index=[2]),), 1),
+    ((1, pd.DataFrame([1], index=[1]), pd.Series([2], index=[2]),), 1),
+])
+def test_get_pandas_index(args, args_idx):
+    index = tools.get_pandas_index(*args)
+
+    if args_idx is None:
+        assert index is None
+    else:
+        pd.testing.assert_index_equal(args[args_idx].index, index)

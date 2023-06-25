@@ -5,6 +5,7 @@ import pytest
 from pvlib.iotools import srml
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
                         fail_on_pvlib_version)
+from pvlib._deprecation import pvlibDeprecationWarning
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 
@@ -91,7 +92,8 @@ def test_get_srml():
 def test_read_srml_month_from_solardat():
     url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
     file_data = srml.read_srml(url)
-    requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
+    with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
+        requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
     assert file_data.equals(requested)
 
 
@@ -99,7 +101,8 @@ def test_read_srml_month_from_solardat():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_15_minute_dt_index():
-    data = srml.read_srml_month_from_solardat('TW', 2019, 4, 'RQ')
+    with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
+        data = srml.read_srml_month_from_solardat('TW', 2019, 4, 'RQ')
     start = pd.Timestamp('20190401 00:00')
     start = start.tz_localize('Etc/GMT+8')
     end = pd.Timestamp('20190430 23:45')
@@ -113,7 +116,8 @@ def test_15_minute_dt_index():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_hourly_dt_index():
-    data = srml.read_srml_month_from_solardat('CD', 1986, 4, 'PH')
+    with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
+        data = srml.read_srml_month_from_solardat('CD', 1986, 4, 'PH')
     start = pd.Timestamp('19860401 00:00')
     start = start.tz_localize('Etc/GMT+8')
     end = pd.Timestamp('19860430 23:00')
@@ -148,3 +152,13 @@ def test_get_srml_minute():
     assert meta['station'] == 'EU'
     assert meta['filetype'] == 'PO'
     assert meta['filenames'] == ['EUPO1801.txt']
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_srml_nonexisting_month_warning():
+    with pytest.warns(UserWarning, match='file was not found: EUPO0912.txt'):
+        # Request data for a period where not all files exist
+        # Eugene (EU) station started reporting 1-minute data in January 2010
+        data, meta = data, meta = srml.get_srml(
+            station='EU', start='2009-12-01', end='2010-01-31', filetype='PO')

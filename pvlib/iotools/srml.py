@@ -237,6 +237,8 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     The University of Oregon Solar Radiation Monitoring Laboratory (SRML) is
     described in [1]_. A list of stations can be found in [2]_.
 
+    Data is returned for the entire months between and including start and end.
+
     Parameters
     ----------
     station : str
@@ -258,7 +260,7 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     data : pd.DataFrame
         Dataframe with data from SRML.
     meta : dict
-        Metadata. Currently no metadata is parsed.
+        Metadata.
 
     Notes
     -----

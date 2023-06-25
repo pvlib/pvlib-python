@@ -827,12 +827,12 @@ def test_orgill_hollands():
     zenith = pd.Series([120, 85, 10, 10], index=index)
     expected = pd.DataFrame(np.array(
         [[0.0,        0.0,        0.0],
-         [108.731366, 40.5234370, 0.405724],
-         [776.155771, 235.635779, 0.718133],
-         [835.696102, 177.000000, 0.768214]]),
+         [108.731366, 40.5234370, 0.405723511],
+         [776.155771, 235.635779, 0.718132729],
+         [835.696102, 177.000000, 0.768214312]]),
         columns=['dni', 'dhi', 'kt'], index=index)
 
-    out = irradiance.boland(ghi, zenith, index)
+    out = irradiance.orgill_hollands(ghi, zenith, index)
 
     assert np.allclose(out, expected)
 

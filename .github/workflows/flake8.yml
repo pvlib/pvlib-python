@@ -2,7 +2,7 @@ name: Python Flake8 Linter
 on:
   pull_request:
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -23,7 +23,7 @@ jobs:
              >> ${{ github.env }}
       - name: Run Flake8 linter
         run: flake8
-               --filename ${{ env.CHANGED_FILENAMES }}
+               ${{ env.CHANGED_FILENAMES }}
                --exclude pvlib/version.py
                --ignore E201,E241,E226,W503,W504
                --max-line-length 79

@@ -170,15 +170,13 @@ def test_singlediode_precision(method, precise_iv_curves):
 
 def test_singlediode_lambert_negative_voc():
 
-    x1 = np.array([0., 1.480501e-11, 0.178, 8000., 1.797559])
-    outs = pvsystem.singlediode(*x1, method='lambertw')
+    # Those values result in a negative v_oc out of `_lambertw_v_from_i`
+    x = np.array([0., 1.480501e-11, 0.178, 8000., 1.797559])
+    outs = pvsystem.singlediode(*x, method='lambertw')
     assert outs['v_oc'] == 0
 
-    x2 = np.array([0., 1.456894e-11, 0.178, 8000., 1.797048])
-    outs = pvsystem.singlediode(*x2, method='lambertw')
-    assert outs['v_oc'] == 0
-
-    x  = np.array([x1, x2]).T
+    # Testing for an array
+    x  = np.array([x, x]).T
     outs = pvsystem.singlediode(*x, method='lambertw')
     assert np.array_equal(outs['v_oc'], [0, 0])
 

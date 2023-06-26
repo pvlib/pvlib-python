@@ -794,6 +794,13 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
     # Compute open circuit voltage
     v_oc = _lambertw_v_from_i(0., **params)
 
+    # Set elements <0 or close to 0 in v_oc to 0
+    if isinstance(v_oc, np.ndarray):
+        v_oc[(v_oc < 0) | ((v_oc > 0) & (v_oc < 1e-12))] = 0.
+    elif isinstance(v_oc, (float, int)):
+        if v_oc < 0 or 0 < v_oc < 1e-12:
+            v_oc = 0.
+
     # Find the voltage, v_mp, where the power is maximized.
     # Start the golden section search at v_oc * 1.14
     p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)

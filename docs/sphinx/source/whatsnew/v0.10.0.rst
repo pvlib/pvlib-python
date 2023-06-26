@@ -49,6 +49,8 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
+* Prevent `v_oc` to be negative in `_lambertw` (:pull:`1782`)
+
 
 Testing
 ~~~~~~~
@@ -71,3 +73,4 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Cédric Leroy (:ghuser:`cedricleroy`)

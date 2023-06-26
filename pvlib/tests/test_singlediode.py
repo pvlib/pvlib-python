@@ -168,6 +168,21 @@ def test_singlediode_precision(method, precise_iv_curves):
     assert np.allclose(pc['i_xx'], outs['i_xx'], atol=1e-6, rtol=0)
 
 
+def test_singlediode_lambert_negative_voc():
+
+    x1 = np.array([0., 1.480501e-11, 0.178, 8000., 1.797559])
+    outs = pvsystem.singlediode(*x1, method='lambertw')
+    assert outs['v_oc'] == 0
+
+    x2 = np.array([0., 1.456894e-11, 0.178, 8000., 1.797048])
+    outs = pvsystem.singlediode(*x2, method='lambertw')
+    assert outs['v_oc'] == 0
+
+    x  = np.array([x1, x2]).T
+    outs = pvsystem.singlediode(*x, method='lambertw')
+    assert np.array_equal(outs['v_oc'], [0, 0])
+
+
 @pytest.mark.parametrize('method', ['lambertw'])
 def test_ivcurve_pnts_precision(method, precise_iv_curves):
     """

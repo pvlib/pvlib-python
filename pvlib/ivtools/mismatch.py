@@ -16,7 +16,7 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
     The current values are linearly spaced from the maximum Isc for all
     curves to 0. All curves have the same current values.
 
-    Returns values in format needed for inputs to
+    Returns currents and voltages in the format needed for input to
     :func:`combine_curves`.
 
     Parameters

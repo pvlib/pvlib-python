@@ -49,7 +49,8 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
-* Prevent `v_oc` to be negative in `_lambertw` (:pull:`1782`)
+* Prevent small negative values of `v_oc` in :py:func:`pvlib.singlediode._lambertw`
+  which result from accumulated roundoff error. (:issue:`1780`, :issue:`1673`, :pull:`1782`)
 
 
 Testing

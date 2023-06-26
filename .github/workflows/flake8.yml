@@ -27,4 +27,3 @@ jobs:
                --exclude pvlib/version.py
                --ignore E201,E241,E226,W503,W504
                --max-line-length 79
-               .

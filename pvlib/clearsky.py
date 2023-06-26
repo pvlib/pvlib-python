@@ -645,10 +645,6 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
 
 
 def _clearsky_get_threshold(sample_interval):
-    # note: are the default values in detect_clearsky still true?
-    # or should they line up with the output of this function when
-    # sample_interval equals 1? (They don't, but maybe that's because of the
-    # differing window lengths?)
     if (sample_interval < 1 or sample_interval > 30):
         raise ValueError
 
@@ -666,8 +662,8 @@ def _clearsky_get_threshold(sample_interval):
             upper_line_length, var_diff, slope_dev)
 
 
-def detect_clearsky(measured, clearsky, times=None, window_length=10,
-                    mean_diff=75, max_diff=75,
+def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
+                    window_length=10, mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
                     return_components=False):
@@ -794,6 +790,17 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     sample_interval, samples_per_window = \
         tools._get_sample_intervals(times, window_length)
+
+    # if infer_limits, find threshold values using sample_interval
+    if infer_limits:
+        window_length, mean_diff, max_diff, lower_line_length, \
+            upper_line_length, var_diff, slope_dev = \
+                _clearsky_get_threshold(sample_interval)
+
+        # recalculate sample_interval, samples_per_window using returned
+        # window_length
+        sample_interval, samples_per_window = \
+            tools._get_sample_intervals(times, window_length)
 
     # generate matrix of integers for creating windows with indexing
     H = hankel(np.arange(samples_per_window),

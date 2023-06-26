@@ -2,7 +2,7 @@ name: Python Flake8 Linter
 on:
   pull_request:
 jobs:
-  lint:
+  flake8-linter:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source

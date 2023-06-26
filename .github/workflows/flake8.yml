@@ -15,12 +15,15 @@ jobs:
         run: pip install flake8
       - name: Setup Flake8 output matcher for PR annotations
         run: echo '::add-matcher::.github/workflows/flake8-pr-annotation-matcher.json'
-      - name: Run Flake8 linter
+      - name: Get names of changed files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: echo CHANGED_FILENAMES="$(gh pr view --repo reepoi/pvlib-python ${{ env.PR_NUMBER }} --json files -q '[.files[].path] | @csv')"
+             >> ${{ github.env }}
+      - name: Run Flake8 linter
         run: flake8
-               --filename $(gh pr view --repo reepoi/pvlib-python ${{ env.PR_NUMBER }} --json files -q '[.files[].path] | @csv')
+               --filename ${{ env.CHANGED_FILENAMES }}
                --exclude pvlib/version.py
                --ignore E201,E241,E226,W503,W504
                --max-line-length 79

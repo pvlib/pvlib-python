@@ -7,6 +7,8 @@ v0.9.6 (Anticipated June 2023)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
+* After being deprecated for over a year, the :py:mod:`pvlib.forecast` module
+  is now removed entirely.  (:pull:`1766`)
 * Modified the ``surface_azimuth`` parameter in :py:func:`pvlib.iotools.get_pvgis_hourly` to conform to the
   pvlib azimuth convention (counterclockwise from north). Previously 0 degrees represented south.
   (:issue:`1724`, :pull:`1739`)
@@ -15,6 +17,20 @@ Breaking Changes
   (:pull:`1768`)
 * For consistency with the rest of pvlib, the ``tilt`` parameter is renamed
   to ``surface_tilt`` in :py:func:`pvlib.soiling.hsu`. (:issue:`1717`, :pull:`1738`)
+* Several undocumented functions in :py:mod:`pvlib.iotools.midc`,
+  :py:mod:`pvlib.iotools.srml`, and :py:mod:`pvlib.iotools.surfrad`
+  are now private. (:issue:`1756`, :pull:`1769`)
+* The following, originally deprecated in :ref:`whatsnew_0900`, is now removed:  (:pull:`1770`)
+
+  - The :py:class:`pvlib.tracking.SingleAxisTracker` class
+  - The various model-specific :py:class:`~pvlib.pvsystem.PVSystem` inverter
+    and cell temperature methods
+  - Attribute "pass-through" from :py:class:`~pvlib.modelchain.ModelChain`
+    to :py:class:`~pvlib.modelchain.ModelChainResult`
+  - Attribute "pass-through" from :py:class:`~pvlib.pvsystem.PVSystem`
+    to :py:class:`~pvlib.pvsystem.Array`
+  - The ``eta_m`` parameter in :py:func:`pvlib.temperature.pvsyst_cell`
+
 
 Deprecations
 ~~~~~~~~~~~~
@@ -36,6 +52,18 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Exposes several functions useful for bifacial and shading calculations (:pull:`1666`):
+
+  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d_integ`
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d_integ`
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ`
+  * :py:func:`pvlib.shading.ground_angle`
+
+* Added a function :py:func:`pvlib.spectrum.spectral_factor_caballero`
+  to estimate spectral mismatch modifiers from atmospheric conditions. (:pull:`1296`)
 * Added a new irradiance decomposition model :py:func:`pvlib.irradiance.louche`. (:pull:`1705`)
 * Add optional encoding parameter to :py:func:`pvlib.iotools.read_tmy3`.
   (:issue:`1732`, :pull:`1737`)
@@ -54,6 +82,11 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Corrects an error in view factor calculations which are part of
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`. The error
+  affects rear surface irradiance by a few W/m2. As part of the correction,
+  average view factors are now computed by exact formulas rather than by
+  numerical integration. (:issue:`1665`, :pull:`1666`)
 * `data` can no longer be left unspecified in
   :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
 * ``d2mutau`` and ``NsVbi`` were hardcoded in :py:func:`pvlib.pvsystem.max_power_point` instead of
@@ -78,10 +111,15 @@ Benchmarking
 
 Requirements
 ~~~~~~~~~~~~
+* With the removal of :py:mod:`pvlib.forecast`, the following packages are no
+  longer listed as (optional) dependencies: ``netCDF4``, ``cftime``, and ``siphon``.
+  (:pull:`1766`)
 
 
 Contributors
 ~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Lakshya Garg (:ghuser:`Lakshyadevelops`)
 * Adam R. Jensen (:ghuser:`adamrjensen`)
 * Ben Pierce (:ghuser:`bgpierc`)
@@ -96,6 +134,7 @@ Contributors
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
+* Jose Antonio Caballero (:ghuser:`Jacc0027`)
 * Andy Lam (:ghuser:`@andylam598`)
 * :ghuser:`ooprathamm`
 * Kevin Anderson (:ghuser:`kandersolar`)

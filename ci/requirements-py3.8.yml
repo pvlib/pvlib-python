@@ -7,7 +7,6 @@ dependencies:
     - cython
     - ephem
     - h5py
-    - netcdf4
     - numba
     - numpy >= 1.16.0
     - pandas >= 0.25.0
@@ -23,7 +22,6 @@ dependencies:
     - pytz
     - requests
     - scipy >= 1.4.0
-    - siphon  # conda-forge
     - statsmodels
     - pip:
         - nrel-pysam>=2.0

@@ -16,14 +16,16 @@ jobs:
       - name: Setup Flake8 output matcher for PR annotations
         run: echo '::add-matcher::.github/workflows/flake8-pr-annotation-matcher.json'
       - name: Get names of changed files
+        id: changed-files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: echo CHANGED_FILENAMES=$(gh pr view --repo pvlib/pvlib-python ${{ env.PR_NUMBER }} --json files -q '.files[].path | select(endswith(".py"))')
-             >> ${{ github.env }}
+        run: echo CHANGED_FILES=$(gh pr view ${{ env.PR_NUMBER }} --repo pvlib/pvlib-python --json files -q '.files[].path | select(endswith(".py"))')
+             >> $GITHUB_OUTPUT
       - name: Run Flake8 linter
+        if: ${{ steps.changed-files.outputs.CHANGED_FILES }} != ''
         run: flake8
-               ${{ env.CHANGED_FILENAMES }}
+               ${{ steps.changed-files.outputs.CHANGED_FILES }}
                --exclude pvlib/version.py
                --ignore E201,E241,E226,W503,W504
                --max-line-length 79

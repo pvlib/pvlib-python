@@ -649,7 +649,8 @@ def _clearsky_get_threshold(sample_interval):
     Returns threshold values for kwargs in detect_clearsky
     """
     if (sample_interval < 1 or sample_interval > 30):
-        raise ValueError
+        raise ValueError("sample_interval must be larger than 1 and
+                          smaller than 30")
 
     data_freq = np.array([1, 5, 15, 30])
 

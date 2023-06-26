@@ -1086,7 +1086,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         * 'capecanaveral1988'
         * 'albany1988'
 
-    return_components: bool (optional, default=False)
+    return_components : bool (optional, default=False)
         Flag used to decide whether to return the calculated diffuse components
         or not.
 

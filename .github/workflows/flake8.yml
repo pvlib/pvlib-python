@@ -19,7 +19,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: echo CHANGED_FILENAMES="$(gh pr view --repo reepoi/pvlib-python ${{ env.PR_NUMBER }} --json files -q '.files[].path')"
+        run: echo CHANGED_FILENAMES="$(gh pr view --repo reepoi/pvlib-python ${{ env.PR_NUMBER }} --json files -q '.files[].path' | xargs)"
              >> ${{ github.env }}
       - name: Run Flake8 linter
         run: flake8

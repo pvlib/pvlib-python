@@ -50,8 +50,6 @@ from pvlib.ivtools.mismatch import prepare_curves, combine_curves
             }
         )
     ])
-
-
 def test_combine(currents, voltages, expected):
     out = combine_curves(currents, voltages)
 

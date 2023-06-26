@@ -644,6 +644,28 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     return clear_samples
 
 
+def _clearsky_get_threshold(sample_interval):
+    # note: are the default values in detect_clearsky still true?
+    # or should they line up with the output of this function when
+    # sample_interval equals 1? (They don't, but maybe that's because of the
+    # differing window lengths?)
+    if (sample_interval < 1 or sample_interval > 30):
+        raise ValueError
+
+    data_freq = np.array([1, 5, 15, 30])
+
+    window_length = np.interp(sample_interval, data_freq, [50, 60, 90, 120])
+    mean_diff = np.interp(sample_interval, data_freq, [75, 75, 75, 75])
+    max_diff = np.interp(sample_interval, data_freq, [60, 65, 75, 90])
+    lower_line_length = np.interp(sample_interval, data_freq, [-45,-45,-45,-45])
+    upper_line_length = np.interp(sample_interval, data_freq, [80, 80, 80, 80])
+    var_diff = np.interp(sample_interval, data_freq, [0.005, 0.01, 0.032, 0.07])
+    slope_dev = np.interp(sample_interval, data_freq, [50, 60, 75, 96])
+
+    return (window_length, mean_diff, max_diff, lower_line_length,
+            upper_line_length, var_diff, slope_dev)
+
+
 def detect_clearsky(measured, clearsky, times=None, window_length=10,
                     mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,

@@ -109,8 +109,6 @@ def test_combine(currents, voltages, expected):
             )
         )
     ])
-
-
 def test_prepare_curves(params, num_pts, breakdown_voltage, expected):
     out = prepare_curves(params, num_pts, breakdown_voltage)
 

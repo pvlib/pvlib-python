@@ -64,11 +64,12 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
 
     Notes
     -----
-    This function assumes a simplified reverse bias model. When using
-    :func:`pvlib.singlediode.bishop88_v_from_i`, ``breakdown_factor`` is
-    left at the default value, which excludes the reverse bias term from
-    the calculation. Instead, any returned voltages that are less than
-    ``breakdown_voltage`` are replaced by it, yielding a vertical line
+    This function assumes a simplified reverse bias model. IV curves are
+    solved using :func:`pvlib.singlediode.bishop88_v_from_i` with
+    ``breakdown_factor`` left at the default value of 0., which excludes
+    the reverse bias term from the calculation. Here, voltages that are
+    less than ``breakdown_voltage`` are set equal to ``breakdown_voltage``
+    effectively modeling the reverse bias curve by a vertical line
     at ``breakdown_voltage``.
 
     """

@@ -76,24 +76,24 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     altitude : float, optional
         Altitude in meters. If None, then the altitude is determined from the
         NASA SRTM database
-    time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
+    time_step : str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
         Time step of the time series, either 1 minute, 15 minute, hourly,
         daily, or monthly.
-    time_ref: str, {'UT', 'TST'}, default: 'UT'
+    time_ref : str, {'UT', 'TST'}, default: 'UT'
         'UT' (universal time) or 'TST' (True Solar Time)
-    verbose: boolean, default: False
+    verbose : boolean, default: False
         Verbose mode outputs additional parameters (aerosols). Only available
         for 1 minute and universal time. See [1]_ for parameter description.
     integrated : boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label: {'right', 'left'}, default: None
+    label : {'right', 'left'}, default: None
         Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
-    map_variables: bool, default: True
+    map_variables : bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-    server: str, default: :const:`pvlib.iotools.sodapro.URL`
+    server : str, default: :const:`pvlib.iotools.sodapro.URL`
         Base url of the SoDa Pro CAMS Radiation API.
     timeout : int, default: 30
         Time in seconds to wait for server response before timeout
@@ -240,10 +240,10 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     integrated : boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label: {'right', 'left'}, default: None
+    label : {'right', 'left'}, default: None
         Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
-    map_variables: bool, default: True
+    map_variables : bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 
@@ -341,10 +341,10 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     integrated : boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label: {'right', 'left}, default: None
+    label : {'right', 'left}, default: None
         Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
-    map_variables: bool, default: True
+    map_variables : bool, default: True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 

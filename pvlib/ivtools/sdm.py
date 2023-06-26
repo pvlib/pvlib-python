@@ -1025,7 +1025,7 @@ def _check_converge(prevparams, result, vmp, imp, i):
 
     Returns
     -------
-    convergeparam: dict containing the following for Imp, Vmp and Pmp:
+    convergeparam : dict containing the following for Imp, Vmp and Pmp:
         - maximum percent difference between measured and modeled values
         - minimum percent difference between measured and modeled values
         - maximum absolute percent difference between measured and modeled

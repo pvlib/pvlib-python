@@ -33,7 +33,7 @@ def read_srml(filename, map_variables=True):
     ----------
     filename : str
         filepath or url to read for the tsv file.
-    map_variables: bool, default: True
+    map_variables : bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 
@@ -183,7 +183,7 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO',
         Month to request data for.
     filetype : string
         SRML file type to gather. See notes for explanation.
-    map_variables: bool, default: True
+    map_variables : bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 

@@ -25,7 +25,7 @@ def prepare_curves(params, num_pts, breakdown_voltage=-0.5):
         An array of parameters representing a set of :math:`n` IV
         curves. The array should contain :math:`n` rows and five
         columns. Each row contains the five parameters needed for a
-        single curve. The parameters should be in the following order:
+        single curve in the following order:
 
             photocurrent : numeric
                 photo-generated current :math:`I_{L}` [A]

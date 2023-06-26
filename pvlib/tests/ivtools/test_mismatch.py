@@ -58,6 +58,16 @@ def test_combine(currents, voltages, expected):
         assert np.all(np.isclose(out[k], v))
 
 
+def test_combine_curves_args_fail():
+    # voltages are not increasing
+    with pytest.raises(ValueError):
+        combine_curves([1,0], [[2,1],[0.1, 1]])
+
+    # currents don't end at zero
+    with pytest.raises(ValueError):
+        combine_curves([1.1,0.1], [[1,2],[3,4]])
+
+
 # inputs to test prepare_curves
 @pytest.mark.parametrize('num_pts, breakdown_voltage, params, expected', [
         # standard use

@@ -2836,7 +2836,7 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
     Returns
     -------
     pdc: numeric
-        DC power.
+        DC power. [W]
 
     References
     ----------

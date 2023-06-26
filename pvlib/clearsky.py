@@ -645,6 +645,9 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
 
 
 def _clearsky_get_threshold(sample_interval):
+    """
+    Returns threshold values for kwargs in detect_clearsky
+    """
     if (sample_interval < 1 or sample_interval > 30):
         raise ValueError
 
@@ -694,6 +697,9 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
     times : DatetimeIndex or None, default None.
         Times of measured and clearsky values. If None the index of measured
         will be used.
+    infer_limits : bool, default False
+        If True, does not use passed in kwargs (or defaults), but instead
+        interpolates these values from Table 1 in [2].
     window_length : int, default 10
         Length of sliding time window in minutes. Must be greater than 2
         periods.
@@ -749,6 +755,9 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
     .. [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
        sky irradiance in time series of GHI measurements" Renewable Energy,
        v90, p. 520-531, 2016.
+    .. [2] Jordan, D.C. and C. Hansen, "Clear-sky detection for PV
+       degradation analysis using multiple regression", Renewable Energy,
+       v209, p. 393-400, 2023.
 
     Notes
     -----
@@ -791,7 +800,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
     sample_interval, samples_per_window = \
         tools._get_sample_intervals(times, window_length)
 
-    # if infer_limits, find threshold values using sample_interval
+    # if infer_limits, find threshold values using the sample interval
     if infer_limits:
         window_length, mean_diff, max_diff, lower_line_length, \
             upper_line_length, var_diff, slope_dev = \

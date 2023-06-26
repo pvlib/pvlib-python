@@ -54,12 +54,12 @@ def read_solrad(filename):
 
     Parameters
     ----------
-    filename: str
+    filename : str
         filepath or url to read for the fixed-width file.
 
     Returns
     -------
-    data: Dataframe
+    data : Dataframe
         A dataframe with DatetimeIndex and all of the variables in the
         file.
 

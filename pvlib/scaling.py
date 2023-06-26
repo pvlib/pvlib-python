@@ -40,10 +40,10 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
     smoothed : numeric or pandas.Series
         The Clear Sky Index time series smoothed for the described plant.
 
-    wavelet: numeric
+    wavelet : numeric
         The individual wavelets for the time series before smoothing.
 
-    tmscales: numeric
+    tmscales : numeric
         The timescales associated with the wavelets in seconds [s].
 
     References
@@ -100,7 +100,7 @@ def _compute_vr(positions, cloud_speed, tmscales):
     cloud_speed : numeric
         Speed of cloud movement in meters per second [m/s].
 
-    tmscales: numeric
+    tmscales : numeric
         The timescales associated with the wavelets in seconds [s].
 
     Returns
@@ -223,11 +223,11 @@ def _compute_wavelet(clearsky_index, dt=None):
 
     Returns
     -------
-    wavelet: numeric
+    wavelet : numeric
         The individual wavelets for the time series. Format follows increasing
         scale (decreasing frequency): [CD1, CD2, ..., CDn, CAn]
 
-    tmscales: numeric
+    tmscales : numeric
         The timescales associated with the wavelets in seconds [s]
 
     References

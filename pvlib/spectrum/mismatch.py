@@ -17,7 +17,7 @@ def get_example_spectral_response(wavelength=None):
 
     Parameters
     ----------
-    wavelength: 1-D sequence of numeric, optional
+    wavelength : 1-D sequence of numeric, optional
         Wavelengths at which spectral response values are generated.
         By default ``wavelength`` is from 280 to 1200 in 5 nm intervals. [nm]
 
@@ -89,13 +89,13 @@ def get_am15g(wavelength=None):
 
     Parameters
     ----------
-    wavelength: 1-D sequence of numeric, optional
+    wavelength : 1-D sequence of numeric, optional
         Wavelengths at which the spectrum is interpolated.
         By default the 2002 wavelengths of the standard are returned. [nm]
 
     Returns
     -------
-    am15g: pandas.Series
+    am15g : pandas.Series
         The AM1.5g standard spectrum indexed by ``wavelength``. [(W/m^2)/nm]
 
     Notes
@@ -147,24 +147,24 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
     Parameters
     ----------
-    sr: pandas.Series
+    sr : pandas.Series
         The relative spectral response of one (photovoltaic) test device.
         The index of the Series must contain wavelength values in nm. [-]
 
-    e_sun: pandas.DataFrame or pandas.Series
+    e_sun : pandas.DataFrame or pandas.Series
         One or more measured solar irradiance spectra in a pandas.DataFrame
         having wavelength in nm as column index.  A single spectrum may be
         be given as a pandas.Series having wavelength in nm as index.
         [(W/m^2)/nm]
 
-    e_ref: pandas.Series, optional
+    e_ref : pandas.Series, optional
         The reference spectrum to use for the mismatch calculation.
         The index of the Series must contain wavelength values in nm.
         The default is the ASTM G173-03 global tilted spectrum. [(W/m^2)/nm]
 
     Returns
     -------
-    smm: pandas.Series or float if a single measured spectrum is provided. [-]
+    smm : pandas.Series or float if a single measured spectrum is provided. [-]
 
     Notes
     -----
@@ -323,7 +323,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
 
     Returns
     -------
-    modifier: array-like
+    modifier : array-like
         spectral mismatch factor (unitless) which can be multiplied
         with broadband irradiance reaching a module's cells to estimate
         effective irradiance, i.e., the irradiance that is converted to
@@ -494,7 +494,7 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
 
     Returns
     -------
-    modifier: numeric
+    modifier : numeric
         spectral mismatch factor (unitless) which is multiplied
         with broadband irradiance reaching a module's cells to estimate
         effective irradiance, i.e., the irradiance that is converted to

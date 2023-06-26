@@ -59,9 +59,9 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
 
     Parameters
     ----------
-    latitude: float
+    latitude : float
         In decimal degrees, between -90 and 90, north is positive (ISO 19115)
-    longitude: float
+    longitude : float
         In decimal degrees, between -180 and 180, east is positive (ISO 19115)
     start: int or datetime like, default: None
         First year of the radiation time series. Defaults to first year
@@ -315,7 +315,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
         ``pvgis_format`` is ``None`` then the file extension will be used to
         determine the PVGIS format to parse. If ``filename`` is a buffer, then
         ``pvgis_format`` is required and must be in ``['csv', 'json']``.
-    map_variables: bool, default True
+    map_variables : bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 
@@ -420,7 +420,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         last year to calculate TMY, must be at least 10 years from first year
     url : str, default: :const:`pvlib.iotools.pvgis.URL`
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
-    map_variables: bool, default True
+    map_variables : bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
     timeout : int, default 30
@@ -581,7 +581,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
         ``outputformat='basic'``, please set ``pvgis_format`` to ``'basic'``.
         If ``filename`` is a buffer, then ``pvgis_format`` is required and must
         be in ``['csv', 'epw', 'json', 'basic']``.
-    map_variables: bool, default True
+    map_variables : bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 

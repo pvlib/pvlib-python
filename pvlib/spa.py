@@ -1061,7 +1061,7 @@ def solar_position(unixtime, lat, lon, elev, pressure, temp, delta_t,
     atmos_refrac : float
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
-    numthreads: int, optional, default 8
+    numthreads : int, optional, default 8
         Number of threads to use for computation if numba>=0.17
         is installed.
     sst : bool, default False

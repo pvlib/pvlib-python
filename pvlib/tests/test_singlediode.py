@@ -74,10 +74,10 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
 
     Parameters
     ----------
-    file_csv: str
+    file_csv : str
         Path to a CSV file of IV curve parameter sets.
 
-    file_json: str
+    file_json : str
         Path to a JSON file of precise IV curves.
 
     Returns

@@ -239,9 +239,9 @@ def parse_psm3(fbuf, map_variables=None):
 
     Parameters
     ----------
-    fbuf: file-like object
+    fbuf : file-like object
         File-like object containing data to read.
-    map_variables: bool
+    map_variables : bool
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable VARIABLE_MAP.
 
@@ -384,9 +384,9 @@ def read_psm3(filename, map_variables=None):
 
     Parameters
     ----------
-    filename: str
+    filename : str
         Filename of a file containing data to read.
-    map_variables: bool
+    map_variables : bool
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable VARIABLE_MAP.
 

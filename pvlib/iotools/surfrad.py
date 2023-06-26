@@ -43,9 +43,9 @@ def read_surfrad(filename, map_variables=True):
 
     Parameters
     ----------
-    filename: str
+    filename : str
         Filepath or URL. URL can be either FTP or HTTP.
-    map_variables: bool
+    map_variables : bool
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 
@@ -53,9 +53,9 @@ def read_surfrad(filename, map_variables=True):
     -------
     Tuple of the form (data, metadata).
 
-    data: Dataframe
+    data : Dataframe
         Dataframe with the fields found below.
-    metadata: dict
+    metadata : dict
         Site metadata included in the file.
 
     Notes
@@ -164,13 +164,13 @@ def _format_index(data):
 
     Parameters
     ----------
-    data: Dataframe
+    data : Dataframe
         Must contain columns 'year', 'jday', 'hour' and
         'minute'.
 
     Return
     ------
-    data: Dataframe
+    data : Dataframe
         Dataframe with a DatetimeIndex localized to UTC.
     """
     year = data.year.apply(str)

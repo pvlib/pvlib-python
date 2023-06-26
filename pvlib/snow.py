@@ -29,7 +29,7 @@ def fully_covered_nrel(snowfall, threshold_snowfall=1.):
 
     Returns
     ----------
-    boolean: Series
+    boolean : Series
         True where the snowfall exceeds the defined threshold to fully cover
         the panel.
 
@@ -170,7 +170,7 @@ def dc_loss_nrel(snow_coverage, num_strings):
     snow_coverage : numeric
         The fraction of row slant height covered by snow at each time step.
 
-    num_strings: int
+    num_strings : int
         The number of parallel-connected strings along a row slant height.
 
     Returns

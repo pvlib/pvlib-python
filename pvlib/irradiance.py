@@ -564,7 +564,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         the reflection coefficient. Must be >=0 and <=1. Will be
         overridden if surface_type is supplied.
 
-    surface_type: None or string, default None
+    surface_type : None or string, default None
         If not None, overrides albedo. String can be one of 'urban',
         'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt', 'concrete',
         'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'.
@@ -906,7 +906,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     dni : numeric
         direct normal irradiance in W/m^2.
 
-    ghi: numeric
+    ghi : numeric
         Global irradiance in W/m^2.
 
     dni_extra : numeric
@@ -2192,9 +2192,9 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
 
     Parameters
     ----------
-    ghi: numeric
+    ghi : numeric
         Global horizontal irradiance in W/m^2.
-    zenith: numeric
+    zenith : numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
     datetime_or_doy : int, float, array, pd.DatetimeIndex
         Day of year or array of days of year e.g.
@@ -2282,9 +2282,9 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
 
     Parameters
     ----------
-    ghi: numeric
+    ghi : numeric
         Global horizontal irradiance. [W/m^2]
-    solar_zenith: numeric
+    solar_zenith : numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
     datetime_or_doy : numeric, pandas.DatetimeIndex
         Day of year or array of days of year e.g.
@@ -2377,23 +2377,23 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
 
     Parameters
     ----------
-    zenith: pd.Series
+    zenith : pd.Series
         True (not refraction-corrected) zenith angles in decimal
         degrees. If Z is a vector it must be of the same size as all
         other vector inputs. Z must be >=0 and <=180.
 
-    transmittance: float
+    transmittance : float
         Atmospheric transmittance between 0 and 1.
 
-    pressure: float, default 101325.0
+    pressure : float, default 101325.0
         Air pressure
 
-    dni_extra: float, default 1367.0
+    dni_extra : float, default 1367.0
         Direct irradiance incident at the top of the atmosphere.
 
     Returns
     -------
-    irradiance: DataFrame
+    irradiance : DataFrame
         Modeled direct normal irradiance, direct horizontal irradiance,
         and global horizontal irradiance in W/m^2
 
@@ -2434,23 +2434,23 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
 
     Parameters
     ----------
-    zenith: pd.Series
+    zenith : pd.Series
         True (not refraction-corrected) zenith angles in decimal
         degrees. If Z is a vector it must be of the same size as all
         other vector inputs. Z must be >=0 and <=180.
 
-    transmittance: float
+    transmittance : float
         Atmospheric transmittance between 0 and 1.
 
-    pressure: float, default 101325.0
+    pressure : float, default 101325.0
         Air pressure
 
-    dni_extra: float, default 1367.0
+    dni_extra : float, default 1367.0
         Direct irradiance incident at the top of the atmosphere.
 
     Returns
     -------
-    irradiance: DataFrame
+    irradiance : DataFrame
         Modeled direct normal irradiance, direct horizontal irradiance,
         and global horizontal irradiance in W/m^2
 
@@ -3138,7 +3138,7 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
 
     Returns
     -------
-    data: OrderedDict or DataFrame
+    data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
             * ``dni``: the modeled direct normal irradiance in W/m^2.

@@ -108,13 +108,13 @@ def _format_index(data):
 
     Parameters
     ----------
-    data: Dataframe
+    data : Dataframe
         Must contain 'DATE (MM/DD/YYYY)' column, second column must be labeled
         with the timezone and contain times in 'HH:MM' format.
 
     Returns
     -------
-    data: Dataframe
+    data : Dataframe
         Dataframe with DatetimeIndex localized to the provided timezone.
     """
     tz_raw = data.columns[1]
@@ -132,13 +132,13 @@ def _format_index_raw(data):
 
     Parameters
     ----------
-    data: Dataframe
+    data : Dataframe
         Must contain columns 'Year' and 'DOY'. Timezone must be found as the
         label of the third (time) column.
 
     Returns
     -------
-    data: Dataframe
+    data : Dataframe
         The data with a Datetime index localized to the provided timezone.
     """
     tz_raw = data.columns[3]
@@ -158,13 +158,13 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
 
     Parameters
     ----------
-    filename: string or file-like object
+    filename : string or file-like object
         Filename, url, or file-like object of data to read.
-    variable_map: dictionary
+    variable_map : dictionary
         Dictionary for mapping MIDC field names to pvlib names. Used to rename
         the columns of the resulting DataFrame. Does not map names by default.
         See Notes for an example.
-    raw_data: boolean
+    raw_data : boolean
         Set to true to use format_index_raw to correctly format the date/time
         columns of MIDC raw data files.
     kwargs : dict
@@ -172,7 +172,7 @@ def read_midc(filename, variable_map={}, raw_data=False, **kwargs):
 
     Returns
     -------
-    data: Dataframe
+    data : Dataframe
         A dataframe with DatetimeIndex localized to the provided timezone.
 
     Notes
@@ -213,13 +213,13 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
 
     Parameters
     ----------
-    site: string
+    site : string
         The MIDC station id.
-    start: datetime
+    start : datetime
         Start date for requested data.
-    end: datetime
+    end : datetime
         End date for requested data.
-    variable_map: dict
+    variable_map : dict
         A dictionary mapping MIDC field names to pvlib names. Used to
         rename columns of the resulting DataFrame. See Notes of
         :py:func:`pvlib.iotools.read_midc` for example.

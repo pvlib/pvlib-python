@@ -116,11 +116,11 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
 
     Parameters
     ----------
-    rainfall: pandas.Series
+    rainfall : pandas.Series
         Accumulated rainfall at the end of each time period. [mm]
-    cleaning_threshold: float, default 6
+    cleaning_threshold : float, default 6
         Amount of daily rainfall required to clean the panels. [mm]
-    soiling_loss_rate: float, default 0.0015
+    soiling_loss_rate : float, default 0.0015
         Fraction of energy lost due to one day of soiling. [unitless]
     grace_period : int, default 14
         Number of days after a rainfall event when it's assumed the ground is

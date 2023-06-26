@@ -142,59 +142,59 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
 
     Parameters
     ----------
-    v_mp: float
+    v_mp : float
         Module voltage at the maximum-power point at reference conditions [V].
-    i_mp: float
+    i_mp : float
         Module current at the maximum-power point at reference conditions [A].
-    v_oc: float
+    v_oc : float
         Open-circuit voltage at reference conditions [V].
-    i_sc: float
+    i_sc : float
         Short-circuit current at reference conditions [A].
-    alpha_sc: float
+    alpha_sc : float
         The short-circuit current (i_sc) temperature coefficient of the
         module [A/K].
-    beta_voc: float
+    beta_voc : float
         The open-circuit voltage (v_oc) temperature coefficient of the
         module [V/K].
-    cells_in_series: integer
+    cells_in_series : integer
         Number of cell in the module.
-    EgRef: float, default 1.121 eV - value for silicon
+    EgRef : float, default 1.121 eV - value for silicon
         Energy of bandgap of semi-conductor used [eV]
-    dEgdT: float, default -0.0002677 - value for silicon
+    dEgdT : float, default -0.0002677 - value for silicon
         Variation of bandgap according to temperature [eV/K]
-    temp_ref: float, default 25
+    temp_ref : float, default 25
         Reference temperature condition [C]
-    irrad_ref: float, default 1000
+    irrad_ref : float, default 1000
         Reference irradiance condition [W/m2]
-    root_kwargs: dictionary, default None
+    root_kwargs : dictionary, default None
         Dictionary of arguments to pass onto scipy.optimize.root()
 
     Returns
     -------
     dict with the following elements:
-        I_L_ref: float
+        I_L_ref : float
             Light-generated current at reference conditions [A]
-        I_o_ref: float
+        I_o_ref : float
             Diode saturation current at reference conditions [A]
-        R_s: float
+        R_s : float
             Series resistance [ohm]
-        R_sh_ref: float
+        R_sh_ref : float
             Shunt resistance at reference conditions [ohm].
-        a_ref: float
+        a_ref : float
             Modified ideality factor at reference conditions.
             The product of the usual diode ideality factor (n, unitless),
             number of cells in series (Ns), and cell thermal voltage at
             specified effective irradiance and cell temperature.
-        alpha_sc: float
+        alpha_sc : float
             The short-circuit current (i_sc) temperature coefficient of the
             module [A/K].
-        EgRef: float
+        EgRef : float
             Energy of bandgap of semi-conductor used [eV]
-        dEgdT: float
+        dEgdT : float
             Variation of bandgap according to temperature [eV/K]
-        irrad_ref: float
+        irrad_ref : float
             Reference irradiance condition [W/m2]
-        temp_ref: float
+        temp_ref : float
             Reference temperature condition [C]
 
     scipy.optimize.OptimizeResult
@@ -257,10 +257,10 @@ def _system_of_equations_desoto(params, specs):
 
     Parameters
     ----------
-    params: ndarray
+    params : ndarray
         Array with parameters of the De Soto single diode model. Must be
         given in the following order: IL, Io, a, Rs, Rsh
-    specs: tuple
+    specs : tuple
         Specifications of pv module given by manufacturer. Must be given
         in the following order: Isc, Voc, Imp, Vmp, beta_oc, alpha_sc
 
@@ -353,7 +353,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
         input that sets the maximum number of iterations for the parameter
         updating part of the algorithm.
 
-    eps1: float, default 1e-3
+    eps1 : float, default 1e-3
         Tolerance for the IV curve fitting. The parameter updating stops when
         absolute values of the percent change in mean, max and standard
         deviation of Imp, Vmp and Pmp between iterations are all less than
@@ -536,7 +536,7 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
         input that sets the maximum number of iterations for the parameter
         updating part of the algorithm.
 
-    eps1: float, default 1e-3
+    eps1 : float, default 1e-3
         Tolerance for the IV curve fitting. The parameter updating stops when
         absolute values of the percent change in mean, max and standard
         deviation of Imp, Vmp and Pmp between iterations are all less than
@@ -917,12 +917,12 @@ def _update_io(voc, iph, io, rs, rsh, nnsvth):
 
     Parameters
     ----------
-    voc: a numpy array of length N of values for Voc (V)
-    iph: a numpy array of length N of values for lighbt current IL (A)
-    io: a numpy array of length N of initial values for Io (A)
-    rs: a numpy array of length N of values for the series resistance (ohm)
-    rsh: a numpy array of length N of values for the shunt resistance (ohm)
-    nnsvth: a numpy array of length N of values for the diode factor x thermal
+    voc : a numpy array of length N of values for Voc (V)
+    iph : a numpy array of length N of values for lighbt current IL (A)
+    io : a numpy array of length N of initial values for Io (A)
+    rs : a numpy array of length N of values for the series resistance (ohm)
+    rsh : a numpy array of length N of values for the shunt resistance (ohm)
+    nnsvth : a numpy array of length N of values for the diode factor x thermal
             voltage for the module, equal to Ns (number of cells in series) x
             Vth (thermal voltage per cell).
 
@@ -1015,13 +1015,13 @@ def _check_converge(prevparams, result, vmp, imp, i):
 
     Parameters
     ----------
-    prevparams: Convergence Parameters from the previous Iteration (used to
+    prevparams : Convergence Parameters from the previous Iteration (used to
                 determine Percent Change in values between iterations)
-    result: performacne paramters of the (predicted) single diode fitting,
+    result : performacne paramters of the (predicted) single diode fitting,
             which includes Voc, Vmp, Imp, Pmp and Isc
-    vmp: measured values for each IV curve
-    imp: measured values for each IV curve
-    i: Index of current iteration in cec_parameter_estimation
+    vmp : measured values for each IV curve
+    imp : measured values for each IV curve
+    i : Index of current iteration in cec_parameter_estimation
 
     Returns
     -------
@@ -1123,13 +1123,13 @@ def _update_rsh_fixed_pt(vmp, imp, iph, io, rs, rsh, nnsvth):
 
     Parameters
     ----------
-    vmp: a numpy array of length N of values for Vmp (V)
-    imp: a numpy array of length N of values for Imp (A)
-    iph: a numpy array of length N of values for light current IL (A)
-    io: a numpy array of length N of values for Io (A)
-    rs: a numpy array of length N of values for series resistance (ohm)
-    rsh: a numpy array of length N of initial values for shunt resistance (ohm)
-    nnsvth: a numpy array length N of values for the diode factor x thermal
+    vmp : a numpy array of length N of values for Vmp (V)
+    imp : a numpy array of length N of values for Imp (A)
+    iph : a numpy array of length N of values for light current IL (A)
+    io : a numpy array of length N of values for Io (A)
+    rs : a numpy array of length N of values for series resistance (ohm)
+    rsh : a numpy array of length N of initial values for shunt resistance (ohm)
+    nnsvth : a numpy array length N of values for the diode factor x thermal
             voltage for the module, equal to Ns (number of cells in series) x
             Vth (thermal voltage per cell).
 
@@ -1165,22 +1165,22 @@ def _calc_theta_phi_exact(vmp, imp, iph, io, rs, rsh, nnsvth):
 
     Parameters
     ----------
-    vmp: a numpy array of length N of values for Vmp (V)
-    imp: a numpy array of length N of values for Imp (A)
-    iph: a numpy array of length N of values for the light current IL (A)
-    io: a numpy array of length N of values for Io (A)
-    rs: a numpy array of length N of values for the series resistance (ohm)
-    rsh: a numpy array of length N of values for the shunt resistance (ohm)
-    nnsvth: a numpy array of length N of values for the diode factor x
+    vmp : a numpy array of length N of values for Vmp (V)
+    imp : a numpy array of length N of values for Imp (A)
+    iph : a numpy array of length N of values for the light current IL (A)
+    io : a numpy array of length N of values for Io (A)
+    rs : a numpy array of length N of values for the series resistance (ohm)
+    rsh : a numpy array of length N of values for the shunt resistance (ohm)
+    nnsvth : a numpy array of length N of values for the diode factor x
             thermal voltage for the module, equal to Ns
             (number of cells in series) x Vth
             (thermal voltage per cell).
 
     Returns
     -------
-    theta: a numpy array of values for the Lamber W function for solving
+    theta : a numpy array of values for the Lamber W function for solving
            I = I(V)
-    phi: a numpy array of values for the Lambert W function for solving
+    phi : a numpy array of values for the Lambert W function for solving
          V = V(I)
 
     Notes

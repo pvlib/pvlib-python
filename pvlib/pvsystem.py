@@ -118,12 +118,12 @@ class PVSystem:
         - `modules_per_string`
         - `strings_per_inverter`
 
-    surface_tilt: float or array-like, default 0
+    surface_tilt : float or array-like, default 0
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
-    surface_azimuth: float or array-like, default 180
+    surface_azimuth : float or array-like, default 180
         Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
 
@@ -153,10 +153,10 @@ class PVSystem:
         Temperature model parameters as required by one of the models in
         pvlib.temperature (excluding poa_global, temp_air and wind_speed).
 
-    modules_per_string: int or float, default 1
+    modules_per_string : int or float, default 1
         See system topology discussion above.
 
-    strings_per_inverter: int or float, default 1
+    strings_per_inverter : int or float, default 1
         See system topology discussion above.
 
     inverter : None or string, default None
@@ -278,7 +278,7 @@ class PVSystem:
 
         Returns
         -------
-        cell_type: str
+        cell_type : str
         """
         return tuple(array._infer_cell_type() for array in self.arrays)
 
@@ -690,7 +690,7 @@ class PVSystem:
 
         Returns
         -------
-        modifier: array-like or tuple of array-like
+        modifier : array-like or tuple of array-like
             spectral mismatch factor (unitless) which can be multiplied
             with broadband irradiance reaching a module's cells to estimate
             effective irradiance, i.e., the irradiance that is converted to
@@ -819,13 +819,13 @@ class PVSystem:
 
         Parameters
         ----------
-        data: DataFrame or tuple of DataFrame
+        data : DataFrame or tuple of DataFrame
             May contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
             'i_sc', 'p_mp'`.
 
         Returns
         -------
-        scaled_data: DataFrame or tuple of DataFrame
+        scaled_data : DataFrame or tuple of DataFrame
             A scaled copy of the input data.
         """
         data = self._validate_per_array(data)
@@ -897,7 +897,7 @@ class Array:
 
     Parameters
     ----------
-    mount: FixedMount, SingleAxisTrackerMount, or other
+    mount : FixedMount, SingleAxisTrackerMount, or other
         Mounting for the array, either on fixed-tilt racking or horizontal
         single axis tracker. Mounting is used to determine module orientation.
         If not provided, a FixedMount with zero tilt is used.
@@ -928,16 +928,16 @@ class Array:
         Parameters for the module temperature model, e.g., SAPM, Pvsyst, or
         other.
 
-    modules_per_string: int, default 1
+    modules_per_string : int, default 1
         Number of modules per string in the array.
 
-    strings: int, default 1
+    strings : int, default 1
         Number of parallel strings in the array.
 
-    array_losses_parameters: None, dict or Series, default None.
+    array_losses_parameters : None, dict or Series, default None.
         Supported keys are 'dc_ohmic_percent'.
 
-    name: None or str, default None
+    name : None or str, default None
         Name of Array instance.
     """
 
@@ -1014,7 +1014,7 @@ class Array:
 
         Returns
         -------
-        cell_type: str
+        cell_type : str
 
         """
 
@@ -2773,17 +2773,17 @@ def scale_voltage_current_power(data, voltage=1, current=1):
 
     Parameters
     ----------
-    data: DataFrame
+    data : DataFrame
         May contain columns `'v_mp', 'v_oc', 'i_mp' ,'i_x', 'i_xx',
         'i_sc', 'p_mp'`.
-    voltage: numeric, default 1
+    voltage : numeric, default 1
         The amount by which to multiply the voltages.
-    current: numeric, default 1
+    current : numeric, default 1
         The amount by which to multiply the currents.
 
     Returns
     -------
-    scaled_data: DataFrame
+    scaled_data : DataFrame
         A scaled copy of the input data.
         `'p_mp'` is scaled by `voltage * current`.
     """
@@ -2817,25 +2817,25 @@ def pvwatts_dc(g_poa_effective, temp_cell, pdc0, gamma_pdc, temp_ref=25.):
 
     Parameters
     ----------
-    g_poa_effective: numeric
+    g_poa_effective : numeric
         Irradiance transmitted to the PV cells. To be
         fully consistent with PVWatts, the user must have already
         applied angle of incidence losses, but not soiling, spectral,
         etc. [W/m^2]
-    temp_cell: numeric
+    temp_cell : numeric
         Cell temperature [C].
-    pdc0: numeric
+    pdc0 : numeric
         Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
-    gamma_pdc: numeric
+    gamma_pdc : numeric
         The temperature coefficient of power. Typically -0.002 to
         -0.005 per degree C. [1/C]
-    temp_ref: numeric, default 25.0
+    temp_ref : numeric, default 25.0
         Cell reference temperature. PVWatts defines it to be 25 C and
         is included here for flexibility. [C]
 
     Returns
     -------
-    pdc: numeric
+    pdc : numeric
         DC power.
 
     References
@@ -2867,21 +2867,21 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 
     Parameters
     ----------
-    soiling: numeric, default 2
-    shading: numeric, default 3
-    snow: numeric, default 0
-    mismatch: numeric, default 2
-    wiring: numeric, default 2
-    connections: numeric, default 0.5
-    lid: numeric, default 1.5
+    soiling : numeric, default 2
+    shading : numeric, default 3
+    snow : numeric, default 0
+    mismatch : numeric, default 2
+    wiring : numeric, default 2
+    connections : numeric, default 0.5
+    lid : numeric, default 1.5
         Light induced degradation
-    nameplate_rating: numeric, default 1
-    age: numeric, default 0
-    availability: numeric, default 3
+    nameplate_rating : numeric, default 1
+    age : numeric, default 0
+    availability : numeric, default 3
 
     Returns
     -------
-    losses: numeric
+    losses : numeric
         System losses in units of %.
 
     References
@@ -2924,20 +2924,20 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
 
     Parameters
     ----------
-    vmp_ref: numeric
+    vmp_ref : numeric
         Voltage at maximum power in reference conditions [V]
-    imp_ref: numeric
+    imp_ref : numeric
         Current at maximum power in reference conditions [V]
-    dc_ohmic_percent: numeric, default 0
+    dc_ohmic_percent : numeric, default 0
         input dc loss as a percent, e.g. 1.5% loss is input as 1.5
-    modules_per_string: int, default 1
+    modules_per_string : int, default 1
         Number of modules per string in the array.
-    strings: int, default 1
+    strings : int, default 1
         Number of parallel strings in the array.
 
     Returns
     ----------
-    Rw: numeric
+    Rw : numeric
         Equivalent resistance [ohm]
 
     See Also
@@ -2965,14 +2965,14 @@ def dc_ohmic_losses(resistance, current):
 
     Parameters
     ----------
-    resistance: numeric
+    resistance : numeric
         Equivalent resistance of wires [ohm]
-    current: numeric, float or array-like
+    current : numeric, float or array-like
         Operating current [A]
 
     Returns
     ----------
-    loss: numeric
+    loss : numeric
         Power Loss [W]
 
     See Also

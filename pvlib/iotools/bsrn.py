@@ -74,29 +74,29 @@ def get_bsrn(station, start, end, username, password,
 
     Parameters
     ----------
-    station: str
+    station : str
         3-letter BSRN station abbreviation
-    start: datetime-like
+    start : datetime-like
         First day of the requested period
-    end: datetime-like
+    end : datetime-like
         Last day of the requested period
-    username: str
+    username : str
         username for accessing the BSRN FTP server
-    password: str
+    password : str
         password for accessing the BSRN FTP server
     logical_records: list or tuple, default: ('0100',)
         List of the logical records (LR) to parse. Options include: '0100',
         '0300', and '0500'.
-    save_path: str or path-like, optional
+    save_path : str or path-like, optional
         If specified, a directory path of where to save each monthly file.
 
     Returns
     -------
-    data: DataFrame
+    data : DataFrame
         timeseries data from the BSRN archive, see
         :func:`pvlib.iotools.read_bsrn` for fields. An empty DataFrame is
         returned if no data was found for the time period.
-    metadata: dict
+    metadata : dict
         metadata for the last available monthly file.
 
     Raises
@@ -219,7 +219,7 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
 
     Parameters
     ----------
-    fbuf: file-like buffer
+    fbuf : file-like buffer
         Buffer of a BSRN station-to-archive data file
     logical_records: list or tuple, default: ('0100',)
         List of the logical records (LR) to parse. Options include: '0100',
@@ -227,11 +227,11 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
 
     Returns
     -------
-    data: DataFrame
+    data : DataFrame
         timeseries data from the BSRN archive, see
         :func:`pvlib.iotools.read_bsrn` for fields. An empty DataFrame is
         returned if the specified logical records were not found.
-    metadata: dict
+    metadata : dict
         Dictionary containing metadata (primarily from LR0004).
 
     See Also
@@ -377,7 +377,7 @@ def read_bsrn(filename, logical_records=('0100',)):
 
     Parameters
     ----------
-    filename: str or path-like
+    filename : str or path-like
         Name or path of a BSRN station-to-archive data file
     logical_records: list or tuple, default: ('0100',)
         List of the logical records (LR) to parse. Options include: '0100',
@@ -385,11 +385,11 @@ def read_bsrn(filename, logical_records=('0100',)):
 
     Returns
     -------
-    data: DataFrame
+    data : DataFrame
         A DataFrame with the columns as described below. For a more extensive
         description of the variables, consult [2]_. An empty DataFrame is
         returned if the specified logical records were not found.
-    metadata: dict
+    metadata : dict
         Dictionary containing metadata (primarily from LR0004).
 
     Notes

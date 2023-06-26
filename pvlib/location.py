@@ -205,14 +205,14 @@ class Location:
 
         Parameters
         ----------
-        times: DatetimeIndex
-        model: str, default 'ineichen'
+        times : DatetimeIndex
+        model : str, default 'ineichen'
             The clear sky model to use. Must be one of
             'ineichen', 'haurwitz', 'simplified_solis'.
         solar_position : None or DataFrame, default None
             DataFrame with columns 'apparent_zenith', 'zenith',
             'apparent_elevation'.
-        dni_extra: None or numeric, default None
+        dni_extra : None or numeric, default None
             If None, will be calculated from times.
 
         kwargs

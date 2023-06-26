@@ -229,7 +229,7 @@ def get_orientation(strategy, **kwargs):
 
     Parameters
     ----------
-    strategy: str
+    strategy : str
         The orientation strategy.
         Allowed strategies include 'flat', 'south_at_latitude_tilt'.
     **kwargs:
@@ -472,49 +472,49 @@ class ModelChain:
     airmass_model : str, default 'kastenyoung1989'
         Passed to location.get_airmass.
 
-    dc_model: None, str, or function, default None
+    dc_model : None, str, or function, default None
         If None, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'.
         The ModelChain instance will be passed as the first argument
         to a user-defined function.
 
-    ac_model: None, str, or function, default None
+    ac_model : None, str, or function, default None
         If None, the model will be inferred from the parameters that
         are common to all of system.inverter_parameters.
         Valid strings are 'sandia', 'adr', 'pvwatts'. The
         ModelChain instance will be passed as the first argument to a
         user-defined function.
 
-    aoi_model: None, str, or function, default None
+    aoi_model : None, str, or function, default None
         If None, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
         'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
-    spectral_model: None, str, or function, default None
+    spectral_model : None, str, or function, default None
         If None, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'sapm', 'first_solar', 'no_loss'.
         The ModelChain instance will be passed as the first argument to
         a user-defined function.
 
-    temperature_model: None, str or function, default None
+    temperature_model : None, str or function, default None
         Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
         The ModelChain instance will be passed as the first argument to a
         user-defined function.
 
-    dc_ohmic_model: str or function, default 'no_loss'
+    dc_ohmic_model : str or function, default 'no_loss'
         Valid strings are 'dc_ohms_from_percent', 'no_loss'. The ModelChain
         instance will be passed as the first argument to a user-defined
         function.
 
-    losses_model: str or function, default 'no_loss'
+    losses_model : str or function, default 'no_loss'
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
         will be passed as the first argument to a user-defined function.
 
-    name: None or str, default None
+    name : None or str, default None
         Name of ModelChain instance.
     """
 
@@ -575,7 +575,7 @@ class ModelChain:
         airmass_model : str, default 'kastenyoung1989'
             Passed to location.get_airmass.
 
-        name: None or str, default None
+        name : None or str, default None
             Name of ModelChain instance.
 
         **kwargs
@@ -651,7 +651,7 @@ class ModelChain:
         airmass_model : str, default 'kastenyoung1989'
             Passed to location.get_airmass.
 
-        name: None or str, default None
+        name : None or str, default None
             Name of ModelChain instance.
 
         **kwargs

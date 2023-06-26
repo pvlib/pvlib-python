@@ -99,11 +99,11 @@ def _spectrl2_transmittances(apparent_zenith, relative_airmass,
 
     Returns
     -------
-    earth_sun_distance_correction: float or 1d np.array
+    earth_sun_distance_correction : float or 1d np.array
         Same shape/type as apparent_zenith
     rayleigh_transmittance, aerosol_transmittance, vapor_transmittance,
     ozone_transmittance, mixed_transmittance, aerosol_scattering,
-    aerosol_absorption: np.ndarray
+    aerosol_absorption : np.ndarray
         Array with shape (122, N) where N is len(apparent_zenith)
     """
     # add a dimension so that each ndarray is 2d with shape (122, 1)

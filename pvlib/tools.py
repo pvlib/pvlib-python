@@ -310,15 +310,15 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
         Parameters to be passed to `func`. Each entry must be of the same
         length.
 
-    lower: numeric
+    lower : numeric
         Lower bound for the optimization. Must be the same length as each
         entry of params.
 
-    upper: numeric
+    upper : numeric
         Upper bound for the optimization. Must be the same length as each
         entry of params.
 
-    func: function
+    func : function
         Function to be optimized. Must be in the form
         result = f(dict or DataFrame, str), where result is a dict or DataFrame
         that also contains the function output, and str is the key
@@ -481,7 +481,7 @@ def get_pandas_index(*args):
 
     Parameters
     ----------
-    args: positional arguments
+    args : positional arguments
         The numeric values to scan for a pandas index.
 
     Returns

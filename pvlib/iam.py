@@ -318,7 +318,7 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
 
     Parameters
     ----------
-    surface_tilt: float or array-like, default 0
+    surface_tilt : float or array-like, default 0
         Surface tilt angles in decimal degrees.
         The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)

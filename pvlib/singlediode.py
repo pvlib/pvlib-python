@@ -93,7 +93,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
         diode reverse saturation current :math:`I_{0}` [A]
     resistance_series : numeric
         series resistance :math:`R_{s}` [ohms]
-    resistance_shunt: numeric
+    resistance_shunt : numeric
         shunt resistance :math:`R_{sh}` [ohms]
     nNsVth : numeric
         product of thermal voltage :math:`V_{th}` [V], diode ideality factor

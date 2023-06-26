@@ -61,19 +61,19 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
 
     Parameters
     ----------
-    latitude: float
+    latitude : float
         in decimal degrees, between -90 and 90, north is positive (ISO 19115)
     longitude : float
         in decimal degrees, between -180 and 180, east is positive (ISO 19115)
-    start: datetime like
+    start : datetime like
         First day of the requested period
-    end: datetime like
+    end : datetime like
         Last day of the requested period
-    email: str
+    email : str
         Email address linked to a SoDa account
-    identifier: {'mcclear', 'cams_radiation'}
+    identifier : {'mcclear', 'cams_radiation'}
         Specify whether to retrieve CAMS Radiation or McClear parameters
-    altitude: float, optional
+    altitude : float, optional
         Altitude in meters. If None, then the altitude is determined from the
         NASA SRTM database
     time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
@@ -84,7 +84,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     verbose: boolean, default: False
         Verbose mode outputs additional parameters (aerosols). Only available
         for 1 minute and universal time. See [1]_ for parameter description.
-    integrated: boolean, default False
+    integrated : boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
     label: {'right', 'left'}, default: None
@@ -100,9 +100,9 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
 
     Returns
     -------
-    data: pandas.DataFrame
+    data : pandas.DataFrame
         Timeseries data, see Notes for columns
-    metadata: dict
+    metadata : dict
         Metadata of the requested time-series
 
     Notes
@@ -235,9 +235,9 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
 
     Parameters
     ----------
-    fbuf: file-like object
+    fbuf : file-like object
         File-like object containing data to read.
-    integrated: boolean, default False
+    integrated : boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
     label: {'right', 'left'}, default: None
@@ -249,9 +249,9 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
 
     Returns
     -------
-    data: pandas.DataFrame
+    data : pandas.DataFrame
         Timeseries data from CAMS Radiation or McClear
-    metadata: dict
+    metadata : dict
         Metadata available in the file.
 
     See Also
@@ -336,9 +336,9 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
 
     Parameters
     ----------
-    filename: str
+    filename : str
         Filename of a file containing data to read.
-    integrated: boolean, default False
+    integrated : boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
     label: {'right', 'left}, default: None
@@ -350,10 +350,10 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
 
     Returns
     -------
-    data: pandas.DataFrame
+    data : pandas.DataFrame
         Timeseries data from CAMS Radiation or McClear.
         See :func:`pvlib.iotools.get_cams` for fields.
-    metadata: dict
+    metadata : dict
         Metadata available in the file.
 
     See Also

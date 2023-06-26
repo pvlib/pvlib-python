@@ -31,7 +31,7 @@ def read_srml(filename, map_variables=True):
 
     Parameters
     ----------
-    filename: str
+    filename : str
         filepath or url to read for the tsv file.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
@@ -39,7 +39,7 @@ def read_srml(filename, map_variables=True):
 
     Returns
     -------
-    data: Dataframe
+    data : Dataframe
         A dataframe with datetime index
 
     Notes
@@ -97,7 +97,7 @@ def _map_columns(col):
 
     Parameters
     ----------
-    col: str
+    col : str
         Column label to be mapped.
 
     Returns
@@ -125,12 +125,12 @@ def _format_index(df):
 
     Parameters
     ----------
-    df: pd.Dataframe
+    df : pd.Dataframe
         The srml data to reindex.
 
     Returns
     -------
-    df: pd.Dataframe
+    df : pd.Dataframe
         The Dataframe with a DatetimeIndex localized to 'Etc/GMT+8'.
     """
     # Name of the second column indicates the year of the file, but
@@ -175,13 +175,13 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO',
 
     Parameters
     ----------
-    station: str
+    station : str
         The name of the SRML station to request.
-    year: int
+    year : int
         Year to request data for
-    month: int
+    month : int
         Month to request data for.
-    filetype: string
+    filetype : string
         SRML file type to gather. See notes for explanation.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
@@ -189,7 +189,7 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO',
 
     Returns
     -------
-    data: pd.DataFrame
+    data : pd.DataFrame
         One month of data from SRML.
 
     Notes

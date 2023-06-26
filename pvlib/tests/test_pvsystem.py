@@ -767,10 +767,10 @@ def _calcparams_correct_Python_type_check(out_value, numeric_args):
 
     Parameters
     ----------
-    out_value: numeric
+    out_value : numeric
         A value returned by a pvsystem.calcparams_ function.
 
-    numeric_args: numeric
+    numeric_args : numeric
         An iterable of the numeric-type arguments to the
         pvsystem.calcparams_ functions:
         ``effective_irradiance`` and ``temp_cell``.

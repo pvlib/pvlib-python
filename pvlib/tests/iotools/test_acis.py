@@ -167,6 +167,9 @@ def test_get_acis_station_data():
         'longitude': -87.93164,
         'latitude': 41.96017
     }
+    # don't check valid dates since they get extended every day
+    meta.pop("valid_daterange")
+    expected_meta.pop("valid_daterange")
     assert meta == expected_meta
 
     # map_variables=False
@@ -178,6 +181,7 @@ def test_get_acis_station_data():
     expected_meta['lat'] = expected_meta.pop('latitude')
     expected_meta['lon'] = expected_meta.pop('longitude')
     expected_meta['elev'] = expected_meta.pop('altitude')
+    meta.pop("valid_daterange")
     assert meta == expected_meta
 
 

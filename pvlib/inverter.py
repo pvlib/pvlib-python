@@ -397,7 +397,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     pdc_neq_0 = ~np.equal(pdc, 0)
 
     # eta < 0 if zeta < 0.006. power_ac is forced to be >= 0 below. GH 541
-    # differs from Eq. 10 of [1], where parentheses were omitted by mistake
+    # In some published versions of [1] the parentheses are missing
     eta = eta_inv_nom / eta_inv_ref * (
         -0.0162 * zeta - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
         + 0.9858)  # noQA: W503

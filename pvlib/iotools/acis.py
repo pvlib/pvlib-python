@@ -50,10 +50,12 @@ def _get_acis(start, end, params, map_variables, url, **kwargs):
     df.index.name = None
 
     metadata = payload['meta']
-    # for StnData endpoint, unpack combination "ll" into lat, lon 
-    ll = metadata.pop('ll', None)
-    if ll:
-        metadata['lon'], metadata['lat'] = ll
+
+    try:
+        # for StnData endpoint, unpack combination "ll" into lat, lon 
+        metadata['lon'], metadata['lat'] = metadata.pop('ll')
+    except KeyError:
+        pass
 
     try:
         metadata['elev'] = metadata['elev'] * 0.3048  # feet to meters
@@ -77,8 +79,14 @@ def get_acis_prism(latitude, longitude, start, end, map_variables=True,
     Retrieve estimated daily precipitation and temperature data from PRISM
     via the Applied Climate Information System (ACIS).
 
-    Geographical coverage: approximately -130° to -65° in longitude and
-    0° to 50° in latitude.
+    ACIS [2]_, [3]_ aggregates and provides access to climate data
+    from many underlying sources.  This function retrieves daily data from
+    the Parameter-elevation Regressions on Independent Slopes Model
+    (PRISM) [1]_, a gridded precipitation and temperature model
+    from Oregon State University.
+
+    Geographical coverage: US, Central America, and part of South America.
+    Approximately 0° to 50° in latitude and -130° to -65° in longitude.
 
     Parameters
     ----------
@@ -124,8 +132,8 @@ def get_acis_prism(latitude, longitude, start, end, map_variables=True,
 
     Examples
     --------
-    >>> df, meta = pvlib.iotools.get_acis_prism(
-    >>>     latitude=40, longitude=-80, start='2020-01-01', end='2020-12-31')
+    >>> from pvlib.iotools import get_acis_prism
+    >>> df, meta = get_acis_prism(40, 80, '2020-01-01', '2020-12-31')
     """
     elems = [
         {"name": "pcpn", "interval": "dly", "units": "mm"},
@@ -154,8 +162,12 @@ def get_acis_nrcc(latitude, longitude, start, end, grid, map_variables=True,
     Northeast Regional Climate Center via the Applied Climate
     Information System (ACIS).
 
-    Geographical coverage: approximately -130° to -65° in longitude and
-    0° to 50° in latitude.
+    ACIS [2]_, [3]_ aggregates and provides access to climate data
+    from many underlying sources.  This function retrieves daily data from
+    Cornell's Northeast Regional Climate Center (NRCC) [1]_.
+
+    Geographical coverage: US, Central America, and part of South America.
+    Approximately 0° to 50° in latitude and -130° to -65° in longitude.
 
     Parameters
     ----------
@@ -204,6 +216,7 @@ def get_acis_nrcc(latitude, longitude, start, end, grid, map_variables=True,
 
     Examples
     --------
+    >>> from pvlib.iotools import get_acis_nrcc
     >>> df, meta = get_acis_nrcc(40, -80, '2020-01-01', '2020-12-31', grid=1)
     """
     elems = [
@@ -232,6 +245,11 @@ def get_acis_mpe(latitude, longitude, start, end, map_variables=True,
     """
     Retrieve estimated daily Multi-sensor Precipitation Estimates
     via the Applied Climate Information System (ACIS).
+
+    ACIS [2]_, [3]_ aggregates and provides access to climate data
+    from many underlying sources.  This function retrieves daily data from
+    the National Weather Service's Multi-sensor Precipitation Estimates
+    (MPE) [1]_, a gridded precipitation model.
 
     This dataset covers the contiguous United States, Mexico, and parts of
     Central America.
@@ -281,6 +299,7 @@ def get_acis_mpe(latitude, longitude, start, end, map_variables=True,
 
     Examples
     --------
+    >>> from pvlib.iotools import get_acis_mpe
     >>> df, meta = get_acis_mpe(40, -80, '2020-01-01', '2020-12-31')
     """
     elems = [
@@ -304,6 +323,10 @@ def get_acis_station_data(station, start, end, trace_val=0.001,
     """
     Retrieve weather station climate records via the Applied Climate
     Information System (ACIS).
+
+    ACIS [1]_, [2]_ aggregates and provides access to climate data
+    from many underlying sources.  This function retrieves measurements
+    from ground stations belonging to various global networks.
 
     This function can query data from stations all over the world.
     The stations available in a given area can be listed using
@@ -353,10 +376,12 @@ def get_acis_station_data(station, start, end, trace_val=0.001,
     Examples
     --------
     >>> # Using an FAA code (Chicago O'Hare airport)
+    >>> from pvlib.iotools import get_acis_station_data
     >>> df, meta = get_acis_station_data('ORD', '2020-01-01', '2020-12-31')
     >>>
     >>> # Look up available stations in a lat/lon rectangle, with data
     >>> # available in the specified date range:
+    >>> from pvlib.iotools import get_acis_available_stations
     >>> stations = get_acis_available_stations([39.5, 40.5], [-80.5, -79.5],
     ...                                        '2020-01-01', '2020-01-03')
     >>> stations['sids'][0]
@@ -443,6 +468,7 @@ def get_acis_available_stations(latitude_range, longitude_range,
     --------
     >>> # Look up available stations in a lat/lon rectangle, with data
     >>> # available in the specified date range:
+    >>> from pvlib.iotools import get_acis_available_stations
     >>> stations = get_acis_available_stations([39.5, 40.5], [-80.5, -79.5],
     ...                                        '2020-01-01', '2020-01-03')
     >>> stations['sids'][0]

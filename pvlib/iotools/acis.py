@@ -10,6 +10,9 @@ VARIABLE_MAP = {
     'avgt': 'temp_air_average',
     'obst': 'temp_air_observation',
     'mint': 'temp_air_min',
+    'cdd': 'cooling_degree_days',
+    'hdd': 'heating_degree_days',
+    'gdd': 'growing_degree_days',
     'snow': 'snowfall',
     'snwd': 'snowdepth',
 

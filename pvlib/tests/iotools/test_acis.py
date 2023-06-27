@@ -24,7 +24,8 @@ def test_get_acis_prism():
             [0, 5, -3, 1, 0, 64, 0]
         ],
         columns=['precipitation', 'temp_air_max', 'temp_air_min',
-                 'temp_air_average', 'cdd', 'hdd', 'gdd'],
+                 'temp_air_average', 'cooling_degree_days',
+                 'heating_degree_days', 'growing_degree_days'],
         index=pd.to_datetime(['2020-01-01', '2020-01-02']),
     )
     assert_frame_equal(df, expected)
@@ -52,7 +53,8 @@ def test_get_acis_nrcc(grid, expected):
     expected = pd.DataFrame(
         expected,
         columns=['precipitation', 'temp_air_max', 'temp_air_min',
-                 'temp_air_average', 'cdd', 'hdd', 'gdd'],
+                 'temp_air_average', 'cooling_degree_days',
+                 'heating_degree_days', 'growing_degree_days'],
         index=pd.to_datetime(['2020-01-01']),
     )
     assert_frame_equal(df, expected)
@@ -110,7 +112,8 @@ def test_get_acis_station_data():
          [-1., -5., -3., np.nan, -99, -99, 5., 0., 68., 0.]],
         columns=['temp_air_max', 'temp_air_min', 'temp_air_average',
                  'temp_air_observation', 'precipitation', 'snowfall',
-                 'snowdepth', 'cdd', 'hdd', 'gdd'],
+                 'snowdepth', 'cooling_degree_days',
+                 'heating_degree_days', 'growing_degree_days'],
         index=pd.to_datetime(['2020-01-10', '2020-01-11', '2020-01-12']),
     )
     assert_frame_equal(df, expected)

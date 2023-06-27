@@ -646,8 +646,16 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
 
 def _clearsky_get_threshold(sample_interval):
     """
-    Returns threshold values for kwargs in detect_clearsky
+    Returns threshold values for kwargs in detect_clearsky. See
+    Table 1 in [1].
+
+    References
+    ----------
+    .. [1] Jordan, D.C. and C. Hansen, "Clear-sky detection for PV
+       degradation analysis using multiple regression", Renewable Energy,
+       v209, p. 393-400, 2023.
     """
+
     if (sample_interval < 1 or sample_interval > 30):
         raise ValueError("sample_interval must be larger than 1 and \
                           smaller than 30")

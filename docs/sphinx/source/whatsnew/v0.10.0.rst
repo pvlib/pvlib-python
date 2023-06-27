@@ -75,3 +75,4 @@ Contributors
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Cédric Leroy (:ghuser:`cedricleroy`)
+* Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)

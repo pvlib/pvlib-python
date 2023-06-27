@@ -109,7 +109,8 @@ def get_acis_prism(latitude, longitude, start, end, map_variables=True,
     Returns
     -------
     data : pandas.DataFrame
-        Daily precipitation [mm] and temperature [Celsius] data
+        Daily precipitation [mm], temperature [Celsius], and degree day
+        [Celsius-days] data
     metadata : dict
         Metadata of the selected grid cell
 
@@ -193,7 +194,8 @@ def get_acis_nrcc(latitude, longitude, start, end, grid, map_variables=True,
     Returns
     -------
     data : pandas.DataFrame
-        Daily precipitation [mm] and temperature [Celsius] data
+        Daily precipitation [mm], temperature [Celsius], and degree day
+        [Celsius-days] data
     metadata : dict
         Metadata of the selected grid cell
 
@@ -355,7 +357,8 @@ def get_acis_station_data(station, start, end, trace_val=0.001,
     Returns
     -------
     data : pandas.DataFrame
-        Daily precipitation [mm], temperature [Celsius], and snow [cm] data
+        Daily precipitation [mm], temperature [Celsius], snow [cm], and degree day
+        [Celsius-days] data data
     metadata : dict
         station metadata
 

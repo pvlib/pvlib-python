@@ -96,7 +96,7 @@ def get_acis_prism(latitude, longitude, start, end, map_variables=True,
     url : str, default: 'https://data.rcc-acis.org/GridData'
         API endpoint URL
     kwargs:
-        Optional parameters passed to ``requests.get``.
+        Optional parameters passed to ``requests.post``.
 
     Returns
     -------
@@ -124,7 +124,8 @@ def get_acis_prism(latitude, longitude, start, end, map_variables=True,
 
     Examples
     --------
-    >>> df, meta = get_acis_prism(40, -80, '2020-01-01', '2020-12-31')
+    >>> df, meta = pvlib.iotools.get_acis_prism(
+    >>>     latitude=40, longitude=-80, start='2020-01-01', end='2020-12-31')
     """
     elems = [
         {"name": "pcpn", "interval": "dly", "units": "mm"},
@@ -175,7 +176,7 @@ def get_acis_nrcc(latitude, longitude, start, end, grid, map_variables=True,
     url : str, default: 'https://data.rcc-acis.org/GridData'
         API endpoint URL
     kwargs:
-        Optional parameters passed to ``requests.get``.
+        Optional parameters passed to ``requests.post``.
 
     Returns
     -------
@@ -251,7 +252,7 @@ def get_acis_mpe(latitude, longitude, start, end, map_variables=True,
     url : str, default: 'https://data.rcc-acis.org/GridData'
         API endpoint URL
     kwargs:
-        Optional parameters passed to ``requests.get``.
+        Optional parameters passed to ``requests.post``.
 
     Returns
     -------
@@ -326,7 +327,7 @@ def get_acis_station_data(station, start, end, trace_val=0.001,
     url : str, default: 'https://data.rcc-acis.org/GridData'
         API endpoint URL
     kwargs:
-        Optional parameters passed to ``requests.get``.
+        Optional parameters passed to ``requests.post``.
 
     Returns
     -------
@@ -415,7 +416,7 @@ def get_acis_available_stations(latitude_range, longitude_range,
     url : str, default: 'https://data.rcc-acis.org/StnMeta'
         API endpoint URL
     kwargs:
-        Optional parameters passed to ``requests.get``.
+        Optional parameters passed to ``requests.post``.
 
     Returns
     -------

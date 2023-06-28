@@ -4,7 +4,7 @@ import pytest
 
 from pvlib.iotools import srml
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
-                        fail_on_pvlib_version)
+                        assert_frame_equal, fail_on_pvlib_version)
 from pvlib._deprecation import pvlibDeprecationWarning
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
@@ -83,7 +83,7 @@ def test_get_srml():
     file_data = srml.read_srml(url)
     requested, _ = srml.get_srml(station='EU', start='2018-01-01',
                                  end='2018-01-31')
-    assert file_data.equals(requested)
+    assert assert_frame_equal(file_data, requested)
 
 
 @fail_on_pvlib_version('0.11')

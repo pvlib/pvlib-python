@@ -119,7 +119,7 @@ def sandia(v_dc, p_dc, inverter):
 
     .. [2] System Advisor Model web page. https://sam.nrel.gov.
 
-    See also
+    See Also
     --------
     pvlib.pvsystem.retrieve_sam
     '''
@@ -182,7 +182,7 @@ def sandia_multi(v_dc, p_dc, inverter):
        Efficiency Of Inverters With Multiple Inputs", 49th IEEE Photovoltaic
        Specialist Conference, Philadelphia, PA, USA. June 2022.
 
-    See also
+    See Also
     --------
     pvlib.inverter.sandia
     '''
@@ -273,7 +273,7 @@ def adr(v_dc, p_dc, inverter, vtol=0.10):
        of Photovoltaic Inverters", 33rd IEEE Photovoltaic Specialist
        Conference (PVSC), June 2008
 
-    See also
+    See Also
     --------
     pvlib.inverter.sandia
     pvlib.pvsystem.retrieve_sam

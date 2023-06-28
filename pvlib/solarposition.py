@@ -189,7 +189,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     .. [2] USNO delta T:
        http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
 
-    See also
+    See Also
     --------
     pyephem, spa_python, ephemeris
     """
@@ -346,7 +346,7 @@ def spa_python(time, latitude, longitude,
     .. [3] USNO delta T:
        http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
 
-    See also
+    See Also
     --------
     pyephem, spa_c, ephemeris
     """
@@ -539,7 +539,7 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
         index is the same as input `time` argument
         columns are 'sunrise', 'sunset', and 'transit'
 
-    See also
+    See Also
     --------
     pyephem
     """
@@ -625,7 +625,7 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
         apparent_azimuth, azimuth,
         apparent_zenith, zenith.
 
-    See also
+    See Also
     --------
     spa_python, spa_c, ephemeris
     """
@@ -725,7 +725,7 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     .. [1] Grover Hughes' class and related class materials on Engineering
        Astronomy at Sandia National Laboratories, 1985.
 
-    See also
+    See Also
     --------
     pyephem, spa_c, spa_python
 

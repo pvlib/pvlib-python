@@ -361,7 +361,7 @@ def bird_hulstrom80_aod_bb(aod380, aod500):
     aod_bb : numeric
         Broadband AOD.  [unitless]
 
-    See also
+    See Also
     --------
     pvlib.atmosphere.kasten96_lt
 
@@ -407,7 +407,7 @@ def kasten96_lt(airmass_absolute, precipitable_water, aod_bb):
     lt : numeric
         Linke turbidity. [unitless]
 
-    See also
+    See Also
     --------
     pvlib.atmosphere.bird_hulstrom80_aod_bb
     pvlib.atmosphere.angstrom_aod_at_lambda
@@ -488,7 +488,7 @@ def angstrom_aod_at_lambda(aod0, lambda0, alpha=1.14, lambda1=700.0):
     aod1 : numeric
         AOD at desired wavelength ``lambda1``. [unitless]
 
-    See also
+    See Also
     --------
     pvlib.atmosphere.angstrom_alpha
 
@@ -528,7 +528,7 @@ def angstrom_alpha(aod1, lambda1, aod2, lambda2):
         Angstrom :math:`\alpha` exponent for wavelength in
         ``(lambda1, lambda2)``. [unitless]
 
-    See also
+    See Also
     --------
     pvlib.atmosphere.angstrom_aod_at_lambda
     """

@@ -78,7 +78,7 @@ def pvefficiency_adr(effective_irradiance, temp_cell,
     are array-like they must be the same shape or broadcastable to the
     same shape.
 
-    See also
+    See Also
     --------
     pvlib.pvarray.fit_pvefficiency_adr
 
@@ -175,7 +175,7 @@ def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta,
     would consist of 6 operating points covering low, medium and high
     irradiance levels at two operating temperatures.
 
-    See also
+    See Also
     --------
     pvlib.pvarray.pvefficiency_adr
     scipy.optimize.curve_fit

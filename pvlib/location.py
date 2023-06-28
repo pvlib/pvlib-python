@@ -50,7 +50,7 @@ class Location:
     name : string, optional
         Sets the name attribute of the Location object.
 
-    See also
+    See Also
     --------
     pvlib.pvsystem.PVSystem
     """
@@ -293,7 +293,7 @@ class Location:
         airmass : DataFrame
             Columns are 'airmass_relative', 'airmass_absolute'
 
-        See also
+        See Also
         --------
         pvlib.atmosphere.get_relative_airmass
         """

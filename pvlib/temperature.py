@@ -131,7 +131,7 @@ def sapm_cell(poa_global, temp_air, wind_speed, a, b, deltaT,
        Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
        NM.
 
-    See also
+    See Also
     --------
     sapm_cell_from_module
     sapm_module
@@ -212,7 +212,7 @@ def sapm_module(poa_global, temp_air, wind_speed, a, b):
        Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
        NM.
 
-    See also
+    See Also
     --------
     sapm_cell
     sapm_cell_from_module
@@ -282,7 +282,7 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
        Model", SAND Report 3535, Sandia National Laboratories, Albuquerque,
        NM.
 
-    See also
+    See Also
     --------
     sapm_cell
     sapm_module
@@ -439,7 +439,7 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
 
-    See also
+    See Also
     --------
     pvlib.temperature.faiman_rad
 
@@ -545,7 +545,7 @@ def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
        Models by Incorporating Radiative Losses to the Sky". SAND2022-11604.
        :doi:`10.2172/1884890`
 
-    See also
+    See Also
     --------
     pvlib.temperature.faiman
 
@@ -1133,7 +1133,7 @@ def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
        Model Equivalence and Parameter Translation". 2022 IEEE
        Photovoltaic Specialists Conference (PVSC), 2022.
 
-    See also
+    See Also
     --------
     pvlib.temperature.GenericLinearModel
     """
@@ -1203,7 +1203,7 @@ class GenericLinearModel():
     >>> pvsyst_cell(800, 20, 1, **parmdict)
     53.33333333333333
 
-    See also
+    See Also
     --------
     pvlib.temperature.generic_linear
     '''
@@ -1248,7 +1248,7 @@ class GenericLinearModel():
         -------
         numeric, values in degrees Celsius
 
-        See also
+        See Also
         --------
         get_generic
         pvlib.temperature.generic_linear
@@ -1269,7 +1269,7 @@ class GenericLinearModel():
         -------
         model_parameters : dict
 
-        See also
+        See Also
         --------
         pvlib.temperature.generic_linear
         '''

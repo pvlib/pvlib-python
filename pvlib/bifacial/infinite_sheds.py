@@ -284,7 +284,7 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        :doi:`10.1109/PVSC40753.2019.8980572`.
 
-    See also
+    See Also
     --------
     get_irradiance
     """
@@ -518,7 +518,7 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
        Photovoltaic Specialists Conference (PVSC), 2019, pp. 1282-1287.
        :doi:`10.1109/PVSC40753.2019.8980572`.
 
-    See also
+    See Also
     --------
     get_irradiance_poa
     """

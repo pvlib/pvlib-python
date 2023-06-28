@@ -89,7 +89,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
           projecting the vector normal to the panel's surface to the earth's
           surface. [degrees]
 
-    See also
+    See Also
     --------
     pvlib.tracking.calc_axis_tilt
     pvlib.tracking.calc_cross_axis_tilt
@@ -287,7 +287,7 @@ def calc_axis_tilt(slope_azimuth, slope_tilt, axis_azimuth):
     axis_tilt : float
         tilt of tracker [degrees]
 
-    See also
+    See Also
     --------
     pvlib.tracking.singleaxis
     pvlib.tracking.calc_cross_axis_tilt
@@ -396,7 +396,7 @@ def calc_cross_axis_tilt(
         between the slope containing the tracker axes and a plane perpendicular
         to the tracker axes [degrees]
 
-    See also
+    See Also
     --------
     pvlib.tracking.singleaxis
     pvlib.tracking.calc_axis_tilt

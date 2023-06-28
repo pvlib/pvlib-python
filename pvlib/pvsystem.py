@@ -185,7 +185,7 @@ class PVSystem:
     ValueError
         If `arrays` is not None and has length 0.
 
-    See also
+    See Also
     --------
     pvlib.location.Location
     """
@@ -351,7 +351,7 @@ class PVSystem:
             Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
             'poa_sky_diffuse', 'poa_ground_diffuse'``.
 
-        See also
+        See Also
         --------
         pvlib.irradiance.get_total_irradiance
         """
@@ -770,7 +770,7 @@ class PVSystem:
         ValueError
             If model='adr' and the PVSystem has more than one array.
 
-        See also
+        See Also
         --------
         pvlib.inverter.sandia
         pvlib.inverter.sandia_multi
@@ -1110,7 +1110,7 @@ class Array:
             Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
             'poa_sky_diffuse', 'poa_ground_diffuse'``.
 
-        See also
+        See Also
         --------
         :py:func:`pvlib.irradiance.get_total_irradiance`
         """
@@ -2313,7 +2313,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     .. [1] D. King et al, "Sandia Photovoltaic Array Performance Model",
        SAND2004-3535, Sandia National Laboratories, Albuquerque, NM
 
-    See also
+    See Also
     --------
     pvlib.iam.sapm
     pvlib.spectrum.spectral_factor_sapm
@@ -2414,7 +2414,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             * i - IV curve current in amperes.
             * v - IV curve voltage in volts.
 
-    See also
+    See Also
     --------
     calcparams_desoto
     calcparams_cec

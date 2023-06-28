@@ -2223,7 +2223,7 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
        diffuse radiation fraction for hourly, daily and monthly-average
        global radiation, Solar Energy 28(4), pp 293-302, 1982. Eq. 1
 
-    See also
+    See Also
     --------
     dirint
     disc
@@ -2321,7 +2321,7 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
        Environmetrics 12(2), pp 103-116, 2001,
        :doi:`10.1002/1099-095X(200103)12:2%3C103::AID-ENV447%3E3.0.CO;2-2`
 
-    See also
+    See Also
     --------
     dirint
     disc

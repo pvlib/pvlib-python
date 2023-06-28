@@ -337,7 +337,7 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     This function will find the points where the function is maximized.
     Returns nan where lower or upper is nan, or where func evaluates to nan.
 
-    See also
+    See Also
     --------
     pvlib.singlediode._pwr_optfcn
     """

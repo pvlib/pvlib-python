@@ -61,7 +61,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
         DataFrame/OrderedDict contains the columns/keys
         ``'dhi', 'dni', 'ghi'``.
 
-    See also
+    See Also
     --------
     lookup_linke_turbidity
     pvlib.location.Location.get_clearsky
@@ -909,7 +909,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
         DataFrame/OrderedDict contains the columns/keys
         ``'dhi', 'dni', 'ghi', 'direct_horizontal'`` in  [W/m^2].
 
-    See also
+    See Also
     --------
     pvlib.atmosphere.bird_hulstrom80_aod_bb
     pvlib.atmosphere.get_relative_airmass

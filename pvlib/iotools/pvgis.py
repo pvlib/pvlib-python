@@ -63,20 +63,20 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         In decimal degrees, between -90 and 90, north is positive (ISO 19115)
     longitude : float
         In decimal degrees, between -180 and 180, east is positive (ISO 19115)
-    start : int or datetime like, default: None
+    start : int or datetime like, default None
         First year of the radiation time series. Defaults to first year
         available.
-    end : int or datetime like, default: None
+    end : int or datetime like, default None
         Last year of the radiation time series. Defaults to last year
         available.
-    raddatabase : str, default: None
+    raddatabase : str, default None
         Name of radiation database. Options depend on location, see [3]_.
-    components : bool, default: True
+    components : bool, default True
         Output solar radiation components (beam, diffuse, and reflected).
         Otherwise only global irradiance is returned.
-    surface_tilt : float, default: 0
+    surface_tilt : float, default 0
         Tilt angle from horizontal plane. Ignored for two-axis tracking.
-    surface_azimuth : float, default: 180
+    surface_azimuth : float, default 180
         Orientation (azimuth angle) of the (fixed) plane. Counter-clockwise
         from north (north=0, south=180). This is offset 180 degrees from
         the convention used by PVGIS. Ignored for tracking systems.
@@ -85,45 +85,45 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
            The `surface_azimuth` parameter now follows the pvlib convention, which
            is counterclockwise from north. However, the convention used by the
            PVGIS website and pvlib<=0.9.5 is offset by 180 degrees.
-    usehorizon : bool, default: True
+    usehorizon : bool, default True
         Include effects of horizon
-    userhorizon : list of float, default: None
+    userhorizon : list of float, default None
         Optional user specified elevation of horizon in degrees, at equally
         spaced azimuth clockwise from north, only valid if ``usehorizon`` is
         true, if ``usehorizon`` is true but ``userhorizon`` is ``None`` then
         PVGIS will calculate the horizon [4]_
-    pvcalculation : bool, default: False
+    pvcalculation : bool, default False
         Return estimate of hourly PV production.
-    peakpower : float, default: None
+    peakpower : float, default None
         Nominal power of PV system in kW. Required if pvcalculation=True.
-    pvtechchoice : {'crystSi', 'CIS', 'CdTe', 'Unknown'}, default: 'crystSi'
+    pvtechchoice : {'crystSi', 'CIS', 'CdTe', 'Unknown'}, default 'crystSi'
         PV technology.
-    mountingplace : {'free', 'building'}, default: free
+    mountingplace : {'free', 'building'}, default free
         Type of mounting for PV system. Options of 'free' for free-standing
         and 'building' for building-integrated.
-    loss : float, default: 0
+    loss : float, default 0
         Sum of PV system losses in percent. Required if pvcalculation=True
-    trackingtype : {0, 1, 2, 3, 4, 5}, default: 0
+    trackingtype : {0, 1, 2, 3, 4, 5}, default 0
         Type of suntracking. 0=fixed, 1=single horizontal axis aligned
         north-south, 2=two-axis tracking, 3=vertical axis tracking, 4=single
         horizontal axis aligned east-west, 5=single inclined axis aligned
         north-south.
-    optimal_surface_tilt : bool, default: False
+    optimal_surface_tilt : bool, default False
         Calculate the optimum tilt angle. Ignored for two-axis tracking
-    optimalangles : bool, default: False
+    optimalangles : bool, default False
         Calculate the optimum tilt and azimuth angles. Ignored for two-axis
         tracking.
-    outputformat : str, default: 'json'
+    outputformat : str, default 'json'
         Must be in ``['json', 'csv']``. See PVGIS hourly data
         documentation [2]_ for more info.
-    url : str, default: :const:`pvlib.iotools.pvgis.URL`
+    url : str, default :const:`pvlib.iotools.pvgis.URL`
         Base url of PVGIS API. ``seriescalc`` is appended to get hourly data
         endpoint. Note, a specific PVGIS version can be specified, e.g.,
         https://re.jrc.ec.europa.eu/api/v5_2/
-    map_variables : bool, default: True
+    map_variables : bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-    timeout : int, default: 30
+    timeout : int, default 30
         Time in seconds to wait for server response before timeout
 
     Returns
@@ -418,7 +418,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         first year to calculate TMY
     endyear : int, default None
         last year to calculate TMY, must be at least 10 years from first year
-    url : str, default: :const:`pvlib.iotools.pvgis.URL`
+    url : str, default :const:`pvlib.iotools.pvgis.URL`
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     map_variables : bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
@@ -678,7 +678,7 @@ def get_pvgis_horizon(latitude, longitude, url=URL, **kwargs):
         Latitude in degrees north
     longitude : float
         Longitude in degrees east
-    url : str, default: :const:`pvlib.iotools.pvgis.URL`
+    url : str, default :const:`pvlib.iotools.pvgis.URL`
         Base URL for PVGIS
     kwargs:
         Passed to requests.get

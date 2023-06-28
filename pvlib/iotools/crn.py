@@ -68,7 +68,7 @@ def read_crn(filename, map_variables=True):
     ----------
     filename : str, path object, or file-like
         filepath or url to read for the fixed-width file.
-    map_variables : boolean, default: True
+    map_variables : boolean, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 

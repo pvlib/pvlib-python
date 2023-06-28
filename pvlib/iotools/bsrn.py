@@ -84,7 +84,7 @@ def get_bsrn(station, start, end, username, password,
         username for accessing the BSRN FTP server
     password : str
         password for accessing the BSRN FTP server
-    logical_records : list or tuple, default: ('0100',)
+    logical_records : list or tuple, default ('0100',)
         List of the logical records (LR) to parse. Options include: '0100',
         '0300', and '0500'.
     save_path : str or path-like, optional
@@ -221,7 +221,7 @@ def parse_bsrn(fbuf, logical_records=('0100',)):
     ----------
     fbuf : file-like buffer
         Buffer of a BSRN station-to-archive data file
-    logical_records : list or tuple, default: ('0100',)
+    logical_records : list or tuple, default ('0100',)
         List of the logical records (LR) to parse. Options include: '0100',
         '0300', and '0500'.
 
@@ -379,7 +379,7 @@ def read_bsrn(filename, logical_records=('0100',)):
     ----------
     filename : str or path-like
         Name or path of a BSRN station-to-archive data file
-    logical_records : list or tuple, default: ('0100',)
+    logical_records : list or tuple, default ('0100',)
         List of the logical records (LR) to parse. Options include: '0100',
         '0300', and '0500'.
 

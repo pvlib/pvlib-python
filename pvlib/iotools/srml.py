@@ -279,6 +279,11 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     hourly        RH           PH
     ============= ============ ==================
 
+    Warning
+    -------
+    SRML data has nighttime data prefilled with 0s through the end of the
+    current month (i.e., values are provided for data in the future).
+
     References
     ----------
     .. [1] University of Oregon Solar Radiation Measurement Laboratory

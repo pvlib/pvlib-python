@@ -24,8 +24,8 @@ VARIABLE_MAP = {
 }
 
 
-def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None,
-              encoding=None):
+def read_tmy3(filename, coerce_year=None, recolumn=None, encoding=None,
+              map_variables=None):
     """Read a TMY3 file into a pandas dataframe.
 
     Note that values contained in the metadata dictionary are unchanged
@@ -44,9 +44,6 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None,
         If supplied, the year of the index will be set to `coerce_year`, except
         for the last index value which will be set to the *next* year so that
         the index increases monotonically.
-    map_variables : bool, default None
-        When True, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable :const:`VARIABLE_MAP`.
     recolumn : bool (deprecated, use map_variables instead)
         If ``True``, apply standard names to TMY3 columns. Typically this
         results in stripping the units from the column name.
@@ -56,6 +53,9 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None,
         be necessary to specify an alternative encoding, e.g., for
         SolarAnywhere TMY3 files the encoding should be 'iso-8859-1'. Users
         may also consider using the 'utf-8-sig' encoding.
+    map_variables : bool, default None
+        When True, renames columns of the DataFrame to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------

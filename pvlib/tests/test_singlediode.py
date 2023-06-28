@@ -8,6 +8,7 @@ import scipy
 from pvlib import pvsystem
 from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
+from pvlib._deprecation import pvlibDeprecationWarning
 import pytest
 from .conftest import DATA_DIR
 
@@ -167,6 +168,19 @@ def test_singlediode_precision(method, precise_iv_curves):
     assert np.allclose(pc['i_xx'], outs['i_xx'], atol=1e-6, rtol=0)
 
 
+def test_singlediode_lambert_negative_voc():
+
+    # Those values result in a negative v_oc out of `_lambertw_v_from_i`
+    x = np.array([0., 1.480501e-11, 0.178, 8000., 1.797559])
+    outs = pvsystem.singlediode(*x, method='lambertw')
+    assert outs['v_oc'] == 0
+
+    # Testing for an array
+    x  = np.array([x, x]).T
+    outs = pvsystem.singlediode(*x, method='lambertw')
+    assert np.array_equal(outs['v_oc'], [0, 0])
+
+
 @pytest.mark.parametrize('method', ['lambertw'])
 def test_ivcurve_pnts_precision(method, precise_iv_curves):
     """
@@ -176,7 +190,10 @@ def test_ivcurve_pnts_precision(method, precise_iv_curves):
     x, pc = precise_iv_curves
     pc_i, pc_v = np.stack(pc['Currents']), np.stack(pc['Voltages'])
     ivcurve_pnts = len(pc['Currents'][0])
-    outs = pvsystem.singlediode(method=method, ivcurve_pnts=ivcurve_pnts, **x)
+
+    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
+        outs = pvsystem.singlediode(method=method, ivcurve_pnts=ivcurve_pnts,
+                                    **x)
 
     assert np.allclose(pc_i, outs['i'], atol=1e-10, rtol=0)
     assert np.allclose(pc_v, outs['v'], atol=1e-10, rtol=0)
@@ -408,3 +425,135 @@ def test_pvsyst_breakdown(method, brk_params, recomb_params, poa, temp_cell,
 
     vsc_88 = bishop88_v_from_i(isc_88, *x, **y, method=method)
     assert np.isclose(vsc_88, 0.0, *tol)
+
+
+@pytest.fixture
+def bishop88_arguments():
+    pvsyst_fs_495 = get_pvsyst_fs_495()
+    # evaluate PVSyst model with thin-film recombination loss current
+    # at reference conditions
+    x = pvsystem.calcparams_pvsyst(
+        effective_irradiance=pvsyst_fs_495['irrad_ref'],
+        temp_cell=pvsyst_fs_495['temp_ref'],
+        alpha_sc=pvsyst_fs_495['alpha_sc'],
+        gamma_ref=pvsyst_fs_495['gamma_ref'],
+        mu_gamma=pvsyst_fs_495['mu_gamma'], I_L_ref=pvsyst_fs_495['I_L_ref'],
+        I_o_ref=pvsyst_fs_495['I_o_ref'], R_sh_ref=pvsyst_fs_495['R_sh_ref'],
+        R_sh_0=pvsyst_fs_495['R_sh_0'], R_sh_exp=pvsyst_fs_495['R_sh_exp'],
+        R_s=pvsyst_fs_495['R_s'],
+        cells_in_series=pvsyst_fs_495['cells_in_series'],
+        EgRef=pvsyst_fs_495['EgRef']
+    )
+    y = dict(d2mutau=pvsyst_fs_495['d2mutau'],
+             NsVbi=VOLTAGE_BUILTIN*pvsyst_fs_495['cells_in_series'])
+    # Convert (*x, **y) in a bishop88_.* call to dict of arguments
+    args_dict = {
+        'photocurrent': x[0],
+        'saturation_current': x[1],
+        'resistance_series': x[2],
+        'resistance_shunt': x[3],
+        'nNsVth': x[4],
+    }
+    args_dict.update(y)
+    return args_dict
+
+
+@pytest.mark.parametrize('method, method_kwargs', [
+    ('newton', {
+        'tol': 1e-8,
+        'rtol': 1e-8,
+        'maxiter': 30,
+    }),
+    ('brentq', {
+        'xtol': 1e-8,
+        'rtol': 1e-8,
+        'maxiter': 30,
+    })
+])
+def test_bishop88_kwargs_transfer(method, method_kwargs, mocker,
+                                  bishop88_arguments):
+    """test method_kwargs modifying optimizer does not break anything"""
+    # patch method namespace at singlediode module namespace
+    optimizer_mock = mocker.patch('pvlib.singlediode.' + method)
+
+    # check kwargs passed to bishop_.* are a subset of the call args
+    # since they are called with more keyword arguments
+
+    bishop88_i_from_v(0, **bishop88_arguments, method=method,
+                      method_kwargs=method_kwargs)
+    _, kwargs = optimizer_mock.call_args
+    assert method_kwargs.items() <= kwargs.items()
+
+    bishop88_v_from_i(0, **bishop88_arguments, method=method,
+                      method_kwargs=method_kwargs)
+    _, kwargs = optimizer_mock.call_args
+    assert method_kwargs.items() <= kwargs.items()
+
+    bishop88_mpp(**bishop88_arguments, method=method,
+                 method_kwargs=method_kwargs)
+    _, kwargs = optimizer_mock.call_args
+    assert method_kwargs.items() <= kwargs.items()
+
+
+@pytest.mark.parametrize('method, method_kwargs', [
+    ('newton', {
+        'tol': 1e-4,
+        'rtol': 1e-4,
+        'maxiter': 20,
+        '_inexistent_param': "0.01"
+    }),
+    ('brentq', {
+        'xtol': 1e-4,
+        'rtol': 1e-4,
+        'maxiter': 20,
+        '_inexistent_param': "0.01"
+    })
+])
+def test_bishop88_kwargs_fails(method, method_kwargs, bishop88_arguments):
+    """test invalid method_kwargs passed onto the optimizer fail"""
+
+    pytest.raises(TypeError, bishop88_i_from_v,
+                  0, **bishop88_arguments, method=method,
+                  method_kwargs=method_kwargs)
+
+    pytest.raises(TypeError, bishop88_v_from_i,
+                  0, **bishop88_arguments, method=method,
+                  method_kwargs=method_kwargs)
+
+    pytest.raises(TypeError, bishop88_mpp,
+                  **bishop88_arguments, method=method,
+                  method_kwargs=method_kwargs)
+
+
+@pytest.mark.parametrize('method', ['newton', 'brentq'])
+def test_bishop88_full_output_kwarg(method, bishop88_arguments):
+    """test call to bishop88_.* with full_output=True return values are ok"""
+    method_kwargs = {'full_output': True}
+
+    ret_val = bishop88_i_from_v(0, **bishop88_arguments, method=method,
+                                method_kwargs=method_kwargs)
+    assert isinstance(ret_val, tuple)  # ret_val must be a tuple
+    assert len(ret_val) == 2  # of two elements
+    assert isinstance(ret_val[0], float)  # first one has bishop88 result
+    assert isinstance(ret_val[1], tuple)  # second is output from optimizer
+    # any root finder returns at least 2 elements with full_output=True
+    assert len(ret_val[1]) >= 2
+
+    ret_val = bishop88_v_from_i(0, **bishop88_arguments, method=method,
+                                method_kwargs=method_kwargs)
+    assert isinstance(ret_val, tuple)  # ret_val must be a tuple
+    assert len(ret_val) == 2  # of two elements
+    assert isinstance(ret_val[0], float)  # first one has bishop88 result
+    assert isinstance(ret_val[1], tuple)  # second is output from optimizer
+    # any root finder returns at least 2 elements with full_output=True
+    assert len(ret_val[1]) >= 2
+
+    ret_val = bishop88_mpp(**bishop88_arguments, method=method,
+                           method_kwargs=method_kwargs)
+    assert isinstance(ret_val, tuple)  # ret_val must be a tuple
+    assert len(ret_val) == 2  # of two elements
+    assert isinstance(ret_val[0], tuple)  # first one has bishop88 result
+    assert len(ret_val[0]) == 3  # of three elements (I,V,P)
+    assert isinstance(ret_val[1], tuple)  # second is output from optimizer
+    # any root finder returns at least 2 elements with full_output=True
+    assert len(ret_val[1]) >= 2

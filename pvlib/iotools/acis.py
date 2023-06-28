@@ -360,8 +360,8 @@ def get_acis_station_data(station, start, end, trace_val=0.001,
     Returns
     -------
     data : pandas.DataFrame
-        Daily precipitation [mm], temperature [Celsius], snow [cm], and degree day
-        [Celsius-days] data data
+        Daily precipitation [mm], temperature [Celsius], snow [mm], and
+        degree day [Celsius-days] data
     metadata : dict
         station metadata
 
@@ -400,8 +400,8 @@ def get_acis_station_data(station, start, end, trace_val=0.001,
         {"name": "avgt", "interval": "dly", "units": "degreeC"},
         {"name": "obst", "interval": "dly", "units": "degreeC"},
         {"name": "pcpn", "interval": "dly", "units": "mm"},
-        {"name": "snow", "interval": "dly", "units": "cm"},
-        {"name": "snwd", "interval": "dly", "units": "cm"},
+        {"name": "snow", "interval": "dly", "units": "mm"},
+        {"name": "snwd", "interval": "dly", "units": "mm"},
         {"name": "cdd", "interval": "dly", "units": "degreeC"},
         {"name": "hdd", "interval": "dly", "units": "degreeC"},
         {"name": "gdd", "interval": "dly", "units": "degreeC"},

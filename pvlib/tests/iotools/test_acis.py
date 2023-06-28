@@ -108,8 +108,8 @@ def test_get_acis_station_data():
                                      trace_val=-99)
     expected = pd.DataFrame(
         [[10., 2., 6., np.nan, 21.34, 0., 0., 0., 59., 0.],
-         [3., -4., -0.5, np.nan, 9.4, 5.3, 0., 0., 65., 0.],
-         [-1., -5., -3., np.nan, -99, -99, 5., 0., 68., 0.]],
+         [3., -4., -0.5, np.nan, 9.4, 53.3, 0., 0., 65., 0.],
+         [-1., -5., -3., np.nan, -99, -99, 51., 0., 68., 0.]],
         columns=['temp_air_max', 'temp_air_min', 'temp_air_average',
                  'temp_air_observation', 'precipitation', 'snowfall',
                  'snowdepth', 'cooling_degree_days',

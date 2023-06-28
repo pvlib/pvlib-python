@@ -45,7 +45,7 @@ Enhancements
   (:issue:`1249`, :pull:`1764`)
 * Improved `ModelChainResult.__repr__` (:pull:`1236`)
 * Added option to infer threshold values for 
-  :py:func:`pvlib.clearsky.detect_clearsky`
+  :py:func:`pvlib.clearsky.detect_clearsky` (:pull:`1784`)
 
 
 Bug fixes

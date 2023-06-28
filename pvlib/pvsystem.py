@@ -1525,10 +1525,10 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
         types in the parameter estimation algorithm used by NREL.
 
-    irrad_ref : float (optional, default=1000)
+    irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
 
-    temp_ref : float (optional, default=25)
+    temp_ref : float, default 25
         Reference cell temperature in C.
 
     Returns
@@ -1741,10 +1741,10 @@ def calcparams_cec(effective_irradiance, temp_cell,
         the SAM CEC module database, dEgdT=-0.0002677 is implicit for all cell
         types in the parameter estimation algorithm used by NREL.
 
-    irrad_ref : float (optional, default=1000)
+    irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
 
-    temp_ref : float (optional, default=25)
+    temp_ref : float, default 25
         Reference cell temperature in C.
 
     Returns
@@ -1858,10 +1858,10 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
         The energy bandgap at reference temperature in units of eV.
         1.121 eV for crystalline silicon. EgRef must be >0.
 
-    irrad_ref : float (optional, default=1000)
+    irrad_ref : float, default 1000
         Reference irradiance in W/m^2.
 
-    temp_ref : float (optional, default=25)
+    temp_ref : float, default 25
         Reference cell temperature in C.
 
     Returns

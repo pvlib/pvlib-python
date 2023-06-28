@@ -49,6 +49,9 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 
+* Prevent small negative values of `v_oc` in :py:func:`pvlib.singlediode._lambertw`
+  which result from accumulated roundoff error. (:issue:`1780`, :issue:`1673`, :pull:`1782`)
+
 
 Testing
 ~~~~~~~
@@ -71,3 +74,5 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Cédric Leroy (:ghuser:`cedricleroy`)
+* Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)

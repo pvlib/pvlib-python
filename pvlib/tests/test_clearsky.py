@@ -544,6 +544,14 @@ def test_clearsky_get_threshold_raises_error():
         clearsky._clearsky_get_threshold(0.5)
 
 
+def test_detect_clearsky_calls_threshold(mocker, detect_clearsky_data):
+    threshold_spy = mocker.spy(clearsky, '_clearsky_get_threshold')
+    expected, cs = detect_clearsky_data
+    threshold_actual = clearsky.detect_clearsky(expected['GHI'], cs['ghi'],
+                       infer_limits=True)
+    assert threshold_spy.call_count == 1
+
+
 def test_detect_clearsky(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(

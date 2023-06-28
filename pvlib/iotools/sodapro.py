@@ -87,7 +87,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     integrated : boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label : {'right', 'left'}, default None
+    label : {'right', 'left'}, optional
         Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
     map_variables : bool, default True
@@ -240,7 +240,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     integrated : boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label : {'right', 'left'}, default None
+    label : {'right', 'left'}, optional
         Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
     map_variables : bool, default True
@@ -341,7 +341,7 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     integrated : boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label : {'right', 'left}, default None
+    label : {'right', 'left}, optional
         Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
     map_variables : bool, default True

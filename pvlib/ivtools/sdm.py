@@ -166,7 +166,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         Reference temperature condition [C]
     irrad_ref : float, default 1000
         Reference irradiance condition [W/m2]
-    root_kwargs : dictionary, default None
+    root_kwargs : dictionary, optional
         Dictionary of arguments to pass onto scipy.optimize.root()
 
     Returns

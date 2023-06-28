@@ -340,13 +340,13 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         Global horizontal irradiance. [W/m2]
     dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m2]
-    airmass : None or numeric, default None
+    airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]
-    surface_type : None or str, default None
+    surface_type : str, optional
         Surface type. See :py:func:`~pvlib.irradiance.get_ground_diffuse` for
         the list of accepted values.
     model : str, default 'isotropic'
@@ -417,9 +417,9 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         Global horizontal irradiance. [W/m2]
     dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m2]
-    airmass : None or numeric, default None
+    airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
@@ -564,7 +564,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         the reflection coefficient. Must be >=0 and <=1. Will be
         overridden if surface_type is supplied.
 
-    surface_type : None or string, default None
+    surface_type : string, optional
         If not None, overrides albedo. String can be one of 'urban',
         'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt', 'concrete',
         'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'.
@@ -777,17 +777,17 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     dni_extra : numeric
         Extraterrestrial normal irradiance in W/m^2.
 
-    solar_zenith : None or numeric, default None
+    solar_zenith : numeric, optional
         Solar apparent (refraction-corrected) zenith angles in decimal
         degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
         supply ``projection_ratio``.
 
-    solar_azimuth : None or numeric, default None
+    solar_azimuth : numeric, optional
         Solar azimuth angles in decimal degrees. Must supply
         ``solar_zenith`` and ``solar_azimuth`` or supply
         ``projection_ratio``.
 
-    projection_ratio : None or numeric, default None
+    projection_ratio : numeric, optional
         Ratio of angle of incidence projection to solar zenith angle
         projection. Must supply ``solar_zenith`` and ``solar_azimuth``
         or supply ``projection_ratio``.
@@ -1541,7 +1541,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, default None
+    temp_dew : None, float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -1790,7 +1790,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, default None
+    temp_dew : None, float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -1898,7 +1898,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, default None
+    temp_dew : None, float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -3008,7 +3008,7 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=180.
 
-    clearsky_dni : None or Series, default None
+    clearsky_dni : Series, optional
         Clearsky direct normal irradiance.
 
     clearsky_tolerance : float, default 1.1

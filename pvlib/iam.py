@@ -514,7 +514,7 @@ def sapm(aoi, module, upper=None):
         A dict or Series with the SAPM IAM model parameters.
         See the :py:func:`sapm` notes section for more details.
 
-    upper : None or float, default None
+    upper : float, optional
         Upper limit on the results.
 
     Returns

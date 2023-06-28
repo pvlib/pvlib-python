@@ -872,7 +872,7 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
         :math:`\eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}`
         where A is module area [m^2].
 
-    effective_irradiance : numeric, default None
+    effective_irradiance : numeric, optional
         The irradiance that is converted to photocurrent. If None,
         assumed equal to poa_global. [W/m^2]
 

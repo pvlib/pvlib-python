@@ -127,17 +127,17 @@ class PVSystem:
         Azimuth angle of the module surface.
         North=0, East=90, South=180, West=270.
 
-    albedo : None or float, default None
+    albedo : float, optional
         Ground surface albedo. If ``None``, then ``surface_type`` is used
         to look up a value in ``irradiance.SURFACE_ALBEDOS``.
         If ``surface_type`` is also None then a ground surface albedo
         of 0.25 is used.
 
-    surface_type : None or string, default None
+    surface_type : string, optional
         The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for
         valid values.
 
-    module : None or string, default None
+    module : string, optional
         The model name of the modules.
         May be used to look up the module_parameters dictionary
         via some other method.
@@ -146,10 +146,10 @@ class PVSystem:
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
-    module_parameters : None, dict or Series, default None
+    module_parameters : None, dict or Series, optional
         Module parameters as defined by the SAPM, CEC, or other.
 
-    temperature_model_parameters : None, dict or Series, default None
+    temperature_model_parameters : None, dict or Series, optional
         Temperature model parameters as required by one of the models in
         pvlib.temperature (excluding poa_global, temp_air and wind_speed).
 
@@ -159,22 +159,22 @@ class PVSystem:
     strings_per_inverter : int or float, default 1
         See system topology discussion above.
 
-    inverter : None or string, default None
+    inverter : string, optional
         The model name of the inverters.
         May be used to look up the inverter_parameters dictionary
         via some other method.
 
-    inverter_parameters : None, dict or Series, default None
+    inverter_parameters : None, dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
     racking_model : None or string, default 'open_rack'
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
         Used to identify a parameter set for the SAPM cell temperature model.
 
-    losses_parameters : None, dict or Series, default None
+    losses_parameters : None, dict or Series, optional
         Losses parameters as defined by PVWatts or other.
 
-    name : None or string, default None
+    name : string, optional
 
     **kwargs
         Arbitrary keyword arguments.
@@ -327,9 +327,9 @@ class PVSystem:
         dni_extra : None, float, Series or tuple of float or Series,\
             default None
             Extraterrestrial direct normal irradiance. [W/m2]
-        airmass : None, float or Series, default None
+        airmass : None, float or Series, optional
             Airmass. [unitless]
-        albedo : None, float or Series, default None
+        albedo : None, float or Series, optional
             Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
@@ -902,29 +902,29 @@ class Array:
         single axis tracker. Mounting is used to determine module orientation.
         If not provided, a FixedMount with zero tilt is used.
 
-    albedo : None or float, default None
+    albedo : float, optional
         Ground surface albedo. If ``None``, then ``surface_type`` is used
         to look up a value in ``irradiance.SURFACE_ALBEDOS``.
         If ``surface_type`` is also None then a ground surface albedo
         of 0.25 is used.
 
-    surface_type : None or string, default None
+    surface_type : string, optional
         The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for valid
         values.
 
-    module : None or string, default None
+    module : string, optional
         The model name of the modules.
         May be used to look up the module_parameters dictionary
         via some other method.
 
-    module_type : None or string, default None
+    module_type : string, optional
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
-    module_parameters : None, dict or Series, default None
+    module_parameters : None, dict or Series, optional
         Parameters for the module model, e.g., SAPM, CEC, or other.
 
-    temperature_model_parameters : None, dict or Series, default None
+    temperature_model_parameters : None, dict or Series, optional
         Parameters for the module temperature model, e.g., SAPM, Pvsyst, or
         other.
 
@@ -934,10 +934,10 @@ class Array:
     strings : int, default 1
         Number of parallel strings in the array.
 
-    array_losses_parameters : None, dict or Series, default None
+    array_losses_parameters : None, dict or Series, optional
         Supported keys are 'dc_ohmic_percent'.
 
-    name : None or str, default None
+    name : str, optional
         Name of Array instance.
     """
 
@@ -1091,11 +1091,11 @@ class Array:
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance. [W/m2]
-        dni_extra : None, float or Series, default None
+        dni_extra : None, float or Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
-        airmass : None, float or Series, default None
+        airmass : None, float or Series, optional
             Airmass. [unitless]
-        albedo : None, float or Series, default None
+        albedo : None, float or Series, optional
             Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
@@ -1963,7 +1963,7 @@ def retrieve_sam(name=None, path=None):
 
     Parameters
     ----------
-    name : None or string, default None
+    name : string, optional
         Name can be one of:
 
         * 'CECMod' - returns the CEC module database
@@ -1974,7 +1974,7 @@ def retrieve_sam(name=None, path=None):
         * 'SandiaMod' - returns the Sandia Module database
         * 'ADRInverter' - returns the ADR Inverter database
 
-    path : None or string, default None
+    path : string, optional
         Path to the SAM file. May also be a URL.
 
     Returns
@@ -2382,7 +2382,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         junction in Kelvin, and :math:`q` is the charge of an electron
         (coulombs). ``0 < nNsVth``.  [V]
 
-    ivcurve_pnts : None or int, default None
+    ivcurve_pnts : int, optional
         Number of points in the desired IV curve. If None or 0, no points on
         the IV curves will be produced.
 

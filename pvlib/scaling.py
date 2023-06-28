@@ -30,7 +30,7 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
     cloud_speed : numeric
         Speed of cloud movement in meters per second [m/s].
 
-    dt : float, default None
+    dt : float, optional
         The time series time delta. By default, is inferred from the
         clearsky_index. Must be specified for a time series that doesn't
         include an index. Units of seconds [s].
@@ -216,7 +216,7 @@ def _compute_wavelet(clearsky_index, dt=None):
     clearsky_index : numeric or pandas.Series
         Clear Sky Index time series that will be smoothed.
 
-    dt : float, default None
+    dt : float, optional
         The time series time delta. By default, is inferred from the
         clearsky_index. Must be specified for a time series that doesn't
         include an index. Units of seconds [s].

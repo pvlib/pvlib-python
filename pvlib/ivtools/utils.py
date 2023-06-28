@@ -136,7 +136,7 @@ def rectify_iv_curve(voltage, current, decimals=None):
     ----------
     voltage : numeric [V]
     current : numeric [A]
-    decimals : int or None, default None
+    decimals : int, optional
         number of decimal places to which voltage is rounded to remove
         duplicated points. If None, no rounding is done.
 

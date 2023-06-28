@@ -21,7 +21,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added a new irradiance decomposition model :py:func:`pvlib.irradiance.orgill_hollands`. (:pull:`1730`)
 
 Bug fixes
 ~~~~~~~~~
@@ -45,3 +45,5 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Taos Transue (:ghuser:`reepoi`)
+* Nicholas Riedel-Lyngskær (:ghuser:`nicorie`)
+

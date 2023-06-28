@@ -29,25 +29,25 @@ class Location:
 
     Parameters
     ----------
-    latitude : float.
+    latitude : float
         Positive is north of the equator.
         Use decimal degrees notation.
 
-    longitude : float.
+    longitude : float
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
-    tz : str, int, float, or pytz.timezone, default 'UTC'.
+    tz : str, int, float, or pytz.timezone, default 'UTC'
         See
         http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
         for a list of valid time zones.
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
 
-    altitude : float, default 0.
+    altitude : float, default 0
         Altitude from sea level in meters.
 
-    name : None or string, default None.
+    name : None or string, default None
         Sets the name attribute of the Location object.
 
     See also
@@ -376,11 +376,11 @@ def lookup_altitude(latitude, longitude):
 
     Parameters
     ----------
-    latitude : float.
+    latitude : float
         Positive is north of the equator.
         Use decimal degrees notation.
 
-    longitude : float.
+    longitude : float
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 

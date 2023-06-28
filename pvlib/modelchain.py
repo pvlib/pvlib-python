@@ -90,11 +90,11 @@ def basic_chain(times, latitude, longitude,
     times : DatetimeIndex
         Times at which to evaluate the model.
 
-    latitude : float.
+    latitude : float
         Positive is north of the equator.
         Use decimal degrees notation.
 
-    longitude : float.
+    longitude : float
         Positive is east of the prime meridian.
         Use decimal degrees notation.
 
@@ -113,7 +113,7 @@ def basic_chain(times, latitude, longitude,
         Module parameters as defined by the SAPM. See pvsystem.sapm for
         details.
 
-    temperature_model_parameters : None, dict or Series.
+    temperature_model_parameters : None, dict or Series
         Temperature model parameters as defined by the SAPM.
         See temperature.sapm_cell for details.
 

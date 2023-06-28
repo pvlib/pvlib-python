@@ -88,7 +88,7 @@ def coverage_nrel(snowfall, poa_irradiance, temp_air, surface_tilt,
     threshold_snowfall : float, default 1.0
         Hourly snowfall above which snow coverage is set to the row's slant
         height. [cm/hr]
-    can_slide_coefficient : float, default -80.
+    can_slide_coefficient : float, default -80
         Coefficient to determine if snow can slide given irradiance and air
         temperature. [W/(m^2 C)]
     slide_amount_coefficient : float, default 0.197

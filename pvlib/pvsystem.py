@@ -149,7 +149,7 @@ class PVSystem:
     module_parameters : None, dict or Series, default None
         Module parameters as defined by the SAPM, CEC, or other.
 
-    temperature_model_parameters : None, dict or Series, default None.
+    temperature_model_parameters : None, dict or Series, default None
         Temperature model parameters as required by one of the models in
         pvlib.temperature (excluding poa_global, temp_air and wind_speed).
 
@@ -288,9 +288,9 @@ class PVSystem:
 
         Parameters
         ----------
-        solar_zenith : float or Series.
+        solar_zenith : float or Series
             Solar zenith angle.
-        solar_azimuth : float or Series.
+        solar_azimuth : float or Series
             Solar azimuth angle.
 
         Returns
@@ -924,7 +924,7 @@ class Array:
     module_parameters : None, dict or Series, default None
         Parameters for the module model, e.g., SAPM, CEC, or other.
 
-    temperature_model_parameters : None, dict or Series, default None.
+    temperature_model_parameters : None, dict or Series, default None
         Parameters for the module temperature model, e.g., SAPM, Pvsyst, or
         other.
 
@@ -934,7 +934,7 @@ class Array:
     strings : int, default 1
         Number of parallel strings in the array.
 
-    array_losses_parameters : None, dict or Series, default None.
+    array_losses_parameters : None, dict or Series, default None
         Supported keys are 'dc_ohmic_percent'.
 
     name : None or str, default None
@@ -1081,9 +1081,9 @@ class Array:
 
         Parameters
         ----------
-        solar_zenith : float or Series.
+        solar_zenith : float or Series
             Solar zenith angle.
-        solar_azimuth : float or Series.
+        solar_azimuth : float or Series
             Solar azimuth angle.
         dni : float or Series
             Direct normal irradiance. [W/m2]

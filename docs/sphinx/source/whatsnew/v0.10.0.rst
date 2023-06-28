@@ -44,6 +44,8 @@ Enhancements
   tolerance and number of iterations can be set.
   (:issue:`1249`, :pull:`1764`)
 * Improved `ModelChainResult.__repr__` (:pull:`1236`)
+* Added option to infer threshold values for 
+  :py:func:`pvlib.clearsky.detect_clearsky`
 
 
 Bug fixes
@@ -71,3 +73,4 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Abigail Jones (:ghuser:`ajonesr`)

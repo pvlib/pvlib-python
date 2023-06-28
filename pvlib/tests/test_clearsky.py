@@ -533,6 +533,17 @@ def detect_clearsky_data():
     return expected, cs
 
 
+def test_clearsky_get_threshold():
+    out = clearsky._clearsky_get_threshold(4.5)
+    expected = (58.75, 75, 64.375, -45, 80.0, 0.009375, 58.75)
+    assert np.allclose(out, expected)
+
+
+def test_clearsky_get_threshold_raises_error():
+    with pytest.raises(ValueError):
+        clearsky._clearsky_get_threshold(0.5)
+
+
 def test_detect_clearsky(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(

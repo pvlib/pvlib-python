@@ -83,7 +83,7 @@ def test_get_srml():
     file_data = srml.read_srml(url)
     requested, _ = srml.get_srml(station='EU', start='2018-01-01',
                                  end='2018-01-31')
-    assert assert_frame_equal(file_data, requested)
+    assert_frame_equal(file_data, requested)
 
 
 @fail_on_pvlib_version('0.11')

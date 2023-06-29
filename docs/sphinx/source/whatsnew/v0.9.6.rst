@@ -69,6 +69,8 @@ Enhancements
   (:issue:`1732`, :pull:`1737`)
 * Added function to retrieve horizon data from PVGIS 
   :py:func:`pvlib.iotools.get_pvgis_horizon`. (:issue:`1290`, :pull:`1395`)
+* Added function to retrieve horizon data from MINES Paris Tech 
+  :py:func:`pvlib.iotools.get_mines_horizon`. (:pull:`1295`)
 * Added ``map_variables`` argument to the :py:func:`pvlib.iotools.read_tmy3` in
   order to offer the option of mapping column names to standard pvlib names.
   (:issue:`1517`, :pull:`1623`)

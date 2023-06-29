@@ -502,11 +502,11 @@ def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_pvgis_horizon():
-    pvgis_data, _ = get_pvgis_horizon(35.171051, -106.465158)
-    horizon_data = pd.read_csv(DATA_DIR / 'test_read_pvgis_horizon.csv',
-                               index_col=0)
-    horizon_data = horizon_data['horizon_elevation']
-    assert_series_equal(pvgis_data, horizon_data)
+    horizon_data_remote, _ = get_pvgis_horizon(35.171051, -106.465158)
+    horizon_data_local = pd.read_csv(DATA_DIR / 'test_read_pvgis_horizon.csv',
+                                     index_col=0)
+    horizon_data_local = horizon_data_local['horizon_elevation']
+    assert_series_equal(horizon_data_remote, horizon_data_local)
 
 
 @pytest.mark.remote_data

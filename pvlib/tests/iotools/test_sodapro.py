@@ -8,7 +8,9 @@ import requests
 import pytest
 
 from pvlib.iotools import sodapro
-from ..conftest import DATA_DIR, assert_frame_equal
+from pvlib.iotools import get_mines_horizon
+from ..conftest import (DATA_DIR,  RERUNS, RERUNS_DELAY, assert_frame_equal,
+                        assert_series_equal)
 
 
 testfile_mcclear_verbose = DATA_DIR / 'cams_mcclear_1min_verbose.csv'
@@ -294,3 +296,13 @@ def test_get_cams_bad_request(requests_mock):
             identifier='mcclear',
             time_step='test',  # incorrect time step
             server='pro.soda-is.com')
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_read_pvgis_horizon():
+    horizon_data_remote, meta = get_mines_horizon(35.171051, -106.465158)
+    horizon_data_file = pd.read_csv(
+        DATA_DIR / 'test_mines_horizon_profile.csv', index_col=0)
+    horizon_data_file = horizon_data_file['horizon_elevation']
+    assert_series_equal(horizon_data_remote, horizon_data_file)

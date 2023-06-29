@@ -29,11 +29,11 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added a new irradiance decomposition model :py:func:`pvlib.irradiance.orgill_hollands`. (:pull:`1730`)
 * The return values of :py:func:`pvlib.pvsystem.calcparams_desoto`,
   :py:func:`pvlib.pvsystem.calcparams_cec`, and
   :py:func:`pvlib.pvsystem.calcparams_pvsyst` are all numeric types and have
   the same Python type as the `effective_irradiance` and `temp_cell` parameters. (:issue:`1626`, :pull:`1700`)
-
 * Added `map_variables` parameter to :py:func:`pvlib.iotools.read_srml`
   and :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
 * Allow passing keyword arguments to :py:func:`scipy:scipy.optimize.brentq` and
@@ -44,7 +44,6 @@ Enhancements
   tolerance and number of iterations can be set.
   (:issue:`1249`, :pull:`1764`)
 * Improved `ModelChainResult.__repr__` (:pull:`1236`)
-
 
 Bug fixes
 ~~~~~~~~~
@@ -71,6 +70,7 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Taos Transue (:ghuser:`reepoi`)
+* Nicholas Riedel-Lyngskær (:ghuser:`nicorie`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Cliff Hansen (:ghuser:`cwhanse`)

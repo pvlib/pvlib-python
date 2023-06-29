@@ -177,7 +177,7 @@ Contributors
 * Kshitiz Gupta (:ghuser:`kshitiz305`)
 * Stefan de Lange (:ghuser:`langestefan`)
 * Jose Antonio Caballero (:ghuser:`Jacc0027`)
-* Andy Lam (:ghuser:`@andylam598`)
+* Andy Lam (:ghuser:`andylam598`)
 * :ghuser:`ooprathamm`
 * Devon Watt (:ghuser:`d-watt`)
 * Todd Karin (:ghuser:`toddkarin`)

@@ -36,6 +36,10 @@ Enhancements
   the same Python type as the `effective_irradiance` and `temp_cell` parameters. (:issue:`1626`, :pull:`1700`)
 * Added `map_variables` parameter to :py:func:`pvlib.iotools.read_srml`
   and :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
+* Added :func:`pvlib.iotools.get_srml` that is similar to
+  :func:`pvlib.iotools.read_srml_month_from_solardat` but is able to fetch multiple months
+  of data using the `start` and `end` parameters.
+  (:pull:`1779`)
 * Allow passing keyword arguments to :py:func:`scipy:scipy.optimize.brentq` and
   :py:func:`scipy:scipy.optimize.newton` solvers in
   :py:func:`~pvlib.singlediode.bishop88_mpp`,

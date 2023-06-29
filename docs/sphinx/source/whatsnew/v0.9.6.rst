@@ -44,11 +44,13 @@ Deprecations
   (data period 2003-2012). Instead, ECMWF recommends to use CAMS global
   reanalysis (EAC4) from the Atmosphere Data Store (ADS). See also :py:func:`pvlib.iotools.get_cams`.
   (:issue:`1691`, :pull:`1654`)
-
 * The ``recolumn`` parameter in :py:func:`pvlib.iotools.read_tmy3`, which maps
   TMY3 column names to nonstandard alternatives, is now deprecated.
   We encourage using ``map_variables`` (which produces standard pvlib names) instead.
   (:issue:`1517`, :pull:`1623`)
+* :py:func:`pvlib.iotools.read_srml_month_from_solardat` is deprecated and replaced by
+  :py:func:`pvlib.iotools.get_srml`. (:pull:`1779`)
+
 
 Enhancements
 ~~~~~~~~~~~~

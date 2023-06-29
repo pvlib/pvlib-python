@@ -17,6 +17,7 @@ of sources and file formats relevant to solar energy modeling.
    iotools.parse_epw
    iotools.read_srml
    iotools.read_srml_month_from_solardat
+   iotools.get_srml
    iotools.read_surfrad
    iotools.read_midc
    iotools.read_midc_raw_data_from_nrel

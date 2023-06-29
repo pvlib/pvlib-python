@@ -37,6 +37,11 @@ of sources and file formats relevant to solar energy modeling.
    iotools.get_cams
    iotools.read_cams
    iotools.parse_cams
+   iotools.get_acis_prism
+   iotools.get_acis_nrcc
+   iotools.get_acis_mpe
+   iotools.get_acis_station_data
+   iotools.get_acis_available_stations
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

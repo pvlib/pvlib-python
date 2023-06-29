@@ -5,12 +5,13 @@ test iotools for panond
 from pvlib.iotools import read_panond, parse_panond
 from pvlib.tests.conftest import DATA_DIR
 import io
-# Not sure if I am creating these test scenarios correctly
 
-fn_file = DATA_DIR / 'CPS SCH275KTL-DO-US-800-250kW_275kVA_1.OND'
-ond_file = read_panond(fn_file)
 
-fn_str = """PVObject_=pvGInverter
+def test_read_ond_file():
+    fn_file = DATA_DIR / 'CPS SCH275KTL-DO-US-800-250kW_275kVA_1.OND'
+    ond_file = read_panond(fn_file)
+    # expected
+    fn_str = fn_str = """PVObject_=pvGInverter
   Comment=ChintPower	CPS SCH275KTL-DO/US-800	Manufacturer 2020
   Version=6.81
   ParObj1=2020
@@ -157,13 +158,16 @@ fn_str = """PVObject_=pvGInverter
   Night_Loss=5.00
 End of PVObject pvGcomperter
 """
-f_obj = io.StringIO(fn_str)
-ond_str = parse_panond(f_obj)
+    f_obj = io.StringIO(fn_str)
+    ond_str = parse_panond(f_obj)
+    assert ond_file.keys() == ond_str.keys()
 
-fn_file = DATA_DIR / 'ET-M772BH550GL.PAN'
-mod_file = read_panond(fn_file)
 
-fn_str = """PVObject_=pvModule
+def test_read_pan_file():
+    fn_file = DATA_DIR / 'ET-M772BH550GL.PAN'
+    ond_file = read_panond(fn_file)
+    # expected
+    fn_str = """PVObject_=pvModule
   Version=7.2
   Flags=$00900243
 
@@ -239,5 +243,6 @@ fn_str = """PVObject_=pvModule
   End of PVObject pvIAM
 End of PVObject pvModule
 """
-f_obj = io.StringIO(fn_str)
-mod_str = parse_panond(f_obj)
+    f_obj = io.StringIO(fn_str)
+    ond_str = parse_panond(f_obj)
+    assert ond_file.keys() == ond_str.keys()

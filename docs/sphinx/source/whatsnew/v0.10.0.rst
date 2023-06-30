@@ -19,6 +19,9 @@ Breaking changes
 * :func:`~pvlib.iotools.get_pvgis_tmy` and :func:`~pvlib.iotools.read_pvgis_tmy`
   now rename columns to standard pvlib names by default (``map_variables=True``)
   (:pull:`1772`)
+* In :py:func:`~pvlib.iotools.get_pvgis_tmy`, the ``map_variables`` keyword
+  parameter now comes before the ``url`` keyword parameter. (:pull:`1795`)
+
 
 Deprecations
 ~~~~~~~~~~~~

@@ -219,7 +219,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     if start is not None:
         params['startyear'] = start if isinstance(start, int) else pd.to_datetime(start).year  # noqa: E501
     if end is not None:
-        params['endyear'] = end if isinstance(end, int) else pd.to_datetime(start).year  # noqa: E501
+        params['endyear'] = end if isinstance(end, int) else pd.to_datetime(end).year  # noqa: E501
     if peakpower is not None:
         params['peakpower'] = peakpower
 

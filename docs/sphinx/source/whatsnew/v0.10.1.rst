@@ -11,6 +11,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added support for dates to specified as strings in the iotools get functions:
+  :py:func:`pvlib.iotools.get_pvgis_hourly`, :py:func:`pvlib.iotools.get_cams`,
+  and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`.
+  (:pull:`1800`)
 
 
 Bug fixes

@@ -178,8 +178,8 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
         altitude = -999
 
     # Start and end date should be in the format: yyyy-mm-dd
-    start = start.strftime('%Y-%m-%d')
-    end = end.strftime('%Y-%m-%d')
+    start = pd.to_datetime(start).strftime('%Y-%m-%d')
+    end = pd.to_datetime(end).strftime('%Y-%m-%d')
 
     email = email.replace('@', '%2540')  # Format email address
     identifier = 'get_{}'.format(identifier.lower())  # Format identifier str

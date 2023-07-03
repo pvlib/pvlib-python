@@ -21,6 +21,11 @@ def pvfactors_timeseries(
     Please refer to pvfactors online documentation for more details:
     https://sunpower.github.io/pvfactors/
 
+    .. versionchanged:: 0.10.1
+       It is now recommended to install the ``solarfactors`` package
+       (``pip install solarfactors``) instead of ``pvfactors`` for this
+       function.  For more information, see :ref:`bifacial`.
+
     Parameters
     ----------
     solar_azimuth: numeric

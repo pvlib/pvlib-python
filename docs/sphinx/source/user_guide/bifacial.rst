@@ -37,11 +37,14 @@ Prior to pvlib version 0.10.1, pvlib used the original SunPower implementation
 of the model via the `pvfactors <https://github.com/sunpower/pvfactors>`_
 package.  Starting in version 0.10.1, pvlib instead uses
 `solarfactors <https://github.com/pvlib/solarfactors>`_, a drop-in
-replacement for ``pvfactors`` maintained by the pvlib community.
+replacement implementation maintained by the pvlib community.
+This switch was made when the original ``pvfactors`` package became
+difficult to install in modern python environments.
 ``solarfactors`` implements the same model as ``pvfactors`` and is kept
-up to date and working over time.  Note that for backwards compatibility,
-``pip install solarfactors`` installs a package that is still accessed in code
-with the original ``import pvfactors``.
+up to date and working over time.  Note that "solarfactors" is only the name
+on PyPI (meaning it is installed via ``pip install solarfactors``);
+after installation, Python code still accesses it as "pvfactors"
+(e.g. ``import pvfactors``).
 
 
 Infinite Sheds

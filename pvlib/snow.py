@@ -46,7 +46,6 @@ def fully_covered_nrel(snowfall, threshold_snowfall=1.):
        of a PV Snow Coverage Model in SAM" (2017) NREL Technical Report
        NREL/TP-6A20-68705
     '''
-    notused = 0
     timestep = _time_delta_in_hours(snowfall.index)
     hourly_snow_rate = snowfall / timestep
     # if we can infer a time frequency, use first snowfall value

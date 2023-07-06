@@ -13,14 +13,6 @@ import pandas as pd
 import functools
 from pvlib.tools import cosd, sind
 
-from pvlib import pvsystem
-
-extra_whitespace = None  
-
-
-
-
-
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
 _IAM_MODEL_PARAMS = {

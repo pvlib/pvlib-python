@@ -27,7 +27,7 @@ Documentation: http://pvlib-python.readthedocs.io
 
 Source code: https://github.com/pvlib/pvlib-python
 """
-LONG_DESCRIPTION_CONTENT_TYPE = "text/plain"
+LONG_DESCRIPTION_CONTENT_TYPE = "text/x-rst"
 
 DISTNAME = 'pvlib'
 LICENSE = 'BSD 3-Clause'

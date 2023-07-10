@@ -123,8 +123,11 @@ print('Annual AC output is ' + str(np.round(annual_ac_output, 2)) + ' kWh')
 # Period of financial analysis
 n = 20
 
-# Assume constant AC production over analysis period
-production = np.full(n, annual_ac_output)
+# Assume system degradation rate is 1%
+sdr = 0.01
+
+# Apply degradation rate to AC production over analysis period
+production = np.array([annual_ac_output*(1 - sdr)**i for i in range(n)])
 
 # Total installed capital costs [$] *
 capex = 1119.82*installed_dc/1000

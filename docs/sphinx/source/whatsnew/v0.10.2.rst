@@ -11,7 +11,11 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added :py:mod:`pvlib.financial` module with functions
+:py:func:`~pvlib.financial.lcoe`, :py:func:`~pvlib.financial.crf`,
+:py:func:`~pvlib.financial.nominal_to_real`,
+:py:func:`~pvlib.financial.real_to_nominal`, and
+:py:func:`~pvlib.financial.wacc` (:pull:`1687`)
 
 Bug fixes
 ~~~~~~~~~
@@ -31,4 +35,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Emma Cooper (:ghuser:`eccoope`)

@@ -11,6 +11,12 @@ Modeling the irradiance on the rear side of a fixed-tilt array.
 # fixed-tilt systems correctly.
 # This example shows how to model rear-side irradiance on a fixed-tilt
 # array using :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries`.
+#
+# .. attention::
+#    To run this example, the ``solarfactors`` package (an implementation
+#    of the pvfactors model) must be installed.  It can be installed with
+#    either ``pip install solarfactors`` or ``pip install pvlib[optional]``,
+#    which installs all of pvlib's optional dependencies.
 
 import pandas as pd
 from pvlib import location

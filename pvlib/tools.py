@@ -377,6 +377,9 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     df['max'] = 0.5 * (df['V1'] + df['V2'])
     func_result = func(df, 'max')
     x = np.where(np.isnan(func_result), np.nan, df['max'])
+    if np.isscalar(df['max']):
+        # np.where always returns an ndarray, converting scalars to 0d-arrays
+        x = x.item()
 
     return func_result, x
 
@@ -459,3 +462,25 @@ def _first_order_centered_difference(f, x0, dx=DX, args=()):
     # removal in scipy 1.12.0
     df = f(x0+dx, *args) - f(x0-dx, *args)
     return df / 2 / dx
+
+
+def get_pandas_index(*args):
+    """
+    Get the index of the first pandas DataFrame or Series in a list of
+    arguments.
+
+    Parameters
+    ----------
+    args: positional arguments
+        The numeric values to scan for a pandas index.
+
+    Returns
+    -------
+    A pandas index or None
+        None is returned if there are no pandas DataFrames or Series in the
+        args list.
+    """
+    return next(
+        (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))),
+        None
+    )

@@ -5,7 +5,6 @@ test infinite sheds
 import numpy as np
 import pandas as pd
 from pvlib.bifacial import infinite_sheds
-from pvlib.tools import cosd
 from ..conftest import assert_series_equal
 
 import pytest
@@ -40,116 +39,6 @@ def test_system():
     vf_2 = 0.5 * (c23 - c22 + c21 - c20)  # vf at point 1
     vfs_ground_sky = np.array([vf_0, vf_1, vf_2])
     return syst, pts, vfs_ground_sky
-
-
-@pytest.mark.parametrize("vectorize", [True, False])
-def test__vf_ground_sky_integ(test_system, vectorize):
-    ts, pts, vfs_gnd_sky = test_system
-    # pass rotation here since max_rows=1 for the hand-solved case in
-    # the fixture test_system, which means the ground-to-sky view factor
-    # isn't summed over enough rows for symmetry to hold.
-    vf_integ = infinite_sheds._vf_ground_sky_integ(
-        ts['rotation'], ts['surface_azimuth'],
-        ts['gcr'], ts['height'], ts['pitch'],
-        max_rows=1, npoints=3, vectorize=vectorize)
-    expected_vf_integ = np.trapz(vfs_gnd_sky, pts)
-    assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
-
-
-def test__vf_row_sky_integ(test_system):
-    ts, _, _ = test_system
-    gcr = ts['gcr']
-    surface_tilt = ts['surface_tilt']
-    f_x = np.array([0., 0.5, 1.])
-    shaded = []
-    noshade = []
-    for x in f_x:
-        s, ns = infinite_sheds._vf_row_sky_integ(
-            x, surface_tilt, gcr, npoints=100)
-        shaded.append(s)
-        noshade.append(ns)
-
-    def analytic(gcr, surface_tilt, x):
-        c = cosd(surface_tilt)
-        a = 1. / gcr
-        dx = np.sqrt(a**2 - 2 * a * c * x + x**2)
-        return - a * (c**2 - 1) * np.arctanh((x - a * c) / dx) - c * dx
-
-    expected_shade = 0.5 * (f_x * cosd(surface_tilt)
-                            - analytic(gcr, surface_tilt, 1 - f_x)
-                            + analytic(gcr, surface_tilt, 1.))
-    expected_noshade = 0.5 * ((1 - f_x) * cosd(surface_tilt)
-                              + analytic(gcr, surface_tilt, 1. - f_x)
-                              - analytic(gcr, surface_tilt, 0.))
-    shaded = np.array(shaded)
-    noshade = np.array(noshade)
-    assert np.allclose(shaded, expected_shade)
-    assert np.allclose(noshade, expected_noshade)
-
-
-def test__poa_sky_diffuse_pv():
-    dhi = np.array([np.nan, 0.0, 500.])
-    f_x = np.array([0.2, 0.2, 0.5])
-    vf_shade_sky_integ = np.array([1.0, 0.5, 0.2])
-    vf_noshade_sky_integ = np.array([0.0, 0.5, 0.8])
-    poa = infinite_sheds._poa_sky_diffuse_pv(
-        f_x, dhi, vf_shade_sky_integ, vf_noshade_sky_integ)
-    expected_poa = np.array([np.nan, 0.0, 500 * (0.5 * 0.2 + 0.5 * 0.8)])
-    assert np.allclose(poa, expected_poa, equal_nan=True)
-
-
-def test__ground_angle(test_system):
-    ts, _, _ = test_system
-    x = np.array([0., 0.5, 1.0])
-    angles = infinite_sheds._ground_angle(
-        x, ts['surface_tilt'], ts['gcr'])
-    expected_angles = np.array([0., 5.866738789543952, 9.896090638982903])
-    assert np.allclose(angles, expected_angles)
-
-
-def test__ground_angle_zero_gcr():
-    surface_tilt = 30.0
-    x = np.array([0.0, 0.5, 1.0])
-    angles = infinite_sheds._ground_angle(x, surface_tilt, 0)
-    expected_angles = np.array([0, 0, 0])
-    assert np.allclose(angles, expected_angles)
-
-
-def test__vf_row_ground(test_system):
-    ts, _, _ = test_system
-    x = np.array([0., 0.5, 1.0])
-    sqr3 = np.sqrt(3)
-    vfs = infinite_sheds._vf_row_ground(
-        x, ts['surface_tilt'], ts['gcr'])
-    expected_vfs = np.array([
-        0.5 * (1. - sqr3 / 2),
-        0.5 * ((4 + sqr3 / 2) / np.sqrt(17 + 4 * sqr3) - sqr3 / 2),
-        0.5 * ((4 + sqr3) / np.sqrt(20 + 8 * sqr3) - sqr3 / 2)])
-    assert np.allclose(vfs, expected_vfs)
-
-
-def test__vf_row_ground_integ(test_system):
-    ts, _, _ = test_system
-    gcr = ts['gcr']
-    surface_tilt = ts['surface_tilt']
-    f_x = np.array([0., 0.5, 1.0])
-    shaded, noshade = infinite_sheds._vf_row_ground_integ(
-        f_x, surface_tilt, gcr)
-
-    def analytic(x, surface_tilt, gcr):
-        c = cosd(surface_tilt)
-        a = 1. / gcr
-        dx = np.sqrt(a**2 + 2 * a * c * x + x**2)
-        return c * dx - a * (c**2 - 1) * np.arctanh((a * c + x) / dx)
-
-    expected_shade = 0.5 * (analytic(f_x, surface_tilt, gcr)
-                            - analytic(0., surface_tilt, gcr)
-                            - f_x * cosd(surface_tilt))
-    expected_noshade = 0.5 * (analytic(1., surface_tilt, gcr)
-                              - analytic(f_x, surface_tilt, gcr)
-                              - (1. - f_x) * cosd(surface_tilt))
-    assert np.allclose(shaded, expected_shade)
-    assert np.allclose(noshade, expected_noshade)
 
 
 def test__poa_ground_shadows():

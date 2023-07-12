@@ -18,6 +18,7 @@ from pvlib import irradiance
 
 from .conftest import DATA_DIR
 
+import numpy as notused
 
 def test_ineichen_series():
     times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h',

@@ -391,8 +391,8 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
 
 
 def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
-                  userhorizon=None, startyear=None, endyear=None, url=URL,
-                  map_variables=True, timeout=30):
+                  userhorizon=None, startyear=None, endyear=None,
+                  map_variables=True, url=URL, timeout=30):
     """
     Get TMY data from PVGIS.
 
@@ -418,11 +418,11 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         first year to calculate TMY
     endyear : int, default None
         last year to calculate TMY, must be at least 10 years from first year
-    url : str, default: :const:`pvlib.iotools.pvgis.URL`
-        base url of PVGIS API, append ``tmy`` to get TMY endpoint
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+    url : str, default: :const:`pvlib.iotools.pvgis.URL`
+        base url of PVGIS API, append ``tmy`` to get TMY endpoint
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 

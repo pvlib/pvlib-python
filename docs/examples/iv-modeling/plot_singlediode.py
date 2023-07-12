@@ -18,7 +18,7 @@ Examples of modeling IV curves using a single-diode circuit equivalent model.
 # cell and has five electrical parameters that depend on the operating
 # conditions.  For more details on the single-diode equation and the five
 # parameters, see the `PVPMC single diode page
-# <https://pvpmc.sandia.gov/modeling-steps/2-dc-module-iv/diode-equivalent-circuit-models/>`_.
+# <https://pvpmc.sandia.gov/modeling-steps/2-dc-module-iv/single-diode-equivalent-circuit-models/>`_.
 #
 # References
 # ----------

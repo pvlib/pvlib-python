@@ -18,4 +18,5 @@ jobs:
       - name: Run Flake8 linter
         run: |
           git remote add upstream git@github.com:pvlib/pvlib-python.git
+          git fetch upstream main
           git diff upstream/main HEAD | flake8 --exclude pvlib/version.py --ignore E201,E241,E226,W503,W504 --max-line-length 79 --diff

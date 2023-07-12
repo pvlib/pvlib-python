@@ -4,8 +4,6 @@ on:
 jobs:
   flake8-linter:
     runs-on: ubuntu-latest
-    permissions:
-      repository-projects: read
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
@@ -18,9 +16,7 @@ jobs:
       - name: Setup Flake8 output matcher for PR annotations
         run: echo '::add-matcher::.github/workflows/flake8-linter-matcher.json'
       - name: Run Flake8 linter
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git remote add upstream https://github.com/pvlib/pvlib-python.git
-          git fetch upstream main  # requires repository-projects read access
+          git fetch upstream main
           git diff upstream/main HEAD | flake8 --exclude pvlib/version.py --ignore E201,E241,E226,W503,W504 --max-line-length 79 --diff

@@ -40,13 +40,14 @@ jobs:
 
       - name: Install Conda environment with Micromamba
         if: matrix.environment-type == 'conda'
-        uses: mamba-org/provision-with-micromamba@v14
+        uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: ${{ env.REQUIREMENTS }}
           cache-downloads: true
-          extra-specs: |
+          create-args: >-
             python=${{ matrix.python-version }}
-          channel-priority: flexible
+          condarc: |
+            channel-priority: flexible
         env:
           # build requirement filename.  First replacement is for the python
           # version, second is to add "-min" if needed
@@ -77,8 +78,8 @@ jobs:
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active
         run: |
-          # ignore iotools & forecast; those tests are run in a separate workflow
-          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools --ignore=pvlib/tests/test_forecast.py
+          # ignore iotools; those tests are run in a separate workflow
+          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == 3.7 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'

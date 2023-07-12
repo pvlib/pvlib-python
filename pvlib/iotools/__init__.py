@@ -2,11 +2,10 @@ from pvlib.iotools.tmy import read_tmy2, read_tmy3  # noqa: F401
 from pvlib.iotools.epw import read_epw, parse_epw  # noqa: F401
 from pvlib.iotools.srml import read_srml  # noqa: F401
 from pvlib.iotools.srml import read_srml_month_from_solardat  # noqa: F401
+from pvlib.iotools.srml import get_srml  # noqa: F401
 from pvlib.iotools.surfrad import read_surfrad  # noqa: F401
 from pvlib.iotools.midc import read_midc  # noqa: F401
 from pvlib.iotools.midc import read_midc_raw_data_from_nrel  # noqa: F401
-from pvlib.iotools.ecmwf_macc import read_ecmwf_macc  # noqa: F401
-from pvlib.iotools.ecmwf_macc import get_ecmwf_macc  # noqa: F401
 from pvlib.iotools.crn import read_crn  # noqa: F401
 from pvlib.iotools.solrad import read_solrad  # noqa: F401
 from pvlib.iotools.psm3 import get_psm3  # noqa: F401
@@ -22,4 +21,10 @@ from pvlib.iotools.bsrn import parse_bsrn  # noqa: F401
 from pvlib.iotools.sodapro import get_cams  # noqa: F401
 from pvlib.iotools.sodapro import read_cams  # noqa: F401
 from pvlib.iotools.sodapro import parse_cams  # noqa: F401
-from pvlib.iotools.panond import read_panond, parse_panond  # noqa: F401
+from pvlib.iotools.panond import read_panond  # noqa: F401
+from pvlib.iotools.panond import parse_panond  # noqa: F401
+from pvlib.iotools.acis import get_acis_prism  # noqa: F401
+from pvlib.iotools.acis import get_acis_nrcc  # noqa: F401
+from pvlib.iotools.acis import get_acis_mpe  # noqa: F401
+from pvlib.iotools.acis import get_acis_station_data  # noqa: F401
+from pvlib.iotools.acis import get_acis_available_stations  # noqa: F401

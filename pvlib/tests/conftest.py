@@ -141,23 +141,6 @@ def has_numba():
 
 requires_numba = pytest.mark.skipif(not has_numba(), reason="requires numba")
 
-try:
-    import siphon
-    has_siphon = True
-except ImportError:
-    has_siphon = False
-
-requires_siphon = pytest.mark.skipif(not has_siphon,
-                                     reason='requires siphon')
-
-try:
-    import netCDF4  # noqa: F401
-    has_netCDF4 = True
-except ImportError:
-    has_netCDF4 = False
-
-requires_netCDF4 = pytest.mark.skipif(not has_netCDF4,
-                                      reason='requires netCDF4')
 
 try:
     import pvfactors  # noqa: F401
@@ -176,20 +159,6 @@ except ImportError:
     has_pysam = False
 
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
-
-
-try:
-    import cftime  # noqa: F401
-
-    has_recent_cftime = parse_version(cftime.__version__) > parse_version(
-        "1.1.0"
-    )
-except ImportError:
-    has_recent_cftime = False
-
-requires_recent_cftime = pytest.mark.skipif(
-    not has_recent_cftime, reason="requires cftime > 1.1.0"
-)
 
 
 @pytest.fixture()

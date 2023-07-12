@@ -246,6 +246,7 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
     assert_allclose(result['horizon'], expected['horizon'][-1], atol=1e-4)
     assert isinstance(result, dict)
 
+
 def test_reindl(irrad_data, ephem_data, dni_et):
     result = irradiance.reindl(
         40, 180, irrad_data['dhi'], irrad_data['dni'], irrad_data['ghi'],
@@ -820,6 +821,22 @@ def test_boland():
     assert np.allclose(out, expected)
 
 
+def test_orgill_hollands():
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
+    ghi = pd.Series([0, 50, 1000, 1000], index=index)
+    zenith = pd.Series([120, 85, 10, 10], index=index)
+    expected = pd.DataFrame(np.array(
+        [[0.0,        0.0,        0.0],
+         [108.731366, 40.5234370, 0.405723511],
+         [776.155771, 235.635779, 0.718132729],
+         [835.696102, 177.000000, 0.768214312]]),
+        columns=['dni', 'dhi', 'kt'], index=index)
+
+    out = irradiance.orgill_hollands(ghi, zenith, index)
+
+    assert np.allclose(out, expected)
+
+
 def test_erbs_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings
@@ -903,8 +920,12 @@ def test_dirindex(times):
     assert np.allclose(out, expected_out, rtol=tolerance, atol=0,
                        equal_nan=True)
     tol_dirint = 0.2
-    assert np.allclose(out.values, dirint_close_values, rtol=tol_dirint, atol=0,
-                       equal_nan=True)
+    assert np.allclose(
+        out.values,
+        dirint_close_values,
+        rtol=tol_dirint,
+        atol=0,
+        equal_nan=True)
 
 
 def test_dirindex_min_cos_zenith_max_zenith():
@@ -1203,3 +1224,20 @@ def test_complete_irradiance():
                                        dhi=None,
                                        dni=i.dni,
                                        dni_clear=clearsky.dni)
+
+
+def test_louche():
+
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620']*1)
+    ghi = pd.Series([0, 50, 1000, 1000], index=index)
+    zenith = pd.Series([91, 85, 10, 10], index=index)
+    expected = pd.DataFrame(np.array(
+        [[0, 0, 0],
+         [130.089669, 38.661938, 0.405724],
+         [828.498650, 184.088106, 0.718133],
+         [887.407348, 126.074364, 0.768214]]),
+        columns=['dni', 'dhi', 'kt'], index=index)
+
+    out = irradiance.louche(ghi, zenith, index)
+
+    assert_frame_equal(out, expected)

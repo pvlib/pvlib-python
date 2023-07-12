@@ -16,6 +16,8 @@ jobs:
       - name: Setup Flake8 output matcher for PR annotations
         run: echo '::add-matcher::.github/workflows/flake8-linter-matcher.json'
       - name: Run Flake8 linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git remote add upstream git@github.com:pvlib/pvlib-python.git
           git fetch upstream main

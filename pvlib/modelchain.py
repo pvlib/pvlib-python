@@ -586,7 +586,7 @@ class ModelChain:
         Examples
         --------
         >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=4500)
-        >>> inverter_parameters = dict(pac0=4000)
+        >>> inverter_parameters = dict(pdc0=4000)
         >>> tparams = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
         >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
         ...     module_parameters=module_parameters,

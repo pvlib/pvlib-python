@@ -821,6 +821,22 @@ def test_boland():
     assert np.allclose(out, expected)
 
 
+def test_orgill_hollands():
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
+    ghi = pd.Series([0, 50, 1000, 1000], index=index)
+    zenith = pd.Series([120, 85, 10, 10], index=index)
+    expected = pd.DataFrame(np.array(
+        [[0.0,        0.0,        0.0],
+         [108.731366, 40.5234370, 0.405723511],
+         [776.155771, 235.635779, 0.718132729],
+         [835.696102, 177.000000, 0.768214312]]),
+        columns=['dni', 'dhi', 'kt'], index=index)
+
+    out = irradiance.orgill_hollands(ghi, zenith, index)
+
+    assert np.allclose(out, expected)
+
+
 def test_erbs_min_cos_zenith_max_zenith():
     # map out behavior under difficult conditions with various
     # limiting kwargs settings

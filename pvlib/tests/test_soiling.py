@@ -92,7 +92,7 @@ def test_hsu_no_cleaning(rainfall_input, expected_output):
     tilt = 0.
     expected_no_cleaning = expected_output
 
-    result = hsu(rainfall=rainfall, cleaning_threshold=10., tilt=tilt,
+    result = hsu(rainfall=rainfall, cleaning_threshold=10., surface_tilt=tilt,
                  pm2_5=pm2_5, pm10=pm10, depo_veloc=depo_veloc,
                  rain_accum_period=pd.Timedelta('1h'))
     assert_series_equal(result, expected_no_cleaning)
@@ -108,7 +108,7 @@ def test_hsu(rainfall_input, expected_output_2):
     tilt = 0.
 
     # three cleaning events at 4:00-6:00, 8:00-11:00, and 17:00-20:00
-    result = hsu(rainfall=rainfall, cleaning_threshold=0.5, tilt=tilt,
+    result = hsu(rainfall=rainfall, cleaning_threshold=0.5, surface_tilt=tilt,
                  pm2_5=pm2_5, pm10=pm10, depo_veloc=depo_veloc,
                  rain_accum_period=pd.Timedelta('3h'))
 
@@ -120,8 +120,8 @@ def test_hsu_defaults(rainfall_input, expected_output_1):
     Test Soiling HSU function with default deposition velocity and default rain
     accumulation period.
     """
-    result = hsu(rainfall=rainfall_input, cleaning_threshold=0.5, tilt=0.0,
-                 pm2_5=1.0e-2, pm10=2.0e-2)
+    result = hsu(rainfall=rainfall_input, cleaning_threshold=0.5,
+                 surface_tilt=0.0, pm2_5=1.0e-2, pm10=2.0e-2)
     assert np.allclose(result.values, expected_output_1)
 
 
@@ -138,7 +138,7 @@ def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
     rain['new_time'] = rain.index + rain['mins_added']
     rain_var_times = rain.set_index('new_time').iloc[:, 0]
     result = hsu(
-        rainfall=rain_var_times, cleaning_threshold=0.5, tilt=50.0,
+        rainfall=rain_var_times, cleaning_threshold=0.5, surface_tilt=50.0,
         pm2_5=1, pm10=2, depo_veloc=depo_veloc,
         rain_accum_period=pd.Timedelta('2h'))
     assert np.allclose(result, expected_output_3)
@@ -147,8 +147,9 @@ def test_hsu_variable_time_intervals(rainfall_input, expected_output_3):
 @pytest.fixture
 def greensboro_rain():
     # get TMY3 data with rain
-    greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
-    return greensboro.Lprecipdepth
+    greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+                              map_variables=True)
+    return greensboro['Lprecip depth (mm)']
 
 
 @pytest.fixture

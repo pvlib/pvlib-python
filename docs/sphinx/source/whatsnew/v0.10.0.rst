@@ -1,0 +1,186 @@
+.. _whatsnew_01000:
+
+
+v0.10.0 (June 30, 2023)
+-----------------------
+
+
+Breaking changes
+~~~~~~~~~~~~~~~~
+* After being deprecated for over a year, the :py:mod:`pvlib.forecast` module
+  is now removed entirely.  (:pull:`1766`)
+* The following, originally deprecated in :ref:`whatsnew_0900`, is now removed:  (:pull:`1770`)
+
+  - The :py:class:`pvlib.tracking.SingleAxisTracker` class
+  - The various model-specific :py:class:`~pvlib.pvsystem.PVSystem` inverter
+    and cell temperature methods
+  - Attribute "pass-through" from :py:class:`~pvlib.modelchain.ModelChain`
+    to :py:class:`~pvlib.modelchain.ModelChainResult`
+  - Attribute "pass-through" from :py:class:`~pvlib.pvsystem.PVSystem`
+    to :py:class:`~pvlib.pvsystem.Array`
+  - The ``eta_m`` parameter in :py:func:`pvlib.temperature.pvsyst_cell`
+
+* Reorder arguments of :py:func:`pvlib.pvsystem.PVSystem.i_from_v`,
+  :py:func:`pvlib.pvsystem.i_from_v`, :py:func:`pvlib.pvsystem.v_from_i`,
+  :py:func:`pvlib.singlediode._lambertw_i_from_v`, and
+  :py:func:`pvlib.singlediode._lambertw_v_from_i` to match
+  :py:func:`pvlib.pvsystem.singlediode`.
+  (:issue:`1718`, :pull:`1719`)
+* Map wind direction to ``'wind_direction'`` instead of ``'wind_dir'`` in
+  :py:func:`pvlib.iotools.read_srml` and
+  :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
+* :func:`~pvlib.iotools.get_pvgis_tmy` and :func:`~pvlib.iotools.read_pvgis_tmy`
+  now rename columns to standard pvlib names by default (``map_variables=True``)
+  (:pull:`1772`)
+* In :py:func:`~pvlib.iotools.get_pvgis_tmy`, the ``map_variables`` keyword
+  parameter now comes before the ``url`` keyword parameter. (:pull:`1795`)
+* Modified the ``surface_azimuth`` parameter in :py:func:`pvlib.iotools.get_pvgis_hourly` to conform to the
+  pvlib azimuth convention (counterclockwise from north). Previously 0 degrees represented south.
+  (:issue:`1724`, :pull:`1739`)
+* For consistency with the rest of pvlib, the ``pw`` parameters are renamed to
+  ``precipitable_water`` in :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
+  (:pull:`1768`)
+* For consistency with the rest of pvlib, the ``tilt`` parameter is renamed
+  to ``surface_tilt`` in :py:func:`pvlib.soiling.hsu`. (:issue:`1717`, :pull:`1738`)
+* Several undocumented functions in :py:mod:`pvlib.iotools.midc`,
+  :py:mod:`pvlib.iotools.srml`, and :py:mod:`pvlib.iotools.surfrad`
+  are now private. (:issue:`1756`, :pull:`1769`)
+
+
+Deprecations
+~~~~~~~~~~~~
+* The ``ivcurve_pnts`` parameter of :py:func:`pvlib.pvsystem.singlediode` is
+  deprecated. Use :py:func:`pvlib.pvsystem.v_from_i` and
+  :py:func:`pvlib.pvsystem.i_from_v` instead. (:issue:`1626`, :pull:`1743`)
+* Functions for calculating spectral modifiers have been moved to :py:mod:`pvlib.spectrum`:
+  :py:func:`pvlib.atmosphere.first_solar_spectral_correction` is deprecated and
+  replaced by :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`, and
+  :py:func:`pvlib.pvsystem.sapm_spectral_loss` is deprecated and replaced by
+  :py:func:`~pvlib.spectrum.spectral_factor_sapm`. (:pull:`1628`)
+* Removed the ``get_ecmwf_macc`` and ``read_ecmwf_macc`` iotools functions as the
+  MACC dataset has been `removed by ECMWF <https://confluence.ecmwf.int/display/DAC/Decommissioning+of+ECMWF+Public+Datasets+Service>`_
+  (data period 2003-2012). Instead, ECMWF recommends to use CAMS global
+  reanalysis (EAC4) from the Atmosphere Data Store (ADS). See also :py:func:`pvlib.iotools.get_cams`.
+  (:issue:`1691`, :pull:`1654`)
+* The ``recolumn`` parameter in :py:func:`pvlib.iotools.read_tmy3`, which maps
+  TMY3 column names to nonstandard alternatives, is now deprecated.
+  We encourage using ``map_variables`` (which produces standard pvlib names) instead.
+  (:issue:`1517`, :pull:`1623`)
+* :py:func:`pvlib.iotools.read_srml_month_from_solardat` is deprecated and replaced by
+  :py:func:`pvlib.iotools.get_srml`. (:pull:`1779`)
+
+
+Enhancements
+~~~~~~~~~~~~
+* Added two new irradiance decomposition models: :py:func:`pvlib.irradiance.orgill_hollands` (:pull:`1730`)
+  and :py:func:`pvlib.irradiance.louche` (:pull:`1705`).
+* The return values of :py:func:`pvlib.pvsystem.calcparams_desoto`,
+  :py:func:`pvlib.pvsystem.calcparams_cec`, and
+  :py:func:`pvlib.pvsystem.calcparams_pvsyst` are all numeric types and have
+  the same Python type as the ``effective_irradiance`` and ``temp_cell`` parameters. (:issue:`1626`, :pull:`1700`)
+* Added ``map_variables`` parameter to :py:func:`pvlib.iotools.read_tmy3` (:issue:`1517`, :pull:`1623`),
+  :py:func:`pvlib.iotools.read_srml`, and :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`).
+* Added :func:`pvlib.iotools.get_srml` that is similar to
+  :func:`pvlib.iotools.read_srml_month_from_solardat` but is able to fetch multiple months
+  of data using the ``start`` and ``end`` parameters.
+  (:pull:`1779`)
+* Allow passing keyword arguments to :py:func:`scipy:scipy.optimize.brentq` and
+  :py:func:`scipy:scipy.optimize.newton` solvers in
+  :py:func:`~pvlib.singlediode.bishop88_mpp`,
+  :py:func:`~pvlib.singlediode.bishop88_i_from_v` and
+  :py:func:`~pvlib.singlediode.bishop88_v_from_i`. Among others,
+  tolerance and number of iterations can be set.
+  (:issue:`1249`, :pull:`1764`)
+* Improved ``ModelChainResult.__repr__`` (:pull:`1236`)
+* Exposes several functions useful for bifacial and shading calculations (:pull:`1666`):
+
+  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_row_sky_2d_integ`
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_row_ground_2d_integ`
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d`
+  * :py:func:`pvlib.bifacial.utils.vf_ground_sky_2d_integ`
+  * :py:func:`pvlib.shading.ground_angle`
+
+* Added a function :py:func:`pvlib.spectrum.spectral_factor_caballero`
+  to estimate spectral mismatch modifiers from atmospheric conditions. (:pull:`1296`)
+* Add optional ``encoding`` parameter to :py:func:`pvlib.iotools.read_tmy3`. (:issue:`1732`, :pull:`1737`)
+* Added function to retrieve horizon data from PVGIS 
+  :py:func:`pvlib.iotools.get_pvgis_horizon`. (:issue:`1290`, :pull:`1395`)
+* Update the URL used in the :py:func:`pvlib.iotools.get_cams` function. The new URL supports load-balancing
+  and redirects to the fastest server. (:issue:`1688`, :pull:`1740`)
+* :py:func:`pvlib.iotools.get_psm3` now has a ``url`` parameter to give the user
+  the option of controlling what NSRDB endpoint is used. (:pull:`1736`)
+* :py:func:`pvlib.iotools.get_psm3` now uses the new NSRDB 3.2.2 endpoint for
+  hourly and half-hourly single-year datasets. (:issue:`1591`, :pull:`1736`)
+* The default solar position algorithm (NREL SPA) is now 50-100% faster. (:pull:`1748`)
+* Added functions to retrieve daily precipitation, temperature, and snowfall data
+  from the NOAA's ACIS service: :py:func:`~pvlib.iotools.get_acis_prism`,
+  :py:func:`~pvlib.iotools.get_acis_nrcc`, :py:func:`~pvlib.iotools.get_acis_mpe`,
+  :py:func:`~pvlib.iotools.get_acis_station_data`, and
+  :py:func:`~pvlib.iotools.get_acis_available_stations`. (:issue:`1293`, :pull:`1767`)
+
+
+Bug fixes
+~~~~~~~~~
+* Prevent small negative values of ``v_oc`` in :py:func:`pvlib.singlediode._lambertw`
+  which result from accumulated roundoff error. (:issue:`1780`, :issue:`1673`, :pull:`1782`)
+* Corrects an error in view factor calculations which are part of
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance`. The error
+  affects rear surface irradiance by a few W/m2. As part of the correction,
+  average view factors are now computed by exact formulas rather than by
+  numerical integration. (:issue:`1665`, :pull:`1666`)
+* ``data`` can no longer be left unspecified in
+  :py:meth:`pvlib.modelchain.ModelChain.run_model_from_effective_irradiance`. (:issue:`1713`, :pull:`1720`)
+* ``d2mutau`` and ``NsVbi`` are now correctly passed through :py:func:`pvlib.pvsystem.max_power_point`
+  instead of being hardcoded. (:pull:`1733`)
+* :py:func:`pvlib.iam.physical` no longer returns NaN when ``n=1`` and ``aoi>90``.
+  This bug was introduced in v0.9.5.  (:issue:`1706`, :pull:`1707`)
+
+
+Testing
+~~~~~~~
+* Migrated to mamba-org/setup-micromamba. (:issue:`1746`, :pull:`1758`)
+
+
+Documentation
+~~~~~~~~~~~~~
+* Updated the description of the interval parameter in
+  :py:func:`pvlib.iotools.get_psm3`. (:issue:`1702`, :pull:`1712`)
+* Fixed outdated nbviewer links. (:issue:`1721`, :pull:`1726`)
+
+
+Requirements
+~~~~~~~~~~~~
+* With the removal of :py:mod:`pvlib.forecast`, the following packages are no
+  longer listed as (optional) dependencies: ``netCDF4``, ``cftime``, and ``siphon``.
+  (:pull:`1766`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Taos Transue (:ghuser:`reepoi`)
+* Nicholas Riedel-Lyngskær (:ghuser:`nicorie`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Cédric Leroy (:ghuser:`cedricleroy`)
+* Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Lakshya Garg (:ghuser:`Lakshyadevelops`)
+* Ben Pierce (:ghuser:`bgpierc`)
+* Joseph Palakapilly (:ghuser:`JPalakapillyKWH`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Karel De Brabandere (:ghuser:`kdebrab`)
+* Josh Stein (:ghuser:`jsstein`)
+* Kevin Anderson (:ghuser:`kandersolar`)
+* Siddharth Kaul (:ghuser:`k10blogger`)
+* Kshitiz Gupta (:ghuser:`kshitiz305`)
+* Stefan de Lange (:ghuser:`langestefan`)
+* Jose Antonio Caballero (:ghuser:`Jacc0027`)
+* Andy Lam (:ghuser:`andylam598`)
+* :ghuser:`ooprathamm`
+* Devon Watt (:ghuser:`d-watt`)
+* Todd Karin (:ghuser:`toddkarin`)
+* Corey Pullium (:ghuser:`cpullium`)

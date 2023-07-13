@@ -11,7 +11,7 @@ import warnings
 from pvlib._deprecation import pvlibDeprecationWarning
 
 NSRDB_API_BASE = "https://developer.nrel.gov"
-PSM_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-download.csv"
+PSM_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-2-2-download.csv"
 TMY_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-tmy-download.csv"
 PSM5MIN_URL = NSRDB_API_BASE + "/api/nsrdb/v2/solar/psm3-5min-download.csv"
 
@@ -63,7 +63,8 @@ REQUEST_VARIABLE_MAP = {
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
              attributes=ATTRIBUTES, leap_day=None, full_name=PVLIB_PYTHON,
-             affiliation=PVLIB_PYTHON, map_variables=None, timeout=30):
+             affiliation=PVLIB_PYTHON, map_variables=None, url=None,
+             timeout=30):
     """
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API. The NSRDB
     is described in [1]_ and the PSM3 API is described in [2]_, [3]_, and [4]_.
@@ -72,6 +73,12 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
        The function now returns a tuple where the first element is a dataframe
        and the second element is a dictionary containing metadata. Previous
        versions of this function had the return values switched.
+
+    .. versionchanged:: 0.10.0
+       The default endpoint for hourly single-year datasets is now v3.2.2.
+       The previous datasets can still be accessed (for now) by setting
+       the ``url`` parameter to the original API endpoint
+       (``"https://developer.nrel.gov/api/nsrdb/v2/solar/psm3-download.csv"``).
 
     Parameters
     ----------
@@ -85,8 +92,10 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         NREL API uses this to automatically communicate messages back
         to the user only if necessary
     names : str, default 'tmy'
-        PSM3 API parameter specifing year or TMY variant to download, see notes
-        below for options
+        PSM3 API parameter specifing year (e.g. ``2020``) or TMY variant
+        to download (e.g. ``'tmy'`` or ``'tgy-2019'``).  The allowed values
+        update periodically, so consult the NSRDB references below for the
+        current set of options.
     interval : int, {60, 5, 15, 30}
         interval size in minutes, must be 5, 15, 30 or 60. Must be 60 for
         typical year requests (i.e., tmy/tgy/tdy).
@@ -95,6 +104,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         ``pvlib.iotools.psm3.ATTRIBUTES``. See references [2]_, [3]_, and [4]_
         for lists of available fields. Alternatively, pvlib names may also be
         used (e.g. 'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`.
+        To retrieve all available fields, set ``attributes=[]``.
     leap_day : boolean, default False
         include leap day in the results. Only used for single-year requests
         (i.e., it is ignored for tmy/tgy/tdy requests).
@@ -102,9 +112,12 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         optional
     affiliation : str, default 'pvlib python'
         optional
-    map_variables: boolean, optional
+    map_variables : boolean, optional
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+    url : str, optional
+        API endpoint URL.  If not specified, the endpoint is determined from
+        the ``names`` and ``interval`` parameters.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 
@@ -132,21 +145,6 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     .. warning:: The "DEMO_KEY" `api_key` is severely rate limited and may
         result in rejected requests.
 
-    The PSM3 API `names` parameter must be a single value from one of these
-    lists:
-
-    +-----------+-------------------------------------------------------------+
-    | Category  | Allowed values                                              |
-    +===========+=============================================================+
-    | Year      | 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, |
-    |           | 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, |
-    |           | 2018, 2019, 2020                                            |
-    +-----------+-------------------------------------------------------------+
-    | TMY       | tmy, tmy-2016, tmy-2017, tdy-2017, tgy-2017,                |
-    |           | tmy-2018, tdy-2018, tgy-2018, tmy-2019, tdy-2019, tgy-2019  |
-    |           | tmy-2020, tdy-2020, tgy-2020                                |
-    +-----------+-------------------------------------------------------------+
-
     .. warning:: PSM3 is limited to data found in the NSRDB, please consult the
         references below for locations with available data. Additionally,
         querying data with < 30-minute resolution uses a different API endpoint
@@ -161,8 +159,8 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     .. [1] `NREL National Solar Radiation Database (NSRDB)
        <https://nsrdb.nrel.gov/>`_
-    .. [2] `Physical Solar Model (PSM) v3
-       <https://developer.nrel.gov/docs/solar/nsrdb/psm3-download/>`_
+    .. [2] `Physical Solar Model (PSM) v3.2.2
+       <https://developer.nrel.gov/docs/solar/nsrdb/psm3-2-2-download/>`_
     .. [3] `Physical Solar Model (PSM) v3 TMY
        <https://developer.nrel.gov/docs/solar/nsrdb/psm3-tmy-download/>`_
     .. [4] `Physical Solar Model (PSM) v3 - Five Minute Temporal Resolution
@@ -205,13 +203,16 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         'interval': interval
     }
     # request CSV download from NREL PSM3
-    if any(prefix in names for prefix in ('tmy', 'tgy', 'tdy')):
-        URL = TMY_URL
-    elif interval in (5, 15):
-        URL = PSM5MIN_URL
-    else:
-        URL = PSM_URL
-    response = requests.get(URL, params=params, timeout=timeout)
+    if url is None:
+        # determine the endpoint that suits the user inputs
+        if any(prefix in names for prefix in ('tmy', 'tgy', 'tdy')):
+            url = TMY_URL
+        elif interval in (5, 15):
+            url = PSM5MIN_URL
+        else:
+            url = PSM_URL
+
+    response = requests.get(url, params=params, timeout=timeout)
     if not response.ok:
         # if the API key is rejected, then the response status will be 403
         # Forbidden, and then the error is in the content and there is no JSON

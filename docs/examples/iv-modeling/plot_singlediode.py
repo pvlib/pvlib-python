@@ -18,7 +18,7 @@ Examples of modeling IV curves using a single-diode circuit equivalent model.
 # cell and has five electrical parameters that depend on the operating
 # conditions.  For more details on the single-diode equation and the five
 # parameters, see the `PVPMC single diode page
-# <https://pvpmc.sandia.gov/modeling-steps/2-dc-module-iv/diode-equivalent-circuit-models/>`_.
+# <https://pvpmc.sandia.gov/modeling-steps/2-dc-module-iv/single-diode-equivalent-circuit-models/>`_.
 #
 # References
 # ----------
@@ -29,9 +29,11 @@ Examples of modeling IV curves using a single-diode circuit equivalent model.
 # -----------------------
 # This example uses :py:meth:`pvlib.pvsystem.calcparams_desoto` to calculate
 # the 5 electrical parameters needed to solve the single-diode equation.
-# :py:meth:`pvlib.pvsystem.singlediode` is then used to generate the IV curves.
+# :py:meth:`pvlib.pvsystem.singlediode` and :py:meth:`pvlib.pvsystem.i_from_v`
+# are used to generate the IV curves.
 
 from pvlib import pvsystem
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -88,26 +90,27 @@ IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
 )
 
 # plug the parameters into the SDE and solve for IV curves:
-curve_info = pvsystem.singlediode(
-    photocurrent=IL,
-    saturation_current=I0,
-    resistance_series=Rs,
-    resistance_shunt=Rsh,
-    nNsVth=nNsVth,
-    ivcurve_pnts=100,
-    method='lambertw'
-)
+SDE_params = {
+    'photocurrent': IL,
+    'saturation_current': I0,
+    'resistance_series': Rs,
+    'resistance_shunt': Rsh,
+    'nNsVth': nNsVth
+}
+curve_info = pvsystem.singlediode(method='lambertw', **SDE_params)
+v = pd.DataFrame(np.linspace(0., curve_info['v_oc'], 100))
+i = pd.DataFrame(pvsystem.i_from_v(voltage=v, method='lambertw', **SDE_params))
 
 # plot the calculated curves:
 plt.figure()
-for i, case in conditions.iterrows():
+for idx, case in conditions.iterrows():
     label = (
         "$G_{eff}$ " + f"{case['Geff']} $W/m^2$\n"
         "$T_{cell}$ " + f"{case['Tcell']} $\\degree C$"
     )
-    plt.plot(curve_info['v'][i], curve_info['i'][i], label=label)
-    v_mp = curve_info['v_mp'][i]
-    i_mp = curve_info['i_mp'][i]
+    plt.plot(v[idx], i[idx], label=label)
+    v_mp = curve_info['v_mp'][idx]
+    i_mp = curve_info['i_mp'][idx]
     # mark the MPP
     plt.plot([v_mp], [i_mp], ls='', marker='o', c='k')
 

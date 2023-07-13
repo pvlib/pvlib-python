@@ -243,9 +243,9 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     ----------
     station : str
         Two letter station abbreviation.
-    start : datetime like
+    start : datetime-like
         First day of the requested period
-    end : datetime like
+    end : datetime-like
         Last day of the requested period
     filetype : string, default: 'PO'
         SRML file type to gather. See notes for explanation.

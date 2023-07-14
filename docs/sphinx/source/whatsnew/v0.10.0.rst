@@ -92,10 +92,6 @@ Enhancements
   tolerance and number of iterations can be set.
   (:issue:`1249`, :pull:`1764`)
 * Improved `ModelChainResult.__repr__` (:pull:`1236`)
-* Added a new module :py:mod:`pvlib.ivtools.mismatch` to contain functions for
-  combining IV curves. Added functions 
-  :py:func:`pvlib.ivtools.mismatch.prepare_curves` and 
-  :py:func:`pvlib.ivtools.mismatch.combine_curves`. (:pull:`1781`)
 * Improved ``ModelChainResult.__repr__`` (:pull:`1236`)
 * Exposes several functions useful for bifacial and shading calculations (:pull:`1666`):
 
@@ -169,7 +165,6 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Cliff Hansen (:ghuser:`cwhanse`)
-* Abigail Jones (:ghuser:`ajonesr`)
 * Cédric Leroy (:ghuser:`cedricleroy`)
 * Jean-Baptiste Pasquier (:ghuser:`pasquierjb`)
 * Mark Mikofski (:ghuser:`mikofski`)

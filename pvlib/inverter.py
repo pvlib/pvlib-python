@@ -335,7 +335,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     NREL's PVWatts inverter model.
 
     The PVWatts inverter model [1]_ calculates inverter efficiency :math:`\eta`
-    as a function of input DC power
+    as a function of input DC power :math:`P_{dc}`
 
     .. math::
 
@@ -369,6 +369,10 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
 
     Notes
     -----
+    When sourcing ``pdc`` from pvlib functions
+    (e.g. :py:func:`pvlib.pvsystem.pvwatts_dc`) their DC power output is in W,
+    and ``pdc0`` should have the same unit (W).
+
     Note that ``pdc0`` is also used as a symbol in
     :py:func:`pvlib.pvsystem.pvwatts_dc`. ``pdc0`` in this function refers to
     the DC power input limit of the inverter. ``pdc0`` in
@@ -393,6 +397,7 @@ def pvwatts(pdc, pdc0, eta_inv_nom=0.96, eta_inv_ref=0.9637):
     pdc_neq_0 = ~np.equal(pdc, 0)
 
     # eta < 0 if zeta < 0.006. power_ac is forced to be >= 0 below. GH 541
+    # In some published versions of [1] the parentheses are missing
     eta = eta_inv_nom / eta_inv_ref * (
         -0.0162 * zeta - np.divide(0.0059, zeta, out=eta, where=pdc_neq_0)
         + 0.9858)  # noQA: W503

@@ -25,4 +25,4 @@ dependencies:
     - statsmodels
     - pip:
         - nrel-pysam>=2.0
-        - pvfactors==1.5.2
+        - solarfactors

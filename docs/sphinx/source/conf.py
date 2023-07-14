@@ -297,7 +297,8 @@ extlinks = {
     'pull': ('https://github.com/pvlib/pvlib-python/pull/%s', 'GH'),
     'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s', 'wiki '),
     'doi': ('http://dx.doi.org/%s', 'DOI: '),
-    'ghuser': ('https://github.com/%s', '@')
+    'ghuser': ('https://github.com/%s', '@'),
+    'discuss': ('https://github.com/pvlib/pvlib-python/discussions/%s', 'GH'),
 }
 
 # -- Options for manual page output ---------------------------------------

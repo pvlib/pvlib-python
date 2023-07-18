@@ -533,6 +533,30 @@ def detect_clearsky_data():
     return expected, cs
 
 
+@pytest.fixture
+def detect_clearsky_threshold_data():
+    # this is (roughly) just a 2 hour period of the same data in
+    # detect_clearsky_data (which only spans 30 minutes)
+    data_file = DATA_DIR / 'detect_clearsky_threshold_data.csv'
+    expected = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    expected = expected.tz_localize('UTC').tz_convert('Etc/GMT+7')
+    metadata = {}
+    with data_file.open() as f:
+        for line in f:
+            if line.startswith('#'):
+                key, value = line.strip('# \n').split(':')
+                metadata[key] = float(value)
+            else:
+                break
+    metadata['window_length'] = int(metadata['window_length'])
+    loc = Location(metadata['latitude'], metadata['longitude'],
+                   altitude=metadata['elevation'])
+    # specify turbidity to guard against future lookup changes
+    cs = loc.get_clearsky(expected.index, linke_turbidity=2.658197)
+    return expected, cs
+
+
 def test_clearsky_get_threshold():
     out = clearsky._clearsky_get_threshold(4.5)
     expected = (58.75, 75, 64.375, -45, 80.0, 0.009375, 58.75)
@@ -544,9 +568,9 @@ def test_clearsky_get_threshold_raises_error():
         clearsky._clearsky_get_threshold(0.5)
 
 
-def test_detect_clearsky_calls_threshold(mocker, detect_clearsky_data):
+def test_detect_clearsky_calls_threshold(mocker, detect_clearsky_threshold_data):
     threshold_spy = mocker.spy(clearsky, '_clearsky_get_threshold')
-    expected, cs = detect_clearsky_data
+    expected, cs = detect_clearsky_threshold_data
     threshold_actual = clearsky.detect_clearsky(expected['GHI'], cs['ghi'],
                        infer_limits=True)
     assert threshold_spy.call_count == 1

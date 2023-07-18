@@ -1782,12 +1782,17 @@ class SingleAxisTrackerMount(AbstractMount):
         A value denoting the compass direction along which the axis of
         rotation lies, measured east of north. [degrees]
 
-    max_angle : float, default 90
-        A value denoting the maximum rotation angle
+    max_angle : float or tuple, default 90
+        A value denoting the maximum rotation angle, in decimal degrees,
         of the one-axis tracker from its horizontal position (horizontal
-        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
-        to rotate to a vertical position to point the panel towards a
-        horizon. max_angle of 180 degrees allows for full rotation. [degrees]
+        if axis_tilt = 0). If a float is provided, it represents the maximum
+        rotation angle, and the minimum rotation angle is assumed to be the
+        opposite of the maximum angle. If a tuple of (min_angle, max_angle)
+        is provided, it represents both the minimum and maximum rotation angles.
+        
+        A max_angle of 90 degrees allows the tracker to rotate to a vertical
+        position to point the panel towards a horizon. A max_angle of 180 degrees
+        allows for full rotation.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"

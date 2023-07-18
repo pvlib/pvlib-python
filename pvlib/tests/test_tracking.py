@@ -151,6 +151,22 @@ def test_max_angle():
     assert_frame_equal(expect, tracker_data)
 
 
+def test_min_angle():
+    apparent_zenith = pd.Series([60])
+    apparent_azimuth = pd.Series([270])
+    tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                       axis_tilt=0, axis_azimuth=0,
+                                       max_angle=(-45, 50), backtrack=True,
+                                       gcr=2.0/7.0)
+
+    expect = pd.DataFrame({'aoi': 15, 'surface_azimuth': 270,
+                           'surface_tilt': 45, 'tracker_theta': -45},
+                          index=[0], dtype=np.float64)
+    expect = expect[SINGLEAXIS_COL_ORDER]
+
+    assert_frame_equal(expect, tracker_data)
+
+
 def test_backtrack():
     apparent_zenith = pd.Series([80])
     apparent_azimuth = pd.Series([90])

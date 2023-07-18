@@ -27,12 +27,17 @@ class SingleAxisTracker(PVSystem):
         A value denoting the compass direction along which the axis of
         rotation lies. Measured in decimal degrees east of north.
 
-    max_angle : float, default 90
+    max_angle : float or tuple, default 90
         A value denoting the maximum rotation angle, in decimal degrees,
         of the one-axis tracker from its horizontal position (horizontal
-        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
-        to rotate to a vertical position to point the panel towards a
-        horizon. max_angle of 180 degrees allows for full rotation.
+        if axis_tilt = 0). If a float is provided, it represents the maximum
+        rotation angle, and the minimum rotation angle is assumed to be the
+        opposite of the maximum angle. If a tuple of (min_angle, max_angle)
+        is provided, it represents both the minimum and maximum rotation angles.
+        
+        A max_angle of 90 degrees allows the tracker to rotate to a vertical
+        position to point the panel towards a horizon. A max_angle of 180 degrees
+        allows for full rotation.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"
@@ -312,12 +317,17 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         A value denoting the compass direction along which the axis of
         rotation lies. Measured in decimal degrees east of north.
 
-    max_angle : float, default 90
+    max_angle : float or tuple, default 90
         A value denoting the maximum rotation angle, in decimal degrees,
         of the one-axis tracker from its horizontal position (horizontal
-        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
-        to rotate to a vertical position to point the panel towards a
-        horizon. max_angle of 180 degrees allows for full rotation.
+        if axis_tilt = 0). If a float is provided, it represents the maximum
+        rotation angle, and the minimum rotation angle is assumed to be the
+        opposite of the maximum angle. If a tuple of (min_angle, max_angle)
+        is provided, it represents both the minimum and maximum rotation angles.
+        
+        A max_angle of 90 degrees allows the tracker to rotate to a vertical
+        position to point the panel towards a horizon. A max_angle of 180 degrees
+        allows for full rotation.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"
@@ -458,7 +468,17 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # NOTE: max_angle defined relative to zero-point rotation, not the
     # system-plane normal
-    tracker_theta = np.clip(tracker_theta, -max_angle, max_angle)
+
+
+    # Determine minimum and maximum rotation angles for the tracker based on max_angle.
+    # If max_angle is a single value, assume min_angle is the negative of max_angle.
+    if np.array(max_angle).size == 1:
+        min_angle = -max_angle
+    else: 
+        min_angle, max_angle = max_angle
+
+    # Clip tracker_theta between the minimum and maximum angles.
+    tracker_theta = np.clip(tracker_theta, min_angle, max_angle)
 
     # Calculate auxiliary angles
     surface = calc_surface_orientation(tracker_theta, axis_tilt, axis_azimuth)

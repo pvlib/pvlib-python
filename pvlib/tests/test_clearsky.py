@@ -678,6 +678,12 @@ def test_detect_clearsky_not_enough_data(detect_clearsky_data):
        clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=60)
 
 
+def test_detect_clearsky_optimizer_failed(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    with pytest.raises(RuntimeError):
+        clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=15)
+
+
 @pytest.fixture
 def detect_clearsky_helper_data():
     samples_per_window = 3

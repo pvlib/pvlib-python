@@ -878,7 +878,13 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
 
-        alpha = minimize_scalar(rmse).x
+        optimize_result = minimize_scalar(rmse)
+        if not optimize_result.success:
+            raise RuntimeError("Optimizer exited unsuccessfully:\n" +
+                                optimize_result.message)
+        else:
+            alpha = optimize_result.x
+
         if round(alpha*10000) == round(previous_alpha*10000):
             break
     else:

@@ -99,13 +99,6 @@ def test_pvsyst_cell_series():
     assert_series_equal(expected, result)
 
 
-def test_pvsyst_cell_eta_m_deprecated():
-    with pytest.warns(pvlibDeprecationWarning):
-        result = temperature.pvsyst_cell(900, 20, wind_speed=5.0, u_c=23.5,
-                                         u_v=6.25, eta_m=0.1)
-        assert_allclose(result, 33.315, 0.001)
-
-
 def test_faiman_default():
     result = temperature.faiman(900, 20, 5)
     assert_allclose(result, 35.203, atol=0.001)

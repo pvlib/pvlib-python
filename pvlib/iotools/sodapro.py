@@ -47,8 +47,9 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
              altitude=None, time_step='1h', time_ref='UT', verbose=False,
              integrated=False, label=None, map_variables=True,
              server=URL, timeout=30):
-    """
-    Retrieve time-series of radiation and/or clear-sky global, beam, and
+    """Retrieve irradiance and clear-sky time series from CAMS.
+
+    Time-series of radiation and/or clear-sky global, beam, and
     diffuse radiation from CAMS (see [1]_). Data is retrieved from SoDa [2]_.
 
     Time coverage: 2004-01-01 to two days ago
@@ -65,9 +66,9 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
         in decimal degrees, between -90 and 90, north is positive (ISO 19115)
     longitude : float
         in decimal degrees, between -180 and 180, east is positive (ISO 19115)
-    start: datetime like
+    start: datetime-like
         First day of the requested period
-    end: datetime like
+    end: datetime-like
         Last day of the requested period
     email: str
         Email address linked to a SoDa account
@@ -177,8 +178,8 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
         altitude = -999
 
     # Start and end date should be in the format: yyyy-mm-dd
-    start = start.strftime('%Y-%m-%d')
-    end = end.strftime('%Y-%m-%d')
+    start = pd.to_datetime(start).strftime('%Y-%m-%d')
+    end = pd.to_datetime(end).strftime('%Y-%m-%d')
 
     email = email.replace('@', '%2540')  # Format email address
     identifier = 'get_{}'.format(identifier.lower())  # Format identifier str

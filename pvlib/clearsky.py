@@ -820,6 +820,11 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         sample_interval, samples_per_window = \
             tools._get_sample_intervals(times, window_length)
 
+    # check that we have enough data to produce a nonempty hankel matrix
+    if len(times) < samples_per_window:
+        raise ValueError(f"times has only {len(times)} entries, but it must \
+                           have at least {samples_per_window} entries")
+
     # generate matrix of integers for creating windows with indexing
     H = hankel(np.arange(samples_per_window),
                np.arange(samples_per_window-1, len(times)))

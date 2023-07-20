@@ -319,11 +319,9 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, voltage, *args)
     elif method == 'newton':
-        # make sure all args are numpy arrays if max size > 1
-        # if voltage is an array, then make a copy to use for initial guess, v0
-        args, v0, method_kwargs = \
-            _prepare_newton_inputs((voltage,), args, voltage, method_kwargs)
-        vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=v0,
+        x0, (voltage, *args), method_kwargs = \
+            _prepare_newton_inputs(voltage, [voltage, *args], method_kwargs)
+        vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
                     args=args,
                     **method_kwargs)
@@ -454,11 +452,9 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, current, *args)
     elif method == 'newton':
-        # make sure all args are numpy arrays if max size > 1
-        # if voc_est is an array, then make a copy to use for initial guess, v0
-        args, v0, method_kwargs = \
-            _prepare_newton_inputs((current,), args, voc_est, method_kwargs)
-        vd = newton(func=lambda x, *a: fi(x, current, *a), x0=v0,
+        x0, (current, *args), method_kwargs = \
+            _prepare_newton_inputs(voc_est, [current, *args], method_kwargs)
+        vd = newton(func=lambda x, *a: fi(x, current, *a), x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
                     args=args,
                     **method_kwargs)
@@ -584,10 +580,10 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     elif method == 'newton':
         # make sure all args are numpy arrays if max size > 1
         # if voc_est is an array, then make a copy to use for initial guess, v0
-        args, v0, method_kwargs = \
-            _prepare_newton_inputs((), args, voc_est, method_kwargs)
+        x0, args, method_kwargs = \
+            _prepare_newton_inputs(voc_est, args, method_kwargs)
         vd = newton(
-            func=fmpp, x0=v0,
+            func=fmpp, x0=x0,
             fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args,
             **method_kwargs)
     else:
@@ -627,22 +623,38 @@ def _get_size_and_shape(args):
     return size, shape
 
 
-def _prepare_newton_inputs(i_or_v_tup, args, v0, method_kwargs):
-    # broadcast arguments for newton method
-    # the first argument should be a tuple, eg: (i,), (v,) or ()
-    size, shape = _get_size_and_shape(i_or_v_tup + args)
-    if size > 1:
-        args = [np.asarray(arg) for arg in args]
-    # newton uses initial guess for the output shape
-    # copy v0 to a new array and broadcast it to the shape of max size
+def _prepare_newton_inputs(x0, args, method_kwargs):
+    """
+    Make inputs compatible with Scipy's newton by:
+    - converting all arugments (`x0` and `args`) into numpy.ndarrays if any
+      argument has size greater than 1 or is a pandas.Series.
+    - broadcasting the initial guess `x0` to the shape of the argument with
+      the greatest size.
+
+    Parameters
+    ----------
+    x0: numeric
+        Initial guess for newton.
+    args: Iterable(numeric)
+        Iterable of additional arguments to use in SciPy's newton.
+    method_kwargs: dict
+        Options to pass to newton.
+
+    Returns
+    -------
+        tuple containing the updated initial guess, arguments, and options
+        for newton.
+    """
+    shape = _get_size_and_shape(args)[1]
     if shape is not None:
-        v0 = np.broadcast_to(v0, shape).copy()
+        args = list(map(np.asarray, args))
+        x0 = np.broadcast_to(x0, shape)
 
     # set abs tolerance and maxiter from method_kwargs if not provided
     # apply defaults, but giving priority to user-specified values
     method_kwargs = {**NEWTON_DEFAULT_PARAMS, **method_kwargs}
 
-    return args, v0, method_kwargs
+    return x0, args, method_kwargs
 
 
 def _lambertw_v_from_i(current, photocurrent, saturation_current,

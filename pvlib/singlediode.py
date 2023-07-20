@@ -3,6 +3,7 @@ Low-level functions for solving the single diode equation.
 """
 
 import numpy as np
+import pandas as pd
 from pvlib.tools import _golden_sect_DataFrame
 
 from scipy.optimize import brentq, newton
@@ -645,8 +646,8 @@ def _prepare_newton_inputs(x0, args, method_kwargs):
         tuple containing the updated initial guess, arguments, and options
         for newton.
     """
-    shape = _get_size_and_shape(args)[1]
-    if shape is not None:
+    size, shape = max(((np.size(a), np.shape(a)) for a in args), key=lambda a: a[0])
+    if size > 1 or any(isinstance(a, pd.Series) for a in args):
         args = list(map(np.asarray, args))
         x0 = np.broadcast_to(x0, shape)
 

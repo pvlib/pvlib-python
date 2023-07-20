@@ -880,8 +880,17 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
 
         optimize_result = minimize_scalar(rmse)
         if not optimize_result.success:
-            raise RuntimeError("Optimizer exited unsuccessfully:\n" +
-                                optimize_result.message)
+            try:
+                message = "Optimizer exited unsuccessfully: \n" \
+                           + optimize_result.message
+            except AttributeError:
+                message = "Optimizer exited unsuccessfully: \n \
+                           No message explaining the failure was returned. \
+                           If you would like to see this message, please \
+                           update your scipy version (try version 1.8.0 \
+                           or beyond)."
+            raise RuntimeError(message)
+
         else:
             alpha = optimize_result.x
 

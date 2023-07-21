@@ -813,6 +813,10 @@ def schlick(aoi):
     iam : numeric
         The incident angle modifier.
 
+    See Also
+    --------
+    pvlib.iam.schlick_diffuse
+
     References
     ----------
     .. [1] Schlick, C. An inexpensive BRDF model for physically-based
@@ -822,10 +826,6 @@ def schlick(aoi):
        for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
-
-    See Also
-    --------
-    pvlib.iam.schlick_diffuse
     """
     iam = 1 - (1 - cosd(aoi)) ** 5
     iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
@@ -874,15 +874,9 @@ def schlick_diffuse(surface_tilt):
     iam_ground : numeric
         The incident angle modifier for ground-reflected diffuse.
 
-    References
-    ----------
-    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
-       rendering. Computer graphics forum 13 (1994).
-
-    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
-       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
-       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
-       :doi:`10.1016/j.rser.2022.112362`
+    See Also
+    --------
+    pvlib.iam.schlick
 
     Notes
     -----
@@ -909,9 +903,15 @@ def schlick_diffuse(surface_tilt):
         >>> pvlib.iam.schlick_diffuse(surface_tilt=20)
         (0.9624993421569652, 0.6269387554469255)
 
-    See Also
-    --------
-    pvlib.iam.schlick
+    References
+    ----------
+    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
+       rendering. Computer graphics forum 13 (1994).
+
+    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
+       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
+       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
+       :doi:`10.1016/j.rser.2022.112362`
     """
     # these calculations are as in [2]_, but with the refractive index
     # weighting coefficient w set to 1.0 (so it is omitted)

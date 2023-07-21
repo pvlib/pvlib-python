@@ -564,7 +564,7 @@ def test_clearsky_get_threshold():
 
 
 def test_clearsky_get_threshold_raises_error():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match='can only be used for inputs'):
         clearsky._clearsky_get_threshold(0.5)
 
 
@@ -674,13 +674,13 @@ def test_detect_clearsky_missing_index(detect_clearsky_data):
 
 def test_detect_clearsky_not_enough_data(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    with pytest.raises(ValueError, match='must have at least'):
+    with pytest.raises(ValueError, match='have at least'):
        clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=60)
 
 
 def test_detect_clearsky_optimizer_failed(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
         clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=15)
 
 

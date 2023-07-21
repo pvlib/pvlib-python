@@ -657,8 +657,8 @@ def _clearsky_get_threshold(sample_interval):
     """
 
     if (sample_interval < 1 or sample_interval > 30):
-        raise ValueError("sample_interval must be larger than 1 and \
-                          smaller than 30")
+        raise ValueError("`infer_limits=True` can only be used for inputs \
+                          with time step from 1 to 30 minutes")
 
     data_freq = np.array([1, 5, 15, 30])
 
@@ -815,9 +815,8 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
             upper_line_length, var_diff, slope_dev = \
                 _clearsky_get_threshold(sample_interval)
 
-        # recalculate sample_interval, samples_per_window using returned
-        # window_length
-        sample_interval, samples_per_window = \
+        # recalculate samples_per_window using returned window_length
+        _, samples_per_window = \
             tools._get_sample_intervals(times, window_length)
 
     # check that we have enough data to produce a nonempty hankel matrix

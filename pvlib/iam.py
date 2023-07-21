@@ -800,7 +800,7 @@ def schlick(aoi):
 
     In PV contexts, the Schlick approximation has been used as an analytically
     integrable alternative to the Fresnel equations for estimating IAM
-    for diffuse irradiance [2]_.
+    for diffuse irradiance [2]_ (see :py:func:`schlick_diffuse`).
 
     Parameters
     ----------
@@ -845,9 +845,20 @@ def schlick_diffuse(surface_tilt):
     ground-reflected irradiance on a tilted surface using the Schlick
     incident angle model.
 
-    The diffuse iam values are calculated using an analytical integration
-    of the Schlick equation [1]_ over the portion of an isotropic sky and
-    isotropic foreground that is visible from the tilted surface [2]_.
+    The Schlick equation (or "Schlick's approximation") [1]_ is an
+    approximation to the Fresnel reflection factor which can be recast as
+    a simple photovoltaic IAM model like so:
+
+    .. math::
+
+        IAM = 1 - (1 - \cos(aoi))^5
+
+    Unlike the Fresnel reflection factor itself, Schlick's approximation can
+    be integrated analytically to derive a closed-form equation for diffuse
+    IAM factors for the portions of the sky and ground visible
+    from a tilted surface.  This function implements an integration of the
+    Schlick approximation provided by Xie et al. [2]_ which assumes isotropic
+    sky and foreground.
 
     Parameters
     ----------
@@ -872,6 +883,31 @@ def schlick_diffuse(surface_tilt):
        for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
+
+    Notes
+    -----
+    The analytical integration of the Schlick approximation was derived
+    as part of the FEDIS diffuse IAM model [2]_.  Compared with the model
+    implemented in this function, the FEDIS model includes an additional term
+    to account for reflection off a pyranometer's glass dome.  Because that
+    reflection should already be accounted for in the instrument's calibration,
+    the pvlib authors believe it is incorrect to account for it again in an
+    IAM model.  Thus, this function omits that term and implements only
+    the integration of the Schlick approximation.
+
+    Note also that the output of this function (which is an exact integration)
+    can be compared with the output of numerical integration of the Schlick
+    approximation using :py:func:`marion_diffuse`:
+
+    .. code::
+
+        >>> pvlib.iam.marion_diffuse('schlick', surface_tilt=20)
+        {'sky': 0.9625000227247358,
+         'horizon': 0.7688174948510073,
+         'ground': 0.6267861879241405}
+
+        >>> pvlib.iam.schlick_diffuse(surface_tilt=20)
+        (0.9624993421569652, 0.6269387554469255)
 
     See Also
     --------

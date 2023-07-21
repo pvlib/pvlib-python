@@ -708,7 +708,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         will be used.
     infer_limits : bool, default False
         If True, does not use passed in kwargs (or defaults), but instead
-        interpolates these values from Table 1 in [2].
+        interpolates these values from Table 1 in [2]_.
     window_length : int, default 10
         Length of sliding time window in minutes. Must be greater than 2
         periods.

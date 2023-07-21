@@ -885,13 +885,13 @@ def schlick_diffuse(surface_tilt):
     implemented in this function, the FEDIS model includes an additional term
     to account for reflection off a pyranometer's glass dome.  Because that
     reflection should already be accounted for in the instrument's calibration,
-    the pvlib authors believe it is incorrect to account for it again in an
-    IAM model.  Thus, this function omits that term and implements only
-    the integration of the Schlick approximation.
+    the pvlib authors believe it is inappropriate to account for pyranometer
+    reflection again in an IAM model.  Thus, this function omits that term and
+    implements only the integrated Schlick approximation.
 
     Note also that the output of this function (which is an exact integration)
-    can be compared with the output of numerical integration of the Schlick
-    approximation using :py:func:`marion_diffuse`:
+    can be compared with the output of :py:func:`marion_diffuse` which numerically
+    integrates the Schlick approximation:
 
     .. code::
 

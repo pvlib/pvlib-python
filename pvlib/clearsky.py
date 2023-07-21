@@ -766,7 +766,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
        v90, p. 520-531, 2016.
     .. [2] Jordan, D.C. and C. Hansen, "Clear-sky detection for PV
        degradation analysis using multiple regression", Renewable Energy,
-       v209, p. 393-400, 2023.
+       v209, p. 393-400, 2023. :doi:`10.1016/j.renene.2023.04.035`
 
     Notes
     -----

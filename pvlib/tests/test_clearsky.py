@@ -674,7 +674,7 @@ def test_detect_clearsky_missing_index(detect_clearsky_data):
 
 def test_detect_clearsky_not_enough_data(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match='must have at least'):
        clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=60)
 
 

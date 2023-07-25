@@ -155,7 +155,6 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
        2010
        :doi:`10.4229/25thEUPVSEC2010-4BV.1.114`
     """
-    I = 10
     # calculate recombination loss current where d2mutau > 0
     is_recomb = d2mutau > 0  # True where there is thin-film recombination loss
     v_recomb = np.where(is_recomb, NsVbi - diode_voltage, np.inf)

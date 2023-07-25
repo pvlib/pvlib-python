@@ -11,6 +11,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added support for dates to be specified as strings in the iotools get functions:
+  :py:func:`pvlib.iotools.get_pvgis_hourly`, :py:func:`pvlib.iotools.get_cams`,
+  :py:func:`pvlib.iotools.get_bsrn`, and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`.
+  (:pull:`1800`)
 
 
 Bug fixes
@@ -23,7 +27,8 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Removed Stickler-CI integration as the service has ceased June 2023.
+  (:issue:`1722`, :pull:`1723`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -31,4 +36,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

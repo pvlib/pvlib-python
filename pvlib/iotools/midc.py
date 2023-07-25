@@ -215,9 +215,9 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
     ----------
     site: string
         The MIDC station id.
-    start: datetime
+    start: datetime-like
         Start date for requested data.
-    end: datetime
+    end: datetime-like
         End date for requested data.
     variable_map: dict
         A dictionary mapping MIDC field names to pvlib names. Used to
@@ -247,8 +247,8 @@ def read_midc_raw_data_from_nrel(site, start, end, variable_map={},
     for more details and considerations.
     """
     args = {'site': site,
-            'begin': start.strftime('%Y%m%d'),
-            'end': end.strftime('%Y%m%d')}
+            'begin': pd.to_datetime(start).strftime('%Y%m%d'),
+            'end': pd.to_datetime(end).strftime('%Y%m%d')}
     url = 'https://midcdmz.nrel.gov/apps/data_api.pl'
     # NOTE: just use requests.get(url, params=args) to build querystring
     # number of header columns and data columns do not always match,

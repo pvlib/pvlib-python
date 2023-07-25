@@ -856,9 +856,9 @@ def schlick_diffuse(surface_tilt):
     Unlike the Fresnel reflection factor itself, Schlick's approximation can
     be integrated analytically to derive a closed-form equation for diffuse
     IAM factors for the portions of the sky and ground visible
-    from a tilted surface.  This function implements an integration of the
-    Schlick approximation provided by Xie et al. [2]_ which assumes isotropic
-    sky and foreground.
+    from a tilted surface if isotropic distributions are assumed.  
+    This function implements the integration of the
+    Schlick approximation provided by Xie et al. [2]_.
 
     Parameters
     ----------

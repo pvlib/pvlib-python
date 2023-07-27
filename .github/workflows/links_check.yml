@@ -26,4 +26,4 @@ jobs:
       - name: Run Sphinx linkcheck builder
         run: |
             cd docs/sphinx
-            python -m sphinx -b linkcheck -T source build/linkcheck
+            python -m sphinx -b linkcheck -T -W --keep-going source build/linkcheck

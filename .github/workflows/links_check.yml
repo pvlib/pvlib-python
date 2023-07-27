@@ -20,10 +20,10 @@ jobs:
         with:
           python-version: "3.8"
 
-      - name: Install PVLIB and documentation dependencies
-        run: python pip install -e .[doc]
+      - name: Install PVLIB documentation dependencies
+        run: python -m pip install -e .[doc]
 
       - name: Run Sphinx linkcheck builder
         run: |
             cd docs/sphinx
-            make linkcheck SPHINXOPTS="-W --keep-going --color"
+            python -m sphinx -b linkcheck -T source build/linkcheck

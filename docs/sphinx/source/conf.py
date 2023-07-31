@@ -355,7 +355,9 @@ suppress_warnings = ['ref.footnote']
 
 # settings for sphinx-gallery
 sphinx_gallery_conf = {
-    'examples_dirs': ['../../examples'],  # location of gallery scripts
+    'examples_dirs': [  # location of gallery scripts
+        '../../examples',
+        '../../tutos_temp'],
     'gallery_dirs': ['gallery'],  # location of generated output
     # sphinx-gallery only shows plots from plot_*.py files by default:
     # 'filename_pattern': '*.py',

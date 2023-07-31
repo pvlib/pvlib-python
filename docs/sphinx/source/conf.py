@@ -358,7 +358,9 @@ sphinx_gallery_conf = {
     'examples_dirs': [  # location of gallery scripts
         '../../examples',
         '../../tutorials'],
-    'gallery_dirs': ['gallery'],  # location of generated output
+    'gallery_dirs': [  # location of generated output
+        'gallery_examples',
+        'gallery_tutorials'],
     # sphinx-gallery only shows plots from plot_*.py files by default:
     'filename_pattern': r'.*\.py',
 

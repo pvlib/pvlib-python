@@ -22,6 +22,7 @@ from pvlib import solarposition, atmosphere
 from pvlib.location import Location
 
 # %%
+
 tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
 print(tus)
 
@@ -48,6 +49,7 @@ plt.ylabel('Airmass')
 plt.ylim(0, 100)
 
 # %%
+
 plt.plot(solpos['zenith'],
          atmosphere.get_relative_airmass(solpos['zenith'], model='simple'),
          label='simple')

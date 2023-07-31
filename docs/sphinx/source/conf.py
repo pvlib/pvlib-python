@@ -360,7 +360,7 @@ sphinx_gallery_conf = {
         '../../tutos_temp'],
     'gallery_dirs': ['gallery'],  # location of generated output
     # sphinx-gallery only shows plots from plot_*.py files by default:
-    # 'filename_pattern': '*.py',
+    'filename_pattern': '*.py',
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',

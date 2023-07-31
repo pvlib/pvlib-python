@@ -23,7 +23,8 @@ Bug fixes
 
 Testing
 ~~~~~~~
-
+* Added GitHub action to lint file changes with Flake8, replacing Stickler-CI.
+  (:issue:`776`, :issue:`1722`, :pull:`1786`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -37,3 +38,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Taos Transue (:ghuser:`reepoi`)

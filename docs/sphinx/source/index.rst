@@ -103,7 +103,8 @@ Contents
    :maxdepth: 1
 
    user_guide/index
-   gallery/index
+   gallery_examples/index
+   gallery_tutorials/index
    reference/index
    whatsnew
    contributing

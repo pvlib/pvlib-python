@@ -3,7 +3,6 @@ Low-level functions for solving the single diode equation.
 """
 
 import numpy as np
-import pandas as pd
 from pvlib.tools import _golden_sect_DataFrame
 
 from scipy.optimize import brentq, newton

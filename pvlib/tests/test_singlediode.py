@@ -1,8 +1,6 @@
 """
 testing single-diode methods using JW Bishop 1988
 """
-import itertools
-
 import numpy as np
 import pandas as pd
 import scipy

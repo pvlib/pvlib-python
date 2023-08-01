@@ -98,24 +98,24 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of thermal voltage :math:`V_{th}` [V], diode ideality factor
         :math:`n`, and number of series cells :math:`N_{s}` [V]
-    d2mutau : numeric, default 0
+    d2mutau : float, default 0
         PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
         (a-Si) modules that accounts for recombination current in the
         intrinsic layer. The value is the ratio of intrinsic layer thickness
         squared :math:`d^2` to the diffusion length of charge carriers
         :math:`\mu \tau`. [V]
-    NsVbi : numeric, default np.inf
+    NsVbi : float, default np.inf
         PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
         (a-Si) modules that is the product of the PV module number of series
         cells :math:`N_{s}` and the builtin voltage :math:`V_{bi}` of the
         intrinsic layer. [V].
-    breakdown_factor : numeric, default 0
+    breakdown_factor : float, default 0
         fraction of ohmic current involved in avalanche breakdown :math:`a`.
         Default of 0 excludes the reverse bias term from the model. [unitless]
-    breakdown_voltage : numeric, default -5.5
+    breakdown_voltage : float, default -5.5
         reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
         [V]
-    breakdown_exp : numeric, default 3.28
+    breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     gradients : bool
         False returns only I, V, and P. True also returns gradients
@@ -227,24 +227,24 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
-    d2mutau : numeric, default 0
+    d2mutau : float, default 0
         PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
         (a-Si) modules that accounts for recombination current in the
         intrinsic layer. The value is the ratio of intrinsic layer thickness
         squared :math:`d^2` to the diffusion length of charge carriers
         :math:`\\mu \\tau`. [V]
-    NsVbi : numeric, default np.inf
+    NsVbi : float, default np.inf
         PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
         (a-Si) modules that is the product of the PV module number of series
         cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
         [V].
-    breakdown_factor : numeric, default 0
+    breakdown_factor : float, default 0
         fraction of ohmic current involved in avalanche breakdown :math:`a`.
         Default of 0 excludes the reverse bias term from the model. [unitless]
-    breakdown_voltage : numeric, default -5.5
+    breakdown_voltage : float, default -5.5
         reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
         [V]
-    breakdown_exp : numeric, default 3.28
+    breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
@@ -362,24 +362,24 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     nNsVth : numeric
         product of diode ideality factor (n), number of series cells (Ns), and
         thermal voltage (Vth = k_b * T / q_e) in volts [V]
-    d2mutau : numeric, default 0
+    d2mutau : float, default 0
         PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
         (a-Si) modules that accounts for recombination current in the
         intrinsic layer. The value is the ratio of intrinsic layer thickness
         squared :math:`d^2` to the diffusion length of charge carriers
         :math:`\\mu \\tau`. [V]
-    NsVbi : numeric, default np.inf
+    NsVbi : float, default np.inf
         PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
         (a-Si) modules that is the product of the PV module number of series
         cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
         [V].
-    breakdown_factor : numeric, default 0
+    breakdown_factor : float, default 0
         fraction of ohmic current involved in avalanche breakdown :math:`a`.
         Default of 0 excludes the reverse bias term from the model. [unitless]
-    breakdown_voltage : numeric, default -5.5
+    breakdown_voltage : float, default -5.5
         reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
         [V]
-    breakdown_exp : numeric, default 3.28
+    breakdown_exp : float, default 3.28
         avalanche breakdown exponent :math:`m` [unitless]
     method : str, default 'newton'
        Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``

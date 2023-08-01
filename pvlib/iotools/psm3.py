@@ -46,7 +46,7 @@ REQUEST_VARIABLE_MAP = {
     'ghi': 'ghi',
     'dhi': 'dhi',
     'dni': 'dni',
-    'ghi_clear': 'clearsky_dhi',
+    'ghi_clear': 'clearsky_ghi',
     'dhi_clear': 'clearsky_dhi',
     'dni_clear': 'clearsky_dni',
     'zenith': 'solar_zenith_angle',

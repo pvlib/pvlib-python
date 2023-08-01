@@ -609,30 +609,32 @@ delta = DHI * AM / DNI_ET
 delta.plot()
 
 # %%
-modelt = "allsitescomposite1990"
 
-F1c, F2c = pvlib.irradiance._get_perez_coefficients(modelt)
+# TODO: THIS AIN'T WORKING SORRY :(
+# modelt = "allsitescomposite1990"
 
-F1 = (
-    F1c[ebin, 0]
-    + F1c[ebin, 1] * delta[ebin.index]
-    + F1c[ebin, 2] * z[ebin.index]
-)
-F1[F1 < 0] = 0
-F1 = F1.astype(float)
+# F1c, F2c = pvlib.irradiance._get_perez_coefficients(modelt)
 
-# F2= F2c[ebin,0] + F2c[ebin,1]*delta[ebinfilter] + F2c[ebin,2]*z[ebinfilter]
-F2 = (
-    F2c[ebin, 0]
-    + F2c[ebin, 1] * delta[ebin.index]
-    + F2c[ebin, 2] * z[ebin.index]
-)
-F2[F2 < 0] = 0
-F2 = F2.astype(float)
+# F1 = (
+#     F1c[ebin, 0]
+#     + F1c[ebin, 1] * delta[ebin.index]
+#     + F1c[ebin, 2] * z[ebin.index]
+# )
+# F1[F1 < 0] = 0
+# F1 = F1.astype(float)
 
-F1.plot(label="F1")
-F2.plot(label="F2")
-plt.legend()
+# # F2= F2c[ebin,0] + F2c[ebin,1]*delta[ebinfilter] + F2c[ebin,2]*z[ebinfilter]
+# F2 = (
+#     F2c[ebin, 0]
+#     + F2c[ebin, 1] * delta[ebin.index]
+#     + F2c[ebin, 2] * z[ebin.index]
+# )
+# F2[F2 < 0] = 0
+# F2 = F2.astype(float)
+
+# F1.plot(label="F1")
+# F2.plot(label="F2")
+# plt.legend()
 
 # %%
 A = tools.cosd(surf_tilt) * tools.cosd(sun_zen) + tools.sind(

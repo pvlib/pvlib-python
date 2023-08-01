@@ -651,16 +651,16 @@ A.plot(label="A")
 B.plot(label="B")
 plt.legend()
 
-# %%
-sky_diffuse = DHI * (
-    0.5 * (1 - F1) * (1 + tools.cosd(surf_tilt))
-    + F1 * A[ebin.index] / B[ebin.index]
-    + F2 * tools.sind(surf_tilt)
-)
-sky_diffuse[sky_diffuse < 0] = 0
-sky_diffuse[AM.isnull()] = 0
+# %% TODO FIX AFTER WILL'S REVIEWING
+# sky_diffuse = DHI * (
+#     0.5 * (1 - F1) * (1 + tools.cosd(surf_tilt))
+#     + F1 * A[ebin.index] / B[ebin.index]
+#     + F2 * tools.sind(surf_tilt)
+# )
+# sky_diffuse[sky_diffuse < 0] = 0
+# sky_diffuse[AM.isnull()] = 0
 
-sky_diffuse.plot()
+# sky_diffuse.plot()
 
 # %%
 # Compare the Perez model to others.

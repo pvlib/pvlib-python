@@ -1,14 +1,14 @@
-#!/usr/bin/env python
-# coding: utf-8
+"""
+``solarposition.py`` tutorial
+=============================
+"""
 
-# # ``solarposition.py`` tutorial
-#
 # This tutorial needs your help to make it better!
 #
 # Table of contents:
-# 1. [Setup](#Setup)
-# 2. [SPA output](#SPA-output)
-# 2. [Speed tests](#Speed-tests)
+# 1. `Setup`_
+# 2. `SPA output`_
+# 3. `Speed tests`_
 #
 # This tutorial has been tested against the following package versions:
 # * pvlib 0.8.0
@@ -16,39 +16,22 @@
 # * IPython 7.18
 # * Pandas 1.1.1
 #
-# It should work with other Python and Pandas versions. It requires pvlib > 0.3.0 and IPython > 3.0.
+# It should work with other Python and Pandas versions.
+# It requires pvlib > 0.3.0 and IPython > 3.0.
 
-# ## Setup
-
-# In[1]:
-
-
+# Setup
+# -----
 import datetime
+from timeit import timeit
 
-# scientific python add-ons
-import numpy as np
 import pandas as pd
-
-# plotting stuff
-# first line makes the plots appear in the notebook
-get_ipython().run_line_magic("matplotlib", "inline")
 import matplotlib.pyplot as plt
-
-# finally, we import the pvlib library
-import pvlib
-
-
-# In[2]:
-
-
 import pvlib
 from pvlib.location import Location
 
-
-# ## SPA output
-
-# In[3]:
-
+# %%
+# SPA output
+# ----------
 
 tus = Location(32.2, -111, "US/Arizona", 700, "Tucson")
 print(tus)
@@ -59,27 +42,17 @@ print(golden_mst)
 berlin = Location(52.5167, 13.3833, "Europe/Berlin", 34, "Berlin")
 print(berlin)
 
-
-# In[4]:
-
-
+# %%
 times = pd.date_range(
     start=datetime.datetime(2014, 6, 23),
     end=datetime.datetime(2014, 6, 24),
     freq="1Min",
 )
 times_loc = times.tz_localize(tus.pytz)
+print(times)
 
 
-# In[5]:
-
-
-times
-
-
-# In[6]:
-
-
+# %%
 pyephemout = pvlib.solarposition.pyephem(
     times_loc, tus.latitude, tus.longitude
 )
@@ -97,9 +70,7 @@ print("spa")
 print(spaout.head())
 
 
-# In[7]:
-
-
+# %%
 plt.figure()
 pyephemout["elevation"].plot(label="pyephem")
 spaout["elevation"].plot(label="spa")
@@ -129,9 +100,7 @@ plt.legend(ncol=3)
 plt.title("azimuth")
 
 
-# In[8]:
-
-
+# %%
 pyephemout = pvlib.solarposition.pyephem(
     times.tz_localize(golden.tz), golden.latitude, golden.longitude
 )
@@ -151,9 +120,7 @@ print("spa")
 print(spaout.head())
 
 
-# In[9]:
-
-
+# %%
 pyephemout = pvlib.solarposition.pyephem(
     times.tz_localize(golden.tz), golden.latitude, golden.longitude
 )
@@ -173,9 +140,7 @@ print("ephem")
 print(ephemout.head())
 
 
-# In[10]:
-
-
+# %%
 loc = berlin
 
 pyephemout = pvlib.solarposition.pyephem(
@@ -198,9 +163,7 @@ print("ephem")
 print(ephemout.head())
 
 
-# In[11]:
-
-
+# %%
 loc = berlin
 times = pd.date_range(
     start=datetime.date(2015, 3, 28),
@@ -233,9 +196,7 @@ print("ephem")
 print(ephemout.head())
 
 
-# In[12]:
-
-
+# %%
 loc = berlin
 times = pd.date_range(
     start=datetime.date(2015, 3, 30),
@@ -268,9 +229,7 @@ print("ephem")
 print(ephemout.head())
 
 
-# In[13]:
-
-
+# %%
 loc = berlin
 times = pd.date_range(
     start=datetime.date(2015, 6, 28),
@@ -303,9 +262,7 @@ print("ephem")
 print(ephemout.head())
 
 
-# In[14]:
-
-
+# %%
 pyephemout["elevation"].plot(label="pyephem")
 pyephemout["apparent_elevation"].plot(label="pyephem apparent")
 ephemout["elevation"].plot(label="ephem")
@@ -319,9 +276,7 @@ plt.xlim(
 plt.ylim(-10, 10)
 
 
-# In[15]:
-
-
+# %%
 # use calc_time to find the time at which a solar angle occurs.
 pvlib.solarposition.calc_time(
     datetime.datetime(2020, 9, 14, 12),
@@ -333,9 +288,7 @@ pvlib.solarposition.calc_time(
 )
 
 
-# In[16]:
-
-
+# %%
 pvlib.solarposition.calc_time(
     datetime.datetime(2020, 9, 14, 22),
     datetime.datetime(2020, 9, 15, 4),
@@ -346,77 +299,102 @@ pvlib.solarposition.calc_time(
 )
 
 
-# ## Speed tests
+# Speed tests
+# -----------
 
-# In[17]:
+# %%
 
-
+# define globals
 times = pd.date_range(start="20180601", freq="1min", periods=14400)
 times_loc = times.tz_localize(loc.tz)
 
+globals = {"pvlib": pvlib, "loc": loc, "times": times, "times_loc": times_loc}
 
-# In[18]:
-
-
-get_ipython().run_cell_magic(
-    "timeit",
-    "",
-    "# NBVAL_SKIP\n\npyephemout = pvlib.solarposition.pyephem(times_loc, loc.latitude, loc.longitude)\n#ephemout = pvlib.solarposition.ephemeris(times, loc)\n",
+# %%
+print(
+    timeit(
+        """
+pyephemout = pvlib.solarposition.pyephem(times_loc, loc.latitude,
+                                         loc.longitude)
+#ephemout = pvlib.solarposition.ephemeris(times, loc)""",
+        globals=globals,
+        number=5,
+    )
 )
 
 
-# In[19]:
-
-
-get_ipython().run_cell_magic(
-    "timeit",
-    "",
-    "# NBVAL_SKIP\n\n#pyephemout = pvlib.solarposition.pyephem(times, loc)\nephemout = pvlib.solarposition.ephemeris(times_loc, loc.latitude, loc.longitude)\n",
+# %%
+print(
+    timeit(
+        """
+# pyephemout = pvlib.solarposition.pyephem(times, loc)
+ephemout = pvlib.solarposition.ephemeris(times_loc, loc.latitude,
+                                         loc.longitude)""",
+        globals=globals,
+        number=5,
+    )
 )
 
 
-# In[20]:
-
-
-get_ipython().run_cell_magic(
-    "timeit",
-    "",
-    "# NBVAL_SKIP\n\n#pyephemout = pvlib.solarposition.pyephem(times, loc)\nephemout = pvlib.solarposition.get_solarposition(times_loc, loc.latitude, loc.longitude,\n                                                 method='nrel_numpy')\n",
+# %%
+print(
+    timeit(
+        """
+# pyephemout = pvlib.solarposition.pyephem(times, loc)
+ephemout = pvlib.solarposition.get_solarposition(times_loc, loc.latitude,
+                                                 loc.longitude,
+                                                 method='nrel_numpy')""",
+        globals=globals,
+        number=5,
+    )
 )
 
 
 # This numba test will only work properly if you have installed numba.
 
-# In[21]:
-
-
-get_ipython().run_cell_magic(
-    "timeit",
-    "",
-    "# NBVAL_SKIP\n\n#pyephemout = pvlib.solarposition.pyephem(times, loc)\nephemout = pvlib.solarposition.get_solarposition(times_loc, loc.latitude, loc.longitude,\n                                                 method='nrel_numba')\n",
+# %%
+print(
+    timeit(
+        """
+#pyephemout = pvlib.solarposition.pyephem(times, loc)
+ephemout = pvlib.solarposition.get_solarposition(times_loc, loc.latitude,
+                                                 loc.longitude,
+                                                 method='nrel_numba')""",
+        globals=globals,
+        number=5,
+    )
 )
 
 
-# The numba calculation takes a long time the first time that it's run because it uses LLVM to compile the Python code to machine code. After that it's about 4-10 times faster depending on your machine. You can pass a ``numthreads`` argument to this function. The optimum ``numthreads`` depends on your machine and is equal to 4 by default.
+# The numba calculation takes a long time the first time that it's run because
+# it uses LLVM to compile the Python code to machine code. After that it's
+# about 4-10 times faster depending on your machine. You can pass a
+# ``numthreads`` argument to this function. The optimum ``numthreads`` depends
+# on your machine and is equal to 4 by default.
 
-# In[22]:
-
-
-get_ipython().run_cell_magic(
-    "timeit",
-    "",
-    "# NBVAL_SKIP\n\n#pyephemout = pvlib.solarposition.pyephem(times, loc)\nephemout = pvlib.solarposition.get_solarposition(times_loc, loc.latitude, loc.longitude,\n                                                 method='nrel_numba', numthreads=16)\n",
+# %%
+print(
+    timeit(
+        """
+#pyephemout = pvlib.solarposition.pyephem(times, loc)
+ephemout = pvlib.solarposition.get_solarposition(times_loc, loc.latitude,
+                                                 loc.longitude,
+                                                 method='nrel_numba',
+                                                 numthreads=16)""",
+        globals=globals,
+        number=5,
+    )
 )
 
 
-# In[23]:
-
-
-get_ipython().run_cell_magic(
-    "timeit",
-    "",
-    "# NBVAL_SKIP\n\nephemout = pvlib.solarposition.spa_python(times_loc, loc.latitude, loc.longitude,\n                                          how='numba', numthreads=16)\n",
+# %%
+print(
+    timeit(
+        """
+ephemout = pvlib.solarposition.spa_python(times_loc, loc.latitude,
+                                          loc.longitude, how='numba',
+                                          numthreads=16)""",
+        globals=globals,
+        number=5,
+    )
 )
-
-
-# In[ ]:

@@ -11,6 +11,7 @@ irradiance to the module's surface.
 import numpy as np
 import pandas as pd
 import functools
+from scipy.optimize import minimize
 from pvlib.tools import cosd, sind
 
 # a dict of required parameter names for each IAM model
@@ -904,3 +905,289 @@ def schlick_diffuse(surface_tilt):
         cug = pd.Series(cug, surface_tilt.index)
 
     return cuk, cug
+
+
+# ----------------------------------------------------------------
+
+
+def _get_model(model_name):
+    # check that model is implemented
+    model_dict = {'ashrae': ashrae, 'martin_ruiz': martin_ruiz,
+                  'physical': physical}
+    try:
+        model = model_dict[model_name]
+    except KeyError:
+        raise NotImplementedError(f"The {model_name} model has not been \
+                                    implemented")
+
+    return model
+
+
+def _check_params(model_name, params):
+    # check that the parameters passed in with the model
+    # belong to the model
+    param_dict = {'ashrae': {'b'}, 'martin_ruiz': {'a_r'},
+                  'physical': {'n', 'K', 'L'}}
+    expected_params = param_dict[model_name]
+
+    if set(params.keys()) != expected_params:
+        raise ValueError(f"The {model_name} model was expecting to be passed \
+                         {', '.join(list(param_dict[model_name]))}, but \
+                         was handed {', '.join(list(params.keys()))}")
+
+
+def _truncated_weight(aoi, max_angle=70):
+    return [1 if angle <= max_angle else 0 for angle in aoi]
+
+
+def _residual(aoi, source_iam, target, target_params,
+              weight_function=_truncated_weight,
+              weight_args=None):
+    # computes a sum of weighted differences between the source model
+    # and target model, using the provided weight function
+
+    if weight_args == None:
+        weight_args = {}
+
+    weight = weight_function(aoi, **weight_args)
+
+    # check that weight_function is behaving as expected
+    if np.shape(aoi) != np.shape(weight):
+        assert weight_function != _truncated_weight
+        raise ValueError('The provided custom weight function is not \
+                          returning an object with the right shape. Please \
+                          refer to the docstrings for a more detailed \
+                          discussion about passing custom weight functions.')
+
+    diff = np.abs(source_iam - np.nan_to_num(target(aoi, *target_params)))
+    return np.sum(diff * weight)
+
+
+def _ashrae_to_physical(aoi, ashrae_iam, options):
+    # the ashrae model has an x-intercept less than 90
+    # we solve for this intercept, and choose n so that the physical
+    # model will have the same x-intercept
+    int_idx = np.argwhere(ashrae_iam == 0.0).flatten()[0]
+    intercept = aoi[int_idx]
+    n = sind(intercept)
+
+    # with n fixed, we will optimize for L (recall that K and L always
+    # appear in the physical model as a product, so it is enough to
+    # optimize for just L, and to fix K=4)
+
+    # we will pass n to the optimizer to simplify things later on,
+    # but because we are setting (n, n) as the bounds, the optimizer
+    # will leave n fixed
+    bounds = [(0, 0.08), (n, n)]
+    guess = [0.002, n]
+
+    def residual_function(target_params):
+        L, n = target_params
+        return _residual(aoi, ashrae_iam, physical, [n, 4, L], **options)
+
+    return residual_function, guess, bounds
+
+
+def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, options):
+    # we will optimize for both n and L (recall that K and L always
+    # appear in the physical model as a product, so it is enough to
+    # optimize for just L, and to fix K=4)
+    bounds = [(0, 0.08), (1+1e-08, 2)]
+    guess = [0.002, 1+1e-08]
+
+    # the product of K and L is more important in determining an initial
+    # guess for the location of the minimum, so we pass L in first
+    def residual_function(target_params):
+        L, n = target_params
+        return _residual(aoi, martin_ruiz_iam, physical, [n, 4, L], **options)
+
+    return residual_function, guess, bounds
+
+
+def _minimize(residual_function, guess, bounds):
+    optimize_result = minimize(residual_function, guess, method="powell",
+                               bounds=bounds)
+
+    if not optimize_result.success:
+        try:
+            message = "Optimizer exited unsuccessfully:" \
+                       + optimize_result.message
+        except AttributeError:
+            message = "Optimizer exited unsuccessfully: \
+                       No message explaining the failure was returned. \
+                       If you would like to see this message, please \
+                       update your scipy version (try version 1.8.0 \
+                       or beyond)."
+        raise RuntimeError(message)
+
+    return optimize_result
+
+
+def _process_return(target_name, optimize_result):
+    if target_name == "ashrae":
+        target_params = {'b': optimize_result.x}
+
+    elif target_name == "martin_ruiz":
+        target_params = {'a_r': optimize_result.x}
+
+    elif target_name == "physical":
+        L, n = optimize_result.x
+        target_params = {'n': n, 'K': 4, 'L': L}
+
+    return target_params
+
+
+def convert(source_name, source_params, target_name, options=None):
+    """
+    Given a source model and its parameters, determines the best
+    parameters for the target model so that the models behave
+    similarly. (FIXME)
+
+    Parameters
+    ----------
+    source_name : str
+        Name of source model. Must be 'ashrae', 'martin_ruiz', or
+        'physical'.
+
+    source_params : dict
+        A dictionary of parameters for the source model. See table
+        below to get keys needed for each model. (Note that the keys
+        for the physical model are case-sensitive!)
+
+        +--------------+----------+
+        | source model | keys     |
+        +==============+==========+
+        | ashrae       | b        |
+        +--------------+----------+
+        | martin_ruiz  | a_r      |
+        +--------------+----------+
+        | physical     | n, K, L  |
+        +--------------+----------+
+
+    target_name : str
+        Name of target model. Must be 'ashrae', 'martin_ruiz', or
+        'physical'.
+
+    options : dict, optional
+        A dictionary that allows passing a custom weight function and
+        arguments to the (default or custom) weight function. Possible
+        keys are 'weight_function' and 'weight_args'
+
+            weight_function : function
+                A function that outputs an array of weights to use
+                when computing residuals between models.
+
+                Requirements:
+                -------------
+                1. Must accept aoi as first argument. (aoi is a numpy
+                array, and it is handed to the function internally.)
+                2. Any other arguments must be keyword arguments. (These
+                will be passed by the user in weight_args, see below.)
+                3. Must return an array-like object with the same shape
+                as aoi.
+
+            weight_args : dict
+                A dictionary containing all keyword arguments for the
+                weight function. If using the default weight function,
+                the only keyword argument is max_angle.
+
+                FIXME there needs to be more information about the default
+                weight function, so people don't have to go digging through the
+                private functions.
+
+        Default value of options is None (leaving as default will use
+        default weight function `pvlib.iam._truncated_weight`).
+        * FIXME if name of default function changes *
+
+    Returns
+    -------
+    dict
+        Parameters for target model that best match the behavior of the
+        given source model. Key names are given in the table below.
+        (Note that the keys for the physical model are case-sensitive!)
+
+        +--------------+----------+
+        | target model | keys     |
+        +==============+==========+
+        | ashrae       | b        |
+        +--------------+----------+
+        | martin_ruiz  | a_r      |
+        +--------------+----------+
+        | physical     | n, K, L  |
+        +--------------+----------+
+
+    References
+    ----------
+    .. [1] TODO
+
+    See Also
+    --------
+    pvlib.iam.fit
+    pvlib.iam.ashrae
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    """
+
+    source = _get_model(source_name)
+    target = _get_model(target_name)
+
+    # if no options were passed in, we will use the default arguments
+    if options == None:
+        options = {}
+
+    aoi = np.linspace(0, 90, 100)
+    _check_params(source_name, source_params)
+    source_iam = source(aoi, **source_params)
+
+    if target_name == "physical":
+        # we can do some special set-up to improve the fit when the
+        # target model is physical
+        if source_name == "ashrae":
+            residual_function, guess, bounds = \
+                _ashrae_to_physical(aoi, source_iam, options)
+        elif source_name == "martin_ruiz":
+            residual_function, guess, bounds = \
+                _martin_ruiz_to_physical(aoi, source_iam, options)
+
+    else:
+        # otherwise, target model is ashrae or martin_ruiz, and scipy
+        # does fine without any special set-up
+        bounds = [(0, 1)]
+        guess = [1e-08]
+        def residual_function(target_param):
+            return _residual(aoi, source_iam, target, target_param, **options)
+
+    optimize_result = _minimize(residual_function, guess, bounds)
+
+    return _process_return(target_name, optimize_result)
+
+
+def fit(measured_aoi, measured_iam, target_name, options=None):
+    # given measured aoi and iam data and a target model, finds
+    # parameters for target model that best fit measured data
+    target = _get_model(target_name)
+
+    # if no options were passed in, we will use the default arguments
+    if options == None:
+        options = {}
+
+    if target_name == "physical":
+        bounds = [(0, 0.08), (1+1e-08, 2)]
+        guess = [0.002, 1+1e-08]
+
+        def residual_function(target_params):
+            L, n = target_params
+            return _residual(measured_aoi, measured_iam, target, [n, 4, L],
+                             **options)
+
+    else: # target_name == martin_ruiz or target_name == ashrae
+        bounds = [(0, 1)]
+        guess = [1e-08]
+        def residual_function(target_param):
+            return _residual(measured_aoi, measured_iam, target, target_param,
+                             **options)
+
+    optimize_result = _minimize(residual_function, guess, bounds)
+
+    return _process_return(target_name, optimize_result)
+

@@ -15,6 +15,8 @@ Enhancements
   :py:func:`pvlib.iotools.get_pvgis_hourly`, :py:func:`pvlib.iotools.get_cams`,
   :py:func:`pvlib.iotools.get_bsrn`, and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`.
   (:pull:`1800`)
+* Added option to infer threshold values for 
+  :py:func:`pvlib.clearsky.detect_clearsky` (:issue:`1808`, :pull:`1784`)
 
 
 Bug fixes
@@ -39,4 +41,5 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Abigail Jones (:ghuser:`ajonesr`)
 * Taos Transue (:ghuser:`reepoi`)

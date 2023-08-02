@@ -1,6 +1,6 @@
 """"
-``atmosphere.py`` tutorial
-==========================
+atmosphere.py tutorial
+======================
 """
 
 

@@ -31,6 +31,11 @@ Documentation
 ~~~~~~~~~~~~~
 * Removed Stickler-CI integration as the service has ceased June 2023.
   (:issue:`1722`, :pull:`1723`)
+* Restricted :py:func:`pvlib.singlediode.bishop88`,
+  :py:func:`pvlib.singlediode.bishop88_i_from_v`, and
+  :py:func:`pvlib.singlediode.bishop88_v_from_i` parameters `breakdown_factor`,
+  `breakdown_voltage`, and `breakdown_exp` to be floats.
+  (:issue:`1820`, :pull:`1821`)
 
 Requirements
 ~~~~~~~~~~~~

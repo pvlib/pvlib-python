@@ -5,11 +5,12 @@ irradiance.py tutorial
 
 # %%
 # This tutorial explores some of the functions available in the ``pvlib``
-# module ``irradiance.py``.
+# module :py:mod:`irradiance`.
 #
 # This tutorial requires pvlib >= 0.6.0.
 #
 # Authors:
+#
 # - Will Holmgren (@wholmgren), University of Arizona. July 2014, April 2015,
 #   July 2015, March 2016, July 2016, February 2017, August 2018.
 
@@ -28,18 +29,18 @@ from pvlib import tools
 
 # %%
 # Table of contents
-# TODO
-# 1. [Extraterrestrial radiation](#Extraterrestrial-radiation)
-# 2. [Clear sky models](#Clear-sky-models)
-# 3. [Diffuse ground](#Diffuse-ground)
-# 4. [Diffuse sky](#Diffuse-sky)
-#     1. [Isotropic](#Isotropic-model)
-#     2. [Klucher](#Klucher-model)
-#     3. [Reindl](#Reindl-model)
-#     4. [Hay-Davies](#Hay-Davies-model)
-#     5. [Perez](#Perez-model)
-# 5. [Angle of incidence](#Angle-of-incidence-functions)
-# 6. [total_irrad](#total_irrad)
+#
+# 1. `Extraterrestrial radiation`_
+# 2. `Clear sky models`_
+# 3. `Diffuse ground`_
+# 4. `Diffuse sky`_
+#     1. `Isotropic model`_
+#     2. `Klucher model`_
+#     3. `Reindl model`_
+#     4. `Hay-Davies model`_
+#     5. `Perez model`_
+# 5. `Angle of incidence`_
+# 6. `total_irrad`_
 
 # %%
 # Extraterrestrial radiation
@@ -162,9 +163,8 @@ plt.ylabel("Extraterrestrial radiation (W/m^2)")
 # %%
 # Clear sky models
 # ----------------
-# See the online documentation for clear sky modeling examples.
-# TODO: LINK LINK
-# http://pvlib-python.readthedocs.io/en/stable/user_guide/clearsky.html
+# See the online documentation for clear `sky modeling examples
+# <http://pvlib-python.readthedocs.io/en/stable/user_guide/clearsky.html>`_.
 #
 # Here we only generate data for the functions below.
 
@@ -179,9 +179,10 @@ plt.ylabel("Irradiance $W/m^2$")
 plt.title("Ineichen, climatological turbidity")
 
 # Diffuse ground
-# -------------- TODO: LINK FUNCS
-# The ``grounddiffuse`` function has a few different ways to obtain the
-# diffuse light reflected from the ground given an surface tilt and the GHI.
+# --------------
+# The :py:func:``~pvlib.irradiance.grounddiffuse`` function has a few different
+# ways to obtain the diffuse light reflected from the ground given
+# an surface tilt and the GHI.
 #
 # First, you can specify the albedo of ground.
 
@@ -228,12 +229,12 @@ plt.title("Ground diffuse as a function of tilt")
 # ``pvlib`` has many different ways to calculate the diffuse sky component
 # of GHI.
 #
-# The API for some of these functions needs some work. TODO HYPERLINKS
-# 1. [Isotropic](#Isotropic-model)
-# 2. [Klucher](#Klucher-model)
-# 3. [Reindl](#Reindl-model)
-# 4. [Hay-Davies](#Hay-Davies-model)
-# 5. [Perez](#Perez-model)
+# The API for some of these functions needs some work.
+# 1. `Isotropic model`_
+# 2. `Klucher model`_
+# 3. `Reindl model`_
+# 4. `Hay-Davies model`_
+# 5. `Perez model`_
 #
 # Isotropic model
 # ^^^^^^^^^^^^^^^
@@ -804,8 +805,8 @@ plt.legend()
 # %%
 # Angle of incidence functions
 # ----------------------------
-# The ``irradiance`` module has some convenience functions to help calculate
-# the angle of incidence. TODO: LINK
+# The :py:mod:`~pvlib.irradiance` module has some convenience functions to
+# help calculate the angle of incidence.
 #
 # First, the angle of incidence.
 
@@ -839,7 +840,7 @@ plt.ylim(-4, 4)
 
 # %%
 # This plot shows that an explicit dot product calculation gives the same
-# result as ``aoi_projection``. TODO: HYPERLINK
+# result as :py:func:`~pvlib.irradiance.aoi_projection`.
 
 surf_tilt = 90
 surf_az = 90
@@ -865,8 +866,9 @@ plt.legend()
 
 # %%
 # get_total_irradiance
-# ^^^^^^^^^^^^^^^^^^^^ TODO: LINK
-# There is a convenience function ``get_total_irradiance`` that aims to make
+# ^^^^^^^^^^^^^^^^^^^^
+# There is a convenience function
+# :py:func:`~pvlib.irradiance.get_total_irradiance` that aims to make
 # it easier to play with different models. For now, we use it to make summary
 # plots of the models explored above.
 #

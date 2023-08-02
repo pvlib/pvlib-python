@@ -1169,13 +1169,10 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
     Parameters
     ----------
     measured_aoi : array-like
-        # TODO check that Pandas, np arrays and list work
-        Array of angle of incidence (aoi) values associated with
-        the measured IAM data.
+        Array of angle of incidence values associated with the
+        measured IAM data.
 
     measured_iam : array-like
-        # TODO check that Pandas, np arrays and list work
-        # TODO add note about 1 dimensional?
         Array of measured IAM values.
 
     target_name : str

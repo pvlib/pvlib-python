@@ -1039,9 +1039,8 @@ def _process_return(target_name, optimize_result):
 
 def convert(source_name, source_params, target_name, options=None):
     """
-    Given a source model and its parameters, determines the best
-    parameters for the target model so that the models behave
-    similarly. (FIXME)
+    Given a source model and its parameters and a target model, finds
+    parameters for target model that best fit source model.
 
     Parameters
     ----------
@@ -1091,13 +1090,13 @@ def convert(source_name, source_params, target_name, options=None):
                 weight function. If using the default weight function,
                 the only keyword argument is max_angle.
 
-                FIXME there needs to be more information about the default
+                TODO there needs to be more information about the default
                 weight function, so people don't have to go digging through the
                 private functions.
 
         Default value of options is None (leaving as default will use
         default weight function `pvlib.iam._truncated_weight`).
-        * FIXME if name of default function changes *
+        * TODO if name of default function changes *
 
     Returns
     -------
@@ -1163,8 +1162,87 @@ def convert(source_name, source_params, target_name, options=None):
 
 
 def fit(measured_aoi, measured_iam, target_name, options=None):
-    # given measured aoi and iam data and a target model, finds
-    # parameters for target model that best fit measured data
+    """
+    Given measured aoi and measured iam data and a target model, finds
+    parameters for target model that best fit measured data.
+
+    Parameters
+    ----------
+    measured_aoi : array-like
+        # TODO check that Pandas, np arrays and list work
+        Array of angle of incidence (aoi) values associated with
+        the measured IAM data.
+
+    measured_iam : array-like
+        # TODO check that Pandas, np arrays and list work
+        # TODO add note about 1 dimensional?
+        Array of measured IAM values.
+
+    target_name : str
+        Name of target model. Must be 'ashrae', 'martin_ruiz', or
+        'physical'.
+
+    options : dict, optional
+        A dictionary that allows passing a custom weight function and
+        arguments to the (default or custom) weight function. Possible
+        keys are 'weight_function' and 'weight_args'
+
+            weight_function : function
+                A function that outputs an array of weights to use
+                when computing residuals between models.
+
+                Requirements:
+                -------------
+                1. Must accept aoi as first argument. (aoi is a numpy
+                array, and it is handed to the function internally.)
+                2. Any other arguments must be keyword arguments. (These
+                will be passed by the user in weight_args, see below.)
+                3. Must return an array-like object with the same shape
+                as aoi.
+
+            weight_args : dict
+                A dictionary containing all keyword arguments for the
+                weight function. If using the default weight function,
+                the only keyword argument is max_angle.
+
+                TODO there needs to be more information about the default
+                weight function, so people don't have to go digging through the
+                private functions.
+
+        Default value of options is None (leaving as default will use
+        default weight function `pvlib.iam._truncated_weight`).
+        * TODO if name of default function changes *
+
+
+    Returns
+    -------
+    dict
+        Parameters for target model that best match the behavior of the
+        given data. Key names are given in the table below. (Note that
+        the keys for the physical model are case-sensitive!)
+
+        +--------------+----------+
+        | target model | keys     |
+        +==============+==========+
+        | ashrae       | b        |
+        +--------------+----------+
+        | martin_ruiz  | a_r      |
+        +--------------+----------+
+        | physical     | n, K, L  |
+        +--------------+----------+
+
+    References
+    ----------
+    .. [1] TODO
+
+    See Also
+    --------
+    pvlib.iam.convert
+    pvlib.iam.ashrae
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    """
+
     target = _get_model(target_name)
 
     # if no options were passed in, we will use the default arguments

@@ -43,7 +43,6 @@ import datetime
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import pytest
 
 import pvlib
 from pvlib.tools import cosd, sind
@@ -1544,7 +1543,7 @@ tracker_data
 # %%
 # This is supposed to fail...
 
-with pytest.raises(Exception):
+try:
     apparent_zenith = pd.Series([10])
     apparent_azimuth = pd.Series([180, 90])
     tracker_data = pvlib.tracking.singleaxis(
@@ -1557,3 +1556,6 @@ with pytest.raises(Exception):
         gcr=2.0 / 7.0,
     )
     tracker_data
+
+except Exception as err:
+    print(err)

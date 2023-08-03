@@ -946,7 +946,7 @@ def _residual(aoi, source_iam, target, target_params,
     # computes a sum of weighted differences between the source model
     # and target model, using the provided weight function
 
-    if weight_args == None:
+    if weight_args is None:
         weight_args = {}
 
     weight = weight_function(aoi, **weight_args)
@@ -1011,7 +1011,7 @@ def _minimize(residual_function, guess, bounds):
     if not optimize_result.success:
         try:
             message = "Optimizer exited unsuccessfully:" \
-                       + optimize_result.message
+                      + optimize_result.message
         except AttributeError:
             message = "Optimizer exited unsuccessfully: \
                        No message explaining the failure was returned. \
@@ -1131,7 +1131,7 @@ def convert(source_name, source_params, target_name, options=None):
     target = _get_model(target_name)
 
     # if no options were passed in, we will use the default arguments
-    if options == None:
+    if options is None:
         options = {}
 
     aoi = np.linspace(0, 90, 100)
@@ -1153,6 +1153,7 @@ def convert(source_name, source_params, target_name, options=None):
         # does fine without any special set-up
         bounds = [(0, 1)]
         guess = [1e-08]
+
         def residual_function(target_param):
             return _residual(aoi, source_iam, target, target_param, **options)
 
@@ -1243,7 +1244,7 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
     target = _get_model(target_name)
 
     # if no options were passed in, we will use the default arguments
-    if options == None:
+    if options is None:
         options = {}
 
     if target_name == "physical":
@@ -1255,9 +1256,11 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
             return _residual(measured_aoi, measured_iam, target, [n, 4, L],
                              **options)
 
-    else: # target_name == martin_ruiz or target_name == ashrae
+    # otherwise, target_name is martin_ruiz or ashrae
+    else:
         bounds = [(0, 1)]
         guess = [1e-08]
+
         def residual_function(target_param):
             return _residual(measured_aoi, measured_iam, target, target_param,
                              **options)
@@ -1265,4 +1268,3 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
     optimize_result = _minimize(residual_function, guess, bounds)
 
     return _process_return(target_name, optimize_result)
-

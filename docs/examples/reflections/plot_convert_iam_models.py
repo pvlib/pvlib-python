@@ -9,8 +9,10 @@ IAM Model Conversion
 # Introductory text blurb (TODO)
 
 import numpy as np
+from random import uniform
 import matplotlib.pyplot as plt
 
+from pvlib.tools import cosd
 from pvlib.iam import (ashrae, martin_ruiz, physical, convert, fit)
 
 # %%
@@ -60,8 +62,6 @@ plt.show()
 # we'll use perturbed output from the Martin-Ruiz model to mimic
 # measured data and then we'll fit this to the Physical model.
 
-from random import uniform
-
 # create perturbed iam data
 aoi = np.linspace(0, 90, 100)
 params = {'a_r': 0.16}
@@ -69,7 +69,7 @@ iam = martin_ruiz(aoi, **params)
 data = iam * np.array([uniform(0.98, 1.02) for _ in range(len(iam))])
 
 # get parameters for physical model that fits this data
-physical_params = convert('martin_ruiz', martin_ruiz_params, 'physical')
+physical_params = fit(aoi, data, 'physical')
 
 # compute physical iam
 physical_iam = physical(aoi, **physical_params)
@@ -106,8 +106,6 @@ plt.show()
 # so, we'll also show how to pass arguments to the default weight function,
 # as well as pass in a custom weight function of our choice.
 
-from pvlib.tools import cosd
-
 # compute martin_ruiz iam for given parameter
 aoi = np.linspace(0, 90, 100)
 martin_ruiz_params = {'a_r': 0.16}
@@ -117,7 +115,8 @@ martin_ruiz_iam = martin_ruiz(aoi, **martin_ruiz_params)
 # get parameters for physical models ...
 
 # ... using default weight function
-physical_params_default = convert('martin_ruiz', martin_ruiz_params, 'physical')
+physical_params_default = convert('martin_ruiz', martin_ruiz_params,
+                                  'physical')
 physical_iam_default = physical(aoi, **physical_params_default)
 
 # ... using default weight function with different max_angle
@@ -129,6 +128,7 @@ physical_iam_diff_max_angle = physical(aoi, **physical_params_diff_max_angle)
 # ... using custom weight function
 def cos_weight(aoi):
     return cosd(aoi)
+
 options = {'weight_function': cos_weight}
 physical_params_custom = convert('martin_ruiz', martin_ruiz_params, 'physical',
                                  options=options)
@@ -162,15 +162,16 @@ ashrae_iam_default = ashrae(aoi, **ashrae_params_default)
 # ... using default weight function with different max_angle
 options = {'weight_args': {'max_angle': 50}}
 ashrae_params_diff_max_angle = convert('martin_ruiz', martin_ruiz_params,
-                                         'ashrae', options=options)
+                                       'ashrae', options=options)
 ashrae_iam_diff_max_angle = ashrae(aoi, **ashrae_params_diff_max_angle)
 
 # ... using custom weight function
 def cos_weight(aoi):
     return cosd(aoi)
+
 options = {'weight_function': cos_weight}
 ashrae_params_custom = convert('martin_ruiz', martin_ruiz_params, 'ashrae',
-                                 options=options)
+                               options=options)
 ashrae_iam_custom = ashrae(aoi, **ashrae_params_custom)
 
 # plot aoi vs iam curve
@@ -212,4 +213,3 @@ plt.show()
 # ---------------------------
 #
 # TODO
-

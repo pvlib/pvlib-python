@@ -1,8 +1,7 @@
-""""
+"""
 atmosphere.py tutorial
 ======================
 """
-
 
 # %%
 # This tutorial needs your help to make it better!

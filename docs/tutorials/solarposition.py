@@ -3,6 +3,7 @@
 =============================
 """
 
+# %%
 # This tutorial needs your help to make it better!
 #
 # Table of contents:

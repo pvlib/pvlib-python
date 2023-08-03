@@ -13,13 +13,12 @@ diffuse irradiance models.
 # - Rob Andrews (@Calama-Consulting), Heliolytics, June 2014
 # - Will Holmgren (@wholmgren), University of Arizona, July 2015, March 2016,
 #   August 2018
-
+#
 # Setup
 # -----
 # See the :ref:`sphx_glr_gallery_tutorials_tmy_to_power.py` tutorial for more
 # detailed explanations for the initial setup
 
-# %%
 import os
 import inspect
 

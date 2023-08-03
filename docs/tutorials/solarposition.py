@@ -7,6 +7,7 @@
 # This tutorial needs your help to make it better!
 #
 # Table of contents:
+#
 # 1. `Setup`_
 # 2. `SPA output`_
 # 3. `Speed tests`_
@@ -21,6 +22,7 @@
 # It should work with other Python and Pandas versions.
 # It requires pvlib > 0.3.0 and IPython > 3.0.
 
+# %%
 # Setup
 # -----
 import datetime
@@ -300,11 +302,9 @@ pvlib.solarposition.calc_time(
     0.05235987755982988,  # 3 degrees in radians
 )
 
-
+# %%
 # Speed tests
 # -----------
-
-# %%
 
 # define globals
 times = pd.date_range(start="20180601", freq="1min", periods=14400)

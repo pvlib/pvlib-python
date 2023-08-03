@@ -7,6 +7,7 @@ using the SAPM.
 
 # %%
 # Table of contents:
+#
 # 1. `Setup`_
 # 2. `Load TMY data`_
 # 3. `Calculate modeling intermediates`_
@@ -16,6 +17,7 @@ using the SAPM.
 # This tutorial requires pvlib >= 0.6.0.
 #
 # Authors:
+#
 # - Will Holmgren (@wholmgren), University of Arizona, July 2015, March 2016,
 #   August 2018.
 # - Rob Andrews (@Calama-Consulting), Heliolytics, June 2014
@@ -49,6 +51,7 @@ import pvlib
 # http://rredc.nrel.gov/solar/old_data/nsrdb/1991-2005/tmy3/by_state_and_city.html
 
 # Find the absolute file path to your pvlib installation
+# TODO: :pull:`1763`
 pvlib_abspath = os.path.dirname(os.path.abspath(inspect.getfile(pvlib)))
 
 # absolute path to a data file
@@ -125,8 +128,8 @@ print(sand_point)
 #
 # The default solar position algorithm is based on Reda and Andreas (2004).
 # Our implementation is pretty fast, but you can make it even faster
-# if you install ```numba`` <http://numba.pydata.org/#installing>`_
-# and use add  ``method='nrel_numba'`` to the function call below.
+# if you install `:literal:`numba` <http://numba.pydata.org/#installing>`_
+# and use add ``method='nrel_numba'`` to the function call below.
 
 solpos = pvlib.solarposition.get_solarposition(
     tmy_data.index, sand_point.latitude, sand_point.longitude
@@ -134,7 +137,7 @@ solpos = pvlib.solarposition.get_solarposition(
 
 solpos.plot()
 
-
+# %%
 # The funny looking jump in the azimuth is just due to the coarse time
 # sampling in the TMY file.
 
@@ -166,6 +169,7 @@ airmass.plot()
 plt.ylabel("Airmass")
 
 
+# %%
 # The funny appearance is due to aliasing and setting invalid numbers
 # equal to ``NaN``.
 # Replot just a day or two and you'll see that the numbers are right.
@@ -220,6 +224,7 @@ aoi.plot()
 plt.ylabel("Angle of incidence (deg)")
 
 
+# %%
 # Note that AOI has values greater than 90 deg. This is ok.
 
 # %%
@@ -447,6 +452,7 @@ sapm_sd_scatter(tmy_data.AOD, label="AOD")
 sapm_sd_scatter(tmy_data.Wspd, label="Wind speed", vmax=10)
 
 
+# %%
 # Notice the use of the ``vmax`` keyword argument in the above example.
 # The ``**kwargs`` pattern allows us to easily pass non-specified arguments
 # to nested functions.

@@ -19,12 +19,13 @@ support in the future.
 # that our implementation differs from the MATLAB implementation.
 #
 # Table of contents:
+#
 # 1. `Setup`_
 # 2. `Walk through each step of the single axis tracking algorithm
-#     <Single axis tracker algorithm>`_
+#     <Single axis tracker algorithm_>`_
 # 3. `Use the :py:func:`~pvlib.tracking.singleaxis` function to explore the
 #    impacts of tracker tilt, tracker azimuth, and backtracking
-#    <tracking.singleaxis examples>`_
+#    <tracking.singleaxis examples_>`_
 #
 # This tutorial requires pvlib >= 0.6.0.
 #
@@ -87,18 +88,19 @@ ephemout = ephem_tus  # default for notebook
 # Single axis tracker algorithm
 # -----------------------------
 # The steps of the tracking algorithm are:
-# 1. `Define input parameters <Inputs>`_.
+#
+# 1. `Define input parameters <Inputs_>`_.
 # 2. `Transform solar position to South facing coordinate system
-#    <Transform to south facing coordinate system>`_.
+#    <Transform to south facing coordinate system_>`_.
 # 3. `Transform solar position to panel coordinate system
-#    <Transform to panel coordinate system>`_.
+#    <Transform to panel coordinate system_>`_.
 # 4. `Determine the ideal tracking angle when ignoring backtracking
-#    <Tracking angle>`_.
-# 5. `Correct the tracking angle to account for backtracking <Backtracking>`_.
+#    <Tracking angle_>`_.
+# 5. `Correct the tracking angle to account for backtracking <Backtracking_>`_.
 # 6. `Calculate the panel normal vector based on tracking angle
-#    <Calculate panel normal>`_.
-# 7. `Calculate the solar angle of incidence <AOI>`_.
-# 8. `Calculate the panel tilt and azimuth <Surface tilt and azimuth>`_.
+#    <Calculate panel normal_>`_.
+# 7. `Calculate the solar angle of incidence <AOI_>`_.
+# 8. `Calculate the panel tilt and azimuth <Surface tilt and azimuth_>`_.
 
 # %%
 # Inputs
@@ -553,6 +555,7 @@ surface_tilt = 90 - np.degrees(
 surface_tilt.plot()
 
 
+# %%
 # According to the MATLAB code, surface_tilt is "The angle between the panel
 # surface and the earth surface, accounting for panel rotation."
 
@@ -1239,6 +1242,7 @@ abq = Location(35, -106, "US/Mountain", 0, "Albuquerque")
 print(abq)
 
 
+# %%
 # Example 1:
 # """"""""""
 # Horizontal single axis tracking without back-tracking (max angle = 45 deg)
@@ -1265,6 +1269,7 @@ plt.ylim(-100, 100)
 plt.title("June 1, Albuquerque, NS Horizontal Single-Axis, no backtrack")
 
 
+# %%
 # Example 2:
 # """"""""""
 # Horizontal single axis tracking with back-tracking (assumes GCR of 0.3)
@@ -1291,6 +1296,7 @@ plt.ylim(-100, 100)
 plt.title("June 1, Albuquerque, NS Horizontal Single-Axis, with backtracking")
 
 
+# %%
 # Example 3:
 # """"""""""
 # 20 deg titled single axis tracking with back-tracking (assumes GCR of 0.3)

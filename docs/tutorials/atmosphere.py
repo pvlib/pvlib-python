@@ -1,10 +1,11 @@
 """
-atmosphere.py tutorial
-======================
+``atmosphere.py`` tutorial
+==========================
 """
 
 # %%
 # This tutorial needs your help to make it better!
+#
 # This tutorial requires pvlib > 0.6.0.
 #
 # Authors:

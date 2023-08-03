@@ -1,6 +1,6 @@
 """
-irradiance.py tutorial
-======================
+``irradiance.py`` tutorial
+==========================
 """
 
 # %%
@@ -39,8 +39,8 @@ from pvlib import tools
 #     3. `Reindl model`_
 #     4. `Hay-Davies model`_
 #     5. `Perez model`_
-# 5. `Angle of incidence`_
-# 6. `total_irrad`_
+# 5. `Angle of incidence functions`_
+# 6. `get_total_irradiance`_
 
 # %%
 # Extraterrestrial radiation
@@ -178,6 +178,7 @@ irrad_data.plot()
 plt.ylabel("Irradiance $W/m^2$")
 plt.title("Ineichen, climatological turbidity")
 
+# %%
 # Diffuse ground
 # --------------
 # The :py:func:``~pvlib.irradiance.grounddiffuse`` function has a few different

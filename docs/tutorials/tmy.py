@@ -17,7 +17,7 @@ from TMY2 and TMY3 files.
 #
 # - Will Holmgren (@wholmgren), University of Arizona. July 2014, July 2015,
 #   March 2016.
-
+#
 # Import modules
 # --------------
 

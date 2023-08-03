@@ -1,6 +1,6 @@
 """
-pvsystem tutorial
-=================
+``pvsystem.py`` tutorial
+========================
 This tutorial explores the :py:mod:`pvlib.pvsystem` module.
 The module has functions for importing PV module and inverter data and
 functions for modeling module and inverter performance.
@@ -171,7 +171,7 @@ temps.plot(kind="bar")
 plt.ylabel("temperature (deg C)")
 
 # %%
-# Sandia-inverter-model
+# Sandia Inverter Model
 # ---------------------
 
 inverters = pvsystem.retrieve_sam("sandiainverter")
@@ -194,13 +194,13 @@ plt.xlabel("dc power")
 # Need to put more effort into describing this function. [TODO ¿¿??]
 
 # %%
-# DC model
-# --------
+# Sandia Array Performance Model
+# ------------------------------
 # This example shows use of the Desoto module performance model and the Sandia
 # Array Performance Model (SAPM). Both models reuire a set of parameter values
 # which can be read from SAM databases for modules.
 #
-# Foe the Desoto model, the database content is returned by supplying the
+# For the Desoto model, the database content is returned by supplying the
 # keyword `cecmod` to `pvsystem.retrievesam`.
 
 cec_modules = pvsystem.retrieve_sam("cecmod")
@@ -422,8 +422,8 @@ ax.set_title("IV curves at multiple times")
 ax.legend()
 
 # %%
-# desoto
-# ------
+# DeSoto Model
+# ------------
 # The same weather data run through the Desoto model.
 
 (

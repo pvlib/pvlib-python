@@ -17,7 +17,9 @@ Enhancements
   (:pull:`1800`)
 * Added option to infer threshold values for 
   :py:func:`pvlib.clearsky.detect_clearsky` (:issue:`1808`, :pull:`1784`)
-
+* Add :py:func:`pvlib.tools.locate_example_dataset` to get example and test
+  files under `pvlib/data` path.
+  (:issue:`924`, :pull:`1763`)
 
 Bug fixes
 ~~~~~~~~~
@@ -43,3 +45,4 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Abigail Jones (:ghuser:`ajonesr`)
 * Taos Transue (:ghuser:`reepoi`)
+* Echedey Luis (:ghuser:`echedey-ls`)

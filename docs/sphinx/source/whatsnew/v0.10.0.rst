@@ -74,9 +74,6 @@ Enhancements
 ~~~~~~~~~~~~
 * Added `map_variables` parameter to :py:func:`pvlib.iotools.read_srml`
   and :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
-* Add :py:func:`pvlib.tools.locate_example_dataset` to get example and test
-  files under `pvlib/data` path.
-  (:issue:`924`, :pull:`1763`)
 * Added two new irradiance decomposition models: :py:func:`pvlib.irradiance.orgill_hollands` (:pull:`1730`)
   and :py:func:`pvlib.irradiance.louche` (:pull:`1705`).
 * The return values of :py:func:`pvlib.pvsystem.calcparams_desoto`,

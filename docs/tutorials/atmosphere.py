@@ -8,6 +8,7 @@ atmosphere.py tutorial
 # This tutorial requires pvlib > 0.6.0.
 #
 # Authors:
+#
 # - Will Holmgren (@wholmgren), University of Arizona. 2015, March 2016,
 #   August 2018.
 

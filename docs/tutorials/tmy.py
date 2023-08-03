@@ -7,12 +7,14 @@ from TMY2 and TMY3 files.
 
 # %%
 # This tutorial has been tested against the following package versions:
+#
 # - pvlib 0.3.0
 # - Python 3.5.1
 # - IPython 4.1
 # - pandas 0.18.0
 #
 # Authors:
+#
 # - Will Holmgren (@wholmgren), University of Arizona. July 2014, July 2015,
 #   March 2016.
 

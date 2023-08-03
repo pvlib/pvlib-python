@@ -29,6 +29,7 @@ support in the future.
 # This tutorial requires pvlib >= 0.6.0.
 #
 # This tutorial was written by
+#
 # - Will Holmgren (:ghuser:`wholmgren`), University of Arizona.
 #   March, 2015, July 2015, March 2016, April 2016, August 2018.
 # - Some of the text is based on the comments in ``pvl_singleaxis.m``,

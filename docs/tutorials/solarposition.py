@@ -12,10 +12,11 @@
 # 3. `Speed tests`_
 #
 # This tutorial has been tested against the following package versions:
-# * pvlib 0.8.0
-# * Python 3.8.5
-# * IPython 7.18
-# * Pandas 1.1.1
+#
+# - pvlib 0.8.0
+# - Python 3.8.5
+# - IPython 7.18
+# - Pandas 1.1.1
 #
 # It should work with other Python and Pandas versions.
 # It requires pvlib > 0.3.0 and IPython > 3.0.

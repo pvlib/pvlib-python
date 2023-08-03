@@ -91,12 +91,13 @@ plt.ylabel("Irradiance (W/m**2)")
 # --------------------------------
 # Before we can calculate power for all times in the TMY file,
 # we will need to calculate:
-# * solar position
-# * extra terrestrial radiation
-# * airmass
-# * angle of incidence
-# * POA sky and ground diffuse radiation
-# * cell and module temperatures
+#
+# - solar position
+# - extra terrestrial radiation
+# - airmass
+# - angle of incidence
+# - POA sky and ground diffuse radiation
+# - cell and module temperatures
 
 # First, define some PV system parameters.
 

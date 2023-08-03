@@ -596,11 +596,6 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         return bishop88(vd, *args)
 
 
-def _shape_of_max_size(*args):
-    return max(((np.size(a), np.shape(a)) for a in args),
-               key=lambda t: t[0])[1]
-
-
 def _prepare_newton_inputs(x0, args, method_kwargs):
     """
     Make inputs compatible with Scipy's newton by:
@@ -625,7 +620,7 @@ def _prepare_newton_inputs(x0, args, method_kwargs):
     """
     if not (np.isscalar(x0) and all(map(np.isscalar, args))):
         args = tuple(map(np.asarray, args))
-        x0 = np.broadcast_to(x0, _shape_of_max_size(x0, *args))
+        x0 = np.broadcast_to(x0, np.broadcast_shapes(*map(np.shape, args)))
 
     # set abs tolerance and maxiter from method_kwargs if not provided
     # apply defaults, but giving priority to user-specified values

@@ -2662,7 +2662,7 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
         V = _singlediode.bishop88_v_from_i(*args, method=method.lower())
         if all(map(np.isscalar, args)):
             return V
-        shape = _singlediode._shape_of_max_size(*args)
+        shape = np.broadcast_shapes(*map(np.shape, args))
         return np.broadcast_to(V, shape)
 
 
@@ -2744,7 +2744,7 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
         current = _singlediode.bishop88_i_from_v(*args, method=method.lower())
         if all(map(np.isscalar, args)):
             return current
-        shape = _singlediode._shape_of_max_size(*args)
+        shape = np.broadcast_shapes(*map(np.shape, args))
         return np.broadcast_to(current, shape)
 
 

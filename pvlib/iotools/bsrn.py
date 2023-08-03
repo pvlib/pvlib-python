@@ -154,6 +154,10 @@ def get_bsrn(station, start, end, username, password,
     # The FTP server uses lowercase station abbreviations
     station = station.lower()
 
+    # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
+    start = pd.to_datetime(start)
+    end = pd.to_datetime(end)
+
     # Generate list files to download based on start/end (SSSMMYY.dat.gz)
     filenames = pd.date_range(
         start, end.replace(day=1) + pd.DateOffset(months=1), freq='1M')\

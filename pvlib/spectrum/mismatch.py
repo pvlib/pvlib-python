@@ -239,8 +239,10 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
     return smm
 
 
-def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
-                               coefficients=None, min_pw=0.1, max_pw=8):
+def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
+                               module_type=None, coefficients=None,
+                               min_precipitable_water=0.1,
+                               max_precipitable_water=8):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) airmass.
@@ -277,21 +279,13 @@ def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
 
     Parameters
     ----------
-    pw : array-like
+    precipitable_water : numeric
         atmospheric precipitable water. [cm]
 
-    airmass_absolute : array-like
+    airmass_absolute : numeric
         absolute (pressure-adjusted) airmass. [unitless]
 
-    min_pw : float, default 0.1
-        minimum atmospheric precipitable water. Any pw value lower than min_pw
-        is set to min_pw to avoid model divergence. [cm]
-
-    max_pw : float, default 8
-        maximum atmospheric precipitable water. Any pw value higher than max_pw
-        is set to NaN to avoid model divergence. [cm]
-
-    module_type : None or string, default None
+    module_type : str, optional
         a string specifying a cell type. Values of 'cdte', 'monosi', 'xsi',
         'multisi', and 'polysi' (can be lower or upper case). If provided,
         module_type selects default coefficients for the following modules:
@@ -307,7 +301,7 @@ def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
         Manufacturer 2 Model C from [3]_. The spectral response (SR) of CIGS
         and a-Si modules used to derive coefficients can be found in [4]_
 
-    coefficients : None or array-like, default None
+    coefficients : array-like, optional
         Allows for entry of user-defined spectral correction
         coefficients. Coefficients must be of length 6. Derivation of
         coefficients requires use of SMARTS and PV module quantum
@@ -317,10 +311,20 @@ def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
         modules with very similar quantum efficiency should be similar,
         in most cases limiting the need for module specific coefficients.
 
+    min_precipitable_water : float, default 0.1
+        minimum atmospheric precipitable water. Any ``precipitable_water``
+        value lower than ``min_precipitable_water``
+        is set to ``min_precipitable_water`` to avoid model divergence. [cm]
+
+    max_precipitable_water : float, default 8
+        maximum atmospheric precipitable water. Any ``precipitable_water``
+        value greater than ``max_precipitable_water``
+        is set to ``np.nan`` to avoid model divergence. [cm]
+
     Returns
     -------
     modifier: array-like
-        spectral mismatch factor (unitless) which is can be multiplied
+        spectral mismatch factor (unitless) which can be multiplied
         with broadband irradiance reaching a module's cells to estimate
         effective irradiance, i.e., the irradiance that is converted to
         electrical current.
@@ -347,16 +351,16 @@ def spectral_factor_firstsolar(pw, airmass_absolute, module_type=None,
     # *** Pw ***
     # Replace Pw Values below 0.1 cm with 0.1 cm to prevent model from
     # diverging"
-    pw = np.atleast_1d(pw)
+    pw = np.atleast_1d(precipitable_water)
     pw = pw.astype('float64')
-    if np.min(pw) < min_pw:
-        pw = np.maximum(pw, min_pw)
-        warn(f'Exceptionally low pw values replaced with {min_pw} cm to '
-             'prevent model divergence')
+    if np.min(pw) < min_precipitable_water:
+        pw = np.maximum(pw, min_precipitable_water)
+        warn('Exceptionally low pw values replaced with '
+             f'{min_precipitable_water} cm to prevent model divergence')
 
     # Warn user about Pw data that is exceptionally high
-    if np.max(pw) > max_pw:
-        pw[pw > max_pw] = np.nan
+    if np.max(pw) > max_precipitable_water:
+        pw[pw > max_precipitable_water] = np.nan
         warn('Exceptionally high pw values replaced by np.nan: '
              'check input data.')
 
@@ -446,3 +450,123 @@ def spectral_factor_sapm(airmass_absolute, module):
         spectral_loss = pd.Series(spectral_loss, airmass_absolute.index)
 
     return spectral_loss
+
+
+def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
+                              module_type=None, coefficients=None):
+    r"""
+    Estimate a technology-specific spectral mismatch modifier from
+    airmass, aerosol optical depth, and atmospheric precipitable water,
+    using the Caballero model.
+
+    The model structure was motivated by examining the effect of these three
+    atmospheric parameters on simulated irradiance spectra and spectral
+    modifiers.  However, the coefficient values reported in [1]_ and
+    available here via the ``module_type`` parameter were determined
+    by fitting the model equations to spectral factors calculated from
+    global tilted spectral irradiance measurements taken in the city of
+    Jaén, Spain.  See [1]_ for details.
+
+    Parameters
+    ----------
+    precipitable_water : numeric
+        atmospheric precipitable water. [cm]
+
+    airmass_absolute : numeric
+        absolute (pressure-adjusted) airmass. [unitless]
+
+    aod500 : numeric
+        atmospheric aerosol optical depth at 500 nm. [unitless]
+
+    module_type : str, optional
+        One of the following PV technology strings from [1]_:
+
+        * ``'cdte'`` - anonymous CdTe module.
+        * ``'monosi'``, - anonymous sc-si module.
+        * ``'multisi'``, - anonymous mc-si- module.
+        * ``'cigs'`` - anonymous copper indium gallium selenide module.
+        * ``'asi'`` - anonymous amorphous silicon module.
+        * ``'perovskite'`` - anonymous pervoskite module.
+
+    coefficients : array-like, optional
+        user-defined coefficients, if not using one of the default coefficient
+        sets via the ``module_type`` parameter.
+
+    Returns
+    -------
+    modifier: numeric
+        spectral mismatch factor (unitless) which is multiplied
+        with broadband irradiance reaching a module's cells to estimate
+        effective irradiance, i.e., the irradiance that is converted to
+        electrical current.
+
+    References
+    ----------
+    .. [1] Caballero, J.A., Fernández, E., Theristis, M.,
+        Almonacid, F., and Nofuentes, G. "Spectral Corrections Based on
+        Air Mass, Aerosol Optical Depth and Precipitable Water
+        for PV Performance Modeling."
+        IEEE Journal of Photovoltaics 2018, 8(2), 552-558.
+        :doi:`10.1109/jphotov.2017.2787019`
+    """
+
+    if module_type is None and coefficients is None:
+        raise ValueError('Must provide either `module_type` or `coefficients`')
+    if module_type is not None and coefficients is not None:
+        raise ValueError('Only one of `module_type` and `coefficients` should '
+                         'be provided')
+
+    # Experimental coefficients from [1]_.
+    # The extra 0/1 coefficients at the end are used to enable/disable
+    # terms to match the different equation forms in Table 1.
+    _coefficients = {}
+    _coefficients['cdte'] = (
+        1.0044, 0.0095, -0.0037, 0.0002, 0.0000, -0.0046,
+        -0.0182, 0, 0.0095, 0.0068, 0, 1)
+    _coefficients['monosi'] = (
+        0.9706, 0.0377, -0.0123, 0.0025, -0.0002, 0.0159,
+        -0.0165, 0, -0.0016, -0.0027, 1, 0)
+    _coefficients['multisi'] = (
+        0.9836, 0.0254, -0.0085, 0.0016, -0.0001, 0.0094,
+        -0.0132, 0, -0.0002, -0.0011, 1, 0)
+    _coefficients['cigs'] = (
+        0.9801, 0.0283, -0.0092, 0.0019, -0.0001, 0.0117,
+        -0.0126, 0, -0.0011, -0.0019, 1, 0)
+    _coefficients['asi'] = (
+        1.1060, -0.0848, 0.0302, -0.0076, 0.0006, -0.1283,
+        0.0986, -0.0254, 0.0156, 0.0146, 1, 0)
+    _coefficients['perovskite'] = (
+        1.0637, -0.0491, 0.0180, -0.0047, 0.0004, -0.0773,
+        0.0583, -0.0159, 0.01251, 0.0109, 1, 0)
+
+    if module_type is not None:
+        coeff = _coefficients[module_type]
+    else:
+        coeff = coefficients
+
+    # Evaluate spectral correction factor
+    ama = airmass_absolute
+    aod500_ref = 0.084
+    pw_ref = 1.4164
+
+    f_AM = (
+        coeff[0]
+        + coeff[1] * ama
+        + coeff[2] * ama**2
+        + coeff[3] * ama**3
+        + coeff[4] * ama**4
+    )
+    # Eq 6, with Table 1
+    f_AOD = (aod500 - aod500_ref) * (
+        coeff[5]
+        + coeff[10] * coeff[6] * ama
+        + coeff[11] * coeff[6] * np.log(ama)
+        + coeff[7] * ama**2
+    )
+    # Eq 7, with Table 1
+    f_PW = (precipitable_water - pw_ref) * (
+        coeff[8]
+        + coeff[9] * np.log(ama)
+    )
+    modifier = f_AM + f_AOD + f_PW  # Eq 5
+    return modifier

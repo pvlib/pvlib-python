@@ -77,7 +77,7 @@ non-editable way, use one of the following commands to install pvlib-python::
 
     By default, pvlib will not install some infrequently used dependencies.
     If you run into an error such as
-    `ModuleNotFoundError: No module named 'netCDF4'`
+    `ModuleNotFoundError: No module named 'statsmodels'`
     you can either install pvlib with all optional dependencies using
     `pip install pvlib[optional]`, or you can install pvlib from conda-forge
     `conda create -n pvlib -c conda-forge pvlib; conda activate pvlib`.
@@ -234,7 +234,6 @@ include:
 * statsmodels: parameter fitting
 * numba: fastest solar position calculations
 * pyephem: solar positions calculations using an astronomical library
-* siphon: forecasting PV power using the pvlib.forecast module
 
 The Anaconda distribution includes most of the above packages.
 

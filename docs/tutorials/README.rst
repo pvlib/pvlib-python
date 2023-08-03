@@ -1,7 +1,7 @@
 .. _tutorials_gallery:
 
-Tutorials Gallery
-=================
+Tutorials
+=========
 
 This gallery shows tutorials about pvlib.
 

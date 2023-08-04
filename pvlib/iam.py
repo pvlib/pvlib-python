@@ -1183,32 +1183,31 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
     options : dict, optional
         A dictionary that allows passing a custom weight function and
         arguments to the (default or custom) weight function. Possible
-        keys are 'weight_function' and 'weight_args'
+        keys are ``weight_function`` and ``weight_args``.
 
             weight_function : function
                 A function that outputs an array of weights to use
                 when computing residuals between models.
 
                 Requirements:
-                -------------
-                1. Must accept aoi as first argument. (aoi is a numpy
-                array, and it is handed to the function internally.)
-                2. Any other arguments must be keyword arguments. (These
-                will be passed by the user in weight_args, see below.)
-                3. Must return an array-like object with the same shape
-                as aoi.
+                    1. Must accept aoi as first argument. (aoi is a numpy
+                       array, and it is handed to the function internally.)
+                    2. Any other arguments must be keyword arguments. (These
+                       will be passed by the user in weight_args, see below.)
+                    3. Must return an array-like object with the same shape
+                       as aoi.
 
             weight_args : dict
                 A dictionary containing all keyword arguments for the
                 weight function. If using the default weight function,
-                the only keyword argument is max_angle.
+                the only keyword argument is ``max_angle``.
 
-                TODO there needs to be more information about the default
+                * TODO there needs to be more information about the default
                 weight function, so people don't have to go digging through the
-                private functions.
+                private functions. *
 
         Default value of options is None (leaving as default will use
-        default weight function `pvlib.iam._truncated_weight`).
+        default weight function ``iam._truncated_weight``).
         * TODO if name of default function changes *
 
 
@@ -1219,15 +1218,19 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
         given data. Key names are given in the table below. (Note that
         the keys for the physical model are case-sensitive!)
 
-        +--------------+----------+
-        | target model | keys     |
-        +==============+==========+
-        | ashrae       | b        |
-        +--------------+----------+
-        | martin_ruiz  | a_r      |
-        +--------------+----------+
-        | physical     | n, K, L  |
-        +--------------+----------+
+        <center>
+
+        +--------------+----------------------+
+        | target model | keys                 |
+        +==============+======================+
+        | ashrae       | ``b``                |
+        +--------------+----------------------+
+        | martin_ruiz  | ``a_r``              |
+        +--------------+----------------------+
+        | physical     | ``n``, ``K``, ``L``  |
+        +--------------+----------------------+
+
+        </center>
 
     References
     ----------

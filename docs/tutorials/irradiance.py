@@ -602,7 +602,8 @@ ebin[eps >= 6.2] = 8
 ebin.plot()
 plt.ylim(0, 9)
 
-# %%ebin = ebin - 1
+# %%
+ebin = ebin - 1
 ebin = ebin.dropna().astype(int)
 ebin.plot()
 
@@ -611,32 +612,30 @@ delta = DHI * AM / DNI_ET
 delta.plot()
 
 # %%
+modelt = "allsitescomposite1990"
 
-# TODO: THIS AIN'T WORKING SORRY :(
-# modelt = "allsitescomposite1990"
+F1c, F2c = pvlib.irradiance._get_perez_coefficients(modelt)
 
-# F1c, F2c = pvlib.irradiance._get_perez_coefficients(modelt)
+F1 = (
+    F1c[ebin, 0]
+    + F1c[ebin, 1] * delta[ebin.index]
+    + F1c[ebin, 2] * z[ebin.index]
+)
+F1[F1 < 0] = 0
+F1 = F1.astype(float)
 
-# F1 = (
-#     F1c[ebin, 0]
-#     + F1c[ebin, 1] * delta[ebin.index]
-#     + F1c[ebin, 2] * z[ebin.index]
-# )
-# F1[F1 < 0] = 0
-# F1 = F1.astype(float)
+# F2= F2c[ebin,0] + F2c[ebin,1]*delta[ebinfilter] + F2c[ebin,2]*z[ebinfilter]
+F2 = (
+    F2c[ebin, 0]
+    + F2c[ebin, 1] * delta[ebin.index]
+    + F2c[ebin, 2] * z[ebin.index]
+)
+F2[F2 < 0] = 0
+F2 = F2.astype(float)
 
-# # F2= F2c[ebin,0] + F2c[ebin,1]*delta[ebinfilter] + F2c[ebin,2]*z[ebinfilter]
-# F2 = (
-#     F2c[ebin, 0]
-#     + F2c[ebin, 1] * delta[ebin.index]
-#     + F2c[ebin, 2] * z[ebin.index]
-# )
-# F2[F2 < 0] = 0
-# F2 = F2.astype(float)
-
-# F1.plot(label="F1")
-# F2.plot(label="F2")
-# plt.legend()
+F1.plot(label="F1")
+F2.plot(label="F2")
+plt.legend()
 
 # %%
 A = tools.cosd(surf_tilt) * tools.cosd(sun_zen) + tools.sind(
@@ -653,16 +652,16 @@ A.plot(label="A")
 B.plot(label="B")
 plt.legend()
 
-# %% TODO FIX AFTER WILL'S REVIEWING
-# sky_diffuse = DHI * (
-#     0.5 * (1 - F1) * (1 + tools.cosd(surf_tilt))
-#     + F1 * A[ebin.index] / B[ebin.index]
-#     + F2 * tools.sind(surf_tilt)
-# )
-# sky_diffuse[sky_diffuse < 0] = 0
-# sky_diffuse[AM.isnull()] = 0
+# %%
+sky_diffuse = DHI * (
+    0.5 * (1 - F1) * (1 + tools.cosd(surf_tilt))
+    + F1 * A[ebin.index] / B[ebin.index]
+    + F2 * tools.sind(surf_tilt)
+)
+sky_diffuse[sky_diffuse < 0] = 0
+sky_diffuse[AM.isnull()] = 0
 
-# sky_diffuse.plot()
+sky_diffuse.plot()
 
 # %%
 # Compare the Perez model to others.

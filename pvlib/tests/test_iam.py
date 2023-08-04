@@ -395,3 +395,125 @@ def test_schlick_diffuse():
     assert_series_equal(pd.Series(expected_sky, idx), actual_sky)
     assert_series_equal(pd.Series(expected_ground, idx), actual_ground,
                         rtol=1e-6)
+
+
+def test_convert():
+    # expected value calculated from computing residual function over
+    # a range of inputs, and taking minimum of these values
+    expected_a_r = 0.17589859805082217
+    actual_params_dict = _iam.convert('physical',
+                                      {'n': 1.5, 'K': 4.5, 'L': 0.004},
+                                      'martin_ruiz')
+    actual_a_r = actual_params_dict['a_r']
+
+    assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
+
+
+# I may also need to write tests that use _ashrae_to_physical and
+# _martin_ruiz_to_physical TODO
+
+
+def test_convert_custom_weight_func():
+    # define custom weight function that takes in other arguments
+    def scaled_weight(aoi, scalar):
+        return scalar * aoi
+
+    # expected value calculated from computing residual function over
+    # a range of inputs, and taking minimum of these values
+    expected_a_r = 0.17478448342232694
+
+    options={'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
+    actual_params_dict = _iam.convert('physical',
+                                      {'n': 1.5, 'K': 4.5, 'L': 0.004},
+                                      'martin_ruiz', options=options)
+    actual_a_r = actual_params_dict['a_r']
+
+    assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
+
+
+def test_convert_model_not_implemented():
+    with pytest.raises(NotImplementedError, match='model has not been'):
+        _iam.convert('ashrae', {'b': 0.1}, 'foo')
+
+
+def test_convert_wrong_model_parameters():
+    with pytest.raises(ValueError, match='model was expecting'):
+        _iam.convert('ashrae', {'B': 0.1}, 'physical')
+
+
+def test_convert_wrong_custom_weight_func():
+    def wrong_weight(aoi):
+        return 0
+
+    with pytest.raises(ValueError, match='custom weight function'):
+        _iam.convert('ashrae', {'b': 0.1}, 'physical',
+                     options={'weight_function': wrong_weight})
+
+
+def test_convert__minimize_fails():
+    # to make scipy.optimize.minimize fail, we'll pass in a nonsense
+    # weight function that only outputs nans
+    def nan_weight(aoi):
+        return [float('nan')]*len(aoi)
+
+    with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
+        _iam.convert('ashrae', {'b': 0.1}, 'physical',
+                     options={'weight_function': nan_weight})
+
+
+def test_fit():
+    aoi = np.linspace(0, 90, 5)
+    perturb = np.array([1.2, 1.01, 0.95, 1, 0.98])
+    perturbed_iam = _iam.martin_ruiz(aoi, a_r=0.14) * perturb
+
+    expected_a_r = 0.14
+    actual_param_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz')
+    actual_a_r = actual_param_dict['a_r']
+
+    assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
+
+
+# Testing different input types for fit? TODO
+
+def test_fit_custom_weight_func():
+    # define custom weight function that takes in other arguments
+    def scaled_weight(aoi, scalar):
+        return scalar * aoi
+
+    aoi = np.linspace(0, 90, 5)
+    perturb = np.array([1.2, 1.01, 0.95, 1, 0.98])
+    perturbed_iam = _iam.martin_ruiz(aoi, a_r=0.14) * perturb
+
+    expected_a_r = 0.14
+
+    options={'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
+    actual_param_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz',
+                                 options=options)
+    actual_a_r = actual_param_dict['a_r']
+
+    assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
+
+
+def test_fit_model_not_implemented():
+    with pytest.raises(NotImplementedError, match='model has not been'):
+        _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'foo')
+
+
+def test_fit_wrong_custom_weight_func():
+    def wrong_weight(aoi):
+        return 0
+
+    with pytest.raises(ValueError, match='custom weight function'):
+        _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'physical',
+                 options={'weight_function': wrong_weight})
+
+
+def test_fit__minimize_fails():
+    # to make scipy.optimize.minimize fail, we'll pass in a nonsense
+    # weight function that only outputs nans
+    def nan_weight(aoi):
+        return [float('nan')]*len(aoi)
+
+    with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
+        _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'physical',
+                     options={'weight_function': nan_weight})

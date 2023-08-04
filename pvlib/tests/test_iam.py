@@ -422,7 +422,7 @@ def test_convert_custom_weight_func():
     # a range of inputs, and taking minimum of these values
     expected_a_r = 0.17478448342232694
 
-    options={'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
+    options = {'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
     actual_params_dict = _iam.convert('physical',
                                       {'n': 1.5, 'K': 4.5, 'L': 0.004},
                                       'martin_ruiz', options=options)
@@ -486,7 +486,7 @@ def test_fit_custom_weight_func():
 
     expected_a_r = 0.14
 
-    options={'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
+    options = {'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
     actual_param_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz',
                                  options=options)
     actual_a_r = actual_param_dict['a_r']
@@ -516,4 +516,4 @@ def test_fit__minimize_fails():
 
     with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
         _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'physical',
-                     options={'weight_function': nan_weight})
+                          options={'weight_function': nan_weight})

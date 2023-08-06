@@ -108,17 +108,47 @@ plt.ylabel("ET Irradiance (W/m^2)")
 
 times = pd.date_range(start="2015", end="2016", freq="1min")
 
-timeit('pvlib.irradiance.get_extra_radiation(times, method="spencer")',
-       setup='import pvlib', number=5, globals={'times': times})
-timeit('pvlib.irradiance.get_extra_radiation(times, method="asce")',
-       setup='import pvlib', number=5, globals={'times': times})
-timeit('pvlib.irradiance.get_extra_radiation(times, method="pyephem")',
-       setup='import pvlib', number=5, globals={'times': times})
-timeit('pvlib.irradiance.get_extra_radiation(times, method="nrel")',
-       setup='import pvlib', number=5, globals={'times': times})
-timeit(
-    'pvlib.irradiance.get_extra_radiation(times, method="nrel", how="numba")',
-    setup='import pvlib', number=5, globals={'times': times})
+print(
+    timeit(
+        'pvlib.irradiance.get_extra_radiation(times, method="spencer")',
+        setup="import pvlib",
+        number=5,
+        globals={"times": times},
+    )
+)
+print(
+    timeit(
+        'pvlib.irradiance.get_extra_radiation(times, method="asce")',
+        setup="import pvlib",
+        number=5,
+        globals={"times": times},
+    )
+)
+print(
+    timeit(
+        'pvlib.irradiance.get_extra_radiation(times, method="pyephem")',
+        setup="import pvlib",
+        number=5,
+        globals={"times": times},
+    )
+)
+print(
+    timeit(
+        'pvlib.irradiance.get_extra_radiation(times, method="nrel")',
+        setup="import pvlib",
+        number=5,
+        globals={"times": times},
+    )
+)
+print(
+    timeit(
+        'pvlib.irradiance.get_extra_radiation(times, method="nrel", '
+        'how="numba")',
+        setup="import pvlib",
+        number=5,
+        globals={"times": times},
+    )
+)
 
 # %%
 # In addition to DatetimeIndex input, the methods also work for various scalar

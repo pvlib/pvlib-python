@@ -309,7 +309,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     ----------
     filename : str, pathlib.Path, or file-like buffer
         Name, path, or buffer of hourly data file downloaded from PVGIS.
-    pvgis_format : str, default None
+    pvgis_format : str, optional
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS API. If ``filename`` is a file and
         ``pvgis_format`` is ``None`` then the file extension will be used to
@@ -409,14 +409,14 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         documentation [2]_ for more info.
     usehorizon : bool, default True
         include effects of horizon
-    userhorizon : list of float, default None
+    userhorizon : list of float, optional
         optional user specified elevation of horizon in degrees, at equally
         spaced azimuth clockwise from north, only valid if ``usehorizon`` is
         true, if ``usehorizon`` is true but ``userhorizon`` is ``None`` then
         PVGIS will calculate the horizon [3]_
-    startyear : int, default None
+    startyear : int, optional
         first year to calculate TMY
-    endyear : int, default None
+    endyear : int, optional
         last year to calculate TMY, must be at least 10 years from first year
     map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
@@ -573,7 +573,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     ----------
     filename : str, pathlib.Path, or file-like buffer
         Name, path, or buffer of file downloaded from PVGIS.
-    pvgis_format : str, default None
+    pvgis_format : str, optional
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS TMY API. If ``filename`` is a file and
         ``pvgis_format`` is ``None`` then the file extension will be used to

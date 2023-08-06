@@ -94,7 +94,7 @@ class Location:
         ----------
         tmy_metadata : dict
             Returned from tmy.readtmy2 or tmy.readtmy3
-        tmy_data : None or DataFrame, default None
+        tmy_data : DataFrame, optional
             Optionally attach the TMY data to this object.
 
         Returns
@@ -138,7 +138,7 @@ class Location:
         ----------
         metadata : dict
             Returned from epw.read_epw
-        data : None or DataFrame, default None
+        data : DataFrame, optional
             Optionally attach the epw data to this object.
 
         Returns
@@ -173,7 +173,7 @@ class Location:
         ----------
         times : pandas.DatetimeIndex
             Must be localized or UTC will be assumed.
-        pressure : None, float, or array-like, default None
+        pressure : None, float, or array-like, optional
             If None, pressure will be calculated using
             :py:func:`pvlib.atmosphere.alt2pres` and ``self.altitude``.
         temperature : None, float, or array-like, default 12
@@ -209,10 +209,10 @@ class Location:
         model: str, default 'ineichen'
             The clear sky model to use. Must be one of
             'ineichen', 'haurwitz', 'simplified_solis'.
-        solar_position : None or DataFrame, default None
+        solar_position : DataFrame, optional
             DataFrame with columns 'apparent_zenith', 'zenith',
             'apparent_elevation'.
-        dni_extra: None or numeric, default None
+        dni_extra : numeric, optional
             If None, will be calculated from times.
 
         kwargs
@@ -279,9 +279,9 @@ class Location:
 
         Parameters
         ----------
-        times : None or DatetimeIndex, default None
+        times : DatetimeIndex, optional
             Only used if solar_position is not provided.
-        solar_position : None or DataFrame, default None
+        solar_position : DataFrame, optional
             DataFrame with with columns 'apparent_zenith', 'zenith'.
         model : str, default 'kastenyoung1989'
             Relative airmass model. See

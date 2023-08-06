@@ -159,7 +159,7 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
 
     longitude : float or int
 
-    filepath : None or string, default None
+    filepath : string, optional
         The path to the ``.h5`` file.
 
     interp_turbidity : bool, default True

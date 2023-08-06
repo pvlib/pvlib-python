@@ -75,8 +75,8 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     identifier: {'mcclear', 'cams_radiation'}
         Specify whether to retrieve CAMS Radiation or McClear parameters
     altitude: float, optional
-        Altitude in meters. If not specified, then the altitude is determined from the
-        NASA SRTM database
+        Altitude in meters. If not specified, then the altitude is determined
+        from the NASA SRTM database
     time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
         Time step of the time series, either 1 minute, 15 minute, hourly,
         daily, or monthly.

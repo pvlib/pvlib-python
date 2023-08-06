@@ -1068,7 +1068,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
         generation)
 
-    model : string (optional, default='allsitescomposite1990')
+    model : string, default 'allsitescomposite1990'
         A string which selects the desired set of Perez coefficients. If
         model is not provided as an input, the default, '1990' will be
         used. All possible model selections are:
@@ -1086,7 +1086,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         * 'capecanaveral1988'
         * 'albany1988'
 
-    return_components : bool (optional, default=False)
+    return_components : bool, default False
         Flag used to decide whether to return the calculated diffuse components
         or not.
 
@@ -2578,7 +2578,7 @@ def _get_perez_coefficients(perezmodel):
     Parameters
     ----------
 
-    perezmodel : string (optional, default='allsitescomposite1990')
+    perezmodel : string, default 'allsitescomposite1990'
 
           a character string which selects the desired set of Perez
           coefficients. If model is not provided as an input, the default,

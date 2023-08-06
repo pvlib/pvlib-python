@@ -191,7 +191,7 @@ plt.ylabel("ac power")
 plt.xlabel("dc power")
 
 # %%
-# Need to put more effort into describing this function. [TODO ¿¿??]
+# Need to put more effort into describing this function.
 
 # %%
 # Sandia Array Performance Model

@@ -52,11 +52,11 @@ def get_solarposition(time, latitude, longitude,
         negative to west.
 
     altitude : float, optional
-        If None, computed from pressure. Assumed to be 0 m
+        If not specified, computed from pressure. Assumed to be 0 m
         if pressure is also None.
 
     pressure : float, optional
-        If None, computed from altitude. Assumed to be 101325 Pa
+        If not specified, computed from altitude. Assumed to be 101325 Pa
         if altitude is also None.
 
     method : string, default 'nrel_numpy'

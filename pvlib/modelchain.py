@@ -122,11 +122,11 @@ def basic_chain(times, latitude, longitude,
         :py:func:`inverter.sandia` for details.
 
     irradiance : DataFrame, optional
-        If None, calculates clear sky data.
+        If not specified, calculates clear sky data.
         Columns must be 'dni', 'ghi', 'dhi'.
 
     weather : DataFrame, optional
-        If None, assumes air temperature is 20 C and
+        If not specified, assumes air temperature is 20 C and
         wind speed is 0 m/s.
         Columns must be 'wind_speed', 'temp_air'.
 
@@ -140,11 +140,11 @@ def basic_chain(times, latitude, longitude,
         Passed to atmosphere.relativeairmass.
 
     altitude : float, optional
-        If None, computed from pressure. Assumed to be 0 m
+        If not specified, computed from pressure. Assumed to be 0 m
         if pressure is also None.
 
     pressure : float, optional
-        If None, computed from altitude. Assumed to be 101325 Pa
+        If not specified, computed from altitude. Assumed to be 101325 Pa
         if altitude is also None.
 
     **kwargs
@@ -473,28 +473,28 @@ class ModelChain:
         Passed to location.get_airmass.
 
     dc_model : None, str, or function, optional
-        If None, the model will be inferred from the parameters that
+        If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'.
         The ModelChain instance will be passed as the first argument
         to a user-defined function.
 
     ac_model : None, str, or function, optional
-        If None, the model will be inferred from the parameters that
+        If not specified, the model will be inferred from the parameters that
         are common to all of system.inverter_parameters.
         Valid strings are 'sandia', 'adr', 'pvwatts'. The
         ModelChain instance will be passed as the first argument to a
         user-defined function.
 
     aoi_model : None, str, or function, optional
-        If None, the model will be inferred from the parameters that
+        If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
         'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
     spectral_model : None, str, or function, optional
-        If None, the model will be inferred from the parameters that
+        If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'sapm', 'first_solar', 'no_loss'.
         The ModelChain instance will be passed as the first argument to

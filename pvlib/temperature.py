@@ -873,7 +873,7 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
         where A is module area [m^2].
 
     effective_irradiance : numeric, default None.
-        The irradiance that is converted to photocurrent. If None,
+        The irradiance that is converted to photocurrent. If not specified,
         assumed equal to poa_global. [W/m^2]
 
     transmittance_absorptance : numeric, default 0.9

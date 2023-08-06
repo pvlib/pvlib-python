@@ -174,7 +174,7 @@ class Location:
         times : pandas.DatetimeIndex
             Must be localized or UTC will be assumed.
         pressure : None, float, or array-like, optional
-            If None, pressure will be calculated using
+            If not specified, pressure will be calculated using
             :py:func:`pvlib.atmosphere.alt2pres` and ``self.altitude``.
         temperature : None, float, or array-like, default 12
 
@@ -213,7 +213,7 @@ class Location:
             DataFrame with columns 'apparent_zenith', 'zenith',
             'apparent_elevation'.
         dni_extra : numeric, optional
-            If None, will be calculated from times.
+            If not specified, will be calculated from times.
 
         kwargs
             Extra parameters passed to the relevant functions. Climatological

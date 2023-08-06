@@ -704,7 +704,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
     clearsky : array or Series
         Time series of the expected clearsky GHI. [W/m2]
     times : DatetimeIndex or None, default None.
-        Times of measured and clearsky values. If None the index of measured
+        Times of measured and clearsky values. If not specified, the index of measured
         will be used.
     infer_limits : bool, default False
         If True, does not use passed in kwargs (or defaults), but instead

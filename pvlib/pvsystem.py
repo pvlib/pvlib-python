@@ -2383,8 +2383,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         (coulombs). ``0 < nNsVth``.  [V]
 
     ivcurve_pnts : int, optional
-        Number of points in the desired IV curve. If None or 0, no points on
-        the IV curves will be produced.
+        Number of points in the desired IV curve. If not specified or 0, no
+        points on the IV curves will be produced.
 
         .. deprecated:: 0.10.0
            Use :py:func:`pvlib.pvsystem.v_from_i` and

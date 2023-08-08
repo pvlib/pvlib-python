@@ -516,4 +516,4 @@ def test_fit__minimize_fails():
 
     with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
         _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'physical',
-                          options={'weight_function': nan_weight})
+                 options={'weight_function': nan_weight})

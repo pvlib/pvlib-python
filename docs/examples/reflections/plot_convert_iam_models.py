@@ -126,8 +126,7 @@ physical_params_diff_max_angle = convert('martin_ruiz', martin_ruiz_params,
 physical_iam_diff_max_angle = physical(aoi, **physical_params_diff_max_angle)
 
 # ... using custom weight function
-def cos_weight(aoi):
-    return cosd(aoi)
+cos_weight = lambda aoi : cosd(aoi)
 
 options = {'weight_function': cos_weight}
 physical_params_custom = convert('martin_ruiz', martin_ruiz_params, 'physical',
@@ -166,8 +165,7 @@ ashrae_params_diff_max_angle = convert('martin_ruiz', martin_ruiz_params,
 ashrae_iam_diff_max_angle = ashrae(aoi, **ashrae_params_diff_max_angle)
 
 # ... using custom weight function
-def cos_weight(aoi):
-    return cosd(aoi)
+cos_weight = lambda aoi : cosd(aoi)
 
 options = {'weight_function': cos_weight}
 ashrae_params_custom = convert('martin_ruiz', martin_ruiz_params, 'ashrae',

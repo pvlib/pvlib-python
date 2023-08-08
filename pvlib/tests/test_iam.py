@@ -397,20 +397,66 @@ def test_schlick_diffuse():
                         rtol=1e-6)
 
 
+# ---------------------------------------------------------------------
+
+
+
 def test_convert():
     # expected value calculated from computing residual function over
     # a range of inputs, and taking minimum of these values
-    expected_a_r = 0.17589859805082217
-    actual_params_dict = _iam.convert('physical',
-                                      {'n': 1.5, 'K': 4.5, 'L': 0.004},
-                                      'martin_ruiz')
-    actual_a_r = actual_params_dict['a_r']
 
-    assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
+    aoi = np.linspace(0, 90, 100)
+
+    # convert physical to martin_ruiz
+    source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
+    source_iam = _iam.physical(aoi, **source_params)
+    expected_min_res = 0.06203538904787109
+
+    actual_dict = _iam.convert('physical', source_params, 'martin_ruiz')
+    actual_params_list = [actual_dict[key] for key in actual_dict]
+    actual_min_res = _iam._residual(aoi, source_iam, _iam.martin_ruiz,
+                                    actual_params_list)
+
+    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
 
 
-# I may also need to write tests that use _ashrae_to_physical and
-# _martin_ruiz_to_physical TODO
+    # convert physical to ashrae
+    source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
+    source_iam = _iam.physical(aoi, **source_params)
+    expected_min_res = 0.4958798773107619
+
+    actual_dict = _iam.convert('physical', source_params, 'ashrae')
+    actual_params_list = [actual_dict[key] for key in actual_dict]
+    actual_min_res = _iam._residual(aoi, source_iam, _iam.ashrae,
+                                    actual_params_list)
+
+    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
+
+
+    # convert ashrae to physical (tests _ashrae_to_physical)
+    source_params = {'b': 0.15}
+    source_iam = _iam.ashrae(aoi, **source_params)
+    expected_min_res = 0.0893334068539472
+
+    actual_dict = _iam.convert('ashrae', source_params, 'physical')
+    actual_params_list = [actual_dict[key] for key in actual_dict]
+    actual_min_res = _iam._residual(aoi, source_iam, _iam.physical,
+                                    actual_params_list)
+
+    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
+
+
+    # convert martin_ruiz to physical (tests _martin_ruiz_to_physical)
+    source_params = {'a_r': 0.14}
+    source_iam = _iam.martin_ruiz(aoi, **source_params)
+    expected_min_res = 0.010777136524633524
+
+    actual_dict = _iam.convert('martin_ruiz', {'a_r': 0.14}, 'physical')
+    actual_params_list = [actual_dict[key] for key in actual_dict]
+    actual_min_res = _iam._residual(aoi, source_iam, _iam.physical,
+                                    actual_params_list)
+
+    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
 
 
 def test_convert_custom_weight_func():
@@ -472,8 +518,6 @@ def test_fit():
 
     assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
 
-
-# Testing different input types for fit? TODO
 
 def test_fit_custom_weight_func():
     # define custom weight function that takes in other arguments

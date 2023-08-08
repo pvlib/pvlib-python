@@ -397,10 +397,6 @@ def test_schlick_diffuse():
                         rtol=1e-6)
 
 
-# ---------------------------------------------------------------------
-
-
-
 def test_convert():
     # expected value calculated from computing residual function over
     # a range of inputs, and taking minimum of these values
@@ -419,7 +415,6 @@ def test_convert():
 
     assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
 
-
     # convert physical to ashrae
     source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
     source_iam = _iam.physical(aoi, **source_params)
@@ -432,7 +427,6 @@ def test_convert():
 
     assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
 
-
     # convert ashrae to physical (tests _ashrae_to_physical)
     source_params = {'b': 0.15}
     source_iam = _iam.ashrae(aoi, **source_params)
@@ -444,7 +438,6 @@ def test_convert():
                                     actual_params_list)
 
     assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
-
 
     # convert martin_ruiz to physical (tests _martin_ruiz_to_physical)
     source_params = {'a_r': 0.14}

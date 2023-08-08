@@ -1195,7 +1195,7 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
                        numpy array, and it is handed to the function
                        internally.)
                     2. Any other arguments must be keyword arguments. (These
-                       will be passed by the user in weight_args, see below.)
+                       will be passed by the user in `weight_args`, see below.)
                     3. Must return an array-like object with the same shape
                        as ``aoi``.
 
@@ -1204,15 +1204,8 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
                 weight function. If using the default weight function,
                 the only keyword argument is ``max_angle``.
 
-                *TODO there needs to be more information about the default
-                weight function, so people don't have to go digging through the
-                private functions.*
-
         Default value of `options` is None (leaving as default will use
         default weight function `iam._truncated_weight`).
-
-        *TODO if name of default function changes*
-
 
     Returns
     -------

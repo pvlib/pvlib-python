@@ -907,9 +907,6 @@ def schlick_diffuse(surface_tilt):
     return cuk, cug
 
 
-# ----------------------------------------------------------------
-
-
 def _get_model(model_name):
     # check that model is implemented
     model_dict = {'ashrae': ashrae, 'martin_ruiz': martin_ruiz,

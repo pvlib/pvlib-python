@@ -1455,6 +1455,23 @@ def test_aoi_model_no_loss(sapm_dc_snl_ac_system, location, weather):
     assert mc.results.ac[1] < 1
 
 
+def test_aoi_model_interp(sapm_dc_snl_ac_system, location, weather, mocker):
+    # similar to test_aoi_models but requires arguments to work, so we
+    # add 'interp' aoi losses model arguments to module
+    sapm_dc_snl_ac_system.arrays[0].module_parameters['iam_ref'] = (1., 0.85)
+    sapm_dc_snl_ac_system.arrays[0].module_parameters['theta_ref'] = (0., 80.)
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    dc_model='sapm', aoi_model='interp',
+                    spectral_model='no_loss')
+    m = mocker.spy(sapm_dc_snl_ac_system, 'get_iam')
+    mc.run_model(weather=weather)
+    assert m.call_count == 1
+    assert isinstance(mc.results.ac, pd.Series)
+    assert not mc.results.ac.empty
+    assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200
+    assert mc.results.ac[1] < 1
+
+
 def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
     m = mocker.spy(sys.modules[__name__], 'constant_aoi_loss')
     mc = ModelChain(sapm_dc_snl_ac_system, location, dc_model='sapm',
@@ -1468,7 +1485,7 @@ def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
 
 
 @pytest.mark.parametrize('aoi_model', [
-    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+    'sapm', 'ashrae', 'physical', 'martin_ruiz', 'interp'
 ])
 def test_infer_aoi_model(location, system_no_aoi, aoi_model):
     for k in iam._IAM_MODEL_PARAMS[aoi_model]:

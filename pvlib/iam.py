@@ -20,7 +20,7 @@ _IAM_MODEL_PARAMS = {
     'physical': {'n', 'K', 'L'},
     'martin_ruiz': {'a_r'},
     'sapm': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
-    'interp': set()
+    'interp': {'theta_ref', 'iam_ref'}
 }
 
 

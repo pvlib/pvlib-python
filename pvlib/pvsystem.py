@@ -388,7 +388,7 @@ class PVSystem:
 
         aoi_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz' and 'sapm'.
+            'martin_ruiz', 'sapm' and 'interp'.
         Returns
         -------
         iam : numeric or tuple of numeric
@@ -1151,7 +1151,7 @@ class Array:
 
         aoi_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz' and 'sapm'.
+            'martin_ruiz', 'sapm' and 'interp'.
 
         Returns
         -------
@@ -1164,16 +1164,13 @@ class Array:
             if `iam_model` is not a valid model name.
         """
         model = iam_model.lower()
-        if model in ['ashrae', 'physical', 'martin_ruiz']:
+        if model in ['ashrae', 'physical', 'martin_ruiz', 'interp']:
             param_names = iam._IAM_MODEL_PARAMS[model]
             kwargs = _build_kwargs(param_names, self.module_parameters)
             func = getattr(iam, model)
             return func(aoi, **kwargs)
         elif model == 'sapm':
             return iam.sapm(aoi, self.module_parameters)
-        elif model == 'interp':
-            raise ValueError(model + ' is not implemented as an IAM model '
-                             'option for Array')
         else:
             raise ValueError(model + ' is not a valid IAM model')
 

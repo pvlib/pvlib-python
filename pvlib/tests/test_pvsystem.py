@@ -64,10 +64,13 @@ def test_PVSystem_get_iam_sapm(sapm_module_params, mocker):
     assert_allclose(out, 1.0, atol=0.01)
 
 
-def test_PVSystem_get_iam_interp(sapm_module_params, mocker):
-    system = pvsystem.PVSystem(module_parameters=sapm_module_params)
-    with pytest.raises(ValueError):
-        system.get_iam(45, iam_model='interp')
+def test_PVSystem_get_iam_interp():
+    custom_module_params = {'iam_ref': (1., 0.8), 'theta_ref': (0., 80.)}
+    system = pvsystem.PVSystem(module_parameters=custom_module_params)
+    aoi = ((0., 40., 80.),)
+    expected = (1., 0.9, 0.8)
+    out = system.get_iam(aoi, iam_model='interp')
+    assert_allclose(out, expected)
 
 
 def test__normalize_sam_product_names():

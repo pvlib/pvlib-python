@@ -183,6 +183,7 @@ def read_panond(file):
 
     See Also
     --------
+    parse_panond
 
     References
     ----------

@@ -2273,8 +2273,8 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     Estimate DNI and DHI from GHI using the continuous Erbs-Driesse model.
 
     The Erbs-Driesse model [1]_ is a new formulations of the original Erbs
-    model [2]_ that provides continuity of the function and its first derivative
-    at the two transition points.
+    model [2]_ that provides continuity of the function and its first
+    derivative at the two transition points.
 
     .. math::
 
@@ -2294,9 +2294,10 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
         Global horizontal irradiance in W/m^2.
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
-    datetime_or_doy : int, float, array, pd.DatetimeIndex
+    datetime_or_doy : int, float, array, pd.DatetimeIndex, default None
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+        Either datetime_or_doy or dni_extra must be provided.
     dni_extra : numeric, default None
         Extraterrestrial normal irradiance.
         dni_extra can be provided if available to avoid recalculating it
@@ -2348,16 +2349,16 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     """
     # central polynomial coefficients with float64 precision
     p = [
-         12.26911439571261000,
+        +12.26911439571261000,
         -16.47050842469730700,
-          4.24692671521831700,
-         -0.11390583806313881,
-          0.94629663357100100,
+        +04.24692671521831700,
+        -00.11390583806313881,
+        +00.94629663357100100,
         ]
 
     if datetime_or_doy is None and dni_extra is None:
-        raise ValueError('One of datetime_or_doy or dni_extra '
-                         'must be specified')
+        raise ValueError('Either datetime_or_doy or dni_extra '
+                         'must be provided.')
 
     if dni_extra is None:
         dni_extra = get_extra_radiation(datetime_or_doy)

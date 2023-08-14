@@ -809,6 +809,7 @@ def test_erbs_driesse():
     index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
     ghi = pd.Series([0, 50, 1000, 1000], index=index)
     zenith = pd.Series([120, 85, 10, 10], index=index)
+    # expected values are the same as for erbs original test
     expected = pd.DataFrame(np.array(
         [[0.00000000e+00, 0.00000000e+00, 0.00000000e+00],
          [9.67192672e+01, 4.15703604e+01, 4.05723511e-01],

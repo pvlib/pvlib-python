@@ -165,7 +165,7 @@ End of PVObject pvGcomperter
 
 def test_read_pan_file():
     fn_file = DATA_DIR / 'ET-M772BH550GL.PAN'
-    ond_file = read_panond(fn_file)
+    pan_file = read_panond(fn_file)
     # expected
     fn_str = """PVObject_=pvModule
   Version=7.2
@@ -244,5 +244,5 @@ def test_read_pan_file():
 End of PVObject pvModule
 """
     f_obj = io.StringIO(fn_str)
-    ond_str = parse_panond(f_obj)
-    assert ond_file.keys() == ond_str.keys()
+    pan_str = parse_panond(f_obj)
+    assert pan_file.keys() == pan_str.keys()

@@ -63,9 +63,6 @@ def parse_panond(fbuf):
         file. The value of datatypes are assumed during reading. The value
         units are the default used by PVsyst.
 
-    Raises
-    ------
-
     Notes
     -----
     The parser is intended for use with .pan and .ond files that were created
@@ -87,7 +84,7 @@ def parse_panond(fbuf):
 
     Sample file:
 
-    'level1 = first level
+    'level1 = first level #TODO: kanderson github comment on output format
     key1 = value1
       level2 = second level
       key2 = value2'
@@ -109,11 +106,6 @@ def parse_panond(fbuf):
     possibility that the datatype applied from this parser is incorrect. In
     that event the user would need to convert to the desired datatype.
 
-    See Also
-    --------
-
-    References
-    ----------
     """
     comp = {}  # Component
     dict_levels = [comp]
@@ -172,20 +164,12 @@ def read_panond(file):
         file. The value of datatypes are assumed during reading. The value
         units are the default used by PVsyst.
 
-    Raises
-    ------
-
     Notes
     -----
     The read_panond function simply converts a file path to a file-like object,
     passes it to parse-panond, and returns the file content. At time of
     creation, tested .pan/.ond files used UTF-8 encoding.
 
-    See Also
-    --------
-
-    References
-    ----------
     """
 
     with open(file, "r", encoding='utf-8-sig') as file:

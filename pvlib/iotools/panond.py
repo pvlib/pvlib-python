@@ -111,6 +111,7 @@ def parse_panond(fbuf):
 
     See Also
     --------
+    read_panond
 
     References
     ----------

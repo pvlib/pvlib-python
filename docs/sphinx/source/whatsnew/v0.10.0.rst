@@ -72,6 +72,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added .pan/.ond reader function
+:py:func:`pvlib.iotools.panond`
+(:issue:`1747` )
 * Added two new irradiance decomposition models: :py:func:`pvlib.irradiance.orgill_hollands` (:pull:`1730`)
   and :py:func:`pvlib.irradiance.louche` (:pull:`1705`).
 * The return values of :py:func:`pvlib.pvsystem.calcparams_desoto`,
@@ -160,6 +163,7 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Taos Transue (:ghuser:`reepoi`)
+* Connor Krening (:ghuser:`ckrening`)
 * Nicholas Riedel-Lyngskær (:ghuser:`nicorie`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Echedey Luis (:ghuser:`echedey-ls`)

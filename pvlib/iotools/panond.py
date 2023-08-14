@@ -111,7 +111,6 @@ def parse_panond(fbuf):
     indicators (e.g. floats have '.' decimals). However, there is still the
     possibility that the datatype applied from this parser is incorrect. In
     that event the user would need to convert to the desired datatype.
-
     """
     comp = {}  # Component
     dict_levels = [comp]
@@ -133,6 +132,7 @@ def parse_panond(fbuf):
         # Logical to make sure there is a value to extract
         if len(line_data) > 1:
             value = _element_type(line_data[1].strip())
+            
         else:
             value = None
         # add a level to the dict. If a key/value pair triggers the new level,
@@ -175,7 +175,6 @@ def read_panond(file):
     The read_panond function simply converts a file path to a file-like object,
     passes it to parse-panond, and returns the file content. At time of
     creation, tested .pan/.ond files used UTF-8 encoding.
-
     """
 
     with open(file, "r", encoding='utf-8-sig') as file:

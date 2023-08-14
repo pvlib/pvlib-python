@@ -132,7 +132,7 @@ def parse_panond(fbuf):
         # Logical to make sure there is a value to extract
         if len(line_data) > 1:
             value = _element_type(line_data[1].strip())
-            
+
         else:
             value = None
         # add a level to the dict. If a key/value pair triggers the new level,

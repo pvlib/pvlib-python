@@ -160,7 +160,7 @@ End of PVObject pvGcomperter
 """
     f_obj = io.StringIO(fn_str)
     ond_str = parse_panond(f_obj)
-    assert ond_file.keys() == ond_str.keys()
+    assert ond_file['PVObject_'].keys() == ond_str['PVObject_'].keys()
 
 
 def test_read_pan_file():
@@ -245,4 +245,4 @@ End of PVObject pvModule
 """
     f_obj = io.StringIO(fn_str)
     pan_str = parse_panond(f_obj)
-    assert pan_file.keys() == pan_str.keys()
+    assert pan_file['PVObject_'].keys() == pan_str['PVObject_'].keys()

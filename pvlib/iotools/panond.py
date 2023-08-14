@@ -5,7 +5,7 @@ Get .PAN or .OND file data into a nested dictionary.
 import io
 
 
-def num_type(value):
+def _num_type(value):
     """
     Determine if a value is float, int or a string
     """
@@ -29,9 +29,9 @@ def num_type(value):
             return value_out
 
 
-def element_type(element):
+def _element_type(element):
     """
-    Determine if an element is a list then pass to num_type()
+    Determine if an element is a list then pass to _num_type()
     """
     if ',' in element:  # Detect a list.
         # .pan/.ond don't use ',' to indicate 1000. If that changes,
@@ -39,12 +39,12 @@ def element_type(element):
         values = element.split(',')
         element_out = []
         for val in values:  # Determine datatype of each value
-            element_out.append(num_type(val))
+            element_out.append(_num_type(val))
 
         return element_out
 
     else:
-        return num_type(element)
+        return _num_type(element)
 
 
 def parse_panond(fbuf):
@@ -62,9 +62,6 @@ def parse_panond(fbuf):
         Contents of the .pan or .ond file following the indentation of the
         file. The value of datatypes are assumed during reading. The value
         units are the default used by PVsyst.
-
-    Raises
-    ------
 
     Notes
     -----
@@ -89,32 +86,31 @@ def parse_panond(fbuf):
 
     'level1 = first level
     key1 = value1
-      level2 = second level
-      key2 = value2'
+    key2 = value2
+        level2 = second level
+        key3 = value3
+        key4 = value4
+    key5 = value5'
 
     output:
 
-    {
-    level1: first level
-    key1: value1,
-    level2:{
-        level2: second level,
-        key2: value2
+    level1:{
+        level1: first level
+        key1: value1,
+        key2: value2,
+        level2:{
+            level2: second level,
+            key3: value3,
+            key4: value4
+            },
+        key5: value5
         }
-    }
 
     The parser takes an additional step to infer the datatype present in
     each value. The .pan/.ond files appear to have intentially left datatype
     indicators (e.g. floats have '.' decimals). However, there is still the
     possibility that the datatype applied from this parser is incorrect. In
     that event the user would need to convert to the desired datatype.
-
-    See Also
-    --------
-    read_panond
-
-    References
-    ----------
     """
     comp = {}  # Component
     dict_levels = [comp]
@@ -135,7 +131,8 @@ def parse_panond(fbuf):
         key = line_data[0].strip()
         # Logical to make sure there is a value to extract
         if len(line_data) > 1:
-            value = element_type(line_data[1].strip())
+            value = _element_type(line_data[1].strip())
+            
         else:
             value = None
         # add a level to the dict. If a key/value pair triggers the new level,
@@ -173,21 +170,11 @@ def read_panond(file):
         file. The value of datatypes are assumed during reading. The value
         units are the default used by PVsyst.
 
-    Raises
-    ------
-
     Notes
     -----
     The read_panond function simply converts a file path to a file-like object,
     passes it to parse-panond, and returns the file content. At time of
     creation, tested .pan/.ond files used UTF-8 encoding.
-
-    See Also
-    --------
-    parse_panond
-
-    References
-    ----------
     """
 
     with open(file, "r", encoding='utf-8-sig') as file:

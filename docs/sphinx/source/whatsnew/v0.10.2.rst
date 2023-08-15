@@ -35,6 +35,8 @@ Documentation
   (:issue:`1811`, :pull:`1812`)
 * Removed Stickler-CI integration as the service has ceased June 2023.
   (:issue:`1722`, :pull:`1723`)
+* Fix and update example in :py:func:`pvlib.pvsystem.retrieve_sam`.
+  (:issue:`1741`, :pull:`1833`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -45,3 +47,4 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Abigail Jones (:ghuser:`ajonesr`)
 * Taos Transue (:ghuser:`reepoi`)
+* NativeSci (:ghuser:`nativesci`)

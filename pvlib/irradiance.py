@@ -2327,7 +2327,7 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
 
     Notes
     -----
-    The diffuse fraction of the Erbs-Driesse model deviates from the original
+    The diffuse fraction DHI/GHI of the Erbs-Driesse model deviates from the original
     Erbs model by less than 0.0005.
 
     References

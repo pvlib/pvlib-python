@@ -17,7 +17,7 @@ Enhancements
   (:pull:`1800`)
 * Added option to infer threshold values for
   :py:func:`pvlib.clearsky.detect_clearsky` (:issue:`1808`, :pull:`1784`)
-* Added a continuous version of the erbs diffuse-fraction/decomposition model.
+* Added a continuous version of the Erbs diffuse-fraction/decomposition model.
   :py:func:`pvlib.irradiance.erbs_driesse` (:issue:`1755`, :pull:`1834`)
 
 

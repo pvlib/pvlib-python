@@ -1467,7 +1467,9 @@ def test_aoi_model_interp(sapm_dc_snl_ac_system, location, weather, mocker):
                     spectral_model='no_loss')
     m = mocker.spy(iam, 'interp')
     mc.run_model(weather=weather)
-    assert m.call_args.kwargs == {'iam_ref': iam_ref, 'theta_ref': theta_ref}
+    # only test kwargs
+    assert m.call_args[1]['iam_ref'] == iam_ref
+    assert m.call_args[1]['theta_ref'] == theta_ref
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
     assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200

@@ -2327,8 +2327,8 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
 
     Notes
     -----
-    The diffuse fraction DHI/GHI of the Erbs-Driesse model deviates from the original
-    Erbs model by less than 0.0005.
+    The diffuse fraction DHI/GHI of the Erbs-Driesse model deviates from the
+    original Erbs model by less than 0.0005.
 
     References
     ----------
@@ -2348,13 +2348,11 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     boland
     """
     # central polynomial coefficients with float64 precision
-    p = [
-        +12.26911439571261000,
-        -16.47050842469730700,
-        +04.24692671521831700,
-        -00.11390583806313881,
-        +00.94629663357100100,
-        ]
+    p = [+12.26911439571261000,
+         -16.47050842469730700,
+         +04.24692671521831700,
+         -00.11390583806313881,
+         +00.94629663357100100]
 
     if datetime_or_doy is None and dni_extra is None:
         raise ValueError('Either datetime_or_doy or dni_extra '
@@ -2369,13 +2367,13 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
                          max_clearness_index=1)
 
-    # For all Kt, set the diffuse fraction
-    df = 1 - 0.09*kt
+    # For all Kt, set the default diffuse fraction
+    df = 1 - 0.09 * kt
 
-    # For Kt > 0.22, overwrite the diffuse fraction
+    # For Kt > 0.216, update the diffuse fraction
     df = np.where(kt > 0.216, np.polyval(p, kt), df)
 
-    # For Kt > 0.8, overwrite the diffuse fraction
+    # For Kt > 0.792, update the diffuse fraction again
     df = np.where(kt > 0.792, 0.165, df)
 
     dhi = df * ghi

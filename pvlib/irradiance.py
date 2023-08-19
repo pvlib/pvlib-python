@@ -2272,7 +2272,7 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     r"""
     Estimate DNI and DHI from GHI using the continuous Erbs-Driesse model.
 
-    The Erbs-Driesse model [1]_ is a new formulations of the original Erbs
+    The Erbs-Driesse model [1]_ is a reformulation of the original Erbs
     model [2]_ that provides continuity of the function and its first
     derivative at the two transition points.
 

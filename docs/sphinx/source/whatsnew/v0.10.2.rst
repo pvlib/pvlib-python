@@ -47,4 +47,5 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Abigail Jones (:ghuser:`ajonesr`)
 * Taos Transue (:ghuser:`reepoi`)
+* NativeSci (:ghuser:`nativesci`)
 * Anton Driesse (:ghuser:`adriesse`)

@@ -1030,10 +1030,10 @@ def _minimize(residual_function, guess, bounds):
 
 def _process_return(target_name, optimize_result):
     if target_name == "ashrae":
-        target_params = {'b': optimize_result.x}
+        target_params = {'b': optimize_result.x.item()}
 
     elif target_name == "martin_ruiz":
-        target_params = {'a_r': optimize_result.x}
+        target_params = {'a_r': optimize_result.x.item()}
 
     elif target_name == "physical":
         L, n = optimize_result.x

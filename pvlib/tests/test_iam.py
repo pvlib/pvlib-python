@@ -406,7 +406,7 @@ def test_convert():
     # convert physical to martin_ruiz
     source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
     source_iam = _iam.physical(aoi, **source_params)
-    expected_min_res = 0.06203538904787109
+    expected_min_res = 0.02193164055914381
 
     actual_dict = _iam.convert('physical', source_params, 'martin_ruiz')
     actual_params_list = [actual_dict[key] for key in actual_dict]
@@ -418,7 +418,7 @@ def test_convert():
     # convert physical to ashrae
     source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
     source_iam = _iam.physical(aoi, **source_params)
-    expected_min_res = 0.4958798773107619
+    expected_min_res = 0.14929293811214253
 
     actual_dict = _iam.convert('physical', source_params, 'ashrae')
     actual_params_list = [actual_dict[key] for key in actual_dict]
@@ -430,7 +430,7 @@ def test_convert():
     # convert ashrae to physical (tests _ashrae_to_physical)
     source_params = {'b': 0.15}
     source_iam = _iam.ashrae(aoi, **source_params)
-    expected_min_res = 0.0893334068539472
+    expected_min_res = 0.024075681431174032
 
     actual_dict = _iam.convert('ashrae', source_params, 'physical')
     actual_params_list = [actual_dict[key] for key in actual_dict]
@@ -442,7 +442,7 @@ def test_convert():
     # convert martin_ruiz to physical (tests _martin_ruiz_to_physical)
     source_params = {'a_r': 0.14}
     source_iam = _iam.martin_ruiz(aoi, **source_params)
-    expected_min_res = 0.010777136524633524
+    expected_min_res = 0.004162175187057447
 
     actual_dict = _iam.convert('martin_ruiz', {'a_r': 0.14}, 'physical')
     actual_params_list = [actual_dict[key] for key in actual_dict]
@@ -453,21 +453,27 @@ def test_convert():
 
 
 def test_convert_custom_weight_func():
+    aoi = np.linspace(0, 90, 100)
+
+    # convert physical to martin_ruiz, using custom weight function
+    source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
+    source_iam = _iam.physical(aoi, **source_params)
+
     # define custom weight function that takes in other arguments
     def scaled_weight(aoi, scalar):
         return scalar * aoi
 
     # expected value calculated from computing residual function over
     # a range of inputs, and taking minimum of these values
-    expected_a_r = 0.17478448342232694
+    expected_min_res = 18.051468686279726
 
     options = {'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
-    actual_params_dict = _iam.convert('physical',
-                                      {'n': 1.5, 'K': 4.5, 'L': 0.004},
-                                      'martin_ruiz', options=options)
-    actual_a_r = actual_params_dict['a_r']
+    actual_dict = _iam.convert('physical', source_params, 'martin_ruiz',
+                               options=options)
+    actual_min_res = _iam._residual(aoi, source_iam, _iam.martin_ruiz,
+                                    [actual_dict['a_r']], **options)
 
-    assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
+    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
 
 
 def test_convert_model_not_implemented():
@@ -506,8 +512,9 @@ def test_fit():
     perturbed_iam = _iam.martin_ruiz(aoi, a_r=0.14) * perturb
 
     expected_a_r = 0.14
-    actual_param_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz')
-    actual_a_r = actual_param_dict['a_r']
+
+    actual_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz')
+    actual_a_r = actual_dict['a_r']
 
     assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
 
@@ -524,9 +531,8 @@ def test_fit_custom_weight_func():
     expected_a_r = 0.14
 
     options = {'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
-    actual_param_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz',
-                                 options=options)
-    actual_a_r = actual_param_dict['a_r']
+    actual_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz', options=options)
+    actual_a_r = actual_dict['a_r']
 
     assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
 

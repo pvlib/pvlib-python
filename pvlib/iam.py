@@ -948,13 +948,6 @@ def _residual(aoi, source_iam, target, target_params,
 
     weight = weight_function(aoi, **weight_args)
 
-    # if aoi contains values outside of interval (0, 90), annihilate
-    # the associated weights (we don't want IAM values from AOI outside
-    # of (0, 90) to affect the fit; this is a possible issue when using
-    # `iam.fit`, but not an issue when using `iam.convert`, since in
-    # that case aoi is defined internally)
-    weight = weight * np.logical_and(aoi >= 0 and aoi <= 90).astype(int)
-
     # check that weight_function is behaving as expected
     if np.shape(aoi) != np.shape(weight):
         assert weight_function != _sin_weight
@@ -962,6 +955,13 @@ def _residual(aoi, source_iam, target, target_params,
                           returning an object with the right shape. Please \
                           refer to the docstrings for a more detailed \
                           discussion about passing custom weight functions.')
+
+    # if aoi contains values outside of interval (0, 90), annihilate
+    # the associated weights (we don't want IAM values from AOI outside
+    # of (0, 90) to affect the fit; this is a possible issue when using
+    # `iam.fit`, but not an issue when using `iam.convert`, since in
+    # that case aoi is defined internally)
+    weight = weight * np.logical_and(aoi >= 0, aoi <= 90).astype(int)
 
     diff = np.abs(source_iam - np.nan_to_num(target(aoi, *target_params)))
     return np.sum(diff * weight)

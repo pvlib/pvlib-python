@@ -37,6 +37,8 @@ Documentation
   (:issue:`1722`, :pull:`1723`)
 * Fix and update example in :py:func:`pvlib.pvsystem.retrieve_sam`.
   (:issue:`1741`, :pull:`1833`)
+* Update definition of snow events parameter for :py:func:`pvlib.snow.loss_townsend`.
+  (:issue:`1839`, :pull:`1839`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -48,3 +50,4 @@ Contributors
 * Abigail Jones (:ghuser:`ajonesr`)
 * Taos Transue (:ghuser:`reepoi`)
 * NativeSci (:ghuser:`nativesci`)
+* Areeba Turabi (:ghuser:`aturabi`)

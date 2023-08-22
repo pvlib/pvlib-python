@@ -398,6 +398,10 @@ def test_schlick_diffuse():
 
 
 def test_convert():
+    # we'll compare residuals rather than coefficient values
+    # we only care about how close the fit of the conversion is, so the
+    # specific coefficients that get us there is less important
+
     # expected value calculated from computing residual function over
     # a range of inputs, and taking minimum of these values
 

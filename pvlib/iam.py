@@ -967,23 +967,31 @@ def _residual(aoi, source_iam, target, target_params,
     return np.sum(diff * weight)
 
 
-def _ashrae_to_physical(aoi, ashrae_iam, options):
-    # the ashrae model has an x-intercept less than 90
-    # we solve for this intercept, and choose n so that the physical
-    # model will have the same x-intercept
-    int_idx = np.argwhere(ashrae_iam == 0.0).flatten()[0]
-    intercept = aoi[int_idx]
-    n = sind(intercept)
+def _ashrae_to_physical(aoi, ashrae_iam, options, fix_n):
+    if fix_n:
+        # the ashrae model has an x-intercept less than 90
+        # we solve for this intercept, and fix n so that the physical
+        # model will have the same x-intercept
+        int_idx = np.argwhere(ashrae_iam == 0.0).flatten()[0]
+        intercept = aoi[int_idx]
+        n = sind(intercept)
 
-    # with n fixed, we will optimize for L (recall that K and L always
-    # appear in the physical model as a product, so it is enough to
-    # optimize for just L, and to fix K=4)
+        # with n fixed, we will optimize for L (recall that K and L always
+        # appear in the physical model as a product, so it is enough to
+        # optimize for just L, and to fix K=4)
 
-    # we will pass n to the optimizer to simplify things later on,
-    # but because we are setting (n, n) as the bounds, the optimizer
-    # will leave n fixed
-    bounds = [(0, 0.08), (n, n)]
-    guess = [0.002, n]
+        # we will pass n to the optimizer to simplify things later on,
+        # but because we are setting (n, n) as the bounds, the optimizer
+        # will leave n fixed
+        bounds = [(0, 0.08), (n, n)]
+        guess = [0.002, n]
+
+    else:
+        # we don't fix n, so physical won't have same x-intercept as ashrae
+        # the fit will be worse, but the parameters returned for the physical
+        # model will be more realistic
+        bounds = [(0, 0.08), (1+1e-08, 2)]
+        guess = [0.002, 1+1e-08]
 
     def residual_function(target_params):
         L, n = target_params
@@ -1042,7 +1050,7 @@ def _process_return(target_name, optimize_result):
     return target_params
 
 
-def convert(source_name, source_params, target_name, options=None):
+def convert(source_name, source_params, target_name, options=None, fix_n=None):
     """
     Given a source model and its parameters and a target model, finds
     parameters for target model that best fit source model.
@@ -1099,6 +1107,19 @@ def convert(source_name, source_params, target_name, options=None):
 
                 The default weight function has no additional arguments.
 
+    fix_n : bool, optional
+        A flag to determine which method is used when converting from the
+        ASHRAE model to the physical model. The default value is None.
+
+        When ``source_name`` is ``'ashrae'`` and ``target_name`` is
+        ``'physical'``, if ``fix_n`` is ``True`` or None,
+        :py:func:`iam.convert` will fix ``n`` so that the returned physical
+        model has the same x-intercept as the inputted ASHRAE model.
+        Fixing ``n`` like this improves the fit of the conversion, but often
+        returns unrealistic values for the parameters of the physical model. If
+        users want parameters that better match the real world, they should
+        set ``fix_n`` to False.
+
     Returns
     -------
     dict
@@ -1141,8 +1162,10 @@ def convert(source_name, source_params, target_name, options=None):
         # we can do some special set-up to improve the fit when the
         # target model is physical
         if source_name == "ashrae":
+            if fix_n is None:
+                fix_n = True
             residual_function, guess, bounds = \
-                _ashrae_to_physical(aoi, source_iam, options)
+                _ashrae_to_physical(aoi, source_iam, options, fix_n)
         elif source_name == "martin_ruiz":
             residual_function, guess, bounds = \
                 _martin_ruiz_to_physical(aoi, source_iam, options)

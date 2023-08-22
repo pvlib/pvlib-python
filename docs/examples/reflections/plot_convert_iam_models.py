@@ -119,12 +119,6 @@ physical_params_default = convert('martin_ruiz', martin_ruiz_params,
                                   'physical')
 physical_iam_default = physical(aoi, **physical_params_default)
 
-# ... using default weight function with different max_angle
-options = {'weight_args': {'max_angle': 50}}
-physical_params_diff_max_angle = convert('martin_ruiz', martin_ruiz_params,
-                                         'physical', options=options)
-physical_iam_diff_max_angle = physical(aoi, **physical_params_diff_max_angle)
-
 # ... using custom weight function
 options = {'weight_function': lambda aoi: cosd(aoi)}
 
@@ -135,7 +129,6 @@ physical_iam_custom = physical(aoi, **physical_params_custom)
 # plot aoi vs iam curve
 plt.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')
 plt.plot(aoi, physical_iam_default, label='Default weight function')
-plt.plot(aoi, physical_iam_diff_max_angle, label='Different max angle')
 plt.plot(aoi, physical_iam_custom, label='Custom weight function')
 plt.xlabel('AOI (degrees)')
 plt.ylabel('IAM')
@@ -157,12 +150,6 @@ plt.show()
 ashrae_params_default = convert('martin_ruiz', martin_ruiz_params, 'ashrae')
 ashrae_iam_default = ashrae(aoi, **ashrae_params_default)
 
-# ... using default weight function with different max_angle
-options = {'weight_args': {'max_angle': 50}}
-ashrae_params_diff_max_angle = convert('martin_ruiz', martin_ruiz_params,
-                                       'ashrae', options=options)
-ashrae_iam_diff_max_angle = ashrae(aoi, **ashrae_params_diff_max_angle)
-
 # ... using custom weight function
 options = {'weight_function': lambda aoi: cosd(aoi)}
 
@@ -173,7 +160,6 @@ ashrae_iam_custom = ashrae(aoi, **ashrae_params_custom)
 # plot aoi vs iam curve
 plt.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')
 plt.plot(aoi, ashrae_iam_default, label='Default weight function')
-plt.plot(aoi, ashrae_iam_diff_max_angle, label='Different max angle')
 plt.plot(aoi, ashrae_iam_custom, label='Custom weight function')
 plt.xlabel('AOI (degrees)')
 plt.ylabel('IAM')

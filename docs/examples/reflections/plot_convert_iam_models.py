@@ -35,7 +35,7 @@ physical_iam = physical(aoi, **physical_params)
 ashrae_params = convert('martin_ruiz', martin_ruiz_params, 'ashrae')
 ashrae_iam = ashrae(aoi, **ashrae_params)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(4,4), sharey=True)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4), sharey=True)
 
 # plot aoi vs iam curves
 ax1.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')

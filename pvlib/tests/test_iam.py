@@ -448,7 +448,8 @@ def test_convert():
     source_iam = _iam.ashrae(aoi, **source_params)
     expected_min_res = 0.06684694222023173
 
-    actual_dict = _iam.convert('ashrae', source_params, 'physical', fix_n=False)
+    actual_dict = _iam.convert('ashrae', source_params, 'physical',
+                               fix_n=False)
     actual_params_list = [actual_dict[key] for key in actual_dict]
     actual_min_res = _iam._residual(aoi, source_iam, _iam.physical,
                                     actual_params_list)
@@ -578,6 +579,7 @@ def test_fit__minimize_fails():
     with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
         _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'physical',
                  options={'weight_function': nan_weight})
+
 
 def test__residual_zero_outside_range():
     # check that _residual annihilates any weights that come from aoi

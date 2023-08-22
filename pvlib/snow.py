@@ -276,7 +276,9 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     axis to the module edge.
 
     The parameter `string_factor` is an enhancement added to the model after
-    publication of [1]_ per private communication with the model's author.
+    publication of [1]_ per private communication with the model's author. The
+    definition for snow events documented above is also based on private
+    communication with the model's author.
 
     References
     ----------

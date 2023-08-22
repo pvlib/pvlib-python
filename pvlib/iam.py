@@ -933,12 +933,12 @@ def _check_params(model_name, params):
                          was handed {', '.join(list(params.keys()))}")
 
 
-def _truncated_weight(aoi, max_angle=70):
-    return [1 if angle <= max_angle else 0 for angle in aoi]
+def _sin_weight(aoi):
+    return 1 - sind(aoi)
 
 
 def _residual(aoi, source_iam, target, target_params,
-              weight_function=_truncated_weight,
+              weight_function=_sin_weight,
               weight_args=None):
     # computes a sum of weighted differences between the source model
     # and target model, using the provided weight function
@@ -948,9 +948,16 @@ def _residual(aoi, source_iam, target, target_params,
 
     weight = weight_function(aoi, **weight_args)
 
+    # if aoi contains values outside of interval (0, 90), annihilate
+    # the associated weights (we don't want IAM values from AOI outside
+    # of (0, 90) to affect the fit; this is a possible issue when using
+    # `iam.fit`, but not an issue when using `iam.convert`, since in
+    # that case aoi is defined internally)
+    weight = weight * np.logical_and(aoi >= 0 and aoi <= 90).astype(int)
+
     # check that weight_function is behaving as expected
     if np.shape(aoi) != np.shape(weight):
-        assert weight_function != _truncated_weight
+        assert weight_function != _sin_weight
         raise ValueError('The provided custom weight function is not \
                           returning an object with the right shape. Please \
                           refer to the docstrings for a more detailed \
@@ -1063,8 +1070,14 @@ def convert(source_name, source_params, target_name, options=None):
 
     options : dict, optional
         A dictionary that allows passing a custom weight function and
-        arguments to the (default or custom) weight function. Possible
-        keys are ``'weight_function'`` and ``'weight_args'``.
+        arguments to the (default or custom) weight function.
+
+        Default value of `options` is None. (Leaving as default will use
+        default weight function `iam._sin_weight`, which is the function
+        ``f(x) = 1 - sin(x)``.)
+
+        Possible keys of `options` are ``'weight_function'`` and
+        ``'weight_args'``.
 
             weight_function : function
                 A function that outputs an array of weights to use
@@ -1073,7 +1086,7 @@ def convert(source_name, source_params, target_name, options=None):
                 Requirements:
                     1. Must accept ``aoi`` as first argument. (``aoi`` is a
                        numpy array, and it is handed to the function
-                       internally.)
+                       internally. Its elements range from 0 to 90.)
                     2. Any other arguments must be keyword arguments. (These
                        will be passed by the user in `weight_args`, see below.)
                     3. Must return an array-like object with the same shape
@@ -1081,11 +1094,9 @@ def convert(source_name, source_params, target_name, options=None):
 
             weight_args : dict
                 A dictionary containing all keyword arguments for the
-                weight function. If using the default weight function,
-                the only keyword argument is ``max_angle``.
+                weight function.
 
-        Default value of `options` is None (leaving as default will use
-        default weight function `iam._truncated_weight`).
+                The default weight function has no additional arguments.
 
     Returns
     -------
@@ -1170,29 +1181,35 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
 
     options : dict, optional
         A dictionary that allows passing a custom weight function and
-        arguments to the (default or custom) weight function. Possible
-        keys are ``'weight_function'`` and ``'weight_args'``.
+        arguments to the (default or custom) weight function.
+
+        Default value of `options` is None. (Leaving as default will use
+        default weight function `iam._sin_weight`, which is the function
+        ``f(x) = 1 - sin(x)``.)
+
+        Possible keys of `options` are ``'weight_function'`` and
+        ``'weight_args'``.
 
             weight_function : function
                 A function that outputs an array of weights to use
                 when computing residuals between models.
 
                 Requirements:
-                    1. Must accept ``aoi`` as first argument. (``aoi`` is a
-                       numpy array, and it is handed to the function
-                       internally.)
+                    1. Must accept `measured_aoi` as first argument.
                     2. Any other arguments must be keyword arguments. (These
                        will be passed by the user in `weight_args`, see below.)
                     3. Must return an array-like object with the same shape
-                       as ``aoi``.
+                       as `measured_aoi`.
+
+                Note: when `measured_aoi` contains elements outside of the
+                closed interval [0, 90], the associated weights are overwritten
+                by zero, regardless of the weight function.
 
             weight_args : dict
                 A dictionary containing all keyword arguments for the
-                weight function. If using the default weight function,
-                the only keyword argument is ``max_angle``.
+                weight function.
 
-        Default value of `options` is None (leaving as default will use
-        default weight function `iam._truncated_weight`).
+                The default weight function has no additional arguments.
 
     Returns
     -------

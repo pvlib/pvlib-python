@@ -1079,12 +1079,9 @@ def convert(source_name, source_params, target_name, options=None, fix_n=None):
 
     options : dict, optional
         A dictionary that allows passing a custom weight function and
-        arguments to the (default or custom) weight function.
-
-        Default value of `options` is None. (Leaving as default will use
-        default weight function `iam._sin_weight`, which is the function
-        ``f(x) = 1 - sin(x)``.)
-
+        arguments to the (default or custom) weight function. Default value of
+        `options` is None. (Leaving as default will use default weight function
+        ``iam._sin_weight``, which is the function ``f(x) = 1 - sin(x)``.)
         Possible keys of `options` are ``'weight_function'`` and
         ``'weight_args'``.
 
@@ -1103,22 +1100,21 @@ def convert(source_name, source_params, target_name, options=None, fix_n=None):
 
             weight_args : dict
                 A dictionary containing all keyword arguments for the
-                weight function.
-
-                The default weight function has no additional arguments.
+                weight function. The default weight function has no additional
+                arguments.
 
     fix_n : bool, optional
         A flag to determine which method is used when converting from the
         ASHRAE model to the physical model. The default value is None.
 
-        When ``source_name`` is ``'ashrae'`` and ``target_name`` is
-        ``'physical'``, if ``fix_n`` is ``True`` or None,
+        When `source_name` is ``'ashrae'`` and `target_name` is
+        ``'physical'``, if `fix_n` is ``True`` or None,
         :py:func:`iam.convert` will fix ``n`` so that the returned physical
         model has the same x-intercept as the inputted ASHRAE model.
         Fixing ``n`` like this improves the fit of the conversion, but often
         returns unrealistic values for the parameters of the physical model. If
         users want parameters that better match the real world, they should
-        set ``fix_n`` to False.
+        set `fix_n` to False.
 
     Returns
     -------
@@ -1205,12 +1201,9 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
 
     options : dict, optional
         A dictionary that allows passing a custom weight function and
-        arguments to the (default or custom) weight function.
-
-        Default value of `options` is None. (Leaving as default will use
-        default weight function `iam._sin_weight`, which is the function
-        ``f(x) = 1 - sin(x)``.)
-
+        arguments to the (default or custom) weight function. Default value of
+        `options` is None. (Leaving as default will use default weight function
+        ``iam._sin_weight``, which is the function ``f(x) = 1 - sin(x)``.)
         Possible keys of `options` are ``'weight_function'`` and
         ``'weight_args'``.
 
@@ -1231,9 +1224,8 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
 
             weight_args : dict
                 A dictionary containing all keyword arguments for the
-                weight function.
-
-                The default weight function has no additional arguments.
+                weight function. The default weight function has no additional
+                arguments.
 
     Returns
     -------

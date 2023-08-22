@@ -37,7 +37,7 @@ Documentation
   (:issue:`1722`, :pull:`1723`)
 * Fix and update example in :py:func:`pvlib.pvsystem.retrieve_sam`.
   (:issue:`1741`, :pull:`1833`)
-* Fix error in :py:func:`pvlib.iotools.get_pvgis_hourly`.
+* Fix error in :py:func:`pvlib.iotools.get_pvgis_hourly` documentation of `surface_azimuth`.
   (:issue:`1724`, :pull:`1838`)
 
 Requirements

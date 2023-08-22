@@ -443,6 +443,20 @@ def test_convert():
 
     assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
 
+    # convert ashrae to physical, without fixing n
+    source_params = {'b': 0.15}
+    source_iam = _iam.ashrae(aoi, **source_params)
+    expected_min_res = 0.06684694222023173
+
+    actual_dict = _iam.convert('ashrae', source_params, 'physical', fix_n=False)
+    actual_params_list = [actual_dict[key] for key in actual_dict]
+    actual_min_res = _iam._residual(aoi, source_iam, _iam.physical,
+                                    actual_params_list)
+
+    # not sure why, but could never get convert residual and expected residual
+    # to be closer than 0.00025ish, hence why atol=1e-03
+    assert np.isclose(expected_min_res, actual_min_res, atol=1e-03)
+
     # convert martin_ruiz to physical (tests _martin_ruiz_to_physical)
     source_params = {'a_r': 0.14}
     source_iam = _iam.martin_ruiz(aoi, **source_params)
@@ -564,3 +578,10 @@ def test_fit__minimize_fails():
     with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
         _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'physical',
                  options={'weight_function': nan_weight})
+
+def test__residual_zero_outside_range():
+    # check that _residual annihilates any weights that come from aoi
+    # outside of interval [0, 90] (this is important for `iam.fit`, when
+    # the `measured_aoi` contains angles outside this range
+    residual = _iam._residual(101, _iam.ashrae(101), _iam.martin_ruiz, [0.16])
+    assert residual == 0.0

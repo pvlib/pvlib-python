@@ -1009,8 +1009,9 @@ def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, options):
 
 
 def _minimize(residual_function, guess, bounds):
-    optimize_result = minimize(residual_function, guess, method="powell",
-                               bounds=bounds)
+    with np.errstate(invalid='ignore'):
+        optimize_result = minimize(residual_function, guess, method="powell",
+                                   bounds=bounds)
 
     if not optimize_result.success:
         try:

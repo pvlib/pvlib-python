@@ -35,7 +35,7 @@ physical_iam = physical(aoi, **physical_params)
 ashrae_params = convert('martin_ruiz', martin_ruiz_params, 'ashrae')
 ashrae_iam = ashrae(aoi, **ashrae_params)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4), sharey=True)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 5), sharey=True)
 
 # plot aoi vs iam curves
 ax1.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')
@@ -95,13 +95,11 @@ plt.show()
 #
 # We can also choose to pass in a custom weight function, instead.
 #
-# ### Options for the weight function
-#
 # In some cases, the choice of weight function has a minimal effect on the
 # behavior of the returned target model. This is especially true when there is
 # a choice of parameters for the target model that matches the source model
 # very well.
-
+#
 # However, in cases where this fit is not as strong, our choice of weight
 # function can have a large impact on what parameters are returned for the
 # target function. What weight function we choose in these cases will depend on

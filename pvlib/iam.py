@@ -990,7 +990,7 @@ def _ashrae_to_physical(aoi, ashrae_iam, options, fix_n):
         # we don't fix n, so physical won't have same x-intercept as ashrae
         # the fit will be worse, but the parameters returned for the physical
         # model will be more realistic
-        bounds = [(0, 0.08), (1+1e-08, 2)]
+        bounds = [(0, 0.08), (1, 2)]
         guess = [0.002, 1+1e-08]
 
     def residual_function(target_params):
@@ -1004,7 +1004,7 @@ def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, options):
     # we will optimize for both n and L (recall that K and L always
     # appear in the physical model as a product, so it is enough to
     # optimize for just L, and to fix K=4)
-    bounds = [(0, 0.08), (1+1e-08, 2)]
+    bounds = [(0, 0.08), (1, 2)]
     guess = [0.002, 1+1e-08]
 
     # the product of K and L is more important in determining an initial
@@ -1169,7 +1169,7 @@ def convert(source_name, source_params, target_name, options=None, fix_n=None):
     else:
         # otherwise, target model is ashrae or martin_ruiz, and scipy
         # does fine without any special set-up
-        bounds = [(0, 1)]
+        bounds = [(1e-08, 1)]
         guess = [1e-08]
 
         def residual_function(target_param):
@@ -1261,7 +1261,7 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
         options = {}
 
     if target_name == "physical":
-        bounds = [(0, 0.08), (1+1e-08, 2)]
+        bounds = [(0, 0.08), (1, 2)]
         guess = [0.002, 1+1e-08]
 
         def residual_function(target_params):
@@ -1271,7 +1271,7 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
 
     # otherwise, target_name is martin_ruiz or ashrae
     else:
-        bounds = [(0, 1)]
+        bounds = [(1e-08, 1)]
         guess = [1e-08]
 
         def residual_function(target_param):

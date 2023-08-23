@@ -20,7 +20,7 @@ from pvlib.iam import (ashrae, martin_ruiz, physical, convert, fit)
 # ------------------------------------
 #
 # Here we'll show how to convert from the Martin-Ruiz model to both the
-# Physical and Ashrae models.
+# physical and ASHRAE models.
 
 # compute martin_ruiz iam for given parameter
 aoi = np.linspace(0, 90, 100)
@@ -39,15 +39,15 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4), sharey=True)
 
 # plot aoi vs iam curves
 ax1.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')
-ax1.plot(aoi, physical_iam, label='Physical')
+ax1.plot(aoi, physical_iam, label='physical')
 ax1.set_xlabel('AOI (degrees)')
-ax1.set_title('Martin-Ruiz to Physical')
+ax1.set_title('Martin-Ruiz to physical')
 ax1.legend()
 
 ax2.plot(aoi, martin_ruiz_iam, label='Martin-Ruiz')
-ax2.plot(aoi, ashrae_iam, label='Ashrae')
+ax2.plot(aoi, ashrae_iam, label='ASHRAE')
 ax2.set_xlabel('AOI (degrees)')
-ax2.set_title('Martin-Ruiz to Ashrae')
+ax2.set_title('Martin-Ruiz to ASHRAE')
 ax2.legend()
 
 ax1.set_ylabel('IAM')
@@ -60,7 +60,7 @@ plt.show()
 #
 # Here, we'll show how to fit measured data to a model. In this case,
 # we'll use perturbed output from the Martin-Ruiz model to mimic
-# measured data and then we'll fit this to the Physical model.
+# measured data and then we'll fit this to the physical model.
 
 # create perturbed iam data
 aoi = np.linspace(0, 90, 100)
@@ -76,26 +76,32 @@ physical_iam = physical(aoi, **physical_params)
 
 # plot aoi vs iam curve
 plt.scatter(aoi, data, c='darkorange', label='Perturbed data')
-plt.plot(aoi, physical_iam, label='Physical')
+plt.plot(aoi, physical_iam, label='physical')
 plt.xlabel('AOI (degrees)')
 plt.ylabel('IAM')
-plt.title('Fitting data to Physical model')
+plt.title('Fitting data to physical model')
 plt.legend()
 plt.show()
 
 
 # %%
-# Options for the weight function
-# -------------------------------
+# The weight function
+# -------------------
+# Both :py:func:`pvlib.iam.convert` and :py:func:`pvlib.iam.fit` use
+# a weight function when computing residuals between the original (source or
+# measured) model and the target model. The default option for this weight
+# function is $1 - \sin(x)$. The reasons for this choice of default are given
+# in TODO.
 #
-# Both :py:func:`pvlib.iam.convert` and :py:func:`pvlib.iam.fit` allow us to
-# pass in a custom weight function. These functions are used when computing
-# residuals between the original (source or measured) model and the target
-# model. In some cases, the choice of weight function has a minimal effect
-# on the behavior of the returned target model. This is especially true when
-# there is a choice of parameters for the target model that matches the source
-# model very well.
+# We can also choose to pass in a custom weight function, instead.
 #
+# ### Options for the weight function
+#
+# In some cases, the choice of weight function has a minimal effect on the
+# behavior of the returned target model. This is especially true when there is
+# a choice of parameters for the target model that matches the source model
+# very well.
+
 # However, in cases where this fit is not as strong, our choice of weight
 # function can have a large impact on what parameters are returned for the
 # target function. What weight function we choose in these cases will depend on
@@ -130,7 +136,7 @@ plt.plot(aoi, physical_iam_default, label='Default weight function')
 plt.plot(aoi, physical_iam_custom, label='Custom weight function')
 plt.xlabel('AOI (degrees)')
 plt.ylabel('IAM')
-plt.title('Martin-Ruiz to Physical')
+plt.title('Martin-Ruiz to physical')
 plt.legend()
 plt.show()
 
@@ -161,7 +167,7 @@ plt.plot(aoi, ashrae_iam_default, label='Default weight function')
 plt.plot(aoi, ashrae_iam_custom, label='Custom weight function')
 plt.xlabel('AOI (degrees)')
 plt.ylabel('IAM')
-plt.title('Martin-Ruiz to Ashrae')
+plt.title('Martin-Ruiz to ASHRAE')
 plt.legend()
 plt.show()
 
@@ -171,9 +177,3 @@ plt.show()
 # knowing where you want the target model to be more accurate, and will likely
 # require some experimentation.
 
-
-# %%
-# The default weight function
-# ---------------------------
-#
-# TODO

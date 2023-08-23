@@ -176,4 +176,3 @@ plt.show()
 # Finding the right weight function and parameters in such cases will require
 # knowing where you want the target model to be more accurate, and will likely
 # require some experimentation.
-

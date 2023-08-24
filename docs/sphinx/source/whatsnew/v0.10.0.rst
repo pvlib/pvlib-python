@@ -91,6 +91,7 @@ Enhancements
   :py:func:`~pvlib.singlediode.bishop88_v_from_i`. Among others,
   tolerance and number of iterations can be set.
   (:issue:`1249`, :pull:`1764`)
+* Improved `ModelChainResult.__repr__` (:pull:`1236`)
 * Improved ``ModelChainResult.__repr__`` (:pull:`1236`)
 * Exposes several functions useful for bifacial and shading calculations (:pull:`1666`):
 

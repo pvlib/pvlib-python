@@ -15,6 +15,10 @@ Enhancements
   :py:func:`pvlib.iotools.get_pvgis_hourly`, :py:func:`pvlib.iotools.get_cams`,
   :py:func:`pvlib.iotools.get_bsrn`, and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`.
   (:pull:`1800`)
+* Added a new module :py:mod:`pvlib.ivtools.mismatch` to contain functions for
+  combining IV curves. Added functions 
+  :py:func:`pvlib.ivtools.mismatch.prepare_curves` and 
+  :py:func:`pvlib.ivtools.mismatch.combine_curves`. (:pull:`1781`)
 * Added option to infer threshold values for 
   :py:func:`pvlib.clearsky.detect_clearsky` (:issue:`1808`, :pull:`1784`)
 

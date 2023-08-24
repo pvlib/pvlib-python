@@ -4,4 +4,4 @@ and diode models.
 
 """
 
-from pvlib.ivtools import sde, sdm, utils  # noqa: F401
+from pvlib.ivtools import mismatch, sde, sdm, utils  # noqa: F401

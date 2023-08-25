@@ -944,9 +944,9 @@ class ModelChain:
                              'system.arrays[i].module_parameters. Check that '
                              'the module_parameters for all Arrays in '
                              'system.arrays contain parameters for '
-                             'the physical, aoi, ashrae or martin_ruiz model; '
-                             'explicitly set the model with the aoi_model '
-                             'kwarg; or set aoi_model="no_loss".')
+                             'the physical, aoi, ashrae, martin_ruiz or interp'
+                             'model; explicitly set the model with the'
+                             'aoi_model kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(

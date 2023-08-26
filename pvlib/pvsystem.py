@@ -8,6 +8,7 @@ import functools
 import io
 import itertools
 import os
+import inspect
 from urllib.request import urlopen
 import numpy as np
 from scipy import constants
@@ -1165,9 +1166,12 @@ class Array:
         """
         model = iam_model.lower()
         if model in ['ashrae', 'physical', 'martin_ruiz', 'interp']:
-            param_names = iam._IAM_MODEL_PARAMS[model]
-            kwargs = _build_kwargs(param_names, self.module_parameters)
-            func = getattr(iam, model)
+            func = getattr(iam, model)  # get function at pvlib.iam
+            # get all parameters from function signature to retrieve them from
+            # module_parameters if present
+            params = set(inspect.signature(func).parameters.keys())
+            params.discard('aoi')  # exclude aoi so it can't be repeated
+            kwargs = _build_kwargs(params, self.module_parameters)
             return func(aoi, **kwargs)
         elif model == 'sapm':
             return iam.sapm(aoi, self.module_parameters)

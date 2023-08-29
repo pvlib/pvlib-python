@@ -1498,6 +1498,26 @@ def test_infer_aoi_model(location, system_no_aoi, aoi_model):
     assert isinstance(mc, ModelChain)
 
 
+@pytest.mark.parametrize('aoi_model,model_kwargs', [
+    # model_kwargs has both required and optional kwargs; test all
+    ('physical',
+     {'n': 1.526, 'K': 4.0, 'L': 0.002,  # required
+      'n_ar': 1.8}),  # extra
+    ('interp',
+     {'theta_ref': (0, 75, 85, 90), 'iam_ref': (1, 0.8, 0.42, 0),  # required
+      'method': 'cubic', 'normalize': False})])  # extra
+def test_infer_aoi_model_with_extra_params(location, system_no_aoi, aoi_model,
+                                           model_kwargs, weather, mocker):
+    # test extra parameters not defined at iam._IAM_MODEL_PARAMS are passed
+    m = mocker.spy(iam, aoi_model)
+    system_no_aoi.arrays[0].module_parameters.update(**model_kwargs)
+    mc = ModelChain(system_no_aoi, location, spectral_model='no_loss')
+    assert isinstance(mc, ModelChain)
+    mc.run_model(weather=weather)
+    _, call_kwargs = m.call_args
+    assert call_kwargs == model_kwargs
+
+
 def test_infer_aoi_model_invalid(location, system_no_aoi):
     exc_text = 'could not infer AOI model'
     with pytest.raises(ValueError, match=exc_text):

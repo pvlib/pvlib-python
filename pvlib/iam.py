@@ -1003,13 +1003,17 @@ def _residual(aoi, source_iam, target, target_params,
     return np.sum(diff * weight)
 
 
-def _ashrae_to_physical(aoi, ashrae_iam, options, fix_n):
+def _get_ashrae_int(b):
+    # find x-intercept of ashrae model
+    return np.rad2deg(np.arccos(b / (1 + b)))
+
+
+def _ashrae_to_physical(aoi, ashrae_iam, options, fix_n, b):
     if fix_n:
         # the ashrae model has an x-intercept less than 90
         # we solve for this intercept, and fix n so that the physical
         # model will have the same x-intercept
-        int_idx = np.argwhere(ashrae_iam == 0.0).flatten()[0]
-        intercept = aoi[int_idx]
+        intercept = _get_ashrae_int(b)
         n = sind(intercept)
 
         # with n fixed, we will optimize for L (recall that K and L always
@@ -1197,7 +1201,8 @@ def convert(source_name, source_params, target_name, options=None, fix_n=None):
             if fix_n is None:
                 fix_n = True
             residual_function, guess, bounds = \
-                _ashrae_to_physical(aoi, source_iam, options, fix_n)
+                _ashrae_to_physical(aoi, source_iam, options, fix_n,
+                                    source_params['b'])
         elif source_name == "martin_ruiz":
             residual_function, guess, bounds = \
                 _martin_ruiz_to_physical(aoi, source_iam, options)

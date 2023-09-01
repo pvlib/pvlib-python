@@ -434,7 +434,7 @@ def test_convert():
     # convert ashrae to physical (tests _ashrae_to_physical)
     source_params = {'b': 0.15}
     source_iam = _iam.ashrae(aoi, **source_params)
-    expected_min_res = 0.024075681431174032
+    expected_min_res = 0.0216
 
     actual_dict = _iam.convert('ashrae', source_params, 'physical')
     actual_params_list = [actual_dict[key] for key in actual_dict]

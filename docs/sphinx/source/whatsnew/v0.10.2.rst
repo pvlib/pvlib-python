@@ -41,6 +41,8 @@ Documentation
   (:issue:`1724`, :pull:`1838`)
 * Update definition of snow events parameter for :py:func:`pvlib.snow.loss_townsend`.
   (:issue:`1839`, :pull:`1840`)
+* Added gallery example demonstrating how results of :py:func:`pvlib.iotools.get_pvgis_horizon`, 
+  can be processed into time series dni and global poa data.
   
 Requirements
 ~~~~~~~~~~~~
@@ -54,3 +56,4 @@ Contributors
 * NativeSci (:ghuser:`nativesci`)
 * Lukas Grossar (:ghuser:`tongpu`)
 * Areeba Turabi (:ghuser:`aturabi`)
+* Saurabh Aneja (:ghuser:`spaneja`)

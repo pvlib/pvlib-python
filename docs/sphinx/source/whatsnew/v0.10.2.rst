@@ -15,8 +15,10 @@ Enhancements
   :py:func:`pvlib.iotools.get_pvgis_hourly`, :py:func:`pvlib.iotools.get_cams`,
   :py:func:`pvlib.iotools.get_bsrn`, and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`.
   (:pull:`1800`)
-* Added option to infer threshold values for 
+* Added option to infer threshold values for
   :py:func:`pvlib.clearsky.detect_clearsky` (:issue:`1808`, :pull:`1784`)
+* Added a continuous version of the Erbs diffuse-fraction/decomposition model.
+  :py:func:`pvlib.irradiance.erbs_driesse` (:issue:`1755`, :pull:`1834`)
 
 
 Bug fixes
@@ -54,6 +56,7 @@ Contributors
 * Abigail Jones (:ghuser:`ajonesr`)
 * Taos Transue (:ghuser:`reepoi`)
 * NativeSci (:ghuser:`nativesci`)
+* Anton Driesse (:ghuser:`adriesse`)
 * Lukas Grossar (:ghuser:`tongpu`)
 * Areeba Turabi (:ghuser:`aturabi`)
 * Saurabh Aneja (:ghuser:`spaneja`)

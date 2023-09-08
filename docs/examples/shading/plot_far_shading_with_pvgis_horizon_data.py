@@ -1,6 +1,6 @@
 """
 Far-Shading with PVGIS Horizon Data
-=========================
+===================================
 
 Example of getting PVGIS horizon data, interpolating it to time-series
 solar-position data, and adjusting DNI and POA-global irradiance.
@@ -9,7 +9,7 @@ solar-position data, and adjusting DNI and POA-global irradiance.
 # %%
 # This example shows how to use retrived horizon elevation angles with
 # corresponding horizon azimuth angles from the
-# :py:meth:`pvlib.iotools.get_pvgis_horizon` furntion.
+# :py:func:`pvlib.iotools.get_pvgis_horizon` function.
 
 # After location information and a date range is established, solar position
 # data is queried from :py:meth:`pvlib.solar_position.get_solar_position`.
@@ -29,7 +29,8 @@ tz = 'MST'
 
 # Set times in the morning of the December solstice.
 times = pd.date_range(
-    '2020-12-20 6:30', '2020-12-20 9:00', freq='1T', tz=tz, inclusive='left')
+    '2020-12-20 6:30', '2020-12-20 9:00', freq='1T', tz=tz
+)
 
 # Create location object, and get solar position and clearsky irradiance data.
 location = Location(lat, lon, tz)
@@ -37,8 +38,7 @@ solar_position = location.get_solarposition(times)
 clearsky = location.get_clearsky(times)
 
 # Get horizon file meta-data and data.
-horizon_file = get_pvgis_horizon(lat, lon)
-horizon_data = horizon_file[0]
+horizon_data, horizon_metadata = get_pvgis_horizon(lat, lon)
 
 # Set variable names for easier reading.
 surface_tilt = 30
@@ -53,7 +53,8 @@ dhi = clearsky.dhi
 # Interpolate the horizon elevation data to the solar azimuth, and keep as a
 # numpy array.
 horizon_elevation_data = np.interp(
-    solar_azimuth, horizon_data.index, horizon_data)
+    solar_azimuth, horizon_data.index, horizon_data
+)
 
 # Convert to Pandas Series for easier usage.
 horizon_elevation_data = pd.Series(horizon_elevation_data, times)
@@ -71,11 +72,13 @@ ghi_adjusted = np.where(
 
 # Transposition using the original and adjusted irradiance components.
 irrad_pre_adj = get_total_irradiance(
-    surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni, ghi, dhi)
+    surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni, ghi, dhi
+)
 
 irrad_post_adj = get_total_irradiance(
     surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni_adjusted,
-    ghi_adjusted, dhi)
+    ghi_adjusted, dhi
+)
 
 # Create and plot result DataFrames.
 poa_global_comparison = pd.DataFrame({
@@ -91,6 +94,8 @@ dni_comparison = pd.DataFrame({
 # Plot results
 poa_global_comparison.plot(
     title='POA-Global: Before and after Horizon Adjustment',
-    ylabel='Irradiance')
+    ylabel='Irradiance'
+)
 dni_comparison.plot(
-    title='DNI: Before and after Horizon Adjustment', ylabel='Irradiance')
+    title='DNI: Before and after Horizon Adjustment', ylabel='Irradiance'
+)

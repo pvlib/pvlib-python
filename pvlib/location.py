@@ -45,7 +45,7 @@ class Location:
         pytz.timezone objects will be converted to strings.
         ints and floats must be in hours from UTC.
 
-    altitude : None or float, default None
+    altitude : None or float, optional
         Altitude from sea level in meters.
         If None, the altitude will be fetched from
         :py:func:`pvlib.location.lookup_altitude`.

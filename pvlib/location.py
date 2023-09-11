@@ -49,7 +49,7 @@ class Location:
         Altitude from sea level in meters.
         If None, the altitude will be fetched from
         :py:func:`pvlib.location.lookup_altitude`.
-        Set to 0 if there is no data at the location.
+        If no data is available for the location, the altitude is set to 0.
 
     name : None or string, default None.
         Sets the name attribute of the Location object.

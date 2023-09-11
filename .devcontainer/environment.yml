@@ -1,0 +1,11 @@
+name: pvlibdev
+channels:
+    - defaults
+    - conda-forge
+dependencies:
+    - python=3.11
+    - flake8
+    - ipython
+    - jupyter
+    - matplotlib
+    - pytest

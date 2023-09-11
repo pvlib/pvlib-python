@@ -1,0 +1,31 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/miniconda
+{
+	"name": "Miniconda (Python 3)",
+	"build": { 
+		"context": ".",
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"flake8.args": [
+					"--config", "${containerWorkspaceFolder}/setup.cfg"
+				]
+			},
+			"extensions": [
+				"donjayamanne.python-extension-pack",
+				"ms-python.flake8",
+				"ms-python.autopep8",
+				"ms-toolsai.jupyter",
+				"ms-toolsai.jupyter-keymap",
+				"ms-toolsai.jupyter-renderers",
+				"github.vscode-pull-request-github"
+			]
+		}
+	},
+	"postStartCommand": "conda init && pip install -e ."
+}

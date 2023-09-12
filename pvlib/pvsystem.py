@@ -8,6 +8,7 @@ import functools
 import io
 import itertools
 import os
+import inspect
 from urllib.request import urlopen
 import numpy as np
 from scipy import constants
@@ -388,7 +389,7 @@ class PVSystem:
 
         aoi_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz' and 'sapm'.
+            'martin_ruiz', 'sapm' and 'interp'.
         Returns
         -------
         iam : numeric or tuple of numeric
@@ -1151,7 +1152,7 @@ class Array:
 
         aoi_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz' and 'sapm'.
+            'martin_ruiz', 'sapm' and 'interp'.
 
         Returns
         -------
@@ -1164,16 +1165,16 @@ class Array:
             if `iam_model` is not a valid model name.
         """
         model = iam_model.lower()
-        if model in ['ashrae', 'physical', 'martin_ruiz']:
-            param_names = iam._IAM_MODEL_PARAMS[model]
-            kwargs = _build_kwargs(param_names, self.module_parameters)
-            func = getattr(iam, model)
+        if model in ['ashrae', 'physical', 'martin_ruiz', 'interp']:
+            func = getattr(iam, model)  # get function at pvlib.iam
+            # get all parameters from function signature to retrieve them from
+            # module_parameters if present
+            params = set(inspect.signature(func).parameters.keys())
+            params.discard('aoi')  # exclude aoi so it can't be repeated
+            kwargs = _build_kwargs(params, self.module_parameters)
             return func(aoi, **kwargs)
         elif model == 'sapm':
             return iam.sapm(aoi, self.module_parameters)
-        elif model == 'interp':
-            raise ValueError(model + ' is not implemented as an IAM model '
-                             'option for Array')
         else:
             raise ValueError(model + ' is not a valid IAM model')
 
@@ -1296,20 +1297,18 @@ class Array:
         """
 
         # get relevent Vmp and Imp parameters from CEC parameters
-        if all([elem in self.module_parameters
-                for elem in ['V_mp_ref', 'I_mp_ref']]):
+        if all(elem in self.module_parameters
+               for elem in ['V_mp_ref', 'I_mp_ref']):
             vmp_ref = self.module_parameters['V_mp_ref']
             imp_ref = self.module_parameters['I_mp_ref']
 
         # get relevant Vmp and Imp parameters from SAPM parameters
-        elif all([elem in self.module_parameters
-                  for elem in ['Vmpo', 'Impo']]):
+        elif all(elem in self.module_parameters for elem in ['Vmpo', 'Impo']):
             vmp_ref = self.module_parameters['Vmpo']
             imp_ref = self.module_parameters['Impo']
 
         # get relevant Vmp and Imp parameters if they are PVsyst-like
-        elif all([elem in self.module_parameters
-                  for elem in ['Vmpp', 'Impp']]):
+        elif all(elem in self.module_parameters for elem in ['Vmpp', 'Impp']):
             vmp_ref = self.module_parameters['Vmpp']
             imp_ref = self.module_parameters['Impp']
 
@@ -2001,23 +2000,25 @@ def retrieve_sam(name=None, path=None):
 
     >>> from pvlib import pvsystem
     >>> invdb = pvsystem.retrieve_sam('CECInverter')
-    >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
+    >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V_
     >>> inverter
-    Vac           277.000000
-    Paco         6000.000000
-    Pdco         6165.670000
-    Vdco          361.123000
-    Pso            36.792300
-    C0             -0.000002
-    C1             -0.000047
-    C2             -0.001861
-    C3              0.000721
-    Pnt             0.070000
-    Vdcmax        600.000000
-    Idcmax         32.000000
-    Mppt_low      200.000000
-    Mppt_high     500.000000
-    Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
+    Vac                          277
+    Pso                    36.197575
+    Paco                      6000.0
+    Pdco                 6158.746094
+    Vdco                       360.0
+    C0                     -0.000002
+    C1                     -0.000026
+    C2                     -0.001253
+    C3                       0.00021
+    Pnt                          1.8
+    Vdcmax                     450.0
+    Idcmax                 17.107628
+    Mppt_low                   100.0
+    Mppt_high                  450.0
+    CEC_Date                     NaN
+    CEC_Type     Utility Interactive
+    Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
     '''
 
     if name is not None:

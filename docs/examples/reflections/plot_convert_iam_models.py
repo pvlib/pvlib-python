@@ -12,7 +12,7 @@ pvlib.iam.fit
 # %%
 # An incidence angle modifier (IAM) model quantifies the fraction of direct
 # irradiance is that is reflected away from a module's surface. Three popular
-# IAM models are Martin-Ruiz py:func:`~pvlib.iam.martin_ruiz`, physical 
+# IAM models are Martin-Ruiz py:func:`~pvlib.iam.martin_ruiz`, physical
 # py:func:`~pvlib.iam.physical`, and ASHRAE `py:func:~pvlib.iam.ashrae`.
 # Each model requires one or more parameters.
 #
@@ -75,7 +75,7 @@ plt.show()
 # Fitting an IAM model to data
 # ----------------------------
 #
-# Here, we'll show how to fit an IAM model to data. 
+# Here, we'll show how to fit an IAM model to data.
 # We'll generate some data by perturbing output from the Martin-Ruiz model to mimic
 # measured data and then we'll fit the physical model to the perturbed data.
 
@@ -112,10 +112,10 @@ plt.show()
 #
 # In some cases, the choice of weight function has a minimal effect on the
 # returned model parameters. This is especially true when converting between
-# the Martin-Ruize and physical models, because the curves described by these models
-# can match quite closely. However, when conversion involves the ASHRAE model, the choice of weight
-# function can have a meaningful effect on the returned parameters for the
-# target model.
+# the Martin-Ruize and physical models, because the curves described by these
+# models can match quite closely. However, when conversion involves the ASHRAE
+# model, the choice of weight function can have a meaningful effect on the
+# returned parameters for the target model.
 #
 # Here we'll show examples of both of these cases, starting with an example
 # where the choice of weight function does not have much impact. In doing
@@ -186,4 +186,3 @@ plt.show()
 # knowing where you want the target model to be more accurate. The default
 # weight function was chosen because it yielded IAM models that produce
 # similar annual insolation for a simulated PV system TODO add reference.
-

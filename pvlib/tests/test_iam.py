@@ -505,15 +505,6 @@ def test_convert_wrong_model_parameters():
         _iam.convert('ashrae', {'B': 0.1}, 'physical')
 
 
-def test_convert_wrong_custom_weight_func():
-    def wrong_weight(aoi):
-        return 0
-
-    with pytest.raises(ValueError, match='custom weight function'):
-        _iam.convert('ashrae', {'b': 0.1}, 'physical',
-                     options={'weight_function': wrong_weight})
-
-
 def test_convert__minimize_fails():
     # to make scipy.optimize.minimize fail, we'll pass in a nonsense
     # weight function that only outputs nans

@@ -51,7 +51,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         rotation angle, and the minimum rotation angle is assumed to be the
         opposite of the maximum angle. If a tuple of (min_angle, max_angle) is
         provided, it represents both the minimum and maximum rotation angles.
-        
+
         A rotation to 'max_angle' is a counter-clockwise rotation about the
         y-axis of the tracker coordinate system. For example, for a tracker
         with 'axis_azimuth' oriented to the south, a rotation to 'max_angle'
@@ -200,12 +200,11 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     # NOTE: max_angle defined relative to zero-point rotation, not the
     # system-plane normal
 
-
-    # Determine minimum and maximum rotation angles for the tracker based on max_angle.
-    # If max_angle is a single value, assume min_angle is the negative of max_angle.
+    # Determine minimum and maximum rotation angles based on max_angle.
+    # If max_angle is a single value, assume min_angle is the negative.
     if np.isscalar(max_angle):
         min_angle = -max_angle
-    else: 
+    else:
         min_angle, max_angle = max_angle
 
     # Clip tracker_theta between the minimum and maximum angles.

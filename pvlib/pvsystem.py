@@ -1418,7 +1418,7 @@ class SingleAxisTrackerMount(AbstractMount):
         rotation angle, and the minimum rotation angle is assumed to be the
         opposite of the maximum angle. If a tuple of (min_angle, max_angle) is
         provided, it represents both the minimum and maximum rotation angles.
-        
+
         A rotation to 'max_angle' is a counter-clockwise rotation about the
         y-axis of the tracker coordinate system. For example, for a tracker
         with 'axis_azimuth' oriented to the south, a rotation to 'max_angle'

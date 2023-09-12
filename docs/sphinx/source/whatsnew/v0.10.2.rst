@@ -42,6 +42,11 @@ Documentation
   (:issue:`1811`, :pull:`1812`)
 * Removed Stickler-CI integration as the service has ceased June 2023.
   (:issue:`1722`, :pull:`1723`)
+* Specified that :py:func:`pvlib.singlediode.bishop88`,
+  :py:func:`pvlib.singlediode.bishop88_i_from_v`, and
+  :py:func:`pvlib.singlediode.bishop88_v_from_i` parameters `breakdown_factor`,
+  `breakdown_voltage`, and `breakdown_exp` should be floats.
+  (:issue:`1820`, :pull:`1821`)
 * Fix and update example in :py:func:`pvlib.pvsystem.retrieve_sam`.
   (:issue:`1741`, :pull:`1833`)
 * Fix error in :py:func:`pvlib.iotools.get_pvgis_hourly` documentation of `surface_azimuth`.

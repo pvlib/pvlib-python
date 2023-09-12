@@ -203,7 +203,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # Determine minimum and maximum rotation angles for the tracker based on max_angle.
     # If max_angle is a single value, assume min_angle is the negative of max_angle.
-    if np.array(max_angle).size == 1:
+    if np.isscalar(max_angle):
         min_angle = -max_angle
     else: 
         min_angle, max_angle = max_angle

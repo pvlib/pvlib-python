@@ -2267,6 +2267,136 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     return data
 
 
+def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
+                 min_cos_zenith=0.065, max_zenith=87):
+    r"""
+    Estimate DNI and DHI from GHI using the continuous Erbs-Driesse model.
+
+    The Erbs-Driesse model [1]_ is a reformulation of the original Erbs
+    model [2]_ that provides continuity of the function and its first
+    derivative at the two transition points.
+
+    .. math::
+
+        DHI = DF \times GHI
+
+    DNI is then estimated as
+
+    .. math::
+
+        DNI = (GHI - DHI)/\cos(Z)
+
+    where Z is the zenith angle.
+
+    Parameters
+    ----------
+    ghi: numeric
+        Global horizontal irradiance in W/m^2.
+    zenith: numeric
+        True (not refraction-corrected) zenith angles in decimal degrees.
+    datetime_or_doy : int, float, array, pd.DatetimeIndex, default None
+        Day of year or array of days of year e.g.
+        pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
+        Either datetime_or_doy or dni_extra must be provided.
+    dni_extra : numeric, default None
+        Extraterrestrial normal irradiance.
+        dni_extra can be provided if available to avoid recalculating it
+        inside this function.  In this case datetime_or_doy is not required.
+    min_cos_zenith : numeric, default 0.065
+        Minimum value of cos(zenith) to allow when calculating global
+        clearness index `kt`. Equivalent to zenith = 86.273 degrees.
+    max_zenith : numeric, default 87
+        Maximum value of zenith to allow in DNI calculation. DNI will be
+        set to 0 for times with zenith values greater than `max_zenith`.
+
+    Returns
+    -------
+    data : OrderedDict or DataFrame
+        Contains the following keys/columns:
+
+            * ``dni``: the modeled direct normal irradiance in W/m^2.
+            * ``dhi``: the modeled diffuse horizontal irradiance in
+              W/m^2.
+            * ``kt``: Ratio of global to extraterrestrial irradiance
+              on a horizontal plane.
+
+    Raises
+    ------
+    ValueError
+        If neither datetime_or_doy nor dni_extra is provided.
+
+    Notes
+    -----
+    The diffuse fraction DHI/GHI of the Erbs-Driesse model deviates from the
+    original Erbs model by less than 0.0005.
+
+    References
+    ----------
+    .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
+        Diffuse Sky Model for Forward and Reverse Transposition, forthcoming.
+
+    .. [2] D. G. Erbs, S. A. Klein and J. A. Duffie, Estimation of the
+       diffuse radiation fraction for hourly, daily and monthly-average
+       global radiation, Solar Energy 28(4), pp 293-302, 1982. Eq. 1
+
+    See also
+    --------
+    erbs
+    dirint
+    disc
+    orgill_hollands
+    boland
+    """
+    # central polynomial coefficients with float64 precision
+    p = [+12.26911439571261000,
+         -16.47050842469730700,
+         +04.24692671521831700,
+         -00.11390583806313881,
+         +00.94629663357100100]
+
+    if datetime_or_doy is None and dni_extra is None:
+        raise ValueError('Either datetime_or_doy or dni_extra '
+                         'must be provided.')
+
+    if dni_extra is None:
+        dni_extra = get_extra_radiation(datetime_or_doy)
+
+    # negative ghi should not reach this point, but just in case
+    ghi = np.maximum(0, ghi)
+
+    kt = clearness_index(ghi, zenith, dni_extra, min_cos_zenith=min_cos_zenith,
+                         max_clearness_index=1)
+
+    # For all Kt, set the default diffuse fraction
+    df = 1 - 0.09 * kt
+
+    # For Kt > 0.216, update the diffuse fraction
+    df = np.where(kt > 0.216, np.polyval(p, kt), df)
+
+    # For Kt > 0.792, update the diffuse fraction again
+    df = np.where(kt > 0.792, 0.165, df)
+
+    dhi = df * ghi
+
+    dni = (ghi - dhi) / tools.cosd(zenith)
+    bad_values = (zenith > max_zenith) | (ghi < 0) | (dni < 0)
+    dni = np.where(bad_values, 0, dni)
+    # ensure that closure relationship remains valid
+    dhi = np.where(bad_values, ghi, dhi)
+
+    data = OrderedDict()
+    data['dni'] = dni
+    data['dhi'] = dhi
+    data['kt'] = kt
+
+    if isinstance(datetime_or_doy, pd.DatetimeIndex):
+        data = pd.DataFrame(data, index=datetime_or_doy)
+    elif isinstance(ghi, pd.Series):
+        data = pd.DataFrame(data, index=ghi.index)
+
+    return data
+
+
 def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
                     min_cos_zenith=0.065, max_zenith=87):
     """Estimate DNI and DHI from GHI using the Orgill and Hollands model.

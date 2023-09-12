@@ -805,6 +805,34 @@ def test_erbs():
     assert_frame_equal(np.round(out, 0), np.round(expected, 0))
 
 
+def test_erbs_driesse():
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
+    ghi = pd.Series([0, 50, 1000, 1000], index=index)
+    zenith = pd.Series([120, 85, 10, 10], index=index)
+    # expected values are the same as for erbs original test
+    expected = pd.DataFrame(np.array(
+        [[0.00000000e+00, 0.00000000e+00, 0.00000000e+00],
+         [9.67192672e+01, 4.15703604e+01, 4.05723511e-01],
+         [7.94205651e+02, 2.17860117e+02, 7.18132729e-01],
+         [8.42001578e+02, 1.70790318e+02, 7.68214312e-01]]),
+        columns=['dni', 'dhi', 'kt'], index=index)
+
+    out = irradiance.erbs_driesse(ghi, zenith, index)
+
+    assert_frame_equal(np.round(out, 0), np.round(expected, 0))
+
+    # test with the new optional dni_extra argument
+    dni_extra = irradiance.get_extra_radiation(index)
+
+    out = irradiance.erbs_driesse(ghi, zenith, dni_extra=dni_extra)
+
+    assert_frame_equal(np.round(out, 0), np.round(expected, 0))
+
+    # test for required inputs
+    with pytest.raises(ValueError):
+        irradiance.erbs_driesse(ghi, zenith)
+
+
 def test_boland():
     index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
     ghi = pd.Series([0, 50, 1000, 1000], index=index)

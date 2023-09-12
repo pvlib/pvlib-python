@@ -7,3 +7,10 @@ RUN set -ex; \
     export DEBIAN_FRONTEND=noninteractive; \
     apt-get -yq install build-essential; \
     apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+# Install project in editable mode
+RUN --mount=type=bind,target=/tmp/setup-tmp,source=.,rw \
+     su ${USERNAME} -c '\
+        set -ex; \
+        pip install -U pip; \
+        pip install -U -e /tmp/setup-tmp/[all]'

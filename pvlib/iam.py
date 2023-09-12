@@ -971,25 +971,21 @@ def _sin_weight(aoi):
 
 
 def _residual(aoi, source_iam, target, target_params,
-              weight_function=_sin_weight,
-              weight_args=None):
+              weight=_sin_weight):
     # computes a sum of weighted differences between the source model
     # and target model, using the provided weight function
 
-    if weight_args is None:
-        weight_args = {}
-
-    weight = weight_function(aoi, **weight_args)
+    weights = weight(aoi)
 
     # if aoi contains values outside of interval (0, 90), annihilate
     # the associated weights (we don't want IAM values from AOI outside
     # of (0, 90) to affect the fit; this is a possible issue when using
     # `iam.fit`, but not an issue when using `iam.convert`, since in
     # that case aoi is defined internally)
-    weight = weight * np.logical_and(aoi >= 0, aoi <= 90).astype(int)
+    weights = weights * np.logical_and(aoi >= 0, aoi <= 90).astype(int)
 
     diff = np.abs(source_iam - np.nan_to_num(target(aoi, *target_params)))
-    return np.sum(diff * weight)
+    return np.sum(diff * weights)
 
 
 def _get_ashrae_int(b):
@@ -997,7 +993,7 @@ def _get_ashrae_int(b):
     return np.rad2deg(np.arccos(b / (1 + b)))
 
 
-def _ashrae_to_physical(aoi, ashrae_iam, options, fix_n, b):
+def _ashrae_to_physical(aoi, ashrae_iam, weight, fix_n, b):
     if fix_n:
         # the ashrae model has an x-intercept less than 90
         # we solve for this intercept, and fix n so that the physical
@@ -1024,12 +1020,12 @@ def _ashrae_to_physical(aoi, ashrae_iam, options, fix_n, b):
 
     def residual_function(target_params):
         L, n = target_params
-        return _residual(aoi, ashrae_iam, physical, [n, 4, L], **options)
+        return _residual(aoi, ashrae_iam, physical, [n, 4, L], weight)
 
     return residual_function, guess, bounds
 
 
-def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, options):
+def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, weight):
     # we will optimize for both n and L (recall that K and L always
     # appear in the physical model as a product, so it is enough to
     # optimize for just L, and to fix K=4)
@@ -1040,7 +1036,7 @@ def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, options):
     # guess for the location of the minimum, so we pass L in first
     def residual_function(target_params):
         L, n = target_params
-        return _residual(aoi, martin_ruiz_iam, physical, [n, 4, L], **options)
+        return _residual(aoi, martin_ruiz_iam, physical, [n, 4, L], weight)
 
     return residual_function, guess, bounds
 
@@ -1079,7 +1075,7 @@ def _process_return(target_name, optimize_result):
     return target_params
 
 
-def convert(source_name, source_params, target_name, options=None, fix_n=True):
+def convert(source_name, source_params, target_name, weight=None, fix_n=True):
     """
     Given a source model and its parameters and a target model, finds
     parameters for the target model that best fit the source model.
@@ -1106,26 +1102,10 @@ def convert(source_name, source_params, target_name, options=None, fix_n=True):
         Name of the target model. Must be ``'ashrae'``, ``'martin_ruiz'``, or
         ``'physical'``.
 
-    options : dict, optional
-        A dictionary that allows passing a custom weight function and
-        arguments for the weight function.
-        Keys of `options` can be ``'weight_function'`` and
-        ``'weight_args'``.
-
-            weight_function : function
-                A function that outputs an array of weights to use
-                when computing residuals between models.
-
-                Requirements:
-                    1. Must have ``aoi`` as the first positional argument.
-                    2. Any other arguments must be keyword arguments,
-                       defined in ``weight_args``.
-                    3. Must return a float or an array-like object with the
-                       same shape as ``aoi``.
-
-            weight_args : dict, optional
-                A dictionary containing keyword arguments for the
-                weight function.
+    weight : function, optional
+        A single-argument function of AOI that calculates weights for the
+        residuals between models. Must return a float or an array-like object.
+        The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
 
     fix_n : bool, default True
         A flag to determine which method is used when converting from the
@@ -1154,10 +1134,6 @@ def convert(source_name, source_params, target_name, options=None, fix_n=True):
             If target model is ``'physical'``, the dictionary will
             contain the keys ``'n'``, ``'K'``, and ``'L'``.
 
-    Notes
-    -----
-    The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
-
     References
     ----------
     .. [1] TODO
@@ -1174,8 +1150,8 @@ def convert(source_name, source_params, target_name, options=None, fix_n=True):
     target = _get_model(target_name)
 
     # if no options were passed in, we will use the default arguments
-    if options is None:
-        options = {}
+    if weight is None:
+        weight = _sin_weight
 
     aoi = np.linspace(0, 90, 100)
     _check_params(source_name, source_params)
@@ -1186,11 +1162,11 @@ def convert(source_name, source_params, target_name, options=None, fix_n=True):
         # target model is physical
         if source_name == "ashrae":
             residual_function, guess, bounds = \
-                _ashrae_to_physical(aoi, source_iam, options, fix_n,
+                _ashrae_to_physical(aoi, source_iam, weight, fix_n,
                                     source_params['b'])
         elif source_name == "martin_ruiz":
             residual_function, guess, bounds = \
-                _martin_ruiz_to_physical(aoi, source_iam, options)
+                _martin_ruiz_to_physical(aoi, source_iam, weight)
 
     else:
         # otherwise, target model is ashrae or martin_ruiz, and scipy
@@ -1199,14 +1175,14 @@ def convert(source_name, source_params, target_name, options=None, fix_n=True):
         guess = [1e-08]
 
         def residual_function(target_param):
-            return _residual(aoi, source_iam, target, target_param, **options)
+            return _residual(aoi, source_iam, target, target_param, weight)
 
     optimize_result = _minimize(residual_function, guess, bounds)
 
     return _process_return(target_name, optimize_result)
 
 
-def fit(measured_aoi, measured_iam, target_name, options=None):
+def fit(measured_aoi, measured_iam, target_name, weight=None):
     """
     Finds parameters for target model that best fit the
     measured data.
@@ -1224,26 +1200,10 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
         Name of the target model. Must be ``'ashrae'``, ``'martin_ruiz'``,
         or ``'physical'``.
 
-    options : dict, optional
-        A dictionary that allows passing a custom weight function and
-        arguments for the weight function.
-        Keys of `options` can be ``'weight_function'`` and
-        ``'weight_args'``.
-
-            weight_function : function
-                A function that outputs an array of weights to use
-                when computing residuals between models.
-
-                Requirements:
-                    1. Must have ``aoi`` as the first positional argument.
-                    2. Any other arguments must be keyword arguments,
-                       defined in ``weight_args``.
-                    3. Must return a float or an array-like object with the
-                       same shape as ``aoi``.
-
-            weight_args : dict, optional
-                A dictionary containing keyword arguments for the
-                weight function.
+    weight : function, optional
+        A single-argument function of AOI that calculates weights for the
+        residuals between models. Must return a float or an array-like object.
+        The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
 
     Returns
     -------
@@ -1274,8 +1234,8 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
     target = _get_model(target_name)
 
     # if no options were passed in, we will use the default arguments
-    if options is None:
-        options = {}
+    if weight is None:
+        weight = _sin_weight
 
     if target_name == "physical":
         bounds = [(0, 0.08), (1, 2)]
@@ -1284,7 +1244,7 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
         def residual_function(target_params):
             L, n = target_params
             return _residual(measured_aoi, measured_iam, target, [n, 4, L],
-                             **options)
+                             weight)
 
     # otherwise, target_name is martin_ruiz or ashrae
     else:
@@ -1293,7 +1253,7 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
 
         def residual_function(target_param):
             return _residual(measured_aoi, measured_iam, target, target_param,
-                             **options)
+                             weight)
 
     optimize_result = _minimize(residual_function, guess, bounds)
 

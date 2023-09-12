@@ -479,18 +479,17 @@ def test_convert_custom_weight_func():
     source_iam = _iam.physical(aoi, **source_params)
 
     # define custom weight function that takes in other arguments
-    def scaled_weight(aoi, scalar):
-        return scalar * aoi
+    def scaled_weight(aoi):
+        return 2. * aoi
 
     # expected value calculated from computing residual function over
     # a range of inputs, and taking minimum of these values
     expected_min_res = 18.051468686279726
 
-    options = {'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
     actual_dict = _iam.convert('physical', source_params, 'martin_ruiz',
-                               options=options)
+                               weight=scaled_weight)
     actual_min_res = _iam._residual(aoi, source_iam, _iam.martin_ruiz,
-                                    [actual_dict['a_r']], **options)
+                                    [actual_dict['a_r']], scaled_weight)
 
     assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
 
@@ -509,11 +508,10 @@ def test_convert__minimize_fails():
     # to make scipy.optimize.minimize fail, we'll pass in a nonsense
     # weight function that only outputs nans
     def nan_weight(aoi):
-        return [float('nan')]*len(aoi)
+        return np.nan
 
     with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
-        _iam.convert('ashrae', {'b': 0.1}, 'physical',
-                     options={'weight_function': nan_weight})
+        _iam.convert('ashrae', {'b': 0.1}, 'physical', weight=nan_weight)
 
 
 def test_fit():
@@ -531,8 +529,8 @@ def test_fit():
 
 def test_fit_custom_weight_func():
     # define custom weight function that takes in other arguments
-    def scaled_weight(aoi, scalar):
-        return scalar * aoi
+    def scaled_weight(aoi):
+        return 2. * aoi
 
     aoi = np.linspace(0, 90, 5)
     perturb = np.array([1.2, 1.01, 0.95, 1, 0.98])
@@ -540,8 +538,8 @@ def test_fit_custom_weight_func():
 
     expected_a_r = 0.14
 
-    options = {'weight_function': scaled_weight, 'weight_args': {'scalar': 2}}
-    actual_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz', options=options)
+    actual_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz',
+                           weight=scaled_weight)
     actual_a_r = actual_dict['a_r']
 
     assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
@@ -556,11 +554,11 @@ def test_fit__minimize_fails():
     # to make scipy.optimize.minimize fail, we'll pass in a nonsense
     # weight function that only outputs nans
     def nan_weight(aoi):
-        return [float('nan')]*len(aoi)
+        return np.nan
 
     with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
         _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'physical',
-                 options={'weight_function': nan_weight})
+                 weight=nan_weight)
 
 
 def test__residual_zero_outside_range():

@@ -15,7 +15,7 @@ from scipy import constants
 import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 from pvlib._deprecation import deprecated, warn_deprecated
 
@@ -1461,7 +1461,7 @@ class SingleAxisTrackerMount(AbstractMount):
     """
     axis_tilt: float = 0.0
     axis_azimuth: float = 0.0
-    max_angle: float = 90.0
+    max_angle: Union[float, tuple] = 90.0
     backtrack: bool = True
     gcr: float = 2.0/7.0
     cross_axis_tilt: float = 0.0

@@ -12,7 +12,11 @@
 			"settings": {
 				"flake8.args": [
 					"--config", "${containerWorkspaceFolder}/setup.cfg"
-				]
+				],
+				"python.testing.pytestArgs": [],
+				"python.testing.unittestEnabled": false,
+				"python.testing.pytestEnabled": true,
+				"python.defaultInterpreterPath": "/usr/local/bin/python"
 			},
 			"extensions": [
 				"donjayamanne.python-extension-pack",

@@ -1297,20 +1297,18 @@ class Array:
         """
 
         # get relevent Vmp and Imp parameters from CEC parameters
-        if all([elem in self.module_parameters
-                for elem in ['V_mp_ref', 'I_mp_ref']]):
+        if all(elem in self.module_parameters
+               for elem in ['V_mp_ref', 'I_mp_ref']):
             vmp_ref = self.module_parameters['V_mp_ref']
             imp_ref = self.module_parameters['I_mp_ref']
 
         # get relevant Vmp and Imp parameters from SAPM parameters
-        elif all([elem in self.module_parameters
-                  for elem in ['Vmpo', 'Impo']]):
+        elif all(elem in self.module_parameters for elem in ['Vmpo', 'Impo']):
             vmp_ref = self.module_parameters['Vmpo']
             imp_ref = self.module_parameters['Impo']
 
         # get relevant Vmp and Imp parameters if they are PVsyst-like
-        elif all([elem in self.module_parameters
-                  for elem in ['Vmpp', 'Impp']]):
+        elif all(elem in self.module_parameters for elem in ['Vmpp', 'Impp']):
             vmp_ref = self.module_parameters['Vmpp']
             imp_ref = self.module_parameters['Impp']
 

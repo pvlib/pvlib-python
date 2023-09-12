@@ -1994,7 +1994,7 @@ def _irrad_for_celltemp(total_irrad, effective_irradiance):
 
     """
     if isinstance(total_irrad, tuple):
-        if all(['poa_global' in df for df in total_irrad]):
+        if all('poa_global' in df for df in total_irrad):
             return _tuple_from_dfs(total_irrad, 'poa_global')
         else:
             return effective_irradiance

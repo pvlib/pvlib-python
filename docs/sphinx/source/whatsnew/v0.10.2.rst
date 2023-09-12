@@ -64,3 +64,4 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Lukas Grossar (:ghuser:`tongpu`)
 * Areeba Turabi (:ghuser:`aturabi`)
+* Miroslav Šedivý (:ghuser:`eumiro`)

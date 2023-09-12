@@ -10,7 +10,7 @@ solar-position data, and adjust DNI and POA-global irradiance.
 # %%
 # This example shows how to use horizon elevation angles with
 # corresponding horizon azimuth angles for simple horizon shading adjustments.
-
+#
 # After location information and a date range is established, solar position
 # data is queried from :py:meth:`pvlib.solar_position.get_solar_position`.
 # Horizon data is assigned, and interpolated to the solar azimuth time
@@ -46,6 +46,9 @@ dni = clearsky.dni
 ghi = clearsky.ghi
 dhi = clearsky.dhi
 
+# %%
+# With basic inputs in place, let's perform the adjustment for horizon shading:
+
 # Use hard-coded horizon profile data from location object above.
 horizon_profile = pd.Series([
     10.7, 11.8, 11.5, 10.3, 8.0, 6.5, 3.8, 2.3, 2.3, 2.3, 4.6, 8.0, 10.3, 11.1,
@@ -67,15 +70,11 @@ horizon_elevation_data = np.interp(
 horizon_elevation_data = pd.Series(horizon_elevation_data, times)
 
 # Adjust DNI based on data - note this is returned as numpy array
-dni_adjusted = np.where(
-    solar_elevation > horizon_elevation_data, dni, 0
-)
+dni_adjusted = np.where(solar_elevation > horizon_elevation_data, dni, 0)
 
 # Adjust GHI and set it to DHI for time-periods where 'dni_adjusted' is 0.
 # Note this is returned as numpy array
-ghi_adjusted = np.where(
-    dni_adjusted == 0, dhi, ghi
-)
+ghi_adjusted = np.where(dni_adjusted == 0, dhi, ghi)
 
 # Transposition using the original and adjusted irradiance components.
 irrad_pre_adj = get_total_irradiance(

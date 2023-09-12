@@ -19,8 +19,7 @@ Enhancements
   the `min_angle` parameter to accept tuples. 
   (:pull:`1809`)
 * Added support for asymmetric limiting angles in :py:func:`pvlib.tracking.singleaxis`
-  and :py:class:`pvlib.pvsystem.SingleAxisTrackerMount` by modifying the ``max_angle``
-  parameter to accept tuples. (:issue:`1777`, :pull:`1809`)
+  and :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount. (:issue:`1777`, :pull:`1809`)
 * Added option to infer threshold values for
   :py:func:`pvlib.clearsky.detect_clearsky` (:issue:`1808`, :pull:`1784`)
 * Added a continuous version of the Erbs diffuse-fraction/decomposition model.

@@ -49,15 +49,16 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         of the one-axis tracker from its horizontal position (horizontal
         if axis_tilt = 0). If a float is provided, it represents the maximum
         rotation angle, and the minimum rotation angle is assumed to be the
-        opposite of the maximum angle. If a tuple of (min_angle, max_angle)
-        is provided, it represents both the minimum and maximum rotation angles.
+        opposite of the maximum angle. If a tuple of (min_angle, max_angle) is
+        provided, it represents both the minimum and maximum rotation angles.
         
-        A rotation to 'max_angle' is a counter-clockwise rotation about the y-axis 
-        of the tracker coordinate system. For example, for a tracker with 'axis_azimuth' 
-        oriented to the south, a rotation to 'max_angle' is towards the west, and a 
-        rotation toward 'min_angle' is in the opposite direction, toward the east.
-        Hence a max_angle of 180 degrees (equivalent to max_angle = (-180, 180)) allows 
-        the tracker to achieve its full rotation capability.
+        A rotation to 'max_angle' is a counter-clockwise rotation about the
+        y-axis of the tracker coordinate system. For example, for a tracker
+        with 'axis_azimuth' oriented to the south, a rotation to 'max_angle'
+        is towards the west, and a rotation toward 'min_angle' is in the
+        opposite direction, toward the east. Hence a max_angle of 180 degrees
+        (equivalent to max_angle = (-180, 180)) allows the tracker to achieve
+        its full rotation capability.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"

@@ -857,7 +857,7 @@ def schlick_diffuse(surface_tilt):
     Unlike the Fresnel reflection factor itself, Schlick's approximation can
     be integrated analytically to derive a closed-form equation for diffuse
     IAM factors for the portions of the sky and ground visible
-    from a tilted surface if isotropic distributions are assumed.  
+    from a tilted surface if isotropic distributions are assumed.
     This function implements the integration of the
     Schlick approximation provided by Xie et al. [2]_.
 
@@ -959,13 +959,10 @@ def _get_model(model_name):
 def _check_params(model_name, params):
     # check that the parameters passed in with the model
     # belong to the model
-    param_dict = {'ashrae': {'b'}, 'martin_ruiz': {'a_r'},
-                  'physical': {'n', 'K', 'L'}}
-    expected_params = param_dict[model_name]
-
-    if set(params.keys()) != expected_params:
+    exp_params = _IAM_MODEL_PARAMS[model_name]
+    if set(params.keys()) != exp_params:
         raise ValueError(f"The {model_name} model was expecting to be passed \
-                         {', '.join(list(param_dict[model_name]))}, but \
+                         {', '.join(list(exp_params))}, but \
                          was handed {', '.join(list(params.keys()))}")
 
 
@@ -983,14 +980,6 @@ def _residual(aoi, source_iam, target, target_params,
         weight_args = {}
 
     weight = weight_function(aoi, **weight_args)
-
-    # check that weight_function is behaving as expected
-    if np.shape(aoi) != np.shape(weight):
-        assert weight_function != _sin_weight
-        raise ValueError('The provided custom weight function is not \
-                          returning an object with the right shape. Please \
-                          refer to the docstrings for a more detailed \
-                          discussion about passing custom weight functions.')
 
     # if aoi contains values outside of interval (0, 90), annihilate
     # the associated weights (we don't want IAM values from AOI outside
@@ -1090,7 +1079,7 @@ def _process_return(target_name, optimize_result):
     return target_params
 
 
-def convert(source_name, source_params, target_name, options=None, fix_n=None):
+def convert(source_name, source_params, target_name, options=None, fix_n=True):
     """
     Given a source model and its parameters and a target model, finds
     parameters for target model that best fit source model.
@@ -1119,9 +1108,7 @@ def convert(source_name, source_params, target_name, options=None, fix_n=None):
 
     options : dict, optional
         A dictionary that allows passing a custom weight function and
-        arguments to the (default or custom) weight function. Default value of
-        `options` is None. (Leaving as default will use default weight function
-        ``iam._sin_weight``, which is the function ``f(x) = 1 - sin(x)``.)
+        arguments for the weight function.
         Possible keys of `options` are ``'weight_function'`` and
         ``'weight_args'``.
 
@@ -1130,37 +1117,33 @@ def convert(source_name, source_params, target_name, options=None, fix_n=None):
                 when computing residuals between models.
 
                 Requirements:
-                    1. Must accept ``aoi`` as first argument. (``aoi`` is a
-                       numpy array, and it is handed to the function
-                       internally. Its elements range from 0 to 90.)
-                    2. Any other arguments must be keyword arguments. (These
-                       will be passed by the user in `weight_args`, see below.)
-                    3. Must return an array-like object with the same shape
-                       as ``aoi``.
+                    1. Must have ``aoi`` as the first positional argument.
+                    2. Any other arguments must be keyword arguments,
+                       defined in `weight_args`.
+                    3. Must return a float or an array-like object with the
+                       same shape as ``aoi``.
 
-            weight_args : dict
-                A dictionary containing all keyword arguments for the
-                weight function. The default weight function has no additional
-                arguments.
+            weight_args : dict, optional
+                A dictionary containing keyword arguments for the
+                weight function.
 
-    fix_n : bool, optional
+    fix_n : bool, default True
         A flag to determine which method is used when converting from the
-        ASHRAE model to the physical model. The default value is None.
+        ASHRAE model to the physical model.
 
         When `source_name` is ``'ashrae'`` and `target_name` is
-        ``'physical'``, if `fix_n` is ``True`` or None,
+        ``'physical'``, if `fix_n` is ``True``,
         :py:func:`iam.convert` will fix ``n`` so that the returned physical
         model has the same x-intercept as the inputted ASHRAE model.
         Fixing ``n`` like this improves the fit of the conversion, but often
-        returns unrealistic values for the parameters of the physical model. If
-        users want parameters that better match the real world, they should
+        returns unrealistic values for the parameters of the physical model.
+        If more physically meaningful parameters are wanted,
         set `fix_n` to False.
 
     Returns
     -------
     dict
-        Parameters for target model that best match the behavior of the
-        given source model.
+        Parameters for the target model.
 
             If target model is ``'ashrae'``, the dictionary will contain
             the key ``'b'``.
@@ -1170,6 +1153,10 @@ def convert(source_name, source_params, target_name, options=None, fix_n=None):
 
             If target model is ``'physical'``, the dictionary will
             contain the keys ``'n'``, ``'K'``, and ``'L'``.
+
+    Notes
+    -----
+    The default weight function is ``f(aoi) = 1 - sin(aoi)``.
 
     References
     ----------
@@ -1198,8 +1185,6 @@ def convert(source_name, source_params, target_name, options=None, fix_n=None):
         # we can do some special set-up to improve the fit when the
         # target model is physical
         if source_name == "ashrae":
-            if fix_n is None:
-                fix_n = True
             residual_function, guess, bounds = \
                 _ashrae_to_physical(aoi, source_iam, options, fix_n,
                                     source_params['b'])
@@ -1223,18 +1208,17 @@ def convert(source_name, source_params, target_name, options=None, fix_n=None):
 
 def fit(measured_aoi, measured_iam, target_name, options=None):
     """
-    Given measured angle of incidence values and measured IAM data and
-    a target model, finds parameters for target model that best fit the
+    Finds parameters for target model that best fit the
     measured data.
 
     Parameters
     ----------
     measured_aoi : array-like
-        Array of angle of incidence values associated with the
-        measured IAM data.
+        Angle of incidence values associated with the
+        measured IAM values.
 
     measured_iam : array-like
-        Array of measured IAM values.
+        IAM values.
 
     target_name : str
         Name of target model. Must be ``'ashrae'``, ``'martin_ruiz'``,
@@ -1242,9 +1226,7 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
 
     options : dict, optional
         A dictionary that allows passing a custom weight function and
-        arguments to the (default or custom) weight function. Default value of
-        `options` is None. (Leaving as default will use default weight function
-        ``iam._sin_weight``, which is the function ``f(x) = 1 - sin(x)``.)
+        arguments for the weight function.
         Possible keys of `options` are ``'weight_function'`` and
         ``'weight_args'``.
 
@@ -1253,26 +1235,20 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
                 when computing residuals between models.
 
                 Requirements:
-                    1. Must accept `measured_aoi` as first argument.
-                    2. Any other arguments must be keyword arguments. (These
-                       will be passed by the user in `weight_args`, see below.)
-                    3. Must return an array-like object with the same shape
-                       as `measured_aoi`.
+                    1. Must have ``aoi`` as the first positional argument.
+                    2. Any other arguments must be keyword arguments,
+                       defined in `weight_args`.
+                    3. Must return a float or an array-like object with the
+                       same shape as ``aoi``.
 
-                Note: when `measured_aoi` contains elements outside of the
-                closed interval [0, 90], the associated weights are overwritten
-                by zero, regardless of the weight function.
-
-            weight_args : dict
-                A dictionary containing all keyword arguments for the
-                weight function. The default weight function has no additional
-                arguments.
+            weight_args : dict, optional
+                A dictionary containing keyword arguments for the
+                weight function.
 
     Returns
     -------
     dict
-        Parameters for target model that best match the behavior of the
-        given data.
+        Parameters for target model.
 
             If target model is ``'ashrae'``, the dictionary will contain
             the key ``'b'``.

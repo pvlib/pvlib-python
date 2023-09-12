@@ -2060,4 +2060,3 @@ def test_ModelChainResult___repr__(sapm_dc_snl_ac_system, location, weather):
     mc_attrs = dir(mc.results)
     mc_attrs = [a for a in mc_attrs if not a.startswith('_')]
     assert all(a in mcres for a in mc_attrs)
-    

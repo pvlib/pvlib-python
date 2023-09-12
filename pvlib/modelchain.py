@@ -14,10 +14,9 @@ from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
 
 from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
-                   temperature)
+                   temperature, iam)
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
-from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
 
 from pvlib._deprecation import deprecated
@@ -279,7 +278,7 @@ def _mcr_repr(obj):
     # scalar, None, other?
     return repr(obj)
 
-    
+
 # Type for fields that vary between arrays
 T = TypeVar('T')
 
@@ -490,7 +489,7 @@ class ModelChain:
         If None, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
-        'no_loss'. The ModelChain instance will be passed as the
+        'interp' and 'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
     spectral_model: None, str, or function, default None
@@ -917,6 +916,8 @@ class ModelChain:
                 self._aoi_model = self.sapm_aoi_loss
             elif model == 'martin_ruiz':
                 self._aoi_model = self.martin_ruiz_aoi_loss
+            elif model == 'interp':
+                self._aoi_model = self.interp_aoi_loss
             elif model == 'no_loss':
                 self._aoi_model = self.no_aoi_loss
             else:
@@ -928,22 +929,24 @@ class ModelChain:
         module_parameters = tuple(
             array.module_parameters for array in self.system.arrays)
         params = _common_keys(module_parameters)
-        if {'K', 'L', 'n'} <= params:
+        if iam._IAM_MODEL_PARAMS['physical'] <= params:
             return self.physical_aoi_loss
-        elif {'B5', 'B4', 'B3', 'B2', 'B1', 'B0'} <= params:
+        elif iam._IAM_MODEL_PARAMS['sapm'] <= params:
             return self.sapm_aoi_loss
-        elif {'b'} <= params:
+        elif iam._IAM_MODEL_PARAMS['ashrae'] <= params:
             return self.ashrae_aoi_loss
-        elif {'a_r'} <= params:
+        elif iam._IAM_MODEL_PARAMS['martin_ruiz'] <= params:
             return self.martin_ruiz_aoi_loss
+        elif iam._IAM_MODEL_PARAMS['interp'] <= params:
+            return self.interp_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
                              'system.arrays[i].module_parameters. Check that '
                              'the module_parameters for all Arrays in '
-                             'system.arrays contain parameters for '
-                             'the physical, aoi, ashrae or martin_ruiz model; '
-                             'explicitly set the model with the aoi_model '
-                             'kwarg; or set aoi_model="no_loss".')
+                             'system.arrays contain parameters for the '
+                             'physical, aoi, ashrae, martin_ruiz or interp '
+                             'model; explicitly set the model with the '
+                             'aoi_model kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
@@ -969,6 +972,13 @@ class ModelChain:
     def martin_ruiz_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
             self.results.aoi, iam_model='martin_ruiz'
+        )
+        return self
+
+    def interp_aoi_loss(self):
+        self.results.aoi_modifier = self.system.get_iam(
+            self.results.aoi,
+            iam_model='interp'
         )
         return self
 

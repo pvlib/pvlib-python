@@ -1,9 +1,7 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/miniconda
 {
-	"name": "Miniconda (Python 3)",
+	"name": "Python 3",
 	"build": { 
-		"context": ".",
+		"context": "..",
 		"dockerfile": "Dockerfile"
 	},
 	"features": {
@@ -27,5 +25,5 @@
 			]
 		}
 	},
-	"postStartCommand": "conda init && pip install -e ."
+	"postStartCommand": "pip install -e .[all]"
 }

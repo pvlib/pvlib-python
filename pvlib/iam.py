@@ -1082,12 +1082,12 @@ def _process_return(target_name, optimize_result):
 def convert(source_name, source_params, target_name, options=None, fix_n=True):
     """
     Given a source model and its parameters and a target model, finds
-    parameters for target model that best fit source model.
+    parameters for the target model that best fit the source model.
 
     Parameters
     ----------
     source_name : str
-        Name of source model. Must be ``'ashrae'``, ``'martin_ruiz'``, or
+        Name of the source model. Must be ``'ashrae'``, ``'martin_ruiz'``, or
         ``'physical'``.
 
     source_params : dict
@@ -1103,13 +1103,13 @@ def convert(source_name, source_params, target_name, options=None, fix_n=True):
             contain the keys ``'n'``, ``'K'``, and ``'L'``.
 
     target_name : str
-        Name of target model. Must be ``'ashrae'``, ``'martin_ruiz'``, or
+        Name of the target model. Must be ``'ashrae'``, ``'martin_ruiz'``, or
         ``'physical'``.
 
     options : dict, optional
         A dictionary that allows passing a custom weight function and
         arguments for the weight function.
-        Possible keys of `options` are ``'weight_function'`` and
+        Keys of `options` can be ``'weight_function'`` and
         ``'weight_args'``.
 
             weight_function : function
@@ -1119,7 +1119,7 @@ def convert(source_name, source_params, target_name, options=None, fix_n=True):
                 Requirements:
                     1. Must have ``aoi`` as the first positional argument.
                     2. Any other arguments must be keyword arguments,
-                       defined in `weight_args`.
+                       defined in ``weight_args``.
                     3. Must return a float or an array-like object with the
                        same shape as ``aoi``.
 
@@ -1131,7 +1131,7 @@ def convert(source_name, source_params, target_name, options=None, fix_n=True):
         A flag to determine which method is used when converting from the
         ASHRAE model to the physical model.
 
-        When `source_name` is ``'ashrae'`` and `target_name` is
+        When ``source_name`` is ``'ashrae'`` and ``target_name`` is
         ``'physical'``, if `fix_n` is ``True``,
         :py:func:`iam.convert` will fix ``n`` so that the returned physical
         model has the same x-intercept as the inputted ASHRAE model.
@@ -1156,7 +1156,7 @@ def convert(source_name, source_params, target_name, options=None, fix_n=True):
 
     Notes
     -----
-    The default weight function is ``f(aoi) = 1 - sin(aoi)``.
+    The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
 
     References
     ----------
@@ -1221,13 +1221,13 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
         IAM values.
 
     target_name : str
-        Name of target model. Must be ``'ashrae'``, ``'martin_ruiz'``,
+        Name of the target model. Must be ``'ashrae'``, ``'martin_ruiz'``,
         or ``'physical'``.
 
     options : dict, optional
         A dictionary that allows passing a custom weight function and
         arguments for the weight function.
-        Possible keys of `options` are ``'weight_function'`` and
+        Keys of `options` can be ``'weight_function'`` and
         ``'weight_args'``.
 
             weight_function : function
@@ -1237,7 +1237,7 @@ def fit(measured_aoi, measured_iam, target_name, options=None):
                 Requirements:
                     1. Must have ``aoi`` as the first positional argument.
                     2. Any other arguments must be keyword arguments,
-                       defined in `weight_args`.
+                       defined in ``weight_args``.
                     3. Must return a float or an array-like object with the
                        same shape as ``aoi``.
 

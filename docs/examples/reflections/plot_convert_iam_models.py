@@ -76,8 +76,9 @@ plt.show()
 # ----------------------------
 #
 # Here, we'll show how to fit an IAM model to data.
-# We'll generate some data by perturbing output from the Martin-Ruiz model to mimic
-# measured data and then we'll fit the physical model to the perturbed data.
+# We'll generate some data by perturbing output from the Martin-Ruiz model to
+# mimic measured data and then we'll fit the physical model to the perturbed
+# data.
 
 # Create and perturb IAM data.
 aoi = np.linspace(0, 90, 100)
@@ -115,7 +116,8 @@ plt.show()
 # the Martin-Ruize and physical models, because the curves described by these
 # models can match quite closely. However, when conversion involves the ASHRAE
 # model, the choice of weight function can have a meaningful effect on the
-# returned parameters for the target model.
+# returned parameters for the
+# target model.
 #
 # Here we'll show examples of both of these cases, starting with an example
 # where the choice of weight function does not have much impact. In doing

@@ -2422,6 +2422,15 @@ def test_SingleAxisTrackerMount_get_orientation(single_axis_tracker_mount):
         assert actual[key] == pytest.approx(expected_value), err_msg
 
 
+def test_SingleAxisTrackerMount_get_orientation_asymmetric_max():
+    mount = pvsystem.SingleAxisTrackerMount(max_angle=(-30, 45))
+    expected = {'surface_tilt': [45, 30], 'surface_azimuth': [90, 270]}
+    actual = mount.get_orientation([60, 60], [90, 270])
+    for key, expected_value in expected.items():
+        err_msg = f"{key} value incorrect"
+        assert actual[key] == pytest.approx(expected_value), err_msg
+
+
 def test_dc_ohms_from_percent():
     expected = .1425
     out = pvsystem.dc_ohms_from_percent(38, 8, 3, 1, 1)

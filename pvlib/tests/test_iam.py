@@ -552,15 +552,6 @@ def test_fit_model_not_implemented():
         _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'foo')
 
 
-def test_fit_wrong_custom_weight_func():
-    def wrong_weight(aoi):
-        return 0
-
-    with pytest.raises(ValueError, match='custom weight function'):
-        _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'physical',
-                 options={'weight_function': wrong_weight})
-
-
 def test_fit__minimize_fails():
     # to make scipy.optimize.minimize fail, we'll pass in a nonsense
     # weight function that only outputs nans

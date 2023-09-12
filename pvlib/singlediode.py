@@ -287,8 +287,8 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     ...     method_kwargs={'full_output': True})
     """
     # collect args
-    args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth, d2mutau, NsVbi,
+    args = (photocurrent, saturation_current,
+            resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
             breakdown_factor, breakdown_voltage, breakdown_exp)
     method = method.lower()
 
@@ -319,14 +319,11 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, voltage, *args)
     elif method == 'newton':
-        # make sure all args are numpy arrays if max size > 1
-        # if voltage is an array, then make a copy to use for initial guess, v0
-        args, v0, method_kwargs = \
-            _prepare_newton_inputs((voltage,), args, voltage, method_kwargs)
-        vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=v0,
+        x0, (voltage, *args), method_kwargs = \
+            _prepare_newton_inputs(voltage, (voltage, *args), method_kwargs)
+        vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
-                    args=args,
-                    **method_kwargs)
+                    args=args, **method_kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -422,9 +419,9 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
     ...     method_kwargs={'full_output': True})
     """
     # collect args
-    args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth, d2mutau, NsVbi, breakdown_factor,
-            breakdown_voltage, breakdown_exp)
+    args = (photocurrent, saturation_current,
+            resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
+            breakdown_factor, breakdown_voltage, breakdown_exp)
     method = method.lower()
 
     # method_kwargs create dict if not provided
@@ -454,14 +451,11 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
         vd = vd_from_brent_vectorized(voc_est, current, *args)
     elif method == 'newton':
-        # make sure all args are numpy arrays if max size > 1
-        # if voc_est is an array, then make a copy to use for initial guess, v0
-        args, v0, method_kwargs = \
-            _prepare_newton_inputs((current,), args, voc_est, method_kwargs)
-        vd = newton(func=lambda x, *a: fi(x, current, *a), x0=v0,
+        x0, (current, *args), method_kwargs = \
+            _prepare_newton_inputs(voc_est, (current, *args), method_kwargs)
+        vd = newton(func=lambda x, *a: fi(x, current, *a), x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
-                    args=args,
-                    **method_kwargs)
+                    args=args, **method_kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -555,9 +549,9 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     ...     method='newton', method_kwargs={'full_output': True})
     """
     # collect args
-    args = (photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth, d2mutau, NsVbi, breakdown_factor,
-            breakdown_voltage, breakdown_exp)
+    args = (photocurrent, saturation_current,
+            resistance_series, resistance_shunt, nNsVth, d2mutau, NsVbi,
+            breakdown_factor, breakdown_voltage, breakdown_exp)
     method = method.lower()
 
     # method_kwargs create dict if not provided
@@ -584,12 +578,11 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
     elif method == 'newton':
         # make sure all args are numpy arrays if max size > 1
         # if voc_est is an array, then make a copy to use for initial guess, v0
-        args, v0, method_kwargs = \
-            _prepare_newton_inputs((), args, voc_est, method_kwargs)
-        vd = newton(
-            func=fmpp, x0=v0,
-            fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7], args=args,
-            **method_kwargs)
+        x0, args, method_kwargs = \
+            _prepare_newton_inputs(voc_est, args, method_kwargs)
+        vd = newton(func=fmpp, x0=x0,
+                    fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7],
+                    args=args, **method_kwargs)
     else:
         raise NotImplementedError("Method '%s' isn't implemented" % method)
 
@@ -603,46 +596,42 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
         return bishop88(vd, *args)
 
 
-def _get_size_and_shape(args):
-    # find the right size and shape for returns
-    size, shape = 0, None  # 0 or None both mean scalar
-    for arg in args:
-        try:
-            this_shape = arg.shape  # try to get shape
-        except AttributeError:
-            this_shape = None
-            try:
-                this_size = len(arg)  # try to get the size
-            except TypeError:
-                this_size = 0
-        else:
-            this_size = arg.size  # if it has shape then it also has size
-            if shape is None:
-                shape = this_shape  # set the shape if None
-        # update size and shape
-        if this_size > size:
-            size = this_size
-            if this_shape is not None:
-                shape = this_shape
-    return size, shape
+def _shape_of_max_size(*args):
+    return max(((np.size(a), np.shape(a)) for a in args),
+               key=lambda t: t[0])[1]
 
 
-def _prepare_newton_inputs(i_or_v_tup, args, v0, method_kwargs):
-    # broadcast arguments for newton method
-    # the first argument should be a tuple, eg: (i,), (v,) or ()
-    size, shape = _get_size_and_shape(i_or_v_tup + args)
-    if size > 1:
-        args = [np.asarray(arg) for arg in args]
-    # newton uses initial guess for the output shape
-    # copy v0 to a new array and broadcast it to the shape of max size
-    if shape is not None:
-        v0 = np.broadcast_to(v0, shape).copy()
+def _prepare_newton_inputs(x0, args, method_kwargs):
+    """
+    Make inputs compatible with Scipy's newton by:
+    - converting all arugments (`x0` and `args`) into numpy.ndarrays if any
+      argument is not a scalar.
+    - broadcasting the initial guess `x0` to the shape of the argument with
+      the greatest size.
+
+    Parameters
+    ----------
+    x0: numeric
+        Initial guess for newton.
+    args: Iterable(numeric)
+        Iterable of additional arguments to use in SciPy's newton.
+    method_kwargs: dict
+        Options to pass to newton.
+
+    Returns
+    -------
+    tuple
+        The updated initial guess, arguments, and options for newton.
+    """
+    if not (np.isscalar(x0) and all(map(np.isscalar, args))):
+        args = tuple(map(np.asarray, args))
+        x0 = np.broadcast_to(x0, _shape_of_max_size(x0, *args))
 
     # set abs tolerance and maxiter from method_kwargs if not provided
     # apply defaults, but giving priority to user-specified values
     method_kwargs = {**NEWTON_DEFAULT_PARAMS, **method_kwargs}
 
-    return args, v0, method_kwargs
+    return x0, args, method_kwargs
 
 
 def _lambertw_v_from_i(current, photocurrent, saturation_current,

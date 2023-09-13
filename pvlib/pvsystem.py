@@ -101,10 +101,11 @@ class PVSystem:
 
     Parameters
     ----------
-    arrays : iterable of Array, optional
-        List of arrays that are part of the system. If not specified
-        a single array is created from the other parameters (e.g.
-        `surface_tilt`, `surface_azimuth`). Must contain at least one Array,
+    arrays : Array or iterable of Array, optional
+        An Array or list of arrays that are part of the system. If not
+        specified a single array is created from the other parameters (e.g.
+        `surface_tilt`, `surface_azimuth`). If specified as a list, the list
+        must contain at least one Array;
         if length of arrays is 0 a ValueError is raised. If `arrays` is
         specified the following PVSystem parameters are ignored:
 
@@ -220,6 +221,8 @@ class PVSystem:
                 strings_per_inverter,
                 array_losses_parameters,
             ),)
+        elif isinstance(arrays, Array):
+            self.arrays = (arrays,)
         elif len(arrays) == 0:
             raise ValueError("PVSystem must have at least one Array. "
                              "If you want to create a PVSystem instance "

@@ -22,7 +22,6 @@ from pvlib.iotools.sodapro import get_cams  # noqa: F401
 from pvlib.iotools.sodapro import read_cams  # noqa: F401
 from pvlib.iotools.sodapro import parse_cams  # noqa: F401
 from pvlib.iotools.panond import read_panond  # noqa: F401
-from pvlib.iotools.panond import parse_panond  # noqa: F401
 from pvlib.iotools.acis import get_acis_prism  # noqa: F401
 from pvlib.iotools.acis import get_acis_nrcc  # noqa: F401
 from pvlib.iotools.acis import get_acis_mpe  # noqa: F401

@@ -45,7 +45,7 @@ def _element_type(element):
         return _num_type(element)
 
 
-def parse_panond(fbuf):
+def _parse_panond(fbuf):
     """
     Parse a .pan or .ond text file into a nested dictionary.
 
@@ -56,41 +56,13 @@ def parse_panond(fbuf):
 
     Returns
     -------
-    comp : dict
+    component_info : dict
         Contents of the .pan or .ond file following the indentation of the
         file. The value of datatypes are assumed during reading. The value
         units are the default used by PVsyst.
-
-    See Also
-    --------
-    read_panond
-
-    Notes
-    -----
-    The parser is intended for use with .pan and .ond files that were created
-    for use by PVsyst. At time of publication, no documentation for these
-    files was available. So, this parser is based on inferred logic, rather
-    than anything specified by PVsyst.
-
-    The parser assumes that the file being parsed uses indentation of two
-    spaces ('  ') to create a new level in a nested dictionary, and that
-    key/values pairs of interest are separated using '='. This further means
-    that lines not containing '=' are omitted from the final returned
-    dictionary.
-
-    Additionally, the indented lines often contain values themselves. This
-    leads to a conflict with the .pan/.ond file and the ability of nested a
-    dictionary to capture that information. The solution implemented here is
-    to repeat that key to the new nested dictionary within that new level.
-
-    The parser takes an additional step to infer the datatype present in
-    each value. The .pan/.ond files appear to have intentially left datatype
-    indicators (e.g. floats have '.' decimals). However, there is still the
-    possibility that the datatype applied from this parser is incorrect. In
-    that event the user would need to convert to the desired datatype.
     """
-    comp = {}  # Component
-    dict_levels = [comp]
+    component_info = {}  # Component
+    dict_levels = [component_info]
 
     lines = fbuf.read().splitlines()
 
@@ -126,7 +98,7 @@ def parse_panond(fbuf):
             current_level = dict_levels[indent_lvl_1]
             current_level[key] = value
 
-    return comp
+    return component_info
 
 
 def read_panond(filename, encoding=None):
@@ -150,18 +122,33 @@ def read_panond(filename, encoding=None):
         file. The value of datatypes are assumed during reading. The value
         units are the default used by PVsyst.
 
-    See Also
-    --------
-    parse_panond
-
     Notes
     -----
-    The read_panond function simply converts a file path to a file-like object,
-    passes it to parse-panond, and returns the file content. At time of
-    creation, tested .pan/.ond files used UTF-8 encoding.
+    The parser is intended for use with .pan and .ond files that were created
+    for use by PVsyst. At time of publication, no documentation for these
+    files was available. So, this parser is based on inferred logic, rather
+    than anything specified by PVsyst.  At time of creation, tested
+    .pan/.ond files used UTF-8 encoding.
+
+    The parser assumes that the file being parsed uses indentation of two
+    spaces ('  ') to create a new level in a nested dictionary, and that
+    key/values pairs of interest are separated using '='. This further means
+    that lines not containing '=' are omitted from the final returned
+    dictionary.
+
+    Additionally, the indented lines often contain values themselves. This
+    leads to a conflict with the .pan/.ond file and the ability of nested a
+    dictionary to capture that information. The solution implemented here is
+    to repeat that key to the new nested dictionary within that new level.
+
+    The parser takes an additional step to infer the datatype present in
+    each value. The .pan/.ond files appear to have intentially left datatype
+    indicators (e.g. floats have '.' decimals). However, there is still the
+    possibility that the datatype applied from this parser is incorrect. In
+    that event the user would need to convert to the desired datatype.
     """
 
     with open(filename, "r", encoding=encoding) as fbuf:
-        content = parse_panond(fbuf)
+        content = _parse_panond(fbuf)
 
     return content

@@ -1887,8 +1887,6 @@ def test_PVSystem_multiple_array_creation():
     assert pv_system.arrays[0].module_parameters == {}
     assert pv_system.arrays[1].module_parameters == {'pdc0': 1}
     assert pv_system.arrays == (array_one, array_two)
-    with pytest.raises(TypeError):
-        pvsystem.PVSystem(arrays=array_one)
 
 
 def test_PVSystem_get_aoi():
@@ -2360,6 +2358,14 @@ def test_PVSystem_at_least_one_array():
     with pytest.raises(ValueError,
                        match="PVSystem must have at least one Array"):
         pvsystem.PVSystem(arrays=[])
+
+
+def test_PVSystem_single_array():
+    # GH 1831
+    single_array = pvsystem.Array(pvsystem.FixedMount())
+    system = pvsystem.PVSystem(arrays=single_array)
+    assert isinstance(system.arrays, tuple)
+    assert system.arrays[0] is single_array
 
 
 def test_combine_loss_factors():

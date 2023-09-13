@@ -15,9 +15,6 @@ Enhancements
   :py:func:`pvlib.iotools.get_pvgis_hourly`, :py:func:`pvlib.iotools.get_cams`,
   :py:func:`pvlib.iotools.get_bsrn`, and :py:func:`pvlib.iotools.read_midc_raw_data_from_nrel`.
   (:pull:`1800`)
-* Added support for asymmetric limiting angles in :py:func:`pvlib.tracking.singleaxis`, by modifying 
-  the `min_angle` parameter to accept tuples. 
-  (:pull:`1809`)
 * Added support for asymmetric limiting angles in :py:func:`pvlib.tracking.singleaxis`
   and :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount. (:issue:`1777`, :pull:`1809`, :pull:`1852`)
 * Added option to infer threshold values for

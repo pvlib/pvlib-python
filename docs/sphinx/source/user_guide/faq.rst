@@ -66,7 +66,7 @@ irradiance datasets, including the BSRN, SURFRAD, SRML, and NREL's MIDC.
 Can I use PVsyst (PAN/OND) files with pvlib?
 --------------------------------------------
 
-Although pvlib does include a function to read PAN and OND files
+Although pvlib includes a function to read PAN and OND files
 (:py:func:`~pvlib.iotools.read_panond`), it is up to the user to determine
 whether and how the imported parameter values can be used with pvlib's models.
 Easier use of these parameter files with the rest of pvlib may be added

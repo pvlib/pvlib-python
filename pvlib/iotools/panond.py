@@ -72,10 +72,10 @@ def parse_panond(fbuf):
     files was available. So, this parser is based on inferred logic, rather
     than anything specified by PVsyst.
 
-    The parser assumes that the file being parsed uses indendation of two
-    spaces ('  ') to create new level in a nested dictionary, and that
+    The parser assumes that the file being parsed uses indentation of two
+    spaces ('  ') to create a new level in a nested dictionary, and that
     key/values pairs of interest are separated using '='. This further means
-    that lines not containing '=' were omitted from the final returned
+    that lines not containing '=' are omitted from the final returned
     dictionary.
 
     Additionally, the indented lines often contain values themselves. This

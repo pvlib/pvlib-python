@@ -58,10 +58,14 @@ def parse_panond(fbuf):
 
     Returns
     -------
-    comp : Nested Dictionary
+    comp : dict
         Contents of the .pan or .ond file following the indentation of the
         file. The value of datatypes are assumed during reading. The value
         units are the default used by PVsyst.
+
+    See Also
+    --------
+    read_panond
 
     Notes
     -----
@@ -80,31 +84,6 @@ def parse_panond(fbuf):
     leads to a conflict with the .pan/.ond file and the ability of nested a
     dictionary to capture that information. The solution implemented here is
     to repeat that key to the new nested dictionary within that new level.
-    Example below.
-
-    Sample file:
-
-    'level1 = first level
-    key1 = value1
-    key2 = value2
-        level2 = second level
-        key3 = value3
-        key4 = value4
-    key5 = value5'
-
-    output:
-
-    level1:{
-        level1: first level
-        key1: value1,
-        key2: value2,
-        level2:{
-            level2: second level,
-            key3: value3,
-            key4: value4
-            },
-        key5: value5
-        }
 
     The parser takes an additional step to infer the datatype present in
     each value. The .pan/.ond files appear to have intentially left datatype
@@ -168,10 +147,14 @@ def read_panond(filename, encoding=None):
 
     Returns
     -------
-    content : Nested Dictionary
+    content : dict
         Contents of the .pan or .ond file following the indentation of the
         file. The value of datatypes are assumed during reading. The value
         units are the default used by PVsyst.
+
+    See Also
+    --------
+    parse_panond
 
     Notes
     -----

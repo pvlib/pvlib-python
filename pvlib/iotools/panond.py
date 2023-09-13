@@ -115,8 +115,7 @@ def parse_panond(fbuf):
     comp = {}  # Component
     dict_levels = [comp]
 
-    fbuf.seek(0)
-    lines = fbuf.getvalue().splitlines()
+    lines = fbuf.read().splitlines()
 
     for i in range(0, len(lines) - 1):
         if lines[i] == '':  # Skipping blank lines
@@ -153,15 +152,19 @@ def parse_panond(fbuf):
     return comp
 
 
-def read_panond(file):
+def read_panond(filename, encoding=None):
     """
     Retrieve Module or Inverter data from a .pan or .ond text file,
     respectively.
 
     Parameters
     ----------
-    file : string or path object
+    filename : str or path object
         Name or path of a .pan/.ond file
+
+    encoding : str, optional
+        Encoding of the file.  Some files may require specifying
+        ``encoding='utf-8-sig'`` to import correctly.
 
     Returns
     -------
@@ -177,10 +180,7 @@ def read_panond(file):
     creation, tested .pan/.ond files used UTF-8 encoding.
     """
 
-    with open(file, "r", encoding='utf-8-sig') as file:
-        f_content = file.read()
-        fbuf = io.StringIO(f_content)
-
-    content = parse_panond(fbuf)
+    with open(filename, "r", encoding=encoding) as fbuf:
+        content = parse_panond(fbuf)
 
     return content

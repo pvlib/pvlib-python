@@ -8,6 +8,7 @@ import functools
 import io
 import itertools
 import os
+import inspect
 from urllib.request import urlopen
 import numpy as np
 from scipy import constants
@@ -388,7 +389,7 @@ class PVSystem:
 
         aoi_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz' and 'sapm'.
+            'martin_ruiz', 'sapm' and 'interp'.
         Returns
         -------
         iam : numeric or tuple of numeric
@@ -1151,7 +1152,7 @@ class Array:
 
         aoi_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz' and 'sapm'.
+            'martin_ruiz', 'sapm' and 'interp'.
 
         Returns
         -------
@@ -1164,16 +1165,16 @@ class Array:
             if `iam_model` is not a valid model name.
         """
         model = iam_model.lower()
-        if model in ['ashrae', 'physical', 'martin_ruiz']:
-            param_names = iam._IAM_MODEL_PARAMS[model]
-            kwargs = _build_kwargs(param_names, self.module_parameters)
-            func = getattr(iam, model)
+        if model in ['ashrae', 'physical', 'martin_ruiz', 'interp']:
+            func = getattr(iam, model)  # get function at pvlib.iam
+            # get all parameters from function signature to retrieve them from
+            # module_parameters if present
+            params = set(inspect.signature(func).parameters.keys())
+            params.discard('aoi')  # exclude aoi so it can't be repeated
+            kwargs = _build_kwargs(params, self.module_parameters)
             return func(aoi, **kwargs)
         elif model == 'sapm':
             return iam.sapm(aoi, self.module_parameters)
-        elif model == 'interp':
-            raise ValueError(model + ' is not implemented as an IAM model '
-                             'option for Array')
         else:
             raise ValueError(model + ' is not a valid IAM model')
 
@@ -1296,20 +1297,18 @@ class Array:
         """
 
         # get relevent Vmp and Imp parameters from CEC parameters
-        if all([elem in self.module_parameters
-                for elem in ['V_mp_ref', 'I_mp_ref']]):
+        if all(elem in self.module_parameters
+               for elem in ['V_mp_ref', 'I_mp_ref']):
             vmp_ref = self.module_parameters['V_mp_ref']
             imp_ref = self.module_parameters['I_mp_ref']
 
         # get relevant Vmp and Imp parameters from SAPM parameters
-        elif all([elem in self.module_parameters
-                  for elem in ['Vmpo', 'Impo']]):
+        elif all(elem in self.module_parameters for elem in ['Vmpo', 'Impo']):
             vmp_ref = self.module_parameters['Vmpo']
             imp_ref = self.module_parameters['Impo']
 
         # get relevant Vmp and Imp parameters if they are PVsyst-like
-        elif all([elem in self.module_parameters
-                  for elem in ['Vmpp', 'Impp']]):
+        elif all(elem in self.module_parameters for elem in ['Vmpp', 'Impp']):
             vmp_ref = self.module_parameters['Vmpp']
             imp_ref = self.module_parameters['Impp']
 
@@ -2653,28 +2652,19 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
        parameters of real solar cells using Lambert W-function", Solar
        Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
+    args = (current, photocurrent, saturation_current,
+            resistance_series, resistance_shunt, nNsVth)
     if method.lower() == 'lambertw':
-        return _singlediode._lambertw_v_from_i(
-            current, photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth
-        )
+        return _singlediode._lambertw_v_from_i(*args)
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
-        args = (current, photocurrent, saturation_current,
-                resistance_series, resistance_shunt, nNsVth)
         V = _singlediode.bishop88_v_from_i(*args, method=method.lower())
-        # find the right size and shape for returns
-        size, shape = _singlediode._get_size_and_shape(args)
-        if size <= 1:
-            if shape is not None:
-                V = np.tile(V, shape)
-        if np.isnan(V).any() and size <= 1:
-            V = np.repeat(V, size)
-            if shape is not None:
-                V = V.reshape(shape)
-        return V
+        if all(map(np.isscalar, args)):
+            return V
+        shape = _singlediode._shape_of_max_size(*args)
+        return np.broadcast_to(V, shape)
 
 
 def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
@@ -2744,28 +2734,19 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
        parameters of real solar cells using Lambert W-function", Solar
        Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
+    args = (voltage, photocurrent, saturation_current,
+            resistance_series, resistance_shunt, nNsVth)
     if method.lower() == 'lambertw':
-        return _singlediode._lambertw_i_from_v(
-            voltage, photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth
-        )
+        return _singlediode._lambertw_i_from_v(*args)
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
-        args = (voltage, photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth)
         current = _singlediode.bishop88_i_from_v(*args, method=method.lower())
-        # find the right size and shape for returns
-        size, shape = _singlediode._get_size_and_shape(args)
-        if size <= 1:
-            if shape is not None:
-                current = np.tile(current, shape)
-        if np.isnan(current).any() and size <= 1:
-            current = np.repeat(current, size)
-            if shape is not None:
-                current = current.reshape(shape)
-        return current
+        if all(map(np.isscalar, args)):
+            return current
+        shape = _singlediode._shape_of_max_size(*args)
+        return np.broadcast_to(current, shape)
 
 
 def scale_voltage_current_power(data, voltage=1, current=1):

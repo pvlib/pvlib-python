@@ -2,8 +2,6 @@
 Get .PAN or .OND file data into a nested dictionary.
 """
 
-import io
-
 
 def _num_type(value):
     """

@@ -40,4 +40,3 @@ def test_read_panond_contents():
     assert ond['NbMPPT'] == 12
     assert ond['Converter']['ModeOper'] == 'MPPT'
     assert ond['Converter']['ProfilPIOV2']['Point_5'] == [75795.9, 75000.0]
-    

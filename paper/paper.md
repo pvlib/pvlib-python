@@ -47,7 +47,7 @@ systems.  It provides peer-reviewed reference implementations of
 over 100 empirical and physics-based models from the scientific literature,
 including solar position algorithms, irradiance models, thermal models,
 and PV electrical models.  In addition to these individual low-level
-model implementations, pvlib python provides high-level constructs
+model implementations, pvlib python provides high-level workflows
 that chain these models together like building blocks to form complete
 "weather-to-power" photovoltaic system models.  It also provides functions to
 fetch and import a wide variety of weather datasets useful for PV modeling. 
@@ -74,7 +74,7 @@ capable models.  Per the United States Department of Energy,
 
 Compared with other PV modeling tools, pvlib python stands out in several
 key aspects.  One is its reusable toolbox design, providing the user a
-level of flexibility beyond that of other tools.  Rather than organizing
+level of flexibility and customization beyond that of other tools.  Rather than organizing
 the user interface around pre-built modeling workflows, pvlib python
 makes the individual "building blocks" of PV performance models accessible to
 the user.  This allows the user to assemble their own model workflows, including
@@ -136,7 +136,7 @@ Second, in addition to the new function-level model implementations,
 the package's high-level classes have also been expanded to support
 the complexity of emerging system designs, including heterogneous systems whose
 subsystems differ in mounting or electrical configuration and systems that require
-custom orientation/steering models.
+custom orientation/tracking models.
 
 Third, the creation of `pvlib.iotools`, a sub-package for fetching and importing
 datasets relevant to PV modeling.  These functions provide a standardized
@@ -164,7 +164,7 @@ project's use of version control software enables easy quantification of
 repository additions (to code, documentation, tests, etc) over time.  The
 project's repository currently comprises contributions from over 100 people
 spanning industry, academia, and government research institutions.
-\autoref{fig:community} shows the number of unique repository
+\autoref{fig:community} (left) shows the number of unique repository
 contributors over time, demonstrating continued and generally accelerating
 attraction of new contributors.
 
@@ -176,7 +176,7 @@ participate in online fora, and support the project in other ways.
 Along those lines, two easily tracked metrics are the number of people
 registered in the pvlib python online discussion forum and the number of
 GitHub "stars" (an indicator of an individual's interest, akin to a browser bookmark)
-on the pvlib python code repository.  \autoref{fig:community}
+on the pvlib python code repository.  \autoref{fig:community} (right)
 shows these counts over time.  Although these numbers
 almost certainly substantially underestimate the true size of the pvlib community,
 their increase over time indicates continued and accelerating community growth.

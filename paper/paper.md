@@ -43,8 +43,8 @@ bibliography: paper.bib
 
 pvlib python is a community-developed, open-source software toolbox
 for simulating the performance of solar photovoltaic (PV) energy
-systems.  It provides peer-reviewed reference implementations of
-over 100 empirical and physics-based models from the scientific literature,
+systems.  It provides reference implementations of
+over 100 empirical and physics-based models from the peer-reviewed scientific literature,
 including solar position algorithms, irradiance models, thermal models,
 and PV electrical models.  In addition to these individual low-level
 model implementations, pvlib python provides high-level workflows
@@ -66,7 +66,7 @@ and community development since our 2018 publication [@pvlibjoss2018].
 
 # Statement of need
 
-PV performance models are used throughout the field of solar phovoltaics.
+PV performance models are used throughout the field of photovoltaics.
 The rapid increase in scale, technological diversity, and sophistication
 of the global solar energy industry demands correspondingly more
 capable models.  Per the United States Department of Energy,
@@ -78,16 +78,14 @@ level of flexibility and customization beyond that of other tools.  Rather than 
 the user interface around pre-built modeling workflows, pvlib python
 makes the individual "building blocks" of PV performance models accessible to
 the user.  This allows the user to assemble their own model workflows, including
-the ability of incorporating their own custom modeling steps.  This flexibility
+the ability of incorporating custom modeling steps.  This flexibility
 is essential for applications in both academia and industry.
 
 Another key aspect of pvlib python is that it is used via
-a general-purpose programming language (Python).  In addition to being more
-generally flexible, powerful, and scalable than a traditional
-graphical user interface, pvlib python's interface as a programming library
-allows it to be combined with other Python packages.  This enables
-integration with database query, data manipulation, numerical optimization,
-plotting, and reporting packages, to name a few.
+a general-purpose programming language (Python), which
+allows pvlib python functions to be combined with capabilities in other Python packages,
+such as database query, data manipulation, numerical optimization,
+plotting, and reporting packages.
 
 A final key aspect of pvlib python is its open peer review approach and
 foundation in published scientific research, allowing it to be developed by
@@ -95,8 +93,8 @@ a decentralized and diverse community of PV researchers and practitioners
 without compromising its focus on transparent and reliable model
 implementations.
 
-These core tenets, along with sustained contributions from a passionate and
-committed community, have lead to its widespread adoption across the PV
+These key aspects, along with sustained contributions from a passionate and
+committed community, have led to pvlib python's widespread adoption across the PV
 field [@Stein2022].  In support of the claim that pvlib python provides
 meaningful value and addresses real needs, we offer these quantitative metrics:
 
@@ -106,7 +104,7 @@ ranks 14th by citation count out of the 2000+ papers published by JOSS to date.
 due to being in the top 1% of the index's packages by download count.
 3. The project's online documentation receives over 400,000 page views
 per year.
-4. pvlib python was found to be the third most used python project
+4. pvlib python was found to be the third most-used python project
 in the broader open-source sustainability software landscape, with the first
 two being netCDF4 utilities applicable across many scientific fields [@Augspurger2023].
 
@@ -154,9 +152,9 @@ project's documentation.
 # Community growth
 
 It is difficult to comprehensively describe the community around
-open-source projects like pvlib python, but some aspects of it are more easily
-quantifiable than others.  Here we examine the community from a few convenient
-perspectives, but we emphasize that this section is necessarily a limited view of
+open-source projects like pvlib python, but some aspects can be
+quantified.  Here we examine the community from a few convenient
+perspectives, emphasizing that these metrics provide a limited view of
 the community as a whole.
 
 First, we examine contributors to pvlib python's code repository.  The
@@ -172,13 +170,13 @@ attraction of new contributors.
 
 However, the project as a whole is the product of not only of those who contribute
 code but also those who submit bug reports, propose ideas for new features,
-participate in online fora, and support the project in other ways.
+participate in online forums, and support the project in other ways.
 Along those lines, two easily tracked metrics are the number of people
 registered in the pvlib python online discussion forum and the number of
 GitHub "stars" (an indicator of an individual's interest, akin to a browser bookmark)
 on the pvlib python code repository.  \autoref{fig:community} (right)
 shows these counts over time.  Although these numbers
-almost certainly substantially underestimate the true size of the pvlib community,
+almost certainly underestimate the true size of the pvlib community,
 their increase over time indicates continued and accelerating community growth.
 
 In addition to continuous interaction online, community members sometimes
@@ -192,8 +190,7 @@ notable events in the project's history.
 ![pvlib python major event timeline: releases (top), community events (middle), and other project milestones (bottom).\label{fig:timeline}](timeline2.pdf)
 
 Finally, it is worth pointing out that pvlib python contributors and users
-are part of a broader community around not just pvlib python itself
-but also other members of the pvlib software "family": pvanalytics, a
+are part of a broader community for the pvlib software "family", which includes pvanalytics, a
 package for PV data quality assurance and feature recognition
 algorithms [@pvpmc2022_pvanalytics_update], and twoaxistracking, a package
 for simulating self-shading in arrays of two-axis solar trackers [@Jensen2022].

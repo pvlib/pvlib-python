@@ -52,7 +52,7 @@ that chain these models together like building blocks to form complete
 "weather-to-power" photovoltaic system models.  It also provides functions to
 fetch and import a wide variety of weather datasets useful for PV modeling. 
 
-pvlib python has been developed since 2015 and follows modern best
+pvlib python has been developed since 2013 and follows modern best
 practices for open-source python software, with comprehensive automated
 testing, standards-based packaging, and semantic versioning.
 Its source code is developed openly on GitHub and releases are

@@ -60,8 +60,9 @@ distributed via the Python Package Index (PyPI) and the conda-forge
 repository.  pvlib python's source code is made freely available under
 the permissive BSD-3 license.
 
-Here we present an update on pvlib python, describing capability
-and community development since our 2018 publication [@pvlibjoss2018].
+Here we (the project's core developers) present an update on pvlib python,
+describing capability and community development since our 2018 publication
+[@pvlibjoss2018].
 
 
 # Statement of need
@@ -132,7 +133,7 @@ last five years.
 
 Second, in addition to the new function-level model implementations,
 the package's high-level classes have also been expanded to support
-the complexity of emerging system designs, including heterogneous systems whose
+the complexity of emerging system designs, including heterogeneous systems whose
 subsystems differ in mounting or electrical configuration and systems that require
 custom orientation/tracking models.
 

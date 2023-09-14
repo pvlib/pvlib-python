@@ -179,6 +179,9 @@ on the pvlib python code repository.  \autoref{fig:community} (right)
 shows these counts over time.  Although these numbers
 almost certainly underestimate the true size of the pvlib community,
 their increase over time indicates continued and accelerating community growth.
+Since the 2018 JOSS publication, pvlib python has doubled the number of 
+maintainers to bring in new perspectives and to better support the growing 
+community.
 
 In addition to continuous interaction online, community members sometimes
 meet in person at user's group and tutorial sessions run by pvlib python

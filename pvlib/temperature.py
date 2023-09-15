@@ -962,6 +962,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
     unit_mass : float, default 11.1
         Total mass of module divided by its one-sided surface area [kg/m^2]
+        One-sided surface area is equal to module height times width
 
     coefficients : 4-element list-like, optional
         Values for coefficients a_0 through a_3, see Eq. 9 of [1]_

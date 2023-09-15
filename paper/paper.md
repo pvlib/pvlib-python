@@ -43,10 +43,10 @@ bibliography: paper.bib
 
 pvlib python is a community-developed, open-source software toolbox
 for simulating the performance of solar photovoltaic (PV) energy
-systems.  It provides reference implementations of
+components and systems.  It provides reference implementations of
 over 100 empirical and physics-based models from the peer-reviewed scientific literature,
 including solar position algorithms, irradiance models, thermal models,
-and PV electrical models.  In addition to these individual low-level
+and PV electrical models.  In addition to individual low-level
 model implementations, pvlib python provides high-level workflows
 that chain these models together like building blocks to form complete
 "weather-to-power" photovoltaic system models.  It also provides functions to
@@ -74,7 +74,7 @@ capable models.  Per the United States Department of Energy,
 "the importance of accurate modeling is hard to overstate" [@seto2022].
 
 Compared with other PV modeling tools, pvlib python stands out in several
-key aspects.  One is its reusable toolbox design, providing the user a
+key aspects.  One is its toolbox design, providing the user a
 level of flexibility and customization beyond that of other tools.  Rather than organizing
 the user interface around pre-built modeling workflows, pvlib python
 makes the individual "building blocks" of PV performance models accessible to
@@ -152,7 +152,7 @@ project's documentation.
 
 # Community growth
 
-It is difficult to comprehensively describe the community around
+It is difficult to fully describe the community around
 open-source projects like pvlib python, but some aspects can be
 quantified.  Here we examine the community from a few convenient
 perspectives, emphasizing that these metrics provide a limited view of

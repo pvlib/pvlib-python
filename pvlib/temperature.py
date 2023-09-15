@@ -678,7 +678,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
 
     wind_height : float, default 9.144
         The height above ground at which ``wind_speed`` is measured. The
-        PVWatts defauls is 9.144 [m]
+        PVWatts default is 9.144 [m]
 
     emissivity : float, default 0.84
         The effectiveness of the module at radiating thermal energy. [unitless]

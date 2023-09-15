@@ -62,8 +62,6 @@ Documentation
   (:issue:`1724`, :pull:`1838`)
 * Update definition of snow events parameter for :py:func:`pvlib.snow.loss_townsend`.
   (:issue:`1839`, :pull:`1840`)
-* Typo fix in :py:func:`pvlib.temperature.fuentes`, `wind_height` parameter description.
-  (:issue:`1814`, :pull:`1860`)
   
 Requirements
 ~~~~~~~~~~~~

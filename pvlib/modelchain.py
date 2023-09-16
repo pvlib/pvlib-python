@@ -584,8 +584,8 @@ class ModelChain:
 
         Warning
         -------
-        The PVWatts model assumes 14% total system losses. The loss assumptions
-        can be modified as shown in the example below.
+        The PVWatts model defaults to 14 % total system losses. The loss
+        assumptions can be modified as shown in the example below.
 
         Examples
         --------

@@ -582,17 +582,27 @@ class ModelChain:
             constructor and take precedence over the default
             configuration.
 
+        .. warning::
+            The PVWatts model assumes 14% total system losses. The loss assumptions
+            can be modified as shown in the example below.
+
         Examples
         --------
+        >>> from pvlib import temperature, pvsystem, location, modelchain
         >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=4500)
         >>> inverter_parameters = dict(pdc0=4000)
-        >>> tparams = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
-        >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
-        ...     module_parameters=module_parameters,
-        ...     inverter_parameters=inverter_parameters,
-        ...     temperature_model_parameters=tparams)
-        >>> location = Location(32.2, -110.9)
-        >>> ModelChain.with_pvwatts(system, location)
+        >>> tparams = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+        >>> pvwatts_losses = {'soiling': 2, 'shading': 3, 'snow': 0, 'mismatch': 2,
+        >>>                   'wiring': 2, 'connections': 0.5, 'lid': 1.5,
+        >>>                   'nameplate_rating': 1, 'age': 0, 'availability': 30}
+        >>> system = pvsystem.PVSystem(
+        >>>     surface_tilt=30, surface_azimuth=180,
+        >>>     module_parameters=module_parameters,
+        >>>     inverter_parameters=inverter_parameters,
+        >>>     temperature_model_parameters=tparams,
+        >>>     losses_parameters=pvwatts_losses)
+        >>> loc = location.Location(32.2, -110.9)
+        >>> modelchain.ModelChain.with_pvwatts(system, loc)
         ModelChain:
           name: None
           clearsky_model: ineichen

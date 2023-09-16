@@ -582,9 +582,10 @@ class ModelChain:
             constructor and take precedence over the default
             configuration.
 
-        .. warning::
-            The PVWatts model assumes 14% total system losses. The loss assumptions
-            can be modified as shown in the example below.
+        Warning
+        -------
+        The PVWatts model assumes 14% total system losses. The loss assumptions
+        can be modified as shown in the example below.
 
         Examples
         --------

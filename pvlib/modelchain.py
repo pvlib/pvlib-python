@@ -603,6 +603,7 @@ class ModelChain:
 
         The following example is a modification of the example above but where
         custom losses have been specified.
+
         >>> pvwatts_losses = {'soiling': 2, 'shading': 3, 'snow': 0, 'mismatch': 2,
         >>>                   'wiring': 2, 'connections': 0.5, 'lid': 1.5,
         >>>                   'nameplate_rating': 1, 'age': 0, 'availability': 30}

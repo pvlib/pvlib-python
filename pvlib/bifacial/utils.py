@@ -4,7 +4,8 @@ modeling.
 """
 import numpy as np
 from pvlib.tools import sind, cosd, tand
-
+import warnings
+from pvlib._deprecation import pvlibDeprecationWarning
 
 def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
     """
@@ -173,7 +174,7 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
 
 
 def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
-                           npoints=100, vectorize=False):
+                           npoints=None, vectorize=None):
     """
     Integrated view factor to the sky from the ground underneath
     interior rows of the array.
@@ -204,23 +205,77 @@ def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
         Integration of view factor over the length between adjacent, interior
         rows.  Shape matches that of ``surface_tilt``. [unitless]
     """
+    if npoints is not None or vectorize is not None:
+        warnings.warn("the `npoints` and `vectorize` parameters are deprecated", pvlibDeprecationWarning)
+
     # Abuse vf_ground_sky_2d by supplying surface_tilt in place
     # of a signed rotation. This is OK because
     # 1) z span the full distance between 2 rows, and
     # 2) max_rows is set to be large upstream, and
     # 3) _vf_ground_sky_2d considers [-max_rows, +max_rows]
     # The VFs to the sky will thus be symmetric around z=0.5
-    z = np.linspace(0, 1, npoints)
-    rotation = np.atleast_1d(surface_tilt)
-    if vectorize:
-        fz_sky = vf_ground_sky_2d(rotation, gcr, z, pitch, height, max_rows)
-    else:
-        fz_sky = np.zeros((npoints, len(rotation)))
-        for k, r in enumerate(rotation):
-            vf = vf_ground_sky_2d(r, gcr, z, pitch, height, max_rows)
-            fz_sky[:, k] = vf[:, 0]  # remove spurious rotation dimension
-    # calculate the integrated view factor for all of the ground between rows
-    return np.trapz(fz_sky, z, axis=0)
+
+
+    # TODO: compatibility with scalar inputs
+    # TODO: clean this up
+    collector_width = pitch * gcr
+
+    base_x1 = 0.5 * collector_width * cosd(surface_tilt)[np.newaxis, :]
+    base_y1 = 0.5 * collector_width * sind(surface_tilt)[np.newaxis, :]
+
+    k = np.arange(-max_rows, max_rows+1)[:, np.newaxis]
+
+    x1l = k*pitch - base_x1
+    x1r = k*pitch + base_x1
+    x2l = x1l + pitch
+    x2r = x1r + pitch
+
+    y1l = y2l = height + base_y1
+    y1r = y2r = height - base_y1
+
+    dx = x1l
+    dy = y1l
+    cx = x2l
+    cy = y2l
+    ax = 0
+    ay = 0
+    bx = pitch
+    by = 0
+
+    o1x = x1r
+    o1y = y1r
+    o2x = x2r
+    o2y = y2r
+
+    theta_ac = np.arctan2(cy - ay, cx - ax)
+    theta_ad = np.arctan2(dy - ay, dx - ax)
+    theta_ao1 = np.arctan2(o1y - ay, o1x - ax)
+    theta_ao2 = np.arctan2(o2y - ay, o2x - ax)
+
+    ac = ((cx - ax)**2 + (cy - ay)**2)**0.5
+    ac = np.where(theta_ac > theta_ao1, ((o1x - ax)**2 + (o1y - ay)**2)**0.5 + ((cx - o1x)**2 + (cy - o1y)**2)**0.5, ac)
+    ac = np.where(theta_ac < theta_ao2, ((o2x - ax)**2 + (o2y - ay)**2)**0.5 + collector_width, ac)
+
+    ad = ((dx - ax)**2 + (dy - ay)**2)**0.5
+    ad = np.where(theta_ad > theta_ao1, ((o1x - ax)**2 + (o1y - ay)**2)**0.5 + collector_width, ad)
+    ad = np.where(theta_ad < theta_ao2, ((o2x - ax)**2 + (o2y - ay)**2)**0.5 + ((dx - o2x)**2 + (dy - o2y)**2)**0.5, ad)
+
+    theta_bc = np.arctan2(cy - by, cx - bx)
+    theta_bd = np.arctan2(dy - by, dx - bx)
+    theta_ao1 = np.arctan2(o1y - by, o1x - bx)
+    theta_ao2 = np.arctan2(o2y - by, o2x - bx)
+
+    bd = ((dx - bx)**2 + (dy - by)**2)**0.5
+    bd = np.where(theta_bd < theta_ao2, ((o2x - bx)**2 + (o2y - by)**2)**0.5 + ((dx - o2x)**2 + (dy - o2y)**2)**0.5, bd)
+    bd = np.where(theta_bd > theta_ao1, ((o1x - bx)**2 + (o1y - by)**2)**0.5 + collector_width, bd)
+
+    bc = ((cx - bx)**2 + (cy - by)**2)**0.5
+    bc = np.where(theta_bc < theta_ao2, ((o2x - bx)**2 + (o2y - by)**2)**0.5 + collector_width, bc)
+    bc = np.where(theta_bc > theta_ao1, ((o1x - bx)**2 + (o1y - by)**2)**0.5 + ((cx - o1x)**2 + (cy - o1y)**2)**0.5, bc)
+
+    vf = np.sum(np.clip(0.5 * (1/pitch) * ((ac + bd) - (bc + ad)), a_min=0, a_max=None), axis=0)
+
+    return vf
 
 
 def _vf_poly(surface_tilt, gcr, x, delta):
@@ -309,14 +364,7 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         from x0 to x1. [unitless]
 
     '''
-    u = np.abs(x1 - x0)
-    p0 = _vf_poly(surface_tilt, gcr, 1 - x0, -1)
-    p1 = _vf_poly(surface_tilt, gcr, 1 - x1, -1)
-    with np.errstate(divide='ignore'):
-        result = np.where(u < 1e-6,
-                          vf_row_sky_2d(surface_tilt, gcr, x0),
-                          0.5*(1 + 1/u * (p1 - p0))
-                          )
+    result = 0.5 * (1/gcr + 1 - ((1/gcr)**2 - (2/gcr)*cosd(surface_tilt) + 1)**0.5)
     return result
 
 
@@ -380,12 +428,5 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         [unitless]
 
     '''
-    u = np.abs(x1 - x0)
-    p0 = _vf_poly(surface_tilt, gcr, x0, 1)
-    p1 = _vf_poly(surface_tilt, gcr, x1, 1)
-    with np.errstate(divide='ignore'):
-        result = np.where(u < 1e-6,
-                          vf_row_ground_2d(surface_tilt, gcr, x0),
-                          0.5*(1 - 1/u * (p1 - p0))
-                          )
+    result = 0.5 * (1/gcr + 1 - ((1/gcr)**2 + (2/gcr)*cosd(surface_tilt) + 1)**0.5)
     return result

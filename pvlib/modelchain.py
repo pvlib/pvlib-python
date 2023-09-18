@@ -593,17 +593,26 @@ class ModelChain:
         >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=4500)
         >>> inverter_parameters = dict(pdc0=4000)
         >>> tparams = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+        >>> system = pvsystem.PVSystem(
+        >>>     surface_tilt=30, surface_azimuth=180,
+        >>>     module_parameters=module_parameters,
+        >>>     inverter_parameters=inverter_parameters,
+        >>>     temperature_model_parameters=tparams)
+        >>> loc = location.Location(32.2, -110.9)
+        >>> modelchain.ModelChain.with_pvwatts(system, loc)
+
+        The following example is a modification of the example above but where
+        custom losses have been specified.
         >>> pvwatts_losses = {'soiling': 2, 'shading': 3, 'snow': 0, 'mismatch': 2,
         >>>                   'wiring': 2, 'connections': 0.5, 'lid': 1.5,
         >>>                   'nameplate_rating': 1, 'age': 0, 'availability': 30}
-        >>> system = pvsystem.PVSystem(
+        >>> system_with_custom_losses = pvsystem.PVSystem(
         >>>     surface_tilt=30, surface_azimuth=180,
         >>>     module_parameters=module_parameters,
         >>>     inverter_parameters=inverter_parameters,
         >>>     temperature_model_parameters=tparams,
         >>>     losses_parameters=pvwatts_losses)
-        >>> loc = location.Location(32.2, -110.9)
-        >>> modelchain.ModelChain.with_pvwatts(system, loc)
+        >>> modelchain.ModelChain.with_pvwatts(system_with_custom_losses, loc)
         ModelChain:
           name: None
           clearsky_model: ineichen

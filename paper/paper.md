@@ -9,12 +9,12 @@ authors:
   - name: Kevin S. Anderson
     orcid: 0000-0002-1166-7957
     affiliation: 1
-  - name: William F. Holmgren
-    orcid: 0000-0001-6218-9767
-    affiliation: 2
   - name: Clifford W. Hansen
     orcid: 0000-0002-8620-5378
     affiliation: 1
+  - name: William F. Holmgren
+    orcid: 0000-0001-6218-9767
+    affiliation: 2
   - name: Mark A. Mikofski
     orcid: 0000-0001-8001-8582
     affiliation: 2

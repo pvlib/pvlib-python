@@ -89,7 +89,7 @@ such as database query, data manipulation, numerical optimization,
 plotting, and reporting packages.
 
 A final key aspect of pvlib python is its open peer review approach and
-foundation in published scientific research, allowing it to be developed by
+foundation on published scientific research, allowing it to be developed by
 a decentralized and diverse community of PV researchers and practitioners
 without compromising its focus on transparent and reliable model
 implementations.

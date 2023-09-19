@@ -19,8 +19,7 @@ solar-position data, and adjust DNI and POA-global irradiance.
 
 import numpy as np
 import pandas as pd
-from pvlib.location import Location
-from pvlib.irradiance import get_total_irradiance
+import pvlib
 
 # Golden, CO
 lat, lon = 39.76, -105.22

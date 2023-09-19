@@ -56,8 +56,19 @@ horizon_profile = pd.Series([
     4.2, 4.2, 4.2, 7.3, 9.5
 ], index=np.arange(0, 360, 7.5))
 
-# Ex - To get the above horizon data from PVGIS (assuming pvlib is imported):
-# horizon_profile, horizon_metadata = pvlib.iotools.get_pvgis_horizon(lat, lon)
+ax = horizon_profile.plot(xlim=(0, 360), ylim=(0, None))
+ax.set_title('Horizon profile')
+ax.set_xticks([0, 90, 180, 270, 360])
+ax.set_xlabel('Azimuth [°]')
+ax.set_ylabel('Horizon angle [°]');
+
+# %%
+# .. admonition:: Horizon data from PVGIS
+#
+#     Example of how to get the above horizon data from PVGIS
+#
+#     horizon_profile, horizon_metadata = pvlib.iotools.get_pvgis_horizon(latitutde, longitude)
+#
 
 # Interpolate the horizon elevation data to the solar azimuth, and keep as a
 # numpy array.

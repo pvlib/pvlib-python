@@ -12,7 +12,7 @@ solar-position data, and adjust DNI and POA-global irradiance.
 # corresponding horizon azimuth angles for simple horizon shading adjustments.
 #
 # After location information and a date range is established, solar position
-# data is queried from :py:meth:`pvlib.solar_position.get_solar_position`.
+# data is calculated using :py:meth:`pvlib.solar_position.get_solar_position`.
 # Horizon data is assigned, and interpolated to the solar azimuth time
 # series data. Finally, in times when solar elevation is greater than the
 # interpolated horizon elevation angle, DNI is set to 0.

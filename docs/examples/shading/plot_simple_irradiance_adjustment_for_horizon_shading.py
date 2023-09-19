@@ -104,4 +104,4 @@ poa_global_comparison.plot(
 )
 dni_comparison.plot(
     title='DNI: Before and after Horizon Adjustment', ylabel='Irradiance'
-)
+);

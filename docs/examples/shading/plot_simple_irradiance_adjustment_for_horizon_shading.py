@@ -77,11 +77,11 @@ dni_adjusted = np.where(solar_elevation > horizon_elevation_data, dni, 0)
 ghi_adjusted = np.where(dni_adjusted == 0, dhi, ghi)
 
 # Transposition using the original and adjusted irradiance components.
-irrad_pre_adj = get_total_irradiance(
+irrad_pre_adj = pvlib.irradiance.get_total_irradiance(
     surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni, ghi, dhi
 )
 
-irrad_post_adj = get_total_irradiance(
+irrad_post_adj = pvlib.irradiance.get_total_irradiance(
     surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni_adjusted,
     ghi_adjusted, dhi
 )

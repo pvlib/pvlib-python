@@ -56,7 +56,7 @@ horizon_profile = pd.Series([
     4.2, 4.2, 4.2, 7.3, 9.5
 ], index=np.arange(0, 360, 7.5))
 
-ax = horizon_profile.plot(xlim=(0, 360), ylim=(0, None))
+ax = horizon_profile.plot(xlim=(0, 360), ylim=(0, None), figsize=(6, 2.5))
 ax.set_title('Horizon profile')
 ax.set_xticks([0, 90, 180, 270, 360])
 ax.set_xlabel('Azimuth [°]')

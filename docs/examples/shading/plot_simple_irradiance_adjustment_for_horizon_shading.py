@@ -2,8 +2,8 @@
 Simple Irradiance Adjustment For Horizon Shading
 ================================================
 
-Example for adjusting dni and global poa from horizon shading. Using
-hard-coded horizon profile data, this example interpolates it to time-series
+Example of applying horizon shading to dni and global poa. Using
+horizon profile data, this example interpolates it to time-series
 solar-position data, and adjust DNI and POA-global irradiance.
 """
 

@@ -1,5 +1,5 @@
 """
-Simple Irradiance Adjustment For Horizon Shading
+Simple irradiance adjustment for horizon shading
 ================================================
 
 Example of applying horizon shading to dni and global poa. Using

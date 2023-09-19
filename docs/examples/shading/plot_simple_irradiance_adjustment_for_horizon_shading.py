@@ -22,7 +22,7 @@ import pandas as pd
 import pvlib
 
 # Golden, CO
-lat, lon = 39.76, -105.22
+latitude, longitude = 39.76, -105.22
 tz = 'MST'
 
 # Set times in the morning of the December solstice.
@@ -31,7 +31,7 @@ times = pd.date_range(
 )
 
 # Create location object, and get solar position and clearsky irradiance data.
-location = pvlib.location.Location(lat, lon, tz)
+location = pvlib.location.Location(latitude, longitude, tz)
 solar_position = location.get_solarposition(times)
 clearsky = location.get_clearsky(times)
 

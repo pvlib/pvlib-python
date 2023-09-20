@@ -173,6 +173,32 @@ def vf_ground_sky_2d(rotation, gcr, x, pitch, height, max_rows=10):
     return vf
 
 
+def _dist(p1, p2):
+    return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
+
+
+def _angle(p1, p2):
+    return np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
+
+
+def _obstructed_string_length(p1, p2, ob_left, ob_right):
+    # string length calculations for Hottel's crossed strings method,
+    # considering view obstructions from the left and right.
+    # all inputs are (x, y) points.
+
+    # unobstructed length
+    d = _dist(p1, p2)
+    # obstructed on the left
+    d = np.where(_angle(p1, p2) > _angle(p1, ob_left),
+                 _dist(p1, ob_left) + _dist(ob_left, p2),
+                 d)
+    # obstructed on the right
+    d = np.where(_angle(p1, p2) < _angle(p1, ob_right),
+                 _dist(p1, ob_right) + _dist(ob_right, p2),
+                 d)
+    return d
+
+
 def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
                            npoints=None, vectorize=None):
     """
@@ -208,50 +234,40 @@ def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
     if npoints is not None or vectorize is not None:
         msg = (
             "The `npoints` and `vectorize` parameters have no effect and will "
-            "be removed in a future version."
+            "be removed in a future version."  # TODO make this better
         )
         warnings.warn(msg, pvlibDeprecationWarning)
 
     input_is_scalar = np.isscalar(surface_tilt)
+
     collector_width = pitch * gcr
     surface_tilt = np.atleast_2d(surface_tilt)
+
     k = np.arange(-max_rows, max_rows+1)[:, np.newaxis]
 
+    # primary crossed string points:
+    # a, b: boundaries of ground segment
+    # c, d: upper module edges
     a = (0, 0)
     b = (pitch, 0)
     c = ((k+1)*pitch - 0.5 * collector_width * cosd(surface_tilt),
          height + 0.5 * collector_width * sind(surface_tilt))
     d = (c[0] - pitch, c[1])
-    
-    o1 = (d[0] + collector_width * cosd(surface_tilt), d[1] - collector_width * sind(surface_tilt))
-    o2 = (o1[0] + pitch, o1[1])
 
-    def dist(p1, p2):
-        return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
+    # view obstruction points (lower module edges)
+    obs_left = (d[0] + collector_width * cosd(surface_tilt),
+                d[1] - collector_width * sind(surface_tilt))
+    obs_right = (obs_left[0] + pitch, obs_left[1])
 
-    def angle(p1, p2):
-        return np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
+    # hottel string lengths, considering obstructions
+    ac = _obstructed_string_length(a, c, obs_left, obs_right)
+    ad = _obstructed_string_length(a, d, obs_left, obs_right)
+    bc = _obstructed_string_length(b, c, obs_left, obs_right)
+    bd = _obstructed_string_length(b, d, obs_left, obs_right)
 
-    def obstructed_string_length(p1, p2, ob_left, ob_right):
-        # unobstructed length
-        d = dist(p1, p2)
-        # obstructed on the left
-        d = np.where(angle(p1, p2) > angle(p1, ob_left),
-                     dist(p1, ob_left) + dist(ob_left, p2),
-                     d)
-        # obstructed on the right
-        d = np.where(angle(p1, p2) < angle(p1, ob_right),
-                     dist(p1, ob_right) + dist(ob_right, p2),
-                     d)
-        return d
-
-    ac = obstructed_string_length(a, c, o1, o2)    
-    ad = obstructed_string_length(a, d, o1, o2)    
-    bc = obstructed_string_length(b, c, o1, o2)    
-    bd = obstructed_string_length(b, d, o1, o2)    
-
-    vf_per_slat = 0.5 * (1/pitch) * ((ac + bd) - (bc + ad))
-    vf_total = np.sum(np.clip(vf_per_slat, a_min=0, a_max=None), axis=0)
+    # crossed string formula for VF
+    vf_per_slat = np.maximum(0.5 * (1/pitch) * ((ac + bd) - (bc + ad)), 0)
+    vf_total = np.sum(vf_per_slat, axis=0)
 
     if input_is_scalar:
         vf_total = vf_total.item()

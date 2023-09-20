@@ -206,85 +206,57 @@ def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
         rows.  Shape matches that of ``surface_tilt``. [unitless]
     """
     if npoints is not None or vectorize is not None:
-        warnings.warn("the `npoints` and `vectorize` parameters are deprecated", pvlibDeprecationWarning)
+        msg = (
+            "The `npoints` and `vectorize` parameters have no effect and will "
+            "be removed in a future version."
+        )
+        warnings.warn(msg, pvlibDeprecationWarning)
 
-    # Abuse vf_ground_sky_2d by supplying surface_tilt in place
-    # of a signed rotation. This is OK because
-    # 1) z span the full distance between 2 rows, and
-    # 2) max_rows is set to be large upstream, and
-    # 3) _vf_ground_sky_2d considers [-max_rows, +max_rows]
-    # The VFs to the sky will thus be symmetric around z=0.5
-
-
-    # TODO: compatibility with scalar inputs
-    # TODO: clean this up
+    input_is_scalar = np.isscalar(surface_tilt)
     collector_width = pitch * gcr
-
-    base_x1 = 0.5 * collector_width * cosd(surface_tilt)[np.newaxis, :]
-    base_y1 = 0.5 * collector_width * sind(surface_tilt)[np.newaxis, :]
-
+    surface_tilt = np.atleast_2d(surface_tilt)
     k = np.arange(-max_rows, max_rows+1)[:, np.newaxis]
 
-    x1l = k*pitch - base_x1
-    x1r = k*pitch + base_x1
-    x2l = x1l + pitch
-    x2r = x1r + pitch
+    a = (0, 0)
+    b = (pitch, 0)
+    c = ((k+1)*pitch - 0.5 * collector_width * cosd(surface_tilt),
+         height + 0.5 * collector_width * sind(surface_tilt))
+    d = (c[0] - pitch, c[1])
+    
+    o1 = (d[0] + collector_width * cosd(surface_tilt), d[1] - collector_width * sind(surface_tilt))
+    o2 = (o1[0] + pitch, o1[1])
 
-    y1l = y2l = height + base_y1
-    y1r = y2r = height - base_y1
+    def dist(p1, p2):
+        return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
 
-    dx = x1l
-    dy = y1l
-    cx = x2l
-    cy = y2l
-    ax = 0
-    ay = 0
-    bx = pitch
-    by = 0
+    def angle(p1, p2):
+        return np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
 
-    o1x = x1r
-    o1y = y1r
-    o2x = x2r
-    o2y = y2r
+    def obstructed_string_length(p1, p2, ob_left, ob_right):
+        # unobstructed length
+        d = dist(p1, p2)
+        # obstructed on the left
+        d = np.where(angle(p1, p2) > angle(p1, ob_left),
+                     dist(p1, ob_left) + dist(ob_left, p2),
+                     d)
+        # obstructed on the right
+        d = np.where(angle(p1, p2) < angle(p1, ob_right),
+                     dist(p1, ob_right) + dist(ob_right, p2),
+                     d)
+        return d
 
-    theta_ac = np.arctan2(cy - ay, cx - ax)
-    theta_ad = np.arctan2(dy - ay, dx - ax)
-    theta_ao1 = np.arctan2(o1y - ay, o1x - ax)
-    theta_ao2 = np.arctan2(o2y - ay, o2x - ax)
+    ac = obstructed_string_length(a, c, o1, o2)    
+    ad = obstructed_string_length(a, d, o1, o2)    
+    bc = obstructed_string_length(b, c, o1, o2)    
+    bd = obstructed_string_length(b, d, o1, o2)    
 
-    a_o1 = ((o1x - ax)**2 + (o1y - ay)**2)**0.5
-    a_o2 = ((o2x - ax)**2 + (o2y - ay)**2)**0.5
-    b_o1 = ((o1x - bx)**2 + (o1y - by)**2)**0.5
-    b_o2 = ((o2x - bx)**2 + (o2y - by)**2)**0.5
-    c_o1 = ((cx - o1x)**2 + (cy - o1y)**2)**0.5
-    c_o2 = collector_width
-    d_o1 = collector_width
-    d_o2 = ((dx - o2x)**2 + (dy - o2y)**2)**0.5
+    vf_per_slat = 0.5 * (1/pitch) * ((ac + bd) - (bc + ad))
+    vf_total = np.sum(np.clip(vf_per_slat, a_min=0, a_max=None), axis=0)
 
-    ac = ((cx - ax)**2 + (cy - ay)**2)**0.5
-    ac = np.where(theta_ac > theta_ao1, a_o1 + c_o1, ac)
-    ac = np.where(theta_ac < theta_ao2, a_o2 + c_o2, ac)
+    if input_is_scalar:
+        vf_total = vf_total.item()
 
-    ad = ((dx - ax)**2 + (dy - ay)**2)**0.5
-    ad = np.where(theta_ad > theta_ao1, a_o1 + d_o1, ad)
-    ad = np.where(theta_ad < theta_ao2, a_o2 + d_o2, ad)
-
-    theta_bc = np.arctan2(cy - by, cx - bx)
-    theta_bd = np.arctan2(dy - by, dx - bx)
-    theta_ao1 = np.arctan2(o1y - by, o1x - bx)
-    theta_ao2 = np.arctan2(o2y - by, o2x - bx)
-
-    bd = ((dx - bx)**2 + (dy - by)**2)**0.5
-    bd = np.where(theta_bd < theta_ao2, b_o2 + d_o2, bd)
-    bd = np.where(theta_bd > theta_ao1, b_o1 + d_o1, bd)
-
-    bc = ((cx - bx)**2 + (cy - by)**2)**0.5
-    bc = np.where(theta_bc < theta_ao2, b_o2 + c_o2, bc)
-    bc = np.where(theta_bc > theta_ao1, b_o1 + c_o1, bc)
-
-    vf = np.sum(np.clip(0.5 * (1/pitch) * ((ac + bd) - (bc + ad)), a_min=0, a_max=None), axis=0)
-
-    return vf
+    return vf_total
 
 
 def _vf_poly(surface_tilt, gcr, x, delta):

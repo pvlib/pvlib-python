@@ -614,10 +614,11 @@ def isotropic(surface_tilt, dhi):
        I_{d} = DHI \frac{1 + \cos\beta}{2}
 
     Hottel and Woertz's model treats the sky as a uniform source of
-    diffuse irradiance. Thus the diffuse irradiance from the sky (ground
+    diffuse irradiance. Thus, the diffuse irradiance from the sky (ground
     reflected irradiance is not included in this algorithm) on a tilted
     surface can be found from the diffuse horizontal irradiance and the
-    tilt angle of the surface.
+    tilt angle of the surface. A discussion of the origin of the
+    isotropic model can be found in [2]_.
 
     Parameters
     ----------
@@ -636,14 +637,16 @@ def isotropic(surface_tilt, dhi):
 
     References
     ----------
-    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
+    .. [1] Loutzenhiser P.G. et al. "Empirical validation of models to
        compute solar irradiance on inclined surfaces for building energy
        simulation" 2007, Solar Energy vol. 81. pp. 254-267
+       :doi:`10.1016/j.solener.2006.03.009`
 
-    .. [2] Hottel, H.C., Woertz, B.B., 1942. Evaluation of flat-plate solar
-       heat collector. Trans. ASME 64, 91.
+    .. [2] Kamphuis, N.R. et al. "Perspectives on the origin, derivation,
+       meaning, and significance of the isotropic sky model" 2020, Solar
+       Energy vol. 201. pp. 8-12
+       :doi:`10.1016/j.solener.2020.02.067`
     '''
-
     sky_diffuse = dhi * (1 + tools.cosd(surface_tilt)) * 0.5
 
     return sky_diffuse

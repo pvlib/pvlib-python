@@ -241,9 +241,10 @@ def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
     input_is_scalar = np.isscalar(surface_tilt)
 
     collector_width = pitch * gcr
-    surface_tilt = np.atleast_2d(surface_tilt)
+    surface_tilt = np.atleast_2d(np.abs(surface_tilt))
 
-    k = np.arange(-max_rows, max_rows+1)[:, np.newaxis]
+    # TODO figure out if this range is correct, or if the original code has a bug
+    k = np.arange(-max_rows+1, max_rows+1)[:, np.newaxis]
 
     # primary crossed string points:
     # a, b: boundaries of ground segment

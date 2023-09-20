@@ -345,7 +345,14 @@ def vf_row_sky_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         from x0 to x1. [unitless]
 
     '''
-    result = 0.5 * (1/gcr + 1 - ((1/gcr)**2 - (2/gcr)*cosd(surface_tilt) + 1)**0.5)
+    u = np.abs(x1 - x0)
+    p0 = _vf_poly(surface_tilt, gcr, 1 - x0, -1)
+    p1 = _vf_poly(surface_tilt, gcr, 1 - x1, -1)
+    with np.errstate(divide='ignore'):
+        result = np.where(u < 1e-6,
+                          vf_row_sky_2d(surface_tilt, gcr, x0),
+                          0.5*(1 + 1/u * (p1 - p0))
+                          )
     return result
 
 
@@ -409,5 +416,12 @@ def vf_row_ground_2d_integ(surface_tilt, gcr, x0=0, x1=1):
         [unitless]
 
     '''
-    result = 0.5 * (1/gcr + 1 - ((1/gcr)**2 + (2/gcr)*cosd(surface_tilt) + 1)**0.5)
+    u = np.abs(x1 - x0)
+    p0 = _vf_poly(surface_tilt, gcr, x0, 1)
+    p1 = _vf_poly(surface_tilt, gcr, x1, 1)
+    with np.errstate(divide='ignore'):
+        result = np.where(u < 1e-6,
+                          vf_row_ground_2d(surface_tilt, gcr, x0),
+                          0.5*(1 - 1/u * (p1 - p0))
+                          )
     return result

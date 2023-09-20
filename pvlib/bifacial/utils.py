@@ -252,13 +252,22 @@ def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
     theta_ao1 = np.arctan2(o1y - ay, o1x - ax)
     theta_ao2 = np.arctan2(o2y - ay, o2x - ax)
 
+    a_o1 = ((o1x - ax)**2 + (o1y - ay)**2)**0.5
+    a_o2 = ((o2x - ax)**2 + (o2y - ay)**2)**0.5
+    b_o1 = ((o1x - bx)**2 + (o1y - by)**2)**0.5
+    b_o2 = ((o2x - bx)**2 + (o2y - by)**2)**0.5
+    c_o1 = ((cx - o1x)**2 + (cy - o1y)**2)**0.5
+    c_o2 = collector_width
+    d_o1 = collector_width
+    d_o2 = ((dx - o2x)**2 + (dy - o2y)**2)**0.5
+
     ac = ((cx - ax)**2 + (cy - ay)**2)**0.5
-    ac = np.where(theta_ac > theta_ao1, ((o1x - ax)**2 + (o1y - ay)**2)**0.5 + ((cx - o1x)**2 + (cy - o1y)**2)**0.5, ac)
-    ac = np.where(theta_ac < theta_ao2, ((o2x - ax)**2 + (o2y - ay)**2)**0.5 + collector_width, ac)
+    ac = np.where(theta_ac > theta_ao1, a_o1 + c_o1, ac)
+    ac = np.where(theta_ac < theta_ao2, a_o2 + c_o2, ac)
 
     ad = ((dx - ax)**2 + (dy - ay)**2)**0.5
-    ad = np.where(theta_ad > theta_ao1, ((o1x - ax)**2 + (o1y - ay)**2)**0.5 + collector_width, ad)
-    ad = np.where(theta_ad < theta_ao2, ((o2x - ax)**2 + (o2y - ay)**2)**0.5 + ((dx - o2x)**2 + (dy - o2y)**2)**0.5, ad)
+    ad = np.where(theta_ad > theta_ao1, a_o1 + d_o1, ad)
+    ad = np.where(theta_ad < theta_ao2, a_o2 + d_o2, ad)
 
     theta_bc = np.arctan2(cy - by, cx - bx)
     theta_bd = np.arctan2(dy - by, dx - bx)
@@ -266,12 +275,12 @@ def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
     theta_ao2 = np.arctan2(o2y - by, o2x - bx)
 
     bd = ((dx - bx)**2 + (dy - by)**2)**0.5
-    bd = np.where(theta_bd < theta_ao2, ((o2x - bx)**2 + (o2y - by)**2)**0.5 + ((dx - o2x)**2 + (dy - o2y)**2)**0.5, bd)
-    bd = np.where(theta_bd > theta_ao1, ((o1x - bx)**2 + (o1y - by)**2)**0.5 + collector_width, bd)
+    bd = np.where(theta_bd < theta_ao2, b_o2 + d_o2, bd)
+    bd = np.where(theta_bd > theta_ao1, b_o1 + d_o1, bd)
 
     bc = ((cx - bx)**2 + (cy - by)**2)**0.5
-    bc = np.where(theta_bc < theta_ao2, ((o2x - bx)**2 + (o2y - by)**2)**0.5 + collector_width, bc)
-    bc = np.where(theta_bc > theta_ao1, ((o1x - bx)**2 + (o1y - by)**2)**0.5 + ((cx - o1x)**2 + (cy - o1y)**2)**0.5, bc)
+    bc = np.where(theta_bc < theta_ao2, b_o2 + c_o2, bc)
+    bc = np.where(theta_bc > theta_ao1, b_o1 + c_o1, bc)
 
     vf = np.sum(np.clip(0.5 * (1/pitch) * ((ac + bd) - (bc + ad)), a_min=0, a_max=None), axis=0)
 

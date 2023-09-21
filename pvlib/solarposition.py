@@ -470,7 +470,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
 def _ephem_convert_to_seconds_and_microseconds(date):
     # utility from unreleased PyEphem 3.6.7.1
     """Converts a PyEphem date into seconds"""
-    microseconds = int(round(24 * 60 * 60 * 1000000 * date))
+    microseconds = round(24 * 60 * 60 * 1000000 * date)
     seconds, microseconds = divmod(microseconds, 1000000)
     seconds -= 2209032000  # difference between epoch 1900 and epoch 1970
     return seconds, microseconds

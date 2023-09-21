@@ -416,8 +416,8 @@ def julian_day_dt(year, month, day, hour, minute, second, microsecond):
     if month <= 2:
         year = year-1
         month = month+12
-    a = int(year/100)
-    b = 2 - a + int(a * 0.25)
+    a = year // 100
+    b = 2 - a + a // 4
     frac_of_day = (microsecond / 1e6 + (second + minute * 60 + hour * 3600)
                    ) * 1.0 / (3600*24)
     d = day + frac_of_day

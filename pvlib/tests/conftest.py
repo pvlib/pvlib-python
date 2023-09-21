@@ -133,10 +133,7 @@ def has_numba():
         return False
     else:
         vers = numba.__version__.split('.')
-        if int(vers[0] + vers[1]) < 17:
-            return False
-        else:
-            return True
+        return int(vers[0] + vers[1]) >= 17
 
 
 requires_numba = pytest.mark.skipif(not has_numba(), reason="requires numba")

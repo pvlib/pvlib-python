@@ -584,8 +584,9 @@ class ModelChain:
 
         Warning
         -------
-        The PVWatts model defaults to 14 % total system losses. The loss
-        assumptions can be modified as shown in the example below.
+        The PVWatts model defaults to 14 % total system losses. The PVWatts
+        losses are fractions of DC power and can be modified, as shown in the
+        example below.
 
         Examples
         --------

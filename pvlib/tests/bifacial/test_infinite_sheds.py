@@ -298,12 +298,16 @@ def test_get_irradiance_with_haydavies():
     expected_front_diffuse = np.array([151.38])
     expected_front_direct = np.array([848.62])
     expected_front_global = expected_front_diffuse + expected_front_direct
-    expected_shaded_fraction = np.array([0.])
+    expected_shaded_fraction_front = np.array([0.])
+    expected_shaded_fraction_back = np.array([0.])
     assert np.isclose(result['poa_front'], expected_front_global)
     assert np.isclose(result['poa_front_diffuse'], expected_front_diffuse)
     assert np.isclose(result['poa_front_direct'], expected_front_direct)
     assert np.isclose(result['poa_global'], result['poa_front'])
-    assert np.isclose(result['shaded_fraction'], expected_shaded_fraction)
+    assert np.isclose(result['shaded_fraction_front'],
+                      expected_shaded_fraction_front)
+    assert np.isclose(result['shaded_fraction_back'],
+                      expected_shaded_fraction_back)
     # test for when dni_extra is not supplied
     with pytest.raises(ValueError, match='supply dni_extra for haydavies'):
         result = infinite_sheds.get_irradiance(

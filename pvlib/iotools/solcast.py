@@ -49,6 +49,7 @@ def get_solcast_tmy(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+        Time is made the index with the "period mid" convention from Solcast's "period end".
     kwargs:
         Optional parameters passed to the API. See https://docs.solcast.com.au/ for full list of parameters.
 
@@ -124,6 +125,7 @@ def get_solcast_historic(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+        Time is made the index with the "period mid" convention from Solcast's "period end".
     api_key : str
         To access Solcast data you will need an API key: https://toolkit.solcast.com.au/register.
     kwargs:
@@ -191,6 +193,7 @@ def get_solcast_forecast(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+        Time is made the index with the "period mid" convention from Solcast's "period end".
     kwargs:
         Optional parameters passed to the GET request
 
@@ -213,7 +216,7 @@ def get_solcast_forecast(
     get_solcast_forecast(
         latitude=-33.856784,
         longitude=151.215297,
-        output_parameters='dni,clearsky_dni',
+        output_parameters=['dni', 'clearsky_dni', 'snow_soiling_rooftop'],
         api_key="your-key"
     )
     """
@@ -248,6 +251,7 @@ def get_solcast_live(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+        Time is made the index with the "period mid" convention from Solcast's "period end".
     kwargs:
         Optional parameters passed to the GET request
 
@@ -272,6 +276,7 @@ def get_solcast_live(
         latitude=-33.856784,
         longitude=151.215297,
         terrain_shading=True,
+        output_parameters=['ghi', 'clearsky_ghi', 'snow_soiling_rooftop'],
         api_key="your-key"
     )
 
@@ -303,7 +308,7 @@ def solcast2pvlib(df):
     """Formats the data from Solcast to PVLib's conventions.
     """
     # move from period_end to period_middle as per pvlib convention
-    df["period_mid"] = pd.to_datetime(df.period_end) - pd.Timedelta(df.period.values[0]) / 2
+    df["period_mid"] = pd.to_datetime(df.period_end) - pd.to_timedelta(df.period.values) / 2
     df = df.set_index("period_mid").drop(columns=["period_end", "period"])
 
     # rename and convert variables
@@ -336,6 +341,7 @@ def _get_solcast(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+        Time is made the index with the "period mid" convention from Solcast's "period end".
 
     Returns
     -------

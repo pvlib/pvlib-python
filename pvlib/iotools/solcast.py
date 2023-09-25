@@ -306,6 +306,15 @@ def get_solcast_live(
 
 def solcast2pvlib(df):
     """Formats the data from Solcast to PVLib's conventions.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        contains the data as returned from the Solcast API
+
+    Returns
+    -------
+    a pandas.DataFrame with the data cast to PVLib's conventions
     """
     # move from period_end to period_middle as per pvlib convention
     df["period_mid"] = pd.to_datetime(df.period_end) - pd.to_timedelta(df.period.values) / 2

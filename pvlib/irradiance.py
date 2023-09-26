@@ -1212,6 +1212,13 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
+def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+          solar_zenith, solar_azimuth, airmass,
+          model='allsitescomposite1990', return_components=False):
+
+    return 0
+
+
 def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.

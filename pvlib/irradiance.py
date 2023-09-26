@@ -10,8 +10,10 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
+from scipy.interpolate import splev
 
 from pvlib import atmosphere, solarposition, tools
+from pvlib.atmosphere import get_relative_airmass
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
 
@@ -1212,11 +1214,150 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
-def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-          solar_zenith, solar_azimuth, airmass,
-          model='allsitescomposite1990', return_components=False):
+def _calc_delta(dhi, dni_extra, zenith):
+    '''
+    Helper function for perez_driesse transposition
 
-    return 0
+    Compute the delta parameter, which represents sky dome "brightness".
+    '''
+    # prevent nan airmass at night
+    zenith = np.minimum(zenith, 90)
+
+    # use the same airmass model as in the original perez work
+    airmass = get_relative_airmass(zenith, 'kastenyoung1989')
+    delta = dhi / (dni_extra / airmass)
+
+    return delta
+
+
+def _calc_zeta(dhi, dni, zenith, use_kappa=True):
+    '''
+    Helper function for perez_driesse transposition
+
+    Compute the zeta parameter, which represents sky dome "clearness"
+    in the perez-driesse model.
+
+    Zeta is a simple transpormation of the original Perez epsilon index:
+        zeta = 1 - 1 / epsilon
+        epsilon = 1 / (1 - zeta)
+
+    Zeta has values between 0 and 1 rather than between 1 and infinity
+    for epsilon.
+    '''
+    dhi = np.asarray(dhi)
+    dni = np.asarray(dni)
+
+    with np.errstate(invalid='ignore'):
+        zeta = dni / (dhi + dni)
+
+    zeta = np.where(dhi > 0, zeta, 0.0)
+
+    if use_kappa:
+        kappa = 1.041
+        kterm = kappa * np.radians(zenith) ** 3
+        zeta = zeta / (1 - kterm * (zeta - 1))
+
+    return zeta
+
+
+def _evaluate_f(i, j, zeta):
+    '''
+    Helper function for perez_driesse transposition
+    '''
+    knots = np.array(
+        [0.000, 0.000, 0.000,
+         0.061, 0.187, 0.333, 0.487, 0.643, 0.778, 0.839,
+         1.000, 1.000, 1.000])
+
+    # quadratic spline coefficients for 'allsitescomposite1990'
+    coefs = np.array(
+        [[-0.053,  0.529, -0.028, -0.071,  0.061, -0.019],
+         [-0.008,  0.588, -0.062, -0.06 ,  0.072, -0.022],
+         [ 0.131,  0.77 , -0.167, -0.026,  0.106, -0.032],
+         [ 0.328,  0.471, -0.216,  0.069, -0.105, -0.028],
+         [ 0.557,  0.241, -0.3  ,  0.086, -0.085, -0.012],
+         [ 0.861, -0.323, -0.355,  0.24 , -0.467, -0.008],
+         [ 1.212, -1.239, -0.444,  0.305, -0.797,  0.047],
+         [ 1.099, -1.847, -0.365,  0.275, -1.132,  0.124],
+         [ 0.544,  0.157, -0.213,  0.118, -1.455,  0.292],
+         [ 0.544,  0.157, -0.213,  0.118, -1.455,  0.292],
+         [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ],
+         [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ],
+         [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ]])
+
+    coefs = coefs.T.reshape((2, 3, -1))
+
+    tck = (knots, coefs[i-1, j-1], 2)
+
+    return splev(zeta, tck)
+
+
+def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+                  solar_zenith, solar_azimuth, airmass=None,
+                  model='allsitescomposite1990', return_components=False):
+    '''
+    Determine diffuse irradiance from the sky on a tilted surface using
+    the continuous Perez-Driesse model.
+    '''
+
+    if airmass is not None:
+        raise Warning("The 'airmass' parameter is ignored. "
+                      'Airmass is calculated internally. ')
+
+    if model is not 'allsitescomposite1990':
+        raise Warning("The 'model' parameter is ignored. "
+                      "Only 'allsitescomposite1990' is available.")
+
+    delta = _calc_delta(dhi, dni_extra, solar_zenith)
+    zeta = _calc_zeta(dhi, dni, solar_zenith, use_kappa=True)
+
+    f = _evaluate_f
+    z = np.radians(solar_zenith)
+
+    F1 = f(1, 1, zeta) + f(1, 2, zeta) * delta + f(1, 3, zeta) * z
+    F2 = f(2, 1, zeta) + f(2, 2, zeta) * delta + f(2, 3, zeta) * z
+
+    # from this point the code is identical to the original perez function
+    A = aoi_projection(surface_tilt, surface_azimuth,
+                       solar_zenith, solar_azimuth)
+    A = np.maximum(A, 0)
+
+    B = tools.cosd(solar_zenith)
+    B = np.maximum(B, tools.cosd(85))
+
+    # Calculate Diffuse POA from sky dome
+    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))
+    term2 = F1 * A / B
+    term3 = F2 * tools.sind(surface_tilt)
+
+    sky_diffuse = np.maximum(dhi * (term1 + term2 + term3), 0)
+
+    # we've preserved the input type until now, so don't ruin it!
+    # if isinstance(sky_diffuse, pd.Series):
+    #     sky_diffuse[np.isnan(airmass)] = 0
+    # else:
+    #     sky_diffuse = np.where(np.isnan(airmass), 0, sky_diffuse)
+
+    if return_components:
+        diffuse_components = OrderedDict()
+        diffuse_components['sky_diffuse'] = sky_diffuse
+
+        # Calculate the different components
+        diffuse_components['isotropic'] = dhi * term1
+        diffuse_components['circumsolar'] = dhi * term2
+        diffuse_components['horizon'] = dhi * term3
+
+        # Set values of components to 0 when sky_diffuse is 0
+        mask = sky_diffuse == 0
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+            diffuse_components.loc[mask] = 0
+        else:
+            diffuse_components = {k: np.where(mask, 0, v) for k, v in
+                                  diffuse_components.items()}
+        return diffuse_components
+    else:
+        return sky_diffuse
 
 
 def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):

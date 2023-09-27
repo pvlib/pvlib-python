@@ -453,7 +453,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     model = model.lower()
 
-    if (model in {'haydavies', 'reindl', 'perez'}) and (dni_extra is None):
+    if (model in {'haydavies', 'reindl', 'perez', 'perez-driesse'}) and (dni_extra is None):
         raise ValueError(f'dni_extra is required for model {model}')
 
     if model == 'isotropic':
@@ -473,6 +473,12 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
         sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+                    solar_zenith, solar_azimuth, airmass,
+                    model=model_perez)
+    elif model == 'perez-driesse':
+        if airmass is None:
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
+        sky = perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                     solar_zenith, solar_azimuth, airmass,
                     model=model_perez)
     else:

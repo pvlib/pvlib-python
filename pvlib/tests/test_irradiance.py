@@ -278,7 +278,7 @@ def test_perez_driesse(irrad_data, ephem_data, dni_et, relative_airmass):
     dni.iloc[2] = np.nan
     out = irradiance.perez_driesse(40, 180, irrad_data['dhi'], dni,
                                    dni_et, ephem_data['apparent_zenith'],
-                                   ephem_data['azimuth'])
+                                   ephem_data['azimuth'], relative_airmass)
     expected = pd.Series(np.array(
         [0.,   30.00,  np.nan,   47.40]),
         index=irrad_data.index)

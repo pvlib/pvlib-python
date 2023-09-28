@@ -325,6 +325,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         * reindl
         * king
         * perez
+        * perez-driesse
 
     Parameters
     ----------
@@ -353,7 +354,8 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         the list of accepted values.
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
-        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``.
+        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
+        ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
 
@@ -365,13 +367,13 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
 
     Notes
     -----
-    Models ``'haydavies'``, ``'reindl'``, or ``'perez'`` require
-    ``'dni_extra'``. Values can be calculated using
+    Models ``'haydavies'``, ``'reindl'``, ``'perez'`` and ``'perez-driesse'``
+    require ``'dni_extra'``. Values can be calculated using
     :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
-    The ``'perez'`` model requires relative airmass (``airmass``) as input. If
-    ``airmass`` is not provided, it is calculated using the defaults in
-    :py:func:`~pvlib.atmosphere.get_relative_airmass`.
+    The ``'perez'`` and ``'perez-driesse'`` models require relative airmass
+    (``airmass``) as input. If ``airmass`` is not provided, it is calculated
+    using the defaults in :py:func:`~pvlib.atmosphere.get_relative_airmass`.
     """
 
     poa_sky_diffuse = get_sky_diffuse(
@@ -402,6 +404,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         * reindl
         * king
         * perez
+        * perez-driesse
 
     Parameters
     ----------
@@ -425,7 +428,8 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         Relative airmass (not adjusted for pressure). [unitless]
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
-        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``.
+        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
+        ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
 
@@ -442,13 +446,13 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     Notes
     -----
-    Models ``'haydavies'``, ``'reindl'``, and ``'perez``` require 'dni_extra'.
-    Values can be calculated using
+    Models ``'haydavies'``, ``'reindl'``, ``'perez'`` and ``'perez-driesse'``
+    require ``'dni_extra'``. Values can be calculated using
     :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
-    The ``'perez'`` model requires relative airmass (``airmass``) as input. If
-    ``airmass`` is not provided, it is calculated using the defaults in
-    :py:func:`~pvlib.atmosphere.get_relative_airmass`.
+    The ``'perez'`` and ``'perez-driesse'`` models require relative airmass
+    (``airmass``) as input. If ``airmass`` is not provided, it is calculated
+    using the defaults in :py:func:`~pvlib.atmosphere.get_relative_airmass`.
     """
 
     model = model.lower()
@@ -1220,15 +1224,19 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
-def _calc_delta(dhi, dni_extra, airmass):
+def _calc_delta(dhi, dni_extra, solar_zenith, airmass=None):
     '''
-    Compute the delta parameter, which represents sky dome "brightness".
+    Compute the delta parameter, which represents sky dome "brightness"
+    in the Perez and Perez-Driesse models.
 
     Helper function for perez_driesse transposition.
     '''
-    max_airmass = get_relative_airmass(90, 'kastenyoung1989')
+    if airmass is None:
+        # use the same airmass model as in the original perez work
+        airmass = get_relative_airmass(solar_zenith, 'kastenyoung1989')
 
-    airmass = np.where(np.isnan(airmass), max_airmass, airmass)
+    max_airmass = get_relative_airmass(90, 'kastenyoung1989')
+    airmass = np.where(solar_zenith >= 90, max_airmass, airmass)
 
     return dhi / (dni_extra / airmass)
 
@@ -1236,7 +1244,7 @@ def _calc_delta(dhi, dni_extra, airmass):
 def _calc_zeta(dhi, dni, zenith, use_kappa=True):
     '''
     Compute the zeta parameter, which represents sky dome "clearness"
-    in the perez-driesse model.
+    in the Perez-Driesse model.
 
     Helper function for perez_driesse transposition.
     '''
@@ -1259,9 +1267,9 @@ def _calc_zeta(dhi, dni, zenith, use_kappa=True):
 def _f(i, j, zeta):
     '''
     Evaluate the quadratic splines corresponding to the
-    allsitescomposite1990 perez look-up tables.
+    allsitescomposite1990 Perez model look-up table.
 
-    Helper function for perez_driesse transposition
+    Helper function for perez_driesse transposition.
     '''
     knots = np.array(
         [0.000, 0.000, 0.000,
@@ -1271,17 +1279,17 @@ def _f(i, j, zeta):
     coefs = np.array(
         [[-0.053,  0.529, -0.028, -0.071,  0.061, -0.019],
          [-0.008,  0.588, -0.062, -0.06 ,  0.072, -0.022],
-         [ 0.131,  0.77 , -0.167, -0.026,  0.106, -0.032],
+         [ 0.131,  0.770, -0.167, -0.026,  0.106, -0.032],
          [ 0.328,  0.471, -0.216,  0.069, -0.105, -0.028],
-         [ 0.557,  0.241, -0.3  ,  0.086, -0.085, -0.012],
+         [ 0.557,  0.241, -0.300,  0.086, -0.085, -0.012],
          [ 0.861, -0.323, -0.355,  0.24 , -0.467, -0.008],
          [ 1.212, -1.239, -0.444,  0.305, -0.797,  0.047],
          [ 1.099, -1.847, -0.365,  0.275, -1.132,  0.124],
          [ 0.544,  0.157, -0.213,  0.118, -1.455,  0.292],
          [ 0.544,  0.157, -0.213,  0.118, -1.455,  0.292],
-         [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ],
-         [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ],
-         [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ]])
+         [ 0.000,  0.000,  0.000,  0.000,  0.000,  0.000],
+         [ 0.000,  0.000,  0.000,  0.000,  0.000,  0.000],
+         [ 0.000,  0.000,  0.000,  0.000,  0.000,  0.000]])
 
     coefs = coefs.T.reshape((2, 3, 13))
 
@@ -1296,17 +1304,108 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
     the continuous Perez-Driesse model.
-    '''
 
+    The Perez-Driesse model [1]_ is a reformulation of the 1990 Perez
+    model [2]_ that provides continuity of the function and of its first
+    derivatives.  This is achieved by replacing the look-up table of coefficients
+    with quadratic splines.  Seet Notes for more information.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        and <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    dhi : numeric
+        Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
+
+    dni : numeric
+        Direct normal irradiance in W/m^2. DNI must be >=0.
+
+    dni_extra : numeric
+        Extraterrestrial normal irradiance in W/m^2.
+
+    solar_zenith : numeric
+        apparent (refraction-corrected) zenith angles in decimal
+        degrees. solar_zenith must be >=0 and <=180.
+
+    solar_azimuth : numeric
+        Sun azimuth angles in decimal degrees. solar_azimuth must be >=0
+        and <=360. The azimuth convention is defined as degrees east of
+        north (e.g. North = 0, East = 90, West = 270).
+
+    airmass : numeric (optional, default None)
+        Relative (not pressure-corrected) airmass values. If airmass is a
+        DataFrame it must be of the same size as all other DataFrame
+        inputs. The kastenyoung1989 airmass calculation is used internally
+        and is also recommended when pre-calculating airmass because
+        it was used in the original model development.
+
+    model : string (optional, default='allsitescomposite1990')
+        A string which selects the desired set of Perez coefficients.
+        This argument is only for compatibility with the `perez` function.
+        If a value other than the default value is provided, it is ignored.
+
+    return_components: bool (optional, default=False)
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
+
+    Returns
+    --------
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by `return_components` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
+    sky_diffuse : numeric
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * sky_diffuse: Total sky diffuse
+            * isotropic
+            * circumsolar
+            * horizon
+
+    Notes
+    -----
+    The Driesse-Perez model can be considered a plug-in replacement for the
+    1990 Perez model using the ``'allsitescomposite1990'`` coefficient set.
+    Deviations between the two are very small, as demonstrated in [1]_.
+    Support for other coefficient sets is not provided because the 1990
+    set is based on the largest and most diverse set of empirical data.
+
+    References
+    ----------
+    .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
+        Diffuse Sky Model for Forward and Reverse Transposition, accepted
+        for publication in the Solar Energy Journal.
+
+    .. [2] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
+       1990. Modeling daylight availability and irradiance components from
+       direct and global irradiance. Solar Energy 44 (5), 271-289.
+
+    See also
+    --------
+    perez
+    isotropic
+    haydavies
+    klucher
+    reindl
+    king
+    '''
     if model is not 'allsitescomposite1990':
         raise Warning("The 'model' parameter is ignored. "
                       "Only 'allsitescomposite1990' is available.")
 
-    if airmass is None:
-        # use the same airmass model as in the original perez work
-        airmass = get_relative_airmass(solar_zenith, 'kastenyoung1989')
-
-    delta = _calc_delta(dhi, dni_extra, airmass)
+    delta = _calc_delta(dhi, dni_extra, solar_zenith, airmass)
     zeta = _calc_zeta(dhi, dni, solar_zenith, use_kappa=True)
 
     z = np.radians(solar_zenith)
@@ -1314,10 +1413,11 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     F1 = _f(1, 1, zeta) + _f(1, 2, zeta) * delta + _f(1, 3, zeta) * z
     F2 = _f(2, 1, zeta) + _f(2, 2, zeta) * delta + _f(2, 3, zeta) * z
 
-    # note the upper limit on F1
+    # note the newly recommended upper limit on F1
     F1 = np.clip(F1, 0, 0.9)
 
     # lines after this point are identical to the original perez function
+    # with some checks removed
 
     A = aoi_projection(surface_tilt, surface_azimuth,
                        solar_zenith, solar_azimuth)
@@ -1342,14 +1442,6 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         diffuse_components['circumsolar'] = dhi * term2
         diffuse_components['horizon'] = dhi * term3
 
-        # Set values of components to 0 when sky_diffuse is 0
-        mask = sky_diffuse == 0
-        if isinstance(sky_diffuse, pd.Series):
-            diffuse_components = pd.DataFrame(diffuse_components)
-            diffuse_components.loc[mask] = 0
-        else:
-            diffuse_components = {k: np.where(mask, 0, v) for k, v in
-                                  diffuse_components.items()}
         return diffuse_components
     else:
         return sky_diffuse

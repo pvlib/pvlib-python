@@ -459,6 +459,27 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     return temp_air + temp_difference
 
 
+def faiman_dyn(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84,
+               thermal_inertia=0):
+    r'''
+    Calculate cell or module temperature using the Faiman model augmented
+    with a thermal inertia term.
+
+    The Faiman model uses an empirical heat loss factor model [1]_ and is
+    adopted in the IEC 61853 standards [2]_ and [3]_.  The radiative loss
+    term was proposed and developed by Driesse [4]_.
+
+    The model can be used to represent cell or module temperature.
+    '''
+    return temp_air
+
+
+def fit_faiman_dyn(temp_pv, poa_global, temp_air, wind_speed,
+                   thermal_inertia=(0, 30, 1), full_output=False, **kwargs):
+
+    return dict(u0=25.0, u1=6.84, thermal_inertia=0)
+
+
 def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
                u0=25.0, u1=6.84, sky_view=1.0, emissivity=0.88):
     r'''

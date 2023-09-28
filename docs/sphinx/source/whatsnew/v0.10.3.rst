@@ -7,6 +7,8 @@ v0.10.3 (Anticipated December, 2023)
 
 Enhancements
 ~~~~~~~~~~~~
+* Added the continuous Perez-Driesse transposition model.
+  :py:func:`pvlib.irradiance.perez_driesse` (:issue:`1841`, :pull:`1876`)
 
 
 Bug fixes
@@ -23,4 +25,4 @@ Documentation
 
 Contributors
 ~~~~~~~~~~~~
-
+* Anton Driesse (:ghuser:`adriesse`)

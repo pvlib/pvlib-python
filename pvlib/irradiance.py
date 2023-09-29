@@ -458,9 +458,9 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     model = model.lower()
 
-    if ((model in {'haydavies', 'reindl', 'perez', 'perez-driesse'}) and
-        (dni_extra is None)):
-            raise ValueError(f'dni_extra is required for model {model}')
+    if dni_extra is None and model in {'haydavies', 'reindl',
+                                       'perez', 'perez-driesse'}:
+        raise ValueError(f'dni_extra is required for model {model}')
 
     if model == 'isotropic':
         sky = isotropic(surface_tilt, dhi)

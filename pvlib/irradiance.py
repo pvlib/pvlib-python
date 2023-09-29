@@ -7,6 +7,7 @@ irradiance, and total irradiance under various conditions.
 import datetime
 from collections import OrderedDict
 from functools import partial
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -459,7 +460,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     if ((model in {'haydavies', 'reindl', 'perez', 'perez-driesse'}) and
         (dni_extra is None)):
-        raise ValueError(f'dni_extra is required for model {model}')
+            raise ValueError(f'dni_extra is required for model {model}')
 
     if model == 'isotropic':
         sky = isotropic(surface_tilt, dhi)
@@ -481,11 +482,10 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth, airmass,
                     model=model_perez)
     elif model == 'perez-driesse':
-        if airmass is None:
-            airmass = atmosphere.get_relative_airmass(solar_zenith)
+        # perez_driesse will calculate its own airmass if needed
         sky = perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                    solar_zenith, solar_azimuth, airmass,
-                    model=model_perez)
+                            solar_zenith, solar_azimuth, airmass,
+                            model=model_perez)
     else:
         raise ValueError(f'invalid model selection {model}')
 
@@ -1279,11 +1279,11 @@ def _f(i, j, zeta):
 
     coefs = np.array(
         [[-0.053, +0.529, -0.028, -0.071, +0.061, -0.019],
-         [-0.008, +0.588, -0.062, -0.06 , +0.072, -0.022],
+         [-0.008, +0.588, -0.062, -0.060, +0.072, -0.022],
          [+0.131, +0.770, -0.167, -0.026, +0.106, -0.032],
          [+0.328, +0.471, -0.216, +0.069, -0.105, -0.028],
          [+0.557, +0.241, -0.300, +0.086, -0.085, -0.012],
-         [+0.861, -0.323, -0.355, +0.24 , -0.467, -0.008],
+         [+0.861, -0.323, -0.355, +0.240, -0.467, -0.008],
          [ 1.212, -1.239, -0.444, +0.305, -0.797, +0.047],
          [ 1.099, -1.847, -0.365, +0.275, -1.132, +0.124],
          [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
@@ -1402,9 +1402,10 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     reindl
     king
     '''
-    if model is not 'allsitescomposite1990':
-        raise Warning("The 'model' parameter is ignored. "
-                      "Only 'allsitescomposite1990' is available.")
+    if model not in ('allsitescomposite1990', '1990'):
+        warnings.warn("The 'model' parameter is ignored. "
+                      "Only 'allsitescomposite1990' is available.",
+                      UserWarning)
 
     delta = _calc_delta(dhi, dni_extra, solar_zenith, airmass)
     zeta = _calc_zeta(dhi, dni, solar_zenith, use_kappa=True)

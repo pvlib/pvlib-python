@@ -457,7 +457,8 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
 
     model = model.lower()
 
-    if (model in {'haydavies', 'reindl', 'perez', 'perez-driesse'}) and (dni_extra is None):
+    if ((model in {'haydavies', 'reindl', 'perez', 'perez-driesse'}) and
+        (dni_extra is None)):
         raise ValueError(f'dni_extra is required for model {model}')
 
     if model == 'isotropic':
@@ -1277,19 +1278,19 @@ def _f(i, j, zeta):
          1.000, 1.000, 1.000])
 
     coefs = np.array(
-        [[-0.053,  0.529, -0.028, -0.071,  0.061, -0.019],
-         [-0.008,  0.588, -0.062, -0.06 ,  0.072, -0.022],
-         [ 0.131,  0.770, -0.167, -0.026,  0.106, -0.032],
-         [ 0.328,  0.471, -0.216,  0.069, -0.105, -0.028],
-         [ 0.557,  0.241, -0.300,  0.086, -0.085, -0.012],
-         [ 0.861, -0.323, -0.355,  0.24 , -0.467, -0.008],
-         [ 1.212, -1.239, -0.444,  0.305, -0.797,  0.047],
-         [ 1.099, -1.847, -0.365,  0.275, -1.132,  0.124],
-         [ 0.544,  0.157, -0.213,  0.118, -1.455,  0.292],
-         [ 0.544,  0.157, -0.213,  0.118, -1.455,  0.292],
-         [ 0.000,  0.000,  0.000,  0.000,  0.000,  0.000],
-         [ 0.000,  0.000,  0.000,  0.000,  0.000,  0.000],
-         [ 0.000,  0.000,  0.000,  0.000,  0.000,  0.000]])
+        [[-0.053, +0.529, -0.028, -0.071, +0.061, -0.019],
+         [-0.008, +0.588, -0.062, -0.06 , +0.072, -0.022],
+         [+0.131, +0.770, -0.167, -0.026, +0.106, -0.032],
+         [+0.328, +0.471, -0.216, +0.069, -0.105, -0.028],
+         [+0.557, +0.241, -0.300, +0.086, -0.085, -0.012],
+         [+0.861, -0.323, -0.355, +0.24 , -0.467, -0.008],
+         [ 1.212, -1.239, -0.444, +0.305, -0.797, +0.047],
+         [ 1.099, -1.847, -0.365, +0.275, -1.132, +0.124],
+         [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
+         [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
+         [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],
+         [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],
+         [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000]])
 
     coefs = coefs.T.reshape((2, 3, 13))
 
@@ -1307,8 +1308,8 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     The Perez-Driesse model [1]_ is a reformulation of the 1990 Perez
     model [2]_ that provides continuity of the function and of its first
-    derivatives.  This is achieved by replacing the look-up table of coefficients
-    with quadratic splines.  Seet Notes for more information.
+    derivatives.  This is achieved by replacing the look-up table of
+    coefficients with quadratic splines.  Seet Notes for more information.
 
     Parameters
     ----------
@@ -1441,6 +1442,9 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         diffuse_components['isotropic'] = dhi * term1
         diffuse_components['circumsolar'] = dhi * term2
         diffuse_components['horizon'] = dhi * term3
+
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
 
         return diffuse_components
     else:

@@ -1324,10 +1324,10 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : numeric
-        Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
+        Diffuse horizontal irradiance in W/m^2. dhi must be >=0.
 
     dni : numeric
-        Direct normal irradiance in W/m^2. DNI must be >=0.
+        Direct normal irradiance in W/m^2. dni must be >=0.
 
     dni_extra : numeric
         Extraterrestrial normal irradiance in W/m^2.
@@ -1380,8 +1380,8 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     The Driesse-Perez model can be considered a plug-in replacement for the
     1990 Perez model using the ``'allsitescomposite1990'`` coefficient set.
     Deviations between the two are very small, as demonstrated in [1]_.
-    Support for other coefficient sets is not provided because the 1990
-    set is based on the largest and most diverse set of empirical data.
+    Other coefficient sets are not supported because the 1990 set is
+    based on the largest and most diverse set of empirical data.
 
     References
     ----------

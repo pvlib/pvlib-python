@@ -1309,7 +1309,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     The Perez-Driesse model [1]_ is a reformulation of the 1990 Perez
     model [2]_ that provides continuity of the function and of its first
     derivatives.  This is achieved by replacing the look-up table of
-    coefficients with quadratic splines.  Seet Notes for more information.
+    coefficients with quadratic splines.
 
     Parameters
     ----------

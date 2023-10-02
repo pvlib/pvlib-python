@@ -1402,6 +1402,8 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     reindl
     king
     '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct., 2023
+
     if model not in ('allsitescomposite1990', '1990'):
         warnings.warn("The 'model' parameter is ignored. "
                       "Only 'allsitescomposite1990' is available.",
@@ -2590,6 +2592,8 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     orgill_hollands
     boland
     """
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug., 2023
+
     # central polynomial coefficients with float64 precision
     p = [+12.26911439571261000,
          -16.47050842469730700,

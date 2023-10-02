@@ -12,6 +12,8 @@ PV temperature models
    temperature.sapm_cell_from_module
    temperature.pvsyst_cell
    temperature.faiman
+   temperature.faiman_dyn
+   temperature.fit_faiman_dyn
    temperature.faiman_rad
    temperature.fuentes
    temperature.ross

@@ -466,24 +466,73 @@ def faiman_dyn(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84,
     Calculate cell or module temperature using the Faiman model augmented
     with a thermal inertia term.
 
-    The Faiman model uses an empirical heat loss factor model [1]_ and is
-    adopted in the IEC 61853 standards [2]_ and [3]_.  The simplified 
-    thermal inertia term was proposed and developed by Driesse [4]_.
+    The Faiman model is an empirical heat loss factor model [1]_ and is
+    adopted in the IEC 61853 standards [2]_ and [3]_.  The method of
+    accounting for thermal inertia was proposed and demonstrated
+    by Driesse in [4]_.
 
     The model can be used to represent cell or module temperature.
 
     Parameters
     ----------
-    thermal_inertia : numeric, default 0.0
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    temp_air : numeric
+        Ambient dry bulb temperature [C].
+
+    wind_speed : numeric, default 1.0
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT. [m/s]
+
+    u0 : numeric, default 25.0
+        Combined heat loss factor coefficient. The default value is one
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
+        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
+
+    u1 : numeric, default 6.84
+        Combined heat loss factor influenced by wind. The default value is one
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+
+    thermal_inertia : scalar numeric, default 0.0
         Represents the delay for a change in module temperature
         in response to changes in operating conditions.
         Typical values are 5-10 minutes. [minutes]
+
+    Returns
+    -------
+    numeric, values in degrees Celsius
 
     Notes
     -----
     Thermal inertia is simulated using a simple moving average on the
     operating conditions.
 
+
+    References
+    ----------
+    .. [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+       photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+       :doi:`10.1002/pip.813`
+
+    .. [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
+       rating - Part 2: Spectral responsivity, incidence angle and module
+       operating temperature measurements". IEC, Geneva, 2018.
+
+    .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
+       rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
+
+    .. [4] Driesse, A. (2022) "Module operating temperature model parameter
+        determination"  DOI TBD
+
+    See also
+    --------
+    pvlib.temperature.fit_faiman_dyn
+    pvlib.temperature.faiman
     '''
     if not isinstance(poa_global, pd.Series):
         raise ValueError('poa_global must be a pandas Series')
@@ -502,7 +551,6 @@ def faiman_dyn(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84,
 
     if window > 1:
         roll_options = dict(window=window, min_periods=1, center=False)
-        roll_options = dict(window=window, center=False)
 
         poa_global = pd.Series(poa_global).rolling(**roll_options).mean()
         temp_air   = pd.Series(temp_air).rolling(**roll_options).mean()
@@ -520,8 +568,25 @@ def fit_faiman_dyn(temp_pv, poa_global, temp_air, wind_speed,
                    thermal_inertia=(0.0, 15.0, 1.0),
                    full_output=False, **kwargs):
     '''
-    Determine the optimal parameters for the faiman_dyn model from
-    a set of measurements.
+    Determine the optimal parameters for the faiman_dyn temperature model
+    from a set of measurements using a method proposed and demonstrated
+    by Driesse in [1]_.
+
+    Parameters
+    ----------
+    temp_pv : numeric
+        Cell or module temperature [C].
+
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    temp_air : numeric
+        Ambient dry bulb temperature [C].
+
+    wind_speed : numeric, default 1.0
+        Wind speed in m/s measured at the same height for which the wind loss
+        factor was determined.  The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT. [m/s]
 
     thermal_inertia : tuple of numeric, default (0.0, 15.0, 1.0)
         Represents the delay for a change in module temperature
@@ -553,6 +618,17 @@ def fit_faiman_dyn(temp_pv, poa_global, temp_air, wind_speed,
     the range of values specified by the thermal_inertia parameter.
     From the collected results, the set of parameters producing the
     smallest RMSE is identified as optimal.
+
+    References
+    ----------
+    .. [1] Driesse, A. (2022) "Module operating temperature model parameter
+        determination" DOI TBD
+
+    See also
+    --------
+    pvlib.temperature.faiman_dyn
+    pvlib.temperature.faiman
+    pvlib.temperature.GenericLinearModel
     '''
 
     if not isinstance(poa_global, pd.Series):

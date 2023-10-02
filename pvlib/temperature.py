@@ -8,6 +8,7 @@ import pandas as pd
 from pvlib.tools import sind
 from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _get_sample_intervals
+from scipy.optimize import curve_fit
 import scipy
 import scipy.constants
 import warnings
@@ -466,18 +467,161 @@ def faiman_dyn(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84,
     with a thermal inertia term.
 
     The Faiman model uses an empirical heat loss factor model [1]_ and is
-    adopted in the IEC 61853 standards [2]_ and [3]_.  The radiative loss
-    term was proposed and developed by Driesse [4]_.
+    adopted in the IEC 61853 standards [2]_ and [3]_.  The simplified 
+    thermal inertia term was proposed and developed by Driesse [4]_.
 
     The model can be used to represent cell or module temperature.
+
+    Parameters
+    ----------
+    thermal_inertia : numeric, default 0.0
+        Represents the delay for a change in module temperature
+        in response to changes in operating conditions.
+        Typical values are 5-10 minutes. [minutes]
+
+    Notes
+    -----
+    Thermal inertia is simulated using a simple moving average on the
+    operating conditions.
+
     '''
+    if not isinstance(poa_global, pd.Series):
+        raise ValueError('poa_global must be a pandas Series')
+
+    if not isinstance(poa_global.index, pd.DatetimeIndex):
+        raise ValueError('poa_global must have a Datetime index')
+
+    # assume the first time increment represent the series time step
+    # later gaps or large steps will not cause the function to fail
+    # only some minor glitches in the module temperature may result
+    time = poa_global.index
+    timestep = time[1] - time[0]
+    timestep_minutes = timestep.seconds / 60
+
+    window = round(2 * thermal_inertia / timestep_minutes)
+
+    if window > 1:
+        roll_options = dict(window=window, min_periods=1, center=False)
+        roll_options = dict(window=window, center=False)
+
+        poa_global = pd.Series(poa_global).rolling(**roll_options).mean()
+        temp_air   = pd.Series(temp_air).rolling(**roll_options).mean()
+        wind_speed = pd.Series(wind_speed).rolling(**roll_options).mean()
+
+    total_loss_factor = u0 + u1 * wind_speed
+    heat_input = poa_global
+    temp_difference = heat_input / total_loss_factor
+    return temp_air + temp_difference
+
     return temp_air
 
 
 def fit_faiman_dyn(temp_pv, poa_global, temp_air, wind_speed,
-                   thermal_inertia=(0, 30, 1), full_output=False, **kwargs):
+                   thermal_inertia=(0.0, 15.0, 1.0),
+                   full_output=False, **kwargs):
+    '''
+    Determine the optimal parameters for the faiman_dyn model from
+    a set of measurements.
 
-    return dict(u0=25.0, u1=6.84, thermal_inertia=0)
+    thermal_inertia : tuple of numeric, default (0.0, 15.0, 1.0)
+        Represents the delay for a change in module temperature
+        in response to changes in operating conditions.
+        This tuple specifies the range of values to be evaluated
+        in the fitting process: (minimum value, maximum value, increment).
+        [minutes]
+
+    full_output : boolean, default False
+        non-zero to return optional output
+
+    kwargs :
+        Additional arguments passed to scipy curvefit.
+
+    Returns
+    -------
+    p: dict
+        A dictionary that has the three keys u0, 01, thermal_inertia
+        and contains the optimal parameter values.
+
+    results : pandas DataFrame
+        Optional table of model parameters for each value of
+        thermal_inertia that was evaluated.
+
+    Notes
+    -----
+    Thermal inertia is simulated using a simple moving average of the
+    operating conditions. The fitting process is repeated for
+    the range of values specified by the thermal_inertia parameter.
+    From the collected results, the set of parameters producing the
+    smallest RMSE is identified as optimal.
+    '''
+
+    if not isinstance(poa_global, pd.Series):
+        raise ValueError('poa_global must be a pandas Series')
+
+    if not isinstance(poa_global.index, pd.DatetimeIndex):
+        raise ValueError('poa_global must have a Datetime index')
+
+    # assume the first time increment represent the series time step
+    # later gaps or large steps will not cause the function to fail
+    # only some minor glitches in the module temperature may result
+    time = poa_global.index
+    timestep = time[1] - time[0]
+    timestep_minutes = timestep.seconds / 60
+
+    # prepare for fitting
+    def fitfun(xdata, *params):
+        return faiman(*xdata, *params)
+
+    fit_options = dict(p0=[20, 5])
+    fit_options.update(kwargs)
+
+    min_window = max(1, round(2 * thermal_inertia[0] / timestep_minutes))
+    max_window = max(1, round(2 * thermal_inertia[1] / timestep_minutes))
+    window_inc = max(1, round(2 * thermal_inertia[2] / timestep_minutes))
+
+    results = []
+
+    # repeat fits using a range of averaging windows
+    for window in range(min_window, max_window + 1, window_inc):
+
+        roll_options = dict(window=window, center=False)
+
+        poa_global_mean = pd.Series(poa_global).rolling(**roll_options).mean()
+        temp_air_mean   = pd.Series(temp_air).rolling(**roll_options).mean()
+        wind_speed_mean = pd.Series(wind_speed).rolling(**roll_options).mean()
+
+        valid = True
+        for v in temp_pv, poa_global_mean, temp_air_mean, wind_speed_mean:
+            valid &= np.isfinite(v)
+
+        xdata = [poa_global_mean[valid],
+                 temp_air_mean[valid],
+                 wind_speed_mean[valid]]
+        ydata = temp_pv[valid]
+
+        popt, pcov = curve_fit(fitfun, xdata, ydata, **fit_options)
+
+        # calculate RMSE
+        ymodel = fitfun(xdata, *popt)
+        rmse = np.sqrt(np.nanmean(np.square(ymodel - ydata)))
+
+        inertia = (window / 2) * timestep_minutes
+        results.append((window, *popt, inertia, rmse))
+
+    # organize the results
+    param_names = ['u0', 'u1', 'thermal_inertia']
+    result_columns = ['window', *param_names, 'rmse']
+
+    results = pd.DataFrame(results, columns=result_columns)
+
+    # choose the solution with the smallest RMSE
+    best_window = results.rmse.idxmin()
+    best_params = results.loc[best_window, param_names].to_dict()
+
+    if full_output:
+        return best_params, results
+    else:
+        return best_params
 
 
 def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,

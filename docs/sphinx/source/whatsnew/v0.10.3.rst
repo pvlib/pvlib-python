@@ -23,4 +23,4 @@ Documentation
 
 Contributors
 ~~~~~~~~~~~~
-
+* Arjan Keeman (:ghuser:`akeeman`)

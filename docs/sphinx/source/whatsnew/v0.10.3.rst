@@ -17,6 +17,7 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Replace use of deprecated ``pkg_resources``. (:issue:`1881`, :pull:`1882`)
 
 
 Documentation
@@ -25,4 +26,6 @@ Documentation
 
 Contributors
 ~~~~~~~~~~~~
+* Arjan Keeman (:ghuser:`akeeman`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Will Hobbs (:ghuser:`williamhobbs`)

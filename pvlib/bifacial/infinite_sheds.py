@@ -505,8 +505,8 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     - ``poa_front_ground_diffuse`` : ground-reflected diffuse irradiance
       reaching the module cells from the front surface. [W/m^2]
     - ``shaded_fraction_front`` : fraction of row slant height from the bottom
-	  that is shaded from direct irradiance on the front surface by adjacent
-	  rows. [unitless]
+      that is shaded from direct irradiance on the front surface by adjacent
+      rows. [unitless]
     - ``poa_back_direct`` : direct irradiance reaching the module cells from
       the back surface. [W/m^2]
     - ``poa_back_diffuse`` : total diffuse irradiance reaching the module
@@ -516,8 +516,8 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
     - ``poa_back_ground_diffuse`` : ground-reflected diffuse irradiance
       reaching the module cells from the back surface. [W/m^2]
     - ``shaded_fraction_back`` : fraction of row slant height from the bottom
-	  that is shaded from direct irradiance on the back surface by adjacent
-	  rows. [unitless]
+      that is shaded from direct irradiance on the back surface by adjacent
+      rows. [unitless]
 
     References
     ----------

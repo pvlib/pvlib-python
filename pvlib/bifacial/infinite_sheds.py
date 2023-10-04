@@ -276,8 +276,8 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
       [W/m^2]
     - ``poa_ground_diffuse`` : total ground-reflected diffuse irradiance on the
       plane of array. [W/m^2]
-    - ``shaded_fraction`` : fraction of row slant height from the bottom that
-      is shaded from direct irradiance. [unitless]
+    - ``shaded_fraction`` : fraction of the surface, going up from the bottom,
+      affected by row-to-row beam shading. [unitless]
 
     References
     ----------
@@ -504,9 +504,8 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
       cells from the front surface. [W/m^2]
     - ``poa_front_ground_diffuse`` : ground-reflected diffuse irradiance
       reaching the module cells from the front surface. [W/m^2]
-    - ``shaded_fraction_front`` : fraction of the front surface,
-      going up from the bottom, affected by row-to-row beam shading.
-      [unitless]
+    - ``shaded_fraction_front`` : fraction of the front surface, going
+      up from the bottom, affected by row-to-row beam shading. [unitless]
     - ``poa_back_direct`` : direct irradiance reaching the module cells from
       the back surface. [W/m^2]
     - ``poa_back_diffuse`` : total diffuse irradiance reaching the module
@@ -515,9 +514,8 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
       cells from the back surface. [W/m^2]
     - ``poa_back_ground_diffuse`` : ground-reflected diffuse irradiance
       reaching the module cells from the back surface. [W/m^2]
-    - ``shaded_fraction_back`` : fraction of row slant height from the
-      bottom that is shaded from direct irradiance on the back surface.
-      [unitless]
+    - ``shaded_fraction_back`` : fraction of the back surface, going
+      up from the bottom, affected by row-to-row beam shading. [unitless]
 
     References
     ----------

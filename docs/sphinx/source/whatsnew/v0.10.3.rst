@@ -7,7 +7,9 @@ v0.10.3 (Anticipated December, 2023)
 
 Enhancements
 ~~~~~~~~~~~~
-
+* :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
+  shaded fraction in returned variables. (:pull:`1871`)
 
 Bug fixes
 ~~~~~~~~~
@@ -26,3 +28,4 @@ Contributors
 ~~~~~~~~~~~~
 * Arjan Keeman (:ghuser:`akeeman`)
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Will Hobbs (:ghuser:`williamhobbs`)

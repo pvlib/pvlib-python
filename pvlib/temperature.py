@@ -320,8 +320,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
         in :eq:`pvsyst`.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}
-                     {\text{C}\ \left( \text{m/s} \right)} \right]`
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     module_efficiency : numeric, default 0.1
         Module external efficiency as a fraction. Parameter :math:`\eta_{m}`
@@ -534,7 +533,9 @@ def faiman_dyn(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84,
     --------
     pvlib.temperature.fit_faiman_dyn
     pvlib.temperature.faiman
-    '''
+
+    '''  # noQA: E501
+    
     if not isinstance(poa_global, pd.Series):
         raise ValueError('poa_global must be a pandas Series')
 

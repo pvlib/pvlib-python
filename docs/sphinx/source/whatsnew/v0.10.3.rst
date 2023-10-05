@@ -9,7 +9,9 @@ Enhancements
 ~~~~~~~~~~~~
 * Added the continuous Perez-Driesse transposition model.
   :py:func:`pvlib.irradiance.perez_driesse` (:issue:`1841`, :pull:`1876`)
-
+* :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
+  shaded fraction in returned variables. (:pull:`1871`)
 
 Bug fixes
 ~~~~~~~~~
@@ -17,6 +19,7 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Replace use of deprecated ``pkg_resources``. (:issue:`1881`, :pull:`1882`)
 
 
 Documentation
@@ -25,4 +28,7 @@ Documentation
 
 Contributors
 ~~~~~~~~~~~~
+* Arjan Keeman (:ghuser:`akeeman`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Will Hobbs (:ghuser:`williamhobbs`)
 * Anton Driesse (:ghuser:`adriesse`)

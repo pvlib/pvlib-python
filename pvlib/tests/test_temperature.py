@@ -143,7 +143,6 @@ def test_faiman_dyn_good():
     expected = [25, 25, 25, 65, 65, 65, 65, 65, 25, 25, 25, 25, 25]
     assert_allclose(expected, temp_pv, atol=0.001)
 
-
     # with thermal inertia
     temp_pv = temperature.faiman_dyn(df.poa_global, df.temp_air, df.wind_speed,
                                      u0=20, u1=5, thermal_inertia=10)

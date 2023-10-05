@@ -6,7 +6,7 @@ PV modules and cells.
 import numpy as np
 import pandas as pd
 from pvlib.tools import sind
-from pvlib._deprecation import warn_deprecated
+# from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _get_sample_intervals
 from scipy.optimize import curve_fit
 import scipy
@@ -320,7 +320,8 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
         in :eq:`pvsyst`.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+        :math:`\left[ \frac{\text{W}/\text{m}^2}
+                     {\text{C}\ \left( \text{m/s} \right)} \right]`
 
     module_efficiency : numeric, default 0.1
         Module external efficiency as a fraction. Parameter :math:`\eta_{m}`
@@ -553,7 +554,7 @@ def faiman_dyn(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84,
         roll_options = dict(window=window, min_periods=1, center=False)
 
         poa_global = pd.Series(poa_global).rolling(**roll_options).mean()
-        temp_air   = pd.Series(temp_air).rolling(**roll_options).mean()
+        temp_air = pd.Series(temp_air).rolling(**roll_options).mean()
         wind_speed = pd.Series(wind_speed).rolling(**roll_options).mean()
 
     total_loss_factor = u0 + u1 * wind_speed
@@ -663,7 +664,7 @@ def fit_faiman_dyn(temp_pv, poa_global, temp_air, wind_speed,
         roll_options = dict(window=window, center=False)
 
         poa_global_mean = pd.Series(poa_global).rolling(**roll_options).mean()
-        temp_air_mean   = pd.Series(temp_air).rolling(**roll_options).mean()
+        temp_air_mean = pd.Series(temp_air).rolling(**roll_options).mean()
         wind_speed_mean = pd.Series(wind_speed).rolling(**roll_options).mean()
 
         valid = True

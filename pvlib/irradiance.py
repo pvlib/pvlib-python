@@ -1377,7 +1377,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Notes
     -----
-    The Driesse-Perez model can be considered a plug-in replacement for the
+    The Perez-Driesse model can be considered a plug-in replacement for the
     1990 Perez model using the ``'allsitescomposite1990'`` coefficient set.
     Deviations between the two are very small, as demonstrated in [1]_.
     Other coefficient sets are not supported because the 1990 set is

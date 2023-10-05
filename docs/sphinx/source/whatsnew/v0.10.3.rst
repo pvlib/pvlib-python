@@ -10,6 +10,10 @@ Enhancements
 * :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
   shaded fraction in returned variables. (:pull:`1871`)
+* Add a simple dynamic version of the Faiman temperature model
+  :py:func:`pvlib.temperature.faiman_dyn`
+  and a function to obtain parameters from field data
+  :py:func:`pvlib.temperature.faiman_dyn`(:issue:`1877`, :pull:`1878`)
 
 Bug fixes
 ~~~~~~~~~

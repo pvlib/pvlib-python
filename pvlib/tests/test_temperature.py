@@ -127,6 +127,73 @@ def test_faiman_ndarray():
     assert_allclose(expected, result, atol=0.001)
 
 
+def test_faiman_dyn_good():
+    time = pd.date_range('3/14/15 9:00', periods=13, freq='5T')
+    df = pd.DataFrame(index=time)
+
+    df['poa_global'] = 0
+    df['poa_global'][3:] = 1000
+    df['temp_air'] = 25
+    df['temp_air'][8:] = -15
+    df['wind_speed'] = 1
+
+    # without thermal inertia
+    temp_pv = temperature.faiman_dyn(df.poa_global, df.temp_air, df.wind_speed,
+                                     u0=20, u1=5, thermal_inertia=0)
+    expected = [25, 25, 25, 65, 65, 65, 65, 65, 25, 25, 25, 25, 25]
+    assert_allclose(expected, temp_pv, atol=0.001)
+
+
+    # with thermal inertia
+    temp_pv = temperature.faiman_dyn(df.poa_global, df.temp_air, df.wind_speed,
+                                     u0=20, u1=5, thermal_inertia=10)
+    expected = [25, 25, 25, 35, 45, 55, 65, 65, 55, 45, 35, 25, 25]
+    assert_allclose(expected, temp_pv, atol=0.001)
+
+
+def test_faiman_dyn_bad():
+    with pytest.raises(ValueError, match='pandas Series'):
+        temperature.faiman_dyn(1000, 25)
+
+    with pytest.raises(ValueError, match='Datetime index'):
+        temperature.faiman_dyn(pd.Series(1000), 25)
+
+
+def test_fit_faiman_dyn_bad():
+    with pytest.raises(ValueError, match='pandas Series'):
+        temperature.fit_faiman_dyn(50, 1000, 25, 1)
+
+    with pytest.raises(ValueError, match='Datetime index'):
+        temperature.fit_faiman_dyn(50, pd.Series(1000), 25, 1)
+
+
+def test_fit_faiman_dyn_good():
+
+    time = pd.date_range('3/14/15 9:00', periods=30, freq='2T')
+    df = pd.DataFrame(index=time)
+
+    df['poa_global'] = np.random.uniform(0, 1000, len(time))
+    df['temp_air'] = np.random.uniform(10, 30, len(time))
+    df['wind_speed'] = np.random.uniform(0, 5, len(time))
+
+    expected = dict(u0=26.5, u1=3.5, thermal_inertia=8)
+    temp_pv = temperature.faiman_dyn(df.poa_global, df.temp_air, df.wind_speed,
+                                     **expected)
+
+    params = temperature.fit_faiman_dyn(temp_pv, df.poa_global,
+                                        df.temp_air, df.wind_speed,
+                                        thermal_inertia=(0, 15, 1))
+    for k, v in expected.items():
+        assert_allclose(params[k], v, atol=1e-4)
+
+    result = temperature.fit_faiman_dyn(temp_pv, df.poa_global,
+                                        df.temp_air, df.wind_speed,
+                                        thermal_inertia=(0, 15, 1),
+                                        full_output=True)
+    params, detail = result
+    assert isinstance(detail, pd.DataFrame)
+
+
 def test_faiman_rad_no_ir():
     expected = temperature.faiman(900, 20, 5)
     result = temperature.faiman_rad(900, 20, 5)

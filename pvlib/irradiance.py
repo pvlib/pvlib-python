@@ -14,7 +14,6 @@ import pandas as pd
 from scipy.interpolate import splev
 
 from pvlib import atmosphere, solarposition, tools
-from pvlib.atmosphere import get_relative_airmass
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
 
@@ -1234,15 +1233,16 @@ def _calc_delta(dhi, dni_extra, solar_zenith, airmass=None):
     '''
     if airmass is None:
         # use the same airmass model as in the original perez work
-        airmass = get_relative_airmass(solar_zenith, 'kastenyoung1989')
+        airmass = atmosphere.get_relative_airmass(solar_zenith, 
+                                                  'kastenyoung1989')
 
-    max_airmass = get_relative_airmass(90, 'kastenyoung1989')
+    max_airmass = atmosphere.get_relative_airmass(90, 'kastenyoung1989')
     airmass = np.where(solar_zenith >= 90, max_airmass, airmass)
 
     return dhi / (dni_extra / airmass)
 
 
-def _calc_zeta(dhi, dni, zenith, use_kappa=True):
+def _calc_zeta(dhi, dni, zenith):
     '''
     Compute the zeta parameter, which represents sky dome "clearness"
     in the Perez-Driesse model.
@@ -1252,15 +1252,17 @@ def _calc_zeta(dhi, dni, zenith, use_kappa=True):
     dhi = np.asarray(dhi)
     dni = np.asarray(dni)
 
+    # first calculate what zeta would be without the kappa correction
+    # using eq. 5 and eq. 13
     with np.errstate(invalid='ignore'):
         zeta = dni / (dhi + dni)
 
     zeta = np.where(dhi == 0, 0.0, zeta)
 
-    if use_kappa:
-        kappa = 1.041
-        kterm = kappa * np.radians(zenith) ** 3
-        zeta = zeta / (1 - kterm * (zeta - 1))
+    # then apply the kappa correction in a manner analogous to eq. 7
+    kappa = 1.041
+    kterm = kappa * np.radians(zenith) ** 3
+    zeta = zeta / (1 - kterm * (zeta - 1))
 
     return zeta
 
@@ -1410,7 +1412,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                       UserWarning)
 
     delta = _calc_delta(dhi, dni_extra, solar_zenith, airmass)
-    zeta = _calc_zeta(dhi, dni, solar_zenith, use_kappa=True)
+    zeta = _calc_zeta(dhi, dni, solar_zenith)
 
     z = np.radians(solar_zenith)
 

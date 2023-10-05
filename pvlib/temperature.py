@@ -534,7 +534,7 @@ def faiman_dyn(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84,
     pvlib.temperature.fit_faiman_dyn
     pvlib.temperature.faiman
 
-    '''  # noQA: E501
+    '''   # noQA: E501
 
     if not isinstance(poa_global, pd.Series):
         raise ValueError('poa_global must be a pandas Series')

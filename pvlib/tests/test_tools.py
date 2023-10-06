@@ -3,6 +3,7 @@ import pytest
 from pvlib import tools
 import numpy as np
 import pandas as pd
+import scipy
 
 
 @pytest.mark.parametrize('keys, input_dict, expected', [
@@ -120,3 +121,18 @@ def test_get_pandas_index(args, args_idx):
         assert index is None
     else:
         pd.testing.assert_index_equal(args[args_idx].index, index)
+
+
+def test__logwrightomega():
+    x = np.concatenate([-(10.**np.arange(100, -100, -0.1)),
+                        10.**np.arange(-100, 100, 0.1)])
+    with np.errstate(divide='ignore'):
+        expected = np.log(scipy.special.wrightomega(x))
+
+    expected[x < -750] = x[x < -750]
+
+    actual = tools._logwrightomega(x, n=2)
+    np.testing.assert_allclose(actual, expected, atol=2e-11, rtol=2e-11)
+
+    actual = tools._logwrightomega(x, n=3)
+    np.testing.assert_allclose(actual, expected, atol=2e-15, rtol=4e-16)

@@ -1233,7 +1233,7 @@ def _calc_delta(dhi, dni_extra, solar_zenith, airmass=None):
     '''
     if airmass is None:
         # use the same airmass model as in the original perez work
-        airmass = atmosphere.get_relative_airmass(solar_zenith, 
+        airmass = atmosphere.get_relative_airmass(solar_zenith,
                                                   'kastenyoung1989')
 
     max_airmass = atmosphere.get_relative_airmass(90, 'kastenyoung1989')

@@ -8,14 +8,23 @@ What can be simpler than a moving average?
 
 # %%
 #
+# Applying a moving average filter to the PV array operating conditions
+# is a simple technique to compensate for the thermal inertia of the module,
+# which delays and dampens temperature fluctuations.
+# It is useful for simulating at small time steps, but even more useful for
+# fitting models to field data as demonstrated in [1]_.
+# The functions :py:func:`pvlib.temperature.faiman_dyn` and
+# :py:func:`pvlib.temperature.fit_faiman_dyn` incorporate this moving average
+# technique.
+#
 # This example reads a csv file containing one-minute average monitoring data.
-# The function fit_faiman_dyn is used to determine the model parameters, and
-# the function faiman_dyn is used to demonstrate how well it worked.
+# The function :py:func:`pvlib.temperature.fit_faiman_dyn` is used to determine
+# the model parameters and the function :py:func:`pvlib.temperature.faiman_dyn`
+# is used to demonstrate how well it worked.
 #
-# Contributed by Anton Driesse, PV Performance Labs, October 2023
+## Contributed by Anton Driesse, PV Performance Labs, October 2023.
 #
-#
-# References
+## References
 # ----------
 # .. [1] Driesse, A. (2022) "Module operating temperature model parameter
 #    determination" DOI TBD
@@ -64,8 +73,8 @@ for k, v in params.items():
 # %%
 #
 # With the full_output option you can obtain the results for all the values
-# of thermal_inertia that were evaluated.  The minimum is clearly visible
-# below, but 1 minute shorter or longer doesn't make much difference
+# of thermal_inertia that were evaluated.  The optimal point is clearly visible
+# below, but a minute shorter or longer actually doesn't make much difference
 # in the RMSE.
 #
 
@@ -92,6 +101,7 @@ df['temp_pv_faiman_dyn'] = faiman_dyn(df.poa_global, df.temp_air,
                                       df.wind_speed, **params)
 
 DAY = slice('2020-03-20 7:00', '2020-03-20 19:00')
+# sphinx_gallery_thumbnail_number = 2
 plt.figure()
 plt.plot(df.temp_pv[DAY])
 plt.plot(df.temp_pv_faiman[DAY], alpha=0.5, zorder=0)
@@ -101,6 +111,8 @@ plt.grid(alpha=0.5)
 plt.xlabel('2020-03-20')
 plt.ylabel('PV temperature [C]')
 plt.show()
+
+# %%
 
 dfs = df.sort_values('wind_speed')
 plt.figure()

@@ -115,8 +115,8 @@ plt.show()
 # %%
 
 plt.figure()
-l1 = plt.plot(dfs['temp_pv'], dfs['temp_pv_faiman'], '.', color='C1')
-l2 = plt.plot(dfs['temp_pv'], dfs['temp_pv_faiman_dyn'], '.', color='C2')
+l1 = plt.plot(df['temp_pv'], df['temp_pv_faiman'], '.', color='C1')
+l2 = plt.plot(df['temp_pv'], df['temp_pv_faiman_dyn'], '.', color='C2')
 plt.legend(['faiman', 'faiman_dyn'])
 l1[0].set_alpha(0.5)
 l2[0].set_alpha(0.25)

@@ -25,6 +25,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import pvlib
 from pvlib.temperature import faiman, faiman_dyn, fit_faiman_dyn
 
 # %%

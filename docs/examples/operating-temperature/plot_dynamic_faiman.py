@@ -1,0 +1,114 @@
+"""
+Demonstrating a simple way to incorporate with thermal inertia
+==============================================================
+
+What can be simpler than a moving average?
+
+This example reads a csv file containing one-minute average monitoring data.
+The function fit_faiman_dyn is used to determine the model parameters, and
+the function faiman_dyn is used to demonstrate how well it worked.
+
+Author: Anton Driesse, PV Performance Labs
+Date: 2023-10-TBD
+"""
+
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+
+import pvlib
+from pvlib.temperature import faiman, faiman_dyn, fit_faiman_dyn
+
+# %%
+#
+# Read a CSV file containing one week of weather data and module temperature
+#
+
+PVLIB_DIR = pvlib.__path__[0]
+DATA_FILE = os.path.join(PVLIB_DIR, 'data', 'tmod_sample_data_subset.csv')
+
+df = pd.read_csv(DATA_FILE, index_col=0, parse_dates=True)
+
+print(df.head())
+
+# %%
+#
+# Estimate the dynamic Faiman model parameters using data where Gpoa > 10
+# This eliminates night time data.
+#
+# The fitting procedure takes a simple approach to finding the optimal
+# thermal inertia: it tries a range of values and chooses the one that
+# produces the lowest RMSE.
+#
+
+dff = df.copy()
+dff = dff.where(df.poa_global > 10)
+
+params, details = fit_faiman_dyn(dff.temp_pv, dff.poa_global,
+                                 dff.temp_air, dff.wind_speed,
+                                 thermal_inertia=(0, 15, 0.5),
+                                 full_output=True)
+
+for k, v in params.items():
+    print('%-15s = %5.2f' % (k, v))
+
+#%%
+#
+# With the full_output option you can obtain the results for all the values
+# of thermal_inertia that were evaluated.  The minimum is clearly visible
+# below, but a minute shorter or longer doesn't make much difference in the RMSE.
+#
+
+plt.figure()
+plt.plot(details.thermal_inertia, details.rmse, '.-')
+plt.grid(alpha=0.5)
+plt.xlabel('Thermal inertia')
+plt.ylabel('RMSE')
+plt.title('Optimal values: u0=%.2f, u1=%.2f, thermal_inertia=%.1f'
+          % tuple(params.values()))
+plt.show()
+
+# %%
+#
+# Calculate the modeled operating temperature of the PV modules
+#
+
+df['temp_pv_faiman'] = faiman(df.poa_global, df.temp_air, df.wind_speed,
+                              u0=params['u0'], u1=params['u1'])
+df['temp_pv_faiman_dyn'] = faiman_dyn(df.poa_global, df.temp_air, df.wind_speed,
+                                      **params)
+
+DAY = slice('2020-03-20 7:00', '2020-03-20 19:00')
+plt.figure()
+plt.plot(df.temp_pv[DAY])
+plt.plot(df.temp_pv_faiman[DAY], alpha=0.5, zorder=0)
+plt.plot(df.temp_pv_faiman_dyn[DAY])
+plt.legend(['measured', 'faiman', 'faiman_dyn'])
+plt.grid(alpha=0.5)
+plt.xlabel('2020-03-20')
+plt.ylabel('PV temperature [C]')
+plt.show()
+
+# %%
+#
+# Show how power and efficiency vary with both irradiance and temperature
+#
+
+dfs = df.sort_values('wind_speed')
+plt.figure()
+l1 = plt.plot(dfs['temp_pv'], dfs['temp_pv_faiman'], '.', color='tab:orange')
+l2 = plt.plot(dfs['temp_pv'], dfs['temp_pv_faiman_dyn'], '.', color='tab:green')
+plt.legend(['faiman', 'faiman_dyn'])
+l1[0].set_alpha(0.5)
+l2[0].set_alpha(0.25)
+plt.grid(alpha=0.5)
+plt.xlabel('Measured temperature [°C]')
+plt.ylabel('Modeled temperature [°C]')
+plt.show()
+
+# %%
+#
+# References
+# ----------
+# .. [1] Driesse, A. (2022) "Module operating temperature model parameter
+#    determination" DOI TBD

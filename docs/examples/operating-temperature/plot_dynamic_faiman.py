@@ -22,9 +22,9 @@ What can be simpler than a moving average?
 # the model parameters and the function :py:func:`pvlib.temperature.faiman_dyn`
 # is used to demonstrate how well it worked.
 #
-## Contributed by Anton Driesse, PV Performance Labs, October 2023.
+# Contributed by Anton Driesse, PV Performance Labs, October 2023.
 #
-## References
+# References
 # ----------
 # .. [1] Driesse, A. (2022) "Module operating temperature model parameter
 #    determination" DOI TBD
@@ -89,7 +89,7 @@ plt.show()
 
 # %%
 #
-# Calculate the modeled operating temperature of the PV modules.  The
+# Now calculate the modeled operating temperature of the PV modules.  The
 # u0 and u1 values found for the dynamic model can be used with the
 # regular Faiman model too, or translated to parameters for other models
 # using :py:func:`pvlib.temperature.GenericLinearModel()`.

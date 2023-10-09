@@ -109,12 +109,11 @@ plt.plot(df.temp_pv_faiman_dyn[DAY])
 plt.legend(['measured', 'faiman', 'faiman_dyn'])
 plt.grid(alpha=0.5)
 plt.xlabel('2020-03-20')
-plt.ylabel('PV temperature [C]')
+plt.ylabel('PV temperature [°C]')
 plt.show()
 
 # %%
 
-dfs = df.sort_values('wind_speed')
 plt.figure()
 l1 = plt.plot(dfs['temp_pv'], dfs['temp_pv_faiman'], '.', color='C1')
 l2 = plt.plot(dfs['temp_pv'], dfs['temp_pv_faiman_dyn'], '.', color='C2')
@@ -128,7 +127,7 @@ plt.show()
 
 # %%
 #
-# Both of the above graphs demonstrate that substantial improvement in modeled
+# Both graphs above demonstrate that substantial improvement in modeled
 # operating temperature is obtained by this simple technique.  Perhaps more
 # important than this, however, is the fact that parameter values can be
 # extracted from field data with minimal or no filtering.

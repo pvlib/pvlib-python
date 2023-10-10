@@ -285,12 +285,6 @@ def test_perez_driesse(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_series_equal(out, expected, check_less_precise=2)
 
 
-def test_perez_driesse_warning():
-    with pytest.warns(UserWarning, match='allsitescomposite1990'):
-        irradiance.perez_driesse(48, 180, 0, 0, 0, 48, 180, 1.5,
-                                 model='allsitescomposite1988')
-
-
 def test_perez_driesse_airmass(irrad_data, ephem_data, dni_et):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan

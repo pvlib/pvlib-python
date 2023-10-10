@@ -483,8 +483,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     elif model == 'perez-driesse':
         # perez_driesse will calculate its own airmass if needed
         sky = perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                            solar_zenith, solar_azimuth, airmass,
-                            model=model_perez)
+                            solar_zenith, solar_azimuth, airmass)
     else:
         raise ValueError(f'invalid model selection {model}')
 
@@ -1303,7 +1302,7 @@ def _f(i, j, zeta):
 
 def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                   solar_zenith, solar_azimuth, airmass=None,
-                  model='allsitescomposite1990', return_components=False):
+                  return_components=False):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
     the continuous Perez-Driesse model.
@@ -1349,11 +1348,6 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         inputs. The kastenyoung1989 airmass calculation is used internally
         and is also recommended when pre-calculating airmass because
         it was used in the original model development.
-
-    model : string (optional, default='allsitescomposite1990')
-        A string which selects the desired set of Perez coefficients.
-        This argument is only for compatibility with the `perez` function.
-        If a value other than the default value is provided, it is ignored.
 
     return_components: bool (optional, default=False)
         Flag used to decide whether to return the calculated diffuse components
@@ -1405,11 +1399,6 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     king
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct., 2023
-
-    if model not in ('allsitescomposite1990', '1990'):
-        warnings.warn("The 'model' parameter is ignored. "
-                      "Only 'allsitescomposite1990' is available.",
-                      UserWarning)
 
     delta = _calc_delta(dhi, dni_extra, solar_zenith, airmass)
     zeta = _calc_zeta(dhi, dni, solar_zenith)

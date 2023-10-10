@@ -25,4 +25,4 @@ dependencies:
     - statsmodels
     - pip:
         # - nrel-pysam>=2.0  # not available for 3.12 as of 2023-10-10
-        - solarfactors
+        # - solarfactors  # required shapely<2 isn't available for 3.12

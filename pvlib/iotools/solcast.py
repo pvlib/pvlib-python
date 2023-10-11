@@ -141,7 +141,8 @@ def get_solcast_historic(
     start : datetime-like
         First day of the requested period
     end : optional, datetime-like
-        Last day of the requested period
+        Last day of the requested period. Must include one of ``end`` or ``duration``.
+
     duration : optional, default is None
         Must include either  ``end`` or ``duration``.
         ISO_8601 compliant duration for the historic data,

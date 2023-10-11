@@ -141,9 +141,10 @@ def get_solcast_historic(
     start : datetime-like
         First day of the requested period
     end : optional, datetime-like
-        Last day of the requested period
+        Last day of the requested period. Must include one of ``end`` or ``duration``.
+
     duration : optional, default is None
-        Must include one of end_date and duration.
+        Must include either  ``end`` or ``duration``.
         ISO_8601 compliant duration for the historic data,
         like "P1D" for one day of data.
         Must be within 31 days of the start_date.
@@ -236,7 +237,7 @@ def get_solcast_forecast(
     Returns
     -------
     data : pandas.DataFrame
-        containing the values for the parameters requested.The times
+        Contains the values for the parameters requested.The times
         in the DataFrame index indicate the midpoint of each interval.
 
     Examples

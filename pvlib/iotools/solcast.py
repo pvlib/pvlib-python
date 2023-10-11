@@ -236,7 +236,8 @@ def get_solcast_forecast(
     Returns
     -------
     data : pandas.DataFrame
-        containing the values for the parameters requested.
+        Contains the values for the parameters requested.
+
         Time is made the index with the "period mid" convention.
 
     Examples

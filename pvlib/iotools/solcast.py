@@ -69,8 +69,8 @@ def get_solcast_tmy(
     Returns
     -------
     data : pandas.DataFrame
-        containing the values for the parameters requested.
-        Time is made the index with the "period mid" convention.
+        containing the values for the parameters requested.The times
+        in the DataFrame index indicate the midpoint of each interval.
 
     Examples
     --------
@@ -160,8 +160,8 @@ def get_solcast_historic(
     Returns
     -------
     data : pandas.DataFrame
-        containing the values for the parameters requested.
-        Time is made the index with the "period mid" convention.
+        containing the values for the parameters requested.The times
+        in the DataFrame index indicate the midpoint of each interval.
 
     Examples
     --------
@@ -236,8 +236,8 @@ def get_solcast_forecast(
     Returns
     -------
     data : pandas.DataFrame
-        containing the values for the parameters requested.
-        Time is made the index with the "period mid" convention.
+        containing the values for the parameters requested.The times
+        in the DataFrame index indicate the midpoint of each interval.
 
     Examples
     --------
@@ -305,8 +305,8 @@ def get_solcast_live(
     Returns
     -------
     data : pandas.DataFrame
-        containing the values for the parameters requested.
-        Time is made the index with the "period mid" convention.
+        containing the values for the parameters requested.The times
+        in the DataFrame index indicate the midpoint of each interval.
 
     Examples
     --------
@@ -411,7 +411,7 @@ def _get_solcast(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-        Time is made the index with the "period mid" convention
+        Time is the index as midpoint of each interval.
         from Solcast's "period end".
 
     Returns

@@ -475,7 +475,7 @@ def faiman_dyn(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84,
 
     Parameters
     ----------
-    poa_global : numeric
+    poa_global : pandas.Series with DatetimeIndex
         Total incident irradiance [W/m^2].
 
     temp_air : numeric
@@ -527,7 +527,8 @@ def faiman_dyn(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84,
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
 
     .. [4] Driesse, A. (2022) "Module operating temperature model parameter
-        determination"  DOI TBD
+       determination." Sandia National Laboratories, Albuquerque NM.
+       :doi:`10.5281/zenodo.10003736`
 
     See also
     --------
@@ -577,7 +578,7 @@ def fit_faiman_dyn(temp_pv, poa_global, temp_air, wind_speed,
     temp_pv : numeric
         Cell or module temperature [C].
 
-    poa_global : numeric
+    poa_global : pandas.Series with DatetimeIndex
         Total incident irradiance [W/m^2].
 
     temp_air : numeric
@@ -622,7 +623,8 @@ def fit_faiman_dyn(temp_pv, poa_global, temp_air, wind_speed,
     References
     ----------
     .. [1] Driesse, A. (2022) "Module operating temperature model parameter
-        determination" DOI TBD
+       determination." Sandia National Laboratories, Albuquerque NM.
+       :doi:`10.5281/zenodo.10003736`
 
     See also
     --------

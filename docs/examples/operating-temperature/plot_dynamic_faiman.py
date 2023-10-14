@@ -27,7 +27,8 @@ What can be simpler than a moving average?
 # References
 # ----------
 # .. [1] Driesse, A. (2022) "Module operating temperature model parameter
-#    determination" DOI TBD
+#    determination." Sandia National Laboratories, Albuquerque NM.
+#    :doi:`10.5281/zenodo.10003736`
 #
 
 import os
@@ -81,8 +82,8 @@ for k, v in params.items():
 plt.figure()
 plt.plot(details.thermal_inertia, details.rmse, '.-')
 plt.grid(alpha=0.5)
-plt.xlabel('Thermal inertia')
-plt.ylabel('RMSE')
+plt.xlabel('Thermal inertia [minutes]')
+plt.ylabel('RMSE [°C]')
 plt.title('Optimal values: u0=%.2f, u1=%.2f, thermal_inertia=%.1f'
           % tuple(params.values()))
 plt.show()
@@ -91,8 +92,7 @@ plt.show()
 #
 # Now calculate the modeled operating temperature of the PV modules.  The
 # u0 and u1 values found for the dynamic model can be used with the
-# regular Faiman model too, or translated to parameters for other models
-# using :py:func:`pvlib.temperature.GenericLinearModel()`.
+# regular Faiman model too.
 #
 
 df['temp_pv_faiman'] = faiman(df.poa_global, df.temp_air, df.wind_speed,
@@ -132,3 +132,24 @@ plt.show()
 # important than this, however, is the fact that parameter values can be
 # extracted from field data with minimal or no filtering.
 #
+# Finally, translate the Faiman model parameters to other model parameters
+# using :py:func:`pvlib.temperature.GenericLinearModel()`
+
+from pvlib.temperature import GenericLinearModel
+
+glm = GenericLinearModel(module_efficiency=0.19, absorptance=0.88)
+glm = glm.use_faiman(u0=params['u0'], u1=params['u1'])
+
+# %% PVsyst paramaters
+
+params_pvsyst = glm.to_pvsyst()
+
+for k, v in params_pvsyst.items():
+    print('%-17s = %5.2f' % (k, v))
+
+# %% SAPM parameters
+
+params_sapm = glm.to_sapm()
+
+for k, v in params_sapm.items():
+    print('%-1s = %5.2f' % (k, v))

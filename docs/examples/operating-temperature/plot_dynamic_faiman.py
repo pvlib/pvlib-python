@@ -37,6 +37,7 @@ import matplotlib.pyplot as plt
 
 import pvlib
 from pvlib.temperature import faiman, faiman_dyn, fit_faiman_dyn
+from pvlib.temperature import GenericLinearModel
 
 # %%
 #
@@ -134,8 +135,6 @@ plt.show()
 #
 # Finally, translate the Faiman model parameters to other model parameters
 # using :py:func:`pvlib.temperature.GenericLinearModel()`
-
-from pvlib.temperature import GenericLinearModel
 
 glm = GenericLinearModel(module_efficiency=0.19, absorptance=0.88)
 glm = glm.use_faiman(u0=params['u0'], u1=params['u1'])

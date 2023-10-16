@@ -1887,8 +1887,6 @@ def test_PVSystem_multiple_array_creation():
     assert pv_system.arrays[0].module_parameters == {}
     assert pv_system.arrays[1].module_parameters == {'pdc0': 1}
     assert pv_system.arrays == (array_one, array_two)
-    with pytest.raises(TypeError):
-        pvsystem.PVSystem(arrays=array_one)
 
 
 def test_PVSystem_get_aoi():
@@ -2362,6 +2360,14 @@ def test_PVSystem_at_least_one_array():
         pvsystem.PVSystem(arrays=[])
 
 
+def test_PVSystem_single_array():
+    # GH 1831
+    single_array = pvsystem.Array(pvsystem.FixedMount())
+    system = pvsystem.PVSystem(arrays=single_array)
+    assert isinstance(system.arrays, tuple)
+    assert system.arrays[0] is single_array
+
+
 def test_combine_loss_factors():
     test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='D')
     loss_1 = pd.Series(.10, index=test_index)
@@ -2417,6 +2423,15 @@ def test_SingleAxisTrackerMount_constructor(single_axis_tracker_mount):
 def test_SingleAxisTrackerMount_get_orientation(single_axis_tracker_mount):
     expected = {'surface_tilt': 19.29835284, 'surface_azimuth': 229.7643755}
     actual = single_axis_tracker_mount.get_orientation(45, 190)
+    for key, expected_value in expected.items():
+        err_msg = f"{key} value incorrect"
+        assert actual[key] == pytest.approx(expected_value), err_msg
+
+
+def test_SingleAxisTrackerMount_get_orientation_asymmetric_max():
+    mount = pvsystem.SingleAxisTrackerMount(max_angle=(-30, 45))
+    expected = {'surface_tilt': [45, 30], 'surface_azimuth': [90, 270]}
+    actual = mount.get_orientation([60, 60], [90, 270])
     for key, expected_value in expected.items():
         err_msg = f"{key} value incorrect"
         assert actual[key] == pytest.approx(expected_value), err_msg

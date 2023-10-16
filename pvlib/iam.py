@@ -841,7 +841,7 @@ def schlick(aoi):
 
 
 def schlick_diffuse(surface_tilt):
-    """
+    r"""
     Determine the incidence angle modifiers (IAM) for diffuse sky and
     ground-reflected irradiance on a tilted surface using the Schlick
     incident angle model.

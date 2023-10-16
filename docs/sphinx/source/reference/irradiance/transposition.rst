@@ -10,6 +10,7 @@ Transposition models
    irradiance.get_sky_diffuse
    irradiance.isotropic
    irradiance.perez
+   irradiance.perez_driesse
    irradiance.haydavies
    irradiance.klucher
    irradiance.reindl

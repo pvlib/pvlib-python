@@ -11,16 +11,16 @@ pvlib.iam.convert
 # %%
 # An incidence angle modifier (IAM) model quantifies the fraction of direct
 # irradiance is that is reflected away from a module's surface. Three popular
-# IAM models are Martin-Ruiz py:func:`~pvlib.iam.martin_ruiz`, physical
-# py:func:`~pvlib.iam.physical`, and ASHRAE `py:func:~pvlib.iam.ashrae`.
+# IAM models are Martin-Ruiz :py:func:`~pvlib.iam.martin_ruiz`, physical
+# :py:func:`~pvlib.iam.physical`, and ASHRAE `py:func:~pvlib.iam.ashrae`.
 # Each model requires one or more parameters.
 #
 # Here, we show how to use
-# py:func:`~pvlib.iam.convert` to estimate parameters for a desired target
+# :py:func:`~pvlib.iam.convert` to estimate parameters for a desired target
 # IAM model from a source IAM model. Model conversion requires a weight
 # function that assigns more influence to some AOI values than others.
 # We illustrate how to provide a custom weight function to
-# py:func:`~pvlib.iam.convert`.
+# :py:func:`~pvlib.iam.convert`.
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -98,9 +98,11 @@ physical_params_default = convert('martin_ruiz', martin_ruiz_params,
                                   'physical')
 physical_iam_default = physical(aoi, **physical_params_default)
 
+
 # ... using a custom weight function.
 def weight_function(aoi):
     return cosd(aoi)
+
 
 physical_params_custom = convert('martin_ruiz', martin_ruiz_params, 'physical',
                                  weight=weight_function)

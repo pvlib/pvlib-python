@@ -10,16 +10,16 @@ Illustrates how to fit an IAM model to data using pvlib.iam.fit
 # %%
 # An incidence angle modifier (IAM) model quantifies the fraction of direct
 # irradiance is that is reflected away from a module's surface. Three popular
-# IAM models are Martin-Ruiz py:func:`~pvlib.iam.martin_ruiz`, physical
-# py:func:`~pvlib.iam.physical`, and ASHRAE `py:func:~pvlib.iam.ashrae`.
+# IAM models are Martin-Ruiz :py:func:`~pvlib.iam.martin_ruiz`, physical
+# :py:func:`~pvlib.iam.physical`, and ASHRAE `py:func:~pvlib.iam.ashrae`.
 # Each model requires one or more parameters.
 #
 # Here, we show how to use
-# py:func:`~pvlib.iam.fit` to estimate a model's parameters from data.
+# :py:func:`~pvlib.iam.fit` to estimate a model's parameters from data.
 #
 # Model fitting require a weight function that assigns
 # more influence to some AOI values than others. We illustrate how to provide
-# a custom weight function to py:func:`~pvlib.iam.fit`.
+# a custom weight function to :py:func:`~pvlib.iam.fit`.
 
 import numpy as np
 from random import uniform
@@ -72,6 +72,7 @@ plt.show()
 # Define a custom weight function.
 def weight_function(aoi):
     return cosd(aoi)
+
 
 physical_params_custom = fit(aoi, data, 'physical', weight=weight_function)
 

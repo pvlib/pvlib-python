@@ -72,8 +72,8 @@ plt.show()
 # -------------------
 # :py:func:`pvlib.iam.convert` uses a weight function when computing residuals
 # between the two models. The default weight
-# function is :math:`1 - \sin(aoi)`. We can instead pass a custom weight function
-# to :py:func:`pvlib.iam.convert`.
+# function is :math:`1 - \sin(aoi)`. We can instead pass a custom weight
+# function to :py:func:`pvlib.iam.convert`.
 #
 # In some cases, the choice of weight function has a minimal effect on the
 # returned model parameters. This is especially true when converting between
@@ -99,7 +99,8 @@ physical_params_default = convert('martin_ruiz', martin_ruiz_params,
 physical_iam_default = physical(aoi, **physical_params_default)
 
 # ... using a custom weight function.
-weight_function = lambda aoi: cosd(aoi)
+def weight_function(aoi):
+    return cosd(aoi)
 
 physical_params_custom = convert('martin_ruiz', martin_ruiz_params, 'physical',
                                  weight=weight_function)
@@ -128,9 +129,7 @@ plt.show()
 ashrae_params_default = convert('martin_ruiz', martin_ruiz_params, 'ashrae')
 ashrae_iam_default = ashrae(aoi, **ashrae_params_default)
 
-# ... using a custom weight function.
-weight_function = lambda aoi: cosd(aoi)
-
+# ... using the custom weight function
 ashrae_params_custom = convert('martin_ruiz', martin_ruiz_params, 'ashrae',
                                weight=weight_function)
 ashrae_iam_custom = ashrae(aoi, **ashrae_params_custom)

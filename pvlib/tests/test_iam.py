@@ -438,6 +438,15 @@ def test_convert_ashrae_physical_no_fix_n():
     assert_allclose(exp, tar, rtol=1e-05)
 
 
+def test_convert_reverse_order_in_physical():
+    source_params = {'b': 0.25}
+    target_params = _iam.convert('ashrae', source_params, 'physical')
+    expected = {'n': 0.979796, 'K': 4, 'L': 0.0615837}
+    exp = [expected[k] for k in expected]
+    tar = [target_params[k] for k in expected]
+    assert_allclose(exp, tar, rtol=1e-5)
+
+
 def test_convert_xtol():
     source_params = {'b': 0.15}
     target_params = _iam.convert('ashrae', source_params, 'physical',

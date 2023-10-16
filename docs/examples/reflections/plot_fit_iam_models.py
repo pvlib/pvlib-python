@@ -70,7 +70,8 @@ plt.show()
 #
 
 # Define a custom weight function.
-weight_function = lambda aoi: cosd(aoi)
+def weight_function(aoi):
+    return cosd(aoi)
 
 physical_params_custom = fit(aoi, data, 'physical', weight=weight_function)
 

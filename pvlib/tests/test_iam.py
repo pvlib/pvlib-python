@@ -265,10 +265,10 @@ def test_marion_diffuse_model(mocker):
     assert physical_spy.call_count == 3
 
     for k, v in ashrae_expected.items():
-        np.testing.assert_allclose(ashrae_actual[k], v)
+        assert_allclose(ashrae_actual[k], v)
 
     for k, v in physical_expected.items():
-        np.testing.assert_allclose(physical_actual[k], v)
+        assert_allclose(physical_actual[k], v)
 
 
 def test_marion_diffuse_kwargs():
@@ -281,7 +281,7 @@ def test_marion_diffuse_kwargs():
     actual = _iam.marion_diffuse('ashrae', 20, b=0.04)
 
     for k, v in expected.items():
-        np.testing.assert_allclose(actual[k], v)
+        assert_allclose(actual[k], v)
 
 
 def test_marion_diffuse_invalid():
@@ -396,6 +396,7 @@ def test_schlick_diffuse():
     assert_series_equal(pd.Series(expected_ground, idx), actual_ground,
                         rtol=1e-6)
 
+
 @pytest.mark.parametrize('source,source_params,target,expected', [
     ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'martin_ruiz',
      {'a_r': 0.173972}),
@@ -425,7 +426,7 @@ def test_convert_recover(source, source_params):
     tar = [target_params[k] for k in source_params]
     assert_allclose(exp, tar, rtol=1e-05)
 
-    
+
 def test_convert_ashrae_physical_no_fix_n():
     # convert ashrae to physical, without fixing n
     source_params = {'b': 0.15}

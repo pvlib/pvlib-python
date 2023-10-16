@@ -1,11 +1,10 @@
 
 """
-IAM Model Conversion and Fitting
-================================
+IAM Model Conversion
+====================
 
 Illustrates how to convert from one IAM model to a different model using
-pvlib.iam.convert, and how to fit an IAM model to data using
-pvlib.iam.fit
+pvlib.iam.convert
 
 """
 
@@ -18,19 +17,16 @@ pvlib.iam.fit
 #
 # Here, we show how to use
 # py:func:`~pvlib.iam.convert` to estimate parameters for a desired target
-# IAM model from a source IAM model. We also show how to use
-# py:func:`~pvlib.iam.fit` to estimate a model's parameters from data.
-#
-# Model conversion and model fitting require a weight function that assigns
-# more influence to some AOI values than others. We illustrate how to provide
-# a custom weight function to py:func:`~pvlib.iam.convert`.
+# IAM model from a source IAM model. Model conversion requires a weight
+# function that assigns more influence to some AOI values than others.
+# We illustrate how to provide a custom weight function to
+# py:func:`~pvlib.iam.convert`.
 
 import numpy as np
-from random import uniform
 import matplotlib.pyplot as plt
 
 from pvlib.tools import cosd
-from pvlib.iam import (ashrae, martin_ruiz, physical, convert, fit)
+from pvlib.iam import (ashrae, martin_ruiz, physical, convert)
 
 # %%
 # Converting from one IAM model to another model
@@ -48,7 +44,7 @@ martin_ruiz_iam = martin_ruiz(aoi, **martin_ruiz_params)
 physical_params = convert('martin_ruiz', martin_ruiz_params, 'physical')
 physical_iam = physical(aoi, **physical_params)
 
-# Get parameters for the ASHRAE model and compute IAm using these parameters.
+# Get parameters for the ASHRAE model and compute IAM using these parameters.
 ashrae_params = convert('martin_ruiz', martin_ruiz_params, 'ashrae')
 ashrae_iam = ashrae(aoi, **ashrae_params)
 
@@ -72,52 +68,19 @@ plt.show()
 
 
 # %%
-# Fitting an IAM model to data
-# ----------------------------
-#
-# Here, we'll show how to fit an IAM model to data.
-# We'll generate some data by perturbing output from the Martin-Ruiz model to
-# mimic measured data and then we'll fit the physical model to the perturbed
-# data.
-
-# Create and perturb IAM data.
-aoi = np.linspace(0, 90, 100)
-params = {'a_r': 0.16}
-iam = martin_ruiz(aoi, **params)
-data = iam * np.array([uniform(0.98, 1.02) for _ in range(len(iam))])
-
-# Get parameters for the physical model by fitting to the perturbed data.
-physical_params = fit(aoi, data, 'physical')
-
-# Compute IAM with the fitted physical model parameters.
-physical_iam = physical(aoi, **physical_params)
-
-# Plot IAM vs. AOI
-plt.scatter(aoi, data, c='darkorange', label='Data')
-plt.plot(aoi, physical_iam, label='physical')
-plt.xlabel('AOI (degrees)')
-plt.ylabel('IAM')
-plt.title('Fitting the physical model to data')
-plt.legend()
-plt.show()
-
-
-# %%
 # The weight function
 # -------------------
-# Both :py:func:`pvlib.iam.convert` and :py:func:`pvlib.iam.fit` use
-# a weight function when computing residuals between the two models, or
-# between a model and data. The default weight
-# function is $1 - \sin(aoi)$. We can instead pass a custom weight function
-# to either :py:func:`pvlib.iam.convert` and :py:func:`pvlib.iam.fit`.
+# :py:func:`pvlib.iam.convert` uses a weight function when computing residuals
+# between the two models. The default weight
+# function is :math:`1 - \sin(aoi)`. We can instead pass a custom weight function
+# to :py:func:`pvlib.iam.convert`.
 #
 # In some cases, the choice of weight function has a minimal effect on the
 # returned model parameters. This is especially true when converting between
-# the Martin-Ruize and physical models, because the curves described by these
+# the Martin-Ruiz and physical models, because the curves described by these
 # models can match quite closely. However, when conversion involves the ASHRAE
 # model, the choice of weight function can have a meaningful effect on the
-# returned parameters for the
-# target model.
+# returned parameters for the target model.
 #
 # Here we'll show examples of both of these cases, starting with an example
 # where the choice of weight function does not have much impact. In doing
@@ -136,10 +99,10 @@ physical_params_default = convert('martin_ruiz', martin_ruiz_params,
 physical_iam_default = physical(aoi, **physical_params_default)
 
 # ... using a custom weight function.
-options = {'weight_function': lambda aoi: cosd(aoi)}
+weight_function = lambda aoi: cosd(aoi)
 
 physical_params_custom = convert('martin_ruiz', martin_ruiz_params, 'physical',
-                                 options=options)
+                                 weight=weight_function)
 physical_iam_custom = physical(aoi, **physical_params_custom)
 
 # Plot IAM vs AOI.
@@ -166,10 +129,10 @@ ashrae_params_default = convert('martin_ruiz', martin_ruiz_params, 'ashrae')
 ashrae_iam_default = ashrae(aoi, **ashrae_params_default)
 
 # ... using a custom weight function.
-options = {'weight_function': lambda aoi: cosd(aoi)}
+weight_function = lambda aoi: cosd(aoi)
 
 ashrae_params_custom = convert('martin_ruiz', martin_ruiz_params, 'ashrae',
-                               options=options)
+                               weight=weight_function)
 ashrae_iam_custom = ashrae(aoi, **ashrae_params_custom)
 
 # Plot IAM vs AOI.

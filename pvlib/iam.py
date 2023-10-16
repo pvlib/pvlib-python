@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import functools
 from scipy.optimize import minimize
-from pvlib.tools import cosd, sind
+from pvlib.tools import cosd, sind, acosd
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
@@ -990,7 +990,7 @@ def _residual(aoi, source_iam, target, target_params,
 
 def _get_ashrae_int(b):
     # find x-intercept of ashrae model
-    return np.rad2deg(np.arccos(b / (1 + b)))
+    return acosd(b / (1 + b))
 
 
 def _ashrae_to_physical(aoi, ashrae_iam, weight, fix_n, b):
@@ -1190,7 +1190,7 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
             residual_function, guess, bounds = \
                 _martin_ruiz_to_physical(aoi, source_iam, weight,
                                          source_params['a_r'])
-                
+
     else:
         # otherwise, target model is ashrae or martin_ruiz, and scipy
         # does fine without any special set-up
@@ -1214,10 +1214,10 @@ def fit(measured_aoi, measured_iam, target_name, weight=None, xtol=None):
     ----------
     measured_aoi : array-like
         Angle of incidence values associated with the
-        measured IAM values.
+        measured IAM values. [degrees]
 
     measured_iam : array-like
-        IAM values.
+        IAM values. [unitless]
 
     target_name : str
         Name of the target model. Must be ``'ashrae'``, ``'martin_ruiz'``,

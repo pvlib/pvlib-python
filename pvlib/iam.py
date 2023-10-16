@@ -1008,15 +1008,15 @@ def _ashrae_to_physical(aoi, ashrae_iam, weight, fix_n, b):
         # we will pass n to the optimizer to simplify things later on,
         # but because we are setting (n, n) as the bounds, the optimizer
         # will leave n fixed
-        bounds = [(0, 0.08), (n, n)]
+        bounds = [(1e-6, 0.08), (n, n)]
         guess = [0.002, n]
 
     else:
         # we don't fix n, so physical won't have same x-intercept as ashrae
         # the fit will be worse, but the parameters returned for the physical
         # model will be more realistic
-        bounds = [(0, 0.08), (1, 2)]
-        guess = [0.002, 1+1e-08]
+        bounds = [(1e-6, 0.08), (0.8, 2)]  # L, n
+        guess = [0.002, 1.0]
 
     def residual_function(target_params):
         L, n = target_params
@@ -1025,26 +1025,41 @@ def _ashrae_to_physical(aoi, ashrae_iam, weight, fix_n, b):
     return residual_function, guess, bounds
 
 
-def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, weight):
+def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, weight, a_r):
     # we will optimize for both n and L (recall that K and L always
     # appear in the physical model as a product, so it is enough to
     # optimize for just L, and to fix K=4)
-    bounds = [(0, 0.08), (1, 2)]
-    guess = [0.002, 1+1e-08]
+    # set lower bound for n at 1.0 so that x-intercept will be at 90
+    # order for Powell's method depends on a_r value
+    bounds = [(1e-6, 0.08), (1.05, 2)]  # L, n
+    guess = [0.002, 1.1]  # L, n
+    # get better results if we reverse order to n, L at high a_r
+    if a_r > 0.22:
+        bounds.reverse()
+        guess.reverse()
 
     # the product of K and L is more important in determining an initial
     # guess for the location of the minimum, so we pass L in first
     def residual_function(target_params):
-        L, n = target_params
+        # unpack target_params for either search order
+        if target_params[0] < target_params[1]:
+            # L will always be less than n
+            L, n = target_params
+        else:
+            n, L = target_params
         return _residual(aoi, martin_ruiz_iam, physical, [n, 4, L], weight)
 
     return residual_function, guess, bounds
 
 
-def _minimize(residual_function, guess, bounds):
+def _minimize(residual_function, guess, bounds, xtol):
+    if xtol is not None:
+        options = {'xtol': xtol}
+    else:
+        options = None
     with np.errstate(invalid='ignore'):
         optimize_result = minimize(residual_function, guess, method="powell",
-                                   bounds=bounds)
+                                   bounds=bounds, options=options)
 
     if not optimize_result.success:
         try:
@@ -1070,12 +1085,16 @@ def _process_return(target_name, optimize_result):
 
     elif target_name == "physical":
         L, n = optimize_result.x
+        # have to unpack order because search order may be different
+        if L > n:
+            L, n = n, L
         target_params = {'n': n, 'K': 4, 'L': L}
 
     return target_params
 
 
-def convert(source_name, source_params, target_name, weight=None, fix_n=True):
+def convert(source_name, source_params, target_name, weight=None, fix_n=True,
+            xtol=None):
     """
     Given a source model and its parameters and a target model, finds
     parameters for the target model that best fit the source model.
@@ -1119,6 +1138,9 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True):
         returns unrealistic values for the parameters of the physical model.
         If more physically meaningful parameters are wanted,
         set `fix_n` to False.
+
+    xtol : float, optional
+        Passed to scipy.optimize.minimize.
 
     Returns
     -------
@@ -1166,23 +1188,24 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True):
                                     source_params['b'])
         elif source_name == "martin_ruiz":
             residual_function, guess, bounds = \
-                _martin_ruiz_to_physical(aoi, source_iam, weight)
-
+                _martin_ruiz_to_physical(aoi, source_iam, weight,
+                                         source_params['a_r'])
+                
     else:
         # otherwise, target model is ashrae or martin_ruiz, and scipy
         # does fine without any special set-up
-        bounds = [(1e-08, 1)]
-        guess = [1e-08]
+        bounds = [(1e-04, 1)]
+        guess = [1e-03]
 
         def residual_function(target_param):
             return _residual(aoi, source_iam, target, target_param, weight)
 
-    optimize_result = _minimize(residual_function, guess, bounds)
+    optimize_result = _minimize(residual_function, guess, bounds, xtol=xtol)
 
     return _process_return(target_name, optimize_result)
 
 
-def fit(measured_aoi, measured_iam, target_name, weight=None):
+def fit(measured_aoi, measured_iam, target_name, weight=None, xtol=None):
     """
     Finds parameters for target model that best fit the
     measured data.
@@ -1204,6 +1227,9 @@ def fit(measured_aoi, measured_iam, target_name, weight=None):
         A single-argument function of AOI that calculates weights for the
         residuals between models. Must return a float or an array-like object.
         The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
+
+    xtol : float, optional
+        Passed to scipy.optimize.minimize.
 
     Returns
     -------
@@ -1255,6 +1281,6 @@ def fit(measured_aoi, measured_iam, target_name, weight=None):
             return _residual(measured_aoi, measured_iam, target, target_param,
                              weight)
 
-    optimize_result = _minimize(residual_function, guess, bounds)
+    optimize_result = _minimize(residual_function, guess, bounds, xtol)
 
     return _process_return(target_name, optimize_result)

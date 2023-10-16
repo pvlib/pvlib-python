@@ -396,79 +396,55 @@ def test_schlick_diffuse():
     assert_series_equal(pd.Series(expected_ground, idx), actual_ground,
                         rtol=1e-6)
 
+@pytest.mark.parametrize('source,source_params,target,expected', [
+    ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'martin_ruiz',
+     {'a_r': 0.173972}),
+    ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'ashrae',
+     {'b': 0.043925}),
+    ('ashrae', {'b': 0.15}, 'physical',
+     {'n': 0.991457, 'K': 4, 'L': 0.0378127}),
+    ('ashrae', {'b': 0.15}, 'martin_ruiz', {'a_r': 0.30284}),
+    ('martin_ruiz', {'a_r': 0.15}, 'physical',
+     {'n': 1.240655, 'K': 4, 'L': 0.00278196}),
+    ('martin_ruiz', {'a_r': 0.15}, 'ashrae', {'b': 0.026147})])
+def test_convert(source, source_params, target, expected):
+    target_params = _iam.convert(source, source_params, target)
+    exp = [expected[k] for k in expected]
+    tar = [target_params[k] for k in expected]
+    assert_allclose(exp, tar, rtol=1e-05)
 
-def test_convert():
-    # we'll compare residuals rather than coefficient values
-    # we only care about how close the fit of the conversion is, so the
-    # specific coefficients that get us there is less important
 
-    # expected value calculated from computing residual function over
-    # a range of inputs, and taking minimum of these values
+@pytest.mark.parametrize('source,source_params', [
+    ('ashrae', {'b': 0.15}),
+    ('ashrae', {'b': 0.05}),
+    ('martin_ruiz', {'a_r': 0.15})])
+def test_convert_recover(source, source_params):
+    # convert isn't set up to handle both source and target = 'physical'
+    target_params = _iam.convert(source, source_params, source, xtol=1e-8)
+    exp = [source_params[k] for k in source_params]
+    tar = [target_params[k] for k in source_params]
+    assert_allclose(exp, tar, rtol=1e-05)
 
-    aoi = np.linspace(0, 90, 100)
-
-    # convert physical to martin_ruiz
-    source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
-    source_iam = _iam.physical(aoi, **source_params)
-    expected_min_res = 0.02193164055914381
-
-    actual_dict = _iam.convert('physical', source_params, 'martin_ruiz')
-    actual_params_list = [actual_dict[key] for key in actual_dict]
-    actual_min_res = _iam._residual(aoi, source_iam, _iam.martin_ruiz,
-                                    actual_params_list)
-
-    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
-
-    # convert physical to ashrae
-    source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
-    source_iam = _iam.physical(aoi, **source_params)
-    expected_min_res = 0.14929293811214253
-
-    actual_dict = _iam.convert('physical', source_params, 'ashrae')
-    actual_params_list = [actual_dict[key] for key in actual_dict]
-    actual_min_res = _iam._residual(aoi, source_iam, _iam.ashrae,
-                                    actual_params_list)
-
-    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
-
-    # convert ashrae to physical (tests _ashrae_to_physical)
-    source_params = {'b': 0.15}
-    source_iam = _iam.ashrae(aoi, **source_params)
-    expected_min_res = 0.0216
-
-    actual_dict = _iam.convert('ashrae', source_params, 'physical')
-    actual_params_list = [actual_dict[key] for key in actual_dict]
-    actual_min_res = _iam._residual(aoi, source_iam, _iam.physical,
-                                    actual_params_list)
-
-    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
-
+    
+def test_convert_ashrae_physical_no_fix_n():
     # convert ashrae to physical, without fixing n
     source_params = {'b': 0.15}
-    source_iam = _iam.ashrae(aoi, **source_params)
-    expected_min_res = 0.06684694222023173
+    target_params = _iam.convert('ashrae', source_params, 'physical',
+                                 fix_n=False)
+    expected = {'n': 0.989039, 'K': 4, 'L': 0.0373608}
+    exp = [expected[k] for k in expected]
+    tar = [target_params[k] for k in expected]
+    assert_allclose(exp, tar, rtol=1e-05)
 
-    actual_dict = _iam.convert('ashrae', source_params, 'physical',
-                               fix_n=False)
-    actual_params_list = [actual_dict[key] for key in actual_dict]
-    actual_min_res = _iam._residual(aoi, source_iam, _iam.physical,
-                                    actual_params_list)
 
-    # not sure why, but could never get convert residual and expected residual
-    # to be closer than 0.00025ish, hence why atol=1e-03
-    assert np.isclose(expected_min_res, actual_min_res, atol=1e-03)
-
-    # convert martin_ruiz to physical (tests _martin_ruiz_to_physical)
-    source_params = {'a_r': 0.14}
-    source_iam = _iam.martin_ruiz(aoi, **source_params)
-    expected_min_res = 0.004162175187057447
-
-    actual_dict = _iam.convert('martin_ruiz', {'a_r': 0.14}, 'physical')
-    actual_params_list = [actual_dict[key] for key in actual_dict]
-    actual_min_res = _iam._residual(aoi, source_iam, _iam.physical,
-                                    actual_params_list)
-
-    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
+def test_convert_xtol():
+    source_params = {'b': 0.15}
+    target_params = _iam.convert('ashrae', source_params, 'physical',
+                                 xtol=1e-12)
+    expected = {'n': 0.9914568913905548, 'K': 4, 'L': 0.037812698547748186}
+    exp = [expected[k] for k in expected]
+    tar = [target_params[k] for k in expected]
+    assert_allclose(exp, tar, rtol=1e-10)
 
 
 def test_convert_custom_weight_func():
@@ -491,7 +467,7 @@ def test_convert_custom_weight_func():
     actual_min_res = _iam._residual(aoi, source_iam, _iam.martin_ruiz,
                                     [actual_dict['a_r']], scaled_weight)
 
-    assert np.isclose(expected_min_res, actual_min_res, atol=1e-04)
+    assert np.isclose(expected_min_res, actual_min_res, atol=1e-08)
 
 
 def test_convert_model_not_implemented():

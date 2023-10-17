@@ -94,4 +94,5 @@ ax[1].legend()
 plt.tight_layout()
 plt.show()
 
-print("")
+print("Parameters with default weights: " + str(physical_params))
+print("Parameters with custom weights: " + str(physical_params_custom))

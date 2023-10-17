@@ -1,9 +1,9 @@
 
 """
-IAM Model Conversion and Fitting
+IAM Model Fitting
 ================================
 
-Illustrates how to fit an IAM model to data using pvlib.iam.fit
+Illustrates how to fit an IAM model to data using :py:func:`~pvlib.iam.fit`
 
 """
 
@@ -11,7 +11,7 @@ Illustrates how to fit an IAM model to data using pvlib.iam.fit
 # An incidence angle modifier (IAM) model quantifies the fraction of direct
 # irradiance is that is reflected away from a module's surface. Three popular
 # IAM models are Martin-Ruiz :py:func:`~pvlib.iam.martin_ruiz`, physical
-# :py:func:`~pvlib.iam.physical`, and ASHRAE `py:func:~pvlib.iam.ashrae`.
+# :py:func:`~pvlib.iam.physical`, and ASHRAE py:func:`~pvlib.iam.ashrae`.
 # Each model requires one or more parameters.
 #
 # Here, we show how to use
@@ -79,10 +79,19 @@ physical_params_custom = fit(aoi, data, 'physical', weight=weight_function)
 physical_iam_custom = physical(aoi, **physical_params_custom)
 
 # Plot IAM vs AOI.
-plt.plot(aoi, data, label='Data (from Martin-Ruiz model)')
-plt.plot(aoi, physical_iam, label='Default weight function')
-plt.plot(aoi, physical_iam_custom, label='Custom weight function')
-plt.xlabel('AOI (degrees)')
-plt.ylabel('IAM')
-plt.legend()
+fig, ax = plt.subplots(2, 1, figsize=(5, 8))
+ax[0].plot(aoi, data, '.', label='Data (from Martin-Ruiz model)')
+ax[0].plot(aoi, physical_iam, label='With default weight function')
+ax[0].plot(aoi, physical_iam_custom, label='With custom weight function')
+ax[0].set_xlabel('AOI (degrees)')
+ax[0].set_ylabel('IAM')
+ax[0].legend()
+
+ax[1].plot(aoi, physical_iam_custom - physical_iam, label='Custom - default')
+ax[1].set_xlabel('AOI (degrees)')
+ax[1].set_ylabel('Diff. in IAM')
+ax[1].legend()
+plt.tight_layout()
 plt.show()
+
+print("")

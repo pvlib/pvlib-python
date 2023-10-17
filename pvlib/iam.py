@@ -1096,8 +1096,7 @@ def _process_return(target_name, optimize_result):
 def convert(source_name, source_params, target_name, weight=None, fix_n=True,
             xtol=None):
     """
-    Given a source model and its parameters and a target model, finds
-    parameters for the target model that best fit the source model.
+    Convert a source IAM model to a target IAM model.
 
     Parameters
     ----------

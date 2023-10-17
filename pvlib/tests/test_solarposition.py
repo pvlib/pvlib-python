@@ -310,7 +310,7 @@ def test_sun_rise_set_transit_ephem_horizon(golden):
     sunrise_delta = datetime.datetime(2016, 1, 3, 7, 17, 11) - \
         datetime.datetime(2016, 1, 3, 7, 21, 33)
     expected = pd.Series(index=times,
-                         data=sunrise_delta,
+                         data=[sunrise_delta],
                          name='sunrise').dt.round('min')
     assert_series_equal(expected, result_rounded)
 

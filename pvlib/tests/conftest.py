@@ -160,6 +160,13 @@ except ImportError:
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 
 
+from pvlib.iam import _min_scipy
+iam_scipy_ok = _min_scipy()
+
+requires_scipy_150 = pytest.mark.skipif(not iam_scipy_ok,
+                                        reason="requires scipy>=1.5.0")
+
+
 @pytest.fixture()
 def golden():
     return Location(39.742476, -105.1786, 'America/Denver', 1830.14)

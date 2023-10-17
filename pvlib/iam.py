@@ -1183,15 +1183,15 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
 
         source = _get_model(source_name)
         target = _get_model(target_name)
-    
+
         # if no options were passed in, we will use the default arguments
         if weight is None:
             weight = _sin_weight
-    
+
         aoi = np.linspace(0, 90, 100)
         _check_params(source_name, source_params)
         source_iam = source(aoi, **source_params)
-    
+
         if target_name == "physical":
             # we can do some special set-up to improve the fit when the
             # target model is physical
@@ -1203,18 +1203,19 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
                 residual_function, guess, bounds = \
                     _martin_ruiz_to_physical(aoi, source_iam, weight,
                                              source_params['a_r'])
-    
+
         else:
             # otherwise, target model is ashrae or martin_ruiz, and scipy
             # does fine without any special set-up
             bounds = [(1e-04, 1)]
             guess = [1e-03]
-    
+
             def residual_function(target_param):
                 return _residual(aoi, source_iam, target, target_param, weight)
-    
-        optimize_result = _minimize(residual_function, guess, bounds, xtol=xtol)
-    
+
+        optimize_result = _minimize(residual_function, guess, bounds,
+                                    xtol=xtol)
+
         return _process_return(target_name, optimize_result)
 
     else:
@@ -1275,32 +1276,31 @@ def fit(measured_aoi, measured_iam, target_name, weight=None, xtol=None):
     if _min_scipy():
 
         target = _get_model(target_name)
-    
+
         # if no options were passed in, we will use the default arguments
         if weight is None:
             weight = _sin_weight
-    
+
         if target_name == "physical":
             bounds = [(0, 0.08), (1, 2)]
             guess = [0.002, 1+1e-08]
-    
+
             def residual_function(target_params):
                 L, n = target_params
                 return _residual(measured_aoi, measured_iam, target, [n, 4, L],
                                  weight)
-    
+
         # otherwise, target_name is martin_ruiz or ashrae
         else:
             bounds = [(1e-08, 1)]
             guess = [0.05]
-    
+
             def residual_function(target_param):
-                return _residual(measured_aoi, measured_iam, target, target_param,
-                                 weight)
-    
+                return _residual(measured_aoi, measured_iam, target,
+                                 target_param, weight)
+
         optimize_result = _minimize(residual_function, guess, bounds, xtol)
-    
+
         return _process_return(target_name, optimize_result)
     else:
         return {}
-   

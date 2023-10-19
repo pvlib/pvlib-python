@@ -42,10 +42,14 @@ partial list of modeling areas that could be improved:
 * Transformer models
 * Electrical mismatch functionality
 * Improved snow loss models, in particular for bifacial and tracked systems
-* Shade models
-* Degradation
-* More sophisticated single-axis tracker models
-* Bifacial irradiance models
+* Shade models: row-to-row, external (e.g. trees), horizon
+* Degradation: we can at least provide the trivial linear model, and
+  add more sophisticated predictive models as they become available.
+* More sophisticated single-axis tracker models, e.g. split-boost backtracking,
+  rotation discretization, stow
+* Bifacial irradiance modeling beyond the relatively basic models currently
+  available in pvlib.  Irradiance nonuniformity, varied terrain and albedo,
+  racking shade, and other effects are not accounted for in the current models.
 * Updated parameter libraries, e.g. the CEC PV Module database
 
 Note that published models may not exist for some of these enhancements,

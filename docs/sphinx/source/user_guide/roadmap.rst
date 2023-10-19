@@ -88,7 +88,7 @@ the scope of these high-level capabilities could be expanded:
 Data I/O
 --------
 :py:mod:`pvlib.iotools` provides functions to import
- weather datasets, horizon profiles, component specifications,
+weather datasets, horizon profiles, component specifications,
 and other external data.  Expanding this capability by
 adding functions for additional data sources is of significant interest.
 :py:mod:`pvlib.iotools` would also benefit from further standardization

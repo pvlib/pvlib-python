@@ -6,6 +6,14 @@ What's New
 
 These are new features and improvements of note in each release.
 
+Bug fixes
+~~~~~~~~~
+* Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
+
+Contributors
+~~~~~~~~~~~~
+* Will Hobbs (:ghuser:`williamhobbs`)
+
 .. include:: whatsnew/v0.10.2.rst
 .. include:: whatsnew/v0.10.1.rst
 .. include:: whatsnew/v0.10.0.rst

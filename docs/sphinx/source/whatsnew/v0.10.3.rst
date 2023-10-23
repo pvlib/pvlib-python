@@ -24,7 +24,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
 
 Contributors
 ~~~~~~~~~~~~

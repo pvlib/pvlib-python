@@ -14,10 +14,9 @@ from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
 
 from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
-                   temperature)
+                   temperature, iam)
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
-from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
 
 from pvlib._deprecation import deprecated
@@ -279,7 +278,7 @@ def _mcr_repr(obj):
     # scalar, None, other?
     return repr(obj)
 
-    
+
 # Type for fields that vary between arrays
 T = TypeVar('T')
 
@@ -490,7 +489,7 @@ class ModelChain:
         If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
-        'no_loss'. The ModelChain instance will be passed as the
+        'interp' and 'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
     spectral_model : None, str, or function, optional
@@ -583,17 +582,39 @@ class ModelChain:
             constructor and take precedence over the default
             configuration.
 
+        Warning
+        -------
+        The PVWatts model defaults to 14 % total system losses. The PVWatts
+        losses are fractions of DC power and can be modified, as shown in the
+        example below.
+
         Examples
         --------
+        >>> from pvlib import temperature, pvsystem, location, modelchain
         >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=4500)
         >>> inverter_parameters = dict(pdc0=4000)
-        >>> tparams = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
-        >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
-        ...     module_parameters=module_parameters,
-        ...     inverter_parameters=inverter_parameters,
-        ...     temperature_model_parameters=tparams)
-        >>> location = Location(32.2, -110.9)
-        >>> ModelChain.with_pvwatts(system, location)
+        >>> tparams = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+        >>> system = pvsystem.PVSystem(
+        >>>     surface_tilt=30, surface_azimuth=180,
+        >>>     module_parameters=module_parameters,
+        >>>     inverter_parameters=inverter_parameters,
+        >>>     temperature_model_parameters=tparams)
+        >>> loc = location.Location(32.2, -110.9)
+        >>> modelchain.ModelChain.with_pvwatts(system, loc)
+
+        The following example is a modification of the example above but where
+        custom losses have been specified.
+
+        >>> pvwatts_losses = {'soiling': 2, 'shading': 3, 'snow': 0, 'mismatch': 2,
+        >>>                   'wiring': 2, 'connections': 0.5, 'lid': 1.5,
+        >>>                   'nameplate_rating': 1, 'age': 0, 'availability': 30}
+        >>> system_with_custom_losses = pvsystem.PVSystem(
+        >>>     surface_tilt=30, surface_azimuth=180,
+        >>>     module_parameters=module_parameters,
+        >>>     inverter_parameters=inverter_parameters,
+        >>>     temperature_model_parameters=tparams,
+        >>>     losses_parameters=pvwatts_losses)
+        >>> modelchain.ModelChain.with_pvwatts(system_with_custom_losses, loc)
         ModelChain:
           name: None
           clearsky_model: ineichen
@@ -917,6 +938,8 @@ class ModelChain:
                 self._aoi_model = self.sapm_aoi_loss
             elif model == 'martin_ruiz':
                 self._aoi_model = self.martin_ruiz_aoi_loss
+            elif model == 'interp':
+                self._aoi_model = self.interp_aoi_loss
             elif model == 'no_loss':
                 self._aoi_model = self.no_aoi_loss
             else:
@@ -928,22 +951,24 @@ class ModelChain:
         module_parameters = tuple(
             array.module_parameters for array in self.system.arrays)
         params = _common_keys(module_parameters)
-        if {'K', 'L', 'n'} <= params:
+        if iam._IAM_MODEL_PARAMS['physical'] <= params:
             return self.physical_aoi_loss
-        elif {'B5', 'B4', 'B3', 'B2', 'B1', 'B0'} <= params:
+        elif iam._IAM_MODEL_PARAMS['sapm'] <= params:
             return self.sapm_aoi_loss
-        elif {'b'} <= params:
+        elif iam._IAM_MODEL_PARAMS['ashrae'] <= params:
             return self.ashrae_aoi_loss
-        elif {'a_r'} <= params:
+        elif iam._IAM_MODEL_PARAMS['martin_ruiz'] <= params:
             return self.martin_ruiz_aoi_loss
+        elif iam._IAM_MODEL_PARAMS['interp'] <= params:
+            return self.interp_aoi_loss
         else:
             raise ValueError('could not infer AOI model from '
                              'system.arrays[i].module_parameters. Check that '
                              'the module_parameters for all Arrays in '
-                             'system.arrays contain parameters for '
-                             'the physical, aoi, ashrae or martin_ruiz model; '
-                             'explicitly set the model with the aoi_model '
-                             'kwarg; or set aoi_model="no_loss".')
+                             'system.arrays contain parameters for the '
+                             'physical, aoi, ashrae, martin_ruiz or interp '
+                             'model; explicitly set the model with the '
+                             'aoi_model kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
@@ -969,6 +994,13 @@ class ModelChain:
     def martin_ruiz_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
             self.results.aoi, iam_model='martin_ruiz'
+        )
+        return self
+
+    def interp_aoi_loss(self):
+        self.results.aoi_modifier = self.system.get_iam(
+            self.results.aoi,
+            iam_model='interp'
         )
         return self
 
@@ -1486,7 +1518,7 @@ class ModelChain:
         return self
 
     def _assign_times(self):
-        """Assign self.results.times according the the index of
+        """Assign self.results.times according the index of
         self.results.weather.
 
         If there are multiple DataFrames in self.results.weather then
@@ -1984,7 +2016,7 @@ def _irrad_for_celltemp(total_irrad, effective_irradiance):
 
     """
     if isinstance(total_irrad, tuple):
-        if all(['poa_global' in df for df in total_irrad]):
+        if all('poa_global' in df for df in total_irrad):
             return _tuple_from_dfs(total_irrad, 'poa_global')
         else:
             return effective_irradiance

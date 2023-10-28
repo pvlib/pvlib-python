@@ -282,7 +282,7 @@ class Location:
         times : DatetimeIndex, optional
             Only used if solar_position is not provided.
         solar_position : DataFrame, optional
-            DataFrame with with columns 'apparent_zenith', 'zenith'.
+            DataFrame with columns 'apparent_zenith', 'zenith'.
         model : str, default 'kastenyoung1989'
             Relative airmass model. See
             :py:func:`pvlib.atmosphere.get_relative_airmass`

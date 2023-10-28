@@ -273,6 +273,31 @@ def test_perez(irrad_data, ephem_data, dni_et, relative_airmass):
     assert_series_equal(out, expected, check_less_precise=2)
 
 
+def test_perez_driesse(irrad_data, ephem_data, dni_et, relative_airmass):
+    dni = irrad_data['dni'].copy()
+    dni.iloc[2] = np.nan
+    out = irradiance.perez_driesse(40, 180, irrad_data['dhi'], dni,
+                                   dni_et, ephem_data['apparent_zenith'],
+                                   ephem_data['azimuth'], relative_airmass)
+    expected = pd.Series(np.array(
+        [0.,   29.991,  np.nan,   47.397]),
+        index=irrad_data.index)
+    assert_series_equal(out, expected, check_less_precise=2)
+
+
+def test_perez_driesse_airmass(irrad_data, ephem_data, dni_et):
+    dni = irrad_data['dni'].copy()
+    dni.iloc[2] = np.nan
+    out = irradiance.perez_driesse(40, 180, irrad_data['dhi'], dni,
+                                   dni_et, ephem_data['apparent_zenith'],
+                                   ephem_data['azimuth'], airmass=None)
+    print(out)
+    expected = pd.Series(np.array(
+        [0.,   29.991,  np.nan,   47.397]),
+        index=irrad_data.index)
+    assert_series_equal(out, expected, check_less_precise=2)
+
+
 def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
     dni = irrad_data['dni'].copy()
     dni.iloc[2] = np.nan
@@ -285,6 +310,32 @@ def test_perez_components(irrad_data, ephem_data, dni_et, relative_airmass):
          [0.,  26.84138589,          np.nan,  31.72696071],
          [0.,  0.,         np.nan,  4.47966439],
          [0.,  4.62212181,         np.nan,  9.25316454]]).T,
+        columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
+        index=irrad_data.index
+    )
+    expected_for_sum = expected['sky_diffuse'].copy()
+    expected_for_sum.iloc[2] = 0
+    sum_components = out.iloc[:, 1:].sum(axis=1)
+    sum_components.name = 'sky_diffuse'
+
+    assert_frame_equal(out, expected, check_less_precise=2)
+    assert_series_equal(sum_components, expected_for_sum, check_less_precise=2)
+
+
+def test_perez_driesse_components(irrad_data, ephem_data, dni_et,
+                                  relative_airmass):
+    dni = irrad_data['dni'].copy()
+    dni.iloc[2] = np.nan
+    out = irradiance.perez_driesse(40, 180, irrad_data['dhi'], dni,
+                                   dni_et, ephem_data['apparent_zenith'],
+                                   ephem_data['azimuth'], relative_airmass,
+                                   return_components=True)
+
+    expected = pd.DataFrame(np.array(
+        [[0., 29.991, np.nan, 47.397],
+         [0., 25.806, np.nan, 33.181],
+         [0.,  0.000, np.nan,  4.197],
+         [0.,  4.184, np.nan, 10.018]]).T,
         columns=['sky_diffuse', 'isotropic', 'circumsolar', 'horizon'],
         index=irrad_data.index
     )
@@ -356,6 +407,21 @@ def test_perez_arrays(irrad_data, ephem_data, dni_et, relative_airmass):
     assert isinstance(out, np.ndarray)
 
 
+def test_perez_driesse_arrays(irrad_data, ephem_data, dni_et,
+                              relative_airmass):
+    dni = irrad_data['dni'].copy()
+    dni.iloc[2] = np.nan
+    out = irradiance.perez_driesse(40, 180, irrad_data['dhi'].values,
+                                   dni.values, dni_et,
+                                   ephem_data['apparent_zenith'].values,
+                                   ephem_data['azimuth'].values,
+                                   relative_airmass.values)
+    expected = np.array(
+        [0.,   29.990,  np.nan,   47.396])
+    assert_allclose(out, expected, atol=1e-2)
+    assert isinstance(out, np.ndarray)
+
+
 def test_perez_scalar():
     # copied values from fixtures
     out = irradiance.perez(40, 180, 118.45831879, 939.95469881,
@@ -366,8 +432,17 @@ def test_perez_scalar():
     assert_allclose(out, 109.084332)
 
 
+def test_perez_driesse_scalar():
+    # copied values from fixtures
+    out = irradiance.perez_driesse(40, 180, 118.458, 939.954,
+                                   1321.165, 10.564, 144.765, 1.016)
+    # this will fail. out is ndarry with ndim == 0. fix in future version.
+    # assert np.isscalar(out)
+    assert_allclose(out, 110.341, atol=1e-2)
+
+
 @pytest.mark.parametrize('model', ['isotropic', 'klucher', 'haydavies',
-                                   'reindl', 'king', 'perez'])
+                                   'reindl', 'king', 'perez', 'perez-driesse'])
 def test_sky_diffuse_zenith_close_to_90(model):
     # GH 432
     sky_diffuse = irradiance.get_sky_diffuse(
@@ -419,7 +494,7 @@ def test_campbell_norman():
 def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
                               relative_airmass):
     models = ['isotropic', 'klucher',
-              'haydavies', 'reindl', 'king', 'perez']
+              'haydavies', 'reindl', 'king', 'perez', 'perez-driesse']
 
     for model in models:
         total = irradiance.get_total_irradiance(
@@ -437,7 +512,8 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-                                   'haydavies', 'reindl', 'king', 'perez'])
+                                   'haydavies', 'reindl', 'king',
+                                   'perez', 'perez-driesse'])
 def test_get_total_irradiance_albedo(
         irrad_data, ephem_data, dni_et, relative_airmass, model):
     albedo = pd.Series(0.2, index=ephem_data.index)
@@ -456,7 +532,8 @@ def test_get_total_irradiance_albedo(
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
-                                   'haydavies', 'reindl', 'king', 'perez'])
+                                   'haydavies', 'reindl', 'king',
+                                   'perez', 'perez-driesse'])
 def test_get_total_irradiance_scalars(model):
     total = irradiance.get_total_irradiance(
         32, 180,
@@ -803,6 +880,34 @@ def test_erbs():
     out = irradiance.erbs(ghi, zenith, index)
 
     assert_frame_equal(np.round(out, 0), np.round(expected, 0))
+
+
+def test_erbs_driesse():
+    index = pd.DatetimeIndex(['20190101']*3 + ['20190620'])
+    ghi = pd.Series([0, 50, 1000, 1000], index=index)
+    zenith = pd.Series([120, 85, 10, 10], index=index)
+    # expected values are the same as for erbs original test
+    expected = pd.DataFrame(np.array(
+        [[0.00000000e+00, 0.00000000e+00, 0.00000000e+00],
+         [9.67192672e+01, 4.15703604e+01, 4.05723511e-01],
+         [7.94205651e+02, 2.17860117e+02, 7.18132729e-01],
+         [8.42001578e+02, 1.70790318e+02, 7.68214312e-01]]),
+        columns=['dni', 'dhi', 'kt'], index=index)
+
+    out = irradiance.erbs_driesse(ghi, zenith, index)
+
+    assert_frame_equal(np.round(out, 0), np.round(expected, 0))
+
+    # test with the new optional dni_extra argument
+    dni_extra = irradiance.get_extra_radiation(index)
+
+    out = irradiance.erbs_driesse(ghi, zenith, dni_extra=dni_extra)
+
+    assert_frame_equal(np.round(out, 0), np.round(expected, 0))
+
+    # test for required inputs
+    with pytest.raises(ValueError):
+        irradiance.erbs_driesse(ghi, zenith)
 
 
 def test_boland():

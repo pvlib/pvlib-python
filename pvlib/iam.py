@@ -541,7 +541,7 @@ def sapm(aoi, module, upper=None):
 
     .. [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
        Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
-       DOI: 10.1109/PVSC.2015.7355849
+       :doi:`10.1109/PVSC.2015.7355849`
 
     See Also
     --------
@@ -607,7 +607,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     .. [1] B. Marion "Numerical method for angle-of-incidence correction
        factors for diffuse radiation incident photovoltaic modules",
        Solar Energy, Volume 147, Pages 344-348. 2017.
-       DOI: 10.1016/j.solener.2017.03.027
+       :doi:`10.1016/j.solener.2017.03.027`
 
     Examples
     --------
@@ -694,7 +694,7 @@ def marion_integrate(function, surface_tilt, region, num=None):
     .. [1] B. Marion "Numerical method for angle-of-incidence correction
        factors for diffuse radiation incident photovoltaic modules",
        Solar Energy, Volume 147, Pages 344-348. 2017.
-       DOI: 10.1016/j.solener.2017.03.027
+       :doi:`10.1016/j.solener.2017.03.027`
 
     Examples
     --------

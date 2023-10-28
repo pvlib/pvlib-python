@@ -85,7 +85,7 @@ def masking_angle(surface_tilt, gcr, slant_height):
     ----------
     .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
-       DOI: 10.1016/0379-6787(84)90017-6
+       :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
@@ -167,7 +167,7 @@ def masking_angle_passias(surface_tilt, gcr):
     ----------
     .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
-       DOI: 10.1016/0379-6787(84)90017-6
+       :doi:`10.1016/0379-6787(84)90017-6`
     """
     # wrap it in an array so that division by zero is handled well
     beta = np.radians(np.array(surface_tilt))
@@ -226,7 +226,7 @@ def sky_diffuse_passias(masking_angle):
     ----------
     .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
-       DOI: 10.1016/0379-6787(84)90017-6
+       :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf

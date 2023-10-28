@@ -58,7 +58,7 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     -----------
     .. [1] M. Coello and L. Boyle, "Simple Model For Predicting Time Series
        Soiling of Photovoltaic Panels," in IEEE Journal of Photovoltaics.
-       doi: 10.1109/JPHOTOV.2019.2919628
+       :doi:`10.1109/JPHOTOV.2019.2919628`
     .. [2] Atmospheric Chemistry and Physics: From Air Pollution to Climate
        Change. J. Seinfeld and S. Pandis. Wiley and Sons 2001.
 

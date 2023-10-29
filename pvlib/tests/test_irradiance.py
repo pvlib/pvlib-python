@@ -237,13 +237,13 @@ def test_haydavies_components(irrad_data, ephem_data, dni_et):
         40, 180, irrad_data['dhi'].values[-1], irrad_data['dni'].values[-1],
         dni_et[-1], ephem_data['apparent_zenith'].values[-1],
         ephem_data['azimuth'].values[-1], return_components=True)
-    assert_allclose(result['sky_diffuse'], expected['sky_diffuse'][-1],
+    assert_allclose(result['sky_diffuse'], expected['sky_diffuse'].iloc[-1],
                     atol=1e-4)
-    assert_allclose(result['isotropic'], expected['isotropic'][-1],
+    assert_allclose(result['isotropic'], expected['isotropic'].iloc[-1],
                     atol=1e-4)
-    assert_allclose(result['circumsolar'], expected['circumsolar'][-1],
+    assert_allclose(result['circumsolar'], expected['circumsolar'].iloc[-1],
                     atol=1e-4)
-    assert_allclose(result['horizon'], expected['horizon'][-1], atol=1e-4)
+    assert_allclose(result['horizon'], expected['horizon'].iloc[-1], atol=1e-4)
     assert isinstance(result, dict)
 
 

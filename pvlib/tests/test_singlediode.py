@@ -110,12 +110,12 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
 
     # parse strings to np.float64
     is_array = ['Currents', 'Voltages', 'diode_voltage']
-    joined[is_array] = joined[is_array].applymap(
+    joined[is_array] = joined[is_array].map(
         lambda a: np.asarray(a, dtype=np.float64)
     )
     is_number = ['v_oc', 'i_sc', 'v_mp', 'i_mp', 'p_mp', 'i_x', 'i_xx',
                  'Temperature']
-    joined[is_number] = joined[is_number].applymap(np.float64)
+    joined[is_number] = joined[is_number].map(np.float64)
 
     joined['Boltzmann'] = scipy.constants.Boltzmann
     joined['Elementary Charge'] = scipy.constants.elementary_charge

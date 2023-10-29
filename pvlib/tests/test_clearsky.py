@@ -631,7 +631,7 @@ def test_detect_clearsky_window(detect_clearsky_data):
     clear_samples = clearsky.detect_clearsky(
         expected['GHI'], cs['ghi'], window_length=3)
     expected = expected['Clear or not'].copy()
-    expected.iloc[-3:] = True
+    expected.iloc[-3:] = 1
     assert_series_equal(expected, clear_samples,
                         check_dtype=False, check_names=False)
 

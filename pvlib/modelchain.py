@@ -140,11 +140,11 @@ def basic_chain(times, latitude, longitude,
 
     altitude : float, optional
         If not specified, computed from pressure. Assumed to be 0 m
-        if pressure is also None.
+        if ``pressure`` is also unspecified.
 
     pressure : float, optional
         If not specified, computed from altitude. Assumed to be 101325 Pa
-        if altitude is also None.
+        if ``altitude`` is also unspecified.
 
     **kwargs
         Arbitrary keyword arguments.

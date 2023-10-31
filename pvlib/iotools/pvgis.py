@@ -430,11 +430,11 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     data : pandas.DataFrame
         the weather data
     months_selected : list
-        TMY year for each month, ``None`` for basic and EPW
+        TMY year for each month, do not specify for basic and EPW
     inputs : dict
-        the inputs, ``None`` for basic and EPW
+        the inputs, do not specify for basic and EPW
     metadata : list or dict
-        file metadata, ``None`` for basic
+        file metadata, do not specify for basic
 
     Note
     ----
@@ -590,11 +590,11 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     data : pandas.DataFrame
         the weather data
     months_selected : list
-        TMY year for each month, ``None`` for basic and EPW
+        TMY year for each month, do not specify for basic and EPW
     inputs : dict
-        the inputs, ``None`` for basic and EPW
+        the inputs, do not specify for basic and EPW
     metadata : list or dict
-        file metadata, ``None`` for basic
+        file metadata, do not specify for basic
 
     Raises
     ------

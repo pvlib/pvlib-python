@@ -312,9 +312,9 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     pvgis_format : str, optional
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS API. If ``filename`` is a file and
-        ``pvgis_format`` is not specified then the file extension will be used to
-        determine the PVGIS format to parse. If ``filename`` is a buffer, then
-        ``pvgis_format`` is required and must be in ``['csv', 'json']``.
+        ``pvgis_format`` is not specified then the file extension will be used
+        to determine the PVGIS format to parse. If ``filename`` is a buffer,
+        then ``pvgis_format`` is required and must be in ``['csv', 'json']``.
     map_variables: bool, default True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
@@ -575,9 +575,10 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     pvgis_format : str, optional
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS TMY API. If ``filename`` is a file and
-        ``pvgis_format`` is not specified then the file extension will be used to
-        determine the PVGIS format to parse. For PVGIS files from the API with
-        ``outputformat='basic'``, please set ``pvgis_format`` to ``'basic'``.
+        ``pvgis_format`` is not specified then the file extension will be used
+        to determine the PVGIS format to parse. For PVGIS files from the API
+        with ``outputformat='basic'``, please set ``pvgis_format`` to
+        ``'basic'``.
         If ``filename`` is a buffer, then ``pvgis_format`` is required and must
         be in ``['csv', 'epw', 'json', 'basic']``.
     map_variables: bool, default True

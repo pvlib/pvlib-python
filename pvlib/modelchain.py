@@ -139,11 +139,11 @@ def basic_chain(times, latitude, longitude,
         Passed to atmosphere.relativeairmass.
 
     altitude : float, optional
-        If not specified, computed from pressure. Assumed to be 0 m
+        If not specified, computed from ``pressure``. Assumed to be 0 m
         if ``pressure`` is also unspecified.
 
     pressure : float, optional
-        If not specified, computed from altitude. Assumed to be 101325 Pa
+        If not specified, computed from ``altitude``. Assumed to be 101325 Pa
         if ``altitude`` is also unspecified.
 
     **kwargs

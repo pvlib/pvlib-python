@@ -441,7 +441,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     ------
     ValueError
         If model is one of ``'haydavies'``, ``'reindl'``, or ``'perez'`` and
-        ``dni_extra`` is ``None``.
+        ``dni_extra`` is not specified.
 
     Notes
     -----

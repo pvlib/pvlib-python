@@ -130,9 +130,9 @@ class PVSystem:
         North=0, East=90, South=180, West=270.
 
     albedo : float, optional
-        Ground surface albedo. If ``None``, then ``surface_type`` is used
+        Ground surface albedo. If not supplied, then ``surface_type`` is used
         to look up a value in ``irradiance.SURFACE_ALBEDOS``.
-        If ``surface_type`` is also None then a ground surface albedo
+        If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
     surface_type : string, optional
@@ -907,9 +907,9 @@ class Array:
         If not provided, a FixedMount with zero tilt is used.
 
     albedo : float, optional
-        Ground surface albedo. If ``None``, then ``surface_type`` is used
+        Ground surface albedo. If not supplied, then ``surface_type`` is used
         to look up a value in ``irradiance.SURFACE_ALBEDOS``.
-        If ``surface_type`` is also None then a ground surface albedo
+        If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
     surface_type : string, optional

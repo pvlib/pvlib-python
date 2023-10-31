@@ -90,7 +90,7 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     userhorizon: list of float, default: None
         Optional user specified elevation of horizon in degrees, at equally
         spaced azimuth clockwise from north, only valid if ``usehorizon`` is
-        true, if ``usehorizon`` is true but ``userhorizon`` is ``None`` then
+        true, if ``usehorizon`` is true but ``userhorizon`` is not specified then
         PVGIS will calculate the horizon [4]_
     pvcalculation: bool, default: False
         Return estimate of hourly PV production.
@@ -312,7 +312,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     pvgis_format : str, optional
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS API. If ``filename`` is a file and
-        ``pvgis_format`` is ``None`` then the file extension will be used to
+        ``pvgis_format`` is not specified then the file extension will be used to
         determine the PVGIS format to parse. If ``filename`` is a buffer, then
         ``pvgis_format`` is required and must be in ``['csv', 'json']``.
     map_variables: bool, default True
@@ -336,11 +336,11 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     Raises
     ------
     ValueError
-        if ``pvgis_format`` is ``None`` and the file extension is neither
+        if ``pvgis_format`` is not specified and the file extension is neither
         ``.csv`` nor ``.json`` or if ``pvgis_format`` is provided as
         input but isn't in ``['csv', 'json']``
     TypeError
-        if ``pvgis_format`` is ``None`` and ``filename`` is a buffer
+        if ``pvgis_format`` is not specified and ``filename`` is a buffer
 
     See Also
     --------
@@ -575,7 +575,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     pvgis_format : str, optional
         Format of PVGIS file or buffer. Equivalent to the ``outputformat``
         parameter in the PVGIS TMY API. If ``filename`` is a file and
-        ``pvgis_format`` is ``None`` then the file extension will be used to
+        ``pvgis_format`` is not specified then the file extension will be used to
         determine the PVGIS format to parse. For PVGIS files from the API with
         ``outputformat='basic'``, please set ``pvgis_format`` to ``'basic'``.
         If ``filename`` is a buffer, then ``pvgis_format`` is required and must
@@ -599,11 +599,11 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     Raises
     ------
     ValueError
-        if ``pvgis_format`` is ``None`` and the file extension is neither
+        if ``pvgis_format`` is not specified and the file extension is neither
         ``.csv``, ``.json``, nor ``.epw``, or if ``pvgis_format`` is provided
         as input but isn't in ``['csv', 'epw', 'json', 'basic']``
     TypeError
-        if ``pvgis_format`` is ``None`` and ``filename`` is a buffer
+        if ``pvgis_format`` is not specified and ``filename`` is a buffer
 
     See Also
     --------

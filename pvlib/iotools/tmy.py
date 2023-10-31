@@ -41,7 +41,7 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None,
     filename : str
         A relative file path or absolute file path.
     coerce_year : int, optional
-        If supplied, the year of the index will be set to `coerce_year`, except
+        If supplied, the year of the index will be set to ``coerce_year``, except
         for the last index value which will be set to the *next* year so that
         the index increases monotonically.
     map_variables : bool, optional

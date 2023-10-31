@@ -2529,11 +2529,11 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
         Global horizontal irradiance in W/m^2.
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
-    datetime_or_doy : int, float, array, pd.DatetimeIndex, default None
+    datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
         Either datetime_or_doy or dni_extra must be provided.
-    dni_extra : numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial normal irradiance.
         dni_extra can be provided if available to avoid recalculating it
         inside this function.  In this case datetime_or_doy is not required.

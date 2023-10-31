@@ -63,13 +63,13 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
         In decimal degrees, between -90 and 90, north is positive (ISO 19115)
     longitude: float
         In decimal degrees, between -180 and 180, east is positive (ISO 19115)
-    start: int or datetime like, default: None
+    start : int or datetime like, optional
         First year of the radiation time series. Defaults to first year
         available.
-    end: int or datetime like, default: None
+    end : int or datetime like, optional
         Last year of the radiation time series. Defaults to last year
         available.
-    raddatabase: str, default: None
+    raddatabase : str, optional
         Name of radiation database. Options depend on location, see [3]_.
     components: bool, default: True
         Output solar radiation components (beam, diffuse, and reflected).
@@ -87,14 +87,14 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
            and pvlib<=0.9.5 is offset by 180 degrees.
     usehorizon: bool, default: True
         Include effects of horizon
-    userhorizon: list of float, default: None
+    userhorizon : list of float, optional
         Optional user specified elevation of horizon in degrees, at equally
         spaced azimuth clockwise from north, only valid if ``usehorizon`` is
         true, if ``usehorizon`` is true but ``userhorizon`` is not specified then
         PVGIS will calculate the horizon [4]_
     pvcalculation: bool, default: False
         Return estimate of hourly PV production.
-    peakpower: float, default: None
+    peakpower : float, optional
         Nominal power of PV system in kW. Required if pvcalculation=True.
     pvtechchoice: {'crystSi', 'CIS', 'CdTe', 'Unknown'}, default: 'crystSi'
         PV technology.

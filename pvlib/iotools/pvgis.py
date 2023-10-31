@@ -410,10 +410,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     usehorizon : bool, default True
         include effects of horizon
     userhorizon : list of float, optional
-        optional user specified elevation of horizon in degrees, at equally
-        spaced azimuth clockwise from north, only valid if ``usehorizon`` is
-        true, if ``usehorizon`` is true but ``userhorizon`` is ``None`` then
-        PVGIS will calculate the horizon [3]_
+        Optional user-specified elevation of horizon in degrees, at equally
+        spaced azimuth clockwise from north. If not specified, PVGIS will
+        calculate the horizon [3]_. If specified, requires ``usehorizon=True``.
     startyear : int, optional
         first year to calculate TMY
     endyear : int, optional

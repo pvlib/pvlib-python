@@ -1776,7 +1776,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, optional
+    temp_dew : float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -2025,7 +2025,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, optional
+    temp_dew : float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -2133,7 +2133,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, optional
+    temp_dew : float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If

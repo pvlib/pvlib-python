@@ -148,7 +148,7 @@ class PVSystem:
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
-    module_parameters : None, dict or Series, optional
+    module_parameters : dict or Series, optional
         Module parameters as defined by the SAPM, CEC, or other.
 
     temperature_model_parameters : None, dict or Series, default None.
@@ -166,14 +166,14 @@ class PVSystem:
         May be used to look up the inverter_parameters dictionary
         via some other method.
 
-    inverter_parameters : None, dict or Series, optional
+    inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
     racking_model : None or string, default 'open_rack'
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
         Used to identify a parameter set for the SAPM cell temperature model.
 
-    losses_parameters : None, dict or Series, optional
+    losses_parameters : dict or Series, optional
         Losses parameters as defined by PVWatts or other.
 
     name : string, optional
@@ -331,9 +331,9 @@ class PVSystem:
         dni_extra : None, float, Series or tuple of float or Series,\
             default None
             Extraterrestrial direct normal irradiance. [W/m2]
-        airmass : None, float or Series, optional
+        airmass : float or Series, optional
             Airmass. [unitless]
-        albedo : None, float or Series, optional
+        albedo : float or Series, optional
             Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.
@@ -925,7 +925,7 @@ class Array:
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
-    module_parameters : None, dict or Series, optional
+    module_parameters : dict or Series, optional
         Parameters for the module model, e.g., SAPM, CEC, or other.
 
     temperature_model_parameters : None, dict or Series, default None.
@@ -1095,11 +1095,11 @@ class Array:
             Global horizontal irradiance
         dhi : float or Series
             Diffuse horizontal irradiance. [W/m2]
-        dni_extra : None, float or Series, optional
+        dni_extra : float or Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
-        airmass : None, float or Series, optional
+        airmass : float or Series, optional
             Airmass. [unitless]
-        albedo : None, float or Series, optional
+        albedo : float or Series, optional
             Ground surface albedo. [unitless]
         model : String, default 'haydavies'
             Irradiance model.

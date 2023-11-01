@@ -108,15 +108,15 @@ def basic_chain(times, latitude, longitude,
         as degrees east of north
         (North=0, South=180, East=90, West=270).
 
-    module_parameters : None, dict or Series
+    module_parameters : dict or Series
         Module parameters as defined by the SAPM. See pvsystem.sapm for
         details.
 
-    temperature_model_parameters : None, dict or Series.
+    temperature_model_parameters : dict or Series
         Temperature model parameters as defined by the SAPM.
         See temperature.sapm_cell for details.
 
-    inverter_parameters : None, dict or Series
+    inverter_parameters : dict or Series
         Inverter parameters as defined by the CEC. See
         :py:func:`inverter.sandia` for details.
 

@@ -703,7 +703,7 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         Time series of measured GHI. [W/m2]
     clearsky : array or Series
         Time series of the expected clearsky GHI. [W/m2]
-    times : DatetimeIndex or None, default None.
+    times : DatetimeIndex, optional
         Times of measured and clearsky values. If not specified, the index of
         ``measured`` will be used.
     infer_limits : bool, default False

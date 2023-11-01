@@ -47,7 +47,7 @@ class Location:
     altitude : float, default 0.
         Altitude from sea level in meters.
 
-    name : None or string, default None.
+    name : string, optional
         Sets the name attribute of the Location object.
 
     See also
@@ -176,7 +176,7 @@ class Location:
         pressure : float, or array-like, optional
             If not specified, pressure will be calculated using
             :py:func:`pvlib.atmosphere.alt2pres` and ``self.altitude``.
-        temperature : None, float, or array-like, default 12
+        temperature : float or array-like, default 12
 
         kwargs
             passed to :py:func:`pvlib.solarposition.get_solarposition`

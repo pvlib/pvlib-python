@@ -144,14 +144,14 @@ class PVSystem:
         May be used to look up the module_parameters dictionary
         via some other method.
 
-    module_type : None or string, default 'glass_polymer'
+    module_type : string, default 'glass_polymer'
          Describes the module's construction. Valid strings are 'glass_polymer'
          and 'glass_glass'. Used for cell and module temperature calculations.
 
     module_parameters : dict or Series, optional
         Module parameters as defined by the SAPM, CEC, or other.
 
-    temperature_model_parameters : None, dict or Series, default None.
+    temperature_model_parameters : dict or Series, optional
         Temperature model parameters as required by one of the models in
         pvlib.temperature (excluding poa_global, temp_air and wind_speed).
 
@@ -169,7 +169,7 @@ class PVSystem:
     inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : None or string, default 'open_rack'
+    racking_model : string, default 'open_rack'
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
         Used to identify a parameter set for the SAPM cell temperature model.
 
@@ -328,8 +328,7 @@ class PVSystem:
             Global horizontal irradiance. [W/m2]
         dhi : float or Series or tuple of float or Series
             Diffuse horizontal irradiance. [W/m2]
-        dni_extra : None, float, Series or tuple of float or Series,\
-            default None
+        dni_extra : float, Series or tuple of float or Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
         airmass : float or Series, optional
             Airmass. [unitless]
@@ -928,7 +927,7 @@ class Array:
     module_parameters : dict or Series, optional
         Parameters for the module model, e.g., SAPM, CEC, or other.
 
-    temperature_model_parameters : None, dict or Series, default None.
+    temperature_model_parameters : dict or Series, optional
         Parameters for the module temperature model, e.g., SAPM, Pvsyst, or
         other.
 
@@ -938,7 +937,7 @@ class Array:
     strings: int, default 1
         Number of parallel strings in the array.
 
-    array_losses_parameters: None, dict or Series, default None.
+    array_losses_parameters : dict or Series, optional
         Supported keys are 'dc_ohmic_percent'.
 
     name : str, optional

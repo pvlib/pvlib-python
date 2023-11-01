@@ -1620,7 +1620,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
-    pressure : None or numeric, default 101325
+    pressure : numeric, default 101325
         Site pressure in Pascal. If not specified, relative airmass is used
         instead of absolute (pressure-corrected) airmass.
 

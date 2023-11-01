@@ -1341,7 +1341,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         and <=360. The azimuth convention is defined as degrees east of
         north (e.g. North = 0, East = 90, West = 270).
 
-    airmass : numeric (optional, default None)
+    airmass : numeric, optional
         Relative (not pressure-corrected) airmass values. If airmass is a
         DataFrame it must be of the same size as all other DataFrame
         inputs. The kastenyoung1989 airmass calculation is used internally

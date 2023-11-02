@@ -575,9 +575,10 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         overridden if surface_type is supplied.
 
     surface_type : string, optional
-        If supplied, overrides ``albedo``. String can be one of 'urban',
-        'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt', 'concrete',
-        'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'.
+        If supplied, overrides ``albedo``. `surface_type` can be one of 
+        'urban', 'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt',
+        'concrete', 'aluminum', 'copper', 'fresh steel', 'dirty steel',
+        'sea'.
 
     Returns
     -------
@@ -1342,7 +1343,7 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         north (e.g. North = 0, East = 90, West = 270).
 
     airmass : numeric, optional
-        Relative (not pressure-corrected) airmass values. If airmass is a
+        Relative (not pressure-corrected) airmass values. If ``airmass`` is a
         DataFrame it must be of the same size as all other DataFrame
         inputs. The kastenyoung1989 airmass calculation is used internally
         and is also recommended when pre-calculating airmass because
@@ -1621,7 +1622,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
     pressure : numeric, default 101325
-        Site pressure in Pascal. If not specified, relative airmass is used
+        Site pressure in Pascal. If not specified, relative airmass is used.
         instead of absolute (pressure-corrected) airmass.
 
     min_cos_zenith : numeric, default 0.065

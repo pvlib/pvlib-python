@@ -174,7 +174,7 @@ class Location:
         times : pandas.DatetimeIndex
             Must be localized or UTC will be assumed.
         pressure : float, or array-like, optional
-            If not specified, pressure will be calculated using
+            If not specified, ``pressure`` is calculated using
             :py:func:`pvlib.atmosphere.alt2pres` and ``self.altitude``.
         temperature : float or array-like, default 12
 

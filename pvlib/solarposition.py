@@ -312,7 +312,7 @@ def spa_python(time, latitude, longitude,
         *Note: delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.*
         The USNO has historical and forecasted delta_t [3]_.
-    atmos_refrac : float, optional, optional
+    atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     how : str, optional, default 'numpy'

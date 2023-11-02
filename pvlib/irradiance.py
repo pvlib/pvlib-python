@@ -575,7 +575,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         overridden if surface_type is supplied.
 
     surface_type : string, optional
-        If supplied, overrides ``albedo``. `surface_type` can be one of 
+        If supplied, overrides ``albedo``. `surface_type` can be one of
         'urban', 'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt',
         'concrete', 'aluminum', 'copper', 'fresh steel', 'dirty steel',
         'sea'.

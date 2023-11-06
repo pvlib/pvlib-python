@@ -215,12 +215,14 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     res = requests.get(base_url + '?DataInputs=' + data_inputs, params=params,
                        timeout=timeout)
 
-    # Invalid requests returns an XML error message and the HTTP staus code 200
-    # as if the request was successful. Therefore, errors cannot be handled
-    # automatic (e.g. res.raise_for_status()) and errors are handled manually
-    if res.headers['Content-Type'] == 'application/xml':
+    # Response from CAMS follows the status and reason format of PyWPS4
+    # If an error occurs on our side, we will return error 400 - bad request
+    # Additional information is available in the response text so we add it here 
+    # to the error displayed to facilitate users effort to fix their request
+    if not res.ok:
         errors = res.text.split('ows:ExceptionText')[1][1:-2]
-        raise requests.HTTPError(errors, response=res)
+        res.reason = "%s: <%s>"%(res.reason, errors)
+        res.raise_for_status()
     # Successful requests returns a csv data file
     elif res.headers['Content-Type'] == 'application/csv':
         fbuf = io.StringIO(res.content.decode('utf-8'))

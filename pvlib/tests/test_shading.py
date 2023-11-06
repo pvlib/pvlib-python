@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from pandas.testing import assert_series_equal
+from numpy.testing import assert_allclose
 import pytest
 
 from pvlib import shading
@@ -104,3 +105,15 @@ def test_sky_diffuse_passias_scalar(average_masking_angle, shading_loss):
     for angle, loss in zip(average_masking_angle, shading_loss):
         actual_loss = shading.sky_diffuse_passias(angle)
         assert np.isclose(loss, actual_loss)
+
+
+def test_projected_solar_zenith_angle():
+    psz_func = shading.projected_solar_zenith_angle
+    for app_zenith, azimuth, expected, atolerance, type in (
+        (90., 120., 90, 1e-3, float),
+        ([30], [100], [30], 1, np.ndarray),
+        (pd.Series([60]), pd.Series([135]), 50, 1, pd.Series)
+    ):
+        psz = psz_func(app_zenith, azimuth)
+        assert_allclose(psz, expected, atol=atolerance)
+        assert isinstance(psz, type)

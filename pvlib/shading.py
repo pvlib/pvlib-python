@@ -253,5 +253,6 @@ def projected_solar_zenith_angle(apparent_zenith, azimuth):
     apparent_zenith = np.radians(apparent_zenith)
     azimuth = np.radians(azimuth)
     return np.degrees(
-        np.arctan2(np.sin(azimuth) * np.sin(apparent_zenith), np.cos(apparent_zenith))
+        np.arctan2(np.sin(azimuth) * np.sin(apparent_zenith),
+                   np.cos(apparent_zenith))
     )

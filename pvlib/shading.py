@@ -232,3 +232,26 @@ def sky_diffuse_passias(masking_angle):
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
     """
     return 1 - cosd(masking_angle/2)**2
+
+
+def projected_solar_zenith_angle(apparent_zenith, azimuth):
+    r"""
+    Calculate projected solar zenith angle in degrees.
+
+    Parameters
+    ----------
+    apparent_zenith : numeric
+        Sun's apparent zenith in degrees.
+    azimuth : numeric
+        Sun's azimuth in degrees.
+
+    Returns
+    -------
+    Projected_solar_zenith : numeric
+        In degrees.
+    """
+    apparent_zenith = np.radians(apparent_zenith)
+    azimuth = np.radians(azimuth)
+    return np.degrees(
+        np.arctan2(np.sin(azimuth) * np.sin(apparent_zenith), np.cos(apparent_zenith))
+    )

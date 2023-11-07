@@ -192,9 +192,9 @@ def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta,
 
     P_NAMES = ['k_a', 'k_d', 'tc_d', 'k_rs', 'k_rsh']
     P_MAX   = [+np.inf,   0, +0.1, 1, 1]                           # noQA: E221
-    P_MIN   = [0,       -12, -0.1, 0, 0]                           # noQA: E221
-    P0      = [eta_max,  -6,  0.0, 0, 0]                           # noQA: E221
-    P_SCALE = [eta_max,  10,  0.1, 1, 1]
+    P_MIN   = [0,       -12, -0.1,  0.0,  0.0]                     # noQA: E221
+    P0      = [eta_max,  -6,  0.0, 1e-3, 1e-3]                     # noQA: E221
+    P_SCALE = [eta_max,  10,  0.1,  1.0,  1.0]
 
     SIGMA = 1 / np.sqrt(irradiance / 1000)
 

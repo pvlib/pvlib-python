@@ -27,6 +27,7 @@ Documentation: http://pvlib-python.readthedocs.io
 
 Source code: https://github.com/pvlib/pvlib-python
 """
+LONG_DESCRIPTION_CONTENT_TYPE = "text/x-rst"
 
 DISTNAME = 'pvlib'
 LICENSE = 'BSD 3-Clause'
@@ -44,7 +45,7 @@ INSTALL_REQUIRES = ['numpy >= 1.16.0',
 
 TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
-                 'pytest-remotedata']
+                 'pytest-remotedata', 'packaging']
 EXTRAS_REQUIRE = {
     'optional': ['cython', 'ephem', 'nrel-pysam', 'numba',
                  'solarfactors', 'statsmodels'],
@@ -119,6 +120,7 @@ setup(name=DISTNAME,
       ext_modules=extensions,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,
+      long_description_content_type=LONG_DESCRIPTION_CONTENT_TYPE,
       author=AUTHOR,
       maintainer_email=MAINTAINER_EMAIL,
       license=LICENSE,

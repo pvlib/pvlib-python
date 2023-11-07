@@ -8,13 +8,14 @@ import functools
 import io
 import itertools
 import os
+import inspect
 from urllib.request import urlopen
 import numpy as np
 from scipy import constants
 import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 from pvlib._deprecation import deprecated, warn_deprecated
 
@@ -100,10 +101,11 @@ class PVSystem:
 
     Parameters
     ----------
-    arrays : iterable of Array, optional
-        List of arrays that are part of the system. If not specified
-        a single array is created from the other parameters (e.g.
-        `surface_tilt`, `surface_azimuth`). Must contain at least one Array,
+    arrays : Array or iterable of Array, optional
+        An Array or list of arrays that are part of the system. If not
+        specified a single array is created from the other parameters (e.g.
+        `surface_tilt`, `surface_azimuth`). If specified as a list, the list
+        must contain at least one Array;
         if length of arrays is 0 a ValueError is raised. If `arrays` is
         specified the following PVSystem parameters are ignored:
 
@@ -219,6 +221,8 @@ class PVSystem:
                 strings_per_inverter,
                 array_losses_parameters,
             ),)
+        elif isinstance(arrays, Array):
+            self.arrays = (arrays,)
         elif len(arrays) == 0:
             raise ValueError("PVSystem must have at least one Array. "
                              "If you want to create a PVSystem instance "
@@ -388,7 +392,7 @@ class PVSystem:
 
         aoi_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz' and 'sapm'.
+            'martin_ruiz', 'sapm' and 'interp'.
         Returns
         -------
         iam : numeric or tuple of numeric
@@ -889,7 +893,7 @@ class PVSystem:
 
 class Array:
     """
-    An Array is a set of of modules at the same orientation.
+    An Array is a set of modules at the same orientation.
 
     Specifically, an array is defined by its mount, the
     module parameters, the number of parallel strings of modules
@@ -992,7 +996,7 @@ class Array:
         )
 
     def _infer_temperature_model_params(self):
-        # try to infer temperature model parameters from from racking_model
+        # try to infer temperature model parameters from racking_model
         # and module_type
         param_set = f'{self.mount.racking_model}_{self.module_type}'
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:
@@ -1151,7 +1155,7 @@ class Array:
 
         aoi_model : string, default 'physical'
             The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz' and 'sapm'.
+            'martin_ruiz', 'sapm' and 'interp'.
 
         Returns
         -------
@@ -1164,16 +1168,16 @@ class Array:
             if `iam_model` is not a valid model name.
         """
         model = iam_model.lower()
-        if model in ['ashrae', 'physical', 'martin_ruiz']:
-            param_names = iam._IAM_MODEL_PARAMS[model]
-            kwargs = _build_kwargs(param_names, self.module_parameters)
-            func = getattr(iam, model)
+        if model in ['ashrae', 'physical', 'martin_ruiz', 'interp']:
+            func = getattr(iam, model)  # get function at pvlib.iam
+            # get all parameters from function signature to retrieve them from
+            # module_parameters if present
+            params = set(inspect.signature(func).parameters.keys())
+            params.discard('aoi')  # exclude aoi so it can't be repeated
+            kwargs = _build_kwargs(params, self.module_parameters)
             return func(aoi, **kwargs)
         elif model == 'sapm':
             return iam.sapm(aoi, self.module_parameters)
-        elif model == 'interp':
-            raise ValueError(model + ' is not implemented as an IAM model '
-                             'option for Array')
         else:
             raise ValueError(model + ' is not a valid IAM model')
 
@@ -1296,20 +1300,18 @@ class Array:
         """
 
         # get relevent Vmp and Imp parameters from CEC parameters
-        if all([elem in self.module_parameters
-                for elem in ['V_mp_ref', 'I_mp_ref']]):
+        if all(elem in self.module_parameters
+               for elem in ['V_mp_ref', 'I_mp_ref']):
             vmp_ref = self.module_parameters['V_mp_ref']
             imp_ref = self.module_parameters['I_mp_ref']
 
         # get relevant Vmp and Imp parameters from SAPM parameters
-        elif all([elem in self.module_parameters
-                  for elem in ['Vmpo', 'Impo']]):
+        elif all(elem in self.module_parameters for elem in ['Vmpo', 'Impo']):
             vmp_ref = self.module_parameters['Vmpo']
             imp_ref = self.module_parameters['Impo']
 
         # get relevant Vmp and Imp parameters if they are PVsyst-like
-        elif all([elem in self.module_parameters
-                  for elem in ['Vmpp', 'Impp']]):
+        elif all(elem in self.module_parameters for elem in ['Vmpp', 'Impp']):
             vmp_ref = self.module_parameters['Vmpp']
             imp_ref = self.module_parameters['Impp']
 
@@ -1410,12 +1412,21 @@ class SingleAxisTrackerMount(AbstractMount):
         A value denoting the compass direction along which the axis of
         rotation lies, measured east of north. [degrees]
 
-    max_angle : float, default 90
-        A value denoting the maximum rotation angle
+    max_angle : float or tuple, default 90
+        A value denoting the maximum rotation angle, in decimal degrees,
         of the one-axis tracker from its horizontal position (horizontal
-        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
-        to rotate to a vertical position to point the panel towards a
-        horizon. max_angle of 180 degrees allows for full rotation. [degrees]
+        if axis_tilt = 0). If a float is provided, it represents the maximum
+        rotation angle, and the minimum rotation angle is assumed to be the
+        opposite of the maximum angle. If a tuple of (min_angle, max_angle) is
+        provided, it represents both the minimum and maximum rotation angles.
+
+        A rotation to 'max_angle' is a counter-clockwise rotation about the
+        y-axis of the tracker coordinate system. For example, for a tracker
+        with 'axis_azimuth' oriented to the south, a rotation to 'max_angle'
+        is towards the west, and a rotation toward 'min_angle' is in the
+        opposite direction, toward the east. Hence a max_angle of 180 degrees
+        (equivalent to max_angle = (-180, 180)) allows the tracker to achieve
+        its full rotation capability.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"
@@ -1451,7 +1462,7 @@ class SingleAxisTrackerMount(AbstractMount):
     """
     axis_tilt: float = 0.0
     axis_azimuth: float = 0.0
-    max_angle: float = 90.0
+    max_angle: Union[float, tuple] = 90.0
     backtrack: bool = True
     gcr: float = 2.0/7.0
     cross_axis_tilt: float = 0.0
@@ -2001,23 +2012,25 @@ def retrieve_sam(name=None, path=None):
 
     >>> from pvlib import pvsystem
     >>> invdb = pvsystem.retrieve_sam('CECInverter')
-    >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_
+    >>> inverter = invdb.AE_Solar_Energy__AE6_0__277V_
     >>> inverter
-    Vac           277.000000
-    Paco         6000.000000
-    Pdco         6165.670000
-    Vdco          361.123000
-    Pso            36.792300
-    C0             -0.000002
-    C1             -0.000047
-    C2             -0.001861
-    C3              0.000721
-    Pnt             0.070000
-    Vdcmax        600.000000
-    Idcmax         32.000000
-    Mppt_low      200.000000
-    Mppt_high     500.000000
-    Name: AE_Solar_Energy__AE6_0__277V__277V__CEC_2012_, dtype: float64
+    Vac                          277
+    Pso                    36.197575
+    Paco                      6000.0
+    Pdco                 6158.746094
+    Vdco                       360.0
+    C0                     -0.000002
+    C1                     -0.000026
+    C2                     -0.001253
+    C3                       0.00021
+    Pnt                          1.8
+    Vdcmax                     450.0
+    Idcmax                 17.107628
+    Mppt_low                   100.0
+    Mppt_high                  450.0
+    CEC_Date                     NaN
+    CEC_Type     Utility Interactive
+    Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
     '''
 
     if name is not None:
@@ -2651,28 +2664,19 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
        parameters of real solar cells using Lambert W-function", Solar
        Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
+    args = (current, photocurrent, saturation_current,
+            resistance_series, resistance_shunt, nNsVth)
     if method.lower() == 'lambertw':
-        return _singlediode._lambertw_v_from_i(
-            current, photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth
-        )
+        return _singlediode._lambertw_v_from_i(*args)
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
-        args = (current, photocurrent, saturation_current,
-                resistance_series, resistance_shunt, nNsVth)
         V = _singlediode.bishop88_v_from_i(*args, method=method.lower())
-        # find the right size and shape for returns
-        size, shape = _singlediode._get_size_and_shape(args)
-        if size <= 1:
-            if shape is not None:
-                V = np.tile(V, shape)
-        if np.isnan(V).any() and size <= 1:
-            V = np.repeat(V, size)
-            if shape is not None:
-                V = V.reshape(shape)
-        return V
+        if all(map(np.isscalar, args)):
+            return V
+        shape = _singlediode._shape_of_max_size(*args)
+        return np.broadcast_to(V, shape)
 
 
 def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
@@ -2742,28 +2746,19 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
        parameters of real solar cells using Lambert W-function", Solar
        Energy Materials and Solar Cells, 81 (2004) 269-277.
     '''
+    args = (voltage, photocurrent, saturation_current,
+            resistance_series, resistance_shunt, nNsVth)
     if method.lower() == 'lambertw':
-        return _singlediode._lambertw_i_from_v(
-            voltage, photocurrent, saturation_current, resistance_series,
-            resistance_shunt, nNsVth
-        )
+        return _singlediode._lambertw_i_from_v(*args)
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
         # equation for the diode voltage V_d then backing out voltage
-        args = (voltage, photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth)
         current = _singlediode.bishop88_i_from_v(*args, method=method.lower())
-        # find the right size and shape for returns
-        size, shape = _singlediode._get_size_and_shape(args)
-        if size <= 1:
-            if shape is not None:
-                current = np.tile(current, shape)
-        if np.isnan(current).any() and size <= 1:
-            current = np.repeat(current, size)
-            if shape is not None:
-                current = current.reshape(shape)
-        return current
+        if all(map(np.isscalar, args)):
+            return current
+        shape = _singlediode._shape_of_max_size(*args)
+        return np.broadcast_to(current, shape)
 
 
 def scale_voltage_current_power(data, voltage=1, current=1):

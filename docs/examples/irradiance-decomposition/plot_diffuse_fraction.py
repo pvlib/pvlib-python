@@ -203,7 +203,7 @@ f.tight_layout()
 # `NSRDB`_ user manuals.
 #
 # The Erbs and Boland models are correlations only based on the clearness index
-# kt, which is the ratio of GHI to the the horizontal component of the
+# kt, which is the ratio of GHI to the horizontal component of the
 # extra-terrestrial irradiance. At low sun elevation (zenith near 90 degrees),
 # especially near sunset, kt can explode because the denominator
 # (extra-terrestrial irradiance) approaches zero. In pvlib this behavior is

@@ -678,7 +678,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
 
     wind_height : float, default 9.144
         The height above ground at which ``wind_speed`` is measured. The
-        PVWatts defauls is 9.144 [m]
+        PVWatts default is 9.144 [m]
 
     emissivity : float, default 0.84
         The effectiveness of the module at radiating thermal energy. [unitless]
@@ -962,6 +962,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
     unit_mass : float, default 11.1
         Total mass of module divided by its one-sided surface area [kg/m^2]
+        One-sided surface area is equal to module height times width
 
     coefficients : 4-element list-like, optional
         Values for coefficients a_0 through a_3, see Eq. 9 of [1]_

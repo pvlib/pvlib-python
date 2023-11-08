@@ -172,5 +172,7 @@ def test_projected_solar_zenith_angle_dataypes(
         cast_func(sun_apparent_zenith),
         cast_func(sun_azimuth),
     )
-    psz = psz_func(array_tilt, array_azimuth, sun_apparent_zenith, array_azimuth)
+    psz = psz_func(
+        array_tilt, array_azimuth, sun_apparent_zenith, array_azimuth
+    )
     assert isinstance(psz, cast_type)

@@ -234,25 +234,51 @@ def sky_diffuse_passias(masking_angle):
     return 1 - cosd(masking_angle/2)**2
 
 
-def projected_solar_zenith_angle(apparent_zenith, azimuth):
+def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
+                                 solar_apparent_zenith, solar_azimuth):
     r"""
     Calculate projected solar zenith angle in degrees.
 
+    This is common in track and shadow computation [1]_ [2]_ [3]_.
+
     Parameters
     ----------
-    apparent_zenith : numeric
+    surface_tilt : numeric
+        Array tilt angle in degrees. From horizontal plane to array plane.
+    surface_azimuth : numeric
+        Array azimuth angle in degrees.
+        North = 0°; East = 90°; South = 180°; West = 270°
+    solar_apparent_zenith : numeric
         Sun's apparent zenith in degrees.
-    azimuth : numeric
+    solar_azimuth : numeric
         Sun's azimuth in degrees.
 
     Returns
     -------
     Projected_solar_zenith : numeric
         In degrees.
+
+    References
+    ----------
+    .. [1] K. Anderson and M. Mikofski, ‘Slope-Aware Backtracking for
+       Single-Axis Trackers’, National Renewable Energy Lab. (NREL), Golden,
+       CO (United States); Det Norske Veritas Group, Oslo (Norway),
+       NREL/TP-5K00-76626, Jul. 2020. :doi:`10.2172/1660126`.
+    .. [2] W. F. Marion and A. P. Dobos, ‘Rotation Angle for the Optimum
+       Tracking of One-Axis Trackers’, National Renewable Energy Lab. (NREL),
+       Golden, CO (United States), NREL/TP-6A20-58891, Jul. 2013.
+       :doi:`10.2172/1089596`.
+    .. [3] E. Lorenzo, L. Narvarte, and J. Muñoz, ‘Tracking and back-tracking’,
+       Progress in Photovoltaics: Research and Applications, vol. 19, no. 6,
+       pp. 747–753, 2011, :doi:`10.1002/pip.1085`.
     """
-    apparent_zenith = np.radians(apparent_zenith)
-    azimuth = np.radians(azimuth)
-    return np.degrees(
-        np.arctan2(np.sin(azimuth) * np.sin(apparent_zenith),
-                   np.cos(apparent_zenith))
-    )
+    # Notation from [1]
+    sx = cosd(solar_apparent_zenith) * cosd(solar_azimuth)
+    sy = cosd(solar_apparent_zenith) * cosd(solar_azimuth)
+    sz = sind(solar_apparent_zenith)
+    sx_prime = sx * cosd(surface_azimuth) - sy * sind(surface_azimuth)
+    sz_prime = (sx * sind(surface_azimuth) * sind(surface_tilt)
+                + sy * sind(surface_tilt) * cosd(surface_azimuth)
+                + sz * cosd(surface_tilt))
+    theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))
+    return theta_T

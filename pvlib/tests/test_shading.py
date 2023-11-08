@@ -6,8 +6,8 @@ from numpy.testing import assert_allclose
 import pytest
 from datetime import timezone, timedelta
 
+import pvlib
 from pvlib import shading
-
 
 @pytest.fixture
 def test_system():
@@ -148,7 +148,12 @@ def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
         timedata["Solar Azimuth"],
     )
     assert_allclose(psz, timedata["True-Tracking"], atol=1e-3)
-
+    # test equivalence against pvlib.tracking.singleaxis
+    singleaxis = pvlib.tracking.singleaxis(90-timedata["Apparent Elevation"],
+                                           timedata["Solar Azimuth"],
+                                           array_tilt, array_azimuth,
+                                           backtrack=False)
+    assert_allclose(psz, singleaxis["tracker_theta"])
 
 @pytest.mark.parametrize(
     "cast_type, cast_func",

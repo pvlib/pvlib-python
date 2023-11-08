@@ -4,6 +4,7 @@ import pandas as pd
 from pandas.testing import assert_series_equal
 from numpy.testing import assert_allclose
 import pytest
+from datetime import timezone, timedelta
 
 from pvlib import shading
 
@@ -38,7 +39,7 @@ def test__ground_angle_zero_gcr():
 
 @pytest.fixture
 def surface_tilt():
-    idx = pd.date_range('2019-01-01', freq='h', periods=3)
+    idx = pd.date_range("2019-01-01", freq="h", periods=3)
     return pd.Series([0, 20, 90], index=idx)
 
 
@@ -107,13 +108,69 @@ def test_sky_diffuse_passias_scalar(average_masking_angle, shading_loss):
         assert np.isclose(loss, actual_loss)
 
 
-def test_projected_solar_zenith_angle():
+@pytest.fixture
+def true_tracking_angle_and_inputs():
+    # data retrieved from NREL Slope-Aware Backtracking for Single-Axis
+    # Trackers
+    # doi.org/10.2172/1660126 ; Accessed on 2023-11-06.
+    tzinfo = timezone(timedelta(hours=-5))
+    array_tilt_angle = 9.666  # deg
+    array_azimuth_angle = 195.0  # deg
+    timedata = pd.DataFrame(
+        columns=("Apparent Elevation", "Solar Azimuth", "True-Tracking"),
+        data=(
+            (2.404287, 122.791770, -84.440),
+            (11.263058, 133.288729, -72.604),
+            (18.733558, 145.285552, -59.861),
+            (24.109076, 158.939435, -45.578),
+            (26.810735, 173.931802, -28.764),
+            (26.482495, 189.371536, -8.475),
+            (23.170447, 204.136810, 15.120),
+            (17.296785, 217.446538, 39.562),
+            (9.461862, 229.102218, 61.587),
+            (0.524817, 239.330401, 79.530),
+        ),
+    )
+    timedata.index = pd.date_range(
+        "2019-01-01T08", "2019-01-01T17", freq="1H", tz=tzinfo
+    )
+    timedata["Apparent Zenith"] = 90.0 - timedata["Apparent Elevation"]
+    return (array_tilt_angle, array_azimuth_angle, timedata)
+
+
+def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
     psz_func = shading.projected_solar_zenith_angle
-    for app_zenith, azimuth, expected, atolerance, type in (
-        (90., 120., 90, 1e-3, float),
-        ([30], [100], [30], 1, np.ndarray),
-        (pd.Series([60]), pd.Series([135]), 50, 1, pd.Series)
-    ):
-        psz = psz_func(app_zenith, azimuth)
-        assert_allclose(psz, expected, atol=atolerance)
-        assert isinstance(psz, type)
+    array_tilt, array_azimuth, timedata = true_tracking_angle_and_inputs
+    psz = psz_func(
+        array_tilt,
+        array_azimuth,
+        timedata["Apparent Elevation"],
+        timedata["Solar Azimuth"],
+    )
+    assert_allclose(psz, timedata["True-Tracking"], atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    "cast_type, cast_func",
+    [
+        (float, float),
+        (np.ndarray, lambda x: np.array([x])),
+        (pd.Series, lambda x: pd.Series(data=[x])),
+    ],
+)
+def test_projected_solar_zenith_angle_dataypes(
+    cast_type, cast_func, true_tracking_angle_and_inputs
+):
+    psz_func = shading.projected_solar_zenith_angle
+    array_tilt, array_azimuth, timedata = true_tracking_angle_and_inputs
+    sun_apparent_zenith = timedata["Apparent Zenith"].iloc[0]
+    sun_azimuth = timedata["Solar Azimuth"].iloc[0]
+
+    array_tilt, array_azimuth, sun_apparent_zenith, sun_azimuth = (
+        cast_func(array_tilt),
+        cast_func(array_azimuth),
+        cast_func(sun_apparent_zenith),
+        cast_func(sun_azimuth),
+    )
+    psz = psz_func(array_tilt, array_azimuth, sun_apparent_zenith, array_azimuth)
+    assert isinstance(psz, cast_type)

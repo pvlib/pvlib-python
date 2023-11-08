@@ -235,7 +235,7 @@ def sky_diffuse_passias(masking_angle):
 
 
 def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
-                                 solar_apparent_zenith, solar_azimuth):
+                                 solar_apparent_elevation, solar_azimuth):
     r"""
     Calculate projected solar zenith angle in degrees.
 
@@ -248,8 +248,8 @@ def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
     surface_azimuth : numeric
         Array azimuth angle in degrees.
         North = 0°; East = 90°; South = 180°; West = 270°
-    solar_apparent_zenith : numeric
-        Sun's apparent zenith in degrees.
+    solar_apparent_elevation : numeric
+        Sun's apparent elevation in degrees.
     solar_azimuth : numeric
         Sun's azimuth in degrees.
 
@@ -273,9 +273,9 @@ def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
        pp. 747–753, 2011, :doi:`10.1002/pip.1085`.
     """
     # Notation from [1]
-    sx = cosd(solar_apparent_zenith) * cosd(solar_azimuth)
-    sy = cosd(solar_apparent_zenith) * cosd(solar_azimuth)
-    sz = sind(solar_apparent_zenith)
+    sx = cosd(solar_apparent_elevation) * sind(solar_azimuth)
+    sy = cosd(solar_apparent_elevation) * cosd(solar_azimuth)
+    sz = sind(solar_apparent_elevation)
     sx_prime = sx * cosd(surface_azimuth) - sy * sind(surface_azimuth)
     sz_prime = (sx * sind(surface_azimuth) * sind(surface_tilt)
                 + sy * sind(surface_tilt) * cosd(surface_azimuth)

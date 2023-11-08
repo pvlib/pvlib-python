@@ -9,6 +9,7 @@ from datetime import timezone, timedelta
 import pvlib
 from pvlib import shading
 
+
 @pytest.fixture
 def test_system():
     syst = {'height': 1.0,
@@ -154,6 +155,7 @@ def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
                                            array_tilt, array_azimuth,
                                            backtrack=False)
     assert_allclose(psz, singleaxis["tracker_theta"])
+
 
 @pytest.mark.parametrize(
     "cast_type, cast_func",

@@ -272,18 +272,24 @@ def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
        Progress in Photovoltaics: Research and Applications, vol. 19, no. 6,
        pp. 747–753, 2011, :doi:`10.1002/pip.1085`.
     """
-    # Notation from [1]
-    sx = cosd(solar_apparent_elevation) * sind(solar_azimuth)
-    sy = cosd(solar_apparent_elevation) * cosd(solar_azimuth)
-    sz = sind(solar_apparent_elevation)
+    # Avoid recalculating these values
+    cosd_solar_apparent_elevation = cosd(solar_apparent_elevation)
     cosd_surface_azimuth = cosd(surface_azimuth)
     sind_surface_azimuth = sind(surface_azimuth)
     sind_surface_tilt = sind(surface_tilt)
+
+    # Notation from [1]
+    # Sun's x, y, z coords
+    sx = cosd_solar_apparent_elevation * sind(solar_azimuth)
+    sy = cosd_solar_apparent_elevation * cosd(solar_azimuth)
+    sz = sind(solar_apparent_elevation)
+    # Eq. (4); sx', sz' values from sun coordinates projected onto surface
     sx_prime = sx * cosd_surface_azimuth - sy * sind_surface_azimuth
     sz_prime = (
         sx * sind_surface_azimuth * sind_surface_tilt
         + sy * sind_surface_tilt * cosd_surface_azimuth
         + sz * cosd(surface_tilt)
     )
+    # Eq. (5); angle between sun's beam and surface
     theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))
     return theta_T

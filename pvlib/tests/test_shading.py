@@ -145,7 +145,7 @@ def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
     psz = psz_func(
         axis_tilt,
         axis_azimuth,
-        timedata["Apparent Elevation"],
+        timedata["Apparent Zenith"],
         timedata["Solar Azimuth"],
     )
     assert_allclose(psz, timedata["True-Tracking"], atol=1e-3)
@@ -159,7 +159,7 @@ def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
     psz = psz_func(
         -axis_tilt,
         axis_azimuth-180,
-        timedata["Apparent Elevation"],
+        timedata["Apparent Zenith"],
         timedata["Solar Azimuth"],
     )
     assert_allclose(psz, -timedata["True-Tracking"], atol=1e-3)

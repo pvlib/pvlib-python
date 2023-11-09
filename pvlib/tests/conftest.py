@@ -4,15 +4,14 @@ import warnings
 
 import pandas as pd
 import os
-from pkg_resources import parse_version
+from packaging.version import Version
 import pytest
 from functools import wraps
 
 import pvlib
 from pvlib.location import Location
 
-pvlib_base_version = \
-    parse_version(parse_version(pvlib.__version__).base_version)
+pvlib_base_version = Version(Version(pvlib.__version__).base_version)
 
 
 # decorator takes one argument: the base version for which it should fail
@@ -27,7 +26,7 @@ def fail_on_pvlib_version(version):
         @wraps(func)
         def inner(*args, **kwargs):
             # fail if the version is too high
-            if pvlib_base_version >= parse_version(version):
+            if pvlib_base_version >= Version(version):
                 pytest.fail('the tested function is scheduled to be '
                             'removed in %s' % version)
             # otherwise return the function to be executed
@@ -40,7 +39,7 @@ def fail_on_pvlib_version(version):
 def _check_pandas_assert_kwargs(kwargs):
     # handles the change in API related to default
     # tolerances in pandas 1.1.0.  See pvlib GH #1018
-    if parse_version(pd.__version__) >= parse_version('1.1.0'):
+    if Version(pd.__version__) >= Version('1.1.0'):
         if kwargs.pop('check_less_precise', False):
             kwargs['atol'] = 1e-3
             kwargs['rtol'] = 1e-3
@@ -141,23 +140,6 @@ def has_numba():
 
 requires_numba = pytest.mark.skipif(not has_numba(), reason="requires numba")
 
-try:
-    import siphon
-    has_siphon = True
-except ImportError:
-    has_siphon = False
-
-requires_siphon = pytest.mark.skipif(not has_siphon,
-                                     reason='requires siphon')
-
-try:
-    import netCDF4  # noqa: F401
-    has_netCDF4 = True
-except ImportError:
-    has_netCDF4 = False
-
-requires_netCDF4 = pytest.mark.skipif(not has_netCDF4,
-                                      reason='requires netCDF4')
 
 try:
     import pvfactors  # noqa: F401
@@ -176,20 +158,6 @@ except ImportError:
     has_pysam = False
 
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
-
-
-try:
-    import cftime  # noqa: F401
-
-    has_recent_cftime = parse_version(cftime.__version__) > parse_version(
-        "1.1.0"
-    )
-except ImportError:
-    has_recent_cftime = False
-
-requires_recent_cftime = pytest.mark.skipif(
-    not has_recent_cftime, reason="requires cftime > 1.1.0"
-)
 
 
 @pytest.fixture()

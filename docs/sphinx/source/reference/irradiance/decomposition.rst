@@ -12,6 +12,10 @@ DNI estimation models
    irradiance.dirint
    irradiance.dirindex
    irradiance.erbs
+   irradiance.erbs_driesse
+   irradiance.orgill_hollands
    irradiance.boland
    irradiance.campbell_norman
    irradiance.gti_dirint
+   irradiance.louche
+

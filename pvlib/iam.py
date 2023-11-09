@@ -20,7 +20,7 @@ _IAM_MODEL_PARAMS = {
     'physical': {'n', 'K', 'L'},
     'martin_ruiz': {'a_r'},
     'sapm': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
-    'interp': set()
+    'interp': {'theta_ref', 'iam_ref'}
 }
 
 
@@ -175,8 +175,12 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     n2costheta2 = n2 * costheta
 
     # reflectance of s-, p-polarized, and normal light by the first interface
-    rho12_s = ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
-    rho12_p = ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
+    with np.errstate(divide='ignore', invalid='ignore'):
+        rho12_s = \
+            ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
+        rho12_p = \
+            ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
+
     rho12_0 = ((n1 - n2) / (n1 + n2)) ** 2
 
     # transmittance through the first interface
@@ -208,12 +212,21 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
         tau_0 *= (1 - rho23_0) / (1 - rho23_0 * rho12_0)
 
     # transmittance after absorption in the glass
-    tau_s *= np.exp(-K * L / costheta)
-    tau_p *= np.exp(-K * L / costheta)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        tau_s *= np.exp(-K * L / costheta)
+        tau_p *= np.exp(-K * L / costheta)
+
     tau_0 *= np.exp(-K * L)
 
     # incidence angle modifier
     iam = (tau_s + tau_p) / 2 / tau_0
+
+    # for light coming from behind the plane, none can enter the module
+    # when n2 > 1, this is already the case
+    if np.isclose(n2, 1).any():
+        iam = np.where(aoi >= 90, 0, iam)
+        if isinstance(aoi, pd.Series):
+            iam = pd.Series(iam, index=aoi.index)
 
     return iam
 
@@ -787,7 +800,7 @@ def schlick(aoi):
 
     In PV contexts, the Schlick approximation has been used as an analytically
     integrable alternative to the Fresnel equations for estimating IAM
-    for diffuse irradiance [2]_.
+    for diffuse irradiance [2]_ (see :py:func:`schlick_diffuse`).
 
     Parameters
     ----------
@@ -800,6 +813,10 @@ def schlick(aoi):
     iam : numeric
         The incident angle modifier.
 
+    See Also
+    --------
+    pvlib.iam.schlick_diffuse
+
     References
     ----------
     .. [1] Schlick, C. An inexpensive BRDF model for physically-based
@@ -809,10 +826,6 @@ def schlick(aoi):
        for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
-
-    See Also
-    --------
-    pvlib.iam.schlick_diffuse
     """
     iam = 1 - (1 - cosd(aoi)) ** 5
     iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
@@ -827,14 +840,25 @@ def schlick(aoi):
 
 
 def schlick_diffuse(surface_tilt):
-    """
+    r"""
     Determine the incidence angle modifiers (IAM) for diffuse sky and
     ground-reflected irradiance on a tilted surface using the Schlick
     incident angle model.
 
-    The diffuse iam values are calculated using an analytical integration
-    of the Schlick equation [1]_ over the portion of an isotropic sky and
-    isotropic foreground that is visible from the tilted surface [2]_.
+    The Schlick equation (or "Schlick's approximation") [1]_ is an
+    approximation to the Fresnel reflection factor which can be recast as
+    a simple photovoltaic IAM model like so:
+
+    .. math::
+
+        IAM = 1 - (1 - \cos(aoi))^5
+
+    Unlike the Fresnel reflection factor itself, Schlick's approximation can
+    be integrated analytically to derive a closed-form equation for diffuse
+    IAM factors for the portions of the sky and ground visible
+    from a tilted surface if isotropic distributions are assumed.  
+    This function implements the integration of the
+    Schlick approximation provided by Xie et al. [2]_.
 
     Parameters
     ----------
@@ -850,6 +874,35 @@ def schlick_diffuse(surface_tilt):
     iam_ground : numeric
         The incident angle modifier for ground-reflected diffuse.
 
+    See Also
+    --------
+    pvlib.iam.schlick
+
+    Notes
+    -----
+    The analytical integration of the Schlick approximation was derived
+    as part of the FEDIS diffuse IAM model [2]_.  Compared with the model
+    implemented in this function, the FEDIS model includes an additional term
+    to account for reflection off a pyranometer's glass dome.  Because that
+    reflection should already be accounted for in the instrument's calibration,
+    the pvlib authors believe it is inappropriate to account for pyranometer
+    reflection again in an IAM model.  Thus, this function omits that term and
+    implements only the integrated Schlick approximation.
+
+    Note also that the output of this function (which is an exact integration)
+    can be compared with the output of :py:func:`marion_diffuse` which numerically
+    integrates the Schlick approximation:
+
+    .. code::
+
+        >>> pvlib.iam.marion_diffuse('schlick', surface_tilt=20)
+        {'sky': 0.9625000227247358,
+         'horizon': 0.7688174948510073,
+         'ground': 0.6267861879241405}
+
+        >>> pvlib.iam.schlick_diffuse(surface_tilt=20)
+        (0.9624993421569652, 0.6269387554469255)
+
     References
     ----------
     .. [1] Schlick, C. An inexpensive BRDF model for physically-based
@@ -859,10 +912,6 @@ def schlick_diffuse(surface_tilt):
        for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
-
-    See Also
-    --------
-    pvlib.iam.schlick
     """
     # these calculations are as in [2]_, but with the refractive index
     # weighting coefficient w set to 1.0 (so it is omitted)

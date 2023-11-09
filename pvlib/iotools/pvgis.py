@@ -77,14 +77,14 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     surface_tilt: float, default: 0
         Tilt angle from horizontal plane. Ignored for two-axis tracking.
     surface_azimuth: float, default: 180
-        Orientation (azimuth angle) of the (fixed) plane. Counter-clockwise
-        from north (north=0, south=180). This is offset 180 degrees from
-        the convention used by PVGIS. Ignored for tracking systems.
+        Orientation (azimuth angle) of the (fixed) plane. Clockwise from north
+        (north=0, east=90, south=180, west=270). This is offset 180 degrees from the
+        convention used by PVGIS. Ignored for tracking systems.
 
         .. versionchanged:: 0.10.0
            The `surface_azimuth` parameter now follows the pvlib convention, which
-           is counterclockwise from north. However, the convention used by the
-           PVGIS website and pvlib<=0.9.5 is offset by 180 degrees.
+           is clockwise from north. However, the convention used by the PVGIS website
+           and pvlib<=0.9.5 is offset by 180 degrees.
     usehorizon: bool, default: True
         Include effects of horizon
     userhorizon: list of float, default: None
@@ -217,9 +217,9 @@ def get_pvgis_hourly(latitude, longitude, start=None, end=None,
     if raddatabase is not None:
         params['raddatabase'] = raddatabase
     if start is not None:
-        params['startyear'] = start if isinstance(start, int) else start.year
+        params['startyear'] = start if isinstance(start, int) else pd.to_datetime(start).year  # noqa: E501
     if end is not None:
-        params['endyear'] = end if isinstance(end, int) else end.year
+        params['endyear'] = end if isinstance(end, int) else pd.to_datetime(end).year  # noqa: E501
     if peakpower is not None:
         params['peakpower'] = peakpower
 
@@ -391,8 +391,8 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
 
 
 def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
-                  userhorizon=None, startyear=None, endyear=None, url=URL,
-                  map_variables=None, timeout=30):
+                  userhorizon=None, startyear=None, endyear=None,
+                  map_variables=True, url=URL, timeout=30):
     """
     Get TMY data from PVGIS.
 
@@ -418,11 +418,11 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         first year to calculate TMY
     endyear : int, default None
         last year to calculate TMY, must be at least 10 years from first year
+    map_variables: bool, default True
+        When true, renames columns of the Dataframe to pvlib variable names
+        where applicable. See variable :const:`VARIABLE_MAP`.
     url : str, default: :const:`pvlib.iotools.pvgis.URL`
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
-    map_variables: bool
-        When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable const:`VARIABLE_MAP`.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 
@@ -508,14 +508,6 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         # the response is HTTP/1.1 400 BAD REQUEST which is handled earlier
         pass
 
-    if map_variables is None:
-        warnings.warn(
-            'PVGIS variable names will be renamed to pvlib conventions by '
-            'default starting in pvlib 0.10.0. Specify map_variables=True '
-            'to enable that behavior now, or specify map_variables=False '
-            'to hide this warning.', pvlibDeprecationWarning
-        )
-        map_variables = False
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
 
@@ -573,7 +565,7 @@ def _parse_pvgis_tmy_basic(src):
     return data, None, None, None
 
 
-def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
+def read_pvgis_tmy(filename, pvgis_format=None, map_variables=True):
     """
     Read a file downloaded from PVGIS.
 
@@ -589,7 +581,7 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
         ``outputformat='basic'``, please set ``pvgis_format`` to ``'basic'``.
         If ``filename`` is a buffer, then ``pvgis_format`` is required and must
         be in ``['csv', 'epw', 'json', 'basic']``.
-    map_variables: bool
+    map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
 
@@ -671,14 +663,6 @@ def read_pvgis_tmy(filename, pvgis_format=None, map_variables=None):
             "'csv', or 'basic'").format(outputformat)
         raise ValueError(err_msg)
 
-    if map_variables is None:
-        warnings.warn(
-            'PVGIS variable names will be renamed to pvlib conventions by '
-            'default starting in pvlib 0.10.0. Specify map_variables=True '
-            'to enable that behavior now, or specify map_variables=False '
-            'to hide this warning.', pvlibDeprecationWarning
-        )
-        map_variables = False
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
 

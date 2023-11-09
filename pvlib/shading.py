@@ -8,6 +8,47 @@ import pandas as pd
 from pvlib.tools import sind, cosd
 
 
+def ground_angle(surface_tilt, gcr, slant_height):
+    """
+    Angle from horizontal of the line from a point on the row slant length
+    to the bottom of the facing row.
+
+    The angles are clockwise from horizontal, rather than the usual
+    counterclockwise direction.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angle in degrees from horizontal, e.g., surface facing up
+        = 0, surface facing horizon = 90. [degree]
+    gcr : float
+        ground coverage ratio, ratio of row slant length to row spacing.
+        [unitless]
+    slant_height : numeric
+        The distance up the module's slant height to evaluate the ground
+        angle, as a fraction [0-1] of the module slant height [unitless].
+
+    Returns
+    -------
+    psi : numeric
+        Angle [degree].
+    """
+    #  : \\            \
+    #  :  \\            \
+    #  :   \\            \
+    #  :    \\            \  facing row
+    #  :     \\.___________\
+    #  :       \  ^*-.  psi \
+    #  :        \  x   *-.   \
+    #  :         \  v      *-.\
+    #  :          \<-----P---->\
+
+    x1 = gcr * slant_height * sind(surface_tilt)
+    x2 = gcr * slant_height * cosd(surface_tilt) + 1
+    psi = np.arctan2(x1, x2)  # do this before rad2deg because it handles 0 / 0
+    return np.rad2deg(psi)
+
+
 def masking_angle(surface_tilt, gcr, slant_height):
     """
     The elevation angle below which diffuse irradiance is blocked.

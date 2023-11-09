@@ -27,6 +27,7 @@ Documentation: http://pvlib-python.readthedocs.io
 
 Source code: https://github.com/pvlib/pvlib-python
 """
+LONG_DESCRIPTION_CONTENT_TYPE = "text/x-rst"
 
 DISTNAME = 'pvlib'
 LICENSE = 'BSD 3-Clause'
@@ -44,15 +45,14 @@ INSTALL_REQUIRES = ['numpy >= 1.16.0',
 
 TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
-                 'pytest-remotedata']
+                 'pytest-remotedata', 'packaging']
 EXTRAS_REQUIRE = {
-    'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
-                 'pvfactors', 'siphon', 'statsmodels',
-                 'cftime >= 1.1.1'],
+    'optional': ['cython', 'ephem', 'nrel-pysam', 'numba',
+                 'solarfactors', 'statsmodels'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 4.5.0',
             'pydata-sphinx-theme == 0.8.1', 'sphinx-gallery',
-            'docutils == 0.15.2', 'pillow', 'netcdf4', 'siphon',
-            'sphinx-toggleprompt >= 0.0.5', 'pvfactors'],
+            'docutils == 0.15.2', 'pillow',
+            'sphinx-toggleprompt >= 0.0.5', 'solarfactors'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
@@ -120,6 +120,7 @@ setup(name=DISTNAME,
       ext_modules=extensions,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,
+      long_description_content_type=LONG_DESCRIPTION_CONTENT_TYPE,
       author=AUTHOR,
       maintainer_email=MAINTAINER_EMAIL,
       license=LICENSE,

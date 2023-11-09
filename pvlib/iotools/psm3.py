@@ -46,7 +46,7 @@ REQUEST_VARIABLE_MAP = {
     'ghi': 'ghi',
     'dhi': 'dhi',
     'dni': 'dni',
-    'ghi_clear': 'clearsky_dhi',
+    'ghi_clear': 'clearsky_ghi',
     'dhi_clear': 'clearsky_dhi',
     'dni_clear': 'clearsky_dni',
     'zenith': 'solar_zenith_angle',
@@ -63,7 +63,7 @@ REQUEST_VARIABLE_MAP = {
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
              attributes=ATTRIBUTES, leap_day=None, full_name=PVLIB_PYTHON,
-             affiliation=PVLIB_PYTHON, url=None, map_variables=None,
+             affiliation=PVLIB_PYTHON, map_variables=None, url=None,
              timeout=30):
     """
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API. The NSRDB
@@ -112,12 +112,12 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         optional
     affiliation : str, default 'pvlib python'
         optional
-    url : str, optional
-        API endpoint URL.  If not specified, the endpoint is determined from
-        the ``names`` and ``interval`` parameters.
     map_variables : boolean, optional
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+    url : str, optional
+        API endpoint URL.  If not specified, the endpoint is determined from
+        the ``names`` and ``interval`` parameters.
     timeout : int, default 30
         time in seconds to wait for server response before timeout
 

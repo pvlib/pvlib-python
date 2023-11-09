@@ -365,17 +365,6 @@ def pvgis_tmy_mapped_columns():
             'wind_speed', 'wind_direction', 'pressure']
 
 
-@fail_on_pvlib_version('0.10')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_pvgis_tmy_variable_map_deprecating_warning_0_10():
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        _ = get_pvgis_tmy(45, 8)
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.epw'
-        _ = read_pvgis_tmy(fn)
-
-
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy(expected, month_year_expected, inputs_expected,
@@ -507,7 +496,7 @@ def test_get_pvgis_tmy_error():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
     actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
-    assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
+    assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 
 @pytest.mark.remote_data
@@ -530,7 +519,7 @@ def test_read_pvgis_horizon_invalid_coords():
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
     actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)
-    assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
+    assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 
 def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,

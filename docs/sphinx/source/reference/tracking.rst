@@ -3,19 +3,6 @@
 Tracking
 ========
 
-SingleAxisTracker
------------------
-
-The :py:class:`~tracking.SingleAxisTracker` inherits from
-:py:class:`~pvsystem.PVSystem`.
-
-.. autosummary::
-   :toctree: generated/
-
-   tracking.SingleAxisTracker
-   tracking.SingleAxisTracker.singleaxis
-   tracking.SingleAxisTracker.get_irradiance
-
 Functions
 ---------
 

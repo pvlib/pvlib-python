@@ -150,7 +150,7 @@ def read_surfrad(filename, map_variables=True):
                        header=None, names=SURFRAD_COLUMNS)
     file_buffer.close()
 
-    data = format_index(data)
+    data = _format_index(data)
     missing = data == -9999.9
     data = data.where(~missing, np.NaN)
 
@@ -159,7 +159,7 @@ def read_surfrad(filename, map_variables=True):
     return data, metadata
 
 
-def format_index(data):
+def _format_index(data):
     """Create UTC localized DatetimeIndex for the dataframe.
 
     Parameters

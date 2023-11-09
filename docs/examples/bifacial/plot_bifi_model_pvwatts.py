@@ -10,6 +10,12 @@ Example of bifacial modeling using pvfactors and procedural method
 # :py:func:`pvlib.pvsystem.pvwatts_dc` with the
 # :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries` function to
 # transpose GHI data to both front and rear Plane of Array (POA) irradiance.
+#
+# .. attention::
+#    To run this example, the ``solarfactors`` package (an implementation
+#    of the pvfactors model) must be installed.  It can be installed with
+#    either ``pip install solarfactors`` or ``pip install pvlib[optional]``,
+#    which installs all of pvlib's optional dependencies.
 
 import pandas as pd
 from pvlib import location

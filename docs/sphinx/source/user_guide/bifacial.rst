@@ -15,7 +15,7 @@ surfaces.
 pvlib-python provides two groups of functions for estimating front and back
 irradiance:
 
-1. a wrapper for convenient use of the pvfactors package:
+1. a wrapper for convenient use of the pvfactors model:
 :py:func:`~pvlib.bifacial.pvfactors.pvfactors_timeseries`
 
 2. the infinite sheds bifacial model:
@@ -26,12 +26,25 @@ irradiance:
 pvfactors
 ---------
 
-The `pvfactors <https://sunpower.github.io/pvfactors/>`_ package calculates
+The pvfactors model calculates
 incident irradiance on the front and back surfaces of an array. pvfactors uses
 a 2D geometry which assumes that the array is made up of long, regular rows.
 Irradiance is calculated in the middle of a row; end-of-row effects are not
 included. pvfactors can model arrays in fixed racking or on single-axis
-trackers.
+trackers with a user-configurable number of rows.
+
+Prior to pvlib version 0.10.1, pvlib used the original SunPower implementation
+of the model via the `pvfactors <https://github.com/sunpower/pvfactors>`_
+package.  Starting in version 0.10.1, pvlib instead uses
+`solarfactors <https://github.com/pvlib/solarfactors>`_, a drop-in
+replacement implementation maintained by the pvlib community.
+This switch was made when the original ``pvfactors`` package became
+difficult to install in modern python environments.
+``solarfactors`` implements the same model as ``pvfactors`` and is kept
+up to date and working over time.  Note that "solarfactors" is only the name
+on PyPI (meaning it is installed via ``pip install solarfactors``);
+after installation, Python code still accesses it as "pvfactors"
+(e.g. ``import pvfactors``).
 
 
 Infinite Sheds

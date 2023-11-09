@@ -230,8 +230,10 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
         Snow received each month. Referred to as S in [1]_. [cm]
 
     snow_events : array-like
-        Number of snowfall events each month. May be int or float type for
-        the average events in a typical month. Referred to as N in [1]_.
+        Number of snowfall events each month. Snow events are defined as days
+        in the month that have snowfall greater than 1 inch. May be int or
+        float type for the average events in a typical month. Referred to as N
+        in [1]_.
 
     surface_tilt : float
         Tilt angle of the array. [deg]
@@ -274,7 +276,9 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
     axis to the module edge.
 
     The parameter `string_factor` is an enhancement added to the model after
-    publication of [1]_ per private communication with the model's author.
+    publication of [1]_ per private communication with the model's author. The
+    definition for snow events documented above is also based on private
+    communication with the model's author.
 
     References
     ----------

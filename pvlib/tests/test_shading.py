@@ -150,11 +150,19 @@ def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
     )
     assert_allclose(psz, timedata["True-Tracking"], atol=1e-3)
     # test equivalence against pvlib.tracking.singleaxis
-    singleaxis = pvlib.tracking.singleaxis(90-timedata["Apparent Elevation"],
+    singleaxis = pvlib.tracking.singleaxis(timedata["Apparent Zenith"],
                                            timedata["Solar Azimuth"],
                                            array_tilt, array_azimuth,
                                            backtrack=False)
     assert_allclose(psz, singleaxis["tracker_theta"])
+    # test by changing axis azimuth and tilt
+    psz = psz_func(
+        -array_tilt,
+        array_azimuth-180,
+        timedata["Apparent Elevation"],
+        timedata["Solar Azimuth"],
+    )
+    assert_allclose(psz, -timedata["True-Tracking"], atol=1e-3)
 
 
 @pytest.mark.parametrize(

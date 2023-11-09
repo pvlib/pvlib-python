@@ -234,7 +234,7 @@ def sky_diffuse_passias(masking_angle):
     return 1 - cosd(masking_angle/2)**2
 
 
-def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
+def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
                                  solar_apparent_elevation, solar_azimuth):
     r"""
     Calculate projected solar zenith angle in degrees.
@@ -243,9 +243,9 @@ def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
 
     Parameters
     ----------
-    surface_tilt : numeric
+    axis_tilt : numeric
         Axis tilt angle in degrees. From horizontal plane to array plane.
-    surface_azimuth : numeric
+    axis_azimuth : numeric
         Axis azimuth angle in degrees.
         North = 0°; East = 90°; South = 180°; West = 270°
     solar_apparent_elevation : numeric
@@ -274,9 +274,9 @@ def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
     """
     # Avoid recalculating these values
     cosd_solar_apparent_elevation = cosd(solar_apparent_elevation)
-    cosd_surface_azimuth = cosd(surface_azimuth)
-    sind_surface_azimuth = sind(surface_azimuth)
-    sind_surface_tilt = sind(surface_tilt)
+    cosd_axis_azimuth = cosd(axis_azimuth)
+    sind_axis_azimuth = sind(axis_azimuth)
+    sind_axis_tilt = sind(axis_tilt)
 
     # Notation from [1]
     # Sun's x, y, z coords
@@ -284,11 +284,11 @@ def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
     sy = cosd_solar_apparent_elevation * cosd(solar_azimuth)
     sz = sind(solar_apparent_elevation)
     # Eq. (4); sx', sz' values from sun coordinates projected onto surface
-    sx_prime = sx * cosd_surface_azimuth - sy * sind_surface_azimuth
+    sx_prime = sx * cosd_axis_azimuth - sy * sind_axis_azimuth
     sz_prime = (
-        sx * sind_surface_azimuth * sind_surface_tilt
-        + sy * sind_surface_tilt * cosd_surface_azimuth
-        + sz * cosd(surface_tilt)
+        sx * sind_axis_azimuth * sind_axis_tilt
+        + sy * sind_axis_tilt * cosd_axis_azimuth
+        + sz * cosd(axis_tilt)
     )
     # Eq. (5); angle between sun's beam and surface
     theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))

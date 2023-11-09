@@ -115,8 +115,8 @@ def true_tracking_angle_and_inputs():
     # Trackers
     # doi.org/10.2172/1660126 ; Accessed on 2023-11-06.
     tzinfo = timezone(timedelta(hours=-5))
-    array_tilt_angle = 9.666  # deg
-    array_azimuth_angle = 195.0  # deg
+    axis_tilt_angle = 9.666  # deg
+    axis_azimuth_angle = 195.0  # deg
     timedata = pd.DataFrame(
         columns=("Apparent Elevation", "Solar Azimuth", "True-Tracking"),
         data=(
@@ -136,15 +136,15 @@ def true_tracking_angle_and_inputs():
         "2019-01-01T08", "2019-01-01T17", freq="1H", tz=tzinfo
     )
     timedata["Apparent Zenith"] = 90.0 - timedata["Apparent Elevation"]
-    return (array_tilt_angle, array_azimuth_angle, timedata)
+    return (axis_tilt_angle, axis_azimuth_angle, timedata)
 
 
 def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
     psz_func = shading.projected_solar_zenith_angle
-    array_tilt, array_azimuth, timedata = true_tracking_angle_and_inputs
+    axis_tilt, axis_azimuth, timedata = true_tracking_angle_and_inputs
     psz = psz_func(
-        array_tilt,
-        array_azimuth,
+        axis_tilt,
+        axis_azimuth,
         timedata["Apparent Elevation"],
         timedata["Solar Azimuth"],
     )
@@ -152,13 +152,13 @@ def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
     # test equivalence against pvlib.tracking.singleaxis
     singleaxis = pvlib.tracking.singleaxis(timedata["Apparent Zenith"],
                                            timedata["Solar Azimuth"],
-                                           array_tilt, array_azimuth,
+                                           axis_tilt, axis_azimuth,
                                            backtrack=False)
     assert_allclose(psz, singleaxis["tracker_theta"])
     # test by changing axis azimuth and tilt
     psz = psz_func(
-        -array_tilt,
-        array_azimuth-180,
+        -axis_tilt,
+        axis_azimuth-180,
         timedata["Apparent Elevation"],
         timedata["Solar Azimuth"],
     )
@@ -169,7 +169,7 @@ def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
     "cast_type, cast_func",
     [
         (float, float),
-        (np.ndarray, lambda x: np.array([x])),
+        (np.ndaxis, lambda x: np.axis([x])),
         (pd.Series, lambda x: pd.Series(data=[x])),
     ],
 )
@@ -177,17 +177,17 @@ def test_projected_solar_zenith_angle_dataypes(
     cast_type, cast_func, true_tracking_angle_and_inputs
 ):
     psz_func = shading.projected_solar_zenith_angle
-    array_tilt, array_azimuth, timedata = true_tracking_angle_and_inputs
+    axis_tilt, axis_azimuth, timedata = true_tracking_angle_and_inputs
     sun_apparent_zenith = timedata["Apparent Zenith"].iloc[0]
     sun_azimuth = timedata["Solar Azimuth"].iloc[0]
 
-    array_tilt, array_azimuth, sun_apparent_zenith, sun_azimuth = (
-        cast_func(array_tilt),
-        cast_func(array_azimuth),
+    axis_tilt, axis_azimuth, sun_apparent_zenith, sun_azimuth = (
+        cast_func(axis_tilt),
+        cast_func(axis_azimuth),
         cast_func(sun_apparent_zenith),
         cast_func(sun_azimuth),
     )
     psz = psz_func(
-        array_tilt, array_azimuth, sun_apparent_zenith, array_azimuth
+        axis_tilt, axis_azimuth, sun_apparent_zenith, axis_azimuth
     )
     assert isinstance(psz, cast_type)

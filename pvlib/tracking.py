@@ -159,7 +159,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
           + z*cos_axis_tilt)
 
     # The ideal tracking angle wid is the rotation to place the sun position
-    # vector (xp, yp, zp) in the (y, z) plane, which is normal to the panel and
+    # vector (xp, yp, zp) in the (x, z) plane, which is normal to the panel and
     # contains the axis of rotation.  wid = 0 indicates that the panel is
     # horizontal. Here, our convention is that a clockwise rotation is
     # positive, to view rotation angles in the same frame of reference as

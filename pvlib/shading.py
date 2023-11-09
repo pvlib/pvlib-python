@@ -244,9 +244,9 @@ def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
     Parameters
     ----------
     surface_tilt : numeric
-        Array tilt angle in degrees. From horizontal plane to array plane.
+        Axis tilt angle in degrees. From horizontal plane to array plane.
     surface_azimuth : numeric
-        Array azimuth angle in degrees.
+        Axis azimuth angle in degrees.
         North = 0°; East = 90°; South = 180°; West = 270°
     solar_apparent_elevation : numeric
         Sun's apparent elevation in degrees.

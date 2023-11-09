@@ -225,7 +225,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
         res.reason = "%s: <%s>" % (res.reason, errors)
         res.raise_for_status()
     # Successful requests returns a csv data file
-    elif res.headers['Content-Type'] == 'application/csv':
+    else:
         fbuf = io.StringIO(res.content.decode('utf-8'))
         data, metadata = parse_cams(fbuf, integrated=integrated, label=label,
                                     map_variables=map_variables)

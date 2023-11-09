@@ -169,7 +169,7 @@ def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
     "cast_type, cast_func",
     [
         (float, float),
-        (np.ndaxis, lambda x: np.axis([x])),
+        (np.ndarray, lambda x: np.axis([x])),
         (pd.Series, lambda x: pd.Series(data=[x])),
     ],
 )

@@ -12,6 +12,8 @@ Enhancements
 * :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
   shaded fraction in returned variables. (:pull:`1871`)
+* Added function :py:func:`pvlib.shading.projected_solar_zenith_angle`,
+  a common calculation in shading and tracking. (:issue:`1734`, :pull:`1904`)
 
 Bug fixes
 ~~~~~~~~~
@@ -32,3 +34,4 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Anton Driesse (:ghuser:`adriesse`)
+* Echedey Luis (:ghuser:`echedey-ls`)

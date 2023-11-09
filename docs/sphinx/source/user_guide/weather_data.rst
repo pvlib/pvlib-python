@@ -1,13 +1,13 @@
 .. _weatherdata:
 
-Importing weather data
-======================
+Weather data
+=========
 
-Many PV modeling applications require irradiance and meteorological datasets
-as the inputs to a PV system model.  These weather datasets are available
+Simulating the performance of a PV system requires irradiance and meteorological data
+as the inputs to a PV system model.  Weather datasets are available
 from many sources and in many formats.  The :py:mod:`pvlib.iotools` module
-contains functions to retrieve and import these datasets in a form
-that is convenient to use with the rest of pvlib.
+contains functions to easily retrieve and import such datasets in a standardized
+form that is convenient to use with the rest of pvlib.
 
 
 Usage

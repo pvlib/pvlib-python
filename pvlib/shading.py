@@ -276,10 +276,13 @@ def projected_solar_zenith_angle(surface_tilt, surface_azimuth,
     sx = cosd(solar_apparent_elevation) * sind(solar_azimuth)
     sy = cosd(solar_apparent_elevation) * cosd(solar_azimuth)
     sz = sind(solar_apparent_elevation)
-    sx_prime = sx * cosd(surface_azimuth) - sy * sind(surface_azimuth)
+    cosd_surface_azimuth = cosd(surface_azimuth)
+    sind_surface_azimuth = sind(surface_azimuth)
+    sind_surface_tilt = sind(surface_tilt)
+    sx_prime = sx * cosd_surface_azimuth - sy * sind_surface_azimuth
     sz_prime = (
-        sx * sind(surface_azimuth) * sind(surface_tilt)
-        + sy * sind(surface_tilt) * cosd(surface_azimuth)
+        sx * sind_surface_azimuth * sind_surface_tilt
+        + sy * sind_surface_tilt * cosd_surface_azimuth
         + sz * cosd(surface_tilt)
     )
     theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))

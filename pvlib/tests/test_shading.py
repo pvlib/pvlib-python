@@ -173,7 +173,7 @@ def test_projected_solar_zenith_angle_numeric(true_tracking_angle_and_inputs):
         (pd.Series, lambda x: pd.Series(data=[x])),
     ],
 )
-def test_projected_solar_zenith_angle_dataypes(
+def test_projected_solar_zenith_angle_datatypes(
     cast_type, cast_func, true_tracking_angle_and_inputs
 ):
     psz_func = shading.projected_solar_zenith_angle

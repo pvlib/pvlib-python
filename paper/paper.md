@@ -141,7 +141,7 @@ Third, the creation of `pvlib.iotools`, a sub-package for fetching and importing
 datasets relevant to PV modeling.  These functions provide a standardized
 interface for reading data files in various complex data formats, offering
 conveniences like optionally standardizing the dataset variable names and units
-to pvlib's conventions [@pvlibiotools].  As of version 0.10.1, `pvlib.iotools` contains
+to pvlib's conventions [@Jensen2023].  As of version 0.10.1, `pvlib.iotools` contains
 functions to download data from over ten online data providers,
 plus file reading/parsing functions for a dozen solar resource file formats.
 
@@ -212,7 +212,7 @@ funding sources, including:
 
 - The U.S. Department of Energy’s Solar Energy Technology Office, through
   the PV Performance Modeling Collaborative (PVPMC) and other projects
-- The Danish Energy Agency through grant nos. 64020-1082 and 134232-510237
+- The Danish Energy Agency through grant nos. 134223-496801 and 134232-510237
 - NumFOCUS's Small Development Grant program
 - Google's Summer of Code program
 

@@ -1532,7 +1532,7 @@ def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
     Estimate global horizontal irradiance (GHI) from global plane-of-array
     (POA) irradiance.  This reverse transposition algorithm uses a bisection
     search together with the continuous Perez-Driesse transposition and
-    continuous Erbs-Driesse decomposition models, as described in _[1].
+    continuous Erbs-Driesse decomposition models, as described in [1]_.
 
     Parameters
     ----------
@@ -1567,8 +1567,8 @@ def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
 
     Notes
     -----
-    Since :py:func:`bisect` is not vectorized, high-resolution time series
-    can be quite slow to process.
+    Since :py:func:`scipy.optimize.bisect` is not vectorized, high-resolution
+    time series can be quite slow to process.
 
     References
     ----------
@@ -1578,9 +1578,9 @@ def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
 
     See also
     --------
-    perez-driesse
-    erbs-driesse
-    gti-dirint
+    perez_driesse
+    erbs_driesse
+    gti_dirint
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 

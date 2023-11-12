@@ -11,6 +11,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 from scipy.interpolate import splev
+from scipy.optimize import bisect
 
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
@@ -1585,11 +1586,11 @@ def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
 
     rtranspose_array = np.vectorize(_rtranspose)
 
-    ghi, conv, niter  = rtranspose_array(surface_tilt, surface_azimuth,
-                                         solar_zenith, solar_azimuth,
-                                         poa_global,
-                                         dni_extra, airmass, albedo,
-                                         xtol=0.01)
+    ghi, conv, niter = rtranspose_array(surface_tilt, surface_azimuth,
+                                        solar_zenith, solar_azimuth,
+                                        poa_global,
+                                        dni_extra, airmass, albedo,
+                                        xtol=0.01)
 
     if isinstance(poa_global, pd.Series):
         ghi = pd.Series(ghi, poa_global.index)

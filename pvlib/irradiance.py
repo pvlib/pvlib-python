@@ -1444,6 +1444,161 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
+def _transpose(surface_tilt, surface_azimuth,
+               solar_zenith, solar_azimuth,
+               ghi,
+               dni_extra, airmass, albedo):
+    '''
+    Transposition function that includes decomposition if GHI using the
+    continuous Erbs-Driesse model.
+
+    Helper function for rtranspose_driesse_2023.
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
+
+    dni = erbsout['dni']
+    dhi = erbsout['dhi']
+
+    irrads = get_total_irradiance(surface_tilt, surface_azimuth,
+                                  solar_zenith, solar_azimuth,
+                                  dni, ghi, dhi,
+                                  dni_extra, airmass, albedo,
+                                  model='perez-driesse')
+
+    return irrads['poa_global']
+
+
+def _rtranspose(surface_tilt, surface_azimuth,
+                solar_zenith, solar_azimuth,
+                poa_global,
+                dni_extra, airmass, albedo,
+                xtol=0.01):
+    '''
+    Reverse transposition function that uses the scalar bisection from scipy.
+
+    Helper function for rtranspose_driesse_2023.
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    # propagate nans and zeros quickly
+    if np.isnan(poa_global):
+        return np.nan, False, 0
+    if poa_global <= 0:
+        return 0.0, True, 0
+
+    # function whose root needs to be found
+    def poa_error(ghi):
+        poa_hat = _transpose(surface_tilt, surface_azimuth,
+                             solar_zenith, solar_azimuth,
+                             ghi,
+                             dni_extra, airmass, albedo)
+        return poa_hat - poa_global
+
+    # calculate an upper bound for ghi using clearness index 1.25
+    ghi_clear = dni_extra * tools.cosd(solar_zenith)
+    ghi_high = np.maximum(10, 1.25 * ghi_clear)
+
+    try:
+        result = bisect(poa_error,
+                        a=0,
+                        b=ghi_high,
+                        xtol=xtol,
+                        maxiter=25,
+                        full_output=True,
+                        disp=False,
+                        )
+    except ValueError:
+        # this occurs when poa_error has the same sign at both end points
+        ghi = np.nan
+        conv = False
+        niter = -1
+    else:
+        ghi = result[0]
+        conv = result[1].converged
+        niter = result[1].iterations
+
+    return ghi, conv, niter
+
+
+def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
+                            solar_zenith, solar_azimuth,
+                            poa_global,
+                            dni_extra=None, airmass=None, albedo=0.25,
+                            xtol=0.01):
+    '''
+    Estimate global horizontal irradiance (GHI) from global plane-of-array
+    (POA) irradiance.  This reverse transposition algorithm uses a bisection
+    search together with the continuous Perez-Driesse transposition and
+    continuous Erbs-Driesse decomposition models, as described in _[1].
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Panel tilt from horizontal. [degree]
+    surface_azimuth : numeric
+        Panel azimuth from north. [degree]
+    solar_zenith : numeric
+        Solar zenith angle. [degree]
+    solar_azimuth : numeric
+        Solar azimuth angle. [degree]
+    poa_global : numeric
+        Plane-of-array global irradiance, aka global tilted irradiance. [W/m^2]
+    dni_extra : None or numeric, default None
+        Extraterrestrial direct normal irradiance. [W/m^2]
+    airmass : None or numeric, default None
+        Relative airmass (not adjusted for pressure). [unitless]
+    albedo : numeric, default 0.25
+        Ground surface albedo. [unitless]
+    xtol : numeric, default 0.01
+        Convergence criterion.  The estimated GHI will be within xtol of the
+        true value. [W/m^2]
+
+    Returns
+    -------
+    ghi : numeric
+        Estimated GHI. [W/m^2]
+    conv : boolean
+        Indicates which elements converged successfully.
+    niter : integer
+        Indicates how many bisection steps were done.
+
+    Notes
+    -----
+    Since :py:func:`bisect` is not vectorized, high-resolution time series
+    can be quite slow to process.
+
+    References
+    ----------
+    .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
+        Diffuse Sky Model for Forward and Reverse Transposition, accepted
+        for publication in the Solar Energy Journal.
+
+    See also
+    --------
+    perez-driesse
+    erbs-driesse
+    gti-dirint
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    rtranspose_array = np.vectorize(_rtranspose)
+
+    ghi, conv, niter  = rtranspose_array(surface_tilt, surface_azimuth,
+                                         solar_zenith, solar_azimuth,
+                                         poa_global,
+                                         dni_extra, airmass, albedo,
+                                         xtol=0.01)
+
+    if isinstance(poa_global, pd.Series):
+        ghi = pd.Series(ghi, poa_global.index)
+        conv = pd.Series(conv, poa_global.index)
+        niter = pd.Series(niter, poa_global.index)
+
+    return ghi, conv, niter
+
+
 def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     """
     Calculate the clearsky index.

@@ -62,7 +62,7 @@ dhi = erbsout['dhi']
 irrads = get_total_irradiance(surface_tilt, surface_azimuth,
                               solar_zenith, solar_azimuth,
                               dni, ghi, dhi,
-                              dni_extra, #airmass, albedo,
+                              dni_extra,
                               model='perez-driesse')
 
 gti = irrads['poa_global']
@@ -117,7 +117,7 @@ dhi = erbsout['dhi']
 irrads = get_total_irradiance(surface_tilt, surface_azimuth,
                               solar_zenith, solar_azimuth,
                               dni, ghi, dhi,
-                              dni_extra, #airmass, albedo,
+                              dni_extra,
                               model='perez-driesse')
 
 gti = irrads['poa_global']

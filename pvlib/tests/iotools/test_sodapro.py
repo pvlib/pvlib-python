@@ -261,7 +261,8 @@ def test_get_cams_bad_request(requests_mock):
 
     # Test if HTTPError is raised if incorrect input is specified
     # In the below example a non-registrered email is specified
-    with pytest.raises(requests.exceptions.HTTPError, match='Failed to execute WPS process'):
+    with pytest.raises(requests.exceptions.HTTPError,
+                       match='Failed to execute WPS process'):
         _ = sodapro.get_cams(
             start=pd.Timestamp('2020-01-01'),
             end=pd.Timestamp('2020-05-04'),

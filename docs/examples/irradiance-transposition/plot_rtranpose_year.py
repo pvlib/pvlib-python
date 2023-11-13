@@ -5,6 +5,7 @@ Reverse transposition using one year of hourly data
 With a brief look at accuracy and speed.
 
 Author: Anton Driesse
+
 """
 
 # %%
@@ -64,7 +65,7 @@ solpos = loc.get_solarposition(df.index)
 # %%
 #
 # Estimate global irradiance on a fixed-tilt array (forward transposition)
-# The array is tilted 30 degrees an oriented 30 degrees east of south.
+# The array is tilted 30 degrees and oriented 30 degrees east of south.
 # The Perez-Driesse model is used for this to match the reverse transposition
 # later, but the match is not perfect because the diffuse fraction of the data
 # does not match the Erbs model.
@@ -87,7 +88,7 @@ df['aoi'] = aoi(TILT, ORIENT, solpos.apparent_zenith, solpos.azimuth)
 # %%
 #
 # Now estimate ghi from poa_global using reverse transposition
-# This step uses a
+# The algorithm uses a simple bisection search.
 #
 
 df['ghi_rev'] = rtranspose_driesse_2023(TILT, ORIENT,

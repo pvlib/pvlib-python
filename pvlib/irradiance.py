@@ -1527,7 +1527,8 @@ def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
                             solar_zenith, solar_azimuth,
                             poa_global,
                             dni_extra=None, airmass=None, albedo=0.25,
-                            xtol=0.01):
+                            xtol=0.01,
+                            full_output=False):
     '''
     Estimate global horizontal irradiance (GHI) from global plane-of-array
     (POA) irradiance.  This reverse transposition algorithm uses a bisection
@@ -1555,15 +1556,20 @@ def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
     xtol : numeric, default 0.01
         Convergence criterion.  The estimated GHI will be within xtol of the
         true value. [W/m^2]
+    full_output : boolean, default False
+        If full_output is False, only ghi is returned, otherwise the return
+        value is (ghi, converged, niter). (see Returns section for details).
 
     Returns
     -------
     ghi : numeric
         Estimated GHI. [W/m^2]
-    conv : boolean
-        Indicates which elements converged successfully.
-    niter : integer
-        Indicates how many bisection steps were done.
+    converged : boolean, optional
+        Present if full_output=True. Indicates which elements converged
+        successfully.
+    niter : integer, optional
+        Present if full_output=True. Indicates how many bisection iterations
+        were done.
 
     Notes
     -----
@@ -1597,7 +1603,10 @@ def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
         conv = pd.Series(conv, poa_global.index)
         niter = pd.Series(niter, poa_global.index)
 
-    return ghi, conv, niter
+    if full_output:
+        return ghi, conv, niter
+    else:
+        return ghi
 
 
 def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):

@@ -23,20 +23,21 @@ Author: Anton Driesse
 #
 
 import numpy as np
-import pandas as pd
 
-import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.rcParams['axes.grid'] = True
+import matplotlib.pyplot as plt
 
-import pvlib
-from pvlib import iotools, location
 from pvlib.irradiance import (erbs_driesse,
                               get_total_irradiance,
                               rtranspose_driesse_2023,
                               )
 
-# %% define conditions for figure 3 in [1]_
+matplotlib.rcParams['axes.grid'] = True
+
+# %%
+#
+# define conditions for figure 3 in [1]_
+#
 
 dni_extra = 1366.1
 albedo = 0.25
@@ -48,7 +49,10 @@ solar_zenith = 75
 
 ghi = np.linspace(0, 500, 100+1)
 
-# %% transpose forward
+# %%
+#
+# transpose forward
+#
 
 erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
 
@@ -63,7 +67,10 @@ irrads = get_total_irradiance(surface_tilt, surface_azimuth,
 
 gti = irrads['poa_global']
 
-# %% reverse transpose a single GTI value of 200 W/m²
+# %%
+#
+# reverse transpose a single GTI value of 200 W/m²
+#
 
 gti_test = 200
 
@@ -83,17 +90,24 @@ plt.annotate('(%.2f, %.0f)' % (ghi_hat, gti_test),
              xy=(ghi_hat-2, 200+2),
              xytext=(ghi_hat-20, 200+20),
              ha='right',
-             arrowprops={'arrowstyle':'simple'})
+             arrowprops={'arrowstyle': 'simple'})
 plt.xlim(0, 500)
 plt.ylim(0, 250)
 plt.xlabel('GHI [W/m²]')
 plt.ylabel('GTI or POA [W/m²]')
+plt.show()
 
-# %% change to the conditions for figure 4 in [1]_
+# %%
+#
+# change to the conditions for figure 4 in [1]_
+#
 
 solar_azimuth = 76
 
-# %% transpose forward
+# %%
+#
+# transpose forward
+#
 
 erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
 
@@ -108,14 +122,17 @@ irrads = get_total_irradiance(surface_tilt, surface_azimuth,
 
 gti = irrads['poa_global']
 
-# %% reverse transpose the full range of possible POA values
+# %%
+#
+# reverse transpose the full range of possible POA values
+#
 
 result = rtranspose_driesse_2023(surface_tilt, surface_azimuth,
-                              solar_zenith, solar_azimuth,
-                              gti,
-                              dni_extra,
-                              full_output=True,
-                              )
+                                 solar_zenith, solar_azimuth,
+                                 gti,
+                                 dni_extra,
+                                 full_output=True,
+                                 )
 
 ghi_hat, conv, niter = result
 correct = np.isclose(ghi, ghi_hat, atol=0.01)

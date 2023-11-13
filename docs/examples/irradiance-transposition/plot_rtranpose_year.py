@@ -24,10 +24,12 @@ Author: Anton Driesse
 
 import os
 import pandas as pd
+
+import matplotlib
 import matplotlib.pyplot as plt
 
 import pvlib
-from pvlib import iotools, location, irradiance
+from pvlib import iotools, location
 from pvlib.irradiance import (get_extra_radiation,
                               get_total_irradiance,
                               rtranspose_driesse_2023,
@@ -35,6 +37,8 @@ from pvlib.irradiance import (get_extra_radiation,
                               )
 
 from timeit import timeit
+
+matplotlib.rcParams['axes.grid'] = True
 
 # %%
 #
@@ -101,11 +105,13 @@ df['ghi_rev'] = rtranspose_driesse_2023(TILT, ORIENT,
 # Let's see how long this takes
 #
 
+
 def run_rtranspose():
     rtranspose_driesse_2023(TILT, ORIENT,
                             solpos.apparent_zenith, solpos.azimuth,
                             df.poa_global,
                             dni_extra=df.dni_extra)
+
 
 elapsed = timeit('run_rtranspose()', number=1, globals=globals())
 
@@ -126,4 +132,3 @@ plt.grid(alpha=0.5)
 plt.xlabel('GHI original [W/m²]')
 plt.ylabel('GHI from POA [W/m²]')
 plt.show()
-

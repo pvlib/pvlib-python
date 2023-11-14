@@ -13,9 +13,8 @@ Author: Anton Driesse
 # Introduction
 # ------------
 # In this example we start with a TMY file and calculate POA global irradiance.
-# Then we use :py:func:`pvlib.irradiance.rtranspose_driesse_2023` to estimate
-# the original GHI from POA global.  Details of the method are more fully
-# described in [1]_.
+# Then, we use :py:func:`pvlib.irradiance.rtranspose_driesse_2023` to estimate
+# the original GHI from POA global.  Details of the method found in [1]_.
 #
 # References
 # ----------
@@ -44,7 +43,7 @@ matplotlib.rcParams['axes.grid'] = True
 
 # %%
 #
-# Read a TMY3 file containing weather data and select needed columns
+# Read a TMY3 file containing weather data and select needed columns.
 #
 
 PVLIB_DIR = pvlib.__path__[0]
@@ -60,7 +59,7 @@ df = pd.DataFrame({'ghi': tmy['ghi'], 'dhi': tmy['dhi'], 'dni': tmy['dni'],
 
 # %%
 #
-# Shift timestamps to the middle of the hour and then calculate sun positions.
+# Shift the timestamps to the middle of the hour and calculate sun positions.
 #
 
 df.index = df.index - pd.Timedelta(minutes=30)
@@ -70,11 +69,8 @@ solpos = loc.get_solarposition(df.index)
 
 # %%
 #
-# Estimate global irradiance on a fixed-tilt array (forward transposition)
+# Estimate global irradiance on a fixed-tilt array (forward transposition).
 # The array is tilted 30 degrees and oriented 30 degrees east of south.
-# The Perez-Driesse model is used for this to match the reverse transposition
-# later, but the match is not perfect because the diffuse fraction of the data
-# does not match the Erbs model.
 #
 
 TILT = 30
@@ -121,9 +117,9 @@ print('Elapsed time for reverse transposition: %.1f s' % elapsed)
 
 # %%
 #
-# This graph shows the reverse transposed values vs. the orinal values.
-# The markers are color-coded by angle-of-incidence to highlight that
-# errors occur mostly at high incidence angles.
+# This graph shows the reverse transposed values vs. the original values.
+# The markers are color-coded by angle-of-incidence to show that
+# errors occur primarily with incidence angle approaching 90° and beyond.
 #
 
 df = df.sort_values('aoi')
@@ -137,3 +133,5 @@ plt.grid(alpha=0.5)
 plt.xlabel('GHI original [W/m²]')
 plt.ylabel('GHI from POA [W/m²]')
 plt.show()
+
+# %%

@@ -2,7 +2,7 @@
 Explore the limitations of reverse transposition
 ================================================
 
-Unfortunately, sometimes there is more than one solution.
+Unfortunately, sometimes there is not a unique solution.
 
 Author: Anton Driesse
 
@@ -137,7 +137,9 @@ poa_global = irrads['poa_global']
 #
 # Now reverse transpose all the POA values and observe that the original
 # GHI cannot always be found.  There is a range of POA values that
-# maps to three possible GHI values.
+# maps to three possible GHI values, and there is not enough information
+# to choose one of them.  Sometimes we get lucky and the right one comes
+# out, other times not.
 #
 
 result = rtranspose_driesse_2023(surface_tilt, surface_azimuth,
@@ -151,8 +153,8 @@ ghi_hat, conv, niter = result
 correct = np.isclose(ghi, ghi_hat, atol=0.01)
 
 plt.figure()
-plt.plot(np.where(correct, ghi, np.nan),
-         np.where(correct, poa_global, np.nan), 'g.', label='correct GHI found')
+plt.plot(np.where(correct, ghi, np.nan), np.where(correct, poa_global, np.nan),
+         'g.', label='correct GHI found')
 plt.plot(ghi[~correct], poa_global[~correct], 'r.', label='unreachable GHI')
 plt.plot(ghi[~conv], poa_global[~conv], 'm.', label='out of range (kt > 1.25)')
 plt.axhspan(88, 103, color='y', alpha=0.25, label='problem region')
@@ -163,3 +165,5 @@ plt.xlabel('GHI [W/m²]')
 plt.ylabel('POA [W/m²]')
 plt.legend()
 plt.show()
+
+# %%

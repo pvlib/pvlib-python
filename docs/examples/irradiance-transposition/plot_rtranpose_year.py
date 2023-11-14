@@ -10,6 +10,8 @@ Author: Anton Driesse
 
 # %%
 #
+# Introduction
+# ------------
 # In this example we start with a TMY file and calculate POA global irradiance.
 # Then we use :py:func:`pvlib.irradiance.rtranspose_driesse_2023` to estimate
 # the original GHI from POA global.  Details of the method are more fully
@@ -58,7 +60,7 @@ df = pd.DataFrame({'ghi': tmy['ghi'], 'dhi': tmy['dhi'], 'dni': tmy['dni'],
 
 # %%
 #
-# Shift timestamps to middle of hour and then calculate sun positions
+# Shift timestamps to the middle of the hour and then calculate sun positions.
 #
 
 df.index = df.index - pd.Timedelta(minutes=30)
@@ -102,7 +104,7 @@ df['ghi_rev'] = rtranspose_driesse_2023(TILT, ORIENT,
 
 # %%
 #
-# Let's see how long this takes
+# Let's see how long this takes...
 #
 
 
@@ -119,8 +121,11 @@ print('Elapsed time for reverse transposition: %.1f s' % elapsed)
 
 # %%
 #
-# Errors occur mostly at high incidence angles.
+# This graph shows the reverse transposed values vs. the orinal values.
+# The markers are color-coded by angle-of-incidence to highlight that
+# errors occur mostly at high incidence angles.
 #
+
 df = df.sort_values('aoi')
 
 plt.figure()

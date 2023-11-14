@@ -10,6 +10,8 @@ Author: Anton Driesse
 
 # %%
 #
+# Introduction
+# ------------
 # In this example we look at a single point in time and consider a full range
 # of possible GHI and POA global values as shown in figures 3 and 4 of [1]_.
 # Then we use :py:func:`pvlib.irradiance.rtranspose_driesse_2023` to estimate
@@ -36,7 +38,7 @@ matplotlib.rcParams['axes.grid'] = True
 
 # %%
 #
-# define conditions for figure 3 in [1]_
+# Define the conditions that were used for figure 3 in [1]_.
 #
 
 dni_extra = 1366.1
@@ -47,12 +49,14 @@ surface_azimuth = 180
 solar_azimuth = 82
 solar_zenith = 75
 
-ghi = np.linspace(0, 500, 100+1)
-
 # %%
 #
-# transpose forward
+# Define a range of possible GHI values and calculate the corresponding
+# POA global.  First estimate DNI and DHI using the Erbs-Driesse model, then
+# transpose using the Perez-Driesse model.
 #
+
+ghi = np.linspace(0, 500, 100+1)
 
 erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
 
@@ -65,28 +69,34 @@ irrads = get_total_irradiance(surface_tilt, surface_azimuth,
                               dni_extra,
                               model='perez-driesse')
 
-gti = irrads['poa_global']
+poa_global = irrads['poa_global']
 
 # %%
 #
-# reverse transpose a single GTI value of 200 W/m²
+# Suppose you measure that POA global is 200 W/m2. What would GHI be?
 #
 
-gti_test = 200
+poa_test = 200
 
 ghi_hat = rtranspose_driesse_2023(surface_tilt, surface_azimuth,
                                   solar_zenith, solar_azimuth,
-                                  gti_test,
+                                  poa_test,
                                   dni_extra,
-                                  full_output=False,
-                                  )
+                                  full_output=False)
+
+print('Estimated GHI: %.2f W/m².' % ghi_hat)
+
+# %%
+#
+# Show this result on the graph of all possible combinations of GHI and POA.
+#
 
 plt.figure()
-plt.plot(ghi, gti, 'g-')
-plt.axvline(ghi_hat, color='b')
-plt.axhline(gti_test, color='b')
-plt.plot(ghi_hat, gti_test, 'bs')
-plt.annotate('(%.2f, %.0f)' % (ghi_hat, gti_test),
+plt.plot(ghi, poa_global, 'k-')
+plt.axvline(ghi_hat, color='g', lw=1)
+plt.axhline(poa_test, color='g', lw=1)
+plt.plot(ghi_hat, poa_test, 'gs')
+plt.annotate('GHI=%.2f' % (ghi_hat),
              xy=(ghi_hat-2, 200+2),
              xytext=(ghi_hat-20, 200+20),
              ha='right',
@@ -94,19 +104,20 @@ plt.annotate('(%.2f, %.0f)' % (ghi_hat, gti_test),
 plt.xlim(0, 500)
 plt.ylim(0, 250)
 plt.xlabel('GHI [W/m²]')
-plt.ylabel('GTI or POA [W/m²]')
+plt.ylabel('POA [W/m²]')
 plt.show()
 
 # %%
 #
-# change to the conditions for figure 4 in [1]_
+# Now change the solar azimuth to match the conditions for figure 4 in [1]_.
 #
 
 solar_azimuth = 76
 
 # %%
 #
-# transpose forward
+# Again, estimate DNI and DHI using the Erbs-Driesse model, then
+# transpose using the Perez-Driesse model.
 #
 
 erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
@@ -120,16 +131,18 @@ irrads = get_total_irradiance(surface_tilt, surface_azimuth,
                               dni_extra,
                               model='perez-driesse')
 
-gti = irrads['poa_global']
+poa_global = irrads['poa_global']
 
 # %%
 #
-# reverse transpose the full range of possible POA values
+# Now reverse transpose all the POA values and observe that the original
+# GHI cannot always be found.  There is a range of POA values that
+# maps to three possible GHI values.
 #
 
 result = rtranspose_driesse_2023(surface_tilt, surface_azimuth,
                                  solar_zenith, solar_azimuth,
-                                 gti,
+                                 poa_global,
                                  dni_extra,
                                  full_output=True,
                                  )
@@ -138,15 +151,15 @@ ghi_hat, conv, niter = result
 correct = np.isclose(ghi, ghi_hat, atol=0.01)
 
 plt.figure()
-
 plt.plot(np.where(correct, ghi, np.nan),
-         np.where(correct, gti, np.nan), 'g-', label='GHI correct')
+         np.where(correct, poa_global, np.nan), 'g.', label='correct GHI found')
+plt.plot(ghi[~correct], poa_global[~correct], 'r.', label='unreachable GHI')
+plt.plot(ghi[~conv], poa_global[~conv], 'm.', label='out of range (kt > 1.25)')
+plt.axhspan(88, 103, color='y', alpha=0.25, label='problem region')
 
-plt.plot(ghi[~correct], gti[~correct], 'r.', label='GHI incorrect')
-plt.plot(ghi[~conv], gti[~conv], 'm.', label='out of range (kt > 1.25)')
 plt.xlim(0, 500)
 plt.ylim(0, 250)
 plt.xlabel('GHI [W/m²]')
-plt.ylabel('GTI or POA [W/m²]')
+plt.ylabel('POA [W/m²]')
 plt.legend()
 plt.show()

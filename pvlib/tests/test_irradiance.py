@@ -787,7 +787,6 @@ def test_rtranspose_driesse():
     times = pd.DatetimeIndex(
         ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])
     poa_global = np.array([20, 300, 1000])
-    aoi = np.array([100, 70, 10])
     zenith = np.array([80, 45, 20])
     azimuth = np.array([90, 135, 180])
     surface_tilt = 30

@@ -165,5 +165,3 @@ plt.xlabel('GHI [W/m²]')
 plt.ylabel('POA [W/m²]')
 plt.legend()
 plt.show()
-
-# %%

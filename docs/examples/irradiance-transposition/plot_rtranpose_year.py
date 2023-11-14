@@ -39,8 +39,6 @@ from pvlib.irradiance import (get_extra_radiation,
 
 from timeit import timeit
 
-matplotlib.rcParams['axes.grid'] = True
-
 # %%
 #
 # Read a TMY3 file containing weather data and select needed columns.
@@ -125,13 +123,13 @@ print('Elapsed time for reverse transposition: %.1f s' % elapsed)
 df = df.sort_values('aoi')
 
 plt.figure()
+plt.gca().grid(True, alpha=.5)
 pc = plt.scatter(df['ghi'], df['ghi_rev'], c=df['aoi'], s=15,
                  cmap='jet', vmin=60, vmax=120)
-plt.colorbar(label='AOI [°]', ax=plt.gca())
+plt.colorbar(label='AOI [°]')
 pc.set_alpha(0.5)
-plt.grid(alpha=0.5)
+
 plt.xlabel('GHI original [W/m²]')
 plt.ylabel('GHI from POA [W/m²]')
-plt.show()
 
-# %%
+plt.show()

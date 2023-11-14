@@ -9,6 +9,9 @@ Enhancements
 ~~~~~~~~~~~~
 * Added the continuous Perez-Driesse transposition model.
   :py:func:`pvlib.irradiance.perez_driesse` (:issue:`1841`, :pull:`1876`)
+* Added a reverse transposition algorithm using the Perez-Driesse model.
+  :py:func:`pvlib.irradiance.rtranspose_driesse_2023`
+  (:issue:`1901`, :pull:`1907`)
 * :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
   shaded fraction in returned variables. (:pull:`1871`)
@@ -25,6 +28,7 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
+* Added two examples to demonstrate reverse transposition (:pull:`1907`)
 
 Contributors
 ~~~~~~~~~~~~

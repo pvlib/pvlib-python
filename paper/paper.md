@@ -86,7 +86,7 @@ the ability of incorporating custom modeling steps.  This flexibility
 is essential for applications in both academia and industry.  To our knowledge,
 the only other PV system modeling software with such a toolbox design is the
 MATLAB version of pvlib [@Andrews2014], the code base from which pvlib python
-was translated and since surpassed in capability and community uptake.  
+was translated and has since surpassed in capability and community uptake.  
 
 Another key aspect of pvlib python is that it is used via
 a general-purpose programming language (Python), which

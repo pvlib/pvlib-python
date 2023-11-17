@@ -105,8 +105,8 @@ without compromising its focus on transparent and reliable model
 implementations.  This is in contrast to the inherent opaqueness of closed-source
 commercial software, which prevents users from inspecting the source code
 to ensure a model implementation's validity or traceability to a reference.
-It is also in contrast to other open-source projects, which tend to be
-be "walled garden" projects with few contributions from outside the host organization.
+It is also in contrast to other open-source PV projects, where code review
+and contributions typically come from a single institution.
 
 These key aspects, along with sustained contributions from a passionate and
 committed community, have led to pvlib python's widespread adoption across the PV

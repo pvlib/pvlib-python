@@ -1373,7 +1373,7 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
     assert m.call_count == 1
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[1] < 1
 
 
 def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -1425,8 +1425,8 @@ def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
     assert m.call_count == 1
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
-    assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
 
 
 @pytest.mark.parametrize('aoi_model', [
@@ -1441,8 +1441,8 @@ def test_aoi_models_singleon_weather_single_array(
     assert len(mc.results.aoi_modifier) == 1
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
-    assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
 
 
 def test_aoi_model_no_loss(sapm_dc_snl_ac_system, location, weather):
@@ -1451,8 +1451,8 @@ def test_aoi_model_no_loss(sapm_dc_snl_ac_system, location, weather):
     mc.run_model(weather)
     assert mc.results.aoi_modifier == 1.0
     assert not mc.results.ac.empty
-    assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
 
 
 def test_aoi_model_interp(sapm_dc_snl_ac_system, location, weather, mocker):
@@ -1472,8 +1472,8 @@ def test_aoi_model_interp(sapm_dc_snl_ac_system, location, weather, mocker):
     assert m.call_args[1]['theta_ref'] == theta_ref
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
-    assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
 
 
 def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
@@ -1484,8 +1484,8 @@ def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
     assert m.call_count == 1
     assert mc.results.aoi_modifier == 0.9
     assert not mc.results.ac.empty
-    assert mc.results.ac[0] > 140 and mc.results.ac[0] < 200
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[0] > 140 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
 
 
 @pytest.mark.parametrize('aoi_model', [

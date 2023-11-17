@@ -45,7 +45,7 @@ INSTALL_REQUIRES = ['numpy >= 1.16.0',
 
 TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
-                 'pytest-remotedata']
+                 'pytest-remotedata', 'packaging']
 EXTRAS_REQUIRE = {
     'optional': ['cython', 'ephem', 'nrel-pysam', 'numba',
                  'solarfactors', 'statsmodels'],

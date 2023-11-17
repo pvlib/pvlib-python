@@ -893,7 +893,7 @@ class PVSystem:
 
 class Array:
     """
-    An Array is a set of of modules at the same orientation.
+    An Array is a set of modules at the same orientation.
 
     Specifically, an array is defined by its mount, the
     module parameters, the number of parallel strings of modules
@@ -996,7 +996,7 @@ class Array:
         )
 
     def _infer_temperature_model_params(self):
-        # try to infer temperature model parameters from from racking_model
+        # try to infer temperature model parameters from racking_model
         # and module_type
         param_set = f'{self.mount.racking_model}_{self.module_type}'
         if param_set in temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']:

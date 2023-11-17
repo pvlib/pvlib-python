@@ -42,8 +42,8 @@ def test_read_srml_map_variables_false():
 
 def test_read_srml_nans_exist():
     data = srml.read_srml(srml_testfile)
-    assert isnan(data['dni_0'][1119])
-    assert data['dni_0_flag'][1119] == 99
+    assert isnan(data['dni_0'].iloc[1119])
+    assert data['dni_0_flag'].iloc[1119] == 99
 
 
 @pytest.mark.parametrize('url,year,month', [

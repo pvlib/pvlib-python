@@ -4,7 +4,7 @@ ASV benchmarks for location.py
 
 import pandas as pd
 import pvlib
-from pkg_resources import parse_version
+from packaging.version import Version
 
 
 def set_solar_position(obj):
@@ -37,7 +37,7 @@ class Location:
 class Location_0_6_1:
 
     def setup(self):
-        if parse_version(pvlib.__version__) < parse_version('0.6.1'):
+        if Version(pvlib.__version__) < Version('0.6.1'):
             raise NotImplementedError
 
         set_solar_position(self)

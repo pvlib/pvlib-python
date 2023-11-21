@@ -13,8 +13,8 @@ The primary focus of :py:mod:`pvlib.iotools` is time series solar resource
 data like the irradiance datasets from PVGIS and the NSRDB, but it also provides
 functionality for other types of data useful for certain aspects of PV modeling.
 For example, precipitation data is available from :py:func:`~pvlib.iotools.get_acis_prism`
-for soiling modeling, and horizon profiles from :py:func:`~pvlib.iotools.get_pvgis_horizon`
-for horizon shade modeling).
+for soiling modeling and horizon profiles can be retrieved from
+:py:func:`~pvlib.iotools.get_pvgis_horizon` for horizon shade modeling.
 
 For a complete list of functions related to retrieving and importing weather
 data, see :ref:`iotools`, and for a detailed comparison of the weather datasets
@@ -74,7 +74,7 @@ them.
 
 
 Usage
------------------------------
+-----
 
 With some exceptions, the :py:mod:`pvlib.iotools` functions
 provide a uniform interface for accessing data across many formats.

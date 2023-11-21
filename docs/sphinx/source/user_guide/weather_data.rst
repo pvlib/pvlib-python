@@ -17,7 +17,8 @@ for soiling modeling, and horizon profiles from :py:func:`~pvlib.iotools.get_pvg
 for horizon shade modeling).
 
 For a complete list of functions related to retrieving and importing weather
-data, see :ref:`iotools`.
+data, see :ref:`iotools`, and for a detailed comparison of the weather datasets
+available through pvlib, see [1]_.
 
 
 Types of weather data sources
@@ -70,9 +71,6 @@ them.
    NWP datasets are primarily useful for parts of the world not covered
    by satellite-based datasets (e.g. polar regions) or if extremely long time
    ranges are needed.
-
-For a more detailed comparison of the weather datasets available through
-pvlib, see [1]_.
 
 
 Usage

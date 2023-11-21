@@ -12,7 +12,7 @@ except ImportError:
 DESCRIPTION = ('A set of functions and classes for simulating the ' +
                'performance of photovoltaic energy systems.')
 LONG_DESCRIPTION = """
-pvlib python is a community supported tool that provides a set of
+pvlib python is a community supported toolbox that provides a set of
 functions and classes for simulating the performance of photovoltaic
 energy systems.  The core mission of pvlib python is to provide open,
 reliable, interoperable, and benchmark implementations of PV system models.

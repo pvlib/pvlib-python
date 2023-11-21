@@ -33,5 +33,5 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Anton Driesse (:ghuser:`adriesse`)
-* Gilles Fischer (:ghuser: `GillesFischerV`)
+* Gilles Fischer (:ghuser:`GillesFischerV`)
 * :ghuser:`matsuobasho`

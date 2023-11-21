@@ -4,19 +4,14 @@
 pvlib python
 ============
 
-pvlib python is a community supported toolbox that provides a set of
+pvlib python is a community developed toolbox that provides a set of
 functions and classes for simulating the performance of photovoltaic
-energy systems.  The core mission of pvlib python is to provide open,
+energy systems and accomplishing related tasks.
+The core mission of pvlib python is to provide open,
 reliable, interoperable, and benchmark implementations of PV system models.
 
-pvlib python started out as a Python translation of the PVLIB MATLAB
-toolbox (developed by the `PVPMC <https://pvpmc.sandia.gov/>`_ at
-Sandia National Laboratories) in 2013 and has grown substantially since then.
-Today it contains code contributions from over a hundred individuals worldwide
-and is maintained by a core group of PV modelers from a variety institutions.
 The source code for pvlib python is hosted on `github
 <https://github.com/pvlib/pvlib-python>`_.
-
 Please see the :ref:`installation` page for installation help.
 
 For examples of how to use pvlib python, please see
@@ -34,6 +29,21 @@ application.
 
 There is a :ref:`variable naming convention <variables_style_rules>` to
 ensure consistency throughout the library.
+
+
+History and acknowledgement
+===========================
+
+pvlib python started out as a Python translation of the PVLIB MATLAB
+toolbox (developed by the `PVPMC <https://pvpmc.sandia.gov/>`_ at
+Sandia National Laboratories) in 2013 and has grown substantially since then.
+Today it contains code contributions from over a hundred individuals worldwide
+and is maintained by a core group of PV modelers from a variety institutions.
+
+pvlib has been supported directly and indirectly by DOE, NumFOCUS, and
+Google Summer of Code funding, companies that allow their employees to
+contribute, and from personal time.
+
 
 Citing pvlib python
 ===================

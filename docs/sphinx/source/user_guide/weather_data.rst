@@ -10,9 +10,9 @@ contains functions to easily retrieve and import such datasets in a standardized
 form that is convenient to use with the rest of pvlib.  
 
 The primary focus of :py:mod:`pvlib.iotools` is time series solar resource
-data like the datasets from PVGIS and the NSRDB, but it also provides
-functionality for other types of data useful for certain aspects of PV modeling
-(e.g. precipitation data from :py:func:`~pvlib.iotools.get_acis_prism`
+data like the irradiance datasets from PVGIS and the NSRDB, but it also provides
+functionality for other types of data useful for certain aspects of PV modeling.
+For example, precipitation data is available from :py:func:`~pvlib.iotools.get_acis_prism`
 for soiling modeling, and horizon profiles from :py:func:`~pvlib.iotools.get_pvgis_horizon`
 for horizon shade modeling).
 
@@ -34,7 +34,8 @@ them.
    source of weather information. However, the coverage depends on
    a weather station having been set up in advance for the location and
    times of interest. Some ground station networks like the BSRN and SURFRAD
-   make their measurement data publicly available.
+   make their measurement data publicly available. An global overview of ground
+   stations is available at https://SolarStations.org.
    
    Data from public ground station measurement networks are useful if you
    want accurate, high-resolution data but have flexibility around the
@@ -43,15 +44,16 @@ them.
 2. **Satellite data**: 
    These sources process satellite imagery (typically from geostationary
    satellites) to identify and classify clouds, and combine this with solar
-   irradiance models to produce irradiance estimates. The quality is
-   generally much higher than NWP, but still not as good as a well-maintained
+   irradiance models and aerosol data to produce irradiance estimates. The
+   quality is generally much higher than NWP, but still not as good as a well-maintained
    weather station. They have high spatial and temporal resolution
    corresponding to the source satellite imagery, and are generally
    optimised to estimate solar irradiance for PV applications. Free sources
-   such as PVGIS are available, and commerical sources such as SolarAnywhere,
-   Solcast and Solargis provide paid options though often have free trials.
+   such as PVGIS, NSRDB, and CAMS are available, and commerical sources such
+   as SolarAnywhere, Solcast, and Solargis provide paid options though often
+   have free trials.
    
-   Satellite data is useful when suitable ground station measurements are
+   Satellite data is useful when suitable ground measurements are
    not available for the location and/or times of interest.
 
 3. **Numerical Weather Prediction (NWP)**:
@@ -66,14 +68,14 @@ them.
    MERRA2) exist.
    
    NWP datasets are primarily useful for parts of the world not covered
-   by satellite-based datasets (e.g. the poles) or if extremely long time
+   by satellite-based datasets (e.g. polar regions) or if extremely long time
    ranges are needed.
 
 For a more detailed comparison of the weather datasets available through
 pvlib, see [1]_.
 
 
-:py:mod:`pvlib.iotools` usage
+Usage
 -----------------------------
 
 With some exceptions, the :py:mod:`pvlib.iotools` functions
@@ -121,8 +123,8 @@ longitude in decimal degrees:
 
 .. code-block:: python
 
-    lat, lon = 33.75, -84.39  # Atlanta, Georgia, United States
-    df, metadata = pvlib.iotools.get_psm3(lat, lon, map_variables=True, ...)
+    latitude, longitude = 33.75, -84.39  # Atlanta, Georgia, United States
+    df, metadata = pvlib.iotools.get_psm3(latitude, longitude, map_variables=True, ...)
 
 
 For ground station networks, the location identifier is the station ID:

@@ -642,7 +642,8 @@ Now we run the synthetic data and clear sky estimate through the
 
 .. ipython:: python
 
-    clear_samples = clearsky.detect_clearsky(ghi, cs['ghi'], cs.index, 10)
+    clear_samples = clearsky.detect_clearsky(ghi, cs['ghi'], cs.index,
+                     window_length=10)
 
     fig, ax = plt.subplots()
 

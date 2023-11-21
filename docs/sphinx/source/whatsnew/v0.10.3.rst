@@ -16,7 +16,7 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Fixed CAMS error message handler in
-  :py:func:`pvlib.iotools.sodapro.get_cams` (:issue:`1799`, :pull:`1905`)
+  :py:func:`pvlib.iotools.get_cams` (:issue:`1799`, :pull:`1905`)
 
 Testing
 ~~~~~~~
@@ -34,4 +34,6 @@ Contributors
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Gilles Fischer (:ghuser:`GillesFischerV`)
+* Adam R. Jensen (:ghusuer:`AdamRJensen`)
 * :ghuser:`matsuobasho`
+

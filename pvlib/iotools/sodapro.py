@@ -57,8 +57,10 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     Access: free, but requires registration, see [2]_
 
     Requests: max. 100 per day
+
     Geographical coverage: worldwide for CAMS McClear and approximately -66° to
-    66° in both latitude and longitude for CAMS Radiation.
+    66° in latitude and -66° to 180° in longitude for CAMS Radiation. See [3]_
+    for a map of the geographical coverage.
 
     Parameters
     ----------
@@ -157,6 +159,9 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
        <https://atmosphere.copernicus.eu/solar-radiation>`_
     .. [2] `CAMS Radiation Automatic Access (SoDa)
        <https://www.soda-pro.com/help/cams-services/cams-radiation-service/automatic-access>`_
+    .. [3] A. R. Jensen et al., pvlib iotools — Open-source Python functions
+       for seamless access to solar irradiance data. Solar Energy. 2023. Vol
+       266, pp. 112092. :doi:`10.1016/j.solener.2023.112092`
     """
     try:
         time_step_str = TIME_STEPS_MAP[time_step]

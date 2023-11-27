@@ -111,7 +111,7 @@ df['ghi_rev'] = rtranspose_driesse_2023(TILT, ORIENT,
                                         dni_extra=df.dni_extra)
 finish = time.process_time()
 
-print ('Elapsed time for reverse transposition: %.1f s' % (finish - start))
+print('Elapsed time for reverse transposition: %.1f s' % (finish - start))
 
 # %%
 #

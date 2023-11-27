@@ -1,6 +1,6 @@
 """
-Explore the limitations of reverse transposition
-================================================
+Limitations of reverse transposition
+====================================
 
 Unfortunately, sometimes there is not a unique solution.
 
@@ -12,6 +12,20 @@ Author: Anton Driesse
 #
 # Introduction
 # ------------
+# When irradiance is measured on a tilted plane, it is useful to be able to
+# estimate the GHI that produces the POA irradiance.
+# The estimation requires inverting a GHI-to-POA irradiance model,
+# which involves two parts:
+# a decomposition of GHI into direct and diffuse components,
+# and a transposition model that calculates the direct and diffuse irradiance
+# on the tilted plane.
+# Recovering GHI from POA irradiance is termed "reverse transposition."
+#
+# Unfortunately, for a given POA irradiance value, sometimes there is not a
+# unique solution for GHI.
+# Different GHI values can produce different combinations of direct and
+# diffuse irradiance that sum to the same POA irradiance value.
+#
 # In this example we look at a single point in time and consider a full range
 # of possible GHI and POA global values as shown in figures 3 and 4 of [1]_.
 # Then we use :py:func:`pvlib.irradiance.rtranspose_driesse_2023` to estimate

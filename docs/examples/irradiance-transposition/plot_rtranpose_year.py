@@ -7,11 +7,19 @@ With a brief look at accuracy and speed.
 Author: Anton Driesse
 
 """
-
 # %%
 #
 # Introduction
 # ------------
+# When irradiance is measured on a tilted plane, it is useful to be able to
+# estimate the GHI that produces the POA irradiance.
+# The estimation requires inverting a GHI-to-POA irradiance model,
+# which involves two parts:
+# a decomposition of GHI into direct and diffuse components,
+# and a transposition model that calculates the direct and diffuse
+# irradiance on the tilted plane.
+# Recovering GHI from POA irradiance is termed "reverse transposition."
+#
 # In this example we start with a TMY file and calculate POA global irradiance.
 # Then, we use :py:func:`pvlib.irradiance.rtranspose_driesse_2023` to estimate
 # the original GHI from POA global.  Details of the method found in [1]_.
@@ -24,6 +32,7 @@ Author: Anton Driesse
 #
 
 import os
+import time
 import pandas as pd
 
 import matplotlib.pyplot as plt
@@ -35,8 +44,6 @@ from pvlib.irradiance import (get_extra_radiation,
                               rtranspose_driesse_2023,
                               aoi,
                               )
-
-from timeit import timeit
 
 # %%
 #
@@ -86,31 +93,25 @@ df['aoi'] = aoi(TILT, ORIENT, solpos.apparent_zenith, solpos.azimuth)
 
 # %%
 #
-# Now estimate ghi from poa_global using reverse transposition
-# The algorithm uses a simple bisection search.
+# Now estimate ghi from poa_global using reverse transposition.
+# The algorithm uses a simple bisection search, which is quite slow
+# because scipy doesn't offer a vectorized version (yet).
+# For this reason we'll process a random sample of 1000 timestamps
+# rather than the whole year.
 #
+
+df = df[df.ghi > 0].sample(n=1000)
+solpos = solpos.reindex(df.index)
+
+start = time.process_time()
 
 df['ghi_rev'] = rtranspose_driesse_2023(TILT, ORIENT,
                                         solpos.apparent_zenith, solpos.azimuth,
                                         df.poa_global,
                                         dni_extra=df.dni_extra)
+finish = time.process_time()
 
-# %%
-#
-# Let's see how long this takes...
-#
-
-
-def run_rtranspose():
-    rtranspose_driesse_2023(TILT, ORIENT,
-                            solpos.apparent_zenith, solpos.azimuth,
-                            df.poa_global,
-                            dni_extra=df.dni_extra)
-
-
-elapsed = timeit('run_rtranspose()', number=1, globals=globals())
-
-print('Elapsed time for reverse transposition: %.1f s' % elapsed)
+print ('Elapsed time for reverse transposition: %.1f s' % (finish - start))
 
 # %%
 #

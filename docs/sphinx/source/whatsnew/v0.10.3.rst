@@ -31,6 +31,7 @@ Documentation
 * Added two examples to demonstrate reverse transposition (:pull:`1907`)
 * Fixed `detect_clearsky` example in `clearsky.rst` (:issue:`1914`)
 
+
 Contributors
 ~~~~~~~~~~~~
 * Arjan Keeman (:ghuser:`akeeman`)

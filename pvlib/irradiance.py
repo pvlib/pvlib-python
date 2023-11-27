@@ -1450,7 +1450,7 @@ def _transpose(surface_tilt, surface_azimuth,
                ghi,
                dni_extra, airmass, albedo):
     '''
-    Transposition function that includes decomposition if GHI using the
+    Transposition function that includes decomposition of GHI using the
     continuous Erbs-Driesse model.
 
     Helper function for rtranspose_driesse_2023.

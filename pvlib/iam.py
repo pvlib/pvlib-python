@@ -989,7 +989,7 @@ def _residual(aoi, source_iam, target, target_params,
     return np.sum(diff * weights)
 
 
-def _get_ashrae_int(b):
+def _get_ashrae_intercept(b):
     # find x-intercept of ashrae model
     return acosd(b / (1 + b))
 
@@ -999,7 +999,7 @@ def _ashrae_to_physical(aoi, ashrae_iam, weight, fix_n, b):
         # the ashrae model has an x-intercept less than 90
         # we solve for this intercept, and fix n so that the physical
         # model will have the same x-intercept
-        intercept = _get_ashrae_int(b)
+        intercept = _get_ashrae_intercept(b)
         n = sind(intercept)
 
         # with n fixed, we will optimize for L (recall that K and L always
@@ -1222,10 +1222,9 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
         return {}
 
 
-def fit(measured_aoi, measured_iam, target_name, weight=None, xtol=None):
+def fit(measured_aoi, measured_iam, model_name, weight=None, xtol=None):
     """
-    Finds parameters for target model that best fit the
-    measured data.
+    Find model parameters that best fit the data.
 
     Parameters
     ----------
@@ -1236,8 +1235,8 @@ def fit(measured_aoi, measured_iam, target_name, weight=None, xtol=None):
     measured_iam : array-like
         IAM values. [unitless]
 
-    target_name : str
-        Name of the target model. Must be ``'ashrae'``, ``'martin_ruiz'``,
+    model_name : str
+        Name of the model to be fit. Must be ``'ashrae'``, ``'martin_ruiz'``,
         or ``'physical'``.
 
     weight : function, optional
@@ -1275,13 +1274,13 @@ def fit(measured_aoi, measured_iam, target_name, weight=None, xtol=None):
     """
     if _min_scipy():
 
-        target = _get_model(target_name)
+        target = _get_model(model_name)
 
         # if no options were passed in, we will use the default arguments
         if weight is None:
             weight = _sin_weight
 
-        if target_name == "physical":
+        if model_name == "physical":
             bounds = [(0, 0.08), (1, 2)]
             guess = [0.002, 1+1e-08]
 
@@ -1301,6 +1300,6 @@ def fit(measured_aoi, measured_iam, target_name, weight=None, xtol=None):
 
         optimize_result = _minimize(residual_function, guess, bounds, xtol)
 
-        return _process_return(target_name, optimize_result)
+        return _process_return(model_name, optimize_result)
     else:
         return {}

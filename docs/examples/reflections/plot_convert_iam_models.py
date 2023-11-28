@@ -12,7 +12,7 @@ Illustrates how to convert from one IAM model to a different model using
 # An incidence angle modifier (IAM) model quantifies the fraction of direct
 # irradiance is that is reflected away from a module's surface. Three popular
 # IAM models are Martin-Ruiz :py:func:`~pvlib.iam.martin_ruiz`, physical
-# :py:func:`~pvlib.iam.physical`, and ASHRAE py:func:`~pvlib.iam.ashrae`.
+# :py:func:`~pvlib.iam.physical`, and ASHRAE :py:func:`~pvlib.iam.ashrae`.
 # Each model requires one or more parameters.
 #
 # Here, we show how to use

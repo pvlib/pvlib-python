@@ -1174,7 +1174,7 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
 
     .. math::
 
-        \Sum_{\\theta=0}^{90} weight \\left(\\theta \\right) \\times 
+        \sum_{\\theta=0}^{90} weight \\left(\\theta \\right) \\times 
         \\| source \\left(\\theta \\right) - target \\left(\\theta \\right) \\|
         
     References
@@ -1284,7 +1284,7 @@ def fit(measured_aoi, measured_iam, model_name, weight=None, xtol=None):
 
     .. math::
 
-        \Sum_{measured AOI} weight \\left( AOI \\right) \\times 
+        \sum_{measured AOI} weight \\left( AOI \\right) \\times 
         \\| measured IAM \\left( AOI \\right) - model \\left( AOI \\right) \\|
 
     See Also

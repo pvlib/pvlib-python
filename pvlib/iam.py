@@ -1174,8 +1174,9 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
 
     .. math::
 
-        \Sum_{\theta=0}^90 weight \times \left(\theta \right)
-        * \left(\|source\left(\theta\right) - target\left(\theta\right) \|)
+        \Sum_{\theta=0}^90 weight \times \\left(\theta \\right)
+        * \\left(\\| source \\left(\theta \\right)
+        - target \\left(\theta \\right) \\| \\right)
         
     References
     ----------

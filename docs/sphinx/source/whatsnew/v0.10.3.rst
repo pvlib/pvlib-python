@@ -26,7 +26,9 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Create :ref:`weatherdata` User's Guide page. (:pull:`1754`)
+* Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
+* Fixed `detect_clearsky` example in `clearsky.rst` (:issue:`1914`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -36,3 +38,7 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Abigail Jones (:ghuser:`ajonesr`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* :ghuser:`matsuobasho`
+* Harry Jack (:ghuser:`harry-solcast`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Kevin Anderson (:ghuser:`kandersolar`)

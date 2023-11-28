@@ -1170,7 +1170,9 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
 
     References
     ----------
-    .. [1] TODO
+    .. [1] Jones, A. R., Hansen, C. W., Anderson, K. S. Parameter estimation
+       for incidence angle modifier models for photovoltaic modules. Sandia
+       report SAND2023-13944 (2023).
 
     See Also
     --------
@@ -1263,7 +1265,9 @@ def fit(measured_aoi, measured_iam, model_name, weight=None, xtol=None):
 
     References
     ----------
-    .. [1] TODO
+    .. [1] Jones, A. R., Hansen, C. W., Anderson, K. S. Parameter estimation
+       for incidence angle modifier models for photovoltaic modules. Sandia
+       report SAND2023-13944 (2023).
 
     See Also
     --------

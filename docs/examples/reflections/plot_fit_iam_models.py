@@ -3,7 +3,7 @@
 IAM Model Fitting
 ================================
 
-Illustrates how to fit an IAM model to data using :py:func:`~pvlib.iam.fit`
+Illustrates how to fit an IAM model to data using :py:func:`~pvlib.iam.fit`.
 
 """
 
@@ -17,7 +17,7 @@ Illustrates how to fit an IAM model to data using :py:func:`~pvlib.iam.fit`
 # Here, we show how to use
 # :py:func:`~pvlib.iam.fit` to estimate a model's parameters from data.
 #
-# Model fitting require a weight function that assigns
+# Model fitting require a weight function that can assign
 # more influence to some AOI values than others. We illustrate how to provide
 # a custom weight function to :py:func:`~pvlib.iam.fit`.
 
@@ -64,7 +64,7 @@ plt.show()
 # The weight function
 # -------------------
 # :py:func:`pvlib.iam.fit` uses a weight function when computing residuals
-# between the model abd data. The default weight
+# between the model and data. The default weight
 # function is :math:`1 - \sin(aoi)`. We can instead pass a custom weight
 # function to :py:func:`pvlib.iam.fit`.
 #

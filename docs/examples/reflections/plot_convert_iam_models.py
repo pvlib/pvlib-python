@@ -4,21 +4,21 @@ IAM Model Conversion
 ====================
 
 Illustrates how to convert from one IAM model to a different model using
-:py:func:`~pvlib.iam.convert`
+:py:func:`~pvlib.iam.convert`.
 
 """
 
 # %%
 # An incidence angle modifier (IAM) model quantifies the fraction of direct
-# irradiance is that is reflected away from a module's surface. Three popular
+# irradiance that is reflected away from a module's surface. Three popular
 # IAM models are Martin-Ruiz :py:func:`~pvlib.iam.martin_ruiz`, physical
 # :py:func:`~pvlib.iam.physical`, and ASHRAE :py:func:`~pvlib.iam.ashrae`.
 # Each model requires one or more parameters.
 #
 # Here, we show how to use
 # :py:func:`~pvlib.iam.convert` to estimate parameters for a desired target
-# IAM model from a source IAM model. Model conversion requires a weight
-# function that assigns more influence to some AOI values than others.
+# IAM model from a source IAM model. Model conversion uses a weight
+# function that can assign more influence to some AOI values than others.
 # We illustrate how to provide a custom weight function to
 # :py:func:`~pvlib.iam.convert`.
 
@@ -151,4 +151,11 @@ plt.show()
 # Finding the right weight function and parameters in such cases will require
 # knowing where you want the target model to be more accurate. The default
 # weight function was chosen because it yielded IAM models that produce
-# similar annual insolation for a simulated PV system TODO add reference.
+# similar annual insolation for a simulated PV system.
+
+# %%
+# Reference
+# ---------
+# .. [1] Jones, A. R., Hansen, C. W., Anderson, K. S. Parameter estimation
+#    for incidence angle modifier models for photovoltaic modules. Sandia
+#    report SAND2023-13944 (2023).

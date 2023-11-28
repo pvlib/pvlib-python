@@ -1168,6 +1168,15 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
             If target model is ``'physical'``, the dictionary will
             contain the keys ``'n'``, ``'K'``, and ``'L'``.
 
+    Note
+    ----
+    Target model parameters are determined by minimizing
+
+    .. math::
+
+        \Sum_{\theta=0}^90 weight \times \left(\theta \right)
+        * \left(\|source\left(\theta\right) - target\left(\theta\right) \|)
+        
     References
     ----------
     .. [1] Jones, A. R., Hansen, C. W., Anderson, K. S. Parameter estimation

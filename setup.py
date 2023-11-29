@@ -36,7 +36,7 @@ INSTALL_REQUIRES = ['numpy >= 1.16.0',
                     'pandas >= 0.25.0',
                     'pytz',
                     'requests',
-                    'scipy >= 1.4.0',
+                    'scipy >= 1.5.0',
                     'h5py',
                     'importlib-metadata; python_version < "3.8"']
 

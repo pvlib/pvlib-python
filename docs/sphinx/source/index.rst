@@ -41,8 +41,8 @@ Today it contains code contributions from over a hundred individuals worldwide
 and is maintained by a core group of PV modelers from a variety institutions.
 
 pvlib has been supported directly and indirectly by DOE, NumFOCUS, and
-Google Summer of Code funding, companies that allow their employees to
-contribute, and from personal time.
+Google Summer of Code funding, university research projects,
+companies that allow their employees to contribute, and from personal time.
 
 
 Citing pvlib python

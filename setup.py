@@ -18,16 +18,6 @@ energy systems and accomplishing related tasks.  The core mission of pvlib
 python is to provide open, reliable, interoperable, and benchmark
 implementations of PV system models.
 
-pvlib python started out as a Python translation of the PVLIB MATLAB
-toolbox (developed by the PVPMC at Sandia National Laboratories) in 2013 and
-has grown substantially since then.
-Today it contains code contributions from over a hundred individuals worldwide
-and is maintained by a core group of PV modelers from a variety institutions.
-
-pvlib has been supported directly and indirectly by DOE, NumFOCUS, and
-Google Summer of Code funding, companies that allow their employees to
-contribute, and from personal time.
-
 We need your help to make pvlib-python a great tool!
 
 Documentation: http://pvlib-python.readthedocs.io

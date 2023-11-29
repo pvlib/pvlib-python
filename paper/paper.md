@@ -73,26 +73,41 @@ of the global solar energy industry demands correspondingly more
 capable models.  Per the United States Department of Energy,
 "the importance of accurate modeling is hard to overstate" [@seto2022].
 
-Compared with other PV modeling tools, pvlib python stands out in several
+Compared with other modern PV system modeling tools, pvlib python stands out in several
 key aspects.  One is its toolbox design, providing the user a
 level of flexibility and customization beyond that of other tools.  Rather than organizing
-the user interface around pre-built modeling workflows, pvlib python
-makes the individual "building blocks" of PV performance models accessible to
+the user interface around pre-built modeling workflows as in other PV system
+modeling tools (e.g. SAM [@Gilman2018], PVsyst [@Mermoud1994], SolarFarmer [@Mikofski2018],
+PlantPredict [@Passow2017], and CASSYS [@Pai2016], to name a few software tools with
+comparable breadth of PV system modeling capability), pvlib python
+makes the individual "building blocks" of PV system performance models accessible to
 the user.  This allows the user to assemble their own model workflows, including
 the ability of incorporating custom modeling steps.  This flexibility
-is essential for applications in both academia and industry.
+is essential for applications in both academia and industry.  To our knowledge,
+the only other PV system modeling software with such a toolbox design is the
+original MATLAB version of pvlib [@Andrews2014].  pvlib python began as
+a translation of that code base and has since surpassed it in terms of
+capability, community uptake, and development attention.
 
 Another key aspect of pvlib python is that it is used via
 a general-purpose programming language (Python), which
 allows pvlib python functions to be combined with capabilities in other Python packages,
 such as database query, data manipulation, numerical optimization,
-plotting, and reporting packages.
+plotting, and reporting packages.  In contrast, most other PV system modeling
+tools are used via some form of GUI.  Some of these other tools are also accessible
+from Python via web APIs or wrapper libraries (e.g. [@pysam]), but these
+"black box" interfaces offer only limited ability to combine the PV models
+with functionality from other Python packages.
 
 A final key aspect of pvlib python is its open peer review approach and
 foundation on published scientific research, allowing it to be developed by
 a decentralized and diverse community of PV researchers and practitioners
 without compromising its focus on transparent and reliable model
-implementations.
+implementations.  This is in contrast to the inherent opaqueness of closed-source
+commercial software, which prevents users from inspecting the source code
+to ensure a model implementation's validity or traceability to a reference.
+It is also in contrast to other open-source PV projects, where code review
+and contributions typically come from a single institution.
 
 These key aspects, along with sustained contributions from a passionate and
 committed community, have led to pvlib python's widespread adoption across the PV

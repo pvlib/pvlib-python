@@ -99,7 +99,8 @@ physical_params_default = convert('martin_ruiz', martin_ruiz_params,
 physical_iam_default = physical(aoi, **physical_params_default)
 
 
-# ... using a custom weight function.
+# ... using a custom weight function. The weight function must take ``aoi``
+# as it's argument and return a vector of the same length as ``aoi``.
 def weight_function(aoi):
     return cosd(aoi)
 

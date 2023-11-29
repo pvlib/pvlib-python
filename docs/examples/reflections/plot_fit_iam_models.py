@@ -38,8 +38,8 @@ from pvlib.iam import (martin_ruiz, physical, fit)
 # mimic measured data and then we'll fit the physical model to the perturbed
 # data.
 
-# Create and perturb IAM data.
-aoi = np.linspace(0, 90, 100)
+# Create some IAM data.
+aoi = np.linspace(0, 85, 10)
 params = {'a_r': 0.16}
 iam = martin_ruiz(aoi, **params)
 data = iam * np.array([uniform(0.98, 1.02) for _ in range(len(iam))])
@@ -69,7 +69,8 @@ plt.show()
 # function to :py:func:`pvlib.iam.fit`.
 #
 
-# Define a custom weight function.
+# Define a custom weight function.  The weight function must take ``aoi``
+# as it's argument and return a vector of the same length as ``aoi``.
 def weight_function(aoi):
     return cosd(aoi)
 

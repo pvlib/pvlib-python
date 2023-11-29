@@ -11,7 +11,6 @@ irradiance to the module's surface.
 import numpy as np
 import pandas as pd
 import functools
-import warnings
 from scipy.optimize import minimize
 from pvlib.tools import cosd, sind, acosd
 
@@ -1301,4 +1300,3 @@ def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
     optimize_result = _minimize(residual_function, guess, bounds, xtol)
 
     return _process_return(model_name, optimize_result)
-

@@ -28,6 +28,11 @@ Documentation
 * Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
 * Fixed `detect_clearsky` example in `clearsky.rst` (:issue:`1914`)
 
+Requirements
+~~~~~~~~~~~~
+* Minimum version of scipy advanced from 1.4.0 to 1.5.0. (:issue:`1918`, :pull:`1919`)
+
+
 Contributors
 ~~~~~~~~~~~~
 * Arjan Keeman (:ghuser:`akeeman`)

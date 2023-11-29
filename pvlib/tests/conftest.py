@@ -10,7 +10,7 @@ from functools import wraps
 
 import pvlib
 from pvlib.location import Location
-from pvlib.iam import _min_scipy
+
 
 pvlib_base_version = Version(Version(pvlib.__version__).base_version)
 
@@ -159,12 +159,6 @@ except ImportError:
     has_pysam = False
 
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
-
-
-iam_scipy_ok = _min_scipy()
-
-requires_scipy_150 = pytest.mark.skipif(not iam_scipy_ok,
-                                        reason="requires scipy>=1.5.0")
 
 
 @pytest.fixture()

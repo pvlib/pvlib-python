@@ -951,8 +951,8 @@ def _get_model(model_name):
     try:
         model = model_dict[model_name]
     except KeyError:
-        raise NotImplementedError(f"The {model_name} model has not been \
-                                    implemented")
+        raise NotImplementedError(f"The {model_name} model has not been "
+                                  "implemented")
 
     return model
 
@@ -962,9 +962,9 @@ def _check_params(model_name, params):
     # belong to the model
     exp_params = _IAM_MODEL_PARAMS[model_name]
     if set(params.keys()) != exp_params:
-        raise ValueError(f"The {model_name} model was expecting to be passed \
-                         {', '.join(list(exp_params))}, but \
-                         was handed {', '.join(list(params.keys()))}")
+        raise ValueError(f"The {model_name} model was expecting to be passed "
+                         "{', '.join(list(exp_params))}, but "
+                         "was handed {', '.join(list(params.keys()))}")
 
 
 def _sin_weight(aoi):
@@ -1106,8 +1106,8 @@ def _min_scipy():
         return False
 
 
-def convert(source_name, source_params, target_name, weight=None, fix_n=True,
-            xtol=None):
+def convert(source_name, source_params, target_name, weight=_sin_weight,
+            fix_n=True, xtol=None):
     """
     Convert a source IAM model to a target IAM model.
 
@@ -1134,9 +1134,9 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
         ``'physical'``.
 
     weight : function, optional
-        A single-argument function of AOI that calculates weights for the
-        residuals between models. Must return a float or an array-like object.
-        The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
+        A single-argument function of AOI (degrees) that calculates weights for
+        the residuals between models. Must return a float or an array-like
+        object. The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
 
     fix_n : bool, default True
         A flag to determine which method is used when converting from the
@@ -1174,9 +1174,11 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
 
     .. math::
 
-        \sum_{\\theta=0}^{90} weight \\left(\\theta \\right) \\times 
+        \\sum_{\\theta=0}^{90} weight \\left(\\theta \\right) \\times
         \\| source \\left(\\theta \\right) - target \\left(\\theta \\right) \\|
-        
+
+    The sum is over :math:`\\theta = 0, 1, 2, ..., 90`.
+
     References
     ----------
     .. [1] Jones, A. R., Hansen, C. W., Anderson, K. S. Parameter estimation
@@ -1194,10 +1196,6 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
 
         source = _get_model(source_name)
         target = _get_model(target_name)
-
-        # if no options were passed in, we will use the default arguments
-        if weight is None:
-            weight = _sin_weight
 
         aoi = np.linspace(0, 90, 100)
         _check_params(source_name, source_params)
@@ -1233,7 +1231,7 @@ def convert(source_name, source_params, target_name, weight=None, fix_n=True,
         return {}
 
 
-def fit(measured_aoi, measured_iam, model_name, weight=None, xtol=None):
+def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
     """
     Find model parameters that best fit the data.
 
@@ -1251,9 +1249,9 @@ def fit(measured_aoi, measured_iam, model_name, weight=None, xtol=None):
         or ``'physical'``.
 
     weight : function, optional
-        A single-argument function of AOI that calculates weights for the
-        residuals between models. Must return a float or an array-like object.
-        The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
+        A single-argument function of AOI (degrees) that calculates weights for
+        the residuals between models. Must return a float or an array-like
+        object. The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
 
     xtol : float, optional
         Passed to scipy.optimize.minimize.
@@ -1284,8 +1282,11 @@ def fit(measured_aoi, measured_iam, model_name, weight=None, xtol=None):
 
     .. math::
 
-        \sum_{measured AOI} weight \\left( AOI \\right) \\times 
-        \\| measured IAM \\left( AOI \\right) - model \\left( AOI \\right) \\|
+        \\sum_{AOI} weight \\left( AOI \\right) \\times
+        \\| IAM \\left( AOI \\right) - model \\left( AOI \\right) \\|
+
+    The sum is over ``measured_aoi`` and :math:`IAM \\left( AOI \\right)`
+    is ``measured_IAM``.
 
     See Also
     --------
@@ -1297,10 +1298,6 @@ def fit(measured_aoi, measured_iam, model_name, weight=None, xtol=None):
     if _min_scipy():
 
         target = _get_model(model_name)
-
-        # if no options were passed in, we will use the default arguments
-        if weight is None:
-            weight = _sin_weight
 
         if model_name == "physical":
             bounds = [(0, 0.08), (1, 2)]

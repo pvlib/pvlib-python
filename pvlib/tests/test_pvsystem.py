@@ -2553,7 +2553,7 @@ def test_Array_temperature_missing_parameters(model, keys):
 
 
 @pytest.mark.parametrize(
-    'inputs', 
+    'inputs',
     [
         {
             "photocurrent": 6.2,

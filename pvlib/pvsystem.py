@@ -7,7 +7,6 @@ from collections import OrderedDict
 import functools
 import io
 import itertools
-import numbers
 import os
 import inspect
 from urllib.request import urlopen

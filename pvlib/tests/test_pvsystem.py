@@ -2647,6 +2647,7 @@ def test_max_power_point_mismatched(inputs):
 
     print(result)
 
+
 def test_max_power_point_mismatched_error():
     """
     Test errored max power point computation for mismatched devices in series.

@@ -3048,17 +3048,22 @@ def max_power_point_mismatched(
     previous step may speed up computation. Algorithm falls back to automated
     computation of i_mp_ic if solution fails with provided i_mp_ic. The value
     of i_mp_ic used is returned along with i_mp (same value for all devices),
-    v_mp, and p_mp.
+    v_mp, p_mp, i_mp_string, v_mp_string, and p_mp_string.
     """
     if i_mp_ic is None:
-        i_mp_ic = max_power_point(
-            np.mean(photocurrent),
-            np.mean(saturation_current),
-            np.mean(resistance_series),
-            np.mean(resistance_shunt),
-            np.mean(nNsVth),
-        )["i_mp"]
         retry_ic = False
+        try:
+            i_mp_ic = max_power_point(
+                np.mean(photocurrent),
+                np.mean(saturation_current),
+                np.mean(resistance_series),
+                np.mean(resistance_shunt),
+                np.mean(nNsVth),
+            )["i_mp"]
+        except Exception as exc:
+            raise RuntimeError(
+                f"unsuccessful determination of i_mp_ic"
+            ) from exc
     else:
         retry_ic = True
 

@@ -4,6 +4,7 @@ import itertools
 import numpy as np
 from numpy import nan, array
 import pandas as pd
+import scipy.constants
 
 import pytest
 from .conftest import (
@@ -2549,3 +2550,47 @@ def test_Array_temperature_missing_parameters(model, keys):
         array.temperature_model_parameters = params
         with pytest.raises(KeyError, match=match):
             array.get_cell_temperature(irrads, temps, winds, model)
+
+
+@pytest.mark.parametrize(
+    'inputs', 
+    [
+        {
+            "photocurrent": 6.2,
+            "saturation_current": 1.0e-8,
+            "n": 1.1,
+            "resistance_series": 0.0001,
+            "resistance_shunt": 5000.0,
+            "Ns": 60,
+            "T": 25.0,
+        },
+        {
+            "photocurrent": np.array([5.8, 6.2]),
+            "saturation_current": 1.0e-8,
+            "n": 1.1,
+            "resistance_series": 0.0001,
+            "resistance_shunt": 5000.0,
+            "Ns": 60,
+            "T": 25.0,
+        }
+    ]
+)
+def test_max_power_point_mismatched(inputs):
+    """Test max power point computaiton for mismatched devices in series."""
+
+    photocurrent = inputs["photocurrent"]
+    saturation_current = inputs["saturation_current"]
+    resistance_series = inputs["resistance_series"]
+    resistance_shunt = inputs["resistance_shunt"]
+    q_C = scipy.constants.value("elementary charge")
+    k_B_J_per_K = scipy.constants.value("Boltzmann constant")
+    T_K = scipy.constants.convert_temperature(inputs["T"], "Celsius", "Kelvin")
+    nNsVth = inputs["n"] * inputs["Ns"] * k_B_J_per_K * T_K / q_C
+
+    pvsystem.max_power_point_mismatched(
+        photocurrent,
+        saturation_current,
+        resistance_series,
+        resistance_shunt,
+        nNsVth,
+    )

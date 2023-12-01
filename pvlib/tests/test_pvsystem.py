@@ -2649,10 +2649,12 @@ def test_max_power_point_mismatched(inputs):
 
 
 def test_max_power_point_mismatched_unsuccessful_solver(monkeypatch):
-    """Test errored max power point computation where solver is unsuccessful."""
+    """
+    Test errored max power point computation where solver is unsuccessful.
+    """
     photocurrent = 6.2
     saturation_current = 1.0e-8
-    resistance_series =  0.0001
+    resistance_series = 0.0001
     resistance_shunt = 5000.0
     n = 1.1
     Ns = 60

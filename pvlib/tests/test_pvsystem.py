@@ -2646,3 +2646,27 @@ def test_max_power_point_mismatched(inputs):
         )
 
     print(result)
+
+def test_max_power_point_mismatched_error():
+    """
+    Test errored max power point computation for mismatched devices in series.
+    """
+    photocurrent = -6.2
+    saturation_current = 1.0e-8
+    resistance_series = 0.0001
+    resistance_shunt = 5000.0
+    q_C = scipy.constants.value("elementary charge")
+    k_B_J_per_K = scipy.constants.value("Boltzmann constant")
+    T_K = scipy.constants.convert_temperature(25.0, "Celsius", "Kelvin")
+    nNsVth = 1.1 * 60 * k_B_J_per_K * T_K / q_C
+
+    with pytest.raises(ValueError) as e_info:
+        pvsystem.max_power_point_mismatched(
+            photocurrent,
+            saturation_current,
+            resistance_series,
+            resistance_shunt,
+            nNsVth,
+        )
+
+    print(e_info)

@@ -3062,7 +3062,7 @@ def max_power_point_mismatched(
             )["i_mp"]
         except Exception as exc:
             raise RuntimeError(
-                f"unsuccessful determination of i_mp_ic"
+                "unsuccessful determination of i_mp_ic"
             ) from exc
     else:
         retry_ic = True

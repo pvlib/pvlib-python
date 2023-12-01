@@ -460,7 +460,8 @@ class ModelChain:
         the physical location at which to evaluate the model.
 
     clearsky_model : str, default 'ineichen'
-        Passed to location.get_clearsky.
+        Passed to location.get_clearsky. Only used when DNI is not found in
+        the weather inputs.
 
     transposition_model : str, default 'haydavies'
         Passed to system.get_irradiance.

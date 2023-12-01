@@ -3040,40 +3040,29 @@ def max_power_point_mismatched(
     resistance_series,
     resistance_shunt,
     nNsVth,
+    *,
+    i_mp_ic=None,
 ):
     """
     Compute maximum power info for (possibly) mismatched set of devices in
-    series.
+    series. When using this serially on time-series data, passing i_mp_ic from
+    previous step may speed up computation. Algorithm falls back to automated
+    computation of i_mp_ic if solution fails with provided i_mp_ic. The value
+    of i_mp_ic used is returned along with i_mp (same value for all devices),
+    v_mp, and p_mp.
     """
-    if all(
-        [
-            isinstance(input, numbers.Number) for input in (
-                photocurrent,
-                saturation_current,
-                resistance_series,
-                resistance_shunt,
-                nNsVth,
-            )
-        ]
-    ):
-        # There cannot be mismatch, so fall back to non-mismatch function.
-        return {
-            **max_power_point(
-                photocurrent,
-                saturation_current,
-                resistance_series,
-                resistance_shunt,
-                nNsVth
-            )
-        }
+    if i_mp_ic is None:
+        i_mp_ic = max_power_point(
+            np.mean(photocurrent),
+            np.mean(saturation_current),
+            np.mean(resistance_series),
+            np.mean(resistance_shunt),
+            np.mean(nNsVth),
+        )["i_mp"]
+        retry_ic = False
+    else:
+        retry_ic = True
 
-    i_mp_0 = max_power_point(
-        np.mean(photocurrent),
-        np.mean(saturation_current),
-        np.mean(resistance_series),
-        np.mean(resistance_shunt),
-        np.mean(nNsVth),
-    )["i_mp"]
     args = (
         photocurrent,
         saturation_current,
@@ -3081,7 +3070,9 @@ def max_power_point_mismatched(
         resistance_shunt,
         nNsVth,
     )
-    sol = scipy.optimize.minimize(_negative_total_power, i_mp_0, args)
+    sol = scipy.optimize.minimize(
+        _negative_total_power, i_mp_ic, args=args, jac='3-point'
+    )
 
     if sol.success:
         i_mp = sol.x[0]
@@ -3095,9 +3086,25 @@ def max_power_point_mismatched(
         )
 
         return {
+            "i_mp_ic": i_mp_ic,
             "i_mp": i_mp,
             "v_mp": v_mp,
             "p_mp": i_mp * v_mp,
+            "i_mp_string": i_mp,
+            "v_mp_string": np.sum(v_mp),
+            "p_mp_string": -sol.fun,
         }
+
+    if retry_ic:
+        # Try solution one more time using automated inital condition.
+        # Caller can detect this occurance by seeing change in i_mp_ic in
+        # return value.
+        return max_power_point_mismatched(
+            photocurrent,
+            saturation_current,
+            resistance_series,
+            resistance_shunt,
+            nNsVth,
+        )
 
     raise RuntimeError(f"unsuccessful solution: {sol}")

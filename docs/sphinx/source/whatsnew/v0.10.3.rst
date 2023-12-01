@@ -15,7 +15,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* Fix mapping of the dew point column to ``temp_dew`` when ``map_variables``
+  is True in :py:func:`pvlib.iotools.get_psm3`. (:pull:`1920`)
 
 Testing
 ~~~~~~~

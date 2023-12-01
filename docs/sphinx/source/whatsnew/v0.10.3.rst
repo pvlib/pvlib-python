@@ -28,6 +28,7 @@ Documentation
 * Create :ref:`weatherdata` User's Guide page. (:pull:`1754`)
 * Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
 * Fixed `detect_clearsky` example in `clearsky.rst` (:issue:`1914`)
+* Clarified purpose of `ModelChain.clearsky_model` (:pull:`1924`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -44,3 +45,4 @@ Contributors
 * Harry Jack (:ghuser:`harry-solcast`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Cliff Hansen (:ghuser:`cwhanse`)

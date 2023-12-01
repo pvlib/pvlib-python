@@ -5,6 +5,7 @@ import numpy as np
 from numpy import nan, array
 import pandas as pd
 import scipy.constants
+import scipy.optimize
 
 import pytest
 from .conftest import (
@@ -13,7 +14,6 @@ from numpy.testing import assert_allclose
 import unittest.mock as mock
 
 from pvlib import inverter, pvsystem
-from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
 from pvlib import spectrum
@@ -2648,47 +2648,30 @@ def test_max_power_point_mismatched(inputs):
     print(result)
 
 
-@pytest.mark.parametrize(
-    'inputs',
-    [
-        {
-            "photocurrent": -6.2,  # This is bad.
-            "saturation_current": 1.0e-8,
-            "n": 1.1,
-            "resistance_series": 0.0001,
-            "resistance_shunt": 5000.0,
-            "Ns": 60,
-            "T": 25.0,
-        },
-        {
-            "photocurrent": -6.2,  # This is bad.
-            "saturation_current": 1.0e-8,
-            "n": 1.1,
-            "resistance_series": 0.0001,
-            "resistance_shunt": 5000.0,
-            "Ns": 60,
-            "T": 25.0,
-            "i_mp_ic": 5.6,
-        },
-    ]
-)
-def test_max_power_point_mismatched_exception(inputs, monkeypatch):
-    """
-    Test errored max power point computation for mismatched devices in series.
-    """
-    # Monkey patch the objective function to force thrown exception.
-    monkeypatch.setattr(
-        "pvlib.pvsystem._negative_total_power", ZeroDivisionError
-    )
-
-    photocurrent = inputs["photocurrent"]
-    saturation_current = inputs["saturation_current"]
-    resistance_series = inputs["resistance_series"]
-    resistance_shunt = inputs["resistance_shunt"]
-    q_C = scipy.constants.value("elementary charge")
+def test_max_power_point_mismatched_unsuccessful_solver(monkeypatch):
+    """Test errored max power point computation where solver is unsuccessful."""
+    photocurrent = 6.2
+    saturation_current = 1.0e-8
+    resistance_series =  0.0001
+    resistance_shunt = 5000.0
+    n = 1.1
+    Ns = 60
+    T = 25.0
+    T_K = scipy.constants.convert_temperature(T, "Celsius", "Kelvin")
     k_B_J_per_K = scipy.constants.value("Boltzmann constant")
-    T_K = scipy.constants.convert_temperature(inputs["T"], "Celsius", "Kelvin")
-    nNsVth = inputs["n"] * inputs["Ns"] * k_B_J_per_K * T_K / q_C
+    q_C = scipy.constants.value("elementary charge")
+    nNsVth = n * Ns * k_B_J_per_K * T_K / q_C
+
+    def minimize_monkeypatched(*_, **__):
+        """Return an unsuccessful solution from solver."""
+        return scipy.optimize.OptimizeResult(success=False)
+
+    # Monkey patch solver to return unsuccessfully.
+    monkeypatch.setattr(
+        scipy.optimize,
+        "minimize",
+        minimize_monkeypatched,
+    )
 
     with pytest.raises(RuntimeError) as e_info:
         pvsystem.max_power_point_mismatched(

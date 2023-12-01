@@ -3052,18 +3052,14 @@ def max_power_point_mismatched(
     """
     if i_mp_ic is None:
         retry_ic = False
-        try:
-            i_mp_ic = max_power_point(
-                np.mean(photocurrent),
-                np.mean(saturation_current),
-                np.mean(resistance_series),
-                np.mean(resistance_shunt),
-                np.mean(nNsVth),
-            )["i_mp"]
-        except Exception as exc:
-            raise RuntimeError(
-                "unsuccessful determination of i_mp_ic"
-            ) from exc
+
+        i_mp_ic = max_power_point(
+            np.mean(photocurrent),
+            np.mean(saturation_current),
+            np.mean(resistance_series),
+            np.mean(resistance_shunt),
+            np.mean(nNsVth),
+        )["i_mp"]
     else:
         retry_ic = True
 
@@ -3074,6 +3070,7 @@ def max_power_point_mismatched(
         resistance_shunt,
         nNsVth,
     )
+
     sol = scipy.optimize.minimize(
         _negative_total_power, i_mp_ic, args=args, jac='3-point'
     )

@@ -2648,18 +2648,47 @@ def test_max_power_point_mismatched(inputs):
     print(result)
 
 
-def test_max_power_point_mismatched_exception():
+@pytest.mark.parametrize(
+    'inputs',
+    [
+        {
+            "photocurrent": -6.2,  # This is bad.
+            "saturation_current": 1.0e-8,
+            "n": 1.1,
+            "resistance_series": 0.0001,
+            "resistance_shunt": 5000.0,
+            "Ns": 60,
+            "T": 25.0,
+        },
+        {
+            "photocurrent": -6.2,  # This is bad.
+            "saturation_current": 1.0e-8,
+            "n": 1.1,
+            "resistance_series": 0.0001,
+            "resistance_shunt": 5000.0,
+            "Ns": 60,
+            "T": 25.0,
+            "i_mp_ic": 5.6,
+        },
+    ]
+)
+def test_max_power_point_mismatched_exception(inputs, monkeypatch):
     """
     Test errored max power point computation for mismatched devices in series.
     """
-    photocurrent = -6.2  # This is bad.
-    saturation_current = 1.0e-8
-    resistance_series = 0.0001
-    resistance_shunt = 5000.0
+    # Monkey patch the objective function to force thrown exception.
+    monkeypatch.setattr(
+        "pvlib.pvsystem._negative_total_power", ZeroDivisionError
+    )
+
+    photocurrent = inputs["photocurrent"]
+    saturation_current = inputs["saturation_current"]
+    resistance_series = inputs["resistance_series"]
+    resistance_shunt = inputs["resistance_shunt"]
     q_C = scipy.constants.value("elementary charge")
     k_B_J_per_K = scipy.constants.value("Boltzmann constant")
-    T_K = scipy.constants.convert_temperature(25.0, "Celsius", "Kelvin")
-    nNsVth = 1.1 * 60 * k_B_J_per_K * T_K / q_C
+    T_K = scipy.constants.convert_temperature(inputs["T"], "Celsius", "Kelvin")
+    nNsVth = inputs["n"] * inputs["Ns"] * k_B_J_per_K * T_K / q_C
 
     with pytest.raises(RuntimeError) as e_info:
         pvsystem.max_power_point_mismatched(

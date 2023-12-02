@@ -21,14 +21,14 @@ Author: Anton Driesse
 # Recovering GHI from POA irradiance is termed "reverse transposition."
 #
 # In this example we start with a TMY file and calculate POA global irradiance.
-# Then, we use :py:func:`pvlib.irradiance.rtranspose_driesse_2023` to estimate
+# Then we use :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023` to estimate
 # the original GHI from POA global.  Details of the method found in [1]_.
 #
 # References
 # ----------
-# .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
-#     Diffuse Sky Model for Forward and Reverse Transposition, accepted
-#     for publication in the Solar Energy Journal.
+# .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+#     Perez diffuse sky model for forward and reverse transposition.
+#     Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
 #
 
 import os
@@ -41,7 +41,7 @@ import pvlib
 from pvlib import iotools, location
 from pvlib.irradiance import (get_extra_radiation,
                               get_total_irradiance,
-                              rtranspose_driesse_2023,
+                              ghi_from_poa_driesse_2023,
                               aoi,
                               )
 
@@ -83,7 +83,8 @@ ORIENT = 150
 df['dni_extra'] = get_extra_radiation(df.index)
 
 total_irrad = get_total_irradiance(TILT, ORIENT,
-                                   solpos.apparent_zenith, solpos.azimuth,
+                                   solpos.apparent_zenith,
+                                   solpos.azimuth,
                                    df.dni, df.ghi, df.dhi,
                                    dni_extra=df.dni_extra,
                                    model='perez-driesse')
@@ -105,10 +106,11 @@ solpos = solpos.reindex(df.index)
 
 start = time.process_time()
 
-df['ghi_rev'] = rtranspose_driesse_2023(TILT, ORIENT,
-                                        solpos.apparent_zenith, solpos.azimuth,
-                                        df.poa_global,
-                                        dni_extra=df.dni_extra)
+df['ghi_rev'] = ghi_from_poa_driesse_2023(TILT, ORIENT,
+                                          solpos.apparent_zenith,
+                                          solpos.azimuth,
+                                          df.poa_global,
+                                          dni_extra=df.dni_extra)
 finish = time.process_time()
 
 print('Elapsed time for reverse transposition: %.1f s' % (finish - start))

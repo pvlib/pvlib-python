@@ -1381,9 +1381,9 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     References
     ----------
-    .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
-        Diffuse Sky Model for Forward and Reverse Transposition, accepted
-        for publication in the Solar Energy Journal.
+    .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+        Perez diffuse sky model for forward and reverse transposition.
+        Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
 
     .. [2] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
        1990. Modeling daylight availability and irradiance components from
@@ -1445,15 +1445,15 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return sky_diffuse
 
 
-def _transpose(surface_tilt, surface_azimuth,
-               solar_zenith, solar_azimuth,
-               ghi,
-               dni_extra, airmass, albedo):
+def _poa_from_ghi(surface_tilt, surface_azimuth,
+                  solar_zenith, solar_azimuth,
+                  ghi,
+                  dni_extra, airmass, albedo):
     '''
     Transposition function that includes decomposition of GHI using the
     continuous Erbs-Driesse model.
 
-    Helper function for rtranspose_driesse_2023.
+    Helper function for ghi_from_poa_driesse_2023.
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
@@ -1471,15 +1471,15 @@ def _transpose(surface_tilt, surface_azimuth,
     return irrads['poa_global']
 
 
-def _rtranspose(surface_tilt, surface_azimuth,
-                solar_zenith, solar_azimuth,
-                poa_global,
-                dni_extra, airmass, albedo,
-                xtol=0.01):
+def _ghi_from_poa(surface_tilt, surface_azimuth,
+                  solar_zenith, solar_azimuth,
+                  poa_global,
+                  dni_extra, airmass, albedo,
+                  xtol=0.01):
     '''
     Reverse transposition function that uses the scalar bisection from scipy.
 
-    Helper function for rtranspose_driesse_2023.
+    Helper function for ghi_from_poa_driesse_2023.
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
@@ -1491,10 +1491,10 @@ def _rtranspose(surface_tilt, surface_azimuth,
 
     # function whose root needs to be found
     def poa_error(ghi):
-        poa_hat = _transpose(surface_tilt, surface_azimuth,
-                             solar_zenith, solar_azimuth,
-                             ghi,
-                             dni_extra, airmass, albedo)
+        poa_hat = _poa_from_ghi(surface_tilt, surface_azimuth,
+                                solar_zenith, solar_azimuth,
+                                ghi,
+                                dni_extra, airmass, albedo)
         return poa_hat - poa_global
 
     # calculate an upper bound for ghi using clearness index 1.25
@@ -1523,12 +1523,12 @@ def _rtranspose(surface_tilt, surface_azimuth,
     return ghi, conv, niter
 
 
-def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
-                            solar_zenith, solar_azimuth,
-                            poa_global,
-                            dni_extra=None, airmass=None, albedo=0.25,
-                            xtol=0.01,
-                            full_output=False):
+def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
+                              solar_zenith, solar_azimuth,
+                              poa_global,
+                              dni_extra=None, airmass=None, albedo=0.25,
+                              xtol=0.01,
+                              full_output=False):
     '''
     Estimate global horizontal irradiance (GHI) from global plane-of-array
     (POA) irradiance.  This reverse transposition algorithm uses a bisection
@@ -1578,9 +1578,9 @@ def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
 
     References
     ----------
-    .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
-        Diffuse Sky Model for Forward and Reverse Transposition, accepted
-        for publication in the Solar Energy Journal.
+    .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+        Perez diffuse sky model for forward and reverse transposition.
+        Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
 
     See also
     --------
@@ -1590,13 +1590,13 @@ def rtranspose_driesse_2023(surface_tilt, surface_azimuth,
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
-    rtranspose_array = np.vectorize(_rtranspose)
+    ghi_from_poa_array = np.vectorize(_ghi_from_poa)
 
-    ghi, conv, niter = rtranspose_array(surface_tilt, surface_azimuth,
-                                        solar_zenith, solar_azimuth,
-                                        poa_global,
-                                        dni_extra, airmass, albedo,
-                                        xtol=0.01)
+    ghi, conv, niter = ghi_from_poa_array(surface_tilt, surface_azimuth,
+                                          solar_zenith, solar_azimuth,
+                                          poa_global,
+                                          dni_extra, airmass, albedo,
+                                          xtol=0.01)
 
     if isinstance(poa_global, pd.Series):
         ghi = pd.Series(ghi, poa_global.index)

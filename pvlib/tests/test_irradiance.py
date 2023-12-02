@@ -782,7 +782,7 @@ def test_dirint_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected, check_less_precise=True)
 
 
-def test_rtranspose_driesse():
+def test_ghi_from_poa_driesse():
     # inputs copied from test_gti_dirint
     times = pd.DatetimeIndex(
         ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])
@@ -793,7 +793,7 @@ def test_rtranspose_driesse():
     surface_azimuth = 180
 
     # test core function
-    output = irradiance.rtranspose_driesse_2023(
+    output = irradiance.ghi_from_poa_driesse_2023(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1)
 
@@ -803,7 +803,7 @@ def test_rtranspose_driesse():
     # test series output
     poa_global = pd.Series([20, 300, 1000], index=times)
 
-    output = irradiance.rtranspose_driesse_2023(
+    output = irradiance.ghi_from_poa_driesse_2023(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1)
 
@@ -812,7 +812,7 @@ def test_rtranspose_driesse():
     # test full_output option and special cases
     poa_global = np.array([0, 1500, np.nan])
 
-    ghi, conv, niter = irradiance.rtranspose_driesse_2023(
+    ghi, conv, niter = irradiance.ghi_from_poa_driesse_2023(
         surface_tilt, surface_azimuth, zenith, azimuth,
         poa_global, dni_extra=1366.1, full_output=True)
 

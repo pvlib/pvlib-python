@@ -28,14 +28,14 @@ Author: Anton Driesse
 #
 # In this example we look at a single point in time and consider a full range
 # of possible GHI and POA global values as shown in figures 3 and 4 of [1]_.
-# Then we use :py:func:`pvlib.irradiance.rtranspose_driesse_2023` to estimate
+# Then we use :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023` to estimate
 # the original GHI from POA global.
 #
 # References
 # ----------
-# .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
-#     Diffuse Sky Model for Forward and Reverse Transposition, accepted
-#     for publication in the Solar Energy Journal.
+# .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+#     Perez diffuse sky model for forward and reverse transposition.
+#     Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
 #
 
 import numpy as np
@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt
 
 from pvlib.irradiance import (erbs_driesse,
                               get_total_irradiance,
-                              rtranspose_driesse_2023,
+                              ghi_from_poa_driesse_2023,
                               )
 
 matplotlib.rcParams['axes.grid'] = True
@@ -92,11 +92,11 @@ poa_global = irrads['poa_global']
 
 poa_test = 200
 
-ghi_hat = rtranspose_driesse_2023(surface_tilt, surface_azimuth,
-                                  solar_zenith, solar_azimuth,
-                                  poa_test,
-                                  dni_extra,
-                                  full_output=False)
+ghi_hat = ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
+                                    solar_zenith, solar_azimuth,
+                                    poa_test,
+                                    dni_extra,
+                                    full_output=False)
 
 print('Estimated GHI: %.2f W/m².' % ghi_hat)
 
@@ -156,12 +156,12 @@ poa_global = irrads['poa_global']
 # out, other times not.
 #
 
-result = rtranspose_driesse_2023(surface_tilt, surface_azimuth,
-                                 solar_zenith, solar_azimuth,
-                                 poa_global,
-                                 dni_extra,
-                                 full_output=True,
-                                 )
+result = ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
+                                   solar_zenith, solar_azimuth,
+                                   poa_global,
+                                   dni_extra,
+                                   full_output=True,
+                                   )
 
 ghi_hat, conv, niter = result
 correct = np.isclose(ghi, ghi_hat, atol=0.01)

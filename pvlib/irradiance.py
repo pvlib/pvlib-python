@@ -2732,8 +2732,9 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
 
     References
     ----------
-    .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
-        Diffuse Sky Model for Forward and Reverse Transposition, forthcoming.
+    .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+        Perez diffuse sky model for forward and reverse transposition.
+        Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
 
     .. [2] D. G. Erbs, S. A. Klein and J. A. Duffie, Estimation of the
        diffuse radiation fraction for hourly, daily and monthly-average

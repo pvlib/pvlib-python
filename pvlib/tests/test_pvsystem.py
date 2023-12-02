@@ -2555,6 +2555,7 @@ def test_Array_temperature_missing_parameters(model, keys):
 @pytest.mark.parametrize(
     'inputs',
     [
+        # FIXME Need many more argument combinations in additional test cases.
         {
             "photocurrent": 6.2,
             "saturation_current": 1.0e-8,
@@ -2645,13 +2646,12 @@ def test_max_power_point_mismatched(inputs):
             nNsVth,
         )
 
+    # FIXME Replace this with test assertions.
     print(result)
 
 
 def test_max_power_point_mismatched_unsuccessful_solver(monkeypatch):
-    """
-    Test errored max power point computation where solver is unsuccessful.
-    """
+    """Test mismatched max power point computation where solver is unsuccessful."""
     photocurrent = 6.2
     saturation_current = 1.0e-8
     resistance_series = 0.0001
@@ -2684,4 +2684,5 @@ def test_max_power_point_mismatched_unsuccessful_solver(monkeypatch):
             nNsVth,
         )
 
+    # FIXME Replace this with test assertions.
     print(e_info)

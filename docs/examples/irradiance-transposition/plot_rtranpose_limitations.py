@@ -28,7 +28,7 @@ Author: Anton Driesse
 #
 # In this example we look at a single point in time and consider a full range
 # of possible GHI and POA global values as shown in figures 3 and 4 of [1]_.
-# Then we use :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023` to estimate
+# Then we use :py:meth:`pvlib.irradiance.ghi_from_poa_driesse_2023` to estimate
 # the original GHI from POA global.
 #
 # References

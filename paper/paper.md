@@ -89,8 +89,8 @@ original MATLAB version of pvlib [@Andrews2014].  pvlib python began as
 a translation of that code base and has since surpassed it in terms of
 capability, community uptake, and development attention.
 
-Another key aspect of pvlib python is that it is used via
-a general-purpose programming language (Python), which
+Another key aspect of pvlib python is that it is both implemented and operated
+with a general-purpose programming language (Python), which
 allows pvlib python functions to be combined with capabilities in other Python packages,
 such as database query, data manipulation, numerical optimization,
 plotting, and reporting packages.  In contrast, most other PV system modeling
@@ -152,10 +152,10 @@ the complexity of emerging system designs, including heterogeneous systems whose
 subsystems differ in mounting or electrical configuration and systems that require
 custom orientation/tracking models.
 
-Third, the creation of `pvlib.iotools`, a sub-package for fetching and importing
+Third, a new subpackage `pvlib.iotools` has been created for fetching and importing
 datasets relevant to PV modeling.  These functions provide a standardized
 interface for reading data files in various complex data formats, offering
-conveniences like optionally standardizing the dataset variable names and units
+conveniences like the option to standardize dataset variable names and units
 to pvlib's conventions [@Jensen2023].  As of version 0.10.1, `pvlib.iotools` contains
 functions to download data from over ten online data providers,
 plus file reading/parsing functions for a dozen solar resource file formats.
@@ -175,7 +175,7 @@ the community as a whole.
 
 First, we examine contributors to pvlib python's code repository.  The
 project's use of version control software enables easy quantification of
-repository additions (to code, documentation, tests, etc) over time.  The
+repository additions (to code, documentation, tests, etc.) over time.  The
 project's repository currently comprises contributions from over 100 people
 spanning industry, academia, and government research institutions.
 \autoref{fig:community} (left) shows the number of unique repository

@@ -113,7 +113,7 @@ def atand(number):
     result : float
         arccos result
     """
-    res = np.degrees(np.atan(number))
+    res = np.degrees(np.arctan(number))
     return res
 
 

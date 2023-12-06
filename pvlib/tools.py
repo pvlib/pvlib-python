@@ -99,7 +99,7 @@ def acosd(number):
     return res
 
 
-def atand(angle):
+def atand(number):
     """
     Inverse Tangent returning an angle in degrees.
 

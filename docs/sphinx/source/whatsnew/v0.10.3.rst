@@ -12,6 +12,9 @@ Enhancements
 * :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
   shaded fraction in returned variables. (:pull:`1871`)
+* Added :py:func:`pvlib.iotools.solcast.get_solcast_tmy`, :py:func:`pvlib.iotools.solcast.get_solcast_historic`,
+  :py:func:`pvlib.iotools.solcast.get_solcast_forecast` and :py:func:`pvlib.iotools.solcast.get_solcast_live` to
+  read data from the Solcast API. (:issue:`1313`, :pull:`1875`)
 
 Bug fixes
 ~~~~~~~~~
@@ -44,3 +47,4 @@ Contributors
 * Harry Jack (:ghuser:`harry-solcast`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Lorenzo Riches (:ghuser:`lorenzo-solcast`)

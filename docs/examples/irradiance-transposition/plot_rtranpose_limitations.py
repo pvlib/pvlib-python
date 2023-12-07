@@ -1,5 +1,5 @@
 """
-Limitations of reverse transposition
+Reverse transposition limitations
 ====================================
 
 Unfortunately, sometimes there is not a unique solution.

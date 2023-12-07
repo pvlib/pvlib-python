@@ -1,0 +1,46 @@
+.. _whatsnew_01030:
+
+
+v0.10.3 (Anticipated December, 2023)
+------------------------------------
+
+
+Enhancements
+~~~~~~~~~~~~
+* Added the continuous Perez-Driesse transposition model.
+  :py:func:`pvlib.irradiance.perez_driesse` (:issue:`1841`, :pull:`1876`)
+* :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
+  :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
+  shaded fraction in returned variables. (:pull:`1871`)
+
+Bug fixes
+~~~~~~~~~
+* Fix mapping of the dew point column to ``temp_dew`` when ``map_variables``
+  is True in :py:func:`pvlib.iotools.get_psm3`. (:pull:`1920`)
+
+Testing
+~~~~~~~
+* Replace use of deprecated ``pkg_resources``. (:issue:`1881`, :pull:`1882`)
+
+
+Documentation
+~~~~~~~~~~~~~
+* Create :ref:`weatherdata` User's Guide page. (:pull:`1754`)
+* Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
+* Fixed `detect_clearsky` example in `clearsky.rst` (:issue:`1914`)
+
+Requirements
+~~~~~~~~~~~~
+* Minimum version of scipy advanced from 1.4.0 to 1.5.0. (:issue:`1918`, :pull:`1919`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Arjan Keeman (:ghuser:`akeeman`)
+* Miguel Sánchez de León Peque (:ghuser:`Peque`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Anton Driesse (:ghuser:`adriesse`)
+* :ghuser:`matsuobasho`
+* Harry Jack (:ghuser:`harry-solcast`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Kevin Anderson (:ghuser:`kandersolar`)

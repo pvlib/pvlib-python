@@ -1,3 +1,6 @@
+
+.. py:module:: pvlib.iotools
+
 .. currentmodule:: pvlib
 
 .. _iotools:

@@ -24,12 +24,20 @@ Author: Anton Driesse
 # Then we use :py:meth:`pvlib.irradiance.ghi_from_poa_driesse_2023` to estimate
 # the original GHI from POA global.  Details of the method found in [1]_.
 #
+# Another method for reverse tranposition called GTI-DIRINT is also
+# available in pvlib python (:py:meth:`pvlib.irradiance.gti_dirint`).
+# More information is available in [2]_.
+#
 # References
 # ----------
 # .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
 #     Perez diffuse sky model for forward and reverse transposition.
 #     Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
 #
+# .. [2] B. Marion, A model for deriving the direct normal and
+#        diffuse horizontal irradiance from the global tilted
+#        irradiance, Solar Energy 122, 1037-1046.
+#        :doi:`10.1016/j.solener.2015.10.024`
 
 import os
 import time
@@ -120,6 +128,13 @@ print('Elapsed time for reverse transposition: %.1f s' % (finish - start))
 # This graph shows the reverse transposed values vs. the original values.
 # The markers are color-coded by angle-of-incidence to show that
 # errors occur primarily with incidence angle approaching 90° and beyond.
+#
+# Note that the results look particularly good because the POA values
+# were calculated using the same models as used in reverse transposition.
+# This isn't cheating though.  It's a way of ensuring that the errors
+# we see are really due to the reverse transposition algorithm.
+# Expect to see larger errors with real-word POA measurements
+# because errors from forward and reverse transposition will both be present.
 #
 
 df = df.sort_values('aoi')

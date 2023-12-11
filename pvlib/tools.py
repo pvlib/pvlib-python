@@ -11,7 +11,7 @@ import warnings
 
 def cosd(angle):
     """
-    Cosine with angle input in degrees.
+    Trigonometric cosine with angle input in degrees.
 
     Parameters
     ----------
@@ -29,7 +29,7 @@ def cosd(angle):
 
 def sind(angle):
     """
-    Sine with angle input in degrees.
+    Trigonometric sine with angle input in degrees.
 
     Parameters
     ----------
@@ -47,7 +47,7 @@ def sind(angle):
 
 def tand(angle):
     """
-    Tangent with angle input in degrees.
+    Trigonometric tangent with angle input in degrees.
 
     Parameters
     ----------
@@ -65,7 +65,7 @@ def tand(angle):
 
 def asind(number):
     """
-    Inverse Sine returning an angle in degrees.
+    Trigonometric inverse sine returning an angle in degrees.
 
     Parameters
     ----------
@@ -83,7 +83,7 @@ def asind(number):
 
 def acosd(number):
     """
-    Inverse Cosine returning an angle in degrees.
+    Trigonometric inverse cosine returning an angle in degrees.
 
     Parameters
     ----------
@@ -101,7 +101,7 @@ def acosd(number):
 
 def atand(number):
     """
-    Inverse Tangent returning an angle in degrees.
+    Trigonometric inverse tangent returning an angle in degrees.
 
     Parameters
     ----------

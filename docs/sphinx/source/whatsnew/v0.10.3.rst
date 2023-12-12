@@ -9,13 +9,17 @@ Enhancements
 ~~~~~~~~~~~~
 * Added the continuous Perez-Driesse transposition model.
   :py:func:`pvlib.irradiance.perez_driesse` (:issue:`1841`, :pull:`1876`)
+* Added a reverse transposition algorithm using the Perez-Driesse model.
+  :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023`
+  (:issue:`1901`, :pull:`1907`)
 * :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
   shaded fraction in returned variables. (:pull:`1871`)
 
 Bug fixes
 ~~~~~~~~~
-
+* Fix mapping of the dew point column to ``temp_dew`` when ``map_variables``
+  is True in :py:func:`pvlib.iotools.get_psm3`. (:pull:`1920`)
 
 Testing
 ~~~~~~~
@@ -24,6 +28,15 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Create :ref:`weatherdata` User's Guide page. (:pull:`1754`)
+* Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
+* Added two examples to demonstrate reverse transposition (:pull:`1907`)
+* Fixed `detect_clearsky` example in `clearsky.rst` (:issue:`1914`)
+
+
+Requirements
+~~~~~~~~~~~~
+* Minimum version of scipy advanced from 1.4.0 to 1.5.0. (:issue:`1918`, :pull:`1919`)
 
 
 Contributors
@@ -32,3 +45,7 @@ Contributors
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Will Hobbs (:ghuser:`williamhobbs`)
 * Anton Driesse (:ghuser:`adriesse`)
+* :ghuser:`matsuobasho`
+* Harry Jack (:ghuser:`harry-solcast`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Kevin Anderson (:ghuser:`kandersolar`)

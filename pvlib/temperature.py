@@ -721,7 +721,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
            http://prod.sandia.gov/techlib/access-control.cgi/1985/850330.pdf
     .. [2] Dobos, A. P., 2014, "PVWatts Version 5 Manual", NREL/TP-6A20-62641,
            National Renewable Energy Laboratory, Golden CO.
-           doi:10.2172/1158421.
+           :doi:`10.2172/1158421`.
     """
     # ported from the FORTRAN77 code provided in Appendix A of Fuentes 1987;
     # nearly all variable names are kept the same for ease of comparison.
@@ -872,8 +872,8 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
         :math:`\eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}`
         where A is module area [m^2].
 
-    effective_irradiance : numeric, default None.
-        The irradiance that is converted to photocurrent. If None,
+    effective_irradiance : numeric, optional
+        The irradiance that is converted to photocurrent. If not specified,
         assumed equal to poa_global. [W/m^2]
 
     transmittance_absorptance : numeric, default 0.9

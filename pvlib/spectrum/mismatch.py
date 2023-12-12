@@ -115,7 +115,7 @@ def get_am15g(wavelength=None):
     References
     ----------
     .. [1] ASTM "G173-03 Standard Tables for Reference Solar Spectral
-        Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
+       Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
 

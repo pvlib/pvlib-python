@@ -75,8 +75,8 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     identifier: {'mcclear', 'cams_radiation'}
         Specify whether to retrieve CAMS Radiation or McClear parameters
     altitude: float, optional
-        Altitude in meters. If None, then the altitude is determined from the
-        NASA SRTM database
+        Altitude in meters. If not specified, then the altitude is determined
+        from the NASA SRTM database
     time_step: str, {'1min', '15min', '1h', '1d', '1M'}, default: '1h'
         Time step of the time series, either 1 minute, 15 minute, hourly,
         daily, or monthly.
@@ -88,7 +88,7 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label: {'right', 'left'}, default: None
+    label : {'right', 'left'}, optional
         Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
@@ -241,7 +241,7 @@ def parse_cams(fbuf, integrated=False, label=None, map_variables=True):
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label: {'right', 'left'}, default: None
+    label : {'right', 'left'}, optional
         Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True
@@ -342,7 +342,7 @@ def read_cams(filename, integrated=False, label=None, map_variables=True):
     integrated: boolean, default False
         Whether to return radiation parameters as integrated values (Wh/m^2)
         or as average irradiance values (W/m^2) (pvlib preferred units)
-    label: {'right', 'left}, default: None
+    label : {'right', 'left}, optional
         Which bin edge label to label time-step with. The default is 'left' for
         all time steps except for '1M' which has a default of 'right'.
     map_variables: bool, default: True

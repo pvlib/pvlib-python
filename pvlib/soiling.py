@@ -58,7 +58,7 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     -----------
     .. [1] M. Coello and L. Boyle, "Simple Model For Predicting Time Series
        Soiling of Photovoltaic Panels," in IEEE Journal of Photovoltaics.
-       doi: 10.1109/JPHOTOV.2019.2919628
+       :doi:`10.1109/JPHOTOV.2019.2919628`
     .. [2] Atmospheric Chemistry and Physics: From Air Pollution to Climate
        Change. J. Seinfeld and S. Pandis. Wiley and Sons 2001.
 
@@ -128,7 +128,7 @@ def kimber(rainfall, cleaning_threshold=6, soiling_loss_rate=0.0015,
     max_soiling : float, default 0.3
         Maximum fraction of energy lost due to soiling. Soiling will build up
         until this value. [unitless]
-    manual_wash_dates : sequence or None, default None
+    manual_wash_dates : sequence, optional
         List or tuple of dates as Python ``datetime.date`` when the panels were
         washed manually. Note there is no grace period after a manual wash, so
         soiling begins to build up immediately.

@@ -15,4 +15,4 @@ Transposition models
    irradiance.klucher
    irradiance.reindl
    irradiance.king
-   irradiance.rtranspose_driesse_2023
+   irradiance.ghi_from_poa_driesse_2023

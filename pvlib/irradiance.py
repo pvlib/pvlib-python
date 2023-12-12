@@ -342,13 +342,13 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         Global horizontal irradiance. [W/m2]
     dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m2]
-    airmass : None or numeric, default None
+    airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]
-    surface_type : None or str, default None
+    surface_type : str, optional
         Surface type. See :py:func:`~pvlib.irradiance.get_ground_diffuse` for
         the list of accepted values.
     model : str, default 'isotropic'
@@ -421,9 +421,9 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         Global horizontal irradiance. [W/m2]
     dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m2]
-    airmass : None or numeric, default None
+    airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
@@ -441,7 +441,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     ------
     ValueError
         If model is one of ``'haydavies'``, ``'reindl'``, or ``'perez'`` and
-        ``dni_extra`` is ``None``.
+        ``dni_extra`` is not specified.
 
     Notes
     -----
@@ -574,10 +574,11 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         the reflection coefficient. Must be >=0 and <=1. Will be
         overridden if surface_type is supplied.
 
-    surface_type: None or string, default None
-        If not None, overrides albedo. String can be one of 'urban',
-        'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt', 'concrete',
-        'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'.
+    surface_type : string, optional
+        If supplied, overrides ``albedo``. ``surface_type`` can be one of
+        'urban', 'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt',
+        'concrete', 'aluminum', 'copper', 'fresh steel', 'dirty steel',
+        'sea'.
 
     Returns
     -------
@@ -790,17 +791,17 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     dni_extra : numeric
         Extraterrestrial normal irradiance in W/m^2.
 
-    solar_zenith : None or numeric, default None
+    solar_zenith : numeric, optional
         Solar apparent (refraction-corrected) zenith angles in decimal
         degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
         supply ``projection_ratio``.
 
-    solar_azimuth : None or numeric, default None
+    solar_azimuth : numeric, optional
         Solar azimuth angles in decimal degrees. Must supply
         ``solar_zenith`` and ``solar_azimuth`` or supply
         ``projection_ratio``.
 
-    projection_ratio : None or numeric, default None
+    projection_ratio : numeric, optional
         Ratio of angle of incidence projection to solar zenith angle
         projection. Must supply ``solar_zenith`` and ``solar_azimuth``
         or supply ``projection_ratio``.
@@ -1081,7 +1082,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
         generation)
 
-    model : string (optional, default='allsitescomposite1990')
+    model : string, default 'allsitescomposite1990'
         A string which selects the desired set of Perez coefficients. If
         model is not provided as an input, the default, '1990' will be
         used. All possible model selections are:
@@ -1099,7 +1100,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         * 'capecanaveral1988'
         * 'albany1988'
 
-    return_components: bool (optional, default=False)
+    return_components : bool, default False
         Flag used to decide whether to return the calculated diffuse components
         or not.
 
@@ -1341,8 +1342,8 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         and <=360. The azimuth convention is defined as degrees east of
         north (e.g. North = 0, East = 90, West = 270).
 
-    airmass : numeric (optional, default None)
-        Relative (not pressure-corrected) airmass values. If airmass is a
+    airmass : numeric, optional
+        Relative (not pressure-corrected) airmass values. If ``airmass`` is a
         DataFrame it must be of the same size as all other DataFrame
         inputs. The kastenyoung1989 airmass calculation is used internally
         and is also recommended when pre-calculating airmass because
@@ -1620,9 +1621,9 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
-    pressure : None or numeric, default 101325
-        Site pressure in Pascal. If None, relative airmass is used
-        instead of absolute (pressure-corrected) airmass.
+    pressure : numeric or None, default 101325
+        Site pressure in Pascal. Uses absolute (pressure-corrected) airmass
+        by default. Set to ``None`` to use relative airmass.
 
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
@@ -1776,7 +1777,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, default None
+    temp_dew : float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -2025,7 +2026,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, default None
+    temp_dew : float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -2133,7 +2134,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, default None
+    temp_dew : float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -2529,11 +2530,11 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
         Global horizontal irradiance in W/m^2.
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
-    datetime_or_doy : int, float, array, pd.DatetimeIndex, default None
+    datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
         Either datetime_or_doy or dni_extra must be provided.
-    dni_extra : numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial normal irradiance.
         dni_extra can be provided if available to avoid recalculating it
         inside this function.  In this case datetime_or_doy is not required.
@@ -2652,7 +2653,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     datetime_or_doy : int, float, array, pd.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m2]
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
@@ -2945,7 +2946,7 @@ def _get_perez_coefficients(perezmodel):
     Parameters
     ----------
 
-    perezmodel : string (optional, default='allsitescomposite1990')
+    perezmodel : string, default 'allsitescomposite1990'
 
           a character string which selects the desired set of Perez
           coefficients. If model is not provided as an input, the default,
@@ -3465,7 +3466,7 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=180.
 
-    clearsky_dni : None or Series, default None
+    clearsky_dni : Series, optional
         Clearsky direct normal irradiance.
 
     clearsky_tolerance : float, default 1.1

@@ -11,6 +11,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 from scipy.interpolate import splev
+from scipy.optimize import bisect
 
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
@@ -1381,9 +1382,9 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     References
     ----------
-    .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
-        Diffuse Sky Model for Forward and Reverse Transposition, accepted
-        for publication in the Solar Energy Journal.
+    .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+        Perez diffuse sky model for forward and reverse transposition.
+        Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
 
     .. [2] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
        1990. Modeling daylight availability and irradiance components from
@@ -1443,6 +1444,170 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return diffuse_components
     else:
         return sky_diffuse
+
+
+def _poa_from_ghi(surface_tilt, surface_azimuth,
+                  solar_zenith, solar_azimuth,
+                  ghi,
+                  dni_extra, airmass, albedo):
+    '''
+    Transposition function that includes decomposition of GHI using the
+    continuous Erbs-Driesse model.
+
+    Helper function for ghi_from_poa_driesse_2023.
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
+
+    dni = erbsout['dni']
+    dhi = erbsout['dhi']
+
+    irrads = get_total_irradiance(surface_tilt, surface_azimuth,
+                                  solar_zenith, solar_azimuth,
+                                  dni, ghi, dhi,
+                                  dni_extra, airmass, albedo,
+                                  model='perez-driesse')
+
+    return irrads['poa_global']
+
+
+def _ghi_from_poa(surface_tilt, surface_azimuth,
+                  solar_zenith, solar_azimuth,
+                  poa_global,
+                  dni_extra, airmass, albedo,
+                  xtol=0.01):
+    '''
+    Reverse transposition function that uses the scalar bisection from scipy.
+
+    Helper function for ghi_from_poa_driesse_2023.
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    # propagate nans and zeros quickly
+    if np.isnan(poa_global):
+        return np.nan, False, 0
+    if poa_global <= 0:
+        return 0.0, True, 0
+
+    # function whose root needs to be found
+    def poa_error(ghi):
+        poa_hat = _poa_from_ghi(surface_tilt, surface_azimuth,
+                                solar_zenith, solar_azimuth,
+                                ghi,
+                                dni_extra, airmass, albedo)
+        return poa_hat - poa_global
+
+    # calculate an upper bound for ghi using clearness index 1.25
+    ghi_clear = dni_extra * tools.cosd(solar_zenith)
+    ghi_high = np.maximum(10, 1.25 * ghi_clear)
+
+    try:
+        result = bisect(poa_error,
+                        a=0,
+                        b=ghi_high,
+                        xtol=xtol,
+                        maxiter=25,
+                        full_output=True,
+                        disp=False,
+                        )
+    except ValueError:
+        # this occurs when poa_error has the same sign at both end points
+        ghi = np.nan
+        conv = False
+        niter = -1
+    else:
+        ghi = result[0]
+        conv = result[1].converged
+        niter = result[1].iterations
+
+    return ghi, conv, niter
+
+
+def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
+                              solar_zenith, solar_azimuth,
+                              poa_global,
+                              dni_extra=None, airmass=None, albedo=0.25,
+                              xtol=0.01,
+                              full_output=False):
+    '''
+    Estimate global horizontal irradiance (GHI) from global plane-of-array
+    (POA) irradiance.  This reverse transposition algorithm uses a bisection
+    search together with the continuous Perez-Driesse transposition and
+    continuous Erbs-Driesse decomposition models, as described in [1]_.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Panel tilt from horizontal. [degree]
+    surface_azimuth : numeric
+        Panel azimuth from north. [degree]
+    solar_zenith : numeric
+        Solar zenith angle. [degree]
+    solar_azimuth : numeric
+        Solar azimuth angle. [degree]
+    poa_global : numeric
+        Plane-of-array global irradiance, aka global tilted irradiance. [W/m^2]
+    dni_extra : None or numeric, default None
+        Extraterrestrial direct normal irradiance. [W/m^2]
+    airmass : None or numeric, default None
+        Relative airmass (not adjusted for pressure). [unitless]
+    albedo : numeric, default 0.25
+        Ground surface albedo. [unitless]
+    xtol : numeric, default 0.01
+        Convergence criterion.  The estimated GHI will be within xtol of the
+        true value. [W/m^2]
+    full_output : boolean, default False
+        If full_output is False, only ghi is returned, otherwise the return
+        value is (ghi, converged, niter). (see Returns section for details).
+
+    Returns
+    -------
+    ghi : numeric
+        Estimated GHI. [W/m^2]
+    converged : boolean, optional
+        Present if full_output=True. Indicates which elements converged
+        successfully.
+    niter : integer, optional
+        Present if full_output=True. Indicates how many bisection iterations
+        were done.
+
+    Notes
+    -----
+    Since :py:func:`scipy.optimize.bisect` is not vectorized, high-resolution
+    time series can be quite slow to process.
+
+    References
+    ----------
+    .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+        Perez diffuse sky model for forward and reverse transposition.
+        Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
+
+    See also
+    --------
+    perez_driesse
+    erbs_driesse
+    gti_dirint
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    ghi_from_poa_array = np.vectorize(_ghi_from_poa)
+
+    ghi, conv, niter = ghi_from_poa_array(surface_tilt, surface_azimuth,
+                                          solar_zenith, solar_azimuth,
+                                          poa_global,
+                                          dni_extra, airmass, albedo,
+                                          xtol=0.01)
+
+    if isinstance(poa_global, pd.Series):
+        ghi = pd.Series(ghi, poa_global.index)
+        conv = pd.Series(conv, poa_global.index)
+        niter = pd.Series(niter, poa_global.index)
+
+    if full_output:
+        return ghi, conv, niter
+    else:
+        return ghi
 
 
 def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
@@ -2568,8 +2733,9 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
 
     References
     ----------
-    .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
-        Diffuse Sky Model for Forward and Reverse Transposition, forthcoming.
+    .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+        Perez diffuse sky model for forward and reverse transposition.
+        Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
 
     .. [2] D. G. Erbs, S. A. Klein and J. A. Duffie, Estimation of the
        diffuse radiation fraction for hourly, daily and monthly-average

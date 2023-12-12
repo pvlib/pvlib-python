@@ -221,8 +221,8 @@ def get_cams(latitude, longitude, start, end, email, identifier='mcclear',
                        timeout=timeout)
 
     # Response from CAMS follows the status and reason format of PyWPS4
-    # If an error occurs on the server side, it will return error 400 - bad request
-    # Additional information is available in the response text, so it is added 
+    # If an error occurs on server side, it will return error 400 - bad request
+    # Additional information is available in the response text, so it is added
     # to the error displayed to facilitate users effort to fix their request
     if not res.ok:
         errors = res.text.split('ows:ExceptionText')[1][1:-2]

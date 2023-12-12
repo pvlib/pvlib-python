@@ -26,7 +26,7 @@ Bug fixes
 Testing
 ~~~~~~~
 * Replace use of deprecated ``pkg_resources``. (:issue:`1881`, :pull:`1882`)
-
+* Added Python 3.12 to test suite. (:pull:`1886`)
 
 Documentation
 ~~~~~~~~~~~~~

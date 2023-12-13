@@ -1373,7 +1373,7 @@ def test_ac_models(sapm_dc_snl_ac_system, cec_dc_adr_ac_system,
     assert m.call_count == 1
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[1] < 1
 
 
 def test_ac_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
@@ -1425,8 +1425,8 @@ def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
     assert m.call_count == 1
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
-    assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
 
 
 @pytest.mark.parametrize('aoi_model', [
@@ -1441,8 +1441,8 @@ def test_aoi_models_singleon_weather_single_array(
     assert len(mc.results.aoi_modifier) == 1
     assert isinstance(mc.results.ac, pd.Series)
     assert not mc.results.ac.empty
-    assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
 
 
 def test_aoi_model_no_loss(sapm_dc_snl_ac_system, location, weather):
@@ -1451,8 +1451,29 @@ def test_aoi_model_no_loss(sapm_dc_snl_ac_system, location, weather):
     mc.run_model(weather)
     assert mc.results.aoi_modifier == 1.0
     assert not mc.results.ac.empty
-    assert mc.results.ac[0] > 150 and mc.results.ac[0] < 200
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
+
+
+def test_aoi_model_interp(sapm_dc_snl_ac_system, location, weather, mocker):
+    # similar to test_aoi_models but requires arguments to work, so we
+    # add 'interp' aoi losses model arguments to module
+    iam_ref = (1., 0.85)
+    theta_ref = (0., 80.)
+    sapm_dc_snl_ac_system.arrays[0].module_parameters['iam_ref'] = iam_ref
+    sapm_dc_snl_ac_system.arrays[0].module_parameters['theta_ref'] = theta_ref
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    dc_model='sapm', aoi_model='interp',
+                    spectral_model='no_loss')
+    m = mocker.spy(iam, 'interp')
+    mc.run_model(weather=weather)
+    # only test kwargs
+    assert m.call_args[1]['iam_ref'] == iam_ref
+    assert m.call_args[1]['theta_ref'] == theta_ref
+    assert isinstance(mc.results.ac, pd.Series)
+    assert not mc.results.ac.empty
+    assert mc.results.ac.iloc[0] > 150 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
 
 
 def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
@@ -1463,18 +1484,38 @@ def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
     assert m.call_count == 1
     assert mc.results.aoi_modifier == 0.9
     assert not mc.results.ac.empty
-    assert mc.results.ac[0] > 140 and mc.results.ac[0] < 200
-    assert mc.results.ac[1] < 1
+    assert mc.results.ac.iloc[0] > 140 and mc.results.ac.iloc[0] < 200
+    assert mc.results.ac.iloc[1] < 1
 
 
 @pytest.mark.parametrize('aoi_model', [
-    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+    'sapm', 'ashrae', 'physical', 'martin_ruiz', 'interp'
 ])
 def test_infer_aoi_model(location, system_no_aoi, aoi_model):
     for k in iam._IAM_MODEL_PARAMS[aoi_model]:
         system_no_aoi.arrays[0].module_parameters.update({k: 1.0})
     mc = ModelChain(system_no_aoi, location, spectral_model='no_loss')
     assert isinstance(mc, ModelChain)
+
+
+@pytest.mark.parametrize('aoi_model,model_kwargs', [
+    # model_kwargs has both required and optional kwargs; test all
+    ('physical',
+     {'n': 1.526, 'K': 4.0, 'L': 0.002,  # required
+      'n_ar': 1.8}),  # extra
+    ('interp',
+     {'theta_ref': (0, 75, 85, 90), 'iam_ref': (1, 0.8, 0.42, 0),  # required
+      'method': 'cubic', 'normalize': False})])  # extra
+def test_infer_aoi_model_with_extra_params(location, system_no_aoi, aoi_model,
+                                           model_kwargs, weather, mocker):
+    # test extra parameters not defined at iam._IAM_MODEL_PARAMS are passed
+    m = mocker.spy(iam, aoi_model)
+    system_no_aoi.arrays[0].module_parameters.update(**model_kwargs)
+    mc = ModelChain(system_no_aoi, location, spectral_model='no_loss')
+    assert isinstance(mc, ModelChain)
+    mc.run_model(weather=weather)
+    _, call_kwargs = m.call_args
+    assert call_kwargs == model_kwargs
 
 
 def test_infer_aoi_model_invalid(location, system_no_aoi):
@@ -2018,5 +2059,4 @@ def test_ModelChainResult___repr__(sapm_dc_snl_ac_system, location, weather):
     mcres = mc.results.__repr__()
     mc_attrs = dir(mc.results)
     mc_attrs = [a for a in mc_attrs if not a.startswith('_')]
-    assert all([a in mcres for a in mc_attrs])
-    
+    assert all(a in mcres for a in mc_attrs)

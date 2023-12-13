@@ -1,0 +1,17 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "flake8-linter-error",
+            "severity": "error",
+            "pattern": [
+                {
+                    "regexp": "^([^:]+):(\\d+):(\\d+):\\s+([EWCNF]\\d+\\s+.+)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            ]
+        }
+    ]
+}

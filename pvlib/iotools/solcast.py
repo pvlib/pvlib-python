@@ -32,7 +32,7 @@ VARIABLE_MAP = [
     ParameterMap("wind_direction_10m", "wind_direction"),
     # azimuth -> solar_azimuth (degrees) (different convention)
     ParameterMap(
-        "azimuth", "solar_azimuth", lambda x: abs(x) if x <= 0 else 360 - x
+        "azimuth", "solar_azimuth", lambda x: -x % 360
     ),
     # precipitable_water (kg/m2) -> precipitable_water (cm)
     ParameterMap("precipitable_water", "precipitable_water", lambda x: x*10),
@@ -44,12 +44,12 @@ VARIABLE_MAP = [
 def get_solcast_tmy(
     latitude, longitude, api_key, map_variables=True, **kwargs
 ):
-    """Get the irradiance and weather for a
+    """Get irradiance and weather for a
     Typical Meteorological Year (TMY) at a requested location.
 
-    Derived from satellite (clouds and irradiance over
-    non-polar continental areas) and numerical weather models (other data).
-    The TMY is calculated with data from 2007 to 2023.
+    Data is derived from a multi-year time series selected to present the
+    unique weather phenomena with annual averages that are consistent with
+    long term averages. See [1]_ for details on the calculation.
 
     Parameters
     ----------
@@ -58,23 +58,25 @@ def get_solcast_tmy(
     longitude : float
         in decimal degrees, between -180 and 180, east is positive
     api_key : str
-        To access Solcast data you will need an API key [1]_.
+        To access Solcast data you will need an API key [2]_.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
     kwargs:
         Optional parameters passed to the API.
-        See [2]_ for full list of parameters.
+        See [3]_ for full list of parameters.
 
     Returns
     -------
     data : pandas.DataFrame
         containing the values for the parameters requested.The times
         in the DataFrame index indicate the midpoint of each interval.
+    metadata: dict
+        latitude and longitude of the request.
 
     Examples
     --------
-    >>> pvlib.iotools.solcast.get_solcast_tmy(
+    >>> df, meta = pvlib.iotools.solcast.get_solcast_tmy(
     >>>      latitude=-33.856784,
     >>>      longitude=151.215297,
     >>>      api_key="your-key"
@@ -84,7 +86,7 @@ def get_solcast_tmy(
     like ``time_zone``. Here we set the value of 10 for
     "10 hours ahead of UTC":
 
-    >>> pvlib.iotools.solcast.get_solcast_tmy(
+    >>> df, meta = pvlib.iotools.solcast.get_solcast_tmy(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
     >>>     time_zone=10,
@@ -93,8 +95,9 @@ def get_solcast_tmy(
 
     References
     ----------
-    .. [1] `Get an API Key <https://toolkit.solcast.com.au/register>`_
+    .. [1] `Solcast TMY Docs <https://solcast.com/tmy>`_
     .. [2] `Solcast API Docs <https://docs.solcast.com.au/>`_
+    .. [3] `Get an API Key <https://toolkit.solcast.com.au/register>`_
     """
 
     params = dict(
@@ -111,7 +114,7 @@ def get_solcast_tmy(
         map_variables=map_variables
     )
 
-    return data, {}
+    return data, {"latitude": latitude, "longitude": longitude}
 
 
 def get_solcast_historic(
@@ -143,31 +146,31 @@ def get_solcast_historic(
     end : optional, datetime-like
         Last day of the requested period.
         Must include one of ``end`` or ``duration``.
-
     duration : optional, default is None
         Must include either  ``end`` or ``duration``.
         ISO_8601 compliant duration for the historic data,
         like "P1D" for one day of data.
-        Must be within 31 days of the start_date.
+        Must be within 31 days of the ``start``.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
     api_key : str
         To access Solcast data you will need an API key [1]_.
     kwargs:
-        Optional parameters passed to the GET request
-
-    See [2]_ for full list of parameters.
+        Optional parameters passed to the API.
+        See [2]_ for full list of parameters.
 
     Returns
     -------
     data : pandas.DataFrame
         containing the values for the parameters requested.The times
         in the DataFrame index indicate the midpoint of each interval.
+    metadata: dict
+        latitude and longitude of the request.
 
     Examples
     --------
-    >>> pvlib.iotools.solcast.get_solcast_historic(
+    >>> df, meta = pvlib.iotools.solcast.get_solcast_historic(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
     >>>     start='2007-01-01T00:00Z',
@@ -178,7 +181,7 @@ def get_solcast_historic(
     you can pass any of the parameters listed in the API docs,
     for example using the ``end`` parameter instead
 
-    >>> pvlib.iotools.solcast.get_solcast_historic(
+    >>> df, meta = pvlib.iotools.solcast.get_solcast_historic(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
     >>>     start='2007-01-01T00:00Z',
@@ -210,7 +213,7 @@ def get_solcast_historic(
         map_variables=map_variables
     )
 
-    return data, {}
+    return data, {"latitude": latitude, "longitude": longitude}
 
 
 def get_solcast_forecast(
@@ -231,19 +234,20 @@ def get_solcast_forecast(
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
     kwargs:
-        Optional parameters passed to the GET request
-
-    See [2]_ for full list of parameters.
+        Optional parameters passed to the API.
+        See [2]_ for full list of parameters.
 
     Returns
     -------
     data : pandas.DataFrame
         Contains the values for the parameters requested.The times
         in the DataFrame index indicate the midpoint of each interval.
+    metadata: dict
+        latitude and longitude of the request.
 
     Examples
     --------
-    >>> pvlib.iotools.solcast.get_solcast_forecast(
+    >>> df, meta = pvlib.iotools.solcast.get_solcast_forecast(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
     >>>     api_key="your-key"
@@ -252,7 +256,7 @@ def get_solcast_forecast(
     you can pass any of the parameters listed in the API docs,
     like asking for specific variables:
 
-    >>> pvlib.iotools.solcast.get_solcast_forecast(
+    >>> df, meta = pvlib.iotools.solcast.get_solcast_forecast(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
     >>>     output_parameters=['dni', 'clearsky_dni', 'snow_soiling_rooftop'],
@@ -279,7 +283,7 @@ def get_solcast_forecast(
         map_variables=map_variables
     )
 
-    return data, {}
+    return data, {"latitude": latitude, "longitude": longitude}
 
 
 def get_solcast_live(
@@ -300,19 +304,20 @@ def get_solcast_live(
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
     kwargs:
-        Optional parameters passed to the GET request
-
-    See [2]_ for full list of parameters.
+        Optional parameters passed to the API.
+        See [2]_ for full list of parameters.
 
     Returns
     -------
     data : pandas.DataFrame
         containing the values for the parameters requested.The times
         in the DataFrame index indicate the midpoint of each interval.
+    metadata: dict
+        latitude and longitude of the request.
 
     Examples
     --------
-    >>> pvlib.iotools.solcast.get_solcast_live(
+    >>> df, meta = pvlib.iotools.solcast.get_solcast_live(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
     >>>    api_key="your-key"
@@ -320,7 +325,7 @@ def get_solcast_live(
 
     you can pass any of the parameters listed in the API docs, like
 
-    >>> pvlib.iotools.solcast.get_solcast_live(
+    >>> df, meta = pvlib.iotools.solcast.get_solcast_live(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
     >>>     terrain_shading=True,
@@ -331,7 +336,7 @@ def get_solcast_live(
     use ``map_variables=False`` to avoid converting the data
     to PVLib's conventions.
 
-    >>> pvlib.iotools.solcast.get_solcast_live(
+    >>> df, meta = pvlib.iotools.solcast.get_solcast_live(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
     >>>     map_variables=False,
@@ -358,10 +363,10 @@ def get_solcast_live(
         map_variables=map_variables
     )
 
-    return data, {}
+    return data, {"latitude": latitude, "longitude": longitude}
 
 
-def solcast2pvlib(data):
+def _solcast2pvlib(data):
     """Formats the data from Solcast to PVLib's conventions.
 
     Parameters
@@ -411,10 +416,10 @@ def _get_solcast(
     api_key : str
         To access Solcast data you will need an API key [1]_.
     map_variables: bool, default: True
-        When true, renames columns of the DataFrame to pvlib variable names
+        When true, renames columns of the DataFrame to PVLib's variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-        Time is the index as midpoint of each interval.
-        from Solcast's "period end".
+        Time is the index as midpoint of each interval
+        from Solcast's "period end" convention.
 
     Returns
     -------
@@ -436,7 +441,7 @@ def _get_solcast(
         j = response.json()
         df = pd.DataFrame.from_dict(j[list(j.keys())[0]])
         if map_variables:
-            return solcast2pvlib(df)
+            return _solcast2pvlib(df)
         else:
             return df
     else:

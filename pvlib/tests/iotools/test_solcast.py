@@ -1,6 +1,7 @@
 import pandas as pd
 from pvlib.iotools.solcast import (
-    get_solcast_live, get_solcast_tmy, solcast2pvlib
+    get_solcast_live, get_solcast_tmy, _solcast2pvlib, get_solcast_historic,
+    get_solcast_forecast
 )
 import pytest
 
@@ -40,7 +41,7 @@ def test_get_solcast_live(
 
     pd.testing.assert_frame_equal(
         function(**params)[0],
-        solcast2pvlib(
+        _solcast2pvlib(
             pd.DataFrame.from_dict(
                 json_response[list(json_response.keys())[0]])
         )
@@ -82,7 +83,7 @@ def test_get_solcast_tmy(
 
     pd.testing.assert_frame_equal(
         function(**params)[0],
-        solcast2pvlib(
+        _solcast2pvlib(
             pd.DataFrame.from_dict(
                 json_response[list(json_response.keys())[0]])
         )
@@ -118,5 +119,97 @@ def test_get_solcast_tmy(
     )
 ])
 def test_solcast2pvlib(in_df, out_df):
-    df = solcast2pvlib(in_df)
+    df = _solcast2pvlib(in_df)
     pd.testing.assert_frame_equal(df.astype(float), out_df.astype(float))
+
+
+@pytest.mark.parametrize("endpoint,function,params,json_response", [
+    (
+        "historic/radiation_and_weather",
+        get_solcast_historic,
+        dict(
+            api_key="1234",
+            latitude=-33.856784,
+            longitude=51.215297,
+            start="2023-01-01T08:00",
+            duration="P1D",
+            period="PT1H",
+            output_parameters='dni'
+        ), {'estimated_actuals': [
+            {'dni': 822, 'period_end': '2023-01-01T09:00:00.0000000Z',
+             'period': 'PT60M'},
+            {'dni': 918, 'period_end': '2023-01-01T10:00:00.0000000Z',
+             'period': 'PT60M'},
+            {'dni': 772, 'period_end': '2023-01-01T11:00:00.0000000Z',
+             'period': 'PT60M'},
+            {'dni': 574, 'period_end': '2023-01-01T12:00:00.0000000Z',
+             'period': 'PT60M'},
+            {'dni': 494, 'period_end': '2023-01-01T13:00:00.0000000Z',
+             'period': 'PT60M'}
+        ]}
+    ),
+])
+def test_get_solcast_historic(
+    requests_mock, endpoint, function, params, json_response
+):
+    mock_url = f"https://api.solcast.com.au/data/{endpoint}?" \
+               f"&latitude={params['latitude']}&" \
+               f"longitude={params['longitude']}&format=json"
+
+    requests_mock.get(mock_url, json=json_response)
+
+    pd.testing.assert_frame_equal(
+        function(**params)[0],
+        _solcast2pvlib(
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            )
+        )
+    )
+
+
+@pytest.mark.parametrize("endpoint,function,params,json_response", [
+    (
+        "forecast/radiation_and_weather",
+        get_solcast_forecast,
+        dict(
+            api_key="1234",
+            latitude=-33.856784,
+            longitude=51.215297,
+            hours="5",
+            period="PT1H",
+            output_parameters='dni'
+        ), {
+            'forecast': [
+                {'dni': 0, 'period_end': '2023-12-13T01:00:00.0000000Z',
+                 'period': 'PT1H'},
+                {'dni': 1, 'period_end': '2023-12-13T02:00:00.0000000Z',
+                 'period': 'PT1H'},
+                {'dni': 2, 'period_end': '2023-12-13T03:00:00.0000000Z',
+                 'period': 'PT1H'},
+                {'dni': 3, 'period_end': '2023-12-13T04:00:00.0000000Z',
+                 'period': 'PT1H'},
+                {'dni': 4, 'period_end': '2023-12-13T05:00:00.0000000Z',
+                 'period': 'PT1H'},
+                {'dni': 5, 'period_end': '2023-12-13T06:00:00.0000000Z',
+                 'period': 'PT1H'}
+            ]}
+    ),
+])
+def test_get_solcast_forecast(
+    requests_mock, endpoint, function, params, json_response
+):
+    mock_url = f"https://api.solcast.com.au/data/{endpoint}?" \
+               f"&latitude={params['latitude']}&" \
+               f"longitude={params['longitude']}&format=json"
+
+    requests_mock.get(mock_url, json=json_response)
+
+    pd.testing.assert_frame_equal(
+        function(**params)[0],
+        _solcast2pvlib(
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            )
+        )
+    )

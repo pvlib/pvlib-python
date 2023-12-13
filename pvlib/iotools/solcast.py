@@ -37,7 +37,12 @@ VARIABLE_MAP = [
     # precipitable_water (kg/m2) -> precipitable_water (cm)
     ParameterMap("precipitable_water", "precipitable_water", lambda x: x*10),
     # zenith -> solar_zenith
-    ParameterMap("zenith", "solar_zenith")
+    ParameterMap("zenith", "solar_zenith"),
+    # clearsky
+    ParameterMap("clearsky_dhi", "dhi_clear"),
+    ParameterMap("clearsky_dni", "dni_clear"),
+    ParameterMap("clearsky_ghi", "ghi_clear"),
+    ParameterMap("clearsky_gti", "poa_global_clear")
 ]
 
 
@@ -96,8 +101,8 @@ def get_solcast_tmy(
     References
     ----------
     .. [1] `Solcast TMY Docs <https://solcast.com/tmy>`_
-    .. [2] `Solcast API Docs <https://docs.solcast.com.au/>`_
-    .. [3] `Get an API Key <https://toolkit.solcast.com.au/register>`_
+    .. [2] `Get an API Key <https://toolkit.solcast.com.au/register>`_
+    .. [3] `Solcast API Docs <https://docs.solcast.com.au/>`_
     """
 
     params = dict(
@@ -379,8 +384,14 @@ def _solcast2pvlib(data):
     a pandas.DataFrame with the data cast to PVLib's conventions
     """
     # move from period_end to period_middle as per pvlib convention
+    # to support Pandas 0.25 for Python 3.7 distribution
+    # we cast PTXX to XX as ISO8601 durations without days aren't
+    # supported:
+    # https://github.com/pandas-dev/pandas/pull/37159
+    periods = data.period.str.replace("PT", "").str.replace("M", "m")
+
     data["period_mid"] = pd.to_datetime(
-        data.period_end) - pd.to_timedelta(data.period.values) / 2
+        data.period_end) - pd.to_timedelta(periods) / 2
     data = data.set_index("period_mid").drop(columns=["period_end", "period"])
 
     # rename and convert variables

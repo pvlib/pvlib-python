@@ -1355,7 +1355,8 @@ class ModelChain:
                    "https://github.com/pvlib/pvlib-python \n")
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
-                weather.index, solar_position=self.results.solar_position)
+                weather.index, model=self.clearsky_model,
+                solar_position=self.results.solar_position)
             complete_irrad_df = pvlib.irradiance.complete_irradiance(
                 solar_zenith=self.results.solar_position.zenith,
                 ghi=weather.ghi,

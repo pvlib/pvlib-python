@@ -1875,8 +1875,8 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location, mocker):
     assert_series_equal(mc.results.weather['dni'],
                         pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))
-    
-    
+
+
 @pytest.mark.filterwarnings("ignore:This function is not safe at the moment")
 @pytest.mark.parametrize("input_type", [tuple, list])
 def test_complete_irradiance_arrays(

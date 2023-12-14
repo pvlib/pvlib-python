@@ -17,7 +17,7 @@ dependencies:
     - requests-mock
     - pytest-timeout
     - pytest-rerunfailures
-    - pytest-remotedata
+    - conda-forge::pytest-remotedata  # version in default channel is old
     - python=3.11
     - pytz
     - requests

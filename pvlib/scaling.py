@@ -276,7 +276,7 @@ def _compute_wavelet(clearsky_index, dt=None):
         # Produces slightly different end effects than the MATLAB version
         df = cs_long.rolling(window=intvlen, center=True, min_periods=1).mean()
         # Fill nan's in both directions
-        df = df.fillna(method='bfill').fillna(method='ffill')
+        df = df.bfill().ffill()
         # Pop values back out of the dataframe and store
         csi_mean[i, :] = df.values.flatten()
         # Shift to account for different indexing in MATLAB moving average

@@ -22,6 +22,8 @@ Bug fixes
   :py:func:`pvlib.iotools.get_cams` (:issue:`1799`, :pull:`1905`)
 * Fix mapping of the dew point column to ``temp_dew`` when ``map_variables``
   is True in :py:func:`pvlib.iotools.get_psm3`. (:pull:`1920`)
+* Fix :py:class:`pvlib.modelchain.ModelChain` to use attribute `clearsky_model`
+  (:pull:`1924`)
 
 Testing
 ~~~~~~~
@@ -34,6 +36,7 @@ Documentation
 * Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
 * Added two examples to demonstrate reverse transposition (:pull:`1907`)
 * Fixed `detect_clearsky` example in `clearsky.rst` (:issue:`1914`)
+* Clarified purpose of `ModelChain.clearsky_model` (:pull:`1924`)
 
 
 Requirements
@@ -52,3 +55,4 @@ Contributors
 * :ghuser:`matsuobasho`
 * Harry Jack (:ghuser:`harry-solcast`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Cliff Hansen (:ghuser:`cwhanse`)

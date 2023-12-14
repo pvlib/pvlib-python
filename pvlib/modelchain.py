@@ -460,7 +460,8 @@ class ModelChain:
         the physical location at which to evaluate the model.
 
     clearsky_model : str, default 'ineichen'
-        Passed to location.get_clearsky.
+        Passed to location.get_clearsky. Only used when DNI is not found in
+        the weather inputs.
 
     transposition_model : str, default 'haydavies'
         Passed to system.get_irradiance.
@@ -1354,7 +1355,8 @@ class ModelChain:
                    "https://github.com/pvlib/pvlib-python \n")
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
-                weather.index, solar_position=self.results.solar_position)
+                weather.index, model=self.clearsky_model,
+                solar_position=self.results.solar_position)
             complete_irrad_df = pvlib.irradiance.complete_irradiance(
                 solar_zenith=self.results.solar_position.zenith,
                 ghi=weather.ghi,

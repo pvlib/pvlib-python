@@ -53,9 +53,9 @@ def fully_covered_nrel(snowfall, threshold_snowfall=1.):
     freq = pd.infer_freq(snowfall.index)
     if freq is not None:
         timedelta = pd.tseries.frequencies.to_offset(freq) / pd.Timedelta('1h')
-        hourly_snow_rate.iloc[0] = snowfall[0] / timedelta
+        hourly_snow_rate.iloc[0] = snowfall.iloc[0] / timedelta
     else:  # can't infer frequency from index
-        hourly_snow_rate[0] = 0  # replaces NaN
+        hourly_snow_rate.iloc[0] = 0  # replaces NaN
     return hourly_snow_rate > threshold_snowfall
 
 

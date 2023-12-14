@@ -11,7 +11,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 from .conftest import assert_series_equal, assert_frame_equal
 import pytest
-from unittest.mock import ANY
+
 from .conftest import fail_on_pvlib_version
 
 

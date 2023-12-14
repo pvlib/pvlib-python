@@ -134,6 +134,7 @@ def _compute_vr(positions, cloud_speed, tmscales):
         return np.abs((x ** 2 - x) / 2 - n_pairs)
 
     n_dist = np.round(scipy.optimize.fmin(fn, np.sqrt(n_pairs), disp=False))
+    n_dist = n_dist.item()
     # Compute VR
     A = cloud_speed / 2  # Resultant fit for A from [2]
     vr = np.zeros(tmscales.shape)

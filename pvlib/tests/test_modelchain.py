@@ -11,7 +11,7 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 from .conftest import assert_series_equal, assert_frame_equal
 import pytest
-
+from unittest.mock import ANY
 from .conftest import fail_on_pvlib_version
 
 
@@ -1871,6 +1871,7 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location, mocker):
     m_ineichen = mocker.spy(location, 'get_clearsky')
     mc.complete_irradiance(i[['dhi', 'ghi']])
     assert m_ineichen.call_count == 1
+    assert m_ineichen.call_args[1]['model'] == 'ineichen'
     assert_series_equal(mc.results.weather['dni'],
                         pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))

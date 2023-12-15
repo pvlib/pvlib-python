@@ -40,11 +40,11 @@ def read_tmy3(filename, coerce_year=None, map_variables=None, recolumn=None,
     ----------
     filename : str
         A relative file path or absolute file path.
-    coerce_year : None or int, default None
-        If supplied, the year of the index will be set to `coerce_year`, except
+    coerce_year : int, optional
+        If supplied, the year of the index will be set to ``coerce_year``, except
         for the last index value which will be set to the *next* year so that
         the index increases monotonically.
-    map_variables : bool, default None
+    map_variables : bool, optional
         When True, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
     recolumn : bool (deprecated, use map_variables instead)

@@ -981,8 +981,8 @@ class Array:
             raise ValueError("The `temperature_model_parameters` is empty "
                             "after an attempt to infer it.  "
                             "Pass the following arguments either to the "
-                            "`Array`, or to the `PVSystem`: "
-                            "`temperature_model_parameters` "
+                            "`Array` or to the `PVSystem`: "
+                            "`temperature_model_parameters`, "
                             "or `racking_model` and `module_type`.")
 
         if array_losses_parameters is None:

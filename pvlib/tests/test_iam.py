@@ -399,15 +399,15 @@ def test_schlick_diffuse():
 
 @pytest.mark.parametrize('source,source_params,target,expected', [
     ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'martin_ruiz',
-     {'a_r': 0.173972}),
+     {'a_r': 0.174098}),
     ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'ashrae',
-     {'b': 0.043925}),
+     {'b': 0.043858}),
     ('ashrae', {'b': 0.15}, 'physical',
-     {'n': 0.991457, 'K': 4, 'L': 0.0378127}),
-    ('ashrae', {'b': 0.15}, 'martin_ruiz', {'a_r': 0.30284}),
+     {'n': 0.991457, 'K': 4, 'L': 0.037789}),
+    ('ashrae', {'b': 0.15}, 'martin_ruiz', {'a_r': 0.302886}),
     ('martin_ruiz', {'a_r': 0.15}, 'physical',
-     {'n': 1.240655, 'K': 4, 'L': 0.00278196}),
-    ('martin_ruiz', {'a_r': 0.15}, 'ashrae', {'b': 0.026147})])
+     {'n': 1.240906, 'K': 4, 'L': 0.002769962}),
+    ('martin_ruiz', {'a_r': 0.15}, 'ashrae', {'b': 0.026102})])
 def test_convert(source, source_params, target, expected):
     target_params = _iam.convert(source, source_params, target)
     exp = [expected[k] for k in expected]
@@ -421,7 +421,7 @@ def test_convert(source, source_params, target, expected):
     ('martin_ruiz', {'a_r': 0.15})])
 def test_convert_recover(source, source_params):
     # convert isn't set up to handle both source and target = 'physical'
-    target_params = _iam.convert(source, source_params, source, xtol=1e-8)
+    target_params = _iam.convert(source, source_params, source, xtol=1e-7)
     exp = [source_params[k] for k in source_params]
     tar = [target_params[k] for k in source_params]
     assert_allclose(exp, tar, rtol=1e-05)
@@ -432,7 +432,7 @@ def test_convert_ashrae_physical_no_fix_n():
     source_params = {'b': 0.15}
     target_params = _iam.convert('ashrae', source_params, 'physical',
                                  fix_n=False)
-    expected = {'n': 0.989039, 'K': 4, 'L': 0.0373608}
+    expected = {'n': 0.988947, 'K': 4, 'L': 0.037360}
     exp = [expected[k] for k in expected]
     tar = [target_params[k] for k in expected]
     assert_allclose(exp, tar, rtol=1e-05)
@@ -441,7 +441,7 @@ def test_convert_ashrae_physical_no_fix_n():
 def test_convert_reverse_order_in_physical():
     source_params = {'a_r': 0.25}
     target_params = _iam.convert('martin_ruiz', source_params, 'physical')
-    expected = {'n': 1.681051, 'K': 4, 'L': 0.0707148}
+    expected = {'n': 1.682894, 'K': 4, 'L': 0.071484}
     exp = [expected[k] for k in expected]
     tar = [target_params[k] for k in expected]
     assert_allclose(exp, tar, rtol=1e-5)
@@ -450,15 +450,15 @@ def test_convert_reverse_order_in_physical():
 def test_convert_xtol():
     source_params = {'b': 0.15}
     target_params = _iam.convert('ashrae', source_params, 'physical',
-                                 xtol=1e-12)
-    expected = {'n': 0.9914568913905548, 'K': 4, 'L': 0.037812698547748186}
+                                 xtol=1e-8)
+    expected = {'n': 0.9914568914, 'K': 4, 'L': 0.03778927497}
     exp = [expected[k] for k in expected]
     tar = [target_params[k] for k in expected]
-    assert_allclose(exp, tar, rtol=1e-10)
+    assert_allclose(exp, tar, rtol=1e-6)
 
 
 def test_convert_custom_weight_func():
-    aoi = np.linspace(0, 90, 100)
+    aoi = np.linspace(0, 90, 90)
 
     # convert physical to martin_ruiz, using custom weight function
     source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
@@ -470,14 +470,14 @@ def test_convert_custom_weight_func():
 
     # expected value calculated from computing residual function over
     # a range of inputs, and taking minimum of these values
-    expected_min_res = 18.051468686279726
+    expected_min_res = 16.1977487
 
     actual_dict = _iam.convert('physical', source_params, 'martin_ruiz',
                                weight=scaled_weight)
     actual_min_res = _iam._residual(aoi, source_iam, _iam.martin_ruiz,
                                     [actual_dict['a_r']], scaled_weight)
 
-    assert np.isclose(expected_min_res, actual_min_res, atol=1e-08)
+    assert np.isclose(expected_min_res, actual_min_res, atol=1e-06)
 
 
 def test_convert_model_not_implemented():

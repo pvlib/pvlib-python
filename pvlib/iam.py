@@ -1182,7 +1182,7 @@ def convert(source_name, source_params, target_name, weight=_sin_weight,
     source = _get_model(source_name)
     target = _get_model(target_name)
 
-    aoi = np.linspace(0, 90, 100)
+    aoi = np.linspace(0, 90, 90)
     _check_params(source_name, source_params)
     source_iam = source(aoi, **source_params)
 

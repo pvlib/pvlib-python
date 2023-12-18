@@ -977,6 +977,14 @@ class Array:
         else:
             self.temperature_model_parameters = temperature_model_parameters
 
+        if temperature_model_parameters is None:
+            raise ValueError("The `temperature_model_parameters` is empty "
+                            "after an attempt to infer it.  "
+                            "Pass the following arguments either to the "
+                            "`Array`, or to the `PVSystem`: "
+                            "`temperature_model_parameters` "
+                            "or `racking_model` and `module_type`.")
+
         if array_losses_parameters is None:
             self.array_losses_parameters = {}
         else:

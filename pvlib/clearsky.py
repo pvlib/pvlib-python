@@ -159,7 +159,7 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
 
     longitude : float or int
 
-    filepath : None or string, default None
+    filepath : string, optional
         The path to the ``.h5`` file.
 
     interp_turbidity : bool, default True
@@ -703,9 +703,9 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         Time series of measured GHI. [W/m2]
     clearsky : array or Series
         Time series of the expected clearsky GHI. [W/m2]
-    times : DatetimeIndex or None, default None.
-        Times of measured and clearsky values. If None the index of measured
-        will be used.
+    times : DatetimeIndex, optional
+        Times of measured and clearsky values. If not specified, the index of
+        ``measured`` will be used.
     infer_limits : bool, default False
         If True, does not use passed in kwargs (or defaults), but instead
         interpolates these values from Table 1 in [2]_.

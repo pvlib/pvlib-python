@@ -1847,7 +1847,7 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
                         pd.Series([9, 5], index=times, name='ghi'))
 
 
-def test_complete_irradiance(sapm_dc_snl_ac_system, location):
+def test_complete_irradiance(sapm_dc_snl_ac_system, location, mocker):
     """Check calculations"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='H')
@@ -1867,7 +1867,11 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
                         pd.Series([372.103976116, 497.087579068],
                                   index=times, name='ghi'))
 
+    # check that clearsky_model is used correctly
+    m_ineichen = mocker.spy(location, 'get_clearsky')
     mc.complete_irradiance(i[['dhi', 'ghi']])
+    assert m_ineichen.call_count == 1
+    assert m_ineichen.call_args[1]['model'] == 'ineichen'
     assert_series_equal(mc.results.weather['dni'],
                         pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))

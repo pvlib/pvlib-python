@@ -9,6 +9,9 @@ Enhancements
 ~~~~~~~~~~~~
 * Added the continuous Perez-Driesse transposition model.
   :py:func:`pvlib.irradiance.perez_driesse` (:issue:`1841`, :pull:`1876`)
+* Added a reverse transposition algorithm using the Perez-Driesse model.
+  :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023`
+  (:issue:`1901`, :pull:`1907`)
 * :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance` and
   :py:func:`pvlib.bifacial.infinite_sheds.get_irradiance_poa` now include
   shaded fraction in returned variables. (:pull:`1871`)
@@ -17,18 +20,26 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* Fixed CAMS error message handler in
+  :py:func:`pvlib.iotools.get_cams` (:issue:`1799`, :pull:`1905`)
+* Fix mapping of the dew point column to ``temp_dew`` when ``map_variables``
+  is True in :py:func:`pvlib.iotools.get_psm3`. (:pull:`1920`)
+* Fix :py:class:`pvlib.modelchain.ModelChain` to use attribute `clearsky_model`
+  (:pull:`1924`)
 
 Testing
 ~~~~~~~
 * Replace use of deprecated ``pkg_resources``. (:issue:`1881`, :pull:`1882`)
-
+* Added Python 3.12 to test suite. (:pull:`1886`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Create :ref:`weatherdata` User's Guide page. (:pull:`1754`)
 * Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
+* Added two examples to demonstrate reverse transposition (:pull:`1907`)
 * Fixed `detect_clearsky` example in `clearsky.rst` (:issue:`1914`)
+* Clarified purpose of `ModelChain.clearsky_model` (:pull:`1924`)
+
 
 Requirements
 ~~~~~~~~~~~~
@@ -43,7 +54,9 @@ Contributors
 * Anton Driesse (:ghuser:`adriesse`)
 * Abigail Jones (:ghuser:`ajonesr`)
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Gilles Fischer (:ghuser:`GillesFischerV`)
+* Adam R. Jensen (:ghusuer:`AdamRJensen`)
 * :ghuser:`matsuobasho`
 * Harry Jack (:ghuser:`harry-solcast`)
-* Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Cliff Hansen (:ghuser:`cwhanse`)

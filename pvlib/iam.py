@@ -125,7 +125,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
 
     n_ar : numeric, optional
         The effective index of refraction of the anti-reflective (AR) coating
-        (unitless). If n_ar is None (default), no AR coating is applied.
+        (unitless). If ``n_ar`` is not supplied, no AR coating is applied.
         A typical value for the effective index of an AR coating is 1.29.
 
     Returns
@@ -339,7 +339,7 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     c2 : float
         Second fitting parameter for the expressions that approximate the
         integral of diffuse irradiance coming from different directions.
-        If c2 is None, it will be calculated according to the linear
+        If c2 is not specified, it will be calculated according to the linear
         relationship given in [3]_.
 
     Returns
@@ -515,7 +515,7 @@ def sapm(aoi, module, upper=None):
         A dict or Series with the SAPM IAM model parameters.
         See the :py:func:`sapm` notes section for more details.
 
-    upper : None or float, default None
+    upper : float, optional
         Upper limit on the results.
 
     Returns
@@ -542,7 +542,7 @@ def sapm(aoi, module, upper=None):
 
     .. [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
        Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
-       DOI: 10.1109/PVSC.2015.7355849
+       :doi:`10.1109/PVSC.2015.7355849`
 
     See Also
     --------
@@ -608,7 +608,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     .. [1] B. Marion "Numerical method for angle-of-incidence correction
        factors for diffuse radiation incident photovoltaic modules",
        Solar Energy, Volume 147, Pages 344-348. 2017.
-       DOI: 10.1016/j.solener.2017.03.027
+       :doi:`10.1016/j.solener.2017.03.027`
 
     Examples
     --------
@@ -695,7 +695,7 @@ def marion_integrate(function, surface_tilt, region, num=None):
     .. [1] B. Marion "Numerical method for angle-of-incidence correction
        factors for diffuse radiation incident photovoltaic modules",
        Solar Energy, Volume 147, Pages 344-348. 2017.
-       DOI: 10.1016/j.solener.2017.03.027
+       :doi:`10.1016/j.solener.2017.03.027`
 
     Examples
     --------

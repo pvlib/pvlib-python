@@ -51,13 +51,13 @@ def get_solarposition(time, latitude, longitude,
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
 
-    altitude : None or float, default None
-        If None, computed from pressure. Assumed to be 0 m
-        if pressure is also None.
+    altitude : float, optional
+        If not specified, computed from ``pressure``. Assumed to be 0 m
+        if ``pressure`` is not supplied.
 
-    pressure : None or float, default None
-        If None, computed from altitude. Assumed to be 101325 Pa
-        if altitude is also None.
+    pressure : float, optional
+        If not specified, computed from ``altitude``. Assumed to be 101325 Pa
+        if ``altitude`` is not supplied.
 
     method : string, default 'nrel_numpy'
         'nrel_numpy' uses an implementation of the NREL SPA algorithm
@@ -312,7 +312,7 @@ def spa_python(time, latitude, longitude,
         *Note: delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.*
         The USNO has historical and forecasted delta_t [3]_.
-    atmos_refrac : None or float, optional, default None
+    atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     how : str, optional, default 'numpy'

@@ -399,15 +399,15 @@ def test_schlick_diffuse():
 
 @pytest.mark.parametrize('source,source_params,target,expected', [
     ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'martin_ruiz',
-     {'a_r': 0.174098}),
+     {'a_r': 0.174037}),
     ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'ashrae',
-     {'b': 0.043858}),
+     {'b': 0.042896}),
     ('ashrae', {'b': 0.15}, 'physical',
-     {'n': 0.991457, 'K': 4, 'L': 0.037789}),
-    ('ashrae', {'b': 0.15}, 'martin_ruiz', {'a_r': 0.302886}),
+     {'n': 0.991457, 'K': 4, 'L': 0.037813}),
+    ('ashrae', {'b': 0.15}, 'martin_ruiz', {'a_r': 0.302390}),
     ('martin_ruiz', {'a_r': 0.15}, 'physical',
-     {'n': 1.240906, 'K': 4, 'L': 0.002769962}),
-    ('martin_ruiz', {'a_r': 0.15}, 'ashrae', {'b': 0.026102})])
+     {'n': 1.240190, 'K': 4, 'L': 0.002791055}),
+    ('martin_ruiz', {'a_r': 0.15}, 'ashrae', {'b': 0.025458})])
 def test_convert(source, source_params, target, expected):
     target_params = _iam.convert(source, source_params, target)
     exp = [expected[k] for k in expected]
@@ -432,7 +432,7 @@ def test_convert_ashrae_physical_no_fix_n():
     source_params = {'b': 0.15}
     target_params = _iam.convert('ashrae', source_params, 'physical',
                                  fix_n=False)
-    expected = {'n': 0.988947, 'K': 4, 'L': 0.037360}
+    expected = {'n': 0.989019, 'K': 4, 'L': 0.037382}
     exp = [expected[k] for k in expected]
     tar = [target_params[k] for k in expected]
     assert_allclose(exp, tar, rtol=1e-05)
@@ -441,24 +441,24 @@ def test_convert_ashrae_physical_no_fix_n():
 def test_convert_reverse_order_in_physical():
     source_params = {'a_r': 0.25}
     target_params = _iam.convert('martin_ruiz', source_params, 'physical')
-    expected = {'n': 1.682894, 'K': 4, 'L': 0.071484}
+    expected = {'n': 1.691398, 'K': 4, 'L': 0.071633}
     exp = [expected[k] for k in expected]
     tar = [target_params[k] for k in expected]
-    assert_allclose(exp, tar, rtol=1e-5)
+    assert_allclose(exp, tar, rtol=1e-05)
 
 
 def test_convert_xtol():
     source_params = {'b': 0.15}
     target_params = _iam.convert('ashrae', source_params, 'physical',
                                  xtol=1e-8)
-    expected = {'n': 0.9914568914, 'K': 4, 'L': 0.03778927497}
+    expected = {'n': 0.9914568914, 'K': 4, 'L': 0.0378126985}
     exp = [expected[k] for k in expected]
     tar = [target_params[k] for k in expected]
     assert_allclose(exp, tar, rtol=1e-6)
 
 
 def test_convert_custom_weight_func():
-    aoi = np.linspace(0, 90, 90)
+    aoi = np.linspace(0, 90, 91)
 
     # convert physical to martin_ruiz, using custom weight function
     source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
@@ -470,7 +470,7 @@ def test_convert_custom_weight_func():
 
     # expected value calculated from computing residual function over
     # a range of inputs, and taking minimum of these values
-    expected_min_res = 16.1977487
+    expected_min_res = 16.39724
 
     actual_dict = _iam.convert('physical', source_params, 'martin_ruiz',
                                weight=scaled_weight)

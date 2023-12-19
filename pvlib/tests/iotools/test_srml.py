@@ -5,8 +5,7 @@ import os
 
 from pvlib.iotools import srml
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
-                        assert_frame_equal, fail_on_pvlib_version)
-from pvlib._deprecation import pvlibDeprecationWarning
+                        assert_frame_equal)
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 
@@ -114,3 +113,13 @@ def test_get_srml_nonexisting_month_warning():
         # Eugene (EUO) station started reporting 1-minute data in January 2010
         data, meta = data, meta = srml.get_srml(
             station='EUO', start='2009-12-01', end='2010-01-31', filetype='PO')
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_srml_nonexisting_month_warning():
+    with pytest.raises(ValueError, match='should be a 3 letter station abbreviation'):  # noqa: E501
+        # Test that an error is raised when specifying a station using the old
+        # two-letter station code. E.g., Eugene, Oregon station used to be EU
+        # and now goes by EUO
+        data, meta = data, meta = srml.get_srml(
+            station='EU', start='2022-12-01', end='2022-01-31', filetype='PO')

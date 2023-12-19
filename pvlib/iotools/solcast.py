@@ -245,7 +245,7 @@ def get_solcast_forecast(
     Returns
     -------
     data : pandas.DataFrame
-        Contains the values for the parameters requested.The times
+        Contains the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
     metadata: dict
         latitude and longitude of the request.

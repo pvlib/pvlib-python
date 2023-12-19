@@ -295,7 +295,7 @@ def get_solcast_live(
     latitude, longitude, api_key, map_variables=True, **kwargs
 ):
     """Get irradiance and weather estimated actuals for near real-time
-    and past 7 days
+    and past 7 days.
 
     Parameters
     ----------

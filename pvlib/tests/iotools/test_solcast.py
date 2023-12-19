@@ -1,13 +1,9 @@
 from unittest.mock import patch
-
-from unittest.mock import patch
-
 import pandas as pd
 import pvlib
 import pytest
 
 
-@pytest.mark.parametrize("map_variables", [True, False])
 @pytest.mark.parametrize("endpoint,params,api_key,json_response", [
     (
         "live/radiation_and_weather",
@@ -29,7 +25,7 @@ import pytest
          }
     ),
 ])
-def test__get_solcast(requests_mock, endpoint, params, api_key, json_response, map_variables):
+def test__get_solcast(requests_mock, endpoint, params, api_key, json_response):
     mock_url = f"https://api.solcast.com.au/data/{endpoint}?" \
                f"latitude={params['latitude']}&" \
                f"longitude={params['longitude']}&" \
@@ -48,7 +44,7 @@ def test__get_solcast(requests_mock, endpoint, params, api_key, json_response, m
         )
     )
 
-    # no remapping of varaibles
+    # no remapping of variables
     pd.testing.assert_frame_equal(
         pvlib.iotools.solcast._get_solcast(
             endpoint, params, api_key, False
@@ -56,6 +52,7 @@ def test__get_solcast(requests_mock, endpoint, params, api_key, json_response, m
         pd.DataFrame.from_dict(
             json_response[list(json_response.keys())[0]])
     )
+
 
 @pytest.mark.parametrize("map_variables", [True, False])
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
@@ -96,13 +93,17 @@ def test_get_solcast_live(
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
             pvlib.iotools.solcast._solcast2pvlib(
-                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+                pd.DataFrame.from_dict(
+                    json_response[list(json_response.keys())[0]]
+                )
             ),
         )
     else:
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
-            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            ),
         )
 
 
@@ -144,13 +145,17 @@ def test_get_solcast_tmy(
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
             pvlib.iotools.solcast._solcast2pvlib(
-                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+                pd.DataFrame.from_dict(
+                    json_response[list(json_response.keys())[0]]
+                )
             ),
         )
     else:
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
-            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            ),
         )
 
 
@@ -227,13 +232,17 @@ def test_get_solcast_historic(
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
             pvlib.iotools.solcast._solcast2pvlib(
-                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+                pd.DataFrame.from_dict(
+                    json_response[list(json_response.keys())[0]]
+                )
             ),
         )
     else:
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
-            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            ),
         )
 
 
@@ -279,13 +288,17 @@ def test_get_solcast_forecast(
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
             pvlib.iotools.solcast._solcast2pvlib(
-                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+                pd.DataFrame.from_dict(
+                    json_response[list(json_response.keys())[0]]
+                )
             ),
         )
     else:
         pd.testing.assert_frame_equal(
             function(**params, map_variables=map_variables)[0],
-            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]]
+            ),
         )
 
 

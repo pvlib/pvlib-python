@@ -225,7 +225,7 @@ def get_solcast_forecast(
     latitude, longitude, api_key, map_variables=True, **kwargs
 ):
     """Get irradiance and weather forecasts from the present time
-    up to 14 days ahead
+    up to 14 days ahead.
 
     Parameters
     ----------

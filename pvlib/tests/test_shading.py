@@ -8,6 +8,34 @@ from pvlib import shading
 
 
 @pytest.fixture
+def test_system():
+    syst = {'height': 1.0,
+            'pitch': 2.,
+            'surface_tilt': 30.,
+            'surface_azimuth': 180.,
+            'rotation': -30.}  # rotation of right edge relative to horizontal
+    syst['gcr'] = 1.0 / syst['pitch']
+    return syst
+
+
+def test__ground_angle(test_system):
+    ts = test_system
+    x = np.array([0., 0.5, 1.0])
+    angles = shading.ground_angle(
+        ts['surface_tilt'], ts['gcr'], x)
+    expected_angles = np.array([0., 5.866738789543952, 9.896090638982903])
+    assert np.allclose(angles, expected_angles)
+
+
+def test__ground_angle_zero_gcr():
+    surface_tilt = 30.0
+    x = np.array([0.0, 0.5, 1.0])
+    angles = shading.ground_angle(surface_tilt, 0, x)
+    expected_angles = np.array([0, 0, 0])
+    assert np.allclose(angles, expected_angles)
+
+
+@pytest.fixture
 def surface_tilt():
     idx = pd.date_range('2019-01-01', freq='h', periods=3)
     return pd.Series([0, 20, 90], index=idx)
@@ -43,6 +71,13 @@ def test_masking_angle_scalar(surface_tilt, masking_angle):
     for tilt, angle in zip(surface_tilt, masking_angle):
         masking_angle_actual = shading.masking_angle(tilt, 0.5, 0.25)
         assert np.isclose(masking_angle_actual, angle)
+
+
+def test_masking_angle_zero_gcr(surface_tilt):
+    # scalar inputs and outputs, including zero
+    for tilt in surface_tilt:
+        masking_angle_actual = shading.masking_angle(tilt, 0, 0.25)
+        assert np.isclose(masking_angle_actual, 0)
 
 
 def test_masking_angle_passias_series(surface_tilt, average_masking_angle):

@@ -170,11 +170,11 @@ def test_read_psm3():
 def test_read_psm3_map_variables():
     """test read_psm3 map_variables=True"""
     data, metadata = psm3.read_psm3(MANUAL_TEST_DATA, map_variables=True)
-    columns_mapped = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'dhi', 'dni',
-                      'ghi', 'dhi_clear', 'dni_clear', 'ghi_clear',
+    columns_mapped = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'dhi', 'ghi',
+                      'dni', 'ghi_clear', 'dhi_clear', 'dni_clear',
                       'Cloud Type', 'Dew Point', 'solar_zenith',
                       'Fill Flag', 'albedo', 'wind_speed',
-                      'precipitable_water', 'wind_direction',
+                      'wind_direction', 'precipitable_water',
                       'relative_humidity', 'temp_air', 'pressure']
     data, metadata = psm3.read_psm3(MANUAL_TEST_DATA, map_variables=True)
     assert_index_equal(data.columns, pd.Index(columns_mapped))
@@ -189,8 +189,10 @@ def test_get_psm3_attribute_mapping(nrel_api_key):
                                names=2019, interval=60,
                                attributes=['ghi', 'wind_speed'],
                                leap_day=False, map_variables=True)
-    assert 'ghi' in data.columns
-    assert 'wind_speed' in data.columns
+    # Check that columns are in the correct order (GH1647)
+    expected_columns = [
+        'Year', 'Month', 'Day', 'Hour', 'Minute', 'ghi', 'wind_speed']
+    pd.testing.assert_index_equal(pd.Index(expected_columns), data.columns)
     assert 'latitude' in meta.keys()
     assert 'longitude' in meta.keys()
     assert 'altitude' in meta.keys()

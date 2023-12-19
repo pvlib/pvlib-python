@@ -323,16 +323,3 @@ methods that calculate system losses. At present, these methods include
 only :py:meth:`pvlib.pvsystem.PVSystem.pvwatts_losses` and
 :py:func:`pvlib.pvsystem.pvwatts_losses`, but we hope to add more related functions
 and methods in the future.
-
-
-.. _sat:
-
-SingleAxisTracker
------------------
-
-The :py:class:`~pvlib.tracking.SingleAxisTracker` is a subclass of
-:py:class:`~pvlib.pvsystem.PVSystem`. The SingleAxisTracker class
-includes a few more keyword arguments and attributes that are specific
-to trackers, plus the
-:py:meth:`~pvlib.tracking.SingleAxisTracker.singleaxis` method. It also
-overrides the `get_aoi` and `get_irradiance` methods.

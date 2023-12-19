@@ -9,6 +9,7 @@ from pvlib.tools import sind
 from pvlib._deprecation import warn_deprecated
 from pvlib.tools import _get_sample_intervals
 import scipy
+import scipy.constants
 import warnings
 
 
@@ -290,7 +291,7 @@ def sapm_cell_from_module(module_temperature, poa_global, deltaT,
 
 
 def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
-                eta_m=None, module_efficiency=0.1, alpha_absorption=0.9):
+                module_efficiency=0.1, alpha_absorption=0.9):
     r"""
     Calculate cell temperature using an empirical heat loss factor model
     as implemented in PVsyst.
@@ -318,9 +319,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     u_v : float, default 0.0
         Combined heat loss factor influenced by wind. Parameter :math:`U_{v}`
         in :eq:`pvsyst`.
-        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`  # noQA: E501
-
-    eta_m : numeric, default None (deprecated, use module_efficiency instead)
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     module_efficiency : numeric, default 0.1
         Module external efficiency as a fraction. Parameter :math:`\eta_{m}`
@@ -375,13 +374,8 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     >>> params = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']
     >>> pvsyst_cell(1000, 10, **params)
     37.93103448275862
-    """
+    """  # noQA: E501
 
-    if eta_m:
-        warn_deprecated(
-            since='v0.9', message='eta_m overwriting module_efficiency',
-            name='eta_m', alternative='module_efficiency', removal='v0.10')
-        module_efficiency = eta_m
     total_loss_factor = u_c + u_v * wind_speed
     heat_input = poa_global * alpha_absorption * (1 - module_efficiency)
     temp_difference = heat_input / total_loss_factor
@@ -413,12 +407,14 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     u0 : numeric, default 25.0
         Combined heat loss factor coefficient. The default value is one
-        determined by Faiman for 7 silicon modules.
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
 
     u1 : numeric, default 6.84
         Combined heat loss factor influenced by wind. The default value is one
-        determined by Faiman for 7 silicon modules.
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
         :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
 
     Returns
@@ -434,6 +430,7 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     ----------
     .. [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
        photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+       :doi:`10.1002/pip.813`
 
     .. [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
        rating - Part 2: Spectral responsivity, incidence angle and module
@@ -442,7 +439,12 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
     .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
 
-    '''
+    See also
+    --------
+    pvlib.temperature.faiman_rad
+
+    '''  # noQA: E501
+
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Dec., 2019
 
     # The following lines may seem odd since u0 & u1 are probably scalar,
@@ -453,6 +455,115 @@ def faiman(poa_global, temp_air, wind_speed=1.0, u0=25.0, u1=6.84):
 
     total_loss_factor = u0 + u1 * wind_speed
     heat_input = poa_global
+    temp_difference = heat_input / total_loss_factor
+    return temp_air + temp_difference
+
+
+def faiman_rad(poa_global, temp_air, wind_speed=1.0, ir_down=None,
+               u0=25.0, u1=6.84, sky_view=1.0, emissivity=0.88):
+    r'''
+    Calculate cell or module temperature using the Faiman model augmented
+    with a radiative loss term.
+
+    The Faiman model uses an empirical heat loss factor model [1]_ and is
+    adopted in the IEC 61853 standards [2]_ and [3]_.  The radiative loss
+    term was proposed and developed by Driesse [4]_.
+
+    The model can be used to represent cell or module temperature.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    temp_air : numeric
+        Ambient dry bulb temperature [C].
+
+    wind_speed : numeric, default 1.0
+        Wind speed measured at the same height for which the wind loss
+        factor was determined.  The default value 1.0 m/s is the wind
+        speed at module height used to determine NOCT. [m/s]
+
+    ir_down : numeric, default 0.0
+        Downwelling infrared radiation from the sky, measured on a horizontal
+        surface. [W/m^2]
+
+    u0 : numeric, default 25.0
+        Combined heat loss factor coefficient. The default value is one
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
+        :math:`\left[\frac{\text{W}/{\text{m}^2}}{\text{C}}\right]`
+
+    u1 : numeric, default 6.84
+        Combined heat loss factor influenced by wind. The default value is one
+        determined by Faiman for 7 silicon modules
+        in the Negev desert on an open rack at 30.9° tilt.
+        :math:`\left[ \frac{\text{W}/\text{m}^2}{\text{C}\ \left( \text{m/s} \right)} \right]`
+
+    sky_view : numeric, default 1.0
+        Effective view factor limiting the radiative exchange between the
+        module and the sky. For a tilted array the expressions
+        (1 + 3*cos(tilt)) / 4 can be used as a first estimate for sky_view
+        as discussed in [4]_. The default value is for a horizontal module.
+        [unitless]
+
+    emissivity : numeric, default 0.88
+        Infrared emissivity of the module surface facing the sky. The default
+        value represents the middle of a range of values found in the
+        literature. [unitless]
+
+    Returns
+    -------
+    numeric, values in degrees Celsius
+
+    Notes
+    -----
+    All arguments may be scalars or vectors. If multiple arguments
+    are vectors they must be the same length.
+
+    When only irradiance, air temperature and wind speed inputs are provided
+    (`ir_down` is `None`) this function calculates the same device temperature
+    as the original faiman model. When down-welling long-wave radiation data
+    are provided as well (`ir_down` is not None) the default u0 and u1 values
+    from the original model should not be used because a portion of the
+    radiative losses would be double-counted.
+
+    References
+    ----------
+    .. [1] Faiman, D. (2008). "Assessing the outdoor operating temperature of
+       photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
+       :doi:`10.1002/pip.813`
+
+    .. [2] "IEC 61853-2 Photovoltaic (PV) module performance testing and energy
+       rating - Part 2: Spectral responsivity, incidence angle and module
+       operating temperature measurements". IEC, Geneva, 2018.
+
+    .. [3] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
+       rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
+
+    .. [4] Driesse, A. et al (2022) "Improving Common PV Module Temperature
+       Models by Incorporating Radiative Losses to the Sky". SAND2022-11604.
+       :doi:`10.2172/1884890`
+
+    See also
+    --------
+    pvlib.temperature.faiman
+
+    '''  # noQA: E501
+
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2022
+
+    abs_zero = -273.15
+    sigma = scipy.constants.Stefan_Boltzmann
+
+    if ir_down is None:
+        qrad_sky = 0.0
+    else:
+        ir_up = sigma * ((temp_air - abs_zero)**4)
+        qrad_sky = emissivity * sky_view * (ir_up - ir_down)
+
+    heat_input = poa_global - qrad_sky
+    total_loss_factor = u0 + u1 * wind_speed
     temp_difference = heat_input / total_loss_factor
     return temp_air + temp_difference
 
@@ -655,7 +766,6 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
 
     # iterate through timeseries inputs
     sun0 = 0
-    tmod0 = 293.15
 
     # n.b. the way Fuentes calculates the first timedelta makes it seem like
     # the value doesn't matter -- rather than recreate it here, just assume
@@ -978,3 +1088,419 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     smoothed[0] = temp_cell.values[0]
     smoothed = pd.Series(smoothed, index=temp_cell.index)
     return smoothed
+
+
+def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
+                   module_efficiency, absorptance):
+    """
+    Calculate cell temperature using a generic linear heat loss factor model.
+
+    The parameters for this model can be obtained from other model
+    parameters using :py:class:`GenericLinearModel`.  A description of this
+    model and its relationship to other temperature models is found in [1]_.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance [W/m^2].
+
+    temp_air : numeric
+        Ambient dry bulb temperature [C].
+
+    wind_speed : numeric
+        Wind speed at a height of 10 meters [m/s].
+
+    u_const : float
+        Combined heat transfer coefficient at zero wind speed [(W/m^2)/C]
+
+    du_wind : float
+        Influence of wind speed on combined heat transfer coefficient
+        [(W/m^2)/C/(m/s)]
+
+    module_efficiency : float
+        The electrical efficiency of the module. [-]
+
+    absorptance : float
+        The light absorptance of the module. [-]
+
+    Returns
+    -------
+    numeric, values in degrees C.
+
+    References
+    ----------
+    .. [1] A. Driesse et al, "PV Module Operating Temperature
+       Model Equivalence and Parameter Translation". 2022 IEEE
+       Photovoltaic Specialists Conference (PVSC), 2022.
+
+    See also
+    --------
+    pvlib.temperature.GenericLinearModel
+    """
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs, Sept. 2022
+
+    heat_input = poa_global * (absorptance - module_efficiency)
+    total_loss_factor = u_const + du_wind * wind_speed
+    temp_difference = heat_input / total_loss_factor
+
+    return temp_air + temp_difference
+
+
+class GenericLinearModel():
+    '''
+    A class that can both use and convert parameters of linear module
+    temperature models: faiman, pvsyst, noct_sam, sapm_module
+    and generic_linear.
+
+    Parameters are converted between models by first converting
+    to the generic linear heat transfer model [1]_ by the ``use_``
+    methods. The equivalent parameters for the target temperature
+    model are then obtained by the ``to_`` method.
+    Parameters are returned as a dictionary that is compatible with the
+    target model function to use in simulations.
+
+    An instance of the class represents a specific module type and
+    the parameters ``module_efficiency`` and ``absorptance`` are required.
+    Although some temperature models do not use these properties, they
+    nevertheless exist and affect operating temperature. Values
+    should be representative of the conditions at which the input
+    model parameters were determined (usually high irradiance).
+
+    Parameters
+    ----------
+    module_efficiency : float
+        The electrical efficiency of the module. [-]
+
+    absorptance : float
+        The light absorptance of the module. [-]
+
+    Notes
+    -----
+    After creating a GenericLinearModel object using the module properties,
+    one of the ``use_`` methods must be called to provide thermal model
+    parameters.  If this is not done, the ``to_`` methods will return ``nan``
+    values.
+
+    References
+    ----------
+    .. [1] A. Driesse et al, "PV Module Operating Temperature
+       Model Equivalence and Parameter Translation". 2022 IEEE
+       Photovoltaic Specialists Conference (PVSC), 2022.
+
+    Examples
+    --------
+    >>> glm = GenericLinearModel(module_efficiency=0.19, absorptance=0.88)
+
+    >>> glm.use_faiman(16, 8)
+    GenericLinearModel: {'u_const': 11.04, 'du_wind': 5.52,
+                         'eta': 0.19, 'alpha': 0.88}
+
+    >>> glm.to_pvsyst()
+    {'u_c': 11.404800000000002, 'u_v': 5.702400000000001,
+     'module_efficiency': 0.19, 'alpha_absorption': 0.88}
+
+    >>> parmdict = glm.to_pvsyst()
+    >>> pvsyst_cell(800, 20, 1, **parmdict)
+    53.33333333333333
+
+    See also
+    --------
+    pvlib.temperature.generic_linear
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs, Sept. 2022
+
+    def __init__(self, module_efficiency, absorptance):
+
+        self.u_const = np.nan
+        self.du_wind = np.nan
+        self.eta = module_efficiency
+        self.alpha = absorptance
+
+        return None
+
+    def __repr__(self):
+
+        return self.__class__.__name__ + ': ' + vars(self).__repr__()
+
+    def __call__(self, poa_global, temp_air, wind_speed,
+                 module_efficiency=None):
+        '''
+        Calculate module temperature using the generic_linear model and
+        previously initialized parameters.
+
+        Parameters
+        ----------
+        poa_global : numeric
+            Total incident irradiance [W/m^2].
+
+        temp_air : numeric
+            Ambient dry bulb temperature [C].
+
+        wind_speed : numeric
+            Wind speed in m/s measured at the same height for which the wind
+            loss factor was determined.  [m/s]
+
+        module_efficiency : numeric, optional
+            Module electrical efficiency.  The default value is the one
+            that was specified initially. [-]
+
+        Returns
+        -------
+        numeric, values in degrees Celsius
+
+        See also
+        --------
+        get_generic
+        pvlib.temperature.generic_linear
+        '''
+        if module_efficiency is None:
+            module_efficiency = self.eta
+
+        return generic_linear(poa_global, temp_air, wind_speed,
+                              self.u_const, self.du_wind,
+                              module_efficiency, self.alpha)
+
+    def get_generic_linear(self):
+        '''
+        Get the generic linear model parameters to use with the separate
+        generic linear module temperature calculation function.
+
+        Returns
+        -------
+        model_parameters : dict
+
+        See also
+        --------
+        pvlib.temperature.generic_linear
+        '''
+        return dict(u_const=self.u_const,
+                    du_wind=self.du_wind,
+                    module_efficiency=self.eta,
+                    absorptance=self.alpha)
+
+    def use_faiman(self, u0, u1):
+        '''
+        Use the Faiman model parameters to set the generic_model equivalents.
+
+        Parameters
+        ----------
+        u0, u1 : float
+            See :py:func:`pvlib.temperature.faiman` for details.
+        '''
+        net_absorptance = self.alpha - self.eta
+        self.u_const = u0 * net_absorptance
+        self.du_wind = u1 * net_absorptance
+
+        return self
+
+    def to_faiman(self):
+        '''
+        Convert the generic model parameters to Faiman equivalents.
+
+        Returns
+        ----------
+        model_parameters : dict
+            See :py:func:`pvlib.temperature.faiman` for
+            model parameter details.
+        '''
+        net_absorptance = self.alpha - self.eta
+        u0 = self.u_const / net_absorptance
+        u1 = self.du_wind / net_absorptance
+
+        return dict(u0=u0, u1=u1)
+
+    def use_pvsyst(self, u_c, u_v, module_efficiency=None,
+                   alpha_absorption=None):
+        '''
+        Use the PVsyst model parameters to set the generic_model equivalents.
+
+        Parameters
+        ----------
+        u_c, u_v : float
+            See :py:func:`pvlib.temperature.pvsyst_cell` for details.
+
+        module_efficiency, alpha_absorption : float, optional
+            See :py:func:`pvlib.temperature.pvsyst_cell` for details.
+
+        Notes
+        -----
+        The optional parameters are primarily for convenient compatibility
+        with existing function signatures.
+        '''
+        if module_efficiency is not None:
+            self.eta = module_efficiency
+
+        if alpha_absorption is not None:
+            self.alpha = alpha_absorption
+
+        net_absorptance_glm = self.alpha - self.eta
+        net_absorptance_pvsyst = self.alpha * (1.0 - self.eta)
+        absorptance_ratio = net_absorptance_glm / net_absorptance_pvsyst
+
+        self.u_const = u_c * absorptance_ratio
+        self.du_wind = u_v * absorptance_ratio
+
+        return self
+
+    def to_pvsyst(self):
+        '''
+        Convert the generic model parameters to PVsyst model equivalents.
+
+        Returns
+        ----------
+        model_parameters : dict
+            See :py:func:`pvlib.temperature.pvsyst_cell` for
+            model parameter details.
+        '''
+        net_absorptance_glm = self.alpha - self.eta
+        net_absorptance_pvsyst = self.alpha * (1.0 - self.eta)
+        absorptance_ratio = net_absorptance_glm / net_absorptance_pvsyst
+
+        u_c = self.u_const / absorptance_ratio
+        u_v = self.du_wind / absorptance_ratio
+
+        return dict(u_c=u_c,
+                    u_v=u_v,
+                    module_efficiency=self.eta,
+                    alpha_absorption=self.alpha)
+
+    def use_noct_sam(self, noct, module_efficiency=None,
+                     transmittance_absorptance=None):
+        '''
+        Use the NOCT SAM model parameters to set the generic_model equivalents.
+
+        Parameters
+        ----------
+        noct : float
+            See :py:func:`pvlib.temperature.noct_sam` for details.
+
+        module_efficiency, transmittance_absorptance : float, optional
+            See :py:func:`pvlib.temperature.noct_sam` for details.
+
+        Notes
+        -----
+        The optional parameters are primarily for convenient compatibility
+        with existing function signatures.
+        '''
+        if module_efficiency is not None:
+            self.eta = module_efficiency
+
+        if transmittance_absorptance is not None:
+            self.alpha = transmittance_absorptance
+
+        # NOCT is determined with wind speed near module height
+        # the adjustment reduces the wind coefficient for use with 10m wind
+        wind_adj = 0.51
+        u_noct = 800.0 * self.alpha / (noct - 20.0)
+        self.u_const = u_noct * 0.6
+        self.du_wind = u_noct * 0.4 * wind_adj
+
+        return self
+
+    def to_noct_sam(self):
+        '''
+        Convert the generic model parameters to NOCT SAM model equivalents.
+
+        Returns
+        ----------
+        model_parameters : dict
+            See :py:func:`pvlib.temperature.noct_sam` for
+            model parameter details.
+        '''
+        # NOCT is determined with wind speed near module height
+        # the adjustment reduces the wind coefficient for use with 10m wind
+        wind_adj = 0.51
+        u_noct = self.u_const + self.du_wind / wind_adj
+        noct = 20.0 + (800.0 * self.alpha) / u_noct
+
+        return dict(noct=noct,
+                    module_efficiency=self.eta,
+                    transmittance_absorptance=self.alpha)
+
+    def use_sapm(self, a, b, wind_fit_low=1.4, wind_fit_high=5.4):
+        '''
+        Use the SAPM model parameters to set the generic_model equivalents.
+
+        In the SAPM the heat transfer coefficient increases exponentially
+        with windspeed, whereas in the other models the increase is linear.
+        This function equates the generic linear model to SAPM at two
+        specified winds speeds, thereby defining a linear approximation
+        for the exponential behavior.
+
+        Parameters
+        ----------
+        a, b : float
+            See :py:func:`pvlib.temperature.sapm_module` for details.
+
+        wind_fit_low : float, optional
+            First wind speed value at which the generic linear model
+            must be equal to the SAPM model. [m/s]
+
+        wind_fit_high : float, optional
+            Second wind speed value at which the generic linear model
+            must be equal to the SAPM model. [m/s]
+
+        Notes
+        -----
+        The two default wind speed values are based on measurements
+        at 10 m height.  Both the SAPM model and the conversion
+        functions can work with wind speed data at different heights as
+        long as the same height is used consistently throughout.
+        '''
+        u_low = 1.0 / np.exp(a + b * wind_fit_low)
+        u_high = 1.0 / np.exp(a + b * wind_fit_high)
+
+        du_wind = (u_high - u_low) / (wind_fit_high - wind_fit_low)
+        u_const = u_low - du_wind * wind_fit_low
+
+        net_absorptance = self.alpha - self.eta
+        self.u_const = u_const * net_absorptance
+        self.du_wind = du_wind * net_absorptance
+
+        return self
+
+    def to_sapm(self, wind_fit_low=1.4, wind_fit_high=5.4):
+        '''
+        Convert the generic model parameters to SAPM model equivalents.
+
+        In the SAPM the heat transfer coefficient increases exponentially
+        with windspeed, whereas in the other models the increase is linear.
+        This function equates SAPM to the generic linear model at two
+        specified winds speeds, thereby defining an exponential approximation
+        for the linear behavior.
+
+        Parameters
+        ----------
+        wind_fit_low : float, optional
+            First wind speed value at which the generic linear model
+            must be equal to the SAPM model. [m/s]
+
+        wind_fit_high : float, optional
+            Second wind speed value at which the generic linear model
+            must be equal to the SAPM model. [m/s]
+
+        Returns
+        ----------
+        model_parameters : dict
+            See :py:func:`pvlib.temperature.sapm_module` for
+            model parameter details.
+
+        Notes
+        -----
+        The two default wind speed values are based on measurements
+        at 10 m height.  Both the SAPM model and the conversion
+        functions can work with wind speed data at different heights as
+        long as the same height is used consistently throughout.
+        '''
+        net_absorptance = self.alpha - self.eta
+        u_const = self.u_const / net_absorptance
+        du_wind = self.du_wind / net_absorptance
+
+        u_low = u_const + du_wind * wind_fit_low
+        u_high = u_const + du_wind * wind_fit_high
+
+        b = - ((np.log(u_high) - np.log(u_low)) /
+               (wind_fit_high - wind_fit_low))
+        a = - (np.log(u_low) + b * wind_fit_low)
+
+        return dict(a=a, b=b)

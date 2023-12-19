@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-    - master
+    - main
 
 jobs:
   test:
@@ -12,7 +12,7 @@ jobs:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
         environment-type: [conda, bare]
         suffix: ['']  # placeholder as an alternative to "-min"
         include:
@@ -40,12 +40,14 @@ jobs:
 
       - name: Install Conda environment with Micromamba
         if: matrix.environment-type == 'conda'
-        uses: mamba-org/provision-with-micromamba@v12
+        uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: ${{ env.REQUIREMENTS }}
           cache-downloads: true
-          extra-specs: |
+          create-args: >-
             python=${{ matrix.python-version }}
+          condarc: |
+            channel-priority: flexible
         env:
           # build requirement filename.  First replacement is for the python
           # version, second is to add "-min" if needed
@@ -58,7 +60,7 @@ jobs:
 
       - name: Install bare Python ${{ matrix.python-version }}${{ matrix.suffix }}
         if: matrix.environment-type == 'bare'
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -76,12 +78,12 @@ jobs:
       - name: Run tests
         shell: bash -l {0}  # necessary for conda env to be active
         run: |
-          # ignore iotools & forecast; those tests are run in a separate workflow
-          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools --ignore=pvlib/tests/test_forecast.py
+          # ignore iotools; those tests are run in a separate workflow
+          pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == 3.7 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
           verbose: true

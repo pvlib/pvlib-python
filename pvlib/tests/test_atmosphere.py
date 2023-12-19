@@ -9,6 +9,8 @@ import pytest
 
 from pvlib import atmosphere
 
+from pvlib._deprecation import pvlibDeprecationWarning
+
 
 def test_pres2alt():
     out = atmosphere.pres2alt(np.array([10000, 90000, 101325]))
@@ -35,7 +37,8 @@ def zeniths():
                           ['kastenyoung1989', [nan, 36.467,  5.586,  1.000]],
                           ['gueymard1993', [nan, 36.431,  5.581,  1.000]],
                           ['young1994', [nan, 30.733,  5.541,  1.000]],
-                          ['pickering2002', [nan, 37.064,  5.581,  1.000]]])
+                          ['pickering2002', [nan, 37.064,  5.581,  1.000]],
+                          ['gueymard2003', [nan, 36.676, 5.590, 1.000]]])
 def test_airmass(model, expected, zeniths):
     out = atmosphere.get_relative_airmass(zeniths, model)
     expected = np.array(expected)
@@ -85,68 +88,10 @@ def test_gueymard94_pw():
     assert_allclose(pws, expected, atol=0.01)
 
 
-@pytest.mark.parametrize("module_type,expect", [
-    ('cdte', np.array(
-        [[ 0.9905102 ,  0.9764032 ,  0.93975028],
-         [ 1.02928735,  1.01881074,  0.98578821],
-         [ 1.04750335,  1.03814456,  1.00623986]])),
-    ('monosi', np.array(
-        [[ 0.9776977 ,  1.02043409,  1.03574032],
-         [ 0.98630905,  1.03055092,  1.04736262],
-         [ 0.98828494,  1.03299036,  1.05026561]])),
-    ('polysi', np.array(
-        [[ 0.9770408 ,  1.01705849,  1.02613202],
-         [ 0.98992828,  1.03173953,  1.04260662],
-         [ 0.99352435,  1.03588785,  1.04730718]])),
-    ('cigs', np.array(
-        [[ 0.9745919 ,  1.02821696,  1.05067895],
-         [ 0.97529378,  1.02967497,  1.05289307],
-         [ 0.97269159,  1.02730558,  1.05075651]])),
-    ('asi', np.array(
-        [[ 1.0555275 ,  0.87707583,  0.72243772],
-         [ 1.11225204,  0.93665901,  0.78487953],
-         [ 1.14555295,  0.97084011,  0.81994083]]))
-])
-def test_first_solar_spectral_correction(module_type, expect):
-    ams = np.array([1, 3, 5])
-    pws = np.array([1, 3, 5])
-    ams, pws = np.meshgrid(ams, pws)
-    out = atmosphere.first_solar_spectral_correction(pws, ams, module_type)
-    assert_allclose(out, expect, atol=0.001)
-
-
-def test_first_solar_spectral_correction_supplied():
-    # use the cdte coeffs
-    coeffs = (0.87102, -0.040543, -0.00929202, 0.10052, 0.073062, -0.0034187)
-    out = atmosphere.first_solar_spectral_correction(1, 1, coefficients=coeffs)
-    expected = 0.99134828
-    assert_allclose(out, expected, atol=1e-3)
-
-
-def test_first_solar_spectral_correction_ambiguous():
-    with pytest.raises(TypeError):
-        atmosphere.first_solar_spectral_correction(1, 1)
-
-
-def test_first_solar_spectral_correction_range():
-    with pytest.warns(UserWarning, match='Exceptionally high pw values'):
-        out = atmosphere.first_solar_spectral_correction(np.array([.1, 3, 10]),
-                                                         np.array([1, 3, 5]),
-                                                         module_type='monosi')
-    expected = np.array([0.96080878, 1.03055092,        nan])
-    assert_allclose(out, expected, atol=1e-3)
-    with pytest.warns(UserWarning, match='Exceptionally high pw values'):
-        out = atmosphere.first_solar_spectral_correction(6, 1.5, max_pw=5,
-                                                         module_type='monosi')
-    with pytest.warns(UserWarning, match='Exceptionally low pw values'):
-        out = atmosphere.first_solar_spectral_correction(np.array([0, 3, 8]),
-                                                         np.array([1, 3, 5]),
-                                                         module_type='monosi')
-    expected = np.array([0.96080878, 1.03055092, 1.04932727])
-    assert_allclose(out, expected, atol=1e-3)
-    with pytest.warns(UserWarning, match='Exceptionally low pw values'):
-        out = atmosphere.first_solar_spectral_correction(0.2, 1.5, min_pw=1,
-                                                         module_type='monosi')
+def test_first_solar_spectral_correction_deprecated():
+    with pytest.warns(pvlibDeprecationWarning,
+                      match='Use pvlib.spectrum.spectral_factor_firstsolar'):
+        atmosphere.first_solar_spectral_correction(1, 1, 'cdte')
 
 
 def test_kasten96_lt():
@@ -169,7 +114,6 @@ def test_kasten96_lt():
     )
     lt = atmosphere.kasten96_lt(*np.meshgrid(amp, pwat, aod_bb))
     assert np.allclose(lt, lt_expected, 1e-3)
-    return lt
 
 
 def test_angstrom_aod():

@@ -40,9 +40,10 @@ import pvlib
 DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
 
 # get TMY3 data with rain
-greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990)
+greensboro, _ = read_tmy3(DATA_DIR / '723170TYA.CSV', coerce_year=1990,
+                          map_variables=True)
 # get the rain data
-greensboro_rain = greensboro.Lprecipdepth
+greensboro_rain = greensboro['Lprecip depth (mm)']
 # calculate soiling with no wash dates and cleaning threshold of 25-mm of rain
 THRESHOLD = 25.0
 soiling_no_wash = kimber(greensboro_rain, cleaning_threshold=THRESHOLD)

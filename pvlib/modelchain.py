@@ -14,8 +14,7 @@ from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
 
 from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
-                   temperature, tools)
-from pvlib.tracking import SingleAxisTracker
+                   temperature)
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
@@ -254,6 +253,33 @@ def get_orientation(strategy, **kwargs):
     return surface_tilt, surface_azimuth
 
 
+def _getmcattr(self, attr):
+    """
+    Helper for __repr__ methods, needed to avoid recursion in property
+    lookups
+    """
+    out = getattr(self, attr)
+    try:
+        out = out.__name__
+    except AttributeError:
+        pass
+    return out
+
+
+def _mcr_repr(obj):
+    '''
+    Helper for ModelChainResult.__repr__
+    '''
+    if isinstance(obj, tuple):
+        return "Tuple (" + ", ".join([_mcr_repr(o) for o in obj]) + ")"
+    if isinstance(obj, pd.DataFrame):
+        return "DataFrame ({} rows x {} columns)".format(*obj.shape)
+    if isinstance(obj, pd.Series):
+        return "Series (length {})".format(len(obj))
+    # scalar, None, other?
+    return repr(obj)
+
+    
 # Type for fields that vary between arrays
 T = TypeVar('T')
 
@@ -268,7 +294,7 @@ class ModelChainResult:
     _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
                          'effective_irradiance', 'dc', 'diode_params',
-                         'dc_ohmic_losses', 'weather'}
+                         'dc_ohmic_losses', 'weather', 'albedo'}
 
     # system-level information
     solar_position: Optional[pd.DataFrame] = field(default=None)
@@ -366,6 +392,10 @@ class ModelChainResult:
     """DatetimeIndex containing a copy of the index of the input weather data.
     """
 
+    albedo: Optional[PerArray[pd.Series]] = None
+    """Series (or tuple of Series, one for each array) containing albedo.
+    """
+
     def _result_type(self, value):
         """Coerce `value` to the correct type according to
         ``self._singleton_tuples``."""
@@ -380,6 +410,33 @@ class ModelChainResult:
         if key in ModelChainResult._per_array_fields:
             value = self._result_type(value)
         super().__setattr__(key, value)
+
+    def __repr__(self):
+        mc_attrs = dir(self)
+
+        def _head(obj):
+            try:
+                return obj[:3]
+            except:
+                return obj
+
+        if type(self.dc) is tuple:
+            num_arrays = len(self.dc)
+        else:
+            num_arrays = 1
+
+        desc1 = ('=== ModelChainResult === \n')
+        desc2 = (f'Number of Arrays: {num_arrays} \n')
+        attr = 'times'
+        desc3 = ('times (first 3)\n' +
+                 f'{_head(_getmcattr(self, attr))}' +
+                 '\n')
+        lines = []
+        for attr in mc_attrs:
+            if not (attr.startswith('_') or attr=='times'):
+                lines.append(f' {attr}: ' + _mcr_repr(getattr(self, attr)))
+        desc4 = '\n'.join(lines)
+        return (desc1 + desc2 + desc3 + desc4)
 
 
 class ModelChain:
@@ -461,13 +518,6 @@ class ModelChain:
         Name of ModelChain instance.
     """
 
-    # list of deprecated attributes
-    _deprecated_attrs = ['solar_position', 'airmass', 'total_irrad',
-                         'aoi', 'aoi_modifier', 'spectral_modifier',
-                         'cell_temperature', 'effective_irradiance',
-                         'dc', 'ac', 'diode_params', 'tracking',
-                         'weather', 'times', 'losses']
-
     def __init__(self, system, location,
                  clearsky_model='ineichen',
                  transposition_model='haydavies',
@@ -499,26 +549,6 @@ class ModelChain:
 
         self.results = ModelChainResult()
 
-    def __getattr__(self, key):
-        if key in ModelChain._deprecated_attrs:
-            msg = f'ModelChain.{key} is deprecated and will' \
-                  f' be removed in v0.10. Use' \
-                  f' ModelChain.results.{key} instead'
-            warnings.warn(msg, pvlibDeprecationWarning)
-            return getattr(self.results, key)
-        # __getattr__ is only called if __getattribute__ fails.
-        # In that case we should check if key is a deprecated attribute,
-        # and fail with an AttributeError if it is not.
-        raise AttributeError
-
-    def __setattr__(self, key, value):
-        if key in ModelChain._deprecated_attrs:
-            msg = f'ModelChain.{key} is deprecated from v0.9. Use' \
-                  f' ModelChain.results.{key} instead'
-            warnings.warn(msg, pvlibDeprecationWarning)
-            setattr(self.results, key, value)
-        else:
-            super().__setattr__(key, value)
 
     @classmethod
     def with_pvwatts(cls, system, location,
@@ -556,7 +586,7 @@ class ModelChain:
         Examples
         --------
         >>> module_parameters = dict(gamma_pdc=-0.003, pdc0=4500)
-        >>> inverter_parameters = dict(pac0=4000)
+        >>> inverter_parameters = dict(pdc0=4000)
         >>> tparams = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
         >>> system = PVSystem(surface_tilt=30, surface_azimuth=180,
         ...     module_parameters=module_parameters,
@@ -674,18 +704,8 @@ class ModelChain:
             'airmass_model', 'dc_model', 'ac_model', 'aoi_model',
             'spectral_model', 'temperature_model', 'losses_model'
         ]
-
-        def getmcattr(self, attr):
-            """needed to avoid recursion in property lookups"""
-            out = getattr(self, attr)
-            try:
-                out = out.__name__
-            except AttributeError:
-                pass
-            return out
-
         return ('ModelChain: \n  ' + '\n  '.join(
-            f'{attr}: {getmcattr(self, attr)}' for attr in attrs))
+            f'{attr}: {_getmcattr(self, attr)}' for attr in attrs))
 
     @property
     def dc_model(self):
@@ -1285,13 +1305,13 @@ class ModelChain:
         self._assign_times()
         self.results.solar_position = self.location.get_solarposition(
             self.results.times, method=self.solar_position_method)
-
+        # Calculate the irradiance using the component sum equations,
+        # if needed
         if isinstance(weather, tuple):
             for w in self.results.weather:
                 self._complete_irradiance(w)
         else:
             self._complete_irradiance(self.results.weather)
-
         return self
 
     def _complete_irradiance(self, weather):
@@ -1300,26 +1320,32 @@ class ModelChain:
                    "Results can be too high or negative.\n" +
                    "Help to improve this function on github:\n" +
                    "https://github.com/pvlib/pvlib-python \n")
-
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
                 weather.index, solar_position=self.results.solar_position)
-            weather.loc[:, 'dni'] = pvlib.irradiance.dni(
-                weather.loc[:, 'ghi'], weather.loc[:, 'dhi'],
-                self.results.solar_position.zenith,
-                clearsky_dni=clearsky['dni'],
-                clearsky_tolerance=1.1)
+            complete_irrad_df = pvlib.irradiance.complete_irradiance(
+                solar_zenith=self.results.solar_position.zenith,
+                ghi=weather.ghi,
+                dhi=weather.dhi,
+                dni=None,
+                dni_clear=clearsky.dni)
+            weather.loc[:, 'dni'] = complete_irrad_df.dni
         elif {'dni', 'dhi'} <= icolumns and 'ghi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
-            weather.loc[:, 'ghi'] = (
-                weather.dhi + weather.dni *
-                tools.cosd(self.results.solar_position.zenith)
-            )
+            complete_irrad_df = pvlib.irradiance.complete_irradiance(
+                solar_zenith=self.results.solar_position.zenith,
+                ghi=None,
+                dhi=weather.dhi,
+                dni=weather.dni)
+            weather.loc[:, 'ghi'] = complete_irrad_df.ghi
         elif {'dni', 'ghi'} <= icolumns and 'dhi' not in icolumns:
             warnings.warn(wrn_txt, UserWarning)
-            weather.loc[:, 'dhi'] = (
-                weather.ghi - weather.dni *
-                tools.cosd(self.results.solar_position.zenith))
+            complete_irrad_df = pvlib.irradiance.complete_irradiance(
+                solar_zenith=self.results.solar_position.zenith,
+                ghi=weather.ghi,
+                dhi=None,
+                dni=weather.dni)
+            weather.loc[:, 'dhi'] = complete_irrad_df.dhi
 
     def _prep_inputs_solar_pos(self, weather):
         """
@@ -1337,6 +1363,17 @@ class ModelChain:
         self.results.solar_position = self.location.get_solarposition(
             self.results.times, method=self.solar_position_method,
             **kwargs)
+        return self
+
+    def _prep_inputs_albedo(self, weather):
+        """
+        Get albedo from weather
+        """
+        try:
+            self.results.albedo = _tuple_from_dfs(weather, 'albedo')
+        except KeyError:
+            self.results.albedo = tuple([
+                a.albedo for a in self.system.arrays])
         return self
 
     def _prep_inputs_airmass(self):
@@ -1471,11 +1508,17 @@ class ModelChain:
 
         Parameters
         ----------
-        weather : DataFrame, or tuple or list of DataFrame
+        weather : DataFrame, or tuple or list of DataFrames
             Required column names include ``'dni'``, ``'ghi'``, ``'dhi'``.
-            Optional column names are ``'wind_speed'``, ``'temp_air'``; if not
+            Optional column names are ``'wind_speed'``, ``'temp_air'``,
+            ``'albedo'``.
+
+            If optional columns ``'wind_speed'``, ``'temp_air'`` are not
             provided, air temperature of 20 C and wind speed
-            of 0 m/s will be added to the DataFrame.
+            of 0 m/s will be added to the ``weather`` DataFrame.
+
+            If optional column ``'albedo'`` is provided, albedo values in the
+            ModelChain's PVSystem.arrays are ignored.
 
             If `weather` is a tuple or list, it must be of the same length and
             order as the Arrays of the ModelChain's PVSystem.
@@ -1494,7 +1537,7 @@ class ModelChain:
         Notes
         -----
         Assigns attributes to ``results``: ``times``, ``weather``,
-        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``, ``albedo``.
 
         See also
         --------
@@ -1507,30 +1550,16 @@ class ModelChain:
 
         self._prep_inputs_solar_pos(weather)
         self._prep_inputs_airmass()
+        self._prep_inputs_albedo(weather)
+        self._prep_inputs_fixed()
 
-        # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
-        # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
-        # have different method signatures. Use partial to handle
-        # the differences.
-        if isinstance(self.system, SingleAxisTracker):
-            self._prep_inputs_tracking()
-            get_irradiance = partial(
-                self.system.get_irradiance,
-                self.results.tracking['surface_tilt'],
-                self.results.tracking['surface_azimuth'],
-                self.results.solar_position['apparent_zenith'],
-                self.results.solar_position['azimuth'])
-        else:
-            self._prep_inputs_fixed()
-            get_irradiance = partial(
-                self.system.get_irradiance,
-                self.results.solar_position['apparent_zenith'],
-                self.results.solar_position['azimuth'])
-
-        self.results.total_irrad = get_irradiance(
+        self.results.total_irrad = self.system.get_irradiance(
+            self.results.solar_position['apparent_zenith'],
+            self.results.solar_position['azimuth'],
             _tuple_from_dfs(self.results.weather, 'dni'),
             _tuple_from_dfs(self.results.weather, 'ghi'),
             _tuple_from_dfs(self.results.weather, 'dhi'),
+            albedo=self.results.albedo,
             airmass=self.results.airmass['airmass_relative'],
             model=self.transposition_model
         )
@@ -1607,10 +1636,7 @@ class ModelChain:
         self._prep_inputs_solar_pos(data)
         self._prep_inputs_airmass()
 
-        if isinstance(self.system, SingleAxisTracker):
-            self._prep_inputs_tracking()
-        else:
-            self._prep_inputs_fixed()
+        self._prep_inputs_fixed()
 
         return self
 
@@ -1657,7 +1683,7 @@ class ModelChain:
             self.temperature_model()
         return self
 
-    def _prepare_temperature(self, data=None):
+    def _prepare_temperature(self, data):
         """
         Sets cell_temperature using inputs in data and the specified
         temperature model.
@@ -1670,7 +1696,7 @@ class ModelChain:
 
         Parameters
         ----------
-        data : DataFrame, default None
+        data : DataFrame
             May contain columns ``'cell_temperature'`` or
             ``'module_temperaure'``.
 
@@ -1724,16 +1750,32 @@ class ModelChain:
         Parameters
         ----------
         weather : DataFrame, or tuple or list of DataFrame
-            Irradiance column names must include ``'dni'``, ``'ghi'``, and
-            ``'dhi'``. If optional columns ``'temp_air'`` and ``'wind_speed'``
+            Column names must include:
+
+            - ``'dni'``
+            - ``'ghi'``
+            - ``'dhi'``
+
+            Optional columns are:
+
+            - ``'temp_air'``
+            - ``'cell_temperature'``
+            - ``'module_temperature'``
+            - ``'wind_speed'``
+            - ``'albedo'``
+
+            If optional columns ``'temp_air'`` and ``'wind_speed'``
             are not provided, air temperature of 20 C and wind speed of 0 m/s
             are added to the DataFrame. If optional column
             ``'cell_temperature'`` is provided, these values are used instead
-            of `temperature_model`. If optional column `module_temperature`
-            is provided, `temperature_model` must be ``'sapm'``.
+            of `temperature_model`. If optional column ``'module_temperature'``
+            is provided, ``temperature_model`` must be ``'sapm'``.
 
-            If list or tuple, must be of the same length and order as the
-            Arrays of the ModelChain's PVSystem.
+            If optional column ``'albedo'`` is provided, ``'albedo'`` may not
+            be present on the ModelChain's PVSystem.Arrays.
+
+            If weather is a list or tuple, it must be of the same length and
+            order as the Arrays of the ModelChain's PVSystem.
 
         Returns
         -------
@@ -1833,13 +1875,13 @@ class ModelChain:
 
         return self
 
-    def _run_from_effective_irrad(self, data=None):
+    def _run_from_effective_irrad(self, data):
         """
         Executes the temperature, DC, losses and AC models.
 
         Parameters
         ----------
-        data : DataFrame, or tuple of DataFrame, default None
+        data : DataFrame, or tuple of DataFrame
             If optional column ``'cell_temperature'`` is provided, these values
             are used instead of `temperature_model`. If optional column
             `module_temperature` is provided, `temperature_model` must be
@@ -1862,7 +1904,7 @@ class ModelChain:
 
         return self
 
-    def run_model_from_effective_irradiance(self, data=None):
+    def run_model_from_effective_irradiance(self, data):
         """
         Run the model starting with effective irradiance in the plane of array.
 

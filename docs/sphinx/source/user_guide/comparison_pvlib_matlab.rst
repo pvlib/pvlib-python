@@ -17,8 +17,8 @@ will require the efforts of the larger pvlib-python community, not just
 the maintainers. Therefore, do not expect feature parity between the
 libaries, only similarity.
 
-The `PV_LIB Matlab help webpage <https://pvpmc.sandia.gov/PVLIB_Matlab_Help/>`_
-is a good reference for this comparison.
+The `PV_LIB Matlab help pages <https://github.com/sandialabs/MATLAB_PV_LIB/>`_
+are a good reference for this comparison.
 
 Missing functions
 ~~~~~~~~~~~~~~~~~
@@ -54,7 +54,6 @@ Major differences
 * pvlib-python implements a handful of class designed to simplify the
   PV modeling process. These include :py:class:`~pvlib.location.Location`,
   :py:class:`~pvlib.pvsystem.PVSystem`,
-  :py:class:`~pvlib.tracking.SingleAxisTracker`,
   and
   :py:class:`~pvlib.modelchain.ModelChain`.
 

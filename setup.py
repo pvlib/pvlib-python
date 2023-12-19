@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 
 import os
-import sys
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_namespace_packages
     from setuptools.extension import Extension
 except ImportError:
     raise RuntimeError('setuptools is required')
-
-
-import versioneer
 
 
 DESCRIPTION = ('A set of functions and classes for simulating the ' +
@@ -35,27 +31,26 @@ Source code: https://github.com/pvlib/pvlib-python
 DISTNAME = 'pvlib'
 LICENSE = 'BSD 3-Clause'
 AUTHOR = 'pvlib python Developers'
-MAINTAINER_EMAIL = 'holmgren@email.arizona.edu'
+MAINTAINER_EMAIL = 'pvlib-admin@googlegroups.com'
 URL = 'https://github.com/pvlib/pvlib-python'
 
 INSTALL_REQUIRES = ['numpy >= 1.16.0',
                     'pandas >= 0.25.0',
                     'pytz',
                     'requests',
-                    'scipy >= 1.2.0',
+                    'scipy >= 1.4.0',
                     'h5py',
-                    ]
+                    'importlib-metadata; python_version < "3.8"']
 
-TESTS_REQUIRE = ['nose', 'pytest', 'pytest-cov', 'pytest-mock',
+TESTS_REQUIRE = ['pytest', 'pytest-cov', 'pytest-mock',
                  'requests-mock', 'pytest-timeout', 'pytest-rerunfailures',
                  'pytest-remotedata']
 EXTRAS_REQUIRE = {
-    'optional': ['cython', 'ephem', 'netcdf4', 'nrel-pysam', 'numba',
-                 'pvfactors', 'siphon', 'statsmodels',
-                 'cftime >= 1.1.1'],
+    'optional': ['cython', 'ephem', 'nrel-pysam', 'numba',
+                 'pvfactors', 'statsmodels'],
     'doc': ['ipython', 'matplotlib', 'sphinx == 4.5.0',
             'pydata-sphinx-theme == 0.8.1', 'sphinx-gallery',
-            'docutils == 0.15.2', 'pillow', 'netcdf4', 'siphon',
+            'docutils == 0.15.2', 'pillow',
             'sphinx-toggleprompt >= 0.0.5', 'pvfactors'],
     'test': TESTS_REQUIRE
 }
@@ -85,7 +80,17 @@ PROJECT_URLS = {
 }
 
 # set up pvlib packages to be installed and extensions to be compiled
-PACKAGES = ['pvlib']
+
+# the list of packages is not just the top-level "pvlib", but also
+# all sub-packages like "pvlib.bifacial".  Here, setuptools's definition of
+# "package" is, in effect, any directory you want to include in the
+# distribution.  So even "pvlib.data" counts as a package, despite
+# not having any python code or even an __init__.py.
+# setuptools.find_namespace_packages() will find all these directories,
+# although to exclude "docs", "ci", etc., we include only names matching
+# the "pvlib*" glob.  Although note that "docs" does get added separately
+# via the MANIFEST.in spec.
+PACKAGES = find_namespace_packages(include=['pvlib*'])
 
 extensions = []
 
@@ -107,8 +112,6 @@ else:
 
 
 setup(name=DISTNAME,
-      version=versioneer.get_version(),
-      cmdclass=versioneer.get_cmdclass(),
       packages=PACKAGES,
       install_requires=INSTALL_REQUIRES,
       extras_require=EXTRAS_REQUIRE,

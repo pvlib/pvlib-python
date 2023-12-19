@@ -341,24 +341,18 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
     --------
     pvlib.singlediode._pwr_optfcn
     """
+    if np.any(upper - lower < 0.):
+        raise ValueError('upper >= lower is required')
 
     phim1 = (np.sqrt(5) - 1) / 2
 
-    df = params
+    df = params.copy()  # shallow copy to avoid modifying caller's dict
     df['VH'] = upper
     df['VL'] = lower
 
     converged = False
-    iterations = 0
 
-    # handle all NaN case gracefully
-    with warnings.catch_warnings():
-        warnings.filterwarnings(action='ignore',
-                                message='All-NaN slice encountered')
-        iterlimit = 1 + np.nanmax(
-            np.trunc(np.log(atol / (df['VH'] - df['VL'])) / np.log(phim1)))
-
-    while not converged and (iterations <= iterlimit):
+    while not converged:
 
         phi = phim1 * (df['VH'] - df['VL'])
         df['V1'] = df['VL'] + phi
@@ -373,22 +367,19 @@ def _golden_sect_DataFrame(params, lower, upper, func, atol=1e-8):
 
         err = abs(df['V2'] - df['V1'])
 
-        # works with single value because err is np.float64
-        converged = (err[~np.isnan(err)] < atol).all()
-        # err will be less than atol before iterations hit the limit
-        # but just to be safe
-        iterations += 1
+        # handle all NaN case gracefully
+        with warnings.catch_warnings():
+            warnings.filterwarnings(action='ignore',
+                                    message='All-NaN slice encountered')
+            converged = np.all(err[~np.isnan(err)] < atol)
 
-    if iterations > iterlimit:
-        raise Exception("Iterations exceeded maximum. Check that func",
-                        " is not NaN in (lower, upper)")  # pragma: no cover
-
-    try:
-        func_result = func(df, 'V1')
-        x = np.where(np.isnan(func_result), np.nan, df['V1'])
-    except KeyError:
-        func_result = np.full_like(upper, np.nan)
-        x = func_result.copy()
+    # best estimate of location of maximum
+    df['max'] = 0.5 * (df['V1'] + df['V2'])
+    func_result = func(df, 'max')
+    x = np.where(np.isnan(func_result), np.nan, df['max'])
+    if np.isscalar(df['max']):
+        # np.where always returns an ndarray, converting scalars to 0d-arrays
+        x = x.item()
 
     return func_result, x
 
@@ -412,3 +403,94 @@ def _get_sample_intervals(times, win_length):
             'periods, leap days, etc.'
         )
         raise NotImplementedError(message)
+
+
+def _degrees_to_index(degrees, coordinate):
+    """Transform input degrees to an output index integer.
+    Specify a degree value and either 'latitude' or 'longitude' to get
+    the appropriate index number for these two index numbers.
+    Parameters
+    ----------
+    degrees : float or int
+        Degrees of either latitude or longitude.
+    coordinate : string
+        Specify whether degrees arg is latitude or longitude. Must be set to
+        either 'latitude' or 'longitude' or an error will be raised.
+    Returns
+    -------
+    index : np.int16
+        The latitude or longitude index number to use when looking up values
+        in the Linke turbidity lookup table.
+    """
+    # Assign inputmin, inputmax, and outputmax based on degree type.
+    if coordinate == 'latitude':
+        inputmin = 90
+        inputmax = -90
+        outputmax = 2160
+    elif coordinate == 'longitude':
+        inputmin = -180
+        inputmax = 180
+        outputmax = 4320
+    else:
+        raise IndexError("coordinate must be 'latitude' or 'longitude'.")
+
+    inputrange = inputmax - inputmin
+    scale = outputmax/inputrange  # number of indices per degree
+    center = inputmin + 1 / scale / 2  # shift to center of index
+    outputmax -= 1  # shift index to zero indexing
+    index = (degrees - center) * scale
+    err = IndexError('Input, %g, is out of range (%g, %g).' %
+                     (degrees, inputmin, inputmax))
+
+    # If the index is still out of bounds after rounding, raise an error.
+    # 0.500001 is used in comparisons instead of 0.5 to allow for a small
+    # margin of error which can occur when dealing with floating point numbers.
+    if index > outputmax:
+        if index - outputmax <= 0.500001:
+            index = outputmax
+        else:
+            raise err
+    elif index < 0:
+        if -index <= 0.500001:
+            index = 0
+        else:
+            raise err
+    # If the index wasn't set to outputmax or 0, round it and cast it as an
+    # integer so it can be used in integer-based indexing.
+    else:
+        index = int(np.around(index))
+
+    return index
+
+
+EPS = np.finfo('float64').eps  # machine precision NumPy-1.20
+DX = EPS**(1/3)  # optimal differential element
+
+
+def _first_order_centered_difference(f, x0, dx=DX, args=()):
+    # simple replacement for scipy.misc.derivative, which is scheduled for
+    # removal in scipy 1.12.0
+    df = f(x0+dx, *args) - f(x0-dx, *args)
+    return df / 2 / dx
+
+
+def get_pandas_index(*args):
+    """
+    Get the index of the first pandas DataFrame or Series in a list of
+    arguments.
+
+    Parameters
+    ----------
+    args: positional arguments
+        The numeric values to scan for a pandas index.
+
+    Returns
+    -------
+    A pandas index or None
+        None is returned if there are no pandas DataFrames or Series in the
+        args list.
+    """
+    return next(
+        (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))),
+        None
+    )

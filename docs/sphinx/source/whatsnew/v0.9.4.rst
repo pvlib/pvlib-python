@@ -1,0 +1,72 @@
+.. _whatsnew_0940:
+
+v0.9.4 (December 20, 2022)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+* Multiple code style issues fixed that were reported by LGTM analysis. (:issue:`1275`, :pull:`1559`)
+* Added a direct IAM model :py:func:`pvlib.iam.schlick` which can be used with
+  :py:func:`~pvlib.iam.marion_diffuse`, and a diffuse IAM model
+  :py:func:`pvlib.iam.schlick_diffuse`. (:pull:`1562`, :issue:`1564`)
+* Added a function to calculate one of GHI, DHI, and DNI from values of the other two.
+  :py:func:`~pvlib.irradiance.complete_irradiance`.
+  (:issue:`1565`, :pull:`1567`)
+* Added optional ``return_components`` parameter to :py:func:`pvlib.irradiance.haydavies` to return
+  individual diffuse irradiance components. (:issue:`1553`, :pull:`1568`)
+* Added a module temperature model that accounts for radiative losses to the sky
+  in a simplified way, using the Faiman model as an example.
+  :py:func:`~pvlib.temperature.faiman_rad` (:issue:`1594`, :pull:`1595`)
+* Added a function :py:func:`pvlib.ivtools.utils.astm_e1036` to perform ASTM E1036 extraction of IV
+  curve parameters. (:pull:`1585`)
+* Added the ADR PV module efficiency model and a function to find its parameters from field or lab measurements
+  (:py:func:`~pvlib.pvarray.pvefficiency_adr` and :py:func:`~pvlib.pvarray.fit_pvefficiency_adr`).
+  (:issue:`1544`, :pull:`1602`)
+
+Bug fixes
+~~~~~~~~~
+* Fixed bug in :py:func:`pvlib.shading.masking_angle` and :py:func:`pvlib.bifacial.infinite_sheds._ground_angle`
+  where zero ``gcr`` input caused a ZeroDivisionError. (:issue:`1576`, :pull:`1589`)
+* Fixed bug in :py:func:`pvlib.tools._golden_sect_DataFrame` so that a result is returned when the search
+  interval is length 0 (which occurs in :py:func:`pvlib.pvsystem.singlediode` if v_oc is 0.) (:issue:`1603`, :pull:`1606`)
+
+Testing
+~~~~~~~
+* Corrected a flawed test for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:issue:`1569`, :pull:`1575`)
+
+Documentation
+~~~~~~~~~~~~~
+* Added an FAQ page to the docs: :ref:`faq`. (:issue:`1546`, :pull:`1549`)
+* Fixed equation in :py:func:`pvlib.iam.martin_ruiz` docstring. (:issue:`1561`, :pull:`1599`)
+* Fixed an error in :py:func:`pvlib.singlediode.bishop88_mpp` docstring. (:issue:`1613`, :pull:`1615`)
+* Added three gallery examples demonstrating how the new ADR PV model can be used for
+  time series simulation. (:issue:`1544`, :pull:`1602`)
+
+Benchmarking
+~~~~~~~~~~~~~
+* Removed ``time_tracker_singleaxis`` function from tracking.py. (:issue:`1508`, :pull:`1535`)
+
+Requirements
+~~~~~~~~~~~~
+* Minimum version of scipy advanced from 1.2.0 to 1.4.0. (:issue:`483`, :pull:`1617`)
+
+Contributors
+~~~~~~~~~~~~
+* Kirsten Perry (:ghuser:`kperrynrel`)
+* Christian Orner (:ghuser:`chrisorner`)
+* Saurabh Aneja (:ghuser:`spaneja`)
+* Marcus Boumans (:ghuser:`bowie2211`)
+* Michael Deceglie (:ghuser:`mdeceglie`)
+* Yu Xie (:ghuser:`xieyupku`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Kevin Anderson (:ghuser:`kanderso-nrel`)
+* Karel De Brabandere (:ghuser:`kdebrab`)
+* Naman Priyadarshi (:ghuser:`Naman-Priyadarshi`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Mark Campanelli (:ghuser:`markcampanelli`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* :ghuser:`avarf`
+* Marios Theristis (:ghuser:`mtheristis`)

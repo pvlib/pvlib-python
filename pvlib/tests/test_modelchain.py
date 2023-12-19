@@ -6,7 +6,6 @@ import pandas as pd
 from pvlib import iam, modelchain, pvsystem, temperature, inverter
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
-from pvlib.tracking import SingleAxisTracker
 from pvlib.location import Location
 from pvlib._deprecation import pvlibDeprecationWarning
 
@@ -495,6 +494,26 @@ def test_prepare_inputs_multi_weather(
     mc.prepare_inputs(input_type((weather, weather)))
     num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
     assert len(mc.results.total_irrad) == num_arrays
+    # check that albedo is transfered to mc.results from mc.system.arrays
+    assert mc.results.albedo == (0.2, 0.2)
+
+
+@pytest.mark.parametrize("input_type", [tuple, list])
+def test_prepare_inputs_albedo_in_weather(
+        sapm_dc_snl_ac_system_Array, location, input_type):
+    times = pd.date_range(start='20160101 1200-0700',
+                          end='20160101 1800-0700', freq='6H')
+    mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
+    weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1, 'albedo': 0.5},
+                           index=times)
+    # weather as a single DataFrame
+    mc.prepare_inputs(weather)
+    num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
+    assert len(mc.results.albedo) == num_arrays
+    # repeat with tuple of weather
+    mc.prepare_inputs(input_type((weather, weather)))
+    num_arrays = sapm_dc_snl_ac_system_Array.num_arrays
+    assert len(mc.results.albedo) == num_arrays
 
 
 def test_prepare_inputs_no_irradiance(sapm_dc_snl_ac_system, location):
@@ -731,50 +750,6 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
     assert m_noct_sam.call_args[1] == {
         'effective_irradiance': mc.results.effective_irradiance,
         'model': 'noct_sam'}
-
-
-def test_run_model_tracker(sapm_dc_snl_ac_system, location, weather, mocker):
-    with pytest.warns(pvlibDeprecationWarning):
-        system = SingleAxisTracker(
-            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
-            temperature_model_parameters=(
-                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-            ),
-            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
-    mocker.spy(system, 'singleaxis')
-    mc = ModelChain(system, location)
-    mc.run_model(weather)
-    assert system.singleaxis.call_count == 1
-    assert (mc.results.tracking.columns == ['tracker_theta',
-                                            'aoi',
-                                            'surface_azimuth',
-                                            'surface_tilt']).all()
-    assert mc.results.ac[0] > 0
-    assert np.isnan(mc.results.ac[1])
-    assert isinstance(mc.results.dc, pd.DataFrame)
-
-
-def test_run_model_tracker_list(
-        sapm_dc_snl_ac_system, location, weather, mocker):
-    with pytest.warns(pvlibDeprecationWarning):
-        system = SingleAxisTracker(
-            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
-            temperature_model_parameters=(
-                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-            ),
-            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
-    mocker.spy(system, 'singleaxis')
-    mc = ModelChain(system, location)
-    mc.run_model([weather])
-    assert system.singleaxis.call_count == 1
-    assert (mc.results.tracking.columns == ['tracker_theta',
-                                            'aoi',
-                                            'surface_azimuth',
-                                            'surface_tilt']).all()
-    assert mc.results.ac[0] > 0
-    assert np.isnan(mc.results.ac[1])
-    assert isinstance(mc.results.dc, tuple)
-    assert len(mc.results.dc) == 1
 
 
 def test__assign_total_irrad(sapm_dc_snl_ac_system, location, weather,
@@ -1025,27 +1000,6 @@ def test_run_model_from_poa_arrays_solar_position_weather(
     # mc uses only the first weather data for solar position corrections
     assert_series_equal(m.call_args[1]['temperature'], data['temp_air'])
     assert_series_equal(m.call_args[1]['pressure'], data['pressure'])
-
-
-def test_run_model_from_poa_tracking(sapm_dc_snl_ac_system, location,
-                                     total_irrad):
-    with pytest.warns(pvlibDeprecationWarning):
-        system = SingleAxisTracker(
-            module_parameters=sapm_dc_snl_ac_system.arrays[0].module_parameters,  # noqa: E501
-            temperature_model_parameters=(
-                sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters
-            ),
-            inverter_parameters=sapm_dc_snl_ac_system.inverter_parameters)
-    mc = ModelChain(system, location, aoi_model='no_loss',
-                    spectral_model='no_loss')
-    ac = mc.run_model_from_poa(total_irrad).results.ac
-    assert (mc.results.tracking.columns == ['tracker_theta',
-                                            'aoi',
-                                            'surface_azimuth',
-                                            'surface_tilt']).all()
-    expected = pd.Series(np.array([149.280238, 96.678385]),
-                         index=total_irrad.index)
-    assert_series_equal(ac, expected)
 
 
 @pytest.mark.parametrize("input_type", [lambda x: x[0], tuple, list])
@@ -1778,16 +1732,6 @@ def test_ModelChain_no_extra_kwargs(sapm_dc_snl_ac_system, location):
         ModelChain(sapm_dc_snl_ac_system, location, arbitrary_kwarg='value')
 
 
-@fail_on_pvlib_version('0.10')
-def test_ModelChain_attributes_deprecated_10(sapm_dc_snl_ac_system, location):
-    match = 'Use ModelChain.results'
-    mc = ModelChain(sapm_dc_snl_ac_system, location)
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        mc.aoi
-    with pytest.warns(pvlibDeprecationWarning, match=match):
-        mc.aoi = 5
-
-
 def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                             sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
@@ -2043,3 +1987,36 @@ def test__irrad_for_celltemp():
     assert len(poa) == 2
     assert_series_equal(poa[0], effect_irrad)
     assert_series_equal(poa[1], effect_irrad)
+
+
+def test_ModelChain___repr__(sapm_dc_snl_ac_system, location):
+
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    name='my mc')
+
+    expected = '\n'.join([
+        'ModelChain: ',
+        '  name: my mc',
+        '  clearsky_model: ineichen',
+        '  transposition_model: haydavies',
+        '  solar_position_method: nrel_numpy',
+        '  airmass_model: kastenyoung1989',
+        '  dc_model: sapm',
+        '  ac_model: sandia_inverter',
+        '  aoi_model: sapm_aoi_loss',
+        '  spectral_model: sapm_spectral_loss',
+        '  temperature_model: sapm_temp',
+        '  losses_model: no_extra_losses'
+    ])
+
+    assert mc.__repr__() == expected
+
+
+def test_ModelChainResult___repr__(sapm_dc_snl_ac_system, location, weather):
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.run_model(weather)
+    mcres = mc.results.__repr__()
+    mc_attrs = dir(mc.results)
+    mc_attrs = [a for a in mc_attrs if not a.startswith('_')]
+    assert all([a in mcres for a in mc_attrs])
+    

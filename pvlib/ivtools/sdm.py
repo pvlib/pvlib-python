@@ -8,16 +8,20 @@ Function names should follow the pattern "fit_" + name of model + "_" +
 
 import numpy as np
 
-import scipy.constants
+from scipy import constants
 from scipy import optimize
 from scipy.special import lambertw
-from scipy.misc import derivative
 
 from pvlib.pvsystem import calcparams_pvsyst, singlediode, v_from_i
 from pvlib.singlediode import bishop88_mpp
 
 from pvlib.ivtools.utils import rectify_iv_curve, _numdiff
 from pvlib.ivtools.sde import _fit_sandia_cocontent
+
+from pvlib.tools import _first_order_centered_difference
+
+
+CONSTANTS = {'E0': 1000.0, 'T0': 25.0, 'k': constants.k, 'q': constants.e}
 
 
 def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
@@ -72,9 +76,10 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
 
     Raises
     ------
-        ImportError if NREL-PySAM is not installed.
-
-        RuntimeError if parameter extraction is not successful.
+    ImportError
+        if NREL-PySAM is not installed.
+    RuntimeError
+        if parameter extraction is not successful.
 
     Notes
     -----
@@ -90,7 +95,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     ----------
     .. [1] A. Dobos, "An Improved Coefficient Calculator for the California
        Energy Commission 6 Parameter Photovoltaic Module Model", Journal of
-       Solar Energy Engineering, vol 134, 2012.
+       Solar Energy Engineering, vol 134, 2012. :doi:`10.1115/1.4005759`
     """
 
     try:
@@ -200,11 +205,11 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
     ----------
     .. [1] W. De Soto et al., "Improvement and validation of a model for
        photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-       2006.
+       2006. :doi:`10.1016/j.solener.2005.06.010`
     """
 
     # Constants
-    k = scipy.constants.value('Boltzmann constant in eV/K')
+    k = constants.value('Boltzmann constant in eV/K')  # in eV/K
     Tref = temp_ref + 273.15  # [K]
 
     # initial guesses of variables for computing convergence:
@@ -340,9 +345,9 @@ def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
         T0 : float
             cell temperature at STC, default 25 [C]
         k : float
-            1.38066E-23 J/K (Boltzmann's constant)
+            Boltzmann's constant [J/K]
         q : float
-            1.60218E-19 Coulomb (elementary charge)
+            elementary charge [Coulomb]
 
     maxiter : int, default 5
         input that sets the maximum number of iterations for the parameter
@@ -401,6 +406,7 @@ def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     .. [1] K. Sauer, T. Roessler, C. W. Hansen, Modeling the Irradiance and
        Temperature Dependence of Photovoltaic Modules in PVsyst, IEEE Journal
        of Photovoltaics v5(1), January 2015.
+       :doi:`10.1109/JPHOTOV.2014.2364133`
     .. [2] A. Mermoud, PV Modules modeling, Presentation at the 2nd PV
        Performance Modeling Workshop, Santa Clara, CA, May 2013
     .. [3] A. Mermoud, T. Lejeuene, Performance Assessment of a Simulation
@@ -408,16 +414,18 @@ def fit_pvsyst_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
        Photovoltaic Solar Energy Conference, Valencia, Spain, Sept. 2010
     .. [4] C. Hansen, Estimating Parameters for the PVsyst Version 6
        Photovoltaic Module Performance Model, Sandia National Laboratories
-       Report SAND2015-8598
+       Report SAND2015-8598. :doi:`10.2172/1223058`
     .. [5] C. Hansen, Parameter Estimation for Single Diode Models of
-       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065.
+       :doi:`10.2172/1177157`
     .. [6] C. Hansen, Estimation of Parameters for Single Diode Models using
         Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
+        :doi:`10.1109/PVSC.2013.6744135`
     .. [7] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
 
     if const is None:
-        const = {'E0': 1000.0, 'T0': 25.0, 'k': 1.38066e-23, 'q': 1.60218e-19}
+        const = CONSTANTS
 
     ee = ivcurves['ee']
     tc = ivcurves['tc']
@@ -520,9 +528,9 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
         T0 : float
             cell temperature at STC, default 25 [C]
         k : float
-            1.38066E-23 J/K (Boltzmann's constant)
+            Boltzmann's constant [J/K]
         q : float
-            1.60218E-19 Coulomb (elementary charge)
+            elementary charge [Coulomb]
 
     maxiter : int, default 5
         input that sets the maximum number of iterations for the parameter
@@ -570,16 +578,18 @@ def fit_desoto_sandia(ivcurves, specs, const=None, maxiter=5, eps1=1.e-3):
     ----------
     .. [1] W. De Soto et al., "Improvement and validation of a model for
        photovoltaic array performance", Solar Energy, vol 80, pp. 78-88,
-       2006.
+       2006. :doi:`10.1016/j.solener.2005.06.010`
     .. [2] C. Hansen, Parameter Estimation for Single Diode Models of
-       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065
+       Photovoltaic Modules, Sandia National Laboratories Report SAND2015-2065.
+       :doi:`10.2172/1177157`
     .. [3] C. Hansen, Estimation of Parameters for Single Diode Models using
         Measured IV Curves, Proc. of the 39th IEEE PVSC, June 2013.
+        :doi:`10.1109/PVSC.2013.6744135`
     .. [4] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
 
     if const is None:
-        const = {'E0': 1000.0, 'T0': 25.0, 'k': 1.38066e-23, 'q': 1.60218e-19}
+        const = CONSTANTS
 
     ee = ivcurves['ee']
     tc = ivcurves['tc']
@@ -938,7 +948,7 @@ def _update_io(voc, iph, io, rs, rsh, nnsvth):
 
     while maxerr > eps and k < niter:
         # Predict Voc
-        pvoc = v_from_i(rsh, rs, nnsvth, 0., tio, iph)
+        pvoc = v_from_i(0., iph, tio, rs, rsh, nnsvth)
 
         # Difference in Voc
         dvoc = pvoc - voc
@@ -1341,5 +1351,6 @@ def pvsyst_temperature_coeff(alpha_sc, gamma_ref, mu_gamma, I_L_ref, I_o_ref,
             I_o_ref, R_sh_ref, R_sh_0, R_s, cells_in_series, R_sh_exp, EgRef,
             temp_ref)
     pmp = maxp(temp_ref, *args)
-    gamma_pdc = derivative(maxp, temp_ref, args=args)
+    gamma_pdc = _first_order_centered_difference(maxp, x0=temp_ref, args=args)
+
     return gamma_pdc / pmp

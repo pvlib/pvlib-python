@@ -309,7 +309,7 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
 
     # Generate list of filenames (note basename uses two-letter abbreviation)
     filenames = [f"{station}/{station}_{m.year}/{station[:2]}{filetype}{m.strftime('%y%m')}.txt" for m in months]  # noqa: E501
-    print(filenames)
+
     dfs = []  # Initialize list of monthly dataframes
     for f in filenames:
         try:

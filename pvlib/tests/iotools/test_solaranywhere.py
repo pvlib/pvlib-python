@@ -73,7 +73,7 @@ def test_read_solaranywhere_high_resolution(high_resolution_index):
     pd.testing.assert_index_equal(data.index, high_resolution_index)
 
 
-def test_read_solaranywhere_map_variables(high_resolution_index):
+def test_read_solaranywhere_map_variables():
     # Check that variables are mapped by default to pvlib names
     data, meta = pvlib.iotools.read_solaranywhere(TESTFILE_HIGH_RESOLUTION)
     mapped_column_names = ['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed',
@@ -124,7 +124,7 @@ def test_get_solaranywhere_bad_probability_of_exceedance():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solaranywhere_missing_start_end(solaranywhere_api_key):
     # Test if ValueError is raised if start/end is missing for non-TMY request
-    with pytest.raises(ValueError, match="`end` is required."):
+    with pytest.raises(ValueError, match="simulation start and end time"):
         pvlib.iotools.get_solaranywhere(
             latitude=44, longitude=-73, api_key=solaranywhere_api_key,
             source='SolarAnywhereLatest')
@@ -132,8 +132,8 @@ def test_get_solaranywhere_missing_start_end(solaranywhere_api_key):
 
 @pytest.fixture
 def time_series_index():
-    index = pd.date_range(start='2020-01-01 00:02:30', periods=288,
-                          freq='5min', tz='UTC')
+    index = pd.date_range(start='2019-12-31 19:02:30-05:00', periods=288,
+                          freq='5min')
     index.name = 'ObservationTime'
     index.freq = None
     return index
@@ -161,23 +161,23 @@ def timeseries_temp_air(time_series_index):
 @requires_solaranywhere_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_solaranywhere_no_timezone_information(
-        high_resolution_index, solaranywhere_api_key, time_series_index,
-        timeseries_temp_air):
+def test_get_solaranywhere_no_timezone(
+        solaranywhere_api_key, time_series_index, timeseries_temp_air):
     # Test if data can be retrieved. This test only retrieves one day of data
     # to minimize the request time.
     data, meta = pvlib.iotools.get_solaranywhere(
         latitude=44.4675, longitude=-73.2075, api_key=solaranywhere_api_key,
-        # test specific version of SolarAnywhere
-        source='SolarAnywhere3_6',
         # specify start/end without timezone information
         start=pd.Timestamp(2020, 1, 1), end=pd.Timestamp(2020, 1, 2),
+        # test specific version of SolarAnywhere
+        source='SolarAnywhere3_6',
         spatial_resolution=0.005, time_resolution=5, true_dynamics=True)
 
     # Check metadata, including that true-dynamics is set
     assert meta['WeatherSiteName'] == 'SolarAnywhere3_6'
     assert meta['ApplyTrueDynamics'] is True
     assert meta['time_resolution'] == 5
+    assert meta['spatial_resolution'] == 0.005
     assert meta['latitude'] == 44.4675
     assert meta['longitude'] == -73.2075
     assert meta['altitude'] == 41.0
@@ -203,14 +203,74 @@ def test_get_solaranywhere_no_timezone_information(
 @requires_solaranywhere_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_solaranywhere_timeout(solaranywhere_api_key):
+def test_get_solaranywhere_other_options(
+        solaranywhere_api_key, time_series_index, timeseries_temp_air):
+    # Test if data can be retrieved. This test only retrieves one day of data
+    # to minimize the request time.
+    data, meta = pvlib.iotools.get_solaranywhere(
+        latitude=44.4675, longitude=-73.2075, api_key=solaranywhere_api_key,
+        # specify start/end as str with timezone information
+        start='2020-01-01 00:00:00+0000',
+        end='2020-01-02 00:00:00+0000',
+        # test specific version of SolarAnywhere
+        source='SolarAnywhere3_7',
+        # test fewer variables
+        variables=[
+            'ObservationTime',
+            'GlobalHorizontalIrradiance_WattsPerMeterSquared',
+        ],
+        map_variables=False)
+
+    # Check metadata
+    assert meta['WeatherSiteName'] == 'SolarAnywhere3_7'
+    assert meta['ApplyTrueDynamics'] is False  # default setting
+    assert meta['time_resolution'] == 60  # default resolution
+    assert meta['spatial_resolution'] == 0.01  # default resolution
+    assert meta['latitude'] == 44.4675
+    assert meta['longitude'] == -73.2075
+    assert meta['altitude'] == 41.0
+
+    # Check that variables have been mapped (default convention)
+    assert 'StartTime' not in data.columns
+    assert 'ObservationTime' in data.columns
+    assert 'EndTime' not in data.columns
+    # Check that ghi is not mapped
+    assert 'ghi' not in data.columns
+    assert 'GlobalHorizontalIrradiance_WattsPerMeterSquared' in data.columns
+    assert 'dni' not in data.columns
+    assert 'dhi' not in data.columns
+    assert 'temp_air' not in data.columns
+    assert 'wind_speed' not in data.columns
+    assert 'albedo' not in data.columns
+    assert 'DataVersion' not in data.columns
+
+
+@requires_solaranywhere_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_solaranywhere_probability_exceedance_error(solaranywhere_api_key):
+    # Test if ValueError is raised when passing start/end to typical year
+    with pytest.raises(ValueError, match="start and end time must be null"):
+        data, meta = pvlib.iotools.get_solaranywhere(
+            latitude=44.4675, longitude=-73.2075,
+            api_key=solaranywhere_api_key,
+            # Probabiliy of exceedance year should not have start/end specified
+            start=pd.Timestamp('2020-01-01 00:00:00+0000'),
+            end=pd.Timestamp('2020-01-05 12:00:00+0000'),
+            source='SolarAnywherePOELatest',
+            probability_of_exceedance=20)
+
+
+@requires_solaranywhere_credentials
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_solaranywhere_timeout_tgy(solaranywhere_api_key):
     # Test if the service times out when the timeout parameter is close to zero
     with pytest.raises(TimeoutError, match="Time exceeded"):
         pvlib.iotools.get_solaranywhere(
             latitude=44.4675, longitude=-73.2075,
             api_key=solaranywhere_api_key,
-            start=pd.Timestamp('2020-01-01 00:00:00+0000'),
-            end=pd.Timestamp('2020-01-05 12:00:00+0000'),
+            source='SolarAnywhereTGYLatest',
             timeout=0.00001)
 
 
@@ -225,11 +285,3 @@ def test_get_solaranywhere_not_available(solaranywhere_api_key):
             api_key=solaranywhere_api_key,
             start=pd.Timestamp('2020-01-01 00:00:00+0000'),
             end=pd.Timestamp('2020-01-05 12:00:00+0000'))
-
-
-# Second live test
-# True dynamics is False
-# Different variables
-
-# Mock tets:
-# TGY

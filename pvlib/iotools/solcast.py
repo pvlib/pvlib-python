@@ -372,7 +372,7 @@ def get_solcast_live(
 
 
 def _solcast2pvlib(data):
-    """Formats the data from Solcast to PVLib's conventions.
+    """Format the data from Solcast to pvlib's conventions.
 
     Parameters
     ----------

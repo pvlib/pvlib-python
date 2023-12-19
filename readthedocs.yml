@@ -16,9 +16,6 @@ build:
        - git fetch --unshallow
 
 python:
-   # only use the packages specified in setup.py
-   system_packages: false
-
    install:
       - method: pip
         path: .

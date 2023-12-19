@@ -270,7 +270,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
        direct and diffuse irradiance on horizontal and tilted planes at the
        earth's surface for cloudless atmospheres", NREL Technical Report
-       TR-215-2436 doi:10.2172/5986936.
+       TR-215-2436 :doi:`10.2172/5986936`.
     .. [2] Bird Simple Spectral Model: spectrl2_2.c.
        https://www.nrel.gov/grid/solar-resource/spectral.html
     """

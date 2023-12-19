@@ -48,7 +48,7 @@ def fit_cec_sam(celltype, v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc,
     beta_voc : float
         Temperature coefficient of open circuit voltage [V/C]
     gamma_pmp : float
-        Temperature coefficient of power at maximum point point [%/C]
+        Temperature coefficient of power at maximum power point [%/C]
     cells_in_series : int
         Number of cells in series
     temp_ref : float, default 25
@@ -166,7 +166,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         Reference temperature condition [C]
     irrad_ref: float, default 1000
         Reference irradiance condition [W/m2]
-    root_kwargs: dictionary, default None
+    root_kwargs : dictionary, optional
         Dictionary of arguments to pass onto scipy.optimize.root()
 
     Returns

@@ -110,12 +110,11 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
 
     # parse strings to np.float64
     is_array = ['Currents', 'Voltages', 'diode_voltage']
-    joined[is_array] = joined[is_array].applymap(
-        lambda a: np.asarray(a, dtype=np.float64)
-    )
+    for col in is_array:
+        joined[col] = [np.asarray(a, dtype=np.float64) for a in joined[col]]
     is_number = ['v_oc', 'i_sc', 'v_mp', 'i_mp', 'p_mp', 'i_x', 'i_xx',
                  'Temperature']
-    joined[is_number] = joined[is_number].applymap(np.float64)
+    joined[is_number] = joined[is_number].astype(np.float64)
 
     joined['Boltzmann'] = scipy.constants.Boltzmann
     joined['Elementary Charge'] = scipy.constants.elementary_charge
@@ -557,3 +556,14 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     assert isinstance(ret_val[1], tuple)  # second is output from optimizer
     # any root finder returns at least 2 elements with full_output=True
     assert len(ret_val[1]) >= 2
+
+
+@pytest.mark.parametrize('method', ['newton', 'brentq'])
+def test_bishop88_pdSeries_len_one(method, bishop88_arguments):
+    for k, v in bishop88_arguments.items():
+        bishop88_arguments[k] = pd.Series([v])
+
+    # should not raise error
+    bishop88_i_from_v(pd.Series([0]), **bishop88_arguments, method=method)
+    bishop88_v_from_i(pd.Series([0]), **bishop88_arguments, method=method)
+    bishop88_mpp(**bishop88_arguments, method=method)

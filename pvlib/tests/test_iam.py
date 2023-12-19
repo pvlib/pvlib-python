@@ -265,10 +265,10 @@ def test_marion_diffuse_model(mocker):
     assert physical_spy.call_count == 3
 
     for k, v in ashrae_expected.items():
-        np.testing.assert_allclose(ashrae_actual[k], v)
+        assert_allclose(ashrae_actual[k], v)
 
     for k, v in physical_expected.items():
-        np.testing.assert_allclose(physical_actual[k], v)
+        assert_allclose(physical_actual[k], v)
 
 
 def test_marion_diffuse_kwargs():
@@ -281,7 +281,7 @@ def test_marion_diffuse_kwargs():
     actual = _iam.marion_diffuse('ashrae', 20, b=0.04)
 
     for k, v in expected.items():
-        np.testing.assert_allclose(actual[k], v)
+        assert_allclose(actual[k], v)
 
 
 def test_marion_diffuse_invalid():
@@ -395,3 +395,161 @@ def test_schlick_diffuse():
     assert_series_equal(pd.Series(expected_sky, idx), actual_sky)
     assert_series_equal(pd.Series(expected_ground, idx), actual_ground,
                         rtol=1e-6)
+
+
+@pytest.mark.parametrize('source,source_params,target,expected', [
+    ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'martin_ruiz',
+     {'a_r': 0.174037}),
+    ('physical', {'n': 1.5, 'K': 4.5, 'L': 0.004}, 'ashrae',
+     {'b': 0.042896}),
+    ('ashrae', {'b': 0.15}, 'physical',
+     {'n': 0.991457, 'K': 4, 'L': 0.037813}),
+    ('ashrae', {'b': 0.15}, 'martin_ruiz', {'a_r': 0.302390}),
+    ('martin_ruiz', {'a_r': 0.15}, 'physical',
+     {'n': 1.240190, 'K': 4, 'L': 0.002791055}),
+    ('martin_ruiz', {'a_r': 0.15}, 'ashrae', {'b': 0.025458})])
+def test_convert(source, source_params, target, expected):
+    target_params = _iam.convert(source, source_params, target)
+    exp = [expected[k] for k in expected]
+    tar = [target_params[k] for k in expected]
+    assert_allclose(exp, tar, rtol=1e-05)
+
+
+@pytest.mark.parametrize('source,source_params', [
+    ('ashrae', {'b': 0.15}),
+    ('ashrae', {'b': 0.05}),
+    ('martin_ruiz', {'a_r': 0.15})])
+def test_convert_recover(source, source_params):
+    # convert isn't set up to handle both source and target = 'physical'
+    target_params = _iam.convert(source, source_params, source, xtol=1e-7)
+    exp = [source_params[k] for k in source_params]
+    tar = [target_params[k] for k in source_params]
+    assert_allclose(exp, tar, rtol=1e-05)
+
+
+def test_convert_ashrae_physical_no_fix_n():
+    # convert ashrae to physical, without fixing n
+    source_params = {'b': 0.15}
+    target_params = _iam.convert('ashrae', source_params, 'physical',
+                                 fix_n=False)
+    expected = {'n': 0.989019, 'K': 4, 'L': 0.037382}
+    exp = [expected[k] for k in expected]
+    tar = [target_params[k] for k in expected]
+    assert_allclose(exp, tar, rtol=1e-05)
+
+
+def test_convert_reverse_order_in_physical():
+    source_params = {'a_r': 0.25}
+    target_params = _iam.convert('martin_ruiz', source_params, 'physical')
+    expected = {'n': 1.691398, 'K': 4, 'L': 0.071633}
+    exp = [expected[k] for k in expected]
+    tar = [target_params[k] for k in expected]
+    assert_allclose(exp, tar, rtol=1e-05)
+
+
+def test_convert_xtol():
+    source_params = {'b': 0.15}
+    target_params = _iam.convert('ashrae', source_params, 'physical',
+                                 xtol=1e-8)
+    expected = {'n': 0.9914568914, 'K': 4, 'L': 0.0378126985}
+    exp = [expected[k] for k in expected]
+    tar = [target_params[k] for k in expected]
+    assert_allclose(exp, tar, rtol=1e-6)
+
+
+def test_convert_custom_weight_func():
+    aoi = np.linspace(0, 90, 91)
+
+    # convert physical to martin_ruiz, using custom weight function
+    source_params = {'n': 1.5, 'K': 4.5, 'L': 0.004}
+    source_iam = _iam.physical(aoi, **source_params)
+
+    # define custom weight function that takes in other arguments
+    def scaled_weight(aoi):
+        return 2. * aoi
+
+    # expected value calculated from computing residual function over
+    # a range of inputs, and taking minimum of these values
+    expected_min_res = 16.39724
+
+    actual_dict = _iam.convert('physical', source_params, 'martin_ruiz',
+                               weight=scaled_weight)
+    actual_min_res = _iam._residual(aoi, source_iam, _iam.martin_ruiz,
+                                    [actual_dict['a_r']], scaled_weight)
+
+    assert np.isclose(expected_min_res, actual_min_res, atol=1e-06)
+
+
+def test_convert_model_not_implemented():
+    with pytest.raises(NotImplementedError, match='model has not been'):
+        _iam.convert('ashrae', {'b': 0.1}, 'foo')
+
+
+def test_convert_wrong_model_parameters():
+    with pytest.raises(ValueError, match='model was expecting'):
+        _iam.convert('ashrae', {'B': 0.1}, 'physical')
+
+
+def test_convert__minimize_fails():
+    # to make scipy.optimize.minimize fail, we'll pass in a nonsense
+    # weight function that only outputs nans
+    def nan_weight(aoi):
+        return np.nan
+
+    with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
+        _iam.convert('ashrae', {'b': 0.1}, 'physical', weight=nan_weight)
+
+
+def test_fit():
+    aoi = np.linspace(0, 90, 5)
+    perturb = np.array([1.2, 1.01, 0.95, 1, 0.98])
+    perturbed_iam = _iam.martin_ruiz(aoi, a_r=0.14) * perturb
+
+    expected_a_r = 0.14
+
+    actual_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz')
+    actual_a_r = actual_dict['a_r']
+
+    assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
+
+
+def test_fit_custom_weight_func():
+    # define custom weight function that takes in other arguments
+    def scaled_weight(aoi):
+        return 2. * aoi
+
+    aoi = np.linspace(0, 90, 5)
+    perturb = np.array([1.2, 1.01, 0.95, 1, 0.98])
+    perturbed_iam = _iam.martin_ruiz(aoi, a_r=0.14) * perturb
+
+    expected_a_r = 0.14
+
+    actual_dict = _iam.fit(aoi, perturbed_iam, 'martin_ruiz',
+                           weight=scaled_weight)
+    actual_a_r = actual_dict['a_r']
+
+    assert np.isclose(expected_a_r, actual_a_r, atol=1e-04)
+
+
+def test_fit_model_not_implemented():
+    with pytest.raises(NotImplementedError, match='model has not been'):
+        _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'foo')
+
+
+def test_fit__minimize_fails():
+    # to make scipy.optimize.minimize fail, we'll pass in a nonsense
+    # weight function that only outputs nans
+    def nan_weight(aoi):
+        return np.nan
+
+    with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
+        _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'physical',
+                 weight=nan_weight)
+
+
+def test__residual_zero_outside_range():
+    # check that _residual annihilates any weights that come from aoi
+    # outside of interval [0, 90] (this is important for `iam.fit`, when
+    # the `measured_aoi` contains angles outside this range
+    residual = _iam._residual(101, _iam.ashrae(101), _iam.martin_ruiz, [0.16])
+    assert residual == 0.0

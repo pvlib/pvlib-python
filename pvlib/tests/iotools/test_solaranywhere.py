@@ -153,7 +153,7 @@ def timeseries_temp_air(time_series_index):
     return pd.Series(data=temp_air, index=time_series_index, name='temp_air')
 
 
-#@requires_solaranywhere_credentials
+@requires_solaranywhere_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solaranywhere_no_timezone_information(
@@ -198,15 +198,15 @@ def test_get_solaranywhere_no_timezone_information(
 @requires_solaranywhere_credentials
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_solaranywhere_max_response_time(solaranywhere_api_key):
-    # Test if ValueError is raised if start/end is missing for non-TMY request
+def test_get_solaranywhere_timeout(solaranywhere_api_key):
+    # Test if the service times out when the timeout parameter is close to zero
     with pytest.raises(TimeoutError, match="Time exceeded"):
         pvlib.iotools.get_solaranywhere(
             latitude=44.4675, longitude=-73.2075,
             api_key=solaranywhere_api_key,
             start=pd.Timestamp('2020-01-01 00:00:00+0000'),
             end=pd.Timestamp('2020-01-05 12:00:00+0000'),
-            max_response_time=0.00001)
+            timeout=0.00001)
 
 
 @requires_solaranywhere_credentials

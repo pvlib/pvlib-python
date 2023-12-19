@@ -49,7 +49,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
                       spatial_resolution=0.01, true_dynamics=False,
                       probability_of_exceedance=None,
                       variables=DEFAULT_VARIABLES, missing_data='FillAverage',
-                      url=URL, map_variables=True, max_response_time=300):
+                      url=URL, map_variables=True, timeout=300):
     """Retrieve historical irradiance time series data from SolarAnywhere.
 
     The SolarAnywhere API is described in [1]_ and [2]_. A detailed list of
@@ -85,7 +85,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         Only available for the 5-min time resolution.
     probability_of_exceedance: int, optional
         Probability of exceedance in the range of 1 to 99. Only relevant when
-        requesting probability of exceedance (POE) time series.
+        requesting probability of exceedance (POE) time series. [%]
     variables: list-like, default: :const:`DEFAULT_VARIABLES`
         Variables to retrieve (described in [4]_).  Available variables depend
         on whether historical or TMY data is requested.
@@ -96,7 +96,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-    max_response_time: float, default: 300
+    timeout: float, default: 300
         Time in seconds to wait for requested data to become available.
 
     Returns
@@ -193,15 +193,14 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
             if results_json['WeatherDataResults'][0]['Status'] == 'Failure':
                 raise RuntimeError(results_json['WeatherDataResults'][0]['ErrorMessages'][0]['Message'])  # noqa: E501
             break
-        elif (time.time()-start_time) > max_response_time:
-            raise TimeoutError('Time exceeded the `max_response_time`.')
+        elif (time.time()-start_time) > timeout:
+            raise TimeoutError('Time exceeded the `timeout`.')
         time.sleep(5)  # Sleep for 5 seconds before each data retrieval attempt
 
     # Extract time series data
     data = pd.DataFrame(results_json['WeatherDataResults'][0]['WeatherDataPeriods']['WeatherDataPeriods'])  # noqa: E501
     # Set index and convert to UTC time
     data.index = pd.to_datetime(data['ObservationTime'])
-    data.index = data.index.tz_convert('UTC')
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
 
@@ -215,7 +214,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     return data, meta
 
 
-def read_solaranywhere(filename, map_variables=True):
+def read_solaranywhere(filename, map_variables=True, encoding='iso-8859-1'):
     """
     Read a SolarAnywhere formatted file into a pandas DataFrame.
 
@@ -225,11 +224,14 @@ def read_solaranywhere(filename, map_variables=True):
 
     Parameters
     ----------
-    fbuf: file-like object
-        File-like object containing data to read.
+    fbuf: str
+        Filename
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+    encoding : str, default : 'iso-8859-1'
+        Encoding of the file. For SolarAnywhere TMY3 files the 'iso-8859-1'
+        encoding is recommended due to the usage of special characters.
 
     Returns
     -------
@@ -247,7 +249,7 @@ def read_solaranywhere(filename, map_variables=True):
     .. [1] `SolarAnywhere historical data file formats
        <https://www.solaranywhere.com/support/historical-data/file-formats/>`_
     """
-    with open(str(filename), 'r', encoding='iso-8859-1') as fbuf:
+    with open(str(filename), 'r', encoding=encoding) as fbuf:
         # Extract first line of file which contains the metadata
         firstline = fbuf.readline().strip().split(',')
         # Read remaining part of file which contains the time series data

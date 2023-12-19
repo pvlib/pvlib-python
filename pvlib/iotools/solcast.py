@@ -16,7 +16,7 @@ class ParameterMap:
     conversion: callable = lambda x: x
 
 
-# define the conventions between Solcast and PVLib nomenclature and units
+# define the conventions between Solcast and pvlib nomenclature and units
 VARIABLE_MAP = [
     # air_temp -> temp_air (deg C)
     ParameterMap("air_temp", "temp_air"),

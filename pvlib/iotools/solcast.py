@@ -67,6 +67,8 @@ def get_solcast_tmy(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+        Time is the index shifted to the midpoint of each interval
+        from Solcast's "period end" convention.
     kwargs:
         Optional parameters passed to the API.
         See [3]_ for full list of parameters.
@@ -151,7 +153,7 @@ def get_solcast_historic(
     end : optional, datetime-like
         Last day of the requested period.
         Must include one of ``end`` or ``duration``.
-    duration : optional, default is None
+    duration : optional, ISO 8601 compliant duration
         Must include either  ``end`` or ``duration``.
         ISO 8601 compliant duration for the historic data,
         like "P1D" for one day of data.
@@ -159,6 +161,8 @@ def get_solcast_historic(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+        Time is the index shifted to the midpoint of each interval
+        from Solcast's "period end" convention.
     api_key : str
         To access Solcast data you will need an API key [1]_.
     kwargs:
@@ -238,6 +242,8 @@ def get_solcast_forecast(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+        Time is the index shifted to the midpoint of each interval
+        from Solcast's "period end" convention.
     kwargs:
         Optional parameters passed to the API.
         See [2]_ for full list of parameters.
@@ -259,12 +265,13 @@ def get_solcast_forecast(
     >>> )
 
     you can pass any of the parameters listed in the API docs,
-    like asking for specific variables:
+    like asking for specific variables for a specific time horizon:
 
     >>> df, meta = pvlib.iotools.solcast.get_solcast_forecast(
     >>>     latitude=-33.856784,
     >>>     longitude=151.215297,
     >>>     output_parameters=['dni', 'clearsky_dni', 'snow_soiling_rooftop'],
+    >>>     hours=24,
     >>>     api_key="your-key"
     >>> )
 
@@ -308,6 +315,8 @@ def get_solcast_live(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
+        Time is the index shifted to the midpoint of each interval
+        from Solcast's "period end" convention.
     kwargs:
         Optional parameters passed to the API.
         See [2]_ for full list of parameters.
@@ -429,7 +438,7 @@ def _get_solcast(
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib's variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-        Time is the index as midpoint of each interval
+        Time is the index shifted to the midpoint of each interval
         from Solcast's "period end" convention.
 
     Returns

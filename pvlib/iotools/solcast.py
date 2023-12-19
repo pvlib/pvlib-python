@@ -427,7 +427,7 @@ def _get_solcast(
     api_key : str
         To access Solcast data you will need an API key [1]_.
     map_variables: bool, default: True
-        When true, renames columns of the DataFrame to PVLib's variable names
+        When true, renames columns of the DataFrame to pvlib's variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
         Time is the index as midpoint of each interval
         from Solcast's "period end" convention.

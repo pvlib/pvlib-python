@@ -3,6 +3,56 @@ import pvlib
 import pytest
 
 
+@pytest.mark.parametrize("endpoint,params,api_key,json_response", [
+    (
+        "live/radiation_and_weather",
+        dict(
+            latitude=-33.856784,
+            longitude=151.215297,
+            output_parameters='dni,ghi'
+        ),
+        "1234",
+        {'estimated_actuals':
+            [{'dni': 836, 'ghi': 561,
+              'period_end': '2023-09-18T05:00:00.0000000Z', 'period': 'PT30M'},
+             {'dni': 866, 'ghi': 643,
+              'period_end': '2023-09-18T04:30:00.0000000Z', 'period': 'PT30M'},
+             {'dni': 890, 'ghi': 713,
+              'period_end': '2023-09-18T04:00:00.0000000Z', 'period': 'PT30M'},
+             {'dni': 909, 'ghi': 768,
+              'period_end': '2023-09-18T03:30:00.0000000Z', 'period': 'PT30M'}]
+         }
+    ),
+])
+def test__get_solcast(requests_mock, endpoint, params, api_key, json_response):
+    mock_url = f"https://api.solcast.com.au/data/{endpoint}?" \
+               f"latitude={params['latitude']}&" \
+               f"longitude={params['longitude']}&" \
+               f"output_parameters={params['output_parameters']}"
+
+    requests_mock.get(mock_url, json=json_response)
+
+    # with variables remapping
+    pd.testing.assert_frame_equal(
+        pvlib.iotools.solcast._get_solcast(
+            endpoint, params, api_key, True
+        ),
+        pvlib.iotools.solcast._solcast2pvlib(
+            pd.DataFrame.from_dict(
+                json_response[list(json_response.keys())[0]])
+        )
+    )
+
+    # no remapping of varaibles
+    pd.testing.assert_frame_equal(
+        pvlib.iotools.solcast._get_solcast(
+            endpoint, params, api_key, False
+        ),
+        pd.DataFrame.from_dict(
+            json_response[list(json_response.keys())[0]])
+    )
+
+
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
         "live/radiation_and_weather",

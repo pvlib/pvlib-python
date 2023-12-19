@@ -1,6 +1,7 @@
 from numpy import isnan
 import pandas as pd
 import pytest
+import os
 
 from pvlib.iotools import srml
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
@@ -9,16 +10,17 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 
+BASE_URL = 'http://is-solardata01.uoregon.edu/Step3B_Original_Format/'
+
 
 def test_read_srml():
     srml.read_srml(srml_testfile)
 
 
-@pytest.mark.skip(reason="SRML server is undergoing maintenance as of 12-2023")
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_srml_remote():
-    srml.read_srml('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt')
+    srml.read_srml(os.path.join(BASE_URL, 'EUO/EUO_2018/EUPO1801.txt'))
 
 
 def test_read_srml_columns_exist():
@@ -47,11 +49,10 @@ def test_read_srml_nans_exist():
     assert data['dni_0_flag'].iloc[1119] == 99
 
 
-@pytest.mark.skip(reason="SRML server is undergoing maintenance as of 12-2023")
 @pytest.mark.parametrize('url,year,month', [
-    ('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt',
+    (os.path.join(BASE_URL, 'EUO/EUO_2018/EUPO1801.txt'),
      2018, 1),
-    ('http://solardat.uoregon.edu/download/Archive/EUPO1612.txt',
+    (os.path.join(BASE_URL, 'EUO/EUO_2016/EUPO1612.txt'),
      2016, 12),
 ])
 @pytest.mark.remote_data
@@ -78,78 +79,21 @@ def test__map_columns(column, expected):
     assert srml._map_columns(column) == expected
 
 
-@pytest.mark.skip(reason="SRML server is undergoing maintenance as of 12-2023")
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_srml():
-    url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
+    url = os.path.join(BASE_URL, 'EUO/EUO_2018/EUPO1801.txt')
     file_data = srml.read_srml(url)
-    requested, _ = srml.get_srml(station='EU', start='2018-01-01',
+    requested, _ = srml.get_srml(station='EUO', start='2018-01-01',
                                  end='2018-01-31')
     assert_frame_equal(file_data, requested)
 
 
-@pytest.mark.skip(reason="SRML server is undergoing maintenance as of 12-2023")
-@fail_on_pvlib_version('0.11')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_read_srml_month_from_solardat():
-    url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
-    file_data = srml.read_srml(url)
-    with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
-        requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
-    assert file_data.equals(requested)
-
-
-@pytest.mark.skip(reason="SRML server is undergoing maintenance as of 12-2023")
-@fail_on_pvlib_version('0.11')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_15_minute_dt_index():
-    with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
-        data = srml.read_srml_month_from_solardat('TW', 2019, 4, 'RQ')
-    start = pd.Timestamp('20190401 00:00')
-    start = start.tz_localize('Etc/GMT+8')
-    end = pd.Timestamp('20190430 23:45')
-    end = end.tz_localize('Etc/GMT+8')
-    assert data.index[0] == start
-    assert data.index[-1] == end
-    assert (data.index[3::4].minute == 45).all()
-
-
-@pytest.mark.skip(reason="SRML server is undergoing maintenance as of 12-2023")
-@fail_on_pvlib_version('0.11')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_hourly_dt_index():
-    with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
-        data = srml.read_srml_month_from_solardat('CD', 1986, 4, 'PH')
-    start = pd.Timestamp('19860401 00:00')
-    start = start.tz_localize('Etc/GMT+8')
-    end = pd.Timestamp('19860430 23:00')
-    end = end.tz_localize('Etc/GMT+8')
-    assert data.index[0] == start
-    assert data.index[-1] == end
-    assert (data.index.minute == 0).all()
-
-
-@pytest.mark.skip(reason="SRML server is undergoing maintenance as of 12-2023")
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_srml_hourly():
-    data, meta = data, meta = srml.get_srml(station='CD', start='1986-04-01',
-                                            end='1986-05-31', filetype='PH')
-    expected_index = pd.date_range(start='1986-04-01', end='1986-05-31 23:59',
-                                   freq='1h', tz='Etc/GMT+8')
-    assert_index_equal(data.index, expected_index)
-
-
-@pytest.mark.skip(reason="SRML server is undergoing maintenance as of 12-2023")
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_srml_minute():
     data_read = srml.read_srml(srml_testfile)
-    data_get, meta = srml.get_srml(station='EU', start='2018-01-01',
+    data_get, meta = srml.get_srml(station='EUO', start='2018-01-01',
                                    end='2018-01-31', filetype='PO')
     expected_index = pd.date_range(start='2018-01-01', end='2018-01-31 23:59',
                                    freq='1min', tz='Etc/GMT+8')
@@ -157,17 +101,16 @@ def test_get_srml_minute():
     assert all(c in data_get.columns for c in data_read.columns)
     # Check that all indices in example file are present in remote file
     assert data_read.index.isin(data_get.index).all()
-    assert meta['station'] == 'EU'
+    assert meta['station'] == 'EUO'
     assert meta['filetype'] == 'PO'
     assert meta['filenames'] == ['EUPO1801.txt']
 
 
-@pytest.mark.skip(reason="SRML server is undergoing maintenance as of 12-2023")
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_srml_nonexisting_month_warning():
-    with pytest.warns(UserWarning, match='file was not found: EUPO0912.txt'):
+    with pytest.warns(UserWarning, match='file was not found: EUO/EUO_2009/EUPO0912.txt'):  # noqa: E501
         # Request data for a period where not all files exist
-        # Eugene (EU) station started reporting 1-minute data in January 2010
+        # Eugene (EUO) station started reporting 1-minute data in January 2010
         data, meta = data, meta = srml.get_srml(
-            station='EU', start='2009-12-01', end='2010-01-31', filetype='PO')
+            station='EUO', start='2009-12-01', end='2010-01-31', filetype='PO')

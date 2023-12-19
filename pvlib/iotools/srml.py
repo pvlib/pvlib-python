@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import urllib
 import warnings
+import os
 
 from pvlib._deprecation import deprecated
 
@@ -25,6 +26,8 @@ VARIABLE_MAP = {
     '933': 'relative_humidity',
     '937': 'temp_cell',
 }
+
+URL = 'http://is-solardata01.uoregon.edu/Step3B_Original_Format/'
 
 
 def read_srml(filename, map_variables=True):
@@ -204,7 +207,7 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO',
     raw or processed data. For instance, `RO` designates raw, one minute
     data and `PO` designates processed one minute data. The availability
     of file types varies between sites. Below is a table of file types
-    and their time intervals. See [1] for site information.
+    and their time intervals. See [1]_ for site information.
 
     ============= ============ ==================
     time interval raw filetype processed filetype
@@ -231,7 +234,7 @@ def read_srml_month_from_solardat(station, year, month, filetype='PO',
 
 
 def get_srml(station, start, end, filetype='PO', map_variables=True,
-             url="http://solardat.uoregon.edu/download/Archive/"):
+             url=URL):
     """Request data from UoO SRML and read it into a Dataframe.
 
     The University of Oregon Solar Radiation Monitoring Laboratory (SRML) is
@@ -242,7 +245,7 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     Parameters
     ----------
     station : str
-        Two letter station abbreviation.
+        Three letter station abbreviation.
     start : datetime-like
         First day of the requested period
     end : datetime-like
@@ -252,7 +255,7 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     map_variables : bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
-    url : str, default: 'http://solardat.uoregon.edu/download/Archive/'
+    url : str, default: :const:`URL`
         API endpoint URL
 
     Returns
@@ -292,6 +295,10 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
        `http://solardat.uoregon.edu/StationIDCodes.html
        <http://solardat.uoregon.edu/StationIDCodes.html>`_
     """
+    # prior to pvlib 0.10.3 the function used 2-letter abbreviations
+    if len(station) != 3:
+        raise ValueError('`station` should be a 3 letter station abbreviation')
+
     # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
     start = pd.to_datetime(start)
     end = pd.to_datetime(end)
@@ -299,11 +306,10 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     # Generate list of months
     months = pd.date_range(
         start, end.replace(day=1) + pd.DateOffset(months=1), freq='1M')
-    months_str = months.strftime('%y%m')
 
-    # Generate list of filenames
-    filenames = [f"{station}{filetype}{m}.txt" for m in months_str]
-
+    # Generate list of filenames (note basename uses two-letter abbreviation)
+    filenames = [f"{station}/{station}_{m.year}/{station[:2]}{filetype}{m.strftime('%y%m')}.txt" for m in months]  # noqa: E501
+    print(filenames)
     dfs = []  # Initialize list of monthly dataframes
     for f in filenames:
         try:
@@ -316,6 +322,6 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
 
     meta = {'filetype': filetype,
             'station': station,
-            'filenames': filenames}
+            'filenames': [os.path.basename(f) for f in filenames]}
 
     return data, meta

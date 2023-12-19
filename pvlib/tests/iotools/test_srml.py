@@ -114,6 +114,7 @@ def test_get_srml_nonexisting_month_warning():
         data, meta = data, meta = srml.get_srml(
             station='EUO', start='2009-12-01', end='2010-01-31', filetype='PO')
 
+
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_srml_station_two_letter_error():
@@ -122,4 +123,4 @@ def test_get_srml_station_two_letter_error():
         # two-letter station code. E.g., Eugene, Oregon station used to be EU
         # and now goes by EUO
         data, meta = data, meta = srml.get_srml(
-            station='EU', start='2022-12-01', end='2022-01-31', filetype='PO')
+            station='EU', start='2022-01-01', end='2022-01-31', filetype='PO')

@@ -108,7 +108,8 @@ def get_solcast_tmy(
 
     See Also
     --------
-    pvlib.iotools.read_solaranywhere, pvlib.iotools.get_bsrn
+    pvlib.iotools.get_solcast_historic, pvlib.iotools.get_solcast_forecast,
+    pvlib.iotools.get_solcast_live
     """
 
     params = dict(
@@ -138,7 +139,7 @@ def get_solcast_historic(
     map_variables=True,
     **kwargs
 ):
-    """Get historical irradiance and weather estimates
+    """Get historical irradiance and weather estimates.
 
     for up to 31 days of data at a time for a requested location,
     derived from satellite (clouds and irradiance
@@ -209,7 +210,8 @@ def get_solcast_historic(
 
     See Also
     --------
-    pvlib.iotools.read_solaranywhere, pvlib.iotools.get_bsrn
+    pvlib.iotools.get_solcast_tmy, pvlib.iotools.get_solcast_forecast,
+    pvlib.iotools.get_solcast_live
     """
 
     params = dict(
@@ -290,7 +292,8 @@ def get_solcast_forecast(
 
     See Also
     --------
-    pvlib.iotools.read_solaranywhere, pvlib.iotools.get_bsrn
+    pvlib.iotools.get_solcast_tmy, pvlib.iotools.get_solcast_historic,
+    pvlib.iotools.get_solcast_live
     """
 
     params = dict(
@@ -376,7 +379,8 @@ def get_solcast_live(
 
     See Also
     --------
-    pvlib.iotools.read_solaranywhere, pvlib.iotools.get_bsrn
+    pvlib.iotools.get_solcast_tmy, pvlib.iotools.get_solcast_historic,
+    pvlib.iotools.get_solcast_forecast
     """
 
     params = dict(
@@ -437,7 +441,7 @@ def _get_solcast(
         api_key,
         map_variables
 ):
-    """retrieves weather, irradiance and power data from the Solcast API.
+    """Retrieve weather, irradiance and power data from the Solcast API.
 
     Parameters
     ----------

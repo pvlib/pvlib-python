@@ -832,7 +832,7 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     # Calculate refraction correction
     Elevation = SunEl
     TanEl = pd.Series(np.tan(np.radians(Elevation)), index=time_utc)
-    Refract = pd.Series(0, index=time_utc)
+    Refract = pd.Series(0., index=time_utc)
 
     Refract[(Elevation > 5) & (Elevation <= 85)] = (
         58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5))

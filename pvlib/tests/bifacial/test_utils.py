@@ -120,13 +120,15 @@ def test_vf_row_sky_2d(test_system_fixed_tilt):
 def test_vf_row_sky_2d_integ(test_system_fixed_tilt):
     ts, _, _ = test_system_fixed_tilt
     # with float input, check end position
-    vf = utils.vf_row_sky_2d_integ(ts['surface_tilt'], ts['gcr'], 1., 1.)
+    with np.errstate(invalid='ignore'):
+        vf = utils.vf_row_sky_2d_integ(ts['surface_tilt'], ts['gcr'], 1., 1.)
     expected = utils.vf_row_sky_2d(ts['surface_tilt'], ts['gcr'], 1.)
     assert np.isclose(vf, expected)
     # with array input
     fx0 = np.array([0., 0.5])
     fx1 = np.array([0., 0.8])
-    vf = utils.vf_row_sky_2d_integ(ts['surface_tilt'], ts['gcr'], fx0, fx1)
+    with np.errstate(invalid='ignore'):
+        vf = utils.vf_row_sky_2d_integ(ts['surface_tilt'], ts['gcr'], fx0, fx1)
     phi = masking_angle(ts['surface_tilt'], ts['gcr'], fx0[0])
     y0 = 0.5 * (1 + cosd(ts['surface_tilt'] + phi))
     x = np.arange(fx0[1], fx1[1], 1e-4)
@@ -161,13 +163,17 @@ def test_vf_row_ground_2d(test_system_fixed_tilt):
 def test_vf_ground_2d_integ(test_system_fixed_tilt):
     ts, _, _ = test_system_fixed_tilt
     # with float input, check end position
-    vf = utils.vf_row_ground_2d_integ(ts['surface_tilt'], ts['gcr'], 0., 0.)
+    with np.errstate(invalid='ignore'):
+        vf = utils.vf_row_ground_2d_integ(ts['surface_tilt'], ts['gcr'],
+                                          0., 0.)
     expected = utils.vf_row_ground_2d(ts['surface_tilt'], ts['gcr'], 0.)
     assert np.isclose(vf, expected)
     # with array input
     fx0 = np.array([0., 0.5])
     fx1 = np.array([0., 0.8])
-    vf = utils.vf_row_ground_2d_integ(ts['surface_tilt'], ts['gcr'], fx0, fx1)
+    with np.errstate(invalid='ignore'):
+        vf = utils.vf_row_ground_2d_integ(ts['surface_tilt'], ts['gcr'],
+                                          fx0, fx1)
     phi = ground_angle(ts['surface_tilt'], ts['gcr'], fx0[0])
     y0 = 0.5 * (1 - cosd(phi - ts['surface_tilt']))
     x = np.arange(fx0[1], fx1[1], 1e-4)

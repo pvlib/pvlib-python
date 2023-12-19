@@ -11,7 +11,8 @@ irradiance to the module's surface.
 import numpy as np
 import pandas as pd
 import functools
-from pvlib.tools import cosd, sind
+from scipy.optimize import minimize
+from pvlib.tools import cosd, sind, acosd
 
 # a dict of required parameter names for each IAM model
 # keys are the function names for the IAM models
@@ -124,7 +125,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
 
     n_ar : numeric, optional
         The effective index of refraction of the anti-reflective (AR) coating
-        (unitless). If n_ar is None (default), no AR coating is applied.
+        (unitless). If ``n_ar`` is not supplied, no AR coating is applied.
         A typical value for the effective index of an AR coating is 1.29.
 
     Returns
@@ -338,7 +339,7 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
     c2 : float
         Second fitting parameter for the expressions that approximate the
         integral of diffuse irradiance coming from different directions.
-        If c2 is None, it will be calculated according to the linear
+        If c2 is not specified, it will be calculated according to the linear
         relationship given in [3]_.
 
     Returns
@@ -514,7 +515,7 @@ def sapm(aoi, module, upper=None):
         A dict or Series with the SAPM IAM model parameters.
         See the :py:func:`sapm` notes section for more details.
 
-    upper : None or float, default None
+    upper : float, optional
         Upper limit on the results.
 
     Returns
@@ -541,7 +542,7 @@ def sapm(aoi, module, upper=None):
 
     .. [3] B.H. King et al, "Recent Advancements in Outdoor Measurement
        Techniques for Angle of Incidence Effects," 42nd IEEE PVSC (2015).
-       DOI: 10.1109/PVSC.2015.7355849
+       :doi:`10.1109/PVSC.2015.7355849`
 
     See Also
     --------
@@ -607,7 +608,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     .. [1] B. Marion "Numerical method for angle-of-incidence correction
        factors for diffuse radiation incident photovoltaic modules",
        Solar Energy, Volume 147, Pages 344-348. 2017.
-       DOI: 10.1016/j.solener.2017.03.027
+       :doi:`10.1016/j.solener.2017.03.027`
 
     Examples
     --------
@@ -694,7 +695,7 @@ def marion_integrate(function, surface_tilt, region, num=None):
     .. [1] B. Marion "Numerical method for angle-of-incidence correction
        factors for diffuse radiation incident photovoltaic modules",
        Solar Energy, Volume 147, Pages 344-348. 2017.
-       DOI: 10.1016/j.solener.2017.03.027
+       :doi:`10.1016/j.solener.2017.03.027`
 
     Examples
     --------
@@ -856,7 +857,7 @@ def schlick_diffuse(surface_tilt):
     Unlike the Fresnel reflection factor itself, Schlick's approximation can
     be integrated analytically to derive a closed-form equation for diffuse
     IAM factors for the portions of the sky and ground visible
-    from a tilted surface if isotropic distributions are assumed.  
+    from a tilted surface if isotropic distributions are assumed.
     This function implements the integration of the
     Schlick approximation provided by Xie et al. [2]_.
 
@@ -940,3 +941,362 @@ def schlick_diffuse(surface_tilt):
         cug = pd.Series(cug, surface_tilt.index)
 
     return cuk, cug
+
+
+def _get_model(model_name):
+    # check that model is implemented
+    model_dict = {'ashrae': ashrae, 'martin_ruiz': martin_ruiz,
+                  'physical': physical}
+    try:
+        model = model_dict[model_name]
+    except KeyError:
+        raise NotImplementedError(f"The {model_name} model has not been "
+                                  "implemented")
+
+    return model
+
+
+def _check_params(model_name, params):
+    # check that the parameters passed in with the model
+    # belong to the model
+    exp_params = _IAM_MODEL_PARAMS[model_name]
+    if set(params.keys()) != exp_params:
+        raise ValueError(f"The {model_name} model was expecting to be passed "
+                         "{', '.join(list(exp_params))}, but "
+                         "was handed {', '.join(list(params.keys()))}")
+
+
+def _sin_weight(aoi):
+    return 1 - sind(aoi)
+
+
+def _residual(aoi, source_iam, target, target_params,
+              weight=_sin_weight):
+    # computes a sum of weighted differences between the source model
+    # and target model, using the provided weight function
+
+    weights = weight(aoi)
+
+    # if aoi contains values outside of interval (0, 90), annihilate
+    # the associated weights (we don't want IAM values from AOI outside
+    # of (0, 90) to affect the fit; this is a possible issue when using
+    # `iam.fit`, but not an issue when using `iam.convert`, since in
+    # that case aoi is defined internally)
+    weights = weights * np.logical_and(aoi >= 0, aoi <= 90).astype(int)
+
+    diff = np.abs(source_iam - np.nan_to_num(target(aoi, *target_params)))
+    return np.sum(diff * weights)
+
+
+def _get_ashrae_intercept(b):
+    # find x-intercept of ashrae model
+    return acosd(b / (1 + b))
+
+
+def _ashrae_to_physical(aoi, ashrae_iam, weight, fix_n, b):
+    if fix_n:
+        # the ashrae model has an x-intercept less than 90
+        # we solve for this intercept, and fix n so that the physical
+        # model will have the same x-intercept
+        intercept = _get_ashrae_intercept(b)
+        n = sind(intercept)
+
+        # with n fixed, we will optimize for L (recall that K and L always
+        # appear in the physical model as a product, so it is enough to
+        # optimize for just L, and to fix K=4)
+
+        # we will pass n to the optimizer to simplify things later on,
+        # but because we are setting (n, n) as the bounds, the optimizer
+        # will leave n fixed
+        bounds = [(1e-6, 0.08), (n, n)]
+        guess = [0.002, n]
+
+    else:
+        # we don't fix n, so physical won't have same x-intercept as ashrae
+        # the fit will be worse, but the parameters returned for the physical
+        # model will be more realistic
+        bounds = [(1e-6, 0.08), (0.8, 2)]  # L, n
+        guess = [0.002, 1.0]
+
+    def residual_function(target_params):
+        L, n = target_params
+        return _residual(aoi, ashrae_iam, physical, [n, 4, L], weight)
+
+    return residual_function, guess, bounds
+
+
+def _martin_ruiz_to_physical(aoi, martin_ruiz_iam, weight, a_r):
+    # we will optimize for both n and L (recall that K and L always
+    # appear in the physical model as a product, so it is enough to
+    # optimize for just L, and to fix K=4)
+    # set lower bound for n at 1.0 so that x-intercept will be at 90
+    # order for Powell's method depends on a_r value
+    bounds = [(1e-6, 0.08), (1.05, 2)]  # L, n
+    guess = [0.002, 1.1]  # L, n
+    # get better results if we reverse order to n, L at high a_r
+    if a_r > 0.22:
+        bounds.reverse()
+        guess.reverse()
+
+    # the product of K and L is more important in determining an initial
+    # guess for the location of the minimum, so we pass L in first
+    def residual_function(target_params):
+        # unpack target_params for either search order
+        if target_params[0] < target_params[1]:
+            # L will always be less than n
+            L, n = target_params
+        else:
+            n, L = target_params
+        return _residual(aoi, martin_ruiz_iam, physical, [n, 4, L], weight)
+
+    return residual_function, guess, bounds
+
+
+def _minimize(residual_function, guess, bounds, xtol):
+    if xtol is not None:
+        options = {'xtol': xtol}
+    else:
+        options = None
+    with np.errstate(invalid='ignore'):
+        optimize_result = minimize(residual_function, guess, method="powell",
+                                   bounds=bounds, options=options)
+
+    if not optimize_result.success:
+        try:
+            message = "Optimizer exited unsuccessfully:" \
+                      + optimize_result.message
+        except AttributeError:
+            message = "Optimizer exited unsuccessfully: \
+                       No message explaining the failure was returned. \
+                       If you would like to see this message, please \
+                       update your scipy version (try version 1.8.0 \
+                       or beyond)."
+        raise RuntimeError(message)
+
+    return optimize_result
+
+
+def _process_return(target_name, optimize_result):
+    if target_name == "ashrae":
+        target_params = {'b': optimize_result.x.item()}
+
+    elif target_name == "martin_ruiz":
+        target_params = {'a_r': optimize_result.x.item()}
+
+    elif target_name == "physical":
+        L, n = optimize_result.x
+        # have to unpack order because search order may be different
+        if L > n:
+            L, n = n, L
+        target_params = {'n': n, 'K': 4, 'L': L}
+
+    return target_params
+
+
+def convert(source_name, source_params, target_name, weight=_sin_weight,
+            fix_n=True, xtol=None):
+    """
+    Convert a source IAM model to a target IAM model.
+
+    Parameters
+    ----------
+    source_name : str
+        Name of the source model. Must be ``'ashrae'``, ``'martin_ruiz'``, or
+        ``'physical'``.
+
+    source_params : dict
+        A dictionary of parameters for the source model.
+
+            If source model is ``'ashrae'``, the dictionary must contain
+            the key ``'b'``.
+
+            If source model is ``'martin_ruiz'``, the dictionary must
+            contain the key ``'a_r'``.
+
+            If source model is ``'physical'``, the dictionary must
+            contain the keys ``'n'``, ``'K'``, and ``'L'``.
+
+    target_name : str
+        Name of the target model. Must be ``'ashrae'``, ``'martin_ruiz'``, or
+        ``'physical'``.
+
+    weight : function, optional
+        A single-argument function of AOI (degrees) that calculates weights for
+        the residuals between models. Must return a float or an array-like
+        object. The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
+
+    fix_n : bool, default True
+        A flag to determine which method is used when converting from the
+        ASHRAE model to the physical model.
+
+        When ``source_name`` is ``'ashrae'`` and ``target_name`` is
+        ``'physical'``, if `fix_n` is ``True``,
+        :py:func:`iam.convert` will fix ``n`` so that the returned physical
+        model has the same x-intercept as the inputted ASHRAE model.
+        Fixing ``n`` like this improves the fit of the conversion, but often
+        returns unrealistic values for the parameters of the physical model.
+        If more physically meaningful parameters are wanted,
+        set `fix_n` to False.
+
+    xtol : float, optional
+        Passed to scipy.optimize.minimize.
+
+    Returns
+    -------
+    dict
+        Parameters for the target model.
+
+            If target model is ``'ashrae'``, the dictionary will contain
+            the key ``'b'``.
+
+            If target model is ``'martin_ruiz'``, the dictionary will
+            contain the key ``'a_r'``.
+
+            If target model is ``'physical'``, the dictionary will
+            contain the keys ``'n'``, ``'K'``, and ``'L'``.
+
+    Note
+    ----
+    Target model parameters are determined by minimizing
+
+    .. math::
+
+        \\sum_{\\theta=0}^{90} weight \\left(\\theta \\right) \\times
+        \\| source \\left(\\theta \\right) - target \\left(\\theta \\right) \\|
+
+    The sum is over :math:`\\theta = 0, 1, 2, ..., 90`.
+
+    References
+    ----------
+    .. [1] Jones, A. R., Hansen, C. W., Anderson, K. S. Parameter estimation
+       for incidence angle modifier models for photovoltaic modules. Sandia
+       report SAND2023-13944 (2023).
+
+    See Also
+    --------
+    pvlib.iam.fit
+    pvlib.iam.ashrae
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    """
+    source = _get_model(source_name)
+    target = _get_model(target_name)
+
+    aoi = np.linspace(0, 90, 91)
+    _check_params(source_name, source_params)
+    source_iam = source(aoi, **source_params)
+
+    if target_name == "physical":
+        # we can do some special set-up to improve the fit when the
+        # target model is physical
+        if source_name == "ashrae":
+            residual_function, guess, bounds = \
+                _ashrae_to_physical(aoi, source_iam, weight, fix_n,
+                                    source_params['b'])
+        elif source_name == "martin_ruiz":
+            residual_function, guess, bounds = \
+                _martin_ruiz_to_physical(aoi, source_iam, weight,
+                                         source_params['a_r'])
+
+    else:
+        # otherwise, target model is ashrae or martin_ruiz, and scipy
+        # does fine without any special set-up
+        bounds = [(1e-04, 1)]
+        guess = [1e-03]
+
+        def residual_function(target_param):
+            return _residual(aoi, source_iam, target, target_param, weight)
+
+    optimize_result = _minimize(residual_function, guess, bounds,
+                                xtol=xtol)
+
+    return _process_return(target_name, optimize_result)
+
+
+def fit(measured_aoi, measured_iam, model_name, weight=_sin_weight, xtol=None):
+    """
+    Find model parameters that best fit the data.
+
+    Parameters
+    ----------
+    measured_aoi : array-like
+        Angle of incidence values associated with the
+        measured IAM values. [degrees]
+
+    measured_iam : array-like
+        IAM values. [unitless]
+
+    model_name : str
+        Name of the model to be fit. Must be ``'ashrae'``, ``'martin_ruiz'``,
+        or ``'physical'``.
+
+    weight : function, optional
+        A single-argument function of AOI (degrees) that calculates weights for
+        the residuals between models. Must return a float or an array-like
+        object. The default weight function is :math:`f(aoi) = 1 - sin(aoi)`.
+
+    xtol : float, optional
+        Passed to scipy.optimize.minimize.
+
+    Returns
+    -------
+    dict
+        Parameters for target model.
+
+            If target model is ``'ashrae'``, the dictionary will contain
+            the key ``'b'``.
+
+            If target model is ``'martin_ruiz'``, the dictionary will
+            contain the key ``'a_r'``.
+
+            If target model is ``'physical'``, the dictionary will
+            contain the keys ``'n'``, ``'K'``, and ``'L'``.
+
+    References
+    ----------
+    .. [1] Jones, A. R., Hansen, C. W., Anderson, K. S. Parameter estimation
+       for incidence angle modifier models for photovoltaic modules. Sandia
+       report SAND2023-13944 (2023).
+
+    Note
+    ----
+    Model parameters are determined by minimizing
+
+    .. math::
+
+        \\sum_{AOI} weight \\left( AOI \\right) \\times
+        \\| IAM \\left( AOI \\right) - model \\left( AOI \\right) \\|
+
+    The sum is over ``measured_aoi`` and :math:`IAM \\left( AOI \\right)`
+    is ``measured_IAM``.
+
+    See Also
+    --------
+    pvlib.iam.convert
+    pvlib.iam.ashrae
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    """
+    target = _get_model(model_name)
+
+    if model_name == "physical":
+        bounds = [(0, 0.08), (1, 2)]
+        guess = [0.002, 1+1e-08]
+
+        def residual_function(target_params):
+            L, n = target_params
+            return _residual(measured_aoi, measured_iam, target, [n, 4, L],
+                             weight)
+
+    # otherwise, target_name is martin_ruiz or ashrae
+    else:
+        bounds = [(1e-08, 1)]
+        guess = [0.05]
+
+        def residual_function(target_param):
+            return _residual(measured_aoi, measured_iam, target,
+                             target_param, weight)
+
+    optimize_result = _minimize(residual_function, guess, bounds, xtol)
+
+    return _process_return(model_name, optimize_result)

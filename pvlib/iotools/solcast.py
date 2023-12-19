@@ -381,7 +381,7 @@ def _solcast2pvlib(data):
 
     Returns
     -------
-    a pandas.DataFrame with the data cast to PVLib's conventions
+    a pandas.DataFrame with the data cast to pvlib's conventions
     """
     # move from period_end to period_middle as per pvlib convention
     # to support Pandas 0.25 we cast PTXX to XX as ISO8601

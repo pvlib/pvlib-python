@@ -116,7 +116,7 @@ def test_get_srml_nonexisting_month_warning():
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_get_srml_nonexisting_month_warning():
+def test_get_srml_station_two_letter_error():
     with pytest.raises(ValueError, match='should be a 3 letter station abbreviation'):  # noqa: E501
         # Test that an error is raised when specifying a station using the old
         # two-letter station code. E.g., Eugene, Oregon station used to be EU

@@ -1,15 +1,12 @@
 import pandas as pd
-from pvlib.iotools.solcast import (
-    get_solcast_live, get_solcast_tmy, _solcast2pvlib, get_solcast_historic,
-    get_solcast_forecast
-)
+from pvlib.iotools import solcast
 import pytest
 
 
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
         "live/radiation_and_weather",
-        get_solcast_live,
+        solcast.get_solcast_live,
         dict(
             api_key="1234",
             latitude=-33.856784,
@@ -41,7 +38,7 @@ def test_get_solcast_live(
 
     pd.testing.assert_frame_equal(
         function(**params)[0],
-        _solcast2pvlib(
+        solcast._solcast2pvlib(
             pd.DataFrame.from_dict(
                 json_response[list(json_response.keys())[0]])
         )
@@ -51,7 +48,7 @@ def test_get_solcast_live(
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
         "tmy/radiation_and_weather",
-        get_solcast_tmy,
+        solcast.get_solcast_tmy,
         dict(
             api_key="1234",
             latitude=-33.856784,
@@ -83,7 +80,7 @@ def test_get_solcast_tmy(
 
     pd.testing.assert_frame_equal(
         function(**params)[0],
-        _solcast2pvlib(
+        solcast._solcast2pvlib(
             pd.DataFrame.from_dict(
                 json_response[list(json_response.keys())[0]])
         )
@@ -119,14 +116,14 @@ def test_get_solcast_tmy(
     )
 ])
 def test_solcast2pvlib(in_df, out_df):
-    df = _solcast2pvlib(in_df)
+    df = solcast._solcast2pvlib(in_df)
     pd.testing.assert_frame_equal(df.astype(float), out_df.astype(float))
 
 
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
         "historic/radiation_and_weather",
-        get_solcast_historic,
+        solcast.get_solcast_historic,
         dict(
             api_key="1234",
             latitude=-33.856784,
@@ -160,7 +157,7 @@ def test_get_solcast_historic(
 
     pd.testing.assert_frame_equal(
         function(**params)[0],
-        _solcast2pvlib(
+        solcast._solcast2pvlib(
             pd.DataFrame.from_dict(
                 json_response[list(json_response.keys())[0]]
             )
@@ -171,7 +168,7 @@ def test_get_solcast_historic(
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
         "forecast/radiation_and_weather",
-        get_solcast_forecast,
+        solcast.get_solcast_forecast,
         dict(
             api_key="1234",
             latitude=-33.856784,
@@ -207,7 +204,7 @@ def test_get_solcast_forecast(
 
     pd.testing.assert_frame_equal(
         function(**params)[0],
-        _solcast2pvlib(
+        solcast._solcast2pvlib(
             pd.DataFrame.from_dict(
                 json_response[list(json_response.keys())[0]]
             )

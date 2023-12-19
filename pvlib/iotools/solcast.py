@@ -76,7 +76,7 @@ def get_solcast_tmy(
     Returns
     -------
     data : pandas.DataFrame
-        containing the values for the parameters requested.The times
+        containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
     metadata: dict
         latitude and longitude of the request.
@@ -105,6 +105,10 @@ def get_solcast_tmy(
     .. [1] `Solcast TMY Docs <https://solcast.com/tmy>`_
     .. [2] `Get an API Key <https://toolkit.solcast.com.au/register>`_
     .. [3] `Solcast API Docs <https://docs.solcast.com.au/>`_
+
+    See Also
+    --------
+    pvlib.iotools.read_solaranywhere, pvlib.iotools.get_bsrn
     """
 
     params = dict(
@@ -134,7 +138,7 @@ def get_solcast_historic(
     map_variables=True,
     **kwargs
 ):
-    """Get historical irradiance and weather estimated actuals
+    """Get historical irradiance and weather estimates
 
     for up to 31 days of data at a time for a requested location,
     derived from satellite (clouds and irradiance
@@ -172,7 +176,7 @@ def get_solcast_historic(
     Returns
     -------
     data : pandas.DataFrame
-        containing the values for the parameters requested.The times
+        containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
     metadata: dict
         latitude and longitude of the request.
@@ -202,6 +206,10 @@ def get_solcast_historic(
     ----------
     .. [1] `Get an API Key <https://toolkit.solcast.com.au/register>`_
     .. [2] `Solcast API Docs <https://docs.solcast.com.au/>`_
+
+    See Also
+    --------
+    pvlib.iotools.read_solaranywhere, pvlib.iotools.get_bsrn
     """
 
     params = dict(
@@ -279,6 +287,10 @@ def get_solcast_forecast(
     ----------
     .. [1] `Get an API Key <https://toolkit.solcast.com.au/register>`_
     .. [2] `Solcast API Docs <https://docs.solcast.com.au/>`_
+
+    See Also
+    --------
+    pvlib.iotools.read_solaranywhere, pvlib.iotools.get_bsrn
     """
 
     params = dict(
@@ -324,7 +336,7 @@ def get_solcast_live(
     Returns
     -------
     data : pandas.DataFrame
-        containing the values for the parameters requested.The times
+        containing the values for the parameters requested. The times
         in the DataFrame index indicate the midpoint of each interval.
     metadata: dict
         latitude and longitude of the request.
@@ -361,6 +373,10 @@ def get_solcast_live(
     ----------
     .. [1] `Get an API Key <https://toolkit.solcast.com.au/register>`_
     .. [2] `Solcast API Docs <https://docs.solcast.com.au/>`_
+
+    See Also
+    --------
+    pvlib.iotools.read_solaranywhere, pvlib.iotools.get_bsrn
     """
 
     params = dict(
@@ -421,7 +437,7 @@ def _get_solcast(
         api_key,
         map_variables
 ):
-    """retrieves weather, irradiance and power data from the Solcast API
+    """retrieves weather, irradiance and power data from the Solcast API.
 
     Parameters
     ----------

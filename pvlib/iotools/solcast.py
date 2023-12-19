@@ -153,7 +153,7 @@ def get_solcast_historic(
         Must include one of ``end`` or ``duration``.
     duration : optional, default is None
         Must include either  ``end`` or ``duration``.
-        ISO_8601 compliant duration for the historic data,
+        ISO 8601 compliant duration for the historic data,
         like "P1D" for one day of data.
         Must be within 31 days of the ``start``.
     map_variables: bool, default: True

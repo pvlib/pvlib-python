@@ -155,7 +155,7 @@ def get_solcast_historic(
         Must include either  ``end`` or ``duration``.
         ISO 8601 compliant duration for the historic data,
         like "P1D" for one day of data.
-        Must be within 31 days of the ``start``.
+        Must be within 31 days of ``start``.
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.

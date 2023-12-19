@@ -386,7 +386,7 @@ def _solcast2pvlib(data):
     Parameters
     ----------
     data : pandas.DataFrame
-        contains the data as returned from the Solcast API
+        contains the data returned from the Solcast API
 
     Returns
     -------

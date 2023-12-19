@@ -1,8 +1,13 @@
+from unittest.mock import patch
+
+from unittest.mock import patch
+
 import pandas as pd
 import pvlib
 import pytest
 
 
+@pytest.mark.parametrize("map_variables", [True, False])
 @pytest.mark.parametrize("endpoint,params,api_key,json_response", [
     (
         "live/radiation_and_weather",
@@ -24,7 +29,7 @@ import pytest
          }
     ),
 ])
-def test__get_solcast(requests_mock, endpoint, params, api_key, json_response):
+def test__get_solcast(requests_mock, endpoint, params, api_key, json_response, map_variables):
     mock_url = f"https://api.solcast.com.au/data/{endpoint}?" \
                f"latitude={params['latitude']}&" \
                f"longitude={params['longitude']}&" \
@@ -52,7 +57,7 @@ def test__get_solcast(requests_mock, endpoint, params, api_key, json_response):
             json_response[list(json_response.keys())[0]])
     )
 
-
+@pytest.mark.parametrize("map_variables", [True, False])
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
         "live/radiation_and_weather",
@@ -76,25 +81,32 @@ def test__get_solcast(requests_mock, endpoint, params, api_key, json_response):
     ),
 ])
 def test_get_solcast_live(
-    requests_mock, endpoint, function, params, json_response
+    requests_mock, endpoint, function, params, json_response, map_variables
 ):
-
-    mock_url = f"https://api.solcast.com.au/data/{endpoint}?" \
-               f"&latitude={params['latitude']}&" \
-               f"longitude={params['longitude']}&" \
-               f"output_parameters={params['output_parameters']}&format=json"
+    mock_url = (
+        f"https://api.solcast.com.au/data/{endpoint}?"
+        f"&latitude={params['latitude']}&"
+        f"longitude={params['longitude']}&"
+        f"output_parameters={params['output_parameters']}&format=json"
+    )
 
     requests_mock.get(mock_url, json=json_response)
 
-    pd.testing.assert_frame_equal(
-        function(**params)[0],
-        pvlib.iotools.solcast._solcast2pvlib(
-            pd.DataFrame.from_dict(
-                json_response[list(json_response.keys())[0]])
+    if map_variables:
+        pd.testing.assert_frame_equal(
+            function(**params, map_variables=map_variables)[0],
+            pvlib.iotools.solcast._solcast2pvlib(
+                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+            ),
         )
-    )
+    else:
+        pd.testing.assert_frame_equal(
+            function(**params, map_variables=map_variables)[0],
+            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+        )
 
 
+@pytest.mark.parametrize("map_variables", [True, False])
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
         "tmy/radiation_and_weather",
@@ -119,7 +131,7 @@ def test_get_solcast_live(
     ),
 ])
 def test_get_solcast_tmy(
-    requests_mock, endpoint, function, params, json_response
+    requests_mock, endpoint, function, params, json_response, map_variables
 ):
 
     mock_url = f"https://api.solcast.com.au/data/{endpoint}?" \
@@ -128,13 +140,18 @@ def test_get_solcast_tmy(
 
     requests_mock.get(mock_url, json=json_response)
 
-    pd.testing.assert_frame_equal(
-        function(**params)[0],
-        pvlib.iotools.solcast._solcast2pvlib(
-            pd.DataFrame.from_dict(
-                json_response[list(json_response.keys())[0]])
+    if map_variables:
+        pd.testing.assert_frame_equal(
+            function(**params, map_variables=map_variables)[0],
+            pvlib.iotools.solcast._solcast2pvlib(
+                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+            ),
         )
-    )
+    else:
+        pd.testing.assert_frame_equal(
+            function(**params, map_variables=map_variables)[0],
+            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+        )
 
 
 @pytest.mark.parametrize("in_df,out_df", [
@@ -170,6 +187,7 @@ def test_solcast2pvlib(in_df, out_df):
     pd.testing.assert_frame_equal(df.astype(float), out_df.astype(float))
 
 
+@pytest.mark.parametrize("map_variables", [True, False])
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
         "historic/radiation_and_weather",
@@ -197,7 +215,7 @@ def test_solcast2pvlib(in_df, out_df):
     ),
 ])
 def test_get_solcast_historic(
-    requests_mock, endpoint, function, params, json_response
+    requests_mock, endpoint, function, params, json_response, map_variables
 ):
     mock_url = f"https://api.solcast.com.au/data/{endpoint}?" \
                f"&latitude={params['latitude']}&" \
@@ -205,16 +223,21 @@ def test_get_solcast_historic(
 
     requests_mock.get(mock_url, json=json_response)
 
-    pd.testing.assert_frame_equal(
-        function(**params)[0],
-        pvlib.iotools.solcast._solcast2pvlib(
-            pd.DataFrame.from_dict(
-                json_response[list(json_response.keys())[0]]
-            )
+    if map_variables:
+        pd.testing.assert_frame_equal(
+            function(**params, map_variables=map_variables)[0],
+            pvlib.iotools.solcast._solcast2pvlib(
+                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+            ),
         )
-    )
+    else:
+        pd.testing.assert_frame_equal(
+            function(**params, map_variables=map_variables)[0],
+            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+        )
 
 
+@pytest.mark.parametrize("map_variables", [True, False])
 @pytest.mark.parametrize("endpoint,function,params,json_response", [
     (
         "forecast/radiation_and_weather",
@@ -244,7 +267,7 @@ def test_get_solcast_historic(
     ),
 ])
 def test_get_solcast_forecast(
-    requests_mock, endpoint, function, params, json_response
+    requests_mock, endpoint, function, params, json_response, map_variables
 ):
     mock_url = f"https://api.solcast.com.au/data/{endpoint}?" \
                f"&latitude={params['latitude']}&" \
@@ -252,11 +275,37 @@ def test_get_solcast_forecast(
 
     requests_mock.get(mock_url, json=json_response)
 
-    pd.testing.assert_frame_equal(
-        function(**params)[0],
-        pvlib.iotools.solcast._solcast2pvlib(
-            pd.DataFrame.from_dict(
-                json_response[list(json_response.keys())[0]]
-            )
+    if map_variables:
+        pd.testing.assert_frame_equal(
+            function(**params, map_variables=map_variables)[0],
+            pvlib.iotools.solcast._solcast2pvlib(
+                pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]])
+            ),
         )
-    )
+    else:
+        pd.testing.assert_frame_equal(
+            function(**params, map_variables=map_variables)[0],
+            pd.DataFrame.from_dict(json_response[list(json_response.keys())[0]]),
+        )
+
+
+@pytest.mark.parametrize(
+    "function",
+    [
+        pvlib.iotools.get_solcast_forecast,
+        pvlib.iotools.get_solcast_live,
+        pvlib.iotools.get_solcast_tmy,
+        pvlib.iotools.get_solcast_historic,
+    ],
+)
+@patch("requests.api.request")
+def test_raises_exception(mock_response, function):
+    dummy_args = {
+        "latitude": 0,
+        "longitude": 0,
+        "api_key": "",
+    }
+    with patch.object(mock_response, "status_code", return_value=404):
+        with pytest.raises(Exception):
+            function(**dummy_args)
+            mock_response.json.assert_called_once()

@@ -22,17 +22,17 @@ def solaranywhere_api_key():
 
 @pytest.fixture
 def high_resolution_index():
-    index = pd.date_range(start='2021-01-01 05:05', end='2021-01-03 05:00',
-                          freq='5min', tz='UTC')
-    index.name = 'ObservationTime(GMT)'
+    index = pd.date_range(start='2021-01-01 00:05-0500',
+                          end='2021-01-03 00:00-0500', freq='5min')
+    index.name = 'ObservationTime'
     return index
 
 
 @pytest.fixture
 def tmy_index():
-    index = pd.date_range(start='2000-01-01 06:00', periods=3*24, freq='1h',
-                          tz='UTC')
-    index.name = 'ObservationTime(GMT)'
+    index = pd.date_range(
+        start='2000-01-01 01:00-0500', periods=3*24, freq='1h')
+    index.name = 'ObservationTime'
     index.freq = None
     return index
 
@@ -58,7 +58,7 @@ def test_read_solaranywhere_high_resolution(high_resolution_index):
     assert meta['name'] == 'Burlington  United States'
     assert meta['TZ'] == -5.0
     assert meta['Data Version'] == '3.6'
-    assert meta['LatLon Resolution'] == '0.005'
+    assert meta['LatLon Resolution'] == 0.005
     # Check that columns are parsed correctly
     assert 'Albedo' in data.columns
     assert 'Global Horizontal Irradiance (GHI) W/m2' in data.columns
@@ -67,8 +67,8 @@ def test_read_solaranywhere_high_resolution(high_resolution_index):
     assert 'WindSpeedObservationType' in data.columns
     assert 'Particulate Matter 10 (µg/m3)' in data.columns
     # Check that data is parsed correctly
-    assert data.loc['2021-01-01 12:00:00+0000', 'Albedo'] == 0.6
-    assert data.loc['2021-01-01 12:00:00+0000', 'WindSpeed (m/s)'] == 0
+    assert data.loc['2021-01-01 07:00-0500', 'Albedo'] == 0.6
+    assert data.loc['2021-01-01 07:00-0500', 'WindSpeed (m/s)'] == 0
     # Assert that the index is parsed correctly
     pd.testing.assert_index_equal(data.index, high_resolution_index)
 
@@ -101,7 +101,7 @@ def test_read_solaranywhere_tmy(tmy_index, tmy_ghi_series):
     assert meta['name'] == 'Burlington  United States'
     assert meta['TZ'] == -5.0
     assert meta['Data Version'] == '3.6'
-    assert meta['LatLon Resolution'] == '0.010'
+    assert meta['LatLon Resolution'] == 0.010
     assert meta['Time Resolution'] == '60 minutes'
     # Assert that the index is parsed correctly
     pd.testing.assert_index_equal(data.index, tmy_index)

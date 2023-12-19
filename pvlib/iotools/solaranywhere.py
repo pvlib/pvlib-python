@@ -67,7 +67,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         First timestamp of the requested period. If a timezone is not
         specified, UTC is assumed. Not applicable for TMY data.
     end: datetime like, optional
-        Last timtestamp of the requested period. If a timezone is not
+        Last timestamp of the requested period. If a timezone is not
         specified, UTC is assumed. Not applicable for TMY data.
     source: str, default: 'SolarAnywhereLatest'
         Data source. Options include: 'SolarAnywhereLatest' (historical data),
@@ -279,10 +279,15 @@ def read_solaranywhere(filename, map_variables=True, encoding='iso-8859-1'):
             k, v = i.split(':')
             meta[k.strip()] = v.strip()
 
-    # Set index to UTC
-    data.index = pd.to_datetime(data['ObservationTime(GMT)'],
-                                format='%m/%d/%Y %H:%M', utc=True)
+    meta['LatLon Resolution'] = float(meta['LatLon Resolution'])
 
+    # Set index
+    data.index = pd.to_datetime(data['ObservationTime(LST)'],
+                                format='%m/%d/%Y %H:%M')
+    # Set timezone
+    data = data.tz_localize(int(meta['TZ'] * 3600))
+    # Remove notion of LST in case the index is later converted to another tz
+    data.index.name = data.index.name.replace('(LST)', '')
     # Missing values can be represented as: blanks, 'NaN', or -999
     data = data.replace(-999, np.nan)
 

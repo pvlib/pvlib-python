@@ -109,6 +109,8 @@ def test_read_solaranywhere_tmy(tmy_index, tmy_ghi_series):
     pd.testing.assert_series_equal(data['ghi'], tmy_ghi_series)
 
 
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solaranywhere_bad_probability_of_exceedance():
     # Test if ValueError is raised if probability_of_exceedance is not integer
     with pytest.raises(ValueError, match="must be an integer"):
@@ -117,11 +119,14 @@ def test_get_solaranywhere_bad_probability_of_exceedance():
             source='SolarAnywherePOELatest', probability_of_exceedance=0.5)
 
 
-def test_get_solaranywhere_missing_start_end():
+@pytest.mark.remote_data
+@requires_solaranywhere_credentials
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_solaranywhere_missing_start_end(solaranywhere_api_key):
     # Test if ValueError is raised if start/end is missing for non-TMY request
     with pytest.raises(ValueError, match="`end` is required."):
         pvlib.iotools.get_solaranywhere(
-            latitude=44, longitude=-73, api_key='empty',
+            latitude=44, longitude=-73, api_key=solaranywhere_api_key,
             source='SolarAnywhereLatest')
 
 

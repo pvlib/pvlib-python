@@ -87,8 +87,9 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         Probability of exceedance in the range of 1 to 99. Only relevant when
         requesting probability of exceedance (POE) time series. [%]
     variables: list-like, default: :const:`DEFAULT_VARIABLES`
-        Variables to retrieve (described in [4]_).  Available variables depend
-        on whether historical or TMY data is requested.
+        Variables to retrieve (described in [4]_), must include
+        'ObservationTime'. Available variables depend on whether historical or
+        TMY data is requested.
     missing_data: {'Omit', 'FillAverage'}, default: 'FillAverage'
         Method for treating missing data.
     url: str, default: :const:`pvlib.iotools.solaranywhere.URL`
@@ -103,7 +104,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     -------
     data: pandas.DataFrame
         Timeseries data from SolarAnywhere. The index is the observation time
-        (middle of period) localized to UTC.
+        (middle of period).
     metadata: dict
         Metadata available (includes site latitude, longitude, and altitude).
 
@@ -164,6 +165,9 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
 
     # Add start/end time if requesting non-TMY data
     if (start is not None) or (end is not None):
+        # Convert start/end to datetime in case they are specified as strings
+        start = pd.to_datetime(start)
+        end = pd.to_datetime(end)
         # start/end are required to have an associated time zone
         if start.tz is None:
             start = start.tz_localize('UTC')
@@ -199,7 +203,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
 
     # Extract time series data
     data = pd.DataFrame(results_json['WeatherDataResults'][0]['WeatherDataPeriods']['WeatherDataPeriods'])  # noqa: E501
-    # Set index and convert to UTC time
+    # Set datetime index
     data.index = pd.to_datetime(data['ObservationTime'])
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
@@ -207,6 +211,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
     # Parse metadata
     meta = results_json['WeatherDataResults'][0]['WeatherSourceInformation']
     meta['time_resolution'] = results_json['WeatherDataResults'][0]['WeatherDataPeriods']['TimeResolution_Minutes']  # noqa: E501
+    meta['spatial_resolution'] = spatial_resolution
     # Rename and convert applicable metadata parameters to floats
     meta['latitude'] = float(meta.pop('Latitude'))
     meta['longitude'] = float(meta.pop('Longitude'))
@@ -224,7 +229,7 @@ def read_solaranywhere(filename, map_variables=True, encoding='iso-8859-1'):
 
     Parameters
     ----------
-    fbuf: str
+    filename: str
         Filename
     map_variables: bool, default: True
         When true, renames columns of the DataFrame to pvlib variable names
@@ -236,7 +241,7 @@ def read_solaranywhere(filename, map_variables=True, encoding='iso-8859-1'):
     Returns
     -------
     data: pandas.DataFrame
-        Timeseries data from SolarAnywhere. Index is localized to UTC.
+        Timeseries data from SolarAnywhere.
     metadata: dict
         Metadata available in the file.
 

@@ -1,8 +1,8 @@
 .. _whatsnew_01030:
 
 
-v0.10.3 (Anticipated December, 2023)
-------------------------------------
+v0.10.3 (December 20, 2023)
+---------------------------
 
 
 Enhancements
@@ -27,10 +27,10 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Fixed CAMS error message handler in
-  :py:func:`pvlib.iotools.get_cams` (:issue:`1799`, :pull:`1905`)
+  :py:func:`pvlib.iotools.get_cams`. (:issue:`1799`, :pull:`1905`)
 * Fix mapping of the dew point column to ``temp_dew`` when ``map_variables``
   is True in :py:func:`pvlib.iotools.get_psm3`. (:pull:`1920`)
-* Fix :py:class:`pvlib.modelchain.ModelChain` to use attribute `clearsky_model`
+* Fix :py:class:`pvlib.modelchain.ModelChain` to use attribute `clearsky_model`.
   (:pull:`1924`)
 
 Testing
@@ -41,10 +41,10 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Create :ref:`weatherdata` User's Guide page. (:pull:`1754`)
-* Fixed a plotting issue in the IV curve gallery example (:pull:`1895`)
-* Added two examples to demonstrate reverse transposition (:pull:`1907`)
-* Fixed `detect_clearsky` example in `clearsky.rst` (:issue:`1914`)
-* Clarified purpose of `ModelChain.clearsky_model` (:pull:`1924`)
+* Fixed a plotting issue in the IV curve gallery example. (:pull:`1895`)
+* Added two examples to demonstrate reverse transposition. (:pull:`1907`)
+* Fixed :py:func:`~pvlib.clearsky.detect_clearsky` example in :ref:`clearsky`. (:issue:`1914`)
+* Clarified purpose of `ModelChain.clearsky_model`. (:pull:`1924`)
 
 
 Requirements
@@ -61,9 +61,15 @@ Contributors
 * Abigail Jones (:ghuser:`ajonesr`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Gilles Fischer (:ghuser:`GillesFischerV`)
-* Adam R. Jensen (:ghusuer:`AdamRJensen`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
 * :ghuser:`matsuobasho`
 * Harry Jack (:ghuser:`harry-solcast`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Lorenzo Riches (:ghuser:`lorenzo-solcast`)
-* Cliff Hansen (:ghuser:`cwhanse`)
+* Hugh Cutcher (:ghuser:`hugh-solcast`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Miroslav Šedivý (:ghuser:`eumiro`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Phoebe Pearce (:ghuser:`phoebe-p`)
+* Eva-Maria Grommes (:ghuser:`EwaGomez`)

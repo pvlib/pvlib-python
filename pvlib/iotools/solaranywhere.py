@@ -158,7 +158,7 @@ def get_solaranywhere(latitude, longitude, api_key, start=None, end=None,
         payload['Options']['ApplyTrueDynamics'] = True
 
     if probability_of_exceedance is not None:
-        if type(probability_of_exceedance) != int:
+        if not isinstance(probability_of_exceedance, int):
             raise ValueError('`probability_of_exceedance` must be an integer')
         payload['Options']['ProbabilityOfExceedance'] = \
             probability_of_exceedance

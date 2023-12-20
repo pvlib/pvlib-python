@@ -979,11 +979,14 @@ class Array:
 
         if self.temperature_model_parameters=={}:
             raise ValueError("The `temperature_model_parameters` is empty "
-                            "after an attempt to infer it.  "
+                            "after an attempt to infer it. "
                             "Pass either `temperature_model_parameters` to "
                             "`Array` or `PVSystem` (if not passing arrays), or "
                             "`racking_module` to the `Array` `mount` "
-                            "object and `module_type` to `Array.")
+                            "object and `module_type` to `Array.  For guidance "
+                            "on allowed values import the "
+                            "TEMPERATURE_MODEL_PARAMETERS global variable from "
+                            "the `temperature` moduleS")
 
         if array_losses_parameters is None:
             self.array_losses_parameters = {}

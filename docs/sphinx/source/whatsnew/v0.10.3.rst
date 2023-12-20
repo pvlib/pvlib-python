@@ -20,6 +20,9 @@ Enhancements
   read data from the Solcast API. (:issue:`1313`, :pull:`1875`)
 * Added :py:func:`~pvlib.iam.convert` and :py:func:`~pvlib.iam.fit` that
   convert between IAM models, and that fit an IAM model to data. (:issue:`1824`, :pull:`1827`)
+* Add :py:func:`pvlib.iotools.read_solaranywhere` and
+  :py:func:`pvlib.iotools.get_solaranywhere` for reading and retrieving
+  SolarAnywhere solar irradiance data. (:pull:`1497`, :discuss:`1310`)
 
 Bug fixes
 ~~~~~~~~~

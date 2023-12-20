@@ -96,6 +96,19 @@ requires_bsrn_credentials = pytest.mark.skipif(
 
 
 try:
+    # Attempt to load SolarAnywhere API key used for testing
+    # pvlib.iotools.get_solaranywhere
+    solaranywhere_api_key = os.environ["SOLARANYWHERE_API_KEY"]
+    has_solaranywhere_credentials = True
+except KeyError:
+    has_solaranywhere_credentials = False
+
+requires_solaranywhere_credentials = pytest.mark.skipif(
+    not has_solaranywhere_credentials,
+    reason='requires solaranywhere credentials')
+
+
+try:
     import statsmodels  # noqa: F401
     has_statsmodels = True
 except ImportError:

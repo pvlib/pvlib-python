@@ -15,7 +15,7 @@ TESTFILE_TMY = DATA_DIR / 'Burlington, United States SolarAnywhere Typical GHI Y
 @pytest.fixture(scope="module")
 def solaranywhere_api_key():
     """Supplies the pvlib's SolarAnywhere API key for testing purposes.
-    Users can freely registre for an API key."""
+    Users can freely register for an API key."""
     solaranywhere_api_key = os.environ["SOLARANYWHERE_API_KEY"]
     return solaranywhere_api_key
 

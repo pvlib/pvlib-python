@@ -714,6 +714,21 @@ def test_PVSystem_fuentes_module_height(mocker):
     assert spy.call_args[1]['module_height'] == 3
 
 
+@pytest.mark.parametrize("racking_model, module_type",
+                         [(None, None),
+                          (None, 'glass_polymer'),
+                          (None, 'glass_glass'),
+                          ('open_rack', None),
+                          ('close_mount', None),
+                          ('close_mount', 'glass_polymer'),
+                          ])
+def test_Array_temperature_model_params_error(racking_model, module_type):
+    mount = pvsystem.FixedMount(surface_tilt=20, surface_azimuth=180,
+                                racking_model=racking_model)
+    with pytest.raises(ValueError, match='`temperature_model_parameters` is empty'):
+        pvsystem.Array(mount = mount, module_type=module_type)
+
+
 def test_Array__infer_temperature_model_params():
     array = pvsystem.Array(mount=FixedMount(0, 180,
                                             racking_model='open_rack'),

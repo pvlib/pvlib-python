@@ -63,7 +63,6 @@ Contributors
 * Harry Jack (:ghuser:`harry-solcast`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Lorenzo Riches (:ghuser:`lorenzo-solcast`)
-* Cliff Hansen (:ghuser:`cwhanse`)
 * Hugh Cutcher (:ghuser:`hugh-solcast`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Will Holmgren (:ghuser:`wholmgren`)

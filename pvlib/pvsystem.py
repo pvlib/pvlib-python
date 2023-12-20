@@ -977,7 +977,7 @@ class Array:
         else:
             self.temperature_model_parameters = temperature_model_parameters
 
-        if self.temperature_model_parameters is None:
+        if self.temperature_model_parameters=={}:
             raise ValueError("The `temperature_model_parameters` is empty "
                             "after an attempt to infer it.  "
                             "Pass either `temperature_model_parameters` to "

@@ -48,6 +48,11 @@ of sources and file formats relevant to solar energy modeling.
    iotools.read_panond
    iotools.get_solaranywhere
    iotools.read_solaranywhere
+   iotools.get_solcast_tmy
+   iotools.get_solcast_historic
+   iotools.get_solcast_forecast
+   iotools.get_solcast_live
+
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata
 in some files.

@@ -27,3 +27,7 @@ from pvlib.iotools.acis import get_acis_nrcc  # noqa: F401
 from pvlib.iotools.acis import get_acis_mpe  # noqa: F401
 from pvlib.iotools.acis import get_acis_station_data  # noqa: F401
 from pvlib.iotools.acis import get_acis_available_stations  # noqa: F401
+from pvlib.iotools.solcast import get_solcast_forecast  # noqa: F401
+from pvlib.iotools.solcast import get_solcast_live  # noqa: F401
+from pvlib.iotools.solcast import get_solcast_historic  # noqa: F401
+from pvlib.iotools.solcast import get_solcast_tmy  # noqa: F401

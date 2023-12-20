@@ -46,6 +46,8 @@ of sources and file formats relevant to solar energy modeling.
    iotools.get_acis_station_data
    iotools.get_acis_available_stations
    iotools.read_panond
+   iotools.get_solaranywhere
+   iotools.read_solaranywhere
    iotools.get_solcast_tmy
    iotools.get_solcast_historic
    iotools.get_solcast_forecast

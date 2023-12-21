@@ -942,6 +942,13 @@ class Array:
 
     name : str, optional
         Name of Array instance.
+
+    Raises
+    ------
+    ValueError
+        If `temperature_model_parameters` is None or if `racking_module`
+        in the `mount` attribute and `module_type` are either None or cannot be
+        used to infer the temperature model parameters.
     """
 
     def __init__(self, mount,
@@ -984,9 +991,10 @@ class Array:
                             "`Array` or `PVSystem` (if not passing arrays), or "
                             "`racking_module` to the `Array` `mount` "
                             "object and `module_type` to `Array.  For guidance "
-                            "on allowed values import the "
+                            "on allowed values to use for `racking_module` and "
+                            "`module_type`, examine the "
                             "TEMPERATURE_MODEL_PARAMETERS global variable from "
-                            "the `temperature` moduleS")
+                            "the `temperature` module.")
 
         if array_losses_parameters is None:
             self.array_losses_parameters = {}

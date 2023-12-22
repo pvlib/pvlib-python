@@ -134,6 +134,7 @@ def _compute_vr(positions, cloud_speed, tmscales):
         return np.abs((x ** 2 - x) / 2 - n_pairs)
 
     n_dist = np.round(scipy.optimize.fmin(fn, np.sqrt(n_pairs), disp=False))
+    n_dist = n_dist.item()
     # Compute VR
     A = cloud_speed / 2  # Resultant fit for A from [2]
     vr = np.zeros(tmscales.shape)
@@ -276,7 +277,7 @@ def _compute_wavelet(clearsky_index, dt=None):
         # Produces slightly different end effects than the MATLAB version
         df = cs_long.rolling(window=intvlen, center=True, min_periods=1).mean()
         # Fill nan's in both directions
-        df = df.fillna(method='bfill').fillna(method='ffill')
+        df = df.bfill().ffill()
         # Pop values back out of the dataframe and store
         csi_mean[i, :] = df.values.flatten()
         # Shift to account for different indexing in MATLAB moving average

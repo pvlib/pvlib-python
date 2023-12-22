@@ -91,7 +91,7 @@ def hsu(rainfall, cleaning_threshold, surface_tilt, pm2_5, pm10,
     mass_no_cleaning = pd.Series(index=rainfall.index, data=tms_cumsum)
     # specify dtype so pandas doesn't assume object
     mass_removed = pd.Series(index=rainfall.index, dtype='float64')
-    mass_removed[0] = 0.
+    mass_removed.iloc[0] = 0.
     mass_removed[cleaning_times] = mass_no_cleaning[cleaning_times]
     accum_mass = mass_no_cleaning - mass_removed.ffill()
 

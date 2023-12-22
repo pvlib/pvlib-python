@@ -50,8 +50,8 @@
     <a href="https://doi.org/10.5281/zenodo.593284">
     <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.593284.svg" alt="zenodo reference">
     </a>
-    <a href="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1">
-    <img src="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg" alt="JOSS reference" />
+    <a style="border-width:0" href="https://doi.org/10.21105/joss.05994">
+    <img src="https://joss.theoj.org/papers/10.21105/joss.05994/status.svg" alt="DOI badge" >
     </a>
   </td>
 </tr>

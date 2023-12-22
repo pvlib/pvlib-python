@@ -7,6 +7,7 @@ v0.10.4 (Anticipated March, 2024)
 
 Enhancements
 ~~~~~~~~~~~~
+* Added the Huld PV model (:pull:`XXXX`)
 
 
 Bug fixes
@@ -27,4 +28,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Cliff Hansen (:ghuser:`cwhanse`)

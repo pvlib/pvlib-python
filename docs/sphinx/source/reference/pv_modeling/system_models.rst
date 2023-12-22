@@ -47,3 +47,11 @@ ADR model
 
    pvarray.pvefficiency_adr
    pvarray.fit_pvefficiency_adr
+
+PVGIS model
+^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: ../generated/
+
+    pvsystem.huld

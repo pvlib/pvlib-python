@@ -23,7 +23,11 @@ from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import cosd
 from pvlib.singlediode import VOLTAGE_BUILTIN
 from pvlib.tests.test_singlediode import get_pvsyst_fs_495
+from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
 
+@pytest.fixture()
+def temp_model_params():
+    return TEMPERATURE_MODEL_PARAMETERS["pvsyst"]["freestanding"]
 
 @pytest.mark.parametrize('iam_model,model_params', [
     ('ashrae', {'b': 0.05}),

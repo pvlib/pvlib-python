@@ -76,13 +76,14 @@ capable models.  Per the United States Department of Energy,
 
 Compared with other modern PV system modeling tools, pvlib python stands out in several
 key aspects.  One is its toolbox design, providing the user a
-level of flexibility and customization beyond that of other tools.  Rather than organizing
-the user interface around pre-built modeling workflows as in other PV system
-modeling tools (e.g. SAM [@Gilman2018], PVsyst [@Mermoud1994], SolarFarmer [@Mikofski2018],
-PlantPredict [@Passow2017], and CASSYS [@Pai2016], to name a few software tools with
-comparable breadth of PV system modeling capability), pvlib python
-makes the individual "building blocks" of PV system performance models accessible to
-the user.  This allows the user to assemble their own model workflows, including
+level of flexibility and customization beyond that of other tools.  
+Other PV system modeling tools like SAM [@Gilman2018], PVsyst [@Mermoud1994], 
+SolarFarmer [@Mikofski2018], PlantPredict [@Passow2017], and 
+CASSYS [@Pai2016]—to name a few software tools with comparable breadth of 
+modeling capability—organize the user interface around pre-built modeling workflows. 
+Instead, pvlib python makes the individual "building blocks" of PV system performance 
+models accessible to the user.
+This allows the user to assemble their own model workflows, including
 the ability of incorporating custom modeling steps.  This flexibility
 is essential for applications in both academia and industry.  To our knowledge,
 the only other PV system modeling software with such a toolbox design is the
@@ -96,7 +97,7 @@ allows pvlib python functions to be combined with capabilities in other Python p
 such as database query, data manipulation, numerical optimization,
 plotting, and reporting packages.  In contrast, most other PV system modeling
 tools are used via some form of GUI.  Some of these other tools are also accessible
-from Python via web APIs or wrapper libraries (e.g. [@pysam]), but these
+from Python via web APIs or wrapper libraries [@pysam], but these
 "black box" interfaces offer only limited ability to combine the PV models
 with functionality from other Python packages.
 
@@ -139,8 +140,7 @@ a capability enhancement of particular note is the inclusion of models for simul
 irradiance on the rear side of PV modules.
 Other notable additions include methods of fitting empirical PV performance models
 to measurements and models for performance loss mechanisms like soiling and snow
-coverage.  
-\autoref{fig:functions-comparison} summarizes the number of models (or functions)
+coverage. \autoref{fig:functions-comparison} summarizes the number of models (or functions)
 per module for pvlib python versions 0.6.0 (released 2018-09-17) and 0.10.1
 (released 2023-07-03), showing a substantial capability expansion over the
 last five years.

@@ -111,7 +111,7 @@ pvlib-python that you used. pvlib-python DOIs are listed at
 
 Also, if you use the pvlib iotools for data retrieval, please cite:
 
-  Jensen et al., (2023). pvlib iotools—Open-source Python
+  Jensen et al., (2023). "pvlib iotools—Open-source Python".
   functions for seamless access to solar irradiance data.
   Solar Energy, 266, 112092.
   https://doi.org/10.1016/j.solener.2023.112092

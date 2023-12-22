@@ -52,10 +52,9 @@ Many of the contributors to pvlib-python work in institutions where
 citation metrics are used in performance or career evaluations. If you
 use pvlib python in a published work, please cite:
 
-  William F. Holmgren, Clifford W. Hansen, and Mark A. Mikofski.
-  "pvlib python: a python package for modeling solar energy systems."
-  Journal of Open Source Software, 3(29), 884, (2018).
-  https://doi.org/10.21105/joss.00884
+  Anderson et al., (2023). "pvlib python: 2023 project update."
+  Journal of Open Source Software, 8(92), 5994.
+  https://doi.org/10.21105/joss.05994
 
 Please also cite the DOI corresponding to the specific version of
 pvlib python that you used. pvlib python DOIs are listed at

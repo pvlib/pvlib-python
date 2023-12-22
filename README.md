@@ -101,14 +101,20 @@ Citing
 
 If you use pvlib-python in a published work, please cite:
 
-  William F. Holmgren, Clifford W. Hansen, and Mark A. Mikofski.
-  "pvlib python: a python package for modeling solar energy systems."
-  Journal of Open Source Software, 3(29), 884, (2018).
-  https://doi.org/10.21105/joss.00884
+  Anderson et al., (2023). pvlib python: 2023 project update.
+  Journal of Open Source Software, 8(92), 5994.
+  https://doi.org/10.21105/joss.05994
 
 Please also cite the DOI corresponding to the specific version of
 pvlib-python that you used. pvlib-python DOIs are listed at
 [Zenodo.org](https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version)
+
+Also, if you use the pvlib iotools for data retrieval, please cite:
+
+  Jensen et al., (2023). pvlib iotools—Open-source Python
+  functions for seamless access to solar irradiance data.
+  Solar Energy, 266, 112092.
+  https://doi.org/10.1016/j.solener.2023.112092
 
 If you use pvlib-python in a commercial or publicly-available application, please
 consider displaying one of the "powered by pvlib" logos:

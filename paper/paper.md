@@ -76,8 +76,8 @@ capable models.  Per the United States Department of Energy,
 
 Compared with other modern PV system modeling tools, pvlib python stands out in several
 key aspects.  One is its toolbox design, providing the user a
-level of flexibility and customization beyond that of other tools.  
-Other PV system modeling tools like SAM [@Gilman2018], PVsyst [@Mermoud1994], 
+level of flexibility and customization beyond that of other tools.  Other
+PV system modeling tools like SAM [@Gilman2018], PVsyst [@Mermoud1994], 
 SolarFarmer [@Mikofski2018], PlantPredict [@Passow2017], and 
 CASSYS [@Pai2016]—to name a few software tools with comparable breadth of 
 modeling capability—organize the user interface around pre-built modeling workflows. 

@@ -2905,7 +2905,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
            10.1016/j.solmat.2011.07.026.
     """
     if k is None:
-        if not cell_type is None:
+        if cell_type is not None:
             k = _infer_k_huld(cell_type)
         else:
             raise ValueError('Either k or cell_type must be specified')

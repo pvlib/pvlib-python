@@ -11,7 +11,11 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* Fixes `AttributeError: 'PVSystem' object has no attribute 'racking_model'`
+error in `ModelChain` instantiation when the `temperature_model_parameters`
+for a `PVSystem` have not been set.  Update requires `PVSystem` or `Array`
+to have `temperature_model_parameters` explicitly or implicitly by providing
+`racking_model` and `module_type`.
 
 Testing
 ~~~~~~~
@@ -19,7 +23,8 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Update all examples in :ref:`pvsystem` User's guide page that reference
+`pvsystem` to adhere to new required argument.
 
 Requirements
 ~~~~~~~~~~~~
@@ -27,4 +32,5 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* :ghuser:`matsuobasho`
 

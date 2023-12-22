@@ -2852,7 +2852,7 @@ def _infer_k_huld(cell_type):
                    'CIS': (-0.005554, -0.038724, -0.003723, -0.000905,
                            -0.001256, 0.000001),
                    'CdTe': (-0.046689, -0.072844, -0.002262, 0.000276,
-                            -0.000159, -0.000006)}
+                            0.000159, -0.000006)}
     return huld_params[cell_type]
 
 
@@ -2860,17 +2860,17 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     r"""
     Power (DC) using the Huld model.
 
-    The Huld model [1]_ is given by
+    The Huld model [1]_ is used by PVGIS and is given by
 
 
     .. math::
 
-        P_{dc} = G` ( P_{dc0} k_1 log(G') + k_2 log^2 (G') + k_3 T' log(G') +
-                 k_5 T' log^2 (G') + k_6 T'^2)
+        P_{dc} = G' ( P_{dc0} + k_1 \log(G') + k_2 \log^2 (G') + k_3 T' +
+                 k_4 T' \log(G') + k_5 T' \log^2 (G') + k_6 T'^2)
 
         G' = \frac{G_{poa eff}}{1000}
 
-        T' = T_{mod} - 25 \degree C
+        T' = T_{mod} - 25 °C
 
 
     Parameters
@@ -2878,7 +2878,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     effective_irradiance : numeric
         The irradiance that is converted to photocurrent. [W/m^2]
     temp_mod: numeric
-        Module back-surface temperature [C].
+        Module back-surface temperature. [C]
     pdc0: numeric
         Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
     k : tuple, optional
@@ -2899,10 +2899,10 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
 
     References
     ----------
-    .. [1] T. Huld, G. Friesen, A. Skoczek, K. R. Kenny, T. Sample, M. Field,
+    .. [1] T. Huld, G. Friesen, A. Skoczek, R. Kenny, T. Sample, M. Field,
            E. Dunlop. A power-rating model for crystalline silicon PV modules.
            Solar Energy Materials and Solar Cells 95, (2011), pp. 3359-3369.
-           10.1016/j.solmat.2011.07.026.
+           :doi:`10.1016/j.solmat.2011.07.026`.
     """
     if k is None:
         if cell_type is not None:

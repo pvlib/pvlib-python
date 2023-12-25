@@ -55,17 +55,6 @@
     </a>
   </td>
 </tr>
-<tr>
-  <td>Downloads</td>
-  <td>
-    <a href="https://pypi.org/project/pvlib/">
-    <img src="https://img.shields.io/pypi/dm/pvlib" alt="PyPI downloads" />
-    </a>
-    <a href="https://anaconda.org/conda-forge/pvlib-python">
-    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/downloads.svg" alt="conda-forge downloads" />
-    </a>
-  </td>
-</tr>
 </table>
 
 

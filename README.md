@@ -148,7 +148,7 @@ History and acknowledgement
 ===========================
 
 pvlib python started out as a Python translation of the PVLIB MATLAB
-toolbox (developed by the `PVPMC <https://pvpmc.sandia.gov/>`_ at
+toolbox (developed by the [PVPMC](https://pvpmc.sandia.gov/) at
 Sandia National Laboratories) in 2013 and has grown substantially since then.
 Today it contains code contributions from over a hundred individuals worldwide
 and is maintained by a core group of PV modelers from a variety institutions.

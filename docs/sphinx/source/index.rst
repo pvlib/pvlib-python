@@ -130,9 +130,6 @@ pvlib python is a `NumFOCUS Affiliated Project <https://numfocus.org/sponsored-p
   :target: https://numfocus.org/sponsored-projects/affiliated-projects
   :alt: NumFocus Affliated Projects
 
-Contents
-========
-
 .. toctree::
    :maxdepth: 1
    :hidden:
@@ -142,9 +139,3 @@ Contents
    reference/index
    whatsnew
    contributing
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`

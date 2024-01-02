@@ -63,7 +63,7 @@ use pvlib python in a published work, please cite:
 **Recommended citation for pvlib iotools**
 
   Jensen, A., Anderson, K., Holmgren, W., Mikofski, M., Hansen, C., Boeman, L., Loonen, R.
-  "pvlib iotools —- Open-source Python functions for seamless access to solar irradiance data."
+  "pvlib iotools — Open-source Python functions for seamless access to solar irradiance data."
   Solar Energy, 266, 112092, (2023).
   https://doi.org/10.1016/j.solener.2023.112092
 
@@ -129,3 +129,22 @@ pvlib python is a `NumFOCUS Affiliated Project <https://numfocus.org/sponsored-p
 .. image:: https://i0.wp.com/numfocus.org/wp-content/uploads/2019/06/AffiliatedProject.png
   :target: https://numfocus.org/sponsored-projects/affiliated-projects
   :alt: NumFocus Affliated Projects
+
+Contents
+========
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   user_guide/index
+   gallery/index
+   reference/index
+   whatsnew
+   contributing
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`

@@ -421,7 +421,9 @@ reasonable.
 
         # set up inputs
         module_parameters = {'b': 0.05}
-        system = pvsystem.PVSystem(module_parameters=module_parameters)
+        temp_model_params = {'u_c': 29.0, 'u_v': 0}
+        system = pvsystem.PVSystem(module_parameters=module_parameters,
+                                temperature_model_parameters=temp_model_params)
         thetas = 1
 
         # call the method
@@ -459,8 +461,10 @@ PVSystem method is called through ``ModelChain.run_model``.
     def test_modelchain_dc_model(mocker):
         # set up location and system for model chain
         location = location.Location(32, -111)
+        temp_model_params = {'u_c': 29.0, 'u_v': 0}
         system = pvsystem.PVSystem(module_parameters=some_sandia_mod_params,
-                                   inverter_parameters=some_cecinverter_params)
+                                inverter_parameters=some_cecinverter_params,
+                                temperature_model_parameters=temp_model_params)
 
         # mocker.spy adds code to the system.sapm method to keep track of how
         # it is called. use returned mock object m to make assertion later,

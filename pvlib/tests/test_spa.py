@@ -17,14 +17,7 @@ import pandas as pd
 import unittest
 import pytest
 
-
-try:
-    from numba import __version__ as numba_version
-    numba_version_int = int(numba_version.split('.')[0] +
-                            numba_version.split('.')[1])
-except ImportError:
-    numba_version_int = 0
-
+from .conftest import requires_numba
 
 times = (pd.date_range('2003-10-17 12:30:30', periods=1, freq='D')
            .tz_localize('MST'))
@@ -390,17 +383,15 @@ class NumpySpaTest(unittest.TestCase, SpaBase):
         assert_almost_equal(JD, self.spa.julian_day(unixtimes)[0], 6)
 
 
-@pytest.mark.skipif(numba_version_int < 17,
-                    reason='Numba not installed or version not >= 0.17.0')
+@requires_numba
 class NumbaSpaTest(unittest.TestCase, SpaBase):
     """Import spa, compiling to numba, and run tests"""
     @classmethod
     def setUpClass(self):
         os.environ['PVLIB_USE_NUMBA'] = '1'
-        if numba_version_int >= 17:
-            import pvlib.spa as spa
-            spa = reload(spa)
-            self.spa = spa
+        import pvlib.spa as spa
+        spa = reload(spa)
+        self.spa = spa
 
     @classmethod
     def tearDownClass(self):

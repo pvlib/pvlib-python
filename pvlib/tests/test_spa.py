@@ -15,9 +15,8 @@ from numpy.testing import assert_almost_equal
 import pandas as pd
 
 import unittest
-import pytest
-
 from .conftest import requires_numba
+
 
 times = (pd.date_range('2003-10-17 12:30:30', periods=1, freq='D')
            .tz_localize('MST'))

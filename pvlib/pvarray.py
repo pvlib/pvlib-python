@@ -225,16 +225,21 @@ def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta,
         return popt
 
 
-def _infer_k_huld(cell_type):
+def _infer_k_huld(cell_type, pdc0):
     # from PVGIS documentation, "PVGIS data sources & calculation methods",
     # Section 5.2.3, accessed 12/22/2023
+    # The parameters in PVGIS' documentation are for a version of Huld's
+    # equation that has factored Pdc0 out of the polynomial:
+    #  P = G/1000 * Pdc0 * (1 + k1 log(Geff) + ...) so these parameters are
+    # multiplied by pdc0
     huld_params = {'csi': (-0.017237, -0.040465, -0.004702, 0.000149,
                            0.000170, 0.000005),
                    'cis': (-0.005554, -0.038724, -0.003723, -0.000905,
                            -0.001256, 0.000001),
                    'cdte': (-0.046689, -0.072844, -0.002262, 0.000276,
                             0.000159, -0.000006)}
-    return huld_params[cell_type.lower()]
+    k = tuple([x*pdc0 for x in huld_params[cell_type.lower()]])
+    return k
 
 
 def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
@@ -288,7 +293,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     """
     if k is None:
         if cell_type is not None:
-            k = _infer_k_huld(cell_type)
+            k = _infer_k_huld(cell_type, pdc0)
         else:
             raise ValueError('Either k or cell_type must be specified')
 

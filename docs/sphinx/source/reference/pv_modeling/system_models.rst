@@ -54,4 +54,4 @@ PVGIS model
 .. autosummary::
    :toctree: ../generated/
 
-    pvsystem.huld
+    pvarray.huld

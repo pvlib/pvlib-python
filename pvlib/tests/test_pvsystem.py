@@ -12,7 +12,6 @@ from numpy.testing import assert_allclose
 import unittest.mock as mock
 
 from pvlib import inverter, pvsystem
-from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
 from pvlib import spectrum
@@ -2549,25 +2548,3 @@ def test_Array_temperature_missing_parameters(model, keys):
         array.temperature_model_parameters = params
         with pytest.raises(KeyError, match=match):
             array.get_cell_temperature(irrads, temps, winds, model)
-
-
-def test_huld():
-    pdc0 = 100
-    res = pvsystem.huld(1000, 25, pdc0, cell_type='cSi')
-    assert np.isclose(res, pdc0)
-    exp_sum = np.exp(1) * (np.sum(pvsystem._infer_k_huld('cSi')) + pdc0)
-    res = pvsystem.huld(1000*np.exp(1), 26, pdc0, cell_type='cSi')
-    assert np.isclose(res, exp_sum)
-    res = pvsystem.huld(100, 30, pdc0, k=(1, 1, 1, 1, 1, 1))
-    exp_100 = 0.1 * (pdc0 + np.log(0.1) + np.log(0.1)**2 + + 5 + 5*np.log(0.1)
-                     + 5*np.log(0.1)**2 + 25)
-    assert np.isclose(res, exp_100)
-    # Series input
-    eff_irr = pd.Series([1000, 100])
-    tm = pd.Series([25, 30])
-    expected = pd.Series([pdc0, exp_100])
-    res = pvsystem.huld(eff_irr, tm, pdc0, k=(1, 1, 1, 1, 1, 1))
-    assert_allclose(res, expected)
-    with pytest.raises(ValueError,
-                       match='Either k or cell_type must be specified'):
-        res = pvsystem.huld(1000, 25, 100)

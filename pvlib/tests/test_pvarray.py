@@ -1,5 +1,8 @@
 import numpy as np
+import pandas as pd
 from numpy.testing import assert_allclose
+from .conftest import assert_series_equal
+import pytest
 
 from pvlib import pvarray
 
@@ -44,3 +47,25 @@ def test_pvefficiency_adr_round_trip():
     params = pvarray.fit_pvefficiency_adr(g, t, eta, dict_output=False)
     result = pvarray.pvefficiency_adr(g, t, *params)
     assert_allclose(result, eta, atol=1e-6)
+
+
+def test_huld():
+    pdc0 = 100
+    res = pvarray.huld(1000, 25, pdc0, cell_type='cSi')
+    assert np.isclose(res, pdc0)
+    exp_sum = np.exp(1) * (np.sum(pvarray._infer_k_huld('cSi')) + pdc0)
+    res = pvarray.huld(1000*np.exp(1), 26, pdc0, cell_type='cSi')
+    assert np.isclose(res, exp_sum)
+    res = pvarray.huld(100, 30, pdc0, k=(1, 1, 1, 1, 1, 1))
+    exp_100 = 0.1 * (pdc0 + np.log(0.1) + np.log(0.1)**2 + 5 + 5*np.log(0.1)
+                     + 5*np.log(0.1)**2 + 25)
+    assert np.isclose(res, exp_100)
+    # Series input, and irradiance = 0
+    eff_irr = pd.Series([1000, 100, 0])
+    tm = pd.Series([25, 30, 30])
+    expected = pd.Series([pdc0, exp_100, 0])
+    res = pvarray.huld(eff_irr, tm, pdc0, k=(1, 1, 1, 1, 1, 1))
+    assert_series_equal(res, expected)
+    with pytest.raises(ValueError,
+                       match='Either k or cell_type must be specified'):
+        res = pvarray.huld(1000, 25, 100)

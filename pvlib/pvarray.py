@@ -251,7 +251,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
 
         G' &= \frac{G_{poa eff}}{1000}
 
-        T' &= T_{mod} - 25 °C
+        T' &= T_{mod} - 25^{\circ}C
 
 
     Parameters
@@ -263,11 +263,11 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     pdc0: numeric
         Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
     k : tuple, optional
-        Empirical coefficients used in the power model. Length 6. If `k` is
-        not provided, `cell_type` must be specified.
+        Empirical coefficients used in the power model. Length 6. If ``k`` is
+        not provided, ``cell_type`` must be specified.
     cell_type : str, optional
-        If provided, must be one of `'cSi'`, `'CIS'`, or `'CdTe'`. Used to look
-        up default values for `k` if `k` is not specified.
+        If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
+        Used to look up default values for ``k`` if ``k`` is not specified.
 
     Returns
     -------
@@ -277,7 +277,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     Raises
     ------
     ValueError
-        If neither `k` nor `cell_type` are specified.
+        If neither ``k`` nor ``cell_type`` are specified.
 
     References
     ----------
@@ -297,10 +297,9 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     # accomodate gprime<=0
     with np.errstate(divide='ignore'):
         logGprime = np.log(gprime, out=np.zeros_like(gprime),
-                           where=np.array(gprime > 0))    
+                           where=np.array(gprime > 0))
     # Eq. 1 in [1]
     pdc = gprime * (pdc0 + k[0] * logGprime + k[1] * logGprime**2 +
                     k[2] * tprime + k[3] * tprime * logGprime +
                     k[4] * tprime * logGprime**2 + k[5] * tprime**2)
     return pdc
-

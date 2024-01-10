@@ -253,6 +253,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
 
         P_{dc} &= G' ( P_{dc0} + k_1 \log(G') + k_2 \log^2 (G') + k_3 T' +
                  k_4 T' \log(G') + k_5 T' \log^2 (G') + k_6 T'^2)
+        :label: main
 
         G' &= \frac{G_{poa eff}}{1000}
 
@@ -283,6 +284,33 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     ------
     ValueError
         If neither ``k`` nor ``cell_type`` are specified.
+
+    Notes
+    -----
+    Eq. :eq:`main` is from [1]_. The expression used in PVGIS documentation is
+    different, factoring :math:`P_{dc0}` out of the polynomial. PVGIS
+    documentation shows a table of default parameters :math:`k'` for different
+    cell types. The parameters :math:`k'` differ from the parameters expected
+    by :py:func:`huld` by the factor ``pdc0``, that is,
+
+    .. math::
+
+        k = P_{dc0} k'
+
+    :py:func:`huld` is a component of the PV performance model implemented in
+    PVGIS. Among other components, the full PVGIS model includes:
+        - the Faiman model for cell temperature
+          :py:func:`pvlib.temperature.faiman`
+        - the Martin and Ruiz model for the incidence angle modifier (IAM)
+          :py:func:`pvlib.iam.martin_ruiz`
+        - a custom model for a spectral adjustment factor
+    The PVGIS API (see :py:func:`pvlib.iotools.pvgis.get_pvgis_hourly) returns
+    broadband plane-of-array irradiance (``poa_global``) and DC power (``P``).
+    ``poa_global`` is irradiance before applying the IAM and spectral
+    adjustments, where as ``effective_irradiance`` input to :py:func:`huld`
+    should be after these adjustments are applied. Users comparing output of
+    :py:func:`huld` to PVGIS' ``P`` should expect differences unless
+    ``effective_irradiance`` is computed the same way as done by PVGIS.
 
     References
     ----------

@@ -290,7 +290,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     documentation is differs by factoring :math:`P_{dc0}` out of the
     polynomial:
 
-    ..math::
+    .. math::
 
         P_{dc} = G' P_{dc0} (1 + k'_1 \log(G') + k'_2 \log^2 (G') + k'_3 T' +
                  k'_4 T' \log(G') + k'_5 T' \log^2 (G') + k'_6 T'^2)
@@ -314,7 +314,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     broadband plane-of-array irradiance (``poa_global``) and DC power (``P``).
     ``poa_global`` is irradiance before applying the IAM and spectral
     adjustments. In contrast the ``effective_irradiance`` for :py:func:`huld`
-    is after these adjustments are applied. Users comparing output of
+    should have the IAM and spectral adjustments. Users comparing output of
     :py:func:`huld` to PVGIS' ``P`` values should expect differences unless
     ``effective_irradiance`` is computed in the same way as done by PVGIS.
 

@@ -291,7 +291,8 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     polynomial:
 
     ..math::
-        P_{dc} = G' P_{dc0} (1 + k'_1 \log(G') + k'_2 \log^2 (G') + k''_3 T' +
+
+        P_{dc} = G' P_{dc0} (1 + k'_1 \log(G') + k'_2 \log^2 (G') + k'_3 T' +
                  k'_4 T' \log(G') + k'_5 T' \log^2 (G') + k'_6 T'^2)
 
     PVGIS documentation shows a table of default parameters :math:`k'` for
@@ -309,7 +310,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
         - the Martin and Ruiz model for the incidence angle modifier (IAM)
           :py:func:`pvlib.iam.martin_ruiz`
         - a custom model for a spectral adjustment factor
-    The PVGIS API (see :py:func:`pvlib.iotools.pvgis.get_pvgis_hourly`) returns
+    The PVGIS API (see :py:func:`pvlib.iotools.get_pvgis_hourly`) returns
     broadband plane-of-array irradiance (``poa_global``) and DC power (``P``).
     ``poa_global`` is irradiance before applying the IAM and spectral
     adjustments. In contrast the ``effective_irradiance`` for :py:func:`huld`

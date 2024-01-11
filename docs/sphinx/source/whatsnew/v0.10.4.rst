@@ -11,7 +11,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* Removed `or` clause from `if` statement in `infer_temperature_model` in
+`ModelChain` (:issue:`1759`).
 
 Testing
 ~~~~~~~
@@ -27,4 +28,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* :ghuser:`matsuobasho`

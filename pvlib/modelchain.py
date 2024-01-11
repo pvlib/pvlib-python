@@ -1118,9 +1118,7 @@ class ModelChain:
             array.temperature_model_parameters for array in self.system.arrays)
         params = _common_keys(temperature_model_parameters)
         # remove or statement in v0.9
-        if {'a', 'b', 'deltaT'} <= params or (
-                not params and self.system.racking_model is None
-                and self.system.module_type is None):
+        if {'a', 'b', 'deltaT'} <= params:
             return self.sapm_temp
         elif {'u_c', 'u_v'} <= params:
             return self.pvsyst_temp

@@ -287,7 +287,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     Notes
     -----
     The equation for :math:`P_{dc}` is from [1]_. The expression used in PVGIS
-    documentation is differs by factoring :math:`P_{dc0}` out of the
+    documentation differs by factoring :math:`P_{dc0}` out of the
     polynomial:
 
     .. math::

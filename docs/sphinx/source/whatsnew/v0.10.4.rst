@@ -11,6 +11,16 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Fixed an error in solar position calculations when using
+  :py:class:`pandas.DatetimeIndex` with ``unit`` other than ``'ns'`` (:issue:`1932`).
+  The following functions were affected:
+
+  - :py:class:`~pvlib.modelchain.ModelChain` and :py:func:`~pvlib.solarposition.get_solarposition` with the ``nrel_numpy`` and ``nrel_numba`` methods
+  - :py:func:`~pvlib.solarposition.spa_python`
+  - :py:func:`~pvlib.solarposition.sun_rise_set_transit_spa`
+  - :py:func:`~pvlib.solarposition.nrel_earthsun_distance`
+  - :py:func:`~pvlib.solarposition.hour_angle`
+  - :py:func:`~pvlib.solarposition.sun_rise_set_transit_geometric`
 
 
 Testing
@@ -27,4 +37,6 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Patrick Sheehan (:ghuser:`patricksheehan`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Kevin Anderson (:ghuser:`kandersolar`)

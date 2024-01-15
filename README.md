@@ -7,11 +7,11 @@
     <a href="https://pypi.org/project/pvlib/">
     <img src="https://img.shields.io/pypi/v/pvlib.svg" alt="latest release" />
     </a>
-    <a href="https://anaconda.org/conda-forge/pvlib-python">
-    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/version.svg" />
+    <a href="https://anaconda.org/conda-forge/pvlib">
+    <img src="https://anaconda.org/conda-forge/pvlib/badges/version.svg" />
     </a>
-    <a href="https://anaconda.org/conda-forge/pvlib-python">
-    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/latest_release_date.svg" />
+    <a href="https://anaconda.org/conda-forge/pvlib">
+    <img src="https://anaconda.org/conda-forge/pvlib/badges/latest_release_date.svg" />
     </a>
 </tr>
 <tr>
@@ -52,17 +52,6 @@
     </a>
     <a href="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1">
     <img src="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg" alt="JOSS reference" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td>Downloads</td>
-  <td>
-    <a href="https://pypi.org/project/pvlib/">
-    <img src="https://img.shields.io/pypi/dm/pvlib" alt="PyPI downloads" />
-    </a>
-    <a href="https://anaconda.org/conda-forge/pvlib-python">
-    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/downloads.svg" alt="conda-forge downloads" />
     </a>
   </td>
 </tr>

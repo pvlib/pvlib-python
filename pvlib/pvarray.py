@@ -305,7 +305,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
 
     :py:func:`huld` is a component of the PV performance model implemented in
     PVGIS. Among other components, the full PVGIS model includes:
-        - the Faiman model for cell temperature
+        - the Faiman model for module temperature
           :py:func:`pvlib.temperature.faiman`
         - the Martin and Ruiz model for the incidence angle modifier (IAM)
           :py:func:`pvlib.iam.martin_ruiz`

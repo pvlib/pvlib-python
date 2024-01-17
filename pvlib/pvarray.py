@@ -266,7 +266,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     temp_mod: numeric
         Module back-surface temperature. [C]
     pdc0: numeric
-        Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
+        Power of the modules at reference conditions 1000 W/m^2 and 25°C. [W]
     k : tuple, optional
         Empirical coefficients used in the power model. Length 6. If ``k`` is
         not provided, ``cell_type`` must be specified.

@@ -275,7 +275,9 @@ def _datetime_to_unixtime(dtindex):
     # convert a pandas datetime index to unixtime, making sure to handle
     # different pandas units (ns, us, etc) and time zones correctly
     if dtindex.tz is not None:
-        epoch = pd.Timestamp("1970-01-01", tz="UTC")
+        # epoch is 1970-01-01 00:00 UTC, but we need to match the input tz
+        # for compatibility with older pandas versions (e.g. v1.3.5)
+        epoch = pd.Timestamp("1970-01-01", tz="UTC").tz_convert(dtindex.tz)
     else:
         epoch = pd.Timestamp("1970-01-01")
 

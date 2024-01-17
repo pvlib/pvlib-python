@@ -718,9 +718,20 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
                        atol=np.abs(expected_transit_error).max())
 
 
+@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
+def test__datetime_to_unixtime(tz):
+    # for pandas < 2.0 where "unit" doesn't exist in pd.date_range. note that
+    # unit of ns is the only option in pandas<2, and the default in pandas 2.x
+    times = pd.date_range(start='2019-01-01', freq='h', periods=3, tz=tz)
+    expected = times.view(np.int64)/10**9
+    actual = solarposition._datetime_to_unixtime(times)
+    np.testing.assert_equal(expected, actual)
+
+
+@requires_pandas_2_0
 @pytest.mark.parametrize('unit', ['ns', 'us', 's'])
 @pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
-def test__datetime_to_unixtime(unit, tz):
+def test__datetime_to_unixtime_units(unit, tz):
     kwargs = dict(start='2019-01-01', freq='h', periods=3)
     times = pd.date_range(**kwargs, unit='ns', tz='UTC')
     expected = times.view(np.int64)/10**9

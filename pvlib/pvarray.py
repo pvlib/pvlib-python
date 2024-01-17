@@ -262,11 +262,12 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     Parameters
     ----------
     effective_irradiance : numeric
-        The irradiance that is converted to photocurrent. [W/m^2]
+        The irradiance that is converted to photocurrent. [:math:`W/m^2`]
     temp_mod: numeric
         Module back-surface temperature. [C]
     pdc0: numeric
-        Power of the modules at reference conditions 1000 W/m^2 and 25°C. [W]
+        Power of the modules at reference conditions :math:`1000 W/m^2`
+        and :math:`25^{\circ}C`. [W]
     k : tuple, optional
         Empirical coefficients used in the power model. Length 6. If ``k`` is
         not provided, ``cell_type`` must be specified.

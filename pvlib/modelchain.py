@@ -1117,7 +1117,6 @@ class ModelChain:
         temperature_model_parameters = tuple(
             array.temperature_model_parameters for array in self.system.arrays)
         params = _common_keys(temperature_model_parameters)
-        # remove or statement in v0.9
         if {'a', 'b', 'deltaT'} <= params:
             return self.sapm_temp
         elif {'u_c', 'u_v'} <= params:

@@ -11,7 +11,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* :py:class:`~pvlib.modelchain.ModelChain` now raises a more useful error when
+  ``temperature_model_parameters`` are specified on the passed ``system`` instead of on its ``arrays``. (:issue:`1759`).
 
 Testing
 ~~~~~~~
@@ -27,4 +28,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* :ghuser:`matsuobasho`

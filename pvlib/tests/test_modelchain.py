@@ -1320,6 +1320,7 @@ def test_temperature_model_not_specified():
         _ = ModelChain(system, location,
                        aoi_model='no_loss', spectral_model='no_loss')
 
+
 def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
                             mocker):
     m = mocker.spy(sys.modules[__name__], 'poadc')

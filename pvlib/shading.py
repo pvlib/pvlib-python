@@ -238,8 +238,11 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
                                  solar_zenith, solar_azimuth):
     r"""
     Calculate projected solar zenith angle in degrees.
+    This is the solar zenith angle projected onto the tracker rotation plane or
+    the plane defined by its normal vector and the azimuth.
 
-    This is common in track and shadow computation [1]_ [2]_ [3]_.
+    Computing said value is common in track and shadow algorithms.
+    See [1]_ [2]_ [3]_.
 
     Parameters
     ----------

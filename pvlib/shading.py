@@ -260,17 +260,17 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
 
     References
     ----------
-    .. [1] K. Anderson and M. Mikofski, ‘Slope-Aware Backtracking for
-       Single-Axis Trackers’, National Renewable Energy Lab. (NREL), Golden,
+    .. [1] K. Anderson and M. Mikofski, 'Slope-Aware Backtracking for
+       Single-Axis Trackers', National Renewable Energy Lab. (NREL), Golden,
        CO (United States); Det Norske Veritas Group, Oslo (Norway),
        NREL/TP-5K00-76626, Jul. 2020. :doi:`10.2172/1660126`.
-    .. [2] W. F. Marion and A. P. Dobos, ‘Rotation Angle for the Optimum
-       Tracking of One-Axis Trackers’, National Renewable Energy Lab. (NREL),
+    .. [2] W. F. Marion and A. P. Dobos, 'Rotation Angle for the Optimum
+       Tracking of One-Axis Trackers', National Renewable Energy Lab. (NREL),
        Golden, CO (United States), NREL/TP-6A20-58891, Jul. 2013.
        :doi:`10.2172/1089596`.
-    .. [3] E. Lorenzo, L. Narvarte, and J. Muñoz, ‘Tracking and back-tracking’,
+    .. [3] E. Lorenzo, L. Narvarte, and J. Muñoz, 'Tracking and back-tracking',
        Progress in Photovoltaics: Research and Applications, vol. 19, no. 6,
-       pp. 747–753, 2011, :doi:`10.1002/pip.1085`.
+       pp. 747-753, 2011, :doi:`10.1002/pip.1085`.
     """
     # Notation from [1], modified to use zenith instead of elevation
     # Since elevation = 90 - zenith, sin(90-x) = cos(x) & cos(90-x) = sin(x):

@@ -275,8 +275,15 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
        Progress in Photovoltaics: Research and Applications, vol. 19, no. 6,
        pp. 747-753, 2011, :doi:`10.1002/pip.1085`.
     """
-    # Notation from [1], modified to use zenith instead of elevation
+    # Assume the tracker reference frame is right-handed. Positive y-axis is
+    # oriented along tracking axis; from north, the y-axis is rotated clockwise
+    # by the axis azimuth and tilted from horizontal by the axis tilt. The
+    # positive x-axis is 90 deg clockwise from the y-axis and parallel to
+    # horizontal (e.g., if the y-axis is south, the x-axis is west); the
+    # positive z-axis is normal to the x and y axes, pointed upward.
+
     # Since elevation = 90 - zenith, sin(90-x) = cos(x) & cos(90-x) = sin(x):
+    # Notation from [1], modified to use zenith instead of elevation
     # cos(elevation) = sin(zenith) and sin(elevation) = cos(zenith)
     # Avoid recalculating these values
     sind_solar_zenith = sind(solar_zenith)
@@ -295,6 +302,14 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
         + sy * sind_axis_tilt * cosd_axis_azimuth
         + sz * cosd(axis_tilt)
     )
+    # The ideal tracking angle wid is the rotation to place the sun position
+    # vector (xp, yp, zp) in the (x, z) plane, which is normal to the panel and
+    # contains the axis of rotation.  wid = 0 indicates that the panel is
+    # horizontal. Here, our convention is that a clockwise rotation is
+    # positive, to view rotation angles in the same frame of reference as
+    # azimuth. For example, for a system with tracking axis oriented south, a
+    # rotation toward the east is negative, and a rotation to the west is
+    # positive. This is a right-handed rotation around the tracker y-axis.
     # Eq. (5); angle between sun's beam and surface
     theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))
     return theta_T

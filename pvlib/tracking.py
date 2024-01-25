@@ -127,7 +127,14 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     if apparent_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
         raise ValueError('Input dimensions must not exceed 1')
 
-    # ideal tracking angle, does not account for row-to-row shading
+    # The ideal tracking angle wid is the rotation to place the sun position
+    # vector (xp, yp, zp) in the (x, z) plane, which is normal to the panel and
+    # contains the axis of rotation.  wid = 0 indicates that the panel is
+    # horizontal. Here, our convention is that a clockwise rotation is
+    # positive, to view rotation angles in the same frame of reference as
+    # azimuth. For example, for a system with tracking axis oriented south, a
+    # rotation toward the east is negative, and a rotation to the west is
+    # positive. This is a right-handed rotation around the tracker y-axis.
     wid = shading.projected_solar_zenith_angle(
         axis_tilt=axis_tilt,
         axis_azimuth=axis_azimuth,

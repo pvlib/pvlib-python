@@ -7,6 +7,8 @@ v0.10.4 (Anticipated March, 2024)
 
 Enhancements
 ~~~~~~~~~~~~
+* Added function :py:func:`pvlib.shading.projected_solar_zenith_angle`,
+  a common calculation in shading and tracking. (:issue:`1734`, :pull:`1904`)
 
 
 Bug fixes

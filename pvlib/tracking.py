@@ -3,6 +3,7 @@ import pandas as pd
 
 from pvlib.tools import cosd, sind, tand, acosd, asind
 from pvlib import irradiance
+from pvlib import shading
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,
@@ -126,51 +127,13 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     if apparent_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
         raise ValueError('Input dimensions must not exceed 1')
 
-    # Calculate sun position x, y, z using coordinate system as in [1], Eq 1.
-
-    # NOTE: solar elevation = 90 - solar zenith, then use trig identities:
-    # sin(90-x) = cos(x) & cos(90-x) = sin(x)
-    sin_zenith = sind(apparent_zenith)
-    x = sin_zenith * sind(apparent_azimuth)
-    y = sin_zenith * cosd(apparent_azimuth)
-    z = cosd(apparent_zenith)
-
-    # Assume the tracker reference frame is right-handed. Positive y-axis is
-    # oriented along tracking axis; from north, the y-axis is rotated clockwise
-    # by the axis azimuth and tilted from horizontal by the axis tilt. The
-    # positive x-axis is 90 deg clockwise from the y-axis and parallel to
-    # horizontal (e.g., if the y-axis is south, the x-axis is west); the
-    # positive z-axis is normal to the x and y axes, pointed upward.
-
-    # Calculate sun position (xp, yp, zp) in tracker coordinate system using
-    # [1] Eq 4.
-
-    cos_axis_azimuth = cosd(axis_azimuth)
-    sin_axis_azimuth = sind(axis_azimuth)
-    cos_axis_tilt = cosd(axis_tilt)
-    sin_axis_tilt = sind(axis_tilt)
-    xp = x*cos_axis_azimuth - y*sin_axis_azimuth
-    # not necessary to calculate y'
-    # yp = (x*cos_axis_tilt*sin_axis_azimuth
-    #       + y*cos_axis_tilt*cos_axis_azimuth
-    #       - z*sin_axis_tilt)
-    zp = (x*sin_axis_tilt*sin_axis_azimuth
-          + y*sin_axis_tilt*cos_axis_azimuth
-          + z*cos_axis_tilt)
-
-    # The ideal tracking angle wid is the rotation to place the sun position
-    # vector (xp, yp, zp) in the (x, z) plane, which is normal to the panel and
-    # contains the axis of rotation.  wid = 0 indicates that the panel is
-    # horizontal. Here, our convention is that a clockwise rotation is
-    # positive, to view rotation angles in the same frame of reference as
-    # azimuth. For example, for a system with tracking axis oriented south, a
-    # rotation toward the east is negative, and a rotation to the west is
-    # positive. This is a right-handed rotation around the tracker y-axis.
-
-    # Calculate angle from x-y plane to projection of sun vector onto x-z plane
-    # using [1] Eq. 5.
-
-    wid = np.degrees(np.arctan2(xp, zp))
+    # ideal tracking angle, does not account for row-to-row shading
+    wid = shading.projected_solar_zenith_angle(
+        axis_tilt=axis_tilt,
+        axis_azimuth=axis_azimuth,
+        solar_zenith=apparent_zenith,
+        solar_azimuth=apparent_azimuth,
+    )
 
     # filter for sun above panel horizon
     zen_gt_90 = apparent_zenith > 90

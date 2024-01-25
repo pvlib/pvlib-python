@@ -196,7 +196,8 @@ def singleaxis_psz_implementation_port_data():
 
 
 def test_projected_solar_zenith_angle_numeric(
-    true_tracking_angle_and_inputs_NREL, singleaxis_psz_implementation_port_data
+    true_tracking_angle_and_inputs_NREL,
+    singleaxis_psz_implementation_port_data
 ):
     psz_func = shading.projected_solar_zenith_angle
     axis_tilt, axis_azimuth, timedata = true_tracking_angle_and_inputs_NREL
@@ -218,7 +219,8 @@ def test_projected_solar_zenith_angle_numeric(
     assert_allclose(psz, -timedata["True-Tracking"], atol=1e-3)
 
     # test implementation port from tracking.singleaxis
-    axis_tilt, axis_azimuth, singleaxis = singleaxis_psz_implementation_port_data
+    axis_tilt, axis_azimuth, singleaxis = \
+        singleaxis_psz_implementation_port_data
     psz = pvlib.tracking.singleaxis(
         singleaxis["Apparent Zenith"],
         singleaxis["Solar Azimuth"],
@@ -226,7 +228,11 @@ def test_projected_solar_zenith_angle_numeric(
         axis_azimuth,
         backtrack=False,
     )
-    assert_allclose(psz["tracker_theta"], singleaxis["tracker_theta"], atol=1e-6)
+    assert_allclose(
+        psz["tracker_theta"],
+        singleaxis["tracker_theta"],
+        atol=1e-6
+    )
 
 
 @pytest.mark.parametrize(

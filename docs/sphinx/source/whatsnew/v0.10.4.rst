@@ -14,6 +14,8 @@ Enhancements
   the SOLRAD ground station network. (:pull:`1967`)
 * Added metadata parsing to :py:func:`~pvlib.iotools.read_solrad` to follow the standard iotools
   convention of returning a tuple of (data, meta). Previously the function only returned a dataframe. (:pull:`1968`)
+* Added function :py:func:`pvlib.shading.projected_solar_zenith_angle`,
+  a common calculation in shading and tracking. (:issue:`1734`, :pull:`1904`)
 
 
 Bug fixes

@@ -238,11 +238,11 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
                                  solar_zenith, solar_azimuth):
     r"""
     Calculate projected solar zenith angle in degrees.
-    This is the solar zenith angle projected onto the tracker rotation plane or
-    the plane defined by its normal vector and the azimuth.
 
-    Computing said value is common in track and shadow algorithms.
-    See [1]_ [2]_ [3]_.
+    This solar zenith angle is projected onto the plane whose normal vector is
+    defined by ``axis_tilt`` and ``axis_azimuth``. The normal vector is in the
+    direction of ``axis_azimuth`` (clockwise from north) and tilted from
+    horizontal by ``axis_tilt``. See Figure 5 in [1]_.
 
     Parameters
     ----------
@@ -265,15 +265,8 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
     ----------
     .. [1] K. Anderson and M. Mikofski, 'Slope-Aware Backtracking for
        Single-Axis Trackers', National Renewable Energy Lab. (NREL), Golden,
-       CO (United States); Det Norske Veritas Group, Oslo (Norway),
+       CO (United States);
        NREL/TP-5K00-76626, Jul. 2020. :doi:`10.2172/1660126`.
-    .. [2] W. F. Marion and A. P. Dobos, 'Rotation Angle for the Optimum
-       Tracking of One-Axis Trackers', National Renewable Energy Lab. (NREL),
-       Golden, CO (United States), NREL/TP-6A20-58891, Jul. 2013.
-       :doi:`10.2172/1089596`.
-    .. [3] E. Lorenzo, L. Narvarte, and J. Muñoz, 'Tracking and back-tracking',
-       Progress in Photovoltaics: Research and Applications, vol. 19, no. 6,
-       pp. 747-753, 2011, :doi:`10.1002/pip.1085`.
     """
     # Assume the tracker reference frame is right-handed. Positive y-axis is
     # oriented along tracking axis; from north, the y-axis is rotated clockwise
@@ -302,14 +295,6 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
         + sy * sind_axis_tilt * cosd_axis_azimuth
         + sz * cosd(axis_tilt)
     )
-    # The ideal tracking angle wid is the rotation to place the sun position
-    # vector (xp, yp, zp) in the (x, z) plane, which is normal to the panel and
-    # contains the axis of rotation.  wid = 0 indicates that the panel is
-    # horizontal. Here, our convention is that a clockwise rotation is
-    # positive, to view rotation angles in the same frame of reference as
-    # azimuth. For example, for a system with tracking axis oriented south, a
-    # rotation toward the east is negative, and a rotation to the west is
-    # positive. This is a right-handed rotation around the tracker y-axis.
     # Eq. (5); angle between sun's beam and surface
     theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))
     return theta_T

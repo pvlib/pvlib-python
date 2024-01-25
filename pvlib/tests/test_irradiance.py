@@ -782,6 +782,50 @@ def test_dirint_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected, check_less_precise=True)
 
 
+def test_ghi_from_poa_driesse():
+    # inputs copied from test_gti_dirint
+    times = pd.DatetimeIndex(
+        ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])
+    poa_global = np.array([20, 300, 1000])
+    zenith = np.array([80, 45, 20])
+    azimuth = np.array([90, 135, 180])
+    surface_tilt = 30
+    surface_azimuth = 180
+
+    # test core function
+    output = irradiance.ghi_from_poa_driesse_2023(
+        surface_tilt, surface_azimuth, zenith, azimuth,
+        poa_global, dni_extra=1366.1)
+
+    expected = [22.089, 304.088, 931.143]
+    assert_allclose(expected, output, atol=0.001)
+
+    # test series output
+    poa_global = pd.Series([20, 300, 1000], index=times)
+
+    output = irradiance.ghi_from_poa_driesse_2023(
+        surface_tilt, surface_azimuth, zenith, azimuth,
+        poa_global, dni_extra=1366.1)
+
+    assert isinstance(output, pd.Series)
+
+    # test full_output option and special cases
+    poa_global = np.array([0, 1500, np.nan])
+
+    ghi, conv, niter = irradiance.ghi_from_poa_driesse_2023(
+        surface_tilt, surface_azimuth, zenith, azimuth,
+        poa_global, dni_extra=1366.1, full_output=True)
+
+    expected = [0, np.nan, np.nan]
+    assert_allclose(expected, ghi, atol=0.001)
+
+    expected = [True, False, False]
+    assert_allclose(expected, conv)
+
+    expected = [0, -1, 0]
+    assert_allclose(expected, niter)
+
+
 def test_gti_dirint():
     times = pd.DatetimeIndex(
         ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])

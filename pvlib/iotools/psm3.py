@@ -30,7 +30,7 @@ VARIABLE_MAP = {
     'Clearsky DNI': 'dni_clear',
     'Solar Zenith Angle': 'solar_zenith',
     'Temperature': 'temp_air',
-    'Dew point': 'temp_dew',
+    'Dew Point': 'temp_dew',
     'Relative Humidity': 'relative_humidity',
     'Pressure': 'pressure',
     'Wind Speed': 'wind_speed',

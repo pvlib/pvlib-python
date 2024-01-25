@@ -20,7 +20,7 @@ jobs:
           git remote add upstream https://github.com/pvlib/pvlib-python.git
           git fetch upstream $GITHUB_BASE_REF
       - name: Run Flake8 linter
-        run: git diff upstream/$GITHUB_BASE_REF HEAD | flake8
+        run: git diff upstream/$GITHUB_BASE_REF HEAD -- "*.py" | flake8
           --exclude pvlib/version.py
           --ignore E201,E241,E226,W503,W504
           --max-line-length 79

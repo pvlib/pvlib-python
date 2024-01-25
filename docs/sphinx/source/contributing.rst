@@ -261,7 +261,7 @@ First, install the ``doc`` dependencies specified in the
 `setup.py <https://github.com/pvlib/pvlib-python/blob/main/setup.py>`_.
 An easy way to do this is with::
 
-    pip install pvlib[doc]
+    pip install pvlib[doc]    # on Mac:  pip install "pvlib[doc]"
 
 Note: Anaconda users may have trouble using the above command to update an
 older version of docutils. If that happens, you can update it with ``conda``

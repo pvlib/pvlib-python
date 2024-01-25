@@ -248,7 +248,7 @@ def test_get_cams_bad_request(requests_mock):
     requests inputs. Also tests if the specified server url gets used"""
 
     # Subset of an xml file returned for errornous requests
-    mock_response_bad = """<?xml version="1.0" encoding="utf-8"?>
+    mock_response_bad_text = """<?xml version="1.0" encoding="utf-8"?>
     <ows:Exception exceptionCode="NoApplicableCode" locator="None">
     <ows:ExceptionText>Failed to execute WPS process [get_mcclear]:
         Please, register yourself at www.soda-pro.com
@@ -256,12 +256,13 @@ def test_get_cams_bad_request(requests_mock):
 
     url_cams_bad_request = 'https://pro.soda-is.com/service/wps?DataInputs=latitude=55.7906;longitude=12.5251;altitude=-999;date_begin=2020-01-01;date_end=2020-05-04;time_ref=TST;summarization=PT01H;username=test%2540test.com;verbose=false&Service=WPS&Request=Execute&Identifier=get_mcclear&version=1.0.0&RawDataOutput=irradiation'  # noqa: E501
 
-    requests_mock.get(url_cams_bad_request, text=mock_response_bad,
-                      headers={'Content-Type': 'application/xml'})
+    requests_mock.get(url_cams_bad_request, status_code=400,
+                      text=mock_response_bad_text)
 
     # Test if HTTPError is raised if incorrect input is specified
     # In the below example a non-registrered email is specified
-    with pytest.raises(requests.HTTPError, match='Failed to execute WPS'):
+    with pytest.raises(requests.exceptions.HTTPError,
+                       match='Failed to execute WPS process'):
         _ = sodapro.get_cams(
             start=pd.Timestamp('2020-01-01'),
             end=pd.Timestamp('2020-05-04'),

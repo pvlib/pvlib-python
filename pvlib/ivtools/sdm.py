@@ -166,7 +166,7 @@ def fit_desoto(v_mp, i_mp, v_oc, i_sc, alpha_sc, beta_voc, cells_in_series,
         Reference temperature condition [C]
     irrad_ref: float, default 1000
         Reference irradiance condition [W/m2]
-    root_kwargs: dictionary, default None
+    root_kwargs : dictionary, optional
         Dictionary of arguments to pass onto scipy.optimize.root()
 
     Returns
@@ -680,7 +680,7 @@ def _fit_desoto_sandia_diode(ee, voc, vth, tc, specs, const):
     y = voc - specs['beta_voc'] * (tc - const['T0'])
     new_x = sm.add_constant(x)
     res = sm.RLM(y, new_x).fit()
-    return res.params[1]
+    return np.array(res.params)[1]
 
 
 def _initial_iv_params(ivcurves, ee, voc, isc, rsh, nnsvth):

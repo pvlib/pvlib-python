@@ -1305,6 +1305,22 @@ def test_temperature_model_inconsistent(location, sapm_dc_snl_ac_system):
                    spectral_model='no_loss', temperature_model='pvsyst')
 
 
+def test_temperature_model_not_specified():
+    # GH 1759 -- ensure correct error is raised when temperature model params
+    # are specified on the PVSystem instead of the Arrays
+    location = Location(latitude=32.2, longitude=-110.9)
+    arrays = [pvsystem.Array(pvsystem.FixedMount(),
+                             module_parameters={'pdc0': 1, 'gamma_pdc': 0})]
+    system = pvsystem.PVSystem(arrays,
+                               temperature_model_parameters={'u0': 1, 'u1': 1},
+                               inverter_parameters={'pdc0': 1})
+    with pytest.raises(ValueError,
+                       match='could not infer temperature model '
+                             'from system.temperature_model_parameters'):
+        _ = ModelChain(system, location,
+                       aoi_model='no_loss', spectral_model='no_loss')
+
+
 def test_dc_model_user_func(pvwatts_dc_pvwatts_ac_system, location, weather,
                             mocker):
     m = mocker.spy(sys.modules[__name__], 'poadc')
@@ -1847,7 +1863,7 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
                         pd.Series([9, 5], index=times, name='ghi'))
 
 
-def test_complete_irradiance(sapm_dc_snl_ac_system, location):
+def test_complete_irradiance(sapm_dc_snl_ac_system, location, mocker):
     """Check calculations"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)
     times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='H')
@@ -1867,7 +1883,11 @@ def test_complete_irradiance(sapm_dc_snl_ac_system, location):
                         pd.Series([372.103976116, 497.087579068],
                                   index=times, name='ghi'))
 
+    # check that clearsky_model is used correctly
+    m_ineichen = mocker.spy(location, 'get_clearsky')
     mc.complete_irradiance(i[['dhi', 'ghi']])
+    assert m_ineichen.call_count == 1
+    assert m_ineichen.call_args[1]['model'] == 'ineichen'
     assert_series_equal(mc.results.weather['dni'],
                         pd.Series([49.756966, 62.153947],
                                   index=times, name='dni'))

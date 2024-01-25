@@ -108,24 +108,24 @@ def basic_chain(times, latitude, longitude,
         as degrees east of north
         (North=0, South=180, East=90, West=270).
 
-    module_parameters : None, dict or Series
+    module_parameters : dict or Series
         Module parameters as defined by the SAPM. See pvsystem.sapm for
         details.
 
-    temperature_model_parameters : None, dict or Series.
+    temperature_model_parameters : dict or Series
         Temperature model parameters as defined by the SAPM.
         See temperature.sapm_cell for details.
 
-    inverter_parameters : None, dict or Series
+    inverter_parameters : dict or Series
         Inverter parameters as defined by the CEC. See
         :py:func:`inverter.sandia` for details.
 
-    irradiance : None or DataFrame, default None
-        If None, calculates clear sky data.
+    irradiance : DataFrame, optional
+        If not specified, calculates clear sky data.
         Columns must be 'dni', 'ghi', 'dhi'.
 
-    weather : None or DataFrame, default None
-        If None, assumes air temperature is 20 C and
+    weather : DataFrame, optional
+        If not specified, assumes air temperature is 20 C and
         wind speed is 0 m/s.
         Columns must be 'wind_speed', 'temp_air'.
 
@@ -138,13 +138,13 @@ def basic_chain(times, latitude, longitude,
     airmass_model : str, default 'kastenyoung1989'
         Passed to atmosphere.relativeairmass.
 
-    altitude : None or float, default None
-        If None, computed from pressure. Assumed to be 0 m
-        if pressure is also None.
+    altitude : float, optional
+        If not specified, computed from ``pressure``. Assumed to be 0 m
+        if ``pressure`` is also unspecified.
 
-    pressure : None or float, default None
-        If None, computed from altitude. Assumed to be 101325 Pa
-        if altitude is also None.
+    pressure : float, optional
+        If not specified, computed from ``altitude``. Assumed to be 101325 Pa
+        if ``altitude`` is also unspecified.
 
     **kwargs
         Arbitrary keyword arguments.
@@ -460,7 +460,8 @@ class ModelChain:
         the physical location at which to evaluate the model.
 
     clearsky_model : str, default 'ineichen'
-        Passed to location.get_clearsky.
+        Passed to location.get_clearsky. Only used when DNI is not found in
+        the weather inputs.
 
     transposition_model : str, default 'haydavies'
         Passed to system.get_irradiance.
@@ -471,35 +472,35 @@ class ModelChain:
     airmass_model : str, default 'kastenyoung1989'
         Passed to location.get_airmass.
 
-    dc_model: None, str, or function, default None
-        If None, the model will be inferred from the parameters that
+    dc_model : str, or function, optional
+        If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'sapm', 'desoto', 'cec', 'pvsyst', 'pvwatts'.
         The ModelChain instance will be passed as the first argument
         to a user-defined function.
 
-    ac_model: None, str, or function, default None
-        If None, the model will be inferred from the parameters that
+    ac_model : str, or function, optional
+        If not specified, the model will be inferred from the parameters that
         are common to all of system.inverter_parameters.
         Valid strings are 'sandia', 'adr', 'pvwatts'. The
         ModelChain instance will be passed as the first argument to a
         user-defined function.
 
-    aoi_model: None, str, or function, default None
-        If None, the model will be inferred from the parameters that
+    aoi_model : str, or function, optional
+        If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
         'interp' and 'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
-    spectral_model: None, str, or function, default None
-        If None, the model will be inferred from the parameters that
+    spectral_model : str, or function, optional
+        If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'sapm', 'first_solar', 'no_loss'.
         The ModelChain instance will be passed as the first argument to
         a user-defined function.
 
-    temperature_model: None, str or function, default None
+    temperature_model : str or function, optional
         Valid strings are: 'sapm', 'pvsyst', 'faiman', 'fuentes', 'noct_sam'.
         The ModelChain instance will be passed as the first argument to a
         user-defined function.
@@ -513,7 +514,7 @@ class ModelChain:
         Valid strings are 'pvwatts', 'no_loss'. The ModelChain instance
         will be passed as the first argument to a user-defined function.
 
-    name: None or str, default None
+    name : str, optional
         Name of ModelChain instance.
     """
 
@@ -574,7 +575,7 @@ class ModelChain:
         airmass_model : str, default 'kastenyoung1989'
             Passed to location.get_airmass.
 
-        name: None or str, default None
+        name : str, optional
             Name of ModelChain instance.
 
         **kwargs
@@ -672,7 +673,7 @@ class ModelChain:
         airmass_model : str, default 'kastenyoung1989'
             Passed to location.get_airmass.
 
-        name: None or str, default None
+        name : str, optional
             Name of ModelChain instance.
 
         **kwargs
@@ -1116,10 +1117,7 @@ class ModelChain:
         temperature_model_parameters = tuple(
             array.temperature_model_parameters for array in self.system.arrays)
         params = _common_keys(temperature_model_parameters)
-        # remove or statement in v0.9
-        if {'a', 'b', 'deltaT'} <= params or (
-                not params and self.system.racking_model is None
-                and self.system.module_type is None):
+        if {'a', 'b', 'deltaT'} <= params:
             return self.sapm_temp
         elif {'u_c', 'u_v'} <= params:
             return self.pvsyst_temp
@@ -1354,7 +1352,8 @@ class ModelChain:
                    "https://github.com/pvlib/pvlib-python \n")
         if {'ghi', 'dhi'} <= icolumns and 'dni' not in icolumns:
             clearsky = self.location.get_clearsky(
-                weather.index, solar_position=self.results.solar_position)
+                weather.index, model=self.clearsky_model,
+                solar_position=self.results.solar_position)
             complete_irrad_df = pvlib.irradiance.complete_irradiance(
                 solar_zenith=self.results.solar_position.zenith,
                 ghi=weather.ghi,

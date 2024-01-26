@@ -581,12 +581,11 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     grounddiffuse : numeric
         Ground reflected irradiance. :math:`W/m^2`
 
-
     Notes
     -----
     Ground diffuse irradiance is the the last term of equations 3, 4, 7, 8,
     10, 11, and 12 in [1]_. Table of albedo values by ``surface_type``
-    in :py:data::`SURFACE_ALBEDOS` from [2]_, [3]_, [4]_.
+    are from [2]_, [3]_, [4]_; see :py:data:`SURFACE_ALBEDOS`.
 
     References
     ----------

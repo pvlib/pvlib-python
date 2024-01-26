@@ -20,7 +20,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Improved references and description for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:pull:`1953`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -29,3 +29,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * :ghuser:`matsuobasho`
+* :ghuser:`cwhanse`

@@ -552,12 +552,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 
 def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
-    Estimate diffuse irradiance from ground reflections given
-    irradiance, albedo, and surface tilt.
-
-    Function to determine the portion of irradiance on a tilted surface
-    due to ground reflections. Any of the inputs may be DataFrames or
-    scalars.
+    Estimate diffuse irradiance on a tilted surface from ground reflections.
 
     Parameters
     ----------
@@ -567,7 +562,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     ghi : numeric
-        Global horizontal irradiance. :math`W/m^2`
+        Global horizontal irradiance. :math:`W/m^2`
 
     albedo : numeric, default 0.25
         Ground reflectance, typically 0.1-0.4 for surfaces on Earth
@@ -584,22 +579,22 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Returns
     -------
     grounddiffuse : numeric
-        Ground reflected irradiance. :math`W/m^2`
+        Ground reflected irradiance. :math:`W/m^2`
 
 
     Notes
     -----
     Ground diffuse irradiance is the the last term of equations 3, 4, 7, 8,
-    10, 11, and 12 in [1]_. Table of albedo values
-    (see :p:data::`SURFACE_ALBEDOS`) from [2]_, [3], [4]_.
+    10, 11, and 12 in [1]_. Table of albedo values by ``surface_type``
+    in :py:data::`SURFACE_ALBEDOS` from [2]_, [3]_, [4]_.
 
     References
     ----------
     .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
        solar irradiance on inclined surfaces for building energy simulation"
        2007, Solar Energy vol. 81. pp. 254-267.
-    .. [2] https://www.pvsyst.com/help/albedo.htm, Accessed January, 2024.
-    .. [3] http://en.wikipedia.org/wiki/Albedo. Accessed January, 2024.
+    .. [2] https://www.pvsyst.com/help/albedo.htm Accessed January, 2024.
+    .. [3] http://en.wikipedia.org/wiki/Albedo Accessed January, 2024.
     .. [4] Payne, R. E. "Albedo of the Sea Surface". J. Atmos. Sci., 29,
        pp. 959–970, 1972.
        https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2.

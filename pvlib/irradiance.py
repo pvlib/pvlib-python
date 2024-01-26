@@ -567,13 +567,13 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     ghi : numeric
-        Global horizontal irradiance. [W/m^2]
+        Global horizontal irradiance. :math`W/m^2`
 
     albedo : numeric, default 0.25
         Ground reflectance, typically 0.1-0.4 for surfaces on Earth
         (land), may increase over snow, ice, etc. May also be known as
         the reflection coefficient. Must be >=0 and <=1. Will be
-        overridden if surface_type is supplied.
+        overridden if ``surface_type`` is supplied.
 
     surface_type : string, optional
         If supplied, overrides ``albedo``. ``surface_type`` can be one of
@@ -584,23 +584,25 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Returns
     -------
     grounddiffuse : numeric
-        Ground reflected irradiance. [W/m^2]
+        Ground reflected irradiance. :math`W/m^2`
 
+
+    Notes
+    -----
+    Ground diffuse irradiance is the the last term of equations 3, 4, 7, 8,
+    10, 11, and 12 in [1]_. Table of albedo values
+    (see :p:data::`SURFACE_ALBEDOS`) from [2]_, [3], [4]_.
 
     References
     ----------
     .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
        solar irradiance on inclined surfaces for building energy simulation"
        2007, Solar Energy vol. 81. pp. 254-267.
-
-    The calculation is the last term of equations 3, 4, 7, 8, 10, 11, and 12.
-
-    .. [2] albedos from:
-       http://files.pvsyst.com/help/albedo.htm
-       and
-       http://en.wikipedia.org/wiki/Albedo
-       and
-       https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
+    .. [2] https://www.pvsyst.com/help/albedo.htm, Accessed January, 2024.
+    .. [3] http://en.wikipedia.org/wiki/Albedo. Accessed January, 2024.
+    .. [4] Payne, R. E. "Albedo of the Sea Surface". J. Atmos. Sci., 29,
+       pp. 959–970, 1972.
+       https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2.
     '''
 
     if surface_type is not None:

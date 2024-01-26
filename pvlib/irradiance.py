@@ -597,7 +597,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     .. [3] http://en.wikipedia.org/wiki/Albedo Accessed January, 2024.
     .. [4] Payne, R. E. "Albedo of the Sea Surface". J. Atmos. Sci., 29,
        pp. 959–970, 1972.
-       https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2.
+       :doi:`10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2`
     '''
 
     if surface_type is not None:

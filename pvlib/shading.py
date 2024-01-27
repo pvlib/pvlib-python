@@ -242,11 +242,14 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
     This solar zenith angle is projected onto the plane whose normal vector is
     defined by ``axis_tilt`` and ``axis_azimuth``. The normal vector is in the
     direction of ``axis_azimuth`` (clockwise from north) and tilted from
-    horizontal by ``axis_tilt``. See Figure 5 in [1]_.
+    horizontal by ``axis_tilt``. See Figure 5 in [1]_:
 
     .. image:: ../../_images/Anderson_Mikofski_2020_Fig5.jpg
-      :alt: Fig. 5: Solar coordinates projection onto tracker rotation plane.
+      :alt: Wire diagram of coordinates systems to obtain the projected angle.
       :align: center
+      :scale: 75 %
+
+      Fig. 5, [1]_: Solar coordinates projection onto tracker rotation plane.
 
     Parameters
     ----------

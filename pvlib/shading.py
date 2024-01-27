@@ -244,7 +244,7 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
     direction of ``axis_azimuth`` (clockwise from north) and tilted from
     horizontal by ``axis_tilt``. See Figure 5 in [1]_:
 
-    .. image:: ../../_images/Anderson_Mikofski_2020_Fig5.jpg
+    .. figure:: ../../_images/Anderson_Mikofski_2020_Fig5.jpg
        :alt: Wire diagram of coordinates systems to obtain the projected angle.
        :align: center
        :scale: 75 %

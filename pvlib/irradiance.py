@@ -551,7 +551,7 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 
 
 def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
-    '''
+    r'''
     Estimate diffuse irradiance on a tilted surface from ground reflections.
 
     Ground diffuse irradiance is calculated as

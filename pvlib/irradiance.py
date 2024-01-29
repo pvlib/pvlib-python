@@ -558,7 +558,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
     .. math::
 
-        G_{ground} = GHI \times \rho \times \frac{1 - \cos \beta}{2}
+       G_{ground} = GHI \times \rho \times \frac{1 - \cos\beta}{2}
 
     where :math:`\rho` is albedo and :math:`\beta` is ``surface_tilt``.
 

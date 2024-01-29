@@ -554,6 +554,14 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance on a tilted surface from ground reflections.
 
+    Ground diffuse irradiance is calculated as
+
+    .. math::
+
+        G_{ground} = GHI \times \rho \times \frac{1 - \cos \beta}{2}
+
+    where :math:`\rho` is albedo and :math:`\beta` is ``surface_tilt``.
+
     Parameters
     ----------
     surface_tilt : numeric
@@ -583,9 +591,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
 
     Notes
     -----
-    Ground diffuse irradiance is the the last term of equations 3, 4, 7, 8,
-    10, 11, and 12 in [1]_. Table of albedo values by ``surface_type``
-    are from [2]_, [3]_, [4]_;
+    Table of albedo values by ``surface_type`` are from [2]_, [3]_, [4]_;
     see :py:data:`~pvlib.irradiance.SURFACE_ALBEDOS`.
 
     References

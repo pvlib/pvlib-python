@@ -363,7 +363,7 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
     References
     ----------
     .. [1] "PVsyst 7 Help", [Online]. Available:
-       https://www.pvsyst.com/help/index.html?thermal_loss.htm. 
+       https://www.pvsyst.com/help/index.html?thermal_loss.htm.
        [Accessed: 30-Jan-2024].
 
     .. [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of

@@ -289,8 +289,7 @@ def get_srml(station, start, end, filetype='PO', map_variables=True,
     .. [1] University of Oregon Solar Radiation Measurement Laboratory
        `http://solardata.uoregon.edu/`_
     .. [2] Station ID codes - Solar Radiation Measurement Laboratory
-       `http://solardata.uoregon.edu/StationIDCodes.html
-       <http://solardata.uoregon.edu/StationIDCodes.html>`_
+       `http://solardata.uoregon.edu/StationIDCodes.html`_
     """
     # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
     start = pd.to_datetime(start)

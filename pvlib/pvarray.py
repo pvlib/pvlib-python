@@ -262,11 +262,12 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     Parameters
     ----------
     effective_irradiance : numeric
-        The irradiance that is converted to photocurrent. [W/m^2]
+        The irradiance that is converted to photocurrent. [:math:`W/m^2`]
     temp_mod: numeric
         Module back-surface temperature. [C]
     pdc0: numeric
-        Power of the modules at 1000 W/m^2 and cell reference temperature. [W]
+        Power of the modules at reference conditions 1000 :math:`W/m^2`
+        and :math:`25^{\circ}C`. [W]
     k : tuple, optional
         Empirical coefficients used in the power model. Length 6. If ``k`` is
         not provided, ``cell_type`` must be specified.
@@ -287,7 +288,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     Notes
     -----
     The equation for :math:`P_{dc}` is from [1]_. The expression used in PVGIS
-    documentation is differs by factoring :math:`P_{dc0}` out of the
+    documentation differs by factoring :math:`P_{dc0}` out of the
     polynomial:
 
     .. math::
@@ -309,7 +310,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
 
     :py:func:`huld` is a component of the PV performance model implemented in
     PVGIS. Among other components, the full PVGIS model includes:
-        - the Faiman model for cell temperature
+        - the Faiman model for module temperature
           :py:func:`pvlib.temperature.faiman`
         - the Martin and Ruiz model for the incidence angle modifier (IAM)
           :py:func:`pvlib.iam.martin_ruiz`

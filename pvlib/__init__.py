@@ -14,6 +14,7 @@ from pvlib import (  # noqa: F401
     ivtools,
     location,
     modelchain,
+    pvarray,
     pvsystem,
     scaling,
     shading,

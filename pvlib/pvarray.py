@@ -297,8 +297,9 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
                  k'_4 T' \log(G') + k'_5 T' \log^2 (G') + k'_6 T'^2)
 
 
-    Users should be aware that at very low irradiance, i.e.,
-    :math:`G' < 20 W/m^2`, :math:`P_{dc}` may be negative.
+    With default values for ``k``, at very low irradiance, i.e.,
+    :math:`G' < 20 W/m^2`, :math:`P_{dc}` may be negative
+    due to the terms involving :math:`\log(G')`.
 
     PVGIS documentation shows a table of default parameters :math:`k'` for
     different cell types. The parameters :math:`k'` differ from the parameters

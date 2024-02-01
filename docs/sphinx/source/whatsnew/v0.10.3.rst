@@ -57,7 +57,6 @@ Contributors
 * Arjan Keeman (:ghuser:`akeeman`)
 * Miguel Sánchez de León Peque (:ghuser:`Peque`)
 * Will Hobbs (:ghuser:`williamhobbs`)
-* Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Abigail Jones (:ghuser:`ajonesr`)
 * Cliff Hansen (:ghuser:`cwhanse`)

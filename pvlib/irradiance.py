@@ -73,7 +73,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
+    .. [2] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
        SR1 and SR2
 
     .. [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes

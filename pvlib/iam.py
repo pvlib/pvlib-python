@@ -69,9 +69,9 @@ def ashrae(aoi, b=0.05):
 
     .. [2] ASHRAE standard 93-77
 
-    .. [3] PVsyst Contextual Help.
-       https://files.pvsyst.com/help/index.html?iam_loss.htm retrieved on
-       October 14, 2019
+    .. [3] PVsyst 7 Help.
+       https://www.pvsyst.com/help/index.html?iam_loss.htm retrieved on
+       January 30, 2024
 
     See Also
     --------

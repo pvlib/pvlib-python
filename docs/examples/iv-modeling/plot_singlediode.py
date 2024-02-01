@@ -118,7 +118,6 @@ plt.legend(loc=(1.0, 0))
 plt.xlabel('Module voltage [V]')
 plt.ylabel('Module current [A]')
 plt.title(parameters['Name'])
-plt.show()
 plt.gcf().set_tight_layout(True)
 
 
@@ -136,6 +135,7 @@ def draw_arrow(ax, label, x0, y0, rotation, size, direction):
 ax = plt.gca()
 draw_arrow(ax, 'Irradiance', 20, 2.5, 90, 15, 'r')
 draw_arrow(ax, 'Temperature', 35, 1, 0, 15, 'l')
+plt.show()
 
 print(pd.DataFrame({
     'i_sc': curve_info['i_sc'],

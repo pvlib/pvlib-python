@@ -51,13 +51,13 @@ def get_solarposition(time, latitude, longitude,
         Longitude in decimal degrees. Positive east of prime meridian,
         negative to west.
 
-    altitude : None or float, default None
-        If None, computed from pressure. Assumed to be 0 m
-        if pressure is also None.
+    altitude : float, optional
+        If not specified, computed from ``pressure``. Assumed to be 0 m
+        if ``pressure`` is not supplied.
 
-    pressure : None or float, default None
-        If None, computed from altitude. Assumed to be 101325 Pa
-        if altitude is also None.
+    pressure : float, optional
+        If not specified, computed from ``altitude``. Assumed to be 101325 Pa
+        if ``altitude`` is not supplied.
 
     method : string, default 'nrel_numpy'
         'nrel_numpy' uses an implementation of the NREL SPA algorithm
@@ -89,7 +89,7 @@ def get_solarposition(time, latitude, longitude,
        solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
        2007.
 
-    .. [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+    .. [3] NREL SPA code: https://midcdmz.nrel.gov/spa/
     """
 
     if altitude is None and pressure is None:
@@ -186,8 +186,8 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     redefined by Python>=3.5. This issue is
     `Python bug 24643 <https://bugs.python.org/issue24643>`_.
 
-    .. [2] USNO delta T:
-       http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
+    .. [2] Delta T:
+       https://en.wikipedia.org/wiki/%CE%94T_(timekeeping)
 
     See also
     --------
@@ -312,7 +312,7 @@ def spa_python(time, latitude, longitude,
         *Note: delta_t = None will break code using nrel_numba,
         this will be fixed in a future version.*
         The USNO has historical and forecasted delta_t [3]_.
-    atmos_refrac : None or float, optional, default None
+    atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
         at sunrise and sunset.
     how : str, optional, default 'numpy'
@@ -832,7 +832,7 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     # Calculate refraction correction
     Elevation = SunEl
     TanEl = pd.Series(np.tan(np.radians(Elevation)), index=time_utc)
-    Refract = pd.Series(0, index=time_utc)
+    Refract = pd.Series(0., index=time_utc)
 
     Refract[(Elevation > 5) & (Elevation <= 85)] = (
         58.1/TanEl - 0.07/(TanEl**3) + 8.6e-05/(TanEl**5))
@@ -1327,9 +1327,9 @@ def solar_zenith_analytical(latitude, hourangle, declination):
     .. [4] `Wikipedia: Solar Zenith Angle
        <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
 
-    .. [5] `PVCDROM: Sun's Position
-       <http://www.pveducation.org/pvcdrom/2-properties-sunlight/
-       suns-position>`_
+    .. [5] `PVCDROM: Elevation Angle
+       <https://www.pveducation.org/pvcdrom/properties-of-sunlight/
+       elevation-angle>`_
 
     See Also
     --------

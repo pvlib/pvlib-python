@@ -201,8 +201,9 @@ def test_read_pvgis_hourly_bad_extension():
     # Test if ValueError is raised if an unkonwn pvgis_format is specified
     with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
         read_pvgis_hourly(testfile_pv_json, pvgis_format='txt')
-    # Test if TypeError is raised if input is a buffer and pvgis_format=None
-    with pytest.raises(TypeError, match="expected str, bytes or os.PathLike"):
+    # Test if TypeError is raised if input is a buffer and pvgis_format=None.
+    # The error text changed in python 3.12. This regex matches both versions:
+    with pytest.raises(TypeError, match="str.*os.PathLike"):
         read_pvgis_hourly(io.StringIO())
 
 

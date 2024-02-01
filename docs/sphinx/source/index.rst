@@ -4,17 +4,14 @@
 pvlib python
 ============
 
-pvlib python is a community supported tool that provides a set of
+pvlib python is a community developed toolbox that provides a set of
 functions and classes for simulating the performance of photovoltaic
-energy systems. pvlib python was originally ported from the PVLIB MATLAB
-toolbox developed at Sandia National Laboratories and it implements many
-of the models and methods developed at the Labs. More information on
-Sandia Labs PV performance modeling programs can be found at the `PVPMC <https://pvpmc.sandia.gov/>`_. We collaborate with the PVLIB MATLAB project,
-but operate independently of it.
+energy systems and accomplishing related tasks.
+The core mission of pvlib python is to provide open,
+reliable, interoperable, and benchmark implementations of PV system models.
 
 The source code for pvlib python is hosted on `github
 <https://github.com/pvlib/pvlib-python>`_.
-
 Please see the :ref:`installation` page for installation help.
 
 For examples of how to use pvlib python, please see
@@ -33,31 +30,55 @@ application.
 There is a :ref:`variable naming convention <variables_style_rules>` to
 ensure consistency throughout the library.
 
+
+History and acknowledgement
+===========================
+
+pvlib python started out as a Python translation of the PVLIB MATLAB
+toolbox (developed by the `PVPMC <https://pvpmc.sandia.gov/>`_ at
+Sandia National Laboratories) in 2013 and has grown substantially since then.
+Today it contains code contributions from over a hundred individuals worldwide
+and is maintained by a core group of PV modelers from a variety institutions.
+
+pvlib has been supported directly and indirectly by DOE, NumFOCUS, and
+Google Summer of Code funding, university research projects,
+companies that allow their employees to contribute, and from personal time.
+
+
 Citing pvlib python
 ===================
 
-Many of the contributors to pvlib-python work in institutions where
+Many of the contributors to pvlib python work in institutions where
 citation metrics are used in performance or career evaluations. If you
 use pvlib python in a published work, please cite:
 
-  William F. Holmgren, Clifford W. Hansen, and Mark A. Mikofski.
+**Recommended citation for the pvlib python project**
+
+  Anderson, K., Hansen, C., Holmgren, W., Jensen, A., Mikofski, M., and Driesse, A.
+  "pvlib python: 2023 project update."
+  Journal of Open Source Software, 8(92), 5994, (2023).
+  https://doi.org/10.21105/joss.05994
+
+
+**Recommended citation for pvlib iotools**
+
+  Jensen, A., Anderson, K., Holmgren, W., Mikofski, M., Hansen, C., Boeman, L., Loonen, R.
+  "pvlib iotools — Open-source Python functions for seamless access to solar irradiance data."
+  Solar Energy, 266, 112092, (2023).
+  https://doi.org/10.1016/j.solener.2023.112092
+
+**Historical citation for pvlib python**
+
+  Holmgren, W., Hansen, C., and Mikofski, M.
   "pvlib python: a python package for modeling solar energy systems."
   Journal of Open Source Software, 3(29), 884, (2018).
   https://doi.org/10.21105/joss.00884
 
+**Version specific citation**
 Please also cite the DOI corresponding to the specific version of
 pvlib python that you used. pvlib python DOIs are listed at
 `Zenodo.org <https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version>`_
 
-If you use pvlib-python in a commercial or publicly-available
-application, please consider displaying one of the "powered by pvlib"
-logos:
-
-.. image:: _images/pvlib_powered_logo_horiz.png
-  :width: 300
-
-.. image:: _images/pvlib_powered_logo_vert.png
-  :width: 300
 
 Additional pvlib python publications include:
 
@@ -82,6 +103,19 @@ Additional pvlib python publications include:
   "An Open Source Solar Power Forecasting Tool Using PVLIB-Python,"
   in 43rd Photovoltaic Specialists Conference, 2016.
 
+
+Logo
+====
+If you use pvlib python in a commercial or publicly-available
+application, please consider displaying one of the "powered by pvlib"
+logos:
+
+.. image:: _images/pvlib_powered_logo_horiz.png
+  :width: 300
+
+.. image:: _images/pvlib_powered_logo_vert.png
+  :width: 300
+
 License
 =======
 
@@ -96,21 +130,12 @@ pvlib python is a `NumFOCUS Affiliated Project <https://numfocus.org/sponsored-p
   :target: https://numfocus.org/sponsored-projects/affiliated-projects
   :alt: NumFocus Affliated Projects
 
-Contents
-========
-
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    user_guide/index
    gallery/index
    reference/index
    whatsnew
    contributing
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`

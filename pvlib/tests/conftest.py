@@ -11,6 +11,7 @@ from functools import wraps
 import pvlib
 from pvlib.location import Location
 
+
 pvlib_base_version = Version(Version(pvlib.__version__).base_version)
 
 
@@ -92,6 +93,19 @@ except KeyError:
 
 requires_bsrn_credentials = pytest.mark.skipif(
     not has_bsrn_credentials, reason='requires bsrn credentials')
+
+
+try:
+    # Attempt to load SolarAnywhere API key used for testing
+    # pvlib.iotools.get_solaranywhere
+    solaranywhere_api_key = os.environ["SOLARANYWHERE_API_KEY"]
+    has_solaranywhere_credentials = True
+except KeyError:
+    has_solaranywhere_credentials = False
+
+requires_solaranywhere_credentials = pytest.mark.skipif(
+    not has_solaranywhere_credentials,
+    reason='requires solaranywhere credentials')
 
 
 try:

@@ -10,6 +10,8 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
+from scipy.interpolate import splev
+from scipy.optimize import bisect
 
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
@@ -71,7 +73,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
+    .. [2] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
        SR1 and SR2
 
     .. [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
@@ -323,6 +325,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         * reindl
         * king
         * perez
+        * perez-driesse
 
     Parameters
     ----------
@@ -340,18 +343,19 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         Global horizontal irradiance. [W/m2]
     dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m2]
-    airmass : None or numeric, default None
+    airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]
-    surface_type : None or str, default None
+    surface_type : str, optional
         Surface type. See :py:func:`~pvlib.irradiance.get_ground_diffuse` for
         the list of accepted values.
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
-        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``.
+        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
+        ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
 
@@ -363,13 +367,13 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
 
     Notes
     -----
-    Models ``'haydavies'``, ``'reindl'``, or ``'perez'`` require
-    ``'dni_extra'``. Values can be calculated using
+    Models ``'haydavies'``, ``'reindl'``, ``'perez'`` and ``'perez-driesse'``
+    require ``'dni_extra'``. Values can be calculated using
     :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
-    The ``'perez'`` model requires relative airmass (``airmass``) as input. If
-    ``airmass`` is not provided, it is calculated using the defaults in
-    :py:func:`~pvlib.atmosphere.get_relative_airmass`.
+    The ``'perez'`` and ``'perez-driesse'`` models require relative airmass
+    (``airmass``) as input. If ``airmass`` is not provided, it is calculated
+    using the defaults in :py:func:`~pvlib.atmosphere.get_relative_airmass`.
     """
 
     poa_sky_diffuse = get_sky_diffuse(
@@ -400,6 +404,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         * reindl
         * king
         * perez
+        * perez-driesse
 
     Parameters
     ----------
@@ -417,13 +422,14 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         Global horizontal irradiance. [W/m2]
     dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m2]
-    airmass : None or numeric, default None
+    airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
-        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``.
+        ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
+        ``'perez-driesse'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
 
@@ -436,22 +442,23 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     ------
     ValueError
         If model is one of ``'haydavies'``, ``'reindl'``, or ``'perez'`` and
-        ``dni_extra`` is ``None``.
+        ``dni_extra`` is not specified.
 
     Notes
     -----
-    Models ``'haydavies'``, ``'reindl'``, and ``'perez``` require 'dni_extra'.
-    Values can be calculated using
+    Models ``'haydavies'``, ``'reindl'``, ``'perez'`` and ``'perez-driesse'``
+    require ``'dni_extra'``. Values can be calculated using
     :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
-    The ``'perez'`` model requires relative airmass (``airmass``) as input. If
-    ``airmass`` is not provided, it is calculated using the defaults in
-    :py:func:`~pvlib.atmosphere.get_relative_airmass`.
+    The ``'perez'`` and ``'perez-driesse'`` models require relative airmass
+    (``airmass``) as input. If ``airmass`` is not provided, it is calculated
+    using the defaults in :py:func:`~pvlib.atmosphere.get_relative_airmass`.
     """
 
     model = model.lower()
 
-    if (model in {'haydavies', 'reindl', 'perez'}) and (dni_extra is None):
+    if dni_extra is None and model in {'haydavies', 'reindl',
+                                       'perez', 'perez-driesse'}:
         raise ValueError(f'dni_extra is required for model {model}')
 
     if model == 'isotropic':
@@ -473,6 +480,10 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         sky = perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                     solar_zenith, solar_azimuth, airmass,
                     model=model_perez)
+    elif model == 'perez-driesse':
+        # perez_driesse will calculate its own airmass if needed
+        sky = perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+                            solar_zenith, solar_azimuth, airmass)
     else:
         raise ValueError(f'invalid model selection {model}')
 
@@ -565,10 +576,11 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         the reflection coefficient. Must be >=0 and <=1. Will be
         overridden if surface_type is supplied.
 
-    surface_type: None or string, default None
-        If not None, overrides albedo. String can be one of 'urban',
-        'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt', 'concrete',
-        'aluminum', 'copper', 'fresh steel', 'dirty steel', 'sea'.
+    surface_type : string, optional
+        If supplied, overrides ``albedo``. ``surface_type`` can be one of
+        'urban', 'grass', 'fresh grass', 'snow', 'fresh snow', 'asphalt',
+        'concrete', 'aluminum', 'copper', 'fresh steel', 'dirty steel',
+        'sea'.
 
     Returns
     -------
@@ -781,17 +793,17 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     dni_extra : numeric
         Extraterrestrial normal irradiance in W/m^2.
 
-    solar_zenith : None or numeric, default None
+    solar_zenith : numeric, optional
         Solar apparent (refraction-corrected) zenith angles in decimal
         degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
         supply ``projection_ratio``.
 
-    solar_azimuth : None or numeric, default None
+    solar_azimuth : numeric, optional
         Solar azimuth angles in decimal degrees. Must supply
         ``solar_zenith`` and ``solar_azimuth`` or supply
         ``projection_ratio``.
 
-    projection_ratio : None or numeric, default None
+    projection_ratio : numeric, optional
         Ratio of angle of incidence projection to solar zenith angle
         projection. Must supply ``solar_zenith`` and ``solar_azimuth``
         or supply ``projection_ratio``.
@@ -1072,7 +1084,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         inputs. AM must be >=0 (careful using the 1/sec(z) model of AM
         generation)
 
-    model : string (optional, default='allsitescomposite1990')
+    model : string, default 'allsitescomposite1990'
         A string which selects the desired set of Perez coefficients. If
         model is not provided as an input, the default, '1990' will be
         used. All possible model selections are:
@@ -1090,7 +1102,7 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         * 'capecanaveral1988'
         * 'albany1988'
 
-    return_components: bool (optional, default=False)
+    return_components : bool, default False
         Flag used to decide whether to return the calculated diffuse components
         or not.
 
@@ -1211,6 +1223,392 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         return diffuse_components
     else:
         return sky_diffuse
+
+
+def _calc_delta(dhi, dni_extra, solar_zenith, airmass=None):
+    '''
+    Compute the delta parameter, which represents sky dome "brightness"
+    in the Perez and Perez-Driesse models.
+
+    Helper function for perez_driesse transposition.
+    '''
+    if airmass is None:
+        # use the same airmass model as in the original perez work
+        airmass = atmosphere.get_relative_airmass(solar_zenith,
+                                                  'kastenyoung1989')
+
+    max_airmass = atmosphere.get_relative_airmass(90, 'kastenyoung1989')
+    airmass = np.where(solar_zenith >= 90, max_airmass, airmass)
+
+    return dhi / (dni_extra / airmass)
+
+
+def _calc_zeta(dhi, dni, zenith):
+    '''
+    Compute the zeta parameter, which represents sky dome "clearness"
+    in the Perez-Driesse model.
+
+    Helper function for perez_driesse transposition.
+    '''
+    dhi = np.asarray(dhi)
+    dni = np.asarray(dni)
+
+    # first calculate what zeta would be without the kappa correction
+    # using eq. 5 and eq. 13
+    with np.errstate(invalid='ignore'):
+        zeta = dni / (dhi + dni)
+
+    zeta = np.where(dhi == 0, 0.0, zeta)
+
+    # then apply the kappa correction in a manner analogous to eq. 7
+    kappa = 1.041
+    kterm = kappa * np.radians(zenith) ** 3
+    zeta = zeta / (1 - kterm * (zeta - 1))
+
+    return zeta
+
+
+def _f(i, j, zeta):
+    '''
+    Evaluate the quadratic splines corresponding to the
+    allsitescomposite1990 Perez model look-up table.
+
+    Helper function for perez_driesse transposition.
+    '''
+    knots = np.array(
+        [0.000, 0.000, 0.000,
+         0.061, 0.187, 0.333, 0.487, 0.643, 0.778, 0.839,
+         1.000, 1.000, 1.000])
+
+    coefs = np.array(
+        [[-0.053, +0.529, -0.028, -0.071, +0.061, -0.019],
+         [-0.008, +0.588, -0.062, -0.060, +0.072, -0.022],
+         [+0.131, +0.770, -0.167, -0.026, +0.106, -0.032],
+         [+0.328, +0.471, -0.216, +0.069, -0.105, -0.028],
+         [+0.557, +0.241, -0.300, +0.086, -0.085, -0.012],
+         [+0.861, -0.323, -0.355, +0.240, -0.467, -0.008],
+         [ 1.212, -1.239, -0.444, +0.305, -0.797, +0.047],
+         [ 1.099, -1.847, -0.365, +0.275, -1.132, +0.124],
+         [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
+         [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
+         [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],
+         [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],
+         [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000]])
+
+    coefs = coefs.T.reshape((2, 3, 13))
+
+    tck = (knots, coefs[i-1, j-1], 2)
+
+    return splev(zeta, tck)
+
+
+def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+                  solar_zenith, solar_azimuth, airmass=None,
+                  return_components=False):
+    '''
+    Determine diffuse irradiance from the sky on a tilted surface using
+    the continuous Perez-Driesse model.
+
+    The Perez-Driesse model [1]_ is a reformulation of the 1990 Perez
+    model [2]_ that provides continuity of the function and of its first
+    derivatives.  This is achieved by replacing the look-up table of
+    coefficients with quadratic splines.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        and <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    dhi : numeric
+        Diffuse horizontal irradiance in W/m^2. dhi must be >=0.
+
+    dni : numeric
+        Direct normal irradiance in W/m^2. dni must be >=0.
+
+    dni_extra : numeric
+        Extraterrestrial normal irradiance in W/m^2.
+
+    solar_zenith : numeric
+        apparent (refraction-corrected) zenith angles in decimal
+        degrees. solar_zenith must be >=0 and <=180.
+
+    solar_azimuth : numeric
+        Sun azimuth angles in decimal degrees. solar_azimuth must be >=0
+        and <=360. The azimuth convention is defined as degrees east of
+        north (e.g. North = 0, East = 90, West = 270).
+
+    airmass : numeric, optional
+        Relative (not pressure-corrected) airmass values. If ``airmass`` is a
+        DataFrame it must be of the same size as all other DataFrame
+        inputs. The kastenyoung1989 airmass calculation is used internally
+        and is also recommended when pre-calculating airmass because
+        it was used in the original model development.
+
+    return_components: bool (optional, default=False)
+        Flag used to decide whether to return the calculated diffuse components
+        or not.
+
+    Returns
+    --------
+    numeric, OrderedDict, or DataFrame
+        Return type controlled by `return_components` argument.
+        If ``return_components=False``, `sky_diffuse` is returned.
+        If ``return_components=True``, `diffuse_components` is returned.
+
+    sky_diffuse : numeric
+        The sky diffuse component of the solar radiation on a tilted
+        surface.
+
+    diffuse_components : OrderedDict (array input) or DataFrame (Series input)
+        Keys/columns are:
+            * sky_diffuse: Total sky diffuse
+            * isotropic
+            * circumsolar
+            * horizon
+
+    Notes
+    -----
+    The Perez-Driesse model can be considered a plug-in replacement for the
+    1990 Perez model using the ``'allsitescomposite1990'`` coefficient set.
+    Deviations between the two are very small, as demonstrated in [1]_.
+    Other coefficient sets are not supported because the 1990 set is
+    based on the largest and most diverse set of empirical data.
+
+    References
+    ----------
+    .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+        Perez diffuse sky model for forward and reverse transposition.
+        Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
+
+    .. [2] Perez, R., Ineichen, P., Seals, R., Michalsky, J., Stewart, R.,
+       1990. Modeling daylight availability and irradiance components from
+       direct and global irradiance. Solar Energy 44 (5), 271-289.
+
+    See also
+    --------
+    perez
+    isotropic
+    haydavies
+    klucher
+    reindl
+    king
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct., 2023
+
+    delta = _calc_delta(dhi, dni_extra, solar_zenith, airmass)
+    zeta = _calc_zeta(dhi, dni, solar_zenith)
+
+    z = np.radians(solar_zenith)
+
+    F1 = _f(1, 1, zeta) + _f(1, 2, zeta) * delta + _f(1, 3, zeta) * z
+    F2 = _f(2, 1, zeta) + _f(2, 2, zeta) * delta + _f(2, 3, zeta) * z
+
+    # note the newly recommended upper limit on F1
+    F1 = np.clip(F1, 0, 0.9)
+
+    # lines after this point are identical to the original perez function
+    # with some checks removed
+
+    A = aoi_projection(surface_tilt, surface_azimuth,
+                       solar_zenith, solar_azimuth)
+    A = np.maximum(A, 0)
+
+    B = tools.cosd(solar_zenith)
+    B = np.maximum(B, tools.cosd(85))
+
+    # Calculate Diffuse POA from sky dome
+    term1 = 0.5 * (1 - F1) * (1 + tools.cosd(surface_tilt))
+    term2 = F1 * A / B
+    term3 = F2 * tools.sind(surface_tilt)
+
+    sky_diffuse = np.maximum(dhi * (term1 + term2 + term3), 0)
+
+    if return_components:
+        diffuse_components = OrderedDict()
+        diffuse_components['sky_diffuse'] = sky_diffuse
+
+        # Calculate the different components
+        diffuse_components['isotropic'] = dhi * term1
+        diffuse_components['circumsolar'] = dhi * term2
+        diffuse_components['horizon'] = dhi * term3
+
+        if isinstance(sky_diffuse, pd.Series):
+            diffuse_components = pd.DataFrame(diffuse_components)
+
+        return diffuse_components
+    else:
+        return sky_diffuse
+
+
+def _poa_from_ghi(surface_tilt, surface_azimuth,
+                  solar_zenith, solar_azimuth,
+                  ghi,
+                  dni_extra, airmass, albedo):
+    '''
+    Transposition function that includes decomposition of GHI using the
+    continuous Erbs-Driesse model.
+
+    Helper function for ghi_from_poa_driesse_2023.
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    erbsout = erbs_driesse(ghi, solar_zenith, dni_extra=dni_extra)
+
+    dni = erbsout['dni']
+    dhi = erbsout['dhi']
+
+    irrads = get_total_irradiance(surface_tilt, surface_azimuth,
+                                  solar_zenith, solar_azimuth,
+                                  dni, ghi, dhi,
+                                  dni_extra, airmass, albedo,
+                                  model='perez-driesse')
+
+    return irrads['poa_global']
+
+
+def _ghi_from_poa(surface_tilt, surface_azimuth,
+                  solar_zenith, solar_azimuth,
+                  poa_global,
+                  dni_extra, airmass, albedo,
+                  xtol=0.01):
+    '''
+    Reverse transposition function that uses the scalar bisection from scipy.
+
+    Helper function for ghi_from_poa_driesse_2023.
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    # propagate nans and zeros quickly
+    if np.isnan(poa_global):
+        return np.nan, False, 0
+    if poa_global <= 0:
+        return 0.0, True, 0
+
+    # function whose root needs to be found
+    def poa_error(ghi):
+        poa_hat = _poa_from_ghi(surface_tilt, surface_azimuth,
+                                solar_zenith, solar_azimuth,
+                                ghi,
+                                dni_extra, airmass, albedo)
+        return poa_hat - poa_global
+
+    # calculate an upper bound for ghi using clearness index 1.25
+    ghi_clear = dni_extra * tools.cosd(solar_zenith)
+    ghi_high = np.maximum(10, 1.25 * ghi_clear)
+
+    try:
+        result = bisect(poa_error,
+                        a=0,
+                        b=ghi_high,
+                        xtol=xtol,
+                        maxiter=25,
+                        full_output=True,
+                        disp=False,
+                        )
+    except ValueError:
+        # this occurs when poa_error has the same sign at both end points
+        ghi = np.nan
+        conv = False
+        niter = -1
+    else:
+        ghi = result[0]
+        conv = result[1].converged
+        niter = result[1].iterations
+
+    return ghi, conv, niter
+
+
+def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
+                              solar_zenith, solar_azimuth,
+                              poa_global,
+                              dni_extra=None, airmass=None, albedo=0.25,
+                              xtol=0.01,
+                              full_output=False):
+    '''
+    Estimate global horizontal irradiance (GHI) from global plane-of-array
+    (POA) irradiance.  This reverse transposition algorithm uses a bisection
+    search together with the continuous Perez-Driesse transposition and
+    continuous Erbs-Driesse decomposition models, as described in [1]_.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Panel tilt from horizontal. [degree]
+    surface_azimuth : numeric
+        Panel azimuth from north. [degree]
+    solar_zenith : numeric
+        Solar zenith angle. [degree]
+    solar_azimuth : numeric
+        Solar azimuth angle. [degree]
+    poa_global : numeric
+        Plane-of-array global irradiance, aka global tilted irradiance. [W/m^2]
+    dni_extra : None or numeric, default None
+        Extraterrestrial direct normal irradiance. [W/m^2]
+    airmass : None or numeric, default None
+        Relative airmass (not adjusted for pressure). [unitless]
+    albedo : numeric, default 0.25
+        Ground surface albedo. [unitless]
+    xtol : numeric, default 0.01
+        Convergence criterion.  The estimated GHI will be within xtol of the
+        true value. [W/m^2]
+    full_output : boolean, default False
+        If full_output is False, only ghi is returned, otherwise the return
+        value is (ghi, converged, niter). (see Returns section for details).
+
+    Returns
+    -------
+    ghi : numeric
+        Estimated GHI. [W/m^2]
+    converged : boolean, optional
+        Present if full_output=True. Indicates which elements converged
+        successfully.
+    niter : integer, optional
+        Present if full_output=True. Indicates how many bisection iterations
+        were done.
+
+    Notes
+    -----
+    Since :py:func:`scipy.optimize.bisect` is not vectorized, high-resolution
+    time series can be quite slow to process.
+
+    References
+    ----------
+    .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+        Perez diffuse sky model for forward and reverse transposition.
+        Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
+
+    See also
+    --------
+    perez_driesse
+    erbs_driesse
+    gti_dirint
+    '''
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    ghi_from_poa_array = np.vectorize(_ghi_from_poa)
+
+    ghi, conv, niter = ghi_from_poa_array(surface_tilt, surface_azimuth,
+                                          solar_zenith, solar_azimuth,
+                                          poa_global,
+                                          dni_extra, airmass, albedo,
+                                          xtol=0.01)
+
+    if isinstance(poa_global, pd.Series):
+        ghi = pd.Series(ghi, poa_global.index)
+        conv = pd.Series(conv, poa_global.index)
+        niter = pd.Series(niter, poa_global.index)
+
+    if full_output:
+        return ghi, conv, niter
+    else:
+        return ghi
 
 
 def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
@@ -1389,9 +1787,9 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
 
-    pressure : None or numeric, default 101325
-        Site pressure in Pascal. If None, relative airmass is used
-        instead of absolute (pressure-corrected) airmass.
+    pressure : numeric or None, default 101325
+        Site pressure in Pascal. Uses absolute (pressure-corrected) airmass
+        by default. Set to ``None`` to use relative airmass.
 
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
@@ -1545,7 +1943,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, default None
+    temp_dew : float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -1794,7 +2192,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, default None
+    temp_dew : float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -1902,7 +2300,7 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
         GHI points is 1.5 hours or greater. If use_delta_kt_prime=True,
         input data must be Series.
 
-    temp_dew : None, float, or array-like, default None
+    temp_dew : float, or array-like, optional
         Surface dew point temperatures, in degrees C. Values of temp_dew
         may be numeric or NaN. Any single time period point with a
         temp_dew=NaN does not have dew point improvements applied. If
@@ -2298,11 +2696,11 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
         Global horizontal irradiance in W/m^2.
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
-    datetime_or_doy : int, float, array, pd.DatetimeIndex, default None
+    datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
         Either datetime_or_doy or dni_extra must be provided.
-    dni_extra : numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial normal irradiance.
         dni_extra can be provided if available to avoid recalculating it
         inside this function.  In this case datetime_or_doy is not required.
@@ -2336,8 +2734,9 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
 
     References
     ----------
-    .. [1] A. Driesse, A. Jensen, R. Perez, A Continuous Form of the Perez
-        Diffuse Sky Model for Forward and Reverse Transposition, forthcoming.
+    .. [1] Driesse, A., Jensen, A., Perez, R., 2024. A Continuous form of the
+        Perez diffuse sky model for forward and reverse transposition.
+        Solar Energy vol. 267. :doi:`10.1016/j.solener.2023.112093`
 
     .. [2] D. G. Erbs, S. A. Klein and J. A. Duffie, Estimation of the
        diffuse radiation fraction for hourly, daily and monthly-average
@@ -2351,6 +2750,8 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     orgill_hollands
     boland
     """
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug., 2023
+
     # central polynomial coefficients with float64 precision
     p = [+12.26911439571261000,
          -16.47050842469730700,
@@ -2419,7 +2820,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     datetime_or_doy : int, float, array, pd.DatetimeIndex
         Day of year or array of days of year e.g.
         pd.DatetimeIndex.dayofyear, or pd.DatetimeIndex.
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m2]
     min_cos_zenith : numeric, default 0.065
         Minimum value of cos(zenith) to allow when calculating global
@@ -2712,7 +3113,7 @@ def _get_perez_coefficients(perezmodel):
     Parameters
     ----------
 
-    perezmodel : string (optional, default='allsitescomposite1990')
+    perezmodel : string, default 'allsitescomposite1990'
 
           a character string which selects the desired set of Perez
           coefficients. If model is not provided as an input, the default,
@@ -3232,7 +3633,7 @@ def dni(ghi, dhi, zenith, clearsky_dni=None, clearsky_tolerance=1.1,
         True (not refraction-corrected) zenith angles in decimal
         degrees. Angles must be >=0 and <=180.
 
-    clearsky_dni : None or Series, default None
+    clearsky_dni : Series, optional
         Clearsky direct normal irradiance.
 
     clearsky_tolerance : float, default 1.1

@@ -89,7 +89,7 @@ def get_solarposition(time, latitude, longitude,
        solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
        2007.
 
-    .. [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+    .. [3] NREL SPA code: https://midcdmz.nrel.gov/spa/
     """
 
     if altitude is None and pressure is None:
@@ -186,8 +186,8 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     redefined by Python>=3.5. This issue is
     `Python bug 24643 <https://bugs.python.org/issue24643>`_.
 
-    .. [2] USNO delta T:
-       http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
+    .. [2] Delta T:
+       https://en.wikipedia.org/wiki/%CE%94T_(timekeeping)
 
     See also
     --------
@@ -1327,9 +1327,9 @@ def solar_zenith_analytical(latitude, hourangle, declination):
     .. [4] `Wikipedia: Solar Zenith Angle
        <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
 
-    .. [5] `PVCDROM: Sun's Position
-       <http://www.pveducation.org/pvcdrom/2-properties-sunlight/
-       suns-position>`_
+    .. [5] `PVCDROM: Elevation Angle
+       <https://www.pveducation.org/pvcdrom/properties-of-sunlight/
+       elevation-angle>`_
 
     See Also
     --------

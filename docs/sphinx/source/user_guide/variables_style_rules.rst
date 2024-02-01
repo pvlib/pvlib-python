@@ -15,7 +15,6 @@ There is a convention on consistent variable names throughout the library:
 For a definition and further explanation on the variables, common symbols and units refer to the following sources:
 
 
-* `Reference Variable List by PVPMC <https://pvpmc.sandia.gov/resources-and-events/variable-list/>`_
 * `IEC 61724-1:2017  -- Photovoltaic system performance - Part 1: Monitoring  <https://webstore.iec.ch/publication/33622>`_ section: 3 -- Terms and definitions; the Indian Standard referencing the withdrawn earlier global IEC standard IEC 61724:1998 is available online: `IS/IEC 61724 (1998) <https://archive.org/details/gov.in.is.iec.61724.1998>`_ and can provide relevant contents.
 * Explanation of Solar irradiation and solar geometry by `SoDa Service <http://www.soda-pro.com/home>`_
   

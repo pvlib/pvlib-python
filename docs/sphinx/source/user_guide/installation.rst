@@ -40,10 +40,6 @@ for pvlib, including Pandas, NumPy, and SciPy.
 #. **Install** the Anaconda Python distribution available at
    `Anaconda.com <https://www.anaconda.com/download/>`_.
 
-See `What is Anaconda? <https://www.anaconda.com/what-is-anaconda/>`_
-and the `Anaconda Documentation <https://docs.anaconda.com/anaconda/>`_
-for more information.
-
 You can now install pvlib-python by one of the methods below.
 
 

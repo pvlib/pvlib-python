@@ -315,9 +315,9 @@ DataFrame's index since the index has been localized.
     ax.set_ylabel('(degrees)');
 
 `According to the US Navy
-<http://aa.usno.navy.mil/rstt/onedaytable?ID=AA&year=1997&month=1&day=1&state=AK&place=sand+point>`_,
-on January 1, 1997 at Sand Point, Alaska, sunrise was at 10:09 am, solar
-noon was at 1:46 pm, and sunset was at 5:23 pm. This is consistent with
+<https://aa.usno.navy.mil/data/RS_OneDay>`_,
+on January 1, 2024 at Sand Point, Alaska (55.34N, -160.5W), sunrise was at 10:09 am, solar
+noon was at 1:46 pm, and sunset was at 5:22 pm. This is consistent with
 the data plotted above (and depressing).
 
 Solar position (assumed UTC)

@@ -21,6 +21,7 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Fixed broken URLs in various docstrings. (:pull:`1957`)
+* Clarified documentation for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:pull:`1883`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -29,3 +30,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * :ghuser:`matsuobasho`
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

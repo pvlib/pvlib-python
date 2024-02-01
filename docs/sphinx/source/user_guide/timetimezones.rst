@@ -246,13 +246,6 @@ You cannot localize a native Python date object.
 pvlib-specific functionality
 ----------------------------
 
-.. note::
-
-    This section applies to pvlib >= 0.3. Version 0.2 of pvlib used a
-    ``Location`` object's ``tz`` attribute to auto-magically correct for
-    some time zone issues. This behavior was counter-intuitive to many
-    users and was removed in version 0.3.
-
 How does this general functionality interact with pvlib? Perhaps the two
 most common places to get tripped up with time and time zone issues in
 solar power analysis occur during data import and solar position

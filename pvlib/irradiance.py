@@ -554,7 +554,8 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
     irradiance, albedo, and surface tilt. The ground is assumed to
-    be isotropic and reflections are Lambertian.
+    be horizontal, flat and Lambertian, and the reflected irradiance
+    is isotropic.
 
     Function to determine the portion of irradiance on a tilted surface
     due to ground reflections. Any of the inputs may be DataFrames or

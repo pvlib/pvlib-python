@@ -25,11 +25,11 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     Implements the Ineichen and Perez clear sky model for global
     horizontal irradiance (GHI), direct normal irradiance (DNI), and
     calculates the clear-sky diffuse horizontal (DHI) component as the
-    difference between GHI and DNI*cos(zenith) as presented in [1, 2]. A
+    difference between GHI and DNI*cos(zenith) as presented in [1]_ [2]_. A
     report on clear sky models found the Ineichen/Perez model to have
-    excellent performance with a minimal input data set [3].
+    excellent performance with a minimal input data set [3]_.
 
-    Default values for monthly Linke turbidity provided by SoDa [4, 5].
+    Default values for monthly Linke turbidity provided by SoDa [4]_, [5]_.
 
     Parameters
     -----------
@@ -80,8 +80,8 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
-       July 17, 2012).
+    .. [4] https://www.soda-pro.com/help/general-knowledge/linke-turbidity-factor
+       (accessed February 2, 2024).
 
     .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
        ISES Solar World Congress, June 2003. Goteborg, Sweden.

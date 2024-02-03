@@ -382,6 +382,8 @@ def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
     as shown in the image below.
 
     .. image:: /_images/FSLR_irrad_shade_loss_slope_terrain.png
+       :alt: Cross-section of two arrays on a sloped terrain and the resulting
+             shade.
 
     The ratio of the shadow length to the pitch, :math:`z/P`, is given by the
     following relation where the ground coverage ratio (GCR) is :math:`L/P`:

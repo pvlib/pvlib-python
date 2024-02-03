@@ -17,6 +17,10 @@ Enhancements
 * Added function :py:func:`pvlib.shading.projected_solar_zenith_angle`,
   a common calculation in shading and tracking. (:issue:`1734`, :pull:`1904`)
 
+* Added functions `pvlib.shading.tracker_shaded_fraction` and
+  `pvlib.shading.linear_shade_loss` to calculate row-to-row shade and apply
+  linear shade loss for thin film CdTe modules like First Solar.
+  (:issue:`1689`, :issue:`1690`, :pull:`1962`)
 
 Bug fixes
 ~~~~~~~~~
@@ -61,3 +65,5 @@ Contributors
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Peter Dudfield (:ghuser:`peterdudfield`)
+* Mark A. Mikofski (:ghuser:`mikofski`)
+* Echedey Luis (:ghuser:`echedey-ls`)

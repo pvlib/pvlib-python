@@ -228,7 +228,7 @@ def test_projected_solar_zenith_angle_datatypes(
 @pytest.fixture
 def sf_premises_and_expected():
     """Data comprised of solar position, tracker orientations, ground coverage
-    ratios and terrain slopes with respective shade fractions (sf)"""   
+    ratios and terrain slopes with respective shade fractions (sf)"""
     # preserve tracker_shade_fraction's args order and append shadow depth, z
     premises_and_results = pd.DataFrame(
         columns=["solar_zenith", "solar_azimuth", "tracker_tilt",

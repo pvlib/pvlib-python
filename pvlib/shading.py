@@ -345,22 +345,25 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     return theta_T
 
 
-def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
-                            cross_axis_slope=0):
+def tracker_shaded_fraction(solar_zenith, solar_azimuth, tracker_tilt,
+                            tracker_azimuth, gcr, cross_axis_slope=0):
     r"""
     Shaded fraction for trackers with a common angle on an east-west slope.
 
     Parameters
     ----------
-    tracker_theta : numeric
-        The tracker rotation angle in degrees from horizontal.
-    gcr : float
+    solar_zenith : numeric
+        Solar position zenith, in degrees.
+    solar_azimuth : numeric
+        Solar position azimuth, in degrees.
+    tracker_tilt : numeric
+        In degrees.
+    tracker_azimuth : numeric
+        In degrees. North=0º, South=180º, East=90º, West=270º.
+    gcr : numeric
         The ground coverage ratio as a fraction equal to the collector width
         over the horizontal row-to-row pitch.
-    projected_solar_zenith : numeric
-        Zenith angle in degrees of the solar vector projected into the plane
-        perpendicular to the tracker axes.
-    cross_axis_slope : float, default 0
+    cross_axis_slope : numeric, default 0
         Angle of the plane containing the tracker axes in degrees from
         horizontal.
 
@@ -406,9 +409,19 @@ def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
     PVPMC, 2023
     """
     theta_g_rad = np.radians(cross_axis_slope)
+    # projected solar zenith:
+    # consider the angle the sun direct beam has on the vertical plane which
+    # contains the tracker normal vector, with respect to a horizontal line
+    projected_solar_zenith = projected_solar_zenith_angle(
+        0,  # no rotation from the horizontal
+        # the vector that defines the projection plane for prior conditions
+        tracker_azimuth-90,
+        solar_zenith,
+        solar_azimuth
+    )
     # angle opposite shadow cast on the ground, z
     angle_z = (
-        np.pi / 2 - np.radians(tracker_theta)
+        np.pi / 2 - np.radians(tracker_tilt)
         + np.radians(projected_solar_zenith))
     # angle opposite the collector width, L
     angle_gcr = (
@@ -419,9 +432,9 @@ def tracker_shaded_fraction(tracker_theta, gcr, projected_solar_zenith,
     # there's only row-to-row shade loss if the shadow on the ground, z, is
     # longer than row-to-row pitch projected on the ground, P*cos(theta_g)
     zp_cos_g = zp*np.cos(theta_g_rad)
-    # shaded fraction (fs)
-    fs = np.where(zp_cos_g <= 1, 0, 1 - 1/zp_cos_g)
-    return fs
+    # shaded fraction (sf)
+    sf = np.where(zp_cos_g <= 1, 0, 1 - 1/zp_cos_g)
+    return sf
 
 
 def linear_shade_loss(shaded_fraction, diffuse_fraction):
@@ -452,8 +465,8 @@ def linear_shade_loss(shaded_fraction, diffuse_fraction):
     Example
     -------
     >>> from pvlib import shading
-    >>> fs = shading.tracker_shaded_fraction(45.0, 0.8, 45.0, 0)
-    >>> loss = shading.linear_shade_loss(fs, 0.2)
+    >>> sf = shading.tracker_shaded_fraction(45.0, 0.8, 45.0, 0)
+    >>> loss = shading.linear_shade_loss(sf, 0.2)
     >>> P_no_shade = 100  # [kWdc]  DC output from modules
     >>> P_linear_shade = P_no_shade * (1-loss)  # [kWdc] output after loss
     # 90.71067811865476 [kWdc]

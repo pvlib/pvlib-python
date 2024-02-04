@@ -405,7 +405,7 @@ def tracker_shaded_fraction(solar_zenith, solar_azimuth, tracker_tilt,
 
     References
     ----------
-    .. [1] Mark A. Mikofski, "First Solar Irradiance Shade Losses on Sloped 
+    .. [1] Mark A. Mikofski, "First Solar Irradiance Shade Losses on Sloped
        Terrain," PVPMC, 2023
     """
     theta_g_rad = np.radians(cross_axis_slope)

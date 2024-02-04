@@ -228,8 +228,11 @@ def test_projected_solar_zenith_angle_datatypes(
 @pytest.fixture
 def sf_premises_and_expected():
     """Data comprised of solar position, tracker orientations, ground coverage
-    ratios and terrain slopes with respective shade fractions (sf)"""
-    # preserve tracker_shade_fraction's args order and append shadow depth, z
+    ratios and terrain slopes with respective shade fractions (sf).
+    Returns a 2-tuple with the premises to be used directly in
+    tracker_shade_fraction(...) in the first element and the expected shaded
+    fractions on the second element"""
+    # tracker_shade_fraction's args order and append shadow depth, z
     premises_and_results = pd.DataFrame(
         columns=["solar_zenith", "solar_azimuth", "tracker_tilt",
                  "tracker_azimuth", "gcr", "cross_axis_slope", "z"],
@@ -245,14 +248,14 @@ def sf_premises_and_expected():
         ))
     # append shaded fraction
     premises_and_results["shaded_fraction"] = 1 - 1/premises_and_results["z"]
-    return premises_and_results
+    return (premises_and_results.drop(columns=["z", "shaded_fraction"]),
+            premises_and_results["shaded_fraction"])
 
 
 def test_tracker_shade_fraction(sf_premises_and_expected):
     """Tests tracker_shade_fraction"""
     # unwrap sf_premises_and_expected values premises and expected results
-    premises = sf_premises_and_expected.drop(columns=["z", "shaded_fraction"])
-    expected_sf_array = sf_premises_and_expected["shaded_fraction"]
+    premises, expected_sf_array = sf_premises_and_expected
     # test scalar inputs from the row iterator
     # series label := corresponding index in expected_sf_array
     for index, premise in premises.iterrows():
@@ -266,7 +269,7 @@ def test_tracker_shade_fraction(sf_premises_and_expected):
 
 
 def test_linear_shade_loss(sf_premises_and_expected):
-    expected_sf_array = sf_premises_and_expected["shaded_fraction"]
+    _, expected_sf_array = sf_premises_and_expected  # Premises are not needed
     loss = shading.linear_shade_loss(expected_sf_array[0], 0.2)
     assert_allclose(loss, 0.09289321881345258)
     # if no diffuse, shade fraction is the loss

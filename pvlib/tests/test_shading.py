@@ -6,7 +6,6 @@ from numpy.testing import assert_allclose
 import pytest
 from datetime import timezone, timedelta
 
-import pvlib
 from pvlib import shading
 
 

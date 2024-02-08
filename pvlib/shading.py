@@ -234,8 +234,8 @@ def sky_diffuse_passias(masking_angle):
     return 1 - cosd(masking_angle/2)**2
 
 
-def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
-                                 solar_zenith, solar_azimuth):
+def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
+                                 axis_tilt, axis_azimuth):
     r"""
     Calculate projected solar zenith angle in degrees.
 
@@ -253,15 +253,15 @@ def projected_solar_zenith_angle(axis_tilt, axis_azimuth,
 
     Parameters
     ----------
+    solar_zenith : numeric
+        Sun's apparent zenith in degrees.
+    solar_azimuth : numeric
+        Sun's azimuth in degrees.
     axis_tilt : numeric
         Axis tilt angle in degrees. From horizontal plane to array plane.
     axis_azimuth : numeric
         Axis azimuth angle in degrees.
         North = 0°; East = 90°; South = 180°; West = 270°
-    solar_zenith : numeric
-        Sun's apparent zenith in degrees.
-    solar_azimuth : numeric
-        Sun's azimuth in degrees.
 
     Returns
     -------

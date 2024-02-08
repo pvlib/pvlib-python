@@ -21,7 +21,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-* Fixed broken URLs in various docstrings. (:pull:`1957`)
+* Fixed broken URLs in various places. (:pull:`1957`, :pull:`1960`)
 * Clarified documentation for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:pull:`1883`)
 
 Requirements

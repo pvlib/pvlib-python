@@ -40,10 +40,6 @@ for pvlib, including Pandas, NumPy, and SciPy.
 #. **Install** the Anaconda Python distribution available at
    `Anaconda.com <https://www.anaconda.com/download/>`_.
 
-See `What is Anaconda? <https://www.anaconda.com/what-is-anaconda/>`_
-and the `Anaconda Documentation <https://docs.anaconda.com/anaconda/>`_
-for more information.
-
 You can now install pvlib-python by one of the methods below.
 
 
@@ -56,7 +52,7 @@ Users may install pvlib-python using either the
 `conda <https://conda.io/docs/>`_ or `pip <https://pip.pypa.io>`_
 package manager. We recommend that most users install pvlib-python
 using the conda package manager in the
-`Anaconda Python distribution <https://www.anaconda.com/what-is-anaconda/>`_.
+Anaconda python distribution.
 To install the most recent stable release of pvlib-python in a
 non-editable way, use one of the following commands to install pvlib-python::
 

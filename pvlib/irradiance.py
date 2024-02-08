@@ -602,7 +602,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
        and
        http://en.wikipedia.org/wiki/Albedo
        and
-       https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
+       :doi:`10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2`
     '''
 
     if surface_type is not None:

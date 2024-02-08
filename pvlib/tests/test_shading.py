@@ -203,18 +203,18 @@ def test_projected_solar_zenith_angle_numeric(
     axis_tilt, axis_azimuth, timedata = true_tracking_angle_and_inputs_NREL
     # test against data provided by NREL
     psz = psz_func(
-        axis_tilt,
-        axis_azimuth,
         timedata["Apparent Zenith"],
         timedata["Solar Azimuth"],
+        axis_tilt,
+        axis_azimuth,
     )
     assert_allclose(psz, timedata["True-Tracking"], atol=1e-3)
     # test by changing axis azimuth and tilt
     psz = psz_func(
-        -axis_tilt,
-        axis_azimuth - 180,
         timedata["Apparent Zenith"],
         timedata["Solar Azimuth"],
+        -axis_tilt,
+        axis_azimuth - 180,
     )
     assert_allclose(psz, -timedata["True-Tracking"], atol=1e-3)
 
@@ -252,10 +252,10 @@ def test_projected_solar_zenith_angle_datatypes(
     sun_azimuth = timedata["Solar Azimuth"].iloc[0]
 
     axis_tilt, axis_azimuth, sun_apparent_zenith, sun_azimuth = (
-        cast_func(axis_tilt),
-        cast_func(axis_azimuth),
         cast_func(sun_apparent_zenith),
         cast_func(sun_azimuth),
+        cast_func(axis_tilt),
+        cast_func(axis_azimuth),
     )
-    psz = psz_func(axis_tilt, axis_azimuth, sun_apparent_zenith, axis_azimuth)
+    psz = psz_func(sun_apparent_zenith, axis_azimuth, axis_tilt, axis_azimuth)
     assert isinstance(psz, cast_type)

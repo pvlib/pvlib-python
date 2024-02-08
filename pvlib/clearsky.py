@@ -85,7 +85,7 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
 
     .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
        ISES Solar World Congress, June 2003. Goteborg, Sweden.
-    '''
+    '''  # noqa: E501
 
     # ghi is calculated using either the equations in [1] by setting
     # perez_enhancement=False (default behavior) or using the model

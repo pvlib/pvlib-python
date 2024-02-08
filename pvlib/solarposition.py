@@ -89,7 +89,7 @@ def get_solarposition(time, latitude, longitude,
        solar radiation applications. Solar Energy, vol. 81, no. 6, p. 838,
        2007.
 
-    .. [3] NREL SPA code: http://rredc.nrel.gov/solar/codesandalgorithms/spa/
+    .. [3] NREL SPA code: https://midcdmz.nrel.gov/spa/
     """
 
     if altitude is None and pressure is None:
@@ -132,7 +132,7 @@ def get_solarposition(time, latitude, longitude,
 def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
           temperature=12, delta_t=67.0,
           raw_spa_output=False):
-    """
+    r"""
     Calculate the solar position using the C implementation of the NREL
     SPA code.
 
@@ -161,7 +161,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
         Temperature in C
     delta_t : float, default 67.0
         Difference between terrestrial time and UT1.
-        USNO has previous values and predictions.
+        USNO has previous values and predictions [3]_.
     raw_spa_output : bool, default False
         If true, returns the raw SPA output.
 
@@ -177,17 +177,16 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 
     References
     ----------
-    .. [1] NREL SPA reference:
-       http://rredc.nrel.gov/solar/codesandalgorithms/spa/
-       NREL SPA C files: https://midcdmz.nrel.gov/spa/
+    .. [1] NREL SPA reference: https://midcdmz.nrel.gov/spa/
 
     Note: The ``timezone`` field in the SPA C files is replaced with
     ``time_zone`` to avoid a nameclash with the function ``__timezone`` that is
     redefined by Python>=3.5. This issue is
     `Python bug 24643 <https://bugs.python.org/issue24643>`_.
 
-    .. [2] USNO delta T:
-       http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
+    .. [2] Delta T: https://en.wikipedia.org/wiki/%CE%94T_(timekeeping)
+
+    .. [3] USNO delta T: https://maia.usno.navy.mil/products/deltaT
 
     See also
     --------
@@ -344,7 +343,7 @@ def spa_python(time, latitude, longitude,
        2007.
 
     .. [3] USNO delta T:
-       http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
+       https://maia.usno.navy.mil/products/deltaT
 
     See also
     --------
@@ -1327,9 +1326,9 @@ def solar_zenith_analytical(latitude, hourangle, declination):
     .. [4] `Wikipedia: Solar Zenith Angle
        <https://en.wikipedia.org/wiki/Solar_zenith_angle>`_
 
-    .. [5] `PVCDROM: Sun's Position
-       <http://www.pveducation.org/pvcdrom/2-properties-sunlight/
-       suns-position>`_
+    .. [5] `PVCDROM: Elevation Angle
+       <https://www.pveducation.org/pvcdrom/properties-of-sunlight/
+       elevation-angle>`_
 
     See Also
     --------

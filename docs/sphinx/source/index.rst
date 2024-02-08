@@ -84,12 +84,12 @@ Additional pvlib python publications include:
 
 * J. S. Stein, “The photovoltaic performance modeling
   collaborative (PVPMC),” in Photovoltaic Specialists Conference, 2012.
-* R.W. Andrews, J.S. Stein, C. Hansen, and D. Riley, “Introduction
-  to the open source pvlib for python photovoltaic system
-  modelling package,” in 40th IEEE Photovoltaic Specialist
-  Conference, 2014.
+* R. W. Andrews, J. S. Stein, C. Hansen and D. Riley, "Introduction to the open
+  source PV LIB for python Photovoltaic system modelling package," 
+  2014 IEEE 40th Photovoltaic Specialist Conference (PVSC), Denver, CO, USA, 
+  2014, pp. 0170-0174, https://doi.org/10.1109/PVSC.2014.6925501
   (`paper
-  <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`__)
+  <https://www.osti.gov/servlets/purl/1241774>`__)
 * W.F. Holmgren, R.W. Andrews, A.T. Lorenzo, and J.S. Stein,
   “PVLIB Python 2015,” in 42nd Photovoltaic Specialists Conference, 2015.
   (`paper

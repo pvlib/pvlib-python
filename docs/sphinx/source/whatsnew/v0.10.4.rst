@@ -7,6 +7,7 @@ v0.10.4 (Anticipated March, 2024)
 
 Enhancements
 ~~~~~~~~~~~~
+* Added the Huld PV model used by PVGIS (:pull:`1940`)
 * Added function :py:func:`pvlib.shading.projected_solar_zenith_angle`,
   a common calculation in shading and tracking. (:issue:`1734`, :pull:`1904`)
 
@@ -22,7 +23,8 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Fixed broken URLs in various places. (:pull:`1957`, :pull:`1960`)
+* Clarified documentation for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:pull:`1883`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -30,4 +32,7 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
 * :ghuser:`matsuobasho`
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Echedey Luis (:ghuser:`echedey-ls`)

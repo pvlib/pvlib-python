@@ -73,7 +73,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
+    .. [2] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
        SR1 and SR2
 
     .. [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
@@ -553,7 +553,9 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
-    irradiance, albedo, and surface tilt.
+    irradiance, albedo, and surface tilt. The ground is assumed to
+    be horizontal, flat and Lambertian, and the reflected irradiance
+    is isotropic.
 
     Function to determine the portion of irradiance on a tilted surface
     due to ground reflections. Any of the inputs may be DataFrames or
@@ -600,7 +602,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
        and
        http://en.wikipedia.org/wiki/Albedo
        and
-       https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
+       :doi:`10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2`
     '''
 
     if surface_type is not None:

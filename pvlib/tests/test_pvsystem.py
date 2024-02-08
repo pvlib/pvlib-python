@@ -12,7 +12,6 @@ from numpy.testing import assert_allclose
 import unittest.mock as mock
 
 from pvlib import inverter, pvsystem
-from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
 from pvlib import spectrum

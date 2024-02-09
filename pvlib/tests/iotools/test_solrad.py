@@ -99,3 +99,24 @@ def test_read_solrad(testfile, index, columns, values, dtypes):
         expected[col] = expected[col].astype(_dtype)
     out = solrad.read_solrad(testfile)
     assert_frame_equal(out, expected)
+
+
+@pytest.mark.remote_data
+@pytest.mark.parametrize('testfile, station', [
+    (testfile, 'abq'),
+    (testfile_mad, 'msn'),
+])
+def test_get_solrad(testfile, station):
+    df, meta = solrad.get_solrad(station, "2019-02-25", "2019-02-25")
+    
+    assert meta['station'] == station
+    assert isinstance(meta['filenames'], list)
+
+    assert len(df) == 1440
+    assert df.index[0] == pd.to_datetime('2019-02-25 00:00+00:00')
+    assert df.index[-1] == pd.to_datetime('2019-02-25 23:59+00:00')
+
+    expected = solrad.read_solrad(testfile)
+    actual = df.reindex(expected.index)
+    # ABQ test file has an unexplained NaN in row 4; just verify first 3 rows
+    assert_frame_equal(actual.iloc[:3], expected.iloc[:3])

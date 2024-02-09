@@ -89,9 +89,9 @@ dtypes_mad = [
     'float64', 'int64', 'float64', 'float64', 'float64', 'float64', 'float64',
     'float64', 'float64']
 meta = {'station_name': 'Albuquerque', 'latitude': 35.03796,
-        'longitude': -106.62211, 'elevation': 1617, 'TZ': -7}
+        'longitude': -106.62211, 'altitude': 1617, 'TZ': -7}
 meta_mad = {'station_name': 'Madison', 'latitude': 43.07250,
-            'longitude': -89.41133, 'elevation': 271, 'TZ': -6}
+            'longitude': -89.41133, 'altitude': 271, 'TZ': -6}
 
 
 @pytest.mark.parametrize('testfile,index,columns,values,dtypes,meta', [

@@ -108,7 +108,7 @@ def read_solrad(filename):
     else:
         file_buffer = open(str(filename), 'r')
 
-    # the first has the name of the  station, and the second gives the
+    # The first line has the name of the station, and the second gives the
     # station's latitude, longitude, elevation above mean sea level in meters,
     # and the displacement in hours from local standard time.
     meta['station_name'] = file_buffer.readline().strip()
@@ -116,7 +116,7 @@ def read_solrad(filename):
     meta_line = file_buffer.readline().split()
     meta['latitude'] = float(meta_line[0])
     meta['longitude'] = float(meta_line[1])
-    meta['elevation'] = float(meta_line[2])
+    meta['altitude'] = float(meta_line[2])
     meta['TZ'] = int(meta_line[3])
 
     # read in data

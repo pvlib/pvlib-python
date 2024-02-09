@@ -164,7 +164,7 @@ def projected_solar_zenith_angle_edge_cases():
 
 
 def test_projected_solar_zenith_angle_numeric(
-true_tracking_angle_and_inputs_NREL,
+    true_tracking_angle_and_inputs_NREL,
     projected_solar_zenith_angle_edge_cases
 ):
     psza_func = shading.projected_solar_zenith_angle

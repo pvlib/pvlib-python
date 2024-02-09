@@ -8,6 +8,8 @@ v0.10.4 (Anticipated March, 2024)
 Enhancements
 ~~~~~~~~~~~~
 * Added the Huld PV model used by PVGIS (:pull:`1940`)
+* Added :py:func:`~pvlib.iotools.get_solrad` for fetching irradiance data from
+  the SOLRAD ground station network. (:pull:`1967`)
 
 
 Bug fixes
@@ -33,3 +35,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * :ghuser:`matsuobasho`
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Kevin Anderson (:ghuser:`kandersolar`)

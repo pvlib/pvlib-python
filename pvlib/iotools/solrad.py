@@ -161,7 +161,7 @@ def get_solrad(station, start, end,
     --------
     >>> # Retrieve two months irradiance data from the ABQ SOLRAD station
     >>> data, metadata = pvlib.iotools.get_solrad(
-    >>>     start="2020-01-01", end="2020-01-31", station='abq')
+    >>>     station='abq', start="2020-01-01", end="2020-01-31")
 
     References
     ----------
@@ -174,11 +174,9 @@ def get_solrad(station, start, end,
 
     # Generate list of filenames
     dates = pd.date_range(start, end, freq='d', inclusive='both')
-    years = dates.year
-    daysofyear = dates.dayofyear
     filenames = [
-        f"{station}/{year}/{station}{year-2000}{doy:03}.dat"
-        for year, doy in zip(years, daysofyear)
+        f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"
+        for d in dates
     ]
 
     dfs = []  # Initialize list of monthly dataframes

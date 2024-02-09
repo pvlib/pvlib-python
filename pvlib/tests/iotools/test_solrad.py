@@ -120,3 +120,15 @@ def test_get_solrad(testfile, station):
     actual = df.reindex(expected.index)
     # ABQ test file has an unexplained NaN in row 4; just verify first 3 rows
     assert_frame_equal(actual.iloc[:3], expected.iloc[:3])
+
+
+@pytest.mark.remote_data
+def test_get_solrad_missing_day():
+    # data availability begins for ABQ on 2002-02-01 (DOY 32), so requesting
+    # data before that will raise a warning
+    message = 'The following file was not found: abq/2002/abq02031.dat'
+    with pytest.warns(UserWarning, match=message):
+        df, meta = solrad.get_solrad('abq', '2002-01-31', '2002-02-01')
+
+    # but the data for 2022-02-01 is still returned
+    assert not df.empty

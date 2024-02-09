@@ -182,6 +182,7 @@ def get_solrad(station, start, end,
 
     # Generate list of filenames
     dates = pd.date_range(start.floor('d'), end, freq='d')
+    station = station.lower()
     filenames = [
         f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"
         for d in dates

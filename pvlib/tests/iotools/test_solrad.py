@@ -108,7 +108,7 @@ def test_read_solrad(testfile, index, columns, values, dtypes):
 ])
 def test_get_solrad(testfile, station):
     df, meta = solrad.get_solrad(station, "2019-02-25", "2019-02-25")
-    
+
     assert meta['station'] == station
     assert isinstance(meta['filenames'], list)
 

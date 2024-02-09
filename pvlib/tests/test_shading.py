@@ -142,28 +142,30 @@ def true_tracking_angle_and_inputs_NREL():
 def projected_solar_zenith_angle_edge_cases():
     premises_and_result_matrix = pd.DataFrame(
         data=[
-        # s_zen | s_azim | ax_tilt | ax_azim | psza
-            [0,     0,        0,        0,      0],
-            [0,     180,      0,        0,      0],
-            [0,     0,        0,      180,      0],
-            [0,     180,      0,      180,      0],
-            [45,    0,        0,      180,      0],
-            [45,    90,       0,      180,    -45],
-            [45,    270,      0,      180,     45],
-            [45,    90,       90,     180,    -90],
-            [45,    270,      90,     180,     90],
-            [45,    90,       90,     0,       90],
-            [45,    270,      90,     0,      -90],
-            [45,    45,       90,     180,   -135],
-            [45,    315,      90,     180,    135],
+            # s_zen | s_azim | ax_tilt | ax_azim | psza
+                [0,     0,        0,        0,      0],
+                [0,     180,      0,        0,      0],
+                [0,     0,        0,      180,      0],
+                [0,     180,      0,      180,      0],
+                [45,    0,        0,      180,      0],
+                [45,    90,       0,      180,    -45],
+                [45,    270,      0,      180,     45],
+                [45,    90,       90,     180,    -90],
+                [45,    270,      90,     180,     90],
+                [45,    90,       90,     0,       90],
+                [45,    270,      90,     0,      -90],
+                [45,    45,       90,     180,   -135],
+                [45,    315,      90,     180,    135],
         ],
-        columns=["solar_zenith", "solar_azimuth", "axis_tilt", "axis_azimuth", "psza"],
+        columns=["solar_zenith", "solar_azimuth", "axis_tilt", "axis_azimuth",
+                 "psza"],
     )
     return premises_and_result_matrix
 
 
 def test_projected_solar_zenith_angle_numeric(
-    true_tracking_angle_and_inputs_NREL, projected_solar_zenith_angle_edge_cases
+true_tracking_angle_and_inputs_NREL,
+    projected_solar_zenith_angle_edge_cases
 ):
     psza_func = shading.projected_solar_zenith_angle
     axis_tilt, axis_azimuth, timedata = true_tracking_angle_and_inputs_NREL

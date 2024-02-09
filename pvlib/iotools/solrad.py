@@ -1,8 +1,8 @@
-"""Functions to read data from the NOAA SOLRAD network.
-"""
+"""Functions to read data from the NOAA SOLRAD network."""
 
-import numpy as np
 import pandas as pd
+import requests
+import io
 
 # pvlib conventions
 BASE_HEADERS = (
@@ -53,6 +53,12 @@ def read_solrad(filename):
 
     The SOLRAD network is described in [1]_ and [2]_.
 
+    .. versionchanged:: 0.10.4
+       The function now returns a tuple where the first element is a dataframe
+       and the second element is a dictionary containing metadata. Previous
+       versions of this function only returned a dataframe.
+
+
     Parameters
     ----------
     filename: str
@@ -94,8 +100,27 @@ def read_solrad(filename):
         widths = WIDTHS
         dtypes = DTYPES
 
+    meta = {}
+
+    if str(filename).startswith('ftp') or str(filename).startswith('http'):
+        response = requests.get(filename)
+        file_buffer = io.StringIO(response.content.decode())
+    else:
+        file_buffer = open(str(filename), 'r')
+
+    # the first has the name of the  station, and the second gives the
+    # station's latitude, longitude, elevation above mean sea level in meters,
+    # and the displacement in hours from local standard time.
+    meta['station_name'] = file_buffer.readline().strip()
+
+    meta_line = file_buffer.readline().split()
+    meta['latitude'] = float(meta_line[0])
+    meta['longitude'] = float(meta_line[1])
+    meta['elevation'] = float(meta_line[2])
+    meta['TZ'] = int(meta_line[3])
+
     # read in data
-    data = pd.read_fwf(filename, header=None, skiprows=2, names=names,
+    data = pd.read_fwf(file_buffer, header=None, names=names,
                        widths=widths, na_values=-9999.9, dtypes=dtypes)
 
     # set index
@@ -108,4 +133,4 @@ def read_solrad(filename):
         dts['minute'], format='%Y%m%d%H%M', utc=True)
     data = data.set_index(dtindex)
 
-    return data
+    return data, meta

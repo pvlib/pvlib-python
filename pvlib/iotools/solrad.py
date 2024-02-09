@@ -65,6 +65,10 @@ def read_solrad(filename):
         A dataframe with DatetimeIndex and all of the variables in the
         file.
 
+    See Also
+    --------
+    get_solrad
+
     Notes
     -----
     SOLRAD data resolution is described by the README_SOLRAD.txt:
@@ -151,6 +155,10 @@ def get_solrad(station, start, end,
         Dataframe with data from SOLRAD.
     meta : dict
         Metadata.
+
+    See Also
+    --------
+    read_solrad
 
     Notes
     -----

@@ -3,6 +3,8 @@
 
 import numpy as np
 import pandas as pd
+import urllib
+import warnings
 
 # pvlib conventions
 BASE_HEADERS = (
@@ -121,3 +123,75 @@ def read_solrad(filename):
         pass
 
     return data
+
+
+def get_solrad(station, start, end,
+               url="https://gml.noaa.gov/aftp/data/radiation/solrad/"):
+    """Request data from NOAA SOLRAD and read it into a Dataframe.
+
+    A list of stations and their descriptions can be found in [1]_,
+    The data files are described in [2]_.
+
+    Data is returned for complete days, including ``start`` and ``end``.
+
+    Parameters
+    ----------
+    station : str
+        Three letter station abbreviation.
+    start : datetime-like
+        First day of the requested period
+    end : datetime-like
+        Last day of the requested period
+    url : str, default: 'https://gml.noaa.gov/aftp/data/radiation/solrad/'
+        API endpoint URL
+
+    Returns
+    -------
+    data : pd.DataFrame
+        Dataframe with data from SOLRAD.
+    meta : dict
+        Metadata.
+
+    Notes
+    -----
+    Recent SOLRAD data is 1-minute averages.  Prior to 2015-01-01, it was
+    3-minute averages.
+
+    Examples
+    --------
+    >>> # Retrieve two months irradiance data from the ABQ SOLRAD station
+    >>> data, metadata = pvlib.iotools.get_solrad(
+    >>>     start="2020-01-01", end="2020-01-31", station='abq')
+
+    References
+    ----------
+    .. [1] https://gml.noaa.gov/grad/solrad/index.html
+    .. [2] https://gml.noaa.gov/aftp/data/radiation/solrad/README_SOLRAD.txt
+    """
+    # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
+    start = pd.to_datetime(start)
+    end = pd.to_datetime(end)
+
+    # Generate list of filenames
+    dates = pd.date_range(start, end, freq='d', inclusive='both')
+    years = dates.year
+    daysofyear = dates.dayofyear
+    filenames = [
+        f"{station}/{year}/{station}{year-2000}{doy:03}.dat"
+        for year, doy in zip(years, daysofyear)
+    ]
+
+    dfs = []  # Initialize list of monthly dataframes
+    for f in filenames:
+        try:
+            dfi = read_solrad(url + f)
+            dfs.append(dfi)
+        except urllib.error.HTTPError:
+            warnings.warn(f"The following file was not found: {f}")
+
+    data = pd.concat(dfs, axis='rows')
+
+    meta = {'station': station,
+            'filenames': filenames}
+
+    return data, meta

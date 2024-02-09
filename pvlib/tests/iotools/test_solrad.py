@@ -10,10 +10,6 @@ from ..conftest import DATA_DIR, assert_frame_equal, RERUNS, RERUNS_DELAY
 
 testfile = DATA_DIR / 'abq19056.dat'
 testfile_mad = DATA_DIR / 'msn19056.dat'
-
-https_testfile = ('https://gml.noaa.gov/aftp/data/radiation/solrad/abq/'
-                  '2019/abq19056.dat')
-
 https_testfile = ('https://gml.noaa.gov/aftp/data/radiation/solrad/msn/'
                   '2019/msn19056.dat')
 

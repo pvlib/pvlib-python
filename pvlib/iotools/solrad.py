@@ -165,16 +165,16 @@ def get_solrad(station, start, end,
     Recent SOLRAD data is 1-minute averages.  Prior to 2015-01-01, it was
     3-minute averages.
 
-    Examples
-    --------
-    >>> # Retrieve two months irradiance data from the ABQ SOLRAD station
-    >>> data, metadata = pvlib.iotools.get_solrad(
-    >>>     station='abq', start="2020-01-01", end="2020-01-31")
-
     References
     ----------
     .. [1] https://gml.noaa.gov/grad/solrad/index.html
     .. [2] https://gml.noaa.gov/aftp/data/radiation/solrad/README_SOLRAD.txt
+
+    Examples
+    --------
+    >>> # Retrieve one month of irradiance data from the ABQ SOLRAD station
+    >>> data, metadata = pvlib.iotools.get_solrad(
+    >>>     station='abq', start="2020-01-01", end="2020-01-31")
     """
     # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
     start = pd.to_datetime(start)

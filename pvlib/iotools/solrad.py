@@ -49,8 +49,9 @@ MADISON_DTYPES = [
 
 def read_solrad(filename):
     """
-    Read NOAA SOLRAD fixed-width file into pandas dataframe.  The SOLRAD
-    network is described in [1]_ and [2]_.
+    Read NOAA SOLRAD fixed-width file into pandas dataframe.
+
+    The SOLRAD network is described in [1]_ and [2]_.
 
     Parameters
     ----------
@@ -62,6 +63,8 @@ def read_solrad(filename):
     data: Dataframe
         A dataframe with DatetimeIndex and all of the variables in the
         file.
+    metadata : dict
+        Metadata.
 
     Notes
     -----
@@ -93,17 +96,7 @@ def read_solrad(filename):
 
     # read in data
     data = pd.read_fwf(filename, header=None, skiprows=2, names=names,
-                       widths=widths, na_values=-9999.9)
-
-    # loop here because dtype kwarg not supported in read_fwf until 0.20
-    for (col, _dtype) in zip(data.columns, dtypes):
-        ser = data[col].astype(_dtype)
-        if _dtype == 'float64':
-            # older verions of pandas/numpy read '-9999.9' as
-            # -9999.8999999999996 and fail to set nan in read_fwf,
-            # so manually set nan
-            ser = ser.where(ser > -9999, other=np.nan)
-        data[col] = ser
+                       widths=widths, na_values=-9999.9, dtypes=dtypes)
 
     # set index
     # columns do not have leading 0s, so must zfill(2) to comply
@@ -114,10 +107,5 @@ def read_solrad(filename):
         data['year'].astype(str) + dts['month'] + dts['day'] + dts['hour'] +
         dts['minute'], format='%Y%m%d%H%M', utc=True)
     data = data.set_index(dtindex)
-    try:
-        # to_datetime(utc=True) does not work in older versions of pandas
-        data = data.tz_localize('UTC')
-    except TypeError:
-        pass
 
     return data

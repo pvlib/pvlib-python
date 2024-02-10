@@ -831,7 +831,8 @@ def test_ghi_from_poa_driesse():
     xtol = -3.14159  # negative value raises exception in scipy.optimize.bisect
     with pytest.raises(
         ValueError,
-        match=re.escape("xtol too small (%g <= 0)" % xtol)):
+        match=re.escape("xtol too small (%g <= 0)" % xtol)
+    ):
         output = irradiance.ghi_from_poa_driesse_2023(
             surface_tilt, surface_azimuth, zenith, azimuth,
             poa_global, dni_extra=1366.1, xtol=xtol)

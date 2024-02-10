@@ -1599,7 +1599,7 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
                                           solar_zenith, solar_azimuth,
                                           poa_global,
                                           dni_extra, airmass, albedo,
-                                          xtol=0.01)
+                                          xtol=xtol)
 
     if isinstance(poa_global, pd.Series):
         ghi = pd.Series(ghi, poa_global.index)

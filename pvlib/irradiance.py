@@ -1513,11 +1513,14 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
                         full_output=True,
                         disp=False,
                         )
-    except ValueError:
-        # this occurs when poa_error has the same sign at both end points
-        ghi = np.nan
-        conv = False
-        niter = -1
+    except ValueError as e:
+        # this may occur because poa_error has the same sign at both end points
+        if "f(a) and f(b) must have different signs" in e.args:
+            ghi = np.nan
+            conv = False
+            niter = -1
+        else:
+            raise e
     else:
         ghi = result[0]
         conv = result[1].converged

@@ -1,6 +1,7 @@
 import datetime
 from collections import OrderedDict
 import warnings
+import re
 
 import numpy as np
 from numpy import array, nan
@@ -824,6 +825,16 @@ def test_ghi_from_poa_driesse():
 
     expected = [0, -1, 0]
     assert_allclose(expected, niter)
+
+    # test xtol propagation by producing an exception
+    poa_global = pd.Series([20, 300, 1000], index=times)
+    xtol = -3.14159  # negative value raises exception in scipy.optimize.bisect
+    with pytest.raises(
+        ValueError,
+        match=re.escape("xtol too small (%g <= 0)" % xtol)):
+        output = irradiance.ghi_from_poa_driesse_2023(
+            surface_tilt, surface_azimuth, zenith, azimuth,
+            poa_global, dni_extra=1366.1, xtol=xtol)
 
 
 def test_gti_dirint():

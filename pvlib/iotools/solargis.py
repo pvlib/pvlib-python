@@ -81,6 +81,11 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     meta : dict
         Dictionary containing metadata.
 
+    Raises
+    ------
+    requests.HTTPError
+        A message from the Solargis server if the request is rejected
+
     Notes
     -----
     Each XMl request is limited to retrieving 31 days of data.
@@ -89,6 +94,12 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     sub-hourly irradiance data is W/m^2, for hourly data it is Wh/m^2, and for
     daily data it is kWh/m^2.
 
+    References
+    ----------
+    .. [1] `Solargis <https://solargis.com>`_
+    .. [2] `Solargis API User Guide
+       <https://solargis.atlassian.net/wiki/spaces/public/pages/7602367/Solargis+API+User+Guide>`_
+
     Examples
     --------
     >>> # Retrieve two days of irradiance data from Solargis
@@ -96,17 +107,6 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     >>>     latitude=48.61259, longitude=20.827079,
     >>>     start='2022-01-01', end='2022-01-02',
     >>>     variables=['GHI', 'DNI'], summarization='MIN_5', api_key='demo')
-
-    Raises
-    ------
-    requests.HTTPError
-        A message from the Solargis server if the request is rejected
-
-    References
-    ----------
-    .. [1] `Solargis <https://solargis.com>`_
-    .. [2] `Solargis API User Guide
-       <https://solargis.atlassian.net/wiki/spaces/public/pages/7602367/Solargis+API+User+Guide>`_
     """  # noqa: E501
     # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
     start = pd.to_datetime(start)

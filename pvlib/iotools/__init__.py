@@ -33,3 +33,4 @@ from pvlib.iotools.solcast import get_solcast_forecast  # noqa: F401
 from pvlib.iotools.solcast import get_solcast_live  # noqa: F401
 from pvlib.iotools.solcast import get_solcast_historic  # noqa: F401
 from pvlib.iotools.solcast import get_solcast_tmy  # noqa: F401
+from pvlib.iotools.solargis import get_solargis  # noqa: F401

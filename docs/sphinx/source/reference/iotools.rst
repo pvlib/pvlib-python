@@ -52,6 +52,7 @@ of sources and file formats relevant to solar energy modeling.
    iotools.get_solcast_historic
    iotools.get_solcast_forecast
    iotools.get_solcast_live
+   iotools.get_solargis
 
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata

@@ -1,7 +1,6 @@
 import datetime
 from collections import OrderedDict
 import warnings
-import re
 
 import numpy as np
 from numpy import array, nan

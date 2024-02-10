@@ -27,7 +27,7 @@ VARIABLE_MAP = {
     'WD': 'wind_direction',
     'INC': 'aoi',  # angle of incidence of direct irradiance
     'PWAT': 'precipitable_water',  # [kg/m2]
-    }
+}
 
 METADATA_FIELDS = [
     'issued', 'site name', 'latitude', 'longitude', 'elevation',

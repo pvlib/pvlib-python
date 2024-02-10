@@ -99,8 +99,8 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
 
     Raises
     ------
-    HTTPError
-        If an incorrect request is made.
+    requests.HTTPError
+        A message from the Solargis server if the request is rejected
 
     References
     ----------

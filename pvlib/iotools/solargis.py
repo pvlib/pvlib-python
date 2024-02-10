@@ -35,8 +35,8 @@ METADATA_FIELDS = [
 ]
 
 
-def get_solargis(latitude, longitude, start, end, variables, summarization,
-                 api_key, timestamp_type='center', tz='GMT+00',
+def get_solargis(latitude, longitude, start, end, variables, api_key,
+                 summarization, timestamp_type='center', tz='GMT+00',
                  terrain_shading=True, url=URL, map_variables=True,
                  timeout=30):
     """
@@ -51,17 +51,17 @@ def get_solargis(latitude, longitude, start, end, variables, summarization,
     longitude: float
         In decimal degrees, between -180 and 180, east is positive (ISO 19115)
     start : datetime-like
-        Start date of time series. Assumes UTC.
+        Start date of time series.
     end : datetime-like
-        End date of time series. Assumes UTC.
+        End date of time series.
     variables : list
         List of variables to request, see [2]_ for options.
-    summarization : str, {'MIN_5', 'MIN_10', 'MIN_15', 'MIN_30', 'HOURLY', 'DAILY', 'MONTHLY', 'YEARLY'}
-        DESCRIPTION.
     api_key : str
         API key.
+    summarization : str, {'MIN_5', 'MIN_10', 'MIN_15', 'MIN_30', 'HOURLY', 'DAILY', 'MONTHLY', 'YEARLY'}
+        DESCRIPTION.
     timestamp_type : {'start', 'center', 'end'}, default: 'center'
-        How to label time intervals in the return data.
+        Labeling of time stamps of the return data.
     tz : str, default : 'GMT+00'
         Timezone of `start` and `end` in the format "GMT+hh" or "GMT-hh".
     terrain_shading : boolean, default: True
@@ -88,6 +88,14 @@ def get_solargis(latitude, longitude, start, end, variables, summarization,
     The variable units depends on the time frequency, e.g., the unit for
     sub-hourly irradiance data is W/m^2, for hourly data it is Wh/m^2, and for
     daily data it is kWh/m^2.
+
+    Examples
+    --------
+    >>> # Retrieve two days of irradiance data from Solargis
+    >>> data, neta = response = get_solargis(
+    >>>     latitude=48.61259, longitude=20.827079,
+    >>>     start='2022-01-01', end='2022-01-02',
+    >>>     variables=['GHI', 'DNI'], summarization='MIN_5', api_key='demo')
 
     Raises
     ------

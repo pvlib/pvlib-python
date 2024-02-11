@@ -1514,12 +1514,13 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
                         disp=False,
                         )
     except ValueError as e:
-        # this may occur because poa_error has the same sign at both end points
         if "f(a) and f(b) must have different signs" in e.args:
+            # this occurs when poa_error has the same sign at both end points
             ghi = np.nan
             conv = False
             niter = -1
         else:
+            # propagate other ValueError's, like a non-positive xtol
             raise e
     else:
         ghi = result[0]
@@ -1560,8 +1561,8 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]
     xtol : numeric, default 0.01
-        Convergence criterion.  The estimated GHI will be within xtol of the
-        true value. [W/m^2]
+        Convergence criterion. The estimated GHI will be within xtol of the
+        true value. Must be positive. [W/m^2]
     full_output : boolean, default False
         If full_output is False, only ghi is returned, otherwise the return
         value is (ghi, converged, niter). (see Returns section for details).

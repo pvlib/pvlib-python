@@ -52,6 +52,8 @@ Bug fixes
   and ``after`` for consistency with ``cftime>=1.6.0``. (:issue:`1609`, :pull:`1656`)
 * :py:func:`~pvlib.ivtools.sdm.pvsyst_temperature_coeff` no longer raises
   a scipy deprecation warning (and is slightly more accurate). (:issue:`1644`, :pull:`1674`)
+* changed versions of ephem,numba,numpa,pandas,python,scipy as mentioned in default anaconda channel conda-forge in asv.conf.json file so that asv run successfully.
+
 
 Testing
 ~~~~~~~

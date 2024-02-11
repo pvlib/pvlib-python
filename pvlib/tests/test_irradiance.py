@@ -782,7 +782,7 @@ def test_dirint_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected, check_less_precise=True)
 
 
-def test_ghi_from_poa_driesse():
+def test_ghi_from_poa_driesse(mocker):
     # inputs copied from test_gti_dirint
     times = pd.DatetimeIndex(
         ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])
@@ -825,13 +825,21 @@ def test_ghi_from_poa_driesse():
     expected = [0, -1, 0]
     assert_allclose(expected, niter)
 
-    # test xtol propagation by producing an exception
+    # test xtol argument
     poa_global = pd.Series([20, 300, 1000], index=times)
+    # test exception
     xtol = -3.14159  # negative value raises exception in scipy.optimize.bisect
-    with pytest.raises(ValueError, match=r"xtol too small \(%g <= 0\)" % xtol):
+    with pytest.raises(ValueError, match=rf"xtol too small \({xtol:g} <= 0\)"):
         output = irradiance.ghi_from_poa_driesse_2023(
             surface_tilt, surface_azimuth, zenith, azimuth,
             poa_global, dni_extra=1366.1, xtol=xtol)
+    # test propagation
+    xtol = 3.141592
+    bisect_spy = mocker.spy(irradiance, "bisect")
+    output = irradiance.ghi_from_poa_driesse_2023(
+        surface_tilt, surface_azimuth, zenith, azimuth,
+        poa_global, dni_extra=1366.1, xtol=xtol)
+    assert bisect_spy.call_args[1]["xtol"] == xtol
 
 
 def test_gti_dirint():

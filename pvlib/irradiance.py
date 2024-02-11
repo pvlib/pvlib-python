@@ -1513,15 +1513,11 @@ def _ghi_from_poa(surface_tilt, surface_azimuth,
                         full_output=True,
                         disp=False,
                         )
-    except ValueError as e:
-        if "f(a) and f(b) must have different signs" in e.args:
-            # this occurs when poa_error has the same sign at both end points
-            ghi = np.nan
-            conv = False
-            niter = -1
-        else:
-            # propagate other ValueError's, like a non-positive xtol
-            raise e
+    except ValueError:
+        # this occurs when poa_error has the same sign at both end points
+        ghi = np.nan
+        conv = False
+        niter = -1
     else:
         ghi = result[0]
         conv = result[1].converged
@@ -1596,6 +1592,9 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     gti_dirint
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
+
+    if xtol <= 0:
+        raise ValueError(f"xtol too small ({xtol:g} <= 0)")
 
     ghi_from_poa_array = np.vectorize(_ghi_from_poa)
 

@@ -113,15 +113,15 @@
     "include": [
         // minimum supported versions
         {
-            "python": "3.7",
+            "python": "3.12.1",
             "build": "",
-            "numpy": "1.16.5",
-            "pandas": "0.25.0",
-            "scipy": "1.5.0",
+            "numpy": "1.26.4",
+            "pandas": "2.2.0",
+            "scipy": "1.12.0",
             // Note: these don't have a minimum in setup.py
-            "h5py": "3.1.0",
-            "ephem": "3.7.6.0",
-            "numba": "0.40.0"
+            "h5py": "3.10.0",
+            "ephem": "4.1.5",
+            "numba": "0.59.0"
         },
         // latest versions available
         {

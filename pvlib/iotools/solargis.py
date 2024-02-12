@@ -2,37 +2,58 @@
 
 import pandas as pd
 import requests
+from dataclasses import dataclass
 import io
 
 URL = 'https://solargis.info/ws/rest/datadelivery/request?'
 
-VARIABLE_MAP = {
-    'GHI': 'ghi',
-    'GHI_C': 'ghi_clear',  # this is stated in documentation
-    'GHIc': 'ghi_clear',  # this is used in practice
-    'DNI': 'dni',
-    'DNI_C': 'dni_clear',
-    'DNIc': 'dni_clear',
-    'DIF': 'dhi',
-    'GTI': 'poa_global',
-    'GTI_C': 'poa_global_clear',
-    'GTIc': 'poa_global_clear',
-    'SE': 'solar_elevation',
-    'SA': 'solar_azimuth',
-    'TEMP': 'temp_air',
-    'TD': 'temp_dew',
-    'AP': 'pressure',
-    'RH': 'relative_humidity',
-    'WS': 'wind_speed',
-    'WD': 'wind_direction',
-    'INC': 'aoi',  # angle of incidence of direct irradiance
-    'PWAT': 'precipitable_water',  # [kg/m2]
-}
+
+@dataclass
+class ParameterMap:
+    solargis_name: str
+    pvlib_name: str
+    conversion: callable = lambda x: x
+
+
+# define the conventions between Solargis and pvlib nomenclature and units
+VARIABLE_MAP = [
+    # Irradiance (unit varies based on time resolution)
+    ParameterMap('GHI', 'ghi'),
+    ParameterMap('GHI_C', 'ghi_clear'),  # this is stated in documentation
+    ParameterMap('GHIc', 'ghi_clear'),  # this is used in practice
+    ParameterMap('DNI', 'dni'),
+    ParameterMap('DNI_C', 'dni_clear'),
+    ParameterMap('DNIc', 'dni_clear'),
+    ParameterMap('DIF', 'dhi'),
+    ParameterMap('GTI', 'poa_global'),
+    ParameterMap('GTI_C', 'poa_global_clear'),
+    ParameterMap('GTIc', 'poa_global_clear'),
+    # Solar position
+    ParameterMap('SE', 'solar_elevation'),
+    # SA -> solar_azimuth (degrees) (different convention)
+    ParameterMap("SA", "solar_azimuth", lambda x: x + 180),
+    # Weather / atmospheric parameters
+    ParameterMap('TEMP', 'temp_air'),
+    ParameterMap('TD', 'temp_dew'),
+    # surface_pressure (hPa) -> pressure (Pa)
+    ParameterMap('AP', 'pressure', lambda x: x*100),
+    ParameterMap('RH', 'relative_humidity'),
+    ParameterMap('WS', 'wind_speed'),
+    ParameterMap('WD', 'wind_direction'),
+    ParameterMap('INC', 'aoi'),  # angle of incidence of direct irradiance
+    # precipitable_water (kg/m2) -> precipitable_water (cm)
+    ParameterMap('PWAT', 'precipitable_water', lambda x: x*10),
+]
 
 METADATA_FIELDS = [
     'issued', 'site name', 'latitude', 'longitude', 'elevation',
     'summarization type', 'summarization period'
 ]
+
+
+# Variables that use "-9" as nan values
+NA_9_COLUMNS = ['GHI', 'GHIc', 'DNI', 'DNIc', 'DIF', 'GTI', 'GIc', 'KT', 'PAR',
+                'PREC', 'PWAT', 'SDWE', 'SFWE']
 
 
 def get_solargis(latitude, longitude, start, end, variables, api_key,
@@ -91,8 +112,8 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     Each XML request is limited to retrieving 31 days of data.
 
     The variable units depends on the time frequency, e.g., the unit for
-    sub-hourly irradiance data is W/m^2, for hourly data it is Wh/m^2, and for
-    daily data it is kWh/m^2.
+    sub-hourly irradiance data is :math:`W/m^2`, for hourly data it is
+    :math:`Wh/m^2`, and for daily data it is :math:`kWh/m^2`.
 
     References
     ----------
@@ -164,9 +185,20 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     data = data.astype(float)
     data.columns = header['columns'].iloc[0].split()
 
-    if map_variables:
-        data = data.rename(columns=VARIABLE_MAP)
+    # Replace "-9" with nan values for specific columns
+    for variable in data.columns:
+        if variable in NA_9_COLUMNS:
+            data[variable] = data[variable].replace(-9, pd.NA)
 
-    data = data.replace(-9, pd.NA)
+    # rename and convert variables
+    if map_variables:
+        for variable in VARIABLE_MAP:
+            if variable.solargis_name in data.columns:
+                data.rename(
+                    columns={variable.solargis_name: variable.pvlib_name},
+                    inplace=True
+                )
+                data[variable.pvlib_name] = data[
+                    variable.pvlib_name].apply(variable.conversion)
 
     return data, meta

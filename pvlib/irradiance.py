@@ -1557,8 +1557,8 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]
     xtol : numeric, default 0.01
-        Convergence criterion.  The estimated GHI will be within xtol of the
-        true value. [W/m^2]
+        Convergence criterion. The estimated GHI will be within xtol of the
+        true value. Must be positive. [W/m^2]
     full_output : boolean, default False
         If full_output is False, only ghi is returned, otherwise the return
         value is (ghi, converged, niter). (see Returns section for details).
@@ -1593,13 +1593,16 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
+    if xtol <= 0:
+        raise ValueError(f"xtol too small ({xtol:g} <= 0)")
+
     ghi_from_poa_array = np.vectorize(_ghi_from_poa)
 
     ghi, conv, niter = ghi_from_poa_array(surface_tilt, surface_azimuth,
                                           solar_zenith, solar_azimuth,
                                           poa_global,
                                           dni_extra, airmass, albedo,
-                                          xtol=0.01)
+                                          xtol=xtol)
 
     if isinstance(poa_global, pd.Series):
         ghi = pd.Series(ghi, poa_global.index)

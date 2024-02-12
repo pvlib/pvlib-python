@@ -103,7 +103,7 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     Examples
     --------
     >>> # Retrieve two days of irradiance data from Solargis
-    >>> data, neta = response = pvlib.iotools.get_solargis(
+    >>> data, meta = response = pvlib.iotools.get_solargis(
     >>>     latitude=48.61259, longitude=20.827079,
     >>>     start='2022-01-01', end='2022-01-02',
     >>>     variables=['GHI', 'DNI'], summarization='MIN_5', api_key='demo')
@@ -159,7 +159,8 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
                        namespaces={'doc': 'http://geomodel.eu/schema/ws/data'},
                        parser='etree')
     data.index = pd.to_datetime(data['dateTime'])
-    data = data['values'].str.split(' ', expand=True)
+    # when requesting one variable, it is necessary to convert dataframe to str
+    data = data['values'].astype(str).str.split(' ', expand=True)
     data = data.astype(float)
     data.columns = header['columns'].iloc[0].split()
 

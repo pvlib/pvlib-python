@@ -88,7 +88,7 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
 
     Notes
     -----
-    Each XMl request is limited to retrieving 31 days of data.
+    Each XML request is limited to retrieving 31 days of data.
 
     The variable units depends on the time frequency, e.g., the unit for
     sub-hourly irradiance data is W/m^2, for hourly data it is Wh/m^2, and for

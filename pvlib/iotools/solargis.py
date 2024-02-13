@@ -5,7 +5,14 @@ import requests
 from dataclasses import dataclass
 import io
 
-URL = 'https://solargis.info/ws/rest/datadelivery/request?'
+URL = 'https://solargis.info/ws/rest/datadelivery/request'
+
+
+TIME_RESOLUTION_MAP = {
+    5: 'MIN_5', 10: 'MIN_10', 15: 'MIN_15', 30:  'MIN_30', 60: 'HOURLY',
+    'PT05M': 'MIN_5', 'PT5M': 'MIN_5', 'PT10M': 'MIN_10', 'PT15M': 'MIN_15',
+    'PT30': 'MIN_30', 'PT60M': 'HOURLY', 'PT1H': 'HOURLY', 'P1D': 'DAILY',
+    'P1M': 'MONTHLY', 'P1Y': 'YEARLY'}
 
 
 @dataclass
@@ -42,7 +49,7 @@ VARIABLE_MAP = [
     ParameterMap('WD', 'wind_direction'),
     ParameterMap('INC', 'aoi'),  # angle of incidence of direct irradiance
     # precipitable_water (kg/m2) -> precipitable_water (cm)
-    ParameterMap('PWAT', 'precipitable_water', lambda x: x*10),
+    ParameterMap('PWAT', 'precipitable_water', lambda x: x/10),
 ]
 
 METADATA_FIELDS = [
@@ -57,7 +64,7 @@ NA_9_COLUMNS = ['GHI', 'GHIc', 'DNI', 'DNIc', 'DIF', 'GTI', 'GIc', 'KT', 'PAR',
 
 
 def get_solargis(latitude, longitude, start, end, variables, api_key,
-                 summarization, timestamp_type='center', tz='GMT+00',
+                 time_resolution, timestamp_type='center', tz='GMT+00',
                  terrain_shading=True, url=URL, map_variables=True,
                  timeout=30):
     """
@@ -79,8 +86,8 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
         List of variables to request, see [2]_ for options.
     api_key : str
         API key.
-    summarization : str, {'MIN_5', 'MIN_10', 'MIN_15', 'MIN_30', 'HOURLY', 'DAILY', 'MONTHLY', 'YEARLY'}
-        DESCRIPTION.
+    time_resolution : str, {'PT05M', 'PT10M', 'PT15M', 'PT30', 'PT1H', 'P1D', 'P1M', 'P1Y'}
+        Time frequency in the time series data.
     timestamp_type : {'start', 'center', 'end'}, default: 'center'
         Labeling of time stamps of the return data.
     tz : str, default : 'GMT+00'
@@ -127,7 +134,7 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     >>> data, meta = response = pvlib.iotools.get_solargis(
     >>>     latitude=48.61259, longitude=20.827079,
     >>>     start='2022-01-01', end='2022-01-02',
-    >>>     variables=['GHI', 'DNI'], summarization='MIN_5', api_key='demo')
+    >>>     variables=['GHI', 'DNI'], time_resolution='PT05M', api_key='demo')
     """  # noqa: E501
     # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
     start = pd.to_datetime(start)
@@ -149,13 +156,14 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <site id="{site_id}" name="" lat="{latitude}" lng="{longitude}">
     </site>
-    <processing key="{' '.join(variables)}" summarization="{summarization}"
+    <processing key="{' '.join(variables)}"
+    summarization="{TIME_RESOLUTION_MAP[time_resolution].upper()}"
     terrainShading="{str(terrain_shading).lower()}">
     <timestampType>{timestamp_type.upper()}</timestampType>
     <timeZone>{tz}</timeZone>
     </processing>
     </ws:dataDeliveryRequest>'''
-    response = requests.post(url + "key=" + api_key, headers=headers,
+    response = requests.post(url + "?key=" + api_key, headers=headers,
                              data=request_xml.encode('utf8'), timeout=timeout)
 
     if response.ok is False:

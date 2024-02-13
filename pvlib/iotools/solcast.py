@@ -35,7 +35,7 @@ VARIABLE_MAP = [
         "azimuth", "solar_azimuth", lambda x: -x % 360
     ),
     # precipitable_water (kg/m2) -> precipitable_water (cm)
-    ParameterMap("precipitable_water", "precipitable_water", lambda x: x*10),
+    ParameterMap("precipitable_water", "precipitable_water", lambda x: x/10),
     # zenith -> solar_zenith
     ParameterMap("zenith", "solar_zenith"),
     # clearsky

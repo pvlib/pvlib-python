@@ -413,11 +413,11 @@ def tracker_shaded_fraction(solar_zenith, solar_azimuth, tracker_tilt,
     # consider the angle the sun direct beam has on the vertical plane which
     # contains the tracker normal vector, with respect to a horizontal line
     projected_solar_zenith = projected_solar_zenith_angle(
+        solar_zenith,
+        solar_azimuth,
         0,  # no rotation from the horizontal
         # the vector that defines the projection plane for prior conditions
         tracker_azimuth-90,
-        solar_zenith,
-        solar_azimuth
     )
     # angle opposite shadow cast on the ground, z
     angle_z = (

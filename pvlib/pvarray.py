@@ -369,11 +369,11 @@ def fit_huld(effective_irradiance, temp_mod, pdc):
                            where=np.array(gprime > 0))
         Y = np.divide(pdc, gprime, out=np.zeros_like(gprime),
                       where=np.array(gprime > 0))
-    
+
     X = np.stack((logGprime, logGprime**2, tprime, tprime*logGprime,
                   tprime*logGprime**2, tprime**2), axis=0).T
     X = sm.add_constant(X)
-        
+
     rlm_model = sm.RLM(Y, X)
     rlm_result = rlm_model.fit()
     pdc0 = rlm_result.params[0]

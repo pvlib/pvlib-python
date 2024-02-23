@@ -7,11 +7,11 @@
     <a href="https://pypi.org/project/pvlib/">
     <img src="https://img.shields.io/pypi/v/pvlib.svg" alt="latest release" />
     </a>
-    <a href="https://anaconda.org/conda-forge/pvlib-python">
-    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/version.svg" />
+    <a href="https://anaconda.org/conda-forge/pvlib">
+    <img src="https://anaconda.org/conda-forge/pvlib/badges/version.svg" />
     </a>
-    <a href="https://anaconda.org/conda-forge/pvlib-python">
-    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/latest_release_date.svg" />
+    <a href="https://anaconda.org/conda-forge/pvlib">
+    <img src="https://anaconda.org/conda-forge/pvlib/badges/latest_release_date.svg" />
     </a>
 </tr>
 <tr>
@@ -50,19 +50,8 @@
     <a href="https://doi.org/10.5281/zenodo.593284">
     <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.593284.svg" alt="zenodo reference">
     </a>
-    <a href="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1">
-    <img src="http://joss.theoj.org/papers/41187535cad22dd4b076c89b72f874b1/status.svg" alt="JOSS reference" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td>Downloads</td>
-  <td>
-    <a href="https://pypi.org/project/pvlib/">
-    <img src="https://img.shields.io/pypi/dm/pvlib" alt="PyPI downloads" />
-    </a>
-    <a href="https://anaconda.org/conda-forge/pvlib-python">
-    <img src="https://anaconda.org/conda-forge/pvlib-python/badges/downloads.svg" alt="conda-forge downloads" />
+    <a style="border-width:0" href="https://doi.org/10.21105/joss.05994">
+    <img src="https://joss.theoj.org/papers/10.21105/joss.05994/status.svg" alt="DOI badge" >
     </a>
   </td>
 </tr>
@@ -99,16 +88,31 @@ The long-term success of pvlib-python requires substantial community support.
 Citing
 ======
 
-If you use pvlib-python in a published work, please cite:
+Many of the contributors to pvlib python work in institutions where
+citation metrics are used in performance or career evaluations. If you
+use pvlib python in a published work, please cite:
 
-  William F. Holmgren, Clifford W. Hansen, and Mark A. Mikofski.
+**Recommended citation for the pvlib python project**
+
+  Anderson, K., Hansen, C., Holmgren, W., Jensen, A., Mikofski, M., and Driesse, A.
+  "pvlib python: 2023 project update."
+  Journal of Open Source Software, 8(92), 5994, (2023).
+  https://doi.org/10.21105/joss.05994
+
+
+**Recommended citation for pvlib iotools**
+
+  Jensen, A., Anderson, K., Holmgren, W., Mikofski, M., Hansen, C., Boeman, L., Loonen, R.
+  "pvlib iotools —- Open-source Python functions for seamless access to solar irradiance data."
+  Solar Energy, 266, 112092, (2023).
+  https://doi.org/10.1016/j.solener.2023.112092
+
+**Historical citation for pvlib python**
+
+  Holmgren, W., Hansen, C., and Mikofski, M.
   "pvlib python: a python package for modeling solar energy systems."
   Journal of Open Source Software, 3(29), 884, (2018).
   https://doi.org/10.21105/joss.00884
-
-Please also cite the DOI corresponding to the specific version of
-pvlib-python that you used. pvlib-python DOIs are listed at
-[Zenodo.org](https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version)
 
 If you use pvlib-python in a commercial or publicly-available application, please
 consider displaying one of the "powered by pvlib" logos:
@@ -142,10 +146,10 @@ History and acknowledgement
 ===========================
 
 pvlib python started out as a Python translation of the PVLIB MATLAB
-toolbox (developed by the `PVPMC <https://pvpmc.sandia.gov/>`_ at
+toolbox (developed by the [PVPMC](https://pvpmc.sandia.gov/) at
 Sandia National Laboratories) in 2013 and has grown substantially since then.
 Today it contains code contributions from over a hundred individuals worldwide
-and is maintained by a core group of PV modelers from a variety institutions.
+and is maintained by a core group of PV modelers from a variety of institutions.
 
 pvlib has been supported directly and indirectly by DOE, NumFOCUS, and
 Google Summer of Code funding, university research projects,

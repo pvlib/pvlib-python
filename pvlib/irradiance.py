@@ -73,7 +73,7 @@ def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [2] <http://solardat.uoregon.edu/SolarRadiationBasics.html>, Eqs.
+    .. [2] http://solardata.uoregon.edu/SolarRadiationBasics.html, Eqs.
        SR1 and SR2
 
     .. [3] Partridge, G. W. and Platt, C. M. R. 1976. Radiative Processes
@@ -553,7 +553,9 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
 def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
-    irradiance, albedo, and surface tilt.
+    irradiance, albedo, and surface tilt. The ground is assumed to
+    be horizontal, flat and Lambertian, and the reflected irradiance
+    is isotropic.
 
     Function to determine the portion of irradiance on a tilted surface
     due to ground reflections. Any of the inputs may be DataFrames or
@@ -600,7 +602,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
        and
        http://en.wikipedia.org/wiki/Albedo
        and
-       https://doi.org/10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2
+       :doi:`10.1175/1520-0469(1972)029<0959:AOTSS>2.0.CO;2`
     '''
 
     if surface_type is not None:
@@ -1555,8 +1557,8 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]
     xtol : numeric, default 0.01
-        Convergence criterion.  The estimated GHI will be within xtol of the
-        true value. [W/m^2]
+        Convergence criterion. The estimated GHI will be within xtol of the
+        true value. Must be positive. [W/m^2]
     full_output : boolean, default False
         If full_output is False, only ghi is returned, otherwise the return
         value is (ghi, converged, niter). (see Returns section for details).
@@ -1591,13 +1593,16 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Nov., 2023
 
+    if xtol <= 0:
+        raise ValueError(f"xtol too small ({xtol:g} <= 0)")
+
     ghi_from_poa_array = np.vectorize(_ghi_from_poa)
 
     ghi, conv, niter = ghi_from_poa_array(surface_tilt, surface_azimuth,
                                           solar_zenith, solar_azimuth,
                                           poa_global,
                                           dni_extra, airmass, albedo,
-                                          xtol=0.01)
+                                          xtol=xtol)
 
     if isinstance(poa_global, pd.Series):
         ghi = pd.Series(ghi, poa_global.index)

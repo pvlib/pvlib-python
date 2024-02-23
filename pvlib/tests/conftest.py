@@ -119,7 +119,7 @@ requires_statsmodels = pytest.mark.skipif(
 
 
 try:
-    import ephem
+    import ephem  # noqa: F401
     has_ephem = True
 except ImportError:
     has_ephem = False
@@ -129,7 +129,7 @@ requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
 
 def has_spa_c():
     try:
-        from pvlib.spa_c_files.spa_py import spa_calc
+        from pvlib.spa_c_files.spa_py import spa_calc  # noqa: F401
     except ImportError:
         return False
     else:

@@ -70,6 +70,7 @@ def test_huld():
                        match='Either k or cell_type must be specified'):
         res = pvarray.huld(1000, 25, 100)
 
+
 @requires_statsmodels
 def test_fit_huld():
     # test is to recover the parameters in _infer_huld_k for each cell type

@@ -11,7 +11,6 @@ Supporting functions and parameter fitting functions may also be found here.
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.special import exp10
-import statsmodels.api as sm
 
 
 def pvefficiency_adr(effective_irradiance, temp_cell,
@@ -270,7 +269,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
         Power of the modules at reference conditions 1000 :math:`W/m^2`
         and :math:`25^{\circ}C`. [W]
     k : tuple, optional
-        Empirical coefficients used in the power model. Length 6. If ``k`` is
+        Empirical coefficients used in the Huld model. Length 6. If ``k`` is
         not provided, ``cell_type`` must be specified.
     cell_type : str, optional
         If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
@@ -361,6 +360,41 @@ def _build_iec61853():
 
 
 def fit_huld(effective_irradiance, temp_mod, pdc):
+    r'''
+    Fit the Huld model to the input data.
+
+    Parameters
+    ----------
+    effective_irradiance : numeric
+        The irradiance that is converted to photocurrent. [:math:`W/m^2`]
+    temp_mod: numeric
+        Module back-surface temperature. [C]
+    pdc: numeric
+        DC power at ``effectuve_irradiance`` and ``temp_mod``. [W]
+
+    Returns
+    -------
+    pdc0: numeric
+        Power of the modules at reference conditions 1000 :math:`W/m^2`
+        and :math:`25^{\circ}C`. [W]
+    k : tuple
+        Empirical coefficients used in the Huld model. Length 6.
+
+    Notes
+    -----
+    Requires ``statsmodels``.
+
+    See Also
+    --------
+    pvlib.pvarray.huld
+    '''
+
+    try:
+        import statsmodels.api as sm
+    except ImportError:
+        raise ImportError(
+            'fit_huld requires statsmodels')
+
     gprime = effective_irradiance / 1000
     tprime = temp_mod - 25
     # accomodate gprime<=0

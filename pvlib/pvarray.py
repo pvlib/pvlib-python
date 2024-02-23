@@ -11,6 +11,7 @@ Supporting functions and parameter fitting functions may also be found here.
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.special import exp10
+import statsmodels.api as sm
 
 
 def pvefficiency_adr(effective_irradiance, temp_cell,
@@ -348,3 +349,33 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
                     k[2] * tprime + k[3] * tprime * logGprime +
                     k[4] * tprime * logGprime**2 + k[5] * tprime**2)
     return pdc
+
+
+def _build_iec61853():
+    ee = np.array([100, 100, 200, 200, 400, 400, 400, 600, 600, 600, 600,
+                   800, 800, 800, 800, 1000, 1000, 1000, 1000, 1100, 1100,
+                   1100]).T
+    tc = np.array([15, 25, 15, 25, 15, 25, 50, 15, 25, 50, 75,
+                   15, 25, 50, 75, 15, 25, 50, 75, 25, 50, 75]).T
+    return ee, tc
+
+
+def fit_huld(effective_irradiance, temp_mod, pdc):
+    gprime = effective_irradiance / 1000
+    tprime = temp_mod - 25
+    # accomodate gprime<=0
+    with np.errstate(divide='ignore'):
+        logGprime = np.log(gprime, out=np.zeros_like(gprime),
+                           where=np.array(gprime > 0))
+        Y = np.divide(pdc, gprime, out=np.zeros_like(gprime),
+                      where=np.array(gprime > 0))
+    
+    X = np.stack((logGprime, logGprime**2, tprime, tprime*logGprime,
+                  tprime*logGprime**2, tprime**2), axis=0).T
+    X = sm.add_constant(X)
+        
+    rlm_model = sm.RLM(Y, X)
+    rlm_result = rlm_model.fit()
+    pdc0 = rlm_result.params[0]
+    k = rlm_result.params[1:]
+    return pdc0, k

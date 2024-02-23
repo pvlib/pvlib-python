@@ -69,3 +69,18 @@ def test_huld():
     with pytest.raises(ValueError,
                        match='Either k or cell_type must be specified'):
         res = pvarray.huld(1000, 25, 100)
+
+
+def test_fit_huld():
+    # test is to recover the parameters in _infer_huld_k for each cell type
+    # IEC61853 conditions to make data for fitting
+    ee, tc = pvarray._build_iec61853()
+    techs = ['csi', 'cis', 'cdte']
+    pdc0 = 250
+    for tech in techs:
+        k0 = pvarray._infer_k_huld(tech, pdc0)
+        pdc = pvarray.huld(ee, tc, pdc0, cell_type=tech)
+        m_pdc0, k = pvarray.fit_huld(ee, tc, pdc)
+        expected = np.array([pdc0,] + [v for v in k0], dtype=float)
+        modeled = np.hstack((m_pdc0, k))
+        assert_allclose(expected, modeled, rtol=1e-8)

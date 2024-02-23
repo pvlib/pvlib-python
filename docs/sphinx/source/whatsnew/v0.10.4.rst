@@ -8,7 +8,7 @@ v0.10.4 (Anticipated March, 2024)
 Enhancements
 ~~~~~~~~~~~~
 * Added the Huld PV model used by PVGIS (:pull:`1940`)
-* Added a method to fit the Huld PV model (:pull:`XXXX`)
+* Added a method to fit the Huld PV model (:pull:`1979`)
 
 
 Bug fixes

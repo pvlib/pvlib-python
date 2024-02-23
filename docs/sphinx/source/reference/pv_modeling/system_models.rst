@@ -55,3 +55,4 @@ PVGIS model
    :toctree: ../generated/
 
     pvarray.huld
+    pvarray.fit_huld

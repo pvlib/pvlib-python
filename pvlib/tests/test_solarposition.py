@@ -12,8 +12,9 @@ import pytest
 from pvlib.location import Location
 from pvlib import solarposition, spa
 
-from .conftest import requires_ephem, requires_spa_c, requires_numba
-
+from .conftest import (
+    requires_ephem, requires_spa_c, requires_numba, requires_pandas_2_0
+)
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014, 6, 24),
@@ -715,6 +716,119 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
                        atol=np.abs(expected_sunset_error).max())
     assert np.allclose(test_transit, expected_transit,
                        atol=np.abs(expected_transit_error).max())
+
+
+@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
+def test__datetime_to_unixtime(tz):
+    # for pandas < 2.0 where "unit" doesn't exist in pd.date_range. note that
+    # unit of ns is the only option in pandas<2, and the default in pandas 2.x
+    times = pd.date_range(start='2019-01-01', freq='h', periods=3, tz=tz)
+    expected = times.view(np.int64)/10**9
+    actual = solarposition._datetime_to_unixtime(times)
+    np.testing.assert_equal(expected, actual)
+
+
+@requires_pandas_2_0
+@pytest.mark.parametrize('unit', ['ns', 'us', 's'])
+@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
+def test__datetime_to_unixtime_units(unit, tz):
+    kwargs = dict(start='2019-01-01', freq='h', periods=3)
+    times = pd.date_range(**kwargs, unit='ns', tz='UTC')
+    expected = times.view(np.int64)/10**9
+
+    times = pd.date_range(**kwargs, unit=unit, tz='UTC').tz_convert(tz)
+    actual = solarposition._datetime_to_unixtime(times)
+    np.testing.assert_equal(expected, actual)
+
+
+@requires_pandas_2_0
+@pytest.mark.parametrize('method', [
+    'nrel_numpy',
+    'ephemeris',
+    pytest.param('pyephem', marks=requires_ephem),
+    pytest.param('nrel_numba', marks=requires_numba),
+    pytest.param('nrel_c', marks=requires_spa_c),
+])
+@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
+def test_get_solarposition_microsecond_index(method, tz):
+    # https://github.com/pvlib/pvlib-python/issues/1932
+
+    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+
+    index_ns = pd.date_range(unit='ns', **kwargs)
+    index_us = pd.date_range(unit='us', **kwargs)
+
+    sp_ns = solarposition.get_solarposition(index_ns, 40, -80, method=method)
+    sp_us = solarposition.get_solarposition(index_us, 40, -80, method=method)
+
+    assert_frame_equal(sp_ns, sp_us, check_index_type=False)
+
+
+@requires_pandas_2_0
+@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
+def test_nrel_earthsun_distance_microsecond_index(tz):
+    # https://github.com/pvlib/pvlib-python/issues/1932
+
+    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+
+    index_ns = pd.date_range(unit='ns', **kwargs)
+    index_us = pd.date_range(unit='us', **kwargs)
+
+    esd_ns = solarposition.nrel_earthsun_distance(index_ns)
+    esd_us = solarposition.nrel_earthsun_distance(index_us)
+
+    assert_series_equal(esd_ns, esd_us, check_index_type=False)
+
+
+@requires_pandas_2_0
+@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
+def test_hour_angle_microsecond_index(tz):
+    # https://github.com/pvlib/pvlib-python/issues/1932
+
+    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+
+    index_ns = pd.date_range(unit='ns', **kwargs)
+    index_us = pd.date_range(unit='us', **kwargs)
+
+    ha_ns = solarposition.hour_angle(index_ns, -80, 0)
+    ha_us = solarposition.hour_angle(index_us, -80, 0)
+
+    np.testing.assert_equal(ha_ns, ha_us)
+
+
+@requires_pandas_2_0
+@pytest.mark.parametrize('tz', ['utc', 'US/Eastern'])
+def test_rise_set_transit_spa_microsecond_index(tz):
+    # https://github.com/pvlib/pvlib-python/issues/1932
+
+    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+
+    index_ns = pd.date_range(unit='ns', **kwargs)
+    index_us = pd.date_range(unit='us', **kwargs)
+
+    rst_ns = solarposition.sun_rise_set_transit_spa(index_ns, 40, -80)
+    rst_us = solarposition.sun_rise_set_transit_spa(index_us, 40, -80)
+
+    assert_frame_equal(rst_ns, rst_us, check_index_type=False)
+
+
+@requires_pandas_2_0
+@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
+def test_rise_set_transit_geometric_microsecond_index(tz):
+    # https://github.com/pvlib/pvlib-python/issues/1932
+
+    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+
+    index_ns = pd.date_range(unit='ns', **kwargs)
+    index_us = pd.date_range(unit='us', **kwargs)
+
+    args = (40, -80, 0, 0)
+    rst_ns = solarposition.sun_rise_set_transit_geometric(index_ns, *args)
+    rst_us = solarposition.sun_rise_set_transit_geometric(index_us, *args)
+
+    for times_ns, times_us in zip(rst_ns, rst_us):
+        # can't use a fancy assert function here since the units are different
+        assert all(times_ns == times_us)
 
 
 # put numba tests at end of file to minimize reloading

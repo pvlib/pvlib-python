@@ -268,12 +268,50 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     Projected_solar_zenith : numeric
         In degrees.
 
+    Notes
+    -----
+    This projection has a variety of applications in PV. For example:
+
+    - Projecting the sun's position onto the plane perpendicular to
+      the axis of a single-axis tracker (i.e. the plane
+      whose normal vector coincides with the tracker torque tube)
+      yields the tracker rotation angle that maximizes direct irradiance
+      capture.  This tracking strategy is called
+      :ref:`true-tracking
+      <sphx_glr_examples_plot_single_axis_tracking.py:True-tracking>`.
+
+    - Self-shading in large PV arrays is often modeled by assuming
+      a simplified 2-D array geometry where the sun's position is
+      projected onto the plane perpendicular to the PV rows.
+      The projected zenith angle is then used for calculations
+      regarding row-to-row shading.
+
+    Examples
+    --------
+
+    Calculate the ideal true-tracking angle for a horizontal north-south
+    single-axis tracker:
+
+    >>> rotation = projected_solar_zenith_angle(solar_zenith, solar_azimuth,
+    >>>                                         axis_tilt=0, axis_azimuth=180)
+
+    Calculate the projected zenith angle in a south-facing fixed tilt array
+    (note: the ``axis_azimuth`` of a fixed-tilt row points along the length
+    of the row):
+
+    >>> psza = projected_solar_zenith_angle(solar_zenith, solar_azimuth,
+    >>>                                     axis_tilt=0, axis_azimuth=90)
+
     References
     ----------
     .. [1] K. Anderson and M. Mikofski, 'Slope-Aware Backtracking for
        Single-Axis Trackers', National Renewable Energy Lab. (NREL), Golden,
        CO (United States);
        NREL/TP-5K00-76626, Jul. 2020. :doi:`10.2172/1660126`.
+
+    See Also
+    --------
+    pvlib.solarposition.get_solarposition
     """
     # Assume the tracker reference frame is right-handed. Positive y-axis is
     # oriented along tracking axis; from north, the y-axis is rotated clockwise

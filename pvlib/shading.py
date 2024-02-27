@@ -288,7 +288,6 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
 
     Examples
     --------
-
     Calculate the ideal true-tracking angle for a horizontal north-south
     single-axis tracker:
 

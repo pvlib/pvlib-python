@@ -28,9 +28,6 @@ from pvlib import atmosphere
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
 
-NS_PER_HR = 1.e9 * 3600.  # nanoseconds per hour
-
-
 def get_solarposition(time, latitude, longitude,
                       altitude=None, pressure=None,
                       method='nrel_numpy',
@@ -132,7 +129,7 @@ def get_solarposition(time, latitude, longitude,
 def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
           temperature=12, delta_t=67.0,
           raw_spa_output=False):
-    """
+    r"""
     Calculate the solar position using the C implementation of the NREL
     SPA code.
 
@@ -161,7 +158,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
         Temperature in C
     delta_t : float, default 67.0
         Difference between terrestrial time and UT1.
-        USNO has previous values and predictions.
+        USNO has previous values and predictions [3]_.
     raw_spa_output : bool, default False
         If true, returns the raw SPA output.
 
@@ -177,17 +174,16 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 
     References
     ----------
-    .. [1] NREL SPA reference:
-       http://rredc.nrel.gov/solar/codesandalgorithms/spa/
-       NREL SPA C files: https://midcdmz.nrel.gov/spa/
+    .. [1] NREL SPA reference: https://midcdmz.nrel.gov/spa/
 
     Note: The ``timezone`` field in the SPA C files is replaced with
     ``time_zone`` to avoid a nameclash with the function ``__timezone`` that is
     redefined by Python>=3.5. This issue is
     `Python bug 24643 <https://bugs.python.org/issue24643>`_.
 
-    .. [2] Delta T:
-       https://en.wikipedia.org/wiki/%CE%94T_(timekeeping)
+    .. [2] Delta T: https://en.wikipedia.org/wiki/%CE%94T_(timekeeping)
+
+    .. [3] USNO delta T: https://maia.usno.navy.mil/products/deltaT
 
     See also
     --------
@@ -274,6 +270,19 @@ def _spa_python_import(how):
     return spa
 
 
+def _datetime_to_unixtime(dtindex):
+    # convert a pandas datetime index to unixtime, making sure to handle
+    # different pandas units (ns, us, etc) and time zones correctly
+    if dtindex.tz is not None:
+        # epoch is 1970-01-01 00:00 UTC, but we need to match the input tz
+        # for compatibility with older pandas versions (e.g. v1.3.5)
+        epoch = pd.Timestamp("1970-01-01", tz="UTC").tz_convert(dtindex.tz)
+    else:
+        epoch = pd.Timestamp("1970-01-01")
+
+    return np.array((dtindex - epoch) / pd.Timedelta("1s"))
+
+
 def spa_python(time, latitude, longitude,
                altitude=0, pressure=101325, temperature=12, delta_t=67.0,
                atmos_refract=None, how='numpy', numthreads=4):
@@ -344,7 +353,7 @@ def spa_python(time, latitude, longitude,
        2007.
 
     .. [3] USNO delta T:
-       http://www.usno.navy.mil/USNO/earth-orientation/eo-products/long-term
+       https://maia.usno.navy.mil/products/deltaT
 
     See also
     --------
@@ -366,7 +375,7 @@ def spa_python(time, latitude, longitude,
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = np.array(time.view(np.int64)/10**9)
+    unixtime = _datetime_to_unixtime(time)
 
     spa = _spa_python_import(how)
 
@@ -445,7 +454,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
 
     # must convert to midnight UTC on day of interest
     utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
-    unixtime = np.array(utcday.view(np.int64)/10**9)
+    unixtime = _datetime_to_unixtime(utcday)
 
     spa = _spa_python_import(how)
 
@@ -1001,7 +1010,7 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         except (TypeError, ValueError):
             time = pd.DatetimeIndex([time, ])
 
-    unixtime = np.array(time.view(np.int64)/10**9)
+    unixtime = _datetime_to_unixtime(time)
 
     spa = _spa_python_import(how)
 
@@ -1378,11 +1387,13 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_spencer71
     equation_of_time_pvcdrom
     """
-    naive_times = times.tz_localize(None)  # naive but still localized
     # hours - timezone = (times - normalized_times) - (naive_times - times)
-    hrs_minus_tzs = 1 / NS_PER_HR * (
-        2 * times.view(np.int64) - times.normalize().view(np.int64) -
-        naive_times.view(np.int64))
+    if times.tz is None:
+        times = times.tz_localize('utc')
+    tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
+
+    hrs_minus_tzs = (times - times.normalize()) / pd.Timedelta('1h') - tzs
+
     # ensure array return instead of a version-dependent pandas <T>Index
     return np.asarray(
         15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)
@@ -1390,9 +1401,9 @@ def hour_angle(times, longitude, equation_of_time):
 
 def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
     """converts hour angles in degrees to hours as a numpy array"""
-    naive_times = times.tz_localize(None)  # naive but still localized
-    tzs = 1 / NS_PER_HR * (
-        naive_times.view(np.int64) - times.view(np.int64))
+    if times.tz is None:
+        times = times.tz_localize('utc')
+    tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
     hours = (hourangle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
     return np.asarray(hours)
 
@@ -1406,16 +1417,13 @@ def _local_times_from_hours_since_midnight(times, hours):
     # normalize local, naive times to previous midnight and add the hours until
     # sunrise, sunset, and transit
     return pd.DatetimeIndex(
-        (naive_times.normalize().view(np.int64) +
-         (hours * NS_PER_HR).astype(np.int64)).astype('datetime64[ns]'),
-        tz=tz_info)
+        naive_times.normalize() + pd.to_timedelta(hours, unit='h'), tz=tz_info)
 
 
 def _times_to_hours_after_local_midnight(times):
     """convert local pandas datetime indices to array of hours as floats"""
     times = times.tz_localize(None)
-    hrs = 1 / NS_PER_HR * (
-        times.view(np.int64) - times.normalize().view(np.int64))
+    hrs = (times - times.normalize()) / pd.Timedelta('1h')
     return np.array(hrs)
 
 

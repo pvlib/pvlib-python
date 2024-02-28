@@ -277,7 +277,8 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
       whose normal vector coincides with the tracker torque tube)
       yields the tracker rotation angle that maximizes direct irradiance
       capture. This tracking strategy is called *true-tracking*. Learn more
-      about tracking in :ref:`sphx_glr_gallery_solar-tracking_plot_single_axis_tracking.py`.
+      about tracking in
+      :ref:`sphx_glr_gallery_solar-tracking_plot_single_axis_tracking.py`.
 
     - Self-shading in large PV arrays is often modeled by assuming
       a simplified 2-D array geometry where the sun's position is

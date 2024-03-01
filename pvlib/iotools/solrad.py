@@ -106,7 +106,8 @@ def read_solrad(filename):
         response = requests.get(filename)
         file_buffer = io.StringIO(response.content.decode())
     else:
-        file_buffer = open(str(filename), 'r')
+        with open(str(filename), 'r') as file_buffer:
+            file_buffer = io.StringIO(file_buffer.read())
 
     # The first line has the name of the station, and the second gives the
     # station's latitude, longitude, elevation above mean sea level in meters,

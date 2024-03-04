@@ -1128,7 +1128,7 @@ class ModelChain:
         elif {'noct', 'module_efficiency'} <= params:
             return self.noct_sam_temp
         else:
-            raise ValueError('could not infer temperature model from '
+            raise ValueError('Could not infer temperature model from '
                              'ModelChain.system.  '
                              'If Arrays are used to construct the PVSystem, '
                              'check that all Arrays in '

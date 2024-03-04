@@ -247,7 +247,7 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     .. figure:: ../../_images/Anderson_Mikofski_2020_Fig5.jpg
        :alt: Wire diagram of coordinates systems to obtain the projected angle.
        :align: center
-       :scale: 75 %
+       :scale: 50 %
 
        Fig. 5, [1]_: Solar coordinates projection onto tracker rotation plane.
 

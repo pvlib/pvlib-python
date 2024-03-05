@@ -1,7 +1,6 @@
 """Functions to read data from the NOAA SOLRAD network."""
 
 import pandas as pd
-import urllib
 import warnings
 import requests
 import io
@@ -110,6 +109,7 @@ def read_solrad(filename):
 
     if str(filename).startswith('ftp') or str(filename).startswith('http'):
         response = requests.get(filename)
+        response.raise_for_status()
         file_buffer = io.StringIO(response.content.decode())
     else:
         with open(str(filename), 'r') as file_buffer:
@@ -207,7 +207,7 @@ def get_solrad(station, start, end,
         try:
             dfi, file_metadata = read_solrad(url + f)
             dfs.append(dfi)
-        except urllib.error.HTTPError:
+        except requests.exceptions.HTTPError:
             warnings.warn(f"The following file was not found: {f}")
 
     data = pd.concat(dfs, axis='rows')

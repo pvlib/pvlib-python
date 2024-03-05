@@ -1133,7 +1133,7 @@ class ModelChain:
                              'If Arrays are used to construct the PVSystem, '
                              'check that all Arrays in '
                              'ModelChain.system.arrays '
-                             'have parameers for the same temperature model. '
+                             'have parameters for the same temperature model. '
                              'If Arrays are not used, check that the PVSystem '
                              'attributes `racking_model` and `module_type` '
                              'are valid.')

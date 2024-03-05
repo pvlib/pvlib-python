@@ -10,7 +10,6 @@ Enhancements
 * Added the Huld PV model used by PVGIS (:pull:`1940`)
 * Added :py:func:`~pvlib.iotools.get_solrad` for fetching irradiance data from
   the SOLRAD ground station network. (:pull:`1967`)
-
 * Added metadata parsing to :py:func:`~pvlib.iotools.read_solrad` to follow the standard iotools
   convention of returning a tuple of (data, meta). Previously the function only returned a dataframe. (:pull:`1968`)
 

@@ -1,6 +1,7 @@
 """Functions to read data from the NOAA SOLRAD network."""
 
 import pandas as pd
+import warnings
 import requests
 import io
 
@@ -72,6 +73,10 @@ def read_solrad(filename):
     metadata : dict
         Metadata.
 
+    See Also
+    --------
+    get_solrad
+
     Notes
     -----
     SOLRAD data resolution is described by the README_SOLRAD.txt:
@@ -104,6 +109,7 @@ def read_solrad(filename):
 
     if str(filename).startswith('ftp') or str(filename).startswith('http'):
         response = requests.get(filename)
+        response.raise_for_status()
         file_buffer = io.StringIO(response.content.decode())
     else:
         with open(str(filename), 'r') as file_buffer:
@@ -133,5 +139,83 @@ def read_solrad(filename):
         data['year'].astype(str) + dts['month'] + dts['day'] + dts['hour'] +
         dts['minute'], format='%Y%m%d%H%M', utc=True)
     data = data.set_index(dtindex)
+
+    return data, meta
+
+
+def get_solrad(station, start, end,
+               url="https://gml.noaa.gov/aftp/data/radiation/solrad/"):
+    """Request data from NOAA SOLRAD and read it into a Dataframe.
+
+    A list of stations and their descriptions can be found in [1]_,
+    The data files are described in [2]_.
+
+    Data is returned for complete days, including ``start`` and ``end``.
+
+    Parameters
+    ----------
+    station : str
+        Three letter station abbreviation.
+    start : datetime-like
+        First day of the requested period
+    end : datetime-like
+        Last day of the requested period
+    url : str, default: 'https://gml.noaa.gov/aftp/data/radiation/solrad/'
+        API endpoint URL
+
+    Returns
+    -------
+    data : pd.DataFrame
+        Dataframe with data from SOLRAD.
+    meta : dict
+        Metadata.
+
+    See Also
+    --------
+    read_solrad
+
+    Notes
+    -----
+    Recent SOLRAD data is 1-minute averages.  Prior to 2015-01-01, it was
+    3-minute averages.
+
+    References
+    ----------
+    .. [1] https://gml.noaa.gov/grad/solrad/index.html
+    .. [2] https://gml.noaa.gov/aftp/data/radiation/solrad/README_SOLRAD.txt
+
+    Examples
+    --------
+    >>> # Retrieve one month of irradiance data from the ABQ SOLRAD station
+    >>> data, metadata = pvlib.iotools.get_solrad(
+    >>>     station='abq', start="2020-01-01", end="2020-01-31")
+    """
+    # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
+    start = pd.to_datetime(start)
+    end = pd.to_datetime(end)
+
+    # Generate list of filenames
+    dates = pd.date_range(start.floor('d'), end, freq='d')
+    station = station.lower()
+    filenames = [
+        f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"
+        for d in dates
+    ]
+
+    dfs = []  # Initialize list of monthly dataframes
+    for f in filenames:
+        try:
+            dfi, file_metadata = read_solrad(url + f)
+            dfs.append(dfi)
+        except requests.exceptions.HTTPError:
+            warnings.warn(f"The following file was not found: {f}")
+
+    data = pd.concat(dfs, axis='rows')
+
+    meta = {'station': station,
+            'filenames': filenames,
+            # all file should have the same metadata, so just merge in the
+            # metadata from the last file
+            **file_metadata}
 
     return data, meta

@@ -117,3 +117,36 @@ def test_read_solrad_https():
     remote_data, _ = solrad.read_solrad(https_testfile)
     # local file only contains four rows to save space
     assert_frame_equal(local_data, remote_data.iloc[:4])
+
+
+@pytest.mark.remote_data
+@pytest.mark.parametrize('testfile, station', [
+    (testfile, 'abq'),
+    (testfile_mad, 'msn'),
+])
+def test_get_solrad(testfile, station):
+    df, meta = solrad.get_solrad(station, "2019-02-25", "2019-02-25")
+
+    assert meta['station'] == station
+    assert isinstance(meta['filenames'], list)
+
+    assert len(df) == 1440
+    assert df.index[0] == pd.to_datetime('2019-02-25 00:00+00:00')
+    assert df.index[-1] == pd.to_datetime('2019-02-25 23:59+00:00')
+
+    expected, _ = solrad.read_solrad(testfile)
+    actual = df.reindex(expected.index)
+    # ABQ test file has an unexplained NaN in row 4; just verify first 3 rows
+    assert_frame_equal(actual.iloc[:3], expected.iloc[:3])
+
+
+@pytest.mark.remote_data
+def test_get_solrad_missing_day():
+    # data availability begins for ABQ on 2002-02-01 (DOY 32), so requesting
+    # data before that will raise a warning
+    message = 'The following file was not found: abq/2002/abq02031.dat'
+    with pytest.warns(UserWarning, match=message):
+        df, meta = solrad.get_solrad('abq', '2002-01-31', '2002-02-01')
+
+    # but the data for 2022-02-01 is still returned
+    assert not df.empty

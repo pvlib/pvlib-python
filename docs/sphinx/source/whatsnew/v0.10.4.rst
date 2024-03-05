@@ -14,8 +14,21 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Fixed an error in solar position calculations when using
+  :py:class:`pandas.DatetimeIndex` with ``unit`` other than ``'ns'`` (:issue:`1932`).
+  The following functions were affected:
+
+  - :py:class:`~pvlib.modelchain.ModelChain` and :py:func:`~pvlib.solarposition.get_solarposition` with the ``nrel_numpy`` and ``nrel_numba`` methods
+  - :py:func:`~pvlib.solarposition.spa_python`
+  - :py:func:`~pvlib.solarposition.sun_rise_set_transit_spa`
+  - :py:func:`~pvlib.solarposition.nrel_earthsun_distance`
+  - :py:func:`~pvlib.solarposition.hour_angle`
+  - :py:func:`~pvlib.solarposition.sun_rise_set_transit_geometric`
+
 * :py:class:`~pvlib.modelchain.ModelChain` now raises a more useful error when
   ``temperature_model_parameters`` are specified on the passed ``system`` instead of on its ``arrays``. (:issue:`1759`).
+* :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023` now correctly makes use
+  of the ``xtol`` argument. Previously, it was ignored. (:issue:`1970`, :pull:`1971`)
 
 Testing
 ~~~~~~~
@@ -23,8 +36,10 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Improved references and description for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:pull:`1953`)
 * Fixed broken URLs in various places. (:pull:`1957`, :pull:`1960`)
 * Clarified documentation for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:pull:`1883`)
+
 
 Requirements
 ~~~~~~~~~~~~
@@ -32,7 +47,11 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Patrick Sheehan (:ghuser:`patricksheehan`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * :ghuser:`matsuobasho`
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Peter Dudfield (:ghuser:`peterdudfield`)

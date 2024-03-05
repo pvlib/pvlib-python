@@ -134,7 +134,7 @@ def test_get_solrad(testfile, station):
     assert df.index[0] == pd.to_datetime('2019-02-25 00:00+00:00')
     assert df.index[-1] == pd.to_datetime('2019-02-25 23:59+00:00')
 
-    expected = solrad.read_solrad(testfile)
+    expected, _ = solrad.read_solrad(testfile)
     actual = df.reindex(expected.index)
     # ABQ test file has an unexplained NaN in row 4; just verify first 3 rows
     assert_frame_equal(actual.iloc[:3], expected.iloc[:3])

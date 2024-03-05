@@ -48,39 +48,48 @@ companies that allow their employees to contribute, and from personal time.
 Citing pvlib python
 ===================
 
-Many of the contributors to pvlib-python work in institutions where
+Many of the contributors to pvlib python work in institutions where
 citation metrics are used in performance or career evaluations. If you
 use pvlib python in a published work, please cite:
 
-  William F. Holmgren, Clifford W. Hansen, and Mark A. Mikofski.
+**Recommended citation for the pvlib python project**
+
+  Anderson, K., Hansen, C., Holmgren, W., Jensen, A., Mikofski, M., and Driesse, A.
+  "pvlib python: 2023 project update."
+  Journal of Open Source Software, 8(92), 5994, (2023).
+  https://doi.org/10.21105/joss.05994
+
+
+**Recommended citation for pvlib iotools**
+
+  Jensen, A., Anderson, K., Holmgren, W., Mikofski, M., Hansen, C., Boeman, L., Loonen, R.
+  "pvlib iotools — Open-source Python functions for seamless access to solar irradiance data."
+  Solar Energy, 266, 112092, (2023).
+  https://doi.org/10.1016/j.solener.2023.112092
+
+**Historical citation for pvlib python**
+
+  Holmgren, W., Hansen, C., and Mikofski, M.
   "pvlib python: a python package for modeling solar energy systems."
   Journal of Open Source Software, 3(29), 884, (2018).
   https://doi.org/10.21105/joss.00884
 
+**Version specific citation**
 Please also cite the DOI corresponding to the specific version of
 pvlib python that you used. pvlib python DOIs are listed at
 `Zenodo.org <https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version>`_
 
-If you use pvlib-python in a commercial or publicly-available
-application, please consider displaying one of the "powered by pvlib"
-logos:
-
-.. image:: _images/pvlib_powered_logo_horiz.png
-  :width: 300
-
-.. image:: _images/pvlib_powered_logo_vert.png
-  :width: 300
 
 Additional pvlib python publications include:
 
 * J. S. Stein, “The photovoltaic performance modeling
   collaborative (PVPMC),” in Photovoltaic Specialists Conference, 2012.
-* R.W. Andrews, J.S. Stein, C. Hansen, and D. Riley, “Introduction
-  to the open source pvlib for python photovoltaic system
-  modelling package,” in 40th IEEE Photovoltaic Specialist
-  Conference, 2014.
+* R. W. Andrews, J. S. Stein, C. Hansen and D. Riley, "Introduction to the open
+  source PV LIB for python Photovoltaic system modelling package," 
+  2014 IEEE 40th Photovoltaic Specialist Conference (PVSC), Denver, CO, USA, 
+  2014, pp. 0170-0174, https://doi.org/10.1109/PVSC.2014.6925501
   (`paper
-  <http://energy.sandia.gov/wp/wp-content/gallery/uploads/PV_LIB_Python_final_SAND2014-18444C.pdf>`__)
+  <https://www.osti.gov/servlets/purl/1241774>`__)
 * W.F. Holmgren, R.W. Andrews, A.T. Lorenzo, and J.S. Stein,
   “PVLIB Python 2015,” in 42nd Photovoltaic Specialists Conference, 2015.
   (`paper
@@ -93,6 +102,19 @@ Additional pvlib python publications include:
 * W.F. Holmgren and D.G. Groenendyk,
   "An Open Source Solar Power Forecasting Tool Using PVLIB-Python,"
   in 43rd Photovoltaic Specialists Conference, 2016.
+
+
+Logo
+====
+If you use pvlib python in a commercial or publicly-available
+application, please consider displaying one of the "powered by pvlib"
+logos:
+
+.. image:: _images/pvlib_powered_logo_horiz.png
+  :width: 300
+
+.. image:: _images/pvlib_powered_logo_vert.png
+  :width: 300
 
 License
 =======
@@ -108,21 +130,12 @@ pvlib python is a `NumFOCUS Affiliated Project <https://numfocus.org/sponsored-p
   :target: https://numfocus.org/sponsored-projects/affiliated-projects
   :alt: NumFocus Affliated Projects
 
-Contents
-========
-
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    user_guide/index
    gallery/index
    reference/index
    whatsnew
    contributing
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`

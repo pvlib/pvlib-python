@@ -168,6 +168,11 @@ except ImportError:
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
 
 
+has_pandas_2_0 = Version(pd.__version__) >= Version("2.0.0")
+requires_pandas_2_0 = pytest.mark.skipif(not has_pandas_2_0,
+                                         reason="requires pandas>=2.0.0")
+
+
 @pytest.fixture()
 def golden():
     return Location(39.742476, -105.1786, 'America/Denver', 1830.14)

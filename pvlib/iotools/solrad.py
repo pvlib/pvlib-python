@@ -1,8 +1,8 @@
-"""Functions to read data from the NOAA SOLRAD network.
-"""
+"""Functions to read data from the NOAA SOLRAD network."""
 
-import numpy as np
 import pandas as pd
+import requests
+import io
 
 # pvlib conventions
 BASE_HEADERS = (
@@ -49,8 +49,15 @@ MADISON_DTYPES = [
 
 def read_solrad(filename):
     """
-    Read NOAA SOLRAD fixed-width file into pandas dataframe.  The SOLRAD
-    network is described in [1]_ and [2]_.
+    Read NOAA SOLRAD fixed-width file into pandas dataframe.
+
+    The SOLRAD network is described in [1]_ and [2]_.
+
+    .. versionchanged:: 0.10.4
+       The function now returns a tuple where the first element is a dataframe
+       and the second element is a dictionary containing metadata. Previous
+       versions of this function only returned a dataframe.
+
 
     Parameters
     ----------
@@ -62,6 +69,8 @@ def read_solrad(filename):
     data: Dataframe
         A dataframe with DatetimeIndex and all of the variables in the
         file.
+    metadata : dict
+        Metadata.
 
     Notes
     -----
@@ -91,19 +100,29 @@ def read_solrad(filename):
         widths = WIDTHS
         dtypes = DTYPES
 
-    # read in data
-    data = pd.read_fwf(filename, header=None, skiprows=2, names=names,
-                       widths=widths, na_values=-9999.9)
+    meta = {}
 
-    # loop here because dtype kwarg not supported in read_fwf until 0.20
-    for (col, _dtype) in zip(data.columns, dtypes):
-        ser = data[col].astype(_dtype)
-        if _dtype == 'float64':
-            # older verions of pandas/numpy read '-9999.9' as
-            # -9999.8999999999996 and fail to set nan in read_fwf,
-            # so manually set nan
-            ser = ser.where(ser > -9999, other=np.nan)
-        data[col] = ser
+    if str(filename).startswith('ftp') or str(filename).startswith('http'):
+        response = requests.get(filename)
+        file_buffer = io.StringIO(response.content.decode())
+    else:
+        with open(str(filename), 'r') as file_buffer:
+            file_buffer = io.StringIO(file_buffer.read())
+
+    # The first line has the name of the station, and the second gives the
+    # station's latitude, longitude, elevation above mean sea level in meters,
+    # and the displacement in hours from local standard time.
+    meta['station_name'] = file_buffer.readline().strip()
+
+    meta_line = file_buffer.readline().split()
+    meta['latitude'] = float(meta_line[0])
+    meta['longitude'] = float(meta_line[1])
+    meta['altitude'] = float(meta_line[2])
+    meta['TZ'] = int(meta_line[3])
+
+    # read in data
+    data = pd.read_fwf(file_buffer, header=None, names=names,
+                       widths=widths, na_values=-9999.9, dtypes=dtypes)
 
     # set index
     # columns do not have leading 0s, so must zfill(2) to comply
@@ -114,10 +133,5 @@ def read_solrad(filename):
         data['year'].astype(str) + dts['month'] + dts['day'] + dts['hour'] +
         dts['minute'], format='%Y%m%d%H%M', utc=True)
     data = data.set_index(dtindex)
-    try:
-        # to_datetime(utc=True) does not work in older versions of pandas
-        data = data.tz_localize('UTC')
-    except TypeError:
-        pass
 
-    return data
+    return data, meta

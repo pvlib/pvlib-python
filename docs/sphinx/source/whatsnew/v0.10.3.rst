@@ -75,4 +75,3 @@ Contributors
 * Mark Mikofski (:ghuser:`mikofski`)
 * Phoebe Pearce (:ghuser:`phoebe-p`)
 * Eva-Maria Grommes (:ghuser:`EwaGomez`)
-* Echedey Luis (:ghuser:`echedey-ls`)

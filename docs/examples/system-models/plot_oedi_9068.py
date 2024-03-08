@@ -205,7 +205,7 @@ cell_temperature = pvlib.temperature.prilliman(
 #
 # Finally, we are ready to run the rest of the system model. Since we want
 # to use pre-calculated plane-of-array irradiance, we will use
-# :py:meth:``~pvlib.modelchain.ModelChain.run_model_from_poa``:
+# :py:meth:`~pvlib.modelchain.ModelChain.run_model_from_poa`:
 
 weather_inputs = pd.DataFrame({
     'poa_global': averaged_irradiance['poa_global'],

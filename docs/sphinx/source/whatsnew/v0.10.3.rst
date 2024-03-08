@@ -23,8 +23,6 @@ Enhancements
 * Add :py:func:`pvlib.iotools.read_solaranywhere` and
   :py:func:`pvlib.iotools.get_solaranywhere` for reading and retrieving
   SolarAnywhere solar irradiance data. (:pull:`1497`, :discuss:`1310`)
-* Added function :py:func:`pvlib.shading.projected_solar_zenith_angle`,
-  a common calculation in shading and tracking. (:issue:`1734`, :pull:`1904`)
 
 Bug fixes
 ~~~~~~~~~

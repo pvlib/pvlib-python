@@ -85,7 +85,7 @@ def masking_angle(surface_tilt, gcr, slant_height):
     ----------
     .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
-       DOI: 10.1016/0379-6787(84)90017-6
+       :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
@@ -167,7 +167,7 @@ def masking_angle_passias(surface_tilt, gcr):
     ----------
     .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
-       DOI: 10.1016/0379-6787(84)90017-6
+       :doi:`10.1016/0379-6787(84)90017-6`
     """
     # wrap it in an array so that division by zero is handled well
     beta = np.radians(np.array(surface_tilt))
@@ -226,7 +226,7 @@ def sky_diffuse_passias(masking_angle):
     ----------
     .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
-       DOI: 10.1016/0379-6787(84)90017-6
+       :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
@@ -247,7 +247,7 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     .. figure:: ../../_images/Anderson_Mikofski_2020_Fig5.jpg
        :alt: Wire diagram of coordinates systems to obtain the projected angle.
        :align: center
-       :scale: 75 %
+       :scale: 50 %
 
        Fig. 5, [1]_: Solar coordinates projection onto tracker rotation plane.
 
@@ -276,9 +276,9 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
       the axis of a single-axis tracker (i.e. the plane
       whose normal vector coincides with the tracker torque tube)
       yields the tracker rotation angle that maximizes direct irradiance
-      capture.  This tracking strategy is called
-      :ref:`true-tracking
-      <sphx_glr_gallery_solar-tracking_plot_single_axis_tracking.py:True-tracking>`.
+      capture. This tracking strategy is called *true-tracking*. Learn more
+      about tracking in
+      :ref:`sphx_glr_gallery_solar-tracking_plot_single_axis_tracking.py`.
 
     - Self-shading in large PV arrays is often modeled by assuming
       a simplified 2-D array geometry where the sun's position is
@@ -288,7 +288,6 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
 
     Examples
     --------
-
     Calculate the ideal true-tracking angle for a horizontal north-south
     single-axis tracker:
 

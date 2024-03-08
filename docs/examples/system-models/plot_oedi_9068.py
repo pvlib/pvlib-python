@@ -145,7 +145,7 @@ keys = ['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed',
 psm3, psm3_metadata = pvlib.iotools.get_psm3(latitude, longitude, api_key,
                                              email, interval=5, names=2019,
                                              map_variables=True, leap_day=True,
-                                             attributes=keys)    
+                                             attributes=keys)
 
 # %%
 # Pre-generate some model inputs
@@ -178,7 +178,7 @@ averaged_irradiance = pvlib.bifacial.infinite_sheds.get_irradiance_poa(
     solar_position['apparent_zenith'], solar_position['azimuth'],
     gcr, axis_height, pitch,
     psm3['ghi'], psm3['dhi'], psm3['dni'], psm3['albedo'],
-    model='haydavies', dni_extra=dni_extra, 
+    model='haydavies', dni_extra=dni_extra,
 )
 
 # %%

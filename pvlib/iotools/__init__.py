@@ -8,6 +8,7 @@ from pvlib.iotools.midc import read_midc  # noqa: F401
 from pvlib.iotools.midc import read_midc_raw_data_from_nrel  # noqa: F401
 from pvlib.iotools.crn import read_crn  # noqa: F401
 from pvlib.iotools.solrad import read_solrad  # noqa: F401
+from pvlib.iotools.solrad import get_solrad  # noqa: F401
 from pvlib.iotools.psm3 import get_psm3  # noqa: F401
 from pvlib.iotools.psm3 import read_psm3  # noqa: F401
 from pvlib.iotools.psm3 import parse_psm3  # noqa: F401

@@ -39,7 +39,7 @@ def test_get_solargis(hourly_dataframe):
         latitude=48.61259, longitude=20.827079,
         start='2022-01-01', end='2022-01-01',
         tz='GMT+01', variables=['GHI', 'DNI'],
-        summarization='HOURLY', api_key='demo')
+        time_resolution='HOURLY', api_key='demo')
     assert_frame_equal(data, hourly_dataframe)
 
 
@@ -51,7 +51,7 @@ def test_get_solargis_utc_start_timestamp(hourly_index_start_utc):
         start='2023-01-01', end='2023-01-01',
         variables=['GTI'],
         timestamp_type='start',
-        summarization='MIN_30',
+        time_resolution='MIN_30',
         map_variables=False, api_key='demo')
     assert 'GTI' in data.columns  # assert that variables aren't mapped
     assert_index_equal(data.index, hourly_index_start_utc)
@@ -65,4 +65,4 @@ def test_get_solargis_http_error():
         _, _ = pvlib.iotools.get_solargis(
             latitude=48.61259, longitude=20.827079,
             start='1920-01-01', end='1920-01-01',  # date outside range
-            variables=['GHI', 'DNI'], summarization='HOURLY', api_key='demo')
+            variables=['GHI', 'DNI'], time_resolution='HOURLY', api_key='demo')

@@ -158,12 +158,12 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     <site id="{site_id}" name="" lat="{latitude}" lng="{longitude}">
     </site>
     <processing key="{' '.join(variables)}"
-    summarization="{TIME_RESOLUTION_MAP[time_resolution].upper()}"
+    summarization="{TIME_RESOLUTION_MAP.get(time_resolution, time_resolution).upper()}"
     terrainShading="{str(terrain_shading).lower()}">
     <timestampType>{timestamp_type.upper()}</timestampType>
     <timeZone>{tz}</timeZone>
     </processing>
-    </ws:dataDeliveryRequest>'''
+    </ws:dataDeliveryRequest>'''  # noqa: E501
 
     response = requests.post(url + "?key=" + api_key, headers=headers,
                              data=request_xml.encode('utf8'), timeout=timeout)

@@ -9,7 +9,7 @@ dependencies:
     - h5py
     - numba
     - numpy >= 1.16.0
-    - pandas >= 0.25.0
+    - pandas >= 1.3.0
     - pip
     - pytest
     - pytest-cov

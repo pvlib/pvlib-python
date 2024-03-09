@@ -32,8 +32,6 @@ def hourly_dataframe(hourly_index):
     return pd.DataFrame(data={'ghi': ghi, 'dni': dni}, index=hourly_index)
 
 
-@pytest.mark.skipif(pd.__version__ < '1.3.0',
-                    reason='pd.read_xml is new as of 1.3.0')
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solargis(hourly_dataframe):
@@ -45,8 +43,6 @@ def test_get_solargis(hourly_dataframe):
     assert_frame_equal(data, hourly_dataframe)
 
 
-@pytest.mark.skipif(pd.__version__ < '1.3.0',
-                    reason='pd.read_xml is new as of 1.3.0')
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solargis_utc_start_timestamp(hourly_index_start_utc):
@@ -61,8 +57,6 @@ def test_get_solargis_utc_start_timestamp(hourly_index_start_utc):
     assert_index_equal(data.index, hourly_index_start_utc)
 
 
-@pytest.mark.skipif(pd.__version__ < '1.3.0',
-                    reason='pd.read_xml is new as of 1.3.0')
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_solargis_http_error():

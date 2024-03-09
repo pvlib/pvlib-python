@@ -87,7 +87,8 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     api_key : str
         API key.
     time_resolution : str, {'PT05M', 'PT10M', 'PT15M', 'PT30', 'PT1H', 'P1D', 'P1M', 'P1Y'}
-        Time frequency in the time series data.
+        Time resolution as an integer number of minutes (e.g. 5, 60)
+        or an ISO 8601 duration string (e.g. "PT05M", "PT60M", "P1M").
     timestamp_type : {'start', 'center', 'end'}, default: 'center'
         Labeling of time stamps of the return data.
     tz : str, default : 'GMT+00'
@@ -163,6 +164,7 @@ def get_solargis(latitude, longitude, start, end, variables, api_key,
     <timeZone>{tz}</timeZone>
     </processing>
     </ws:dataDeliveryRequest>'''
+
     response = requests.post(url + "?key=" + api_key, headers=headers,
                              data=request_xml.encode('utf8'), timeout=timeout)
 

@@ -24,6 +24,11 @@ Enhancements
 * :py:class:`~pvlib.pvsystem.PVSystem` objects with a single
   :py:class:`~pvlib.pvsystem.Array` can now be created without wrapping the
   ``Array`` in a list first. (:issue:`1831`, :pull:`1854`)
+* Added :py:mod:`pvlib.financial` module with functions
+  :py:func:`~pvlib.financial.lcoe`, :py:func:`~pvlib.financial.crf`,
+  :py:func:`~pvlib.financial.nominal_to_real`,
+  :py:func:`~pvlib.financial.real_to_nominal`, and
+  :py:func:`~pvlib.financial.wacc` (:pull:`1687`)
 
 
 Bug fixes
@@ -84,3 +89,4 @@ Contributors
 * Will Holmgren (:ghuser:`wholmgren`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Emma Cooper (:ghuser:`eccoope`)

@@ -20,3 +20,4 @@ API reference
    bifacial
    scaling
    location
+   financial

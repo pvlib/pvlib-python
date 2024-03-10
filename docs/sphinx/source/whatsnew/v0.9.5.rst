@@ -37,6 +37,7 @@ Enhancements
 * Use `Horner's Method <https://en.wikipedia.org/wiki/Horner%27s_method>`_
   to evaluate polynomials in :py:func:`~pvlib.irradiance.disc`, may
   decrease runtime by 20%. (:issue:`1180`, :pull:`1183`)
+  
 
 Bug fixes
 ~~~~~~~~~
@@ -65,6 +66,8 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Remove LGTM.com integration. (:issue:`1550`, :pull:`1651`)
+* Added two examples demonstrating how :py:mod:`pvlib.financial` can
+  be used (:pull:`1687`)
 
 Benchmarking
 ~~~~~~~~~~~~~

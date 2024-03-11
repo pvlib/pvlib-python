@@ -1128,11 +1128,15 @@ class ModelChain:
         elif {'noct', 'module_efficiency'} <= params:
             return self.noct_sam_temp
         else:
-            raise ValueError(f'could not infer temperature model from '
-                             f'system.temperature_model_parameters. Check '
-                             f'that all Arrays in system.arrays have '
-                             f'parameters for the same temperature model. '
-                             f'Common temperature model parameters: {params}.')
+            raise ValueError('Could not infer temperature model from '
+                             'ModelChain.system.  '
+                             'If Arrays are used to construct the PVSystem, '
+                             'check that all Arrays in '
+                             'ModelChain.system.arrays '
+                             'have parameters for the same temperature model. '
+                             'If Arrays are not used, check that the PVSystem '
+                             'attributes `racking_model` and `module_type` '
+                             'are valid.')
 
     def _set_celltemp(self, model):
         """Set self.results.cell_temperature using the given cell

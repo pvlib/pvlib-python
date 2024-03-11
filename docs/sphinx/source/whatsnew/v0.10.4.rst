@@ -35,6 +35,8 @@ Bug fixes
 * :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023` now correctly makes use
   of the ``xtol`` argument. Previously, it was ignored. (:issue:`1970`, :pull:`1971`)
 * Fixed incorrect unit conversion of precipitable water used for the Solcast iotools functions.
+* :py:class:`~pvlib.modelchain.ModelChain.infer_temperature_model` now raises a more useful error when
+  the temperature model cannot be inferred (:issue:`1946`)
 
 Testing
 ~~~~~~~
@@ -59,7 +61,6 @@ Contributors
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Kevin Anderson (:ghuser:`kandersolar`)
 * Cliff Hansen (:ghuser:`cwhanse`)
-* :ghuser:`matsuobasho`
+* Roma Koulikov (:ghuser:`matsuobasho`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
-* Kevin Anderson (:ghuser:`kandersolar`)
 * Peter Dudfield (:ghuser:`peterdudfield`)

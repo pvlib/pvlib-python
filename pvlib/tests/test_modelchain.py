@@ -1306,8 +1306,6 @@ def test_temperature_model_inconsistent(location, sapm_dc_snl_ac_system):
 
 
 def test_temperature_model_not_specified():
-    # GH 1759 -- ensure correct error is raised when temperature model params
-    # are specified on the PVSystem instead of the Arrays
     location = Location(latitude=32.2, longitude=-110.9)
     arrays = [pvsystem.Array(pvsystem.FixedMount(),
                              module_parameters={'pdc0': 1, 'gamma_pdc': 0})]
@@ -1315,8 +1313,8 @@ def test_temperature_model_not_specified():
                                temperature_model_parameters={'u0': 1, 'u1': 1},
                                inverter_parameters={'pdc0': 1})
     with pytest.raises(ValueError,
-                       match='could not infer temperature model '
-                             'from system.temperature_model_parameters'):
+                       match='Could not infer temperature model from '
+                             'ModelChain.system.'):
         _ = ModelChain(system, location,
                        aoi_model='no_loss', spectral_model='no_loss')
 
@@ -1957,11 +1955,8 @@ def test_inconsistent_array_params(location,
                                    cec_module_params):
     module_error = ".* selected for the DC model but one or more Arrays are " \
                    "missing one or more required parameters"
-    temperature_error = "could not infer temperature model from " \
-                        r"system\.temperature_model_parameters\. Check " \
-                        r"that all Arrays in system\.arrays have " \
-                        r"parameters for the same temperature model\. " \
-                        r"Common temperature model parameters: .*"
+    temperature_error = 'Could not infer temperature model from ' \
+                        'ModelChain.system.  '
     different_module_system = pvsystem.PVSystem(
         arrays=[
             pvsystem.Array(

@@ -37,6 +37,8 @@ Bug fixes
 * Fixed incorrect unit conversion of precipitable water used for the Solcast iotools functions.
 * :py:class:`~pvlib.modelchain.ModelChain.infer_temperature_model` now raises a more useful error when
   the temperature model cannot be inferred (:issue:`1946`)
+* The default URL for retrieving irradiance data from the SRML network was updated in
+  :py:func:`~pvlib.iotools.get_srml` (:pull:`1957`, :issue:`1922`)
 
 Testing
 ~~~~~~~

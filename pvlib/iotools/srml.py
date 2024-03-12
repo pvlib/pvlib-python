@@ -172,64 +172,6 @@ def _format_index(df):
     return df
 
 
-@deprecated('0.10.0', alternative='pvlib.iotools.get_srml', removal='0.11.0')
-def read_srml_month_from_solardat(station, year, month, filetype='PO',
-                                  map_variables=True):
-    """Request a month of SRML data and read it into a Dataframe.
-
-    The SRML is described in [1]_.
-
-    Parameters
-    ----------
-    station: str
-        The name of the SRML station to request.
-    year: int
-        Year to request data for
-    month: int
-        Month to request data for.
-    filetype: string
-        SRML file type to gather. See notes for explanation.
-    map_variables: bool, default: True
-        When true, renames columns of the DataFrame to pvlib variable names
-        where applicable. See variable :const:`VARIABLE_MAP`.
-
-    Returns
-    -------
-    data: pd.DataFrame
-        One month of data from SRML.
-
-    Notes
-    -----
-    File types designate the time interval of a file and if it contains
-    raw or processed data. For instance, `RO` designates raw, one minute
-    data and `PO` designates processed one minute data. The availability
-    of file types varies between sites. Below is a table of file types
-    and their time intervals. See [1] for site information.
-
-    ============= ============ ==================
-    time interval raw filetype processed filetype
-    ============= ============ ==================
-    1 minute      RO           PO
-    5 minute      RF           PF
-    15 minute     RQ           PQ
-    hourly        RH           PH
-    ============= ============ ==================
-
-    References
-    ----------
-    .. [1] University of Oregon Solar Radiation Measurement Laboratory
-       http://solardata.uoregon.edu/
-    """
-    file_name = "{station}{filetype}{year:02d}{month:02d}.txt".format(
-        station=station,
-        filetype=filetype,
-        year=year % 100,
-        month=month)
-    url = "http://solardata.uoregon.edu/download/Archive/"
-    data = read_srml(url + file_name, map_variables=map_variables)
-    return data
-
-
 def get_srml(station, start, end, filetype='PO', map_variables=True,
              url="http://solardata.uoregon.edu/download/Archive/"):
     """Request data from UoO SRML and read it into a Dataframe.

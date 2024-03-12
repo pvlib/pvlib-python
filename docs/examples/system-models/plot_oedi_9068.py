@@ -1,6 +1,6 @@
 """
-SR_CO (OEDI System 9068)
-========================
+4.7 MW CdTe single-axis tracking (OEDI System 9068)
+===================================================
 
 A basic model of a 4.7 MW single-axis tracking CdTe system located in
 Colorado, United States.
@@ -69,7 +69,8 @@ inverter_parameters = cec_inverter_db['TMEIC__PVL_L1833GRM']
 # We'll use the PVWatts v5 losses model.  Set shading to zero as it is
 # accounted for elsewhere in the model, and disable availability loss since
 # we want a "clean" simulation.
-# Other loss types are left at their default amounts.
+# Leaving the other pvwatts loss types (mismatch, wiring, etc) unspecified
+# causes them to take their default values.
 losses_parameters = dict(shading=0, availability=0)
 
 # Google Street View images show that each row is four modules high, in

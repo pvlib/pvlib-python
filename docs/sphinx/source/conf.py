@@ -58,6 +58,15 @@ extensions = [
 
 napoleon_use_rtype = False  # group rtype on same line together with return
 
+napoleon_type_aliases = {
+    # link to the sphinx targets & definitions in contributing.rst
+    'dict-like': ':ref:`dict-like <dict-like>`',
+    'numeric': ':ref:`numeric <numeric>`',
+    'array-like': ':ref:`array-like <array-like>`',
+}
+napoleon_preprocess_types = True
+
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

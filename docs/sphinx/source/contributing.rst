@@ -238,9 +238,9 @@ allows for multiple input types to work for many parameters. pvlib uses
 the following generic descriptors as short-hand to indicate which
 specific types may be used:
 
-* dict-like : dict, OrderedDict, pd.Series
-* numeric : scalar, np.array, pd.Series. Typically int or float dtype.
-* array-like : np.array, pd.Series. Typically int or float dtype.
+* _`dict-like` : dict, OrderedDict, pd.Series
+* _`numeric` : scalar, np.array, pd.Series. Typically int or float dtype.
+* _`array-like` : np.array, pd.Series. Typically int or float dtype.
 
 Parameters that specify a specific type require that specific input type.
 

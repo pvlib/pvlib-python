@@ -8,6 +8,7 @@ from .conftest import DATA_DIR
 import pytest
 
 from pvlib import inverter
+from pvlib.iotools import read_panond
 
 
 def test_adr(adr_inverter_parameters):
@@ -211,3 +212,20 @@ def test_fit_sandia(infilen, expected):
                                  dc_voltage_level=curves['dc_voltage_level'],
                                  p_ac_0=expected['Paco'], p_nt=expected['Pnt'])
     assert expected == pytest.approx(result, rel=1e-3)
+
+
+OND_FILE = DATA_DIR / 'Huawei_Sun2000_40KTL_US_SLR.OND'
+def test_ond_to_sandia():
+    content = read_panond(OND_FILE, encoding='utf-8-sig')
+    data = content['PVObject_']
+    result = inverter.ond_to_sandia_inv(data)
+    expected = {'Paco': 40000.,
+                'Pdco': 40667.958855217,
+                'Pnt': 1.0,
+                'Pso': 73.847630974,
+                'Vdco': 720.0,
+                'C0': -1.6657324233698e-7,
+                'C1': -1.7961032678822e-5,
+                'C2': -0.0004676856528,
+                'C3': -0.0009031894907}
+    assert expected == pytest.approx(result, rel=1e-8)

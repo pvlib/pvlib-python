@@ -547,3 +547,57 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
     # prepare dict and return
     return {'Paco': p_ac_0, 'Pdco': p_dc0, 'Vdco': v_nom, 'Pso': p_s0,
             'C0': c0, 'C1': c1, 'C2': c2, 'C3': c3, 'Pnt': p_nt}
+
+
+def ond_to_sandia_inv(content):
+    """
+    Get parameters for :py:func:`pvlib.inverter.sandia` from content of a
+    PVsyst OND file.
+    
+    Parameters
+    ----------
+    content : dict
+        OND file content from the nested dict returned from 
+        :py:func:`pvlib.iotools.panond.read_panond`
+
+    Returns
+    -------
+    dict
+        Parameters for :py:func:`pvlib.inverter.sandia`
+
+    """
+    # get power unit
+    if content['Converter']['UnitAffEnum'] == 'kW':
+        multiplier = 1000.
+    else:
+        multiplier = 1.
+    # to fit pvlib.inverter.sandia, we need ac_power, dc_power, dc_voltage,
+    # dc_voltage_level, p_ac_0, p_nt
+    p_ac_0 = content['Converter']['PNomConv'] * multiplier
+    p_nt = content['Night_Loss']
+    # assemble ac_power and dc_power
+    ac_power = []
+    dc_power = []
+    dc_voltage = []
+    dc_voltage_level = []
+    voltages = content['Converter']['VNomEff']
+    if voltages[-1] =='':
+        voltages = voltages[:-1]
+    voltage_lvls = ['Vmin', 'Vnom', 'Vmax']
+    for v, lvl, profile in zip(voltages, voltage_lvls,
+                      ['ProfilPIOV1', 'ProfilPIOV2', 'ProfilPIOV3']):
+        data = content['Converter'][profile]
+        npts = int(data['NPtsEff'])
+        for p in range(1, npts+1):
+            dc_voltage.append(v)
+            dc_voltage_level.append(lvl)
+            vals = data['Point_' + str(p)]
+            ac_power.append(vals[1])
+            dc_power.append(vals[0])
+    dc_power = np.array(dc_power)
+    ac_power = np.array(ac_power)
+    dc_voltage = np.array(dc_voltage)
+    dc_voltage_level = np.array(dc_voltage_level)
+    return fit_sandia(ac_power, dc_power, 
+                      dc_voltage, dc_voltage_level,
+                      p_ac_0, p_nt)

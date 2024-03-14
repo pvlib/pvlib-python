@@ -344,10 +344,13 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     return theta_T
 
 
-def tracker_shaded_fraction(solar_zenith, solar_azimuth, tracker_tilt,
-                            tracker_azimuth, gcr, cross_axis_slope=0):
+def shaded_fraction1d(solar_zenith, solar_azimuth, surface_tilt,
+                      surface_azimuth, gcr, cross_axis_slope=0):
     r"""
-    Shaded fraction for trackers with a common angle on an east-west slope.
+    Shaded fraction in the vertical dimension of the rows.
+
+    Assumes both the shaded row and the one blocking the direct beam share
+    the same tilt and azimuth values.
 
     Parameters
     ----------
@@ -355,16 +358,17 @@ def tracker_shaded_fraction(solar_zenith, solar_azimuth, tracker_tilt,
         Solar position zenith, in degrees.
     solar_azimuth : numeric
         Solar position azimuth, in degrees.
-    tracker_tilt : numeric
+    surface_tilt : numeric
         In degrees.
-    tracker_azimuth : numeric
+    surface_azimuth : numeric
         In degrees. North=0º, South=180º, East=90º, West=270º.
     gcr : numeric
         The ground coverage ratio as a fraction equal to the collector width
         over the horizontal row-to-row pitch.
     cross_axis_slope : numeric, default 0
-        Angle of the plane containing the tracker axes in degrees from
-        horizontal.
+        Angle of the plane containing the rows' axes in degrees from
+        horizontal. A row axis is defined by the vector product of
+        ``surface_tilt`` and ``surface_azimuth``.
 
     Returns
     -------
@@ -377,7 +381,7 @@ def tracker_shaded_fraction(solar_zenith, solar_azimuth, tracker_tilt,
     pvlib.shading.linear_shade_loss
 
 
-    The shaded fraction is derived using trigonometery and similar triangles
+    The shaded fraction is derived using trigonometry and similar triangles
     from the tracker rotation :math:`\beta`, the ground slope :math:`\theta_g`,
     the projected solar zenith (psz) :math:`\theta`, the collector width
     :math:`L`, the row-to-row pitch :math:`P`, and the shadow length :math:`z`
@@ -416,11 +420,11 @@ def tracker_shaded_fraction(solar_zenith, solar_azimuth, tracker_tilt,
         solar_azimuth,
         0,  # no rotation from the horizontal
         # the vector that defines the projection plane for prior conditions
-        tracker_azimuth-90,
+        surface_azimuth-90,
     )
     # angle opposite shadow cast on the ground, z
     angle_z = (
-        np.pi / 2 - np.radians(tracker_tilt)
+        np.pi / 2 - np.radians(surface_tilt)
         + np.radians(projected_solar_zenith))
     # angle opposite the collector width, L
     angle_gcr = (

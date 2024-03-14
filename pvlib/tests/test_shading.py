@@ -227,44 +227,43 @@ def test_projected_solar_zenith_angle_datatypes(
 
 @pytest.fixture
 def sf_premises_and_expected():
-    """Data comprised of solar position, tracker orientations, ground coverage
+    """Data comprised of solar position, rows orientations, ground coverage
     ratios and terrain slopes with respective shade fractions (sf).
     Returns a 2-tuple with the premises to be used directly in
-    tracker_shade_fraction(...) in the first element and the expected shaded
+    shaded_fraction1d(...) in the first element and the expected shaded
     fractions on the second element"""
-    # tracker_shade_fraction's args order and append shadow depth, z
+    # shaded_fraction1d's args order and append shadow depth, z
     premises_and_results = pd.DataFrame(
-        columns=["solar_zenith", "solar_azimuth", "tracker_tilt",
-                 "tracker_azimuth", "gcr", "cross_axis_slope", "z"],
+        columns=["solar_zenith", "solar_azimuth", "surface_tilt",
+                 "surface_azimuth", "gcr", "cross_axis_slope", "z"],
         data=(
-            # trivial case, 80% gcr, no slope, trackers & psz at 45-deg
-            (45, 90., 45, 90., 0.8, 0, np.sqrt(2*0.8*0.8)),
-            # another trivial case, 60% gcr, no slope, trackers & psz at 60-deg
+            # trivial case, 80% gcr, no slope, rows & psz at 45-deg
+            (45, 90., 45, 90., 0.8, 0, 0.8*np.sqrt(2)),
+            # another trivial case, 60% gcr, no slope, rows & psz at 60-deg
             (60, 120, 60, 120, 0.6, 0, 2*0.6),
-            # 30-deg isosceles, 60% gcr, no slope, 30-deg trackers, psz 60-deg
+            # 30-deg isosceles, 60% gcr, no slope, 30-deg rows, psz 60-deg
             (60, 135, 30, 135, 0.6, 0, 0.6*np.sqrt(3)),
             # no shading, 40% gcr, shadow is only 0.565-m long < 1-m r2r P
             (45, 180, 45, 180, 0.4, 0, 1)  # z := 1 means no shadow
         ))
     # append shaded fraction
     premises_and_results["shaded_fraction"] = 1 - 1/premises_and_results["z"]
+    # return 1st: premises dataframe first and 2nd: shaded fraction series
     return (premises_and_results.drop(columns=["z", "shaded_fraction"]),
             premises_and_results["shaded_fraction"])
 
 
-def test_tracker_shade_fraction(sf_premises_and_expected):
-    """Tests tracker_shade_fraction"""
+def test_shade_fraction1d(sf_premises_and_expected):
+    """Tests shaded_fraction1d"""
     # unwrap sf_premises_and_expected values premises and expected results
     premises, expected_sf_array = sf_premises_and_expected
-    # test scalar inputs from the row iterator
-    # series label := corresponding index in expected_sf_array
-    for index, premise in premises.iterrows():
-        expected_result = expected_sf_array[index]
-        sf = shading.tracker_shaded_fraction(**premise)
-        assert_allclose(sf, expected_result)
+    # test scalar input
+    expected_result = expected_sf_array.iloc[0]
+    sf = shading.shaded_fraction1d(**premises.iloc[0])
+    assert_allclose(sf, expected_result)
 
     # test vector inputs
-    sf_vec = shading.tracker_shaded_fraction(**premises)
+    sf_vec = shading.shaded_fraction1d(**premises)
     assert_allclose(sf_vec, expected_sf_array)
 
 

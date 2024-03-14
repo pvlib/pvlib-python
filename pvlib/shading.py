@@ -382,7 +382,7 @@ def shaded_fraction1d(solar_zenith, solar_azimuth, surface_tilt,
 
 
     The shaded fraction is derived using trigonometry and similar triangles
-    from the tracker rotation :math:`\beta`, the ground slope :math:`\theta_g`,
+    from the row rotation :math:`\beta`, the ground slope :math:`\theta_g`,
     the projected solar zenith (psz) :math:`\theta`, the collector width
     :math:`L`, the row-to-row pitch :math:`P`, and the shadow length :math:`z`
     as shown in the image below.
@@ -414,7 +414,7 @@ def shaded_fraction1d(solar_zenith, solar_azimuth, surface_tilt,
     theta_g_rad = np.radians(cross_axis_slope)
     # projected solar zenith:
     # consider the angle the sun direct beam has on the vertical plane which
-    # contains the tracker normal vector, with respect to a horizontal line
+    # contains the row's normal vector, with respect to a horizontal line
     projected_solar_zenith = projected_solar_zenith_angle(
         solar_zenith,
         solar_azimuth,

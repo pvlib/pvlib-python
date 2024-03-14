@@ -11,6 +11,6 @@ Shading
    shading.masking_angle_passias
    shading.sky_diffuse_passias
    shading.projected_solar_zenith_angle
-   shading.tracker_shaded_fraction
+   shading.shaded_fraction1d
    shading.linear_shade_loss
    

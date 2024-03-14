@@ -280,5 +280,5 @@ def test_linear_shade_loss(sf_premises_and_expected):
     no_loss = shading.linear_shade_loss(expected_sf_array[0], 1.0)
     assert_allclose(no_loss, 0)
     vec_loss = shading.linear_shade_loss(expected_sf_array, 0.2)
-    expected_loss = np.array([0.09289322, 0.13333333, 0.03019964, 0.0])
+    expected_loss = np.array([0.09289322, 0.13333333, 0.03019964, 0., 0.])
     assert_allclose(vec_loss, expected_loss)

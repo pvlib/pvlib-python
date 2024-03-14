@@ -387,9 +387,9 @@ def shaded_fraction1d(solar_zenith, solar_azimuth, surface_tilt,
     :math:`L`, the row-to-row pitch :math:`P`, and the shadow length :math:`z`
     as shown in the image below.
 
-    .. image:: /_images/FSLR_irrad_shade_loss_slope_terrain.png
+    .. image:: /_images/Anderson_Mikofski_2020_Fig9.png
        :alt: Cross-section of two arrays on a sloped terrain and the resulting
-             shade.
+             shade. Figure 9, [1]_
 
     The ratio of the shadow length to the pitch, :math:`z/P`, is given by the
     following relation where the ground coverage ratio (GCR) is :math:`L/P`:
@@ -408,9 +408,15 @@ def shaded_fraction1d(solar_zenith, solar_azimuth, surface_tilt,
 
     References
     ----------
-    .. [1] Mark A. Mikofski, "First Solar Irradiance Shade Losses on Sloped
+    .. [1] K. Anderson and M. Mikofski, 'Slope-Aware Backtracking for
+       Single-Axis Trackers', National Renewable Energy Lab. (NREL), Golden,
+       CO (United States);
+       NREL/TP-5K00-76626, Jul. 2020. :doi:`10.2172/1660126`.
+    .. [2] Mark A. Mikofski, "First Solar Irradiance Shade Losses on Sloped
        Terrain," PVPMC, 2023
     """
+    # Original implementation by Mikofski, updated to conform to codebase by
+    # Echedey. For nomenclature, please refer to [2].
     theta_g_rad = np.radians(cross_axis_slope)
     # projected solar zenith:
     # consider the angle the sun direct beam has on the vertical plane which

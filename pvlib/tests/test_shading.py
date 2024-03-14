@@ -244,7 +244,9 @@ def sf_premises_and_expected():
             # 30-deg isosceles, 60% gcr, no slope, 30-deg rows, psz 60-deg
             (60, 135, 30, 135, 0.6, 0, 0.6*np.sqrt(3)),
             # no shading, 40% gcr, shadow is only 0.565-m long < 1-m r2r P
-            (45, 180, 45, 180, 0.4, 0, 1)  # z := 1 means no shadow
+            (45, 180, 45, 180, 0.4, 0, 1),  # z := 1 means no shadow
+            # no shading, sun behind (~1st case, row azimuth+180, lower zenith)
+            (40, 180, 45, 90., 0.8, 0, 1),  # z := 1 means no shadow
         ))
     # append shaded fraction
     premises_and_results["shaded_fraction"] = 1 - 1/premises_and_results["z"]

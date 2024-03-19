@@ -1,0 +1,33 @@
+.. _whatsnew_01050:
+
+
+v0.10.5 (Anticipated June 2024)
+-------------------------------
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~

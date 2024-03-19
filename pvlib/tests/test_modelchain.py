@@ -268,7 +268,7 @@ def location():
 
 @pytest.fixture
 def weather():
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     weather = pd.DataFrame({'ghi': [500, 0], 'dni': [800, 0], 'dhi': [100, 0]},
                            index=times)
     return weather
@@ -350,7 +350,7 @@ def test_with_pvwatts(pvwatts_dc_pvwatts_ac_system, location, weather):
 
 def test_run_model_with_irradiance(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location)
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(irradiance).results.ac
@@ -417,7 +417,7 @@ def test_run_model_from_irradiance_arrays_no_loss(
         spectral_model='no_loss',
         losses_model='no_loss'
     )
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     mc_one.run_model(irradiance)
@@ -457,7 +457,7 @@ def test_run_model_from_irradiance_arrays_no_loss_input_type(
         spectral_model='no_loss',
         losses_model='no_loss'
     )
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     mc_one.run_model(irradiance)
@@ -487,7 +487,7 @@ def test_ModelChain_invalid_inverter_params_arrays(
 def test_prepare_inputs_multi_weather(
         sapm_dc_snl_ac_system_Array, location, input_type):
     times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
+                          end='20160101 1800-0700', freq='6h')
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1},
                            index=times)
@@ -502,7 +502,7 @@ def test_prepare_inputs_multi_weather(
 def test_prepare_inputs_albedo_in_weather(
         sapm_dc_snl_ac_system_Array, location, input_type):
     times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
+                          end='20160101 1800-0700', freq='6h')
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     weather = pd.DataFrame({'ghi': 1, 'dhi': 1, 'dni': 1, 'albedo': 0.5},
                            index=times)
@@ -564,14 +564,14 @@ def test_ModelChain_times_error_arrays(sapm_dc_snl_ac_system_Array, location):
     error_str = r"Input DataFrames must have same index\."
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     irradiance = {'ghi': [1, 2], 'dhi': [1, 2], 'dni': [1, 2]}
-    times_one = pd.date_range(start='1/1/2020', freq='6H', periods=2)
-    times_two = pd.date_range(start='1/1/2020 00:15', freq='6H', periods=2)
+    times_one = pd.date_range(start='1/1/2020', freq='6h', periods=2)
+    times_two = pd.date_range(start='1/1/2020 00:15', freq='6h', periods=2)
     weather_one = pd.DataFrame(irradiance, index=times_one)
     weather_two = pd.DataFrame(irradiance, index=times_two)
     with pytest.raises(ValueError, match=error_str):
         mc.prepare_inputs((weather_one, weather_two))
     # test with overlapping, but differently sized indices.
-    times_three = pd.date_range(start='1/1/2020', freq='6H', periods=3)
+    times_three = pd.date_range(start='1/1/2020', freq='6h', periods=3)
     irradiance_three = irradiance
     irradiance_three['ghi'].append(3)
     irradiance_three['dhi'].append(3)
@@ -588,7 +588,7 @@ def test_ModelChain_times_arrays(sapm_dc_snl_ac_system_Array, location):
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     irradiance_one = {'ghi': [1, 2], 'dhi': [1, 2], 'dni': [1, 2]}
     irradiance_two = {'ghi': [2, 1], 'dhi': [2, 1], 'dni': [2, 1]}
-    times = pd.date_range(start='1/1/2020', freq='6H', periods=2)
+    times = pd.date_range(start='1/1/2020', freq='6h', periods=2)
     weather_one = pd.DataFrame(irradiance_one, index=times)
     weather_two = pd.DataFrame(irradiance_two, index=times)
     mc.prepare_inputs((weather_one, weather_two))
@@ -617,7 +617,7 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
               'pvwatts': pvwatts_dc_pvwatts_ac_system_arrays}
     mc = ModelChain(system[ac_model], location, aoi_model='no_loss',
                     spectral_model='no_loss')
-    times = pd.date_range('20200101 1200-0700', periods=2, freq='2H')
+    times = pd.date_range('20200101 1200-0700', periods=2, freq='2h')
     weather_one = pd.DataFrame({'dni': [900, 800],
                                 'ghi': [600, 500],
                                 'dhi': [150, 100]},
@@ -634,7 +634,7 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
 def test_run_model_perez(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location,
                     transposition_model='perez')
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(irradiance).results.ac
@@ -648,7 +648,7 @@ def test_run_model_gueymard_perez(sapm_dc_snl_ac_system, location):
     mc = ModelChain(sapm_dc_snl_ac_system, location,
                     airmass_model='gueymard1993',
                     transposition_model='perez')
-    times = pd.date_range('20160101 1200-0700', periods=2, freq='6H')
+    times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
     ac = mc.run_model(irradiance).results.ac
@@ -812,7 +812,7 @@ def test_prepare_inputs_from_poa_arrays_different_indices(
     mc = ModelChain(sapm_dc_snl_ac_system_Array, location)
     poa = pd.concat([weather, total_irrad], axis=1)
     with pytest.raises(ValueError, match=error_str):
-        mc.prepare_inputs_from_poa((poa, poa.shift(periods=1, freq='6H')))
+        mc.prepare_inputs_from_poa((poa, poa.shift(periods=1, freq='6h')))
 
 
 def test_prepare_inputs_from_poa_arrays_missing_column(
@@ -1078,7 +1078,7 @@ def test_run_model_from_effective_irradiance_arrays_error(
     with pytest.raises(ValueError,
                        match=r"Input DataFrames must have same index\."):
         mc.run_model_from_effective_irradiance(
-            (data, data.shift(periods=1, freq='6H'))
+            (data, data.shift(periods=1, freq='6h'))
         )
 
 
@@ -1790,7 +1790,7 @@ def test_ModelChain_no_extra_kwargs(sapm_dc_snl_ac_system, location):
 def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
                             sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
+                          end='20160101 1800-0700', freq='6h')
     latitude = 32.2
     longitude = -111
     surface_tilt = 0
@@ -1812,7 +1812,7 @@ def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
 def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
                                        sapm_temperature_cs5p_220m):
     times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
+                          end='20160101 1800-0700', freq='6h')
     latitude = 32.2
     longitude = -111
     altitude = 700
@@ -1847,7 +1847,7 @@ def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
 def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
     """The DataFrame should not change if all columns are passed"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)
-    times = pd.date_range('2010-07-05 9:00:00', periods=2, freq='H')
+    times = pd.date_range('2010-07-05 9:00:00', periods=2, freq='h')
     i = pd.DataFrame(
         {'dni': [2, 3], 'dhi': [4, 6], 'ghi': [9, 5]}, index=times)
 
@@ -1864,7 +1864,7 @@ def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
 def test_complete_irradiance(sapm_dc_snl_ac_system, location, mocker):
     """Check calculations"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)
-    times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='H')
+    times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='h')
     i = pd.DataFrame({'dni': [49.756966, 62.153947],
                       'ghi': [372.103976116, 497.087579068],
                       'dhi': [356.543700, 465.44400]}, index=times)
@@ -1897,7 +1897,7 @@ def test_complete_irradiance_arrays(
         sapm_dc_snl_ac_system_same_arrays, location, input_type):
     """ModelChain.complete_irradiance can accept a tuple of weather
     DataFrames."""
-    times = pd.date_range(start='2020-01-01 0700-0700', periods=2, freq='H')
+    times = pd.date_range(start='2020-01-01 0700-0700', periods=2, freq='h')
     weather = pd.DataFrame({'dni': [2, 3],
                             'dhi': [4, 6],
                             'ghi': [9, 5]}, index=times)
@@ -1932,7 +1932,7 @@ def test_complete_irradiance_arrays(
 def test_complete_irradiance_arrays_wrong_length(
         sapm_dc_snl_ac_system_same_arrays, location, input_type):
     mc = ModelChain(sapm_dc_snl_ac_system_same_arrays, location)
-    times = pd.date_range(start='2020-01-01 0700-0700', periods=2, freq='H')
+    times = pd.date_range(start='2020-01-01 0700-0700', periods=2, freq='h')
     weather = pd.DataFrame({'dni': [2, 3],
                             'dhi': [4, 6],
                             'ghi': [9, 5]}, index=times)

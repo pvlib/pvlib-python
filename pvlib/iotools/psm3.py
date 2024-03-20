@@ -62,7 +62,7 @@ REQUEST_VARIABLE_MAP = {
 
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
-             attributes=ATTRIBUTES, leap_day=None, full_name=PVLIB_PYTHON,
+             attributes=ATTRIBUTES, leap_day=True, full_name=PVLIB_PYTHON,
              affiliation=PVLIB_PYTHON, map_variables=None, url=None,
              timeout=30):
     """
@@ -105,7 +105,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         for lists of available fields. Alternatively, pvlib names may also be
         used (e.g. 'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`.
         To retrieve all available fields, set ``attributes=[]``.
-    leap_day : boolean, default False
+    leap_day : boolean, default : True
         include leap day in the results. Only used for single-year requests
         (i.e., it is ignored for tmy/tgy/tdy requests).
     full_name : str, default 'pvlib python'
@@ -178,14 +178,6 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
 
     # convert pvlib names in attributes to psm3 convention
     attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
-
-    if (leap_day is None) and (not names.startswith('t')):
-        warnings.warn(
-            'The ``get_psm3`` function will default to leap_day=True '
-            'starting in pvlib 0.11.0. Specify leap_day=True '
-            'to enable this behavior now, or specify leap_day=False '
-            'to hide this warning.', pvlibDeprecationWarning)
-        leap_day = False
 
     # required query-string parameters for request to PSM3 API
     params = {

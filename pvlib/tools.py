@@ -402,20 +402,10 @@ def _get_sample_intervals(times, win_length):
     sky detection functions
     """
     deltas = np.diff(times.values) / np.timedelta64(1, '60s')
-
-    # determine if we can proceed
-    if times.inferred_freq and len(np.unique(deltas)) == 1:
-        sample_interval = times[1] - times[0]
-        sample_interval = sample_interval.seconds / 60  # in minutes
-        samples_per_window = int(win_length / sample_interval)
-        return sample_interval, samples_per_window
-    else:
-        message = (
-            'algorithm does not yet support unequal time intervals. consider '
-            'resampling your data and checking for gaps from missing '
-            'periods, leap days, etc.'
-        )
-        raise NotImplementedError(message)
+    vals, counts = np.unique(deltas, return_counts=True)
+    sample_interval = vals[np.argmax(counts)]
+    samples_per_window = int(win_length / sample_interval)
+    return sample_interval, samples_per_window
 
 
 def _degrees_to_index(degrees, coordinate):

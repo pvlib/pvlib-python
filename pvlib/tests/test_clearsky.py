@@ -8,16 +8,13 @@ from scipy.linalg import hankel
 
 import pytest
 from numpy.testing import assert_allclose
-from .conftest import assert_frame_equal, assert_series_equal
+from .conftest import assert_frame_equal, assert_series_equal, DATA_DIR
 
 from pvlib.location import Location
 from pvlib import clearsky
 from pvlib import solarposition
 from pvlib import atmosphere
 from pvlib import irradiance
-
-from .conftest import DATA_DIR
-
 
 def test_ineichen_series():
     times = pd.date_range(start='2014-06-24', end='2014-06-25', freq='3h',
@@ -656,21 +653,89 @@ def test_detect_clearsky_arrays(detect_clearsky_data):
     assert (clear_samples == expected['Clear or not'].values).all()
 
 
-def test_detect_clearsky_irregular_times(detect_clearsky_data):
+def test_detect_clearsky_missing_index1():
+    # Test for an isolated missing index
+    data_file = DATA_DIR / 'detect_clearsky_data_missing1.csv'
+    data = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    meas, cs, expected = data['GHI'], data['CS'], data['Clear or not']
+    clear_samples = clearsky.detect_clearsky(
+        meas, cs)
+    assert_series_equal(expected, clear_samples, check_dtype=False,
+                        check_names=False)
+
+
+def test_detect_clearsky_missing_index2():
+    # Test for a missing index followed by an overcast period
+    data_file = DATA_DIR / 'detect_clearsky_data_missing2.csv'
+    data = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    meas, cs, expected = data['GHI'], data['CS'], data['Clear or not']
+    clear_samples = clearsky.detect_clearsky(
+        meas, cs)
+    assert_series_equal(expected, clear_samples, check_dtype=False,
+                        check_names=False)
+
+
+def test_detect_clearsky_missing_index3():
+    # Test for 15 consecutive missing indices
+    data_file = DATA_DIR / 'detect_clearsky_data_missing3.csv'
+    data = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    meas, cs, expected = data['GHI'], data['CS'], data['Clear or not']
+    clear_samples = clearsky.detect_clearsky(
+        meas, cs)
+    assert_series_equal(expected, clear_samples, check_dtype=False,
+    check_names=False)
+
+def test_detect_clearsky_nans1():
+    # Test for 1 NaN value - should mark as NaN
+    data_file = DATA_DIR / 'detect_clearsky_data_nans1.csv'
+    data = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    meas, cs, expected = data['GHI'], data['CS'], data['Clear or not']
+    clear_samples = clearsky.detect_clearsky(
+        meas, cs)
+    assert_series_equal(expected, clear_samples, check_dtype=False,
+                        check_names=False)
+
+    
+def test_detect_clearsky_nans2():
+    # Test for 1 NaN value - should mark as NaN
+    data_file = DATA_DIR / 'detect_clearsky_data_nans2.csv'
+    data = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    meas, cs, expected = data['GHI'], data['CS'], data['Clear or not']
+    clear_samples = clearsky.detect_clearsky(
+        meas, cs)
+    assert_series_equal(expected, clear_samples, check_dtype=False,
+                        check_names=False)
+    
+def test_detect_clearsky_diff_index_lengths(detect_clearsky_data):
+    '''
+    Intended to test the following if/else clauses
+    
+    if not isinstance(clear_sky, pd.Series):
+        clear = pd.Series(clear_sky, index=times)
+    # This clause is designed to address cases where measured has missing time
+    # steps - if this is the case, clear should be set to have the same
+    # missing time intervals as measured. Not doing this may cause issues with
+    # arrays of different lengths when evaluating comparison criteria and
+    # when indexing the Hankel matrix to construct clear_samples
+    elif len(clear_sky.index) != len(times):
+        clear = pd.Series(clear_sky, index=times)
+    else:
+        clear = clear_sky
+    '''
     expected, cs = detect_clearsky_data
-    times = cs.index.values.copy()
-    times[0] += 10**9
-    times = pd.DatetimeIndex(times)
-    with pytest.raises(NotImplementedError):
-        clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values,
-                                 times, 10)
-
-
-def test_detect_clearsky_missing_index(detect_clearsky_data):
-    expected, cs = detect_clearsky_data
-    with pytest.raises(ValueError):
-        clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values)
-
+    expected.drop(index=expected.index[10], inplace=True)
+    clear_samples = clearsky.detect_clearsky(
+        expected['GHI'], cs['ghi'], times=expected.index,
+        window_length=10)
+    new_expected = np.array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 0.,
+                              0., 0., 0., 1., 1., 1., 1., 1., 1., 1., 1.,
+                              1., 1., 1., 0., 0., 0., 0.])
+    assert (clear_samples.values == new_expected).all()
 
 def test_detect_clearsky_not_enough_data(detect_clearsky_data):
     expected, cs = detect_clearsky_data
@@ -705,7 +770,7 @@ def test__line_length_windowed(detect_clearsky_helper_data):
     expected['line_length'] = sqt + sqt.shift(-1)
     result = clearsky._line_length_windowed(
         x, H, samples_per_window, sample_interval)
-    assert_series_equal(result, expected['line_length'])
+    assert_series_equal(result, expected['line_length'], check_dtype=False)
 
 
 def test__max_diff_windowed(detect_clearsky_helper_data):
@@ -714,7 +779,7 @@ def test__max_diff_windowed(detect_clearsky_helper_data):
     expected['max_diff'] = pd.Series(
         data=[np.nan, 3., 5., 7., 9., 11., np.nan], index=x.index)
     result = clearsky._max_diff_windowed(x, H, samples_per_window)
-    assert_series_equal(result, expected['max_diff'])
+    assert_series_equal(result, expected['max_diff'], check_dtype=False)
 
 
 def test__calc_stats(detect_clearsky_helper_data):
@@ -736,10 +801,11 @@ def test__calc_stats(detect_clearsky_helper_data):
     result = clearsky._calc_stats(
         x, samples_per_window, sample_interval, H)
     res_mean, res_max, res_slope_nstd, res_slope = result
-    assert_series_equal(res_mean, expected['mean'])
-    assert_series_equal(res_max, expected['max'])
-    assert_series_equal(res_slope_nstd, expected['slope_nstd'])
-    assert_series_equal(res_slope, expected['slope'])
+    assert_series_equal(res_mean, expected['mean'], check_dtype=False)
+    assert_series_equal(res_max, expected['max'], check_dtype=False)
+    assert_series_equal(res_slope_nstd, expected['slope_nstd'],
+                        check_dtype=False)
+    assert_series_equal(res_slope, expected['slope'], check_dtype=False)
 
 
 def test_bird():

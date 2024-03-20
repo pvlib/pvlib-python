@@ -1,9 +1,8 @@
 import pytest
-
 from pvlib import tools
 import numpy as np
 import pandas as pd
-
+from .conftest import DATA_DIR
 
 @pytest.mark.parametrize('keys, input_dict, expected', [
     (['a', 'b'], {'a': 1, 'b': 2, 'c': 3}, {'a': 1, 'b': 2}),
@@ -90,6 +89,15 @@ def test__golden_sect_DataFrame_nans():
                                         _obj_test_golden_sect)
     assert np.allclose(x, expected, atol=1e-8, equal_nan=True)
 
+
+def test_get_sample_intervals():
+    data_file = DATA_DIR / 'detect_clearsky_data_missing3.csv'
+    data = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    sample_interval, samples_per_window = tools._get_sample_intervals(
+        data.index, 10)
+    assert np.allclose(sample_interval, 1)
+    assert np.allclose(samples_per_window, 10)
 
 def test_degrees_to_index_1():
     """Test that _degrees_to_index raises an error when something other than

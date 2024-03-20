@@ -2404,7 +2404,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
     method : str, default 'lambertw'
         Determines the method used to calculate points on the IV curve. The
-        options are ``'lambertw'``, ``'newton'``, or ``'brentq'``.
+        options are ``'lambertw'``, ``'logwright'``, ``'newton'``, or
+        ``'brentq'``.
 
     Returns
     -------
@@ -2439,6 +2440,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     If the method is ``'lambertw'`` then the solution employed to solve the
     implicit diode equation utilizes the Lambert W function to obtain an
     explicit function of :math:`V=f(I)` and :math:`I=f(V)` as shown in [2]_.
+
+    If the method is ``'logwright'`` TODO
 
     If the method is ``'newton'`` then the root-finding Newton-Raphson method
     is used. It should be safe for well behaved IV-curves, but the ``'brentq'``
@@ -2481,8 +2484,8 @@ def singlediode(photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
-    if method.lower() == 'lambertw':
-        out = _singlediode._lambertw(*args, ivcurve_pnts)
+    if method.lower() in ['lambertw', 'logwright']:
+        out = _singlediode._lambertw(*args, ivcurve_pnts, how=method)
         points = out[:7]
         if ivcurve_pnts:
             ivcurve_i, ivcurve_v = out[7:]
@@ -2650,8 +2653,8 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
         0 < nNsVth
 
     method : str
-        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
-        ``'brentq'`` is limited to 1st quadrant only.
+        Method to use: ``'lambertw'``, ``'logwright'``, ``'newton'``,
+        or ``'brentq'``. *Note*: ``'brentq'`` is limited to 1st quadrant only.
 
     Returns
     -------
@@ -2667,6 +2670,8 @@ def v_from_i(current, photocurrent, saturation_current, resistance_series,
             resistance_series, resistance_shunt, nNsVth)
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_v_from_i(*args)
+    elif method.lower() == 'logwright':
+        return _singlediode._logwright_v_from_i(*args)
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
@@ -2732,8 +2737,8 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
         0 < nNsVth
 
     method : str
-        Method to use: ``'lambertw'``, ``'newton'``, or ``'brentq'``. *Note*:
-        ``'brentq'`` is limited to 1st quadrant only.
+        Method to use: ``'lambertw'``, ``'logwright'``, ``'newton'``,
+        or ``'brentq'``. *Note*: ``'brentq'`` is limited to 1st quadrant only.
 
     Returns
     -------
@@ -2749,6 +2754,8 @@ def i_from_v(voltage, photocurrent, saturation_current, resistance_series,
             resistance_series, resistance_shunt, nNsVth)
     if method.lower() == 'lambertw':
         return _singlediode._lambertw_i_from_v(*args)
+    elif method.lower() == 'logwright':
+        return _singlediode._logwright_i_from_v(*args)
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode

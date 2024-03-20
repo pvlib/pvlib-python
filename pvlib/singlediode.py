@@ -3,7 +3,7 @@ Low-level functions for solving the single diode equation.
 """
 
 import numpy as np
-from pvlib.tools import _golden_sect_DataFrame
+from pvlib.tools import _golden_sect_DataFrame, _logwrightomega
 
 from scipy.optimize import brentq, newton
 from scipy.special import lambertw
@@ -770,7 +770,16 @@ def _lambertw_i_from_v(voltage, photocurrent, saturation_current,
 
 
 def _lambertw(photocurrent, saturation_current, resistance_series,
-              resistance_shunt, nNsVth, ivcurve_pnts=None):
+              resistance_shunt, nNsVth, ivcurve_pnts=None, how='lambertw'):
+    if how == 'lambertw':
+        f_i_from_v = _lambertw_i_from_v
+        f_v_from_i = _lambertw_v_from_i
+    elif how == 'logwright':
+        f_i_from_v = _logwright_i_from_v
+        f_v_from_i = _logwright_v_from_i
+    else:
+        raise ValueError(f'invalid method: {how}')
+
     # collect args
     params = {'photocurrent': photocurrent,
               'saturation_current': saturation_current,
@@ -778,10 +787,10 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
               'resistance_shunt': resistance_shunt, 'nNsVth': nNsVth}
 
     # Compute short circuit current
-    i_sc = _lambertw_i_from_v(0., **params)
+    i_sc = f_i_from_v(0., **params)
 
     # Compute open circuit voltage
-    v_oc = _lambertw_v_from_i(0., **params)
+    v_oc = f_v_from_i(0., **params)
 
     # Set small elements <0 in v_oc to 0
     if isinstance(v_oc, np.ndarray):
@@ -792,15 +801,16 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
 
     # Find the voltage, v_mp, where the power is maximized.
     # Start the golden section search at v_oc * 1.14
-    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14, _pwr_optfcn)
+    p_mp, v_mp = _golden_sect_DataFrame(params, 0., v_oc * 1.14,
+                                        _make_pwr_optfcn(f_i_from_v))
 
     # Find Imp using Lambert W
-    i_mp = _lambertw_i_from_v(v_mp, **params)
+    i_mp = f_i_from_v(v_mp, **params)
 
     # Find Ix and Ixx using Lambert W
-    i_x = _lambertw_i_from_v(0.5 * v_oc, **params)
+    i_x = f_i_from_v(0.5 * v_oc, **params)
 
-    i_xx = _lambertw_i_from_v(0.5 * (v_oc + v_mp), **params)
+    i_xx = f_i_from_v(0.5 * (v_oc + v_mp), **params)
 
     out = (i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx)
 
@@ -809,21 +819,71 @@ def _lambertw(photocurrent, saturation_current, resistance_series,
         ivcurve_v = (np.asarray(v_oc)[..., np.newaxis] *
                      np.linspace(0, 1, ivcurve_pnts))
 
-        ivcurve_i = _lambertw_i_from_v(ivcurve_v.T, **params).T
+        ivcurve_i = f_i_from_v(ivcurve_v.T, **params).T
 
         out += (ivcurve_i, ivcurve_v)
 
     return out
 
 
-def _pwr_optfcn(df, loc):
+def _make_pwr_optfcn(i_from_v):
     '''
     Function to find power from ``i_from_v``.
     '''
+    def _pwr_optfcn(df, loc):
+        current = i_from_v(df[loc], df['photocurrent'],
+                           df['saturation_current'],
+                           df['resistance_series'],
+                           df['resistance_shunt'], df['nNsVth'])
+    
+        return current * df[loc]
+    return _pwr_optfcn
 
-    current = _lambertw_i_from_v(df[loc], df['photocurrent'],
-                                 df['saturation_current'],
-                                 df['resistance_series'],
-                                 df['resistance_shunt'], df['nNsVth'])
 
-    return current * df[loc]
+def _logwright_v_from_i(current, photocurrent, saturation_current,
+                        resistance_series, resistance_shunt, nNsVth):
+    # Record if inputs were all scalar
+    output_is_scalar = all(map(np.isscalar,
+                               (current, photocurrent, saturation_current,
+                                resistance_series, resistance_shunt, nNsVth)))
+
+    # Ensure that we are working with read-only views of numpy arrays
+    # Turns Series into arrays so that we don't have to worry about
+    #  multidimensional broadcasting failing
+    I, IL, I0, Rs, Rsh, a = \
+        np.broadcast_arrays(current, photocurrent, saturation_current,
+                            resistance_series, resistance_shunt, nNsVth)
+
+    log_I0_Rsh_a = np.log(I0 * Rsh / a)
+    x = log_I0_Rsh_a + Rsh * (-I + IL + I0) / a
+    V = a * (_logwrightomega(x) - log_I0_Rsh_a) - I * Rs
+
+    if output_is_scalar:
+        return V.item()
+    else:
+        return V
+
+
+def _logwright_i_from_v(voltage, photocurrent, saturation_current,
+                        resistance_series, resistance_shunt, nNsVth):
+    # Record if inputs were all scalar
+    output_is_scalar = all(map(np.isscalar,
+                               (voltage, photocurrent, saturation_current,
+                                resistance_series, resistance_shunt, nNsVth)))
+
+    # Ensure that we are working with read-only views of numpy arrays
+    # Turns Series into arrays so that we don't have to worry about
+    #  multidimensional broadcasting failing
+    V, IL, I0, Rs, Rsh, a = \
+        np.broadcast_arrays(voltage, photocurrent, saturation_current,
+                            resistance_series, resistance_shunt, nNsVth)
+
+    log_term = np.log(I0 * Rs * Rsh / (a * (Rs + Rsh)))
+    x = log_term + (Rsh / (Rs + Rsh)) * (Rs * (IL + I0) + V) / a
+    I = (a * (_logwrightomega(x) - log_term) - V) / Rs
+
+    if output_is_scalar:
+        return I.item()
+    else:
+        return I
+

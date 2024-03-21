@@ -231,7 +231,7 @@ df_inverter_measured = df_inverter_measured.tz_localize('US/Mountain',
                                                         ambiguous='NaT',
                                                         nonexistent='NaT')
 # convert to standard time to match the NSRDB-based simulation
-df_inverter_measred = df_inverter_measured.tz_convert('Etc/GMT+7')
+df_inverter_measured = df_inverter_measured.tz_convert('Etc/GMT+7')
 
 # %%
 

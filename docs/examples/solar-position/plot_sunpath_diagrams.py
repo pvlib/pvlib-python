@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 tz = 'Asia/Calcutta'
 lat, lon = 28.6, 77.2
 
-times = pd.date_range('2019-01-01 00:00:00', '2020-01-01', freq='H', tz=tz)
+times = pd.date_range('2023-01-01 00:00:00', '2024-01-01', inclusive='right', freq='h', tz=tz)
 solpos = solarposition.get_solarposition(times, lat, lon)
 # remove nighttime
 solpos = solpos.loc[solpos['apparent_elevation'] > 0, :]
@@ -103,8 +103,7 @@ import matplotlib.pyplot as plt
 
 tz = 'Asia/Calcutta'
 lat, lon = 28.6, 77.2
-times = pd.date_range('2019-01-01 00:00:00', '2020-01-01', closed='left',
-                      freq='H', tz=tz)
+times = pd.date_range('2023-01-01 00:00:00', '2024-01-01', inclusive='right', freq='h', tz=tz)
 
 solpos = solarposition.get_solarposition(times, lat, lon)
 # remove nighttime

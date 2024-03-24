@@ -17,7 +17,8 @@ testfile_radiation_verbose = DATA_DIR / 'cams_radiation_1min_verbose.csv'
 testfile_radiation_monthly = DATA_DIR / 'cams_radiation_monthly.csv'
 
 
-index_verbose = pd.date_range('2020-06-01 12', periods=4, freq='1T', tz='UTC')
+index_verbose = pd.date_range('2020-06-01 12', periods=4, freq='1min',
+                              tz='UTC')
 index_monthly = pd.date_range('2020-01-01', periods=4, freq='1M')
 
 

@@ -132,7 +132,7 @@ def true_tracking_angle_and_inputs_NREL():
         ),
     )
     timedata.index = pd.date_range(
-        "2019-01-01T08", "2019-01-01T17", freq="1H", tz=tzinfo
+        "2019-01-01T08", "2019-01-01T17", freq="1h", tz=tzinfo
     )
     timedata["Apparent Zenith"] = 90.0 - timedata["Apparent Elevation"]
     return (axis_tilt_angle, axis_azimuth_angle, timedata)

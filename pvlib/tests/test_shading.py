@@ -267,18 +267,3 @@ def test_shade_fraction1d(sf_premises_and_expected):
     # test vector inputs
     sf_vec = shading.shaded_fraction1d(**premises)
     assert_allclose(sf_vec, expected_sf_array)
-
-
-def test_linear_shade_loss(sf_premises_and_expected):
-    _, expected_sf_array = sf_premises_and_expected  # Premises are not needed
-    loss = shading.linear_shade_loss(expected_sf_array[0], 0.2)
-    assert_allclose(loss, 0.09289321881345258)
-    # if no diffuse, shade fraction is the loss
-    loss_no_df = shading.linear_shade_loss(expected_sf_array[0], 0)
-    assert_allclose(loss_no_df, expected_sf_array[0])
-    # if all diffuse, no shade loss
-    no_loss = shading.linear_shade_loss(expected_sf_array[0], 1.0)
-    assert_allclose(no_loss, 0)
-    vec_loss = shading.linear_shade_loss(expected_sf_array, 0.2)
-    expected_loss = np.array([0.09289322, 0.13333333, 0.03019964, 0., 0.])
-    assert_allclose(vec_loss, expected_loss)

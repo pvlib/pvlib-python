@@ -11,6 +11,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added :py:func:`pvlib.spectrum.spectral_responsivity_to_quantum_efficiency`
+  and :py:func:`pvlib.spectrum.quantum_efficiency_to_spectral_responsivity`
+  to convert quantum efficiencies into spectral responsivities and viceversa.
+  (:issue:`1963`, :pull:`TODO`)
 
 
 Bug fixes
@@ -31,3 +35,6 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Mark Campanelli (:ghuser:`markcampanelli`)

@@ -6,9 +6,18 @@ import pvlib
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
+import scipy.constants
 import os
 
 from warnings import warn
+
+
+_PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION = (
+    scipy.constants.speed_of_light
+    * scipy.constants.Planck
+    / scipy.constants.elementary_charge
+    * 1e9
+)
 
 
 def get_example_spectral_response(wavelength=None):
@@ -153,7 +162,7 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
     e_sun: pandas.DataFrame or pandas.Series
         One or more measured solar irradiance spectra in a pandas.DataFrame
-        having wavelength in nm as column index.  A single spectrum may be
+        having wavelength in nm as column index. A single spectrum may be
         be given as a pandas.Series having wavelength in nm as index.
         [(W/m^2)/nm]
 
@@ -570,3 +579,129 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     )
     modifier = f_AM + f_AOD + f_PW  # Eq 5
     return modifier
+
+
+def spectral_responsivity_to_quantum_efficiency(sr, wavelength=None):
+    """
+    Convert spectral responsivities to quantum efficiencies [1]_.
+    If ``wavelength`` is not provided, the spectral responsivity ``sr`` must be
+    a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
+    wavelengths in the index.
+
+    Provide wavelengths in nanometers :math:`[nm]`.
+
+    .. versionadded:: 0.10.5
+
+    Parameters
+    ----------
+    sr : numeric, pandas.Series or pandas.DataFrame
+        Spectral response.
+        Index must be the wavelength in nanometers :math:`nm`.
+
+    wavelength : numeric, optional
+        Points where spectral response is measured, in nanometers :math:`nm`.
+
+    Returns
+    -------
+    quantum_efficiency : numeric, same type as ``sr``
+        Quantum efficiency in the interval :math:`[0, 1]`.
+
+    Notes
+    -----
+    - If ``sr`` is of type ``pandas.Series`` or ``pandas.DataFrame``,
+      column names will remain unchanged in the returned object.
+    - If ``wavelength`` is provided it will be used independently of the
+      datatype of ``sr``.
+
+    References
+    ----------
+    .. [1] “Spectral Response,” PV Performance Modeling Collaborative (PVPMC).
+        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/
+        effective-irradiance/spectral-response/
+    .. [2] “Spectral Response | PVEducation,” www.pveducation.org.
+        https://www.pveducation.org/pvcdrom/solar-cell-operation/
+        spectral-response
+
+    See Also
+    --------
+    pvlib.spectrum.quantum_efficiency_to_spectral_responsivity
+    """
+    if wavelength is None:
+        if hasattr(sr, "index"):  # true for pandas objects
+            # use reference to index values instead of index alone so
+            # sr / wavelength returns a series with the same name
+            wavelength = sr.index.array
+        else:
+            raise TypeError(
+                "'sr' must have an '.index' attribute"
+                + " or 'wavelength' must be provided"
+            )
+    quantum_efficiency = (
+        sr
+        / wavelength
+        * _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
+    )
+    return quantum_efficiency
+
+
+def quantum_efficiency_to_spectral_responsivity(qe, wavelength=None):
+    """
+    Convert quantum efficiencies to spectral responsivities [1]_.
+    If ``wavelength`` is not provided, the quantum efficiency ``qe`` must be
+    a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
+    wavelengths in the index.
+
+    Provide wavelengths in nanometers :math:`[nm]`.
+
+    .. versionadded:: 0.10.5
+
+    Parameters
+    ----------
+    qe : numeric, pandas.Series or pandas.DataFrame
+        Quantum efficiency.
+        If pandas subtype, index must be the wavelength in nanometers.
+
+    wavelength : numeric, optional
+        Points where quantum efficiency is measured, in nanometers :math:`nm`.
+
+    Returns
+    -------
+    spectral_response : numeric, same type as ``qe``
+        Spectral response in :math:`A/W`.
+
+    Notes
+    -----
+    - If ``qe`` is of type ``pandas.Series`` or ``pandas.DataFrame``,
+      column names will remain unchanged in the returned object.
+    - If ``wavelength`` is provided it will be used independently of the
+      datatype of ``qe``.
+
+    References
+    ----------
+    .. [1] “Spectral Response,” PV Performance Modeling Collaborative (PVPMC).
+        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/
+        effective-irradiance/spectral-response/
+    .. [2] “Spectral Response | PVEducation,” www.pveducation.org.
+        https://www.pveducation.org/pvcdrom/solar-cell-operation/
+        spectral-response
+
+    See Also
+    --------
+    pvlib.spectrum.spectral_responsivity_to_quantum_efficiency
+    """
+    if wavelength is None:
+        if hasattr(qe, "index"):  # true for pandas objects
+            # use reference to index values instead of index alone so
+            # sr / wavelength returns a series with the same name
+            wavelength = qe.index.array
+        else:
+            raise TypeError(
+                "'qe' must have an '.index' attribute"
+                + " or 'wavelength' must be provided"
+            )
+    spectral_responsivity = (
+        qe
+        * wavelength
+        / _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
+    )
+    return spectral_responsivity

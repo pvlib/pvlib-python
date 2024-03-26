@@ -8,6 +8,7 @@ v0.10.4 (March 19, 2024)
 Enhancements
 ~~~~~~~~~~~~
 * Added the Huld PV model used by PVGIS (:pull:`1940`)
+* Added a method to fit the Huld PV model (:pull:`1979`)
 * Add :py:func:`~pvlib.iotools.get_solargis` for retrieving Solargis
   irradiance data. (:pull:`1969`)
 * Added function :py:func:`pvlib.shading.projected_solar_zenith_angle`,

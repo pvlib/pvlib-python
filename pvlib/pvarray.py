@@ -269,7 +269,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
         Power of the modules at reference conditions 1000 :math:`W/m^2`
         and :math:`25^{\circ}C`. [W]
     k : tuple, optional
-        Empirical coefficients used in the power model. Length 6. If ``k`` is
+        Empirical coefficients used in the Huld model. Length 6. If ``k`` is
         not provided, ``cell_type`` must be specified.
     cell_type : str, optional
         If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
@@ -348,3 +348,68 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
                     k[2] * tprime + k[3] * tprime * logGprime +
                     k[4] * tprime * logGprime**2 + k[5] * tprime**2)
     return pdc
+
+
+def _build_iec61853():
+    ee = np.array([100, 100, 200, 200, 400, 400, 400, 600, 600, 600, 600,
+                   800, 800, 800, 800, 1000, 1000, 1000, 1000, 1100, 1100,
+                   1100]).T
+    tc = np.array([15, 25, 15, 25, 15, 25, 50, 15, 25, 50, 75,
+                   15, 25, 50, 75, 15, 25, 50, 75, 25, 50, 75]).T
+    return ee, tc
+
+
+def fit_huld(effective_irradiance, temp_mod, pdc):
+    r'''
+    Fit the Huld model to the input data.
+
+    Parameters
+    ----------
+    effective_irradiance : numeric
+        The irradiance that is converted to photocurrent. [:math:`W/m^2`]
+    temp_mod: numeric
+        Module back-surface temperature. [C]
+    pdc: numeric
+        DC power at ``effectuve_irradiance`` and ``temp_mod``. [W]
+
+    Returns
+    -------
+    pdc0: numeric
+        Power of the modules at reference conditions 1000 :math:`W/m^2`
+        and :math:`25^{\circ}C`. [W]
+    k : tuple
+        Empirical coefficients used in the Huld model. Length 6.
+
+    Notes
+    -----
+    Requires ``statsmodels``.
+
+    See Also
+    --------
+    pvlib.pvarray.huld
+    '''
+
+    try:
+        import statsmodels.api as sm
+    except ImportError:
+        raise ImportError(
+            'fit_huld requires statsmodels')
+
+    gprime = effective_irradiance / 1000
+    tprime = temp_mod - 25
+    # accomodate gprime<=0
+    with np.errstate(divide='ignore'):
+        logGprime = np.log(gprime, out=np.zeros_like(gprime),
+                           where=np.array(gprime > 0))
+        Y = np.divide(pdc, gprime, out=np.zeros_like(gprime),
+                      where=np.array(gprime > 0))
+
+    X = np.stack((logGprime, logGprime**2, tprime, tprime*logGprime,
+                  tprime*logGprime**2, tprime**2), axis=0).T
+    X = sm.add_constant(X)
+
+    rlm_model = sm.RLM(Y, X)
+    rlm_result = rlm_model.fit()
+    pdc0 = rlm_result.params[0]
+    k = rlm_result.params[1:]
+    return pdc0, k

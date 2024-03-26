@@ -21,23 +21,15 @@ def nocompile(*args, **kwargs):
 
 if os.getenv('PVLIB_USE_NUMBA', '0') != '0':
     try:
-        from numba import jit, __version__
+        from numba import jit
     except ImportError:
         warnings.warn('Could not import numba, falling back to numpy ' +
                       'calculation')
         jcompile = nocompile
         USE_NUMBA = False
     else:
-        major, minor = __version__.split('.')[:2]
-        if int(major + minor) >= 17:
-            # need at least numba >= 0.17.0
-            jcompile = jit
-            USE_NUMBA = True
-        else:
-            warnings.warn('Numba version must be >= 0.17.0, falling back to ' +
-                          'numpy')
-            jcompile = nocompile
-            USE_NUMBA = False
+        jcompile = jit
+        USE_NUMBA = True
 else:
     jcompile = nocompile
     USE_NUMBA = False

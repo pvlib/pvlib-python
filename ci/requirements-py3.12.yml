@@ -7,9 +7,9 @@ dependencies:
     - cython
     - ephem
     - h5py
-    # - numba  # not available for 3.12 as of 2023-12-12
-    - numpy >= 1.16.0
-    - pandas >= 0.25.0
+    - numba
+    - numpy >= 1.17.3
+    - pandas >= 1.3.0
     - pip
     - pytest
     - pytest-cov
@@ -23,6 +23,6 @@ dependencies:
     - requests
     - scipy >= 1.5.0
     - statsmodels
-    # - pip:
-        # - nrel-pysam>=2.0  # not available for 3.12 as of 2023-12-12
+    - pip:
+        - nrel-pysam>=2.0
         # - solarfactors  # required shapely<2 isn't available for 3.12

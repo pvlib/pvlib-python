@@ -31,9 +31,28 @@ solpos = solpos.loc[solpos['apparent_elevation'] > 0, :]
 
 ax = plt.subplot(1, 1, 1, projection='polar')
 # draw the analemma loops
-points = ax.scatter(np.radians(solpos.azimuth), solpos.apparent_zenith,
-                    s=2, label=None, c=solpos.index.dayofyear)
-ax.figure.colorbar(points)
+points = ax.scatter(
+    np.radians(solpos.azimuth), 
+    solpos.apparent_zenith, 
+    s=2, 
+    label=None, 
+    c=solpos.index.dayofyear
+)
+# Create colorbar
+cbar = ax.figure.colorbar(points)
+# Define ticks for the middle of each month
+month_ticks = [
+    pd.Timestamp(f'2023-{month}-15')
+    .dayofyear for month in range(1, 13)
+]
+# Set colorbar ticks
+cbar.set_ticks(month_ticks) 
+# Set colorbar tick labels to short month names
+month_names = [
+    pd.Timestamp(f'2023-{month}-15')
+    .strftime('%b') for month in range(1, 13)
+]
+cbar.set_ticklabels(month_names)
 
 # draw hour labels
 for hour in np.unique(solpos.index.hour):
@@ -111,9 +130,28 @@ solpos = solarposition.get_solarposition(times, lat, lon)
 solpos = solpos.loc[solpos['apparent_elevation'] > 0, :]
 
 fig, ax = plt.subplots()
-points = ax.scatter(solpos.azimuth, solpos.apparent_elevation, s=2,
-                    c=solpos.index.dayofyear, label=None)
-fig.colorbar(points)
+points = ax.scatter(
+    np.radians(solpos.azimuth), 
+    solpos.apparent_zenith, 
+    s=2, 
+    label=None, 
+    c=solpos.index.dayofyear
+)
+# Create colorbar
+cbar = ax.figure.colorbar(points)
+# Define ticks for the middle of each month
+month_ticks = [
+    pd.Timestamp(f'2023-{month}-15')
+    .dayofyear for month in range(1, 13)
+]
+# Set colorbar ticks
+cbar.set_ticks(month_ticks)
+# Set colorbar tick labels to short month names
+month_names = [
+    pd.Timestamp(f'2023-{month}-15')
+    .strftime('%b') for month in range(1, 13)
+]
+cbar.set_ticklabels(month_names)
 
 for hour in np.unique(solpos.index.hour):
     # choose label position by the largest elevation for each hour

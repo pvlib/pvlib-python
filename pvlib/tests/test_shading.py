@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 
 from pandas.testing import assert_series_equal
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_approx_equal
 import pytest
 from datetime import timezone, timedelta
 
 from pvlib import shading
+from pvlib.tools import atand
 
 
 @pytest.fixture
@@ -226,44 +227,87 @@ def test_projected_solar_zenith_angle_datatypes(
 
 
 @pytest.fixture
-def sf_premises_and_expected():
-    """Data comprised of solar position, rows orientations, ground coverage
-    ratios and terrain slopes with respective shade fractions (sf).
-    Returns a 2-tuple with the premises to be used directly in
-    shaded_fraction1d(...) in the first element and the expected shaded
-    fractions on the second element"""
-    # shaded_fraction1d's args order and append shadow depth, z
-    premises_and_results = pd.DataFrame(
-        columns=["solar_zenith", "solar_azimuth", "surface_tilt",
-                 "surface_azimuth", "gcr", "cross_axis_slope", "z"],
+def sf1d_premises_and_expected():
+    """Data comprised of solar position, rows parameters and terrain slope
+    with respective shade fractions (sf). Returns a 2-tuple with the premises
+    to be used directly in shaded_fraction1d(...) in the first element and
+    the expected shaded fractions in the second element.
+    See [1] in shaded_fraction1d()
+    Test data sourced from http://doi.org/10.5281/zenodo.10513987
+    """
+    test_data = pd.DataFrame(
+        columns=["x_L", "z_L", "theta_L", "x_R", "z_R", "theta_R", "z_0", "l",
+                 "theta_s", "f_s"],
         data=(
-            # trivial case, 80% gcr, no slope, rows & psz at 45-deg
-            (45, 90., 45, 90., 0.8, 0, 0.8*np.sqrt(2)),
-            # another trivial case, 60% gcr, no slope, rows & psz at 60-deg
-            (60, 120, 60, 120, 0.6, 0, 2*0.6),
-            # 30-deg isosceles, 60% gcr, no slope, 30-deg rows, psz 60-deg
-            (60, 135, 30, 135, 0.6, 0, 0.6*np.sqrt(3)),
-            # no shading, 40% gcr, shadow is only 0.565-m long < 1-m r2r P
-            (45, 180, 45, 180, 0.4, 0, 1),  # z := 1 means no shadow
-            # no shading, sun behind (~1st case, row azimuth+180, lower zenith)
-            (40, 180, 45, 90., 0.8, 0, 1),  # z := 1 means no shadow
-        ))
-    # append shaded fraction
-    premises_and_results["shaded_fraction"] = 1 - 1/premises_and_results["z"]
+            (1, 0.2,  50, 0,   0,  25,    0, 0.5,  80, 1),
+            (1, 0.1,  50, 0,   0,  25, 0.05, 0.5,  80, 0.937191),
+            (1,   0,  50, 0, 0.1,  25,    0, 0.5,  80, 0.30605),
+            (1,   0,  50, 0, 0.2,  25,    0, 0.5,  80, 0),
+            (1, 0.2, -25, 0,   0, -50,    0, 0.5, -80, 0),
+            (1, 0.1, -25, 0,   0, -50,    0, 0.5, -80, 0.30605),
+            (1,   0, -25, 0, 0.1, -50,  0.1, 0.5, -80, 0.881549),
+            (1,   0, -25, 0, 0.2, -50,    0, 0.5, -80, 1),
+            (1, 0.2,   5, 0,   0,  25, 0.05, 0.5,  80, 0.832499),
+            (1, 0.2, -25, 0,   0,  25, 0.05, 0.5,  80, 0.832499),
+            (1, 0.2,   5, 0,   0, -45, 0.05, 0.5,  80, 0.832499),
+            (1, 0.2, -25, 0,   0, -45, 0.05, 0.5,  80, 0.832499),
+            (1,   0, -25, 0, 0.2,  25, 0.05, 0.5, -80, 0.832499),
+            (1,   0, -25, 0, 0.2,  -5, 0.05, 0.5, -80, 0.832499),
+            (1,   0,  45, 0, 0.2,  25, 0.05, 0.5, -80, 0.832499),
+            (1,   0,  45, 0, 0.2,  -5, 0.05, 0.5, -80, 0.832499),
+        ),
+    )  # fmt: skip
+
+    test_data["cross_axis_slope"] = atand(
+        (test_data["z_R"] - test_data["z_L"])
+        / (test_data["x_L"] - test_data["x_R"])
+    )
+    test_data["row_pitch"] = test_data["x_L"] - test_data["x_R"]
+    # switch Left/Right trackers if needed to make the right one the shaded
+    where_switch = test_data["theta_s"] >= 0
+    test_data["theta_L"], test_data["theta_R"] = (
+        np.where(
+            where_switch,
+            test_data["theta_L"],
+            test_data["theta_R"],
+        ),
+        np.where(
+            where_switch,
+            test_data["theta_R"],
+            test_data["theta_L"],
+        ),
+    )
+    test_data.rename(
+        columns={
+            "theta_L": "shading_tracker_tilt",
+            "theta_R": "shaded_tracker_tilt",
+            "z_0": "surface_to_axis_offset",
+            "l": "collector_width",
+            "theta_s": "solar_zenith",  # for the projected solar zenith angle
+            "f_s": "shaded_fraction",
+        },
+        inplace=True,
+    )
+    test_data.drop(columns=["x_L", "z_L", "x_R", "z_R"], inplace=True)
+    # for the projected solar zenith angle
+    # this returns the same psz angle as test_data["solar_zenith"]
+    test_data["solar_azimuth"], test_data["trackers_axis_azimuth"] = 180, 90
+
     # return 1st: premises dataframe first and 2nd: shaded fraction series
-    return (premises_and_results.drop(columns=["z", "shaded_fraction"]),
-            premises_and_results["shaded_fraction"])
+    return (test_data.drop(columns=["shaded_fraction"]),
+            test_data["shaded_fraction"])
 
 
-def test_shade_fraction1d(sf_premises_and_expected):
+def test_shaded_fraction1d(sf1d_premises_and_expected):
     """Tests shaded_fraction1d"""
     # unwrap sf_premises_and_expected values premises and expected results
-    premises, expected_sf_array = sf_premises_and_expected
+    premises, expected_sf_array = sf1d_premises_and_expected
+    premises.to_csv("C:/Users/Yo/Downloads/hola.csv")
     # test scalar input
     expected_result = expected_sf_array.iloc[0]
     sf = shading.shaded_fraction1d(**premises.iloc[0])
-    assert_allclose(sf, expected_result)
+    assert_approx_equal(sf, expected_result, )
 
     # test vector inputs
     sf_vec = shading.shaded_fraction1d(**premises)
-    assert_allclose(sf_vec, expected_sf_array)
+    assert_allclose(sf_vec, expected_sf_array, atol=1e-6)

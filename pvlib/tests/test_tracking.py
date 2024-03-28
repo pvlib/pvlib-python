@@ -12,7 +12,19 @@ from pvlib._deprecation import pvlibDeprecationWarning
 
 SINGLEAXIS_COL_ORDER = ['tracker_theta', 'aoi',
                         'surface_azimuth', 'surface_tilt']
+def test_rotation_to_orientation():
+    tracker_theta = np.array([-45, 0, 45])
+    axis_tilt = 10
+    axis_azimuth = 180
+    max_angle = 90
+    expected_surface_tilt = np.array([45, 10, 45])
+    expected_surface_azimuth = np.array([270, 180, 90])
 
+    orientation = tracking.rotation_to_orientation(
+        tracker_theta, axis_tilt, axis_azimuth, max_angle)
+
+    assert_allclose(orientation['surface_tilt'], expected_surface_tilt)
+    assert_allclose(orientation['surface_azimuth'], expected_surface_azimuth)
 
 def test_solar_noon():
     index = pd.date_range(start='20180701T1200', freq='1s', periods=1)
@@ -134,7 +146,20 @@ def test_azimuth_north_south():
 
     assert_frame_equal(expect, tracker_data)
 
-
+def test_singleaxis_aoi_gh1221():
+    # vertical tracker
+    loc = pvlib.location.Location(40.1134, -88.3695)
+    dr = pd.date_range(
+        start='02-Jun-1998 00:00:00', end='02-Jun-1998 23:55:00', freq='5T',
+        tz='Etc/GMT+6')
+    sp = loc.get_solarposition(dr)
+    tr = pvlib.tracking.singleaxis(
+        sp['apparent_zenith'], sp['azimuth'], axis_tilt=90, axis_azimuth=180,
+        max_angle=0.001, backtrack=False)
+    fixed = pvlib.irradiance.aoi(90, 180, sp['apparent_zenith'], sp['azimuth'])
+    fixed[np.isnan(tr['aoi'])] = np.nan
+    assert np.allclose(tr['aoi'], fixed, equal_nan=True)
+  
 def test_max_angle():
     apparent_zenith = pd.Series([60])
     apparent_azimuth = pd.Series([90])

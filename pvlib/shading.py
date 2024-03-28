@@ -342,3 +342,140 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     # Eq. (5); angle between sun's beam and surface
     theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))
     return theta_T
+
+
+def shaded_fraction1d(
+    solar_zenith,
+    solar_azimuth,
+    trackers_axis_azimuth,
+    shaded_tracker_tilt,
+    *,
+    collector_width,
+    row_pitch,
+    surface_to_axis_offset=0,
+    cross_axis_slope=0,
+    shading_tracker_tilt=None,
+):
+    r"""
+    Shaded fraction in the vertical dimension of tilted rows.
+
+    If ``shading_tracker_tilt`` isn't provided, assumes both the shaded
+    row and the one blocking the direct beam
+    share the same tilt and azimuth values.
+
+    If only the GCR is known, feed GCR into ``trackers_vertical_length`` and
+    specify ``trackers_row_pitch=1``.
+
+    .. versionadded:: TODO
+
+    Parameters
+    ----------
+    solar_zenith : numeric
+        Solar position zenith, in degrees.
+    solar_azimuth : numeric
+        Solar position azimuth, in degrees.
+    trackers_axis_azimuth : numeric
+        In degrees. North=0º, South=180º, East=90º, West=270º.
+    shaded_tracker_tilt : numeric
+        Tilt of the tracker receiving the shade in degrees.
+    collector_width : numeric
+        Vertical length of a tilted tracker. The returned ``shaded fraction``
+        is the ratio of the shadow over this value.
+    row_pitch : numeric
+        Axis-to-axis horizontal spacing of the trackers.
+    surface_to_axis_offset : numeric, default 0
+        Distance between the rotating axis and the collector surface.
+    cross_axis_slope : numeric, default 0
+        Angle of the plane containing the rows' axes from
+        horizontal. In degrees.
+    shading_tracker_tilt : numeric, optional
+        Tilt of the tracker casting the shadow.
+
+    Returns
+    -------
+    shaded_fraction : numeric
+        The fraction of the collector width shaded by an adjacent row. A
+        value of 1 is completely shaded and zero is no shade.
+
+    Notes
+    -----
+    All length parameters must have the same units to produce a reasonable
+    result.
+
+    Parameters are defined as follow:
+
+    .. figure:: Anderson_Jensen_2024_Fig3.png
+        :alt: Diagram showing the two trackers and the parameters of the model.
+
+        +------------------+----------------------------+---------------------+
+        | Symbol           | Parameter                  | Units               |
+        +==================+============================+=====================+
+        | :math:`\theta_1` | ``shading_tracker_tilt``   |                     |
+        +------------------+----------------------------+                     |
+        | :math:`\theta_2` | ``shaded_tracker_tilt``    | Degrees             |
+        +------------------+----------------------------+ :math:`^{\circ}`    |
+        | :math:`\beta_c`  | ``cross_axis_slope``       |                     |
+        +------------------+----------------------------+---------------------+
+        | :math:`p`        | ``row_pitch``              |                     |
+        +------------------+----------------------------+ Any consistent      |
+        | :math:`l`        | ``collector_width``        | length unit.        |
+        +------------------+----------------------------+ E.g. :math:`m` for  |
+        | :math:`z_0`      | ``surface_to_axis_offset`` | all parameters.     |
+        +------------------+----------------------------+---------------------+
+        | :math:`f_s`      | Return value               | Dimensionless       |
+        +------------------+----------------------------+---------------------+
+        Figure 3 of [1]_.
+
+    See also
+    --------
+    pvlib.tracking.projected_solar_zenith_angle
+
+    References
+    ----------
+    .. [1] TODO
+    """
+    # For nomenclature you may refer to [1].
+
+    # tilt of the tracker casting the shadow defaults to shaded tracker tilt
+    if shading_tracker_tilt is None:
+        shading_tracker_tilt = shaded_tracker_tilt
+
+    # projected solar zenith:
+    # consider the angle the sun direct beam has on the vertical plane which
+    # contains the row's normal vector, with respect to a horizontal line
+    projected_solar_zenith = projected_solar_zenith_angle(
+        solar_zenith,
+        solar_azimuth,
+        0,  # no rotation from the horizontal plane
+        # the vector that defines the projection plane for prior conditions
+        trackers_axis_azimuth,
+    )
+    
+    # calculate repeated elements 
+    thetas_1_S_diff = shading_tracker_tilt - projected_solar_zenith
+    thetas_2_S_diff = shaded_tracker_tilt - projected_solar_zenith
+    thetaS_tilt_diff = projected_solar_zenith - cross_axis_slope
+
+    cos_theta_2_S_diff_abs = np.abs(cosd(thetas_2_S_diff))
+
+    # Eq. (12) of [1]
+    t_asterisk = (
+        0.5
+        + np.abs(cosd(thetas_1_S_diff)) / cos_theta_2_S_diff_abs / 2
+        + (
+            np.sign(projected_solar_zenith)
+            * surface_to_axis_offset
+            / collector_width
+            / cos_theta_2_S_diff_abs
+            * (sind(thetas_2_S_diff) - sind(thetas_1_S_diff))
+        )
+        - (
+            row_pitch
+            / collector_width
+            * cosd(thetaS_tilt_diff)
+            / cos_theta_2_S_diff_abs
+            / cosd(cross_axis_slope)
+        )
+    )
+
+    return np.clip(t_asterisk, 0, 1)

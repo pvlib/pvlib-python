@@ -1,9 +1,265 @@
 import numpy as np
 import pandas as pd
 
-from pvlib.tools import cosd, sind, tand, acosd, asind
-from pvlib import irradiance
-from pvlib import shading
+from pvlib.tools import cosd, sind, tand
+from pvlib.pvsystem import (
+    PVSystem, Array, SingleAxisTrackerMount, _unwrap_single_value
+)
+from pvlib import irradiance, atmosphere
+from pvlib._deprecation import deprecated
+
+
+@deprecated('0.9.0', alternative='PVSystem with SingleAxisTrackerMount')
+class SingleAxisTracker(PVSystem):
+    """
+    A class for single-axis trackers that inherits the PV modeling methods from
+    :py:class:`~pvlib.pvsystem.PVSystem`. For details on calculating tracker
+    rotation see :py:func:`pvlib.tracking.singleaxis`.
+
+    Parameters
+    ----------
+    axis_tilt : float, default 0
+        The tilt of the axis of rotation (i.e, the y-axis defined by
+        axis_azimuth) with respect to horizontal, in decimal degrees.
+
+    axis_azimuth : float, default 0
+        A value denoting the compass direction along which the axis of
+        rotation lies. Measured in decimal degrees east of north.
+
+    max_angle : float, default 90
+        A value denoting the maximum rotation angle, in decimal degrees,
+        of the one-axis tracker from its horizontal position (horizontal
+        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
+        to rotate to a vertical position to point the panel towards a
+        horizon. max_angle of 180 degrees allows for full rotation.
+
+    backtrack : bool, default True
+        Controls whether the tracker has the capability to "backtrack"
+        to avoid row-to-row shading. False denotes no backtrack
+        capability. True denotes backtrack capability.
+
+    gcr : float, default 2.0/7.0
+        A value denoting the ground coverage ratio of a tracker system
+        which utilizes backtracking; i.e. the ratio between the PV array
+        surface area to total ground area. A tracker system with modules
+        2 meters wide, centered on the tracking axis, with 6 meters
+        between the tracking axes has a gcr of 2/6=0.333. If gcr is not
+        provided, a gcr of 2/7 is default. gcr must be <=1.
+
+    cross_axis_tilt : float, default 0.0
+        The angle, relative to horizontal, of the line formed by the
+        intersection between the slope containing the tracker axes and a plane
+        perpendicular to the tracker axes. Cross-axis tilt should be specified
+        using a right-handed convention. For example, trackers with axis
+        azimuth of 180 degrees (heading south) will have a negative cross-axis
+        tilt if the tracker axes plane slopes down to the east and positive
+        cross-axis tilt if the tracker axes plane slopes up to the east. Use
+        :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
+        `cross_axis_tilt`. [degrees]
+
+    **kwargs
+        Passed to :py:class:`~pvlib.pvsystem.PVSystem`. If the `arrays`
+        parameter is specified it must have only a single Array. Furthermore
+        if a :py:class:`~pvlib.pvsystem.Array` is provided it must have
+        ``surface_tilt`` and ``surface_azimuth`` equal to None.
+
+    Raises
+    ------
+    ValueError
+        If more than one Array is specified.
+    ValueError
+        If an Array is provided with a surface tilt or azimuth not None.
+
+    See also
+    --------
+    pvlib.tracking.singleaxis
+    pvlib.tracking.calc_axis_tilt
+    pvlib.tracking.calc_cross_axis_tilt
+    """
+
+    def __init__(self, axis_tilt=0, axis_azimuth=0, max_angle=90,
+                 backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0.0, **kwargs):
+
+        mount_kwargs = {
+            k: kwargs.pop(k) for k in ['racking_model', 'module_height']
+            if k in kwargs
+        }
+        mount = SingleAxisTrackerMount(axis_tilt, axis_azimuth, max_angle,
+                                       backtrack, gcr, cross_axis_tilt,
+                                       **mount_kwargs)
+
+        array_defaults = {
+            'albedo': None, 'surface_type': None, 'module': None,
+            'module_type': None, 'module_parameters': None,
+            'temperature_model_parameters': None,
+            'modules_per_string': 1,
+        }
+        array_kwargs = {
+            key: kwargs.get(key, array_defaults[key]) for key in array_defaults
+        }
+        # strings/strings_per_inverter is a special case
+        array_kwargs['strings'] = kwargs.get('strings_per_inverter', 1)
+
+        array = Array(mount=mount, **array_kwargs)
+        pass_through_kwargs = {  # other args to pass to PVSystem()
+            k: v for k, v in kwargs.items() if k not in array_defaults
+        }
+        # leave these in case someone is using them
+        self.axis_tilt = axis_tilt
+        self.axis_azimuth = axis_azimuth
+        self.max_angle = max_angle
+        self.backtrack = backtrack
+        self.gcr = gcr
+        self.cross_axis_tilt = cross_axis_tilt
+
+        pass_through_kwargs['surface_tilt'] = None
+        pass_through_kwargs['surface_azimuth'] = None
+
+        super().__init__(arrays=[array], **pass_through_kwargs)
+
+    def __repr__(self):
+        attrs = ['axis_tilt', 'axis_azimuth', 'max_angle', 'backtrack', 'gcr',
+                 'cross_axis_tilt']
+        sat_repr = ('SingleAxisTracker:\n  ' + '\n  '.join(
+            f'{attr}: {getattr(self, attr)}' for attr in attrs))
+        # get the parent PVSystem info
+        pvsystem_repr = super().__repr__()
+        # remove the first line (contains 'PVSystem: \n')
+        pvsystem_repr = '\n'.join(pvsystem_repr.split('\n')[1:])
+        return sat_repr + '\n' + pvsystem_repr
+
+    def singleaxis(self, apparent_zenith, apparent_azimuth):
+        """
+        Get tracking data. See :py:func:`pvlib.tracking.singleaxis` more
+        detail.
+
+        Parameters
+        ----------
+        apparent_zenith : float, 1d array, or Series
+            Solar apparent zenith angles in decimal degrees.
+
+        apparent_azimuth : float, 1d array, or Series
+            Solar apparent azimuth angles in decimal degrees.
+
+        Returns
+        -------
+        tracking data
+        """
+        tracking_data = singleaxis(apparent_zenith, apparent_azimuth,
+                                   self.axis_tilt, self.axis_azimuth,
+                                   self.max_angle, self.backtrack,
+                                   self.gcr, self.cross_axis_tilt)
+
+        return tracking_data
+
+    def get_aoi(self, surface_tilt, surface_azimuth, solar_zenith,
+                solar_azimuth):
+        """Get the angle of incidence on the system.
+
+        For a given set of solar zenith and azimuth angles, the
+        surface tilt and azimuth parameters are typically determined
+        by :py:meth:`~SingleAxisTracker.singleaxis`. The
+        :py:meth:`~SingleAxisTracker.singleaxis` method also returns
+        the angle of incidence, so this method is only needed
+        if using a different tracking algorithm.
+
+        Parameters
+        ----------
+        surface_tilt : numeric
+            Panel tilt from horizontal.
+        surface_azimuth : numeric
+            Panel azimuth from north
+        solar_zenith : float or Series.
+            Solar zenith angle.
+        solar_azimuth : float or Series.
+            Solar azimuth angle.
+
+        Returns
+        -------
+        aoi : Series
+            The angle of incidence in degrees from normal.
+        """
+
+        aoi = irradiance.aoi(surface_tilt, surface_azimuth,
+                             solar_zenith, solar_azimuth)
+        return aoi
+
+    @_unwrap_single_value
+    def get_irradiance(self, surface_tilt, surface_azimuth,
+                       solar_zenith, solar_azimuth, dni, ghi, dhi,
+                       dni_extra=None, airmass=None, model='haydavies',
+                       **kwargs):
+        """
+        Uses the :func:`irradiance.get_total_irradiance` function to
+        calculate the plane of array irradiance components on a tilted
+        surface defined by the input data and ``self.albedo``.
+
+        For a given set of solar zenith and azimuth angles, the
+        surface tilt and azimuth parameters are typically determined
+        by :py:meth:`~SingleAxisTracker.singleaxis`.
+
+        Parameters
+        ----------
+        surface_tilt : numeric
+            Panel tilt from horizontal.
+        surface_azimuth : numeric
+            Panel azimuth from north
+        solar_zenith : numeric
+            Solar zenith angle.
+        solar_azimuth : numeric
+            Solar azimuth angle.
+        dni : float or Series
+            Direct Normal Irradiance
+        ghi : float or Series
+            Global horizontal irradiance
+        dhi : float or Series
+            Diffuse horizontal irradiance
+        dni_extra : float or Series, default None
+            Extraterrestrial direct normal irradiance
+        airmass : float or Series, default None
+            Airmass
+        model : String, default 'haydavies'
+            Irradiance model.
+
+        **kwargs
+            Passed to :func:`irradiance.get_total_irradiance`.
+
+        Returns
+        -------
+        poa_irradiance : DataFrame
+            Column names are: ``total, beam, sky, ground``.
+        """
+
+        # not needed for all models, but this is easier
+        if dni_extra is None:
+            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
+
+        if airmass is None:
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
+
+        # SingleAxisTracker only supports a single Array, but we need the
+        # validate/iterate machinery so that single length tuple input/output
+        # is handled the same as PVSystem.get_irradiance. GH 1159
+        dni = self._validate_per_array(dni, system_wide=True)
+        ghi = self._validate_per_array(ghi, system_wide=True)
+        dhi = self._validate_per_array(dhi, system_wide=True)
+
+        return tuple(
+            irradiance.get_total_irradiance(
+                surface_tilt,
+                surface_azimuth,
+                solar_zenith,
+                solar_azimuth,
+                dni, ghi, dhi,
+                dni_extra=dni_extra,
+                airmass=airmass,
+                model=model,
+                albedo=self.arrays[0].albedo,
+                **kwargs)
+            for array, dni, ghi, dhi in zip(
+                self.arrays, dni, ghi, dhi
+            )
+        )
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,
@@ -38,28 +294,18 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     axis_tilt : float, default 0
         The tilt of the axis of rotation (i.e, the y-axis defined by
-        ``axis_azimuth``) with respect to horizontal.
-        ``axis_tilt`` must be >= 0 and <= 90. [degree]
+        axis_azimuth) with respect to horizontal, in decimal degrees.
 
     axis_azimuth : float, default 0
         A value denoting the compass direction along which the axis of
         rotation lies. Measured in decimal degrees east of north.
 
-    max_angle : float or tuple, default 90
+    max_angle : float, default 90
         A value denoting the maximum rotation angle, in decimal degrees,
         of the one-axis tracker from its horizontal position (horizontal
-        if axis_tilt = 0). If a float is provided, it represents the maximum
-        rotation angle, and the minimum rotation angle is assumed to be the
-        opposite of the maximum angle. If a tuple of (min_angle, max_angle) is
-        provided, it represents both the minimum and maximum rotation angles.
-
-        A rotation to 'max_angle' is a counter-clockwise rotation about the
-        y-axis of the tracker coordinate system. For example, for a tracker
-        with 'axis_azimuth' oriented to the south, a rotation to 'max_angle'
-        is towards the west, and a rotation toward 'min_angle' is in the
-        opposite direction, toward the east. Hence a max_angle of 180 degrees
-        (equivalent to max_angle = (-180, 180)) allows the tracker to achieve
-        its full rotation capability.
+        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
+        to rotate to a vertical position to point the panel towards a
+        horizon. max_angle of 180 degrees allows for full rotation.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"
@@ -81,16 +327,16 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         using a right-handed convention. For example, trackers with axis
         azimuth of 180 degrees (heading south) will have a negative cross-axis
         tilt if the tracker axes plane slopes down to the east and positive
-        cross-axis tilt if the tracker axes plane slopes down to the west. Use
+        cross-axis tilt if the tracker axes plane slopes up to the east. Use
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
 
     Returns
     -------
     dict or DataFrame with the following columns:
-        * `tracker_theta`: The rotation angle of the tracker is a right-handed
-          rotation defined by `axis_azimuth`.
-          tracker_theta = 0 is horizontal. [degrees]
+        * `tracker_theta`: The rotation angle of the tracker.
+          tracker_theta = 0 is horizontal, and positive rotation angles are
+          clockwise. [degrees]
         * `aoi`: The angle-of-incidence of direct irradiance onto the
           rotated panel surface. [degrees]
         * `surface_tilt`: The angle between the panel surface and the earth
@@ -103,7 +349,6 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     --------
     pvlib.tracking.calc_axis_tilt
     pvlib.tracking.calc_cross_axis_tilt
-    pvlib.tracking.calc_surface_orientation
 
     References
     ----------
@@ -127,20 +372,50 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     if apparent_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
         raise ValueError('Input dimensions must not exceed 1')
 
+    # Calculate sun position x, y, z using coordinate system as in [1], Eq 1.
+
+    # NOTE: solar elevation = 90 - solar zenith, then use trig identities:
+    # sin(90-x) = cos(x) & cos(90-x) = sin(x)
+    sin_zenith = sind(apparent_zenith)
+    x = sin_zenith * sind(apparent_azimuth)
+    y = sin_zenith * cosd(apparent_azimuth)
+    z = cosd(apparent_zenith)
+
+    # Assume the tracker reference frame is right-handed. Positive y-axis is
+    # oriented along tracking axis; from north, the y-axis is rotated clockwise
+    # by the axis azimuth and tilted from horizontal by the axis tilt. The
+    # positive x-axis is 90 deg clockwise from the y-axis and parallel to
+    # horizontal (e.g., if the y-axis is south, the x-axis is west); the
+    # positive z-axis is normal to the x and y axes, pointed upward.
+
+    # Calculate sun position (xp, yp, zp) in tracker coordinate system using
+    # [1] Eq 4.
+
+    cos_axis_azimuth = cosd(axis_azimuth)
+    sin_axis_azimuth = sind(axis_azimuth)
+    cos_axis_tilt = cosd(axis_tilt)
+    sin_axis_tilt = sind(axis_tilt)
+    xp = x*cos_axis_azimuth - y*sin_axis_azimuth
+    yp = (x*cos_axis_tilt*sin_axis_azimuth
+          + y*cos_axis_tilt*cos_axis_azimuth
+          - z*sin_axis_tilt)
+    zp = (x*sin_axis_tilt*sin_axis_azimuth
+          + y*sin_axis_tilt*cos_axis_azimuth
+          + z*cos_axis_tilt)
+
     # The ideal tracking angle wid is the rotation to place the sun position
-    # vector (xp, yp, zp) in the (x, z) plane, which is normal to the panel and
+    # vector (xp, yp, zp) in the (y, z) plane, which is normal to the panel and
     # contains the axis of rotation.  wid = 0 indicates that the panel is
     # horizontal. Here, our convention is that a clockwise rotation is
     # positive, to view rotation angles in the same frame of reference as
     # azimuth. For example, for a system with tracking axis oriented south, a
     # rotation toward the east is negative, and a rotation to the west is
     # positive. This is a right-handed rotation around the tracker y-axis.
-    wid = shading.projected_solar_zenith_angle(
-        axis_tilt=axis_tilt,
-        axis_azimuth=axis_azimuth,
-        solar_zenith=apparent_zenith,
-        solar_azimuth=apparent_azimuth,
-    )
+
+    # Calculate angle from x-y plane to projection of sun vector onto x-z plane
+    # using [1] Eq. 5.
+
+    wid = np.degrees(np.arctan2(xp, zp))
 
     # filter for sun above panel horizon
     zen_gt_90 = apparent_zenith > 90

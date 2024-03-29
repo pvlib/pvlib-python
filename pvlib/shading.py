@@ -404,7 +404,7 @@ def shaded_fraction1d(
 
     Parameters are defined as follow:
 
-    .. figure:: Anderson_Jensen_2024_Fig3.png
+    .. figure:: _images/Anderson_Jensen_2024_Fig3.png
         :alt: Diagram showing the two trackers and the parameters of the model.
 
         +------------------+----------------------------+---------------------+

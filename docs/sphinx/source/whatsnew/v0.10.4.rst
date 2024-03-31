@@ -16,6 +16,10 @@ Enhancements
   the SOLRAD ground station network. (:pull:`1967`)
 * Added metadata parsing to :py:func:`~pvlib.iotools.read_solrad` to follow the standard iotools
   convention of returning a tuple of (data, meta). Previously the function only returned a dataframe. (:pull:`1968`)
+* Added functions `pvlib.shading.tracker_shaded_fraction` and
+  `pvlib.shading.linear_shade_loss` to calculate row-to-row shade and apply
+  linear shade loss for thin film CdTe modules like First Solar.
+  (:issue:`1689`, :issue:`1690`, :pull:`1962`)
 
 
 Bug fixes

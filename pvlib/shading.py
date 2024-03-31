@@ -342,3 +342,40 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
     # Eq. (5); angle between sun's beam and surface
     theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))
     return theta_T
+
+
+def linear_shade_loss(shaded_fraction, diffuse_fraction):
+    """
+    Fraction of power lost to linear shade loss applicable to monolithic thin
+    film modules like First Solar CdTe, where the shadow is perpendicular to
+    cell scribe lines.
+
+    Parameters
+    ----------
+    shaded_fraction : numeric
+        The fraction of the collector width shaded by an adjacent row. A
+        value of 1 is completely shaded and zero is no shade.
+    diffuse_fraction : numeric
+        The ratio of diffuse plane of array (poa) irradiance to global poa.
+        A value of 1 is completely diffuse and zero is no diffuse.
+
+    Returns
+    -------
+    linear_shade_loss : numeric
+        The fraction of power lost due to linear shading. A value of 1 is all
+        power lost and zero is no loss.
+
+    See also
+    --------
+    pvlib.shading.tracker_shaded_fraction
+
+    Example
+    -------
+    >>> from pvlib import shading
+    >>> sf = shading.tracker_shaded_fraction(45.0, 0.8, 45.0, 0)
+    >>> loss = shading.linear_shade_loss(sf, 0.2)
+    >>> P_no_shade = 100  # [kWdc]  DC output from modules
+    >>> P_linear_shade = P_no_shade * (1-loss)  # [kWdc] output after loss
+    # 90.71067811865476 [kWdc]
+    """
+    return shaded_fraction * (1 - diffuse_fraction)

@@ -407,24 +407,26 @@ def shaded_fraction1d(
     .. figure:: ../../_images/Anderson_Jensen_2024_Fig3.png
         :alt: Diagram showing the two trackers and the parameters of the model.
 
-        +------------------+----------------------------+---------------------+
-        | Symbol           | Parameter                  | Units               |
-        +==================+============================+=====================+
-        | :math:`\theta_1` | ``shading_tracker_tilt``   |                     |
-        +------------------+----------------------------+                     |
-        | :math:`\theta_2` | ``shaded_tracker_tilt``    | Degrees             |
-        +------------------+----------------------------+ :math:`^{\circ}`    |
-        | :math:`\beta_c`  | ``cross_axis_slope``       |                     |
-        +------------------+----------------------------+---------------------+
-        | :math:`p`        | ``row_pitch``              |                     |
-        +------------------+----------------------------+ Any consistent      |
-        | :math:`l`        | ``collector_width``        | length unit.        |
-        +------------------+----------------------------+ E.g. :math:`m` for  |
-        | :math:`z_0`      | ``surface_to_axis_offset`` | all parameters.     |
-        +------------------+----------------------------+---------------------+
-        | :math:`f_s`      | Return value               | Dimensionless       |
-        +------------------+----------------------------+---------------------+
-        Figure 3 of [1]_.
+        Figure 3 of [1]_. See correspondence between this nomenclature and the
+        function parameters in the table below.
+
+    +------------------+----------------------------+---------------------+
+    | Symbol           | Parameter                  | Units               |
+    +==================+============================+=====================+
+    | :math:`\theta_1` | ``shading_tracker_tilt``   |                     |
+    +------------------+----------------------------+                     |
+    | :math:`\theta_2` | ``shaded_tracker_tilt``    | Degrees             |
+    +------------------+----------------------------+ :math:`^{\circ}`    |
+    | :math:`\beta_c`  | ``cross_axis_slope``       |                     |
+    +------------------+----------------------------+---------------------+
+    | :math:`p`        | ``row_pitch``              |                     |
+    +------------------+----------------------------+ Any consistent      |
+    | :math:`l`        | ``collector_width``        | length unit.        |
+    +------------------+----------------------------+ E.g. :math:`m` for  |
+    | :math:`z_0`      | ``surface_to_axis_offset`` | all parameters.     |
+    +------------------+----------------------------+---------------------+
+    | :math:`f_s`      | Return value               | Dimensionless       |
+    +------------------+----------------------------+---------------------+
 
     See also
     --------

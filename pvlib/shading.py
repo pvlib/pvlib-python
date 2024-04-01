@@ -452,8 +452,8 @@ def shaded_fraction1d(
         # the vector that defines the projection plane for prior conditions
         trackers_axis_azimuth,
     )
-    
-    # calculate repeated elements 
+
+    # calculate repeated elements
     thetas_1_S_diff = shading_tracker_tilt - projected_solar_zenith
     thetas_2_S_diff = shaded_tracker_tilt - projected_solar_zenith
     thetaS_tilt_diff = projected_solar_zenith - cross_axis_slope

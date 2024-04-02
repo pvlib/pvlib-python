@@ -434,7 +434,9 @@ def shaded_fraction1d(
 
     References
     ----------
-    .. [1] TODO
+    .. [1] Kevin S. Anderson, Adam R. Jensen; Shaded fraction and backtracking
+        in single-axis trackers on rolling terrain. J. Renewable Sustainable
+        Energy 1 March 2024; 16 (2): 023504. :doi:`10.1063/5.0202220`
     """
     # For nomenclature you may refer to [1].
 

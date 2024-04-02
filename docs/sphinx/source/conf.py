@@ -366,6 +366,9 @@ sphinx_gallery_conf = {
     # Modules for which function/class level galleries are created. In
     # this case only pvlib, could include others though.  must be tuple of str
     'doc_module': ('pvlib',),
+
+    # https://sphinx-gallery.github.io/dev/configuration.html#removing-config-comments  # noqa: E501
+    'remove_config_comments': True,
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html

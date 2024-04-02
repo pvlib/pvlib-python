@@ -366,7 +366,7 @@ def shaded_fraction1d(
     If only the GCR is known, feed GCR into ``trackers_vertical_length`` and
     specify ``trackers_row_pitch=1``.
 
-    .. versionadded:: TODO
+    .. versionadded:: 0.10.5
 
     Parameters
     ----------

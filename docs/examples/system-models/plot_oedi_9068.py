@@ -48,7 +48,7 @@ strings_per_inverter = 1344
 
 # "unofficial" information
 
-# We know the system uses 117.5 W CdTe modules.  Based on the system vintage
+# We know the system uses 117.5 W CdTe modules. Based on the system vintage
 # (data begins in 2017), it seems likely that the array uses First Solar
 # Series 4 modules (FS-4117).
 cec_module_db = pvlib.pvsystem.retrieve_sam('cecmod')
@@ -68,7 +68,7 @@ module_unit_mass = 12 / 0.72  # kg/m^2, taken from datasheet values
 cec_inverter_db = pvlib.pvsystem.retrieve_sam('cecinverter')
 inverter_parameters = cec_inverter_db['TMEIC__PVL_L1833GRM']
 
-# We'll use the PVWatts v5 losses model.  Set shading to zero as it is
+# We'll use the PVWatts v5 losses model. Set shading to zero as it is
 # accounted for elsewhere in the model, and disable availability loss since
 # we want a "clean" simulation.
 # Leaving the other pvwatts loss types (mismatch, wiring, etc) unspecified
@@ -76,7 +76,7 @@ inverter_parameters = cec_inverter_db['TMEIC__PVL_L1833GRM']
 losses_parameters = dict(shading=0, availability=0)
 
 # Google Street View images show that each row is four modules high, in
-# landscape orientation.  Assuming the modules are First Solar Series 4,
+# landscape orientation. Assuming the modules are First Solar Series 4,
 # each of them is 600 mm wide.
 # Assume ~1 centimeter gap between modules (three gaps total).
 # And from Google Earth, the array's pitch is estimated to be about 7.0 meters.

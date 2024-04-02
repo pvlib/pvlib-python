@@ -364,7 +364,7 @@ sphinx_gallery_conf = {
     'backreferences_dir': 'reference/generated/gallery_backreferences',
 
     # Modules for which function/class level galleries are created. In
-    # this case only pvlib, could include others though.  must be tuple of str
+    # this case only pvlib, could include others though. Must be tuple of str
     'doc_module': ('pvlib',),
 
     # https://sphinx-gallery.github.io/dev/configuration.html#removing-config-comments  # noqa: E501

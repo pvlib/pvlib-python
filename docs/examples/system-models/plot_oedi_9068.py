@@ -6,7 +6,7 @@ A basic model of a 4.7 MW single-axis tracking CdTe system located in
 Colorado, United States.
 """
 
-# sphinx_gallery_thumbnail_path = '_images/pvlib_logo_vert.png'  # noqa: E501
+# sphinx_gallery_thumbnail_path = "_images/OEDI_9068_daily_timeseries.png"
 
 # %%
 # This example model uses satellite-based solar resource data from the

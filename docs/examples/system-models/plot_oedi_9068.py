@@ -6,6 +6,8 @@ A basic model of a 4.7 MW single-axis tracking CdTe system located in
 Colorado, United States.
 """
 
+# sphinx_gallery_thumbnail_path = "_images/OEDI_9068_inverter1_comparison.png"
+
 # %%
 # This example model uses satellite-based solar resource data from the
 # NSRDB PSM3. This approach is useful for pre-construction energy modeling
@@ -21,8 +23,6 @@ Colorado, United States.
 import pvlib
 import pandas as pd
 import matplotlib.pyplot as plt
-
-# sphinx_gallery_thumbnail_path = "../../_images/OEDI_9068_inverter1_comparison.png"
 
 # %%
 # System parameters

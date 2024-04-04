@@ -108,6 +108,6 @@ def test_fit_huld_method_error():
     ee, tc = pvarray._build_iec61853()
     pdc0 = 250
     pdc = pvarray.huld(ee, tc, pdc0, cell_type='csi')
-    method='brute_force'
+    method = 'brute_force'
     with pytest.raises(ValueError, match="method must be ols or robust"):
         m_pdc0, k = pvarray.fit_huld(ee, tc, pdc, method=method)

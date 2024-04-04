@@ -437,9 +437,9 @@ def fit_huld(effective_irradiance, temp_module, pdc, method='ols'):
                   tprime*logGprime**2, tprime**2), axis=0).T
     X = sm.add_constant(X)
 
-    if method=='ols':
+    if method == 'ols':
         model = sm.OLS(Y, X, missing='drop')
-    elif method=='robust':
+    elif method == 'robust':
         model = sm.RLM(Y, X, missing='drop')
     else:
         raise ValueError("method must be ols or robust")

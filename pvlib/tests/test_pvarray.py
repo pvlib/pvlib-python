@@ -93,6 +93,7 @@ def test_fit_huld(method):
     pdc = pvarray.huld(ee, tc, pdc0, cell_type='csi')
     pdc[11] = np.nan
     m_pdc0, k = pvarray.fit_huld(ee, tc, pdc, method='ols')
+    # known solution for OLS obtained with statsmodels v0.14.0
     expected = np.array([2.07118648e+02, -8.35033390e+01, -3.83844606e+01,
                          2.75629738e+00,  1.87571414e+00, -2.86429730e-01,
                          -6.00418853e-02])

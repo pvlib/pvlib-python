@@ -367,15 +367,15 @@ def linear_shade_loss(shaded_fraction, diffuse_fraction):
 
     See also
     --------
-    pvlib.shading.tracker_shaded_fraction
+    pvlib.shading.shaded_fraction1d
 
     Example
     -------
     >>> from pvlib import shading
-    >>> sf = shading.tracker_shaded_fraction(45.0, 0.8, 45.0, 0)
-    >>> loss = shading.linear_shade_loss(sf, 0.2)
+    >>> sf = shading.shaded_fraction1d(TODO)
+    >>> loss = shading.linear_shade_loss(sf, diffuse_fraction=0.2)
     >>> P_no_shade = 100  # [kWdc]  DC output from modules
     >>> P_linear_shade = P_no_shade * (1-loss)  # [kWdc] output after loss
-    # 90.71067811865476 [kWdc]
+    90.71067811865476 [kWdc]
     """
     return shaded_fraction * (1 - diffuse_fraction)

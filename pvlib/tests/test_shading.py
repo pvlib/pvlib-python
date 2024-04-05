@@ -302,12 +302,13 @@ def test_shaded_fraction1d(sf1d_premises_and_expected):
     """Tests shaded_fraction1d"""
     # unwrap sf_premises_and_expected values premises and expected results
     premises, expected_sf_array = sf1d_premises_and_expected
-    premises.to_csv("C:/Users/Yo/Downloads/hola.csv")
     # test scalar input
     expected_result = expected_sf_array.iloc[0]
     sf = shading.shaded_fraction1d(**premises.iloc[0])
-    assert_approx_equal(sf, expected_result, )
+    assert_approx_equal(sf, expected_result)
+    assert isinstance(sf, float)
 
-    # test vector inputs
+    # test Series inputs
     sf_vec = shading.shaded_fraction1d(**premises)
     assert_allclose(sf_vec, expected_sf_array, atol=1e-6)
+    assert isinstance(sf_vec, pd.Series)

@@ -11,6 +11,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added `pvlib.shading.linear_shade_loss` to apply linear shade loss for thin
+  film CdTe modules. (:issue:`1690`, :pull:`2004`)
 
 
 Bug fixes
@@ -31,3 +33,5 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)
+* Echedey Luis (:ghuser:`echedey-ls`)

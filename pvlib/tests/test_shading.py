@@ -265,17 +265,10 @@ def sf1d_premises_and_expected():
     test_data["row_pitch"] = test_data["x_L"] - test_data["x_R"]
     # switch Left/Right trackers if needed to make the right one the shaded
     where_switch = test_data["theta_s"] >= 0
-    test_data["theta_L"], test_data["theta_R"] = (
-        np.where(
-            where_switch,
-            test_data["theta_L"],
-            test_data["theta_R"],
-        ),
-        np.where(
-            where_switch,
-            test_data["theta_R"],
-            test_data["theta_L"],
-        ),
+    test_data["theta_L"], test_data["theta_R"] = np.where(
+        where_switch,
+        (test_data["theta_L"], test_data["theta_R"]),
+        (test_data["theta_R"], test_data["theta_L"]),
     )
     test_data.rename(
         columns={
@@ -294,8 +287,10 @@ def sf1d_premises_and_expected():
     test_data["solar_azimuth"], test_data["trackers_axis_azimuth"] = 180, 90
 
     # return 1st: premises dataframe first and 2nd: shaded fraction series
-    return (test_data.drop(columns=["shaded_fraction"]),
-            test_data["shaded_fraction"])
+    return (
+        test_data.drop(columns=["shaded_fraction"]),
+        test_data["shaded_fraction"],
+    )
 
 
 def test_shaded_fraction1d(sf1d_premises_and_expected):

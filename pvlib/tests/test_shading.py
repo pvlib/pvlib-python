@@ -327,3 +327,9 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
     premises = test_data.drop(columns=["expected_sf"])
     sf = shading.shaded_fraction1d(**premises)
     assert_allclose(sf, expected_sf, atol=1e-2)
+
+
+def test_martinez_shade_factor():
+    """Tests pvlib.shading.martinez_shade_factor"""
+    # TODO
+    pass

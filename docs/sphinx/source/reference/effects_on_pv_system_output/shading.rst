@@ -12,4 +12,4 @@ Shading
    shading.sky_diffuse_passias
    shading.projected_solar_zenith_angle
    shading.shaded_fraction1d
-   
+   shading.martinez_shade_factor

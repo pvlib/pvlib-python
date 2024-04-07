@@ -553,3 +553,77 @@ def shaded_fraction1d(
     )
 
     return np.clip(t_asterisk, 0, 1)
+
+
+def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
+    r"""
+    A shading correction factor for the power yield of non-monolithic Silicon
+    modules and arrays with an arbitrary number of bypass diodes.
+    shaded_fraction : numeric
+        Surface shaded fraction. Unitless.
+    shaded_blocks : numeric
+        Number of blocks affected by the shadow. Unitless integer.
+    total_blocks : numeric
+        Number of total blocks. Unitless integer.
+
+    Returns
+    -------
+    shading_correction_factor : numeric
+        Multiply unshaded power by this factor.
+
+    Notes
+    -----
+    The implemented equation is (6) from [1]_:
+
+    .. math::
+
+        (1 - F_{ES}) = (1 - F_{GS}) (1 - \frac{N_{SB}}{N_{TB} + 1})
+
+    Where :math:`(1 - F_{ES})` is the correction factor to be multiplied by
+    the unshaded irradiance, :math:`F_{GS}` is the shaded fraction,
+    :math:`N_{SB}` is the number of shaded blocks and :math:`N_{TB}` is the
+    number of total blocks.
+
+    Blocks terminology
+    ^^^^^^^^^^^^^^^^^^
+    [1]_ defines a *block* as a group of solar cells protected by a bypass
+    diode. Also, a *block* is shaded when at least one of its cells is shaded.
+
+    How many blocks and their layout depend on the module(s) used. Many
+    manufacturers don't specify this information explicitly. However, we can
+    infer these values from:
+     - the number of bypass diodes
+     - where and how many junction boxes are present on the back of the module
+     - whether or not the module is comprised of *half-cut cells*
+    The latter two are heavily correlated.
+
+    Examples
+    --------
+    Minimal example. For a complete example, see
+    :ref:`this example <sphx_glr_gallery_plot_martinez_shade_loss.py>`
+    >>> import numpy as np
+    >>> from pvlib import shading
+    >>> total_blocks = 3  # blocks along the vertical of the module
+    >>> Pwr_out_unshaded = 100  # kW
+    >>> shaded_fraction = shading.shaded_fraction1d(
+            TODO copy from linear loss PR
+        )
+    >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
+    >>> loss_correction = shading.martinez_shade_factor()
+    >>> Pwr_out_shaded = Pwr_out_unshaded * loss_correction
+
+    See Also
+    --------
+    pvlib.shading.linear_shade_loss for monolithic thin film modules
+
+    References
+    ----------
+    .. [1] F. Martínez-Moreno, J. Muñoz, and E. Lorenzo, 'Experimental model
+        to estimate shading losses on PV arrays', Solar Energy Materials and
+        Solar Cells, vol. 94, no. 12, pp. 2298-2303, Dec. 2010,
+        :doi:`10.1016/j.solmat.2010.07.029`.
+    """  # Contributed by Echedey Luis, 2024
+    return (  # Eq. (6) of [1]
+        (1 - shaded_fraction)
+        * (1 - N_shaded_blocks / (1 + N_total_blocks))
+    )

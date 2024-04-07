@@ -18,7 +18,7 @@ a PV array comprised of non-monolithic silicon cells.
 # The following key functions are used in this example:
 # 1. :py:func:`pvlib.shading.martinez_shade_loss` to calculate the adjustment
 #    factor for the direct irradiance component.
-# 2. :py:func:`pvlib.shading.shading_factor1d` to calculate the fraction of
+# 2. :py:func:`pvlib.shading.shaded_fraction1d` to calculate the fraction of
 #    shaded surface and consequently the number of shaded *blocks* due to
 #    row-to-row shading.
 #
@@ -128,9 +128,9 @@ poa_ground_diffuse = pvlib.irradiance.get_ground_diffuse(
 # Shaded fraction calculation
 # ---------------------------
 # The next step is to calculate the fraction of shaded surface. This is done
-# using :py:func:`pvlib.shading.shading_factor1d`. Using this function is
+# using :py:func:`pvlib.shading.shaded_fraction1d`. Using this function is
 # straightforward with the amount of information we already have.
 
-shaded_fraction = pvlib.shading.shading_factor1d(
+shaded_fraction = pvlib.shading.shaded_fraction1d(
     surface_tilt, surface_azimuth, apparent_zenith, apparent_azimuth
 )

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from numpy.testing import assert_allclose
 from pandas.testing import assert_series_equal
 from numpy.testing import assert_allclose, assert_approx_equal
 import pytest
@@ -329,7 +330,40 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
     assert_allclose(sf, expected_sf, atol=1e-2)
 
 
-def test_martinez_shade_factor():
+def martinez_shade_factor_Table2():
+    """
+    Data provided in Table 2, [1] of martinez_shade_factor
+    Returns tuple with (input: pandas.DataFrame, output: pandas.Series)
+    Output is POWER LOSS, not POWER CORRECTION, so model result must be
+    subtracted from 1
+    """
+    test_data = pd.DataFrame(
+        columns=["F_GS-H", "F_GS-V", "N_shaded_blocks", "power_reduction"],
+        data=[
+            [1.00, 0.09, 24, 0.88],
+            [1.00, 0.18, 24, 0.89],
+            [1.00, 0.36, 24, 0.90],
+            [0.04, 0.64,  1, 0.08],
+            [0.17, 0.45,  3, 0.22],
+            [0.29, 0.27,  5, 0.33],
+            [0.50, 0.09,  8, 0.46],
+            [0.13, 1.00,  2, 0.21],
+            [0.25, 1.00,  4, 0.40],
+            [0.38, 1.00,  6, 0.56],
+            [0.50, 1.00,  8, 0.54],
+            [0.58, 0.82, 10, 0.74],
+            [0.75, 0.73, 12, 0.81],
+            [0.92, 0.64, 15, 0.89],
+        ]  # fmt: skip
+    )
+    test_data["N_total_blocks"] = 24  # total blocks is 24 for all cases
+    test_data["shaded_fraction"] = test_data["F_GS-H"] * test_data["F_GS-V"]
+    test_data.drop(columns=["F_GS-H", "F_GS-V"], inplace=True)
+    return (test_data.drop(columns="power_reduction"), test_data["power_reduction"])
+
+
+def test_martinez_shade_factor(martinez_shade_factor_Table2):
     """Tests pvlib.shading.martinez_shade_factor"""
-    # TODO
-    pass
+    premises, power_reduction_expected = martinez_shade_factor_Table2
+    power_loss_factor = 1 - shading.martinez_shade_factor(**premises)
+    assert_allclose(power_loss_factor, power_reduction_expected)

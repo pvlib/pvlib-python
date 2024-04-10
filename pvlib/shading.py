@@ -419,11 +419,11 @@ def shaded_fraction1d(
     +------------------+----------------------------+ :math:`^{\circ}`    |
     | :math:`\beta_c`  | ``cross_axis_slope``       |                     |
     +------------------+----------------------------+---------------------+
-    | :math:`p`        | ``row_pitch``              |                     |
-    +------------------+----------------------------+ Any consistent      |
-    | :math:`l`        | ``collector_width``        | length unit.        |
-    +------------------+----------------------------+ E.g. :math:`m` for  |
-    | :math:`z_0`      | ``surface_to_axis_offset`` | all parameters.     |
+    | :math:`p`        | ``row_pitch``              | Any consistent      |
+    +------------------+----------------------------+ length unit across  |
+    | :math:`l`        | ``collector_width``        | all these           |
+    +------------------+----------------------------+ parameters, e.g.    |
+    | :math:`z_0`      | ``surface_to_axis_offset`` | :math:`m`.          |
     +------------------+----------------------------+---------------------+
     | :math:`f_s`      | Return value               | Dimensionless       |
     +------------------+----------------------------+---------------------+

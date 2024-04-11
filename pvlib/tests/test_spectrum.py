@@ -319,6 +319,7 @@ def test_spectral_factor_caballero_supplied_ambiguous():
 
 @pytest.fixture
 def sr_and_eqe_fixture():
+    # Just some arbitrary data for testing the conversion functions
     df = pd.DataFrame(
         columns=("wavelength", "quantum_efficiency", "spectral_response"),
         data=[
@@ -368,7 +369,7 @@ def test_spectral_responsivity_to_quantum_efficiency(sr_and_eqe_fixture):
         check_names=False  
     )
     assert qe.name == "spectral_response"
-    #- error on lack of wavelength parameter if no pandas obj. provided
+    #- error on lack of wavelength parameter if no pandas object is provided
     with pytest.raises(TypeError, match="must have an '.index' attribute"):
         _ = spectrum.spectral_responsivity_to_quantum_efficiency(
             sr_and_eqe_fixture["spectral_response"].values
@@ -398,7 +399,7 @@ def test_quantum_efficiency_to_spectral_responsivity(sr_and_eqe_fixture):
         check_names=False  
     )
     assert sr.name == "quantum_efficiency"
-    #- error on lack of wavelength parameter if no pandas obj. provided
+    #- error on lack of wavelength parameter if no pandas object is provided
     with pytest.raises(TypeError, match="must have an '.index' attribute"):
         _ = spectrum.quantum_efficiency_to_spectral_responsivity(
             sr_and_eqe_fixture["quantum_efficiency"].values

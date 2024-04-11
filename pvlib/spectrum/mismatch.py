@@ -613,6 +613,30 @@ def spectral_responsivity_to_quantum_efficiency(sr, wavelength=None):
     - If ``wavelength`` is provided it will be used independently of the
       datatype of ``sr``.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pvlib import spectrum
+    >>> wavelengths = np.array([350, 550, 750])
+    >>> spectral_response = np.array([0.25, 0.40, 0.57])
+    >>> quantum_efficiency = \
+    >>>     spectrum.spectral_responsivity_to_quantum_efficiency(
+    >>>         spectral_response, wavelengths
+    >>>     )
+    >>> quantum_efficiency
+    array([0.88560142, 0.90170326, 0.94227991])
+
+    >>> spectral_response_series = \
+    >>>     pd.Series(spectral_response, index=wavelengths, name="dataset")
+    >>> qe = spectrum.spectral_responsivity_to_quantum_efficiency(
+    >>>         spectral_response_series
+    >>>     )
+    >>> qe
+    350    0.885601
+    550    0.901703
+    750    0.942280
+    Name: dataset, dtype: float64
+
     References
     ----------
     .. [1] “Spectral Response,” PV Performance Modeling Collaborative (PVPMC).
@@ -675,6 +699,30 @@ def quantum_efficiency_to_spectral_responsivity(qe, wavelength=None):
       column names will remain unchanged in the returned object.
     - If ``wavelength`` is provided it will be used independently of the
       datatype of ``qe``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pvlib import spectrum
+    >>> wavelengths = np.array([350, 550, 750])
+    >>> quantum_efficiency = np.array([0.86, 0.90, 0.94])
+    >>> spectral_response = \
+    >>>     spectrum.quantum_efficiency_to_spectral_responsivity(
+    >>>         quantum_efficiency, wavelengths
+    >>>     )
+    >>> spectral_response
+    array([0.24277287, 0.39924442, 0.56862085])
+
+    >>> quantum_efficiency_series = \
+    >>>     pd.Series(quantum_efficiency, index=wavelengths, name="dataset")
+    >>> sr = spectrum.quantum_efficiency_to_spectral_responsivity(
+    >>>         quantum_efficiency_series
+    >>>     )
+    >>> sr
+    350    0.242773
+    550    0.399244
+    750    0.568621
+    Name: dataset, dtype: float64
 
     References
     ----------

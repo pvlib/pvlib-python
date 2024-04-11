@@ -19,12 +19,13 @@ def get_example_spectral_response(wavelength=None):
     ----------
     wavelength: 1-D sequence of numeric, optional
         Wavelengths at which spectral response values are generated.
-        By default ``wavelength`` is from 280 to 1200 in 5 nm intervals. [nm]
+        By default ``wavelength`` is from 280 to 1200 in 5 nm intervals.
+        :math:`nm`.
 
     Returns
     -------
     spectral_response : pandas.Series
-        The relative spectral response indexed by ``wavelength`` in nm. [-]
+        The relative spectral response indexed by ``wavelength``. Unitless.
 
     Notes
     -----
@@ -77,7 +78,7 @@ def get_example_spectral_response(wavelength=None):
 
 
 def get_am15g(wavelength=None):
-    '''
+    r"""
     Read the ASTM G173-03 AM1.5 global spectrum on a 37-degree tilted surface,
     optionally interpolated to the specified wavelength(s).
 
@@ -91,19 +92,21 @@ def get_am15g(wavelength=None):
     ----------
     wavelength: 1-D sequence of numeric, optional
         Wavelengths at which the spectrum is interpolated.
-        By default the 2002 wavelengths of the standard are returned. [nm]
+        By default the 2002 wavelengths of the standard are returned.
+        :math:`nm`.
 
     Returns
     -------
     am15g: pandas.Series
-        The AM1.5g standard spectrum indexed by ``wavelength``. [(W/m^2)/nm]
+        The AM1.5g standard spectrum indexed by ``wavelength``, in
+        :math:`\frac{W}{m^2 nm}`.
 
     Notes
     -----
     If ``wavelength`` is specified this function uses linear interpolation.
 
     If the values in ``wavelength`` are too widely spaced, the integral of the
-    spectrum may deviate from the standard value of 1000.37 W/m^2.
+    spectrum may deviate from the standard value of :math:`1000.37 W/m^2`.
 
     The values in the data file provided with pvlib-python are copied from an
     Excel file distributed by NREL, which is found here:
@@ -112,32 +115,111 @@ def get_am15g(wavelength=None):
     More information about reference spectra is found here:
     https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html
 
+    See Also
+    --------
+    pvlib.spectrum.get_ASTM_G173 : reads also the direct and extraterrestrial
+      components of the spectrum.
+
     References
     ----------
     .. [1] ASTM "G173-03 Standard Tables for Reference Solar Spectral
        Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
-    '''
+    """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
+    # modified by Echedey Luis, 2024, as a wrapper of spectrum.get_ASTM_G173
+    return get_ASTM_G173(wavelength)["global"]
 
-    pvlib_path = pvlib.__path__[0]
-    filepath = os.path.join(pvlib_path, 'data', 'astm_g173_am15g.csv')
 
-    am15g = pd.read_csv(filepath, index_col=0).squeeze()
+def get_ASTM_G173(wavelengths=None):
+    r"""
+    Read the ASTM G173-03 AM1.5 ``extraterrestrial``, ``global`` and ``direct``
+    spectrum on a 37-degree tilted surface, optionally interpolated to the
+    specified wavelength(s).
 
-    if wavelength is not None:
-        interpolator = interp1d(am15g.index, am15g,
-                                kind='linear',
-                                bounds_error=False,
-                                fill_value=0.0,
-                                copy=False,
-                                assume_sorted=True)
+    Parameters
+    ----------
+    wavelengths: numeric, optional
+        Wavelengths at which the spectrum is interpolated.
+        If not provided, the 2002 wavelengths of the standard are returned.
+        :math:`nm`.
+        Values outside of the range :math:`[280, 4000]` are filled with zeroes.
 
-        am15g = pd.Series(data=interpolator(wavelength), index=wavelength)
+    Returns
+    -------
+    am15: pandas.DataFrame
+        The AM1.5 standard spectrums by ``wavelength [nm]``, in
+        :math:`\frac{W}{m^2 nm}`. Column names are ``extraterrestrial``,
+        ``direct`` and ``global``.
 
-    am15g.index.name = 'wavelength'
-    am15g.name = 'am15g'
+    Notes
+    -----
+    If ``wavelength`` is specified this function uses linear interpolation.
 
-    return am15g
+    If the values in ``wavelength`` are too widely spaced, the integral of each
+    spectrum may deviate from its standard value.
+    For global spectra, it is about :math:`1000.37 W/m^2`.
+
+    The values in the data file provided with pvlib-python are copied from an
+    Excel file distributed by NREL, which is found here:
+    https://www.nrel.gov/grid/solar-resource/assets/data/astmg173.xls
+
+    More information about reference spectra is found here:
+    https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html
+
+    Examples
+    --------
+    >>> from pvlib import spectrum
+    >>> am15 = spectrum.get_ASTM_G173()
+    >>> am15_extraterrestrial, am15_global, am15_direct = \
+    >>>     am15['extraterrestrial'], am15['global'], am15['direct']
+    >>> am15.head()
+                extraterrestrial        global        direct
+    wavelength
+    280.0                  0.082  4.730900e-23  2.536100e-26
+    280.5                  0.099  1.230700e-21  1.091700e-24
+    281.0                  0.150  5.689500e-21  6.125300e-24
+    281.5                  0.212  1.566200e-19  2.747900e-22
+    282.0                  0.267  1.194600e-18  2.834600e-21
+
+    >>> am15 = spectrum.get_ASTM_G173([300, 500, 800, 1100])
+    >>> am15
+                extraterrestrial   global    direct
+    wavelength
+    300                  0.45794  0.00102  0.000456
+    500                  1.91600  1.54510  1.339100
+    800                  1.12480  1.07250  0.988590
+    1100                 0.60000  0.48577  0.461130
+
+    References
+    ----------
+    .. [1] ASTM "G173-03 Standard Tables for Reference Solar Spectral
+       Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
+    """  # Contributed by Echedey Luis
+    filepath = os.path.join(pvlib.__path__[0], "data", "ASTMG173.csv")
+
+    am15 = pd.read_csv(
+        filepath,
+        sep=",",
+        index_col=0,
+        skiprows=2,
+        names=["wavelength", "extraterrestrial", "global", "direct"],
+        dtype=float,
+    )
+
+    if wavelengths is not None:
+        am15 = (
+            # fill with NaNs where we want to interpolate
+            am15.reindex(wavelengths, method=None)
+            .interpolate(  # interpolate those NaN values
+                method="linear",
+                limit_area="inside",
+            )
+            .fillna(0.0)  # fill out-of-bounds values with 0.0
+            .loc[wavelengths]  # keep only the requested wavelengths
+        )
+
+    am15.name = "am15"
+    return am15
 
 
 def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):

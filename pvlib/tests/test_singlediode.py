@@ -10,7 +10,7 @@ from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
 from pvlib._deprecation import pvlibDeprecationWarning
 import pytest
-from numpy.testing import assert_allclose
+from numpy.testing import assert_array_equal
 from .conftest import DATA_DIR
 
 POA = 888
@@ -168,16 +168,24 @@ def test_singlediode_precision(method, precise_iv_curves):
     assert np.allclose(pc['i_xx'], outs['i_xx'], atol=1e-6, rtol=0)
 
 
-def test_singlediode_lambert_negative_voc():
-    # Those values result in a negative v_oc out of `_lambertw_v_from_i`
-    x = np.array([0., 1.480501e-11, 0.178, 8000., 1.797559])
-    outs = pvsystem.singlediode(*x, method='lambertw')
-    assert_allclose(outs['v_oc'], 0)
+def test_singlediode_lambert_negative_voc(mocker):
+    """Tests approximation to zero of v_oc when it is negative and small.
+    See singlediode.py:_lambertw > comment 'Set small elements <0 in v_oc to 0'
+    """
+    # Next values should result in a negative v_oc out of `_lambertw_v_from_i`
+    # however, we can't ensure that the output belongs to (-1e-12, 0), so we
+    # mock it. It depends on the platform and Python distro. See issue #2000.
+    patcher = mocker.patch("pvlib.singlediode._lambertw_v_from_i")
+    x = np.array([0.0, 1.480501e-11, 0.178, 8000.0, 1.797559])
+    patcher.return_value=-9.999e-13
+    outs = pvsystem.singlediode(*x, method="lambertw")
+    assert outs["v_oc"] == 0
 
     # Testing for an array
+    patcher.return_value=np.array([-9.999e-13, -1.001e-13])
     x = np.array([x, x]).T
-    outs = pvsystem.singlediode(*x, method='lambertw')
-    assert_allclose(outs['v_oc'].values, [0, 0])
+    outs = pvsystem.singlediode(*x, method="lambertw")
+    assert_array_equal(outs['v_oc'], [0, 0])
 
 
 @pytest.mark.parametrize('method', ['lambertw'])

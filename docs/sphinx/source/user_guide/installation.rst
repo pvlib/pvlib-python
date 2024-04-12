@@ -220,7 +220,7 @@ pvlib-python is compatible with Python 3.
 
 pvlib-python requires Pandas, Numpy, and SciPy. The minimum version requirements
 are specified in
-`setup.py <https://github.com/pvlib/pvlib-python/blob/main/setup.py>`_.
+`pyproject.toml <https://github.com/pvlib/pvlib-python/blob/main/pyproject.toml>`_.
 They are typically releases from several years ago.
 
 A handful of pvlib-python features require additional packages that must

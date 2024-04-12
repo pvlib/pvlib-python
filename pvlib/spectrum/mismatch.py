@@ -174,7 +174,7 @@ def get_ASTM_G173(wavelengths=None):
     >>> am15 = spectrum.get_ASTM_G173()
     >>> am15_extraterrestrial, am15_global, am15_direct = \
     >>>     am15['extraterrestrial'], am15['global'], am15['direct']
-    >>> am15.head()
+    >>> print(am15.head())
                 extraterrestrial        global        direct
     wavelength
     280.0                  0.082  4.730900e-23  2.536100e-26
@@ -184,7 +184,7 @@ def get_ASTM_G173(wavelengths=None):
     282.0                  0.267  1.194600e-18  2.834600e-21
 
     >>> am15 = spectrum.get_ASTM_G173([300, 500, 800, 1100])
-    >>> am15
+    >>> print(am15)
                 extraterrestrial   global    direct
     wavelength
     300                  0.45794  0.00102  0.000456

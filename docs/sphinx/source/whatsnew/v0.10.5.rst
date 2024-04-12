@@ -1,0 +1,35 @@
+.. _whatsnew_01050:
+
+
+v0.10.5 (Anticipated June 2024)
+-------------------------------
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Bug fixes
+~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+* Fix variable name typo at
+  ``docs\examples\system-models\plot_oedi_9068.py``, (:pull:`1996`)
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~

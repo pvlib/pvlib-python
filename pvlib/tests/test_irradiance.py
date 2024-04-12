@@ -27,7 +27,7 @@ from .conftest import (
 @pytest.fixture
 def times():
     # must include night values
-    return pd.date_range(start='20140624', freq='6H', periods=4,
+    return pd.date_range(start='20140624', freq='6h', periods=4,
                          tz='US/Arizona')
 
 
@@ -349,7 +349,7 @@ def test_perez_driesse_components(irrad_data, ephem_data, dni_et,
 
 
 def test_perez_negative_horizon():
-    times = pd.date_range(start='20190101 11:30:00', freq='1H',
+    times = pd.date_range(start='20190101 11:30:00', freq='1h',
                           periods=5, tz='US/Central')
 
     # Avoid test dependencies on functionality not being tested by hard-coding
@@ -711,7 +711,7 @@ def test_dirint_value():
 
 
 def test_dirint_nans():
-    times = pd.date_range(start='2014-06-24T12-0700', periods=5, freq='6H')
+    times = pd.date_range(start='2014-06-24T12-0700', periods=5, freq='6h')
     ghi = pd.Series([np.nan, 1038.62, 1038.62, 1038.62, 1038.62], index=times)
     zenith = pd.Series([10.567, np.nan, 10.567, 10.567, 10.567], index=times)
     pressure = pd.Series([93193., 93193., np.nan, 93193., 93193.], index=times)
@@ -782,7 +782,7 @@ def test_dirint_min_cos_zenith_max_zenith():
     assert_series_equal(out, expected, check_less_precise=True)
 
 
-def test_ghi_from_poa_driesse():
+def test_ghi_from_poa_driesse(mocker):
     # inputs copied from test_gti_dirint
     times = pd.DatetimeIndex(
         ['2014-06-24T06-0700', '2014-06-24T09-0700', '2014-06-24T12-0700'])
@@ -824,6 +824,22 @@ def test_ghi_from_poa_driesse():
 
     expected = [0, -1, 0]
     assert_allclose(expected, niter)
+
+    # test xtol argument
+    poa_global = pd.Series([20, 300, 1000], index=times)
+    # test exception
+    xtol = -3.14159  # negative value raises exception in scipy.optimize.bisect
+    with pytest.raises(ValueError, match=rf"xtol too small \({xtol:g} <= 0\)"):
+        output = irradiance.ghi_from_poa_driesse_2023(
+            surface_tilt, surface_azimuth, zenith, azimuth,
+            poa_global, dni_extra=1366.1, xtol=xtol)
+    # test propagation
+    xtol = 3.141592
+    bisect_spy = mocker.spy(irradiance, "bisect")
+    output = irradiance.ghi_from_poa_driesse_2023(
+        surface_tilt, surface_azimuth, zenith, azimuth,
+        poa_global, dni_extra=1366.1, xtol=xtol)
+    assert bisect_spy.call_args[1]["xtol"] == xtol
 
 
 def test_gti_dirint():
@@ -1210,7 +1226,7 @@ def test_clearsky_index():
     expected = 0.01
     assert_allclose(out, expected, atol=0.001)
     # series
-    times = pd.date_range(start='20180601', periods=2, freq='12H')
+    times = pd.date_range(start='20180601', periods=2, freq='12h')
     ghi_measured = pd.Series([100,  500], index=times)
     ghi_modeled = pd.Series([500, 1000], index=times)
     out = irradiance.clearsky_index(ghi_measured, ghi_modeled)
@@ -1266,7 +1282,7 @@ def test_clearness_index():
     expected = 0.725
     assert_allclose(out, expected, atol=0.001)
     # series
-    times = pd.date_range(start='20180601', periods=2, freq='12H')
+    times = pd.date_range(start='20180601', periods=2, freq='12h')
     ghi = pd.Series([0, 1000], index=times)
     solar_zenith = pd.Series([90, 0], index=times)
     extra_radiation = pd.Series([1360, 1400], index=times)
@@ -1300,7 +1316,7 @@ def test_clearness_index_zenith_independent(airmass_kt):
     expected = 0.443
     assert_allclose(out, expected, atol=0.001)
     # series
-    times = pd.date_range(start='20180601', periods=2, freq='12H')
+    times = pd.date_range(start='20180601', periods=2, freq='12h')
     clearness_index = pd.Series([0, .5], index=times)
     airmass = pd.Series([np.nan, 2], index=times)
     out = irradiance.clearness_index_zenith_independent(clearness_index,
@@ -1311,7 +1327,7 @@ def test_clearness_index_zenith_independent(airmass_kt):
 
 def test_complete_irradiance():
     # Generate dataframe to test on
-    times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='H')
+    times = pd.date_range('2010-07-05 7:00:00-0700', periods=2, freq='h')
     i = pd.DataFrame({'ghi': [372.103976116, 497.087579068],
                       'dhi': [356.543700, 465.44400],
                       'dni': [49.63565561689957, 62.10624908037814]},

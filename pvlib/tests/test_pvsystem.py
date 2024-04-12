@@ -12,7 +12,6 @@ from numpy.testing import assert_allclose
 import unittest.mock as mock
 
 from pvlib import inverter, pvsystem
-from pvlib import atmosphere
 from pvlib import iam as _iam
 from pvlib import irradiance
 from pvlib import spectrum
@@ -184,7 +183,7 @@ def test_retrieve_sam_cecinverter():
 
 def test_sapm(sapm_module_params):
 
-    times = pd.date_range(start='2015-01-01', periods=5, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=5, freq='12h')
     effective_irradiance = pd.Series([-1000, 500, 1100, np.nan, 1000],
                                      index=times)
     temp_cell = pd.Series([10, 25, 50, 25, np.nan], index=times)
@@ -536,7 +535,7 @@ def test_PVSystem_noct_celltemp(mocker):
                                       np.array(wind_speed), model='noct_sam')
     assert_allclose(out, expected)
     dr = pd.date_range(start='2020-01-01 12:00:00', end='2020-01-01 13:00:00',
-                       freq='1H')
+                       freq='1h')
     out = system.get_cell_temperature(pd.Series(index=dr, data=poa_global),
                                       pd.Series(index=dr, data=temp_air),
                                       pd.Series(index=dr, data=wind_speed),
@@ -566,7 +565,7 @@ def test_PVSystem_noct_celltemp_error():
 @pytest.mark.parametrize("model",
                          ['faiman', 'pvsyst', 'sapm', 'fuentes', 'noct_sam'])
 def test_PVSystem_multi_array_celltemp_functions(model, two_array_system):
-    times = pd.date_range(start='2020-08-25 11:00', freq='H', periods=3)
+    times = pd.date_range(start='2020-08-25 11:00', freq='h', periods=3)
     irrad_one = pd.Series(1000, index=times)
     irrad_two = pd.Series(500, index=times)
     temp_air = pd.Series(25, index=times)
@@ -580,7 +579,7 @@ def test_PVSystem_multi_array_celltemp_functions(model, two_array_system):
 @pytest.mark.parametrize("model",
                          ['faiman', 'pvsyst', 'sapm', 'fuentes', 'noct_sam'])
 def test_PVSystem_multi_array_celltemp_multi_temp(model, two_array_system):
-    times = pd.date_range(start='2020-08-25 11:00', freq='H', periods=3)
+    times = pd.date_range(start='2020-08-25 11:00', freq='h', periods=3)
     irrad = pd.Series(1000, index=times)
     temp_air_one = pd.Series(25, index=times)
     temp_air_two = pd.Series(5, index=times)
@@ -605,7 +604,7 @@ def test_PVSystem_multi_array_celltemp_multi_temp(model, two_array_system):
 @pytest.mark.parametrize("model",
                          ['faiman', 'pvsyst', 'sapm', 'fuentes', 'noct_sam'])
 def test_PVSystem_multi_array_celltemp_multi_wind(model, two_array_system):
-    times = pd.date_range(start='2020-08-25 11:00', freq='H', periods=3)
+    times = pd.date_range(start='2020-08-25 11:00', freq='h', periods=3)
     irrad = pd.Series(1000, index=times)
     temp_air = pd.Series(25, index=times)
     wind_speed_one = pd.Series(1, index=times)
@@ -933,7 +932,7 @@ def test_calcparams_pvsyst_all_scalars(pvsyst_module_params):
 
 
 def test_calcparams_desoto(cec_module_params):
-    times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=3, freq='12h')
     df = pd.DataFrame({
         'effective_irradiance': [0.0, 800.0, 800.0],
         'temp_cell': [25, 25, 50]
@@ -965,7 +964,7 @@ def test_calcparams_desoto(cec_module_params):
 
 
 def test_calcparams_cec(cec_module_params):
-    times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=3, freq='12h')
     df = pd.DataFrame({
         'effective_irradiance': [0.0, 800.0, 800.0],
         'temp_cell': [25, 25, 50]
@@ -1008,7 +1007,7 @@ def test_calcparams_cec_extra_params_propagation(cec_module_params, mocker):
     checks that the latter is called with the expected parameters instead of
     some default values.
     """
-    times = pd.date_range(start='2015-01-01', periods=3, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=3, freq='12h')
     effective_irradiance = pd.Series([0.0, 800.0, 800.0], index=times)
     temp_cell = pd.Series([25, 25, 50], index=times)
     extra_parameters = dict(
@@ -1035,7 +1034,7 @@ def test_calcparams_cec_extra_params_propagation(cec_module_params, mocker):
 
 
 def test_calcparams_pvsyst(pvsyst_module_params):
-    times = pd.date_range(start='2015-01-01', periods=2, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=2, freq='12h')
     df = pd.DataFrame({
         'effective_irradiance': [0.0, 800.0],
         'temp_cell': [25, 50]
@@ -1527,7 +1526,7 @@ def test_mpp_series():
 
 
 def test_singlediode_series(cec_module_params):
-    times = pd.date_range(start='2015-01-01', periods=2, freq='12H')
+    times = pd.date_range(start='2015-01-01', periods=2, freq='12h')
     effective_irradiance = pd.Series([0.0, 800.0], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
         effective_irradiance,
@@ -1617,7 +1616,7 @@ def test_singlediode_floats_ivcurve():
 
 
 def test_singlediode_series_ivcurve(cec_module_params):
-    times = pd.date_range(start='2015-06-01', periods=3, freq='6H')
+    times = pd.date_range(start='2015-06-01', periods=3, freq='6h')
     effective_irradiance = pd.Series([0.0, 400.0, 800.0], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
                                   effective_irradiance,
@@ -1911,7 +1910,7 @@ def test_PVSystem_multiple_array_get_aoi():
 @pytest.fixture
 def solar_pos():
     times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6H')
+                          end='20160101 1800-0700', freq='6h')
     location = Location(latitude=32, longitude=-111)
     return location.get_solarposition(times)
 
@@ -2369,10 +2368,10 @@ def test_PVSystem_single_array():
 
 
 def test_combine_loss_factors():
-    test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='D')
+    test_index = pd.date_range(start='1990/01/01T12:00', periods=365, freq='d')
     loss_1 = pd.Series(.10, index=test_index)
     loss_2 = pd.Series(.05, index=pd.date_range(start='1990/01/01T12:00',
-                                                periods=365*2, freq='D'))
+                                                periods=365*2, freq='d'))
     loss_3 = pd.Series(.02, index=pd.date_range(start='1990/01/01',
                                                 periods=12, freq='MS'))
     expected = pd.Series(.1621, index=test_index)

@@ -20,15 +20,21 @@ import pandas as pd
 MIDC_VARIABLE_MAP = {
     'BMS': {
         'Global CMP22 (vent/cor) [W/m^2]': 'ghi',
-        'Direct NIP [W/m^2]': 'dni',
+        'Direct CHP1-1 [W/m^2]': 'dni',
+        # NIP was mapped to dni for pvlib<=0.10.4
+        # 'Direct NIP [W/m^2]': 'dni',
         'Diffuse CM22-1 (vent/cor) [W/m^2]': 'dhi',
         'Avg Wind Speed @ 6ft [m/s]': 'wind_speed',
         'Tower Dry Bulb Temp [deg C]': 'temp_air',
         'Tower RH [%]': 'relative_humidity'},
     'UOSMRL': {
         'Global CMP22 [W/m^2]': 'ghi',
-        'Direct NIP [W/m^2]': 'dni',
-        'Diffuse Schenk [W/m^2]': 'dhi',
+        'Direct CHP1 [W/m^2]': 'dni',
+        'Diffuse [W/m^2]': 'dhi',
+        # NIP was mapped to dni for pvlib<=0.10.4
+        # 'Direct NIP [W/m^2]': 'dni',
+        # Schenk was mapped to dhi for pvlib<=0.10.4
+        # 'Diffuse Schenk [W/m^2]': 'dhi',
         'Air Temperature [deg C]': 'temp_air',
         'Relative Humidity [%]': 'relative_humidity',
         'Avg Wind Speed @ 10m [m/s]': 'wind_speed'},
@@ -80,18 +86,17 @@ MIDC_VARIABLE_MAP = {
         'Air Temperature [deg C]': 'temp_air',
         'Rel Humidity [%]': 'relative_humidity',
         'Avg Wind Speed @ 3m [m/s]': 'wind_speed'},
-    'VTIF': {
+    'NWTC': {
         'Global Horizontal [W/m^2]': 'ghi',
         'Direct Normal [W/m^2]': 'dni',
         'Diffuse Horizontal [W/m^2]': 'dhi',
-        'Air Temperature [deg C]': 'temp_air',
-        'Avg Wind Speed @ 3m [m/s]': 'wind_speed',
-        'Rel Humidity [%]': 'relative_humidity'},
-    'NWTC': {
-        'Global PSP [W/m^2]': 'ghi',
+        # PSP instrument was removed Feb. 2021
+        # PSP was mapped to ghi for pvlib<=0.10.4
+        # 'Global PSP [W/m^2]': 'ghi',
         'Temperature @ 2m [deg C]': 'temp_air',
         'Avg Wind Speed @ 2m [m/s]': 'wind_speed',
-        'Relative Humidity [%]': 'relative_humidity'}}
+        'Relative Humidity [%]': 'relative_humidity'},
+}
 
 
 # Maps problematic timezones to 'Etc/GMT' for parsing.

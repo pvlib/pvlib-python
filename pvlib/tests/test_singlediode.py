@@ -175,7 +175,7 @@ def test_singlediode_lambert_negative_voc():
     assert_approx_equal(outs['v_oc'], 0)
 
     # Testing for an array
-    x  = np.array([x, x]).T
+    x = np.array([x, x]).T
     outs = pvsystem.singlediode(*x, method='lambertw')
     assert_approx_equal(outs['v_oc'], [0, 0])
 

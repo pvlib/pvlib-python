@@ -10,6 +10,7 @@ from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
 from pvlib._deprecation import pvlibDeprecationWarning
 import pytest
+from numpy.testing import assert_approx_equal
 from .conftest import DATA_DIR
 
 POA = 888
@@ -168,16 +169,15 @@ def test_singlediode_precision(method, precise_iv_curves):
 
 
 def test_singlediode_lambert_negative_voc():
-
     # Those values result in a negative v_oc out of `_lambertw_v_from_i`
     x = np.array([0., 1.480501e-11, 0.178, 8000., 1.797559])
     outs = pvsystem.singlediode(*x, method='lambertw')
-    assert outs['v_oc'] == 0
+    assert_approx_equal(outs['v_oc'], 0)
 
     # Testing for an array
     x  = np.array([x, x]).T
     outs = pvsystem.singlediode(*x, method='lambertw')
-    assert np.array_equal(outs['v_oc'], [0, 0])
+    assert_approx_equal(outs['v_oc'], [0, 0])
 
 
 @pytest.mark.parametrize('method', ['lambertw'])

@@ -177,15 +177,15 @@ def test_singlediode_lambert_negative_voc(mocker):
     # mock it. It depends on the platform and Python distro. See issue #2000.
     patcher = mocker.patch("pvlib.singlediode._lambertw_v_from_i")
     x = np.array([0.0, 1.480501e-11, 0.178, 8000.0, 1.797559])
-    patcher.return_value=-9.999e-13
+    patcher.return_value = -9.999e-13
     outs = pvsystem.singlediode(*x, method="lambertw")
     assert outs["v_oc"] == 0
 
     # Testing for an array
-    patcher.return_value=np.array([-9.999e-13, -1.001e-13])
+    patcher.return_value = np.array([-9.999e-13, -1.001e-13])
     x = np.array([x, x]).T
     outs = pvsystem.singlediode(*x, method="lambertw")
-    assert_array_equal(outs['v_oc'], [0, 0])
+    assert_array_equal(outs["v_oc"], [0, 0])
 
 
 @pytest.mark.parametrize('method', ['lambertw'])

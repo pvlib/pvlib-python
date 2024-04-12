@@ -82,26 +82,30 @@ pvlib python that you used. pvlib python DOIs are listed at
 
 Additional pvlib python publications include:
 
-* J. S. Stein, “The photovoltaic performance modeling
-  collaborative (PVPMC),” in Photovoltaic Specialists Conference, 2012.
+* J. S. Stein, "The Photovoltaic Performance Modeling Collaborative (PVPMC),"
+  2012 38th IEEE Photovoltaic Specialists Conference (PVSC),
+  Austin, TX, USA, 2012, pp. 003048-003052, https://doi.org/10.1109/PVSC.2012.6318225.
 * R. W. Andrews, J. S. Stein, C. Hansen and D. Riley, "Introduction to the open
   source PV LIB for python Photovoltaic system modelling package," 
-  2014 IEEE 40th Photovoltaic Specialist Conference (PVSC), Denver, CO, USA, 
-  2014, pp. 0170-0174, https://doi.org/10.1109/PVSC.2014.6925501
+  2014 IEEE 40th Photovoltaic Specialist Conference (PVSC),
+  Denver, CO, USA, 2014, pp. 0170-0174, https://doi.org/10.1109/PVSC.2014.6925501
   (`paper
   <https://www.osti.gov/servlets/purl/1241774>`__)
-* W.F. Holmgren, R.W. Andrews, A.T. Lorenzo, and J.S. Stein,
-  “PVLIB Python 2015,” in 42nd Photovoltaic Specialists Conference, 2015.
+* W.F. Holmgren, R.W. Andrews, A.T. Lorenzo, and J.S. Stein, "PVLIB Python 2015,"
+  2015 IEEE 42nd Photovoltaic Specialist Conference (PVSC),
+  New Orleans, LA, USA, 2015, pp. 1-5, https://doi.org/10.1109/PVSC.2015.7356005
   (`paper
   <https://github.com/pvlib/pvsc2015/blob/main/pvlib_pvsc_42.pdf>`__ and
   the `notebook to reproduce the figures
   <http://nbviewer.org/github/pvlib/pvsc2015/blob/main/paper.ipynb>`_)
 * J.S. Stein, W.F. Holmgren, J. Forbess, and C.W. Hansen,
-  "PVLIB: Open Source Photovoltaic Performance Modeling Functions
-  for Matlab and Python," in 43rd Photovoltaic Specialists Conference, 2016.
+  "PVLIB: Open Source Photovoltaic Performance Modeling Functions for Matlab and Python,"
+  2016 IEEE 43rd Photovoltaic Specialists Conference (PVSC),
+  Portland, OR, USA, 2016, pp. 3425-3430, https://doi.org/10.1109/PVSC.2016.7750303.
 * W.F. Holmgren and D.G. Groenendyk,
   "An Open Source Solar Power Forecasting Tool Using PVLIB-Python,"
-  in 43rd Photovoltaic Specialists Conference, 2016.
+  2016 IEEE 43rd Photovoltaic Specialists Conference (PVSC),
+  Portland, OR, USA, 2016, pp. 0972-0975, https://doi.org/10.1109/PVSC.2016.7749755.
 
 
 Logo

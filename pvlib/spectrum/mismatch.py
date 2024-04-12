@@ -136,9 +136,12 @@ def get_ASTM_G173(wavelengths=None):
     spectrum on a 37-degree tilted surface, optionally interpolated to the
     specified wavelength(s).
 
+    The AM1.5 spectrum is the standard reference spectrum for terrestrial
+    photovoltaic systems [1]_.
+
     Parameters
     ----------
-    wavelengths: numeric, optional
+    wavelengths : numeric, optional
         Wavelengths at which the spectrum is interpolated.
         If not provided, the 2002 wavelengths of the standard are returned.
         :math:`nm`.
@@ -146,7 +149,7 @@ def get_ASTM_G173(wavelengths=None):
 
     Returns
     -------
-    am15: pandas.DataFrame
+    am15 : pandas.DataFrame
         The AM1.5 standard spectrums by ``wavelength [nm]``, in
         :math:`\frac{W}{m^2 nm}`. Column names are ``extraterrestrial``,
         ``direct`` and ``global``.
@@ -163,8 +166,7 @@ def get_ASTM_G173(wavelengths=None):
     Excel file distributed by NREL, which is found here:
     https://www.nrel.gov/grid/solar-resource/assets/data/astmg173.xls
 
-    More information about reference spectra is found here:
-    https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html
+    More information about reference spectra is found at [2]_.
 
     Examples
     --------
@@ -194,7 +196,9 @@ def get_ASTM_G173(wavelengths=None):
     ----------
     .. [1] ASTM "G173-03 Standard Tables for Reference Solar Spectral
        Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
-    """  # Contributed by Echedey Luis
+    .. [2] “Reference Air Mass 1.5 Spectra,” www.nrel.gov.
+       https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html
+    """  # Contributed by Echedey Luis, inspired by Anton Driesse (get_am15g)
     filepath = os.path.join(pvlib.__path__[0], "data", "ASTMG173.csv")
 
     am15 = pd.read_csv(

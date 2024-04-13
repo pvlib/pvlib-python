@@ -557,8 +557,14 @@ def shaded_fraction1d(
 
 def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     r"""
-    A shading correction factor for the power yield of non-monolithic Silicon
+    A shading correction factor for the direct and circumsolar incident
+    irradiance of non-monolithic Silicon
     modules and arrays with an arbitrary number of bypass diodes.
+
+    .. versionadded:: 0.10.5
+
+    Parameters
+    ----------
     shaded_fraction : numeric
         Surface shaded fraction. Unitless.
     shaded_blocks : numeric
@@ -569,7 +575,7 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     Returns
     -------
     shading_correction_factor : numeric
-        Multiply unshaded power by this factor.
+        Multiply direct and circumsolar irradiance by this factor.
 
     Notes
     -----
@@ -580,9 +586,9 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
         (1 - F_{ES}) = (1 - F_{GS}) (1 - \frac{N_{SB}}{N_{TB} + 1})
 
     Where :math:`(1 - F_{ES})` is the correction factor to be multiplied by
-    the unshaded irradiance, :math:`F_{GS}` is the shaded fraction,
-    :math:`N_{SB}` is the number of shaded blocks and :math:`N_{TB}` is the
-    number of total blocks.
+    the direct and circumsolar irradiance, :math:`F_{GS}` is the shaded
+    fraction of the collector, :math:`N_{SB}` is the number of shaded blocks
+    and :math:`N_{TB}` is the number of total blocks.
 
     Blocks terminology
     ^^^^^^^^^^^^^^^^^^
@@ -597,6 +603,16 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
      - whether or not the module is comprised of *half-cut cells*
     The latter two are heavily correlated.
 
+    For example:
+     - A module with 3 bypass diodes and 3 junction boxes is likely to have
+       3 blocks.
+     - A module with 1 bypass diode and 1 junction box is likely to have 1
+       block.
+     - A module with 3 bypass diodes and 1 junction box is likely to have 3
+       blocks.
+     - A module with 1 bypass diode and 3 junction boxes is likely to have 1
+       block.
+
     Examples
     --------
     Minimal example. For a complete example, see
@@ -606,7 +622,9 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     >>> total_blocks = 3  # blocks along the vertical of the module
     >>> Pwr_out_unshaded = 100  # kW
     >>> shaded_fraction = shading.shaded_fraction1d(
-            TODO copy from linear loss PR
+            80, 180, 90, 25,
+             collector_width=0.5, row_pitch=1, surface_to_axis_offset=0,
+             cross_axis_slope=5.711, shading_tracker_tilt=50)
         )
     >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
     >>> loss_correction = shading.martinez_shade_factor()
@@ -614,7 +632,8 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
 
     See Also
     --------
-    pvlib.shading.linear_shade_loss for monolithic thin film modules
+    shaded_fraction1d : to calculate 1-dimensional shaded fraction
+    linear_shade_loss
 
     References
     ----------

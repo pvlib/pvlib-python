@@ -346,9 +346,10 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
 
 def linear_shade_loss(shaded_fraction, diffuse_fraction):
     r"""
-    Fraction of power lost to linear shade loss applicable to monolithic thin
-    film modules like First Solar CdTe, where the shadow is perpendicular to
-    cell scribe lines.
+    Fraction of power lost to linear shade loss.
+
+    Linear shade loss is applicable to monolithic thin film modules like
+    First Solar CdTe, where the shadow is perpendicular to cell scribe lines.
 
     .. versionadded:: 0.10.5
 
@@ -398,5 +399,5 @@ def linear_shade_loss(shaded_fraction, diffuse_fraction):
     ----------
     .. [1] First Solar, “First Solar Series 4 Module.” [Online]. Available at: https://web.archive.org/web/20230512210902/https://www.firstsolar.com/-/media/First-Solar/Technical-Documents/User-Guides/Series-4-Module-User-Guide-North-America.ashx?la=en [accessed 2024-04-12]
     .. [2] First Solar, “Diffuse Irradiance and Tracker Simulations,” May 01-02, 2013. http://web.archive.org/web/20170127080529/https://energy.sandia.gov/wp-content/gallery/uploads/26-Littmann-Tracking-and-Diffuse-Shading.pdf0_.pdf [accessed 2024-04-12]
-    """
+    """  # noqa: E501
     return shaded_fraction * (1 - diffuse_fraction)

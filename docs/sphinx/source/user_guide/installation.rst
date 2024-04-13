@@ -83,15 +83,10 @@ for a password then you're probably trying to install pvlib into your
 system's Python distribution. This is usually a bad idea and you should
 follow the :ref:`nopython` instructions before installing pvlib.
 
-You may still want to download the Python source code so that you can
-easily get all of the Jupyter Notebook tutorials. Either clone the `git
+You may still want to download the Python source code. Either clone the `git
 repository <https://github.com/pvlib/pvlib-python>`_ or go to the
 `Releases page <https://github.com/pvlib/pvlib-python/releases>`_ to
-download the zip file of the most recent release. You can also use the
-nbviewer website to choose a tutorial to experiment with. Go to our
-`nbviewer tutorial page
-<http://nbviewer.jupyter.org/github/pvlib/pvlib-python/tree/main/docs/
-tutorials/>`_.
+download the zip file of the most recent release.
 
 
 .. _editablelibrary:

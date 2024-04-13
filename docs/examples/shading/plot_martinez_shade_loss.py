@@ -20,9 +20,8 @@ a PV array comprised of non-monolithic silicon cells.
 # 2. :py:func:`pvlib.shading.shading_factor1d` to calculate the fraction of
 #    shaded surface and the number of shaded *blocks*, due to row-to-row
 #    shading
-# 
-# .. versionadded:: 0.10.5
-# .. sectionauthor:: Echedey Luis <echelual@gmail.com>
+#
+# .. sectionauthor:: Echedey Luis <echelual (at) gmail.com>
 
 from pvlib import shading
 import pandas as pd

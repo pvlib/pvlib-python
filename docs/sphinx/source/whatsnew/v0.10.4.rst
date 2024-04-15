@@ -64,7 +64,6 @@ Contributors
 * Roma Koulikov (:ghuser:`matsuobasho`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Peter Dudfield (:ghuser:`peterdudfield`)
-* Mark A. Mikofski (:ghuser:`mikofski`)
 * Anton Driesse (:ghuser:`adriesse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Will Holmgren (:ghuser:`wholmgren`)

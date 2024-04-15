@@ -11,7 +11,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added function :py:func:`pvlib.shading.shaded_fraction1d`, to calculate the
+  shade perpendicular to ``axis_azimuth``. (:issue:`1689`, :pull:`1725`, :pull:`1962`)
 
 Bug fixes
 ~~~~~~~~~
@@ -31,3 +32,5 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)
+* Echedey Luis (:ghuser:`echedey-ls`)

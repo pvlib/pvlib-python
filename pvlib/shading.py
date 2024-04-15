@@ -421,7 +421,7 @@ def shaded_fraction1d(
     +------------------+----------------------------+---------------------+
     | :math:`p`        | ``row_pitch``              | Any consistent      |
     +------------------+----------------------------+ length unit across  |
-    | :math:`l`        | ``collector_width``        | all these           |
+    | :math:`\ell`     | ``collector_width``        | all these           |
     +------------------+----------------------------+ parameters, e.g.    |
     | :math:`z_0`      | ``surface_to_axis_offset`` | :math:`m`.          |
     +------------------+----------------------------+---------------------+

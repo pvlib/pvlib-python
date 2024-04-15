@@ -347,7 +347,7 @@ def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
 def shaded_fraction1d(
     solar_zenith,
     solar_azimuth,
-    trackers_axis_azimuth,
+    axis_azimuth,
     shaded_tracker_tilt,
     *,
     collector_width,
@@ -374,7 +374,7 @@ def shaded_fraction1d(
         Solar position zenith, in degrees.
     solar_azimuth : numeric
         Solar position azimuth, in degrees.
-    trackers_axis_azimuth : numeric
+    axis_azimuth : numeric
         In degrees. North=0º, South=180º, East=90º, West=270º.
     shaded_tracker_tilt : numeric
         Tilt of the tracker receiving the shade in degrees.
@@ -452,7 +452,7 @@ def shaded_fraction1d(
         solar_azimuth,
         0,  # no rotation from the horizontal plane
         # the vector that defines the projection plane for prior conditions
-        trackers_axis_azimuth,
+        axis_azimuth,
     )
 
     # calculate repeated elements

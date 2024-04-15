@@ -284,7 +284,7 @@ def sf1d_premises_and_expected():
     test_data.drop(columns=["x_L", "z_L", "x_R", "z_R"], inplace=True)
     # for the projected solar zenith angle
     # this returns the same psz angle as test_data["solar_zenith"]
-    test_data["solar_azimuth"], test_data["trackers_axis_azimuth"] = 180, 90
+    test_data["solar_azimuth"], test_data["axis_azimuth"] = 180, 90
 
     # return 1st: premises dataframe first and 2nd: shaded fraction series
     return (

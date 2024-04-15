@@ -262,7 +262,7 @@ def sf1d_premises_and_expected():
         (test_data["z_R"] - test_data["z_L"])
         / (test_data["x_L"] - test_data["x_R"])
     )
-    test_data["row_pitch"] = test_data["x_L"] - test_data["x_R"]
+    test_data["pitch"] = test_data["x_L"] - test_data["x_R"]
     # switch Left/Right trackers if needed to make the right one the shaded
     where_switch = test_data["theta_s"] >= 0
     test_data["theta_L"], test_data["theta_R"] = np.where(

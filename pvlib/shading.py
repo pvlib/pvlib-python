@@ -351,7 +351,7 @@ def shaded_fraction1d(
     shaded_tracker_tilt,
     *,
     collector_width,
-    row_pitch,
+    pitch,
     surface_to_axis_offset=0,
     cross_axis_slope=0,
     shading_tracker_tilt=None,
@@ -364,7 +364,7 @@ def shaded_fraction1d(
     share the same tilt and azimuth values.
 
     If only the GCR is known, feed GCR into ``trackers_vertical_length`` and
-    specify ``trackers_row_pitch=1``.
+    specify ``pitch=1``.
 
     .. versionadded:: 0.10.5
 
@@ -381,7 +381,7 @@ def shaded_fraction1d(
     collector_width : numeric
         Vertical length of a tilted tracker. The returned ``shaded fraction``
         is the ratio of the shadow over this value.
-    row_pitch : numeric
+    pitch : numeric
         Axis-to-axis horizontal spacing of the trackers.
     surface_to_axis_offset : numeric, default 0
         Distance between the rotating axis and the collector surface.
@@ -419,7 +419,7 @@ def shaded_fraction1d(
     +------------------+----------------------------+ :math:`^{\circ}`    |
     | :math:`\beta_c`  | ``cross_axis_slope``       |                     |
     +------------------+----------------------------+---------------------+
-    | :math:`p`        | ``row_pitch``              | Any consistent      |
+    | :math:`p`        | ``pitch``                  | Any consistent      |
     +------------------+----------------------------+ length unit across  |
     | :math:`\ell`     | ``collector_width``        | all these           |
     +------------------+----------------------------+ parameters, e.g.    |
@@ -474,7 +474,7 @@ def shaded_fraction1d(
             * (sind(thetas_2_S_diff) - sind(thetas_1_S_diff))
         )
         - (
-            row_pitch
+            pitch
             / collector_width
             * cosd(thetaS_tilt_diff)
             / cos_theta_2_S_diff_abs

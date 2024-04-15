@@ -348,20 +348,22 @@ def shaded_fraction1d(
     solar_zenith,
     solar_azimuth,
     axis_azimuth,
-    shaded_tracker_tilt,
+    shaded_tracker_rotation,
     *,
     collector_width,
     pitch,
+    axis_tilt=0,
     surface_to_axis_offset=0,
     cross_axis_slope=0,
-    shading_tracker_tilt=None,
+    shading_tracker_rotation=None,
 ):
     r"""
-    Shaded fraction in the vertical dimension of tilted rows.
+    Shaded fraction in the vertical dimension of tilted rows, or perpendicular
+    to the ``axis_azimuth`` of horizontal rows.
 
-    If ``shading_tracker_tilt`` isn't provided, assumes both the shaded
+    If ``shading_tracker_rotation`` isn't provided, assumes both the shaded
     row and the one blocking the direct beam
-    share the same tilt and azimuth values.
+    share the same rotation and azimuth values.
 
     If only the GCR is known, feed GCR into ``trackers_vertical_length`` and
     specify ``pitch=1``.
@@ -376,20 +378,24 @@ def shaded_fraction1d(
         Solar position azimuth, in degrees.
     axis_azimuth : numeric
         In degrees. North=0º, South=180º, East=90º, West=270º.
-    shaded_tracker_tilt : numeric
-        Tilt of the tracker receiving the shade in degrees.
+    shaded_tracker_rotation : numeric
+        Right-handed rotation of the tracker receiving the shade, with respect
+        to ``axis_azimuth``. In degrees :math:`^{\circ}`.
     collector_width : numeric
         Vertical length of a tilted tracker. The returned ``shaded fraction``
         is the ratio of the shadow over this value.
     pitch : numeric
         Axis-to-axis horizontal spacing of the trackers.
+    axis_tilt : numeric, default 0
+        Tilt of the rows axis from horizontal. In degrees :math:`^{\circ}`.
     surface_to_axis_offset : numeric, default 0
         Distance between the rotating axis and the collector surface.
     cross_axis_slope : numeric, default 0
         Angle of the plane containing the rows' axes from
         horizontal. In degrees.
-    shading_tracker_tilt : numeric, optional
-        Tilt of the tracker casting the shadow.
+    shading_tracker_rotation : numeric, optional
+        Right-handed rotation of the tracker casting the shadow, with respect
+        to ``axis_azimuth``. In degrees :math:`^{\circ}`.
 
     Returns
     -------
@@ -413,9 +419,9 @@ def shaded_fraction1d(
     +------------------+----------------------------+---------------------+
     | Symbol           | Parameter                  | Units               |
     +==================+============================+=====================+
-    | :math:`\theta_1` | ``shading_tracker_tilt``   |                     |
+    | :math:`\theta_1` |``shading_tracker_rotation``|                     |
     +------------------+----------------------------+                     |
-    | :math:`\theta_2` | ``shaded_tracker_tilt``    | Degrees             |
+    | :math:`\theta_2` | ``shaded_tracker_rotation``| Degrees             |
     +------------------+----------------------------+ :math:`^{\circ}`    |
     | :math:`\beta_c`  | ``cross_axis_slope``       |                     |
     +------------------+----------------------------+---------------------+
@@ -440,25 +446,22 @@ def shaded_fraction1d(
     """
     # For nomenclature you may refer to [1].
 
-    # tilt of the tracker casting the shadow defaults to shaded tracker tilt
-    if shading_tracker_tilt is None:
-        shading_tracker_tilt = shaded_tracker_tilt
+    # rotation of tracker casting the shadow defaults to shaded tracker's one
+    if shading_tracker_rotation is None:
+        shading_tracker_rotation = shaded_tracker_rotation
 
-    # projected solar zenith:
-    # consider the angle the sun direct beam has on the vertical plane which
-    # contains the row's normal vector, with respect to a horizontal line
+    # projected solar zenith angle
     projected_solar_zenith = projected_solar_zenith_angle(
         solar_zenith,
         solar_azimuth,
-        0,  # no rotation from the horizontal plane
-        # the vector that defines the projection plane for prior conditions
+        axis_tilt,
         axis_azimuth,
     )
 
     # calculate repeated elements
-    thetas_1_S_diff = shading_tracker_tilt - projected_solar_zenith
-    thetas_2_S_diff = shaded_tracker_tilt - projected_solar_zenith
-    thetaS_tilt_diff = projected_solar_zenith - cross_axis_slope
+    thetas_1_S_diff = shading_tracker_rotation - projected_solar_zenith
+    thetas_2_S_diff = shaded_tracker_rotation - projected_solar_zenith
+    thetaS_rotation_diff = projected_solar_zenith - cross_axis_slope
 
     cos_theta_2_S_diff_abs = np.abs(cosd(thetas_2_S_diff))
 
@@ -476,7 +479,7 @@ def shaded_fraction1d(
         - (
             pitch
             / collector_width
-            * cosd(thetaS_tilt_diff)
+            * cosd(thetaS_rotation_diff)
             / cos_theta_2_S_diff_abs
             / cosd(cross_axis_slope)
         )

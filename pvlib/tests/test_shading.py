@@ -272,8 +272,8 @@ def sf1d_premises_and_expected():
     )
     test_data.rename(
         columns={
-            "theta_L": "shading_tracker_tilt",
-            "theta_R": "shaded_tracker_tilt",
+            "theta_L": "shading_tracker_rotation",
+            "theta_R": "shaded_tracker_rotation",
             "z_0": "surface_to_axis_offset",
             "l": "collector_width",
             "theta_s": "solar_zenith",  # for the projected solar zenith angle

@@ -430,7 +430,7 @@ def shaded_fraction1d(
 
     See also
     --------
-    pvlib.tracking.projected_solar_zenith_angle
+    pvlib.shading.projected_solar_zenith_angle
 
     References
     ----------

@@ -4,7 +4,7 @@
 Comparison with PVLIB MATLAB
 ****************************
 
-PVLIB was originally developed as a library for MATLAB at Sandia
+pvlib was originally developed as a library for MATLAB at Sandia
 National Lab, and Sandia remains the official maintainer of the MATLAB
 library. Sandia supported the initial Python port and
 then released further project maintenance and development to the

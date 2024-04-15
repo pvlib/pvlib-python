@@ -25,6 +25,8 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Fix variable name typo at
+  ``docs\examples\system-models\plot_oedi_9068.py``, (:pull:`1996`)
 
 
 Requirements

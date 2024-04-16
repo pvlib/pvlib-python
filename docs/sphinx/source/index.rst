@@ -10,14 +10,14 @@ energy systems and accomplishing related tasks.
 The core mission of pvlib python is to provide open,
 reliable, interoperable, and benchmark implementations of PV system models.
 
-The source code for pvlib python is hosted on `github
+The source code for pvlib python is hosted on `GitHub
 <https://github.com/pvlib/pvlib-python>`_.
 Please see the :ref:`installation` page for installation help.
 
 For examples of how to use pvlib python, please see
-:ref:`package_overview` and our `Jupyter Notebook tutorials
-<http://nbviewer.org/github/pvlib/pvlib-python/tree/main/docs/
-tutorials/>`_. The documentation assumes general familiarity with
+:ref:`package_overview` and the `Example Gallery
+<https://pvlib-python.readthedocs.io/en/stable/gallery/index.html/>`_.
+The documentation assumes general familiarity with
 Python, NumPy, and Pandas. Google searches will yield many
 excellent tutorials for these packages.
 

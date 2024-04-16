@@ -34,7 +34,7 @@ ensure consistency throughout the library.
 History and acknowledgement
 ===========================
 
-pvlib python began in 2013 as a Python translation of the [PVLIB for Matlab](https://github.com/sandialabs/MATLAB_PV_LIB)
+pvlib python began in 2013 as a Python translation of the `PVLIB for Matlab <https://github.com/sandialabs/MATLAB_PV_LIB>`_
 toolbox developed by Sandia National Laboratories. pvlib python has grown substantially since then.
 Today it contains code contributions from over a hundred individuals worldwide
 and is maintained by a core group of PV modelers from a variety of institutions.

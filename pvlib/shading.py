@@ -382,7 +382,7 @@ def shaded_fraction1d(
         Right-handed rotation of the tracker receiving the shade, with respect
         to ``axis_azimuth``. In degrees :math:`^{\circ}`.
     collector_width : numeric
-        Vertical length of a tilted tracker. The returned ``shaded fraction``
+        Vertical length of a tilted tracker. The returned ``shaded_fraction``
         is the ratio of the shadow over this value.
     pitch : numeric
         Axis-to-axis horizontal spacing of the trackers.
@@ -392,7 +392,8 @@ def shaded_fraction1d(
         Distance between the rotating axis and the collector surface.
     cross_axis_slope : numeric, default 0
         Angle of the plane containing the rows' axes from
-        horizontal. In degrees.
+        horizontal. Right-handed rotation with respect to ``axis_azimuth``.
+        In degrees :math:`^{\circ}`.
     shading_tracker_rotation : numeric, optional
         Right-handed rotation of the tracker casting the shadow, with respect
         to ``axis_azimuth``. In degrees :math:`^{\circ}`.
@@ -437,6 +438,55 @@ def shaded_fraction1d(
     See also
     --------
     pvlib.shading.projected_solar_zenith_angle
+
+    Examples
+    --------
+    Fixed-tilt south-facing array on flat terrain
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    Tilted tracker with a pitch of :math:`1.5m`, a collector width of
+    :math:`2m`, and tracker rotations of :math:`30^{\circ}`. In the morning.
+
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=104.5,
+    ...     axis_azimuth=90, shaded_tracker_rotation=30,
+    ...     shading_tracker_rotation=30, collector_width=2, pitch=1,
+    ...     axis_tilt=0, surface_to_axis_offset=0.05, cross_axis_slope=0)
+    0.6827437712114521
+
+    Fixed-tilt north-facing array on sloped terrain
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    Tilted tracker with a pitch of :math:`1m`, a collector width of
+    :math:`2.5m`, and tracker rotations of :math:`50^{\circ}` for the shaded
+    tracker and :math:`30^{\circ}` for the shading tracker. The rows are on a
+    :math:`10^{\circ}` slope, where their axis is on the most inclined
+    direction (zero cross-axis slope). Shaded in the morning.
+
+    >>> shaded_fraction1d(solar_zenith=65, solar_azimuth=75.5,
+    ...     axis_azimuth=270, shaded_tracker_rotation=50,
+    ...     shading_tracker_rotation=30, collector_width=2.5, pitch=1,
+    ...     axis_tilt=10, surface_to_axis_offset=0.05, cross_axis_slope=0)
+    0.6975923460352351
+
+    N-S single-axis tracker on sloped terrain
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    Horizontal trackers with a pitch of :math:`1m`, a collector width of
+    :math:`1.4m`, and tracker rotations of :math:`30^{\circ}` pointing east,
+    in the morning. Terrain slope is :math:`7^{\circ}` west-east (east-most
+    tracker is higher that the west-most tracker).
+
+    >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=90, axis_azimuth=180,
+    ...     shaded_tracker_rotation=-30, collector_width=1.4, pitch=1,
+    ...     axis_tilt=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
+    0.5828961460616938
+
+    Note the previous example only calculates the shaded fraction for the
+    west-most tracker. To calculate the shaded fraction for the east-most
+    tracker, you must input the corresponding ``shaded_tracker_rotation``
+    in the afternoon.
+
+    >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=270, axis_azimuth=180,
+    ...     shaded_tracker_rotation=30, collector_width=1.4, pitch=1,
+    ...     axis_tilt=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
+    0.4399034444363955
 
     References
     ----------

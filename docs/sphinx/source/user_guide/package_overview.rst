@@ -47,8 +47,8 @@ instructions on how to contribute. We really appreciate it!
 
 Credits
 -------
-The pvlib-python community thanks Sandia National Lab
-for developing PVLIB Matlab and for supporting
+The pvlib-python community thanks Sandia National Laboratories
+for developing PVLIB for Matlab and for supporting
 Rob Andrews of Calama Consulting to port the library to Python.
 Will Holmgren thanks the Department of Energy's Energy
 Efficiency and Renewable Energy Postdoctoral Fellowship Program

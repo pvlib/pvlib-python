@@ -27,6 +27,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Fix variable name typo at
   ``docs\examples\system-models\plot_oedi_9068.py``, (:pull:`1996`)
+* Remove "Comparison with PVLib for Matlab" page from the User Guide (:issue:`2010`, :pull:`2012`)
 
 
 Requirements
@@ -35,5 +36,6 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Echedey Luis (:ghuser:`echedey-ls`)

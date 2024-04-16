@@ -10,14 +10,13 @@ energy systems and accomplishing related tasks.
 The core mission of pvlib python is to provide open,
 reliable, interoperable, and benchmark implementations of PV system models.
 
-The source code for pvlib python is hosted on `github
+The source code for pvlib python is hosted on `GitHub
 <https://github.com/pvlib/pvlib-python>`_.
 Please see the :ref:`installation` page for installation help.
 
 For examples of how to use pvlib python, please see
-:ref:`package_overview` and our `Jupyter Notebook tutorials
-<http://nbviewer.org/github/pvlib/pvlib-python/tree/main/docs/
-tutorials/>`_. The documentation assumes general familiarity with
+:ref:`package_overview` and the :ref:`example_gallery`.
+The documentation assumes general familiarity with
 Python, NumPy, and Pandas. Google searches will yield many
 excellent tutorials for these packages.
 
@@ -34,11 +33,10 @@ ensure consistency throughout the library.
 History and acknowledgement
 ===========================
 
-pvlib python started out as a Python translation of the PVLIB MATLAB
-toolbox (developed by the `PVPMC <https://pvpmc.sandia.gov/>`_ at
-Sandia National Laboratories) in 2013 and has grown substantially since then.
+pvlib python began in 2013 as a Python translation of the `PVLIB for Matlab <https://github.com/sandialabs/MATLAB_PV_LIB>`_
+toolbox developed by Sandia National Laboratories. pvlib python has grown substantially since then.
 Today it contains code contributions from over a hundred individuals worldwide
-and is maintained by a core group of PV modelers from a variety institutions.
+and is maintained by a core group of PV modelers from a variety of institutions.
 
 pvlib has been supported directly and indirectly by DOE, NumFOCUS, and
 Google Summer of Code funding, university research projects,

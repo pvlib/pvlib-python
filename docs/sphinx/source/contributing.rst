@@ -29,7 +29,7 @@ pvlib-python, git, or Python:
   `easy <https://github.com/pvlib/pvlib-python/labels/easy>`_,
   or `help wanted <https://github.com/pvlib/pvlib-python/labels/help%20wanted>`_.
 * Improve the documentation and the unit tests.
-* Improve the IPython/Jupyter Notebook tutorials or write new ones that
+* Improve the Example Gallery or add new examples that
   demonstrate how to use pvlib-python in your area of expertise.
 * Tell your friends and colleagues about pvlib-python.
 * Add your project to our

@@ -31,10 +31,6 @@ pvlib-python, git, or Python:
 * Improve the documentation and the unit tests.
 * Improve the IPython/Jupyter Notebook tutorials or write new ones that
   demonstrate how to use pvlib-python in your area of expertise.
-* If you have MATLAB experience, you can help us keep pvlib-python
-  up to date with PVLIB_MATLAB or help us develop common unit tests.
-  For more, see `Issue #2 <https://github.com/pvlib/pvlib-python/issues/2>`_
-  and `Issue #3 <https://github.com/pvlib/pvlib-python/issues/3>`_.
 * Tell your friends and colleagues about pvlib-python.
 * Add your project to our
   `Projects and publications that use pvlib-python wiki

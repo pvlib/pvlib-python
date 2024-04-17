@@ -128,8 +128,9 @@ poa_ground_diffuse = pvlib.irradiance.get_ground_diffuse(
 # Shaded fraction calculation
 # ---------------------------
 # The next step is to calculate the fraction of shaded surface. This is done
-# using the :py:func:`pvlib.shading.shading_factor1d` function. Using this
-# function is straightforward with the amount of information we already have.
+# using :py:func:`pvlib.shading.shading_factor1d`. Using this function is
+# straightforward with the amount of information we already have.
+
 shaded_fraction = pvlib.shading.shading_factor1d(
     surface_tilt, surface_azimuth, apparent_zenith, apparent_azimuth
 )

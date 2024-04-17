@@ -569,6 +569,7 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
         Surface shaded fraction. Unitless.
     shaded_blocks : numeric
         Number of blocks affected by the shadow. Unitless integer.
+        If a floating point number is provided, it will be rounded up.
     total_blocks : numeric
         Number of total blocks. Unitless integer.
 
@@ -644,5 +645,5 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     """  # Contributed by Echedey Luis, 2024
     return (  # Eq. (6) of [1]
         (1 - shaded_fraction)
-        * (1 - N_shaded_blocks / (1 + N_total_blocks))
+        * (1 - np.ceil(N_shaded_blocks) / (1 + N_total_blocks))
     )

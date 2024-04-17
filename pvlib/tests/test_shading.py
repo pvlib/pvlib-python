@@ -330,6 +330,7 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
     assert_allclose(sf, expected_sf, atol=1e-2)
 
 
+@pytest.fixture
 def martinez_shade_factor_Table2():
     """
     Data provided in Table 2, [1] of martinez_shade_factor

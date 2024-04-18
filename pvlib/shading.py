@@ -605,13 +605,22 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     The latter two are heavily correlated.
 
     For example:
-     - A module with 1 bypass diode is likely to have 1 block.
-     - A module with 3 bypass diodes and 1 junction box is likely to have 3
-       blocks.
-     - A half-cut module with 3 junction boxes (split junction boxes) is likely
-       to have 3x2 blocks. The number of blocks along the longest side of the
-       module is 2 and along the shortest side is 3.
-     - A module without bypass diodes doesn't have blocks.
+     1. A module with 1 bypass diode is likely to have 1 block.
+     2. A module with 3 bypass diodes and 1 junction box is likely to have 3
+        blocks.
+     3. A half-cut module with 3 junction boxes (split junction boxes) is
+        likely to have 3x2 blocks. The number of blocks along the longest
+        side of the module is 2 and along the shortest side is 3.
+     4. A module without bypass diodes doesn't constitute a block, but may be
+        part of one.
+
+     .. figure:: _images/Centralized_and_split_PV_junction_boxes.jpg
+        :alt: Centralized and split PV junction boxes.
+
+        Left image: Centralized junction box with 3 bypass diodes (2.).
+        Right image: 3 (split-) junction boxes on a half-cut cell module (3.).
+        Source: César Domínguez, CC BY-SA 4.0
+        <https://creativecommons.org/licenses/by-sa/4.0>, Wikimedia Commons.
 
     Examples
     --------

@@ -7,16 +7,15 @@ a PV array comprised of non-monolithic silicon cells.
 """
 
 # %%
-# This example illustrates how to use the work of Martinez et al. [1]_.
-# The model is implemented in :py:func:`pvlib.shading.martinez_shade_loss`.
-# This model corrects the beam and circumsolar incident irradiance
+# This example illustrates how to use the proposed by Martinez et al. [1]_.
+# The model corrects the beam and circumsolar incident irradiance
 # based on the number of shaded *blocks*. A *block* is defined as a
 # group of cells that are protected by a bypass diode.
 # More information on the *blocks* can be found in the original paper [1]_ and
-# in :py:func:`pvlib.shading.martinez_shade_loss` documentation.
+# in :py:func:`pvlib.shading.martinez_shade_factor` documentation.
 #
 # The following key functions are used in this example:
-# 1. :py:func:`pvlib.shading.martinez_shade_loss` to calculate the adjustment
+# 1. :py:func:`pvlib.shading.martinez_shade_factor` to calculate the adjustment
 #    factor for the direct irradiance component.
 # 2. :py:func:`pvlib.shading.shaded_fraction1d` to calculate the fraction of
 #    shaded surface and consequently the number of shaded *blocks* due to
@@ -45,7 +44,8 @@ a PV array comprised of non-monolithic silicon cells.
 #
 # Setting up the system
 # ----------------------
-# Let's start by defining the location and the time range for the analysis.
+# Let's start by defining the system characteristics, location and the time
+# range for the analysis.
 
 import pvlib
 import pandas as pd
@@ -71,7 +71,7 @@ locus = pvlib.location.Location(
     metadata["latitude"], metadata["longitude"], altitude=metadata["elevation"]
 )
 
-# Coerce a year: function above returns typical months of different years
+# Coerce a year: function above returns typical months from different years
 pvgis_data.index = [ts.replace(year=2024) for ts in pvgis_data.index]
 # Select day to show
 weather_data = pvgis_data["2024-07-11"]

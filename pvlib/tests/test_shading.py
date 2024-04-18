@@ -333,38 +333,56 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
 @pytest.fixture
 def martinez_shade_factor_Table2():
     """
-    Data provided in Table 2, [1] of martinez_shade_factor
+    Original data used in [1] (see shading.martinez_shade_factor) to validate
+    the model. Some of the data is provided from Table 2.
     Returns tuple with (input: pandas.DataFrame, output: pandas.Series)
-    Output is POWER LOSS, not POWER CORRECTION, so model result must be
-    subtracted from 1
+    Output is IRRADIANCE LOSS, not IRRADIANCE CORRECTION, so model result must
+    be subtracted from 1
     """
     test_data = pd.DataFrame(
-        columns=["F_GS-H", "F_GS-V", "N_shaded_blocks", "power_reduction"],
+        columns=[
+            "F_GS-H",
+            "F_GS-V",
+            "N_shaded_blocks",
+            "direct",
+            "diffuse",
+            "irrad_correction",
+        ],
         data=[
-            [1.00, 0.09, 24, 0.88],
-            [1.00, 0.18, 24, 0.89],
-            [1.00, 0.36, 24, 0.90],
-            [0.04, 0.64,  1, 0.08],
-            [0.17, 0.45,  3, 0.22],
-            [0.29, 0.27,  5, 0.33],
-            [0.50, 0.09,  8, 0.46],
-            [0.13, 1.00,  2, 0.21],
-            [0.25, 1.00,  4, 0.40],
-            [0.38, 1.00,  6, 0.56],
-            [0.50, 1.00,  8, 0.54],
-            [0.58, 0.82, 10, 0.74],
-            [0.75, 0.73, 12, 0.81],
-            [0.92, 0.64, 15, 0.89],
-        ]  # fmt: skip
-    )
-    test_data["N_total_blocks"] = 24  # total blocks is 24 for all cases
+            # F-H, F-V, Nsb, direct, diffuse, effective_irrad_correction
+            [1.00, 0.09, 16, 846.59, 59.42, 0.88],
+            [1.00, 0.18, 16, 841.85, 59.69, 0.89],
+            [1.00, 0.36, 16, 843.38, 59.22, 0.90],
+            [0.04, 0.64,  1, 851.90, 59.40, 0.08],
+            [0.17, 0.45,  3, 862.86, 58.40, 0.22],
+            [0.29, 0.27,  5, 864.14, 58.11, 0.33],
+            [0.50, 0.09,  8, 863.23, 58.31, 0.46],
+            [0.13, 1.00,  2, 870.14, 58.02, 0.21],
+            [0.25, 1.00,  4, 876.57, 57.98, 0.40],
+            [0.38, 1.00,  6, 866.86, 58.89, 0.56],
+            [0.50, 1.00,  8, 874.58, 58.44, 0.69],
+            [0.58, 0.82, 10, 876.80, 58.16, 0.74],
+            [0.75, 0.73, 12, 866.89, 58.73, 0.81],
+            [0.92, 0.64, 15, 861.48, 59.66, 0.89],
+        ]
+    )  # fmt: skip
+    test_data["N_total_blocks"] = 16  # total blocks is 16 for all cases
     test_data["shaded_fraction"] = test_data["F_GS-H"] * test_data["F_GS-V"]
-    test_data.drop(columns=["F_GS-H", "F_GS-V"], inplace=True)
-    return (test_data.drop(columns="power_reduction"), test_data["power_reduction"])
+    test_data = test_data.drop(columns=["F_GS-H", "F_GS-V"])
+    return (
+        test_data.drop(columns="irrad_correction"),
+        test_data["irrad_correction"],
+    )
 
 
 def test_martinez_shade_factor(martinez_shade_factor_Table2):
     """Tests pvlib.shading.martinez_shade_factor"""
-    premises, power_reduction_expected = martinez_shade_factor_Table2
-    power_loss_factor = 1 - shading.martinez_shade_factor(**premises)
-    assert_allclose(power_loss_factor, power_reduction_expected)
+    test_data, irrad_reduction_expected = martinez_shade_factor_Table2
+    correction_factor = shading.martinez_shade_factor(
+        **test_data.drop(columns=["direct", "diffuse"])
+    )
+    irrad_correction = 1 - (
+        (test_data["direct"] * correction_factor + test_data["diffuse"])
+        / (test_data["direct"] + test_data["diffuse"])
+    )
+    assert_allclose(irrad_correction, irrad_reduction_expected, atol=1e-2)

@@ -93,18 +93,13 @@ def test_fit_huld(method):
     pdc = pvarray.huld(ee, tc, pdc0, cell_type='csi')
     pdc[11] = np.nan
     m_pdc0, k = pvarray.fit_huld(ee, tc, pdc, method='ols')
-    # known solution for OLS obtained with statsmodels v0.14.0
-    expected = np.array([2.07118648e+02, -8.35033390e+01, -3.83844606e+01,
-                         2.75629738e+00,  1.87571414e+00, -2.86429730e-01,
-                         -6.00418853e-02])
+    expected = np.array([pdc0, ] + [v for v in k0], dtype=float)
     modeled = np.hstack((m_pdc0, k))
-    assert_allclose(expected, modeled, rtol=1e-5)
+    assert_allclose(expected, modeled, rtol=1e-8)
 
 
 @requires_statsmodels
 def test_fit_huld_method_error():
-    # test is to recover the parameters in _infer_huld_k for each cell type
-    # IEC61853 conditions to make data for fitting
     ee, tc = pvarray._build_iec61853()
     pdc0 = 250
     pdc = pvarray.huld(ee, tc, pdc0, cell_type='csi')

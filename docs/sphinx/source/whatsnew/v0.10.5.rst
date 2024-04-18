@@ -11,7 +11,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added a method to fit the Huld PV model (:pull:`1979`)
 
 Bug fixes
 ~~~~~~~~~

@@ -427,10 +427,10 @@ def fit_huld(effective_irradiance, temp_module, pdc, method='ols'):
     gprime = effective_irradiance / 1000
     tprime = temp_module - 25
     # accomodate gprime<=0
+    logGprime = np.log(gprime, out=np.nan*gprime,
+                       where=np.array(gprime > 0))
     with np.errstate(divide='ignore'):
-        logGprime = np.log(gprime, out=np.zeros_like(gprime),
-                           where=np.array(gprime > 0))
-        Y = np.divide(pdc, gprime, out=np.zeros_like(gprime),
+        Y = np.divide(pdc, gprime, out=np.nan*gprime,
                       where=np.array(gprime > 0))
 
     X = np.stack((logGprime, logGprime**2, tprime, tprime*logGprime,

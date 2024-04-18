@@ -605,14 +605,13 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     The latter two are heavily correlated.
 
     For example:
-     - A module with 3 bypass diodes and 3 junction boxes is likely to have
-       3 blocks.
-     - A module with 1 bypass diode and 1 junction box is likely to have 1
-       block.
+     - A module with 1 bypass diode is likely to have 1 block.
      - A module with 3 bypass diodes and 1 junction box is likely to have 3
        blocks.
-     - A module with 1 bypass diode and 3 junction boxes is likely to have 1
-       block.
+     - A half-cut module with 3 junction boxes (split junction boxes) is likely
+       to have 3x2 blocks. The number of blocks along the longest side of the
+       module is 2 and along the shortest side is 3.
+     - A module without bypass diodes doesn't have blocks.
 
     Examples
     --------
@@ -621,7 +620,8 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     >>> import numpy as np
     >>> from pvlib import shading
     >>> total_blocks = 3  # blocks along the vertical of the module
-    >>> Pwr_out_unshaded = 100  # kW
+    >>> POA_direct = 600  # W
+    >>> POA_diffuse = 80  # W
     >>> shaded_fraction = shading.shaded_fraction1d(
             80, 180, 90, 25,
              collector_width=0.5, row_pitch=1, surface_to_axis_offset=0,
@@ -629,7 +629,7 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
         )
     >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
     >>> loss_correction = shading.martinez_shade_factor()
-    >>> Pwr_out_shaded = Pwr_out_unshaded * loss_correction
+    >>> POA_total = POA_direct * loss_correction + POA_diffuse
 
     See Also
     --------

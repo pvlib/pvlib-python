@@ -3,6 +3,21 @@
 
 v0.10.5 (May 6, 2024)
 ---------------------
+v0.10.5 (Anticipated June 2024)
+-------------------------------
+
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+* Added function :py:func:`pvlib.shading.shaded_fraction1d`, to calculate the
+  shade perpendicular to ``axis_azimuth``. (:issue:`1689`, :pull:`1725`, :pull:`1962`)
+* Added function :py:func:`pvlib.shading.martinez_shade_factor` to calculate
+  shading losses by taking into account the amount of bypass diodes of a module.
+  (:issue:``, :pull:``)
 
 
 Bug fixes

@@ -359,7 +359,7 @@ def shaded_fraction1d(
 ):
     r"""
     Shaded fraction in the vertical dimension of tilted rows, or perpendicular
-    to the ``axis_azimuth`` of horizontal rows.
+    to the axis of horizontal rows.
 
     If ``shading_tracker_rotation`` isn't provided, assumes both the shaded
     row and the one blocking the direct beam
@@ -367,6 +367,14 @@ def shaded_fraction1d(
 
     If only the GCR is known, feed GCR into ``trackers_vertical_length`` and
     specify ``pitch=1``.
+
+    .. admonition::
+
+        This function assumes the roles of the shaded and shading trackers are
+        the same during all the day. If the trackers allow for different
+        shading or shaded roles, e.g. a N-S single-axis tracker, you must
+        switch the inputs depending on the sign of the projected solar zenith
+        angle. See :ref:`ns_sat_case`.
 
     .. versionadded:: 0.10.5
 
@@ -435,10 +443,6 @@ def shaded_fraction1d(
     | :math:`f_s`      | Return value               | Dimensionless       |
     +------------------+----------------------------+---------------------+
 
-    See also
-    --------
-    pvlib.shading.projected_solar_zenith_angle
-
     Examples
     --------
     Fixed-tilt south-facing array on flat terrain
@@ -466,20 +470,29 @@ def shaded_fraction1d(
     ...     axis_tilt=10, surface_to_axis_offset=0.05, cross_axis_slope=0)
     0.6975923460352351
 
+    .. _ns_sat_case:
+
     N-S single-axis tracker on sloped terrain
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     Horizontal trackers with a pitch of :math:`1m`, a collector width of
     :math:`1.4m`, and tracker rotations of :math:`30^{\circ}` pointing east,
     in the morning. Terrain slope is :math:`7^{\circ}` west-east (east-most
-    tracker is higher that the west-most tracker).
+    tracker is higher than the west-most tracker).
 
     >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=90, axis_azimuth=180,
     ...     shaded_tracker_rotation=-30, collector_width=1.4, pitch=1,
     ...     axis_tilt=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
     0.5828961460616938
 
-    Note the previous example only calculates the shaded fraction for the
-    west-most tracker. To calculate the shaded fraction for the east-most
+    Note the previous example calculates the shaded fraction for the
+    west-most tracker, but it does actually assume it is the shaded tracker
+    during all the day, thou it is incorrect.
+    During the afternoon, it is the one casting the shadow onto the
+    east-most tracker. You must switch the inputs depending on the sign of the
+    projected solar zenith angle.
+    See :py:func:`pvlib.shading.projected_solar_zenith_angle`.
+
+    To calculate the shaded fraction for the east-most
     tracker, you must input the corresponding ``shaded_tracker_rotation``
     in the afternoon.
 
@@ -487,6 +500,10 @@ def shaded_fraction1d(
     ...     shaded_tracker_rotation=30, collector_width=1.4, pitch=1,
     ...     axis_tilt=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
     0.4399034444363955
+
+    See also
+    --------
+    pvlib.shading.projected_solar_zenith_angle
 
     References
     ----------

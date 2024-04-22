@@ -20,9 +20,9 @@ import pandas as pd
 MIDC_VARIABLE_MAP = {
     'BMS': {
         'Global CMP22 (vent/cor) [W/m^2]': 'ghi',
-        'Direct CHP1-1 [W/m^2]': 'dni',
+        'Direct CHP1-1 [W/m^2]': 'dni_chp1',
         # NIP was mapped to dni for pvlib<=0.10.4
-        # 'Direct NIP [W/m^2]': 'dni',
+        'Direct NIP [W/m^2]': 'dni_nip',
         'Diffuse CM22-1 (vent/cor) [W/m^2]': 'dhi',
         'Avg Wind Speed @ 6ft [m/s]': 'wind_speed',
         'Tower Dry Bulb Temp [deg C]': 'temp_air',
@@ -32,7 +32,7 @@ MIDC_VARIABLE_MAP = {
         'Direct CHP1 [W/m^2]': 'dni',
         'Diffuse [W/m^2]': 'dhi',
         # NIP was mapped to dni for pvlib<=0.10.4
-        # 'Direct NIP [W/m^2]': 'dni',
+        'Direct NIP [W/m^2]': 'dni_nip',
         # Schenk was mapped to dhi for pvlib<=0.10.4
         # 'Diffuse Schenk [W/m^2]': 'dhi',
         'Air Temperature [deg C]': 'temp_air',

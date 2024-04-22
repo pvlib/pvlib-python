@@ -487,11 +487,11 @@ def shaded_fraction1d(
     Note the previous example calculates the shaded fraction for the
     west-most tracker in the morning, but it does actually assume it is the
     shaded tracker during all the day, thou it is incorrect.
-    During the afternoon, it is the one casting the shadow onto the 
+    During the afternoon, it is the one casting the shadow onto the
     east-most tracker. You must switch the inputs depending on the sign of the
     projected solar zenith angle.
     See :py:func:`pvlib.shading.projected_solar_zenith_angle`.
-    
+
     To calculate the shaded fraction for the east-most
     tracker, you must input the corresponding ``shaded_tracker_rotation``
     in the afternoon.

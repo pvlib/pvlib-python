@@ -29,7 +29,7 @@ MIDC_VARIABLE_MAP = {
         'Tower RH [%]': 'relative_humidity'},
     'UOSMRL': {
         'Global CMP22 [W/m^2]': 'ghi',
-        'Direct CHP1 [W/m^2]': 'dni',
+        'Direct CHP1 [W/m^2]': 'dni_chp1',
         'Diffuse [W/m^2]': 'dhi',
         # NIP was mapped to dni for pvlib<=0.10.4
         'Direct NIP [W/m^2]': 'dni_nip',

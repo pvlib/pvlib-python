@@ -11,7 +11,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Updated `~pvlib.iotools.MIDC_VARIABLE_MAP`~ to reflect
+  changes in instrumentation. (:pull:`2006`)
 
 Bug fixes
 ~~~~~~~~~
@@ -33,3 +34,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Adam R. Jensen (:ghuser:`AdamRJensen`)

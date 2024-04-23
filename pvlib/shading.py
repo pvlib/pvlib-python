@@ -484,13 +484,11 @@ def shaded_fraction1d(
     ...     axis_tilt=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
     0.5828961460616938
 
-    Note the previous example calculates the shaded fraction for the
-    west-most tracker in the morning, but it does actually assume it is the
-    shaded tracker during all the day, thou it is incorrect.
+    Note the previous example only is valid for the shaded fraction of the
+    west-most tracker in the morning, and assuming it is the
+    shaded tracker during all the day is incorrect.
     During the afternoon, it is the one casting the shadow onto the
-    east-most tracker. You must switch the inputs depending on the sign of the
-    projected solar zenith angle.
-    See :py:func:`pvlib.shading.projected_solar_zenith_angle`.
+    east-most tracker.
 
     To calculate the shaded fraction for the east-most
     tracker, you must input the corresponding ``shaded_tracker_rotation``

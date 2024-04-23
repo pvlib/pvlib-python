@@ -499,9 +499,9 @@ def shaded_fraction1d(
     0.4399034444363955
 
     You must switch the input/output depending on the
-    sign of the projected solar zenith angle.
-    See :py:func:`~pvlib.shading.projected_solar_zenith_angle` and the gallery
-    example :ref:`sphx_glr_gallery_plot_shaded_fraction1d_ns_hsat_example.py`
+    sign of the projected solar zenith angle. See
+    :py:func:`~pvlib.shading.projected_solar_zenith_angle` and the example
+    :ref:`sphx_glr_gallery_shading_plot_shaded_fraction1d_ns_hsat_example.py`
 
     See also
     --------

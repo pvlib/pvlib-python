@@ -365,9 +365,6 @@ def shaded_fraction1d(
     row and the one blocking the direct beam
     share the same rotation and azimuth values.
 
-    If only the GCR is known, feed GCR into ``trackers_vertical_length`` and
-    specify ``pitch=1``.
-
     .. warning::
         This function assumes the roles of the shaded and shading trackers are
         the same during all the day. If the trackers allow for different

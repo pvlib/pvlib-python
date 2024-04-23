@@ -368,8 +368,7 @@ def shaded_fraction1d(
     If only the GCR is known, feed GCR into ``trackers_vertical_length`` and
     specify ``pitch=1``.
 
-    .. admonition::
-
+    .. warning::
         This function assumes the roles of the shaded and shading trackers are
         the same during all the day. If the trackers allow for different
         shading or shaded roles, e.g. a N-S single-axis tracker, you must

@@ -1,6 +1,6 @@
 """
-:py:func:`pvlib.shading.shaded_fraction1d` N-S horizontal single-axis example
-==============================================================================
+shaded_fraction1d N-S horizontal single-axis example
+====================================================
 
 This example illustrates how to calculate the shaded fraction of three rows
 in an N-S HSAT configuration.
@@ -21,6 +21,7 @@ in an N-S HSAT configuration.
 # done to allow significant shade to be used as an example.
 #
 # Key functions used in this example are:
+#
 # 1. :py:func:`pvlib.tracking.singleaxis` to calculate the tracking angles.
 # 2. :py:func:`pvlib.shading.projected_solar_zenith_angle` to calculate the
 #    projected solar zenith angle.

@@ -499,6 +499,11 @@ def shaded_fraction1d(
     ...     axis_tilt=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
     0.4399034444363955
 
+    You must switch the input/output depending on the
+    sign of the projected solar zenith angle.
+    See :py:func:`~pvlib.shading.projected_solar_zenith_angle` and the gallery
+    example :ref:`sphx_glr_gallery_plot_shaded_fraction1d_ns_hsat_example.py`
+
     See also
     --------
     pvlib.shading.projected_solar_zenith_angle

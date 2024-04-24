@@ -370,7 +370,7 @@ def shaded_fraction1d(
         the same during all the day. If the trackers allow for different
         shading or shaded roles, e.g. a N-S single-axis tracker, you must
         switch the inputs depending on the sign of the projected solar zenith
-        angle. See :ref:`ns_sat_case`.
+        angle. See the Examples section below.
 
     .. versionadded:: 0.10.5
 
@@ -466,8 +466,6 @@ def shaded_fraction1d(
     ...     shading_tracker_rotation=30, collector_width=2.5, pitch=4,
     ...     axis_tilt=10, surface_to_axis_offset=0.05, cross_axis_slope=0)
     0.6975923460352351
-
-    .. _ns_sat_case:
 
     **N-S single-axis tracker on sloped terrain**
 

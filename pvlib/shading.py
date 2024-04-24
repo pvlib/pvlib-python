@@ -442,65 +442,63 @@ def shaded_fraction1d(
     Examples
     --------
 
-    * **Fixed-tilt south-facing array on flat terrain**
+    **Fixed-tilt south-facing array on flat terrain**
 
-      Tilted tracker with a pitch of :math:`1.5m`, a collector width of
-      :math:`2m`, and tracker rotations of :math:`30^{\circ}`. In the morning.
+    Tilted tracker with a pitch of :math:`1.5m`, a collector width of
+    :math:`2m`, and tracker rotations of :math:`30^{\circ}`. In the morning.
 
-      >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=104.5,
-      ...     axis_azimuth=90, shaded_tracker_rotation=30,
-      ...     shading_tracker_rotation=30, collector_width=2, pitch=1,
-      ...     axis_tilt=0, surface_to_axis_offset=0.05, cross_axis_slope=0)
-      0.6827437712114521
+    >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=104.5,
+    ...     axis_azimuth=90, shaded_tracker_rotation=30,
+    ...     shading_tracker_rotation=30, collector_width=2, pitch=1,
+    ...     axis_tilt=0, surface_to_axis_offset=0.05, cross_axis_slope=0)
+    0.6827437712114521
 
-    * **Fixed-tilt north-facing array on sloped terrain**
+    **Fixed-tilt north-facing array on sloped terrain**
 
-      Tilted tracker with a pitch of :math:`1m`, a collector width of
-      :math:`2.5m`, and tracker rotations of :math:`50^{\circ}` for the shaded
-      tracker and :math:`30^{\circ}` for the shading tracker. The rows are on a
-      :math:`10^{\circ}` slope, where their axis is on the most inclined
-      direction (zero cross-axis slope). Shaded in the morning.
-      >>> shaded_fraction1d(solar_zenith=65, solar_azimuth=75.5,
-      ...     axis_azimuth=270, shaded_tracker_rotation=50,
-      ...     shading_tracker_rotation=30, collector_width=2.5, pitch=1,
-      ...     axis_tilt=10, surface_to_axis_offset=0.05, cross_axis_slope=0)
-      0.6975923460352351
+    Tilted tracker with a pitch of :math:`1m`, a collector width of
+    :math:`2.5m`, and tracker rotations of :math:`50^{\circ}` for the shaded
+    tracker and :math:`30^{\circ}` for the shading tracker. The rows are on a
+    :math:`10^{\circ}` slope, where their axis is on the most inclined
+    direction (zero cross-axis slope). Shaded in the morning.
+    >>> shaded_fraction1d(solar_zenith=65, solar_azimuth=75.5,
+    ...     axis_azimuth=270, shaded_tracker_rotation=50,
+    ...     shading_tracker_rotation=30, collector_width=2.5, pitch=1,
+    ...     axis_tilt=10, surface_to_axis_offset=0.05, cross_axis_slope=0)
+    0.6975923460352351
 
     .. _ns_sat_case:
 
-    * **N-S single-axis tracker on sloped terrain**
+    **N-S single-axis tracker on sloped terrain**
 
-      Horizontal trackers with a pitch of :math:`1m`, a collector width of
-      :math:`1.4m`, and tracker rotations of :math:`30^{\circ}` pointing east,
-      in the morning. Terrain slope is :math:`7^{\circ}` west-east (east-most
-      tracker is higher than the west-most tracker).
+    Horizontal trackers with a pitch of :math:`1m`, a collector width of
+    :math:`1.4m`, and tracker rotations of :math:`30^{\circ}` pointing east,
+    in the morning. Terrain slope is :math:`7^{\circ}` west-east (east-most
+    tracker is higher than the west-most tracker).
 
-      >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=90,
-      ...     axis_azimuth=180, shaded_tracker_rotation=-30,
-      ...     collector_width=1.4, pitch=1, axis_tilt=0,
-      ...     surface_to_axis_offset=0.10, cross_axis_slope=7)
-      0.5828961460616938
+    >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=90, axis_azimuth=180,
+    ...     shaded_tracker_rotation=-30, collector_width=1.4, pitch=1,
+    ...     axis_tilt=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
+    0.5828961460616938
 
-      Note the previous example only is valid for the shaded fraction of the
-      west-most tracker in the morning, and assuming it is the
-      shaded tracker during all the day is incorrect.
-      During the afternoon, it is the one casting the shadow onto the
-      east-most tracker.
+    Note the previous example only is valid for the shaded fraction of the
+    west-most tracker in the morning, and assuming it is the
+    shaded tracker during all the day is incorrect.
+    During the afternoon, it is the one casting the shadow onto the
+    east-most tracker.
 
-      To calculate the shaded fraction for the east-most
-      tracker, you must input the corresponding ``shaded_tracker_rotation``
-      in the afternoon.
+    To calculate the shaded fraction for the east-most
+    tracker, you must input the corresponding ``shaded_tracker_rotation``
+    in the afternoon.
 
-      >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=270,
-      ...     axis_azimuth=180, shaded_tracker_rotation=30,
-      ...     collector_width=1.4, pitch=1, axis_tilt=0,
-      ...     surface_to_axis_offset=0.10, cross_axis_slope=7)
-      0.4399034444363955
+    >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=270, axis_azimuth=180,
+    ...     shaded_tracker_rotation=30, collector_width=1.4, pitch=1,
+    ...     axis_tilt=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
+    0.4399034444363955
 
-      You must switch the input/output depending on the
-      sign of the projected solar zenith angle. See
-      :py:func:`~pvlib.shading.projected_solar_zenith_angle` and the example
-      :ref:`sphx_glr_gallery_shading_plot_shaded_fraction1d_ns_hsat_example.py`
+    You must switch the input/output depending on the
+    sign of the projected solar zenith angle. See
+    :py:func:`~pvlib.shading.projected_solar_zenith_angle` and the example
+    :ref:`sphx_glr_gallery_shading_plot_shaded_fraction1d_ns_hsat_example.py`
 
     See also
     --------

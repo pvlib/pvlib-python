@@ -444,25 +444,26 @@ def shaded_fraction1d(
 
     **Fixed-tilt south-facing array on flat terrain**
 
-    Tilted row with a pitch of :math:`1.5m`, a collector width of
+    Tilted row with a pitch of :math:`3m`, a collector width of
     :math:`2m`, and row rotations of :math:`30^{\circ}`. In the morning.
 
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=104.5,
     ...     axis_azimuth=90, shaded_tracker_rotation=30,
-    ...     shading_tracker_rotation=30, collector_width=2, pitch=1,
+    ...     shading_tracker_rotation=30, collector_width=2, pitch=3,
     ...     axis_tilt=0, surface_to_axis_offset=0.05, cross_axis_slope=0)
     0.6827437712114521
 
     **Fixed-tilt north-facing array on sloped terrain**
 
-    Tilted row with a pitch of :math:`1m`, a collector width of
+    Tilted row with a pitch of :math:`4m`, a collector width of
     :math:`2.5m`, and row rotations of :math:`50^{\circ}` for the shaded
     row and :math:`30^{\circ}` for the shading row. The rows are on a
     :math:`10^{\circ}` slope, where their axis is on the most inclined
     direction (zero cross-axis slope). Shaded in the morning.
+
     >>> shaded_fraction1d(solar_zenith=65, solar_azimuth=75.5,
     ...     axis_azimuth=270, shaded_tracker_rotation=50,
-    ...     shading_tracker_rotation=30, collector_width=2.5, pitch=1,
+    ...     shading_tracker_rotation=30, collector_width=2.5, pitch=4,
     ...     axis_tilt=10, surface_to_axis_offset=0.05, cross_axis_slope=0)
     0.6975923460352351
 
@@ -470,13 +471,13 @@ def shaded_fraction1d(
 
     **N-S single-axis tracker on sloped terrain**
 
-    Horizontal trackers with a pitch of :math:`1m`, a collector width of
+    Horizontal trackers with a pitch of :math:`3m`, a collector width of
     :math:`1.4m`, and tracker rotations of :math:`30^{\circ}` pointing east,
     in the morning. Terrain slope is :math:`7^{\circ}` west-east (east-most
     tracker is higher than the west-most tracker).
 
     >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=90, axis_azimuth=180,
-    ...     shaded_tracker_rotation=-30, collector_width=1.4, pitch=1,
+    ...     shaded_tracker_rotation=-30, collector_width=1.4, pitch=3,
     ...     axis_tilt=0, surface_to_axis_offset=0.10, cross_axis_slope=7)
     0.5828961460616938
 

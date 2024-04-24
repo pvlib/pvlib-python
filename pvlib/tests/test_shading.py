@@ -263,7 +263,7 @@ def sf1d_premises_and_expected():
         / (test_data["x_L"] - test_data["x_R"])
     )
     test_data["pitch"] = test_data["x_L"] - test_data["x_R"]
-    # switch Left/Right trackers if needed to make the right one the shaded
+    # switch Left/Right rows if needed to make the right one the shaded
     where_switch = test_data["theta_s"] >= 0
     test_data["theta_L"], test_data["theta_R"] = np.where(
         where_switch,
@@ -272,8 +272,8 @@ def sf1d_premises_and_expected():
     )
     test_data.rename(
         columns={
-            "theta_L": "shading_tracker_rotation",
-            "theta_R": "shaded_tracker_rotation",
+            "theta_L": "shading_row_rotation",
+            "theta_R": "shaded_row_rotation",
             "z_0": "surface_to_axis_offset",
             "l": "collector_width",
             "theta_s": "solar_zenith",  # for the projected solar zenith angle

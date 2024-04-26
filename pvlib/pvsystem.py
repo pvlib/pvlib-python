@@ -2254,10 +2254,9 @@ def sapm(effective_irradiance, temp_cell, module):
         module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
         (1 + module['Aisc']*(temp_cell - temp_ref)))
 
-    # the Ixx calculation in King 2004 has a typo (mixes up Aisc and Aimp)
     out['i_xx'] = (
         module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - temp_ref)))
+        (1 + module['Aimp']*(temp_cell - temp_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)

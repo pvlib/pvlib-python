@@ -123,6 +123,27 @@ def test_get_example_spectral_response():
     assert_allclose(sr, expected, rtol=1e-5)
 
 
+def test_get_spectral_response_of_material():
+    # test that the sr curves are read correctly
+    sr = spectrum.get_spectral_response_of_material(material="all")
+    assert len(sr) == 181
+    pd.testing.assert_series_equal(
+        sr.sum(),
+        pd.Series({"polysi": 116.32, "monosi": 115.51, "hit": 110.07}),
+        atol=1e-2,
+    )
+
+    # test raise error if material not in dataset
+    with pytest.raises(ValueError, match="Material '.*' not found in dataset"):
+        sr = spectrum.get_spectral_response_of_material(material="not in dataset")
+
+    # test correct interpolation
+    material, wavelength = "polysi", [270, 850, 900, 950, 1200]
+    expected = [0.0, 0.974667, 0.995869, 0.988224, 0.0]
+    result = spectrum.get_spectral_response_of_material(material, wavelength)
+    assert_allclose(result, expected, atol=1e-6)
+
+
 def test_get_am15g():
     # test that the reference spectrum is read and interpolated correctly
     e = spectrum.get_am15g()

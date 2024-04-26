@@ -15,7 +15,7 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-* Corrected equation for Ixx0 in :py:func:`pvlib.pvsystem.sapm` (:issue:`2016`, :pull:`XXXX`)
+* Corrected equation for Ixx0 in :py:func:`pvlib.pvsystem.sapm` (:issue:`2016`, :pull:`2019`)
 
 Testing
 ~~~~~~~

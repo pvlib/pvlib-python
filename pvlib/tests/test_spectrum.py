@@ -135,7 +135,9 @@ def test_get_spectral_response_of_material():
 
     # test raise error if material not in dataset
     with pytest.raises(ValueError, match="Material '.*' not found in dataset"):
-        sr = spectrum.get_spectral_response_of_material(material="not in dataset")
+        sr = spectrum.get_spectral_response_of_material(
+            material="not in dataset"
+        )
 
     # test correct interpolation
     material, wavelength = "polysi", [270, 850, 900, 950, 1200]

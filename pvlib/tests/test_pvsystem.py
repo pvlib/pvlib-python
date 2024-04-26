@@ -2548,3 +2548,15 @@ def test_Array_temperature_missing_parameters(model, keys):
         array.temperature_model_parameters = params
         with pytest.raises(KeyError, match=match):
             array.get_cell_temperature(irrads, temps, winds, model)
+
+
+def test_nonuniform_irradiance_loss():
+    """tests pvsystem.nonuniform_irradiance_loss"""
+    premise_rmads = np.array([0.0, 0.05, 0.1, 0.15, 0.2, 0.25])
+    expected_mms = np.array([0, 0.012925, 0.0397, 0.080325, 0.1348, 0.203125])
+    result_mms = pvsystem.nonuniform_irradiance_loss(premise_rmads)
+    assert_allclose(result_mms, expected_mms, atol=1e-5)
+
+    # test datatypes Series IO
+    result_mms = pvsystem.nonuniform_irradiance_loss(pd.Series(premise_rmads))
+    assert isinstance(result_mms, pd.Series)

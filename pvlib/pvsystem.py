@@ -3021,3 +3021,50 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
         combined_factor *= (1 - loss)
 
     return 1 - combined_factor
+
+
+def nonuniform_irradiance_loss(rmad):
+    """
+    Calculate the incident irradiance loss due to irradiance non-uniformity.
+
+    This model is described for bifacial modules in [1]_, where the backside
+    irradiance is less uniform due to mounting and site conditions.
+
+    .. versionadded:: 0.10.5
+
+    Parameters
+    ----------
+    rmad : numeric
+        The Relative Mean Absolute Difference of the irradiance.
+        See the definition in [2]_ and the example :ref:`sphx_glr_gallery_TODO`.
+
+    Returns
+    -------
+    loss : numeric
+        The irradiance loss.
+
+    Notes
+    -----
+    TODO
+
+    Examples
+    --------
+    >>> from pvlib import pvsystem
+    >>> pvsystem.nonuniform_irradiance_loss(0.05)
+    0.025
+
+    See Also
+    --------
+    TODO
+
+    References
+    ----------
+    .. [1] Ayala Pelaez, S., Deline, C., MacAlpine, S., & Olalla, C. (2019).
+       Bifacial PV System Mismatch Loss Estimation.
+       https://www.nrel.gov/docs/fy19osti/74831.pdf
+    .. [2] “Mean absolute difference,” Wikipedia, Sep. 05, 2023.
+       https://en.wikipedia.org/wiki/Mean_absolute_difference#Relative_mean_absolute_difference
+       (accessed 2024-04-14).
+    """  # noqa: E501
+    # Eq. (7) of [1]
+    return rmad * (0.12 + 2.77 * rmad)

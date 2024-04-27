@@ -1957,7 +1957,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
 
-def retrieve_sam(name_or_path):
+def retrieve_sam(name_or_path=None, name=None, path=None):
     """
     Retrieve latest module and inverter info from a file bundled with pvlib,
     a path or an URL (like SAM's website).
@@ -1985,6 +1985,16 @@ def retrieve_sam(name_or_path):
         * 'ADRInverter' - returns the ADR Inverter database
 
         Additionally, a path to a CSV file or a URL can be provided.
+
+    name : string, optional
+        Name of the database to use.
+        .. deprecated:: 0.10.5
+            Use ``name_or_path`` instead.
+
+    path : string, optional
+        Path to a CSV file or a URL.
+        .. deprecated:: 0.10.5
+            Use ``name_or_path`` instead.
 
     Returns
     -------
@@ -2030,6 +2040,22 @@ def retrieve_sam(name_or_path):
     CEC_Type     Utility Interactive
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
     """
+    # error: path was previously silently ignored if name was given GH#2018
+    if name is not None and path is not None:
+        raise ValueError("Please only provide 'name_or_path', not both.")
+    # deprecation warning for name and path if given GH#2018
+    if name is not None or path is not None:
+        warn_deprecated(
+            since="0.10.5",
+            removal="0.11.0",
+            message=(
+                "'name' and 'path' parameters have been deprecated in "
+                + "favor of 'name_or_path' parameter."
+            ),
+            name="pvlib.pvsystem.retrieve_sam",
+            obj_type="parameters 'name' and 'path'",
+        )
+        name_or_path = name or path
     internal_dbs = {
         "cecmod": "sam-library-cec-modules-2019-03-05.csv",
         "sandiamod": "sam-library-sandia-modules-2015-6-30.csv",

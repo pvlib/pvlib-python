@@ -103,12 +103,18 @@ def test_PVSystem_get_iam_invalid(sapm_module_params, mocker):
         system.get_iam(45, iam_model='not_a_model')
 
 
-def test_retrieve_sam_raise_no_parameters():
+def test_retrieve_sam_raises_exceptions():
     """
     Raise an exception if an invalid parameter is provided to `retrieve_sam()`.
     """
+    with pytest.raises(ValueError, match="Please provide either"):
+        pvsystem.retrieve_sam()
+    with pytest.raises(ValueError, match="Please provide either.*, not both."):
+        pvsystem.retrieve_sam(name="this_surely_wont_work", path="wont_work")
     with pytest.raises(ValueError, match="Invalid name"):
-        pvsystem.retrieve_sam(name_or_path="this_surely_wont_work.csv")
+        pvsystem.retrieve_sam(name="this_surely_wont_work")
+    with pytest.raises(ValueError, match="Invalid path"):
+        pvsystem.retrieve_sam(path="this_surely_wont_work.csv")
 
 
 def test_retrieve_sam_cecinverter():

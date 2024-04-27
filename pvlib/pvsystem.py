@@ -1957,7 +1957,7 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
 
-def retrieve_sam(name_or_path=None, name=None, path=None):
+def retrieve_sam(name=None, path=None):
     """
     Retrieve latest module and inverter info from a file bundled with pvlib,
     a path or an URL (like SAM's website).
@@ -1971,9 +1971,12 @@ def retrieve_sam(name_or_path=None, name=None, path=None):
 
     and return it as a pandas DataFrame.
 
+    .. note::
+        Only provide one of ``name`` or ``path``.
+
     Parameters
     ----------
-    name_or_path : string
+    name : string, optional
         Use one of the following strings to retrieve a database bundled with
         pvlib:
         * 'CECMod' - returns the CEC module database
@@ -1984,17 +1987,8 @@ def retrieve_sam(name_or_path=None, name=None, path=None):
         * 'SandiaMod' - returns the Sandia Module database
         * 'ADRInverter' - returns the ADR Inverter database
 
-        Additionally, a path to a CSV file or a URL can be provided.
-
-    name : string, optional
-        Name of the database to use.
-        .. deprecated:: 0.10.5
-            Use ``name_or_path`` instead.
-
     path : string, optional
         Path to a CSV file or a URL.
-        .. deprecated:: 0.10.5
-            Use ``name_or_path`` instead.
 
     Returns
     -------
@@ -2006,7 +2000,13 @@ def retrieve_sam(name_or_path=None, name=None, path=None):
     Raises
     ------
     ValueError
-        If no name or path is provided.
+        If no ``name`` or ``path`` is provided.
+    ValueError
+        If both ``name`` and ``path`` are provided.
+    ValueError
+        If the provided ``name`` is not valid.
+    ValueError
+        If the provided ``path`` does not exist.
 
     Notes
     -----
@@ -2042,46 +2042,36 @@ def retrieve_sam(name_or_path=None, name=None, path=None):
     """
     # error: path was previously silently ignored if name was given GH#2018
     if name is not None and path is not None:
-        raise ValueError("Please only provide 'name_or_path', not both.")
-    # deprecation warning for name and path if given GH#2018
-    if name is not None or path is not None:
-        warn_deprecated(
-            since="0.10.5",
-            removal="0.11.0",
-            message=(
-                "'name' and 'path' parameters have been deprecated in "
-                + "favor of 'name_or_path' parameter."
-            ),
-            name="pvlib.pvsystem.retrieve_sam",
-            obj_type="parameters 'name' and 'path'",
-        )
-        name_or_path = name or path
-    internal_dbs = {
-        "cecmod": "sam-library-cec-modules-2019-03-05.csv",
-        "sandiamod": "sam-library-sandia-modules-2015-6-30.csv",
-        "adrinverter": "adr-library-cec-inverters-2019-03-05.csv",
-        # Both 'cecinverter' and 'sandiainverter', point to same database
-        # to provide for old code, while aligning with current expectations
-        "cecinverter": "sam-library-cec-inverters-2019-03-05.csv",
-        "sandiainverter": "sam-library-cec-inverters-2019-03-05.csv",
-    }
-    name_lwr = name_or_path.lower()
-    if name_lwr in internal_dbs.keys():  # input is a database name
-        csvdata_path = Path(__file__).parent.joinpath(
-            "data", internal_dbs[name_lwr]
-        )
-    else:  # input is a path or URL
-        if name_lwr.startswith("http"):  # name so check is not case-sensitive
-            response = urlopen(name_or_path)  # URL is case-sensitive
-            csvdata_path = io.StringIO(response.read().decode(errors="ignore"))
-        elif Path(name_or_path).exists():
-            csvdata_path = name_or_path
+        raise ValueError("Please provide either 'name' or 'path', not both.")
+    elif name is None and path is None:
+        raise ValueError("Please provide either 'name' or 'path'.")
+    elif name is not None:
+        internal_dbs = {
+            "cecmod": "sam-library-cec-modules-2019-03-05.csv",
+            "sandiamod": "sam-library-sandia-modules-2015-6-30.csv",
+            "adrinverter": "adr-library-cec-inverters-2019-03-05.csv",
+            # Both 'cecinverter' and 'sandiainverter', point to same database
+            # to provide for old code, while aligning with current expectations
+            "cecinverter": "sam-library-cec-inverters-2019-03-05.csv",
+            "sandiainverter": "sam-library-cec-inverters-2019-03-05.csv",
+        }
+        name_lwr = name.lower()
+        if name_lwr in internal_dbs.keys():  # input is a database name
+            csvdata_path = Path(__file__).parent.joinpath(
+                "data", internal_dbs[name_lwr]
+            )
         else:
             raise ValueError(
-                f"Invalid name {name_or_path} or path does not exist. Allowed "
-                + f"names are {internal_dbs} or a path to a CSV file or URL."
+                f"Invalid name {name}. Provide one of {internal_dbs.keys()}."
             )
-
+    else:  # path is not None
+        if path.lower().startswith("http"):  # URL check is not case-sensitive
+            response = urlopen(path)  # URL is case-sensitive
+            csvdata_path = io.StringIO(response.read().decode(errors="ignore"))
+        elif Path(path).exists():
+            csvdata_path = path
+        else:
+            raise ValueError(f"Invalid path {path}: does not exist.")
     return _parse_raw_sam_df(csvdata_path)
 
 

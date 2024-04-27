@@ -105,80 +105,48 @@ def test_PVSystem_get_iam_invalid(sapm_module_params, mocker):
 
 def test_retrieve_sam_raise_no_parameters():
     """
-    Raise an exception if no parameters are provided to `retrieve_sam()`.
+    Raise an exception if an invalid parameter is provided to `retrieve_sam()`.
     """
-    with pytest.raises(ValueError) as error:
-        pvsystem.retrieve_sam()
-    assert 'A name or path must be provided!' == str(error.value)
-
-
-def test_retrieve_sam_cecmod():
-    """
-    Test the expected data is retrieved from the CEC module database. In
-    particular, check for a known module in the database and check for the
-    expected keys for that module.
-    """
-    data = pvsystem.retrieve_sam('cecmod')
-    keys = [
-        'BIPV',
-        'Date',
-        'T_NOCT',
-        'A_c',
-        'N_s',
-        'I_sc_ref',
-        'V_oc_ref',
-        'I_mp_ref',
-        'V_mp_ref',
-        'alpha_sc',
-        'beta_oc',
-        'a_ref',
-        'I_L_ref',
-        'I_o_ref',
-        'R_s',
-        'R_sh_ref',
-        'Adjust',
-        'gamma_r',
-        'Version',
-        'STC',
-        'PTC',
-        'Technology',
-        'Bifacial',
-        'Length',
-        'Width',
-    ]
-    module = 'Itek_Energy_LLC_iT_300_HE'
-    assert module in data
-    assert set(data[module].keys()) == set(keys)
+    with pytest.raises(ValueError, match="Invalid name"):
+        pvsystem.retrieve_sam(name_or_path="this_surely_wont_work.csv")
 
 
 def test_retrieve_sam_cecinverter():
-    """
-    Test the expected data is retrieved from the CEC inverter database. In
-    particular, check for a known inverter in the database and check for the
-    expected keys for that inverter.
-    """
-    data = pvsystem.retrieve_sam('cecinverter')
-    keys = [
-        'Vac',
-        'Paco',
-        'Pdco',
-        'Vdco',
-        'Pso',
-        'C0',
-        'C1',
-        'C2',
-        'C3',
-        'Pnt',
-        'Vdcmax',
-        'Idcmax',
-        'Mppt_low',
-        'Mppt_high',
-        'CEC_Date',
-        'CEC_Type',
-    ]
-    inverter = 'Yaskawa_Solectria_Solar__PVI_5300_208__208V_'
-    assert inverter in data
-    assert set(data[inverter].keys()) == set(keys)
+    """Test the expected keys are retrieved from each database."""
+    keys_per_database = {
+        "cecmod": {'Technology', 'Bifacial', 'STC', 'PTC', 'A_c', 'Length',
+                   'Width', 'N_s', 'I_sc_ref', 'V_oc_ref', 'I_mp_ref',
+                   'V_mp_ref', 'alpha_sc', 'beta_oc', 'T_NOCT', 'a_ref',
+                   'I_L_ref', 'I_o_ref', 'R_s', 'R_sh_ref', 'Adjust',
+                   'gamma_r', 'BIPV', 'Version', 'Date'},
+        "sandiamod": {'Vintage', 'Area', 'Material', 'Cells_in_Series',
+                      'Parallel_Strings', 'Isco', 'Voco', 'Impo', 'Vmpo',
+                      'Aisc', 'Aimp', 'C0', 'C1', 'Bvoco', 'Mbvoc', 'Bvmpo',
+                      'Mbvmp', 'N', 'C2', 'C3', 'A0', 'A1', 'A2', 'A3', 'A4',
+                      'B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'DTC', 'FD', 'A',
+                      'B', 'C4', 'C5', 'IXO', 'IXXO', 'C6', 'C7', 'Notes'},
+        "adrinverter": {'Manufacturer', 'Model', 'Source', 'Vac', 'Vintage',
+                        'Pacmax', 'Pnom', 'Vnom', 'Vmin', 'Vmax',
+                        'ADRCoefficients', 'Pnt', 'Vdcmax', 'Idcmax',
+                        'MPPTLow', 'MPPTHi', 'TambLow', 'TambHi', 'Weight',
+                        'PacFitErrMax', 'YearOfData'},
+        "cecinverter": {'Vac', 'Paco', 'Pdco', 'Vdco', 'Pso', 'C0', 'C1', 'C2',
+                        'C3', 'Pnt', 'Vdcmax', 'Idcmax', 'Mppt_low',
+                        'Mppt_high', 'CEC_Date', 'CEC_Type'}
+    }  # fmt: skip
+    keys_per_database["sandiainverter"] = keys_per_database["cecinverter"]
+    module_per_database = {
+        "cecmod": "Itek_Energy_LLC_iT_300_HE",
+        "sandiamod": "Canadian_Solar_CS6X_300M__2013_",
+        "adrinverter": "Sainty_Solar__SSI_4K4U_240V__CEC_2011_",
+        "cecinverter": "ABB__PVI_3_0_OUTD_S_US__208V_",
+        "sandiainverter": "ABB__PVI_3_0_OUTD_S_US__208V_"
+    }
+
+    for database in keys_per_database.keys():
+        data = pvsystem.retrieve_sam(database)
+        assert set(data.index) == keys_per_database[database]
+        assert module_per_database[database] in data.columns
 
 
 def test_sapm(sapm_module_params):

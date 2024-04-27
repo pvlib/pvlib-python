@@ -7,7 +7,7 @@ from collections import OrderedDict
 import functools
 import io
 import itertools
-import os
+from pathlib import Path
 import inspect
 from urllib.request import urlopen
 import numpy as np
@@ -1957,10 +1957,10 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
     return tuple(pd.Series(a, index=index).rename(None) for a in out)
 
 
-def retrieve_sam(name=None, path=None):
-    '''
-    Retrieve latest module and inverter info from a local file or the
-    SAM website.
+def retrieve_sam(name_or_path):
+    """
+    Retrieve latest module and inverter info from a file bundled with pvlib,
+    a path or an URL (like SAM's website).
 
     This function will retrieve either:
 
@@ -1973,9 +1973,9 @@ def retrieve_sam(name=None, path=None):
 
     Parameters
     ----------
-    name : string, optional
-        Name can be one of:
-
+    name_or_path : string
+        Use one of the following strings to retrieve a database bundled with
+        pvlib:
         * 'CECMod' - returns the CEC module database
         * 'CECInverter' - returns the CEC Inverter database
         * 'SandiaInverter' - returns the CEC Inverter database
@@ -1984,8 +1984,7 @@ def retrieve_sam(name=None, path=None):
         * 'SandiaMod' - returns the Sandia Module database
         * 'ADRInverter' - returns the ADR Inverter database
 
-    path : string, optional
-        Path to the SAM file. May also be a URL.
+        Additionally, a path to a CSV file or a URL can be provided.
 
     Returns
     -------
@@ -2030,38 +2029,34 @@ def retrieve_sam(name=None, path=None):
     CEC_Date                     NaN
     CEC_Type     Utility Interactive
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
-    '''
-
-    if name is not None:
-        name = name.lower()
-        data_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'data')
-        if name == 'cecmod':
-            csvdata = os.path.join(
-                data_path, 'sam-library-cec-modules-2019-03-05.csv')
-        elif name == 'sandiamod':
-            csvdata = os.path.join(
-                data_path, 'sam-library-sandia-modules-2015-6-30.csv')
-        elif name == 'adrinverter':
-            csvdata = os.path.join(
-                data_path, 'adr-library-cec-inverters-2019-03-05.csv')
-        elif name in ['cecinverter', 'sandiainverter']:
-            # Allowing either, to provide for old code,
-            # while aligning with current expectations
-            csvdata = os.path.join(
-                data_path, 'sam-library-cec-inverters-2019-03-05.csv')
+    """
+    internal_dbs = {
+        "cecmod": "sam-library-cec-modules-2019-03-05.csv",
+        "sandiamod": "sam-library-sandia-modules-2015-6-30.csv",
+        "adrinverter": "adr-library-cec-inverters-2019-03-05.csv",
+        # Both 'cecinverter' and 'sandiainverter', point to same database
+        # to provide for old code, while aligning with current expectations
+        "cecinverter": "sam-library-cec-inverters-2019-03-05.csv",
+        "sandiainverter": "sam-library-cec-inverters-2019-03-05.csv",
+    }
+    name_lwr = name_or_path.lower()
+    if name_lwr in internal_dbs.keys():  # input is a database name
+        csvdata_path = Path(__file__).parent.joinpath(
+            "data", internal_dbs[name_lwr]
+        )
+    else:  # input is a path or URL
+        if name_lwr.startswith("http"):  # name so check is not case-sensitive
+            response = urlopen(name_or_path)  # URL is case-sensitive
+            csvdata_path = io.StringIO(response.read().decode(errors="ignore"))
+        elif Path(name_or_path).exists():
+            csvdata_path = name_or_path
         else:
-            raise ValueError(f'invalid name {name}')
-    elif path is not None:
-        if path.startswith('http'):
-            response = urlopen(path)
-            csvdata = io.StringIO(response.read().decode(errors='ignore'))
-        else:
-            csvdata = path
-    elif name is None and path is None:
-        raise ValueError("A name or path must be provided!")
+            raise ValueError(
+                f"Invalid name {name_or_path} or path does not exist. Allowed "
+                + f"names are {internal_dbs} or a path to a CSV file or URL."
+            )
 
-    return _parse_raw_sam_df(csvdata)
+    return _parse_raw_sam_df(csvdata_path)
 
 
 def _normalize_sam_product_names(names):

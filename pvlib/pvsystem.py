@@ -1979,6 +1979,7 @@ def retrieve_sam(name=None, path=None):
     name : string, optional
         Use one of the following strings to retrieve a database bundled with
         pvlib:
+
         * 'CECMod' - returns the CEC module database
         * 'CECInverter' - returns the CEC Inverter database
         * 'SandiaInverter' - returns the CEC Inverter database

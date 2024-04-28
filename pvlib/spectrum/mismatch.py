@@ -218,8 +218,8 @@ def get_ASTM_G173(wavelengths=None):
                 method="linear",
                 limit_area="inside",
             )
-            .fillna(0.0)  # fill out-of-bounds values with 0.0
             .loc[wavelengths]  # keep only the requested wavelengths
+            .fillna(0.0)  # fill out-of-bounds values with 0.0
         )
 
     am15.name = "am15"

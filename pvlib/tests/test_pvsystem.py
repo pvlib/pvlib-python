@@ -111,9 +111,9 @@ def test_retrieve_sam_raises_exceptions():
         pvsystem.retrieve_sam()
     with pytest.raises(ValueError, match="Please provide either.*, not both."):
         pvsystem.retrieve_sam(name="this_surely_wont_work", path="wont_work")
-    with pytest.raises(ValueError, match="Invalid name"):
+    with pytest.raises(KeyError, match="Invalid name"):
         pvsystem.retrieve_sam(name="this_surely_wont_work")
-    with pytest.raises(ValueError, match="Invalid path"):
+    with pytest.raises(FileNotFoundError):
         pvsystem.retrieve_sam(path="this_surely_wont_work.csv")
 
 
@@ -140,14 +140,15 @@ def test_retrieve_sam_cecinverter():
                         'C3', 'Pnt', 'Vdcmax', 'Idcmax', 'Mppt_low',
                         'Mppt_high', 'CEC_Date', 'CEC_Type'}
     }  # fmt: skip
-    keys_per_database["sandiainverter"] = keys_per_database["cecinverter"]
     module_per_database = {
         "cecmod": "Itek_Energy_LLC_iT_300_HE",
         "sandiamod": "Canadian_Solar_CS6X_300M__2013_",
         "adrinverter": "Sainty_Solar__SSI_4K4U_240V__CEC_2011_",
         "cecinverter": "ABB__PVI_3_0_OUTD_S_US__208V_",
-        "sandiainverter": "ABB__PVI_3_0_OUTD_S_US__208V_"
     }
+    # duplicate the cecinverter items for sandiainverter, for backwards compat
+    keys_per_database["sandiainverter"] = keys_per_database["cecinverter"]
+    module_per_database["sandiainverter"] = module_per_database["cecinverter"]
 
     for database in keys_per_database.keys():
         data = pvsystem.retrieve_sam(database)

@@ -2004,10 +2004,8 @@ def retrieve_sam(name=None, path=None):
         If no ``name`` or ``path`` is provided.
     ValueError
         If both ``name`` and ``path`` are provided.
-    ValueError
-        If the provided ``name`` is not valid.
-    ValueError
-        If the provided ``path`` does not exist.
+    KeyError
+        If the provided ``name`` is not a valid database name.
 
     Notes
     -----
@@ -2056,23 +2054,20 @@ def retrieve_sam(name=None, path=None):
             "cecinverter": "sam-library-cec-inverters-2019-03-05.csv",
             "sandiainverter": "sam-library-cec-inverters-2019-03-05.csv",
         }
-        name_lwr = name.lower()
-        if name_lwr in internal_dbs.keys():  # input is a database name
+        try:
             csvdata_path = Path(__file__).parent.joinpath(
-                "data", internal_dbs[name_lwr]
+                "data", internal_dbs[name.lower()]
             )
-        else:
-            raise ValueError(
+        except KeyError:
+            raise KeyError(
                 f"Invalid name {name}. Provide one of {internal_dbs.keys()}."
-            )
+            ) from None
     else:  # path is not None
         if path.lower().startswith("http"):  # URL check is not case-sensitive
             response = urlopen(path)  # URL is case-sensitive
             csvdata_path = io.StringIO(response.read().decode(errors="ignore"))
-        elif Path(path).exists():
-            csvdata_path = path
         else:
-            raise ValueError(f"Invalid path {path}: does not exist.")
+            csvdata_path = path
     return _parse_raw_sam_df(csvdata_path)
 
 

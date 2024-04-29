@@ -109,3 +109,5 @@ jobs:
           fail_ci_if_error: true
           verbose: true
           flags: remote-data  # flags are configured in codecov.yml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

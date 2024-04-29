@@ -117,7 +117,7 @@ def test_retrieve_sam_raises_exceptions():
         pvsystem.retrieve_sam(path="this_surely_wont_work.csv")
 
 
-def test_retrieve_sam_cecinverter():
+def test_retrieve_sam_databases():
     """Test the expected keys are retrieved from each database."""
     keys_per_database = {
         "cecmod": {'Technology', 'Bifacial', 'STC', 'PTC', 'A_c', 'Length',
@@ -140,7 +140,7 @@ def test_retrieve_sam_cecinverter():
                         'C3', 'Pnt', 'Vdcmax', 'Idcmax', 'Mppt_low',
                         'Mppt_high', 'CEC_Date', 'CEC_Type'}
     }  # fmt: skip
-    module_per_database = {
+    item_per_database = {
         "cecmod": "Itek_Energy_LLC_iT_300_HE",
         "sandiamod": "Canadian_Solar_CS6X_300M__2013_",
         "adrinverter": "Sainty_Solar__SSI_4K4U_240V__CEC_2011_",
@@ -148,12 +148,12 @@ def test_retrieve_sam_cecinverter():
     }
     # duplicate the cecinverter items for sandiainverter, for backwards compat
     keys_per_database["sandiainverter"] = keys_per_database["cecinverter"]
-    module_per_database["sandiainverter"] = module_per_database["cecinverter"]
+    item_per_database["sandiainverter"] = item_per_database["cecinverter"]
 
     for database in keys_per_database.keys():
         data = pvsystem.retrieve_sam(database)
         assert set(data.index) == keys_per_database[database]
-        assert module_per_database[database] in data.columns
+        assert item_per_database[database] in data.columns
 
 
 def test_sapm(sapm_module_params):

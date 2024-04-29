@@ -2060,7 +2060,8 @@ def retrieve_sam(name=None, path=None):
             )
         except KeyError:
             raise KeyError(
-                f"Invalid name {name}. Provide one of {internal_dbs.keys()}."
+                f"Invalid name {name}. "
+                + f"Provide one of {list(internal_dbs.keys())}."
             ) from None
     else:  # path is not None
         if path.lower().startswith("http"):  # URL check is not case-sensitive

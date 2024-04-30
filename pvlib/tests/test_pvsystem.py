@@ -199,8 +199,8 @@ def test_sapm(sapm_module_params):
           5.52987899, 3.46796463],
          [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
          [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]),
-         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
-         index=times)
+        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
+        index=times)
 
     assert_frame_equal(out, expected, check_less_precise=4)
 

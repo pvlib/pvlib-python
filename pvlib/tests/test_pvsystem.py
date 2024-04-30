@@ -191,16 +191,16 @@ def test_sapm(sapm_module_params):
     out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
     expected = pd.DataFrame(np.array(
-      [[-5.0608322, -4.65037767, np.nan, np.nan, np.nan,
-        -4.91119927, -4.16721569],
-       [2.545575, 2.28773882, 56.86182059, 47.21121608, 108.00693168,
-        2.48357383, 1.71782772],
-       [5.65584763, 5.01709903, 54.1943277, 42.51861718, 213.32011294,
-        5.52987899, 3.46796463],
-       [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
-       [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]),
-        columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
-        index=times)
+       [[-5.0608322, -4.65037767, np.nan, np.nan, np.nan,
+         -4.91119927, -4.16721569],
+        [2.545575, 2.28773882, 56.86182059, 47.21121608, 108.00693168,
+         2.48357383, 1.71782772],
+        [5.65584763, 5.01709903, 54.1943277, 42.51861718, 213.32011294,
+         5.52987899, 3.46796463],
+        [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+        [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]),
+         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
+         index=times)
 
     assert_frame_equal(out, expected, check_less_precise=4)
 

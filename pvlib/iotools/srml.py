@@ -92,7 +92,7 @@ def read_srml(filename, map_variables=True):
     # Mask data marked with quality flag 99 (bad or missing data)
     for col in columns[::2]:
         missing = data[col + '_flag'] == 99
-        data[col] = data[col].where(~(missing), np.NaN)
+        data[col] = data[col].where(~(missing), np.nan)
     return data
 
 

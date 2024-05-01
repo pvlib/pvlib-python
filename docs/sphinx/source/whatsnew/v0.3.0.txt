@@ -69,7 +69,7 @@ Enhancements
 * Modify ``sapm`` documentation to clarify that it does
   not work with the CEC database. (:issue:`122`)
 * Adds citation information to the documentation. (:issue:`73`)
-* Updates the :ref:`comparison_pvlib_matlab` documentation. (:issue:`116`)
+* Updates the ``comparison_pvlib_matlab`` documentation. (:issue:`116`)
 
 
 Bug fixes

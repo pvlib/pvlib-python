@@ -1698,7 +1698,9 @@ def calcparams_cec(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the CEC
-    model. The CEC model [1]_ differs from the De soto et al.
+    model.
+    
+    The CEC model [1]_ differs from the De soto et al.
     model [3]_ by the parameter Adjust. The five values returned by
     calcparams_cec can be used by singlediode to calculate an IV curve.
 

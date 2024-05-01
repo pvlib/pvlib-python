@@ -355,7 +355,7 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
         # other conditions with breakdown model on and recombination model off
         (
             (1.e-4, -5.5, 3.28),
-            (0., np.Inf),
+            (0., np.inf),
             POA,
             TCELL,
             {

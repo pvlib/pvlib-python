@@ -2536,7 +2536,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
 
 def max_power_point(photocurrent, saturation_current, resistance_series,
-                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
                     method='brentq'):
     """
     Given the single diode equation coefficients, calculates the maximum power

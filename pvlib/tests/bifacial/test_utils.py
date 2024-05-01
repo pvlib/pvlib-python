@@ -6,6 +6,7 @@ import pytest
 from pvlib.bifacial import utils
 from pvlib.shading import masking_angle, ground_angle
 from pvlib.tools import cosd
+from scipy.integrate import trapezoid
 
 
 @pytest.fixture
@@ -99,7 +100,7 @@ def test_vf_ground_sky_2d_integ(test_system_fixed_tilt, vectorize):
     vf_integ = utils.vf_ground_sky_2d_integ(
         ts['rotation'], ts['gcr'], ts['height'], ts['pitch'],
         max_rows=1, npoints=3, vectorize=vectorize)
-    expected_vf_integ = np.trapz(vfs_gnd_sky, pts, axis=0)
+    expected_vf_integ = trapezoid(vfs_gnd_sky, pts, axis=0)
     assert np.isclose(vf_integ, expected_vf_integ, rtol=0.1)
 
 
@@ -134,7 +135,7 @@ def test_vf_row_sky_2d_integ(test_system_fixed_tilt):
     x = np.arange(fx0[1], fx1[1], 1e-4)
     phi_y = masking_angle(ts['surface_tilt'], ts['gcr'], x)
     y = 0.5 * (1 + cosd(ts['surface_tilt'] + phi_y))
-    y1 = np.trapz(y, x) / (fx1[1] - fx0[1])
+    y1 = trapezoid(y, x) / (fx1[1] - fx0[1])
     expected = np.array([y0, y1])
     assert np.allclose(vf, expected, rtol=1e-3)
     # with defaults (0, 1)
@@ -142,7 +143,7 @@ def test_vf_row_sky_2d_integ(test_system_fixed_tilt):
     x = np.arange(0, 1, 1e-4)
     phi_y = masking_angle(ts['surface_tilt'], ts['gcr'], x)
     y = 0.5 * (1 + cosd(ts['surface_tilt'] + phi_y))
-    y1 = np.trapz(y, x) / (1 - 0)
+    y1 = trapezoid(y, x) / (1 - 0)
     assert np.allclose(vf, y1, rtol=1e-3)
 
 
@@ -179,7 +180,7 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     x = np.arange(fx0[1], fx1[1], 1e-4)
     phi_y = ground_angle(ts['surface_tilt'], ts['gcr'], x)
     y = 0.5 * (1 - cosd(phi_y - ts['surface_tilt']))
-    y1 = np.trapz(y, x) / (fx1[1] - fx0[1])
+    y1 = trapezoid(y, x) / (fx1[1] - fx0[1])
     expected = np.array([y0, y1])
     assert np.allclose(vf, expected, rtol=1e-2)
     # with defaults (0, 1)
@@ -187,5 +188,5 @@ def test_vf_ground_2d_integ(test_system_fixed_tilt):
     x = np.arange(0, 1, 1e-4)
     phi_y = ground_angle(ts['surface_tilt'], ts['gcr'], x)
     y = 0.5 * (1 - cosd(phi_y - ts['surface_tilt']))
-    y1 = np.trapz(y, x) / (1 - 0)
+    y1 = trapezoid(y, x) / (1 - 0)
     assert np.allclose(vf, y1, rtol=1e-2)

@@ -8,7 +8,7 @@ dependencies:
     - pytest-cov
     - pytest-mock
     - pytest-timeout
-    - python=3.7
+    - python=3.8
     - pytz
     - requests
     - pip:

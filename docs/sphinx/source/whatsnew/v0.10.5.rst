@@ -31,6 +31,13 @@ Bug fixes
 * Fixed :py:func:`pvlib.pvsystem.retrieve_sam` silently ignoring the ``path`` parameter
   when ``name`` was provided. Now an exception is raised requesting to only provide one
   of the two parameters. (:issue:`2018`, :pull:`2020`)
+* Fixed :py:func:`pvlib.pvsystem.retrieve_sam` silently ignoring the `path` parameter
+  when `name` was provided. Now an exception is raised requesting to only provide one
+  of the two parameters. (:issue:`2018`, :pull:`2020`)
+
+
+Testing
+~~~~~~~
 
 
 Documentation
@@ -57,3 +64,5 @@ Contributors
 * Scott Meredith (:ghuser:`smmeredith`)
 * Alexander Morgan (:ghuser:`alexandermorgan`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* :ghuser:`apct69`
+* Mark Mikofski (:ghuser:`mikofski`)

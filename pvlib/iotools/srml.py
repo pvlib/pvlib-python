@@ -175,7 +175,8 @@ def _format_index(df):
 @deprecated('0.10.0', alternative='pvlib.iotools.get_srml', removal='0.11.0')
 def read_srml_month_from_solardat(station, year, month, filetype='PO',
                                   map_variables=True):
-    """Request a month of SRML data and read it into a Dataframe.
+    """
+    Request a month of SRML data and read it into a Dataframe.
 
     The SRML is described in [1]_.
 

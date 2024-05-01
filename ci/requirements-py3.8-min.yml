@@ -13,7 +13,7 @@ dependencies:
     - requests
     - pip:
         - dataclasses
-        - h5py==3.1.0
+        - h5py==2.10.0  # chosen for compatibility with numpy 1.17.3 and py3.8
         - numpy==1.17.3
         - pandas==1.3.0
         - scipy==1.6.0

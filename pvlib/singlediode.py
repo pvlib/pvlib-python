@@ -307,7 +307,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
         # start iteration slightly less than NsVbi when voc_est > NsVbi, to
         # avoid the asymptote at NsVbi
         xp = np.where(voc_est < NsVbi, voc_est, 0.9999*NsVbi)
-    
+
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
         # arguments for possible array input

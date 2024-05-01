@@ -1487,8 +1487,10 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the De Soto et al.
-    model described in [1]_. The five values returned by calcparams_desoto
-    can be used by singlediode to calculate an IV curve.
+    model. The five values returned by ``calcparams_desoto`` can be used by
+    singlediode to calculate an IV curve.
+
+    The model is described in [1]_.
 
     Parameters
     ----------

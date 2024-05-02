@@ -166,16 +166,14 @@ def test_sapm(sapm_module_params):
     out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
     expected = pd.DataFrame(np.array(
-      [[  -5.0608322 ,   -4.65037767,           nan,           nan,
-                  nan,   -4.91119927,   -4.15367716],
-       [   2.545575  ,    2.28773882,   56.86182059,   47.21121608,
-         108.00693168,    2.48357383,    1.71782772],
-       [   5.65584763,    5.01709903,   54.1943277 ,   42.51861718,
-         213.32011294,    5.52987899,    3.48660728],
-       [          nan,           nan,           nan,           nan,
-                  nan,           nan,           nan],
-       [          nan,           nan,           nan,           nan,
-                  nan,           nan,           nan]]),
+        [[-5.0608322, -4.65037767, np.nan, np.nan, np.nan,
+          -4.91119927, -4.16721569],
+         [2.545575, 2.28773882, 56.86182059, 47.21121608, 108.00693168,
+          2.48357383, 1.71782772],
+         [5.65584763, 5.01709903, 54.1943277, 42.51861718, 213.32011294,
+          5.52987899, 3.46796463],
+         [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+         [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]),
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
         index=times)
 
@@ -184,13 +182,13 @@ def test_sapm(sapm_module_params):
     out = pvsystem.sapm(1000, 25, sapm_module_params)
 
     expected = OrderedDict()
-    expected['i_sc'] = 5.09115
-    expected['i_mp'] = 4.5462909092579995
-    expected['v_oc'] = 59.260800000000003
-    expected['v_mp'] = 48.315600000000003
-    expected['p_mp'] = 219.65677305534581
-    expected['i_x'] = 4.9759899999999995
-    expected['i_xx'] = 3.1880204359100004
+    expected['i_sc'] = sapm_module_params['Isco']
+    expected['i_mp'] = sapm_module_params['Impo']
+    expected['v_oc'] = sapm_module_params['Voco']
+    expected['v_mp'] = sapm_module_params['Vmpo']
+    expected['p_mp'] = sapm_module_params['Impo'] * sapm_module_params['Vmpo']
+    expected['i_x'] = sapm_module_params['IXO']
+    expected['i_xx'] = sapm_module_params['IXXO']
 
     for k, v in expected.items():
         assert_allclose(out[k], v, atol=1e-4)

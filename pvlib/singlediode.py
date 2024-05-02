@@ -310,6 +310,9 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
     if method == 'brentq':
         # first bound the search using voc
         voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+        # start iteration slightly less than NsVbi when voc_est > NsVbi, to
+        # avoid the asymptote at NsVbi
+        xp = np.where(voc_est < NsVbi, voc_est, 0.9999*NsVbi)
 
         # brentq only works with scalar inputs, so we need a set up function
         # and np.vectorize to repeatedly call the optimizer with the right
@@ -323,7 +326,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
                           **method_kwargs)
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
-        vd = vd_from_brent_vectorized(voc_est, voltage, *args)
+        vd = vd_from_brent_vectorized(xp, voltage, *args)
     elif method == 'newton':
         x0, (voltage, *args), method_kwargs = \
             _prepare_newton_inputs(voltage, (voltage, *args), method_kwargs)
@@ -443,6 +446,9 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+    # start iteration slightly less than NsVbi when voc_est > NsVbi, to avoid
+    # the asymptote at NsVbi
+    xp = np.where(voc_est < NsVbi, voc_est, 0.9999*NsVbi)
 
     def fi(x, i, *a):
         # calculate current residual given diode voltage "x"
@@ -461,10 +467,10 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
                           **method_kwargs)
 
         vd_from_brent_vectorized = np.vectorize(vd_from_brent)
-        vd = vd_from_brent_vectorized(voc_est, current, *args)
+        vd = vd_from_brent_vectorized(xp, current, *args)
     elif method == 'newton':
         x0, (current, *args), method_kwargs = \
-            _prepare_newton_inputs(voc_est, (current, *args), method_kwargs)
+            _prepare_newton_inputs(xp, (current, *args), method_kwargs)
         vd = newton(func=lambda x, *a: fi(x, current, *a), x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
                     args=args, **method_kwargs)
@@ -579,6 +585,9 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
 
     # first bound the search using voc
     voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+    # start iteration slightly less than NsVbi when voc_est > NsVbi, to avoid
+    # the asymptote at NsVbi
+    xp = np.where(voc_est < NsVbi, voc_est, 0.9999*NsVbi)
 
     def fmpp(x, *a):
         return bishop88(x, *a, gradients=True)[6]
@@ -592,12 +601,13 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
                                   vbr_a, vbr, vbr_exp),
                             **method_kwargs)
         )
-        vd = vec_fun(voc_est, *args)
+        vd = vec_fun(xp, *args)
     elif method == 'newton':
         # make sure all args are numpy arrays if max size > 1
         # if voc_est is an array, then make a copy to use for initial guess, v0
+
         x0, args, method_kwargs = \
-            _prepare_newton_inputs(voc_est, args, method_kwargs)
+            _prepare_newton_inputs(xp, args, method_kwargs)
         vd = newton(func=fmpp, x0=x0,
                     fprime=lambda x, *a: bishop88(x, *a, gradients=True)[7],
                     args=args, **method_kwargs)

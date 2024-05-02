@@ -575,3 +575,53 @@ def test_bishop88_pdSeries_len_one(method, bishop88_arguments):
     bishop88_i_from_v(pd.Series([0]), **bishop88_arguments, method=method)
     bishop88_v_from_i(pd.Series([0]), **bishop88_arguments, method=method)
     bishop88_mpp(**bishop88_arguments, method=method)
+
+
+def _sde_check_solution(i, v, il, io, rs, rsh, a, d2mutau=0., NsVbi=np.inf):
+    vd = v + rs * i
+    return il - io*np.expm1(vd/a) - vd/rsh - il*d2mutau/(NsVbi - vd) - i
+
+
+@pytest.mark.parametrize('method', ['newton', 'brentq'])
+def test_bishop88_init_cond(method):
+    # GH 2013
+    p = {'alpha_sc': 0.0012256,
+         'gamma_ref': 1.2916241612804187,
+         'mu_gamma': 0.00047308959960937403,
+         'I_L_ref': 3.068717040806731,
+         'I_o_ref': 2.2691248021217617e-11,
+         'R_sh_ref': 7000,
+         'R_sh_0': 7000,
+         'R_s': 4.602,
+         'cells_in_series': 268,
+         'R_sh_exp': 5.5,
+         'EgRef': 1.5}
+    NsVbi = 268 * 0.9
+    d2mutau = 1.4
+    irrad = np.arange(20, 1100, 20)
+    tc = np.arange(-25, 74, 1)
+    weather = np.array(np.meshgrid(irrad, tc)).T.reshape(-1, 2)
+    # with the above parameters and weather conditions, a few combinations
+    # result in voc_est > NsVbi, which causes failure of brentq and newton
+    # when the recombination parameters NsVbi and d2mutau are used.
+    sde_params = pvsystem.calcparams_pvsyst(weather[:, 0], weather[:, 1], **p)
+    # test _mpp
+    result = bishop88_mpp(*sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+    imp, vmp, pmp = result
+    err = np.abs(_sde_check_solution(
+        imp, vmp, sde_params[0], sde_params[1], sde_params[2], sde_params[3],
+        sde_params[4], d2mutau=d2mutau, NsVbi=NsVbi))
+    bad_results = np.isnan(pmp) | (pmp < 0) | (err > 0.00001)  # 0.01mA error
+    assert not bad_results.any()
+    # test v_from_i
+    vmp2 = bishop88_v_from_i(imp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+    err = np.abs(_sde_check_solution(imp, vmp2, *sde_params, d2mutau=d2mutau,
+                                     NsVbi=NsVbi))
+    bad_results = np.isnan(vmp2) | (vmp2 < 0) | (err > 0.00001)
+    assert not bad_results.any()
+    # test v_from_i
+    imp2 = bishop88_i_from_v(vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+    err = np.abs(_sde_check_solution(imp2, vmp, *sde_params, d2mutau=d2mutau,
+                                     NsVbi=NsVbi))
+    bad_results = np.isnan(imp2) | (imp2 < 0) | (err > 0.00001)
+    assert not bad_results.any()

@@ -15,6 +15,10 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Improved reliability of :py:func:`pvlib.singlediode.bishop88_mpp`,
+  :py:func:`pvlib.singlediode.bishop88_i_from_v` and
+  :py:func:`pvlib.singlediode.bishop88_v_from_i` by improving the initial
+  guess for the newton and brentq algorithms. (:issue:`2013`, :pull:`2032`)
 * Corrected equation for Ixx0 in :py:func:`pvlib.pvsystem.sapm` (:issue:`2016`, :pull:`2019`)
 * Fixed :py:func:`pvlib.pvsystem.retrieve_sam` silently ignoring the `path` parameter
   when `name` was provided. Now an exception is raised requesting to only provide one

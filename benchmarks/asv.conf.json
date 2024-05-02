@@ -121,7 +121,7 @@
             // Note: these don't have a minimum in setup.py
             "h5py": "3.1.0",
             "ephem": "3.7.6.0",
-            "numba": "0.40.0"
+            "numba": "0.47.0",  # first version to support py 3.8
         },
         // latest versions available
         {

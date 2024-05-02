@@ -58,7 +58,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
 
 def bishop88(diode_voltage, photocurrent, saturation_current,
              resistance_series, resistance_shunt, nNsVth, d2mutau=0,
-             NsVbi=np.Inf, breakdown_factor=0., breakdown_voltage=-5.5,
+             NsVbi=np.inf, breakdown_factor=0., breakdown_voltage=-5.5,
              breakdown_exp=3.28, gradients=False):
     r"""
     Explicit calculation of points on the IV curve described by the single
@@ -206,7 +206,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
 
 def bishop88_i_from_v(voltage, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
+                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
                       method='newton', method_kwargs=None):
     """
@@ -285,6 +285,12 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
 
     >>> i, method_output = bishop88_i_from_v(0.0, **args, method='newton',
     ...     method_kwargs={'full_output': True})
+
+    References
+    ----------
+    .. [1] "Computer simulation of the effects of electrical mismatches in
+       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+       :doi:`10.1016/0379-6787(88)90059-2`
     """
     # collect args
     args = (photocurrent, saturation_current,
@@ -338,7 +344,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
 
 def bishop88_v_from_i(current, photocurrent, saturation_current,
                       resistance_series, resistance_shunt, nNsVth,
-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
+                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
                       breakdown_voltage=-5.5, breakdown_exp=3.28,
                       method='newton', method_kwargs=None):
     """
@@ -417,6 +423,12 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 
     >>> v, method_output = bishop88_v_from_i(0.0, **args, method='newton',
     ...     method_kwargs={'full_output': True})
+
+    References
+    ----------
+    .. [1] "Computer simulation of the effects of electrical mismatches in
+       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+       :doi:`10.1016/0379-6787(88)90059-2`
     """
     # collect args
     args = (photocurrent, saturation_current,
@@ -469,7 +481,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
 
 
 def bishop88_mpp(photocurrent, saturation_current, resistance_series,
-                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
                  breakdown_factor=0., breakdown_voltage=-5.5,
                  breakdown_exp=3.28, method='newton', method_kwargs=None):
     """
@@ -547,6 +559,12 @@ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
 
     >>> (i_mp, v_mp, p_mp), method_output = bishop88_mpp(**args,
     ...     method='newton', method_kwargs={'full_output': True})
+
+    References
+    ----------
+    .. [1] "Computer simulation of the effects of electrical mismatches in
+       photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
+       :doi:`10.1016/0379-6787(88)90059-2`
     """
     # collect args
     args = (photocurrent, saturation_current,

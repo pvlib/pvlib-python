@@ -311,11 +311,13 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
 
     :py:func:`huld` is a component of the PV performance model implemented in
     PVGIS. Among other components, the full PVGIS model includes:
-        - the Faiman model for module temperature
-          :py:func:`pvlib.temperature.faiman`
-        - the Martin and Ruiz model for the incidence angle modifier (IAM)
-          :py:func:`pvlib.iam.martin_ruiz`
-        - a custom model for a spectral adjustment factor
+
+    - the Faiman model for module temperature
+      :py:func:`pvlib.temperature.faiman`
+    - the Martin and Ruiz model for the incidence angle modifier (IAM)
+      :py:func:`pvlib.iam.martin_ruiz`
+    - a custom model for a spectral adjustment factor
+
     The PVGIS API (see :py:func:`pvlib.iotools.get_pvgis_hourly`) returns
     broadband plane-of-array irradiance (``poa_global``) and DC power (``P``).
     ``poa_global`` is irradiance before applying the IAM and spectral

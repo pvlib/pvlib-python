@@ -619,7 +619,7 @@ def test_bishop88_init_cond(method):
                                      NsVbi=NsVbi))
     bad_results = np.isnan(vmp2) | (vmp2 < 0) | (err > 0.00001)
     assert not bad_results.any()
-    # test v_from_i    
+    # test v_from_i
     imp2 = bishop88_i_from_v(vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
     err = np.abs(_sde_check_solution(imp2, vmp, *sde_params, d2mutau=d2mutau,
                                      NsVbi=NsVbi))

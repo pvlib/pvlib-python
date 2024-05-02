@@ -15,7 +15,10 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* Improved reliability of :py:func:`pvlib.singlediode.bishop88_mpp`,
+  :py:func:`pvlib.singlediode.bishop88_i_from_v` and
+  :py:func:`pvlib.singlediode.bishop88_v_from_i` by improving the initial
+  guess for the newton and brentq algorithms. (:issue:`2013`, :pull:`2032`)
 
 Testing
 ~~~~~~~

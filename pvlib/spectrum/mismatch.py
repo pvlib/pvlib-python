@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 
 from warnings import warn
+from functools import partial
 
 
 def get_example_spectral_response(wavelength=None):
@@ -122,14 +123,13 @@ def get_spectral_response_of_material(material, wavelengths=None):
        measurements - Data and Resources.” EMN-DURMAT (EMN-DuraMAT); Sandia
        National Laboratories (SNL-NM), Albuquerque, NM (United States), 2023.
        :doi:`10.21948/2204677`.
-       Available: https://www.osti.gov/servlets/purl/2204677/ 
+       Available: https://www.osti.gov/servlets/purl/2204677/
     """
 
     sr_dataset_path = Path(pvlib.__path__[0]).joinpath(
         "data", "duramat_spectral_responses.csv"
     )
     dataset = pd.read_csv(sr_dataset_path, index_col=0)
-    dataset.name = "spectral_response"
 
     if material in dataset.columns:
         dataset = dataset[material]
@@ -140,17 +140,21 @@ def get_spectral_response_of_material(material, wavelengths=None):
         )
 
     if wavelengths is not None:
-        dataset = (
-            # fill with NaNs where we want to interpolate
-            dataset.reindex(wavelengths, method=None)
-            .interpolate(  # interpolate those NaN values
-                method="linear",
-                limit_area="inside",
+        interpolator = partial(np.interp, xp=dataset.index, left=0, right=0)
+        if material == "all":  # returned data is a DataFrame
+            dataset = pd.DataFrame(
+                index=wavelengths,
+                data={
+                    col: interpolator(x=wavelengths, fp=dataset[col])
+                    for col in dataset.columns
+                },
             )
-            .loc[wavelengths]  # keep only the requested wavelengths
-            .fillna(0.0)  # fill out-of-bounds NaNs with zeros
-        )
-
+        else:  # returned data is a Series
+            dataset = pd.Series(
+                index=wavelengths,
+                data=interpolator(x=wavelengths, fp=dataset),
+            )
+    dataset.name = "spectral_response"
     return dataset
 
 

@@ -216,7 +216,10 @@ def get_ASTM_G173(wavelengths=None):
         interpolator = partial(np.interp, xp=am15.index, left=0.0, right=0.0)
         am15 = pd.DataFrame(
             index=wavelengths,
-            data={col: interpolator(x=wavelengths, fp=am15[col]) for col in am15.columns},
+            data={
+                col: interpolator(x=wavelengths, fp=am15[col])
+                for col in am15.columns
+            },
         )
 
     am15.name = "am15"

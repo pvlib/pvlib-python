@@ -5,8 +5,9 @@ The ``mismatch`` module provides functions for spectral mismatch calculations.
 import pvlib
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d
 import scipy.constants
+from scipy.integrate import trapezoid
+from scipy.interpolate import interp1d
 import os
 
 from warnings import warn
@@ -233,7 +234,7 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
     # a helper function to make usable fraction calculations more readable
     def integrate(e):
-        return np.trapz(e, x=e.T.index, axis=-1)
+        return trapezoid(e, x=e.T.index, axis=-1)
 
     # calculate usable fractions
     uf_sun = integrate(e_sun * sr_sun) / integrate(e_sun)

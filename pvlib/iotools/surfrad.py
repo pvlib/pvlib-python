@@ -152,7 +152,7 @@ def read_surfrad(filename, map_variables=True):
 
     data = _format_index(data)
     missing = data == -9999.9
-    data = data.where(~missing, np.NaN)
+    data = data.where(~missing, np.nan)
 
     if map_variables:
         data.rename(columns=VARIABLE_MAP, inplace=True)

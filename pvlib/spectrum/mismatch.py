@@ -10,6 +10,7 @@ from scipy.integrate import trapezoid
 import os
 
 from warnings import warn
+from functools import partial
 
 
 def get_example_spectral_response(wavelength=None):
@@ -212,15 +213,10 @@ def get_ASTM_G173(wavelengths=None):
     )
 
     if wavelengths is not None:
-        am15 = (
-            # fill with NaNs where we want to interpolate
-            am15.reindex(wavelengths, method=None)
-            .interpolate(  # interpolate those NaN values
-                method="linear",
-                limit_area="inside",
-            )
-            .loc[wavelengths]  # keep only the requested wavelengths
-            .fillna(0.0)  # fill out-of-bounds values with 0.0
+        interpolator = partial(np.interp, xp=am15.index, left=0.0, right=0.0)
+        am15 = pd.DataFrame(
+            index=wavelengths,
+            data={col: interpolator(x=wavelengths, fp=am15[col]) for col in am15.columns},
         )
 
     am15.name = "am15"

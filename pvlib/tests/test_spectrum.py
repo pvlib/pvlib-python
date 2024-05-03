@@ -130,8 +130,8 @@ def test_get_am15g():
     assert_equal(np.sum(e.index), 2761442)
     assert_approx_equal(np.sum(e), 1002.88, significant=6)
 
-    wavelength = [270, 850, 950, 1200, 4001]
-    expected = [0.0, 0.893720, 0.147260, 0.448250, 0.0]
+    wavelength = [270, 850, 950, 1200, 1201.25, 4001]
+    expected = [0.0, 0.893720, 0.147260, 0.448250, 0.4371025, 0.0]
 
     e = spectrum.get_am15g(wavelength)
     assert_equal(len(e), len(wavelength))

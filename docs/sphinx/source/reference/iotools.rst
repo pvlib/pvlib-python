@@ -26,6 +26,7 @@ of sources and file formats relevant to solar energy modeling.
    iotools.read_midc_raw_data_from_nrel
    iotools.read_crn
    iotools.read_solrad
+   iotools.get_solrad
    iotools.get_psm3
    iotools.read_psm3
    iotools.parse_psm3
@@ -52,6 +53,7 @@ of sources and file formats relevant to solar energy modeling.
    iotools.get_solcast_historic
    iotools.get_solcast_forecast
    iotools.get_solcast_live
+   iotools.get_solargis
 
 
 A :py:class:`~pvlib.location.Location` object may be created from metadata

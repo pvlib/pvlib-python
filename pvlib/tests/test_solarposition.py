@@ -18,7 +18,7 @@ from .conftest import (
 
 # setup times and locations to be tested.
 times = pd.date_range(start=datetime.datetime(2014, 6, 24),
-                      end=datetime.datetime(2014, 6, 26), freq='15Min')
+                      end=datetime.datetime(2014, 6, 26), freq='15min')
 
 tus = Location(32.2, -111, 'US/Arizona', 700)  # no DST issues possible
 times_localized = times.tz_localize(tus.tz)
@@ -547,7 +547,7 @@ def test_nrel_earthsun_distance():
 
 def test_equation_of_time():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                          freq="H")
+                          freq="h")
     output = solarposition.spa_python(times, 37.8, -122.25, 100)
     eot = output['equation_of_time']
     eot_rng = eot.max() - eot.min()  # range of values, around 30 minutes
@@ -559,7 +559,7 @@ def test_equation_of_time():
 
 def test_declination():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                          freq="H")
+                          freq="h")
     atmos_refract = 0.5667
     delta_t = spa.calculate_deltat(times.year, times.month)
     unixtime = np.array([calendar.timegm(t.timetuple()) for t in times])
@@ -578,7 +578,7 @@ def test_declination():
 
 def test_analytical_zenith():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                          freq="H").tz_localize('Etc/GMT+8')
+                          freq="h").tz_localize('Etc/GMT+8')
     lat, lon = 37.8, -122.25
     lat_rad = np.deg2rad(lat)
     output = solarposition.spa_python(times, lat, lon, 100)
@@ -599,7 +599,7 @@ def test_analytical_zenith():
 
 def test_analytical_azimuth():
     times = pd.date_range(start="1/1/2015 0:00", end="12/31/2015 23:00",
-                          freq="H").tz_localize('Etc/GMT+8')
+                          freq="h").tz_localize('Etc/GMT+8')
     lat, lon = 37.8, -122.25
     lat_rad = np.deg2rad(lat)
     output = solarposition.spa_python(times, lat, lon, 100)
@@ -753,7 +753,7 @@ def test__datetime_to_unixtime_units(unit, tz):
 def test_get_solarposition_microsecond_index(method, tz):
     # https://github.com/pvlib/pvlib-python/issues/1932
 
-    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
 
     index_ns = pd.date_range(unit='ns', **kwargs)
     index_us = pd.date_range(unit='us', **kwargs)
@@ -769,7 +769,7 @@ def test_get_solarposition_microsecond_index(method, tz):
 def test_nrel_earthsun_distance_microsecond_index(tz):
     # https://github.com/pvlib/pvlib-python/issues/1932
 
-    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
 
     index_ns = pd.date_range(unit='ns', **kwargs)
     index_us = pd.date_range(unit='us', **kwargs)
@@ -785,7 +785,7 @@ def test_nrel_earthsun_distance_microsecond_index(tz):
 def test_hour_angle_microsecond_index(tz):
     # https://github.com/pvlib/pvlib-python/issues/1932
 
-    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
 
     index_ns = pd.date_range(unit='ns', **kwargs)
     index_us = pd.date_range(unit='us', **kwargs)
@@ -801,7 +801,7 @@ def test_hour_angle_microsecond_index(tz):
 def test_rise_set_transit_spa_microsecond_index(tz):
     # https://github.com/pvlib/pvlib-python/issues/1932
 
-    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
 
     index_ns = pd.date_range(unit='ns', **kwargs)
     index_us = pd.date_range(unit='us', **kwargs)
@@ -817,7 +817,7 @@ def test_rise_set_transit_spa_microsecond_index(tz):
 def test_rise_set_transit_geometric_microsecond_index(tz):
     # https://github.com/pvlib/pvlib-python/issues/1932
 
-    kwargs = dict(start='2019-01-01', freq='H', periods=24, tz=tz)
+    kwargs = dict(start='2019-01-01', freq='h', periods=24, tz=tz)
 
     index_ns = pd.date_range(unit='ns', **kwargs)
     index_us = pd.date_range(unit='us', **kwargs)

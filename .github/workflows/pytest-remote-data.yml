@@ -104,8 +104,10 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == 3.7 && matrix.suffix == ''
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
           verbose: true
           flags: remote-data  # flags are configured in codecov.yml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

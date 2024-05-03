@@ -222,7 +222,9 @@ def loss_townsend(snow_total, snow_events, surface_tilt, relative_humidity,
                   string_factor=1.0, angle_of_repose=40):
     '''
     Calculates monthly snow loss based on the Townsend monthly snow loss
-    model [1]_.
+    model.
+
+    This model is described in [1]_.
 
     Parameters
     ----------

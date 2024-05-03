@@ -120,7 +120,7 @@
             "scipy": "1.6.0",
             // Note: these don't have a minimum in setup.py
             "h5py": "3.1.0",
-            "ephem": "3.7.6.0",
+            "ephem": "3.7.7.0",  // first version to support py 3.8
             "numba": "0.47.0",  // first version to support py 3.8
         },
         // latest versions available

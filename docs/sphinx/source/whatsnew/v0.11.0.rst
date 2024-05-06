@@ -15,6 +15,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added conversion functions from spectral response :math:`[A/W]` to quantum
+  efficiency :math:`[unitless]` and vice versa. The conversion functions are
+  :py:func:`spectral_responsivity_to_quantum_efficiency` and :py:func:`quantum_efficiency_to_spectral_responsivity` respectively.
+  (:issue:`2040`, :pull:`2041`)
 
 
 Bug fixes
@@ -35,3 +39,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Mark Campanelli (:ghuser:`markcampanelli`)

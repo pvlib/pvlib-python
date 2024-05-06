@@ -103,82 +103,57 @@ def test_PVSystem_get_iam_invalid(sapm_module_params, mocker):
         system.get_iam(45, iam_model='not_a_model')
 
 
-def test_retrieve_sam_raise_no_parameters():
+def test_retrieve_sam_raises_exceptions():
     """
-    Raise an exception if no parameters are provided to `retrieve_sam()`.
+    Raise an exception if an invalid parameter is provided to `retrieve_sam()`.
     """
-    with pytest.raises(ValueError) as error:
+    with pytest.raises(ValueError, match="Please provide either"):
         pvsystem.retrieve_sam()
-    assert 'A name or path must be provided!' == str(error.value)
+    with pytest.raises(ValueError, match="Please provide either.*, not both."):
+        pvsystem.retrieve_sam(name="this_surely_wont_work", path="wont_work")
+    with pytest.raises(KeyError, match="Invalid name"):
+        pvsystem.retrieve_sam(name="this_surely_wont_work")
+    with pytest.raises(FileNotFoundError):
+        pvsystem.retrieve_sam(path="this_surely_wont_work.csv")
 
 
-def test_retrieve_sam_cecmod():
-    """
-    Test the expected data is retrieved from the CEC module database. In
-    particular, check for a known module in the database and check for the
-    expected keys for that module.
-    """
-    data = pvsystem.retrieve_sam('cecmod')
-    keys = [
-        'BIPV',
-        'Date',
-        'T_NOCT',
-        'A_c',
-        'N_s',
-        'I_sc_ref',
-        'V_oc_ref',
-        'I_mp_ref',
-        'V_mp_ref',
-        'alpha_sc',
-        'beta_oc',
-        'a_ref',
-        'I_L_ref',
-        'I_o_ref',
-        'R_s',
-        'R_sh_ref',
-        'Adjust',
-        'gamma_r',
-        'Version',
-        'STC',
-        'PTC',
-        'Technology',
-        'Bifacial',
-        'Length',
-        'Width',
-    ]
-    module = 'Itek_Energy_LLC_iT_300_HE'
-    assert module in data
-    assert set(data[module].keys()) == set(keys)
+def test_retrieve_sam_databases():
+    """Test the expected keys are retrieved from each database."""
+    keys_per_database = {
+        "cecmod": {'Technology', 'Bifacial', 'STC', 'PTC', 'A_c', 'Length',
+                   'Width', 'N_s', 'I_sc_ref', 'V_oc_ref', 'I_mp_ref',
+                   'V_mp_ref', 'alpha_sc', 'beta_oc', 'T_NOCT', 'a_ref',
+                   'I_L_ref', 'I_o_ref', 'R_s', 'R_sh_ref', 'Adjust',
+                   'gamma_r', 'BIPV', 'Version', 'Date'},
+        "sandiamod": {'Vintage', 'Area', 'Material', 'Cells_in_Series',
+                      'Parallel_Strings', 'Isco', 'Voco', 'Impo', 'Vmpo',
+                      'Aisc', 'Aimp', 'C0', 'C1', 'Bvoco', 'Mbvoc', 'Bvmpo',
+                      'Mbvmp', 'N', 'C2', 'C3', 'A0', 'A1', 'A2', 'A3', 'A4',
+                      'B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'DTC', 'FD', 'A',
+                      'B', 'C4', 'C5', 'IXO', 'IXXO', 'C6', 'C7', 'Notes'},
+        "adrinverter": {'Manufacturer', 'Model', 'Source', 'Vac', 'Vintage',
+                        'Pacmax', 'Pnom', 'Vnom', 'Vmin', 'Vmax',
+                        'ADRCoefficients', 'Pnt', 'Vdcmax', 'Idcmax',
+                        'MPPTLow', 'MPPTHi', 'TambLow', 'TambHi', 'Weight',
+                        'PacFitErrMax', 'YearOfData'},
+        "cecinverter": {'Vac', 'Paco', 'Pdco', 'Vdco', 'Pso', 'C0', 'C1', 'C2',
+                        'C3', 'Pnt', 'Vdcmax', 'Idcmax', 'Mppt_low',
+                        'Mppt_high', 'CEC_Date', 'CEC_Type'}
+    }  # fmt: skip
+    item_per_database = {
+        "cecmod": "Itek_Energy_LLC_iT_300_HE",
+        "sandiamod": "Canadian_Solar_CS6X_300M__2013_",
+        "adrinverter": "Sainty_Solar__SSI_4K4U_240V__CEC_2011_",
+        "cecinverter": "ABB__PVI_3_0_OUTD_S_US__208V_",
+    }
+    # duplicate the cecinverter items for sandiainverter, for backwards compat
+    keys_per_database["sandiainverter"] = keys_per_database["cecinverter"]
+    item_per_database["sandiainverter"] = item_per_database["cecinverter"]
 
-
-def test_retrieve_sam_cecinverter():
-    """
-    Test the expected data is retrieved from the CEC inverter database. In
-    particular, check for a known inverter in the database and check for the
-    expected keys for that inverter.
-    """
-    data = pvsystem.retrieve_sam('cecinverter')
-    keys = [
-        'Vac',
-        'Paco',
-        'Pdco',
-        'Vdco',
-        'Pso',
-        'C0',
-        'C1',
-        'C2',
-        'C3',
-        'Pnt',
-        'Vdcmax',
-        'Idcmax',
-        'Mppt_low',
-        'Mppt_high',
-        'CEC_Date',
-        'CEC_Type',
-    ]
-    inverter = 'Yaskawa_Solectria_Solar__PVI_5300_208__208V_'
-    assert inverter in data
-    assert set(data[inverter].keys()) == set(keys)
+    for database in keys_per_database.keys():
+        data = pvsystem.retrieve_sam(database)
+        assert set(data.index) == keys_per_database[database]
+        assert item_per_database[database] in data.columns
 
 
 def test_sapm(sapm_module_params):
@@ -191,16 +166,14 @@ def test_sapm(sapm_module_params):
     out = pvsystem.sapm(effective_irradiance, temp_cell, sapm_module_params)
 
     expected = pd.DataFrame(np.array(
-      [[  -5.0608322 ,   -4.65037767,           nan,           nan,
-                  nan,   -4.91119927,   -4.15367716],
-       [   2.545575  ,    2.28773882,   56.86182059,   47.21121608,
-         108.00693168,    2.48357383,    1.71782772],
-       [   5.65584763,    5.01709903,   54.1943277 ,   42.51861718,
-         213.32011294,    5.52987899,    3.48660728],
-       [          nan,           nan,           nan,           nan,
-                  nan,           nan,           nan],
-       [          nan,           nan,           nan,           nan,
-                  nan,           nan,           nan]]),
+        [[-5.0608322, -4.65037767, np.nan, np.nan, np.nan,
+          -4.91119927, -4.16721569],
+         [2.545575, 2.28773882, 56.86182059, 47.21121608, 108.00693168,
+          2.48357383, 1.71782772],
+         [5.65584763, 5.01709903, 54.1943277, 42.51861718, 213.32011294,
+          5.52987899, 3.46796463],
+         [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+         [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]),
         columns=['i_sc', 'i_mp', 'v_oc', 'v_mp', 'p_mp', 'i_x', 'i_xx'],
         index=times)
 
@@ -209,13 +182,13 @@ def test_sapm(sapm_module_params):
     out = pvsystem.sapm(1000, 25, sapm_module_params)
 
     expected = OrderedDict()
-    expected['i_sc'] = 5.09115
-    expected['i_mp'] = 4.5462909092579995
-    expected['v_oc'] = 59.260800000000003
-    expected['v_mp'] = 48.315600000000003
-    expected['p_mp'] = 219.65677305534581
-    expected['i_x'] = 4.9759899999999995
-    expected['i_xx'] = 3.1880204359100004
+    expected['i_sc'] = sapm_module_params['Isco']
+    expected['i_mp'] = sapm_module_params['Impo']
+    expected['v_oc'] = sapm_module_params['Voco']
+    expected['v_mp'] = sapm_module_params['Vmpo']
+    expected['p_mp'] = sapm_module_params['Impo'] * sapm_module_params['Vmpo']
+    expected['i_x'] = sapm_module_params['IXO']
+    expected['i_xx'] = sapm_module_params['IXXO']
 
     for k, v in expected.items():
         assert_allclose(out[k], v, atol=1e-4)

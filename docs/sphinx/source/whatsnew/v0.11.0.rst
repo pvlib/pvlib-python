@@ -38,3 +38,5 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Mark Mikofski (:ghuser:`mikofski`)
+* Anton Driesse (:ghuser:`adriesse`)

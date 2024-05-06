@@ -18,6 +18,8 @@ Enhancements
 * Added function :py:func:`pvlib.shading.martinez_shade_factor` to calculate
   shading losses by taking into account the amount of bypass diodes of a module.
   (:issue:``, :pull:``)
+v0.10.5 (May 6, 2024)
+---------------------
 
 
 Bug fixes
@@ -35,10 +37,6 @@ Bug fixes
 * Fixed :py:func:`pvlib.pvsystem.retrieve_sam` silently ignoring the `path` parameter
   when `name` was provided. Now an exception is raised requesting to only provide one
   of the two parameters. (:issue:`2018`, :pull:`2020`)
-
-
-Testing
-~~~~~~~
 
 
 Documentation
@@ -68,3 +66,9 @@ Contributors
 * Kevin Anderson (:ghuser:`kandersolar`)
 * :ghuser:`apct69`
 * Mark Mikofski (:ghuser:`mikofski`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Adam R. Jensen (:ghuser:`adamrjensen`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Scott Meredith (:ghuser:`smmeredith`)
+* Alexander Morgan (:ghuser:`alexandermorgan`)
+* Kevin Anderson (:ghuser:`kandersolar`)

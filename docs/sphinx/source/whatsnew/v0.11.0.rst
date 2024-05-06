@@ -33,6 +33,7 @@ Documentation
 ~~~~~~~~~~~~~
 * Configure mathjax to left-align and indent equations in docstrings. (:pull:`2056`)
 
+
 Requirements
 ~~~~~~~~~~~~
 

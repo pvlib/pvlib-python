@@ -366,7 +366,7 @@ def test_spectral_responsivity_to_quantum_efficiency(sr_and_eqe_fixture):
     )
     pd.testing.assert_series_equal(
         qe, sr_and_eqe_fixture["quantum_efficiency"],
-        check_names=False  
+        check_names=False
     )
     assert qe.name == "spectral_response"
     # error on lack of wavelength parameter if no pandas object is provided
@@ -396,7 +396,7 @@ def test_quantum_efficiency_to_spectral_responsivity(sr_and_eqe_fixture):
     )
     pd.testing.assert_series_equal(
         sr, sr_and_eqe_fixture["spectral_response"],
-        check_names=False  
+        check_names=False
     )
     assert sr.name == "quantum_efficiency"
     # error on lack of wavelength parameter if no pandas object is provided

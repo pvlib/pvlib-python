@@ -15,6 +15,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added more spectral responses materials ``monosi``, ``polysi`` and ``hit``
+  with the function :py:func:`pvlib.spectrum.get_spectral_response_of_material`
+  (:issue:`2037`, :pull:`TODO`)
 
 
 Bug fixes

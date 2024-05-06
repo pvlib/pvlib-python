@@ -14,7 +14,7 @@ Deprecations
   :py:class:`~pvlib.modelchain.ModelChain` interfaces, although note that the
   inputs do not directly translate. (:pull:`1401`)
 * All functionality in the ``pvlib.forecast`` module is deprecated.
-  For details, see :ref:`forecasts`. (:issue:`1057`, :pull:`1426`)
+  For details, see ``forecasts``. (:issue:`1057`, :pull:`1426`)
 
 Enhancements
 ~~~~~~~~~~~~

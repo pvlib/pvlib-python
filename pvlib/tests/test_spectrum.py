@@ -347,19 +347,19 @@ def sr_and_eqe_fixture():
 
 
 def test_spectral_responsivity_to_quantum_efficiency(sr_and_eqe_fixture):
-    #- scalar type
+    # scalar type
     qe = spectrum.spectral_responsivity_to_quantum_efficiency(
         sr_and_eqe_fixture["spectral_response"].values[0],
         sr_and_eqe_fixture.index.values[0],  # wavelength, nm
     )
     assert_approx_equal(qe, sr_and_eqe_fixture["quantum_efficiency"].values[0])
-    #- vector type
+    # vector type
     qe = spectrum.spectral_responsivity_to_quantum_efficiency(
         sr_and_eqe_fixture["spectral_response"].values,
         sr_and_eqe_fixture.index.values,  # wavelength, nm
     )
     assert_allclose(qe, sr_and_eqe_fixture["quantum_efficiency"])
-    #- pandas series type
+    # pandas series type
     # note: output Series' name should match the input
     qe = spectrum.spectral_responsivity_to_quantum_efficiency(
         sr_and_eqe_fixture["spectral_response"]
@@ -369,7 +369,7 @@ def test_spectral_responsivity_to_quantum_efficiency(sr_and_eqe_fixture):
         check_names=False  
     )
     assert qe.name == "spectral_response"
-    #- error on lack of wavelength parameter if no pandas object is provided
+    # error on lack of wavelength parameter if no pandas object is provided
     with pytest.raises(TypeError, match="must have an '.index' attribute"):
         _ = spectrum.spectral_responsivity_to_quantum_efficiency(
             sr_and_eqe_fixture["spectral_response"].values
@@ -377,19 +377,19 @@ def test_spectral_responsivity_to_quantum_efficiency(sr_and_eqe_fixture):
 
 
 def test_quantum_efficiency_to_spectral_responsivity(sr_and_eqe_fixture):
-    #- scalar type
+    # scalar type
     sr = spectrum.quantum_efficiency_to_spectral_responsivity(
         sr_and_eqe_fixture["quantum_efficiency"].values[0],
         sr_and_eqe_fixture.index.values[0],  # wavelength, nm
     )
     assert_approx_equal(sr, sr_and_eqe_fixture["spectral_response"].values[0])
-    #- vector type
+    # vector type
     sr = spectrum.quantum_efficiency_to_spectral_responsivity(
         sr_and_eqe_fixture["quantum_efficiency"].values,
         sr_and_eqe_fixture.index.values,  # wavelength, nm
     )
     assert_allclose(sr, sr_and_eqe_fixture["spectral_response"])
-    #- pandas series type
+    # pandas series type
     # note: output Series' name should match the input
     sr = spectrum.quantum_efficiency_to_spectral_responsivity(
         sr_and_eqe_fixture["quantum_efficiency"]
@@ -399,7 +399,7 @@ def test_quantum_efficiency_to_spectral_responsivity(sr_and_eqe_fixture):
         check_names=False  
     )
     assert sr.name == "quantum_efficiency"
-    #- error on lack of wavelength parameter if no pandas object is provided
+    # error on lack of wavelength parameter if no pandas object is provided
     with pytest.raises(TypeError, match="must have an '.index' attribute"):
         _ = spectrum.quantum_efficiency_to_spectral_responsivity(
             sr_and_eqe_fixture["quantum_efficiency"].values

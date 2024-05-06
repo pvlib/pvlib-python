@@ -15,6 +15,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Added extraterrestrial and direct spectra of the ASTM G173-03 standard with
+  the new function :py:func:`pvlib.spectrum.get_ASTM_G173`.
+  (:issue:`1963`, :pull:`2039`)
 
 
 Bug fixes

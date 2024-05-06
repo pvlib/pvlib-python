@@ -584,12 +584,14 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
 
 def spectral_responsivity_to_quantum_efficiency(sr, wavelength=None):
     """
-    Convert spectral responsivities to quantum efficiencies [1]_.
+    Convert spectral responsivities to quantum efficiencies.
     If ``wavelength`` is not provided, the spectral responsivity ``sr`` must be
     a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
     wavelengths in the index.
 
     Provide wavelengths in nanometers :math:`[nm]`.
+
+    Conversion is described in [1]_.
 
     .. versionadded:: 0.10.5
 
@@ -671,12 +673,14 @@ def spectral_responsivity_to_quantum_efficiency(sr, wavelength=None):
 
 def quantum_efficiency_to_spectral_responsivity(qe, wavelength=None):
     """
-    Convert quantum efficiencies to spectral responsivities [1]_.
+    Convert quantum efficiencies to spectral responsivities.
     If ``wavelength`` is not provided, the quantum efficiency ``qe`` must be
     a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
     wavelengths in the index.
 
     Provide wavelengths in nanometers :math:`[nm]`.
+
+    Conversion is described in [1]_.
 
     .. versionadded:: 0.10.5
 

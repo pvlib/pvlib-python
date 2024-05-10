@@ -3045,7 +3045,8 @@ def nonuniform_irradiance_loss(rmad):
     ----------
     rmad : numeric
         The Relative Mean Absolute Difference of the irradiance.
-        See the definition in [2]_ and the example :ref:`sphx_glr_gallery_TODO`.
+        See the definition in [2]_ and the example 
+        :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`.
 
     Returns
     -------

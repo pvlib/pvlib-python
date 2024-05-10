@@ -17,9 +17,9 @@ Calculate the incident irradiance lost to non-uniformity in a bifacial PV array
 # two different approaches:
 #
 # - Given the irradiance levels of each cell in an instant,
-#   in :ref:`theoretical_approach`.
+#   in the first section.
 # - Modelling the irradiance non-uniformity RMAD through the day thanks to a
-#   mock-up horizontal axis tracker system, in :ref:`practical_approach`.
+#   mock-up horizontal axis tracker system, in the second section.
 #   See [2]_ and [3]_ for more information.
 #
 # The function :py:func:`pvlib.pvsystem.nonuniform_irradiance_loss` will be
@@ -65,8 +65,6 @@ def rmad(data, axis=None):
 
 
 # %%
-# .. _theoretical_approach::
-#
 # Theoretical and straightforward problem
 # ---------------------------------------
 # Let's set a fixed irradiance to each cell row of the PV array with the values
@@ -146,9 +144,6 @@ print(f"Effective power after mismatch correction: {mismatch_corrected_irrad}")
 # %%
 # A practical approach
 # --------------------
-#
-# .. _practical_approach::
-#
 # In practice, simulating each cell irradiance is computationally expensive,
 # and measuring each of the cells irradiance of a real system can also be
 # challenging. Nevertheless, a mock-up system can be used to estimate the

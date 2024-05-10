@@ -3033,7 +3033,7 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
 
 
 def nonuniform_irradiance_loss(rmad):
-    """
+    r"""
     Calculate the incident irradiance loss due to irradiance non-uniformity.
 
     This model is described for bifacial modules in [1]_, where the backside
@@ -3055,17 +3055,35 @@ def nonuniform_irradiance_loss(rmad):
 
     Notes
     -----
-    TODO
+    The function this model implements is equation (7) of [1]_:
 
-    Examples
-    --------
-    >>> from pvlib import pvsystem
-    >>> pvsystem.nonuniform_irradiance_loss(0.05)
-    0.025
+    .. math::
+       
+       M[%] = 0.12 \DELTA[%] + 2.77 \DELTA[%]^2
+
+    where :math:`\DELTA[%]` is the Relative Mean Absolute Difference of the
+    global irradiance, Eq. (4) of [1]_ and [2]_:
+
+    .. math::
+
+       \DELTA[%] = \frac{1}{n^2\bar{G_{total}}} \sum_{i=1}^{n} \sum_{j=1}^{n}
+       |G_{total,i} - G_{total,j}|
+
+    and the total irradiance is calculated as:
+
+    .. math::
+
+       G_{total,i} = G_{front,i} + \PHI_{Bifi} G_{rear,i}
+    
+    where :math:`\PHI_{Bifi}` is the bifaciality factor.
+
+    It is recommended to see the example
+    :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`
+    for a complete use case and the RMAD function implementation.
 
     See Also
     --------
-    TODO
+    pvlib.pvsystem.combine_loss_factors
 
     References
     ----------

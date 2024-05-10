@@ -33,9 +33,6 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-* Echedey Luis (:ghuser:`echedey-ls`)
-* Mark Mikofski (:ghuser:`mikofski`)
-* Mark Campanelli (:ghuser:`markcampanelli`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * :ghuser:`apct69`
 * Mark Mikofski (:ghuser:`mikofski`)

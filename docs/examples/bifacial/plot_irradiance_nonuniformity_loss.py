@@ -144,10 +144,11 @@ print(f"Power loss % due to the irradiance non-uniformity: {mismatch_loss}")
 print(f"Effective power after mismatch correction: {mismatch_corrected_irrad}")
 
 # %%
-# .. _practical_approach::
-#
 # A practical approach
 # --------------------
+#
+# .. _practical_approach::
+#
 # In practice, simulating each cell irradiance is computationally expensive,
 # and measuring each of the cells irradiance of a real system can also be
 # challenging. Nevertheless, a mock-up system can be used to estimate the

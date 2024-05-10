@@ -198,8 +198,8 @@ def hsat_backside_rmad_model_through_day(hour):
 #
 # Let's calculate the **global RMAD** through the day - it's **different** from
 # the backside RMAD since :math:`RMAD(k \cdot X + c) = k \cdot RMAD(X) \cdot
-# \frac{\bar{X}}{\bar{X} + c}`, where :math:`X` is a random variable and
-# :math:`k>0` and :math:`c \neq \bar{X}` are constants (:ref:`source
+# \frac{k \bar{X}}{k \bar{X} + c}`, where :math:`X` is a random variable and
+# :math:`k>0, c \neq \bar{X}` are constants (:ref:`source
 # <https://en.wikipedia.org/wiki/Mean_absolute_difference#Properties>`).
 
 times = pd.date_range("2023-06-06T09:30", "2023-06-06T18:30", freq="30min")
@@ -211,8 +211,13 @@ backside_irrad = scipy.stats.norm.pdf(hours, loc=12.5, scale=180)
 global_irrad = front_irrad + bifaciality * backside_irrad
 # See RMAD properties above
 # Here we calculate RMAD(global_irrad)
+# backside_irrad := X, bifaciality := k, front_irrad := c
 backside_rmad = hsat_backside_rmad_model_through_day(hours)
-global_rmad = bifaciality * backside_rmad / (1 + front_irrad / backside_irrad)
+global_rmad = (
+    bifaciality
+    * backside_rmad
+    / (1 + front_irrad / backside_irrad / bifaciality)
+)
 
 # Get the mismatch loss
 mismatch_loss = nonuniform_irradiance_loss(global_rmad)
@@ -238,3 +243,5 @@ ax2.legend(loc="upper right")
 ax2.set_ylabel("Mismatch loss")
 
 fig.show()
+
+# %%

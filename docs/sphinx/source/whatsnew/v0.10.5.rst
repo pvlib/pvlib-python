@@ -1,20 +1,6 @@
 .. _whatsnew_01050:
 
 
-v0.10.5 (Anticipated June 2024)
--------------------------------
-
-
-Deprecations
-~~~~~~~~~~~~
-
-
-Enhancements
-~~~~~~~~~~~~
-* Added :py:func:`pvlib.spectrum.spectral_responsivity_to_quantum_efficiency`
-  and :py:func:`pvlib.spectrum.quantum_efficiency_to_spectral_responsivity`
-  to convert quantum efficiencies into spectral responsivities and viceversa.
-  (:issue:`1963`, :pull:`TODO`)
 v0.10.5 (May 6, 2024)
 ---------------------
 

@@ -3039,7 +3039,7 @@ def nonuniform_irradiance_loss(rmad):
     This model is described for bifacial modules in [1]_, where the backside
     irradiance is less uniform due to mounting and site conditions.
 
-    .. versionadded:: 0.10.5
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------

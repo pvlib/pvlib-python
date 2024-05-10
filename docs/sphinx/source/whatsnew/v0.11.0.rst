@@ -17,8 +17,8 @@ Enhancements
 ~~~~~~~~~~~~
 * Added conversion functions from spectral response :math:`[A/W]` to quantum
   efficiency :math:`[unitless]` and vice versa. The conversion functions are
-  :py:func:`spectral_responsivity_to_quantum_efficiency` and :py:func:`quantum_efficiency_to_spectral_responsivity` respectively.
-  (:issue:`2040`, :pull:`2041`)
+  :py:func:`pvlib.spectrum.sr_to_qe` and :py:func:`pvlib.spectrum.qe_to_sr`
+  respectively. (:issue:`2040`, :pull:`2041`)
 
 
 Bug fixes

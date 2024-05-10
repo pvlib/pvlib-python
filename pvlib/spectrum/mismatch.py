@@ -582,7 +582,7 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     return modifier
 
 
-def spectral_responsivity_to_quantum_efficiency(sr, wavelength=None):
+def sr_to_qe(sr, wavelength=None):
     """
     Convert spectral responsivities to quantum efficiencies.
     If ``wavelength`` is not provided, the spectral responsivity ``sr`` must be
@@ -593,7 +593,7 @@ def spectral_responsivity_to_quantum_efficiency(sr, wavelength=None):
 
     Conversion is described in [1]_.
 
-    .. versionadded:: 0.10.5
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -622,19 +622,14 @@ def spectral_responsivity_to_quantum_efficiency(sr, wavelength=None):
     >>> from pvlib import spectrum
     >>> wavelengths = np.array([350, 550, 750])
     >>> spectral_response = np.array([0.25, 0.40, 0.57])
-    >>> quantum_efficiency = \
-    >>>     spectrum.spectral_responsivity_to_quantum_efficiency(
-    >>>         spectral_response, wavelengths
-    >>>     )
-    >>> quantum_efficiency
+    >>> quantum_efficiency = spectrum.sr_to_qe(spectral_response, wavelengths)
+    >>> print(quantum_efficiency)
     array([0.88560142, 0.90170326, 0.94227991])
 
     >>> spectral_response_series = \
     >>>     pd.Series(spectral_response, index=wavelengths, name="dataset")
-    >>> qe = spectrum.spectral_responsivity_to_quantum_efficiency(
-    >>>         spectral_response_series
-    >>>     )
-    >>> qe
+    >>> qe = spectrum.sr_to_qe(spectral_response_series)
+    >>> print(qe)
     350    0.885601
     550    0.901703
     750    0.942280
@@ -651,7 +646,7 @@ def spectral_responsivity_to_quantum_efficiency(sr, wavelength=None):
 
     See Also
     --------
-    pvlib.spectrum.quantum_efficiency_to_spectral_responsivity
+    pvlib.spectrum.qe_to_sr
     """
     if wavelength is None:
         if hasattr(sr, "index"):  # true for pandas objects
@@ -671,7 +666,7 @@ def spectral_responsivity_to_quantum_efficiency(sr, wavelength=None):
     return quantum_efficiency
 
 
-def quantum_efficiency_to_spectral_responsivity(qe, wavelength=None):
+def qe_to_sr(qe, wavelength=None):
     """
     Convert quantum efficiencies to spectral responsivities.
     If ``wavelength`` is not provided, the quantum efficiency ``qe`` must be
@@ -682,7 +677,7 @@ def quantum_efficiency_to_spectral_responsivity(qe, wavelength=None):
 
     Conversion is described in [1]_.
 
-    .. versionadded:: 0.10.5
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -711,19 +706,14 @@ def quantum_efficiency_to_spectral_responsivity(qe, wavelength=None):
     >>> from pvlib import spectrum
     >>> wavelengths = np.array([350, 550, 750])
     >>> quantum_efficiency = np.array([0.86, 0.90, 0.94])
-    >>> spectral_response = \
-    >>>     spectrum.quantum_efficiency_to_spectral_responsivity(
-    >>>         quantum_efficiency, wavelengths
-    >>>     )
-    >>> spectral_response
+    >>> spectral_response = spectrum.qe_to_sr(quantum_efficiency, wavelengths)
+    >>> print(spectral_response)
     array([0.24277287, 0.39924442, 0.56862085])
 
     >>> quantum_efficiency_series = \
     >>>     pd.Series(quantum_efficiency, index=wavelengths, name="dataset")
-    >>> sr = spectrum.quantum_efficiency_to_spectral_responsivity(
-    >>>         quantum_efficiency_series
-    >>>     )
-    >>> sr
+    >>> sr = spectrum.qe_to_sr(quantum_efficiency_series)
+    >>> print(sr)
     350    0.242773
     550    0.399244
     750    0.568621
@@ -740,7 +730,7 @@ def quantum_efficiency_to_spectral_responsivity(qe, wavelength=None):
 
     See Also
     --------
-    pvlib.spectrum.spectral_responsivity_to_quantum_efficiency
+    pvlib.spectrum.sr_to_qe
     """
     if wavelength is None:
         if hasattr(qe, "index"):  # true for pandas objects

@@ -13,5 +13,5 @@ Spectrum
    spectrum.spectral_factor_caballero
    spectrum.spectral_factor_firstsolar
    spectrum.spectral_factor_sapm
-   spectrum.spectral_responsivity_to_quantum_efficiency
-   spectrum.quantum_efficiency_to_spectral_responsivity
+   spectrum.sr_to_qe
+   spectrum.qe_to_sr

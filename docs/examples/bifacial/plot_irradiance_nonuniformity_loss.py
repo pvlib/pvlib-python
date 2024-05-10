@@ -200,8 +200,8 @@ def hsat_backside_rmad_model_through_day(hour):
 # Let's calculate the **global RMAD** through the day - it's **different** from
 # the backside RMAD since :math:`RMAD(k \cdot X + c) = k \cdot RMAD(X) \cdot
 # \frac{k \bar{X}}{k \bar{X} + c}`, where :math:`X` is a random variable and
-# :math:`k>0, c \neq \bar{X}` are constants (:ref:`source
-# <https://en.wikipedia.org/wiki/Mean_absolute_difference#Properties>`).
+# :math:`k>0, c \neq \bar{X}` are constants (`source
+# <https://en.wikipedia.org/wiki/Mean_absolute_difference>`_).
 
 times = pd.date_range("2023-06-06T09:30", "2023-06-06T18:30", freq="30min")
 hours = times.hour + times.minute / 60

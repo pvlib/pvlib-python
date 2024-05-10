@@ -154,7 +154,7 @@ print(f"Effective power after mismatch correction: {mismatch_corrected_irrad}")
 # non-uniformity through the day.
 #
 # Here we will base our calculations on the work of Domínguez et al. [2]_.
-# The following image shows the backside irradiance non-uniformity of a
+# The following image in [3]_ shows the backside irradiance non-uniformity of a
 # HSAT mock-up system:
 #
 # .. figure:: ../../_images/Dominguez_et_al_PVSC2023.png

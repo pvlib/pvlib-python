@@ -95,8 +95,8 @@ ax.pcolormesh(
 #
 # .. math::
 #
-#    \Delta[%] = \frac{1}{n^2\bar{G_{total}}} \sum_{i=1}^{n} \sum_{j=1}^{n}
-#    |G_{total,i} - G_{total,j}|
+#    \Delta[%] = \frac{1}{n^2 \bar{G}_{total}} \sum_{i=1}^{n} \sum_{j=1}^{n}
+#                |G_{total,i} - G_{total,j}|
 
 
 def rmad(data, axis=None):
@@ -197,7 +197,7 @@ def hsat_backside_rmad_model_through_day(hour):
 #
 #    G_{total,i} = G_{front,i} + \phi_{Bifi} G_{rear,i}
 #
-# where :math:`\PHI_{Bifi}` is the bifaciality factor.
+# where :math:`\phi_{Bifi}` is the bifaciality factor.
 #
 # Here we will model front and backside irradiances with normal distributions
 # for simplicity, then calculate the global RMAD and plot the results.
@@ -230,8 +230,8 @@ global_irrad = front_irrad + bifaciality * backside_irrad
 # backside_irrad := X, bifaciality := k, front_irrad := c
 backside_rmad = hsat_backside_rmad_model_through_day(hours)
 global_rmad = (
-    bifaciality
-    * backside_rmad
+    backside_rmad
+    * bifaciality
     / (1 + front_irrad / backside_irrad / bifaciality)
 )
 

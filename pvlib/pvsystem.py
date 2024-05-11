@@ -3062,20 +3062,13 @@ def nonuniform_irradiance_loss(rmad):
        M[%] = 0.12 \Delta[%] + 2.77 \Delta[%]^2
 
     where :math:`\Delta[%]` is the Relative Mean Absolute Difference of the
-    global irradiance, Eq. (4) of [1]_ and [2]_:
+    global irradiance, Eq. (4) of [1]_ and [2]_.
+
+    The losses definition is done in Eq. (1) of [1]_:
 
     .. math::
 
-       \Delta[%] = \frac{1}{n^2\bar{G_{total}}} \sum_{i=1}^{n} \sum_{j=1}^{n}
-       |G_{total,i} - G_{total,j}|
-
-    and the total irradiance is calculated as:
-
-    .. math::
-
-       G_{total,i} = G_{front,i} + \phi_{Bifi} G_{rear,i}
-
-    where :math:`\PHI_{Bifi}` is the bifaciality factor.
+        M[%] = 1 - \frac{P_{Array}}{\sum P_{Cells}}
 
     It is recommended to see the example
     :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`

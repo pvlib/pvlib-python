@@ -53,17 +53,6 @@ from matplotlib.colors import Normalize
 
 from pvlib.pvsystem import nonuniform_irradiance_loss
 
-
-# Define the Relative Mean Absolute Deviation (RMAD) function, (Eq. 4) in [1]_.
-def rmad(data, axis=None):
-    """
-    Relative Mean Absolute Deviation
-    https://stackoverflow.com/a/19472336/19371110
-    """
-    mad = np.mean(np.absolute(data - np.mean(data, axis)), axis)
-    return mad / np.mean(data, axis)
-
-
 # %%
 # Theoretical and straightforward problem
 # ---------------------------------------
@@ -102,12 +91,27 @@ ax.pcolormesh(
 # Relative Mean Absolute Deviation
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Calculate the Relative Mean Absolute Deviation (RMAD) of the cells'
-# irradiance with the help of the function defined on the top of this example.
+# irradiance with the following function, Eq. (4) of [1]_:
+#
+# .. math::
+#
+#    \Delta[%] = \frac{1}{n^2\bar{G_{total}}} \sum_{i=1}^{n} \sum_{j=1}^{n}
+#    |G_{total,i} - G_{total,j}|
+
+
+def rmad(data, axis=None):
+    """
+    Relative Mean Absolute Deviation.
+    https://stackoverflow.com/a/19472336/19371110
+    """
+    mad = np.mean(np.absolute(data - np.mean(data, axis)), axis)
+    return mad / np.mean(data, axis)
+
 
 rmad_cells = rmad(cells_irrad)
 
 # this is the same as a column's RMAD!
-assert rmad_cells == rmad(cells_irrad[:, 0])
+print(rmad_cells == rmad(cells_irrad[:, 0]))
 
 # %%
 # Mismatch Loss
@@ -180,11 +184,21 @@ def hsat_backside_rmad_model_through_day(hour):
 
 
 # %%
+# Calculating Global RMAD from Backside RMAD
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # .. note::
 #    The global irradiance RMAD is different from the backside irradiance RMAD.
 #
 # The global irradiance is the sum of the front irradiance and the backside
 # irradiance by the bifaciality factor, see equation (2) in [1]_.
+#
+# .. math::
+#
+#    G_{total,i} = G_{front,i} + \phi_{Bifi} G_{rear,i}
+#
+# where :math:`\PHI_{Bifi}` is the bifaciality factor.
+#
 # Here we will model front and backside irradiances with normal distributions
 # for simplicity, then calculate the global RMAD and plot the results.
 #

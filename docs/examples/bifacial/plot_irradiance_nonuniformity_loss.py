@@ -99,6 +99,7 @@ ax.pcolormesh(
 #                \lvert G_{total,i} - G_{total,j} \rvert
 #
 
+
 def rmad(data, axis=None):
     """
     Relative Mean Absolute Deviation.

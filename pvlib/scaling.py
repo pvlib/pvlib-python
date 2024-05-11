@@ -13,8 +13,10 @@ from scipy.spatial.distance import pdist
 def wvm(clearsky_index, positions, cloud_speed, dt=None):
     """
     Compute spatial aggregation time series smoothing on clear sky index based
-    on the Wavelet Variability model of Lave et al. [1]_, [2]_. Implementation
-    is basically a port of the Matlab version of the code [3]_.
+    on the Wavelet Variability model.
+
+    This model is described in Lave et al. [1]_, [2]_.
+    Implementation is basically a port of the Matlab version of the code [3]_.
 
     Parameters
     ----------
@@ -30,7 +32,7 @@ def wvm(clearsky_index, positions, cloud_speed, dt=None):
     cloud_speed : numeric
         Speed of cloud movement in meters per second [m/s].
 
-    dt : float, default None
+    dt : float, optional
         The time series time delta. By default, is inferred from the
         clearsky_index. Must be specified for a time series that doesn't
         include an index. Units of seconds [s].
@@ -134,6 +136,7 @@ def _compute_vr(positions, cloud_speed, tmscales):
         return np.abs((x ** 2 - x) / 2 - n_pairs)
 
     n_dist = np.round(scipy.optimize.fmin(fn, np.sqrt(n_pairs), disp=False))
+    n_dist = n_dist.item()
     # Compute VR
     A = cloud_speed / 2  # Resultant fit for A from [2]
     vr = np.zeros(tmscales.shape)
@@ -216,7 +219,7 @@ def _compute_wavelet(clearsky_index, dt=None):
     clearsky_index : numeric or pandas.Series
         Clear Sky Index time series that will be smoothed.
 
-    dt : float, default None
+    dt : float, optional
         The time series time delta. By default, is inferred from the
         clearsky_index. Must be specified for a time series that doesn't
         include an index. Units of seconds [s].
@@ -276,7 +279,7 @@ def _compute_wavelet(clearsky_index, dt=None):
         # Produces slightly different end effects than the MATLAB version
         df = cs_long.rolling(window=intvlen, center=True, min_periods=1).mean()
         # Fill nan's in both directions
-        df = df.fillna(method='bfill').fillna(method='ffill')
+        df = df.bfill().ffill()
         # Pop values back out of the dataframe and store
         csi_mean[i, :] = df.values.flatten()
         # Shift to account for different indexing in MATLAB moving average

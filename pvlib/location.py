@@ -47,7 +47,7 @@ class Location:
     altitude : float, default 0.
         Altitude from sea level in meters.
 
-    name : None or string, default None.
+    name : string, optional
         Sets the name attribute of the Location object.
 
     See also
@@ -94,7 +94,7 @@ class Location:
         ----------
         tmy_metadata : dict
             Returned from tmy.readtmy2 or tmy.readtmy3
-        tmy_data : None or DataFrame, default None
+        tmy_data : DataFrame, optional
             Optionally attach the TMY data to this object.
 
         Returns
@@ -138,7 +138,7 @@ class Location:
         ----------
         metadata : dict
             Returned from epw.read_epw
-        data : None or DataFrame, default None
+        data : DataFrame, optional
             Optionally attach the epw data to this object.
 
         Returns
@@ -173,10 +173,10 @@ class Location:
         ----------
         times : pandas.DatetimeIndex
             Must be localized or UTC will be assumed.
-        pressure : None, float, or array-like, default None
-            If None, pressure will be calculated using
+        pressure : float, or array-like, optional
+            If not specified, ``pressure`` is calculated using
             :py:func:`pvlib.atmosphere.alt2pres` and ``self.altitude``.
-        temperature : None, float, or array-like, default 12
+        temperature : float or array-like, default 12
 
         kwargs
             passed to :py:func:`pvlib.solarposition.get_solarposition`
@@ -209,11 +209,11 @@ class Location:
         model: str, default 'ineichen'
             The clear sky model to use. Must be one of
             'ineichen', 'haurwitz', 'simplified_solis'.
-        solar_position : None or DataFrame, default None
+        solar_position : DataFrame, optional
             DataFrame with columns 'apparent_zenith', 'zenith',
             'apparent_elevation'.
-        dni_extra: None or numeric, default None
-            If None, will be calculated from times.
+        dni_extra : numeric, optional
+            If not specified, will be calculated from times.
 
         kwargs
             Extra parameters passed to the relevant functions. Climatological
@@ -279,9 +279,9 @@ class Location:
 
         Parameters
         ----------
-        times : None or DatetimeIndex, default None
+        times : DatetimeIndex, optional
             Only used if solar_position is not provided.
-        solar_position : None or DataFrame, default None
+        solar_position : DataFrame, optional
             DataFrame with columns 'apparent_zenith', 'zenith'.
         model : str, default 'kastenyoung1989'
             Relative airmass model. See
@@ -439,8 +439,10 @@ def lookup_altitude(latitude, longitude):
     # 255 is a special value that means nodata. Fallback to 0 if nodata.
     if alt == 255:
         return 0
+    # convert from np.uint8 to float so that the following operations succeed
+    alt = float(alt)
     # Altitude is encoded in 28 meter steps from -450 meters to 6561 meters
     # There are 0-254 possible altitudes, with 255 reserved for nodata.
     alt *= 28
     alt -= 450
-    return float(alt)
+    return alt

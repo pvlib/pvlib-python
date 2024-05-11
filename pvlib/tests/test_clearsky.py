@@ -745,7 +745,7 @@ def test__calc_stats(detect_clearsky_helper_data):
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""
     times = pd.date_range(start='1/1/2015 0:00', end='12/31/2015 23:00',
-                          freq='H')
+                          freq='h')
     tz = -7  # test timezone
     gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
     times = times.tz_localize(gmt_tz)  # set timezone

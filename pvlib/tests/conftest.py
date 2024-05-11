@@ -11,6 +11,7 @@ from functools import wraps
 import pvlib
 from pvlib.location import Location
 
+
 pvlib_base_version = Version(Version(pvlib.__version__).base_version)
 
 
@@ -95,6 +96,19 @@ requires_bsrn_credentials = pytest.mark.skipif(
 
 
 try:
+    # Attempt to load SolarAnywhere API key used for testing
+    # pvlib.iotools.get_solaranywhere
+    solaranywhere_api_key = os.environ["SOLARANYWHERE_API_KEY"]
+    has_solaranywhere_credentials = True
+except KeyError:
+    has_solaranywhere_credentials = False
+
+requires_solaranywhere_credentials = pytest.mark.skipif(
+    not has_solaranywhere_credentials,
+    reason='requires solaranywhere credentials')
+
+
+try:
     import statsmodels  # noqa: F401
     has_statsmodels = True
 except ImportError:
@@ -105,7 +119,7 @@ requires_statsmodels = pytest.mark.skipif(
 
 
 try:
-    import ephem
+    import ephem  # noqa: F401
     has_ephem = True
 except ImportError:
     has_ephem = False
@@ -115,7 +129,7 @@ requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
 
 def has_spa_c():
     try:
-        from pvlib.spa_c_files.spa_py import spa_calc
+        from pvlib.spa_c_files.spa_py import spa_calc  # noqa: F401
     except ImportError:
         return False
     else:
@@ -125,20 +139,14 @@ def has_spa_c():
 requires_spa_c = pytest.mark.skipif(not has_spa_c(), reason="requires spa_c")
 
 
-def has_numba():
-    try:
-        import numba
-    except ImportError:
-        return False
-    else:
-        vers = numba.__version__.split('.')
-        if int(vers[0] + vers[1]) < 17:
-            return False
-        else:
-            return True
+try:
+    import numba   # noqa: F401
+    has_numba = True
+except ImportError:
+    has_numba = False
 
 
-requires_numba = pytest.mark.skipif(not has_numba(), reason="requires numba")
+requires_numba = pytest.mark.skipif(not has_numba, reason="requires numba")
 
 
 try:
@@ -158,6 +166,11 @@ except ImportError:
     has_pysam = False
 
 requires_pysam = pytest.mark.skipif(not has_pysam, reason="requires PySAM")
+
+
+has_pandas_2_0 = Version(pd.__version__) >= Version("2.0.0")
+requires_pandas_2_0 = pytest.mark.skipif(not has_pandas_2_0,
+                                         reason="requires pandas>=2.0.0")
 
 
 @pytest.fixture()

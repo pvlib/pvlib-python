@@ -316,7 +316,7 @@ def test_calc_axis_tilt():
     starttime = '2017-01-01T00:30:00-0300'
     stoptime = '2017-12-31T23:59:59-0300'
     lat, lon = -27.597300, -48.549610
-    times = pd.DatetimeIndex(pd.date_range(starttime, stoptime, freq='H'))
+    times = pd.DatetimeIndex(pd.date_range(starttime, stoptime, freq='h'))
     solpos = pvlib.solarposition.get_solarposition(times, lat, lon)
     # singleaxis tracker w/slope data
     slope_azimuth, slope_tilt = 77.34, 10.1149
@@ -394,7 +394,7 @@ def test_singleaxis_aoi_gh1221():
     # vertical tracker
     loc = pvlib.location.Location(40.1134, -88.3695)
     dr = pd.date_range(
-        start='02-Jun-1998 00:00:00', end='02-Jun-1998 23:55:00', freq='5T',
+        start='02-Jun-1998 00:00:00', end='02-Jun-1998 23:55:00', freq='5min',
         tz='Etc/GMT+6')
     sp = loc.get_solarposition(dr)
     tr = pvlib.tracking.singleaxis(

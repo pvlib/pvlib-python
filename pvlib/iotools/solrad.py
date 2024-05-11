@@ -1,8 +1,9 @@
-"""Functions to read data from the NOAA SOLRAD network.
-"""
+"""Functions to read data from the NOAA SOLRAD network."""
 
-import numpy as np
 import pandas as pd
+import warnings
+import requests
+import io
 
 # pvlib conventions
 BASE_HEADERS = (
@@ -49,8 +50,15 @@ MADISON_DTYPES = [
 
 def read_solrad(filename):
     """
-    Read NOAA SOLRAD fixed-width file into pandas dataframe.  The SOLRAD
-    network is described in [1]_ and [2]_.
+    Read NOAA SOLRAD fixed-width file into pandas dataframe.
+
+    The SOLRAD network is described in [1]_ and [2]_.
+
+    .. versionchanged:: 0.10.4
+       The function now returns a tuple where the first element is a dataframe
+       and the second element is a dictionary containing metadata. Previous
+       versions of this function only returned a dataframe.
+
 
     Parameters
     ----------
@@ -62,6 +70,12 @@ def read_solrad(filename):
     data: Dataframe
         A dataframe with DatetimeIndex and all of the variables in the
         file.
+    metadata : dict
+        Metadata.
+
+    See Also
+    --------
+    get_solrad
 
     Notes
     -----
@@ -91,19 +105,30 @@ def read_solrad(filename):
         widths = WIDTHS
         dtypes = DTYPES
 
-    # read in data
-    data = pd.read_fwf(filename, header=None, skiprows=2, names=names,
-                       widths=widths, na_values=-9999.9)
+    meta = {}
 
-    # loop here because dtype kwarg not supported in read_fwf until 0.20
-    for (col, _dtype) in zip(data.columns, dtypes):
-        ser = data[col].astype(_dtype)
-        if _dtype == 'float64':
-            # older verions of pandas/numpy read '-9999.9' as
-            # -9999.8999999999996 and fail to set nan in read_fwf,
-            # so manually set nan
-            ser = ser.where(ser > -9999, other=np.nan)
-        data[col] = ser
+    if str(filename).startswith('ftp') or str(filename).startswith('http'):
+        response = requests.get(filename)
+        response.raise_for_status()
+        file_buffer = io.StringIO(response.content.decode())
+    else:
+        with open(str(filename), 'r') as file_buffer:
+            file_buffer = io.StringIO(file_buffer.read())
+
+    # The first line has the name of the station, and the second gives the
+    # station's latitude, longitude, elevation above mean sea level in meters,
+    # and the displacement in hours from local standard time.
+    meta['station_name'] = file_buffer.readline().strip()
+
+    meta_line = file_buffer.readline().split()
+    meta['latitude'] = float(meta_line[0])
+    meta['longitude'] = float(meta_line[1])
+    meta['altitude'] = float(meta_line[2])
+    meta['TZ'] = int(meta_line[3])
+
+    # read in data
+    data = pd.read_fwf(file_buffer, header=None, names=names,
+                       widths=widths, na_values=-9999.9, dtypes=dtypes)
 
     # set index
     # columns do not have leading 0s, so must zfill(2) to comply
@@ -114,10 +139,83 @@ def read_solrad(filename):
         data['year'].astype(str) + dts['month'] + dts['day'] + dts['hour'] +
         dts['minute'], format='%Y%m%d%H%M', utc=True)
     data = data.set_index(dtindex)
-    try:
-        # to_datetime(utc=True) does not work in older versions of pandas
-        data = data.tz_localize('UTC')
-    except TypeError:
-        pass
 
-    return data
+    return data, meta
+
+
+def get_solrad(station, start, end,
+               url="https://gml.noaa.gov/aftp/data/radiation/solrad/"):
+    """Request data from NOAA SOLRAD and read it into a Dataframe.
+
+    A list of stations and their descriptions can be found in [1]_,
+    The data files are described in [2]_.
+
+    Data is returned for complete days, including ``start`` and ``end``.
+
+    Parameters
+    ----------
+    station : str
+        Three letter station abbreviation.
+    start : datetime-like
+        First day of the requested period
+    end : datetime-like
+        Last day of the requested period
+    url : str, default: 'https://gml.noaa.gov/aftp/data/radiation/solrad/'
+        API endpoint URL
+
+    Returns
+    -------
+    data : pd.DataFrame
+        Dataframe with data from SOLRAD.
+    meta : dict
+        Metadata.
+
+    See Also
+    --------
+    read_solrad
+
+    Notes
+    -----
+    Recent SOLRAD data is 1-minute averages.  Prior to 2015-01-01, it was
+    3-minute averages.
+
+    References
+    ----------
+    .. [1] https://gml.noaa.gov/grad/solrad/index.html
+    .. [2] https://gml.noaa.gov/aftp/data/radiation/solrad/README_SOLRAD.txt
+
+    Examples
+    --------
+    >>> # Retrieve one month of irradiance data from the ABQ SOLRAD station
+    >>> data, metadata = pvlib.iotools.get_solrad(
+    >>>     station='abq', start="2020-01-01", end="2020-01-31")
+    """
+    # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
+    start = pd.to_datetime(start)
+    end = pd.to_datetime(end)
+
+    # Generate list of filenames
+    dates = pd.date_range(start.floor('d'), end, freq='d')
+    station = station.lower()
+    filenames = [
+        f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"
+        for d in dates
+    ]
+
+    dfs = []  # Initialize list of monthly dataframes
+    for f in filenames:
+        try:
+            dfi, file_metadata = read_solrad(url + f)
+            dfs.append(dfi)
+        except requests.exceptions.HTTPError:
+            warnings.warn(f"The following file was not found: {f}")
+
+    data = pd.concat(dfs, axis='rows')
+
+    meta = {'station': station,
+            'filenames': filenames,
+            # all file should have the same metadata, so just merge in the
+            # metadata from the last file
+            **file_metadata}
+
+    return data, meta

@@ -1,0 +1,44 @@
+.. _whatsnew_01050:
+
+
+v0.10.5 (May 6, 2024)
+---------------------
+
+
+Bug fixes
+~~~~~~~~~
+* Compatibility with numpy 2.0. (:issue:`2026`, :pull:`2027`)
+* Improved reliability of :py:func:`pvlib.singlediode.bishop88_mpp`,
+  :py:func:`pvlib.singlediode.bishop88_i_from_v` and
+  :py:func:`pvlib.singlediode.bishop88_v_from_i` by improving the initial
+  guess for the newton and brentq algorithms. (:issue:`2013`, :pull:`2032`)
+* Corrected equation for Ixx0 in :py:func:`pvlib.pvsystem.sapm`. (:issue:`2016`, :pull:`2019`)
+* Fixed :py:func:`pvlib.pvsystem.retrieve_sam` silently ignoring the ``path`` parameter
+  when ``name`` was provided. Now an exception is raised requesting to only provide one
+  of the two parameters. (:issue:`2018`, :pull:`2020`)
+
+
+Documentation
+~~~~~~~~~~~~~
+* Fix variable name typo at
+  ``docs\examples\system-models\plot_oedi_9068.py``. (:pull:`1996`)
+* Remove "Comparison with PVLib for Matlab" page from the User Guide. (:issue:`2010`, :pull:`2012`)
+
+
+Requirements
+~~~~~~~~~~~~
+* Minimum version of Python increased from 3.7 to 3.8. (:issue:`1975`, :pull:`2029`)
+* Minimum version of scipy advanced from 1.5.0 to 1.6.0. (:pull:`2027`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* :ghuser:`apct69`
+* Mark Mikofski (:ghuser:`mikofski`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Adam R. Jensen (:ghuser:`adamrjensen`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Scott Meredith (:ghuser:`smmeredith`)
+* Alexander Morgan (:ghuser:`alexandermorgan`)
+* Kevin Anderson (:ghuser:`kandersolar`)

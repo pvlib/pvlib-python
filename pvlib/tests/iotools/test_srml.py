@@ -17,7 +17,9 @@ def test_read_srml():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_srml_remote():
-    srml.read_srml('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt')
+    srml.read_srml(
+        'http://solardata.uoregon.edu/download/Archive/EUPO1801.txt'
+    )
 
 
 def test_read_srml_columns_exist():
@@ -47,9 +49,9 @@ def test_read_srml_nans_exist():
 
 
 @pytest.mark.parametrize('url,year,month', [
-    ('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt',
+    ('http://solardata.uoregon.edu/download/Archive/EUPO1801.txt',
      2018, 1),
-    ('http://solardat.uoregon.edu/download/Archive/EUPO1612.txt',
+    ('http://solardata.uoregon.edu/download/Archive/EUPO1612.txt',
      2016, 12),
 ])
 @pytest.mark.remote_data
@@ -79,7 +81,7 @@ def test__map_columns(column, expected):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_srml():
-    url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
+    url = 'http://solardata.uoregon.edu/download/Archive/EUPO1801.txt'
     file_data = srml.read_srml(url)
     requested, _ = srml.get_srml(station='EU', start='2018-01-01',
                                  end='2018-01-31')
@@ -90,7 +92,7 @@ def test_get_srml():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_srml_month_from_solardat():
-    url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
+    url = 'http://solardata.uoregon.edu/download/Archive/EUPO1801.txt'
     file_data = srml.read_srml(url)
     with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
         requested = srml.read_srml_month_from_solardat('EU', 2018, 1)

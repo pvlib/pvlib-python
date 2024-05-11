@@ -97,7 +97,7 @@ ax.pcolormesh(
 #
 #    \Delta[%] = \frac{1}{n^2 \bar{G}_{total}} \sum_{i=1}^{n} \sum_{j=1}^{n}
 #                \lvert G_{total,i} - G_{total,j} \rvert
-
+#
 
 def rmad(data, axis=None):
     """

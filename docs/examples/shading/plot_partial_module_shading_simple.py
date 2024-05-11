@@ -317,7 +317,7 @@ for diffuse_fraction in np.linspace(0, 1, 11):
 
 results = pd.DataFrame(data)
 results['pmp'] /= results['pmp'].max()  # normalize power to 0-1
-results_pivot = results.pivot('fd', 'fs', 'pmp')
+results_pivot = results.pivot(index='fd', columns='fs', values='pmp')
 plt.figure()
 plt.imshow(results_pivot, origin='lower', aspect='auto')
 plt.xlabel('shaded fraction')

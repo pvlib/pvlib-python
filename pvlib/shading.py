@@ -85,7 +85,7 @@ def masking_angle(surface_tilt, gcr, slant_height):
     ----------
     .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
-       DOI: 10.1016/0379-6787(84)90017-6
+       :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
@@ -167,7 +167,7 @@ def masking_angle_passias(surface_tilt, gcr):
     ----------
     .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
-       DOI: 10.1016/0379-6787(84)90017-6
+       :doi:`10.1016/0379-6787(84)90017-6`
     """
     # wrap it in an array so that division by zero is handled well
     beta = np.radians(np.array(surface_tilt))
@@ -226,9 +226,119 @@ def sky_diffuse_passias(masking_angle):
     ----------
     .. [1] D. Passias and B. Källbäck, "Shading effects in rows of solar cell
        panels", Solar Cells, Volume 11, Pages 281-291.  1984.
-       DOI: 10.1016/0379-6787(84)90017-6
+       :doi:`10.1016/0379-6787(84)90017-6`
     .. [2] Gilman, P. et al., (2018). "SAM Photovoltaic Model Technical
        Reference Update", NREL Technical Report NREL/TP-6A20-67399.
        Available at https://www.nrel.gov/docs/fy18osti/67399.pdf
     """
     return 1 - cosd(masking_angle/2)**2
+
+
+def projected_solar_zenith_angle(solar_zenith, solar_azimuth,
+                                 axis_tilt, axis_azimuth):
+    r"""
+    Calculate projected solar zenith angle in degrees.
+
+    This solar zenith angle is projected onto the plane whose normal vector is
+    defined by ``axis_tilt`` and ``axis_azimuth``. The normal vector is in the
+    direction of ``axis_azimuth`` (clockwise from north) and tilted from
+    horizontal by ``axis_tilt``. See Figure 5 in [1]_:
+
+    .. figure:: ../../_images/Anderson_Mikofski_2020_Fig5.jpg
+       :alt: Wire diagram of coordinates systems to obtain the projected angle.
+       :align: center
+       :scale: 50 %
+
+       Fig. 5, [1]_: Solar coordinates projection onto tracker rotation plane.
+
+    Parameters
+    ----------
+    solar_zenith : numeric
+        Sun's apparent zenith in degrees.
+    solar_azimuth : numeric
+        Sun's azimuth in degrees.
+    axis_tilt : numeric
+        Axis tilt angle in degrees. From horizontal plane to array plane.
+    axis_azimuth : numeric
+        Axis azimuth angle in degrees.
+        North = 0°; East = 90°; South = 180°; West = 270°
+
+    Returns
+    -------
+    Projected_solar_zenith : numeric
+        In degrees.
+
+    Notes
+    -----
+    This projection has a variety of applications in PV. For example:
+
+    - Projecting the sun's position onto the plane perpendicular to
+      the axis of a single-axis tracker (i.e. the plane
+      whose normal vector coincides with the tracker torque tube)
+      yields the tracker rotation angle that maximizes direct irradiance
+      capture. This tracking strategy is called *true-tracking*. Learn more
+      about tracking in
+      :ref:`sphx_glr_gallery_solar-tracking_plot_single_axis_tracking.py`.
+
+    - Self-shading in large PV arrays is often modeled by assuming
+      a simplified 2-D array geometry where the sun's position is
+      projected onto the plane perpendicular to the PV rows.
+      The projected zenith angle is then used for calculations
+      regarding row-to-row shading.
+
+    Examples
+    --------
+    Calculate the ideal true-tracking angle for a horizontal north-south
+    single-axis tracker:
+
+    >>> rotation = projected_solar_zenith_angle(solar_zenith, solar_azimuth,
+    >>>                                         axis_tilt=0, axis_azimuth=180)
+
+    Calculate the projected zenith angle in a south-facing fixed tilt array
+    (note: the ``axis_azimuth`` of a fixed-tilt row points along the length
+    of the row):
+
+    >>> psza = projected_solar_zenith_angle(solar_zenith, solar_azimuth,
+    >>>                                     axis_tilt=0, axis_azimuth=90)
+
+    References
+    ----------
+    .. [1] K. Anderson and M. Mikofski, 'Slope-Aware Backtracking for
+       Single-Axis Trackers', National Renewable Energy Lab. (NREL), Golden,
+       CO (United States);
+       NREL/TP-5K00-76626, Jul. 2020. :doi:`10.2172/1660126`.
+
+    See Also
+    --------
+    pvlib.solarposition.get_solarposition
+    """
+    # Assume the tracker reference frame is right-handed. Positive y-axis is
+    # oriented along tracking axis; from north, the y-axis is rotated clockwise
+    # by the axis azimuth and tilted from horizontal by the axis tilt. The
+    # positive x-axis is 90 deg clockwise from the y-axis and parallel to
+    # horizontal (e.g., if the y-axis is south, the x-axis is west); the
+    # positive z-axis is normal to the x and y axes, pointed upward.
+
+    # Since elevation = 90 - zenith, sin(90-x) = cos(x) & cos(90-x) = sin(x):
+    # Notation from [1], modified to use zenith instead of elevation
+    # cos(elevation) = sin(zenith) and sin(elevation) = cos(zenith)
+    # Avoid recalculating these values
+    sind_solar_zenith = sind(solar_zenith)
+    cosd_axis_azimuth = cosd(axis_azimuth)
+    sind_axis_azimuth = sind(axis_azimuth)
+    sind_axis_tilt = sind(axis_tilt)
+
+    # Sun's x, y, z coords
+    sx = sind_solar_zenith * sind(solar_azimuth)
+    sy = sind_solar_zenith * cosd(solar_azimuth)
+    sz = cosd(solar_zenith)
+    # Eq. (4); sx', sz' values from sun coordinates projected onto surface
+    sx_prime = sx * cosd_axis_azimuth - sy * sind_axis_azimuth
+    sz_prime = (
+        sx * sind_axis_azimuth * sind_axis_tilt
+        + sy * sind_axis_tilt * cosd_axis_azimuth
+        + sz * cosd(axis_tilt)
+    )
+    # Eq. (5); angle between sun's beam and surface
+    theta_T = np.degrees(np.arctan2(sx_prime, sz_prime))
+    return theta_T

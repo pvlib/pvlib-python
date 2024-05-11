@@ -223,3 +223,130 @@ def fit_pvefficiency_adr(effective_irradiance, temp_cell, eta,
         return dict(zip(P_NAMES, popt))
     else:
         return popt
+
+
+def _infer_k_huld(cell_type, pdc0):
+    # from PVGIS documentation, "PVGIS data sources & calculation methods",
+    # Section 5.2.3, accessed 12/22/2023
+    # The parameters in PVGIS' documentation are for a version of Huld's
+    # equation that has factored Pdc0 out of the polynomial:
+    #  P = G/1000 * Pdc0 * (1 + k1 log(Geff) + ...) so these parameters are
+    # multiplied by pdc0
+    huld_params = {'csi': (-0.017237, -0.040465, -0.004702, 0.000149,
+                           0.000170, 0.000005),
+                   'cis': (-0.005554, -0.038724, -0.003723, -0.000905,
+                           -0.001256, 0.000001),
+                   'cdte': (-0.046689, -0.072844, -0.002262, 0.000276,
+                            0.000159, -0.000006)}
+    k = tuple([x*pdc0 for x in huld_params[cell_type.lower()]])
+    return k
+
+
+def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
+    r"""
+    Power (DC) using the Huld model.
+
+    The Huld model [1]_ is used by PVGIS and is given by
+
+
+    .. math::
+
+        P_{dc} &= G' ( P_{dc0} + k_1 \log(G') + k_2 \log^2 (G') + k_3 T' +
+                 k_4 T' \log(G') + k_5 T' \log^2 (G') + k_6 T'^2)
+
+        G' &= \frac{G_{poa eff}}{1000}
+
+        T' &= T_{mod} - 25^{\circ}C
+
+
+    Parameters
+    ----------
+    effective_irradiance : numeric
+        The irradiance that is converted to photocurrent. [:math:`W/m^2`]
+    temp_mod: numeric
+        Module back-surface temperature. [C]
+    pdc0: numeric
+        Power of the modules at reference conditions 1000 :math:`W/m^2`
+        and :math:`25^{\circ}C`. [W]
+    k : tuple, optional
+        Empirical coefficients used in the power model. Length 6. If ``k`` is
+        not provided, ``cell_type`` must be specified.
+    cell_type : str, optional
+        If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
+        Used to look up default values for ``k`` if ``k`` is not specified.
+
+    Returns
+    -------
+    pdc: numeric
+        DC power. [W]
+
+    Raises
+    ------
+    ValueError
+        If neither ``k`` nor ``cell_type`` are specified.
+
+    Notes
+    -----
+    The equation for :math:`P_{dc}` is from [1]_. The expression used in PVGIS
+    documentation differs by factoring :math:`P_{dc0}` out of the
+    polynomial:
+
+    .. math::
+
+        P_{dc} = G' P_{dc0} (1 + k'_1 \log(G') + k'_2 \log^2 (G') + k'_3 T' +
+                 k'_4 T' \log(G') + k'_5 T' \log^2 (G') + k'_6 T'^2)
+
+
+    PVGIS documentation shows a table of default parameters :math:`k'` for
+    different cell types. The parameters :math:`k'` differ from the parameters
+    :math:`k` for :py:func:`huld` by the factor ``pdc0``, that is,
+
+    .. math::
+
+        k = P_{dc0} k'
+
+    With default values for :math:`k`, at very low irradiance, i.e.,
+    :math:`G' < 20 W/m^2`, :math:`P_{dc}` may be negative
+    due to the terms involving :math:`\log(G')`.
+
+    :py:func:`huld` is a component of the PV performance model implemented in
+    PVGIS. Among other components, the full PVGIS model includes:
+
+    - the Faiman model for module temperature
+      :py:func:`pvlib.temperature.faiman`
+    - the Martin and Ruiz model for the incidence angle modifier (IAM)
+      :py:func:`pvlib.iam.martin_ruiz`
+    - a custom model for a spectral adjustment factor
+
+    The PVGIS API (see :py:func:`pvlib.iotools.get_pvgis_hourly`) returns
+    broadband plane-of-array irradiance (``poa_global``) and DC power (``P``).
+    ``poa_global`` is irradiance before applying the IAM and spectral
+    adjustments. In contrast the ``effective_irradiance`` for :py:func:`huld`
+    should have the IAM and spectral adjustments. Users comparing output of
+    :py:func:`huld` to PVGIS' ``P`` values should expect differences unless
+    ``effective_irradiance`` is computed in the same way as done by PVGIS.
+
+    References
+    ----------
+    .. [1] T. Huld, G. Friesen, A. Skoczek, R. Kenny, T. Sample, M. Field,
+           E. Dunlop. A power-rating model for crystalline silicon PV modules.
+           Solar Energy Materials and Solar Cells 95, (2011), pp. 3359-3369.
+           :doi:`10.1016/j.solmat.2011.07.026`.
+    """
+    if k is None:
+        if cell_type is not None:
+            k = _infer_k_huld(cell_type, pdc0)
+        else:
+            raise ValueError('Either k or cell_type must be specified')
+
+    gprime = effective_irradiance / 1000
+    tprime = temp_mod - 25
+    # accomodate gprime<=0
+    with np.errstate(divide='ignore'):
+        logGprime = np.log(gprime, out=np.zeros_like(gprime),
+                           where=np.array(gprime > 0))
+    # Eq. 1 in [1]
+    pdc = gprime * (pdc0 + k[0] * logGprime + k[1] * logGprime**2 +
+                    k[2] * tprime + k[3] * tprime * logGprime +
+                    k[4] * tprime * logGprime**2 + k[5] * tprime**2)
+    return pdc

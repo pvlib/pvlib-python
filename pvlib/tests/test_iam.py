@@ -221,7 +221,7 @@ AOI_DATA = np.array([
     0, 10, 20, 30, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90,
 ])
 IAM_DATA = np.array([
-    1.0000, 0.9989, 1.0014, 1.0002, 0.9984, 0.9941, 0.9911, 0.9815, 0.9631,
+    1.0000, 1.0000, 1.0014, 1.0002, 0.9984, 0.9941, 0.9911, 0.9815, 0.9631,
     0.9352, 0.8922, 0.8134, 0.6778, 0.4541, 0.0000,
 ])
 
@@ -343,9 +343,9 @@ def test_marion_diffuse_iam_function_without_kwargs():
     measurement, without any kwargs and with array input.
     """
     expected = {
-        'sky': np.array([0.95664428, 0.96958797, 0.95665529, 0.88137573]),
-        'horizon': np.array([0.03718587, 0.94953826, 0.976997, 0.94862772]),
-        'ground': np.array([0., 0.88137573, 0.95665529, 0.96958797]),
+        'sky': np.array([0.95671526, 0.96967113, 0.95672627, 0.88137573]),
+        'horizon': np.array([0.03718587, 0.94953826, 0.97722834, 0.94862772]),
+        'ground': np.array([0., 0.88137573, 0.95672627, 0.96967113]),
     }
     actual = _iam.marion_diffuse(
         _iam.pchip(AOI_DATA, IAM_DATA), np.array([0.0, 45, 90, 135])
@@ -358,7 +358,7 @@ def test_marion_diffuse_iam_function_without_kwargs():
 def test_marion_diffuse_iam_with_kwargs():
     """Test custom IAM function (iam.interp) with kwargs and scalar input."""
     expected = {
-        'sky': 0.9687461532452274,
+        'sky': 0.9688222974371822,
         'horizon': 0.94824614710175,
         'ground': 0.878266931831978,
     }

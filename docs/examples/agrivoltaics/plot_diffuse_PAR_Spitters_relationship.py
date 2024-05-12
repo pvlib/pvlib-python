@@ -89,7 +89,9 @@ par["diffuse_fraction"] = pvlib.par.spitters_relationship(
 
 # Finally, calculate the diffuse PAR
 par["diffuse"] = par["total"] * par["diffuse_fraction"]
-par[solar_position["zenith"] > 80] = 0  # set to zero for elevation < 10 degrees
+par[solar_position["zenith"] > 80] = (
+    0  # set to zero for elevation < 10 degrees
+)
 
 # %%
 # Plot the results
@@ -104,9 +106,21 @@ ax_l.set(
 )
 ax_l.xaxis.set_major_formatter(DateFormatter("%H:%M", tz=tmy.index.tz))
 ax_l.plot(tmy.index, tmy["ghi"], label="Global: total", color="deepskyblue")
-ax_l.plot(tmy.index, tmy["dhi"], label="Global: diffuse", color="skyblue", linestyle="-.")
+ax_l.plot(
+    tmy.index,
+    tmy["dhi"],
+    label="Global: diffuse",
+    color="skyblue",
+    linestyle="-.",
+)
 ax_l.plot(tmy.index, par["total"], label="PAR: total", color="orangered")
-ax_l.plot(tmy.index, par["diffuse"], label="PAR: diffuse", color="coral", linestyle="-.")
+ax_l.plot(
+    tmy.index,
+    par["diffuse"],
+    label="PAR: diffuse",
+    color="coral",
+    linestyle="-.",
+)
 ax_l.grid()
 
 ax_r = ax_l.twinx()

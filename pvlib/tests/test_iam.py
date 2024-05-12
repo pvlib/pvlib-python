@@ -215,17 +215,22 @@ def test_iam_interp():
 
 
 # Custom IAM function without kwargs, using IEC 61853-2 measurement data.
-# Notice that the measured IAM data here are not stricly monotonic decreasing, but a
-# PCHIP interpolant should go no higher than the highest data point.
-AOI_DATA = np.array([0, 10, 20, 30, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90])
+# Notice that the measured IAM data here are not stricly monotonic decreasing,
+# but a PCHIP interpolant should go no higher than the highest data point.
+AOI_DATA = np.array([
+    0, 10, 20, 30, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90,
+])
 IAM_DATA = np.array([
-    1.0000, 0.9989, 1.0014, 1.0002, 0.9984, 0.9941, 0.9911, 0.9815, 0.9631, 0.9352,
-    0.8922, 0.8134, 0.6778, 0.4541, 0.0000,
+    1.0000, 0.9989, 1.0014, 1.0002, 0.9984, 0.9941, 0.9911, 0.9815, 0.9631,
+    0.9352, 0.8922, 0.8134, 0.6778, 0.4541, 0.0000,
 ])
 
 
 def test_pchip():
-    """Test generating interpolating function for incident-angle modifier (IAM) data."""
+    """
+    Test generating interpolating function for incident-angle modifier (IAM)
+    data.
+    """
     iam_pchip = _iam.pchip(AOI_DATA, IAM_DATA)
 
     # Data points should be interpolated.
@@ -309,10 +314,14 @@ def test_marion_diffuse_model(mocker):
     assert physical_spy.call_count == 3
 
     for k, v in ashrae_expected.items():
-        assert_allclose(ashrae_actual[k], v, err_msg=f"ashrae component {k}")
+        assert_allclose(
+            ashrae_actual[k], v, err_msg=f"ashrae component {k}"
+        )
 
     for k, v in physical_expected.items():
-        assert_allclose(physical_actual[k], v, err_msg=f"physical component {k}")
+        assert_allclose(
+            physical_actual[k], v, err_msg=f"physical component {k}"
+        )
 
 
 def test_marion_diffuse_kwargs():
@@ -330,12 +339,12 @@ def test_marion_diffuse_kwargs():
 
 def test_marion_diffuse_iam_function_without_kwargs():
     """
-    Test PCHIP-interpolated custom IAM function from an IEC 61853-2 IAM measurement,
-    without any kwargs and with array input.
+    Test PCHIP-interpolated custom IAM function from an IEC 61853-2 IAM
+    measurement, without any kwargs and with array input.
     """
     expected = {
         'sky': np.array([0.95664428, 0.96958797, 0.95665529, 0.88137573]),
-        'horizon': np.array([0.03718587, 0.94953826, 0.976997  , 0.94862772]),
+        'horizon': np.array([0.03718587, 0.94953826, 0.976997, 0.94862772]),
         'ground': np.array([0., 0.88137573, 0.95665529, 0.96958797]),
     }
     actual = _iam.marion_diffuse(
@@ -354,7 +363,11 @@ def test_marion_diffuse_iam_with_kwargs():
         'ground': 0.878266931831978,
     }
     actual = _iam.marion_diffuse(
-        _iam.interp, 45.0, theta_ref=AOI_DATA, iam_ref=IAM_DATA, normalize=False
+        _iam.interp,
+        45.0,
+        theta_ref=AOI_DATA,
+        iam_ref=IAM_DATA,
+        normalize=False,
     )
 
     for k, v in expected.items():

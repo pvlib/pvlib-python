@@ -503,18 +503,18 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
 def pchip(aoi_data, iam_data):
     """
-    Generate a piecewise-cubic hermite interpolating polynomial for incident-angle
-    modifier (IAM) data. Assumes aoi_data in [0, 90], in degrees, with normalized
-    iam_data in [0, 1], unitless. Typically, (0, 1) and (90, 0) are included in the
-    interpolation data.
+    Generate a piecewise-cubic hermite interpolating polynomial for
+    incident-angle modifier (IAM) data. Assumes aoi_data in [0, 90], in
+    degrees, with normalized iam_data in [0, 1], unitless. Typically, (0, 1)
+    and (90, 0) are included in the interpolation data.
 
     The resulting function requires aoi to be in [0, 180], in degrees.
 
-    This function can work well for IAM measured according to IEC 61853-2, as it
-    preserves monotonicity between data points.
+    This function can work well for IAM measured according to IEC 61853-2, as
+    it preserves monotonicity between data points.
 
-    Note that scipy.interpolate.PchipInterpolator requires aoi_data be 1D monotonic
-    increasing and without duplicates.
+    Note that scipy.interpolate.PchipInterpolator requires aoi_data be 1D
+    monotonic increasing and without duplicates.
     """
 
     iam_pchip_ = scipy.interpolate.PchipInterpolator(
@@ -522,7 +522,10 @@ def pchip(aoi_data, iam_data):
     )
 
     def iam(aoi):
-        """Compute unitless incident-angle modifier as a function of aoi, in degrees."""
+        """
+        Compute unitless incident-angle modifier as a function of aoi, in
+        degrees.
+        """
         if np.any(np.logical_or(aoi < 0, aoi > 180)):
             raise ValueError("aoi not between 0 and 180, inclusive")
 
@@ -609,8 +612,9 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     Parameters
     ----------
     model : str or callable
-        The IAM function to evaluate across solid angle. If not callable, then must be
-        one of `'ashrae', 'martin_ruiz', 'physical', 'sapm', 'schlick'`.
+        The IAM function to evaluate across solid angle. If not callable, then
+        must be one of `'ashrae', 'martin_ruiz', 'physical', 'sapm',
+        'schlick'`.
 
     surface_tilt : numeric
         Surface tilt angles in decimal degrees.
@@ -669,7 +673,9 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     elif callable(model):
         iam_model = model
     else:
-        raise ValueError(f"model must be one of: {list(models.keys())} or callable")
+        raise ValueError(
+            f"model must be one of: {list(models.keys())} or callable"
+        )
 
     iam_function = functools.partial(iam_model, **kwargs)
 
@@ -926,8 +932,8 @@ def schlick_diffuse(surface_tilt):
     implements only the integrated Schlick approximation.
 
     Note also that the output of this function (which is an exact integration)
-    can be compared with the output of :py:func:`marion_diffuse` which numerically
-    integrates the Schlick approximation:
+    can be compared with the output of :py:func:`marion_diffuse` which
+    numerically integrates the Schlick approximation:
 
     .. code::
 

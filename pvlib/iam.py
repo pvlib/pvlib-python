@@ -516,8 +516,8 @@ def pchip(aoi_data, iam_data):
     Note that scipy.interpolate.PchipInterpolator requires aoi_data be 1D
     monotonic increasing and without duplicates.
     """
-
-    iam_pchip_ = scipy.interpolate.PchipInterpolator(
+    # For efficiency, use closure over this created-once interpolator.
+    pchip_ = scipy.interpolate.PchipInterpolator(
         aoi_data, iam_data, extrapolate=False
     )
 
@@ -529,7 +529,7 @@ def pchip(aoi_data, iam_data):
         if np.any(np.logical_or(aoi < 0, aoi > 180)):
             raise ValueError("aoi not between 0 and 180, inclusive")
 
-        iam_ = iam_pchip_(aoi)
+        iam_ = pchip_(aoi)
         iam_[90 < aoi] = 0.0
 
         return iam_

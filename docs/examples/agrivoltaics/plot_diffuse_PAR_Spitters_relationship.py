@@ -25,9 +25,9 @@ active radiation (PAR) using Spitter's relationship.
 #    photosynthesis. See section on *Photosynthetically Active Radiation* in
 #    pp. 222-223 of [1]_.
 #
-# Key functions used in this example:
-# - :py:func:`pvlib.par.spitters_relationship` to calculate the diffuse PAR
-#   fraction, as a function of global diffuse fraction and solar zenith.
+# The key function used in this example is
+# :py:func:`pvlib.par.spitters_relationship` to calculate the diffuse PAR
+# fraction, as a function of global diffuse fraction and solar zenith.
 #
 # References
 # ----------

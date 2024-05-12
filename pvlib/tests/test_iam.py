@@ -9,7 +9,7 @@ import pandas as pd
 
 import pytest
 from .conftest import assert_series_equal
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_equal
 
 from pvlib import iam as _iam
 
@@ -214,6 +214,50 @@ def test_iam_interp():
         _iam.interp(0.0, [0, 90], [1, -1])
 
 
+# Custom IAM function without kwargs, using IEC 61853-2 measurement data.
+# Notice that the measured IAM data here are not stricly monotonic decreasing.
+AOI_DATA = np.array([0, 10, 20, 30, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90])
+IAM_DATA = np.array([
+    1.0000, 0.9989, 1.0014, 1.0002, 0.9984, 0.9941, 0.9911, 0.9815, 0.9631, 0.9352,
+    0.8922, 0.8134, 0.6778, 0.4541, 0.0000,
+])
+
+
+def test_iam_pchip():
+    """Test generating interpolating function for incident-angle modifier (IAM) data."""
+
+    iam_pchip = _iam.iam_pchip(AOI_DATA, IAM_DATA)
+
+    # Data points should be interpolated.
+    assert_allclose(iam_pchip(AOI_DATA), IAM_DATA, rtol=0, atol=1e-16)
+
+    # Degrees beyond 90 should be zero.
+    assert_equal(iam_pchip(np.array([135, 180])), np.array([0.0, 0.0]))
+
+    # Verify interpolated IAM curve is  monotonic decreasing.
+    middle_aoi = (AOI_DATA[:-1] + AOI_DATA[1:]) / 2
+    middle_iam = iam_pchip(middle_aoi)
+
+    for idx in range(middle_aoi.size):
+        if IAM_DATA[idx] < IAM_DATA[idx+1]:
+            # Increasing IAM on interval.
+            assert IAM_DATA[idx] < middle_iam[idx] < IAM_DATA[idx+1]
+        elif IAM_DATA[idx] > IAM_DATA[idx+1]:
+            # Decreasing IAM on interval.
+            assert IAM_DATA[idx] > middle_iam[idx] > IAM_DATA[idx+1]
+        else:
+            # Constant IAM on interval.
+            assert IAM_DATA[idx] == middle_iam[idx] == IAM_DATA[idx+1]
+
+    # Test out of bounds scalar.
+    with pytest.raises(ValueError):
+        iam_pchip(-45)
+
+    # Test vector with out of bounds element.
+    with pytest.raises(ValueError):
+        iam_pchip(np.array([45, 270]))
+
+
 @pytest.mark.parametrize('aoi,expected', [
     (45, 0.9975036250000002),
     (np.array([[-30, 30, 100, np.nan]]),
@@ -265,10 +309,10 @@ def test_marion_diffuse_model(mocker):
     assert physical_spy.call_count == 3
 
     for k, v in ashrae_expected.items():
-        assert_allclose(ashrae_actual[k], v)
+        assert_allclose(ashrae_actual[k], v, err_msg=f"ashrae component {k}")
 
     for k, v in physical_expected.items():
-        assert_allclose(physical_actual[k], v)
+        assert_allclose(physical_actual[k], v, err_msg=f"physical component {k}")
 
 
 def test_marion_diffuse_kwargs():
@@ -281,7 +325,40 @@ def test_marion_diffuse_kwargs():
     actual = _iam.marion_diffuse('ashrae', 20, b=0.04)
 
     for k, v in expected.items():
-        assert_allclose(actual[k], v)
+        assert_allclose(actual[k], v, err_msg=f"component {k}")
+
+
+def test_marion_diffuse_iam_function_without_kwargs():
+    """
+    Test PCHIP-interpolated custom IAM function from an IEC 61853-2 IAM measurement,
+    without any kwargs and with array input.
+    """
+    expected = {
+        'sky': np.array([0.95664428, 0.96958797, 0.95665529, 0.88137573]),
+        'horizon': np.array([0.03718587, 0.94953826, 0.976997  , 0.94862772]),
+        'ground': np.array([0., 0.88137573, 0.95665529, 0.96958797]),
+    }
+    actual = _iam.marion_diffuse(
+        _iam.iam_pchip(AOI_DATA, IAM_DATA), np.array([0.0, 45, 90, 135])
+    )
+
+    for k, v in expected.items():
+        assert_allclose(actual[k], v, rtol=2e-7, err_msg=f"component {k}")
+
+
+def test_marion_diffuse_iam_with_kwargs():
+    """Test custom IAM function with kwargs and scalar input."""
+    expected = {
+        'sky': 0.9687461532452274,
+        'horizon': 0.94824614710175,
+        'ground': 0.878266931831978,
+    }
+    actual = _iam.marion_diffuse(
+        _iam.interp, 45.0, theta_ref=AOI_DATA, iam_ref=IAM_DATA, normalize=False
+    )
+
+    for k, v in expected.items():
+        assert_allclose(actual[k], v, err_msg=f"component {k}")
 
 
 def test_marion_diffuse_invalid():

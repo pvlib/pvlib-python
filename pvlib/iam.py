@@ -11,6 +11,7 @@ irradiance to the module's surface.
 import numpy as np
 import pandas as pd
 import functools
+import scipy.interpolate
 from scipy.optimize import minimize
 from pvlib.tools import cosd, sind, acosd
 
@@ -470,8 +471,6 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
-    from scipy.interpolate import interp1d
-
     # Scipy doesn't give the clearest feedback, so check number of points here.
     MIN_REF_VALS = {'linear': 2, 'quadratic': 3, 'cubic': 4, 1: 2, 2: 3, 3: 4}
 
@@ -483,8 +482,9 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
         raise ValueError("Negative value(s) found in 'iam_ref'. "
                          "This is not physically possible.")
 
-    interpolator = interp1d(theta_ref, iam_ref, kind=method,
-                            fill_value='extrapolate')
+    interpolator = scipy.interpolate.interp1d(
+        theta_ref, iam_ref, kind=method, fill_value='extrapolate'
+    )
     aoi_input = aoi
 
     aoi = np.asanyarray(aoi)
@@ -497,6 +497,39 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
 
     if isinstance(aoi_input, pd.Series):
         iam = pd.Series(iam, index=aoi_input.index)
+
+    return iam
+
+
+def iam_pchip(aoi_data, iam_data):
+    """
+    Generate a piecewise-cubic hermite interpolating polynomial for incident-angle
+    modifier (IAM) data. Assumes aoi_data in [0, 90], in degrees, with normalized
+    iam_data in [0, 1], unitless. Typically, (0, 1) and (90, 0) are included in the
+    interpolation data.
+
+    The resulting function requires aoi to be in [0, 180], in degrees.
+
+    This function can work well for IAM measured according to IEC 61853-2, as it
+    preserves monotonicity between data points.
+
+    Note that scipy.interpolate.PchipInterpolator requires aoi_data be 1D monotonic
+    increasing and without duplicates.
+    """
+
+    iam_pchip_ = scipy.interpolate.PchipInterpolator(
+        aoi_data, iam_data, extrapolate=False
+    )
+
+    def iam(aoi):
+        """Compute unitless incident-angle modifier as a function of aoi, in degrees."""
+        if np.any(np.logical_or(aoi < 0, aoi > 180)):
+            raise ValueError("aoi not between 0 and 180, inclusive")
+
+        iam_ = iam_pchip_(aoi)
+        iam_[90 < aoi] = 0.0
+
+        return iam_
 
     return iam
 
@@ -575,9 +608,9 @@ def marion_diffuse(model, surface_tilt, **kwargs):
 
     Parameters
     ----------
-    model : str
-        The IAM function to evaluate across solid angle. Must be one of
-        `'ashrae', 'physical', 'martin_ruiz', 'sapm', 'schlick'`.
+    model : str or callable
+        The IAM function to evaluate across solid angle. If not a callable, then must be
+        one of `'ashrae', 'martin_ruiz', 'physical', 'sapm', 'schlick'`.
 
     surface_tilt : numeric
         Surface tilt angles in decimal degrees.
@@ -621,27 +654,33 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     {'sky': array([0.96748999, 0.96938408]),
      'horizon': array([0.86478428, 0.91825792]),
      'ground': array([0.77004435, 0.8522436 ])}
+
+    # FIXME Add IEC 61853-2 IAM example.
     """
 
     models = {
-        'physical': physical,
         'ashrae': ashrae,
-        'sapm': sapm,
         'martin_ruiz': martin_ruiz,
+        'physical': physical,
+        'sapm': sapm,
         'schlick': schlick,
     }
 
-    try:
+    if model in models:
         iam_model = models[model]
-    except KeyError:
-        raise ValueError('model must be one of: ' + str(list(models.keys())))
+    elif callable(model):
+        iam_model = model
+    else:
+        raise ValueError(
+            f"model must be one of: {list(models.keys())} or a callable function"
+        )
 
     iam_function = functools.partial(iam_model, **kwargs)
-    iam = {}
-    for region in ['sky', 'horizon', 'ground']:
-        iam[region] = marion_integrate(iam_function, surface_tilt, region)
 
-    return iam
+    return {
+        region: marion_integrate(iam_function, surface_tilt, region)
+        for region in ['sky', 'horizon', 'ground']
+    }
 
 
 def marion_integrate(function, surface_tilt, region, num=None):

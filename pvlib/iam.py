@@ -501,7 +501,7 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     return iam
 
 
-def iam_pchip(aoi_data, iam_data):
+def pchip(aoi_data, iam_data):
     """
     Generate a piecewise-cubic hermite interpolating polynomial for incident-angle
     modifier (IAM) data. Assumes aoi_data in [0, 90], in degrees, with normalized
@@ -609,7 +609,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     Parameters
     ----------
     model : str or callable
-        The IAM function to evaluate across solid angle. If not a callable, then must be
+        The IAM function to evaluate across solid angle. If not callable, then must be
         one of `'ashrae', 'martin_ruiz', 'physical', 'sapm', 'schlick'`.
 
     surface_tilt : numeric
@@ -654,8 +654,6 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     {'sky': array([0.96748999, 0.96938408]),
      'horizon': array([0.86478428, 0.91825792]),
      'ground': array([0.77004435, 0.8522436 ])}
-
-    # FIXME Add IEC 61853-2 IAM example.
     """
 
     models = {
@@ -671,9 +669,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     elif callable(model):
         iam_model = model
     else:
-        raise ValueError(
-            f"model must be one of: {list(models.keys())} or a callable function"
-        )
+        raise ValueError(f"model must be one of: {list(models.keys())} or callable")
 
     iam_function = functools.partial(iam_model, **kwargs)
 

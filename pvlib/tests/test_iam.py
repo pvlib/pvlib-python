@@ -215,7 +215,8 @@ def test_iam_interp():
 
 
 # Custom IAM function without kwargs, using IEC 61853-2 measurement data.
-# Notice that the measured IAM data here are not stricly monotonic decreasing.
+# Notice that the measured IAM data here are not stricly monotonic decreasing, but a
+# PCHIP interpolant should go no higher than the highest data point.
 AOI_DATA = np.array([0, 10, 20, 30, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90])
 IAM_DATA = np.array([
     1.0000, 0.9989, 1.0014, 1.0002, 0.9984, 0.9941, 0.9911, 0.9815, 0.9631, 0.9352,
@@ -223,15 +224,14 @@ IAM_DATA = np.array([
 ])
 
 
-def test_iam_pchip():
+def test_pchip():
     """Test generating interpolating function for incident-angle modifier (IAM) data."""
-
-    iam_pchip = _iam.iam_pchip(AOI_DATA, IAM_DATA)
+    iam_pchip = _iam.pchip(AOI_DATA, IAM_DATA)
 
     # Data points should be interpolated.
     assert_allclose(iam_pchip(AOI_DATA), IAM_DATA, rtol=0, atol=1e-16)
 
-    # Degrees beyond 90 should be zero.
+    # Degrees >90 and <=180 should be exactly zero.
     assert_equal(iam_pchip(np.array([135, 180])), np.array([0.0, 0.0]))
 
     # Verify interpolated IAM curve is  monotonic decreasing.
@@ -339,7 +339,7 @@ def test_marion_diffuse_iam_function_without_kwargs():
         'ground': np.array([0., 0.88137573, 0.95665529, 0.96958797]),
     }
     actual = _iam.marion_diffuse(
-        _iam.iam_pchip(AOI_DATA, IAM_DATA), np.array([0.0, 45, 90, 135])
+        _iam.pchip(AOI_DATA, IAM_DATA), np.array([0.0, 45, 90, 135])
     )
 
     for k, v in expected.items():
@@ -347,7 +347,7 @@ def test_marion_diffuse_iam_function_without_kwargs():
 
 
 def test_marion_diffuse_iam_with_kwargs():
-    """Test custom IAM function with kwargs and scalar input."""
+    """Test custom IAM function (iam.interp) with kwargs and scalar input."""
     expected = {
         'sky': 0.9687461532452274,
         'horizon': 0.94824614710175,

@@ -3080,9 +3080,10 @@ def nonuniform_irradiance_loss(rmad):
 
     References
     ----------
-    .. [1] Ayala Pelaez, S., Deline, C., MacAlpine, S., & Olalla, C. (2019).
-       Bifacial PV System Mismatch Loss Estimation.
-       https://www.nrel.gov/docs/fy19osti/74831.pdf
+    .. [1] C. Deline, S. Ayala Pelaez, S. MacAlpine, and C. Olalla, 'Estimating
+       and parameterizing mismatch power loss in bifacial photovoltaic
+       systems', Progress in Photovoltaics: Research and Applications, vol. 28,
+       no. 7, pp. 691-703, 2020, :doi:`10.1002/pip.3259`.
     .. [2] “Mean absolute difference,” Wikipedia, Sep. 05, 2023.
        https://en.wikipedia.org/wiki/Mean_absolute_difference#Relative_mean_absolute_difference
        (accessed 2024-04-14).

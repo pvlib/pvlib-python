@@ -29,9 +29,10 @@ Calculate the incident irradiance lost to non-uniformity in a bifacial PV array
 #
 # References
 # ----------
-# .. [1] Deline, C., Pelaez, S.A., MacAlpine, S.M., & Olalla, C. (2019).
-#    Bifacial PV System Mismatch Loss Estimation and Parameterization:
-#    Preprint. https://www.nrel.gov/docs/fy19osti/74831.pdf
+# .. [1] C. Deline, S. Ayala Pelaez, S. MacAlpine, and C. Olalla, 'Estimating
+#    and parameterizing mismatch power loss in bifacial photovoltaic
+#    systems', Progress in Photovoltaics: Research and Applications, vol. 28,
+#    no. 7, pp. 691-703, 2020, :doi:`10.1002/pip.3259`.
 # .. [2] C. Domínguez, J. Marcos, S. Ures, S. Askins, and I. Antón, 'A
 #    Horizontal Single-Axis Tracker Mock-Up to Quickly Assess the Influence
 #    of Geometrical Factors on Bifacial Energy Gain', in 2023 IEEE 50th

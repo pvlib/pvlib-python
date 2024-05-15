@@ -9,7 +9,7 @@ import pandas as pd
 
 import pytest
 from .conftest import assert_series_equal
-from numpy.testing import assert_allclose, assert_equal
+from numpy.testing import assert_allclose
 import scipy.interpolate
 
 from pvlib import iam as _iam

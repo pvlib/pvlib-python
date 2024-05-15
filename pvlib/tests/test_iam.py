@@ -314,9 +314,6 @@ def test_marion_diffuse_iam_function_without_kwargs():
         Compute unitless incident-angle modifier as a function of aoi, in
         degrees.
         """
-        if np.any(np.logical_or(aoi < 0, aoi > 180)):
-            raise ValueError("aoi not between 0 and 180, inclusive")
-
         iam_ = pchip(aoi)
         iam_[90 < aoi] = 0.0
 

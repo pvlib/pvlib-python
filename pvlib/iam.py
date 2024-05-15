@@ -576,7 +576,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     Parameters
     ----------
     model : str or callable
-        The IAM function to evaluate across solid angle. Must be one of 
+        The IAM function to evaluate across solid angle. Must be one of
         `'ashrae', 'martin_ruiz', 'physical', 'sapm', 'schlick'` or be
         callable. If callable, then must take numeric AOI in degrees as
         input and return the fractional IAM.

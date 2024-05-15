@@ -501,42 +501,6 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     return iam
 
 
-def pchip(aoi_data, iam_data):
-    """
-    Generate a piecewise-cubic hermite interpolating polynomial for
-    incident-angle modifier (IAM) data. Assumes aoi_data in [0, 90], in
-    degrees, with normalized iam_data in [0, 1], unitless. Typically, (0, 1)
-    and (90, 0) are included in the interpolation data.
-
-    The resulting function requires aoi to be in [0, 180], in degrees.
-
-    This function can work well for IAM measured according to IEC 61853-2, as
-    it preserves monotonicity between data points.
-
-    Note that scipy.interpolate.PchipInterpolator requires aoi_data be 1D
-    monotonic increasing and without duplicates.
-    """
-    # For efficiency, use closure over this created-once interpolator.
-    pchip_ = scipy.interpolate.PchipInterpolator(
-        aoi_data, iam_data, extrapolate=False
-    )
-
-    def iam(aoi):
-        """
-        Compute unitless incident-angle modifier as a function of aoi, in
-        degrees.
-        """
-        if np.any(np.logical_or(aoi < 0, aoi > 180)):
-            raise ValueError("aoi not between 0 and 180, inclusive")
-
-        iam_ = pchip_(aoi)
-        iam_[90 < aoi] = 0.0
-
-        return iam_
-
-    return iam
-
-
 def sapm(aoi, module, upper=None):
     r"""
     Determine the incidence angle modifier (IAM) using the SAPM model.
@@ -612,9 +576,10 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     Parameters
     ----------
     model : str or callable
-        The IAM function to evaluate across solid angle. If not callable, then
-        must be one of `'ashrae', 'martin_ruiz', 'physical', 'sapm',
-        'schlick'`.
+        The IAM function to evaluate across solid angle. Must be one of 
+        `'ashrae', 'martin_ruiz', 'physical', 'sapm', 'schlick'` or be
+        callable. If callable, then must take numeric AOI in degrees as
+        input and return the fractional IAM.
 
     surface_tilt : numeric
         Surface tilt angles in decimal degrees.

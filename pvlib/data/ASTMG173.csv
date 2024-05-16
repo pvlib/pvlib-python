@@ -1,5 +1,5 @@
 ASTM G173-03 Reference Spectra Derived from SMARTS v. 2.9.2,,,
-Wvlgth nm,Etr W*m-2*nm-1,Global tilt  W*m-2*nm-1,Direct+circumsolar W*m-2*nm-1
+wavelength,extraterrestrial,global,direct
 280,0.082,4.7309E-23,2.5361E-26
 280.5,0.099,1.2307E-21,1.0917E-24
 281,0.15,5.6895E-21,6.1253E-24

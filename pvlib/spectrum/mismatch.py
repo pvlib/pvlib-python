@@ -7,11 +7,10 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.integrate import trapezoid
-import os
 
+from pathlib import Path
 from warnings import warn
 from functools import partial
-
 
 def get_example_spectral_response(wavelength=None):
     '''
@@ -119,7 +118,7 @@ def get_am15g(wavelength=None):
 
     See Also
     --------
-    pvlib.spectrum.get_ASTM_G173 : reads also the direct and extraterrestrial
+    pvlib.spectrum.get_standard_spectrum : reads also the direct and extraterrestrial
       components of the spectrum.
 
     References
@@ -128,18 +127,21 @@ def get_am15g(wavelength=None):
        Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
     """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
-    # modified by Echedey Luis, 2024, as a wrapper of spectrum.get_ASTM_G173
-    return get_ASTM_G173(wavelength)["global"]
+    # modified by @echedey-ls, as a wrapper of spectrum.get_standard_spectrum
+    standard = get_standard_spectrum(wavelength, reference="ASTM G173-03")
+    return standard["global"]
 
 
-def get_ASTM_G173(wavelengths=None):
+def get_standard_spectrum(
+    wavelengths=None, *, reference: str = "ASTM G173-03"
+) -> pd.DataFrame:
     r"""
-    Read the ASTM G173-03 AM1.5 ``extraterrestrial``, ``global`` and ``direct``
-    spectrum on a 37-degree tilted surface, optionally interpolated to the
-    specified wavelength(s).
+    Read a standard spectrum specified by ``reference``, optionally
+    interpolated to the specified wavelength(s).
 
-    The AM1.5 spectrum is the standard reference spectrum for terrestrial
-    photovoltaic systems [1]_.
+    Defaults to the ASTM G173-03 AM1.5 standard [1]_, which returns
+    ``extraterrestrial``, ``global`` and ``direct`` spectrum on a 37-degree
+    tilted surface, optionally interpolated to the specified wavelength(s).
 
     Parameters
     ----------
@@ -148,24 +150,28 @@ def get_ASTM_G173(wavelengths=None):
         If not provided, the 2002 wavelengths of the standard are returned.
         :math:`nm`.
         Values outside of the range :math:`[280, 4000]` are filled with zeroes.
+    
+    reference : str, default "ASTM G173-03"
+        The reference standard spectrum to use. Only the reference spectrum
+        ``"ASTM G173-03"`` is available at the moment.
 
     Returns
     -------
-    am15 : pandas.DataFrame
-        The AM1.5 standard spectrums by ``wavelength [nm]``, in
+    standard_spectrum : pandas.DataFrame
+        The standard spectrum by ``wavelength [nm]``, in
         :math:`\frac{W}{m^2 nm}`. Column names are ``extraterrestrial``,
         ``direct`` and ``global``.
 
     Notes
     -----
-    If ``wavelength`` is specified this function uses linear interpolation.
+    If ``wavelength`` is specified, linear interpolation is used.
 
     If the values in ``wavelength`` are too widely spaced, the integral of each
     spectrum may deviate from its standard value.
     For global spectra, it is about :math:`1000.37 W/m^2`.
 
-    The values in the data file provided with pvlib-python are copied from an
-    Excel file distributed by NREL, which is found here:
+    The values of the ASTM G173-03 provided with pvlib-python are copied from
+    an Excel file distributed by NREL, which is found here:
     https://www.nrel.gov/grid/solar-resource/assets/data/astmg173.xls
 
     More information about reference spectra is found at [2]_.
@@ -173,7 +179,7 @@ def get_ASTM_G173(wavelengths=None):
     Examples
     --------
     >>> from pvlib import spectrum
-    >>> am15 = spectrum.get_ASTM_G173()
+    >>> am15 = spectrum.get_standard_spectrum()
     >>> am15_extraterrestrial, am15_global, am15_direct = \
     >>>     am15['extraterrestrial'], am15['global'], am15['direct']
     >>> print(am15.head())
@@ -185,7 +191,7 @@ def get_ASTM_G173(wavelengths=None):
     281.5                  0.212  1.566200e-19  2.747900e-22
     282.0                  0.267  1.194600e-18  2.834600e-21
 
-    >>> am15 = spectrum.get_ASTM_G173([300, 500, 800, 1100])
+    >>> am15 = spectrum.get_standard_spectrum([300, 500, 800, 1100])
     >>> print(am15)
                 extraterrestrial   global    direct
     wavelength
@@ -201,29 +207,41 @@ def get_ASTM_G173(wavelengths=None):
     .. [2] “Reference Air Mass 1.5 Spectra,” www.nrel.gov.
        https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html
     """  # Contributed by Echedey Luis, inspired by Anton Driesse (get_am15g)
-    filepath = os.path.join(pvlib.__path__[0], "data", "ASTMG173.csv")
+    SPECTRA_FILES = {
+        "ASTM G173-03": "ASTMG173.csv",
+    }
+    pvlib_datapath = Path(pvlib.__path__[0]) / "data"
 
-    am15 = pd.read_csv(
+    try:
+        filepath = pvlib_datapath / SPECTRA_FILES[reference]
+    except KeyError:
+        raise ValueError(
+            f"Invalid reference identifier '{reference}'. Available "
+            + "identifiers are: "
+            + ", ".join(SPECTRA_FILES.keys())
+        )
+
+    standard = pd.read_csv(
         filepath,
-        sep=",",
-        index_col=0,
-        skiprows=2,
-        names=["wavelength", "extraterrestrial", "global", "direct"],
+        header=1,  # expect first line of description, then column names
+        index_col=0,  # first column is "wavelength"
         dtype=float,
     )
 
     if wavelengths is not None:
-        interpolator = partial(np.interp, xp=am15.index, left=0.0, right=0.0)
-        am15 = pd.DataFrame(
+        interpolator = partial(
+            np.interp, xp=standard.index, left=0.0, right=0.0
+        )
+        standard = pd.DataFrame(
             index=wavelengths,
             data={
-                col: interpolator(x=wavelengths, fp=am15[col])
-                for col in am15.columns
+                col: interpolator(x=wavelengths, fp=standard[col])
+                for col in standard.columns
             },
         )
 
-    am15.name = "am15"
-    return am15
+    standard.name = reference
+    return standard
 
 
 def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):

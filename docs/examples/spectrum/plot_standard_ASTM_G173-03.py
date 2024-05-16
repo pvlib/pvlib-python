@@ -13,15 +13,15 @@ import pvlib
 
 
 # %%
-# Use :py:func:`pvlib.spectrum.get_ASTM_G173` to retrieve the ASTM G173-03
+# Use :py:func:`pvlib.spectrum.get_standard_spectrum` to retrieve a
 # standard spectrum.
 
-am15_df = pvlib.spectrum.get_ASTM_G173()
+am15 = pvlib.spectrum.get_standard_spectrum(reference="ASTM G173-03")
 
 # Plot
-plt.plot(am15_df.index, am15_df['extraterrestrial'], label='Extraterrestrial')
-plt.plot(am15_df.index, am15_df['global'], label='Global')
-plt.plot(am15_df.index, am15_df['direct'], label='Direct')
+plt.plot(am15.index, am15['extraterrestrial'], label='Extraterrestrial')
+plt.plot(am15.index, am15['global'], label='Global')
+plt.plot(am15.index, am15['direct'], label='Direct')
 plt.xlabel('Wavelength (nm)')
 plt.ylabel('Irradiance (W/m²/nm)')
 plt.title('ASTM G173-03 Solar Spectral Irradiance')

@@ -12,6 +12,7 @@ from pathlib import Path
 from warnings import warn
 from functools import partial
 
+
 def get_example_spectral_response(wavelength=None):
     '''
     Generate a generic smooth spectral response (SR) for tests and experiments.
@@ -118,8 +119,8 @@ def get_am15g(wavelength=None):
 
     See Also
     --------
-    pvlib.spectrum.get_standard_spectrum : reads also the direct and extraterrestrial
-      components of the spectrum.
+    pvlib.spectrum.get_standard_spectrum : reads also the direct and
+      extraterrestrial components of the spectrum.
 
     References
     ----------
@@ -150,7 +151,7 @@ def get_standard_spectrum(
         If not provided, the 2002 wavelengths of the standard are returned.
         :math:`nm`.
         Values outside of the range :math:`[280, 4000]` are filled with zeroes.
-    
+
     reference : str, default "ASTM G173-03"
         The reference standard spectrum to use. Only the reference spectrum
         ``"ASTM G173-03"`` is available at the moment.

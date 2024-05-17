@@ -15,7 +15,7 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Added a simple transformer efficiency model
 
 Bug fixes
 ~~~~~~~~~
@@ -35,3 +35,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Kurt Rhee (:ghuser:`kurt-rhee`)

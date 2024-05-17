@@ -6,6 +6,7 @@ from numpy.testing import assert_allclose
 from pvlib import transformer
 
 
+
 def test_simple_transformer():
 
     # define test inputs
@@ -39,6 +40,3 @@ def test_simple_transformer():
     
     # determine if expected results are obtained
     assert_allclose(calculated_output_power, expected_output_power)
-
-if __name__ == '__main__':
-    test_simple_transformer()

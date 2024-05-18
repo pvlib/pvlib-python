@@ -3032,7 +3032,7 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
     return 1 - combined_factor
 
 
-def nonuniform_irradiance_loss(rmad):
+def nonuniform_irradiance_loss(rmad, c1=0.054, c2=0.068):
     r"""
     Calculate the incident irradiance loss due to irradiance non-uniformity.
 
@@ -3089,4 +3089,4 @@ def nonuniform_irradiance_loss(rmad):
        (accessed 2024-04-14).
     """  # noqa: E501
     # Eq. (7) of [1]
-    return rmad * (0.12 + 2.77 * rmad)
+    return rmad * (c1 + c2 * rmad)

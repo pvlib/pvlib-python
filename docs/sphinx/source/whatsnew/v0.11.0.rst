@@ -19,6 +19,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
+* Fixes clearsky.lookup_linke_turbidity and irradiance.get_extra_radiation to be timezone-aware
+  (:issue:`2054`, :pull:`2055`)
 
 
 Testing
@@ -35,3 +37,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Yunho Kee (:ghuser:`yhkee0404`)

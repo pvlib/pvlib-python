@@ -2523,13 +2523,41 @@ def test_Array_temperature_missing_parameters(model, keys):
             array.get_cell_temperature(irrads, temps, winds, model)
 
 
-def test_nonuniform_irradiance_loss():
-    """tests pvsystem.nonuniform_irradiance_loss"""
+def test_nonuniform_irradiance_deline_power_loss():
+    """tests pvsystem.nonuniform_irradiance_deline_power_loss"""  # TODO: improve
     premise_rmads = np.array([0.0, 0.05, 0.1, 0.15, 0.2, 0.25])
-    expected_mms = np.array([0, 0.012925, 0.0397, 0.080325, 0.1348, 0.203125])
-    result_mms = pvsystem.nonuniform_irradiance_loss(premise_rmads)
-    assert_allclose(result_mms, expected_mms, atol=1e-5)
+    # default model result values
+    expected_sat_mms = np.array(
+        [0.0, 0.00287, 0.00608, 0.00963, 0.01352, 0.01775]
+    )
+    result_def_mms = pvsystem.nonuniform_irradiance_deline_power_loss(
+        premise_rmads
+    )
+    assert_allclose(result_def_mms, expected_sat_mms, atol=1e-5)
+    assert np.all(np.diff(result_def_mms) > 0)  # higher RMADs => higher losses
+    # default model matches single-axis tracker
+    result_sat_mms = pvsystem.nonuniform_irradiance_deline_power_loss(
+        premise_rmads, model="single-axis-tracking"
+    )
+    assert_allclose(result_sat_mms, expected_sat_mms)
+    # fixed-tilt model result values
+    expected_ft_mms = np.array(
+        [0.0, 0.00718, 0.01452, 0.02202, 0.02968, 0.0375]
+    )
+    result_ft_mms = pvsystem.nonuniform_irradiance_deline_power_loss(
+        premise_rmads, model="fixed-tilt"
+    )
+    assert_allclose(result_ft_mms, expected_ft_mms)
+    assert np.all(np.diff(result_ft_mms) > 0)  # higher RMADs => higher losses
+    # giving custom coefficients (1+1*RMAD) model
+    polynomial = np.polynomial.Polynomial([1, 1, 0])
+    result_custom_mms = pvsystem.nonuniform_irradiance_deline_power_loss(
+        premise_rmads, model=polynomial
+    )
+    assert_allclose(result_custom_mms, 1+premise_rmads)
 
-    # test datatypes Series IO
-    result_mms = pvsystem.nonuniform_irradiance_loss(pd.Series(premise_rmads))
+    # test datatypes IO with Series
+    result_mms = pvsystem.nonuniform_irradiance_deline_power_loss(
+        pd.Series(premise_rmads)
+    )
     assert isinstance(result_mms, pd.Series)

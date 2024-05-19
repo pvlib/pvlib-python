@@ -8,9 +8,18 @@ Calculate the incident irradiance lost to non-uniformity in a bifacial PV array
 # %%
 # The incident irradiance on the backside of a bifacial PV module is
 # not uniform due to neighboring rows, the ground albedo and site conditions.
-# Cells with different irradiance levels produce less power that the sum of
-# the power produced by each cell individually. This is known as irradiance
-# non-uniformity loss.
+# When each cell works at different irradiance levels, the power produced by
+# the module is less than the sum of the power produced by each cell since the
+# maximum power point of each cell is different, but cells connected in series
+# will operate at the same current. This is known as irradiance non-uniformity
+# loss.
+#
+# Calculating the IV curve of each cell and then matching the working point of
+# the whole module is computationally expensive, so a model to account for this
+# loss is of interest. Deline et al. [1]_ proposed a model based on the
+# Relative Mean Absolute Difference (RMAD) of the irradiance of each cell.
+# They did also use the standard deviation of the cells' irradiances, but they
+# found that the RMAD was a better predictor of the mismatch loss.
 #
 # This example demonstrates how to model the irradiance non-uniformity loss
 # due to different global irradiance levels on a bifacial PV module through
@@ -22,8 +31,9 @@ Calculate the incident irradiance lost to non-uniformity in a bifacial PV array
 #   mock-up horizontal axis tracker system, in the second section.
 #   See [2]_ and [3]_ for more information.
 #
-# The function :py:func:`pvlib.pvsystem.nonuniform_irradiance_loss` will be
-# used to transform the Relative Mean Absolute Deviation (RMAD) of the
+# The function
+# :py:func:`pvlib.pvsystem.nonuniform_irradiance_deline_power_loss` is
+# used to transform the Relative Mean Absolute Difference (RMAD) of the
 # irradiance into a power loss percentage. Down below you will find a
 # numpy-based implementation of the RMAD function.
 #
@@ -52,19 +62,22 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 
-from pvlib.pvsystem import nonuniform_irradiance_loss
+from pvlib.pvsystem import nonuniform_irradiance_deline_power_loss
 
 # %%
 # Theoretical and straightforward problem
 # ---------------------------------------
 # Let's set a fixed irradiance to each cell row of the PV array with the values
-# described in Figure 1 (a), [1]_. We will cover this case for educational
-# purposes.
-# Here we set and plot the global irradiance levels of each cell.
+# described in Figure 1 (A), [1]_. We will cover this case for educational
+# purposes, although it can be achieved with the packages
+# :ref:`solarfactors <https://github.com/pvlib/solarfactors/>` and
+# :ref:`bifacial_radiance <https://github.com/NREL/bifacial_radiance>`.
+#
+# Here we set and plot the global irradiance level of each cell.
 
-x = np.arange(6, 0, -1)
+x = np.arange(12, 0, -1)
 y = np.arange(6, 0, -1)
-cells_irrad = np.repeat([1059, 976, 967, 986, 1034, 1128], 6).reshape(6, 6)
+cells_irrad = np.repeat([1059, 976, 967, 986, 1034, 1128], len(x)).reshape(len(y), len(x))
 
 color_map = "gray"
 color_norm = Normalize(930, 1150)
@@ -89,9 +102,9 @@ ax.pcolormesh(
 )
 
 # %%
-# Relative Mean Absolute Deviation
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Calculate the Relative Mean Absolute Deviation (RMAD) of the cells'
+# Relative Mean Absolute Difference
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Calculate the Relative Mean Absolute Difference (RMAD) of the cells'
 # irradiance with the following function, Eq. (4) of [1]_:
 #
 # .. math::
@@ -103,7 +116,7 @@ ax.pcolormesh(
 
 def rmad(data, axis=None):
     """
-    Relative Mean Absolute Deviation.
+    Relative Mean Absolute Difference.
     https://stackoverflow.com/a/19472336/19371110
     """
     mad = np.mean(np.absolute(data - np.mean(data, axis)), axis)
@@ -119,43 +132,23 @@ print(rmad_cells == rmad(cells_irrad[:, 0]))
 # Mismatch Loss
 # ^^^^^^^^^^^^^
 # Calculate the power loss percentage due to the irradiance non-uniformity
-# with the function :py:func:`pvlib.pvsystem.nonuniform_irradiance_loss`.
+# with the function :py:func:`pvlib.pvsystem.nonuniform_irradiance_deline_power_loss`.
 
-mismatch_loss = nonuniform_irradiance_loss(rmad_cells)
+mismatch_loss = nonuniform_irradiance_deline_power_loss(rmad_cells)
 
-# %%
-# Total power incident on the module cells
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# It is the sum of the irradiance of each cell
-
-total_irrad = np.sum(cells_irrad)
-
-# %%
-# Mismatch-corrected irradiance
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# The power incident on the module cells is multiplied by the mismatch loss
-# as follows:
-
-mismatch_corrected_irrad = total_irrad * (1 - mismatch_loss)
-
-# %%
-# Results
-# ^^^^^^^
-
-print(f"Total power incident on the module cells: {total_irrad}")
 print(f"RMAD of the cells' irradiance: {rmad_cells}")
 print(f"Power loss % due to the irradiance non-uniformity: {mismatch_loss}")
-print(f"Effective power after mismatch correction: {mismatch_corrected_irrad}")
 
 # %%
 # A practical approach
 # --------------------
-# In practice, simulating each cell irradiance is computationally expensive,
-# and measuring each of the cells irradiance of a real system can also be
-# challenging. Nevertheless, a mock-up system can be used to estimate the
-# non-uniformity through the day.
+# Instead of simulating or measuring the irradiance of each cell, RMAD trend
+# through the day can be modelled. The remaining section of this example will
+# cover the modelling of the global RMAD if the backside irradiance RMAD is
+# known. Note these two RMADs are inherently different but are related.
 #
-# Here we will base our calculations on the work of Domínguez et al. [2]_.
+# Here we will base our calculations on a horizontal single-axis tracking
+# mockup developed by Domínguez et al. [2]_.
 # The following image in [3]_ shows the backside irradiance non-uniformity of a
 # HSAT mock-up system:
 #
@@ -167,7 +160,7 @@ print(f"Effective power after mismatch correction: {mismatch_corrected_irrad}")
 #    *BE* stands for *backside east*.
 
 
-def hsat_backside_rmad_model_through_day(hour):
+def hsat_backside_rmad_model_through_day(hour):  # TODO: REMOVE THIS
     """Model of the blue dots in the image above."""
     # For demonstration purposes only. Model roughly fit to show an example of
     # the RMAD variation through the day without including all the data.
@@ -238,7 +231,7 @@ global_rmad = (
 )
 
 # Get the mismatch loss
-mismatch_loss = nonuniform_irradiance_loss(global_rmad)
+mismatch_loss = nonuniform_irradiance_deline_power_loss(global_rmad)
 
 # Plot results
 fig, ax1 = plt.subplots()
@@ -261,5 +254,3 @@ ax2.legend(loc="upper right")
 ax2.set_ylabel("Mismatch loss")
 
 fig.show()
-
-# %%

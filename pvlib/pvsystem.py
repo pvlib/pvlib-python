@@ -15,7 +15,7 @@ from scipy import constants
 import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from typing import Optional, Union, Literal
 
 from pvlib._deprecation import deprecated, warn_deprecated
 
@@ -3032,12 +3032,20 @@ def combine_loss_factors(index, *losses, fill_method='ffill'):
     return 1 - combined_factor
 
 
-def nonuniform_irradiance_loss(rmad, c1=0.054, c2=0.068):
+def nonuniform_irradiance_deline_power_loss(
+    rmad,
+    model: Literal[
+        "fixed-tilt", "single-axis-tracking"
+    ] = "single-axis-tracking",
+):
     r"""
-    Calculate the incident irradiance loss due to irradiance non-uniformity.
+    Estimate the power loss due to irradiance non-uniformity.
 
     This model is described for bifacial modules in [1]_, where the backside
     irradiance is less uniform due to mounting and site conditions.
+
+    Depending on the mounting type, the power loss is estimated with either
+    equation (11) or (12) of [1]_.
 
     .. versionadded:: 0.11.0
 
@@ -3048,35 +3056,57 @@ def nonuniform_irradiance_loss(rmad, c1=0.054, c2=0.068):
         See the definition in [2]_ and the example
         :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`.
 
+    model : str, numpy.polynomial.Polynom or list, default ``"single-axis-tracking"``
+        The model coefficients to use.
+        If a string, it must be one of the following:
+
+        * ``"fixed-tilt"``: Eq. (11) of [1]_.
+        * ``"single-axis-tracking"``: Eq. (12) of [1]_.
+
+        If a :py:`numpy.polynomial.Polynomial`, it is evaluated as is.
+
+        If neither a string nor a polynomial, it must be the coefficients of
+        polynomial model, with the first element being the constant term and
+        the last element the highest order term.
+
     Returns
     -------
     loss : numeric
-        The irradiance loss.
+        The power loss.
 
     Notes
     -----
-    The function this model implements is equation (7) of [1]_:
+    The models implemented are equations (11) and (12) of [1]_:
 
     .. math::
 
-       M[%] = 0.12 \Delta[%] + 2.77 \Delta[%]^2
+       \text{model="fixed-tilt"} & \Rightarrow M[\%] =
+       0.142 \Delta[\%] + 0.032 \Delta[\%]^2 \qquad & \text{(11)}
+       \text{model="single-axis-tracking"} & \Rightarrow M[\%] =
+       0.054 \Delta[\%] + 0.068 \Delta[\%]^2 \qquad & \text{(12)} \\
 
-    where :math:`\Delta[%]` is the Relative Mean Absolute Difference of the
+    where :math:`\Delta[\%]` is the Relative Mean Absolute Difference of the
     global irradiance, Eq. (4) of [1]_ and [2]_.
 
-    The losses definition is done in Eq. (1) of [1]_:
+    The losses definition is Eq. (1) of [1]_, and it's defined as a loss of the
+    output power:
 
     .. math::
 
-        M[%] = 1 - \frac{P_{Array}}{\sum P_{Cells}}
+        M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}}
 
     It is recommended to see the example
     :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`
     for a complete use case and the RMAD function implementation.
 
+    In the section *See Also*, you will find two packages that can be used to
+    calculate the irradiance at different points of the module.
+
     See Also
     --------
     pvlib.pvsystem.combine_loss_factors
+    :ref:`solarfactors <https://github.com/pvlib/solarfactors/>`
+    :ref:`bifacial_radiance <https://github.com/NREL/bifacial_radiance>`.
 
     References
     ----------
@@ -3088,5 +3118,20 @@ def nonuniform_irradiance_loss(rmad, c1=0.054, c2=0.068):
        https://en.wikipedia.org/wiki/Mean_absolute_difference#Relative_mean_absolute_difference
        (accessed 2024-04-14).
     """  # noqa: E501
-    # Eq. (7) of [1]
-    return rmad * (c1 + c2 * rmad)
+    if isinstance(model, str):
+        _MODEL_POLYNOMS = {
+            "fixed-tilt": [0, 0.142, 0.032],  # Eq. (11), [1]
+            "single-axis-tracking": [0, 0.054, 0.068],  # Eq. (12), [1]
+        }
+        try:
+            model_polynom = np.polynomial.Polynomial(_MODEL_POLYNOMS[model])
+        except KeyError:
+            raise ValueError(
+                f"Invalid model '{model}'. Available models are "
+                f"{list(_MODEL_POLYNOMS.keys())}."
+            )
+    elif isinstance(model, np.polynomial.Polynomial):
+        model_polynom = model
+    else:
+        model_polynom = np.polynomial.Polynomial(coef=model)
+    return model_polynom(rmad)

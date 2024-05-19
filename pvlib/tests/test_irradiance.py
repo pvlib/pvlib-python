@@ -28,7 +28,7 @@ from .conftest import (
 def times():
     # must include night values
     return pd.date_range(start='20140624', freq='6h', periods=4,
-                         tz='US/Arizona')
+                         tz='utc').tz_convert('US/Arizona')
 
 
 @pytest.fixture
@@ -112,7 +112,7 @@ def test_get_extra_radiation_nrel_numba(times):
         # and reset to no-numba state
         irradiance.get_extra_radiation(times, method='nrel')
     assert_allclose(result,
-                    [1322.332316, 1322.296282, 1322.261205, 1322.227091])
+                    [1322.375560, 1322.338415, 1322.302221, 1322.266984])
 
 
 def test_get_extra_radiation_invalid():
@@ -612,7 +612,7 @@ def test_disc_value(pressure, expected):
     # see GH 449 for pressure=None vs. 101325.
     columns = ['dni', 'kt', 'airmass']
     times = pd.DatetimeIndex(['2014-06-24T1200', '2014-06-24T1800'],
-                             tz='America/Phoenix')
+                             tz='utc').tz_convert('America/Phoenix')
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     out = irradiance.disc(ghi, zenith, times, pressure=pressure)

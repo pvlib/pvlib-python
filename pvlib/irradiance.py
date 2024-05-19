@@ -126,7 +126,13 @@ def _handle_extra_radiation_types(datetime_or_doy, epoch_year):
     # a better way to do it.
     if isinstance(datetime_or_doy, pd.DatetimeIndex):
         to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
-        def to_datetimeindex(x): return x                       # noqa: E306
+        def to_datetimeindex(x):                                # noqa: E306
+            # if localized, convert to UTC. otherwise, assume UTC.
+            try:
+                x_utc = x.tz_convert('UTC')
+            except TypeError:
+                x_utc = x
+            return x_utc
         to_output = partial(pd.Series, index=datetime_or_doy)
     elif isinstance(datetime_or_doy, pd.Timestamp):
         to_doy = tools._pandas_to_doy

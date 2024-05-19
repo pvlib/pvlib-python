@@ -2550,10 +2550,16 @@ def test_nonuniform_irradiance_deline_power_loss():
     )
     assert_allclose(result_ft_mms, expected_ft_mms)
     assert np.all(np.diff(result_ft_mms) > 0)  # higher RMADs => higher losses
-    # giving custom coefficients (1+1*RMAD) model
+    # test custom coefficients, set model to 1+1*RMAD
+    # as Polynomial class
     polynomial = np.polynomial.Polynomial([1, 1, 0])
     result_custom_mms = pvsystem.nonuniform_irradiance_deline_power_loss(
         premise_rmads, model=polynomial
+    )
+    assert_allclose(result_custom_mms, 1+premise_rmads)
+    # as list
+    result_custom_mms = pvsystem.nonuniform_irradiance_deline_power_loss(
+        premise_rmads, model=[1, 1, 0]
     )
     assert_allclose(result_custom_mms, 1+premise_rmads)
 

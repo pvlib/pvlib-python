@@ -3045,7 +3045,7 @@ def nonuniform_irradiance_deline_power_loss(
     irradiance is less uniform due to mounting and site conditions.
 
     Depending on the mounting type, the power loss is estimated with either
-    equation (11) or (12) of [1]_.
+    equation (11) or (12) of [1]_. Passing the polynomial is also valid.
 
     .. versionadded:: 0.11.0
 

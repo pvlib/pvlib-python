@@ -2524,7 +2524,8 @@ def test_Array_temperature_missing_parameters(model, keys):
 
 
 def test_nonuniform_irradiance_deline_power_loss():
-    """tests pvsystem.nonuniform_irradiance_deline_power_loss"""  # TODO: improve
+    """tests pvsystem.nonuniform_irradiance_deline_power_loss"""
+    # TODO: improve
     premise_rmads = np.array([0.0, 0.05, 0.1, 0.15, 0.2, 0.25])
     # default model result values
     expected_sat_mms = np.array(

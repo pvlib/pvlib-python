@@ -77,7 +77,9 @@ from pvlib.pvsystem import nonuniform_irradiance_deline_power_loss
 
 x = np.arange(12, 0, -1)
 y = np.arange(6, 0, -1)
-cells_irrad = np.repeat([1059, 976, 967, 986, 1034, 1128], len(x)).reshape(len(y), len(x))
+cells_irrad = np.repeat([1059, 976, 967, 986, 1034, 1128], len(x)).reshape(
+    len(y), len(x)
+)
 
 color_map = "gray"
 color_norm = Normalize(930, 1150)
@@ -132,7 +134,8 @@ print(rmad_cells == rmad(cells_irrad[:, 0]))
 # Mismatch Loss
 # ^^^^^^^^^^^^^
 # Calculate the power loss percentage due to the irradiance non-uniformity
-# with the function :py:func:`pvlib.pvsystem.nonuniform_irradiance_deline_power_loss`.
+# with the function
+# :py:func:`pvlib.pvsystem.nonuniform_irradiance_deline_power_loss`.
 
 mismatch_loss = nonuniform_irradiance_deline_power_loss(rmad_cells)
 

@@ -191,7 +191,7 @@ def test_ineichen_altitude():
 
 def test_lookup_linke_turbidity():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
-                          freq='12h', tz='America/Phoenix')
+                          freq='12h', tz='utc').tz_convert('America/Phoenix')
     # expect same value on 2014-06-24 0000 and 1200, and
     # diff value on 2014-06-25
     expected = pd.Series(
@@ -203,7 +203,7 @@ def test_lookup_linke_turbidity():
 
 def test_lookup_linke_turbidity_leapyear():
     times = pd.date_range(start='2016-06-24', end='2016-06-25',
-                          freq='12h', tz='America/Phoenix')
+                          freq='12h', tz='utc').tz_convert('America/Phoenix')
     # expect same value on 2016-06-24 0000 and 1200, and
     # diff value on 2016-06-25
     expected = pd.Series(
@@ -214,8 +214,8 @@ def test_lookup_linke_turbidity_leapyear():
 
 
 def test_lookup_linke_turbidity_nointerp():
-    times = pd.date_range(start='2014-06-24', end='2014-06-25',
-                          freq='12h', tz='America/Phoenix')
+    times = pd.date_range(start='2014-06-01', end='2014-06-02',
+                          freq='12h', tz='utc').tz_convert('America/Phoenix')
     # expect same value for all days
     expected = pd.Series(np.array([3., 3., 3.]), index=times)
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
@@ -225,7 +225,7 @@ def test_lookup_linke_turbidity_nointerp():
 
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
-                          freq='1M', tz='America/Phoenix')
+                          freq='1M', tz='utc').tz_convert('America/Phoenix')
     expected = pd.Series(
         np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
     )
@@ -235,7 +235,7 @@ def test_lookup_linke_turbidity_months():
 
 def test_lookup_linke_turbidity_months_leapyear():
     times = pd.date_range(start='2016-04-01', end='2016-07-01',
-                          freq='1M', tz='America/Phoenix')
+                          freq='1M', tz='utc').tz_convert('America/Phoenix')
     expected = pd.Series(
         np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
     )

@@ -198,13 +198,20 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     with h5py.File(filepath, 'r') as lt_h5_file:
         lts = lt_h5_file['LinkeTurbidity'][latitude_index, longitude_index]
 
+    # if localized, convert to UTC. otherwise, assume UTC.
+    try:
+        time_utc = time.tz_convert('UTC')
+    except TypeError:
+        time_utc = time
+
     if interp_turbidity:
-        linke_turbidity = _interpolate_turbidity(lts, time)
+        linke_turbidity = _interpolate_turbidity(lts, time_utc)
     else:
-        months = time.month - 1
-        linke_turbidity = pd.Series(lts[months], index=time)
+        months = time_utc.month - 1
+        linke_turbidity = pd.Series(lts[months], index=time_utc)
 
     linke_turbidity /= 20.
+    linke_turbidity.index = time
 
     return linke_turbidity
 

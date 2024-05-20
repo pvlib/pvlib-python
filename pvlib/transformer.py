@@ -59,7 +59,7 @@ def simple_efficiency(
     Parameters
     ----------
     input_power : numeric
-        The power that is input into the transformer. [W]
+        The real power input to the transformer. [W]
 
     no_load_loss_fraction : numeric
         The constant losses experienced by a transformer, even

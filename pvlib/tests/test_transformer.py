@@ -15,8 +15,8 @@ def test_simple_transformer():
         1580687.44677249,
         1616441.79660171
     ])
-    no_load_loss_fraction = 0.002
-    load_loss_fraction = 0.007
+    no_load_loss = 0.002
+    load_loss = 0.007
     transformer_rating = 2750000
 
     # define expected test results
@@ -31,8 +31,8 @@ def test_simple_transformer():
     # run test function with test inputs
     calculated_output_power = transformer.simple_efficiency(
         input_power=input_power,
-        no_load_loss_fraction=no_load_loss_fraction,
-        load_loss_fraction=load_loss_fraction,
+        no_load_loss=no_load_loss,
+        load_loss=load_loss,
         transformer_rating=transformer_rating
     )
 

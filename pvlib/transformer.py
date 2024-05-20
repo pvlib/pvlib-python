@@ -81,8 +81,8 @@ def simple_efficiency(
     References
     ----------
     .. [1] Central Station Engineers of the Westinghouse Electric Corporation,
-    "Electrical Transmission and Distribution Reference Book" 4th Edition.
-    pg. 101.
+       "Electrical Transmission and Distribution Reference Book" 4th Edition.
+       pg. 101.
 
     '''
 

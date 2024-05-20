@@ -139,8 +139,8 @@ print(rmad_cells == rmad(cells_irrad[:, 0]))
 
 mismatch_loss = nonuniform_irradiance_deline_power_loss(rmad_cells)
 
-print(f"RMAD of the cells' irradiance: {rmad_cells}")
-print(f"Power loss % due to the irradiance non-uniformity: {mismatch_loss}")
+print(f"RMAD of the cells' irradiance: {rmad_cells:.3} [unitless]")
+print(f"Power loss due to the irradiance non-uniformity: {mismatch_loss:.3%}")
 
 # %%
 # A practical approach

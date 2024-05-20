@@ -1,10 +1,8 @@
-import numpy as np
 import pandas as pd
 
 from numpy.testing import assert_allclose
 
 from pvlib import transformer
-
 
 
 def test_simple_transformer():
@@ -16,7 +14,7 @@ def test_simple_transformer():
         1511820.16603752,
         1580687.44677249,
         1616441.79660171
-        ])
+    ])
     no_load_loss_fraction = 0.002
     load_loss_fraction = 0.007
     transformer_rating = 2750000
@@ -36,7 +34,7 @@ def test_simple_transformer():
         no_load_loss_fraction=no_load_loss_fraction,
         load_loss_fraction=load_loss_fraction,
         transformer_rating=transformer_rating
-        )
-    
+    )
+
     # determine if expected results are obtained
     assert_allclose(calculated_output_power, expected_output_power)

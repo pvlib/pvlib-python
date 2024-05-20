@@ -1,28 +1,30 @@
 """
 This module contains functions for transformer modeling.
 
-Transformer models calculate AC power output at a different voltage from the voltage 
-at the AC input terminals. Model parameters should be passed as a single dict.
-
+Transformer models calculate AC power output at a different voltage from the
+voltage at the AC input terminals.
 """
 
 import numpy as np
-import pandas as pd
 
 
-def simple_efficiency(input_power, no_load_loss_fraction, load_loss_fraction, transformer_rating):
+def simple_efficiency(
+        input_power, no_load_loss_fraction, load_loss_fraction,
+        transformer_rating
+):
     r'''
     Calculate the energy at the output terminal of the transformer
      after taking into account efficiency using a simple calculation.
 
     The equation used in this function can be derived from the reference.
 
-    First, assume that the load loss is proportional to the square of output power.
+    First, assume that the load loss is proportional to the square of output
+    power.
 
         .. math::
         L_{load}(P_{out}) = L_{load}(P_{out}) * P^2_{out}
         L_{load}(P_{out}) = L_{full, load} * P^2_{out}
-    
+
     Total loss is the variable load loss, plus a constant no-load loss:
 
         .. math::
@@ -43,13 +45,15 @@ def simple_efficiency(input_power, no_load_loss_fraction, load_loss_fraction, tr
         a = L_{full, load}
         b = 1
         c = L_{no, load} - P_{in}
-            
-    Therefore:
-        
-        ..math::
-        P_{out} = \frac{-1 +- \sqrt{1 - 4*L_{full, load}*L_{no, load} - P_{in}}}{2*L_{no, load} - P_{in}}
 
-    Note that the positive root must be the correct one if the output power in positive.
+    Therefore:
+
+        ..math::
+        P_{out} = \frac{-1 +- \sqrt{1 - 4*L_{full, load}*L_{no, load} -
+        P_{in}}}{2*L_{no, load} - P_{in}}
+
+    Note that the positive root must be the correct one if the output power in
+    positive.
 
 
     Parameters
@@ -77,28 +81,30 @@ def simple_efficiency(input_power, no_load_loss_fraction, load_loss_fraction, tr
     References
     ----------
     .. [1] Central Station Engineers of the Westinghouse Electric Corporation,
-    "Electrical Transmission and Distribution Reference Book" 4th Edition. pg. 101.
+    "Electrical Transmission and Distribution Reference Book" 4th Edition.
+    pg. 101.
 
     '''
 
     # calculate the load loss in terms of VA instead of percent
-    loss_at_full_load = (no_load_loss_fraction + load_loss_fraction) * transformer_rating
+    loss_at_full_load = (
+        (no_load_loss_fraction + load_loss_fraction) * transformer_rating
+    )
     no_load_loss = no_load_loss_fraction * transformer_rating
     load_loss = loss_at_full_load - no_load_loss
 
     # calculate how much power is lost
     combined_loss = (
-        (1 / (2 * load_loss)) * 
+        (1 / (2 * load_loss)) *
         (
             (transformer_rating ** 2) +
-            (2 * load_loss * input_power) - 
+            (2 * load_loss * input_power) -
             (transformer_rating * np.sqrt(
                 (transformer_rating ** 2) +
                 (4 * load_loss) * (input_power - no_load_loss)
             ))
         )
     )
-
 
     # calculate final output power given calculated losses
     output_power = input_power - combined_loss

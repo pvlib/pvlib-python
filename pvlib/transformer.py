@@ -52,7 +52,7 @@ def simple_efficiency(
         P_{out} = \frac{-1 +- \sqrt{1 - 4*L_{full, load}*L_{no, load} -
         P_{in}}}{2*L_{no, load} - P_{in}}
 
-    Note that the positive root must be the correct one if the output power in
+    Note that the positive root must be the correct one if the output power is
     positive.
 
 

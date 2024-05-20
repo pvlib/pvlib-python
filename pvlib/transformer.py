@@ -17,47 +17,6 @@ def simple_efficiency(
 
     The equation used in this function can be derived from [1]_.
 
-    First, assume that the load loss is proportional to the square of output
-    power.
-
-        .. math::
-        L_{load}(P_{out}) = L_{load}(P_{out}) * P^2_{out}
-        L_{load}(P_{out}) = L_{full, load} * P^2_{out}
-
-    Total loss is the variable load loss, plus a constant no-load loss:
-
-        .. math::
-
-           L_{total}(P_{out}) = L_{no, load} + L_{load}(P_{out})
-           L_{total}(P_{out}) = L_{no, load} + L_{full, load} * P^2_{out}
-
-
-    Conservation of energy:
-
-        .. math::
-
-           P_{in} = P_{out} + L_{total}(P_{out})
-           P_{in} = P_{out} + L_{no, load} + L_{full, load} * P^2_{out}
-
-    Now use quadratic formula to solve for $P_{out}$ as a function of $P_in$.
-
-        ..math::
-
-           P_{out} = \frac{-b +- \sqrt{b^2 - 4ac}}{2a}
-           a = L_{full, load}
-           b = 1
-           c = L_{no, load} - P_{in}
-
-    Therefore:
-
-        ..math::
-
-           P_{out} = \frac{-1 +- \sqrt{1 - 4*L_{full, load}*L_{no, load} -
-           P_{in}}}{2*L_{no, load} - P_{in}}
-
-    Note that the positive root must be the correct one if the output power is
-    positive.
-
 
     Parameters
     ----------
@@ -80,6 +39,50 @@ def simple_efficiency(
     -------
     output_power : numeric
         Real power output. [W]
+
+    Notes
+    -------
+    First, assume that the load loss is proportional to the square of output
+    power.
+
+        .. math::
+
+           L_{load}(P_{out}) = L_{load}(P_{out}) * P^2_{out}
+           L_{load}(P_{out}) = L_{full, load} * P^2_{out}
+
+    Total loss is the variable load loss, plus a constant no-load loss:
+
+        .. math::
+
+           L_{total}(P_{out}) = L_{no, load} + L_{load}(P_{out})
+           L_{total}(P_{out}) = L_{no, load} + L_{full, load} * P^2_{out}
+
+
+    Conservation of energy:
+
+        .. math::
+
+           P_{in} = P_{out} + L_{total}(P_{out})
+           P_{in} = P_{out} + L_{no, load} + L_{full, load} * P^2_{out}
+
+    Now use quadratic formula to solve for $P_{out}$ as a function of $P_in$.
+
+        .. math::
+
+           P_{out} = \frac{-b +- \sqrt{b^2 - 4ac}}{2a}
+           a = L_{full, load}
+           b = 1
+           c = L_{no, load} - P_{in}
+
+    Therefore:
+
+        .. math::
+
+           P_{out} = \frac{-1 +- \sqrt{1 - 4*L_{full, load}*L_{no, load} -
+           P_{in}}}{2*L_{no, load} - P_{in}}
+
+    Note that the positive root must be the correct one if the output power is
+    positive.
 
 
     References

@@ -71,7 +71,7 @@ def simple_efficiency(
 
     load_loss:  numeric
         The load dependent losses experienced by the transformer.
-        Value from 0 to 1. [Unitless]
+        Fraction of transformer rating, value from 0 to 1. [unitless]
 
     transformer_rating: numeric
         The nominal output power of the transformer. [VA]

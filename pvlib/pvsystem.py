@@ -3082,8 +3082,9 @@ def nonuniform_irradiance_deline_power_loss(
 
        \text{model="fixed-tilt"} & \Rightarrow M[\%] =
        0.142 \Delta[\%] + 0.032 \Delta[\%]^2 \qquad & \text{(11)}
+
        \text{model="single-axis-tracking"} & \Rightarrow M[\%] =
-       0.054 \Delta[\%] + 0.068 \Delta[\%]^2 \qquad & \text{(12)} \\
+       0.054 \Delta[\%] + 0.068 \Delta[\%]^2 \qquad & \text{(12)}
 
     where :math:`\Delta[\%]` is the Relative Mean Absolute Difference of the
     global irradiance, Eq. (4) of [1]_ and [2]_.

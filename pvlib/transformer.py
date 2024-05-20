@@ -66,7 +66,8 @@ def simple_efficiency(
 
     no_load_loss : numeric
         The constant losses experienced by a transformer, even
-        when the transformer is not under load. Value from 0 to 1. [Unitless]
+        when the transformer is not under load. Fraction of transformer rating,
+        value from 0 to 1. [unitless]
 
     load_loss:  numeric
         The load dependent losses experienced by the transformer.

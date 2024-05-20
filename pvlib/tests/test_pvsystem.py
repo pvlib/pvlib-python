@@ -2568,3 +2568,9 @@ def test_nonuniform_irradiance_deline_power_loss():
         pd.Series(premise_rmads)
     )
     assert isinstance(result_mms, pd.Series)
+
+    # test raises error on inexistent model
+    with pytest.raises(ValueError, match="Invalid model 'foo'"):
+        pvsystem.nonuniform_irradiance_deline_power_loss(
+            premise_rmads, model="foo"
+        )

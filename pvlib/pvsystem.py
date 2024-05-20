@@ -3153,7 +3153,7 @@ def nonuniform_irradiance_deline_power_loss(
         model_polynom = model
     else:  # expect an iterable
         model_polynom = np.polynomial.Polynomial(coef=model)
-    
+
     if fillfactor_ratio:  # General fill factor ratio, so it's always used
         # Eq. (9), [1]
         model_polynom = model_polynom * fillfactor_ratio

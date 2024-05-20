@@ -15,7 +15,7 @@ def simple_efficiency(
     Calculate the energy at the output terminal of the transformer
     after taking into account efficiency using a simple calculation.
 
-    The equation used in this function can be derived from the reference.
+    The equation used in this function can be derived from [1]_.
 
     First, assume that the load loss is proportional to the square of output
     power.

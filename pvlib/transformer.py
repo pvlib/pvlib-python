@@ -13,7 +13,7 @@ def simple_efficiency(
 ):
     r'''
     Calculate the energy at the output terminal of the transformer
-     after taking into account efficiency using a simple calculation.
+    after taking into account efficiency using a simple calculation.
 
     The equation used in this function can be derived from the reference.
 

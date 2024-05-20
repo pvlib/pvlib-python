@@ -9,8 +9,7 @@ import numpy as np
 
 
 def simple_efficiency(
-        input_power, no_load_loss_fraction, load_loss_fraction,
-        transformer_rating
+        input_power, no_load_loss, load_loss, transformer_rating
 ):
     r'''
     Calculate the energy at the output terminal of the transformer
@@ -61,13 +60,13 @@ def simple_efficiency(
     input_power : numeric
         The real power input to the transformer. [W]
 
-    no_load_loss_fraction : numeric
+    no_load_loss : numeric
         The constant losses experienced by a transformer, even
-        when the transformer is not under load. [% from 0 to 1]
+        when the transformer is not under load. Value from 0 to 1. [Unitless]
 
-    load_loss_fraction:  numeric
+    load_loss:  numeric
         The load dependent losses experienced by the transformer.
-        [% from 0 to 1]
+        Value from 0 to 1. [Unitless]
 
     transformer_rating: numeric
         The nominal output power of the transformer. [VA]
@@ -88,9 +87,9 @@ def simple_efficiency(
 
     # calculate the load loss in terms of VA instead of percent
     loss_at_full_load = (
-        (no_load_loss_fraction + load_loss_fraction) * transformer_rating
+        (no_load_loss + load_loss) * transformer_rating
     )
-    no_load_loss = no_load_loss_fraction * transformer_rating
+    no_load_loss = no_load_loss * transformer_rating
     load_loss = loss_at_full_load - no_load_loss
 
     # calculate how much power is lost

@@ -42,10 +42,11 @@ def simple_efficiency(
     Now use quadratic formula to solve for $P_{out}$ as a function of $P_in$.
 
         ..math::
-        P_{out} = \frac{-b +- \sqrt{b^2 - 4ac}}{2a}
-        a = L_{full, load}
-        b = 1
-        c = L_{no, load} - P_{in}
+
+           P_{out} = \frac{-b +- \sqrt{b^2 - 4ac}}{2a}
+           a = L_{full, load}
+           b = 1
+           c = L_{no, load} - P_{in}
 
     Therefore:
 

@@ -3037,6 +3037,7 @@ def nonuniform_irradiance_deline_power_loss(
     model: Literal[
         "fixed-tilt", "single-axis-tracking"
     ] = "single-axis-tracking",
+    fillfactor_ratio: float = None,
 ):
     r"""
     Estimate the power loss due to irradiance non-uniformity.
@@ -3045,7 +3046,13 @@ def nonuniform_irradiance_deline_power_loss(
     irradiance is less uniform due to mounting and site conditions.
 
     Depending on the mounting type, the power loss is estimated with either
-    equation (11) or (12) of [1]_. Passing the polynomial is also valid.
+    equation (11) or (12) of [1]_. Passing a custom polynomial is also valid.
+
+    Use ``fillfactor_ratio`` to account for different fill factors between the
+    trained model and the module of interest. The fill factor used for
+    developing the models ``"single-axis-tracking" and "fixed-tilt"`` is
+    :math:`0.79`. For example, if the fill factor of the module of interest is
+    :math:`0.65`, then set ``fillfactor_ratio = 0.65 / 0.79``.
 
     .. versionadded:: 0.11.0
 
@@ -3063,11 +3070,18 @@ def nonuniform_irradiance_deline_power_loss(
         * ``"fixed-tilt"``: Eq. (11) of [1]_.
         * ``"single-axis-tracking"``: Eq. (12) of [1]_.
 
-        If a :py:`numpy.polynomial.Polynomial`, it is evaluated as is.
+        If a :py:`numpy:numpy.polynomial.Polynomial`, it is evaluated as is.
 
-        If neither a string nor a polynomial, it must be the coefficients of
-        polynomial model, with the first element being the constant term and
-        the last element the highest order term.
+        If neither a string nor a ``Polynomial``, it must be a collection of
+        the coefficients of the model, where the first element is the constant
+        term and the last element is the highest order term. A
+        :py:`numpy:numpy.polynomial.Polynomial` will be created internally.
+
+    fillfactor_ratio : float, optional
+        The ratio of the fill factor of the module of interest to the fill
+        factor used for developing the models. Fill factor used for models
+        ``"single-axis-tracking"`` and ``"fixed-tilt"`` is 0.79. For a module
+        with fill factor 0.65, set ``fillfactor_ratio = 0.65 / 0.79``.
 
     Returns
     -------
@@ -3093,8 +3107,9 @@ def nonuniform_irradiance_deline_power_loss(
     output power:
 
     .. math::
+       :eq: 1
 
-        M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}}
+       M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}}
 
     It is recommended to see the example
     :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`
@@ -3109,6 +3124,7 @@ def nonuniform_irradiance_deline_power_loss(
         Calculate the irradiance at different points of the module.
     `bifacial_radiance <https://github.com/NREL/bifacial_radiance>`_
         Calculate the irradiance at different points of the module.
+
     pvlib.pvsystem.combine_loss_factors
 
     References
@@ -3135,6 +3151,11 @@ def nonuniform_irradiance_deline_power_loss(
             )
     elif isinstance(model, np.polynomial.Polynomial):
         model_polynom = model
-    else:
+    else:  # expect an iterable
         model_polynom = np.polynomial.Polynomial(coef=model)
+    
+    if fillfactor_ratio:  # General fill factor ratio, so it's always used
+        # Eq. (9), [1]
+        model_polynom = model_polynom * fillfactor_ratio
+
     return model_polynom(rmad)

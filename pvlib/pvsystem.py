@@ -3105,9 +3105,11 @@ def nonuniform_irradiance_deline_power_loss(
 
     See Also
     --------
+    `solarfactors <https://github.com/pvlib/solarfactors/>`_
+        Calculate the irradiance at different points of the module.
+    `bifacial_radiance <https://github.com/NREL/bifacial_radiance>`_
+        Calculate the irradiance at different points of the module.
     pvlib.pvsystem.combine_loss_factors
-    :ref:`solarfactors <https://github.com/pvlib/solarfactors/>`
-    :ref:`bifacial_radiance <https://github.com/NREL/bifacial_radiance>`.
 
     References
     ----------

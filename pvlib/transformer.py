@@ -75,7 +75,7 @@ def simple_efficiency(
     Returns
     -------
     output_power : numeric
-        AC power output. [W]
+        Real power output. [W]
 
 
     References

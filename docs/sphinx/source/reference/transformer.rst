@@ -1,7 +1,7 @@
 .. currentmodule:: pvlib
 
-Scaling
-=======
+Transformer losses
+==================
 
 Methods for calculate losses in transformer equipment
 

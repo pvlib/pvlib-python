@@ -5,7 +5,7 @@ from numpy.testing import assert_allclose
 from pvlib import transformer
 
 
-def test_simple_transformer():
+def test_simple_efficiency():
 
     # define test inputs
     input_power = pd.Series([

@@ -3046,7 +3046,8 @@ def nonuniform_irradiance_deline_power_loss(
     irradiance is less uniform due to mounting and site conditions.
 
     Depending on the mounting type, the power loss is estimated with either
-    equation (11) or (12) of [1]_. Passing a custom polynomial is also valid.
+    equation :eq:`11` or :eq:`12` of [1]_. Passing a custom polynomial is also
+    possible.
 
     Use ``fillfactor_ratio`` to account for different fill factors between the
     trained model and the module of interest. The fill factor used for
@@ -3067,8 +3068,8 @@ def nonuniform_irradiance_deline_power_loss(
         The model coefficients to use.
         If a string, it must be one of the following:
 
-        * ``"fixed-tilt"``: Eq. (11) of [1]_.
-        * ``"single-axis-tracking"``: Eq. (12) of [1]_.
+        * ``"fixed-tilt"``: Eq. :eq:`11` of [1]_.
+        * ``"single-axis-tracking"``: Eq. :eq:`12` of [1]_.
 
         If a :py:`numpy:numpy.polynomial.Polynomial`, it is evaluated as is.
 
@@ -3090,20 +3091,24 @@ def nonuniform_irradiance_deline_power_loss(
 
     Notes
     -----
-    The models implemented are equations (11) and (12) of [1]_:
+    The models implemented are equations :eq:`11` and :eq:`12` of [1]_:
 
     .. math::
+       :eq: 11
 
        \text{model="fixed-tilt"} & \Rightarrow M[\%] =
-       0.142 \Delta[\%] + 0.032 \Delta[\%]^2 \qquad & \text{(11)}
+       0.142 \Delta[\%] + 0.032 \Delta[\%]^2
+
+    .. math::
+       :eq: 12
 
        \text{model="single-axis-tracking"} & \Rightarrow M[\%] =
-       0.054 \Delta[\%] + 0.068 \Delta[\%]^2 \qquad & \text{(12)}
+       0.054 \Delta[\%] + 0.068 \Delta[\%]^2
 
     where :math:`\Delta[\%]` is the Relative Mean Absolute Difference of the
     global irradiance, Eq. (4) of [1]_ and [2]_.
 
-    The losses definition is Eq. (1) of [1]_, and it's defined as a loss of the
+    The losses definition is Eq. :eq:`1` of [1]_, and it's defined as a loss of the
     output power:
 
     .. math::
@@ -3120,12 +3125,11 @@ def nonuniform_irradiance_deline_power_loss(
 
     See Also
     --------
+    pvlib.pvsystem.combine_loss_factors
     `solarfactors <https://github.com/pvlib/solarfactors/>`_
         Calculate the irradiance at different points of the module.
     `bifacial_radiance <https://github.com/NREL/bifacial_radiance>`_
         Calculate the irradiance at different points of the module.
-
-    pvlib.pvsystem.combine_loss_factors
 
     References
     ----------

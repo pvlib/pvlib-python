@@ -56,7 +56,8 @@ def simple_efficiency(
         .. math::
 
            L_{total}(P_{out}) = L_{no, load} + L_{load}(P_{out})
-           L_{total}(P_{out}) = L_{no, load} + L_{full, load} * P^2_{out}
+
+           L_{total}(P_{out}) = L_{no, load} + L_{full, load} \times P^2_{out}
 
 
     Conservation of energy:

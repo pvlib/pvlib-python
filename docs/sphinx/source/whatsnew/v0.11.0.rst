@@ -15,7 +15,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Added a simple transformer efficiency model
+* Add a simple transformer efficiency model :py:func:`pvlib.transformer.simple_efficiency`
+  (:issue:`1269`, :pull:`2053`)
+  
 
 Bug fixes
 ~~~~~~~~~

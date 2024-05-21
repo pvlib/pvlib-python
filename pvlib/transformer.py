@@ -65,7 +65,8 @@ def simple_efficiency(
         .. math::
 
            P_{in} = P_{out} + L_{total}(P_{out})
-           P_{in} = P_{out} + L_{no, load} + L_{full, load} * P^2_{out}
+
+           P_{in} = P_{out} + L_{no, load} + L_{full, load} \times P^2_{out}
 
     Now use quadratic formula to solve for :math:`P_{out}` as a function of :math:`P_in`.
 

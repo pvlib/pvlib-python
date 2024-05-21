@@ -369,11 +369,19 @@ def test_sr_to_qe(sr_and_eqe_fixture):
         check_names=False
     )
     assert qe.name == "spectral_response"
+    # series normalization
+    qe = spectrum.sr_to_qe(
+        sr_and_eqe_fixture["spectral_response"] * 10, normalize=True
+    )
+    pd.testing.assert_series_equal(
+        qe,
+        sr_and_eqe_fixture["quantum_efficiency"]
+        / max(sr_and_eqe_fixture["quantum_efficiency"]),
+        check_names=False,
+    )
     # error on lack of wavelength parameter if no pandas object is provided
     with pytest.raises(TypeError, match="must have an '.index' attribute"):
-        _ = spectrum.sr_to_qe(
-            sr_and_eqe_fixture["spectral_response"].values
-        )
+        _ = spectrum.sr_to_qe(sr_and_eqe_fixture["spectral_response"].values)
 
 
 def test_qe_to_sr(sr_and_eqe_fixture):
@@ -399,6 +407,16 @@ def test_qe_to_sr(sr_and_eqe_fixture):
         check_names=False
     )
     assert sr.name == "quantum_efficiency"
+    # series normalization
+    sr = spectrum.qe_to_sr(
+        sr_and_eqe_fixture["quantum_efficiency"] * 10, normalize=True
+    )
+    pd.testing.assert_series_equal(
+        sr,
+        sr_and_eqe_fixture["spectral_response"]
+        / max(sr_and_eqe_fixture["spectral_response"]),
+        check_names=False,
+    )
     # error on lack of wavelength parameter if no pandas object is provided
     with pytest.raises(TypeError, match="must have an '.index' attribute"):
         _ = spectrum.qe_to_sr(

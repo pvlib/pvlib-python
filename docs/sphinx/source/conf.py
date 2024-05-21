@@ -56,8 +56,8 @@ extensions = [
     'sphinx_toggleprompt',
 ]
 
-mathjax_config = {'chtml': {'displayAlign': 'left',
-                            'displayIndent': '2em'}}
+mathjax3_config = {'chtml': {'displayAlign': 'left',
+                             'displayIndent': '2em'}}
 
 napoleon_use_rtype = False  # group rtype on same line together with return
 

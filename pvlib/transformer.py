@@ -47,8 +47,9 @@ def simple_efficiency(
 
         .. math::
 
-           L_{load}(P_{out}) = L_{load}(P_{out}) * P^2_{out}
-           L_{load}(P_{out}) = L_{full, load} * P^2_{out}
+           L_{load}(P_{out}) = L_{load}(P_{out}) \times P^2_{out}
+
+           L_{load}(P_{out}) = L_{full, load} \times P^2_{out}
 
     Total loss is the variable load loss, plus a constant no-load loss:
 

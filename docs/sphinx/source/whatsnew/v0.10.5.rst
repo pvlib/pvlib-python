@@ -23,7 +23,7 @@ Documentation
 * Fix variable name typo at
   ``docs\examples\system-models\plot_oedi_9068.py``. (:pull:`1996`)
 * Remove "Comparison with PVLib for Matlab" page from the User Guide. (:issue:`2010`, :pull:`2012`)
-* Configure mathjax to left-align and indent equations in docstrings. (:pull:`2056`)
+
 
 Requirements
 ~~~~~~~~~~~~

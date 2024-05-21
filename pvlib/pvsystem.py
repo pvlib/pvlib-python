@@ -3120,7 +3120,8 @@ def nonuniform_irradiance_deline_power_loss(
 
     See Also
     --------
-    :py:func:`pvlib.pvsystem.combine_loss_factors`
+    pvlib.pvsystem.combine_loss_factors
+        Take into other losses.
 
     `solarfactors <https://github.com/pvlib/solarfactors/>`_
         Calculate the irradiance at different points of the module.

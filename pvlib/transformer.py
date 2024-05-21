@@ -70,15 +70,15 @@ def simple_efficiency(
     Now use quadratic formula to solve for :math:`P_{out}` as a function of
     :math:`P_{in}`.
 
-        .. math::
+    .. math::
 
-           P_{out} = \frac{-b +- \sqrt{b^2 - 4ac}}{2a}
+       P_{out} &= \frac{-b +- \sqrt{b^2 - 4ac}}{2a}
 
-           a = L_{full, load}
+       a &= L_{full, load}
 
-           b = 1
+       b &= 1
 
-           c = L_{no, load} - P_{in}
+       c &= L_{no, load} - P_{in}
 
     Therefore:
 

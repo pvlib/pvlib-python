@@ -3,7 +3,7 @@
 Transformer losses
 ==================
 
-Methods for calculate losses in transformer equipment
+Methods to account for losses in transformers
 
 .. autosummary::
    :toctree: generated/

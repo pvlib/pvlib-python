@@ -73,8 +73,11 @@ def simple_efficiency(
         .. math::
 
            P_{out} = \frac{-b +- \sqrt{b^2 - 4ac}}{2a}
+
            a = L_{full, load}
+
            b = 1
+           
            c = L_{no, load} - P_{in}
 
     Therefore:

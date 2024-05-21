@@ -1,8 +1,7 @@
 """
 This module contains functions for transformer modeling.
 
-Transformer models calculate AC power output at a different voltage from the
-voltage at the AC input terminals.
+Transformer models calculate AC power output and losses at a given input power.
 """
 
 import numpy as np

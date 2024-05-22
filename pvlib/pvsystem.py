@@ -2420,20 +2420,20 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     dict or pandas.DataFrame
         The returned dict-like object always contains the keys/columns:
 
-            * i_sc - short circuit current in amperes.
-            * v_oc - open circuit voltage in volts.
-            * i_mp - current at maximum power point in amperes.
-            * v_mp - voltage at maximum power point in volts.
-            * p_mp - power at maximum power point in watts.
-            * i_x - current, in amperes, at ``v = 0.5*v_oc``.
-            * i_xx - current, in amperes, at ``v = 0.5*(v_oc+v_mp)``.
+        * i_sc - short circuit current in amperes.
+        * v_oc - open circuit voltage in volts.
+        * i_mp - current at maximum power point in amperes.
+        * v_mp - voltage at maximum power point in volts.
+        * p_mp - power at maximum power point in watts.
+        * i_x - current, in amperes, at ``v = 0.5*v_oc``.
+        * i_xx - current, in amperes, at ``v = 0.5*(v_oc+v_mp)``.
 
         A dict is returned when the input parameters are scalars or
         ``ivcurve_pnts > 0``. If ``ivcurve_pnts > 0``, the output dictionary
         will also include the keys:
 
-            * i - IV curve current in amperes.
-            * v - IV curve voltage in volts.
+        * i - IV curve current in amperes.
+        * v - IV curve voltage in volts.
 
     See also
     --------

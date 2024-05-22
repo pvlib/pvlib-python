@@ -46,7 +46,7 @@ def simple_efficiency(
 
     .. math::
 
-       L_{load}(P_{out}) &= L_{load}(P_{out}) \times P^2_{out}
+       L_{load}(P_{out}) &= L_{load}(P_{rated}) \times P^2_{out}
 
        L_{load}(P_{out}) &= L_{full, load} \times P^2_{out}
 

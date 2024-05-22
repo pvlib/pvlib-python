@@ -3107,9 +3107,8 @@ def nonuniform_irradiance_deline_power_loss(
     output power:
 
     .. math::
-       :eq: 1
 
-       M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}}
+       M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}} \qquad & \text{(1)}
 
     It is recommended to see the example
     :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`

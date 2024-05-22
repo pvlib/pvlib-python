@@ -896,8 +896,8 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     .. math::
 
-       I_{d} = DHI (A R_b + (1 - A) (\frac{1 + \cos\beta}{2})
-       (1 + \sqrt{\frac{I_{hb}}{I_h}} \sin^3(\beta/2)) )
+       I_{d} = DHI \left(A R_b + (1 - A) \left(\frac{1 + \cos\beta}{2}\right)
+       \left(1 + \sqrt{\frac{I_{hb}}{I_h}} \sin^3(\beta/2)\right) \right)
 
     Reindl's 1990 model determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a

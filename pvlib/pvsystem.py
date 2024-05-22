@@ -2318,9 +2318,10 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     a module's cells.
 
     The model is
+
     .. math::
 
-        `Ee = f_1(AM_a) (E_b f_2(AOI) + f_d E_d)`
+        Ee = f_1(AM_a) (E_b f_2(AOI) + f_d E_d)
 
     where :math:`Ee` is effective irradiance (W/m2), :math:`f_1` is a fourth
     degree polynomial in air mass :math:`AM_a`, :math:`E_b` is beam (direct)

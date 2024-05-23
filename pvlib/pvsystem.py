@@ -7,7 +7,7 @@ from collections import OrderedDict
 import functools
 import io
 import itertools
-import os
+from pathlib import Path
 import inspect
 from urllib.request import urlopen
 import numpy as np
@@ -1487,8 +1487,10 @@ def calcparams_desoto(effective_irradiance, temp_cell,
     '''
     Calculates five parameter values for the single diode equation at
     effective irradiance and cell temperature using the De Soto et al.
-    model described in [1]_. The five values returned by calcparams_desoto
-    can be used by singlediode to calculate an IV curve.
+    model. The five values returned by ``calcparams_desoto`` can be used by
+    singlediode to calculate an IV curve.
+
+    The model is described in [1]_.
 
     Parameters
     ----------
@@ -1958,9 +1960,9 @@ def calcparams_pvsyst(effective_irradiance, temp_cell,
 
 
 def retrieve_sam(name=None, path=None):
-    '''
-    Retrieve latest module and inverter info from a local file or the
-    SAM website.
+    """
+    Retrieve latest module and inverter info from a file bundled with pvlib,
+    a path or an URL (like SAM's website).
 
     This function will retrieve either:
 
@@ -1971,10 +1973,14 @@ def retrieve_sam(name=None, path=None):
 
     and return it as a pandas DataFrame.
 
+    .. note::
+        Only provide one of ``name`` or ``path``.
+
     Parameters
     ----------
     name : string, optional
-        Name can be one of:
+        Use one of the following strings to retrieve a database bundled with
+        pvlib:
 
         * 'CECMod' - returns the CEC module database
         * 'CECInverter' - returns the CEC Inverter database
@@ -1985,7 +1991,7 @@ def retrieve_sam(name=None, path=None):
         * 'ADRInverter' - returns the ADR Inverter database
 
     path : string, optional
-        Path to the SAM file. May also be a URL.
+        Path to a CSV file or a URL.
 
     Returns
     -------
@@ -1997,7 +2003,11 @@ def retrieve_sam(name=None, path=None):
     Raises
     ------
     ValueError
-        If no name or path is provided.
+        If no ``name`` or ``path`` is provided.
+    ValueError
+        If both ``name`` and ``path`` are provided.
+    KeyError
+        If the provided ``name`` is not a valid database name.
 
     Notes
     -----
@@ -2030,38 +2040,38 @@ def retrieve_sam(name=None, path=None):
     CEC_Date                     NaN
     CEC_Type     Utility Interactive
     Name: AE_Solar_Energy__AE6_0__277V_, dtype: object
-    '''
-
-    if name is not None:
-        name = name.lower()
-        data_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'data')
-        if name == 'cecmod':
-            csvdata = os.path.join(
-                data_path, 'sam-library-cec-modules-2019-03-05.csv')
-        elif name == 'sandiamod':
-            csvdata = os.path.join(
-                data_path, 'sam-library-sandia-modules-2015-6-30.csv')
-        elif name == 'adrinverter':
-            csvdata = os.path.join(
-                data_path, 'adr-library-cec-inverters-2019-03-05.csv')
-        elif name in ['cecinverter', 'sandiainverter']:
-            # Allowing either, to provide for old code,
-            # while aligning with current expectations
-            csvdata = os.path.join(
-                data_path, 'sam-library-cec-inverters-2019-03-05.csv')
-        else:
-            raise ValueError(f'invalid name {name}')
-    elif path is not None:
-        if path.startswith('http'):
-            response = urlopen(path)
-            csvdata = io.StringIO(response.read().decode(errors='ignore'))
-        else:
-            csvdata = path
+    """
+    # error: path was previously silently ignored if name was given GH#2018
+    if name is not None and path is not None:
+        raise ValueError("Please provide either 'name' or 'path', not both.")
     elif name is None and path is None:
-        raise ValueError("A name or path must be provided!")
-
-    return _parse_raw_sam_df(csvdata)
+        raise ValueError("Please provide either 'name' or 'path'.")
+    elif name is not None:
+        internal_dbs = {
+            "cecmod": "sam-library-cec-modules-2019-03-05.csv",
+            "sandiamod": "sam-library-sandia-modules-2015-6-30.csv",
+            "adrinverter": "adr-library-cec-inverters-2019-03-05.csv",
+            # Both 'cecinverter' and 'sandiainverter', point to same database
+            # to provide for old code, while aligning with current expectations
+            "cecinverter": "sam-library-cec-inverters-2019-03-05.csv",
+            "sandiainverter": "sam-library-cec-inverters-2019-03-05.csv",
+        }
+        try:
+            csvdata_path = Path(__file__).parent.joinpath(
+                "data", internal_dbs[name.lower()]
+            )
+        except KeyError:
+            raise KeyError(
+                f"Invalid name {name}. "
+                + f"Provide one of {list(internal_dbs.keys())}."
+            ) from None
+    else:  # path is not None
+        if path.lower().startswith("http"):  # URL check is not case-sensitive
+            response = urlopen(path)  # URL is case-sensitive
+            csvdata_path = io.StringIO(response.read().decode(errors="ignore"))
+        else:
+            csvdata_path = path
+    return _parse_raw_sam_df(csvdata_path)
 
 
 def _normalize_sam_product_names(names):
@@ -2254,10 +2264,9 @@ def sapm(effective_irradiance, temp_cell, module):
         module['IXO'] * (module['C4']*Ee + module['C5']*(Ee**2)) *
         (1 + module['Aisc']*(temp_cell - temp_ref)))
 
-    # the Ixx calculation in King 2004 has a typo (mixes up Aisc and Aimp)
     out['i_xx'] = (
         module['IXXO'] * (module['C6']*Ee + module['C7']*(Ee**2)) *
-        (1 + module['Aisc']*(temp_cell - temp_ref)))
+        (1 + module['Aimp']*(temp_cell - temp_ref)))
 
     if isinstance(out['i_sc'], pd.Series):
         out = pd.DataFrame(out)
@@ -2309,9 +2318,10 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
     a module's cells.
 
     The model is
+
     .. math::
 
-        `Ee = f_1(AM_a) (E_b f_2(AOI) + f_d E_d)`
+        Ee = f_1(AM_a) (E_b f_2(AOI) + f_d E_d)
 
     where :math:`Ee` is effective irradiance (W/m2), :math:`f_1` is a fourth
     degree polynomial in air mass :math:`AM_a`, :math:`E_b` is beam (direct)
@@ -2411,20 +2421,20 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     dict or pandas.DataFrame
         The returned dict-like object always contains the keys/columns:
 
-            * i_sc - short circuit current in amperes.
-            * v_oc - open circuit voltage in volts.
-            * i_mp - current at maximum power point in amperes.
-            * v_mp - voltage at maximum power point in volts.
-            * p_mp - power at maximum power point in watts.
-            * i_x - current, in amperes, at ``v = 0.5*v_oc``.
-            * i_xx - current, in amperes, at ``v = 0.5*(v_oc+v_mp)``.
+        * i_sc - short circuit current in amperes.
+        * v_oc - open circuit voltage in volts.
+        * i_mp - current at maximum power point in amperes.
+        * v_mp - voltage at maximum power point in volts.
+        * p_mp - power at maximum power point in watts.
+        * i_x - current, in amperes, at ``v = 0.5*v_oc``.
+        * i_xx - current, in amperes, at ``v = 0.5*(v_oc+v_mp)``.
 
         A dict is returned when the input parameters are scalars or
         ``ivcurve_pnts > 0``. If ``ivcurve_pnts > 0``, the output dictionary
         will also include the keys:
 
-            * i - IV curve current in amperes.
-            * v - IV curve voltage in volts.
+        * i - IV curve current in amperes.
+        * v - IV curve voltage in volts.
 
     See also
     --------
@@ -2536,7 +2546,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
 
 
 def max_power_point(photocurrent, saturation_current, resistance_series,
-                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
                     method='brentq'):
     """
     Given the single diode equation coefficients, calculates the maximum power

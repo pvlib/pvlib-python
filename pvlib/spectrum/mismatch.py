@@ -129,16 +129,16 @@ def get_am15g(wavelength=None):
     """
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
     # modified by @echedey-ls, as a wrapper of spectrum.get_standard_spectrum
-    standard = get_standard_spectrum(wavelength, reference="ASTM G173-03")
+    standard = get_standard_spectrum(wavelength, standard="ASTM G173-03")
     return standard["global"]
 
 
-def get_standard_spectrum(wavelengths=None, *, reference="ASTM G173-03"):
+def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
     r"""
-    Read a standard spectrum specified by ``reference``, optionally
+    Read a standard spectrum specified by ``standard``, optionally
     interpolated to the specified wavelength(s).
 
-    Defaults to the ASTM G173-03 AM1.5 standard [1]_, which returns
+    Defaults to ``ASTM G173-03`` AM1.5 standard [1]_, which returns
     ``extraterrestrial``, ``global`` and ``direct`` spectrum on a 37-degree
     tilted surface, optionally interpolated to the specified wavelength(s).
 
@@ -150,8 +150,8 @@ def get_standard_spectrum(wavelengths=None, *, reference="ASTM G173-03"):
         :math:`nm`.
         Values outside of the range :math:`[280, 4000]` are filled with zeroes.
 
-    reference : str, default "ASTM G173-03"
-        The reference standard spectrum to use. Only the reference spectrum
+    standard : str, default "ASTM G173-03"
+        The standard spectrum to be read. Only the spectrum
         ``"ASTM G173-03"`` is available at the moment.
 
     Returns
@@ -170,10 +170,8 @@ def get_standard_spectrum(wavelengths=None, *, reference="ASTM G173-03"):
     For global spectra, it is about :math:`1000.37 W/m^2`.
 
     The values of the ASTM G173-03 provided with pvlib-python are copied from
-    an Excel file distributed by NREL, which is found here:
+    an Excel file distributed by NREL, which is found here [2]_:
     https://www.nrel.gov/grid/solar-resource/assets/data/astmg173.xls
-
-    More information about reference spectra is found at [2]_.
 
     Examples
     --------
@@ -212,10 +210,10 @@ def get_standard_spectrum(wavelengths=None, *, reference="ASTM G173-03"):
     pvlib_datapath = Path(pvlib.__path__[0]) / "data"
 
     try:
-        filepath = pvlib_datapath / SPECTRA_FILES[reference]
+        filepath = pvlib_datapath / SPECTRA_FILES[standard]
     except KeyError:
         raise ValueError(
-            f"Invalid reference identifier '{reference}'. Available "
+            f"Invalid standard identifier '{standard}'. Available "
             + "identifiers are: "
             + ", ".join(SPECTRA_FILES.keys())
         )
@@ -239,7 +237,6 @@ def get_standard_spectrum(wavelengths=None, *, reference="ASTM G173-03"):
             },
         )
 
-    standard.name = reference
     return standard
 
 

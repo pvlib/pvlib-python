@@ -95,7 +95,7 @@ def get_am15g(wavelength=None):
     wavelength: 1-D sequence of numeric, optional
         Wavelengths at which the spectrum is interpolated.
         By default the 2002 wavelengths of the standard are returned.
-        :math:`nm`.
+        :math:`[nm]`.
 
     Returns
     -------

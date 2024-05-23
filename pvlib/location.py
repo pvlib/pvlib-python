@@ -439,8 +439,10 @@ def lookup_altitude(latitude, longitude):
     # 255 is a special value that means nodata. Fallback to 0 if nodata.
     if alt == 255:
         return 0
+    # convert from np.uint8 to float so that the following operations succeed
+    alt = float(alt)
     # Altitude is encoded in 28 meter steps from -450 meters to 6561 meters
     # There are 0-254 possible altitudes, with 255 reserved for nodata.
     alt *= 28
     alt -= 450
-    return float(alt)
+    return alt

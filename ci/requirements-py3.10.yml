@@ -21,7 +21,7 @@ dependencies:
     - python=3.10
     - pytz
     - requests
-    - scipy >= 1.5.0
+    - scipy >= 1.6.0
     - statsmodels
     - pip:
         - nrel-pysam>=2.0

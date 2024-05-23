@@ -399,11 +399,11 @@ def shaded_fraction1d(
         May be used to account for a torque tube offset.
     cross_axis_slope : numeric, default 0
         Angle of the plane containing the rows' axes from
-        horizontal. Right-handed rotation with respect to ``axis_azimuth``.
+        horizontal. Right-handed rotation with respect to the rows axes.
         In degrees :math:`^{\circ}`.
     shading_row_rotation : numeric, optional
         Right-handed rotation of the row casting the shadow, with respect
-        to ``axis_azimuth``. In degrees :math:`^{\circ}`.
+        to the row axis. In degrees :math:`^{\circ}`.
 
     Returns
     -------

@@ -361,29 +361,29 @@ def shaded_fraction1d(
     Shaded fraction in the vertical dimension of tilted rows, or perpendicular
     to the axis of horizontal rows.
 
-    If ``shading_row_rotation`` isn't provided, assumes both the shaded
-    row and the one blocking the direct beam
-    share the same rotation and azimuth values.
+    If ``shading_row_rotation`` isn't provided, it is assumed that
+    both the shaded row and the shading row (the one blocking the
+    direct beam) have the same rotation and azimuth values.
 
     .. warning::
-        This function assumes the roles of the shaded and shading rows are
-        the same during all the day. If the rows allow for different
-        shading or shaded roles, e.g. a N-S single-axis tracker, you must
-        switch the inputs depending on the sign of the projected solar zenith
+        The function assumes that the roles of the shaded and shading rows remain
+        the same during the day. In the case where the shading and shaded rows
+        change throughout the day, e.g. a N-S single-axis tracker, the inputs
+        must be switched depending on the sign of the projected solar zenith
         angle. See the Examples section below.
 
-    .. versionadded:: 0.10.5
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
     solar_zenith : numeric
-        Solar position zenith, in degrees.
+        Solar zenith angle, in degrees.
     solar_azimuth : numeric
-        Solar position azimuth, in degrees.
+        Solar azimuth angle, in degrees.
     axis_azimuth : numeric
-        In degrees. North=0º, South=180º, East=90º, West=270º.
-        This is the rotation axis of a tracker. Consider fixed-tilt arrays as
-        a particular case of a tracker.
+        Axis azimuth of the rotation axis of a tracker, in degrees.
+        Fixed-tilt arrays can be considered as a particular case of a tracker.
+        North=0º, South=180º, East=90º, West=270º.
     shaded_row_rotation : numeric
         Right-handed rotation of the row receiving the shade, with respect
         to ``axis_azimuth``. In degrees :math:`^{\circ}`.
@@ -396,6 +396,7 @@ def shaded_fraction1d(
         Tilt of the rows axis from horizontal. In degrees :math:`^{\circ}`.
     surface_to_axis_offset : numeric, default 0
         Distance between the rotating axis and the collector surface.
+        May be used to account for a torque tube offset.
     cross_axis_slope : numeric, default 0
         Angle of the plane containing the rows' axes from
         horizontal. Right-handed rotation with respect to ``axis_azimuth``.
@@ -408,12 +409,11 @@ def shaded_fraction1d(
     -------
     shaded_fraction : numeric
         The fraction of the collector width shaded by an adjacent row. A
-        value of 1 is completely shaded and zero is no shade.
+        value of 1 is completely shaded and 0 is no shade.
 
     Notes
     -----
-    All length parameters must have the same units to produce a reasonable
-    result.
+    All length parameters must have the same units.
 
     Parameters are defined as follow:
 

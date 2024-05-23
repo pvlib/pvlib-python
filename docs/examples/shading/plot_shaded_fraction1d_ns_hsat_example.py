@@ -1,24 +1,24 @@
 """
-shaded_fraction1d N-S horizontal single-axis example
+Shaded fraction of a horizontal single-axis tracker
 ====================================================
 
-This example illustrates how to calculate the shaded fraction of three rows
-in an N-S HSAT configuration.
+This example illustrates how to calculate the 1D shaded fraction of three rows
+in a North-South horizontal single axis tracker (HSAT) configuration.
 """
 
 # %%
 # :py:func:`pvlib.shading.shaded_fraction1d` exposes a useful method for the
 # calculation of the shaded fraction of the width of a solar collector. Here,
 # the width is defined as the dimension perpendicular to the axis of rotation.
-# This method for calculating the shaded fraction also applies to fixed-tilt
-# systems with little changes.
+# This method for calculating the shaded fraction only requires minor
+# modifications to be applicable for fixed-tilt systems.
 #
-# Reading its documentation is recommended to understand the parameters and
-# the method capabilities.
+# It is highly recommended to read the :py:func:`pvlib.shading.shaded_fraction1d` documentation
+# to understand the input parameters and the method's capabilities.
 #
 # Let's start by obtaining the true-tracking angles for each of the rows and
 # limiting the angles to the range of -50 to 50 degrees. This decision is
-# done to allow significant shade to be used as an example.
+# done to create an example scenario with significant shading.
 #
 # Key functions used in this example are:
 #
@@ -42,7 +42,7 @@ latitude, longitude = 28.51, -13.89
 altitude = pvlib.location.lookup_altitude(latitude, longitude)
 
 axis_tilt = 3  # degrees
-axis_azimuth = 180  # degrees
+axis_azimuth = 180  # degrees, N-S tracking axis
 collector_width = 3.2  # m
 pitch = 4.15  # m
 gcr = collector_width / pitch
@@ -77,7 +77,8 @@ rotation_angle = pvlib.tracking.singleaxis(
 )["tracker_theta"]
 
 # %%
-# The next step is to calculate the shaded fraction. Special care must be taken
+# Once the tracker angles have been obtained, the next step is to calculate
+# the shaded fraction. Special care must be taken
 # to ensure that the shaded or shading tracker roles are correctly assigned
 # depending on the solar position.
 # This means we will have a result for each row, ``eastmost_shaded_fraction``,
@@ -164,7 +165,7 @@ westmost_shaded_fraction = np.where(
 )
 
 # %%
-# Plot the shaded fraction result per row
+# Plot the shaded fraction result for each row:
 plt.plot(times, eastmost_shaded_fraction, label="East-most", color="blue")
 plt.plot(
     times,

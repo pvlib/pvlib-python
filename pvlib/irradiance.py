@@ -896,8 +896,8 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     .. math::
 
-       I_{d} = DHI (A R_b + (1 - A) (\frac{1 + \cos\beta}{2})
-       (1 + \sqrt{\frac{I_{hb}}{I_h}} \sin^3(\beta/2)) )
+       I_{d} = DHI \left(A R_b + (1 - A) \left(\frac{1 + \cos\beta}{2}\right)
+       \left(1 + \sqrt{\frac{I_{hb}}{I_h}} \sin^3(\beta/2)\right) \right)
 
     Reindl's 1990 model determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a
@@ -2334,10 +2334,10 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
     data : DataFrame
         Contains the following keys/columns:
 
-            * ``ghi``: the modeled global horizontal irradiance in W/m^2.
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
+        * ``ghi``: the modeled global horizontal irradiance in W/m^2.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
 
     References
     ----------
@@ -2618,11 +2618,11 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     References
     ----------
@@ -2721,11 +2721,11 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     Raises
     ------
@@ -2839,11 +2839,11 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     References
     ----------
@@ -2934,11 +2934,11 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     References
     ----------
@@ -3771,11 +3771,11 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     data: OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     References
     -------

@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pvlib import spectrum
 
-from .conftest import DATA_DIR, assert_series_equal
+from .conftest import DATA_DIR, assert_series_equal, fail_on_pvlib_version
 
 SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
 
@@ -123,6 +123,7 @@ def test_get_example_spectral_response():
     assert_allclose(sr, expected, rtol=1e-5)
 
 
+@fail_on_pvlib_version('0.12')
 def test_get_am15g():
     # test that the reference spectrum is read and interpolated correctly
     e = spectrum.get_am15g()

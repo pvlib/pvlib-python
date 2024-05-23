@@ -366,11 +366,11 @@ def shaded_fraction1d(
     direct beam) have the same rotation and azimuth values.
 
     .. warning::
-        The function assumes that the roles of the shaded and shading rows remain
-        the same during the day. In the case where the shading and shaded rows
-        change throughout the day, e.g. a N-S single-axis tracker, the inputs
-        must be switched depending on the sign of the projected solar zenith
-        angle. See the Examples section below.
+        The function assumes that the roles of the shaded and shading rows
+        remain the same during the day. In the case where the shading and
+        shaded rows change throughout the day, e.g. a N-S single-axis tracker,
+        the inputs must be switched depending on the sign of the projected
+        solar zenith angle. See the Examples section below.
 
     .. versionadded:: 0.11.0
 

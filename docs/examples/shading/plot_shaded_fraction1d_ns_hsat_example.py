@@ -13,8 +13,9 @@ in a North-South horizontal single axis tracker (HSAT) configuration.
 # This method for calculating the shaded fraction only requires minor
 # modifications to be applicable for fixed-tilt systems.
 #
-# It is highly recommended to read the :py:func:`pvlib.shading.shaded_fraction1d` documentation
-# to understand the input parameters and the method's capabilities.
+# It is highly recommended to read :py:func:`pvlib.shading.shaded_fraction1d`
+# documentation to understand the input parameters and the method's
+# capabilities.
 #
 # Let's start by obtaining the true-tracking angles for each of the rows and
 # limiting the angles to the range of -50 to 50 degrees. This decision is
@@ -41,7 +42,7 @@ from matplotlib.dates import DateFormatter
 latitude, longitude = 28.51, -13.89
 altitude = pvlib.location.lookup_altitude(latitude, longitude)
 
-axis_tilt = 3  # degrees
+axis_tilt = 3  # degrees, positive is upwards in the axis_azimuth direction
 axis_azimuth = 180  # degrees, N-S tracking axis
 collector_width = 3.2  # m
 pitch = 4.15  # m
@@ -167,14 +168,8 @@ westmost_shaded_fraction = np.where(
 # %%
 # Plot the shaded fraction result for each row:
 plt.plot(times, eastmost_shaded_fraction, label="East-most", color="blue")
-plt.plot(
-    times,
-    middle_shaded_fraction,
-    label="Middle",
-    color="green",
-    linewidth=3,
-    linestyle="--",
-)
+plt.plot(times, middle_shaded_fraction, label="Middle", color="green",
+         linewidth=3, linestyle="--")  # fmt: skip
 plt.plot(times, westmost_shaded_fraction, label="West-most", color="red")
 plt.title(r"$shaded\_fraction1d$ of each row vs time")
 plt.xlabel("Time")
@@ -182,5 +177,3 @@ plt.gca().xaxis.set_major_formatter(DateFormatter("%H:%M"))
 plt.ylabel("Shaded Fraction")
 plt.legend()
 plt.show()
-
-# %%

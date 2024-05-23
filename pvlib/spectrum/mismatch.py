@@ -3,6 +3,8 @@ The ``mismatch`` module provides functions for spectral mismatch calculations.
 """
 
 import pvlib
+from pvlib._deprecation import deprecated
+
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
@@ -79,6 +81,16 @@ def get_example_spectral_response(wavelength=None):
     return sr
 
 
+@deprecated(
+    since="0.11",
+    removal="0.12",
+    name="pvlib.spectrum.get_am15g",
+    alternative="pvlib.spectrum.get_standard_spectrum",
+    addendum=(
+        "The new function reads more data. Use it with "
+        + "standard='ASTM G173-03' and extract the 'global' column."
+    ),
+)
 def get_am15g(wavelength=None):
     r"""
     Read the ASTM G173-03 AM1.5 global spectrum on a 37-degree tilted surface,

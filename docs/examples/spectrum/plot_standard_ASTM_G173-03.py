@@ -14,16 +14,16 @@ import pvlib
 
 # %%
 # Use :py:func:`pvlib.spectrum.get_standard_spectrum` to retrieve a
-# standard spectrum.
+# standard spectra file.
 
-am15 = pvlib.spectrum.get_standard_spectrum(reference="ASTM G173-03")
+am15 = pvlib.spectrum.get_standard_spectrum(standard="ASTM G173-03")
 
 # Plot
 plt.plot(am15.index, am15['extraterrestrial'], label='Extraterrestrial')
 plt.plot(am15.index, am15['global'], label='Global')
 plt.plot(am15.index, am15['direct'], label='Direct')
-plt.xlabel('Wavelength (nm)')
-plt.ylabel('Irradiance (W/m²/nm)')
+plt.xlabel(r'Wavelength $[nm]$')
+plt.ylabel(r'Irradiance $[\frac{W}{m^2 nm}$')
 plt.title('ASTM G173-03 Solar Spectral Irradiance')
 plt.legend()
 plt.grid(True)

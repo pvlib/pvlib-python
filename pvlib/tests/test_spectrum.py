@@ -153,7 +153,7 @@ def test_get_am15g():
 )
 def test_get_standard_spectrum(reference_identifier, expected_sums):
     # test reading of reference spectrum
-    standard = spectrum.get_standard_spectrum(reference=reference_identifier)
+    standard = spectrum.get_standard_spectrum(standard=reference_identifier)
     assert set(standard.columns) == expected_sums.keys()
     assert standard.index.name == "wavelength"
     assert standard.index.is_monotonic_increasing is True

@@ -446,8 +446,8 @@ def shaded_fraction1d(
 
     **Fixed-tilt south-facing array on flat terrain**
 
-    Tilted row with a pitch of :math:`3m`, a collector width of
-    :math:`2m`, and row rotations of :math:`30^{\circ}`. In the morning.
+    Tilted row with a pitch of 3 m, a collector width of
+    2 m, and row rotations of 30°. In the morning.
 
     >>> shaded_fraction1d(solar_zenith=80, solar_azimuth=104.5,
     ...     axis_azimuth=90, shaded_row_rotation=30, shading_row_rotation=30,
@@ -457,10 +457,10 @@ def shaded_fraction1d(
 
     **Fixed-tilt north-facing array on sloped terrain**
 
-    Tilted row with a pitch of :math:`4m`, a collector width of
-    :math:`2.5m`, and row rotations of :math:`50^{\circ}` for the shaded
-    row and :math:`30^{\circ}` for the shading row. The rows are on a
-    :math:`10^{\circ}` slope, where their axis is on the most inclined
+    Tilted row with a pitch of 4 m, a collector width of
+    2.5 m, and row rotations of 50° for the shaded
+    row and 30° for the shading row. The rows are on a
+    10° slope, where their axis is on the most inclined
     direction (zero cross-axis slope). Shaded in the morning.
 
     >>> shaded_fraction1d(solar_zenith=65, solar_azimuth=75.5,
@@ -471,9 +471,9 @@ def shaded_fraction1d(
 
     **N-S single-axis tracker on sloped terrain**
 
-    Horizontal trackers with a pitch of :math:`3m`, a collector width of
-    :math:`1.4m`, and tracker rotations of :math:`30^{\circ}` pointing east,
-    in the morning. Terrain slope is :math:`7^{\circ}` west-east (east-most
+    Horizontal trackers with a pitch of 3 m, a collector width of
+    1.4 m, and tracker rotations of 30° pointing east,
+    in the morning. Terrain slope is 7° west-east (east-most
     tracker is higher than the west-most tracker).
 
     >>> shaded_fraction1d(solar_zenith=50, solar_azimuth=90, axis_azimuth=180,

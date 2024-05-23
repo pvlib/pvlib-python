@@ -170,7 +170,7 @@ def test_get_standard_spectrum_custom_wavelengths():
         {"extraterrestrial": 2.23266, "global": 1.68952, "direct": 1.58480}
     )  # for given ``wavelength``
     standard = spectrum.get_standard_spectrum(
-        wavelength, reference="ASTM G173-03"
+        wavelength, standard="ASTM G173-03"
     )
     assert_equal(len(standard), len(wavelength))
     assert any(standard.isna())  # check no NaN values were returned
@@ -180,7 +180,7 @@ def test_get_standard_spectrum_custom_wavelengths():
 def test_get_standard_spectrum_invalid_reference():
     # test that an invalid reference identifier raises a ValueError
     with pytest.raises(ValueError, match="Invalid reference identifier"):
-        spectrum.get_standard_spectrum(reference="invalid")
+        spectrum.get_standard_spectrum(standard="invalid")
 
 
 def test_calc_spectral_mismatch_field(spectrl2_data):

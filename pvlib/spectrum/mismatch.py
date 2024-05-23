@@ -133,9 +133,7 @@ def get_am15g(wavelength=None):
     return standard["global"]
 
 
-def get_standard_spectrum(
-    wavelengths=None, *, reference: str = "ASTM G173-03"
-) -> pd.DataFrame:
+def get_standard_spectrum(wavelengths=None, *, reference="ASTM G173-03"):
     r"""
     Read a standard spectrum specified by ``reference``, optionally
     interpolated to the specified wavelength(s).

@@ -3,7 +3,7 @@ ASTM G173-03 Standard Spectrum
 ==============================
 
 This example demonstrates how to read the data from the ASTM G173-03 standard
-spectrum bundled with PVLIB and plot each of the components.
+spectrum bundled with pvlib and plot each of the components.
 
 The ASTM G173-03 standard provides reference solar spectral irradiance data.
 """

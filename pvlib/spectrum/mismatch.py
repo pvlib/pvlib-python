@@ -145,18 +145,17 @@ def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
     Parameters
     ----------
     wavelengths : numeric, optional
-        Wavelengths at which the spectrum is interpolated.
-        If not provided, the 2002 wavelengths of the standard are returned.
-        :math:`nm`.
-        Values outside of the range :math:`[280, 4000]` are filled with zeroes.
+        Wavelengths at which the spectrum is interpolated. :math:`[nm]`.
+        If not provided, the original wavelengths from the specified standard
+        are used. Values outside that range are filled with zeros.
 
     standard : str, default "ASTM G173-03"
-        The standard spectrum to be read. Only the spectrum
+        The reference standard to be read. Only the reference
         ``"ASTM G173-03"`` is available at the moment.
 
     Returns
     -------
-    standard_spectrum : pandas.DataFrame
+    standard_spectra : pandas.DataFrame
         The standard spectrum by ``wavelength [nm]``, in
         :math:`\frac{W}{m^2 nm}`. Column names are ``extraterrestrial``,
         ``direct`` and ``global``.

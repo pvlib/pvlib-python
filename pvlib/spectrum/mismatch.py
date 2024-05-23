@@ -172,7 +172,7 @@ def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
     -------
     standard_spectra : pandas.DataFrame
         The standard spectrum by ``wavelength [nm]``, in
-        :math:`\frac{W}{m^2 nm}`. Column names are ``extraterrestrial``,
+        :math:`W/m^2/nm`. Column names are ``extraterrestrial``,
         ``direct`` and ``global``.
 
     Notes

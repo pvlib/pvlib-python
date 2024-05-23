@@ -179,7 +179,7 @@ def test_get_standard_spectrum_custom_wavelengths():
 
 def test_get_standard_spectrum_invalid_reference():
     # test that an invalid reference identifier raises a ValueError
-    with pytest.raises(ValueError, match="Invalid reference identifier"):
+    with pytest.raises(ValueError, match="Invalid standard identifier"):
         spectrum.get_standard_spectrum(standard="invalid")
 
 

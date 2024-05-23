@@ -1,18 +1,6 @@
 .. _whatsnew_01050:
 
 
-v0.10.5 (Anticipated June 2024)
--------------------------------
-
-
-Deprecations
-~~~~~~~~~~~~
-
-
-Enhancements
-~~~~~~~~~~~~
-* Added `pvlib.shading.linear_shade_loss` to apply linear shade loss for thin
-  film CdTe modules. (:issue:`1690`, :pull:`2004`)
 v0.10.5 (May 6, 2024)
 ---------------------
 
@@ -46,8 +34,6 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
-* Mark Mikofski (:ghuser:`mikofski`)
-* Echedey Luis (:ghuser:`echedey-ls`)
 * :ghuser:`apct69`
 * Mark Mikofski (:ghuser:`mikofski`)
 * Echedey Luis (:ghuser:`echedey-ls`)

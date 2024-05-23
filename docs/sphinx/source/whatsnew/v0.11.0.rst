@@ -19,6 +19,11 @@ Enhancements
   shade perpendicular to ``axis_azimuth``. The function is applicable to both
   fixed-tilt and one-axis tracking systems.
   (:issue:`1689`, :pull:`1725`, :pull:`1962`)
+* Added function :py:func:`pvlib.shading.shaded_fraction1d`, to calculate the
+  shade perpendicular to row axis. (:issue:`1689`, :pull:`1725`, :pull:`1962`)
+* Added function :py:func:`pvlib.shading.martinez_shade_factor` to calculate
+  shading losses by taking into account the amount of bypass diodes of a module.
+  (:issue:``, :pull:``)
 
 
 Bug fixes
@@ -42,3 +47,4 @@ Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
+* Echedey Luis (:ghuser:`echedey-ls`)

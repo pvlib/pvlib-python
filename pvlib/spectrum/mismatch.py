@@ -102,6 +102,9 @@ def get_am15g(wavelength=None):
     the irradiance on a flat receiver is frequently called plane-of-array (POA)
     irradiance.
 
+    .. deprecated:: 0.11
+        Use ``pvlib.spectrum.get_standard_spectrum(standard="ASTM G173-03")["global"]`` instead.
+
     Parameters
     ----------
     wavelength: 1-D sequence of numeric, optional
@@ -138,7 +141,7 @@ def get_am15g(wavelength=None):
     ----------
     .. [1] ASTM "G173-03 Standard Tables for Reference Solar Spectral
        Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
-    """
+    """  # noqa: E501
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
     # modified by @echedey-ls, as a wrapper of spectrum.get_standard_spectrum
     standard = get_standard_spectrum(wavelength, standard="ASTM G173-03")

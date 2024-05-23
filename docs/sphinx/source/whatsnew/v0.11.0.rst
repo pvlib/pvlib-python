@@ -11,6 +11,10 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Function :py:func:`pvlib.spectrum.get_am15g` has been deprecated in favor
+  of the new function :py:func:`pvlib.spectrum.get_standard_spectrum`. Use
+  ``pvlib.spectrum.get_standard_spectrum(standard="ASTM G173-03")["global"]``
+  instead. (:pull:`2039`)
 
 
 Enhancements

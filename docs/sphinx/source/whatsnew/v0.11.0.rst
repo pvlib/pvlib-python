@@ -29,7 +29,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Configure mathjax to left-align and indent equations in docstrings. (:pull:`2056`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -37,4 +37,7 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Siddharth Kaul (:ghuser:`k10blogger`)
 * Yunho Kee (:ghuser:`yhkee0404`)

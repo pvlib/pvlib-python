@@ -307,3 +307,23 @@ def test_shaded_fraction1d(sf1d_premises_and_expected):
     sf_vec = shading.shaded_fraction1d(**premises)
     assert_allclose(sf_vec, expected_sf_array, atol=1e-6)
     assert isinstance(sf_vec, pd.Series)
+
+
+def test_shaded_fraction1d_unprovided_shading_row_rotation():
+    """Tests shaded_fraction1d without providing shading_row_rotation"""
+    test_data = pd.DataFrame(
+        columns=[
+            "shaded_row_rotation", "surface_to_axis_offset", "collector_width",
+            "solar_zenith", "cross_axis_slope", "pitch", "solar_azimuth",
+            "axis_azimuth", "expected_sf",
+        ],
+        data=[
+            (30, 0, 5.7735, 60, 0, 5, 90, 180, 0),
+            (30, 0, 5.7735, 79, 0, 5, 90, 180, 0.5),
+            (30, 0, 5.7735, 90, 0, 5, 90, 180, 1),
+        ],
+    )  # fmt: skip
+    expected_sf = test_data["expected_sf"]
+    premises = test_data.drop(columns=["expected_sf"])
+    sf = shading.shaded_fraction1d(**premises)
+    assert_allclose(sf, expected_sf, atol=1e-2)

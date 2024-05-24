@@ -20,4 +20,3 @@ API reference
    bifacial
    scaling
    location
-   agrivoltaics

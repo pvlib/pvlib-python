@@ -13,3 +13,4 @@ Spectrum
    spectrum.spectral_factor_caballero
    spectrum.spectral_factor_firstsolar
    spectrum.spectral_factor_sapm
+   spectrum.spitters_relationship

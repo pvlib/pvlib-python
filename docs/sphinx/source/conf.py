@@ -56,6 +56,9 @@ extensions = [
     'sphinx_toggleprompt',
 ]
 
+mathjax3_config = {'chtml': {'displayAlign': 'left',
+                             'displayIndent': '2em'}}
+
 napoleon_use_rtype = False  # group rtype on same line together with return
 
 # Add any paths that contain templates here, relative to this directory.
@@ -357,15 +360,18 @@ suppress_warnings = ['ref.footnote']
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
     'gallery_dirs': ['gallery'],  # location of generated output
-    # sphinx-gallery only shows plots from plot_*.py files by default:
-    # 'filename_pattern': '*.py',
+    # execute all scripts except for ones in the "system-models" directory:
+    'filename_pattern': '^((?!system-models).)*$',
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',
 
     # Modules for which function/class level galleries are created. In
-    # this case only pvlib, could include others though.  must be tuple of str
+    # this case only pvlib, could include others though. Must be tuple of str
     'doc_module': ('pvlib',),
+
+    # https://sphinx-gallery.github.io/dev/configuration.html#removing-config-comments  # noqa: E501
+    'remove_config_comments': True,
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html

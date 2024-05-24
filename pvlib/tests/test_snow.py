@@ -42,7 +42,7 @@ def test_coverage_nrel_subhourly():
     surface_tilt = 45
     slide_amount_coefficient = 0.197
     dt = pd.date_range(start="2019-1-1 11:00:00", end="2019-1-1 14:00:00",
-                       freq='15T')
+                       freq='15min')
     poa_irradiance = pd.Series([400, 200, 100, 1234, 134, 982, 100, 100, 100,
                                 100, 100, 100, 0],
                                index=dt)

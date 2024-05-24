@@ -119,7 +119,7 @@ requires_statsmodels = pytest.mark.skipif(
 
 
 try:
-    import ephem
+    import ephem  # noqa: F401
     has_ephem = True
 except ImportError:
     has_ephem = False
@@ -129,7 +129,7 @@ requires_ephem = pytest.mark.skipif(not has_ephem, reason='requires ephem')
 
 def has_spa_c():
     try:
-        from pvlib.spa_c_files.spa_py import spa_calc
+        from pvlib.spa_c_files.spa_py import spa_calc  # noqa: F401
     except ImportError:
         return False
     else:
@@ -139,20 +139,14 @@ def has_spa_c():
 requires_spa_c = pytest.mark.skipif(not has_spa_c(), reason="requires spa_c")
 
 
-def has_numba():
-    try:
-        import numba
-    except ImportError:
-        return False
-    else:
-        vers = numba.__version__.split('.')
-        if int(vers[0] + vers[1]) < 17:
-            return False
-        else:
-            return True
+try:
+    import numba   # noqa: F401
+    has_numba = True
+except ImportError:
+    has_numba = False
 
 
-requires_numba = pytest.mark.skipif(not has_numba(), reason="requires numba")
+requires_numba = pytest.mark.skipif(not has_numba, reason="requires numba")
 
 
 try:

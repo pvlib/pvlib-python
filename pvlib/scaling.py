@@ -13,8 +13,10 @@ from scipy.spatial.distance import pdist
 def wvm(clearsky_index, positions, cloud_speed, dt=None):
     """
     Compute spatial aggregation time series smoothing on clear sky index based
-    on the Wavelet Variability model of Lave et al. [1]_, [2]_. Implementation
-    is basically a port of the Matlab version of the code [3]_.
+    on the Wavelet Variability model.
+
+    This model is described in Lave et al. [1]_, [2]_.
+    Implementation is basically a port of the Matlab version of the code [3]_.
 
     Parameters
     ----------

@@ -532,9 +532,9 @@ def fit_sandia(ac_power, dc_power, dc_voltage, dc_voltage_level, p_ac_0, p_nt):
         p_s0 = solve_quad(a, b, c)
 
         # Add values to dataframe at index d
-        coeffs['a'][d] = a
-        coeffs['p_dc'][d] = p_dc
-        coeffs['p_s0'][d] = p_s0
+        coeffs.loc[d, 'a'] = a
+        coeffs.loc[d, 'p_dc'] = p_dc
+        coeffs.loc[d, 'p_s0'] = p_s0
 
     b_dc0, b_dc1, c1 = extract_c(x_d, coeffs['p_dc'])
     b_s0, b_s1, c2 = extract_c(x_d, coeffs['p_s0'])

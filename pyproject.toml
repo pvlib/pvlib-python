@@ -9,15 +9,14 @@ description = "A set of functions and classes for simulating the performance of 
 authors = [
     { name = "pvlib python Developers", email = "pvlib-admin@googlegroups.com" },
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = [
     'numpy >= 1.17.3',
     'pandas >= 1.3.0',
     'pytz',
     'requests',
-    'scipy >= 1.5.0',
+    'scipy >= 1.6.0',
     'h5py',
-    'importlib-metadata; python_version < "3.8"',
 ]
 license = { text = "BSD-3-Clause" }
 classifiers = [
@@ -51,7 +50,7 @@ optional = [
     'cython',
     'ephem',
     'nrel-pysam',
-    'numba',
+    'numba >= 0.17.0',
     'solarfactors',
     'statsmodels',
 ]

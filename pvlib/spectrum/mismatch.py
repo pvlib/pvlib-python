@@ -590,7 +590,7 @@ def sr_to_qe(sr, wavelength=None, normalize=False):
     a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
     wavelengths in the index.
 
-    Provide wavelengths in nanometers :math:`[nm]`.
+    Provide wavelengths in nanometers, [nm].
 
     Conversion is described in [1]_.
 
@@ -599,11 +599,11 @@ def sr_to_qe(sr, wavelength=None, normalize=False):
     Parameters
     ----------
     sr : numeric, pandas.Series or pandas.DataFrame
-        Spectral response.
-        Index must be the wavelength in nanometers :math:`nm`.
+        Spectral response, [A/W].
+        Index must be the wavelength in nanometers, [nm].
 
     wavelength : numeric, optional
-        Points where spectral response is measured, in nanometers :math:`nm`.
+        Points where spectral response is measured, in nanometers, [nm].
 
     normalize : bool, default False
         If True, the quantum efficiency is normalized so that the maximum value
@@ -614,7 +614,7 @@ def sr_to_qe(sr, wavelength=None, normalize=False):
     Returns
     -------
     quantum_efficiency : numeric, same type as ``sr``
-        Quantum efficiency in the interval :math:`[0, 1]`.
+        Quantum efficiency, in the interval [0, 1].
 
     Notes
     -----
@@ -691,7 +691,7 @@ def qe_to_sr(qe, wavelength=None, normalize=False):
     a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
     wavelengths in the index.
 
-    Provide wavelengths in nanometers :math:`[nm]`.
+    Provide wavelengths in nanometers, [nm].
 
     Conversion is described in [1]_.
 
@@ -701,10 +701,10 @@ def qe_to_sr(qe, wavelength=None, normalize=False):
     ----------
     qe : numeric, pandas.Series or pandas.DataFrame
         Quantum efficiency.
-        If pandas subtype, index must be the wavelength in nanometers.
+        If pandas subtype, index must be the wavelength in nanometers, [nm].
 
     wavelength : numeric, optional
-        Points where quantum efficiency is measured, in nanometers :math:`nm`.
+        Points where quantum efficiency is measured, in nanometers, [nm].
 
     normalize : bool, default False
         If True, the spectral response is normalized so that the maximum value
@@ -715,7 +715,7 @@ def qe_to_sr(qe, wavelength=None, normalize=False):
     Returns
     -------
     spectral_response : numeric, same type as ``qe``
-        Spectral response in :math:`A/W`.
+        Spectral response, [A/W].
 
     Notes
     -----

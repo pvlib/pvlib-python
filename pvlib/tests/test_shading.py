@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 
 from pandas.testing import assert_series_equal
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_approx_equal
 import pytest
 from datetime import timezone, timedelta
 
 from pvlib import shading
+from pvlib.tools import atand
 
 
 @pytest.fixture
@@ -223,3 +224,106 @@ def test_projected_solar_zenith_angle_datatypes(
     )
     psz = psz_func(sun_apparent_zenith, axis_azimuth, axis_tilt, axis_azimuth)
     assert isinstance(psz, cast_type)
+
+
+@pytest.fixture
+def sf1d_premises_and_expected():
+    """Data comprised of solar position, rows parameters and terrain slope
+    with respective shade fractions (sf). Returns a 2-tuple with the premises
+    to be used directly in shaded_fraction1d(...) in the first element and
+    the expected shaded fractions in the second element.
+    See [1] in shaded_fraction1d()
+    Test data sourced from http://doi.org/10.5281/zenodo.10513987
+    """
+    test_data = pd.DataFrame(
+        columns=["x_L", "z_L", "theta_L", "x_R", "z_R", "theta_R", "z_0", "l",
+                 "theta_s", "f_s"],
+        data=(
+            (1, 0.2,  50, 0,   0,  25,    0, 0.5,  80, 1),
+            (1, 0.1,  50, 0,   0,  25, 0.05, 0.5,  80, 0.937191),
+            (1,   0,  50, 0, 0.1,  25,    0, 0.5,  80, 0.30605),
+            (1,   0,  50, 0, 0.2,  25,    0, 0.5,  80, 0),
+            (1, 0.2, -25, 0,   0, -50,    0, 0.5, -80, 0),
+            (1, 0.1, -25, 0,   0, -50,    0, 0.5, -80, 0.30605),
+            (1,   0, -25, 0, 0.1, -50,  0.1, 0.5, -80, 0.881549),
+            (1,   0, -25, 0, 0.2, -50,    0, 0.5, -80, 1),
+            (1, 0.2,   5, 0,   0,  25, 0.05, 0.5,  80, 0.832499),
+            (1, 0.2, -25, 0,   0,  25, 0.05, 0.5,  80, 0.832499),
+            (1, 0.2,   5, 0,   0, -45, 0.05, 0.5,  80, 0.832499),
+            (1, 0.2, -25, 0,   0, -45, 0.05, 0.5,  80, 0.832499),
+            (1,   0, -25, 0, 0.2,  25, 0.05, 0.5, -80, 0.832499),
+            (1,   0, -25, 0, 0.2,  -5, 0.05, 0.5, -80, 0.832499),
+            (1,   0,  45, 0, 0.2,  25, 0.05, 0.5, -80, 0.832499),
+            (1,   0,  45, 0, 0.2,  -5, 0.05, 0.5, -80, 0.832499),
+        ),
+    )  # fmt: skip
+
+    test_data["cross_axis_slope"] = atand(
+        (test_data["z_R"] - test_data["z_L"])
+        / (test_data["x_L"] - test_data["x_R"])
+    )
+    test_data["pitch"] = test_data["x_L"] - test_data["x_R"]
+    # switch Left/Right rows if needed to make the right one the shaded
+    where_switch = test_data["theta_s"] >= 0
+    test_data["theta_L"], test_data["theta_R"] = np.where(
+        where_switch,
+        (test_data["theta_L"], test_data["theta_R"]),
+        (test_data["theta_R"], test_data["theta_L"]),
+    )
+    test_data.rename(
+        columns={
+            "theta_L": "shading_row_rotation",
+            "theta_R": "shaded_row_rotation",
+            "z_0": "surface_to_axis_offset",
+            "l": "collector_width",
+            "theta_s": "solar_zenith",  # for the projected solar zenith angle
+            "f_s": "shaded_fraction",
+        },
+        inplace=True,
+    )
+    test_data.drop(columns=["x_L", "z_L", "x_R", "z_R"], inplace=True)
+    # for the projected solar zenith angle
+    # this returns the same psz angle as test_data["solar_zenith"]
+    test_data["solar_azimuth"], test_data["axis_azimuth"] = 180, 90
+
+    # return 1st: premises dataframe first and 2nd: shaded fraction series
+    return (
+        test_data.drop(columns=["shaded_fraction"]),
+        test_data["shaded_fraction"],
+    )
+
+
+def test_shaded_fraction1d(sf1d_premises_and_expected):
+    """Tests shaded_fraction1d"""
+    # unwrap sf_premises_and_expected values premises and expected results
+    premises, expected_sf_array = sf1d_premises_and_expected
+    # test scalar input
+    expected_result = expected_sf_array.iloc[0]
+    sf = shading.shaded_fraction1d(**premises.iloc[0])
+    assert_approx_equal(sf, expected_result)
+    assert isinstance(sf, float)
+
+    # test Series inputs
+    sf_vec = shading.shaded_fraction1d(**premises)
+    assert_allclose(sf_vec, expected_sf_array, atol=1e-6)
+    assert isinstance(sf_vec, pd.Series)
+
+
+def test_shaded_fraction1d_unprovided_shading_row_rotation():
+    """Tests shaded_fraction1d without providing shading_row_rotation"""
+    test_data = pd.DataFrame(
+        columns=[
+            "shaded_row_rotation", "surface_to_axis_offset", "collector_width",
+            "solar_zenith", "cross_axis_slope", "pitch", "solar_azimuth",
+            "axis_azimuth", "expected_sf",
+        ],
+        data=[
+            (30, 0, 5.7735, 60, 0, 5, 90, 180, 0),
+            (30, 0, 5.7735, 79, 0, 5, 90, 180, 0.5),
+            (30, 0, 5.7735, 90, 0, 5, 90, 180, 1),
+        ],
+    )  # fmt: skip
+    expected_sf = test_data["expected_sf"]
+    premises = test_data.drop(columns=["expected_sf"])
+    sf = shading.shaded_fraction1d(**premises)
+    assert_allclose(sf, expected_sf, atol=1e-2)

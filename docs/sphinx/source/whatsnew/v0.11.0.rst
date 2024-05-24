@@ -11,6 +11,9 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* ``pvlib.iotools.read_srml_month_from_solardat()`` was deprecated in v0.10.0 and has
+  now been completely removed. The function is replaced by :py:func:`~pvlib.iotools.get_srml()`.
+  (:pull:`1779`, :pull:`1989`)
 
 
 Enhancements

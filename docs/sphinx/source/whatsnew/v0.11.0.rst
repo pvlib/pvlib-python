@@ -15,6 +15,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add :py:func:`pvlib.iotools.get_meteonorm_tmy` for retrieving
+  Meteonorm weather and solar irradiance data. (:pull:`2066`)
 
 
 Bug fixes

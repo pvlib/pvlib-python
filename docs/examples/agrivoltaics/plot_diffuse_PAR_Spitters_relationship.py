@@ -74,7 +74,7 @@ solar_position.index = tmy.index  # reset index to end of the hour
 # Calculate Photosynthetically Active Radiation
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # The total PAR can be approximated as 0.50 times the global horizontal
-# irradiance (GHI) for solar elevation higher that :math:`10^\circ`.
+# irradiance (GHI) for solar elevation higher that 10°.
 # See section on *Photosynthetically Active Radiation* in pp. 222-223 of [1]_.
 
 par = pd.DataFrame({"total": 0.50 * tmy["ghi"]}, index=tmy.index)

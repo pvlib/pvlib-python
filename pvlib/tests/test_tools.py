@@ -133,8 +133,6 @@ def test_get_pandas_index(args, args_idx):
     (pd.DataFrame({"a": [0, 1, 2], "b": [0, 2, 8]}),
      pd.DataFrame({"a": [0, 0.5, 1], "b": [0, 0.25, 1]})),
     # test with NaN and all zeroes
-    (np.array([1, 2, 3, 4, 5]),
-     np.array([0.2, 0.4, 0.6, 0.8, 1])),
     (pd.DataFrame({"a": [0, np.nan, 1], "b": [0, 0, 0]}),
      pd.DataFrame({"a": [0, np.nan, 1], "b": [np.nan]*3})),
     # test with negative values

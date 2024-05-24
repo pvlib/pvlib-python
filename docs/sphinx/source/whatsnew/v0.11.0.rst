@@ -7,7 +7,7 @@ v0.11.0 (Anticipated June, 2024)
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
-
+* Remove the function and all its reference `poa_horizontal_ratio`. (:issue:`1697`, :pull:`2021`)
 
 Deprecations
 ~~~~~~~~~~~~
@@ -41,3 +41,4 @@ Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
+* Siddharth Kaul (:ghuser:`k10blogger`)

@@ -1,18 +1,6 @@
 .. _whatsnew_01050:
 
 
-v0.10.5 (Anticipated June 2024)
--------------------------------
-
-
-Deprecations
-~~~~~~~~~~~~
-
-
-Enhancements
-~~~~~~~~~~~~
-* Updated `~pvlib.iotools.MIDC_VARIABLE_MAP`~ to reflect
-  changes in instrumentation. (:pull:`2006`)
 v0.10.5 (May 6, 2024)
 ---------------------
 
@@ -45,7 +33,6 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-* Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Cliff Hansen (:ghuser:`cwhanse`)
 * :ghuser:`apct69`
 * Mark Mikofski (:ghuser:`mikofski`)

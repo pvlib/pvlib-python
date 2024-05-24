@@ -49,7 +49,7 @@ def _numdiff(x, f):
     ----------
     .. [1] M. K. Bowen, R. Smith, "Derivative formulae and errors for
        non-uniformly spaced points", Proceedings of the Royal Society A, vol.
-       461 pp 1975 - 1997, July 2005. DOI: 10.1098/rpsa.2004.1430
+       461 pp 1975 - 1997, July 2005. :doi:`10.1098/rpsa.2004.1430`
     .. [2] PVLib MATLAB https://github.com/sandialabs/MATLAB_PV_LIB
     """
 
@@ -136,9 +136,9 @@ def rectify_iv_curve(voltage, current, decimals=None):
     ----------
     voltage : numeric [V]
     current : numeric [A]
-    decimals : int or None, default None
+    decimals : int, optional
         number of decimal places to which voltage is rounded to remove
-        duplicated points. If None, no rounding is done.
+        duplicated points. If not specified, no rounding is done.
 
     Returns
     -------

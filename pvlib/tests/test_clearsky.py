@@ -631,7 +631,7 @@ def test_detect_clearsky_window(detect_clearsky_data):
     clear_samples = clearsky.detect_clearsky(
         expected['GHI'], cs['ghi'], window_length=3)
     expected = expected['Clear or not'].copy()
-    expected.iloc[-3:] = True
+    expected.iloc[-3:] = 1
     assert_series_equal(expected, clear_samples,
                         check_dtype=False, check_names=False)
 
@@ -745,7 +745,7 @@ def test__calc_stats(detect_clearsky_helper_data):
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""
     times = pd.date_range(start='1/1/2015 0:00', end='12/31/2015 23:00',
-                          freq='H')
+                          freq='h')
     tz = -7  # test timezone
     gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
     times = times.tz_localize(gmt_tz)  # set timezone
@@ -855,7 +855,8 @@ def test_bird():
     # test scalars just at noon
     # XXX: calculations start at 12am so noon is at index = 12
     irrads3 = clearsky.bird(
-        zenith[12], airmass[12], aod_380nm, aod_500nm, h2o_cm, dni_extra=etr[12]
+        zenith[12], airmass[12], aod_380nm, aod_500nm, h2o_cm,
+        dni_extra=etr.iloc[12]
     )
     Eb3, Ebh3, Gh3, Dh3 = (irrads3[_] for _ in field_names)
     # XXX: testdata starts at 1am so noon is at index = 11

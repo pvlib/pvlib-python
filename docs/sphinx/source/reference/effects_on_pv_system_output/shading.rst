@@ -10,3 +10,4 @@ Shading
    shading.masking_angle
    shading.masking_angle_passias
    shading.sky_diffuse_passias
+   shading.projected_solar_zenith_angle

@@ -7,10 +7,10 @@ import pandas as pd
 import pvlib
 from pvlib import solarposition
 
-from pkg_resources import parse_version
+from packaging.version import Version
 
 
-if parse_version(pvlib.__version__) >= parse_version('0.6.1'):
+if Version(pvlib.__version__) >= Version('0.6.1'):
     sun_rise_set_transit_spa = solarposition.sun_rise_set_transit_spa
 else:
     sun_rise_set_transit_spa = solarposition.get_sun_rise_set_transit

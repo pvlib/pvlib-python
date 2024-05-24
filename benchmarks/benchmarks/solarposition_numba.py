@@ -7,7 +7,7 @@ code during setup.
 Try to keep relevant sections in sync with benchmarks/solarposition.py
 """
 
-from pkg_resources import parse_version
+from packaging.version import Version
 import pandas as pd
 
 import os
@@ -18,7 +18,7 @@ import pvlib  # NOQA: E402
 from pvlib import solarposition  # NOQA: E402
 
 
-if parse_version(pvlib.__version__) >= parse_version('0.6.1'):
+if Version(pvlib.__version__) >= Version('0.6.1'):
     sun_rise_set_transit_spa = solarposition.sun_rise_set_transit_spa
 else:
     sun_rise_set_transit_spa = solarposition.get_sun_rise_set_transit

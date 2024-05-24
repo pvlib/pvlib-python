@@ -25,15 +25,15 @@ def fit_sandia_simple(voltage, current, v_oc=None, i_sc=None, v_mp_i_mp=None,
         1D array of `float` type containing current at each point on the IV
         curve, from ``i_sc`` to 0 inclusive. [A]
 
-    v_oc : float, default None
+    v_oc : float, optional
         Open circuit voltage. If not provided, ``v_oc`` is taken as the
         last point in the ``voltage`` array. [V]
 
-    i_sc : float, default None
+    i_sc : float, optional
         Short circuit current. If not provided, ``i_sc`` is taken as the
         first point in the ``current`` array. [A]
 
-    v_mp_i_mp : tuple of float, default None
+    v_mp_i_mp : tuple of float, optional
         Voltage, current at maximum power point. If not provided, the maximum
         power point is found at the maximum of ``voltage`` \times ``current``.
         [V], [A]

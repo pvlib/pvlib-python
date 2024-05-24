@@ -52,7 +52,7 @@ def test_sapm_ndarray(sapm_default):
 
 
 def test_sapm_series(sapm_default):
-    times = pd.date_range(start='2015-01-01', end='2015-01-02', freq='12H')
+    times = pd.date_range(start='2015-01-01', end='2015-01-02', freq='12h')
     temps = pd.Series([0, 10, 5], index=times)
     irrads = pd.Series([0, 500, 0], index=times)
     winds = pd.Series([10, 5, 0], index=times)
@@ -89,7 +89,7 @@ def test_pvsyst_cell_ndarray():
 
 
 def test_pvsyst_cell_series():
-    times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12H")
+    times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12h")
     temps = pd.Series([0, 10, 5], index=times)
     irrads = pd.Series([0, 500, 0], index=times)
     winds = pd.Series([10, 5, 0], index=times)
@@ -161,7 +161,7 @@ def test_ross():
 
 
 def test_faiman_series():
-    times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12H")
+    times = pd.date_range(start="2015-01-01", end="2015-01-02", freq="12h")
     temps = pd.Series([0, 10, 5], index=times)
     irrads = pd.Series([0, 500, 0], index=times)
     winds = pd.Series([10, 5, 0], index=times)
@@ -255,7 +255,7 @@ def test_noct_sam():
                                   np.array(module_efficiency))
     assert_allclose(result, expected)
     dr = pd.date_range(start='2020-01-01 12:00:00', end='2020-01-01 13:00:00',
-                       freq='1H')
+                       freq='1h')
     result = temperature.noct_sam(pd.Series(index=dr, data=poa_global),
                                   pd.Series(index=dr, data=temp_air),
                                   pd.Series(index=dr, data=wind_speed),

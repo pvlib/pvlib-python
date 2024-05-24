@@ -347,12 +347,6 @@ def sr_and_eqe_fixture():
 
 
 def test_sr_to_qe(sr_and_eqe_fixture):
-    # scalar type
-    qe = spectrum.sr_to_qe(
-        sr_and_eqe_fixture["spectral_response"].values[0],
-        sr_and_eqe_fixture.index.values[0],  # wavelength, nm
-    )
-    assert_approx_equal(qe, sr_and_eqe_fixture["quantum_efficiency"].values[0])
     # vector type
     qe = spectrum.sr_to_qe(
         sr_and_eqe_fixture["spectral_response"].values,
@@ -385,12 +379,6 @@ def test_sr_to_qe(sr_and_eqe_fixture):
 
 
 def test_qe_to_sr(sr_and_eqe_fixture):
-    # scalar type
-    sr = spectrum.qe_to_sr(
-        sr_and_eqe_fixture["quantum_efficiency"].values[0],
-        sr_and_eqe_fixture.index.values[0],  # wavelength, nm
-    )
-    assert_approx_equal(sr, sr_and_eqe_fixture["spectral_response"].values[0])
     # vector type
     sr = spectrum.qe_to_sr(
         sr_and_eqe_fixture["quantum_efficiency"].values,
@@ -422,3 +410,12 @@ def test_qe_to_sr(sr_and_eqe_fixture):
         _ = spectrum.qe_to_sr(
             sr_and_eqe_fixture["quantum_efficiency"].values
         )
+
+
+def test_qe_and_sr_reciprocal_conversion(sr_and_eqe_fixture):
+    # test that the conversion functions are reciprocal
+    qe = spectrum.sr_to_qe(sr_and_eqe_fixture["spectral_response"])
+    sr = spectrum.qe_to_sr(qe)
+    assert_allclose(sr, sr_and_eqe_fixture["spectral_response"])
+    qe = spectrum.sr_to_qe(sr)
+    assert_allclose(qe, sr_and_eqe_fixture["quantum_efficiency"])

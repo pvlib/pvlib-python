@@ -11,6 +11,7 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* The deprecated :py:func:`pvlib.modelchain.basic_chain` has now been removed. (:pull:`1862`)
 
 
 Enhancements

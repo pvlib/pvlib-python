@@ -15,12 +15,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-* Add module :py:mod:`pvlib.par` to facilitate the design of Agrivoltaic
-  systems.
-  - Adds function :py:func:`pvlib.spectrum.spitters_relationship` to calculate the
-    diffuse fraction of Photosynthetically Active Radiation (PAR) from the
-    global diffuse fraction and the solar zenith.
-    (:issue:`2047`, :pull:`2048`)
+- Add function :py:func:`pvlib.spectrum.spitters_relationship` to calculate the
+  diffuse fraction of Photosynthetically Active Radiation (PAR) from the
+  global diffuse fraction and the solar zenith.
+  (:issue:`2047`, :pull:`2048`)
 
 
 Bug fixes

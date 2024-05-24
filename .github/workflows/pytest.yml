@@ -12,12 +12,12 @@ jobs:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.7, 3.8, 3.9, "3.10", "3.11", "3.12"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
         environment-type: [conda, bare]
         suffix: ['']  # placeholder as an alternative to "-min"
         include:
           - os: ubuntu-latest
-            python-version: 3.7
+            python-version: 3.8
             environment-type: conda
             suffix: -min
         exclude:
@@ -82,9 +82,11 @@ jobs:
           pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == 3.7 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
-        uses: codecov/codecov-action@v3
+        if: matrix.python-version == 3.8 && matrix.suffix == '' && matrix.os == 'ubuntu-latest' && matrix.environment-type == 'conda'
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
           verbose: true
           flags: core  # flags are configured in codecov.yml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

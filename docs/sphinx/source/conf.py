@@ -56,6 +56,9 @@ extensions = [
     'sphinx_toggleprompt',
 ]
 
+mathjax3_config = {'chtml': {'displayAlign': 'left',
+                             'displayIndent': '2em'}}
+
 napoleon_use_rtype = False  # group rtype on same line together with return
 
 # Add any paths that contain templates here, relative to this directory.

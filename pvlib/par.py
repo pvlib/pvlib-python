@@ -24,7 +24,7 @@ def spitters_relationship(solar_zenith, global_diffuse_fraction):
     Returns
     -------
     par_diffuse_fraction : numeric
-        Photosynthetically active radiation in W/m^2.
+        Photosynthetically Active Radiation diffuse fraction. Unitless [0, 1].
 
     Notes
     -----

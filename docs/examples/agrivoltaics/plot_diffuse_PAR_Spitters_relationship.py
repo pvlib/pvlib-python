@@ -13,7 +13,7 @@ active radiation (PAR) from total PAR using Spitter's relationship.
 # with respect to the total PAR is important in agrivoltaic systems, where
 # crops are grown under solar panels. The diffuse fraction of PAR can be
 # calculated using the Spitter's relationship [1]_ implemented in
-# :py:func:`~pvlib.par.spitters_relationship`.
+# :py:func:`~pvlib.spectrum.spitters_relationship`.
 # This model requires the solar zenith angle and the fraction of the global
 # radiation that is diffuse as inputs.
 #
@@ -26,7 +26,7 @@ active radiation (PAR) from total PAR using Spitter's relationship.
 #    pp. 222-223 of [1]_.
 #
 # The key function used in this example is
-# :py:func:`pvlib.par.spitters_relationship` to calculate the diffuse PAR
+# :py:func:`pvlib.spectrum.spitters_relationship` to calculate the diffuse PAR
 # fraction, as a function of global diffuse fraction and solar zenith.
 #
 # References
@@ -83,7 +83,7 @@ par = pd.DataFrame({"total": 0.50 * tmy["ghi"]}, index=tmy.index)
 tmy["diffuse_fraction"] = tmy["dhi"] / tmy["ghi"]
 
 # Calculate diffuse PAR fraction using Spitter's relationship
-par["diffuse_fraction"] = pvlib.par.spitters_relationship(
+par["diffuse_fraction"] = pvlib.spectrum.spitters_relationship(
     solar_position["zenith"], tmy["diffuse_fraction"]
 )
 

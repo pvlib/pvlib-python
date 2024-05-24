@@ -6,4 +6,4 @@ Agrivoltaic Systems Modelling
 .. autosummary::
     :toctree: generated/
     
-    par.spitters_relationship
+    spectrum.spitters_relationship

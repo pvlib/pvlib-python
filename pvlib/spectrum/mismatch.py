@@ -652,11 +652,9 @@ def sr_to_qe(sr, wavelength=None, normalize=False):
     References
     ----------
     .. [1] “Spectral Response,” PV Performance Modeling Collaborative (PVPMC).
-        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/
-        effective-irradiance/spectral-response/
+        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/effective-irradiance/spectral-response/
     .. [2] “Spectral Response | PVEducation,” www.pveducation.org.
-        https://www.pveducation.org/pvcdrom/solar-cell-operation/
-        spectral-response
+        https://www.pveducation.org/pvcdrom/solar-cell-operation/spectral-response
 
     See Also
     --------
@@ -753,11 +751,9 @@ def qe_to_sr(qe, wavelength=None, normalize=False):
     References
     ----------
     .. [1] “Spectral Response,” PV Performance Modeling Collaborative (PVPMC).
-        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/
-        effective-irradiance/spectral-response/
+        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/effective-irradiance/spectral-response/
     .. [2] “Spectral Response | PVEducation,” www.pveducation.org.
-        https://www.pveducation.org/pvcdrom/solar-cell-operation/
-        spectral-response
+        https://www.pveducation.org/pvcdrom/solar-cell-operation/spectral-response
 
     See Also
     --------

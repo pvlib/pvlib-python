@@ -16,7 +16,7 @@ def spitters_relationship(solar_zenith, global_diffuse_fraction):
     Parameters
     ----------
     solar_zenith : numeric
-        Solar zenith angle in degrees :math:`^{\circ}`.
+        Solar zenith angle. Degrees.
 
     global_diffuse_fraction : numeric
         Fraction of the global radiation that is diffuse. Unitless.

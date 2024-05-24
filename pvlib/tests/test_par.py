@@ -3,7 +3,6 @@ Test Photosynthetically Active Radiation (PAR) submodule.
 """
 
 from pvlib import par
-
 import numpy as np
 from numpy.testing import assert_allclose
 

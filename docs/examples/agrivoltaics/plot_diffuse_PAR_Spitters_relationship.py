@@ -3,12 +3,12 @@ Calculating the diffuse PAR using Spitter's relationship
 =========================================================
 
 This example demonstrates how to calculate the diffuse photosynthetically
-active radiation (PAR) using Spitter's relationship.
+active radiation (PAR) from total PAR using Spitter's relationship.
 """
 
 # %%
 # The photosynthetically active radiation (PAR) is a key component in the
-# photosynthesis process of plants. As in photovoltaic systems, the PAR is
+# photosynthesis process of plants. As in photovoltaic systems, PAR can be
 # divided into direct and diffuse components. The diffuse fraction of PAR
 # with respect to the total PAR is important in agrivoltaic systems, where
 # crops are grown under solar panels. The diffuse fraction of PAR can be

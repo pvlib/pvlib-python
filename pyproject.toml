@@ -51,7 +51,7 @@ optional = [
     'cython',
     'ephem',
     'nrel-pysam',
-    'numba',
+    'numba >= 0.17.0',
     'solarfactors',
     'statsmodels',
 ]

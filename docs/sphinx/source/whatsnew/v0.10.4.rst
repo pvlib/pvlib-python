@@ -1,14 +1,14 @@
 .. _whatsnew_01040:
 
 
-v0.10.4 (Anticipated March, 2024)
----------------------------------
+v0.10.4 (March 19, 2024)
+------------------------
 
 
 Enhancements
 ~~~~~~~~~~~~
 * Added the Huld PV model used by PVGIS (:pull:`1940`)
-* Add :py:func:`pvlib.iotools.get_solargis` for retrieving Solargis
+* Add :py:func:`~pvlib.iotools.get_solargis` for retrieving Solargis
   irradiance data. (:pull:`1969`)
 * Added function :py:func:`pvlib.shading.projected_solar_zenith_angle`,
   a common calculation in shading and tracking. (:issue:`1734`, :pull:`1904`)
@@ -16,6 +16,7 @@ Enhancements
   the SOLRAD ground station network. (:pull:`1967`)
 * Added metadata parsing to :py:func:`~pvlib.iotools.read_solrad` to follow the standard iotools
   convention of returning a tuple of (data, meta). Previously the function only returned a dataframe. (:pull:`1968`)
+
 
 Bug fixes
 ~~~~~~~~~
@@ -34,19 +35,18 @@ Bug fixes
   ``temperature_model_parameters`` are specified on the passed ``system`` instead of on its ``arrays``. (:issue:`1759`).
 * :py:func:`pvlib.irradiance.ghi_from_poa_driesse_2023` now correctly makes use
   of the ``xtol`` argument. Previously, it was ignored. (:issue:`1970`, :pull:`1971`)
-* Fixed incorrect unit conversion of precipitable water used for the Solcast iotools functions.
+* Fixed incorrect unit conversion of precipitable water used for the Solcast iotools functions. (:pull:`1969`)
 * :py:class:`~pvlib.modelchain.ModelChain.infer_temperature_model` now raises a more useful error when
   the temperature model cannot be inferred (:issue:`1946`)
-
-Testing
-~~~~~~~
+* The default URL for retrieving irradiance data from the SRML network was updated in
+  :py:func:`~pvlib.iotools.get_srml` (:pull:`1957`, :issue:`1922`)
 
 
 Documentation
 ~~~~~~~~~~~~~
-* Improved references and description for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:pull:`1953`)
+* Improved references and description for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:pull:`1883`, :pull:`1953`)
 * Fixed broken URLs in various places. (:pull:`1957`, :pull:`1960`)
-* Clarified documentation for :py:func:`~pvlib.irradiance.get_ground_diffuse`. (:pull:`1883`)
+* Added a gallery example with a model for OEDI system 9068. (:pull:`1985`)
 
 
 Requirements
@@ -64,3 +64,7 @@ Contributors
 * Roma Koulikov (:ghuser:`matsuobasho`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Peter Dudfield (:ghuser:`peterdudfield`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Jules Chéron (:ghuser:`jules-ch`)

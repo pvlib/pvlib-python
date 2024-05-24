@@ -413,14 +413,9 @@ def _solcast2pvlib(data):
     a pandas.DataFrame with the data cast to pvlib's conventions
     """
     # move from period_end to period_middle as per pvlib convention
-    # to support Pandas 0.25 we cast PTXX to XX as ISO8601
-    # durations without days aren't supported:
-    # https://github.com/pandas-dev/pandas/pull/37159\
-    # Can remove once minimum supported Pandas version is >=1.2
-    periods = data.period.str.replace("PT", "").str.replace("M", "m")
 
     data["period_mid"] = pd.to_datetime(
-        data.period_end) - pd.to_timedelta(periods) / 2
+        data.period_end) - pd.to_timedelta(data.period.values) / 2
     data = data.set_index("period_mid").drop(columns=["period_end", "period"])
 
     # rename and convert variables

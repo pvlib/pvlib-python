@@ -122,6 +122,7 @@ ax_l.plot(
     linestyle="-.",
 )
 ax_l.grid()
+ax_l.legend(loc="upper left")
 
 ax_r = ax_l.twinx()
 ax_r.set(ylabel="Diffuse fraction")
@@ -139,7 +140,6 @@ ax_r.plot(
     color="chocolate",
     linestyle=":",
 )
+ax_r.legend(loc="upper right")
 
-lines = ax_l.get_lines() + ax_r.get_lines()
-plt.legend(lines, (line.get_label() for line in lines))
 plt.show()

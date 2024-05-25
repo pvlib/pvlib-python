@@ -38,7 +38,7 @@ DATA_KEYS = WEATHER_KEYS + POA_KEYS + TEMPERATURE_KEYS
 
 # these dictionaries contain the default configuration for following
 # established modeling sequences. They can be used in combination with
-# basic_chain and ModelChain. They are used by the ModelChain methods
+# ModelChain, particularly they are used by the methods
 # ModelChain.with_pvwatts, ModelChain.with_sapm, etc.
 
 # pvwatts documentation states that it uses the following reference for

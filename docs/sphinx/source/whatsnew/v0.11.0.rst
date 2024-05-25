@@ -7,11 +7,11 @@ v0.11.0 (Anticipated June, 2024)
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
+* The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
 
 
 Deprecations
 ~~~~~~~~~~~~
-* The deprecated :py:func:`pvlib.modelchain.basic_chain` has now been removed. (:pull:`1862`)
 
 
 Enhancements

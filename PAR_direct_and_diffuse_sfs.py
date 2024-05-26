@@ -1,6 +1,11 @@
 # %%
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.spatial import ConvexHull
+from scipy.spatial.transform import Rotation as R
+from pvlib.tools import sind, cosd
+
+from itertools import repeat
 
 # %%
 x0, y0, z0 = 0, 0, 1 / 2  # m
@@ -17,12 +22,22 @@ corners0 = np.array(
 
 # %%
 # def rotation
+def Rz(theta):
+    return np.array(
+        [
+            [cosd(theta), -sind(theta), 0],
+            [sind(theta), cosd(theta), 0],
+            [0, 0, 1],
+        ]
+    )
+
+
 def Ry(theta):
     return np.array(
         [
-            [np.cos(theta), 0, np.sin(theta)],
+            [cosd(theta), 0, sind(theta)],
             [0, 1, 0],
-            [-np.sin(theta), 0, np.cos(theta)],
+            [-sind(theta), 0, cosd(theta)],
         ]
     )
 
@@ -31,8 +46,8 @@ def Rx(theta):
     return np.array(
         [
             [1, 0, 0],
-            [0, np.cos(theta), -np.sin(theta)],
-            [0, np.sin(theta), np.cos(theta)],
+            [0, cosd(theta), -sind(theta)],
+            [0, sind(theta), cosd(theta)],
         ]
     )
 
@@ -57,7 +72,7 @@ def test_rotate_row_with_center_pivot():
             [1, 1, 0],
         ]
     )
-    corners_rotated = rotate_row_with_center_pivot(corners, -np.pi / 2, 0)
+    corners_rotated = rotate_row_with_center_pivot(corners, -90, 0)
     print(corners_rotated)
 
 
@@ -70,9 +85,9 @@ def plot_corners(corners, fig=None, ax=None, **kwargs) -> plt.Figure:
         fig = plt.figure()
     if ax is None:
         ax = fig.add_subplot(111, projection="3d")
-    x_ = corners[:, 0].reshape(2, 2)
-    y_ = corners[:, 1].reshape(2, 2)
-    z_ = corners[:, 2].reshape(2, 2)
+    x_ = corners[:, 0].reshape(2, -1)
+    y_ = corners[:, 1].reshape(2, -1)
+    z_ = corners[:, 2].reshape(2, -1)
     ax.plot_surface(x_, y_, z_, **kwargs)
     return fig
 
@@ -82,7 +97,7 @@ fig = plot_corners(corners0, alpha=0.5)
 fig.show()
 
 # %%
-rotated_fixed_tilt = rotate_row_with_center_pivot(corners0, -np.pi / 2, 0)
+rotated_fixed_tilt = rotate_row_with_center_pivot(corners0, -90, 0)
 fig = plot_corners(rotated_fixed_tilt, alpha=0.5)
 fig.show()
 
@@ -92,9 +107,9 @@ def solar_vector(zenith, azimuth):
     # Eq. (8), but in terms of zenith instead of elevation
     return np.array(
         [
-            np.sin(zenith) * np.sin(azimuth),
-            np.sin(zenith) * np.cos(azimuth),
-            np.cos(zenith),
+            sind(zenith) * sind(azimuth),
+            sind(zenith) * cosd(azimuth),
+            cosd(zenith),
         ]
     )
 
@@ -103,9 +118,9 @@ def normal_vector_of_row(tilt, azimuth):
     # Eq. (18)
     return np.array(
         [
-            np.sin(tilt) * np.cos(azimuth),
-            np.sin(tilt) * np.sin(azimuth),
-            np.cos(tilt),
+            sind(tilt) * cosd(azimuth),
+            sind(tilt) * sind(azimuth),
+            cosd(tilt),
         ]
     )
 
@@ -127,14 +142,16 @@ def corners_projection_onto_plane(
 
 # %%
 # set hypothetical values
-solar_zenith = np.pi / 2 - 1e-1
-solar_azimuth = np.pi
-row_tilt = np.pi / 6
-row_azimuth = np.pi
+solar_zenith = 30
+solar_azimuth = 180
+row_tilt = 30
+row_azimuth = 180
+plane_tilt = -10
+plane_azimuth = 90
 
 # create the row
 corners1 = rotate_row_with_center_pivot(corners0, row_tilt, 0)
-corners_projected = corners_projection_onto_plane(corners1, solar_zenith, solar_azimuth, 0, 0)
+corners_projected = corners_projection_onto_plane(corners1, solar_zenith, solar_azimuth, plane_tilt, plane_azimuth)
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection="3d")
@@ -144,5 +161,23 @@ ax.set_zlim(0, 1)
 _ = plot_corners(corners1, ax=ax, alpha=0.5, color="grey")
 _ = plot_corners(corners_projected, ax=ax, alpha=0.5, color="brown")
 fig.show()
+
+# %%
+# Compare corners_projected with corners after rotation to new coordinate systems of the projection plane, to remove the third coordinate
+
+def from_3d_plane_to_2d(points, tilt, azimuth):
+    # Section 4.3 in [2]
+    R_z = Rz(90 + azimuth)
+    R_x = Rx(tilt)
+    rot = (R_z @ R_x).T
+    if points.ndim == 1:
+        points = points.reshape(1, -1)
+    new_points = np.fromiter(map(rot.__matmul__, points), dtype=(float, 3))
+    return np.delete(new_points, 2, axis=1)
+
+
+new_points = from_3d_plane_to_2d(corners_projected, plane_tilt, plane_azimuth)
+
+print(new_points)
 
 # %%

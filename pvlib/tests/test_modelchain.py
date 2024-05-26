@@ -1787,63 +1787,6 @@ def test_ModelChain_no_extra_kwargs(sapm_dc_snl_ac_system, location):
         ModelChain(sapm_dc_snl_ac_system, location, arbitrary_kwarg='value')
 
 
-def test_basic_chain_alt_az(sam_data, cec_inverter_parameters,
-                            sapm_temperature_cs5p_220m):
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6h')
-    latitude = 32.2
-    longitude = -111
-    surface_tilt = 0
-    surface_azimuth = 0
-    modules = sam_data['sandiamod']
-    module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    temp_model_params = sapm_temperature_cs5p_220m.copy()
-    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
-        dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                        surface_tilt, surface_azimuth,
-                                        module_parameters, temp_model_params,
-                                        cec_inverter_parameters)
-
-    expected = pd.Series(np.array([111.621405, -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
-
-
-def test_basic_chain_altitude_pressure(sam_data, cec_inverter_parameters,
-                                       sapm_temperature_cs5p_220m):
-    times = pd.date_range(start='20160101 1200-0700',
-                          end='20160101 1800-0700', freq='6h')
-    latitude = 32.2
-    longitude = -111
-    altitude = 700
-    surface_tilt = 0
-    surface_azimuth = 0
-    modules = sam_data['sandiamod']
-    module_parameters = modules['Canadian_Solar_CS5P_220M___2009_']
-    temp_model_params = sapm_temperature_cs5p_220m.copy()
-    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
-        dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                        surface_tilt, surface_azimuth,
-                                        module_parameters, temp_model_params,
-                                        cec_inverter_parameters,
-                                        pressure=93194)
-
-    expected = pd.Series(np.array([113.190045, -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
-
-    with pytest.warns(pvlibDeprecationWarning, match='with_pvwatts'):
-        dc, ac = modelchain.basic_chain(times, latitude, longitude,
-                                        surface_tilt, surface_azimuth,
-                                        module_parameters, temp_model_params,
-                                        cec_inverter_parameters,
-                                        altitude=altitude)
-
-    expected = pd.Series(np.array([113.189814, -2.00000000e-02]),
-                         index=times)
-    assert_series_equal(ac, expected)
-
-
 def test_complete_irradiance_clean_run(sapm_dc_snl_ac_system, location):
     """The DataFrame should not change if all columns are passed"""
     mc = ModelChain(sapm_dc_snl_ac_system, location)

@@ -173,6 +173,7 @@ def from_3d_plane_to_2d(points, tilt, azimuth):
     if points.ndim == 1:
         points = points.reshape(1, -1)
     new_points = np.fromiter(map(rot.__matmul__, points), dtype=(float, 3))
+    assert np.allclose(new_points[:, 2], 0), "The third coordinate should be zero, check input parameters are consistent with the projection plane."
     return np.delete(new_points, 2, axis=1)
 
 

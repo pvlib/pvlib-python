@@ -7,7 +7,7 @@ v0.11.0 (Anticipated June, 2024)
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
-
+* Remove the function and all its reference `poa_horizontal_ratio`. (:issue:`1697`, :pull:`2021`)
 
 Deprecations
 ~~~~~~~~~~~~
@@ -15,6 +15,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add function :py:func:`pvlib.shading.shaded_fraction1d`, to calculate the
+  shade perpendicular to ``axis_azimuth``. The function is applicable to both
+  fixed-tilt and one-axis tracking systems.
+  (:issue:`1689`, :pull:`1725`, :pull:`1962`)
 
 
 Bug fixes

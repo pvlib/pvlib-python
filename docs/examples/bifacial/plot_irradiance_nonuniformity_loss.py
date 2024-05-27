@@ -11,8 +11,9 @@ Calculate the incident irradiance lost to non-uniformity in a bifacial PV array
 # When each cell works at different irradiance levels, the power produced by
 # the module is less than the sum of the power produced by each cell since the
 # maximum power point of each cell is different, but cells connected in series
-# will operate at the same current. This is known as irradiance non-uniformity
-# loss.
+# will operate at the same current. In that case, a deviation is found
+# between the MPP and the working point of the cells.
+# This is known as irradiance non-uniformity loss.
 #
 # Calculating the IV curve of each cell and then matching the working point of
 # the whole module is computationally expensive, so a model to account for this

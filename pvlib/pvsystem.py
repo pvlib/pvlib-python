@@ -3110,12 +3110,27 @@ def nonuniform_irradiance_deline_power_loss(
 
        M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}} \qquad & \text{(1)}
 
-    It is recommended to see the example
-    :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`
-    for a complete use case and the RMAD function implementation.
-
     In the section *See Also*, you will find two packages that can be used to
     calculate the irradiance at different points of the module.
+
+    .. note::
+       The global irradiance RMAD is different from the backside irradiance
+       RMAD.
+
+    In case the RMAD of the backside irradiance is known, the global RMAD can
+    be calculated as follows, assuming the front irradiance RMAD is
+    negligible [2]_:
+
+    .. math::
+
+       RMAD(k \cdot X + c) = RMAD(X) \cdot k \frac{k \bar{X}}{k \bar{X} + c}
+       = RMAD(X) \cdot k \frac{1}{1 + \frac{c}{k \bar{X}}}
+
+    by similarity with equation (2) of [1]_:
+
+    .. math::
+
+       G_{total\,i} = G_{front\i} + \phi_{Bifi} G_{rear,i}
 
     See Also
     --------

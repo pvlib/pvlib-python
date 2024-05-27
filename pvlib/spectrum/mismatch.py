@@ -265,11 +265,11 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     SMARTS, spectrums are simulated with all combinations of AMa and
     Pw where:
 
-       * :math:`0.5 \textrm{cm} <= Pw <= 5 \textrm{cm}`
-       * :math:`1.0 <= AM_a <= 5.0`
-       * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
-       * spectrum simulated on a plane normal to the sun
-       * All other parameters fixed at G173 standard
+    * :math:`0.5 \textrm{cm} <= Pw <= 5 \textrm{cm}`
+    * :math:`1.0 <= AM_a <= 5.0`
+    * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
+    * spectrum simulated on a plane normal to the sun
+    * All other parameters fixed at G173 standard
 
     From these simulated spectra, M is calculated using the known
     quantum efficiency curves. Multiple linear regression is then
@@ -291,11 +291,11 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         'multisi', and 'polysi' (can be lower or upper case). If provided,
         module_type selects default coefficients for the following modules:
 
-            * 'cdte' - First Solar Series 4-2 CdTe module.
-            * 'monosi', 'xsi' - First Solar TetraSun module.
-            * 'multisi', 'polysi' - anonymous multi-crystalline silicon module.
-            * 'cigs' - anonymous copper indium gallium selenide module.
-            * 'asi' - anonymous amorphous silicon module.
+        * 'cdte' - First Solar Series 4-2 CdTe module.
+        * 'monosi', 'xsi' - First Solar TetraSun module.
+        * 'multisi', 'polysi' - anonymous multi-crystalline silicon module.
+        * 'cigs' - anonymous copper indium gallium selenide module.
+        * 'asi' - anonymous amorphous silicon module.
 
         The module used to calculate the spectral correction
         coefficients corresponds to the Multi-crystalline silicon

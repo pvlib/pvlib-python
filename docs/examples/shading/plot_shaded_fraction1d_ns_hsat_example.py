@@ -15,7 +15,9 @@ in a North-South horizontal single axis tracker (HSAT) configuration.
 #
 # It is highly recommended to read :py:func:`pvlib.shading.shaded_fraction1d`
 # documentation to understand the input parameters and the method's
-# capabilities.
+# capabilities. For more in-depth information, please see the journal paper
+# `10.1063/5.0202220 <https://doi.org/10.1063/5.0202220>`_ describing
+# the methodology.
 #
 # Let's start by obtaining the true-tracking angles for each of the rows and
 # limiting the angles to the range of -50 to 50 degrees. This decision is

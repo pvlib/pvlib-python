@@ -7,6 +7,8 @@ v0.11.0 (Anticipated June, 2024)
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
+* The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
+* Remove the `poa_horizontal_ratio` function and all of its references. (:issue:`1697`, :pull:`2021`)
 
 
 Deprecations
@@ -48,3 +50,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Siddharth Kaul (:ghuser:`k10blogger`)

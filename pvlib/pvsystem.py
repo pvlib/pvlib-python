@@ -3131,7 +3131,7 @@ def nonuniform_irradiance_deline_power_loss(
 
     .. math::
 
-       G_{total\,i} = G_{front\i} + \phi_{Bifi} G_{rear,i}
+       G_{total\,i} = G_{front\,i} + \phi_{Bifi} G_{rear\,i}
 
     See Also
     --------

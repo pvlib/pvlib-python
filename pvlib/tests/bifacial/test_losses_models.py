@@ -48,17 +48,17 @@ def test_power_mismatch_deline():
     result_mms = bifacial.power_mismatch_deline(pd.Series(premise_rmads))
     assert isinstance(result_mms, pd.Series)
 
-    # test fillfactor_ratio
-    # straightforward
+    # test fillfactor
+    # with an internal model
     result_mms = bifacial.power_mismatch_deline(
-        premise_rmads, fillfactor_ratio=0.65 / 0.79
+        premise_rmads, fillfactor=0.65
     )
     assert_allclose(result_mms, expected_sat_mms * 0.65 / 0.79, atol=1e-5)
-    # with custom model
-    result_mms = bifacial.power_mismatch_deline(
-        premise_rmads, model=polynomial, fillfactor_ratio=0.24
-    )
-    assert_allclose(result_mms, (1 + premise_rmads) * 0.24, atol=1e-5)
+    # fails for a custom polynomial
+    with pytest.raises(ValueError, match="Fill factor can only be used"):
+        bifacial.power_mismatch_deline(
+            premise_rmads, model=polynomial, fillfactor=0.24
+        )
 
     # test raises error on inexistent model
     with pytest.raises(ValueError, match="Invalid model 'foo'"):

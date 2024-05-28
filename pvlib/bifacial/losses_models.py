@@ -3,12 +3,12 @@ import numpy as np
 from typing import Literal
 
 
-def power_mismatch_deline (
+def power_mismatch_deline(
     rmad,
     model: Literal[
         "fixed-tilt", "single-axis-tracking"
     ] = "single-axis-tracking",
-    fillfactor_ratio: float = None,
+    fillfactor: float = None,
 ):
     r"""
     Estimate the power loss due to irradiance non-uniformity.
@@ -19,11 +19,10 @@ def power_mismatch_deline (
     Depending on the mounting type, the power loss is estimated with either
     equation (11) or (12) of [1]_. Passing a custom polynomial is also valid.
 
-    Use ``fillfactor_ratio`` to account for different fill factors between the
-    trained model and the module of interest. The fill factor used for
-    developing the models ``"single-axis-tracking" and "fixed-tilt"`` is
-    :math:`0.79`. For example, if the fill factor of the module of interest is
-    :math:`0.65`, then set ``fillfactor_ratio = 0.65 / 0.79``.
+    Use ``fillfactor`` to account for different fill factors between the
+    trained model and the module of interest.
+    For example, if the fill factor of the module of interest is
+    :math:`0.65`, then set ``fillfactor=0.65``.
 
     .. versionadded:: 0.11.0
 
@@ -48,11 +47,17 @@ def power_mismatch_deline (
         term and the last element is the highest order term. A
         :py:`numpy:numpy.polynomial.Polynomial` will be created internally.
 
-    fillfactor_ratio : float, optional
-        The ratio of the fill factor of the module of interest to the fill
-        factor used for developing the models. Fill factor used for models
-        ``"single-axis-tracking"`` and ``"fixed-tilt"`` is 0.79. For a module
-        with fill factor 0.65, set ``fillfactor_ratio = 0.65 / 0.79``.
+    fillfactor : float, optional
+        Fill factor at standard test condition (STC) of the module.
+        Accounts for different fill factors between the trained model and the
+        module of interest, whose ``fillfactor`` is 0.79. Only affects the
+        model if it is any of the provided.
+        Raises a ``ValueError`` if the model is a custom polynomial.
+        Internally, this argument is with equation (7) of [1]_:
+
+        .. math::
+
+           M[\%]_{FF_1} = M[\%]_{FF_0} \frac{FF_1}{FF_0}
 
     Returns
     -------
@@ -132,13 +137,21 @@ def power_mismatch_deline (
                 f"Invalid model '{model}'. Available models are "
                 f"{list(_MODEL_POLYNOMS.keys())}."
             )
-    elif isinstance(model, np.polynomial.Polynomial):
-        model_polynom = model
-    else:  # expect an iterable
-        model_polynom = np.polynomial.Polynomial(coef=model)
-
-    if fillfactor_ratio:  # General fill factor ratio, so it's always used
-        # Eq. (9), [1]
-        model_polynom = model_polynom * fillfactor_ratio
+        else:
+            if fillfactor:
+                # Use fillfactor to modify output of a known trained model
+                # Eq. (7), [1]
+                model_polynom = model_polynom * fillfactor / 0.79
+    else:
+        if fillfactor:
+            raise ValueError(
+                    "Fill factor can only be used with predefined models. "
+                    "Modify polynomial or multiply output by "
+                    "'module_fillfactor / training_fillfactor'."
+                )
+        if isinstance(model, np.polynomial.Polynomial):
+            model_polynom = model
+        else:  # expect an iterable
+            model_polynom = np.polynomial.Polynomial(coef=model)
 
     return model_polynom(rmad)

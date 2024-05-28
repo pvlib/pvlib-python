@@ -8,4 +8,4 @@ Loss models
 
    pvsystem.combine_loss_factors
    pvsystem.dc_ohms_from_percent
-   pvsystem.nonuniform_irradiance_deline_power_loss
+   bifacial.nonuniform_irradiance_deline_power_loss

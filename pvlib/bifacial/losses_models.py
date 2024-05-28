@@ -1,0 +1,144 @@
+import numpy as np
+
+from typing import Literal
+
+
+def nonuniform_irradiance_deline_power_loss(
+    rmad,
+    model: Literal[
+        "fixed-tilt", "single-axis-tracking"
+    ] = "single-axis-tracking",
+    fillfactor_ratio: float = None,
+):
+    r"""
+    Estimate the power loss due to irradiance non-uniformity.
+
+    This model is described for bifacial modules in [1]_, where the backside
+    irradiance is less uniform due to mounting and site conditions.
+
+    Depending on the mounting type, the power loss is estimated with either
+    equation (11) or (12) of [1]_. Passing a custom polynomial is also valid.
+
+    Use ``fillfactor_ratio`` to account for different fill factors between the
+    trained model and the module of interest. The fill factor used for
+    developing the models ``"single-axis-tracking" and "fixed-tilt"`` is
+    :math:`0.79`. For example, if the fill factor of the module of interest is
+    :math:`0.65`, then set ``fillfactor_ratio = 0.65 / 0.79``.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    rmad : numeric
+        The Relative Mean Absolute Difference of the irradiance.
+        See the definition in [2]_ and the example
+        :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`.
+
+    model : str, numpy.polynomial.Polynom or list, default ``"single-axis-tracking"``
+        The model coefficients to use.
+        If a string, it must be one of the following:
+
+        * ``"fixed-tilt"``: Eq. (11) of [1]_.
+        * ``"single-axis-tracking"``: Eq. (12) of [1]_.
+
+        If a :py:`numpy:numpy.polynomial.Polynomial`, it is evaluated as is.
+
+        If neither a string nor a ``Polynomial``, it must be a collection of
+        the coefficients of the model, where the first element is the constant
+        term and the last element is the highest order term. A
+        :py:`numpy:numpy.polynomial.Polynomial` will be created internally.
+
+    fillfactor_ratio : float, optional
+        The ratio of the fill factor of the module of interest to the fill
+        factor used for developing the models. Fill factor used for models
+        ``"single-axis-tracking"`` and ``"fixed-tilt"`` is 0.79. For a module
+        with fill factor 0.65, set ``fillfactor_ratio = 0.65 / 0.79``.
+
+    Returns
+    -------
+    loss : numeric
+        The power loss.
+
+    Notes
+    -----
+    The models implemented are equations (11) and (12) of [1]_:
+
+    .. math::
+
+       \text{model="fixed-tilt"} & \Rightarrow M[\%] =
+       0.142 \Delta[\%] + 0.032 \Delta[\%]^2 \qquad & \text{(11)}
+
+       \text{model="single-axis-tracking"} & \Rightarrow M[\%] =
+       0.054 \Delta[\%] + 0.068 \Delta[\%]^2 \qquad & \text{(12)}
+
+    where :math:`\Delta[\%]` is the Relative Mean Absolute Difference of the
+    global irradiance, Eq. (4) of [1]_ and [2]_.
+
+    The losses definition is Eq. (1) of [1]_, and it's defined as a loss of the
+    output power:
+
+    .. math::
+
+       M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}} \qquad & \text{(1)}
+
+    In the section *See Also*, you will find two packages that can be used to
+    calculate the irradiance at different points of the module.
+
+    .. note::
+       The global irradiance RMAD is different from the backside irradiance
+       RMAD.
+
+    In case the RMAD of the backside irradiance is known, the global RMAD can
+    be calculated as follows, assuming the front irradiance RMAD is
+    negligible [2]_:
+
+    .. math::
+
+       RMAD(k \cdot X + c) = RMAD(X) \cdot k \frac{k \bar{X}}{k \bar{X} + c}
+       = RMAD(X) \cdot k \frac{1}{1 + \frac{c}{k \bar{X}}}
+
+    by similarity with equation (2) of [1]_:
+
+    .. math::
+
+       G_{total\,i} = G_{front\,i} + \phi_{Bifi} G_{rear\,i}
+
+    See Also
+    --------
+    `solarfactors <https://github.com/pvlib/solarfactors/>`_
+        Calculate the irradiance at different points of the module.
+    `bifacial_radiance <https://github.com/NREL/bifacial_radiance>`_
+        Calculate the irradiance at different points of the module.
+
+    References
+    ----------
+    .. [1] C. Deline, S. Ayala Pelaez, S. MacAlpine, and C. Olalla, 'Estimating
+       and parameterizing mismatch power loss in bifacial photovoltaic
+       systems', Progress in Photovoltaics: Research and Applications, vol. 28,
+       no. 7, pp. 691-703, 2020, :doi:`10.1002/pip.3259`.
+    .. [2] “Mean absolute difference,” Wikipedia, Sep. 05, 2023.
+       https://en.wikipedia.org/wiki/Mean_absolute_difference#Relative_mean_absolute_difference
+       (accessed 2024-04-14).
+    """  # noqa: E501
+    if isinstance(model, str):
+        _MODEL_POLYNOMS = {
+            "fixed-tilt": [0, 0.142, 0.032],  # Eq. (11), [1]
+            "single-axis-tracking": [0, 0.054, 0.068],  # Eq. (12), [1]
+        }
+        try:
+            model_polynom = np.polynomial.Polynomial(_MODEL_POLYNOMS[model])
+        except KeyError:
+            raise ValueError(
+                f"Invalid model '{model}'. Available models are "
+                f"{list(_MODEL_POLYNOMS.keys())}."
+            )
+    elif isinstance(model, np.polynomial.Polynomial):
+        model_polynom = model
+    else:  # expect an iterable
+        model_polynom = np.polynomial.Polynomial(coef=model)
+
+    if fillfactor_ratio:  # General fill factor ratio, so it's always used
+        # Eq. (9), [1]
+        model_polynom = model_polynom * fillfactor_ratio
+
+    return model_polynom(rmad)

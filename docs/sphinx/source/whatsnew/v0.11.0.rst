@@ -22,7 +22,7 @@ Enhancements
   fixed-tilt and one-axis tracking systems.
   (:issue:`1689`, :pull:`1725`, :pull:`1962`)
 * Add new losses function that accounts for non-uniform irradiance of bifacial
-  modules, :py:func:`pvlib.pvsystem.nonuniform_irradiance_deline_power_loss`.
+  modules, :py:func:`pvlib.bifacial.nonuniform_irradiance_deline_power_loss`.
   (:issue:`2045`, :pr:`2046`)
 
 

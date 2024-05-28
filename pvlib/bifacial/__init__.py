@@ -5,6 +5,7 @@ modules.
 """
 from pvlib._deprecation import deprecated
 from pvlib.bifacial import pvfactors, infinite_sheds, utils   # noqa: F401
+from .losses_models import nonuniform_irradiance_deline_power_loss  # noqa: F401
 
 pvfactors_timeseries = deprecated(
     since='0.9.1',

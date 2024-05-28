@@ -3,7 +3,7 @@ import numpy as np
 from typing import Literal
 
 
-def nonuniform_irradiance_deline_power_loss(
+def power_mismatch_deline (
     rmad,
     model: Literal[
         "fixed-tilt", "single-axis-tracking"

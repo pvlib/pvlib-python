@@ -26,7 +26,7 @@ Calculate the incident irradiance lost to non-uniformity in a bifacial PV array
 # from the irradiance levels of each cell in a PV module.
 #
 # The function
-# :py:func:`pvlib.bifacial.nonuniform_irradiance_deline_power_loss` is
+# :py:func:`pvlib.bifacial.power_mismatch_deline ` is
 # used to transform the Relative Mean Absolute Difference (RMAD) of the
 # irradiance into a power loss percentage. Down below you will find a
 # numpy-based implementation of the RMAD function.
@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 
-from pvlib.bifacial import nonuniform_irradiance_deline_power_loss
+from pvlib.bifacial import power_mismatch_deline
 
 # %%
 # Problem description
@@ -118,9 +118,9 @@ print(rmad_cells == rmad(cells_irrad[:, 0]))
 # ^^^^^^^^^^^^^
 # Calculate the power loss percentage due to the irradiance non-uniformity
 # with the function
-# :py:func:`pvlib.bifacial.nonuniform_irradiance_deline_power_loss`.
+# :py:func:`pvlib.bifacial.power_mismatch_deline `.
 
-mismatch_loss = nonuniform_irradiance_deline_power_loss(rmad_cells)
+mismatch_loss = power_mismatch_deline(rmad_cells)
 
 print(f"RMAD of the cells' irradiance: {rmad_cells:.3} [unitless]")
 print(f"Power loss due to the irradiance non-uniformity: {mismatch_loss:.3%}")

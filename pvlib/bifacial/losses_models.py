@@ -42,8 +42,8 @@ def power_mismatch_deline(
 
         If a :py:`numpy:numpy.polynomial.Polynomial`, it is evaluated as is.
 
-        If neither a string nor a ``Polynomial``, it must be a collection of
-        the coefficients of the model, where the first element is the constant
+        If neither a string nor a ``Polynomial``, it must be the coefficients
+        of a polynomial in ``rmad``, where the first element is the constant
         term and the last element is the highest order term. A
         :py:`numpy:numpy.polynomial.Polynomial` will be created internally.
 

@@ -170,7 +170,7 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
 #    Each module has three bypass diodes. On the left, they connect cell
 #    columns 1-2, 2-3 & 3-4. On the right, they connect cell rows 1-2, 3-4 &
 #    5-6.
-#    *Source: César Domínguez. CC BY-SA 4.0*
+#    *Source: César Domínguez. CC BY-SA 4.0, Wikimedia Commons*
 #
 # .. figure:: ../../_images/Centralized_and_split_PV_junction_boxes_cesardd.jpg
 #    :align: center
@@ -180,7 +180,7 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
 #    Left: centralized junction box, common in non-half-cut cell modules.
 #    Right: split junction box, common in half-cut cell modules.
 #    Clarification of the bypass diodes connection and blocks.
-#    *Source: César Domínguez. CC BY-SA 4.0*
+#    *Source: César Domínguez. CC BY-SA 4.0, Wikimedia Commons*
 #
 # In the upper image, each orange U-like circuit section is a block.
 # By symmetry, the yellow inverted-U's of the subcircuit are also blocks.

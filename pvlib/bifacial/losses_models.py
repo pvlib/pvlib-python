@@ -29,9 +29,10 @@ def power_mismatch_deline(
     Parameters
     ----------
     rmad : numeric
-        The Relative Mean Absolute Difference of the irradiance.
-        See the definition in [2]_ and the example
-        :ref:`sphx_glr_gallery_bifacial_plot_irradiance_nonuniformity_loss.py`.
+        The Relative Mean Absolute Difference of the cell-by-cell total
+        irradiance. [Unitless]
+        Check out the *Notes* section for the equation to calculate it from the
+        bifaciality and the front and back irradiances.
 
     model : str, numpy.polynomial.Polynom or list, default ``"single-axis-tracking"``
         The model coefficients to use.

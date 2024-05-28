@@ -17,6 +17,10 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add function :py:func:`pvlib.shading.shaded_fraction1d`, to calculate the
+  shade perpendicular to ``axis_azimuth``. The function is applicable to both
+  fixed-tilt and one-axis tracking systems.
+  (:issue:`1689`, :pull:`1725`, :pull:`1962`)
 * Added function :py:func:`pvlib.shading.martinez_shade_factor` to calculate
   shading losses by taking into account the amount of bypass diodes of a module.
   (:issue:`2063`, :pull:`2070`)
@@ -33,7 +37,6 @@ Testing
 Documentation
 ~~~~~~~~~~~~~
 * Configure mathjax to left-align and indent equations in docstrings. (:pull:`2056`)
-
 
 Requirements
 ~~~~~~~~~~~~

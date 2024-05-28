@@ -8,15 +8,16 @@ a PV array comprised of non-monolithic silicon cells.
 
 # %%
 # This example illustrates how to use the proposed by Martinez et al. [1]_.
-# The model corrects the beam and circumsolar incident irradiance
-# based on the number of shaded *blocks*. A *block* is defined as a
-# group of cells that are protected by a bypass diode.
-# More information on the *blocks* can be found in the original paper [1]_ and
-# in :py:func:`pvlib.shading.martinez_shade_factor` documentation.
+# The model adjusts the output power of a PV module based on the number of
+# shaded *blocks*. A *block* is defined as a group of cells protected by a
+# bypass diode. More information on the *blocks* can be found in the original
+# paper [1]_ and in :py:func:`pvlib.shading.martinez_shade_factor`
+# documentation.
 #
 # The following key functions are used in this example:
+#
 # 1. :py:func:`pvlib.shading.martinez_shade_factor` to calculate the adjustment
-#    factor for the direct irradiance component.
+#    factor for the output power.
 # 2. :py:func:`pvlib.shading.shaded_fraction1d` to calculate the fraction of
 #    shaded surface and consequently the number of shaded *blocks* due to
 #    row-to-row shading.
@@ -35,12 +36,13 @@ a PV array comprised of non-monolithic silicon cells.
 # Problem description
 # -------------------
 # Let's consider a PV system with the following characteristics:
+#
 # - Two north-south single-axis tracker with 6 modules each one.
 # - The rows have the same true-tracking tilt angles. Let's consider
 #   true-tracking so shade is significant for this example.
 # - Terrain slope is 7 degrees downward to the east.
 # - Rows' axes are horizontal.
-# - The modules are comprised of silicon cells. We will compare these cases:
+# - The modules are comprised of multiple cells. We will compare these cases:
 #    - modules with one bypass diode
 #    - modules with three bypass diodes
 #    - half-cut cell modules with three bypass diodes on portrait and landscape
@@ -155,6 +157,7 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
 # The number of shaded blocks is calculated by rounding up the shaded fraction
 # by the number of blocks along the shaded length. So let's define the number
 # of blocks for each module configuration:
+#
 # - 1 bypass diode: 1 block
 # - 3 bypass diodes: 3 blocks (in portrait; in landscape, it would be 1)
 # - 3 bypass diodes half-cut cells:
@@ -182,7 +185,7 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
 #    Clarification of the bypass diodes connection and blocks.
 #    *Source: César Domínguez. CC BY-SA 4.0, Wikimedia Commons*
 #
-# In the upper image, each orange U-like circuit section is a block.
+# In the upper image, each orange U-shaped section of the string is a block.
 # By symmetry, the yellow inverted-U's of the subcircuit are also blocks.
 # For this reason, the half-cut cell modules have 6 blocks in total: two along
 # the longest side and three along the shortest side.
@@ -252,5 +255,12 @@ ax2.set_ylabel("Power correction factor")
 ax2.set_title("Per row")
 fig.tight_layout()
 fig.show()
+
+# %%
+# Note how the half-cut cell module in portrait behaves worse that the
+# normal module with three bypass diodes. This is because the number of shaded
+# blocks is less along the shaded length.
+# This is the reason why half-cut cell modules are preferred in portrait
+# orientation.
 
 # %%

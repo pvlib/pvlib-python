@@ -599,32 +599,37 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     How many blocks and their layout depend on the module(s) used. Many
     manufacturers don't specify this information explicitly. However, we can
     infer these values from:
-     - the number of bypass diodes
-     - where and how many junction boxes are present on the back of the module
-     - whether or not the module is comprised of *half-cut cells*
+
+    - the number of bypass diodes
+    - where and how many junction boxes are present on the back of the module
+    - whether or not the module is comprised of *half-cut cells*
+
     The latter two are heavily correlated.
 
     For example:
-     1. A module with 1 bypass diode behaves as 1 block.
-     2. A module with 3 bypass diodes and 1 junction box is likely to have 3
-        blocks.
-     3. A half-cut module with 3 junction boxes (split junction boxes) is
-        likely to have 3x2 blocks. The number of blocks along the longest
-        side of the module is 2 and along the shortest side is 3.
-     4. A module without bypass diodes doesn't constitute a block, but may be
-        part of one.
 
-     .. figure:: _images/Centralized_and_split_PV_junction_boxes_cesardd.jpg
-        :alt: Centralized and split PV junction boxes.
+    1. A module with 1 bypass diode behaves as 1 block.
+    2. A module with 3 bypass diodes and 1 junction box is likely to have 3
+       blocks.
+    3. A half-cut module with 3 junction boxes (split junction boxes) is
+       likely to have 3x2 blocks. The number of blocks along the longest
+       side of the module is 2 and along the shortest side is 3.
+    4. A module without bypass diodes doesn't constitute a block, but may be
+       part of one.
 
-        Left image: Centralized junction box with 3 bypass diodes (2.).
-        Right image: 3 (split-) junction boxes on a half-cut cell module (3.).
-        Source: César Domínguez, CC BY-SA 4.0, Wikimedia Commons.
+    .. figure:: _images/Centralized_and_split_PV_junction_boxes_cesardd.jpg
+       :alt: Centralized and split PV junction boxes.
+
+       Left image: Centralized junction box with 3 bypass diodes (2.).
+       Right image: 3 (split-) junction boxes on a half-cut cell module (3.).
+       *Source: César Domínguez, CC BY-SA 4.0, Wikimedia Commons.*
 
     Examples
     --------
     Minimal example. For a complete example, see
     :ref:`this example <sphx_glr_gallery_plot_martinez_shade_loss.py>`
+    from the gallery.
+
     >>> import numpy as np
     >>> from pvlib import shading
     >>> total_blocks = 3  # blocks along the vertical of the module
@@ -642,7 +647,6 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     See Also
     --------
     shaded_fraction1d : to calculate 1-dimensional shaded fraction
-    linear_shade_loss
 
     References
     ----------

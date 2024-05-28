@@ -5,6 +5,7 @@ def spectral_factor_pelland(airmass_absolute, clearness_index,
                             module_type = None, coefficients = None,
                             min_airmass_absolute = 0.58,
                             max_airmass_absolute = 10):
+    #0.58 -> same as spectral_factor_firstsolar
 # =============================================================================
 #     model implemented: https://ieeexplore.ieee.org/document/9300932
 #     inputs: air mass, clearness index

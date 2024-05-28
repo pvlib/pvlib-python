@@ -72,7 +72,9 @@ locus = pvlib.location.Location(
     altitude=pvlib.location.lookup_altitude(latitude, longitude),
 )
 
-times = pd.date_range("2001-04-11T03", "2001-04-11T07", periods=24).union(pd.date_range("2001-04-11T16", "2001-04-11T20", periods=24))
+times = pd.date_range("2001-04-11T03", "2001-04-11T07", periods=24).union(
+    pd.date_range("2001-04-11T16", "2001-04-11T20", periods=24)
+)
 
 # %%
 # True-tracking algorithm and shaded fraction
@@ -231,7 +233,9 @@ for k, shade_factor in shade_factor_per_module.items():
 ax1.legend()
 ax1.grid()
 ax1.set_xlabel("Time")
-ax1.xaxis.set_major_formatter(ConciseDateFormatter("%H:%M", tz="Europe/Madrid"))
+ax1.xaxis.set_major_formatter(
+    ConciseDateFormatter("%H:%M", tz="Europe/Madrid")
+)
 ax1.set_ylabel("Power correction factor")
 ax1.set_title("Per module")
 
@@ -241,7 +245,9 @@ for k, shade_factor in shade_factor_per_row.items():
 ax2.legend()
 ax2.grid()
 ax2.set_xlabel("Time")
-ax2.xaxis.set_major_formatter(ConciseDateFormatter("%H:%M", tz="Europe/Madrid"))
+ax2.xaxis.set_major_formatter(
+    ConciseDateFormatter("%H:%M", tz="Europe/Madrid")
+)
 ax2.set_ylabel("Power correction factor")
 ax2.set_title("Per row")
 fig.tight_layout()

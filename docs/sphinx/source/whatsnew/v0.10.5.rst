@@ -3,23 +3,6 @@
 
 v0.10.5 (May 6, 2024)
 ---------------------
-v0.10.5 (Anticipated June 2024)
--------------------------------
-
-
-Deprecations
-~~~~~~~~~~~~
-
-
-Enhancements
-~~~~~~~~~~~~
-* Added function :py:func:`pvlib.shading.shaded_fraction1d`, to calculate the
-  shade perpendicular to ``axis_azimuth``. (:issue:`1689`, :pull:`1725`, :pull:`1962`)
-* Added function :py:func:`pvlib.shading.martinez_shade_factor` to calculate
-  shading losses by taking into account the amount of bypass diodes of a module.
-  (:issue:``, :pull:``)
-v0.10.5 (May 6, 2024)
----------------------
 
 
 Bug fixes
@@ -33,10 +16,6 @@ Bug fixes
 * Fixed :py:func:`pvlib.pvsystem.retrieve_sam` silently ignoring the ``path`` parameter
   when ``name`` was provided. Now an exception is raised requesting to only provide one
   of the two parameters. (:issue:`2018`, :pull:`2020`)
-* Corrected equation for Ixx0 in :py:func:`pvlib.pvsystem.sapm` (:issue:`2016`, :pull:`2019`)
-* Fixed :py:func:`pvlib.pvsystem.retrieve_sam` silently ignoring the `path` parameter
-  when `name` was provided. Now an exception is raised requesting to only provide one
-  of the two parameters. (:issue:`2018`, :pull:`2020`)
 
 
 Documentation
@@ -49,21 +28,12 @@ Documentation
 Requirements
 ~~~~~~~~~~~~
 * Minimum version of Python increased from 3.7 to 3.8. (:issue:`1975`, :pull:`2029`)
-* Python 3.8 or higher. (:issue:`1975`, :pull:`2029`)
 * Minimum version of scipy advanced from 1.5.0 to 1.6.0. (:pull:`2027`)
 
 
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
-* :ghuser:`apct69`
-* Mark Mikofski (:ghuser:`mikofski`)
-* Echedey Luis (:ghuser:`echedey-ls`)
-* Adam R. Jensen (:ghuser:`adamrjensen`)
-* Anton Driesse (:ghuser:`adriesse`)
-* Scott Meredith (:ghuser:`smmeredith`)
-* Alexander Morgan (:ghuser:`alexandermorgan`)
-* Kevin Anderson (:ghuser:`kandersolar`)
 * :ghuser:`apct69`
 * Mark Mikofski (:ghuser:`mikofski`)
 * Echedey Luis (:ghuser:`echedey-ls`)

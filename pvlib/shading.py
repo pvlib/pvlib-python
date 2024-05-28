@@ -561,7 +561,7 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     irradiance of non-monolithic Silicon
     modules and arrays with an arbitrary number of bypass diodes.
 
-    .. versionadded:: 0.10.5
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------

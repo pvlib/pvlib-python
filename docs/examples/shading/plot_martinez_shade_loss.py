@@ -1,9 +1,9 @@
 """
-Modelling power loss due to module shading in non-monolithic Si arrays
-======================================================================
+Modelling power loss due to module shading in non-monolithic modules
+====================================================================
 
 This example demonstrates how to model power loss due to row-to-row shading in
-a PV array comprised of non-monolithic silicon cells.
+a PV array comprised of non-monolithic modules.
 """
 
 # %%

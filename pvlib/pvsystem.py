@@ -15,7 +15,7 @@ from scipy import constants
 import pandas as pd
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import Optional, Union, Literal
+from typing import Optional, Union
 
 from pvlib._deprecation import deprecated, warn_deprecated
 

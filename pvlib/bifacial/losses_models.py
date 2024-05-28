@@ -145,10 +145,10 @@ def power_mismatch_deline(
     else:
         if fillfactor:
             raise ValueError(
-                    "Fill factor can only be used with predefined models. "
-                    "Modify polynomial or multiply output by "
-                    "'module_fillfactor / training_fillfactor'."
-                )
+                "Fill factor can only be used with predefined models. "
+                "Modify polynomial or multiply output by "
+                "'module_fillfactor / training_fillfactor'."
+            )
         if isinstance(model, np.polynomial.Polynomial):
             model_polynom = model
         else:  # expect an iterable

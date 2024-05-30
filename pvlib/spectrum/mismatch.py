@@ -154,7 +154,6 @@ def get_spectral_response_of_material(material, wavelengths=None):
                 index=wavelengths,
                 data=interpolator(x=wavelengths, fp=dataset),
             )
-    dataset.name = "spectral_response"
     return dataset
 
 

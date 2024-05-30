@@ -145,6 +145,12 @@ def test_get_spectral_response_of_material():
     result = spectrum.get_spectral_response_of_material(material, wavelength)
     assert_allclose(result, expected, atol=1e-6)
 
+    # "all" interpolation
+    material, wavelength = "all", [270, 850, 900, 950, 1200]
+    expected = [0.0, 0.974667, 0.995869, 0.988224, 0.0]
+    result = spectrum.get_spectral_response_of_material(material, wavelength)
+    assert_allclose(result["polysi"], expected, atol=1e-6)
+
 
 def test_get_am15g():
     # test that the reference spectrum is read and interpolated correctly

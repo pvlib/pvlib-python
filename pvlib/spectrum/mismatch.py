@@ -115,8 +115,7 @@ def get_am15g(wavelength=None):
     Returns
     -------
     am15g: pandas.Series
-        The AM1.5g standard spectrum indexed by ``wavelength``, in
-        :math:`\frac{W}{m^2 nm}`.
+        The AM1.5g standard spectrum indexed by ``wavelength``, in W/(m²nm).
 
     Notes
     -----
@@ -160,7 +159,7 @@ def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
     Parameters
     ----------
     wavelengths : numeric, optional
-        Wavelengths at which the spectrum is interpolated. :math:`[nm]`.
+        Wavelengths at which the spectrum is interpolated. [nm].
         If not provided, the original wavelengths from the specified standard
         are used. Values outside that range are filled with zeros.
 
@@ -171,9 +170,8 @@ def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
     Returns
     -------
     standard_spectra : pandas.DataFrame
-        The standard spectrum by ``wavelength [nm]``, in
-        :math:`W/m^2/nm`. Column names are ``extraterrestrial``,
-        ``direct`` and ``global``.
+        The standard spectrum by ``wavelength [nm]``, in W/(m²nm).
+        Column names are ``extraterrestrial``, ``direct`` and ``global``.
 
     Notes
     -----
@@ -181,7 +179,7 @@ def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
 
     If the values in ``wavelength`` are too widely spaced, the integral of each
     spectrum may deviate from its standard value.
-    For global spectra, it is about :math:`1000.37 W/m^2`.
+    For global spectra, it is about 1000.37 W/m².
 
     The values of the ASTM G173-03 provided with pvlib-python are copied from
     an Excel file distributed by NREL, which is found here [2]_:

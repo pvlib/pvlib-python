@@ -109,20 +109,19 @@ def get_am15g(wavelength=None):
     ----------
     wavelength: 1-D sequence of numeric, optional
         Wavelengths at which the spectrum is interpolated.
-        By default the 2002 wavelengths of the standard are returned.
-        :math:`[nm]`.
+        By default the 2002 wavelengths of the standard are returned. [nm].
 
     Returns
     -------
     am15g: pandas.Series
-        The AM1.5g standard spectrum indexed by ``wavelength``, in W/(m²nm).
+        The AM1.5g standard spectrum indexed by ``wavelength``. [W/(m²nm)].
 
     Notes
     -----
     If ``wavelength`` is specified this function uses linear interpolation.
 
     If the values in ``wavelength`` are too widely spaced, the integral of the
-    spectrum may deviate from the standard value of :math:`1000.37 W/m^2`.
+    spectrum may deviate from the standard value of 1000.37 W/m².
 
     The values in the data file provided with pvlib-python are copied from an
     Excel file distributed by NREL, which is found here:
@@ -170,7 +169,7 @@ def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
     Returns
     -------
     standard_spectra : pandas.DataFrame
-        The standard spectrum by ``wavelength [nm]``, in W/(m²nm).
+        The standard spectrum by ``wavelength [nm]``. [W/(m²nm)].
         Column names are ``extraterrestrial``, ``direct`` and ``global``.
 
     Notes

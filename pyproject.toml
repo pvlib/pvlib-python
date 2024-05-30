@@ -53,6 +53,7 @@ optional = [
     'numba >= 0.17.0',
     'solarfactors',
     'statsmodels',
+    'shapely',
 ]
 doc = [
     'ipython',

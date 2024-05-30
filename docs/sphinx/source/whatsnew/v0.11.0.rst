@@ -19,7 +19,7 @@ Enhancements
   shade perpendicular to ``axis_azimuth``. The function is applicable to both
   fixed-tilt and one-axis tracking systems.
   (:issue:`1689`, :pull:`1725`, :pull:`1962`)
-- Add function :py:func:`pvlib.spectrum.spitters_relationship` to calculate the
+- Add function :py:func:`pvlib.irradiance.spitters_relationship` to calculate the
   diffuse fraction of Photosynthetically Active Radiation (PAR) from the
   global diffuse fraction and the solar zenith.
   (:issue:`2047`, :pull:`2048`)

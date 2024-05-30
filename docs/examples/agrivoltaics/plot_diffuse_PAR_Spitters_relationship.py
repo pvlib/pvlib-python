@@ -26,8 +26,8 @@ active radiation (PAR) from total PAR using Spitter's relationship.
 #    pp. 222-223 of [1]_.
 #
 # The key function used in this example is
-# :py:func:`pvlib.irradiance.spitters_relationship` to calculate the diffuse PAR
-# fraction, as a function of global diffuse fraction and solar zenith.
+# :py:func:`pvlib.irradiance.spitters_relationship` to calculate the diffuse
+# PAR fraction, as a function of global diffuse fraction and solar zenith.
 #
 # References
 # ----------

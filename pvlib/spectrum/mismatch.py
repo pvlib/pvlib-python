@@ -3,7 +3,6 @@ The ``mismatch`` module provides functions for spectral mismatch calculations.
 """
 
 import pvlib
-from pvlib.tools import sind, cosd
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d

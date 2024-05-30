@@ -507,3 +507,24 @@ def get_pandas_index(*args):
         (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))),
         None
     )
+
+
+def _logwrightomega(x, n=3):
+    # a faster alternative to np.log(scipy.special.wrightomega(x)).
+    # this calculation also more robust in that it avoids underflow
+    # problems that np.log(scipy.specia.wrightomega()) experiences
+    # for x < ~-745.
+
+    # TODO see ref X
+
+    y = np.where(x <= -np.e, x, 1)
+    y = np.where((-np.e < x) & (x < np.e), -np.e + (1 + np.e) * (x + np.e) / (2 * np.e), y)
+    np.log(x, out=y, where=x >= np.e)
+
+    for _ in range(n):
+        ey = np.exp(y)
+        ey_plus_one = 1 + ey
+        y_ey_x = y + ey - x
+        y = y - 2 * (y_ey_x) * (ey_plus_one) / ((2 * (ey_plus_one)**2 - (y_ey_x)*ey))
+
+    return y

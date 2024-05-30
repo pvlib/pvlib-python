@@ -49,6 +49,8 @@ Then the module current can be solved using the Lambert W-function,
        - \frac{n Ns V_{th}}{R_s} W \left(z \right)
 
 
+TODO
+
 Bishop's Algorithm
 ------------------
 The function :func:`pvlib.singlediode.bishop88` uses an explicit solution [4]

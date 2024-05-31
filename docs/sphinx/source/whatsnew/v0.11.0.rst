@@ -9,6 +9,7 @@ Breaking changes
 ~~~~~~~~~~~~~~~~
 * The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
 * Remove the `poa_horizontal_ratio` function and all of its references. (:issue:`1697`, :pull:`2021`)
+* Parameter ``temp_mod`` in :py:func:`pvlib.pvarray.huld` is renamed to ``temp_module``. (:pull:`1979`)
 
 
 Deprecations

@@ -1,17 +1,6 @@
 .. _whatsnew_01050:
 
 
-v0.10.5 (Anticipated June 2024)
--------------------------------
-
-
-Deprecations
-~~~~~~~~~~~~
-
-
-Enhancements
-~~~~~~~~~~~~
-* Added a method to fit the Huld PV model (:pull:`1979`)
 v0.10.5 (May 6, 2024)
 ---------------------
 

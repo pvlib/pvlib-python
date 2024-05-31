@@ -327,7 +327,7 @@ def test_spectral_factor_caballero_supplied_ambiguous():
 def test_spectral_factor_pelland(module_type, expected):
     ams = np.array([1.0, 1.5, 2.0])
     kcs = np.array([0.4, 0.6, 0.8])
-    out = spectrum.test_spectral_factor_pelland(ams, kcs,
+    out = spectrum.spectral_factor_pelland(ams, kcs,
                                              module_type=module_type)
     assert np.allclose(expected, out, atol=1e-3)
 
@@ -335,7 +335,7 @@ def test_spectral_factor_pelland_supplied():
     # use the multisi coeffs
     coeffs = (
         0.9847, -0.05237, 0.03034)
-    out = spectrum.test_spectral_factor_pelland(1.5, 0.8, coefficients=coeffs)
+    out = spectrum.spectral_factor_pelland(1.5, 0.8, coefficients=coeffs)
     expected = 1.00860641
     assert_allclose(out, expected, atol=1e-3)
     
@@ -344,27 +344,27 @@ def test_spectral_factor_pelland_supplied_redundant():
     coeffs = (
         0.9847, -0.05237, 0.03034)
     with pytest.raises(ValueError):
-        spectrum.test_spectral_factor_pelland(1.5, 0.8, module_type='multisi',
+        spectrum.spectral_factor_pelland(1.5, 0.8, module_type='multisi',
                                            coefficients=coeffs)
 
 def test_spectral_factor_pelland_supplied_ambiguous():
     # Error when specifying neither module_type nor coefficients
     with pytest.raises(ValueError):
-        spectrum.test_spectral_factor_pelland(1.5, 0.8, module_type=None,
+        spectrum.spectral_factor_pelland(1.5, 0.8, module_type=None,
                                            coefficients=None)
         
 def test_spectral_factor_pelland_low_airmass():
     with pytest.warns(UserWarning, match='Exceptionally low air mass'):
-        _ = spectrum.test_spectral_factor_pelland(0.1, 0.8, 'multisi')        
+        _ = spectrum.spectral_factor_pelland(0.1, 0.8, 'multisi')        
 
 def test_spectral_factor_pelland_high_airmass():
     with pytest.warns(UserWarning, match='Exceptionally high air mass'):
-        _ = spectrum.test_spectral_factor_pelland(12, 0.8, 'multisi')
+        _ = spectrum.spectral_factor_pelland(12, 0.8, 'multisi')
         
 def test_spectral_factor_pelland_low_clearnessindex():
     with pytest.raises(ValueError, match='Clearness index cannot be negative'):
-        _ = spectrum.test_spectral_factor_pelland(1.5, -0.8, 'multisi')        
+        _ = spectrum.spectral_factor_pelland(1.5, -0.8, 'multisi')        
 
 def test_spectral_factor_pelland_high_clearnessindex():
     with pytest.raises(ValueError, match='Clearness index cannot be >1'):
-        _ = spectrum.test_spectral_factor_pelland(1.5, 1.8, 'multisi')
+        _ = spectrum.spectral_factor_pelland(1.5, 1.8, 'multisi')

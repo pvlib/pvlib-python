@@ -572,7 +572,7 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     modifier = f_AM + f_AOD + f_PW  # Eq 5
     return modifier
 
-def test_spectral_factor_pelland(airmass_absolute, clearness_index,
+def spectral_factor_pelland(airmass_absolute, clearness_index,
                             module_type = None, coefficients = None,
                             min_airmass_absolute = 0.58,
                             max_airmass_absolute = 10):

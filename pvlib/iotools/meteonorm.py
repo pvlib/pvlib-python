@@ -30,6 +30,7 @@ VARIABLE_MAP = [
     # surface_pressure (hPa) -> pressure (Pa)
     ParameterMap('p', 'pressure', lambda x: x*100),
     ParameterMap('w', 'precipitable_water'),  # cm
+    ParameterMap('aot', 'aod'),
     ParameterMap('hs', 'solar_elevation'),
     ParameterMap('az', 'solar_azimuth'),
     ParameterMap('rho', 'albedo'),

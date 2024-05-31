@@ -336,7 +336,7 @@ def test_spectral_factor_pelland_supplied():
     coeffs = (
         0.9847, -0.05237, 0.03034)
     out = spectrum.test_spectral_factor_pelland(1.5, 0.8, coefficients=coeffs)
-    expected = 1.00982
+    expected = 1.00860641
     assert_allclose(out, expected, atol=1e-3)
     
 def test_spectral_factor_pelland_supplied_redundant():

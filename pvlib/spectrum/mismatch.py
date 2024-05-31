@@ -646,8 +646,8 @@ def test_spectral_factor_pelland(airmass_absolute, clearness_index,
         raise ValueError('Clearness index cannot be grater than 1')
     #ama
     if np.max(airmass_absolute) > max_airmass_absolute:
-        warn('High air mass values greater than 'f'{max_airmass_absolute} '+
-             'in dataset')
+        warn('Exceptionally high air mass: ' +
+             'values greater than 'f'{max_airmass_absolute} in dataset')
     # Warn user about exceptionally low ama data
     if np.min(airmass_absolute) < min_airmass_absolute:
         airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute )
@@ -656,6 +656,7 @@ def test_spectral_factor_pelland(airmass_absolute, clearness_index,
 # =============================================================================
 #      --- Default coefficients ---
 # =============================================================================
+    #Empirical coefficients from [1]_
     _coefficients = {}
     _coefficients['multisi'] = (
         0.9847, -0.05237, 0.03034)

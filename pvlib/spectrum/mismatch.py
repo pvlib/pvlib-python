@@ -641,9 +641,9 @@ def test_spectral_factor_pelland(airmass_absolute, clearness_index,
     kc = np.atleast_1d(clearness_index)
     kc = kc.astype('float64')
     if np.min(kc) < 0:
-        raise ValueError('Clearness index cannot be less than 0')
+        raise ValueError('Clearness index cannot be negative')
     if np.max(kc) > 1:
-        raise ValueError('Clearness index cannot be grater than 1')
+        raise ValueError('Clearness index cannot be >1')
     #ama
     if np.max(airmass_absolute) > max_airmass_absolute:
         warn('Exceptionally high air mass: ' +
@@ -680,11 +680,11 @@ def test_spectral_factor_pelland(airmass_absolute, clearness_index,
     elif module_type is None and coefficients is not None:
         pass
     elif module_type is None and coefficients is None:
-        raise TypeError('No valid input provided, both module_type and ' +
+        raise ValueError('No valid input provided, both module_type and ' +
                         'coefficients are None. module_type can be one of ' +
                         'poly-Si, monosi, fs-2, fs-4, cigs, or asi')
     else:
-        raise TypeError('Cannot resolve input, must supply only one of ' +
+        raise ValueError('Cannot resolve input, must supply only one of ' +
                         'module_type and coefficients. module_type can be ' +
                         'one of poly-Si, monosi, fs-2, fs-4, cigs, or asi')
 # =============================================================================

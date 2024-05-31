@@ -4,6 +4,7 @@ modeling.
 """
 import numpy as np
 from pvlib.tools import sind, cosd, tand
+from scipy.integrate import trapezoid
 
 
 def _solar_projection_tangent(solar_zenith, solar_azimuth, surface_azimuth):
@@ -220,7 +221,7 @@ def vf_ground_sky_2d_integ(surface_tilt, gcr, height, pitch, max_rows=10,
             vf = vf_ground_sky_2d(r, gcr, z, pitch, height, max_rows)
             fz_sky[:, k] = vf[:, 0]  # remove spurious rotation dimension
     # calculate the integrated view factor for all of the ground between rows
-    return np.trapz(fz_sky, z, axis=0)
+    return trapezoid(fz_sky, z, axis=0)
 
 
 def _vf_poly(surface_tilt, gcr, x, delta):

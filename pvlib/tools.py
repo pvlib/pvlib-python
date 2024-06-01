@@ -207,12 +207,28 @@ def _pandas_to_doy(pd_object):
     -------
     dayofyear
     """
-    # if localized, convert to UTC. otherwise, assume UTC.
+    return _pandas_to_utc(pd_object).dayofyear
+
+
+def _pandas_to_utc(pd_object):
+    """
+    Converts a pandas datetime-like object to UTC, if localized.
+    Otherwise, assume UTC.
+
+    Parameters
+    ----------
+    pd_object : DatetimeIndex or Timestamp
+
+    Returns
+    -------
+    pandas object localized to or assumed to be UTC.
+    """
+    # 
     try:
         pd_object_utc = pd_object.tz_convert('UTC')
     except TypeError:
         pd_object_utc = pd_object
-    return pd_object_utc.dayofyear
+    return pd_object_utc
 
 
 def _doy_to_datetimeindex(doy, epoch_year=2014):
@@ -242,11 +258,7 @@ def _datetimelike_scalar_to_datetimeindex(time):
 
     timestamp = pd.Timestamp(time)
 
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        timestamp_utc = timestamp.tz_convert('UTC')
-    except TypeError:
-        timestamp_utc = timestamp
+    timestamp_utc = _pandas_to_utc(timestamp)
 
     return pd.DatetimeIndex([timestamp_utc])
 

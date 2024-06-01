@@ -24,7 +24,7 @@ import scipy.optimize as so
 import warnings
 import datetime
 
-from pvlib import atmosphere
+from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime
 
 
@@ -200,11 +200,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
         raise ImportError('Could not import built-in SPA calculator. ' +
                           'You may need to recompile the SPA code.')
 
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time
+    time_utc = tools._pandas_to_utc(time)
 
     spa_out = []
 
@@ -645,11 +641,7 @@ def pyephem(time, latitude, longitude, altitude=0, pressure=101325,
     except ImportError:
         raise ImportError('PyEphem must be installed')
 
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time
+    time_utc = tools._pandas_to_utc(time)
 
     sun_coords = pd.DataFrame(index=time)
 
@@ -766,11 +758,7 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     # the SPA algorithm needs time to be expressed in terms of
     # decimal UTC hours of the day of the year.
 
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time
+    time_utc = tools._pandas_to_utc(time)
 
     # strip out the day of the year and calculate the decimal hour
     DayOfYear = time_utc.dayofyear

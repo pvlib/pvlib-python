@@ -206,11 +206,7 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     with h5py.File(filepath, 'r') as lt_h5_file:
         lts = lt_h5_file['LinkeTurbidity'][latitude_index, longitude_index]
 
-    # if localized, convert to UTC. otherwise, assume UTC.
-    try:
-        time_utc = time.tz_convert('UTC')
-    except TypeError:
-        time_utc = time
+    time_utc = tools._pandas_to_utc(time)
 
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time_utc)

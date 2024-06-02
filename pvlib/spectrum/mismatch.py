@@ -23,12 +23,12 @@ def get_example_spectral_response(wavelength=None):
     ----------
     wavelength: 1-D sequence of numeric, optional
         Wavelengths at which spectral response values are generated.
-        By default ``wavelength`` is from 280 to 1200 in 5 nm intervals. [nm].
+        By default ``wavelength`` is from 280 to 1200 in 5 nm intervals. [nm]
 
     Returns
     -------
     spectral_response : pandas.Series
-        The relative spectral response indexed by ``wavelength``. Unitless.
+        The relative spectral response indexed by ``wavelength`` in nm. [-]
 
     Notes
     -----

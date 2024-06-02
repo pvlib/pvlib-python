@@ -102,9 +102,6 @@ def get_am15g(wavelength=None):
     the irradiance on a flat receiver is frequently called plane-of-array (POA)
     irradiance.
 
-    .. deprecated:: 0.11
-        Use ``pvlib.spectrum.get_standard_spectrum(standard="ASTM G173-03")["global"]`` instead.
-
     Parameters
     ----------
     wavelength: 1-D sequence of numeric, optional

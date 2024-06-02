@@ -128,7 +128,7 @@ def test_get_example_spectral_response():
 def test_get_am15g():
     # test that the reference spectrum is read and interpolated correctly
     with pytest.warns(pvlibDeprecationWarning,
-                      match="get_standard_spectrum instead"):
+                      match="get_reference_spectrum instead"):
         e = spectrum.get_am15g()
     assert_equal(len(e), 2002)
     assert_equal(np.sum(e.index), 2761442)
@@ -138,7 +138,7 @@ def test_get_am15g():
     expected = [0.0, 0.893720, 0.147260, 0.448250, 0.4371025, 0.0]
 
     with pytest.warns(pvlibDeprecationWarning,
-                      match="get_standard_spectrum instead"):
+                      match="get_reference_spectrum instead"):
         e = spectrum.get_am15g(wavelength)
     assert_equal(len(e), len(wavelength))
     assert_allclose(e, expected, rtol=1e-6)

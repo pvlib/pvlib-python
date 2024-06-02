@@ -322,7 +322,7 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
     # get the reference spectrum at wavelengths matching the measured spectra
     if e_ref is None:
-        e_ref = get_am15g(wavelength=e_sun.T.index)
+        e_ref = get_reference_spectrum(wavelengths=e_sun.T.index)["global"]
 
     # interpolate the sr at the wavelengths of the spectra
     # reference spectrum wavelengths may differ if e_ref is from caller

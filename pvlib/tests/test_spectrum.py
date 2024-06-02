@@ -200,7 +200,7 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
     e_sun = e_sun.set_index('wavelength')
     e_sun = e_sun.transpose()
 
-    e_ref = spectrum.get_am15g()
+    e_ref = spectrum.get_reference_spectrum(standard='ASTM G173-03')["global"]
     sr = spectrum.get_example_spectral_response()
 
     # test with single sun spectrum, same as ref spectrum

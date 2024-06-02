@@ -9,6 +9,8 @@ Breaking changes
 ~~~~~~~~~~~~~~~~
 * The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
 * Remove the `poa_horizontal_ratio` function and all of its references. (:issue:`1697`, :pull:`2021`)
+* The `leap_day` parameter in :py:func:`~pvlib.iotools.get_psm3`
+  now defaults to True instead of False. (:issue:`1481`, :pull:`1991`)
 
 
 Deprecations

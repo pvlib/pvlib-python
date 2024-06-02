@@ -19,12 +19,12 @@ import pvlib
 am15 = pvlib.spectrum.get_reference_spectrum(standard="ASTM G173-03")
 
 # Plot
-plt.plot(am15.index, am15['extraterrestrial'], label='Extraterrestrial')
-plt.plot(am15.index, am15['global'], label='Global')
-plt.plot(am15.index, am15['direct'], label='Direct')
-plt.xlabel(r'Wavelength $[nm]$')
-plt.ylabel(r'Irradiance $[\frac{W}{m^2 nm}$')
-plt.title('ASTM G173-03 Solar Spectral Irradiance')
+plt.plot(am15.index, am15["extraterrestrial"], label="Extraterrestrial")
+plt.plot(am15.index, am15["global"], label="Global")
+plt.plot(am15.index, am15["direct"], label="Direct")
+plt.xlabel(r"Wavelength $[nm]$")
+plt.ylabel(r"Irradiance $\left[\frac{W}{m^2 nm}\right]$")
+plt.title("ASTM G173-03 Solar Spectral Irradiance")
 plt.legend()
 plt.grid(True)
 plt.tight_layout()

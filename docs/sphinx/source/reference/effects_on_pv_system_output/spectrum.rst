@@ -9,7 +9,7 @@ Spectrum
    spectrum.spectrl2
    spectrum.get_example_spectral_response
    spectrum.get_am15g
-   spectrum.get_standard_spectrum
+   spectrum.get_reference_spectrum
    spectrum.calc_spectral_mismatch_field
    spectrum.spectral_factor_caballero
    spectrum.spectral_factor_firstsolar

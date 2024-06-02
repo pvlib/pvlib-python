@@ -84,7 +84,7 @@ def get_example_spectral_response(wavelength=None):
     since="0.11",
     removal="0.12",
     name="pvlib.spectrum.get_am15g",
-    alternative="pvlib.spectrum.get_standard_spectrum",
+    alternative="pvlib.spectrum.get_reference_spectrum",
     addendum=(
         "The new function reads more data. Use it with "
         + "standard='ASTM G173-03' and extract the 'global' column."
@@ -128,7 +128,7 @@ def get_am15g(wavelength=None):
 
     See Also
     --------
-    pvlib.spectrum.get_standard_spectrum : reads also the direct and
+    pvlib.spectrum.get_reference_spectrum : reads also the direct and
       extraterrestrial components of the spectrum.
 
     References
@@ -137,12 +137,12 @@ def get_am15g(wavelength=None):
        Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
     """  # noqa: E501
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
-    # modified by @echedey-ls, as a wrapper of spectrum.get_standard_spectrum
-    standard = get_standard_spectrum(wavelength, standard="ASTM G173-03")
+    # modified by @echedey-ls, as a wrapper of spectrum.get_reference_spectrum
+    standard = get_reference_spectrum(wavelength, standard="ASTM G173-03")
     return standard["global"]
 
 
-def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
+def get_reference_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
     r"""
     Read a standard spectrum specified by ``standard``, optionally
     interpolated to the specified wavelength(s).
@@ -183,7 +183,7 @@ def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
     Examples
     --------
     >>> from pvlib import spectrum
-    >>> am15 = spectrum.get_standard_spectrum()
+    >>> am15 = spectrum.get_reference_spectrum()
     >>> am15_extraterrestrial, am15_global, am15_direct = \
     >>>     am15['extraterrestrial'], am15['global'], am15['direct']
     >>> print(am15.head())
@@ -195,7 +195,7 @@ def get_standard_spectrum(wavelengths=None, *, standard="ASTM G173-03"):
     281.5                  0.212  1.566200e-19  2.747900e-22
     282.0                  0.267  1.194600e-18  2.834600e-21
 
-    >>> am15 = spectrum.get_standard_spectrum([300, 500, 800, 1100])
+    >>> am15 = spectrum.get_reference_spectrum([300, 500, 800, 1100])
     >>> print(am15)
                 extraterrestrial   global    direct
     wavelength

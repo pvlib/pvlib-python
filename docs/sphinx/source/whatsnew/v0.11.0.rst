@@ -9,13 +9,13 @@ Breaking changes
 ~~~~~~~~~~~~~~~~
 * The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
 * Remove the `poa_horizontal_ratio` function and all of its references. (:issue:`1697`, :pull:`2021`)
+* ``pvlib.iotools.read_srml_month_from_solardat()`` was deprecated in v0.10.0 and has
+  now been completely removed. The function is replaced by :py:func:`~pvlib.iotools.get_srml()`.
+  (:pull:`1779`, :pull:`1989`)
 
 
 Deprecations
 ~~~~~~~~~~~~
-* ``pvlib.iotools.read_srml_month_from_solardat()`` was deprecated in v0.10.0 and has
-  now been completely removed. The function is replaced by :py:func:`~pvlib.iotools.get_srml()`.
-  (:pull:`1779`, :pull:`1989`)
 
 
 Enhancements

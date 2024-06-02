@@ -555,7 +555,7 @@ def shaded_fraction1d(
     return np.clip(t_asterisk, 0, 1)
 
 
-def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
+def martinez_shade_factor(shaded_fraction, shaded_blocks, total_blocks):
     r"""
     A shading correction factor for the direct and circumsolar incident
     irradiance of non-monolithic Silicon
@@ -657,5 +657,5 @@ def martinez_shade_factor(shaded_fraction, N_shaded_blocks, N_total_blocks):
     """  # Contributed by Echedey Luis, 2024
     return (  # Eq. (6) of [1]
         (1 - shaded_fraction)
-        * (1 - np.ceil(N_shaded_blocks) / (1 + N_total_blocks))
+        * (1 - np.ceil(shaded_blocks) / (1 + total_blocks))
     )

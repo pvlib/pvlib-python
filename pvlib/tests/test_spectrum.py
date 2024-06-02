@@ -180,7 +180,7 @@ def test_get_reference_spectrum_custom_wavelengths():
     )
     assert_equal(len(standard), len(wavelength))
     # check no NaN values were returned
-    assert not standard.isna().any().any()  # double any to return one value  
+    assert not standard.isna().any().any()  # double any to return one value
     assert_series_equal(np.sum(standard), expected_sums, atol=1e-4)
 
 

@@ -128,7 +128,7 @@ def test_get_example_spectral_response():
 def test_get_am15g():
     # test that the reference spectrum is read and interpolated correctly
     with pytest.warns(pvlibDeprecationWarning,
-                      match="get_reference_spectrum instead"):
+                      match="get_reference_spectra instead"):
         e = spectrum.get_am15g()
     assert_equal(len(e), 2002)
     assert_equal(np.sum(e.index), 2761442)
@@ -138,7 +138,7 @@ def test_get_am15g():
     expected = [0.0, 0.893720, 0.147260, 0.448250, 0.4371025, 0.0]
 
     with pytest.warns(pvlibDeprecationWarning,
-                      match="get_reference_spectrum instead"):
+                      match="get_reference_spectra instead"):
         e = spectrum.get_am15g(wavelength)
     assert_equal(len(e), len(wavelength))
     assert_allclose(e, expected, rtol=1e-6)
@@ -157,9 +157,9 @@ def test_get_am15g():
         ),
     ],
 )
-def test_get_reference_spectrum(reference_identifier, expected_sums):
+def test_get_reference_spectra(reference_identifier, expected_sums):
     # test reading of a standard spectrum
-    standard = spectrum.get_reference_spectrum(standard=reference_identifier)
+    standard = spectrum.get_reference_spectra(standard=reference_identifier)
     assert set(standard.columns) == expected_sums.keys()
     assert standard.index.name == "wavelength"
     assert standard.index.is_monotonic_increasing is True
@@ -167,7 +167,7 @@ def test_get_reference_spectrum(reference_identifier, expected_sums):
     assert_series_equal(np.sum(standard), expected_sums, atol=1e-2)
 
 
-def test_get_reference_spectrum_custom_wavelengths():
+def test_get_reference_spectra_custom_wavelengths():
     # test that the spectrum is interpolated correctly when custom wavelengths
     # are specified
     # only checked for ASTM G173-03 reference spectrum
@@ -175,7 +175,7 @@ def test_get_reference_spectrum_custom_wavelengths():
     expected_sums = pd.Series(
         {"extraterrestrial": 2.23266, "global": 1.68952, "direct": 1.58480}
     )  # for given ``wavelength``
-    standard = spectrum.get_reference_spectrum(
+    standard = spectrum.get_reference_spectra(
         wavelength, standard="ASTM G173-03"
     )
     assert_equal(len(standard), len(wavelength))
@@ -184,10 +184,10 @@ def test_get_reference_spectrum_custom_wavelengths():
     assert_series_equal(np.sum(standard), expected_sums, atol=1e-4)
 
 
-def test_get_reference_spectrum_invalid_reference():
+def test_get_reference_spectra_invalid_reference():
     # test that an invalid reference identifier raises a ValueError
     with pytest.raises(ValueError, match="Invalid standard identifier"):
-        spectrum.get_reference_spectrum(standard="invalid")
+        spectrum.get_reference_spectra(standard="invalid")
 
 
 def test_calc_spectral_mismatch_field(spectrl2_data):
@@ -200,7 +200,7 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
     e_sun = e_sun.set_index('wavelength')
     e_sun = e_sun.transpose()
 
-    e_ref = spectrum.get_reference_spectrum(standard='ASTM G173-03')["global"]
+    e_ref = spectrum.get_reference_spectra(standard='ASTM G173-03')["global"]
     sr = spectrum.get_example_spectral_response()
 
     # test with single sun spectrum, same as ref spectrum

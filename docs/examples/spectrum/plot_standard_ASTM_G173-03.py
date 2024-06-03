@@ -13,10 +13,10 @@ import pvlib
 
 
 # %%
-# Use :py:func:`pvlib.spectrum.get_reference_spectrum` to retrieve a
-# standard spectra file.
+# Use :py:func:`pvlib.spectrum.get_reference_spectra` to read a spectra dataset
+# bundled with pvlib.
 
-am15 = pvlib.spectrum.get_reference_spectrum(standard="ASTM G173-03")
+am15 = pvlib.spectrum.get_reference_spectra(standard="ASTM G173-03")
 
 # Plot
 plt.plot(am15.index, am15["extraterrestrial"], label="Extraterrestrial")

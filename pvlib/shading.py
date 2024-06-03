@@ -629,8 +629,7 @@ def martinez_shade_factor(shaded_fraction, shaded_blocks, total_blocks):
     Examples
     --------
     Minimal example. For a complete example, see
-    :ref:`this example <sphx_glr_gallery_plot_martinez_shade_loss.py>`
-    from the gallery.
+    `this gallery example <sphx_glr_gallery_plot_martinez_shade_loss.py>`_.
 
     >>> import numpy as np
     >>> from pvlib import shading

@@ -118,26 +118,14 @@ tracker_theta, aoi, surface_tilt, surface_azimuth = (
     tracking_result["surface_azimuth"],
 )  # unpack for better readability
 
-# Calculate the tracking angles
-rotation_angle = pvlib.tracking.singleaxis(
-    solar_apparent_zenith,
-    solar_azimuth,
-    axis_tilt,
-    axis_azimuth,
-    max_angle=(-45, 45),  # (min, max) degrees
-    backtrack=False,
-    gcr=gcr,
-    cross_axis_tilt=cross_axis_tilt,
-)["tracker_theta"]
-
 # Calculate the shade fraction
 shaded_fraction = pvlib.shading.shaded_fraction1d(
     solar_apparent_zenith,
     solar_azimuth,
     axis_azimuth,
     axis_tilt=axis_tilt,
-    shaded_row_rotation=rotation_angle,
-    shading_row_rotation=rotation_angle,
+    shaded_row_rotation=tracker_theta,
+    shading_row_rotation=tracker_theta,
     collector_width=width,
     pitch=pitch,
     cross_axis_slope=cross_axis_tilt,

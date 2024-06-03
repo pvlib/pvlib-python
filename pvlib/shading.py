@@ -619,13 +619,6 @@ def martinez_shade_factor(shaded_fraction, shaded_blocks, total_blocks):
     4. A module without bypass diodes doesn't constitute a block, but may be
        part of one.
 
-    .. figure:: _images/Centralized_and_split_PV_junction_boxes_cesardd.jpg
-       :alt: Centralized and split PV junction boxes.
-
-       Left image: Centralized junction box with 3 bypass diodes (2.).
-       Right image: 3 (split-) junction boxes on a half-cut cell module (3.).
-       *Source: César Domínguez, CC BY-SA 4.0, Wikimedia Commons.*
-
     Examples
     --------
     Minimal example. For a complete example, see

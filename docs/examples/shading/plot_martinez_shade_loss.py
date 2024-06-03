@@ -1,7 +1,7 @@
 """
-Modelling irradiance loss due to module shading in non-monolithic modules
-=========================================================================
-"""
+Modelling irradiance loss due to of direct irradiance in modules with bypass diodes
+===================================================================================
+"""  # noqa: E501
 
 # %%
 # This example illustrates how to use the proposed by Martinez et al. [1]_.

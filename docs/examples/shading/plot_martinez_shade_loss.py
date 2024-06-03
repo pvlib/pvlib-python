@@ -75,7 +75,7 @@ locus = pvlib.location.Location(
     altitude=pvlib.location.lookup_altitude(latitude, longitude),
 )
 
-times = pd.date_range("2001-04-11T03", "2001-04-11T07", periods=24).union(
+times = pd.date_range("2001-04-11T04", "2001-04-11T08", periods=24).union(
     pd.date_range("2001-04-11T16", "2001-04-11T20", periods=24)
 )
 

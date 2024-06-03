@@ -1,9 +1,6 @@
 """
 Modelling irradiance loss due to module shading in non-monolithic modules
 =========================================================================
-
-Demonstrates how to model direct irradiance loss due to shading in PV modules
-with bypass diodes.
 """
 
 # %%

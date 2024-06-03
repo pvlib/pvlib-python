@@ -330,9 +330,9 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
 
 
 @pytest.fixture
-def martinez_shade_factor_Table2():
+def direct_martinez_Table2():
     """
-    Original data used in [1] (see shading.martinez_shade_factor) to validate
+    Original data used in [1] (see shading.direct_martinez) to validate
     the model. Some of the data is provided from Table 2.
     Returns tuple with (input: pandas.DataFrame, output: pandas.Series)
     Output is IRRADIANCE LOSS, not IRRADIANCE CORRECTION, so model result must
@@ -374,10 +374,10 @@ def martinez_shade_factor_Table2():
     )
 
 
-def test_martinez_shade_factor(martinez_shade_factor_Table2):
-    """Tests pvlib.shading.martinez_shade_factor"""
-    test_data, irrad_reduction_expected = martinez_shade_factor_Table2
-    correction_factor = shading.martinez_shade_factor(
+def test_direct_martinez(direct_martinez_Table2):
+    """Tests pvlib.shading.direct_martinez"""
+    test_data, irrad_reduction_expected = direct_martinez_Table2
+    correction_factor = shading.direct_martinez(
         **test_data.drop(columns=["direct", "diffuse"])
     )
     irrad_correction = 1 - (

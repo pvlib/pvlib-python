@@ -12,12 +12,12 @@ with bypass diodes.
 # PV module based on the number
 # of shaded *blocks*. A *block* is defined as a group of cells protected by a
 # bypass diode. More information on the *blocks* can be found in the original
-# paper [1]_ and in :py:func:`pvlib.shading.martinez_shade_factor`
+# paper [1]_ and in :py:func:`pvlib.shading.direct_martinez`
 # documentation.
 #
 # The following key functions are used in this example:
 #
-# 1. :py:func:`pvlib.shading.martinez_shade_factor` to calculate the adjustment
+# 1. :py:func:`pvlib.shading.direct_martinez` to calculate the adjustment
 #    factor for the output power.
 # 2. :py:func:`pvlib.shading.shaded_fraction1d` to calculate the fraction of
 #    shaded surface and consequently the number of shaded *blocks* due to
@@ -192,14 +192,14 @@ shaded_blocks_per_module = {
 # difference between applying it to just a module or a whole row.
 
 shade_factor_per_module = {
-    k: pvlib.shading.martinez_shade_factor(
+    k: pvlib.shading.direct_martinez(
         shaded_fraction, module_shaded_blocks, blocks_per_module[k]
     )
     for k, module_shaded_blocks in shaded_blocks_per_module.items()
 }
 
 shade_factor_per_row = {
-    k: pvlib.shading.martinez_shade_factor(
+    k: pvlib.shading.direct_martinez(
         shaded_fraction,
         module_shaded_blocks * N_modules_per_row,
         blocks_per_module[k] * N_modules_per_row,

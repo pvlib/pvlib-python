@@ -555,7 +555,7 @@ def shaded_fraction1d(
     return np.clip(t_asterisk, 0, 1)
 
 
-def martinez_shade_factor(shaded_fraction, shaded_blocks, total_blocks):
+def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
     r"""
     A shading correction factor for the direct and circumsolar incident
     irradiance of non-monolithic Silicon
@@ -635,7 +635,7 @@ def martinez_shade_factor(shaded_fraction, shaded_blocks, total_blocks):
     >>>      cross_axis_slope=5.711, shading_tracker_tilt=50)
     >>> )
     >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
-    >>> loss_correction = shading.martinez_shade_factor()
+    >>> loss_correction = shading.direct_martinez()
     >>> POA_total = POA_direct * loss_correction + POA_diffuse
 
     See Also

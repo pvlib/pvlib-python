@@ -345,10 +345,10 @@ def martinez_shade_factor_Table2():
             "shaded_blocks",
             "direct",
             "diffuse",
-            "pwr_correction",
+            "irrad_correction",
         ],
         data=[
-            # F-H, F-V, Nsb, direct, diffuse, pwr_correction
+            # F-H, F-V, Nsb, direct, diffuse, irrad_correction
             [1.00, 0.09, 16, 846.59, 59.42, 0.88],
             [1.00, 0.18, 16, 841.85, 59.69, 0.89],
             [1.00, 0.36, 16, 843.38, 59.22, 0.90],
@@ -369,8 +369,8 @@ def martinez_shade_factor_Table2():
     test_data["shaded_fraction"] = test_data["F_GS-H"] * test_data["F_GS-V"]
     test_data = test_data.drop(columns=["F_GS-H", "F_GS-V"])
     return (
-        test_data.drop(columns="pwr_correction"),
-        test_data["pwr_correction"],
+        test_data.drop(columns="irrad_correction"),
+        test_data["irrad_correction"],
     )
 
 
@@ -380,8 +380,8 @@ def test_martinez_shade_factor(martinez_shade_factor_Table2):
     correction_factor = shading.martinez_shade_factor(
         **test_data.drop(columns=["direct", "diffuse"])
     )
-    pwr_correction = 1 - (
+    irrad_correction = 1 - (
         (test_data["direct"] * correction_factor + test_data["diffuse"])
         / (test_data["direct"] + test_data["diffuse"])
     )
-    assert_allclose(pwr_correction, irrad_reduction_expected, atol=1e-2)
+    assert_allclose(irrad_correction, irrad_reduction_expected, atol=1e-2)

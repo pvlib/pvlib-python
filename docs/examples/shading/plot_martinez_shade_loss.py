@@ -160,7 +160,7 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
 # of blocks for each module configuration:
 #
 # - 1 bypass diode: 1 block
-# - 3 bypass diodes: 3 blocks (in portrait; in landscape, it would be 1)
+# - 3 bypass diodes: 3 blocks in landscape; 1 in portrait
 # - 3 bypass diodes half-cut cells:
 #   - 2 blocks in portrait
 #   - 3 blocks in landscape

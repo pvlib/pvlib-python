@@ -1,15 +1,16 @@
 """
-Modelling power loss due to module shading in non-monolithic modules
-====================================================================
+Modelling irradiance loss due to module shading in non-monolithic modules
+=========================================================================
 
-This example demonstrates how to model power loss due to row-to-row shading in
-a PV array comprised of non-monolithic modules.
+Demonstrates how to model direct irradiance loss due to shading in PV modules
+with bypass diodes.
 """
 
 # %%
 # This example illustrates how to use the proposed by Martinez et al. [1]_.
-# The model adjusts the output power of a PV module based on the number of
-# shaded *blocks*. A *block* is defined as a group of cells protected by a
+# The model adjusts the incident direct and circumsolar beam irradiance of a
+# PV module based on the number
+# of shaded *blocks*. A *block* is defined as a group of cells protected by a
 # bypass diode. More information on the *blocks* can be found in the original
 # paper [1]_ and in :py:func:`pvlib.shading.martinez_shade_factor`
 # documentation.

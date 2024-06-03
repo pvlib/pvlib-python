@@ -570,10 +570,10 @@ def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
         some functions may only return a 1D shaded fraction, e.g.,
         :py:func:`pvlib.shading.shaded_fraction1d`. Unitless.
     shaded_blocks : numeric
-        Number of blocks affected by the shadow. Unitless integer.
+        Number of blocks affected by the shadow. Unitless.
         If a floating point number is provided, it will be rounded up.
-    total_blocks : numeric
-        Number of total blocks. Unitless integer.
+    total_blocks : int
+        Number of total blocks. Unitless.
 
     Returns
     -------

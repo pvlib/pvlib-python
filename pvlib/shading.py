@@ -566,9 +566,7 @@ def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
     Parameters
     ----------
     shaded_fraction : numeric
-        Surface shaded fraction, with respect to the whole area (2D). Note that
-        some functions may only return a 1D shaded fraction, e.g.,
-        :py:func:`pvlib.shading.shaded_fraction1d`. Unitless.
+        Fraction of module surface area that is shaded. Unitless.
     shaded_blocks : numeric
         Number of blocks affected by the shadow. Unitless.
         If a floating point number is provided, it will be rounded up.

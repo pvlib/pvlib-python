@@ -631,10 +631,11 @@ def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
     >>> POA_diffuse = 80  # W
     >>> shaded_fraction = shading.shaded_fraction1d(
     >>>     80, 180, 90, 25,
-    >>>      collector_width=0.5, pitch=1, surface_to_axis_offset=0,
-    >>>      cross_axis_slope=5.711, shading_row_rotation=50)
+    >>>     collector_width=0.5, pitch=1, surface_to_axis_offset=0,
+    >>>     cross_axis_slope=5.711, shading_row_rotation=50)
     >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
-    >>> loss_correction = shading.direct_martinez(shaded_fraction, shaded_blocks, total_blocks)
+    >>> loss_correction = shading.direct_martinez(
+    >>>     shaded_fraction, shaded_blocks, total_blocks)
     >>> POA_total = POA_direct * loss_correction + POA_diffuse
 
     See Also

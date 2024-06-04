@@ -594,7 +594,7 @@ def spectral_factor_pelland(airmass_absolute, clearness_index,
     are derived using spectral irradiance and other meteorological data from
     eight locations. These coefficients for seven modules, available here via
     the ``module_type`` parameter, as well as more details on the model, can be
-    found in Ref. [1]_
+    found in [1]_.
 
     Parameters
     ----------

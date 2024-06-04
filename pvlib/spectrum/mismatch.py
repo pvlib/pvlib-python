@@ -583,7 +583,7 @@ def spectral_factor_pelland(airmass_absolute, clearness_index,
         
     .. math::
 
-       M = a_1*kc**(a_2)*ama**(a_3),
+       M = a_1\cdot K_c^{a_2}\cdot AM_a^{a_3},
     
     where M is the spectral mismatch factor, and a_1, a_2, a_3 are
     module-specific coefficients.

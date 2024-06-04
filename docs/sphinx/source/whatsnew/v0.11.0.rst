@@ -23,8 +23,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-* Fixes clearsky.lookup_linke_turbidity and irradiance.get_extra_radiation to be timezone-aware
-  (:issue:`2054`, :pull:`2055`)
+* Changes clearsky.lookup_linke_turbidity and irradiance.get_extra_radiation to use UTC instead of local
+   timezone when determining day of year. (:issue:`2054`, :pull:`2055`)
 
 
 Testing

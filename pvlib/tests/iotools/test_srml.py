@@ -4,8 +4,7 @@ import pytest
 
 from pvlib.iotools import srml
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
-                        assert_frame_equal, fail_on_pvlib_version)
-from pvlib._deprecation import pvlibDeprecationWarning
+                        assert_frame_equal)
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 

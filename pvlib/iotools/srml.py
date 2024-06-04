@@ -6,8 +6,6 @@ import pandas as pd
 import urllib
 import warnings
 
-from pvlib._deprecation import deprecated
-
 # VARIABLE_MAP is a dictionary mapping SRML data element numbers to their
 # pvlib names. For most variables, only the first three digits are used,
 # the fourth indicating the instrument. Spectral data (7xxx) uses all

@@ -18,6 +18,7 @@ PV temperature models
    temperature.noct_sam
    temperature.prilliman
    pvsystem.PVSystem.get_cell_temperature
+   temperature.lindholm_floating
    temperature.generic_linear
    temperature.GenericLinearModel
 

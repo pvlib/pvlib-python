@@ -468,3 +468,107 @@ def test_glm_repr():
                 "'alpha': 0.9}")
 
     assert glm.__repr__() == expected
+
+
+def test_lindholm_floating_default():
+    result = temperature.lindholm_floating(poa_global=800,
+                                           temp_air=20,
+                                           characteristic_length=2,
+                                           wind_speed=1,
+                                           temp_module_front=24,
+                                           temp_module_back=23,
+                                           temp_water=16,
+                                           water_velocity=0.1,
+                                           temp_sky=5)
+    assert_allclose(result, 28.520, 0.001)
+
+
+def test_lindholm_floating_flat_module():
+    result = temperature.lindholm_floating(poa_global=800,
+                                           temp_air=20,
+                                           characteristic_length=2,
+                                           wind_speed=1,
+                                           temp_module_front=24,
+                                           temp_module_back=23,
+                                           temp_water=16,
+                                           water_velocity=0.1,
+                                           temp_sky=5,
+                                           flat_module=True)
+    assert_allclose(result, 24.823, 0.001)
+
+
+def test_lindholm_floating_kwargs():
+    result = temperature.lindholm_floating(poa_global=800,
+                                           temp_air=20,
+                                           characteristic_length=2,
+                                           wind_speed=1,
+                                           temp_module_front=24,
+                                           temp_module_back=23,
+                                           temp_water=16,
+                                           water_velocity=0.1,
+                                           temp_sky=5,
+                                           kinematic_viscocity_water=0.0000012,
+                                           lamda_water=0.6,
+                                           prandtl_water=9,
+                                           glass_thickness_front=0.002,
+                                           glass_thickness_back=0.002,
+                                           encapsulant_thickness_front=0.0002,
+                                           encapsulant_thickness_back=0.0002,
+                                           wafer_thickness=0.00016,
+                                           glass_conductivity_front=2,
+                                           glass_conductivity_back=2,
+                                           encapsulant_conductivity_front=0.25,
+                                           encapsulant_conductivity_back=0.25,
+                                           wafer_conductivity=155,
+                                           membrane_thickness=0.002,
+                                           membrane_conductivity=0.3,
+                                           module_efficiency=0.2,
+                                           alpha_absorption=0.95,
+                                           glass_transmittance=0.98,
+                                           glass_cover_emissivity=0.95)
+    assert_allclose(result, 27.767, 0.001)
+
+
+def test_lindholm_floating_ndarray():
+    temps = np.array([0, 10, 25])
+    irrads = np.array([0, 250, 600])
+    winds = np.array([0, 3.5, 7])
+    front_temps = np.array([0, 25, 40])
+    back_temps = np.array([0, 25, 30])
+    water_temps = np.array([5, 10, 20])
+    water_speeds = np.array([1, 0.1, 0])
+    sky_temps = np.array([0, 2, 5])
+    result = temperature.lindholm_floating(poa_global=irrads,
+                                           temp_air=temps,
+                                           characteristic_length=2,
+                                           wind_speed=winds,
+                                           temp_module_front=front_temps,
+                                           temp_module_back=back_temps,
+                                           temp_water=water_temps,
+                                           water_velocity=water_speeds,
+                                           temp_sky=sky_temps)
+    expected = np.array([0.0, 12.4341, 46.7391])
+    assert_allclose(expected, result, 3)
+
+
+def test_lindholm_floating_series():
+    times = pd.date_range(start="2015-01-01 00:00", end="2015-01-01 12:00", freq="6h")
+    temps = pd.Series([0, 10, 25], index=times)
+    irrads = pd.Series([0, 250, 600], index=times)
+    winds = pd.Series([0, 3.5, 7], index=times)
+    front_temps = pd.Series([0, 25, 40], index=times)
+    back_temps = pd.Series([0, 25, 30], index=times)
+    water_temps = pd.Series([5, 10, 20], index=times)
+    water_speeds = pd.Series([1, 0.1, 0], index=times)
+    sky_temps = pd.Series([0, 2, 5], index=times)
+    result = temperature.lindholm_floating(poa_global=irrads,
+                                           temp_air=temps,
+                                           characteristic_length=2,
+                                           wind_speed=winds,
+                                           temp_module_front=front_temps,
+                                           temp_module_back=back_temps,
+                                           temp_water=water_temps,
+                                           water_velocity=water_speeds,
+                                           temp_sky=sky_temps)
+    expected = pd.Series([0.0, 12.4341, 46.7391], index=times)
+    assert_series_equal(expected, result)

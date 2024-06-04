@@ -1092,6 +1092,208 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
     return smoothed
 
 
+def lindholm_floating(poa_global, temp_air, characteristic_length,
+                      wind_speed, temp_module_front, temp_module_back,
+                      temp_water, water_velocity, temp_sky,
+                      kinematic_viscocity_water=0.000001189,
+                      lamda_water=0.596,
+                      prandtl_water=8.2,
+                      glass_thickness_front=0.0025,
+                      glass_thickness_back=0.0025,
+                      encapsulant_thickness_front=0.0004,
+                      encapsulant_thickness_back=0.0004,
+                      wafer_thickness=0.000175,
+                      glass_conductivity_front=1.8,
+                      glass_conductivity_back=1.8,
+                      encapsulant_conductivity_front=0.21,
+                      encapsulant_conductivity_back=0.21,
+                      wafer_conductivity=148,
+                      membrane_thickness=0.001,
+                      membrane_conductivity=0.2,
+                      module_efficiency=0.1, alpha_absorption=0.9,
+                      glass_transmittance=1, glass_cover_emissivity=0.89,
+                      flat_module=False):
+    r"""
+    Calculate cell temperature for floating PV systems.
+
+    Systems can be either in direct contact with the water
+    or elevated modules using the heat transfer
+    energy balance model developed by Lindholm et al. [1]_.
+
+    Implementation details are provided in [2]_.
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Total incident irradiance. [W/m^2]
+
+    temp_air : numeric
+        Ambient dry bulb temperature. [C]
+
+    characteristic_length : float
+        Characterisitc length of the PV module. Panel width or height
+        depnding on wind direction. [m]
+
+    wind_speed : numeric
+        Wind speed measured at panel height. [m/s]
+
+    temp_module_front : numeric
+        Front surface temperature of PV module. [C]
+
+    temp_module_back : numeric
+        Back surface temperature of PV module. [C]
+
+    temp_water : numeric
+        Water temperature. [C]
+
+    water_velocity : numeric
+        Water velocity. [m/s]
+
+    temp_sky : numeric
+        Sky temperature. [C]
+
+    kinematic_viscocity_water : numeric, default 0.000001189
+        Kinematic viscocity of seawater. Default value is for seawater
+        at 15 °C. [m^2/s]
+
+    lamda_water : numeric, default 0.596
+        Thermal conductivity of seawater. Default value is for seawater
+        at 15 °C. [W/(m K)]
+
+    prandtl_water : numeric, default 8.2
+        Prandtl number for seawater. Default value is for seawater
+        at 15 °C. [W/(m K)]
+
+    glass_thickness_front : float, default 0.0025
+        Thickness of the front glass of PV module. [m]
+
+    glass_thickness_back : float, default 0.0025
+        Thickness of the back glass of PV module. [m]
+
+    encapsulant_thickness_front : float, default 0.0004
+        Thickness of the front encapsulant of PV module. [m]
+
+    encapsulant_thickness_back : float, default 0.0004
+        Thickness of the back encapsulant of PV module. [m]
+
+    wafer_thickness : float, default 0.000175
+        Thickness of the wafer of PV module. [m]
+
+    glass_conductivity_front : float, default 1.8
+        Thermal conductivity of the front glass of PV module. [W/(m K)]
+
+    glass_conductivity_back : float, default 1.8
+        Thermal conductivity of the back glass of PV module. [W/(m K)]
+
+    encapsulant_conductivity_front : float, default 0.21
+        Thermal conductivity of the front encapsulant of PV module. [W/(m K)]
+
+    encapsulant_conductivity_back : float, default 0.21
+        Thermal conductivity of the back encapsulant of PV module. [W/(m K)]
+
+    wafer_conductivity : float, default 148
+        Thermal conductivity of the wafer of PV module. [W/(m K)]
+
+    membrane_thickness : float, default 0.001
+        Thickness of the membrane placed between the floating modules
+        and water surface. [m]
+
+    membrane_conductivity : float, default 0.2
+        Thermal conductivity of the membrane placed between the floating
+        modules and water surface. [W/(m K)]
+
+    module_efficiency : numeric, default 0.1
+        Module external efficiency as a fraction. See
+        :py:func:`pvlib.temprature.pvsyst_cell`.
+
+    alpha_absorption : float, default 0.9
+        Absorption coefficient. See :py:func:`pvlib.temprature.pvsyst_cell`.
+
+    glass_transmittance : float, default 1
+        Transmittance of glass covering the PV module.
+
+    glass_cover_emissivity : float, default 0.89
+        Emissivity of the glass covering the PV module.
+
+    flat_module : boolean, default False
+        Back surface of the module is in contact with the water.
+
+    Returns
+    -------
+    numeric, values in degrees Celsius
+
+    References
+    ----------
+    .. [1] Lindholm, D. et al. (2021). "Heat loss coefficients computed
+       for floating PV modules." Progress in Photovoltaics 29: 1262-1273.
+       :doi:`10.1002/pip.3451`
+
+    .. [2] Kjeldstad, T. et al. (2021). "Cooling of floating photovoltaics and the
+       importance of water temperature." Solar Energy 218: 544-551.
+       :doi:`10.1016/j.solener.2021.03.022`
+    """
+
+    # covective heat transfer coefficient to ambient air
+    # https://www.sciencedirect.com/science/article/pii/S0038092X21002085
+    # this expression is valid for wind speeds lower than 7 m/s
+    h_air = 2.8 + 3 * wind_speed
+
+    # radiative heat transfer coefficient to the sky
+    h_air_rad = (glass_cover_emissivity * 5.67*10**(-8) *
+                 (temp_module_front + temp_sky) *
+                 (temp_module_front**2 + temp_sky**2))
+
+    # Reynolds number
+    Re = water_velocity * characteristic_length / kinematic_viscocity_water
+    # Nusselt number
+    Nu = 0.664 * Re**(1/2) * prandtl_water**(1/3)
+    # convective heat transfer coefficient to water
+    h_water = Nu * lamda_water / characteristic_length
+
+    # radiative heat transfer coefficient to water
+    h_water_rad = (glass_cover_emissivity * 5.67*10**(-8) *
+                   (temp_module_back + temp_water) *
+                   (temp_module_back**2 + temp_water**2))
+
+    # Thermal resistance of front area of PV module in (m^2 K)/W
+    A_front = 1 / (
+        glass_thickness_front / glass_conductivity_front +
+        encapsulant_thickness_front / encapsulant_conductivity_front +
+        (wafer_thickness / 2) / wafer_conductivity
+        )
+
+    B_front = A_front + h_air + h_air_rad
+
+    C_front = h_air * temp_air + h_air_rad * temp_sky
+
+    # Thermal resistance of back area of PV module in (m^2 K)/W
+    A_back = 1 / (
+        membrane_thickness / membrane_conductivity +
+        glass_thickness_back / glass_conductivity_back +
+        encapsulant_thickness_back / encapsulant_conductivity_back +
+        (wafer_thickness / 2) / wafer_conductivity
+        )
+
+    # if the PV module lays flat on the water there is no radiative heat flux
+    # toward the water
+    if flat_module:
+        B_back = A_back + h_water
+        C_back = h_water * temp_water
+    else:
+        B_back = A_back + h_water + h_water_rad
+        C_back = h_water * temp_air + h_water_rad * temp_water
+
+    # Cell temperature
+    temp_cell = ((B_front * B_back *
+                 (alpha_absorption * glass_transmittance - module_efficiency) *
+                 poa_global + A_front * B_back * C_front +
+                 A_back * B_front * C_back) /
+                 (B_front * B_back * (A_back + A_front) -
+                  A_back**2 * B_front - A_front**2 * B_back))
+
+    return temp_cell
+
+
 def generic_linear(poa_global, temp_air, wind_speed, u_const, du_wind,
                    module_efficiency, absorptance):
     """

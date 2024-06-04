@@ -10,6 +10,8 @@ Breaking changes
 * The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
 * Remove the `poa_horizontal_ratio` function and all of its references. (:issue:`1697`, :pull:`2021`)
 * Parameter ``temp_mod`` in :py:func:`pvlib.pvarray.huld` is renamed to ``temp_module``. (:pull:`1979`)
+* The `leap_day` parameter in :py:func:`~pvlib.iotools.get_psm3`
+  now defaults to True instead of False. (:issue:`1481`, :pull:`1991`)
 
 
 Deprecations
@@ -22,7 +24,7 @@ Enhancements
   shade perpendicular to ``axis_azimuth``. The function is applicable to both
   fixed-tilt and one-axis tracking systems.
   (:issue:`1689`, :pull:`1725`, :pull:`1962`)
-* Added a method to fit the Huld PV model (:pull:`1979`)
+* Added a method to fit the Huld PV model. (:pull:`1979`)
 
 Bug fixes
 ~~~~~~~~~

@@ -28,8 +28,6 @@ VARIABLE_MAP = {
     'ClearSkyGHI_WattsPerMeterSquared': 'ghi_clear',
     'Clear Sky DNI': 'dni_clear',
     'ClearSkyDNI_WattsPerMeterSquared': 'dni_clear',
-    'Clear Sky DHI': 'dhi_clear',
-    'ClearSkyDHI_WattsPerMeterSquared': 'dhi_clear',
     'Albedo': 'albedo',
     'Albedo_Unitless': 'albedo',
 }

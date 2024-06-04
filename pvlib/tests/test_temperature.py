@@ -552,7 +552,8 @@ def test_lindholm_floating_ndarray():
 
 
 def test_lindholm_floating_series():
-    times = pd.date_range(start="2015-01-01 00:00", end="2015-01-01 12:00", freq="6h")
+    times = pd.date_range(start="2015-01-01 00:00", end="2015-01-01 12:00",
+                          freq="6h")
     temps = pd.Series([0, 10, 25], index=times)
     irrads = pd.Series([0, 250, 600], index=times)
     winds = pd.Series([0, 3.5, 7], index=times)

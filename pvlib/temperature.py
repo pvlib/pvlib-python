@@ -1228,8 +1228,8 @@ def lindholm_floating(poa_global, temp_air, characteristic_length,
        for floating PV modules." Progress in Photovoltaics 29: 1262-1273.
        :doi:`10.1002/pip.3451`
 
-    .. [2] Kjeldstad, T. et al. (2021). "Cooling of floating photovoltaics and the
-       importance of water temperature." Solar Energy 218: 544-551.
+    .. [2] Kjeldstad, T. et al. (2021). "Cooling of floating photovoltaics
+       and the importance of water temperature." Solar Energy 218: 544-551.
        :doi:`10.1016/j.solener.2021.03.022`
     """
 
@@ -1260,7 +1260,7 @@ def lindholm_floating(poa_global, temp_air, characteristic_length,
         glass_thickness_front / glass_conductivity_front +
         encapsulant_thickness_front / encapsulant_conductivity_front +
         (wafer_thickness / 2) / wafer_conductivity
-        )
+    )
 
     B_front = A_front + h_air + h_air_rad
 
@@ -1272,7 +1272,7 @@ def lindholm_floating(poa_global, temp_air, characteristic_length,
         glass_thickness_back / glass_conductivity_back +
         encapsulant_thickness_back / encapsulant_conductivity_back +
         (wafer_thickness / 2) / wafer_conductivity
-        )
+    )
 
     # if the PV module lays flat on the water there is no radiative heat flux
     # toward the water

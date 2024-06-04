@@ -581,9 +581,9 @@ def spectral_factor_pelland(airmass_absolute, clearness_index,
     airmass and clearness index using the Pelland model, which takes the
     following form:
         
-        .. math::
+    .. math::
 
-            M = a_1*kc**(a_2)*ama**(a_3),
+       M = a_1*kc**(a_2)*ama**(a_3),
     
     where M is the spectral mismatch factor, and a_1, a_2, a_3 are
     module-specific coefficients.
@@ -594,7 +594,7 @@ def spectral_factor_pelland(airmass_absolute, clearness_index,
     are derived using spectral irradiance and other meteorological data from
     eight locations. These coefficients for seven modules, available here via
     the ``module_type`` parameter, as well as more details on the model, can be
-    found in Ref. [1]_
+    found in [1]_.
 
     Parameters
     ----------
@@ -629,10 +629,10 @@ def spectral_factor_pelland(airmass_absolute, clearness_index,
     References
     ----------
     .. [1] Pelland, S., Beswick, C., Thevenard, D., Côté, A., Pai, A. and 
-    Poissant, Y., 2020, June. Development and testing of the PVSPEC model of 
-    photovoltaic spectral mismatch factor. In 2020 47th IEEE Photovoltaic 
-    Specialists Conference (PVSC) (pp. 1258-1264). IEEE.
-        :doi:`https://doi.org/10.1109/PVSC45281.2020.9300932`
+       Poissant, Y., 2020, June. Development and testing of the PVSPEC model of 
+       photovoltaic spectral mismatch factor. In 2020 47th IEEE Photovoltaic 
+       Specialists Conference (PVSC) (pp. 1258-1264). IEEE.
+       :doi:`https://doi.org/10.1109/PVSC45281.2020.9300932`
     """
 # =============================================================================
 #      --- Screen Input Data ---

@@ -242,7 +242,7 @@ def _infer_k_huld(cell_type, pdc0):
     return k
 
 
-def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
+def huld(effective_irradiance, temp_module, pdc0, k=None, cell_type=None):
     r"""
     Power (DC) using the Huld model.
 
@@ -263,13 +263,13 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
     ----------
     effective_irradiance : numeric
         The irradiance that is converted to photocurrent. [:math:`W/m^2`]
-    temp_mod: numeric
+    temp_module: numeric
         Module back-surface temperature. [C]
     pdc0: numeric
         Power of the modules at reference conditions 1000 :math:`W/m^2`
         and :math:`25^{\circ}C`. [W]
     k : tuple, optional
-        Empirical coefficients used in the power model. Length 6. If ``k`` is
+        Empirical coefficients used in the Huld model. Length 6. If ``k`` is
         not provided, ``cell_type`` must be specified.
     cell_type : str, optional
         If provided, must be one of ``'cSi'``, ``'CIS'``, or ``'CdTe'``.
@@ -332,6 +332,10 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
            E. Dunlop. A power-rating model for crystalline silicon PV modules.
            Solar Energy Materials and Solar Cells 95, (2011), pp. 3359-3369.
            :doi:`10.1016/j.solmat.2011.07.026`.
+
+    See Also
+    --------
+    pvlib.pvarray.fit_huld
     """
     if k is None:
         if cell_type is not None:
@@ -340,7 +344,7 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
             raise ValueError('Either k or cell_type must be specified')
 
     gprime = effective_irradiance / 1000
-    tprime = temp_mod - 25
+    tprime = temp_module - 25
     # accomodate gprime<=0
     with np.errstate(divide='ignore'):
         logGprime = np.log(gprime, out=np.zeros_like(gprime),
@@ -350,3 +354,99 @@ def huld(effective_irradiance, temp_mod, pdc0, k=None, cell_type=None):
                     k[2] * tprime + k[3] * tprime * logGprime +
                     k[4] * tprime * logGprime**2 + k[5] * tprime**2)
     return pdc
+
+
+def _build_iec61853():
+    ee = np.array([100, 100, 200, 200, 400, 400, 400, 600, 600, 600, 600,
+                   800, 800, 800, 800, 1000, 1000, 1000, 1000, 1100, 1100,
+                   1100], dtype=np.float64).T
+    tc = np.array([15, 25, 15, 25, 15, 25, 50, 15, 25, 50, 75,
+                   15, 25, 50, 75, 15, 25, 50, 75, 25, 50, 75],
+                  dtype=np.float64).T
+    return ee, tc
+
+
+def fit_huld(effective_irradiance, temp_module, pdc, method='ols'):
+    r'''
+    Fit the Huld model to the input data.
+
+    Parameters
+    ----------
+    effective_irradiance : array-like
+        The irradiance that is converted to photocurrent. [:math:`W/m^2`]
+    temp_module: array-like
+        Module back-surface temperature. [C]
+    pdc: array-like
+        DC power at ``effective_irradiance`` and ``temp_module``. [W]
+    method : string, default 'ols'
+        The regression method. Must be either ``'ols'`` or ``'robust'``.
+
+    Returns
+    -------
+    pdc0: numeric
+        Power of the modules at reference conditions 1000 :math:`W/m^2`
+        and :math:`25^{\circ}C`. [W]
+    k : tuple
+        Empirical coefficients used in the Huld model. Length 6.
+
+    Notes
+    -----
+    Requires ``statsmodels``.
+
+    Input data ``effective_irradiance``, ``temp_module`` and ``pdc`` must be
+    equal length. Data are aligned as columns and any row with a NaN in any
+    column is dropped. Remaining data must be at least length 7.
+
+    Huld [1]_ describes fitting by least-squares but doesn't detail the
+    procedure, although it is reasonable that ordinary least-squares regression
+    was used. Ordinary least-squares regression can be unduly influenced by
+    data points with large deviations from the mean of the dependent variable
+    ``pdc``. For example, these data may occur when short-duration shading is
+    present. If filtering is applied to exclude such data, a suitable model
+    can be obtained with ordinary least-squares regression. As an alternative,
+    this function also provides a 'robust' regression option (an iteratively
+    reweighted least-squares method) that is more tolerant of outliers in the
+    dependent variable.
+
+    References
+    ----------
+    .. [1] T. Huld, G. Friesen, A. Skoczek, R. Kenny, T. Sample, M. Field,
+           E. Dunlop. A power-rating model for crystalline silicon PV modules.
+           Solar Energy Materials and Solar Cells 95, (2011), pp. 3359-3369.
+           :doi:`10.1016/j.solmat.2011.07.026`.
+
+    See Also
+    --------
+    pvlib.pvarray.huld
+    '''
+
+    try:
+        import statsmodels.api as sm
+    except ImportError:
+        raise ImportError(
+            'fit_huld requires statsmodels')
+
+    gprime = effective_irradiance / 1000
+    tprime = temp_module - 25
+    # accomodate gprime<=0
+    logGprime = np.log(gprime, out=np.nan*gprime,
+                       where=np.array(gprime > 0))
+    with np.errstate(divide='ignore'):
+        Y = np.divide(pdc, gprime, out=np.nan*gprime,
+                      where=np.array(gprime > 0))
+
+    X = np.stack((logGprime, logGprime**2, tprime, tprime*logGprime,
+                  tprime*logGprime**2, tprime**2), axis=0).T
+    X = sm.add_constant(X)
+
+    if method == 'ols':
+        model = sm.OLS(Y, X, missing='drop')
+    elif method == 'robust':
+        model = sm.RLM(Y, X, missing='drop')
+    else:
+        raise ValueError("method must be ols or robust")
+
+    result = model.fit()
+    pdc0 = result.params[0]
+    k = result.params[1:]
+    return pdc0, k

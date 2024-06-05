@@ -206,16 +206,13 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     with h5py.File(filepath, 'r') as lt_h5_file:
         lts = lt_h5_file['LinkeTurbidity'][latitude_index, longitude_index]
 
-    time_utc = tools._pandas_to_utc(time)
-
     if interp_turbidity:
-        linke_turbidity = _interpolate_turbidity(lts, time_utc)
+        linke_turbidity = _interpolate_turbidity(lts, time)
     else:
-        months = time_utc.month - 1
-        linke_turbidity = pd.Series(lts[months], index=time_utc)
+        months = tools._pandas_to_utc(time).month - 1
+        linke_turbidity = pd.Series(lts[months], index=time)
 
     linke_turbidity /= 20.
-    linke_turbidity.index = time
 
     return linke_turbidity
 
@@ -258,6 +255,8 @@ def _interpolate_turbidity(lts, time):
     # Jan 1 - Jan 15 and Dec 16 - Dec 31.
     lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
 
+    time = tools._pandas_to_utc(time)
+    
     # handle leap years
     try:
         isleap = time.is_leap_year

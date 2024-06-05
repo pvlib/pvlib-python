@@ -28,7 +28,7 @@ from .conftest import (
 def times():
     # must include night values
     return pd.date_range(start='20140624', freq='6h', periods=4,
-                         tz='utc').tz_convert('US/Arizona')
+                         tz='US/Arizona')
 
 
 @pytest.fixture
@@ -112,7 +112,7 @@ def test_get_extra_radiation_nrel_numba(times):
         # and reset to no-numba state
         irradiance.get_extra_radiation(times, method='nrel')
     assert_allclose(result,
-                    [1322.375560, 1322.338415, 1322.302221, 1322.266984])
+                    [1322.332316, 1322.296282, 1322.261205, 1322.227091])
 
 
 def test_get_extra_radiation_invalid():
@@ -602,17 +602,17 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
 
 @pytest.mark.parametrize('pressure,expected', [
     (93193,  [[830.46567,   0.79742,   0.93505],
-              [676.09497,   0.63776,   3.02102]]),
+              [676.18340,   0.63782,   3.02102]]),
     (None,   [[868.72425,   0.79742,   1.01664],
-              [680.66679,   0.63776,   3.28463]]),
+              [680.73800,   0.63782,   3.28463]]),
     (101325, [[868.72425,   0.79742,   1.01664],
-              [680.66679,   0.63776,   3.28463]])
+              [680.73800,   0.63782,   3.28463]])
 ])
 def test_disc_value(pressure, expected):
     # see GH 449 for pressure=None vs. 101325.
     columns = ['dni', 'kt', 'airmass']
     times = pd.DatetimeIndex(['2014-06-24T1200', '2014-06-24T1800'],
-                             tz='utc').tz_convert('America/Phoenix')
+                             tz='America/Phoenix')
     ghi = pd.Series([1038.62, 254.53], index=times)
     zenith = pd.Series([10.567, 72.469], index=times)
     out = irradiance.disc(ghi, zenith, times, pressure=pressure)
@@ -1079,7 +1079,7 @@ def test_dirindex(times):
                                             pressure=pressure,
                                             use_delta_kt_prime=True,
                                             temp_dew=tdew).values
-    expected_out = np.array([np.nan, 0., 748.31562753, 630.72592644])
+    expected_out = np.array([np.nan, 0., 748.31562800, 630.73752100])
 
     tolerance = 1e-8
     assert np.allclose(out, expected_out, rtol=tolerance, atol=0,

@@ -206,6 +206,10 @@ def _pandas_to_doy(pd_object):
     Returns
     -------
     dayofyear
+
+    Notes
+    -----
+    Day of year is determined using UTC, since pandas uses local hour
     """
     return _pandas_to_utc(pd_object).dayofyear
 

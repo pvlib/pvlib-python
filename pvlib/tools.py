@@ -255,16 +255,11 @@ def _doy_to_datetimeindex(doy, epoch_year=2014):
 
 
 def _datetimelike_scalar_to_doy(time):
-    return _datetimelike_scalar_to_datetimeindex(time).dayofyear
+    return _pandas_to_utc(_datetimelike_scalar_to_datetimeindex(time)).dayofyear
 
 
 def _datetimelike_scalar_to_datetimeindex(time):
-
-    timestamp = pd.Timestamp(time)
-
-    timestamp_utc = _pandas_to_utc(timestamp)
-
-    return pd.DatetimeIndex([timestamp_utc])
+    return pd.DatetimeIndex([pd.Timestamp(time)])
 
 
 def _scalar_out(arg):

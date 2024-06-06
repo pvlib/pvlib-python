@@ -26,8 +26,8 @@ def test_albedo_water_ndarray():
     result = albedo.albedo_water(solar_elevation=solar_elevs,
                                  color_coeff=color_coeffs,
                                  wave_roughness_coeff=roughness_coeffs)
-    expected = np.array([0.1, 0.1349, 0.0644])
-    assert_allclose(expected, result, 3)
+    expected = np.array([0.1, 0.134973, 0.064479])
+    assert_allclose(expected, result, atol=1e-5)
 
 
 def test_lindholm_floating_series():

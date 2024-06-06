@@ -44,14 +44,14 @@ def get_example_spectral_response(wavelength=None):
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
 
-    SR_DATA = np.array([[ 290, 0.00],
-                        [ 350, 0.27],
-                        [ 400, 0.37],
-                        [ 500, 0.52],
-                        [ 650, 0.71],
-                        [ 800, 0.88],
-                        [ 900, 0.97],
-                        [ 950, 1.00],
+    SR_DATA = np.array([[290, 0.00],
+                        [350, 0.27],
+                        [400, 0.37],
+                        [500, 0.52],
+                        [650, 0.71],
+                        [800, 0.88],
+                        [900, 0.97],
+                        [950, 1.00],
                         [1000, 0.93],
                         [1050, 0.58],
                         [1100, 0.21],
@@ -572,25 +572,24 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     modifier = f_AM + f_AOD + f_PW  # Eq 5
     return modifier
 
-def spectral_factor_pelland(airmass_absolute, clearness_index,
-                            module_type = None, coefficients = None,
-                            min_airmass_absolute = 0.58,
-                            max_airmass_absolute = 10):
+
+def spectral_factor_pelland(airmass_absolute, clearsky_index,
+                            module_type=None, coefficients=None):
     r"""
     Estimate a technology-specific spectral mismatch modifier from
-    airmass and clearness index using the Pelland model, which takes the
+    airmass and clear sky index using the Pelland model, which takes the
     following form:
-        
+
     .. math::
 
        M = a_1 K_c^{a_2} AM_a^{a_3},
-    
-    where M is the spectral mismatch factor, and a_1, a_2, a_3 are
+
+    where M is the spectral mismatch factor, and :math: `a_1, a_2, a_3` are
     module-specific coefficients.
 
     The motivtion for this model is to include the effect of cloud cover on the
     spectrum, and thus spectral mismatch. Another motivation is to develop a
-    simple parameterisation compared with existing models. Model coefficients
+    simple parameterisation compared with exicting models. Model coefficients
     are derived using spectral irradiance and other meteorological data from
     eight locations. These coefficients for seven modules, available here via
     the ``module_type`` parameter, as well as more details on the model, can be
@@ -601,8 +600,8 @@ def spectral_factor_pelland(airmass_absolute, clearness_index,
     airmass_absolute : numeric
         absolute (pressure-adjusted) airmass. [unitless]
 
-    clearness_index: numeric
-        clearness index. [unitless]
+    clearsky_index: numeric
+        clear sky index. [unitless]
 
     module_type : str, optional
         One of the following PV technology strings from [1]_:
@@ -626,37 +625,36 @@ def spectral_factor_pelland(airmass_absolute, clearness_index,
         effective irradiance, i.e., the irradiance that is converted to
         electrical current.
 
+    Notes
+    -------
+    In the PVSPEC model publication, absolute air mass is estimated using the
+    Kasten and Young model [2]_. The clear sky index, which is the ratio of GHI
+    to clear sky GHI, uses the ESRA model [3]_ to estimate the clear sky GHI
+    with monthly Linke turbidity values from [4]_ as inputs.
+
     References
     ----------
-    .. [1] Pelland, S., Beswick, C., Thevenard, D., Côté, A., Pai, A. and 
-       Poissant, Y., 2020, June. Development and testing of the PVSPEC model of 
-       photovoltaic spectral mismatch factor. In 2020 47th IEEE Photovoltaic 
+    .. [1] Pelland, S., Beswick, C., Thevenard, D., Côté, A., Pai, A. and
+       Poissant, Y., 2020, June. Development and testing of the PVSPEC model of
+       photovoltaic spectral mismatch factor. In 2020 47th IEEE Photovoltaic
        Specialists Conference (PVSC) (pp. 1258-1264). IEEE.
        :doi:`https://doi.org/10.1109/PVSC45281.2020.9300932`
+    .. [2] Kasten, F. and Young, A.T., 1989. Revised optical air mass tables
+       and approximation formula. Applied optics, 28(22), pp.4735-4738.
+       :doi: `https://doi.org/10.1364/AO.28.004735`
+    .. [3] Rigollier, C., Bauer, O. and Wald, L., 2000. On the clear sky model
+    of the ESRA—European Solar Radiation Atlas—with respect to the Heliosat
+    method. Solar energy, 68(1), pp.33-48.
+       :doi: `https://doi.org/10.1016/S0038-092X(99)00055-9`
+    .. [4] SoDa website monthly Linke turbidity values:
+       <url> `http://www.sodapro.com/gl/web-services/atmosphere/linke-
+       turbidity-factor-ozone-watervapor-and-angstroembeta`
     """
-# =============================================================================
-#      --- Screen Input Data ---
-# =============================================================================
-    #kc
-    kc = np.atleast_1d(clearness_index)
-    kc = kc.astype('float64')
-    if np.min(kc) < 0:
-        raise ValueError('Clearness index cannot be negative')
-    if np.max(kc) > 1:
-        raise ValueError('Clearness index cannot be >1')
-    #ama
-    if np.max(airmass_absolute) > max_airmass_absolute:
-        warn('Exceptionally high air mass: ' +
-             'values greater than 'f'{max_airmass_absolute} in dataset')
-    # Warn user about exceptionally low ama data
-    if np.min(airmass_absolute) < min_airmass_absolute:
-        airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute )
-        warn('Exceptionally low air mass: ' +
-             'model not intended for extra-terrestrial use')
+
 # =============================================================================
 #      --- Default coefficients ---
 # =============================================================================
-    #Empirical coefficients from [1]_
+    # Empirical coefficients from [1]_
     _coefficients = {}
     _coefficients['multisi'] = (
         0.9847, -0.05237, 0.03034)
@@ -681,18 +679,18 @@ def spectral_factor_pelland(airmass_absolute, clearness_index,
         pass
     elif module_type is None and coefficients is None:
         raise ValueError('No valid input provided, both module_type and ' +
-                        'coefficients are None. module_type can be one of ' +
-                        'poly-Si, monosi, fs-2, fs-4, cigs, or asi')
+                         'coefficients are None. module_type can be one of ' +
+                         'poly-Si, monosi, fs-2, fs-4, cigs, or asi')
     else:
         raise ValueError('Cannot resolve input, must supply only one of ' +
-                        'module_type and coefficients. module_type can be ' +
-                        'one of poly-Si, monosi, fs-2, fs-4, cigs, or asi')
+                         'module_type and coefficients. module_type can be ' +
+                         'one of poly-Si, monosi, fs-2, fs-4, cigs, or asi')
 # =============================================================================
 #      --- Specral mismatch calculation ---
 # =============================================================================
     coeff = coefficients
     ama = airmass_absolute
-    kc = clearness_index
-    mismatch = coeff[0]*kc**(coeff[1])*ama**(coeff[2])
+    kc = clearsky_index
+    mismatch = coeff[0]*np.power(kc, coeff[1])*np.power(ama, coeff[2])
 
     return mismatch

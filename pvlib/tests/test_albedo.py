@@ -20,24 +20,24 @@ def test_albedo_water_string_surface_condition():
 
 
 def test_albedo_water_ndarray():
-    solar_elevs = np.array([0, 20, 60])
-    color_coeffs = np.array([0.1, 0.25, 0.4])
-    roughness_coeffs = np.array([0.3, 1.3, 2.3])
+    solar_elevs = np.array([0, 20, 60, 90])
+    color_coeffs = np.array([0.1, 0.2, 0.3, 0.4])
+    roughness_coeffs = np.array([0.3, 0.8, 1.5, 2])
     result = albedo.albedo_water(solar_elevation=solar_elevs,
                                  color_coeff=color_coeffs,
                                  wave_roughness_coeff=roughness_coeffs)
-    expected = np.array([0.1, 0.134973, 0.064479])
+    expected = np.array([0.1, 0.1287, 0.0627, 0.064])
     assert_allclose(expected, result, atol=1e-5)
 
 
-def test_lindholm_floating_series():
-    times = pd.date_range(start="2015-01-01 00:00", end="2015-01-01 12:00",
+def test_albedo_water_series():
+    times = pd.date_range(start="2015-01-01 00:00", end="2015-01-01 18:00",
                           freq="6h")
-    solar_elevs = pd.Series([0, 20, 60], index=times)
-    color_coeffs = pd.Series([0.1, 0.25, 0.4], index=times)
-    roughness_coeffs = pd.Series([0.3, 1.3, 2.3], index=times)
+    solar_elevs = pd.Series([0, 20, 60, 90], index=times)
+    color_coeffs = pd.Series([0.1, 0.2, 0.3, 0.4], index=times)
+    roughness_coeffs = pd.Series([0.3, 0.8, 1.5, 2], index=times)
     result = albedo.albedo_water(solar_elevation=solar_elevs,
                                  color_coeff=color_coeffs,
                                  wave_roughness_coeff=roughness_coeffs)
-    expected = pd.Series([0.1, 0.134973, 0.064479], index=times)
+    expected = pd.Series([0.1, 0.1287, 0.0627, 0.064], index=times)
     assert_series_equal(expected, result, atol=1e-5)

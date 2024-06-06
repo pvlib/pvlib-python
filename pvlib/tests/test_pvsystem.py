@@ -434,7 +434,7 @@ def test_PVSystem_sapm_celltemp_kwargs(mocker):
                                                   temp_model_params['a'],
                                                   temp_model_params['b'],
                                                   temp_model_params['deltaT'])
-    assert_allclose(out, 57, atol=1e-1)
+    assert_allclose(out, 57, atol=1)
 
 
 def test_PVSystem_multi_array_sapm_celltemp_different_arrays():

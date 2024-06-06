@@ -26,37 +26,35 @@ WATER_ROUGHNESS_COEFFS = {
 def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
                  surface_condition=None):
     r"""
-    Estimation of albedo values for inland water bodies.
+    Estimation of albedo for inland water bodies.
 
     The available surface conditions are for inland water bodies, e.g., lakes
     and ponds. For ocean/open sea, an albedo value of 0.06 is recommended.
-    See :py:constant:`pvlib.temperature.ALBEDO`.
+    See :const:`pvlib.irradiance.SURFACE_ALBEDOS`.
 
     Parameters
     ----------
     solar_elevation : numeric
         Sun elevation angle. [degrees]
 
-    color_coeff : numeric, optional
+    color_coeff : float, optional
         Water color coefficient. [-]
 
-    wave_roughness_coeff : numeric, optional
+    wave_roughness_coeff : float, optional
         Water wave roughness coefficient. [-]
 
     surface_condition : string, optional
         If supplied, overrides ``color_coeff`` and ``wave_roughness_coeff``.
         ``surface_condition`` can be one of the following:
-        * 'clear_water_no_waves'
-        * 'clear_water_ripples_up_to_2.5cm'
-        * 'clear_water_ripples_larger_than_2.5cm_occasional_whitecaps'
-        * 'clear_water_frequent_whitecaps'
-        * 'green_water_ripples_up_to_2.5cm'
-        * 'muddy_water_no_waves'.
+        'clear_water_no_waves', 'clear_water_ripples_up_to_2.5cm',
+        'clear_water_ripples_larger_than_2.5cm_occasional_whitecaps',
+        'clear_water_frequent_whitecaps', 'green_water_ripples_up_to_2.5cm',
+        'muddy_water_no_waves'.
 
     Returns
     -------
-    numeric
-    Albedo for inland water bodies.
+    albedo : numeric
+        Albedo for inland water bodies.
 
     Notes
     -----
@@ -74,21 +72,21 @@ def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
     :data:`~pvlib.albedo.WATER_ROUGHNESS_COEFFS`. The values of these
     coefficients are experimentally determined.
 
-    +---------------------------------------------------------------+-----------------------------+--------------------------------------+
-    | Surface and condition                                         | Color coefficient :math:`c` | Wave roughness coefficient :math:`r` |
-    +===============================================================+=============================+======================================+
-    | Clear water no waves                                          | 0.13                        | 0.29                                 |
-    +---------------------------------------------------------------+-----------------------------+--------------------------------------+
-    | Clear water ripples up to 2.5 cm                              | 0.16                        | 0.70                                 |
-    +---------------------------------------------------------------+-----------------------------+--------------------------------------+
-    | Clear water ripples larger than 2.5 cm (occasional whitecaps) | 0.23                        | 1.23                                 |
-    +---------------------------------------------------------------+-----------------------------+--------------------------------------+
-    | Clear water frequent whitecaps                                | 0.30                        | 2.00                                 |
-    +---------------------------------------------------------------+-----------------------------+--------------------------------------+
-    | Green water ripples up to 2.5cm                               | 0.22                        | 0.70                                 |
-    +---------------------------------------------------------------+-----------------------------+--------------------------------------+
-    | Muddy water no waves                                          | 0.19                        | 0.29                                 |
-    +---------------------------------------------------------------+-----------------------------+--------------------------------------+
+    +---------------------------------------------------------------+-------------------------------+----------------------------------------+
+    | Surface and condition                                         | Color coefficient (:math:`c`) | Wave roughness coefficient (:math:`r`) |
+    +===============================================================+===============================+========================================+
+    | Clear water no waves                                          | 0.13                          | 0.29                                   |
+    +---------------------------------------------------------------+-------------------------------+----------------------------------------+
+    | Clear water ripples up to 2.5 cm                              | 0.16                          | 0.70                                   |
+    +---------------------------------------------------------------+-------------------------------+----------------------------------------+
+    | Clear water ripples larger than 2.5 cm (occasional whitecaps) | 0.23                          | 1.23                                   |
+    +---------------------------------------------------------------+-------------------------------+----------------------------------------+
+    | Clear water frequent whitecaps                                | 0.30                          | 2.00                                   |
+    +---------------------------------------------------------------+-------------------------------+----------------------------------------+
+    | Green water ripples up to 2.5cm                               | 0.22                          | 0.70                                   |
+    +---------------------------------------------------------------+-------------------------------+----------------------------------------+
+    | Muddy water no waves                                          | 0.19                          | 0.29                                   |
+    +---------------------------------------------------------------+-------------------------------+----------------------------------------+
 
     References
     ----------

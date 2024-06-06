@@ -11,7 +11,7 @@ WATER_COLOR_COEFFS = {
     'clear_water_frequent_whitecaps': 0.3,
     'green_water_ripples_up_to_2.5cm': 0.22,
     'muddy_water_no_waves': 0.19
-    }
+}
 
 WATER_ROUGHNESS_COEFFS = {
     'clear_water_no_waves': 0.29,
@@ -20,7 +20,7 @@ WATER_ROUGHNESS_COEFFS = {
     'clear_water_frequent_whitecaps': 2,
     'green_water_ripples_up_to_2.5cm': 0.7,
     'muddy_water_no_waves': 0.29
-    }
+}
 
 
 def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
@@ -52,7 +52,7 @@ def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
         * 'clear_water_frequent_whitecaps'
         * 'green_water_ripples_up_to_2.5cm'
         * 'muddy_water_no_waves'.
-        
+
     Returns
     -------
     numeric
@@ -66,12 +66,12 @@ def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
        :label: albedo
 
         \rho = c^{(r sin(\alpha) + 1)}
-        
+
     Inputs to the model are the water color coefficient :math:`c` [-], the
     water wave roughness coefficient :math:`r` [-] and the solar elevation
     :math:`\alpha` [degrees]. Parameters are provided in [1]_ , and are coded
-    for convenience in :data:`~pvlib.albedo.WATER_COLOR_COEFFS` and 
-    :data:`~pvlib.albedo.WATER_ROUGHNESS_COEFFS`. The values of these 
+    for convenience in :data:`~pvlib.albedo.WATER_COLOR_COEFFS` and
+    :data:`~pvlib.albedo.WATER_ROUGHNESS_COEFFS`. The values of these
     coefficients are experimentally determined.
 
     +---------------------------------------------------------------+-----------------------------+--------------------------------------+
@@ -92,7 +92,7 @@ def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
 
     References
     ----------
-    .. [1] Dvoracek M.J., Hannabas B. (1990). "Prediction of albedo for use in 
+    .. [1] Dvoracek M.J., Hannabas B. (1990). "Prediction of albedo for use in
        evapotranspiration and irrigation scheduling." IN: Visions of the Future
        American Society of Agricultural Engineers 04-90: 692-699.
     """  # noqa: E501

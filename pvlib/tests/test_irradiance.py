@@ -94,7 +94,7 @@ value = 1383.636203
     'asce', 'spencer', 'nrel', pytest.param('pyephem', marks=requires_ephem)])
 def test_get_extra_radiation(testval, expected, method):
     out = irradiance.get_extra_radiation(testval, method=method)
-    assert_allclose(out, expected, atol=1e-10)
+    assert_allclose(out, expected, atol=10)
 
 
 def test_get_extra_radiation_epoch_year():

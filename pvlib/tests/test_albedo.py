@@ -26,7 +26,7 @@ def test_albedo_water_ndarray():
     result = albedo.albedo_water(solar_elevation=solar_elevs,
                                  color_coeff=color_coeffs,
                                  wave_roughness_coeff=roughness_coeffs)
-    expected = np.array([0.1, 0.1287, 0.0627, 0.064])
+    expected = np.array([0.1, 0.12875, 0.06278, 0.064])
     assert_allclose(expected, result, atol=1e-5)
 
 
@@ -39,5 +39,5 @@ def test_albedo_water_series():
     result = albedo.albedo_water(solar_elevation=solar_elevs,
                                  color_coeff=color_coeffs,
                                  wave_roughness_coeff=roughness_coeffs)
-    expected = pd.Series([0.1, 0.1287, 0.0627, 0.064], index=times)
+    expected = pd.Series([0.1, 0.12875, 0.06278, 0.064], index=times)
     assert_series_equal(expected, result, atol=1e-5)

@@ -28,7 +28,7 @@ Breaking changes
   (:issue:`1718`, :pull:`1719`)
 * Map wind direction to ``'wind_direction'`` instead of ``'wind_dir'`` in
   :py:func:`pvlib.iotools.read_srml` and
-  :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`)
+  ``pvlib.iotools.read_srml_month_from_solardat`` (:pull:`1773`)
 * :func:`~pvlib.iotools.get_pvgis_tmy` and :func:`~pvlib.iotools.read_pvgis_tmy`
   now rename columns to standard pvlib names by default (``map_variables=True``)
   (:pull:`1772`)
@@ -66,7 +66,7 @@ Deprecations
   TMY3 column names to nonstandard alternatives, is now deprecated.
   We encourage using ``map_variables`` (which produces standard pvlib names) instead.
   (:issue:`1517`, :pull:`1623`)
-* :py:func:`pvlib.iotools.read_srml_month_from_solardat` is deprecated and replaced by
+* ``pvlib.iotools.read_srml_month_from_solardat`` is deprecated and replaced by
   :py:func:`pvlib.iotools.get_srml`. (:pull:`1779`)
 
 
@@ -79,9 +79,9 @@ Enhancements
   :py:func:`pvlib.pvsystem.calcparams_pvsyst` are all numeric types and have
   the same Python type as the ``effective_irradiance`` and ``temp_cell`` parameters. (:issue:`1626`, :pull:`1700`)
 * Added ``map_variables`` parameter to :py:func:`pvlib.iotools.read_tmy3` (:issue:`1517`, :pull:`1623`),
-  :py:func:`pvlib.iotools.read_srml`, and :py:func:`pvlib.iotools.read_srml_month_from_solardat` (:pull:`1773`).
+  :py:func:`pvlib.iotools.read_srml`, and ``pvlib.iotools.read_srml_month_from_solardat`` (:pull:`1773`).
 * Added :func:`pvlib.iotools.get_srml` that is similar to
-  :func:`pvlib.iotools.read_srml_month_from_solardat` but is able to fetch multiple months
+  ``pvlib.iotools.read_srml_month_from_solardat`` but is able to fetch multiple months
   of data using the ``start`` and ``end`` parameters.
   (:pull:`1779`)
 * Allow passing keyword arguments to :py:func:`scipy:scipy.optimize.brentq` and

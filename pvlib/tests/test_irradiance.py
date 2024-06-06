@@ -94,7 +94,7 @@ value = 1383.636203
     'asce', 'spencer', 'nrel', pytest.param('pyephem', marks=requires_ephem)])
 def test_get_extra_radiation(testval, expected, method):
     out = irradiance.get_extra_radiation(testval, method=method)
-    assert_allclose(out, expected, atol=10)
+    assert_allclose(out, expected, atol=1e-10)
 
 
 def test_get_extra_radiation_epoch_year():
@@ -1053,7 +1053,7 @@ def test_erbs_all_scalar():
     out = irradiance.erbs(ghi, zenith, doy)
 
     for k, v in out.items():
-        assert_allclose(v, expected[k], 5)
+        assert_allclose(v, expected[k], 1e-2)
 
 
 def test_dirindex(times):

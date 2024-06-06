@@ -20,13 +20,13 @@ def sapm_default():
 def test_sapm_cell(sapm_default):
     default = temperature.sapm_cell(900, 20, 5, sapm_default['a'],
                                     sapm_default['b'], sapm_default['deltaT'])
-    assert_allclose(default, 43.509, 3)
+    assert_allclose(default, 43.509, 1e-3)
 
 
 def test_sapm_module(sapm_default):
     default = temperature.sapm_module(900, 20, 5, sapm_default['a'],
                                       sapm_default['b'])
-    assert_allclose(default, 40.809, 3)
+    assert_allclose(default, 40.809, 1e-3)
 
 
 def test_sapm_cell_from_module(sapm_default):
@@ -47,8 +47,8 @@ def test_sapm_ndarray(sapm_default):
                                            sapm_default['b'])
     expected_cell = np.array([0., 23.06066166, 5.])
     expected_module = np.array([0., 21.56066166, 5.])
-    assert_allclose(expected_cell, cell_temps, 3)
-    assert_allclose(expected_module, module_temps, 3)
+    assert_allclose(expected_cell, cell_temps, 1e-3)
+    assert_allclose(expected_module, module_temps, 1e-3)
 
 
 def test_sapm_series(sapm_default):
@@ -85,7 +85,7 @@ def test_pvsyst_cell_ndarray():
     winds = np.array([10, 5, 0])
     result = temperature.pvsyst_cell(irrads, temps, wind_speed=winds)
     expected = np.array([0.0, 23.96551, 5.0])
-    assert_allclose(expected, result, 3)
+    assert_allclose(expected, result, 1e-3)
 
 
 def test_pvsyst_cell_series():

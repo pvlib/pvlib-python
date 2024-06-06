@@ -9,6 +9,8 @@ Breaking changes
 ~~~~~~~~~~~~~~~~
 * The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
 * Remove the `poa_horizontal_ratio` function and all of its references. (:issue:`1697`, :pull:`2021`)
+* Updated `~pvlib.iotools.MIDC_VARIABLE_MAP`~ to reflect
+  changes in instrumentation. (:pull:`2006`)
 
 
 Deprecations
@@ -21,8 +23,6 @@ Enhancements
   shade perpendicular to ``axis_azimuth``. The function is applicable to both
   fixed-tilt and one-axis tracking systems.
   (:issue:`1689`, :pull:`1725`, :pull:`1962`)
-* Updated `~pvlib.iotools.MIDC_VARIABLE_MAP`~ to reflect
-  changes in instrumentation. (:pull:`2006`)
 
 
 Bug fixes

@@ -117,6 +117,23 @@ def atand(number):
     return res
 
 
+def atan2d(y, x):
+    """
+    Trigonometric quadrant-wise inverse tangent returning an angle in degrees.
+
+    Parameters
+    ----------
+    y, x : numeric
+        Input numbers
+
+    Returns
+    -------
+    result : numeric
+        arctan2 result in degrees
+    """
+    return np.degrees(np.arctan2(y, x))
+
+
 def localize_to_utc(time, location):
     """
     Converts or localizes a time series to UTC.

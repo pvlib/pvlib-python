@@ -626,7 +626,7 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
         electrical current.
 
     Notes
-    -------
+    -----
     In the PVSPEC model publication, absolute air mass is estimated using the
     Kasten and Young model [2]_. The clear sky index, which is the ratio of GHI
     to clear sky GHI, uses the ESRA model [3]_ to estimate the clear sky GHI

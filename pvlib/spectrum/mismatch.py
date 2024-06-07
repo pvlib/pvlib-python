@@ -577,19 +577,11 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
                             module_type=None, coefficients=None):
     r"""
     Estimate a technology-specific spectral mismatch modifier from
-    airmass and clear sky index using the Pelland model, which takes the
-    following form:
+    airmass and clear sky index using the Pelland model.
 
-    .. math::
-
-       M = a_1 K_c^{a_2} AM_a^{a_3},
-
-    where M is the spectral mismatch factor, and :math:`a_1, a_2, a_3` are
-    module-specific coefficients.
-
-    The motivtion for this model is to include the effect of cloud cover on the
-    spectrum, and thus spectral mismatch. Another motivation is to develop a
-    simple parameterisation compared with exicting models. Model coefficients
+    The motivation for this model is to include the effects of cloud cover on
+    the spectrum, and thus spectral mismatch. Another motivation is to develop
+    a simple parameterisation compared with existing models. Model coefficients
     are derived using spectral irradiance and other meteorological data from
     eight locations. These coefficients for seven modules, available here via
     the ``module_type`` parameter, as well as more details on the model, can be
@@ -627,10 +619,19 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
 
     Notes
     -----
-    In the PVSPEC model publication, absolute air mass is estimated using the
-    Kasten and Young model [2]_. The clear sky index, which is the ratio of GHI
-    to clear sky GHI, uses the ESRA model [3]_ to estimate the clear sky GHI
-    with monthly Linke turbidity values from [4]_ as inputs.
+    The Pelland model expresses the spectral mismatch factor as a function
+    of absolute air mass and the clear sky index that takes the following form:
+
+    .. math::
+
+       M = a_1 K_c^{a_2} AM_a^{a_3},
+
+    where M is the spectral mismatch factor, and :math:`a_1, a_2, a_3` are
+    module-specific coefficients. In the PVSPEC model publication, absolute air
+    mass is estimated using the Kasten and Young model [2]_. The clear sky
+    index, which is the ratio of GHI to clear sky GHI, uses the ESRA model [3]_
+    to estimate the clear sky GHI with monthly Linke turbidity values from [4]_
+    as inputs.
 
     References
     ----------

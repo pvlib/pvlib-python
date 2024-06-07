@@ -246,7 +246,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
                                max_precipitable_water=8):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
-    (pressure-adjusted) airmass.
+    (pressure-adjusted) air mass.
 
     Estimates a spectral mismatch modifier :math:`M` representing the effect on
     module short circuit current of variation in the spectral
@@ -284,7 +284,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         atmospheric precipitable water. [cm]
 
     airmass_absolute : numeric
-        absolute (pressure-adjusted) airmass. [unitless]
+        absolute (pressure-adjusted) air mass. [unitless]
 
     module_type : str, optional
         a string specifying a cell type. Values of 'cdte', 'monosi', 'xsi',
@@ -576,16 +576,16 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
 def spectral_factor_pelland(airmass_absolute, clearsky_index,
                             module_type=None, coefficients=None):
     r"""
-    Estimate a technology-specific spectral mismatch modifier from
+    Estimate a technology-specific spectral mismatch modifier from absolute
     airmass and clear sky index using the Pelland model.
 
     The motivation for this model is to include the effects of cloud cover on
-    the spectrum, and thus spectral mismatch. Another motivation is to develop
-    a simple parameterisation compared with existing models. Model coefficients
-    are derived using spectral irradiance and other meteorological data from
-    eight locations. These coefficients for seven modules, available here via
-    the ``module_type`` parameter, as well as more details on the model, can be
-    found in [1]_.
+    the spectrum, and thus spectral mismatch factor estimation. Another
+    motivation is to develop a simple parameterisation compared with existing
+    models. Model coefficients are derived using spectral irradiance and other
+    meteorological data from eight locations. These coefficients for seven
+    modules, available here via the ``module_type`` parameter, as well as more 
+    details on the model, can be found in [1]_.
 
     Parameters
     ----------
@@ -619,8 +619,8 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
 
     Notes
     -----
-    The Pelland model expresses the spectral mismatch factor as a function
-    of absolute air mass and the clear sky index that takes the following form:
+    The Pelland model parameterises the spectral mismatch factor as a function
+    of absolute air mass and the clear sky index as follows:
 
     .. math::
 
@@ -639,7 +639,7 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
        Poissant, Y., 2020, June. Development and testing of the PVSPEC model of
        photovoltaic spectral mismatch factor. In 2020 47th IEEE Photovoltaic
        Specialists Conference (PVSC) (pp. 1258-1264). IEEE.
-       :doi:`https://doi.org/10.1109/PVSC45281.2020.9300932`
+       :doi:`10.1109/PVSC45281.2020.9300932`
     .. [2] Kasten, F. and Young, A.T., 1989. Revised optical air mass tables
        and approximation formula. Applied Optics, 28(22), pp.4735-4738.
        :doi:`https://doi.org/10.1364/AO.28.004735`
@@ -649,7 +649,7 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
        :doi:`https://doi.org/10.1016/S0038-092X(99)00055-9`
     .. [4] SoDa website monthly Linke turbidity values:
        `http://www.sodapro.com/gl/web-services/atmosphere/linke-turbidity-
-       factor-ozone-watervapor-and-angstroembeta`
+       factor-ozone-watervapor-and-angstroembeta`_.
     """
 
 # =============================================================================

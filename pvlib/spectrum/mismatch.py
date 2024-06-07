@@ -638,7 +638,7 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
        Poissant, Y., 2020, June. Development and testing of the PVSPEC model of
        photovoltaic spectral mismatch factor. In 2020 47th IEEE Photovoltaic
        Specialists Conference (PVSC) (pp. 1258-1264). IEEE.
-       :doi:`https://doi.org/10.1109/PVSC45281.2020.9300932`
+       :doi:`10.1109/PVSC45281.2020.9300932`
     .. [2] Kasten, F. and Young, A.T., 1989. Revised optical air mass tables
        and approximation formula. Applied Optics, 28(22), pp.4735-4738.
        :doi:`https://doi.org/10.1364/AO.28.004735`

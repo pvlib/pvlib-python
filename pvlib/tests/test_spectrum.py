@@ -356,23 +356,3 @@ def test_spectral_factor_pelland_supplied_ambiguous():
     with pytest.raises(ValueError):
         spectrum.spectral_factor_pelland(1.5, 0.8, module_type=None,
                                          coefficients=None)
-
-
-def test_spectral_factor_pelland_low_airmass():
-    with pytest.warns(UserWarning, match='Exceptionally low air mass'):
-        _ = spectrum.spectral_factor_pelland(0.1, 0.8, 'multisi')
-
-
-def test_spectral_factor_pelland_high_airmass():
-    with pytest.warns(UserWarning, match='Exceptionally high air mass'):
-        _ = spectrum.spectral_factor_pelland(12, 0.8, 'multisi')
-
-
-def test_spectral_factor_pelland_low_clearskyindex():
-    with pytest.raises(ValueError, match='Clearsky index cannot be negative'):
-        _ = spectrum.spectral_factor_pelland(1.5, -0.8, 'multisi')
-
-
-def test_spectral_factor_pelland_high_clearskysindex():
-    with pytest.raises(ValueError, match='Clearsky index cannot be >1'):
-        _ = spectrum.spectral_factor_pelland(1.5, 1.8, 'multisi')

@@ -87,6 +87,8 @@ def plot_corners(corners, fig=None, ax=None, **kwargs) -> plt.Figure:
         fig = plt.figure()
     if ax is None:
         ax = fig.add_subplot(111, projection="3d")
+    if not isinstance(corners, np.ndarray):
+        corners = np.array(corners)
     x_ = corners[:, 0].reshape(2, -1)
     y_ = corners[:, 1].reshape(2, -1)
     z_ = corners[:, 2].reshape(2, -1)
@@ -191,14 +193,21 @@ new_points = from_3d_plane_to_2d(corners_projected, plane_tilt, plane_azimuth)
 print(new_points)
 
 # %%
+#
 ##########################
 # OOP Implementation
 ##########################
 import numpy as np
+import pandas as pd
 import shapely as sp
-from pvlib.tools import sind, cosd
+from pvlib.tools import sind, cosd, acosd
+import matplotlib.pyplot as plt
 
 from abc import ABC, abstractmethod
+
+
+def atan2d(y, x):
+    return np.degrees(np.arctan2(y, x))
 
 
 def Rz(theta):
@@ -239,7 +248,7 @@ def solar_vector(zenith, azimuth):
             sind(zenith) * cosd(azimuth),
             cosd(zenith),
         ]
-    )
+    ).T
 
 
 def normal_vector_of_surface(tilt, azimuth):
@@ -250,11 +259,14 @@ def normal_vector_of_surface(tilt, azimuth):
             sind(tilt) * sind(azimuth),
             cosd(tilt),
         ]
-    )
+    ).T
 
 
-class CoplanarSurface:
-    def __init__(self, azimuth, tilt, polygon_boundaries, point_on_surface=None):
+# %%
+class FlatSurface:
+    def __init__(
+        self, azimuth, tilt, polygon_boundaries
+    ):
         """
 
         .. warning::
@@ -269,49 +281,83 @@ class CoplanarSurface:
         tilt : float
             Surface tilt, angle at which it is inclined with respect to the horizontal plane. Tilted downwards ``azimuth``. 0° is horizontal, 90° is vertical. In degrees [°].
         polygon : shapely.LinearRing or array[N, 3]
-            Shapely Polygon or boundaries to build it. If you need to specify holes, provide your custom LinearRing. Note that not all shapely objects calculate a ``point_on_surface`` correctly in 3D space. LinearRing is guaranteed to work.
+            Shapely Polygon or boundaries to build it. If you need to specify holes, provide your custom LinearRing.
         """
         self.azimuth = azimuth
         self.tilt = tilt
         # works for polygon_boundaries := array[N, 3] | shapely.Polygon
         self.polygon = sp.LinearRing(polygon_boundaries)
-        # representative point to calculate if obstacles are in front or behind
-        if point_on_surface is None:
-            self.belonging_point = self.polygon.point_on_surface()
-        else:
-            self.belonging_point = point_on_surface
-        # internal 2D coordinates-system to translate projections
-        # TODO
+        # TODO: REMOVABLE?
+        #  representative point to calculate if obstacles are in front or behind
+        # if point_on_surface is None:
+        #     self.belonging_point = self.polygon.point_on_surface()
+        # else:
+        #     self.belonging_point = point_on_surface
+        # self.belonging_point = np.array(self.belonging_point)
+        # internal 2D coordinates-system to translate projections matrix
+        # only defined if needed later on
+        self._projection_matrix = None
+        self._projected_polygon = None
 
+    def get_3D_shades_from(self, solar_zenith, solar_azimuth, *others):
+        # project ``others`` onto this shaded surface
+        # return the shade shapely object
+        solar_vec = solar_vector(solar_zenith, solar_azimuth)  # x,y,z
+        normal_vec = normal_vector_of_surface(self.tilt, self.azimuth)  # a,b,c
 
-    def get_shade_by(self, solar_zenith, solar_azimuth, *others):
-        # project ``others`` vertices onto this shaded surface
-        solar_vec = solar_vector(solar_zenith, solar_azimuth)  # := x, y, z
-        normal_vec = normal_vector_of_surface(self.tilt, self.azimuth)  # := a, b, c
-        def projection(corner):  # corner := Px, Py, Pz
-            # Eq. (20)
-            t = -(normal_vec * corner) / (solar_vec * normal_vec)
-            # Eq. (19)
-            p_prime = corner + t * solar_vec  # Px + x * t, Py + y * t, Pz + z * t
+        def point_projection(vertex):  # vertex := Px, Py, Pz
+            t = -(normal_vec @ vertex) / (solar_vec @ normal_vec)  # Eq. (20)
+            p_prime = vertex + (t * solar_vec.T).T  # Eq. (19)
             return p_prime
-        corns = np.array([projection(corner) for corner in self.polygon.coords[:-1]])
+
         # undo surface rotations to make the third coordinate zero
-        # TODO
-        new_points = from_3d_plane_to_2d(
-            corners_projected,
-            self.base.surface_tilt,
-            self.base.surface_azimuth,
+        _projection_matrix = self._get_projection_matrix_matrix()
+        _projected_polygon = self._get_self_projected_polygon()
+
+        projected_vertices = np.fromiter(
+            map(point_projection, other.polygon.coords[:-1]), dtype=(float, 3)
         )
-        # create a polygon
-        polygon = sp.geometry.Polygon(new_points)
-        # create a convex hull
-        hull = ConvexHull(new_points)
-        # create a shapely polygon
-        shapely_hull = sp.geometry.Polygon(hull.points[hull.vertices])
-        return polygon, shapely_hull
+
+        def get_3D_shade_from_flat_surface(other):
+            # Section 4.3 in [2]
+            if projected_vertices.ndim == 1:
+                projected_vertices = projected_vertices.reshape(1, -1)
+            vertices_2d = np.fromiter(
+                map(_projection_matrix.__matmul__, projected_vertices),
+                dtype=(float, 3),
+            )
+            if not np.allclose(vertices_2d[:, 2], 0.0, atol=1e-10):
+                raise RuntimeError(
+                    "The third coordinate should be zero, check input "
+                    + "parameters are consistent with the projection plane."
+                    + " If you see this, the error is on me. I fkd up."
+                )
+            vertices_2d = np.delete(vertices_2d, 2, axis=1)
+            # create a 2D polygon
+            polygon = sp.Polygon(vertices_2d).intersection(_projected_polygon)
+            return polygon
+
+        return tuple(map(get_shade_from_flat_surface, others))
+
+    def _get_projection_matrix_matrix(self):
+        if self._projection_matrix is None:
+            self._projection_matrix = (Rz(90 + self.azimuth) @ Rx(self.tilt)).T
+        return self._projection_matrix
+
+    def _get_self_projected_polygon(self):
+        if self._projected_polygon is None:
+            _projection_matrix = self._get_projection_matrix_matrix()
+            self._projected_polygon = sp.Polygon(
+                (
+                    _projection_matrix @ vertex
+                    for vertex in self.polygon.coords[:-1]
+                )
+            )
+        return self._projected_polygon
 
 
-class RectangularSurface(CoplanarSurface):
+# %%
+class RectangularSurface(FlatSurface):
     def __init__(
         self, center, surface_azimuth, surface_tilt, axis_tilt, width, length
     ):
@@ -328,6 +374,8 @@ class RectangularSurface(CoplanarSurface):
         width: width of the surface
         length: length of the surface
             TODO: which one is perpendicular to azimuth?
+
+
         """
         self.center = np.array(center)
         x_c, y_c, z_c = center
@@ -345,25 +393,103 @@ class RectangularSurface(CoplanarSurface):
             ]
         )
         # rotate corners to match the surface orientation
-        rX, rY, rZ = Rx(row_tilt), Ry(row_azimuth), Rz(axis_tilt)
-        rot = rX @ rY @ rZ
-        self.corners = np.array(
-            [rot @ (corner - self.center) + self.center for corner in corners]
-        )
+        # note pvlib convention uses a left-handed azimuth rotation
+        rot = Rz(180 - surface_azimuth) @ Ry(axis_tilt) @ Rx(surface_tilt)
         self.shapely_obj = sp.LinearRing(
             [rot @ (corner - self.center) + self.center for corner in corners]
         )
+        tilt, azimuth = self._calc_surface_tilt_and_azimuth(rot)
+        super().__init__(azimuth, tilt, self.shapely_obj)
+        self._projection_matrix = rot.T
 
-    # @classmethod
-    # def from_slope_values(cls, center, slope_azimuth, slope_tilt, width, length):
-    #     return cls(center, slope_azimuth, slope_tilt, width, length)
+    @classmethod
+    def _calc_surface_tilt_and_azimuth(cls, rotation_matrix):
+        # tz as in K. Anderson and M. Mikofski paper, somefig
+        tz_x, tz_y, tz_z = rotation_matrix[:, 2]  # := rot @ [0, 0, 1].T
+        tilt = acosd(tz_z)
+        azimuth = atan2d(tz_y, tz_x)
+        return tilt, azimuth
 
-    # @classmethod
-    # def from_Array_values(cls, center, surface_azimuth, surface_tilt, axis_tilt, width, length):
-    #     return cls(center, surface_azimuth, surface_tilt, axis_tilt, width, length)
+    def plot(self, ax=None, **kwargs):
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection="3d")
+        x, y, z = np.hsplit(
+            np.array(self.shapely_obj.coords[:-1]).flatten(order="F"), 3
+        )
+        ax.plot_trisurf(x, y, z, triangles=((0, 1, 2), (0, 2, 3)), **kwargs)
+        return ax
 
 
-    
+# %%
+# Paper Examples
+# ==============
+#
+# +------------------------+----------+-------------+----------+-------+
+# | Input parameters       | Vertical | Single-axis | Two-axis | Units |
+# +========================+==========+=============+==========+=======+
+# | Panel width            |        1 |           1 |        1 |   [m] |
+# +------------------------+----------+-------------+----------+-------+
+# | Panel length           |        2 |           2 |        2 |   [m] |
+# +------------------------+----------+-------------+----------+-------+
+# | Number of panels       |       40 |          40 |       40 |   [-] |
+# +------------------------+----------+-------------+----------+-------+
+# | Total panel area       |       80 |          80 |       80 |  [m²] |
+# +------------------------+----------+-------------+----------+-------+
+# | Number of rows         |        2 |           2 |        2 |   [-] |
+# +------------------------+----------+-------------+----------+-------+
+# | Row spacing            |       10 |          10 |       10 |   [m] |
+# +------------------------+----------+-------------+----------+-------+
+# | Row length             |       20 |          20 |       20 |   [m] |
+# +------------------------+----------+-------------+----------+-------+
+# | Crop area              |      200 |         200 |      200 |  [m²] |
+# +------------------------+----------+-------------+----------+-------+
+# | Pitch                  |        - |           - |        2 |   [m] |
+# +------------------------+----------+-------------+----------+-------+
+# | Height                 |        0 |           3 |        3 |   [m] |
+# +------------------------+----------+-------------+----------+-------+
+# | Fixed tilt angle       |       90 |           - |        - |   [°] |
+# +------------------------+----------+-------------+----------+-------+
+# | Azimuth angle          |        0 |           0 |        0 |   [°] |
+# +------------------------+----------+-------------+----------+-------+
+# | Maximum tilt angle     |        - |          60 |       60 |   [°] |
+# +------------------------+----------+-------------+----------+-------+
+# | Minimum tilt angle     |        - |         -60 |      -60 |   [°] |
+# +------------------------+----------+-------------+----------+-------+
+#
+#
+
+# Kärrbo Prästgård, Västerås, Sweden
+latitude, longitude, altitude = 59.6099, 16.5448, 20  # °N, °E, m
+
+spring_equinox = pd.date_range("2021-03-20", periods=24, freq="H")
+summer_solstice = pd.date_range("2021-06-21", periods=24, freq="H")
+fall_equinox = pd.date_range("2021-09-22", periods=24, freq="H")
+winter_solstice = pd.date_range("2021-12-21", periods=24, freq="H")
+dates = (
+    spring_equinox.union(summer_solstice)
+    .union(fall_equinox)
+    .union(winter_solstice)
+)
+
+solar_azimuth = 120
+solar_zenith = [60, 80]
+
+# %%
+# Fixed Tilt
+# ----------
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection="3d")
+field = RectangularSurface([20 / 2, 10 / 2, 0], 0, 0, 0, 10, 20)
+field.plot(ax=ax, color="forestgreen", alpha=0.5)
+pv_row1 = RectangularSurface([20 / 2, 0, 2 / 2], 180, 90, 0, 2, 20)
+pv_row1.plot(ax=ax, color="darkblue", alpha=0.5)
+pv_row2 = RectangularSurface([20 / 2, 10, 2 / 2], 180, 90, 0, 2, 20)
+pv_row2.plot(ax=ax, color="darkblue", alpha=0.5)
 
 
+
+# %%
+shades = field.get_shades_by(solar_zenith, solar_azimuth, pv_row1, pv_row2)
 # %%

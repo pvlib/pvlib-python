@@ -584,7 +584,7 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
 
        M = a_1 K_c^{a_2} AM_a^{a_3},
 
-    where M is the spectral mismatch factor, and :math: `a_1, a_2, a_3` are
+    where M is the spectral mismatch factor, and $a_1, a_2, a_3$ are
     module-specific coefficients.
 
     The motivtion for this model is to include the effect of cloud cover on the
@@ -641,14 +641,14 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
        :doi:`https://doi.org/10.1109/PVSC45281.2020.9300932`
     .. [2] Kasten, F. and Young, A.T., 1989. Revised optical air mass tables
        and approximation formula. Applied optics, 28(22), pp.4735-4738.
-       :doi: `https://doi.org/10.1364/AO.28.004735`
+       :doi:`https://doi.org/10.1364/AO.28.004735`
     .. [3] Rigollier, C., Bauer, O. and Wald, L., 2000. On the clear sky model
     of the ESRA—European Solar Radiation Atlas—with respect to the Heliosat
     method. Solar energy, 68(1), pp.33-48.
-       :doi: `https://doi.org/10.1016/S0038-092X(99)00055-9`
+       :doi:`https://doi.org/10.1016/S0038-092X(99)00055-9`
     .. [4] SoDa website monthly Linke turbidity values:
-       <url> `http://www.sodapro.com/gl/web-services/atmosphere/linke-
-       turbidity-factor-ozone-watervapor-and-angstroembeta`
+       `http://www.sodapro.com/gl/web-services/atmosphere/linke-turbidity-
+       factor-ozone-watervapor-and-angstroembeta`
     """
 
 # =============================================================================

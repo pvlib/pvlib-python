@@ -652,10 +652,6 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
        factor-ozone-watervapor-and-angstroembeta`_.
     """
 
-# =============================================================================
-#      --- Default coefficients ---
-# =============================================================================
-    # Empirical coefficients from [1]_
     _coefficients = {}
     _coefficients['multisi'] = (
         0.9847, -0.05237, 0.03034)
@@ -669,11 +665,7 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
         0.9791, -0.03904, 0.03096)
     _coefficients['asi'] = (
         1.051, -0.1033, 0.009838)
-    _coefficients['polysi'] = _coefficients['multisi']
-    _coefficients['xsi'] = _coefficients['monosi']
-# =============================================================================
-#      --- Check arguments ---
-# =============================================================================
+
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]
     elif module_type is None and coefficients is not None:
@@ -686,9 +678,7 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
         raise ValueError('Cannot resolve input, must supply only one of ' +
                          'module_type and coefficients. module_type can be ' +
                          'one of poly-Si, monosi, fs-2, fs-4, cigs, or asi')
-# =============================================================================
-#      --- Specral mismatch calculation ---
-# =============================================================================
+
     coeff = coefficients
     ama = airmass_absolute
     kc = clearsky_index

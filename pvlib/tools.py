@@ -227,7 +227,6 @@ def _pandas_to_utc(pd_object):
     -------
     pandas object localized to or assumed to be UTC.
     """
-    # 
     try:
         pd_object_utc = pd_object.tz_convert('UTC')
     except TypeError:
@@ -255,7 +254,7 @@ def _doy_to_datetimeindex(doy, epoch_year=2014):
 
 
 def _datetimelike_scalar_to_doy(time):
-    return _pandas_to_utc(_datetimelike_scalar_to_datetimeindex(time)).dayofyear
+    return _pandas_to_doy(_datetimelike_scalar_to_datetimeindex(time))
 
 
 def _datetimelike_scalar_to_datetimeindex(time):

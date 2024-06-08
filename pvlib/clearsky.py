@@ -256,7 +256,7 @@ def _interpolate_turbidity(lts, time):
     lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
 
     time = tools._pandas_to_utc(time)
-    
+
     # handle leap years
     try:
         isleap = time.is_leap_year

@@ -255,16 +255,16 @@ def _interpolate_turbidity(lts, time):
     # Jan 1 - Jan 15 and Dec 16 - Dec 31.
     lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
 
-    time = tools._pandas_to_utc(time)
+    time_utc = tools._pandas_to_utc(time)
 
     # handle leap years
     try:
-        isleap = time.is_leap_year
+        isleap = time_utc.is_leap_year
     except AttributeError:
-        year = time.year
+        year = time_utc.year
         isleap = _is_leap_year(year)
 
-    dayofyear = time.dayofyear
+    dayofyear = time_utc.dayofyear
     days_leap = _calendar_month_middles(2016)
     days_no_leap = _calendar_month_middles(2015)
 

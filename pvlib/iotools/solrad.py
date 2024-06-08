@@ -4,6 +4,7 @@ import pandas as pd
 import warnings
 import requests
 import io
+from pvlib import tools
 
 # pvlib conventions
 BASE_HEADERS = (
@@ -195,7 +196,7 @@ def get_solrad(station, start, end,
     end = pd.to_datetime(end)
 
     # Generate list of filenames
-    dates = pd.date_range(start.floor('d'), end, freq='d')
+    dates = tools._pandas_to_utc(pd.date_range(start.floor('d'), end, freq='d'))
     station = station.lower()
     filenames = [
         f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"

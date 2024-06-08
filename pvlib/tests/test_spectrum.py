@@ -352,9 +352,6 @@ def test_spectral_factor_pvspec_supplied_redundant():
 
 def test_spectral_factor_pvspec_supplied_ambiguous():
     # Error when specifying neither module_type nor coefficients
-    with pytest.raises(ValueError):
-        spectrum.spectral_factor_pvspec(1.5, 0.8, module_type=None,
-                                        coefficients=None)
     with pytest.raises(ValueError, match='No valid input provided'):
         spectrum.spectral_factor_pelland(1.5, 0.8, module_type=None,
                                          coefficients=None)

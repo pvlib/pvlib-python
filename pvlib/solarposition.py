@@ -1004,7 +1004,9 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
+    if not delta_t:
+        time_utc = tools._pandas_to_utc(time)
+        delta_t = spa.calculate_deltat(time_utc.year, time_utc.month)
 
     dist = spa.earthsun_distance(unixtime, delta_t, numthreads)
 

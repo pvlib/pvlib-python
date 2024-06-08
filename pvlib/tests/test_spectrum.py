@@ -346,7 +346,7 @@ def test_spectral_factor_pelland_supplied_redundant():
     # Error when specifying both module_type and coefficients
     coeffs = (
         0.9847, -0.05237, 0.03034)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match='supply only one of'):
         spectrum.spectral_factor_pelland(1.5, 0.8, module_type='multisi',
                                          coefficients=coeffs)
 

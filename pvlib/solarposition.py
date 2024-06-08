@@ -578,12 +578,11 @@ def sun_rise_set_transit_ephem(times, latitude, longitude,
     sunrise = []
     sunset = []
     trans = []
-    for thetime in times:
-        thetime = thetime.to_pydatetime()
+    for thetime in tools._pandas_to_utc(times):
         # older versions of pyephem ignore timezone when converting to its
         # internal datetime format, so convert to UTC here to support
         # all versions.  GH #1449
-        obs.date = ephem.Date(thetime.astimezone(datetime.timezone.utc))
+        obs.date = ephem.Date(thetime)
         sunrise.append(_ephem_to_timezone(rising(sun), tzinfo))
         sunset.append(_ephem_to_timezone(setting(sun), tzinfo))
         trans.append(_ephem_to_timezone(transit(sun), tzinfo))
@@ -945,7 +944,10 @@ def pyephem_earthsun_distance(time):
 
     sun = ephem.Sun()
     earthsun = []
-    for thetime in time:
+    for thetime in tools._pandas_to_utc(time):
+        # older versions of pyephem ignore timezone when converting to its
+        # internal datetime format, so convert to UTC here to support
+        # all versions.  GH #1449
         sun.compute(ephem.Date(thetime))
         earthsun.append(sun.earth_distance)
 

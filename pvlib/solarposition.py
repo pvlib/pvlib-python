@@ -1382,22 +1382,26 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_spencer71
     equation_of_time_pvcdrom
     """
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
     # hours - timezone = (times - normalized_times) - (naive_times - times)
-    if times.tz is None:
-        times = times.tz_localize('utc')
     tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
 
-    hrs_minus_tzs = (times - times.normalize()) / pd.Timedelta('1h') - tzs
+    hrs_minus_tzs = _times_to_hours_after_local_midnight(times) - tzs
 
-    # ensure array return instead of a version-dependent pandas <T>Index
-    return np.asarray(
-        15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.)
+    return 15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.
 
 
 def _hour_angle_to_hours(times, hourangle, longitude, equation_of_time):
     """converts hour angles in degrees to hours as a numpy array"""
-    if times.tz is None:
-        times = times.tz_localize('utc')
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
     tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
     hours = (hourangle - longitude - equation_of_time / 4.) / 15. + 12. + tzs
     return np.asarray(hours)
@@ -1407,18 +1411,26 @@ def _local_times_from_hours_since_midnight(times, hours):
     """
     converts hours since midnight from an array of floats to localized times
     """
-    tz_info = times.tz  # pytz timezone info
-    naive_times = times.tz_localize(None)  # naive but still localized
-    # normalize local, naive times to previous midnight and add the hours until
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
+    # normalize local times to previous local midnight and add the hours until
     # sunrise, sunset, and transit
-    return pd.DatetimeIndex(
-        naive_times.normalize() + pd.to_timedelta(hours, unit='h'), tz=tz_info)
+    return times.normalize() + pd.to_timedelta(hours, unit='h')
 
 
 def _times_to_hours_after_local_midnight(times):
     """convert local pandas datetime indices to array of hours as floats"""
-    times = times.tz_localize(None)
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
     hrs = (times - times.normalize()) / pd.Timedelta('1h')
+
+    # ensure array return instead of a version-dependent pandas <T>Index
     return np.array(hrs)
 
 
@@ -1464,6 +1476,11 @@ def sun_rise_set_transit_geometric(times, latitude, longitude, declination,
        CRC Press (2012)
 
     """
+
+    # times must be localized
+    if not times.tz:
+        raise ValueError('times must be localized')
+
     latitude_rad = np.radians(latitude)  # radians
     sunset_angle_rad = np.arccos(-np.tan(declination) * np.tan(latitude_rad))
     sunset_angle = np.degrees(sunset_angle_rad)  # degrees

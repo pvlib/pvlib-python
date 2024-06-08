@@ -781,7 +781,7 @@ def test_nrel_earthsun_distance_microsecond_index(tz):
 
 
 @requires_pandas_2_0
-@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
+@pytest.mark.parametrize('tz', ['utc', 'US/Eastern'])
 def test_hour_angle_microsecond_index(tz):
     # https://github.com/pvlib/pvlib-python/issues/1932
 
@@ -813,7 +813,7 @@ def test_rise_set_transit_spa_microsecond_index(tz):
 
 
 @requires_pandas_2_0
-@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
+@pytest.mark.parametrize('tz', ['utc', 'US/Eastern'])
 def test_rise_set_transit_geometric_microsecond_index(tz):
     # https://github.com/pvlib/pvlib-python/issues/1932
 

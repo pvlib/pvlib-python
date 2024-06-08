@@ -451,8 +451,8 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         raise ValueError('times must be localized')
 
     # must convert to midnight UTC on day of interest
-    utcday = pd.DatetimeIndex(times.date).tz_localize('UTC')
-    unixtime = _datetime_to_unixtime(utcday)
+    times_utc = times.tz_convert('UTC')
+    unixtime = _datetime_to_unixtime(times_utc.normalize())
 
     spa = _spa_python_import(how)
 

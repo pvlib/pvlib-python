@@ -330,7 +330,7 @@ def test_spectral_factor_pvspec(module_type, expected):
     kcs = np.array([0.4, 0.6, 0.8])
     out = spectrum.spectral_factor_pvspec(ams, kcs,
                                           module_type=module_type)
-    assert np.allclose(expected, out, atol=1e-3)
+    assert np.allclose(expected, out, atol=1e-8)
 
 
 def test_spectral_factor_pvspec_supplied():
@@ -339,7 +339,7 @@ def test_spectral_factor_pvspec_supplied():
         0.9847, -0.05237, 0.03034)
     out = spectrum.spectral_factor_pvspec(1.5, 0.8, coefficients=coeffs)
     expected = 1.00860641
-    assert_allclose(out, expected, atol=1e-3)
+    assert_allclose(out, expected, atol=1e-8)
 
 
 def test_spectral_factor_pvspec_supplied_redundant():
@@ -355,3 +355,6 @@ def test_spectral_factor_pvspec_supplied_ambiguous():
     with pytest.raises(ValueError):
         spectrum.spectral_factor_pvspec(1.5, 0.8, module_type=None,
                                         coefficients=None)
+    with pytest.raises(ValueError, match='No valid input provided'):
+        spectrum.spectral_factor_pelland(1.5, 0.8, module_type=None,
+                                         coefficients=None)

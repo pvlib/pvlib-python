@@ -456,7 +456,8 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(times.year, times.month)
+    if not delta_t:
+        delta_t = spa.calculate_deltat(times_utc.year, times_utc.month)
 
     transit, sunrise, sunset = spa.transit_sunrise_sunset(
         unixtime, lat, lon, delta_t, numthreads)

@@ -175,25 +175,25 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
 
 @pytest.mark.parametrize("module_type,expect", [
     ('cdte', np.array(
-        [[ 0.99051020, 0.97640320, 0.93975028],
-         [ 1.02928735, 1.01881074, 0.98578821],
-         [ 1.04750335, 1.03814456, 1.00623986]])),
+        [[0.99051020, 0.97640320, 0.93975028],
+         [1.02928735, 1.01881074, 0.98578821],
+         [1.04750335, 1.03814456, 1.00623986]])),
     ('monosi', np.array(
-        [[ 0.97769770, 1.02043409, 1.03574032],
-         [ 0.98630905, 1.03055092, 1.04736262],
-         [ 0.98828494, 1.03299036, 1.05026561]])),
+        [[0.97769770, 1.02043409, 1.03574032],
+         [0.98630905, 1.03055092, 1.04736262],
+         [0.98828494, 1.03299036, 1.05026561]])),
     ('polysi', np.array(
-        [[ 0.97704080, 1.01705849, 1.02613202],
-         [ 0.98992828, 1.03173953, 1.04260662],
-         [ 0.99352435, 1.03588785, 1.04730718]])),
+        [[0.97704080, 1.01705849, 1.02613202],
+         [0.98992828, 1.03173953, 1.04260662],
+         [0.99352435, 1.03588785, 1.04730718]])),
     ('cigs', np.array(
-        [[ 0.97459190, 1.02821696, 1.05067895],
-         [ 0.97529378, 1.02967497, 1.05289307],
-         [ 0.97269159, 1.02730558, 1.05075651]])),
+        [[0.97459190, 1.02821696, 1.05067895],
+         [0.97529378, 1.02967497, 1.05289307],
+         [0.97269159, 1.02730558, 1.05075651]])),
     ('asi', np.array(
-        [[ 1.05552750, 0.87707583, 0.72243772],
-         [ 1.11225204, 0.93665901, 0.78487953],
-         [ 1.14555295, 0.97084011, 0.81994083]]))
+        [[1.05552750, 0.87707583, 0.72243772],
+         [1.11225204, 0.93665901, 0.78487953],
+         [1.14555295, 0.97084011, 0.81994083]]))
 ])
 def test_spectral_factor_firstsolar(module_type, expect):
     ams = np.array([1, 3, 5])
@@ -325,33 +325,33 @@ def test_spectral_factor_caballero_supplied_ambiguous():
     ('monosi', np.array([1.03225083, 1.02335353, 1.01708734])),
     ('cigs', np.array([1.01475834, 1.01143927, 1.00909094])),
 ])
-def test_spectral_factor_pelland(module_type, expected):
+def test_spectral_factor_pvspec(module_type, expected):
     ams = np.array([1.0, 1.5, 2.0])
     kcs = np.array([0.4, 0.6, 0.8])
-    out = spectrum.spectral_factor_pelland(ams, kcs,
-                                           module_type=module_type)
+    out = spectrum.spectral_factor_pvspec(ams, kcs,
+                                          module_type=module_type)
     assert np.allclose(expected, out, atol=1e-3)
 
 
-def test_spectral_factor_pelland_supplied():
+def test_spectral_factor_pvspec_supplied():
     # use the multisi coeffs
     coeffs = (
         0.9847, -0.05237, 0.03034)
-    out = spectrum.spectral_factor_pelland(1.5, 0.8, coefficients=coeffs)
+    out = spectrum.spectral_factor_pvspec(1.5, 0.8, coefficients=coeffs)
     expected = 1.00860641
     assert_allclose(out, expected, atol=1e-3)
 
 
-def test_spectral_factor_pelland_supplied_redundant():
+def test_spectral_factor_pvspec_supplied_redundant():
     # Error when specifying both module_type and coefficients
     coeffs = (0.9847, -0.05237, 0.03034)
     with pytest.raises(ValueError, match='supply only one of'):
-        spectrum.spectral_factor_pelland(1.5, 0.8, module_type='multisi',
-                                         coefficients=coeffs)
+        spectrum.spectral_factor_pvspec(1.5, 0.8, module_type='multisi',
+                                        coefficients=coeffs)
 
 
-def test_spectral_factor_pelland_supplied_ambiguous():
+def test_spectral_factor_pvspec_supplied_ambiguous():
     # Error when specifying neither module_type nor coefficients
     with pytest.raises(ValueError):
-        spectrum.spectral_factor_pelland(1.5, 0.8, module_type=None,
-                                         coefficients=None)
+        spectrum.spectral_factor_pvspec(1.5, 0.8, module_type=None,
+                                        coefficients=None)

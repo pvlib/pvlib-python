@@ -573,8 +573,8 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     return modifier
 
 
-def spectral_factor_pelland(airmass_absolute, clearsky_index,
-                            module_type=None, coefficients=None):
+def spectral_factor_pvspec(airmass_absolute, clearsky_index,
+                           module_type=None, coefficients=None):
     r"""
     Estimate a technology-specific spectral mismatch modifier from absolute
     airmass and clear sky index using the Pelland model.
@@ -619,7 +619,7 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
 
     Notes
     -----
-    The Pelland model parameterises the spectral mismatch factor as a function
+    The PVSPEC model parameterises the spectral mismatch factor as a function
     of absolute air mass and the clear sky index as follows:
 
     .. math::

@@ -375,7 +375,9 @@ def spa_python(time, latitude, longitude,
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
+    if not delta_t:
+        time_utc = tools._pandas_to_utc(time)
+        delta_t = spa.calculate_deltat(time_utc.year, time_utc.month)
 
     app_zenith, zenith, app_elevation, elevation, azimuth, eot = \
         spa.solar_position(unixtime, lat, lon, elev, pressure, temperature,

@@ -677,7 +677,7 @@ def spectral_factor_pelland(airmass_absolute, clearsky_index,
     else:
         raise ValueError('Cannot resolve input, must supply only one of ' +
                          'module_type and coefficients. module_type can be ' +
-                         'one of poly-Si, monosi, fs-2, fs-4, cigs, or asi')
+                         'one of' ", ".join(_coefficients.keys()))
 
     coeff = coefficients
     ama = airmass_absolute

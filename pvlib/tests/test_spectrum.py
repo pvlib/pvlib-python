@@ -332,6 +332,29 @@ def test_spectral_factor_pvspec(module_type, expected):
                                           module_type=module_type)
     assert np.allclose(expected, out, atol=1e-8)
 
+@pytest.mark.parametrize("module_type,expected", [
+    ('asi', pd.Series([1.15534029, 1.1123772, 1.08286684, 1.01915462])),
+    ('fs-2', pd.Series([1.0694323, 1.04948777, 1.03556288, 0.9881471])),
+    ('fs-4', pd.Series([1.05234725, 1.037771, 1.0275516, 0.98820533])),
+    ('multisi', pd.Series([1.03310403, 1.02391703, 1.01744833, 0.97947605])),
+    ('monosi', pd.Series([1.03225083, 1.02335353, 1.01708734, 0.97950110])),
+    ('cigs', pd.Series([1.01475834, 1.01143927, 1.00909094, 0.97852966])),
+])
+def test_spectral_factor_pvspec_series(module_type, expected):
+    ams = pd.Series([1.0, 1.5, 2.0, 1.5])
+    kcs = pd.Series([0.4, 0.6, 0.8, 1.4])
+    out = spectrum.spectral_factor_pvspec(ams, kcs,
+                                          module_type=module_type)
+    out = pd.Series(out)
+    assert np.allclose(expected, out, atol=1e-8)
+    
+def test_spectral_factor_pvspec_supplied():
+    # use the multisi coeffs
+    coeffs = (
+        0.9847, -0.05237, 0.03034)
+    out = spectrum.spectral_factor_pvspec(1.5, 0.8, coefficients=coeffs)
+    expected = 1.00860641
+    assert_allclose(out, expected, atol=1e-8)
 
 def test_spectral_factor_pvspec_supplied():
     # use the multisi coeffs

@@ -577,7 +577,7 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
                            module_type=None, coefficients=None):
     r"""
     Estimate a technology-specific spectral mismatch modifier from absolute
-    airmass and clear sky index using the Pelland model.
+    airmass and clear sky index using the PVSPEC model.
 
     The motivation for this model is to include the effects of cloud cover on
     the spectrum, and thus spectral mismatch factor estimation. Another

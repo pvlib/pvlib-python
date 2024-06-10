@@ -16,7 +16,7 @@ WATER_COLOR_COEFFS = {
 WATER_ROUGHNESS_COEFFS = {
     'clear_water_no_waves': 0.29,
     'clear_water_ripples_up_to_2.5cm': 0.7,
-    'clear_water_ripples_larger_than_2.5cm_occasional_whitecaps': 1.23,
+    'clear_water_ripples_larger_than_2.5cm_occasional_whitecaps': 1.25,
     'clear_water_frequent_whitecaps': 2,
     'green_water_ripples_up_to_2.5cm': 0.7,
     'muddy_water_no_waves': 0.29

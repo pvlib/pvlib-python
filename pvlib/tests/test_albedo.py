@@ -22,8 +22,7 @@ def test_albedo_water_negative_elevation():
 
 def test_albedo_water_string_surface_condition():
     result = albedo.inland_water_dvoracek(solar_elevation=90,
-                                          surface_condition=
-                                          'clear_water_no_waves')
+                                          surface_condition='clear_water_no_waves')   # noqa: E501
     assert_allclose(result, 0.072, 0.001)
 
 
@@ -33,8 +32,7 @@ def test_albedo_water_ndarray():
     roughness_coeffs = np.array([0.3, 0.3, 0.8, 1.5, 2])
     result = albedo.inland_water_dvoracek(solar_elevation=solar_elevs,
                                           color_coeff=color_coeffs,
-                                          wave_roughness_coeff=
-                                          roughness_coeffs)
+                                          wave_roughness_coeff=roughness_coeffs)   # noqa: E501
     expected = np.array([0.1, 0.1, 0.12875, 0.06278, 0.064])
     assert_allclose(expected, result, atol=1e-5)
 
@@ -47,7 +45,6 @@ def test_albedo_water_series():
     roughness_coeffs = pd.Series([0.1, 0.3, 0.8, 1.5, 2], index=times)
     result = albedo.inland_water_dvoracek(solar_elevation=solar_elevs,
                                           color_coeff=color_coeffs,
-                                          wave_roughness_coeff=
-                                          roughness_coeffs)
+                                          wave_roughness_coeff=roughness_coeffs)   # noqa: E501
     expected = pd.Series([0.1, 0.1, 0.12875, 0.06278, 0.064], index=times)
     assert_series_equal(expected, result, atol=1e-5)

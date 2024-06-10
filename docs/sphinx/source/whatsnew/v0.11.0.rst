@@ -28,6 +28,10 @@ Enhancements
   shade perpendicular to ``axis_azimuth``. The function is applicable to both
   fixed-tilt and one-axis tracking systems.
   (:issue:`1689`, :pull:`1725`, :pull:`1962`)
+* Added conversion functions from spectral response ([A/W]) to quantum
+  efficiency ([unitless]) and vice versa. The conversion functions are
+  :py:func:`pvlib.spectrum.sr_to_qe` and :py:func:`pvlib.spectrum.qe_to_sr`
+  respectively. (:issue:`2040`, :pull:`2041`)
 
 
 Bug fixes
@@ -51,3 +55,4 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Siddharth Kaul (:ghuser:`k10blogger`)
+* Mark Campanelli (:ghuser:`markcampanelli`)

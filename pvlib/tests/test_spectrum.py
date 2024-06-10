@@ -8,6 +8,7 @@ from .conftest import DATA_DIR, assert_series_equal
 
 SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
 
+
 @pytest.fixture
 def spectrl2_data():
     # reference spectra generated with solar_utils==0.3
@@ -332,6 +333,7 @@ def test_spectral_factor_pvspec(module_type, expected):
                                           module_type=module_type)
     assert np.allclose(expected, out, atol=1e-8)
 
+
 @pytest.mark.parametrize("module_type,expected", [
     ('asi', pd.Series([1.15534029, 1.1123772, 1.08286684, 1.01915462])),
     ('fs-2', pd.Series([1.0694323, 1.04948777, 1.03556288, 0.9881471])),
@@ -347,19 +349,11 @@ def test_spectral_factor_pvspec_series(module_type, expected):
                                           module_type=module_type)
     out = pd.Series(out)
     assert np.allclose(expected, out, atol=1e-8)
-    
-def test_spectral_factor_pvspec_supplied():
-    # use the multisi coeffs
-    coeffs = (
-        0.9847, -0.05237, 0.03034)
-    out = spectrum.spectral_factor_pvspec(1.5, 0.8, coefficients=coeffs)
-    expected = 1.00860641
-    assert_allclose(out, expected, atol=1e-8)
+
 
 def test_spectral_factor_pvspec_supplied():
     # use the multisi coeffs
-    coeffs = (
-        0.9847, -0.05237, 0.03034)
+    coeffs = (0.9847, -0.05237, 0.03034)
     out = spectrum.spectral_factor_pvspec(1.5, 0.8, coefficients=coeffs)
     expected = 1.00860641
     assert_allclose(out, expected, atol=1e-8)

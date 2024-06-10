@@ -3,6 +3,7 @@ The ``albedo`` module contains functions for modeling albedo.
 """
 
 from pvlib.tools import sind
+import numpy as np
 
 WATER_COLOR_COEFFS = {
     'clear_water_no_waves': 0.13,
@@ -37,12 +38,6 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
     solar_elevation : numeric
         Sun elevation angle. [degrees]
 
-    color_coeff : float, optional
-        Water color coefficient. [-]
-
-    wave_roughness_coeff : float, optional
-        Water wave roughness coefficient. [-]
-
     surface_condition : string, optional
         If supplied, overrides ``color_coeff`` and ``wave_roughness_coeff``.
         ``surface_condition`` can be one of the following:
@@ -53,6 +48,12 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
         * 'clear_water_frequent_whitecaps'
         * 'green_water_ripples_up_to_2.5cm'
         * 'muddy_water_no_waves'.
+
+    color_coeff : float, optional
+        Water color coefficient. [-]
+
+    wave_roughness_coeff : float, optional
+        Water wave roughness coefficient. [-]
 
     Returns
     -------
@@ -104,9 +105,16 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
        American Society of Agricultural Engineers 04-90: 692-699.
     """
 
-    if surface_condition is not None:
+    if surface_condition is None:
+        if (color_coeff is None) or (wave_roughness_coeff is None):
+            raise ValueError('Either a surface_condition has to be chosen or a'
+                             'combination of both color and wave roughness'
+                             'coefficients.')
+    else:
         color_coeff = WATER_COLOR_COEFFS[surface_condition]
         wave_roughness_coeff = WATER_ROUGHNESS_COEFFS[surface_condition]
+
+    solar_elevation = np.where(solar_elevation < 0, 0, solar_elevation)
 
     albedo = color_coeff ** (wave_roughness_coeff * sind(solar_elevation) + 1)
     return albedo

@@ -23,7 +23,7 @@ Enhancements
   shade perpendicular to ``axis_azimuth``. The function is applicable to both
   fixed-tilt and one-axis tracking systems.
   (:issue:`1689`, :pull:`1725`, :pull:`1962`)
-* Add function :py:func:`pvlib.albedo.albedo_water`, to calculate the
+* Add function :py:func:`pvlib.albedo.inland_water_dvoracek`, to calculate the
   albedo for inland water bodies.
   (:pull:`2079`)
 

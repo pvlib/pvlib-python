@@ -84,8 +84,8 @@ def test_pvsyst_cell_ndarray():
     irrads = np.array([0, 500, 0])
     winds = np.array([10, 5, 0])
     result = temperature.pvsyst_cell(irrads, temps, wind_speed=winds)
-    expected = np.array([0.0, 23.96551, 5.0])
-    assert_allclose(expected, result, 3)
+    expected = np.array([0.0, 23.965517, 5.0])
+    assert_allclose(expected, result)
 
 
 def test_pvsyst_cell_series():
@@ -95,7 +95,7 @@ def test_pvsyst_cell_series():
     winds = pd.Series([10, 5, 0], index=times)
 
     result = temperature.pvsyst_cell(irrads, temps, wind_speed=winds)
-    expected = pd.Series([0.0, 23.96551, 5.0], index=times)
+    expected = pd.Series([0.0, 23.965517, 5.0], index=times)
     assert_series_equal(expected, result)
 
 

@@ -72,7 +72,6 @@ def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
     :data:`~pvlib.albedo.WATER_ROUGHNESS_COEFFS`. The values of these
     coefficients are experimentally determined.
 
-    +---------------------------------------------------------------+-------------------------------+----------------------------------------+
     +------------------------+-------------------+-------------------------+
     | Surface and condition  | Color coefficient | Wave roughness          |
     |                        | (:math:`c`)       | coefficient (:math:`r`) |

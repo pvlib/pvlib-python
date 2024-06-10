@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 from pvlib import albedo
 
 from .conftest import assert_series_equal
@@ -48,3 +49,8 @@ def test_albedo_water_series():
                                           wave_roughness_coeff=roughness_coeffs)   # noqa: E501
     expected = pd.Series([0.1, 0.1, 0.12875, 0.06278, 0.064], index=times)
     assert_series_equal(expected, result, atol=1e-5)
+
+
+def test_albedo_water_invalid():
+    with pytest.raises(ValueError):
+        albedo.inland_water_dvoracek(45)

@@ -23,8 +23,8 @@ WATER_ROUGHNESS_COEFFS = {
 }
 
 
-def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
-                 surface_condition=None):
+def inland_water_dvoracek(solar_elevation, surface_condition=None,
+                          color_coeff=None, wave_roughness_coeff=None):
     r"""
     Estimation of albedo for inland water bodies.
 
@@ -46,10 +46,13 @@ def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
     surface_condition : string, optional
         If supplied, overrides ``color_coeff`` and ``wave_roughness_coeff``.
         ``surface_condition`` can be one of the following:
-        'clear_water_no_waves', 'clear_water_ripples_up_to_2.5cm',
-        'clear_water_ripples_larger_than_2.5cm_occasional_whitecaps',
-        'clear_water_frequent_whitecaps', 'green_water_ripples_up_to_2.5cm',
-        'muddy_water_no_waves'.
+
+        * 'clear_water_no_waves'
+        * 'clear_water_ripples_up_to_2.5cm'
+        * 'clear_water_ripples_larger_than_2.5cm_occasional_whitecaps'
+        * 'clear_water_frequent_whitecaps'
+        * 'green_water_ripples_up_to_2.5cm'
+        * 'muddy_water_no_waves'.
 
     Returns
     -------
@@ -99,7 +102,7 @@ def albedo_water(solar_elevation, color_coeff=None, wave_roughness_coeff=None,
     .. [1] Dvoracek M.J., Hannabas B. (1990). "Prediction of albedo for use in
        evapotranspiration and irrigation scheduling." IN: Visions of the Future
        American Society of Agricultural Engineers 04-90: 692-699.
-    """  # noqa: E501
+    """
 
     if surface_condition is not None:
         color_coeff = WATER_COLOR_COEFFS[surface_condition]

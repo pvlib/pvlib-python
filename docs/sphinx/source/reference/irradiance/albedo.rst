@@ -6,4 +6,4 @@ Albedo
 .. autosummary::
    :toctree: ../generated/
 
-   albedo.albedo_water
+   albedo.inland_water_dvoracek

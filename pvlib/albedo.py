@@ -67,7 +67,7 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
     .. math::
        :label: albedo
 
-        \rho = c^{(r sin(\alpha) + 1)}
+        \rho = c^{(r \cdot \sin(\alpha) + 1)}
 
     Inputs to the model are the water color coefficient :math:`c` [-], the
     water wave roughness coefficient :math:`r` [-] and the solar elevation

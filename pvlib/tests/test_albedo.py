@@ -52,5 +52,14 @@ def test_albedo_water_series():
 
 
 def test_albedo_water_invalid():
-    with pytest.raises(ValueError):
-        albedo.inland_water_dvoracek(45)
+    with pytest.raises(ValueError):  # no surface info given
+        albedo.inland_water_dvoracek(solar_elevation=45)
+    with pytest.raises(KeyError):  # invalid surface type
+        albedo.inland_water_dvoracek(solar_elevation=45,
+                                     surface_condition='not_a_surface_type')
+    with pytest.raises(ValueError):  # only one coefficient given
+        albedo.inland_water_dvoracek(solar_elevation=45,
+                                     color_coeff=0.13)
+    with pytest.raises(ValueError):  # only one coefficient given
+        albedo.inland_water_dvoracek(solar_elevation=45,
+                                     wave_roughness_coeff=0.29)

@@ -123,8 +123,8 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
         raise ValueError(
             "Either a `surface_condition` has to be chosen or"
             " a combination of `color_coeff` and"
-            " `wave_roughness_coeff`."
-        )
+            " `wave_roughness_coeff`.")
+
     solar_elevation = np.where(solar_elevation < 0, 0, solar_elevation)
 
     albedo = color_coeff ** (wave_roughness_coeff * sind(solar_elevation) + 1)

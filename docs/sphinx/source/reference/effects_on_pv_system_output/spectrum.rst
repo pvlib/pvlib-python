@@ -14,3 +14,5 @@ Spectrum
    spectrum.spectral_factor_firstsolar
    spectrum.spectral_factor_sapm
    spectrum.spectral_factor_pvspec
+   spectrum.sr_to_qe
+   spectrum.qe_to_sr

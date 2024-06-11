@@ -3,13 +3,23 @@ The ``mismatch`` module provides functions for spectral mismatch calculations.
 """
 
 import pvlib
+from pvlib.tools import normalize_max2one
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d
+import scipy.constants
 from scipy.integrate import trapezoid
+from scipy.interpolate import interp1d
 import os
 
 from warnings import warn
+
+
+_PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION = (
+    scipy.constants.speed_of_light
+    * scipy.constants.Planck
+    / scipy.constants.elementary_charge
+    * 1e9
+)
 
 
 def get_example_spectral_response(wavelength=None):
@@ -154,7 +164,7 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
     e_sun: pandas.DataFrame or pandas.Series
         One or more measured solar irradiance spectra in a pandas.DataFrame
-        having wavelength in nm as column index.  A single spectrum may be
+        having wavelength in nm as column index. A single spectrum may be
         be given as a pandas.Series having wavelength in nm as index.
         [(W/m^2)/nm]
 
@@ -265,11 +275,11 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     SMARTS, spectrums are simulated with all combinations of AMa and
     Pw where:
 
-       * :math:`0.5 \textrm{cm} <= Pw <= 5 \textrm{cm}`
-       * :math:`1.0 <= AM_a <= 5.0`
-       * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
-       * spectrum simulated on a plane normal to the sun
-       * All other parameters fixed at G173 standard
+    * :math:`0.5 \textrm{cm} <= Pw <= 5 \textrm{cm}`
+    * :math:`1.0 <= AM_a <= 5.0`
+    * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
+    * spectrum simulated on a plane normal to the sun
+    * All other parameters fixed at G173 standard
 
     From these simulated spectra, M is calculated using the known
     quantum efficiency curves. Multiple linear regression is then
@@ -291,11 +301,11 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         'multisi', and 'polysi' (can be lower or upper case). If provided,
         module_type selects default coefficients for the following modules:
 
-            * 'cdte' - First Solar Series 4-2 CdTe module.
-            * 'monosi', 'xsi' - First Solar TetraSun module.
-            * 'multisi', 'polysi' - anonymous multi-crystalline silicon module.
-            * 'cigs' - anonymous copper indium gallium selenide module.
-            * 'asi' - anonymous amorphous silicon module.
+        * 'cdte' - First Solar Series 4-2 CdTe module.
+        * 'monosi', 'xsi' - First Solar TetraSun module.
+        * 'multisi', 'polysi' - anonymous multi-crystalline silicon module.
+        * 'cigs' - anonymous copper indium gallium selenide module.
+        * 'asi' - anonymous amorphous silicon module.
 
         The module used to calculate the spectral correction
         coefficients corresponds to the Multi-crystalline silicon
@@ -648,8 +658,8 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
        of the ESRA—European Solar Radiation Atlas—with respect to the Heliosat
        method. Solar energy, 68(1), pp.33-48.
        :doi:`10.1016/S0038-092X(99)00055-9`
-    .. [4] `SoDa website monthly Linke turbidity values:
-       http://www.sodapro.com/gl/web-services/atmosphere/linke-turbidity-factor-ozone-watervapor-and-angstroembeta`_
+    .. [4] SoDa website monthly Linke turbidity values:
+       `http://www.sodapro.com/gl/web-services/atmosphere/linke-turbidity-factor-ozone-watervapor-and-angstroembeta`_
     """  # noqa: E501
 
     _coefficients = {}
@@ -679,3 +689,201 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     mismatch = coeff[0]*np.power(kc, coeff[1])*np.power(ama, coeff[2])
 
     return mismatch
+
+
+def sr_to_qe(sr, wavelength=None, normalize=False):
+    """
+    Convert spectral responsivities to quantum efficiencies.
+    If ``wavelength`` is not provided, the spectral responsivity ``sr`` must be
+    a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
+    wavelengths in the index.
+
+    Provide wavelengths in nanometers, [nm].
+
+    Conversion is described in [1]_.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    sr : numeric, pandas.Series or pandas.DataFrame
+        Spectral response, [A/W].
+        Index must be the wavelength in nanometers, [nm].
+
+    wavelength : numeric, optional
+        Points where spectral response is measured, in nanometers, [nm].
+
+    normalize : bool, default False
+        If True, the quantum efficiency is normalized so that the maximum value
+        is 1.
+        For ``pandas.DataFrame``, normalization is done for each column.
+        For 2D arrays, normalization is done for each sub-array.
+
+    Returns
+    -------
+    quantum_efficiency : numeric, same type as ``sr``
+        Quantum efficiency, in the interval [0, 1].
+
+    Notes
+    -----
+    - If ``sr`` is of type ``pandas.Series`` or ``pandas.DataFrame``,
+      column names will remain unchanged in the returned object.
+    - If ``wavelength`` is provided it will be used independently of the
+      datatype of ``sr``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from pvlib import spectrum
+    >>> wavelengths = np.array([350, 550, 750])
+    >>> spectral_response = np.array([0.25, 0.40, 0.57])
+    >>> quantum_efficiency = spectrum.sr_to_qe(spectral_response, wavelengths)
+    >>> print(quantum_efficiency)
+    array([0.88560142, 0.90170326, 0.94227991])
+
+    >>> spectral_response_series = pd.Series(spectral_response, index=wavelengths, name="dataset")
+    >>> qe = spectrum.sr_to_qe(spectral_response_series)
+    >>> print(qe)
+    350    0.885601
+    550    0.901703
+    750    0.942280
+    Name: dataset, dtype: float64
+
+    >>> qe = spectrum.sr_to_qe(spectral_response_series, normalize=True)
+    >>> print(qe)
+    350    0.939850
+    550    0.956938
+    750    1.000000
+    Name: dataset, dtype: float64
+
+    References
+    ----------
+    .. [1] “Spectral Response,” PV Performance Modeling Collaborative (PVPMC).
+        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/effective-irradiance/spectral-response/
+    .. [2] “Spectral Response | PVEducation,” www.pveducation.org.
+        https://www.pveducation.org/pvcdrom/solar-cell-operation/spectral-response
+
+    See Also
+    --------
+    pvlib.spectrum.qe_to_sr
+    """  # noqa: E501
+    if wavelength is None:
+        if hasattr(sr, "index"):  # true for pandas objects
+            # use reference to index values instead of index alone so
+            # sr / wavelength returns a series with the same name
+            wavelength = sr.index.array
+        else:
+            raise TypeError(
+                "'sr' must have an '.index' attribute"
+                + " or 'wavelength' must be provided"
+            )
+    quantum_efficiency = (
+        sr
+        / wavelength
+        * _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
+    )
+
+    if normalize:
+        quantum_efficiency = normalize_max2one(quantum_efficiency)
+
+    return quantum_efficiency
+
+
+def qe_to_sr(qe, wavelength=None, normalize=False):
+    """
+    Convert quantum efficiencies to spectral responsivities.
+    If ``wavelength`` is not provided, the quantum efficiency ``qe`` must be
+    a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
+    wavelengths in the index.
+
+    Provide wavelengths in nanometers, [nm].
+
+    Conversion is described in [1]_.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    qe : numeric, pandas.Series or pandas.DataFrame
+        Quantum efficiency.
+        If pandas subtype, index must be the wavelength in nanometers, [nm].
+
+    wavelength : numeric, optional
+        Points where quantum efficiency is measured, in nanometers, [nm].
+
+    normalize : bool, default False
+        If True, the spectral response is normalized so that the maximum value
+        is 1.
+        For ``pandas.DataFrame``, normalization is done for each column.
+        For 2D arrays, normalization is done for each sub-array.
+
+    Returns
+    -------
+    spectral_response : numeric, same type as ``qe``
+        Spectral response, [A/W].
+
+    Notes
+    -----
+    - If ``qe`` is of type ``pandas.Series`` or ``pandas.DataFrame``,
+      column names will remain unchanged in the returned object.
+    - If ``wavelength`` is provided it will be used independently of the
+      datatype of ``qe``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from pvlib import spectrum
+    >>> wavelengths = np.array([350, 550, 750])
+    >>> quantum_efficiency = np.array([0.86, 0.90, 0.94])
+    >>> spectral_response = spectrum.qe_to_sr(quantum_efficiency, wavelengths)
+    >>> print(spectral_response)
+    array([0.24277287, 0.39924442, 0.56862085])
+
+    >>> quantum_efficiency_series = pd.Series(quantum_efficiency, index=wavelengths, name="dataset")
+    >>> sr = spectrum.qe_to_sr(quantum_efficiency_series)
+    >>> print(sr)
+    350    0.242773
+    550    0.399244
+    750    0.568621
+    Name: dataset, dtype: float64
+
+    >>> sr = spectrum.qe_to_sr(quantum_efficiency_series, normalize=True)
+    >>> print(sr)
+    350    0.426950
+    550    0.702128
+    750    1.000000
+    Name: dataset, dtype: float64
+
+    References
+    ----------
+    .. [1] “Spectral Response,” PV Performance Modeling Collaborative (PVPMC).
+        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/effective-irradiance/spectral-response/
+    .. [2] “Spectral Response | PVEducation,” www.pveducation.org.
+        https://www.pveducation.org/pvcdrom/solar-cell-operation/spectral-response
+
+    See Also
+    --------
+    pvlib.spectrum.sr_to_qe
+    """  # noqa: E501
+    if wavelength is None:
+        if hasattr(qe, "index"):  # true for pandas objects
+            # use reference to index values instead of index alone so
+            # sr / wavelength returns a series with the same name
+            wavelength = qe.index.array
+        else:
+            raise TypeError(
+                "'qe' must have an '.index' attribute"
+                + " or 'wavelength' must be provided"
+            )
+    spectral_responsivity = (
+        qe
+        * wavelength
+        / _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
+    )
+
+    if normalize:
+        spectral_responsivity = normalize_max2one(spectral_responsivity)
+
+    return spectral_responsivity

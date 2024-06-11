@@ -58,7 +58,7 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
     Returns
     -------
     albedo : numeric
-        Albedo for inland water bodies.
+        Albedo for inland water bodies. [-]
 
     Notes
     -----

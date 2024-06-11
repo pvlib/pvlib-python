@@ -109,7 +109,7 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
         if (color_coeff is None) or (wave_roughness_coeff is None):
             raise ValueError('Either a `surface_condition` has to be chosen or'
                              ' a combination of `color_coeff` and'
-                             '`wave_roughness_coeff`.')
+                             ' `wave_roughness_coeff`.')
     else:
         color_coeff = WATER_COLOR_COEFFS[surface_condition]
         wave_roughness_coeff = WATER_ROUGHNESS_COEFFS[surface_condition]

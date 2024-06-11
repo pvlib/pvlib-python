@@ -65,9 +65,11 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
     Raises
     ------
     ValueError
-        If neither of ``surface_condition`` nor the pair ``color_coeff`` and ``wave_roughness_coeff`` are given.
-        If ``surface_condition`` and any of ``color_coeff`` or ``wave_roughness_coeff`` are given.
-        These parameters are mutually exclusive.
+        If neither of ``surface_condition`` nor a combination of
+        ``color_coeff`` and ``wave_roughness_coeff`` are given.
+        If ``surface_condition`` and any of ``color_coeff`` or
+        ``wave_roughness_coeff`` are given. These parameters are
+        mutually exclusive.
 
     KeyError
         If ``surface_condition`` is invalid.

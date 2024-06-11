@@ -51,6 +51,19 @@ def test_albedo_water_series():
     assert_series_equal(expected, result, atol=1e-5)
 
 
+def test_albedo_water_series_mix_with_array():
+    times = pd.date_range(start="2015-01-01 00:00", end="2015-01-01 06:00",
+                             freq="6h")
+    solar_elevs = pd.Series([45, 60], index=times)
+    color_coeffs = 0.13
+    roughness_coeffs = 0.29
+    result = albedo.inland_water_dvoracek(solar_elevation=solar_elevs,
+                                          color_coeff=color_coeffs,
+                                          wave_roughness_coeff=roughness_coeffs)   # noqa: E501
+    expected = pd.Series([0.08555, 0.07787], index=times)
+    assert_series_equal(expected, result, atol=1e-5)
+
+
 def test_albedo_water_invalid():
     with pytest.raises(ValueError):  # no surface info given
         albedo.inland_water_dvoracek(solar_elevation=45)

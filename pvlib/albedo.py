@@ -30,8 +30,8 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
     Estimation of albedo for inland water bodies.
 
     The available surface conditions are for inland water bodies, e.g., lakes
-    and ponds. For ocean/open sea, an albedo value of 0.06 is recommended.
-    See :const:`pvlib.irradiance.SURFACE_ALBEDOS`.
+    and ponds. For ocean/open sea, see
+    :const:`pvlib.irradiance.SURFACE_ALBEDOS`.
 
     Parameters
     ----------

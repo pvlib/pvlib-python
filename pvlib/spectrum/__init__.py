@@ -6,4 +6,6 @@ from pvlib.spectrum.mismatch import (  # noqa: F401
     spectral_factor_caballero,
     spectral_factor_firstsolar,
     spectral_factor_sapm,
+    sr_to_qe,
+    qe_to_sr,
 )

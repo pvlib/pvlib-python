@@ -4,6 +4,8 @@ The ``albedo`` module contains functions for modeling albedo.
 
 from pvlib.tools import sind
 import numpy as np
+import pandas as pd
+
 
 WATER_COLOR_COEFFS = {
     'clear_water_no_waves': 0.13,
@@ -105,16 +107,29 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
        American Society of Agricultural Engineers 04-90: 692-699.
     """
 
-    if surface_condition is None:
-        if (color_coeff is None) or (wave_roughness_coeff is None):
-            raise ValueError('Either a `surface_condition` has to be chosen or'
-                             ' a combination of `color_coeff` and'
-                             ' `wave_roughness_coeff`.')
-    else:
+    if surface_condition is not None and (
+        color_coeff is None and wave_roughness_coeff is None
+    ):
+        # use surface_condition
         color_coeff = WATER_COLOR_COEFFS[surface_condition]
         wave_roughness_coeff = WATER_ROUGHNESS_COEFFS[surface_condition]
 
+    elif surface_condition is None and not (
+        color_coeff is None or wave_roughness_coeff is None
+    ):
+        # use provided color_coeff and wave_roughness_coeff
+        pass
+    else:
+        raise ValueError(
+            "Either a `surface_condition` has to be chosen or"
+            " a combination of `color_coeff` and"
+            " `wave_roughness_coeff`."
+        )
     solar_elevation = np.where(solar_elevation < 0, 0, solar_elevation)
 
     albedo = color_coeff ** (wave_roughness_coeff * sind(solar_elevation) + 1)
+
+    if isinstance(solar_elevation, pd.Series):
+        albedo = pd.Series(albedo, index=solar_elevation.index)
+
     return albedo

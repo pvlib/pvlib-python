@@ -53,7 +53,7 @@ def test_albedo_water_series():
 
 def test_albedo_water_series_mix_with_array():
     times = pd.date_range(start="2015-01-01 00:00", end="2015-01-01 06:00",
-                             freq="6h")
+                          freq="6h")
     solar_elevs = pd.Series([45, 60], index=times)
     color_coeffs = 0.13
     roughness_coeffs = 0.29

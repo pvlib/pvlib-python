@@ -634,7 +634,7 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
 
     .. math::
 
-       M = a_1 k_c^{a_2} AM_a^{a_3},
+        M = a_1 k_c^{a_2} AM_a^{a_3},
 
     where :math:`M` is the spectral mismatch factor, :math:`k_c` is the clear
     sky index, :math:`AM_a` is the absolute air mass, and :math:`a_1, a_2, a_3`

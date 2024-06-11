@@ -626,7 +626,7 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
 
        M = a_1 K_c^{a_2} AM_a^{a_3},
 
-    where M is the spectral mismatch factor, and :math:`a_1, a_2, a_3` are
+    where :math:`M` is the spectral mismatch factor, :math:`k_c` is the clear sky index, :math:`AM` is the absolute air mass, and :math:`a_1, a_2, a_3` are
     module-specific coefficients. In the PVSPEC model publication, absolute air
     mass is estimated starting from the Kasten and Young relative air mass
     [2]_. The clear sky index, which is the ratio of GHI to clear sky GHI, uses

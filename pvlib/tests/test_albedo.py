@@ -7,27 +7,27 @@ from .conftest import assert_series_equal
 from numpy.testing import assert_allclose
 
 
-def test_albedo_water_default():
+def test_inland_water_dvoracek_default():
     result = albedo.inland_water_dvoracek(solar_elevation=90,
                                           color_coeff=0.13,
                                           wave_roughness_coeff=0.29)
     assert_allclose(result, 0.072, 0.001)
 
 
-def test_albedo_water_negative_elevation():
+def test_inland_water_dvoracek_negative_elevation():
     result = albedo.inland_water_dvoracek(solar_elevation=-60,
                                           color_coeff=0.13,
                                           wave_roughness_coeff=0.29)
     assert_allclose(result, 0.13, 0.01)
 
 
-def test_albedo_water_string_surface_condition():
+def test_inland_water_dvoracek_string_surface_condition():
     result = albedo.inland_water_dvoracek(solar_elevation=90,
                                           surface_condition='clear_water_no_waves')   # noqa: E501
     assert_allclose(result, 0.072, 0.001)
 
 
-def test_albedo_water_ndarray():
+def test_inland_water_dvoracek_ndarray():
     solar_elevs = np.array([-50, 0, 20, 60, 90])
     color_coeffs = np.array([0.1, 0.1, 0.2, 0.3, 0.4])
     roughness_coeffs = np.array([0.3, 0.3, 0.8, 1.5, 2])
@@ -38,7 +38,7 @@ def test_albedo_water_ndarray():
     assert_allclose(expected, result, atol=1e-5)
 
 
-def test_albedo_water_series():
+def test_inland_water_dvoracek_series():
     times = pd.date_range(start="2015-01-01 00:00", end="2015-01-02 00:00",
                           freq="6h")
     solar_elevs = pd.Series([-50, 0, 20, 60, 90], index=times)
@@ -51,7 +51,7 @@ def test_albedo_water_series():
     assert_series_equal(expected, result, atol=1e-5)
 
 
-def test_albedo_water_series_mix_with_array():
+def test_inland_water_dvoracek_series_mix_with_array():
     times = pd.date_range(start="2015-01-01 00:00", end="2015-01-01 06:00",
                           freq="6h")
     solar_elevs = pd.Series([45, 60], index=times)
@@ -64,7 +64,7 @@ def test_albedo_water_series_mix_with_array():
     assert_series_equal(expected, result, atol=1e-5)
 
 
-def test_albedo_water_invalid():
+def test_inland_water_dvoracek_invalid():
     with pytest.raises(ValueError, match='Either a `surface_condition` has to '
                        'be chosen or a combination of `color_coeff` and'
                        ' `wave_roughness_coeff`.'):  # no surface info given

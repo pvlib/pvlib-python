@@ -44,12 +44,12 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
         If supplied, overrides ``color_coeff`` and ``wave_roughness_coeff``.
         ``surface_condition`` can be one of the following:
 
-        * 'clear_water_no_waves'
-        * 'clear_water_ripples_up_to_2.5cm'
-        * 'clear_water_ripples_larger_than_2.5cm_occasional_whitecaps'
-        * 'clear_water_frequent_whitecaps'
-        * 'green_water_ripples_up_to_2.5cm'
-        * 'muddy_water_no_waves'.
+        * ``'clear_water_no_waves'``
+        * ``'clear_water_ripples_up_to_2.5cm'``
+        * ``'clear_water_ripples_larger_than_2.5cm_occasional_whitecaps'``
+        * ``'clear_water_frequent_whitecaps'``
+        * ``'green_water_ripples_up_to_2.5cm'``
+        * ``'muddy_water_no_waves'``
 
     color_coeff : float, optional
         Water color coefficient. [-]

@@ -636,7 +636,7 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     References
     ----------
     .. [1] Pelland, S., Beswick, C., Thevenard, D., Côté, A., Pai, A. and
-       Poissant, Y., 2020, June. Development and testing of the PVSPEC model of
+       Poissant, Y., 2020. Development and testing of the PVSPEC model of
        photovoltaic spectral mismatch factor. In 2020 47th IEEE Photovoltaic
        Specialists Conference (PVSC) (pp. 1258-1264). IEEE.
        :doi:`10.1109/PVSC45281.2020.9300932`

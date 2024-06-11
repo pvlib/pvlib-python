@@ -65,14 +65,20 @@ def test_albedo_water_series_mix_with_array():
 
 
 def test_albedo_water_invalid():
-    with pytest.raises(ValueError):  # no surface info given
+    with pytest.raises(ValueError, match='Either a `surface_condition` has to '
+                       'be chosen or a combination of `color_coeff` and'
+                       ' `wave_roughness_coeff`.'):  # no surface info given
         albedo.inland_water_dvoracek(solar_elevation=45)
-    with pytest.raises(KeyError):  # invalid surface type
+    with pytest.raises(KeyError, match='not_a_surface_type'):  # invalid type
         albedo.inland_water_dvoracek(solar_elevation=45,
                                      surface_condition='not_a_surface_type')
-    with pytest.raises(ValueError):  # only one coefficient given
+    with pytest.raises(ValueError, match='Either a `surface_condition` has to '
+                       'be chosen or a combination of `color_coeff` and'
+                       ' `wave_roughness_coeff`.'):  # only one coeff given
         albedo.inland_water_dvoracek(solar_elevation=45,
                                      color_coeff=0.13)
-    with pytest.raises(ValueError):  # only one coefficient given
+    with pytest.raises(ValueError, match='Either a `surface_condition` has to '
+                       'be chosen or a combination of `color_coeff` and'
+                       ' `wave_roughness_coeff`.'):  # only one coeff given
         albedo.inland_water_dvoracek(solar_elevation=45,
                                      wave_roughness_coeff=0.29)

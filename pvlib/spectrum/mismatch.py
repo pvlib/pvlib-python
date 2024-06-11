@@ -583,9 +583,9 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     the spectrum, and thus spectral mismatch factor estimation. Another
     motivation is to develop a simple parameterisation compared with existing
     models. Model coefficients are derived using spectral irradiance and other
-    meteorological data from eight locations. These coefficients for seven
-    modules, available here via the ``module_type`` parameter, as well as more
-    details on the model, can be found in [1]_.
+    meteorological data from eight locations. These coefficients for six
+    modules are available here via the ``module_type`` parameter. More details
+    on the model, can be found in [1]_.
 
     Parameters
     ----------

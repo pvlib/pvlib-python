@@ -1,7 +1,7 @@
 """
 Modelling shading losses in modules with bypass diodes
 ======================================================
-"""  # noqa: E501
+"""
 
 # %%
 # This example illustrates how to use the model proposed by Martinez et al.

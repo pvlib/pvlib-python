@@ -589,12 +589,10 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     Estimate a technology-specific spectral mismatch modifier from absolute
     airmass and clear sky index using the PVSPEC model.
 
-    The motivation for this model is to include the effects of cloud cover on
-    the spectrum, and thus spectral mismatch factor estimation. Another
-    motivation is to develop a simple parameterisation compared with existing
-    models. Model coefficients are derived using spectral irradiance and other
-    meteorological data from eight locations. These coefficients for six
-    modules are available here via the ``module_type`` parameter. More details
+    The PVSPEC spectral mismatch model includes the effects of cloud cover on
+    the irradiance spectrum. Model coefficients are derived using spectral irradiance
+    and other meteorological data from eight locations. Coefficients for six
+    module types are available via the ``module_type`` parameter. More details
     on the model can be found in [1]_.
 
     Parameters

@@ -22,7 +22,7 @@ def power_mismatch_deline(
     Use ``fillfactor`` to account for different fill factors between the
     trained model and the module of interest.
     For example, if the fill factor of the module of interest is
-    :math:`0.65`, then set ``fillfactor=0.65``.
+    0.65, then set ``fillfactor=0.65``.
 
     .. versionadded:: 0.11.0
 

@@ -155,7 +155,7 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
 #
 #    Left: common module layout. Right: half-cut cells module layout.
 #    Each module has three bypass diodes. On the left, they connect cell
-#    columns 1-2, 2-3 & 3-4. On the right, they connect cell rows 1-2, 3-4 &
+#    columns 1-2, 2-3 & 3-4. On the right, they connect cell columns 1-2, 3-4 &
 #    5-6.
 #    *Source: César Domínguez. CC BY-SA 4.0, Wikimedia Commons*
 #

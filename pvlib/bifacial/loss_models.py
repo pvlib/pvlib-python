@@ -34,21 +34,21 @@ def power_mismatch_deline(
         Check out the *Notes* section for the equation to calculate it from the
         bifaciality and the front and back irradiances.
 
-    model : str, numpy.polynomial.Polynom or list, default ``"single-axis-tracking"``
+    model : str, numpy.polynomial.polynomial.Polynomial or list, default ``"single-axis-tracking"``
         The model coefficients to use.
         If a string, it must be one of the following:
 
         * ``"fixed-tilt"``: Eq. (11) of [1]_.
         * ``"single-axis-tracking"``: Eq. (12) of [1]_.
 
-        If a :external:class:`numpy.polynomial.Polynomial`, it is evaluated as
-        is.
+        If a :external:class:`numpy.polynomial.polynomial.Polynomial`,
+        it is evaluated as is.
 
         If neither a string nor a ``Polynomial``, it must be the coefficients
         of a polynomial in ``rmad``, where the first element is the constant
         term and the last element is the highest order term. A
-        :external:class:`numpy.polynomial.Polynomial` will be created
-        internally.
+        :external:class:`numpy.polynomial.polynomial.Polynomial`
+        will be created internally.
 
     fillfactor : float, optional
         Fill factor at standard test condition (STC) of the module.

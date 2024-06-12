@@ -229,15 +229,14 @@ ax2.xaxis.set_major_formatter(
 )
 ax2.set_ylabel(r"$POA_{direct}$ correction factor")
 ax2.set_title("Per row")
-fig.tight_layout()
+_ = fig.tight_layout()
 
 # %%
 # .. raw:: html
 #
 #    </details>
 
-plt.ion()
-display(fig)
+fig
 
 # %%
 # Note how the half-cut cell module in portrait behaves worse that the

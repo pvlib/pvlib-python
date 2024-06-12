@@ -57,7 +57,7 @@ def power_mismatch_deline(
         Models from [1]_ were calculated for a ``fillfactor`` of 0.79.
         This parameter will only be used if ``model`` is a string.
         Raises a ``ValueError`` if the model is a custom polynomial.
-        Internally, this argument applies :eq:`equation (7) <fillfactor>`.
+        Internally, this argument applies :ref:`Equation (7) <fillfactor_eq>`.
 
     Returns
     -------
@@ -89,8 +89,9 @@ def power_mismatch_deline(
     To account for a module with a fill factor distinct from the one used to
     train the model (0.79), the output of the model can be modified by Eq. (7):
 
+    .. _fillfactor_eq:
+
     .. math::
-       :label: fillfactor
 
        M[\%]_{FF_1} = M[\%]_{FF_0} \frac{FF_1}{FF_0} \qquad \text{(7)}
 

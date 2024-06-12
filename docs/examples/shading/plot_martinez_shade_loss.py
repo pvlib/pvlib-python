@@ -237,7 +237,7 @@ fig.tight_layout()
 #    </details>
 
 plt.ion()
-fig
+display(fig)
 
 # %%
 # Note how the half-cut cell module in portrait behaves worse that the

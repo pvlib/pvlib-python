@@ -1,21 +1,21 @@
 """
-Modelling irradiance loss due to of direct irradiance in modules with bypass diodes
-===================================================================================
+Modelling shading losses in modules with bypass diodes
+======================================================
 """  # noqa: E501
 
 # %%
-# This example illustrates how to use the proposed by Martinez et al. [1]_.
-# The model adjusts the incident direct and circumsolar beam irradiance of a
-# PV module based on the number
+# This example illustrates how to use the model proposed by Martinez et al.
+# [1]_. The model adjusts the incident direct and circumsolar beam irradiance
+# of a PV module based on the number
 # of shaded *blocks*. A *block* is defined as a group of cells protected by a
-# bypass diode. More information on the *blocks* can be found in the original
-# paper [1]_ and in :py:func:`pvlib.shading.direct_martinez`
+# bypass diode. More information on *blocks* can be found in the original
+# paper [1]_ and in the :py:func:`pvlib.shading.direct_martinez`
 # documentation.
 #
 # The following key functions are used in this example:
 #
 # 1. :py:func:`pvlib.shading.direct_martinez` to calculate the adjustment
-#    factor for the output power.
+#    factor for incident beam and circumsolar irradiance.
 # 2. :py:func:`pvlib.shading.shaded_fraction1d` to calculate the fraction of
 #    shaded surface and consequently the number of shaded *blocks* due to
 #    row-to-row shading.
@@ -24,19 +24,13 @@ Modelling irradiance loss due to of direct irradiance in modules with bypass dio
 #
 # .. sectionauthor:: Echedey Luis <echelual (at) gmail.com>
 #
-# References
-# ----------
-# .. [1] F. Martínez-Moreno, J. Muñoz, and E. Lorenzo, 'Experimental model
-#    to estimate shading losses on PV arrays', Solar Energy Materials and
-#    Solar Cells, vol. 94, no. 12, pp. 2298-2303, Dec. 2010,
-#    :doi:`10.1016/j.solmat.2010.07.029`.
-#
 # Problem description
 # -------------------
 # Let's consider a PV system with the following characteristics:
 #
-# - Two north-south single-axis tracker with 6 modules each one.
-# - The rows have the same true-tracking tilt angles. Let's consider
+# - Two north-south single-axis trackers, each one having 6 modules.
+# - The rows have the same true-tracking tilt angles. True tracking
+#   is chosen in this example, so shading is significant.
 #   true-tracking so shade is significant for this example.
 # - Terrain slope is 7 degrees downward to the east.
 # - Rows' axes are horizontal.
@@ -58,7 +52,7 @@ from matplotlib.dates import ConciseDateFormatter
 
 pitch = 4  # meters
 width = 1.5  # meters
-gcr = width / pitch
+gcr = width / pitch  # ground coverage ratio
 N_modules_per_row = 6
 axis_azimuth = 180  # N-S axis
 axis_tilt = 0  # flat because the axis is perpendicular to the slope
@@ -135,7 +129,7 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
 # On the other hand, modules with three bypass diodes will have three blocks,
 # except for the half-cut cell modules, which will have six blocks; 2x3 blocks
 # where the two rows are along the longest side of the module.
-# We can argue that the dimensions of the system changes when you switch from
+# We can argue that the dimensions of the system change when you switch from
 # portrait to landscape, but for this example, we will consider it the same.
 #
 # The number of shaded blocks is calculated by rounding up the shaded fraction
@@ -159,7 +153,7 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
 #    5-6.
 #    *Source: César Domínguez. CC BY-SA 4.0, Wikimedia Commons*
 #
-# In the upper image, each orange U-shaped section of the string is a block.
+# In the image above, each orange U-shaped string section is a block.
 # By symmetry, the yellow inverted-U's of the subcircuit are also blocks.
 # For this reason, the half-cut cell modules have 6 blocks in total: two along
 # the longest side and three along the shortest side.
@@ -181,10 +175,11 @@ shaded_blocks_per_module = {
 # Results
 # -------
 # Now that we have the number of shaded blocks for each module configuration,
-# we can apply the model and estimate the power loss due to shading.
+# we can apply the model and estimate the direct irradiance loss due to
+# shading.
 #
-# Note this model is not linear with the shaded blocks ratio, so there is a
-# difference between applying it to just a module or a whole row.
+# Note that this model is not linear with the shaded blocks ratio, so there is
+# a difference between applying it to just a module or a whole row.
 
 shade_factor_per_module = {
     k: pvlib.shading.direct_martinez(
@@ -203,7 +198,7 @@ shade_factor_per_row = {
 }
 
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
-fig.suptitle("Martinez power correction factor due to shading")
+fig.suptitle("Martinez irradiance correction factor due to shading")
 for k, shade_factor in shade_factor_per_module.items():
     linestyle = "--" if k == "3 bypass diodes half-cut, landscape" else "-"
     ax1.plot(times, shade_factor, label=k, linestyle=linestyle)
@@ -213,7 +208,7 @@ ax1.set_xlabel("Time")
 ax1.xaxis.set_major_formatter(
     ConciseDateFormatter("%H:%M", tz="Europe/Madrid")
 )
-ax1.set_ylabel("Power correction factor")
+ax1.set_ylabel(r"$POA_{direct}$ correction factor")
 ax1.set_title("Per module")
 
 for k, shade_factor in shade_factor_per_row.items():
@@ -225,7 +220,7 @@ ax2.set_xlabel("Time")
 ax2.xaxis.set_major_formatter(
     ConciseDateFormatter("%H:%M", tz="Europe/Madrid")
 )
-ax2.set_ylabel("Power correction factor")
+ax2.set_ylabel(r"$POA_{direct}$ correction factor")
 ax2.set_title("Per row")
 fig.tight_layout()
 fig.show()
@@ -238,3 +233,9 @@ fig.show()
 # orientation.
 
 # %%
+# References
+# ----------
+# .. [1] F. Martínez-Moreno, J. Muñoz, and E. Lorenzo, 'Experimental model
+#    to estimate shading losses on PV arrays', Solar Energy Materials and
+#    Solar Cells, vol. 94, no. 12, pp. 2298-2303, Dec. 2010,
+#    :doi:`10.1016/j.solmat.2010.07.029`.

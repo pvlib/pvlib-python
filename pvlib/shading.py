@@ -596,9 +596,9 @@ def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
     [1]_ defines a *block* as a group of solar cells protected by a bypass
     diode. Also, a *block* is shaded when at least one of its cells is shaded.
 
-    How many blocks and their layout depend on the module(s) used. Many
-    manufacturers don't specify this information explicitly. However, we can
-    infer these values from:
+    The total number of blocks and their layout depend on the module(s) used.
+    Many manufacturers don't specify this information explicitly.
+    However, we can infer these values from:
 
     - the number of bypass diodes
     - where and how many junction boxes are present on the back of the module
@@ -627,13 +627,18 @@ def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
     >>> total_blocks = 3  # blocks along the vertical of the module
     >>> POA_direct = 600  # W
     >>> POA_diffuse = 80  # W
+    >>> # calculation of the shaded fraction for the collector
     >>> shaded_fraction = shading.shaded_fraction1d(
-    >>>     80, 180, 90, 25,
+    >>>     solar_zenith=80, solar_azimuth=180,
+    >>>     axis_azimuth=90, shaded_row_rotation=25,
     >>>     collector_width=0.5, pitch=1, surface_to_axis_offset=0,
     >>>     cross_axis_slope=5.711, shading_row_rotation=50)
+    >>> # calculation of the number of shaded blocks
     >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
+    >>> # apply the Martinez correction to the calculated shading
     >>> loss_correction = shading.direct_martinez(
     >>>     shaded_fraction, shaded_blocks, total_blocks)
+    >>> # calculation of the POA for the corrected direct irradiance
     >>> POA_total = POA_direct * loss_correction + POA_diffuse
 
     See Also

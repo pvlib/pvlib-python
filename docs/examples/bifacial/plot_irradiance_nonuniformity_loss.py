@@ -2,7 +2,7 @@
 Plot Irradiance Non-uniformity Loss
 ===================================
 
-Calculate the incident irradiance lost to non-uniformity in a bifacial PV array
+Calculate the DC power lost to non-uniformity in a bifacial PV array
 """
 
 # %%
@@ -11,14 +11,13 @@ Calculate the incident irradiance lost to non-uniformity in a bifacial PV array
 # When each cell works at different irradiance levels, the power produced by
 # the module is less than the sum of the power produced by each cell since the
 # maximum power point (MPP) of each cell is different, but cells connected in
-# series will operate at the same current. In that case, a deviation is found
-# between the MPP and the working point of the cells.
+# series will operate at the same current.
 # This is known as irradiance non-uniformity loss.
 #
 # Calculating the IV curve of each cell and then matching the working point of
-# the whole module is computationally expensive, so a model to account for this
-# loss is of interest. Deline et al. [1]_ proposed a model based on the
-# Relative Mean Absolute Difference (RMAD) of the irradiance of each cell.
+# the whole module is computationally expensive, so a simple model to account
+# for this loss is of interest. Deline et al. [1]_ proposed a model based on
+# the Relative Mean Absolute Difference (RMAD) of the irradiance of each cell.
 # They did also use the standard deviation of the cells' irradiances, but they
 # found that the RMAD was a better predictor of the mismatch loss.
 #

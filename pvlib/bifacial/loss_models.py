@@ -11,7 +11,7 @@ def power_mismatch_deline(
     fillfactor: float = None,
 ):
     r"""
-    Estimate the power loss due to irradiance non-uniformity.
+    Estimate DC power loss due to irradiance non-uniformity.
 
     This model is described for bifacial modules in [1]_, where the backside
     irradiance is less uniform due to mounting and site conditions.
@@ -41,24 +41,21 @@ def power_mismatch_deline(
         * ``"fixed-tilt"``: Eq. (11) of [1]_.
         * ``"single-axis-tracking"``: Eq. (12) of [1]_.
 
-        If a :py:`numpy:numpy.polynomial.Polynomial`, it is evaluated as is.
+        If a :py:`numpy.polynomial.Polynomial`, it is evaluated as is.
 
         If neither a string nor a ``Polynomial``, it must be the coefficients
         of a polynomial in ``rmad``, where the first element is the constant
         term and the last element is the highest order term. A
-        :py:`numpy:numpy.polynomial.Polynomial` will be created internally.
+        :py:`numpy.polynomial.Polynomial` will be created internally.
 
     fillfactor : float, optional
         Fill factor at standard test condition (STC) of the module.
         Accounts for different fill factors between the trained model and the
-        module of interest, whose ``fillfactor`` is 0.79. Only affects the
-        model if it is any of the provided.
+        module under non-uniform irradiance.
+        Models from [1]_ were calculated for a ``fillfactor`` of 0.79.
+        This parameter will only be used if ``model`` is a string.
         Raises a ``ValueError`` if the model is a custom polynomial.
-        Internally, this argument is with equation (7) of [1]_:
-
-        .. math::
-
-           M[\%]_{FF_1} = M[\%]_{FF_0} \frac{FF_1}{FF_0} \qquad \text{(7)}
+        Internally, this argument applies :eq:`equation (7) <fillfactor>`.
 
     Returns
     -------
@@ -86,6 +83,14 @@ def power_mismatch_deline(
     .. math::
 
        M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}} \qquad \text{(1)}
+
+    To account for a module with a fill factor distinct from the one used to
+    train the model (0.79), the output of the model can be modified by Eq. (7):
+
+    .. math::
+       :label: fillfactor
+
+       M[\%]_{FF_1} = M[\%]_{FF_0} \frac{FF_1}{FF_0} \qquad \text{(7)}
 
     In the section *See Also*, you will find two packages that can be used to
     calculate the irradiance at different points of the module.

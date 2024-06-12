@@ -203,6 +203,7 @@ shade_factor_per_row = {
 #    <details>
 #    <summary><a>See plot code</a></summary>
 
+plt.ioff()
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
 fig.suptitle("Martinez irradiance correction factor due to shading")
 for k, shade_factor in shade_factor_per_module.items():
@@ -228,14 +229,15 @@ ax2.xaxis.set_major_formatter(
 )
 ax2.set_ylabel(r"$POA_{direct}$ correction factor")
 ax2.set_title("Per row")
+fig.tight_layout()
 
 # %%
 # .. raw:: html
 #
 #    </details>
 
-fig.tight_layout()
-fig.show()
+plt.ion()
+fig
 
 # %%
 # Note how the half-cut cell module in portrait behaves worse that the

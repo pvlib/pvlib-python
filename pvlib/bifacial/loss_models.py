@@ -41,12 +41,14 @@ def power_mismatch_deline(
         * ``"fixed-tilt"``: Eq. (11) of [1]_.
         * ``"single-axis-tracking"``: Eq. (12) of [1]_.
 
-        If a :py:`numpy.polynomial.Polynomial`, it is evaluated as is.
+        If a :external:class:`numpy.polynomial.Polynomial`, it is evaluated as
+        is.
 
         If neither a string nor a ``Polynomial``, it must be the coefficients
         of a polynomial in ``rmad``, where the first element is the constant
         term and the last element is the highest order term. A
-        :py:`numpy.polynomial.Polynomial` will be created internally.
+        :external:class:`numpy.polynomial.Polynomial` will be created
+        internally.
 
     fillfactor : float, optional
         Fill factor at standard test condition (STC) of the module.

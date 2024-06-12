@@ -28,6 +28,9 @@ Enhancements
   shade perpendicular to ``axis_azimuth``. The function is applicable to both
   fixed-tilt and one-axis tracking systems.
   (:issue:`1689`, :pull:`1725`, :pull:`1962`)
+* Add function :py:func:`pvlib.albedo.inland_water_dvoracek`, to calculate the
+  albedo for inland water bodies.
+  (:pull:`2079`)
 * Added conversion functions from spectral response ([A/W]) to quantum
   efficiency ([unitless]) and vice versa. The conversion functions are
   :py:func:`pvlib.spectrum.sr_to_qe` and :py:func:`pvlib.spectrum.qe_to_sr`
@@ -55,4 +58,5 @@ Contributors
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Siddharth Kaul (:ghuser:`k10blogger`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Mark Campanelli (:ghuser:`markcampanelli`)

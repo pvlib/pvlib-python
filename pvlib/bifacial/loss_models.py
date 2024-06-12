@@ -47,7 +47,7 @@ def power_mismatch_deline(
         If neither a string nor a ``Polynomial``, it must be the coefficients
         of a polynomial in ``rmad``, where the first element is the constant
         term and the last element is the highest order term. A
-        :external:class:`numpy.polynomial.polynomial.Polynomial`
+        :external:class:`~numpy.polynomial.polynomial.Polynomial`
         will be created internally.
 
     fillfactor : float, optional
@@ -63,6 +63,11 @@ def power_mismatch_deline(
     -------
     loss : numeric
         The power loss.
+
+    Raises
+    ------
+    ValueError
+        If the model is not a string and ``fillfactor`` is not ``None``.
 
     Notes
     -----

@@ -58,7 +58,7 @@ def power_mismatch_deline(
 
         .. math::
 
-           M[\%]_{FF_1} = M[\%]_{FF_0} \frac{FF_1}{FF_0}
+           M[\%]_{FF_1} = M[\%]_{FF_0} \frac{FF_1}{FF_0} \qquad \text{(7)}
 
     Returns
     -------

@@ -33,7 +33,7 @@ Enhancements
   :py:func:`pvlib.spectrum.sr_to_qe` and :py:func:`pvlib.spectrum.qe_to_sr`
   respectively. (:issue:`2040`, :pull:`2041`)
 * Add new losses function that accounts for non-uniform irradiance of bifacial
-  modules, :py:func:`pvlib.bifacial.power_mismatch_deline `.
+  modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
   (:issue:`2045`, :pr:`2046`)
 
 

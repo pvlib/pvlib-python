@@ -7,7 +7,7 @@ Calculate the DC power lost to non-uniformity in a bifacial PV array
 
 # %%
 # The incident irradiance on the backside of a bifacial PV module is
-# not uniform due to neighboring rows, the ground albedo and site conditions.
+# not uniform due to neighboring rows, the ground albedo, and site conditions.
 # When each cell works at different irradiance levels, the power produced by
 # the module is less than the sum of the power produced by each cell since the
 # maximum power point (MPP) of each cell is different, but cells connected in

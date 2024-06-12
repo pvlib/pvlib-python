@@ -10,7 +10,7 @@ Calculate the incident irradiance lost to non-uniformity in a bifacial PV array
 # not uniform due to neighboring rows, the ground albedo and site conditions.
 # When each cell works at different irradiance levels, the power produced by
 # the module is less than the sum of the power produced by each cell since the
-# maximum power point of each cell is different, but cells connected in series
+# maximum power point (MPP) of each cell is different, but cells connected in series
 # will operate at the same current. In that case, a deviation is found
 # between the MPP and the working point of the cells.
 # This is known as irradiance non-uniformity loss.
@@ -90,7 +90,7 @@ ax.pcolormesh(
 # Relative Mean Absolute Difference
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Calculate the Relative Mean Absolute Difference (RMAD) of the cells'
-# irradiance with the following function, Eq. (4) of [1]_:
+# irradiances with the following function, Eq. (4) of [1]_:
 #
 # .. math::
 #

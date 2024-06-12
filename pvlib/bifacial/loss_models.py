@@ -85,7 +85,7 @@ def power_mismatch_deline(
 
     .. math::
 
-       M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}} \qquad & \text{(1)}
+       M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}} \qquad \text{(1)}
 
     In the section *See Also*, you will find two packages that can be used to
     calculate the irradiance at different points of the module.
@@ -107,7 +107,7 @@ def power_mismatch_deline(
 
     .. math::
 
-       G_{total\,i} = G_{front\,i} + \phi_{Bifi} G_{rear\,i}
+       G_{total\,i} = G_{front\,i} + \phi_{Bifi} G_{rear\,i} \qquad \text{(2)}
 
     See Also
     --------

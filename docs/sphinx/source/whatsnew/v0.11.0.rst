@@ -7,6 +7,15 @@ v0.11.0 (Anticipated June, 2024)
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
+* The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
+* Remove the `poa_horizontal_ratio` function and all of its references. (:issue:`1697`, :pull:`2021`)
+* Updated `~pvlib.iotools.MIDC_VARIABLE_MAP`~ to reflect
+  changes in instrumentation. (:pull:`2006`)
+* ``pvlib.iotools.read_srml_month_from_solardat`` was deprecated in v0.10.0 and has
+  now been completely removed. The function is replaced by :py:func:`~pvlib.iotools.get_srml()`.
+  (:pull:`1779`, :pull:`1989`)
+* The `leap_day` parameter in :py:func:`~pvlib.iotools.get_psm3`
+  now defaults to True instead of False. (:issue:`1481`, :pull:`1991`)
 
 
 Deprecations
@@ -15,6 +24,17 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add function :py:func:`pvlib.shading.shaded_fraction1d`, to calculate the
+  shade perpendicular to ``axis_azimuth``. The function is applicable to both
+  fixed-tilt and one-axis tracking systems.
+  (:issue:`1689`, :pull:`1725`, :pull:`1962`)
+* Add function :py:func:`pvlib.albedo.inland_water_dvoracek`, to calculate the
+  albedo for inland water bodies.
+  (:pull:`2079`)
+* Added conversion functions from spectral response ([A/W]) to quantum
+  efficiency ([unitless]) and vice versa. The conversion functions are
+  :py:func:`pvlib.spectrum.sr_to_qe` and :py:func:`pvlib.spectrum.qe_to_sr`
+  respectively. (:issue:`2040`, :pull:`2041`)
 
 
 Bug fixes
@@ -36,3 +56,7 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Siddharth Kaul (:ghuser:`k10blogger`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Mark Campanelli (:ghuser:`markcampanelli`)

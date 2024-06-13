@@ -4,6 +4,7 @@ from pvlib import (  # noqa: F401
     # list spectrum first so it's available for atmosphere & pvsystem (GH 1628)
     spectrum,
 
+    albedo,
     atmosphere,
     bifacial,
     clearsky,

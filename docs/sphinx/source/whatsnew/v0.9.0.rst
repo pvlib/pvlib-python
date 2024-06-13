@@ -43,7 +43,7 @@ Breaking changes
 * The ``orientation_strategy`` parameter has been removed from the various
   :py:class:`pvlib.modelchain.ModelChain` constructors and ``surface_tilt``,
   ``surface_azimuth`` are now required parameters for
-  :py:func:`pvlib.modelchain.basic_chain` (:issue:`1028`, :pull:`1181`)
+  ``pvlib.modelchain.basic_chain`` (:issue:`1028`, :pull:`1181`)
 
 * Removed the ``**kwargs`` parameters from :py:meth:`~pvlib.pvsystem.PVSystem.sapm` and
   :py:meth:`~pvlib.pvsystem.PVSystem.calcparams_desoto` and

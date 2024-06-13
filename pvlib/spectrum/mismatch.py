@@ -657,8 +657,8 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
        method. Solar energy, 68(1), pp.33-48.
        :doi:`10.1016/S0038-092X(99)00055-9`
     .. [4] SoDa website monthly Linke turbidity values:
-       http://www.soda-pro.com/gl/web-services/atmosphere/linke-turbidity-factor-ozone-watervapor-and-angstroembeta
-    """  # noqa: E501
+       http://www.soda-pro.com/
+    """
 
     _coefficients = {}
     _coefficients['multisi'] = (0.9847, -0.05237, 0.03034)

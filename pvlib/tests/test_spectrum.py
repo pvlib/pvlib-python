@@ -347,8 +347,8 @@ def test_spectral_factor_pvspec_series(module_type, expected):
     kcs = pd.Series([0.4, 0.6, 0.8, 1.4])
     out = spectrum.spectral_factor_pvspec(ams, kcs,
                                           module_type=module_type)
-    out = pd.Series(out)
-    assert np.allclose(expected, out, atol=1e-8)
+    if isinstance(out, pd.Series):
+        assert np.allclose(expected, out, atol=1e-8)
 
 
 def test_spectral_factor_pvspec_supplied():

@@ -592,7 +592,7 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     The PVSPEC spectral mismatch model includes the effects of cloud cover on
     the irradiance spectrum. Model coefficients are derived using spectral
     irradiance and other meteorological data from eight locations. Coefficients
-    for six module types are available via the ``module_type`` parameter. 
+    for six module types are available via the ``module_type`` parameter.
     More details on the model can be found in [1]_.
 
     Parameters

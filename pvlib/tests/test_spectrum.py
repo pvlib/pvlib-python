@@ -164,7 +164,7 @@ def test_get_reference_spectra(reference_identifier, expected_sums):
     assert standard.index.name == "wavelength"
     assert standard.index.is_monotonic_increasing is True
     expected_sums = pd.Series(expected_sums)  # convert prior to comparison
-    assert_series_equal(np.sum(standard), expected_sums, atol=1e-2)
+    assert_series_equal(np.sum(standard, axis=0), expected_sums, atol=1e-2)
 
 
 def test_get_reference_spectra_custom_wavelengths():
@@ -181,7 +181,7 @@ def test_get_reference_spectra_custom_wavelengths():
     assert_equal(len(standard), len(wavelength))
     # check no NaN values were returned
     assert not standard.isna().any().any()  # double any to return one value
-    assert_series_equal(np.sum(standard), expected_sums, atol=1e-4)
+    assert_series_equal(np.sum(standard, axis=0), expected_sums, atol=1e-4)
 
 
 def test_get_reference_spectra_invalid_reference():

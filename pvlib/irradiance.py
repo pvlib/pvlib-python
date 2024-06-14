@@ -1509,9 +1509,9 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         Solar azimuth angle. [degree]
     poa_global : numeric
         Plane-of-array global irradiance, aka global tilted irradiance. [W/m^2]
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m^2]
-    airmass : None or numeric, default None
+    airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]

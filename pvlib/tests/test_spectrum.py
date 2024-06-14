@@ -8,6 +8,7 @@ from .conftest import DATA_DIR, assert_series_equal
 
 SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
 
+
 @pytest.fixture
 def spectrl2_data():
     # reference spectra generated with solar_utils==0.3
@@ -140,7 +141,7 @@ def test_get_am15g():
 
 def test_calc_spectral_mismatch_field(spectrl2_data):
     # test that the mismatch is calculated correctly with
-    # - default and custom reference sepctrum
+    # - default and custom reference spectrum
     # - single or multiple sun spectra
 
     # sample data
@@ -175,25 +176,25 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
 
 @pytest.mark.parametrize("module_type,expect", [
     ('cdte', np.array(
-        [[ 0.99051020, 0.97640320, 0.93975028],
-         [ 1.02928735, 1.01881074, 0.98578821],
-         [ 1.04750335, 1.03814456, 1.00623986]])),
+        [[0.99051020, 0.97640320, 0.93975028],
+         [1.02928735, 1.01881074, 0.98578821],
+         [1.04750335, 1.03814456, 1.00623986]])),
     ('monosi', np.array(
-        [[ 0.97769770, 1.02043409, 1.03574032],
-         [ 0.98630905, 1.03055092, 1.04736262],
-         [ 0.98828494, 1.03299036, 1.05026561]])),
+        [[0.97769770, 1.02043409, 1.03574032],
+         [0.98630905, 1.03055092, 1.04736262],
+         [0.98828494, 1.03299036, 1.05026561]])),
     ('polysi', np.array(
-        [[ 0.97704080, 1.01705849, 1.02613202],
-         [ 0.98992828, 1.03173953, 1.04260662],
-         [ 0.99352435, 1.03588785, 1.04730718]])),
+        [[0.97704080, 1.01705849, 1.02613202],
+         [0.98992828, 1.03173953, 1.04260662],
+         [0.99352435, 1.03588785, 1.04730718]])),
     ('cigs', np.array(
-        [[ 0.97459190, 1.02821696, 1.05067895],
-         [ 0.97529378, 1.02967497, 1.05289307],
-         [ 0.97269159, 1.02730558, 1.05075651]])),
+        [[0.97459190, 1.02821696, 1.05067895],
+         [0.97529378, 1.02967497, 1.05289307],
+         [0.97269159, 1.02730558, 1.05075651]])),
     ('asi', np.array(
-        [[ 1.05552750, 0.87707583, 0.72243772],
-         [ 1.11225204, 0.93665901, 0.78487953],
-         [ 1.14555295, 0.97084011, 0.81994083]]))
+        [[1.05552750, 0.87707583, 0.72243772],
+         [1.11225204, 0.93665901, 0.78487953],
+         [1.14555295, 0.97084011, 0.81994083]]))
 ])
 def test_spectral_factor_firstsolar(module_type, expect):
     ams = np.array([1, 3, 5])
@@ -315,3 +316,163 @@ def test_spectral_factor_caballero_supplied_ambiguous():
     with pytest.raises(ValueError):
         spectrum.spectral_factor_caballero(1, 1, 1, module_type=None,
                                            coefficients=None)
+
+
+@pytest.mark.parametrize("module_type,expected", [
+    ('asi', np.array([1.15534029, 1.1123772, 1.08286684, 1.01915462])),
+    ('fs-2', np.array([1.0694323, 1.04948777, 1.03556288, 0.9881471])),
+    ('fs-4', np.array([1.05234725, 1.037771, 1.0275516, 0.98820533])),
+    ('multisi', np.array([1.03310403, 1.02391703, 1.01744833, 0.97947605])),
+    ('monosi', np.array([1.03225083, 1.02335353, 1.01708734, 0.97950110])),
+    ('cigs', np.array([1.01475834, 1.01143927, 1.00909094, 0.97852966])),
+])
+def test_spectral_factor_pvspec(module_type, expected):
+    ams = np.array([1.0, 1.5, 2.0, 1.5])
+    kcs = np.array([0.4, 0.6, 0.8, 1.4])
+    out = spectrum.spectral_factor_pvspec(ams, kcs,
+                                          module_type=module_type)
+    assert np.allclose(expected, out, atol=1e-8)
+
+
+@pytest.mark.parametrize("module_type,expected", [
+    ('asi', pd.Series([1.15534029, 1.1123772, 1.08286684, 1.01915462])),
+    ('fs-2', pd.Series([1.0694323, 1.04948777, 1.03556288, 0.9881471])),
+    ('fs-4', pd.Series([1.05234725, 1.037771, 1.0275516, 0.98820533])),
+    ('multisi', pd.Series([1.03310403, 1.02391703, 1.01744833, 0.97947605])),
+    ('monosi', pd.Series([1.03225083, 1.02335353, 1.01708734, 0.97950110])),
+    ('cigs', pd.Series([1.01475834, 1.01143927, 1.00909094, 0.97852966])),
+])
+def test_spectral_factor_pvspec_series(module_type, expected):
+    ams = pd.Series([1.0, 1.5, 2.0, 1.5])
+    kcs = pd.Series([0.4, 0.6, 0.8, 1.4])
+    out = spectrum.spectral_factor_pvspec(ams, kcs,
+                                          module_type=module_type)
+    assert isinstance(out, pd.Series)
+    assert np.allclose(expected, out, atol=1e-8)
+
+
+def test_spectral_factor_pvspec_supplied():
+    # use the multisi coeffs
+    coeffs = (0.9847, -0.05237, 0.03034)
+    out = spectrum.spectral_factor_pvspec(1.5, 0.8, coefficients=coeffs)
+    expected = 1.00860641
+    assert_allclose(out, expected, atol=1e-8)
+
+
+def test_spectral_factor_pvspec_supplied_redundant():
+    # Error when specifying both module_type and coefficients
+    coeffs = (0.9847, -0.05237, 0.03034)
+    with pytest.raises(ValueError, match='supply only one of'):
+        spectrum.spectral_factor_pvspec(1.5, 0.8, module_type='multisi',
+                                        coefficients=coeffs)
+
+
+def test_spectral_factor_pvspec_supplied_ambiguous():
+    # Error when specifying neither module_type nor coefficients
+    with pytest.raises(ValueError, match='No valid input provided'):
+        spectrum.spectral_factor_pvspec(1.5, 0.8, module_type=None,
+                                        coefficients=None)
+
+
+@pytest.fixture
+def sr_and_eqe_fixture():
+    # Just some arbitrary data for testing the conversion functions
+    df = pd.DataFrame(
+        columns=("wavelength", "quantum_efficiency", "spectral_response"),
+        data=[
+            # nm, [0,1], A/W
+            [300, 0.85, 0.205671370402405],
+            [350, 0.86, 0.242772872514211],
+            [400, 0.87, 0.280680929019753],
+            [450, 0.88, 0.319395539919029],
+            [500, 0.89, 0.358916705212040],
+            [550, 0.90, 0.399244424898786],
+            [600, 0.91, 0.440378698979267],
+            [650, 0.92, 0.482319527453483],
+            [700, 0.93, 0.525066910321434],
+            [750, 0.94, 0.568620847583119],
+            [800, 0.95, 0.612981339238540],
+            [850, 0.90, 0.617014111207215],
+            [900, 0.80, 0.580719163489143],
+            [950, 0.70, 0.536358671833723],
+            [1000, 0.6, 0.483932636240953],
+            [1050, 0.4, 0.338752845368667],
+        ],
+    )
+    df.set_index("wavelength", inplace=True)
+    return df
+
+
+def test_sr_to_qe(sr_and_eqe_fixture):
+    # vector type
+    qe = spectrum.sr_to_qe(
+        sr_and_eqe_fixture["spectral_response"].values,
+        sr_and_eqe_fixture.index.values,  # wavelength, nm
+    )
+    assert_allclose(qe, sr_and_eqe_fixture["quantum_efficiency"])
+    # pandas series type
+    # note: output Series' name should match the input
+    qe = spectrum.sr_to_qe(
+        sr_and_eqe_fixture["spectral_response"]
+    )
+    pd.testing.assert_series_equal(
+        qe, sr_and_eqe_fixture["quantum_efficiency"],
+        check_names=False
+    )
+    assert qe.name == "spectral_response"
+    # series normalization
+    qe = spectrum.sr_to_qe(
+        sr_and_eqe_fixture["spectral_response"] * 10, normalize=True
+    )
+    pd.testing.assert_series_equal(
+        qe,
+        sr_and_eqe_fixture["quantum_efficiency"]
+        / max(sr_and_eqe_fixture["quantum_efficiency"]),
+        check_names=False,
+    )
+    # error on lack of wavelength parameter if no pandas object is provided
+    with pytest.raises(TypeError, match="must have an '.index' attribute"):
+        _ = spectrum.sr_to_qe(sr_and_eqe_fixture["spectral_response"].values)
+
+
+def test_qe_to_sr(sr_and_eqe_fixture):
+    # vector type
+    sr = spectrum.qe_to_sr(
+        sr_and_eqe_fixture["quantum_efficiency"].values,
+        sr_and_eqe_fixture.index.values,  # wavelength, nm
+    )
+    assert_allclose(sr, sr_and_eqe_fixture["spectral_response"])
+    # pandas series type
+    # note: output Series' name should match the input
+    sr = spectrum.qe_to_sr(
+        sr_and_eqe_fixture["quantum_efficiency"]
+    )
+    pd.testing.assert_series_equal(
+        sr, sr_and_eqe_fixture["spectral_response"],
+        check_names=False
+    )
+    assert sr.name == "quantum_efficiency"
+    # series normalization
+    sr = spectrum.qe_to_sr(
+        sr_and_eqe_fixture["quantum_efficiency"] * 10, normalize=True
+    )
+    pd.testing.assert_series_equal(
+        sr,
+        sr_and_eqe_fixture["spectral_response"]
+        / max(sr_and_eqe_fixture["spectral_response"]),
+        check_names=False,
+    )
+    # error on lack of wavelength parameter if no pandas object is provided
+    with pytest.raises(TypeError, match="must have an '.index' attribute"):
+        _ = spectrum.qe_to_sr(
+            sr_and_eqe_fixture["quantum_efficiency"].values
+        )
+
+
+def test_qe_and_sr_reciprocal_conversion(sr_and_eqe_fixture):
+    # test that the conversion functions are reciprocal
+    qe = spectrum.sr_to_qe(sr_and_eqe_fixture["spectral_response"])
+    sr = spectrum.qe_to_sr(qe)
+    assert_allclose(sr, sr_and_eqe_fixture["spectral_response"])
+    qe = spectrum.sr_to_qe(sr)
+    assert_allclose(qe, sr_and_eqe_fixture["quantum_efficiency"])

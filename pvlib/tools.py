@@ -507,3 +507,30 @@ def get_pandas_index(*args):
         (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))),
         None
     )
+
+
+def normalize_max2one(a):
+    r"""
+    Normalize an array so that the largest absolute value is ±1.
+
+    Handles both numpy arrays and pandas objects.
+    On 2D arrays, normalization is row-wise.
+    On pandas DataFrame, normalization is column-wise.
+
+    If all values of row are 0, the array is set to NaNs.
+
+    Parameters
+    ----------
+    a : array-like
+        The array to normalize.
+
+    Returns
+    -------
+    array-like
+        The normalized array.
+    """
+    try:  # expect numpy array
+        res = a / np.max(np.absolute(a), axis=-1, keepdims=True)
+    except ValueError:  # fails for pandas objects
+        res = a.div(a.abs().max(axis=0, skipna=True))
+    return res

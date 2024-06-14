@@ -14,3 +14,4 @@ Decomposing and combining irradiance
    irradiance.get_ground_diffuse
    irradiance.dni
    irradiance.complete_irradiance
+   irradiance.spitters_relationship

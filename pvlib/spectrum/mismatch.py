@@ -54,14 +54,14 @@ def get_example_spectral_response(wavelength=None):
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
 
-    SR_DATA = np.array([[ 290, 0.00],
-                        [ 350, 0.27],
-                        [ 400, 0.37],
-                        [ 500, 0.52],
-                        [ 650, 0.71],
-                        [ 800, 0.88],
-                        [ 900, 0.97],
-                        [ 950, 1.00],
+    SR_DATA = np.array([[290, 0.00],
+                        [350, 0.27],
+                        [400, 0.37],
+                        [500, 0.52],
+                        [650, 0.71],
+                        [800, 0.88],
+                        [900, 0.97],
+                        [950, 1.00],
                         [1000, 0.93],
                         [1050, 0.58],
                         [1100, 0.21],
@@ -256,7 +256,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
                                max_precipitable_water=8):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
-    (pressure-adjusted) airmass.
+    (pressure-adjusted) air mass.
 
     Estimates a spectral mismatch modifier :math:`M` representing the effect on
     module short circuit current of variation in the spectral
@@ -294,7 +294,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         atmospheric precipitable water. [cm]
 
     airmass_absolute : numeric
-        absolute (pressure-adjusted) airmass. [unitless]
+        absolute (pressure-adjusted) air mass. [unitless]
 
     module_type : str, optional
         a string specifying a cell type. Values of 'cdte', 'monosi', 'xsi',
@@ -581,6 +581,112 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     )
     modifier = f_AM + f_AOD + f_PW  # Eq 5
     return modifier
+
+
+def spectral_factor_pvspec(airmass_absolute, clearsky_index,
+                           module_type=None, coefficients=None):
+    r"""
+    Estimate a technology-specific spectral mismatch modifier from absolute
+    airmass and clear sky index using the PVSPEC model.
+
+    The PVSPEC spectral mismatch model includes the effects of cloud cover on
+    the irradiance spectrum. Model coefficients are derived using spectral
+    irradiance and other meteorological data from eight locations. Coefficients
+    for six module types are available via the ``module_type`` parameter.
+    More details on the model can be found in [1]_.
+
+    Parameters
+    ----------
+    airmass_absolute : numeric
+        absolute (pressure-adjusted) airmass. [unitless]
+
+    clearsky_index: numeric
+        clear sky index. [unitless]
+
+    module_type : str, optional
+        One of the following PV technology strings from [1]_:
+
+        * ``'fs4-1'`` - First Solar series 4-1 and earlier CdTe module.
+        * ``'fs4-2'`` - First Solar 4-2 and later CdTe module.
+        * ``'monosi'``, - anonymous monocrystalline Si module.
+        * ``'multisi'``, - anonymous multicrystalline Si module.
+        * ``'cigs'`` - anonymous copper indium gallium selenide module.
+        * ``'asi'`` - anonymous amorphous silicon module.
+
+    coefficients : array-like, optional
+        user-defined coefficients, if not using one of the default coefficient
+        sets via the ``module_type`` parameter.
+
+    Returns
+    -------
+    mismatch: numeric
+        spectral mismatch factor (unitless) which is multiplied
+        with broadband irradiance reaching a module's cells to estimate
+        effective irradiance, i.e., the irradiance that is converted to
+        electrical current.
+
+    Notes
+    -----
+    The PVSPEC model parameterises the spectral mismatch factor as a function
+    of absolute air mass and the clear sky index as follows:
+
+    .. math::
+
+        M = a_1 k_c^{a_2} AM_a^{a_3},
+
+    where :math:`M` is the spectral mismatch factor, :math:`k_c` is the clear
+    sky index, :math:`AM_a` is the absolute air mass, and :math:`a_1, a_2, a_3`
+    are module-specific coefficients. In the PVSPEC model publication, absolute
+    air mass (denoted as :math:`AM`) is estimated starting from the Kasten and
+    Young relative air mass [2]_. The clear sky index, which is the ratio of
+    GHI to clear sky GHI, uses the ESRA model [3]_ to estimate the clear sky
+    GHI with monthly Linke turbidity values from [4]_ as inputs.
+
+    References
+    ----------
+    .. [1] Pelland, S., Beswick, C., Thevenard, D., Côté, A., Pai, A. and
+       Poissant, Y., 2020. Development and testing of the PVSPEC model of
+       photovoltaic spectral mismatch factor. In 2020 47th IEEE Photovoltaic
+       Specialists Conference (PVSC) (pp. 1258-1264). IEEE.
+       :doi:`10.1109/PVSC45281.2020.9300932`
+    .. [2] Kasten, F. and Young, A.T., 1989. Revised optical air mass tables
+       and approximation formula. Applied Optics, 28(22), pp.4735-4738.
+       :doi:`10.1364/AO.28.004735`
+    .. [3] Rigollier, C., Bauer, O. and Wald, L., 2000. On the clear sky model
+       of the ESRA—European Solar Radiation Atlas—with respect to the Heliosat
+       method. Solar energy, 68(1), pp.33-48.
+       :doi:`10.1016/S0038-092X(99)00055-9`
+    .. [4] SoDa website monthly Linke turbidity values:
+       http://www.soda-pro.com/
+    """
+
+    _coefficients = {}
+    _coefficients['multisi'] = (0.9847, -0.05237, 0.03034)
+    _coefficients['monosi'] = (0.9845, -0.05169, 0.03034)
+    _coefficients['fs-2'] = (1.002, -0.07108, 0.02465)
+    _coefficients['fs-4'] = (0.9981, -0.05776, 0.02336)
+    _coefficients['cigs'] = (0.9791, -0.03904, 0.03096)
+    _coefficients['asi'] = (1.051, -0.1033, 0.009838)
+
+    if module_type is not None and coefficients is None:
+        coefficients = _coefficients[module_type.lower()]
+    elif module_type is None and coefficients is not None:
+        pass
+    elif module_type is None and coefficients is None:
+        raise ValueError('No valid input provided, both module_type and ' +
+                         'coefficients are None. module_type can be one of ' +
+                         ", ".join(_coefficients.keys()))
+    else:
+        raise ValueError('Cannot resolve input, must supply only one of ' +
+                         'module_type and coefficients. module_type can be ' +
+                         'one of' ", ".join(_coefficients.keys()))
+
+    coeff = coefficients
+    ama = airmass_absolute
+    kc = clearsky_index
+    mismatch = coeff[0]*np.power(kc, coeff[1])*np.power(ama, coeff[2])
+
+    return mismatch
 
 
 def sr_to_qe(sr, wavelength=None, normalize=False):

@@ -3819,7 +3819,7 @@ def spitters_relationship(solar_zenith, global_diffuse_fraction):
     """
     # notation change:
     #  cosd(90-x) = sind(x) and 90-solar_elevation = solar_zenith
-    sind_solar_zenith = tools.sind(solar_zenith)
+    cosd_solar_zenith = tools.cosd(solar_zenith)
     cosd_solar_elevation = tools.cosd(90 - solar_zenith)
     par_diffuse_fraction = (
         (1 + 0.3 * (1 - global_diffuse_fraction**2))
@@ -3827,7 +3827,7 @@ def spitters_relationship(solar_zenith, global_diffuse_fraction):
         / (
             1
             + (1 - global_diffuse_fraction**2)
-            * sind_solar_zenith**2
+            * cosd_solar_zenith**2
             * cosd_solar_elevation**3
         )
     )

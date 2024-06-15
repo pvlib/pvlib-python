@@ -8,6 +8,7 @@ from .conftest import DATA_DIR, assert_series_equal
 
 SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
 
+
 @pytest.fixture
 def spectrl2_data():
     # reference spectra generated with solar_utils==0.3

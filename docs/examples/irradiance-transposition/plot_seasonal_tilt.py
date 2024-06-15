@@ -32,7 +32,8 @@ class SeasonalTiltMount(pvsystem.AbstractMount):
     surface_azimuth: float = 180.0
 
     def get_orientation(self, solar_zenith, solar_azimuth):
-        tilts = [self.monthly_tilts[m-1] for m in tools._pandas_to_utc(solar_zenith.index).month]
+        tilts = [self.monthly_tilts[m-1]
+                 for m in tools._pandas_to_utc(solar_zenith.index).month]
         return pd.DataFrame({
             'surface_tilt': tilts,
             'surface_azimuth': self.surface_azimuth,

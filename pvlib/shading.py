@@ -593,10 +593,10 @@ def direct_martinez(
 
     .. math::
 
-        (1 - F_{ES}) = (1 - F_{GS}) (1 - \frac{N_{SB}}{N_{TB} + 1})
+        (1 - F_{ES}) = (1 - F_{GS}) \left(1 - \frac{N_{SB}}{N_{TB} + 1}\right)
         \quad \text{(6)}
 
-        (1 - \frac{P_{S}}{P_{NS}}) = \left(1 -
+        \left(1 - \frac{P_{S}}{P_{NS}}\right) = \left(1 -
         \frac{\left[(B + D^{CIR})(1 - F_{ES}) + D^{ISO} + R\right]}{G}\right)
         \quad \text{(8)}
 

@@ -374,6 +374,54 @@ def test_spectral_factor_pvspec_supplied_ambiguous():
                                         coefficients=None)
 
 
+@pytest.mark.parametrize("module_type,expected", [
+    ('multisi', np.array([1.00021361, 1.00010800, 1.00004028, 0.99999459])),
+    ('cdte', np.array([1.00011106, 1.00006434, 1.00003177, 0.99997402])),
+])
+def test_spectral_factor_jrc(module_type, expected):
+    ams = np.array([1.0, 1.5, 2.0, 1.5])
+    kcs = np.array([0.4, 0.6, 0.8, 1.4])
+    out = spectrum.spectral_factor_jrc(ams, kcs,
+                                       module_type=module_type)
+    assert np.allclose(expected, out, atol=1e-8)
+
+
+@pytest.mark.parametrize("module_type,expected", [
+    ('multisi', np.array([1.00021361, 1.00010800, 1.00004028, 0.99999459])),
+    ('cdte', np.array([1.00011106, 1.00006434, 1.00003177, 0.99997402])),
+])
+def test_spectral_factor_jrc_series(module_type, expected):
+    ams = pd.Series([1.0, 1.5, 2.0, 1.5])
+    kcs = pd.Series([0.4, 0.6, 0.8, 1.4])
+    out = spectrum.spectral_factor_jrc(ams, kcs,
+                                       module_type=module_type)
+    assert isinstance(out, pd.Series)
+    assert np.allclose(expected, out, atol=1e-8)
+
+
+def test_spectral_factor_jrc_supplied():
+    # use the multisi coeffs
+    coeffs = (0.00172, 0.000508, 0.00000357)
+    out = spectrum.spectral_factor_jrc(1.0, 0.8, coefficients=coeffs)
+    expected = 1.00003671
+    assert_allclose(out, expected, atol=1e-5)
+
+
+def test_spectral_factor_jrc_supplied_redundant():
+    # Error when specifying both module_type and coefficients
+    coeffs = (0.00172, 0.000508, 0.00000357)
+    with pytest.raises(ValueError, match='supply only one of'):
+        spectrum.spectral_factor_jrc(1.0, 0.8, module_type='multisi',
+                                     coefficients=coeffs)
+
+
+def test_spectral_factor_jrc_supplied_ambiguous():
+    # Error when specifying neither module_type nor coefficients
+    with pytest.raises(ValueError, match='No valid input provided'):
+        spectrum.spectral_factor_jrc(1.0, 0.8, module_type=None,
+                                     coefficients=None)
+
+
 @pytest.fixture
 def sr_and_eqe_fixture():
     # Just some arbitrary data for testing the conversion functions

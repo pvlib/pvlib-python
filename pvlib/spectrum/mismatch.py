@@ -739,9 +739,10 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
         M = 1 + a_1(e^{-k_c}) + a_2(k_c-1)+a_3(AM-1.5),
 
     where :math:`M` is the spectral mismatch factor, :math:`k_c` is the clear
-    sky index, :math:`AM` is the air mass, and :math:`a_1, a_2, a_3`
-    are module-specific coefficients. In the JRC model publication, the model
-    used to estimate the air mass (denoted as :math:`AM`) is not stated. The
+    sky index, :math:`AM` is the air mass, :math:`e` is Euler's number, and
+    :math:`a_1, a_2, a_3` are module-specific coefficients. In the JRC model
+    publication, the model used to estimate the air mass (denoted as :math:`AM`
+                                                          ) is not stated. The
     clear sky index, which is the ratio of GHI to clear sky GHI, uses the ESRA
     model [2]_ to estimate the clear sky GHI. Prior to this calculation, the
     irradiance measurements are corrected for angle of incidence using the
@@ -758,9 +759,10 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
        of the ESRA—European Solar Radiation Atlas—with respect to the Heliosat
        method. Solar energy, 68(1), pp.33-48.
        :doi:`10.1016/S0038-092X(99)00055-9`
-       [3] Martin, N., & Ruiz, J. M., 2001. Calculation of the PV modules
+    .. [3] Martin, N., & Ruiz, J. M., 2001. Calculation of the PV modules
        angular losses under field conditions by means of an analytical model.
        Solar Energy Materials and Solar Cells, 70(1), 25-38.
+       :doi:`10.1016/S0927-0248(00)00408-6`
     """
 
     _coefficients = {}

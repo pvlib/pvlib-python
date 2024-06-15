@@ -555,11 +555,20 @@ def shaded_fraction1d(
     return np.clip(t_asterisk, 0, 1)
 
 
-def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
+def direct_martinez(
+    poa_global,
+    poa_direct_and_circumsolar,
+    shaded_fraction,
+    shaded_blocks,
+    total_blocks,
+):
     r"""
-    A shading correction factor for the direct and circumsolar incident
-    irradiance of non-monolithic Silicon
+    A shading losses power factor for non-monolithic Silicon
     modules and arrays with an arbitrary number of bypass diodes.
+
+    This experimental model cancels a fraction of the direct and circumsolar
+    irradiance based on the number of *blocks* affected by the shadow.
+    More on blocks in the *Notes* section and in [1]_.
 
     .. versionadded:: 0.11.0
 
@@ -575,21 +584,33 @@ def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
 
     Returns
     -------
-    shading_correction_factor : numeric
-        Multiply direct and circumsolar irradiance by this factor.
+    shading_losses : numeric
+        Multiply unshaded output power by 1 minus this value.
 
     Notes
     -----
-    The implemented equation is (6) from [1]_:
+    The implemented equations are (6) and (8) from [1]_:
 
     .. math::
 
         (1 - F_{ES}) = (1 - F_{GS}) (1 - \frac{N_{SB}}{N_{TB} + 1})
+        \quad \text{(6)}
 
-    Where :math:`(1 - F_{ES})` is the correction factor to be multiplied by
+        (1 - \frac{P_{S}}{P_{NS}}) = \left(1 -
+        \frac{\left[(B + D^{CIR})(1 - F_{ES}) + D^{ISO} + R\right]}{G}\right)
+        \quad \text{(8)}
+
+    In (6), :math:`(1 - F_{ES})` is the correction factor to be multiplied by
     the direct and circumsolar irradiance, :math:`F_{GS}` is the shaded
     fraction of the collector, :math:`N_{SB}` is the number of shaded blocks
     and :math:`N_{TB}` is the number of total blocks.
+
+    In (8), :math:`(1 - \frac{P_{S}}{P_{NS}})` is the power losses factor,
+    :math:`P_{S}` is the power output of the shaded module,
+    :math:`P_{NS}` is the power output of the non-shaded module,
+    :math:`B + D^{CIR}` is the beam and circumsolar irradiance,
+    :math:`D^{ISO} + R` is the sum of diffuse and albedo irradiances and
+    :math:`G` is the global irradiance.
 
     Blocks terminology
     ^^^^^^^^^^^^^^^^^^
@@ -625,8 +646,9 @@ def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
     >>> import numpy as np
     >>> from pvlib import shading
     >>> total_blocks = 3  # blocks along the vertical of the module
-    >>> POA_direct = 600  # W
-    >>> POA_diffuse = 80  # W
+    >>> POA_direct_and_circumsolar, POA_diffuse = 600, 80  # W/m²
+    >>> POA_global = POA_direct_and_circumsolar + POA_diffuse
+    >>> P_out_unshaded = 3000  # W
     >>> # calculation of the shaded fraction for the collector
     >>> shaded_fraction = shading.shaded_fraction1d(
     >>>     solar_zenith=80, solar_azimuth=180,
@@ -635,11 +657,11 @@ def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
     >>>     cross_axis_slope=5.711, shading_row_rotation=50)
     >>> # calculation of the number of shaded blocks
     >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
-    >>> # apply the Martinez correction to the calculated shading
-    >>> loss_correction = shading.direct_martinez(
+    >>> # apply the Martinez power losses to the calculated shading
+    >>> power_loss = shading.direct_martinez(
+    >>>     POA_global, POA_direct_and_circumsolar,
     >>>     shaded_fraction, shaded_blocks, total_blocks)
-    >>> # calculation of the POA for the corrected direct irradiance
-    >>> POA_total = POA_direct * loss_correction + POA_diffuse
+    >>> P_out_corrected = P_out_unshaded * (1 - power_loss)
 
     See Also
     --------
@@ -652,7 +674,15 @@ def direct_martinez(shaded_fraction, shaded_blocks, total_blocks):
         Solar Cells, vol. 94, no. 12, pp. 2298-2303, Dec. 2010,
         :doi:`10.1016/j.solmat.2010.07.029`.
     """  # Contributed by Echedey Luis, 2024
-    return (  # Eq. (6) of [1]
+    beam_factor = (  # Eq. (6) of [1]
         (1 - shaded_fraction)
         * (1 - np.ceil(shaded_blocks) / (1 + total_blocks))
+    )
+    return (  # Eq. (8) of [1]
+        1
+        - (
+            poa_direct_and_circumsolar * beam_factor
+            + (poa_global - poa_direct_and_circumsolar)  # diffuse and albedo
+        )
+        / poa_global
     )

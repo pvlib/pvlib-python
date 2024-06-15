@@ -5,17 +5,17 @@ Modelling shading losses in modules with bypass diodes
 
 # %%
 # This example illustrates how to use the model proposed by Martinez et al.
-# [1]_. The model adjusts the incident direct and circumsolar beam irradiance
-# of a PV module based on the number
-# of shaded *blocks*. A *block* is defined as a group of cells protected by a
-# bypass diode. More information on *blocks* can be found in the original
-# paper [1]_ and in the :py:func:`pvlib.shading.direct_martinez`
-# documentation.
+# [1]_. The model proposes a power output losses factor by adjusting
+# the incident direct and circumsolar beam irradiance fraction of a PV module
+# based on the number of shaded *blocks*. A *block* is defined as a group of
+# cells protected by a bypass diode. More information on *blocks* can be found
+# in the original paper [1]_ and in the
+# :py:func:`pvlib.shading.direct_martinez` documentation.
 #
 # The following key functions are used in this example:
 #
-# 1. :py:func:`pvlib.shading.direct_martinez` to calculate the adjustment
-#    factor for incident beam and circumsolar irradiance.
+# 1. :py:func:`pvlib.shading.direct_martinez` to calculate the power output
+#    losses fraction due to shading.
 # 2. :py:func:`pvlib.shading.shaded_fraction1d` to calculate the fraction of
 #    shaded surface and consequently the number of shaded *blocks* due to
 #    row-to-row shading.
@@ -120,6 +120,27 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
     cross_axis_slope=cross_axis_tilt,
 )
 
+clearsky = locus.get_clearsky(
+    times, solar_position=solar_pos, model="ineichen"
+)
+dhi, dni = (
+    clearsky["dhi"],
+    clearsky["dni"],
+)
+dni_extra = pvlib.irradiance.get_extra_radiation(times)
+airmass = pvlib.atmosphere.get_relative_airmass(solar_apparent_zenith)
+sky_diffuse = pvlib.irradiance.perez_driesse(
+    surface_tilt, surface_azimuth, dhi, dni,
+    solar_apparent_zenith, solar_azimuth, dni_extra, airmass,
+)  # fmt: skip
+poa_components = pvlib.irradiance.poa_components(
+    aoi, dni, sky_diffuse, poa_ground_diffuse=0
+)  # ignore ground diffuse for brevity
+poa_global, poa_direct_and_circumsolar = (
+    poa_components["poa_global"],
+    poa_components["poa_direct"],
+)
+
 # %%
 # Number of shaded blocks
 # -----------------------
@@ -175,21 +196,26 @@ shaded_blocks_per_module = {
 # Results
 # -------
 # Now that we have the number of shaded blocks for each module configuration,
-# we can apply the model and estimate the direct irradiance loss due to
-# shading.
+# we can apply the model and estimate the power loss due to shading.
 #
 # Note that this model is not linear with the shaded blocks ratio, so there is
 # a difference between applying it to just a module or a whole row.
 
-shade_factor_per_module = {
+shade_losses_per_module = {
     k: pvlib.shading.direct_martinez(
-        shaded_fraction, module_shaded_blocks, blocks_per_module[k]
+        poa_global,
+        poa_direct_and_circumsolar,
+        shaded_fraction,
+        module_shaded_blocks,
+        blocks_per_module[k],
     )
     for k, module_shaded_blocks in shaded_blocks_per_module.items()
 }
 
-shade_factor_per_row = {
+shade_losses_per_row = {
     k: pvlib.shading.direct_martinez(
+        poa_global,
+        poa_direct_and_circumsolar,
         shaded_fraction,
         module_shaded_blocks * N_modules_per_row,
         blocks_per_module[k] * N_modules_per_row,
@@ -202,29 +228,29 @@ shade_factor_per_row = {
 # ^^^^^^^^^^^^^^^^^^^^
 
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
-fig.suptitle("Martinez irradiance correction factor due to shading")
-for k, shade_factor in shade_factor_per_module.items():
+fig.suptitle("Martinez power losses due to shading")
+for k, shade_losses in shade_losses_per_module.items():
     linestyle = "--" if k == "3 bypass diodes half-cut, landscape" else "-"
-    ax1.plot(times, shade_factor, label=k, linestyle=linestyle)
-ax1.legend()
+    ax1.plot(times, shade_losses, label=k, linestyle=linestyle)
+ax1.legend(loc="upper center")
 ax1.grid()
 ax1.set_xlabel("Time")
 ax1.xaxis.set_major_formatter(
     ConciseDateFormatter("%H:%M", tz="Europe/Madrid")
 )
-ax1.set_ylabel(r"$POA_{direct}$ correction factor")
+ax1.set_ylabel(r"$P_{out}$ losses")
 ax1.set_title("Per module")
 
-for k, shade_factor in shade_factor_per_row.items():
+for k, shade_losses in shade_losses_per_row.items():
     linestyle = "--" if k == "3 bypass diodes half-cut, landscape" else "-"
-    ax2.plot(times, shade_factor, label=k, linestyle=linestyle)
-ax2.legend()
+    ax2.plot(times, shade_losses, label=k, linestyle=linestyle)
+ax2.legend(loc="upper center")
 ax2.grid()
 ax2.set_xlabel("Time")
 ax2.xaxis.set_major_formatter(
     ConciseDateFormatter("%H:%M", tz="Europe/Madrid")
 )
-ax2.set_ylabel(r"$POA_{direct}$ correction factor")
+ax2.set_ylabel(r"$P_{out}$ losses")
 ax2.set_title("Per row")
 fig.tight_layout()
 fig.show()

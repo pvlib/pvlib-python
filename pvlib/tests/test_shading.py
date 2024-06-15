@@ -332,56 +332,52 @@ def test_shaded_fraction1d_unprovided_shading_row_rotation():
 @pytest.fixture
 def direct_martinez_Table2():
     """
-    Original data used in [1] (see shading.direct_martinez) to validate
-    the model. Some of the data is provided from Table 2.
+    Original data used in [1] (see pvlib.shading.direct_martinez) to validate
+    the model. Some of the data is provided in Table 2.
     Returns tuple with (input: pandas.DataFrame, output: pandas.Series)
-    Output is IRRADIANCE LOSS, not IRRADIANCE CORRECTION, so model result must
-    be subtracted from 1
+    Output is power loss: 1 - (P_shaded / P_unshaded)
     """
     test_data = pd.DataFrame(
         columns=[
             "F_GS-H",
             "F_GS-V",
             "shaded_blocks",
-            "direct",
-            "diffuse",
-            "irrad_correction",
+            "poa_direct_and_circumsolar",
+            "poa_diffuse",
+            "power_loss_model",
         ],
         data=[
-            # F-H, F-V, Nsb, direct, diffuse, irrad_correction
-            [1.00, 0.09, 16, 846.59, 59.42, 0.88],
-            [1.00, 0.18, 16, 841.85, 59.69, 0.89],
-            [1.00, 0.36, 16, 843.38, 59.22, 0.90],
-            [0.04, 0.64,  1, 851.90, 59.40, 0.08],
-            [0.17, 0.45,  3, 862.86, 58.40, 0.22],
-            [0.29, 0.27,  5, 864.14, 58.11, 0.33],
-            [0.50, 0.09,  8, 863.23, 58.31, 0.46],
-            [0.13, 1.00,  2, 870.14, 58.02, 0.21],
-            [0.25, 1.00,  4, 876.57, 57.98, 0.40],
-            [0.38, 1.00,  6, 866.86, 58.89, 0.56],
-            [0.50, 1.00,  8, 874.58, 58.44, 0.69],
-            [0.58, 0.82, 10, 876.80, 58.16, 0.74],
-            [0.75, 0.73, 12, 866.89, 58.73, 0.81],
-            [0.92, 0.64, 15, 861.48, 59.66, 0.89],
+            # F-H, F-V, Nsb, direct, diffuse, power_loss
+            [1.00, 0.09, 16, 846.59, 59.42, 0.8844],
+            [1.00, 0.18, 16, 841.85, 59.69, 0.8888],
+            [1.00, 0.36, 16, 843.38, 59.22, 0.8994],
+            [0.04, 0.64,  1, 851.90, 59.40, 0.0783],
+            [0.17, 0.45,  3, 862.86, 58.40, 0.2237],
+            [0.29, 0.27,  5, 864.14, 58.11, 0.3282],
+            [0.50, 0.09,  8, 863.23, 58.31, 0.4634],
+            [0.13, 1.00,  2, 870.14, 58.02, 0.2137],
+            [0.25, 1.00,  4, 876.57, 57.98, 0.4000],
+            [0.38, 1.00,  6, 866.86, 58.89, 0.5577],
+            [0.50, 1.00,  8, 874.58, 58.44, 0.6892],
+            [0.58, 0.82, 10, 876.80, 58.16, 0.7359],
+            [0.75, 0.73, 12, 866.89, 58.73, 0.8113],
+            [0.92, 0.64, 15, 861.48, 59.66, 0.8894],
         ]
     )  # fmt: skip
     test_data["total_blocks"] = 16  # total blocks is 16 for all cases
     test_data["shaded_fraction"] = test_data["F_GS-H"] * test_data["F_GS-V"]
-    test_data = test_data.drop(columns=["F_GS-H", "F_GS-V"])
+    test_data["poa_global"] = (
+        test_data["poa_direct_and_circumsolar"] + test_data["poa_diffuse"]
+    )
+    test_data = test_data.drop(columns=["F_GS-H", "F_GS-V", "poa_diffuse"])
     return (
-        test_data.drop(columns="irrad_correction"),
-        test_data["irrad_correction"],
+        test_data.drop(columns="power_loss_model"),
+        test_data["power_loss_model"],
     )
 
 
 def test_direct_martinez(direct_martinez_Table2):
     """Tests pvlib.shading.direct_martinez"""
-    test_data, irrad_reduction_expected = direct_martinez_Table2
-    correction_factor = shading.direct_martinez(
-        **test_data.drop(columns=["direct", "diffuse"])
-    )
-    irrad_correction = 1 - (
-        (test_data["direct"] * correction_factor + test_data["diffuse"])
-        / (test_data["direct"] + test_data["diffuse"])
-    )
-    assert_allclose(irrad_correction, irrad_reduction_expected, atol=1e-2)
+    test_data, power_losses_expected = direct_martinez_Table2
+    power_losses = shading.direct_martinez(**test_data)
+    assert_allclose(power_losses, power_losses_expected, atol=5e-3)

@@ -1053,7 +1053,7 @@ def test_erbs_all_scalar():
     out = irradiance.erbs(ghi, zenith, doy)
 
     for k, v in out.items():
-        assert_allclose(v, expected[k], 5)
+        assert_allclose(v, expected[k], 1e-2)
 
 
 def test_dirindex(times):

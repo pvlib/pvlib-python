@@ -3,6 +3,7 @@ import pytest
 from pvlib import tools
 import numpy as np
 import pandas as pd
+from numpy.testing import assert_allclose
 
 
 @pytest.mark.parametrize('keys, input_dict, expected', [
@@ -120,3 +121,26 @@ def test_get_pandas_index(args, args_idx):
         assert index is None
     else:
         pd.testing.assert_index_equal(args[args_idx].index, index)
+
+
+@pytest.mark.parametrize('data_in,expected', [
+    (np.array([1, 2, 3, 4, 5]),
+     np.array([0.2, 0.4, 0.6, 0.8, 1])),
+    (np.array([[0, 1, 2], [0, 3, 6]]),
+     np.array([[0, 0.5, 1], [0, 0.5, 1]])),
+    (pd.Series([1, 2, 3, 4, 5]),
+     pd.Series([0.2, 0.4, 0.6, 0.8, 1])),
+    (pd.DataFrame({"a": [0, 1, 2], "b": [0, 2, 8]}),
+     pd.DataFrame({"a": [0, 0.5, 1], "b": [0, 0.25, 1]})),
+    # test with NaN and all zeroes
+    (pd.DataFrame({"a": [0, np.nan, 1], "b": [0, 0, 0]}),
+     pd.DataFrame({"a": [0, np.nan, 1], "b": [np.nan]*3})),
+    # test with negative values
+    (np.array([1, 2, -3, 4, -5]),
+     np.array([0.2, 0.4, -0.6, 0.8, -1])),
+    (pd.Series([-2, np.nan, 1]),
+     pd.Series([-1, np.nan, 0.5])),
+])
+def test_normalize_max2one(data_in, expected):
+    result = tools.normalize_max2one(data_in)
+    assert_allclose(result, expected)

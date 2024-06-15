@@ -206,7 +206,7 @@ def test_PVSystem_sapm(sapm_module_params, mocker):
     out = system.sapm(effective_irradiance, temp_cell)
     pvsystem.sapm.assert_called_once_with(effective_irradiance, temp_cell,
                                           sapm_module_params)
-    assert_allclose(out['p_mp'], 100, atol=100)
+    assert_allclose(out['p_mp'], 100, 10)
 
 
 def test_PVSystem_multi_array_sapm(sapm_module_params):
@@ -487,7 +487,7 @@ def test_PVSystem_faiman_celltemp(mocker):
     winds = 1
     out = system.get_cell_temperature(irrads, temps, winds, model='faiman')
     temperature.faiman.assert_called_once_with(irrads, temps, winds, u0, u1)
-    assert_allclose(out, 56.4, atol=1)
+    assert_allclose(out, 56.4, atol=1e-1)
 
 
 def test_PVSystem_noct_celltemp(mocker):
@@ -1062,7 +1062,7 @@ def test_PVSystem_calcparams_desoto(cec_module_params, mocker):
         dEgdT=module_parameters['dEgdT']
     )
 
-    assert_allclose(IL, np.array([0.0, 6.036]), atol=1)
+    assert_allclose(IL, np.array([0.0, 6.036]), atol=1e-1)
     assert_allclose(I0, np.array([2.0e-9, 2.0e-9]), atol=1.0e-9)
     assert_allclose(Rs, np.array([0.1, 0.1]), atol=0.1)
     assert_allclose(Rsh, np.array([np.inf, 20]), atol=1)

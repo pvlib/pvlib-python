@@ -124,5 +124,4 @@ Functions for power modeling.
 .. autosummary::
    :toctree: generated/
 
-   modelchain.basic_chain
    modelchain.get_orientation

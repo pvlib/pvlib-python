@@ -232,48 +232,6 @@ def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     return aoi_value
 
 
-def poa_horizontal_ratio(surface_tilt, surface_azimuth,
-                         solar_zenith, solar_azimuth):
-    """
-    Calculates the ratio of the beam components of the plane of array
-    irradiance and the horizontal irradiance.
-
-    Input all angles in degrees.
-
-    Parameters
-    ----------
-    surface_tilt : numeric
-        Panel tilt from horizontal.
-    surface_azimuth : numeric
-        Panel azimuth from north.
-    solar_zenith : numeric
-        Solar zenith angle.
-    solar_azimuth : numeric
-        Solar azimuth angle.
-
-    Returns
-    -------
-    ratio : numeric
-        Ratio of the plane of array irradiance to the horizontal plane
-        irradiance
-    """
-
-    cos_poa_zen = aoi_projection(surface_tilt, surface_azimuth,
-                                 solar_zenith, solar_azimuth)
-
-    cos_solar_zenith = tools.cosd(solar_zenith)
-
-    # ratio of tilted and horizontal beam irradiance
-    ratio = cos_poa_zen / cos_solar_zenith
-
-    try:
-        ratio.name = 'poa_ratio'
-    except AttributeError:
-        pass
-
-    return ratio
-
-
 def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    dni):
     """
@@ -1551,9 +1509,9 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         Solar azimuth angle. [degree]
     poa_global : numeric
         Plane-of-array global irradiance, aka global tilted irradiance. [W/m^2]
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m^2]
-    airmass : None or numeric, default None
+    airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]

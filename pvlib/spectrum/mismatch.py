@@ -151,7 +151,7 @@ def get_am15g(wavelength=None):
     return standard["global"]
 
 
-def get_reference_spectra(wavelengths=None, *, standard="ASTM G173-03"):
+def get_reference_spectra(wavelengths=None, standard="ASTM G173-03"):
     r"""
     Read a standard spectrum specified by ``standard``, optionally
     interpolated to the specified wavelength(s).

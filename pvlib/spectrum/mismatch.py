@@ -736,7 +736,7 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
 
     .. math::
 
-        M = 1 + a_1(e^{-k_c}) + a_2(k_c-1)+a_3(AM-1.5),
+        M = 1 + a_1(e^{-k_c}-e^{-1}) + a_2(k_c-1)+a_3(AM-1.5),
 
     where :math:`M` is the spectral mismatch factor, :math:`k_c` is the clear
     sky index, :math:`AM` is the air mass, :math:`e` is Euler's number, and
@@ -750,16 +750,16 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
 
     References
     ----------
-    .. [1] Huld, Thomas, Tony Sample, and Ewan D. Dunlop., 2009. A simple model
-        for estimating the influence of spectrum variations on PV performance.
-        In Proceedings of the 24th European Photovoltaic Solar Energy
-        Conference, Hamburg, Germany pp. 3385-3389. 2009.
-       :doi:`10.4229/24thEUPVSEC2009-4AV.3.27`
-    .. [2] Rigollier, C., Bauer, O. and Wald, L., 2000. On the clear sky model
+    .. [1] Huld, T., Tony, S., and Ewan, D., 2009. A simple model
+       for estimating the influence of spectrum variations on PV performance.
+       In Proceedings of the 24th European Photovoltaic Solar Energy
+       Conference, Hamburg, Germany pp. 3385-3389. 2009. Accessed at:
+       https://www.researchgate.net/publication/256080247
+    .. [2] Rigollier, C., Bauer, O., and Wald, L., 2000. On the clear sky model
        of the ESRA—European Solar Radiation Atlas—with respect to the Heliosat
        method. Solar energy, 68(1), pp.33-48.
        :doi:`10.1016/S0038-092X(99)00055-9`
-    .. [3] Martin, N., & Ruiz, J. M., 2001. Calculation of the PV modules
+    .. [3] Martin, N. and Ruiz, J. M., 2001. Calculation of the PV modules
        angular losses under field conditions by means of an analytical model.
        Solar Energy Materials and Solar Cells, 70(1), 25-38.
        :doi:`10.1016/S0927-0248(00)00408-6`
@@ -783,7 +783,7 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
                          'one of' ", ".join(_coefficients.keys()))
 
     coeff = coefficients
-mismatch = (
+    mismatch = (
         1
         + coeff[0] * (np.exp(-clearsky_index) - np.exp(-1))
         + coeff[1] * (clearsky_index - 1)

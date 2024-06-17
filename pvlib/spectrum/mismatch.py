@@ -10,7 +10,6 @@ import scipy.constants
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 import os
-import math
 
 from warnings import warn
 

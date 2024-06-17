@@ -136,7 +136,7 @@ sky_diffuse = pvlib.irradiance.perez_driesse(
 poa_components = pvlib.irradiance.poa_components(
     aoi, dni, sky_diffuse, poa_ground_diffuse=0
 )  # ignore ground diffuse for brevity
-poa_global, poa_direct_and_circumsolar = (
+poa_global, poa_direct = (
     poa_components["poa_global"],
     poa_components["poa_direct"],
 )
@@ -203,22 +203,22 @@ shaded_blocks_per_module = {
 
 shade_losses_per_module = {
     k: pvlib.shading.direct_martinez(
-        poa_global,
-        poa_direct_and_circumsolar,
-        shaded_fraction,
-        module_shaded_blocks,
-        blocks_per_module[k],
+        poa_global=poa_global,
+        poa_direct=poa_direct,
+        shaded_fraction=shaded_fraction,
+        shaded_blocks=module_shaded_blocks,
+        total_blocks=blocks_per_module[k],
     )
     for k, module_shaded_blocks in shaded_blocks_per_module.items()
 }
 
 shade_losses_per_row = {
     k: pvlib.shading.direct_martinez(
-        poa_global,
-        poa_direct_and_circumsolar,
-        shaded_fraction,
-        module_shaded_blocks * N_modules_per_row,
-        blocks_per_module[k] * N_modules_per_row,
+        poa_global=poa_global,
+        poa_direct=poa_direct,
+        shaded_fraction=shaded_fraction,
+        shaded_blocks=module_shaded_blocks * N_modules_per_row,
+        total_blocks=blocks_per_module[k] * N_modules_per_row,
     )
     for k, module_shaded_blocks in shaded_blocks_per_module.items()
 }

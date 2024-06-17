@@ -557,7 +557,7 @@ def shaded_fraction1d(
 
 def direct_martinez(
     poa_global,
-    poa_direct_and_circumsolar,
+    poa_direct,
     shaded_fraction,
     shaded_blocks,
     total_blocks,
@@ -574,6 +574,10 @@ def direct_martinez(
 
     Parameters
     ----------
+    poa_global : numeric
+        Plane of array global irradiance. [W/m²].
+    poa_direct : numeric
+        Plane of array direct and circumsolar irradiance. [W/m²].
     shaded_fraction : numeric
         Fraction of module surface area that is shaded. Unitless.
     shaded_blocks : numeric
@@ -681,8 +685,8 @@ def direct_martinez(
     return (  # Eq. (8) of [1]
         1
         - (
-            poa_direct_and_circumsolar * beam_factor
-            + (poa_global - poa_direct_and_circumsolar)  # diffuse and albedo
+            poa_direct * beam_factor
+            + (poa_global - poa_direct)  # diffuse and albedo
         )
         / poa_global
     )

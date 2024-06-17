@@ -342,7 +342,7 @@ def direct_martinez_Table2():
             "F_GS-H",
             "F_GS-V",
             "shaded_blocks",
-            "poa_direct_and_circumsolar",
+            "poa_direct",
             "poa_diffuse",
             "power_loss_model",
         ],
@@ -367,7 +367,7 @@ def direct_martinez_Table2():
     test_data["total_blocks"] = 16  # total blocks is 16 for all cases
     test_data["shaded_fraction"] = test_data["F_GS-H"] * test_data["F_GS-V"]
     test_data["poa_global"] = (
-        test_data["poa_direct_and_circumsolar"] + test_data["poa_diffuse"]
+        test_data["poa_direct"] + test_data["poa_diffuse"]
     )
     test_data = test_data.drop(columns=["F_GS-H", "F_GS-V", "poa_diffuse"])
     return (

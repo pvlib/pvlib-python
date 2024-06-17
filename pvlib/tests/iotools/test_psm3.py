@@ -196,10 +196,3 @@ def test_get_psm3_attribute_mapping(nrel_api_key):
     assert 'latitude' in meta.keys()
     assert 'longitude' in meta.keys()
     assert 'altitude' in meta.keys()
-
-
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_psm3_variable_map_deprecation_warning(nrel_api_key):
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        _ = psm3.read_psm3(MANUAL_TEST_DATA)

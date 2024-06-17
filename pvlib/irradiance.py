@@ -2821,8 +2821,8 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     References
     ----------
     .. [1] Orgill, J.F., Hollands, K.G.T., Correlation equation for hourly
-      diffuse radiation on a horizontal surface, Solar Energy 19(4), pp 357–359,
-      1977. Eqs. 3(a), 3(b) and 3(c)
+      diffuse radiation on a horizontal surface, Solar Energy 19(4),
+      pp 357–359, 1977. Eqs. 3(a), 3(b) and 3(c)
       :doi:`10.1016/0038-092X(77)90006-8`
 
     See Also

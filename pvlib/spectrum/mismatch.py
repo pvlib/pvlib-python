@@ -783,10 +783,12 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
                          'one of' ", ".join(_coefficients.keys()))
 
     coeff = coefficients
-    am = airmass
-    kc = clearsky_index
-    mismatch = 1 + coeff[0]*(np.power(math.e, -kc) - np.power(math.e, -1)) +\
-        coeff[1]*(kc-1)+coeff[2]*(am-1.5)
+mismatch = (
+        1
+        + coeff[0] * (np.exp(-clearsky_index) - np.exp(-1))
+        + coeff[1] * (clearsky_index - 1)
+        + coeff[2] * (airmass - 1.5)
+    )
     return mismatch
 
 

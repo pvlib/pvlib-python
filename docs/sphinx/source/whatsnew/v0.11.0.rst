@@ -20,6 +20,8 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* The ``pvlib.irradiance.SURFACE_ALBEDOS`` dictionary has been moved to the
+  ``albedo.py`` module. (:pull:`2095`)
 
 
 Enhancements

@@ -1406,3 +1406,9 @@ def test_louche():
     out = irradiance.louche(ghi, zenith, index)
 
     assert_frame_equal(out, expected)
+
+
+def test_SURFACE_ALBEDOS_deprecation():
+    with pytest.warns(UserWarning, match='SURFACE_ALBEDOS is deprecated as of'
+                      ' v0.11.0'):
+        irradiance.SURFACE_ALBEDOS

@@ -7,6 +7,25 @@ import numpy as np
 import pandas as pd
 
 
+# Sources of for the albedo values are provided in
+# pvlib.irradiance.get_ground_diffuse.
+SURFACE_ALBEDOS = {
+    'urban': 0.18,
+    'grass': 0.20,
+    'fresh grass': 0.26,
+    'soil': 0.17,
+    'sand': 0.40,
+    'snow': 0.65,
+    'fresh snow': 0.75,
+    'asphalt': 0.12,
+    'concrete': 0.30,
+    'aluminum': 0.85,
+    'copper': 0.74,
+    'fresh steel': 0.35,
+    'dirty steel': 0.08,
+    'sea': 0.06,
+}
+
 WATER_COLOR_COEFFS = {
     'clear_water_no_waves': 0.13,
     'clear_water_ripples_up_to_2.5cm': 0.16,
@@ -33,7 +52,7 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
 
     The available surface conditions are for inland water bodies, e.g., lakes
     and ponds. For ocean/open sea, see
-    :const:`pvlib.irradiance.SURFACE_ALBEDOS`.
+    :const:`pvlib.albedo.SURFACE_ALBEDOS`.
 
     Parameters
     ----------

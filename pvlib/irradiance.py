@@ -16,6 +16,21 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
+import sys, warnings
+
+def WrapMod(mod, deprecated):
+    """Return a wrapped object that warns about deprecated accesses"""
+    class Wrapper(object):
+        def __getattr__(self, attr):
+            if attr in deprecated:
+                warnings.warn("%s is deprecated as of v0.11.0" % attr)
+            return getattr(mod, attr)
+    return Wrapper()
+
+
+sys.modules[__name__] = WrapMod(sys.modules[__name__],
+                                deprecated=['SURFACE_ALBEDOS'])
+
 
 # see References section of get_ground_diffuse function
 SURFACE_ALBEDOS = {'urban': 0.18,
@@ -550,7 +565,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Notes
     -----
     Table of albedo values by ``surface_type`` are from [2]_, [3]_, [4]_;
-    see :py:data:`~pvlib.irradiance.SURFACE_ALBEDOS`.
+    see :py:data:`~pvlib.albedo.SURFACE_ALBEDOS`.
 
     References
     ----------
@@ -565,7 +580,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
 
     if surface_type is not None:
-        albedo = SURFACE_ALBEDOS[surface_type]
+        albedo = pvlib.albedo.SURFACE_ALBEDOS[surface_type]
 
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surface_tilt))) * 0.5
 

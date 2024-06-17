@@ -764,8 +764,8 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
     """
 
     _coefficients = {}
-    _coefficients['multisi'] = (0.00172, 0.000508, 0.00000357)
-    _coefficients['cdte'] = (0.000643, 0.000130, 0.0000108)
+    _coefficients['multisi'] = (0.494, 0.146, 0.00103)
+    _coefficients['cdte'] = (0.559, 0.113, 0.00939)
 
     if module_type is not None and coefficients is None:
         coefficients = _coefficients[module_type.lower()]

@@ -16,6 +16,13 @@ def simple_efficiency(
 
     The equation used in this function can be derived from [1]_.
 
+    For a zero input power, the output power will be negative.
+    This means the transformer will consume energy from the grid at night if
+    it stays connected (due to the parallel impedance in the equivalent
+    circuit).
+    If the input power is negative, the output power will be even more
+    negative; so the model can be used bidirectionally when drawing
+    energy from the grid.
 
     Parameters
     ----------

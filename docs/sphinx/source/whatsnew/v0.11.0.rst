@@ -35,9 +35,14 @@ Enhancements
   efficiency ([unitless]) and vice versa. The conversion functions are
   :py:func:`pvlib.spectrum.sr_to_qe` and :py:func:`pvlib.spectrum.qe_to_sr`
   respectively. (:issue:`2040`, :pull:`2041`)
-* Add function :py:func:`pvlib.spectrum.spectral_factor_pvspec`, which calculates the
-  spectral mismatch factor as a function of absolute airmass and clearsky index
-  using the PVSPEC model. (:issue:`1950`, :issue:`2065`, :pull:`2072`)
+* Add function :py:func:`pvlib.spectrum.spectral_factor_pvspec`, which
+  calculates the spectral mismatch factor as a function of absolute airmass and
+  clearsky index using the PVSPEC model.
+  (:issue:`1950`, :issue:`2065`, :pull:`2072`)
+* Add function :py:func:`pvlib.spectrum.spectral_factor_jrc`, which calculates
+  the spectral mismatch factor as a function of absolute airmass and clearsky
+  index using the JRC model.
+  (:issue:`1950`, :issue:`2065`, :issue:`2087`, :pull:`2088`)
 
 Bug fixes
 ~~~~~~~~~

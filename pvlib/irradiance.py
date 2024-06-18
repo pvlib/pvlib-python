@@ -16,39 +16,36 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
-import sys
+from pvlib._deprecation import pvlibDeprecationWarning
 import warnings
 
 
-def WrapMod(mod, deprecated):
-    """Return a wrapped object that warns about deprecated accesses"""
-    class Wrapper(object):
-        def __getattr__(self, attr):
-            if attr in deprecated:
-                warnings.warn("%s is deprecated as of v0.11.0" % attr)
-            return getattr(mod, attr)
-    return Wrapper()
-
-
-sys.modules[__name__] = WrapMod(sys.modules[__name__],
-                                deprecated=['SURFACE_ALBEDOS'])
+# Deprecation warning based on https://peps.python.org/pep-0562/
+def __getattr__(attr):
+    if attr in ['SURFACE_ALBEDOS']:
+        warnings.warn(f"{attr} has been moved to the albedo module as of "
+                      "v0.11.0. Please use pvlib.albedo.SURFACE_ALBEDOS.",
+                      pvlibDeprecationWarning)
+        return globals()[f"_DEPRECATED_{attr}"]
+    raise AttributeError(f"module {__name__!r} has no attribute {attr!r}")
 
 
 # see References section of get_ground_diffuse function
-SURFACE_ALBEDOS = {'urban': 0.18,
-                   'grass': 0.20,
-                   'fresh grass': 0.26,
-                   'soil': 0.17,
-                   'sand': 0.40,
-                   'snow': 0.65,
-                   'fresh snow': 0.75,
-                   'asphalt': 0.12,
-                   'concrete': 0.30,
-                   'aluminum': 0.85,
-                   'copper': 0.74,
-                   'fresh steel': 0.35,
-                   'dirty steel': 0.08,
-                   'sea': 0.06}
+_DEPRECATED_SURFACE_ALBEDOS = {
+    'urban': 0.18,
+    'grass': 0.20,
+    'fresh grass': 0.26,
+    'soil': 0.17,
+    'sand': 0.40,
+    'snow': 0.65,
+    'fresh snow': 0.75,
+    'asphalt': 0.12,
+    'concrete': 0.30,
+    'aluminum': 0.85,
+    'copper': 0.74,
+    'fresh steel': 0.35,
+    'dirty steel': 0.08,
+    'sea': 0.06}
 
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,

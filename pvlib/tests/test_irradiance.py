@@ -18,6 +18,7 @@ from .conftest import (
     requires_numba
 )
 
+from pvlib._deprecation import pvlibDeprecationWarning
 
 # fixtures create realistic test input data
 # test input data generated at Location(32.2, -111, 'US/Arizona', 700)
@@ -1408,7 +1409,8 @@ def test_louche():
     assert_frame_equal(out, expected)
 
 
-def test_SURFACE_ALBEDOS_deprecation():
-    with pytest.warns(UserWarning, match='SURFACE_ALBEDOS is deprecated as of'
-                      ' v0.11.0'):
+def test_SURFACE_ALBEDOS_deprecated():
+    with pytest.warns(pvlibDeprecationWarning, match='SURFACE_ALBEDOS has been'
+                      ' moved to the albedo module as of v0.11.0. Please use'
+                      ' pvlib.albedo.SURFACE_ALBEDOS.'):
         irradiance.SURFACE_ALBEDOS

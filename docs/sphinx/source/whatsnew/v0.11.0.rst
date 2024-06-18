@@ -8,20 +8,20 @@ v0.11.0 (Anticipated June, 2024)
 Breaking changes
 ~~~~~~~~~~~~~~~~
 * The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
-* Remove the `poa_horizontal_ratio` function and all of its references. (:issue:`1697`, :pull:`2021`)
+* Remove the ``poa_horizontal_ratio`` function and all of its references. (:issue:`1697`, :pull:`2021`)
 * Updated `~pvlib.iotools.MIDC_VARIABLE_MAP`~ to reflect
   changes in instrumentation. (:pull:`2006`)
 * ``pvlib.iotools.read_srml_month_from_solardat`` was deprecated in v0.10.0 and has
   now been completely removed. The function is replaced by :py:func:`~pvlib.iotools.get_srml()`.
   (:pull:`1779`, :pull:`1989`)
-* The `leap_day` parameter in :py:func:`~pvlib.iotools.get_psm3`
+* The ``leap_day`` parameter in :py:func:`~pvlib.iotools.get_psm3`
   now defaults to True instead of False. (:issue:`1481`, :pull:`1991`)
 
 
 Deprecations
 ~~~~~~~~~~~~
-* The ``pvlib.irradiance.SURFACE_ALBEDOS`` dictionary has been moved to the
-  ``albedo.py`` module. (:pull:`2095`)
+* The ``pvlib.irradiance.SURFACE_ALBEDOS`` dictionary has been moved to
+  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`. (:pull:`2095`)
 
 
 Enhancements

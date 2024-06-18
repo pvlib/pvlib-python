@@ -31,7 +31,6 @@ Modelling shading losses in modules with bypass diodes
 # - Two north-south single-axis trackers, each one having 6 modules.
 # - The rows have the same true-tracking tilt angles. True tracking
 #   is chosen in this example, so shading is significant.
-#   true-tracking so shade is significant for this example.
 # - Terrain slope is 7 degrees downward to the east.
 # - Rows' axes are horizontal.
 # - The modules are comprised of multiple cells. We will compare these cases:

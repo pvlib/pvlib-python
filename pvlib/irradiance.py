@@ -3785,7 +3785,8 @@ def spitters_relationship(solar_zenith, global_diffuse_fraction):
     Returns
     -------
     par_diffuse_fraction : numeric
-        Fraction of photosynthetically active radiation (PAR) that is diffuse. Unitless [0, 1].
+        Fraction of photosynthetically active radiation (PAR) that is diffuse.
+        Unitless [0, 1].
 
     Notes
     -----
@@ -3799,8 +3800,9 @@ def spitters_relationship(solar_zenith, global_diffuse_fraction):
         {1 + \left(1 - \left(k_d^{model}\right)^2\right) \cos ^2 (90 - \beta)
         \cos ^3 \beta}
 
-    where :math:`k_d^{model}` is the diffuse fraction of the global radiation,
-    provided by some model.
+    where :math:`k_d^{model}` is the diffuse fraction of the global radiation
+    provided by some model, and :math:`\beta` is the solar elevation angle
+    (in degrees [°]).
 
     A comparison using different models for the diffuse fraction of
     the global irradiance can be found in [2]_ in the context of Sweden.

@@ -3768,7 +3768,7 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     return data
 
 
-def spitters_relationship(solar_zenith, global_diffuse_fraction):
+def diffuse_par_spitters(solar_zenith, global_diffuse_fraction):
     r"""
     Derive the diffuse fraction of photosynthetically active radiation (PAR).
 

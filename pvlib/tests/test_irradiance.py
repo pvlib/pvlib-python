@@ -1408,13 +1408,13 @@ def test_louche():
     assert_frame_equal(out, expected)
 
 
-def test_spitters_relationship():
+def test_diffuse_par_spitters():
     solar_zenith, global_diffuse_fraction = np.meshgrid(
         [90, 85, 75, 60, 40, 30, 10, 0], [0.01, 0.1, 0.3, 0.6, 0.8, 0.99]
     )
     solar_zenith = solar_zenith.ravel()
     global_diffuse_fraction = global_diffuse_fraction.ravel()
-    result = irradiance.spitters_relationship(
+    result = irradiance.diffuse_par_spitters(
         solar_zenith, global_diffuse_fraction
     )
     expected = np.array([

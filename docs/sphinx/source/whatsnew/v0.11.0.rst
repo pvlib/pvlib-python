@@ -38,7 +38,7 @@ Enhancements
 * Add function :py:func:`pvlib.spectrum.spectral_factor_pvspec`, which calculates the
   spectral mismatch factor as a function of absolute airmass and clearsky index
   using the PVSPEC model. (:issue:`1950`, :issue:`2065`, :pull:`2072`)
-* Add function :py:func:`pvlib.irradiance.spitters_relationship` to calculate the
+* Add function :py:func:`pvlib.irradiance.diffuse_par_spitters` to calculate the
   diffuse fraction of Photosynthetically Active Radiation (PAR) from the
   global diffuse fraction and the solar zenith.
   (:issue:`2047`, :pull:`2048`)

@@ -348,6 +348,7 @@ def direct_martinez_Table2():
         ],
         data=[
             # F-H, F-V, Nsb, direct, diffuse, power_loss
+            # original data sourced from researchers
             [1.00, 0.09, 16, 846.59, 59.42, 0.8844],
             [1.00, 0.18, 16, 841.85, 59.69, 0.8888],
             [1.00, 0.36, 16, 843.38, 59.22, 0.8994],
@@ -362,6 +363,13 @@ def direct_martinez_Table2():
             [0.58, 0.82, 10, 876.80, 58.16, 0.7359],
             [0.75, 0.73, 12, 866.89, 58.73, 0.8113],
             [0.92, 0.64, 15, 861.48, 59.66, 0.8894],
+            # custom edge cases
+            [0.00, 0.00,  0, 800.00, 50.00, 0.0000],
+            [1.00, 1.00, 16, 900.00, 00.00, 1.0000],
+            [0.00, 1.00, 16, 000.00, 00.00, np.nan],
+            [1.00, 0.00,  0, 000.00, 00.00, np.nan],
+            [1.00, 0.00,  0, -50.00, 50.00, np.nan],  # zero poa_global
+            [1.00, 0.00,  0, 50.00, -50.00, np.nan],  # zero poa_global
         ]
     )  # fmt: skip
     test_data["total_blocks"] = 16  # total blocks is 16 for all cases

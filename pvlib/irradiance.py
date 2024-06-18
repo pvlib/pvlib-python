@@ -7,6 +7,7 @@ irradiance, and total irradiance under various conditions.
 import datetime
 from collections import OrderedDict
 from functools import partial
+from os import getenv
 
 import numpy as np
 import pandas as pd
@@ -32,6 +33,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'fresh steel': 0.35,
                    'dirty steel': 0.08,
                    'sea': 0.06}
+PVLIB_IRR_DTYPE = getenv('PVLIB_IRR_DTYPE', default=np.float64)
 
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
@@ -1793,10 +1795,13 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     --------
     dirint
     """
-
     # this is the I0 calculation from the reference
     # SSC uses solar constant = 1367.0 (checked 2018 08 15)
     I0 = get_extra_radiation(datetime_or_doy, 1370., 'spencer')
+
+    # Considering the extra radiation is only time dependent,
+    # broadcast it to ghi's dimensions
+    I0 = np.broadcast_to(I0, ghi.shape).astype(PVLIB_IRR_DTYPE)
 
     kt = clearness_index(ghi, solar_zenith, I0, min_cos_zenith=min_cos_zenith,
                          max_clearness_index=1)
@@ -1942,7 +1947,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
        Global Horizontal to Direct Normal Insolation", Technical Report No.
        SERI/TR-215-3087, Golden, CO: Solar Energy Research Institute, 1987.
     """
-
+    shape = ghi.shape
     disc_out = disc(ghi, solar_zenith, times, pressure=pressure,
                     min_cos_zenith=min_cos_zenith, max_zenith=max_zenith)
     airmass = disc_out['airmass']
@@ -1951,10 +1956,10 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     kt_prime = clearness_index_zenith_independent(
         kt, airmass, max_clearness_index=1)
     delta_kt_prime = _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime,
-                                            times)
-    w = _temp_dew_dirint(temp_dew, times)
+                                            shape)
+    w = _temp_dew_dirint(temp_dew, shape)
 
-    dirint_coeffs = _dirint_coeffs(times, kt_prime, solar_zenith, w,
+    dirint_coeffs = _dirint_coeffs(kt_prime, solar_zenith, w,
                                    delta_kt_prime)
 
     # Perez eqn 5
@@ -1980,43 +1985,72 @@ def _dirint_from_dni_ktprime(dni, kt_prime, solar_zenith, use_delta_kt_prime,
     return dni_dirint
 
 
-def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, times):
+def _delta_kt_prime_dirint(kt_prime, use_delta_kt_prime, shape):
     """
     Calculate delta_kt_prime (Perez eqn 2 and eqn 3), or return a default value
     for use with :py:func:`_dirint_bins`.
+
+    Parameters
+    ----------
+    kt_prime : Zenith-independent clearness index
+    use_delta_kt_prime : Boolean flag whether to use calculate the stability
+        index or to use the default value
+    shape : Shape of the input data
+
+    Returns
+    ----------
+    delta_kt_prime : Stability index
     """
     if use_delta_kt_prime:
         # Perez eqn 2
-        kt_next = kt_prime.shift(-1)
-        kt_previous = kt_prime.shift(1)
-        # replace nan with values that implement Perez Eq 3 for first and last
-        # positions. Use kt_previous and kt_next to handle series of length 1
-        kt_next.iloc[-1] = kt_previous.iloc[-1]
-        kt_previous.iloc[0] = kt_next.iloc[0]
-        delta_kt_prime = 0.5 * ((kt_prime - kt_next).abs().add(
-                                (kt_prime - kt_previous).abs(),
-                                fill_value=0))
+        kt_diffp1 = np.abs(np.diff(kt_prime, axis=-1))
+        kt_diffm1 = np.flip(
+            np.abs(np.diff(np.flip(kt_prime, axis=-1), axis=-1)), axis=-1
+        )
+
+        kt_next = np.empty(shape, dtype=PVLIB_IRR_DTYPE)
+        # work only on last dimension
+        kt_next[..., :-1] = kt_diffp1
+        kt_next[..., -1] = kt_diffm1[..., -1]
+
+        kt_previous = np.empty(shape, dtype=PVLIB_IRR_DTYPE)
+        # work only on last dimension
+        kt_previous[..., 1:] = kt_diffm1
+        kt_previous[..., 0] = kt_diffp1[..., 0]
+
+        delta_kt_prime = 0.5 * (
+            np.abs(kt_prime - kt_next) + np.abs(kt_prime - kt_previous)
+        )
     else:
         # do not change unless also modifying _dirint_bins
-        delta_kt_prime = pd.Series(-1, index=times)
+        delta_kt_prime = np.full(shape, -1)
     return delta_kt_prime
 
 
-def _temp_dew_dirint(temp_dew, times):
+def _temp_dew_dirint(temp_dew, shape):
     """
     Calculate precipitable water from surface dew point temp (Perez eqn 4),
     or return a default value for use with :py:func:`_dirint_bins`.
+
+    Parameters
+    ----------
+    temp_dew : Surface dew point temperature array
+    shape : Shape of the input data
+
+    Returns
+    ----------
+    w : Precipitable water estimated from surface dew-point temperature
     """
     if temp_dew is not None:
         # Perez eqn 4
-        w = pd.Series(np.exp(0.07 * temp_dew - 0.075), index=times)
+        w = np.exp(0.07 * temp_dew - 0.075)
     else:
         # do not change unless also modifying _dirint_bins
-        w = pd.Series(-1, index=times)
+        w = np.full(shape, -1)
     return w
 
 
-def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
+def _dirint_coeffs(kt_prime, solar_zenith, w, delta_kt_prime):
     """
     Determine the DISC to DIRINT multiplier `dirint_coeffs`.
 
@@ -2024,7 +2058,6 @@ def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
 
     Parameters
     ----------
-    times : pd.DatetimeIndex
     kt_prime : Zenith-independent clearness index
     solar_zenith : Solar zenith angle
     w : precipitable water estimated from surface dew-point temperature
@@ -2035,30 +2068,34 @@ def _dirint_coeffs(times, kt_prime, solar_zenith, w, delta_kt_prime):
     dirint_coeffs : array-like
     """
     kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin = \
-        _dirint_bins(times, kt_prime, solar_zenith, w, delta_kt_prime)
+        _dirint_bins(kt_prime=kt_prime, zenith=solar_zenith,
+                     w=w, delta_kt_prime=delta_kt_prime)
 
     # get the coefficients
-    coeffs = _get_dirint_coeffs()
+    coeffs = _get_dirint_coeffs().astype(PVLIB_IRR_DTYPE)
 
     # subtract 1 to account for difference between MATLAB-style bin
     # assignment and Python-style array lookup.
     dirint_coeffs = coeffs[kt_prime_bin-1, zenith_bin-1,
                            delta_kt_prime_bin-1, w_bin-1]
 
-    # convert unassigned bins to nan
-    dirint_coeffs = np.where((kt_prime_bin == 0) | (zenith_bin == 0) |
-                             (w_bin == 0) | (delta_kt_prime_bin == 0),
-                             np.nan, dirint_coeffs)
+    # convert unassigned bins to 1, instead of putting nan originally
+    # whenever the dirint coeff is not known
+    # it should be preferred to fall back
+    # to disc values and therefore have a coeff of 1.
+    dirint_coeffs[
+        (kt_prime_bin == 0) | (zenith_bin == 0) |
+        (w_bin == 0) | (delta_kt_prime_bin == 0)
+    ] = 1
     return dirint_coeffs
 
 
-def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
+def _dirint_bins(kt_prime, zenith, w, delta_kt_prime):
     """
     Determine the bins for the DIRINT coefficients.
 
     Parameters
     ----------
-    times : pd.DatetimeIndex
     kt_prime : Zenith-independent clearness index
     zenith : Solar zenith angle
     w : precipitable water estimated from surface dew-point temperature
@@ -2068,11 +2105,12 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     -------
     tuple of kt_prime_bin, zenith_bin, w_bin, delta_kt_prime_bin
     """
+    shape = kt_prime.shape
     # @wholmgren: the following bin assignments use MATLAB's 1-indexing.
     # Later, we'll subtract 1 to conform to Python's 0-indexing.
 
     # Create kt_prime bins
-    kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
+    kt_prime_bin = np.zeros(shape, dtype=np.int8)
     kt_prime_bin[(kt_prime >= 0) & (kt_prime < 0.24)] = 1
     kt_prime_bin[(kt_prime >= 0.24) & (kt_prime < 0.4)] = 2
     kt_prime_bin[(kt_prime >= 0.4) & (kt_prime < 0.56)] = 3
@@ -2081,7 +2119,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     kt_prime_bin[(kt_prime >= 0.8) & (kt_prime <= 1)] = 6
 
     # Create zenith angle bins
-    zenith_bin = pd.Series(0, index=times, dtype=np.int64)
+    zenith_bin = np.zeros(shape, dtype=np.int8)
     zenith_bin[(zenith >= 0) & (zenith < 25)] = 1
     zenith_bin[(zenith >= 25) & (zenith < 40)] = 2
     zenith_bin[(zenith >= 40) & (zenith < 55)] = 3
@@ -2090,7 +2128,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     zenith_bin[(zenith >= 80)] = 6
 
     # Create the bins for w based on dew point temperature
-    w_bin = pd.Series(0, index=times, dtype=np.int64)
+    w_bin = np.zeros(shape, dtype=np.int8)
     w_bin[(w >= 0) & (w < 1)] = 1
     w_bin[(w >= 1) & (w < 2)] = 2
     w_bin[(w >= 2) & (w < 3)] = 3
@@ -2098,7 +2136,7 @@ def _dirint_bins(times, kt_prime, zenith, w, delta_kt_prime):
     w_bin[(w == -1)] = 5
 
     # Create delta_kt_prime binning.
-    delta_kt_prime_bin = pd.Series(0, index=times, dtype=np.int64)
+    delta_kt_prime_bin = np.zeros(shape, dtype=np.int8)
     delta_kt_prime_bin[(delta_kt_prime >= 0) & (delta_kt_prime < 0.015)] = 1
     delta_kt_prime_bin[(delta_kt_prime >= 0.015) &
                        (delta_kt_prime < 0.035)] = 2
@@ -2199,9 +2237,16 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
                                  min_cos_zenith=min_cos_zenith,
                                  max_zenith=max_zenith)
 
-    dni_dirindex = dni_clearsky * dni_dirint / dni_dirint_clearsky
+    # Avoid dividing by zero with clearsky.
+    # Whenever the dni_dirint_clearsky is zero, the array defaults
+    # to dni_dirint (which logically should be also zero)
+    nonzero = dni_dirint_clearsky != 0
+    dni_dirindex = dni_dirint
+    dni_dirindex[nonzero] = \
+        dni_clearsky[nonzero] * dni_dirint[nonzero] / \
+        dni_dirint_clearsky[nonzero]
 
-    dni_dirindex[dni_dirindex < 0] = 0.
+    dni_dirindex[dni_dirindex < 0] = 0.0
 
     return dni_dirindex
 

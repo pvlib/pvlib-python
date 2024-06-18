@@ -132,13 +132,13 @@ class PVSystem:
 
     albedo : float, optional
         Ground surface albedo. If not supplied, then ``surface_type`` is used
-        to look up a value in  :const:`pvlib.albedo.SURFACE_ALBEDOS`.
+        to look up a value in  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`.
         If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
     surface_type : string, optional
-        The ground surface type. See  :const:`pvlib.albedo.SURFACE_ALBEDOS` for
-        valid values.
+        The ground surface type. See  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`
+        for valid values.
 
     module : string, optional
         The model name of the modules.
@@ -908,13 +908,13 @@ class Array:
 
     albedo : float, optional
         Ground surface albedo. If not supplied, then ``surface_type`` is used
-        to look up a value in  :const:`pvlib.albedo.SURFACE_ALBEDOS`.
+        to look up a value in  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`.
         If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
     surface_type : string, optional
-        The ground surface type. See  :const:`pvlib.albedo.SURFACE_ALBEDOS` for
-        valid values.
+        The ground surface type. See  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`
+        for valid values.
 
     module : string, optional
         The model name of the modules.

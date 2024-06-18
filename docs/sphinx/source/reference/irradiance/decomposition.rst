@@ -18,3 +18,4 @@ DNI estimation models
    irradiance.campbell_norman
    irradiance.gti_dirint
    irradiance.louche
+

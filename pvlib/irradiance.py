@@ -3770,8 +3770,7 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
 
 def spitters_relationship(solar_zenith, global_diffuse_fraction):
     r"""
-    Derive the diffuse fraction of photosynthetically active radiation (PAR)
-    respect to the global radiation diffuse fraction.
+    Derive the diffuse fraction of photosynthetically active radiation (PAR).
 
     The relationship is based on the work of Spitters et al. (1986) [1]_.
 
@@ -3786,7 +3785,7 @@ def spitters_relationship(solar_zenith, global_diffuse_fraction):
     Returns
     -------
     par_diffuse_fraction : numeric
-        Photosynthetically Active Radiation diffuse fraction. Unitless [0, 1].
+        Fraction of photosynthetically active radiation (PAR) that is diffuse. Unitless [0, 1].
 
     Notes
     -----
@@ -3803,7 +3802,7 @@ def spitters_relationship(solar_zenith, global_diffuse_fraction):
     where :math:`k_d^{model}` is the diffuse fraction of the global radiation,
     provided by some model.
 
-    A comparison of different models performance for the diffuse fraction of
+    A comparison using different models for the diffuse fraction of
     the global irradiance can be found in [2]_ in the context of Sweden.
 
     References

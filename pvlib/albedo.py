@@ -52,7 +52,7 @@ def inland_water_dvoracek(solar_elevation, surface_condition=None,
 
     The available surface conditions are for inland water bodies, e.g., lakes
     and ponds. For ocean/open sea, see
-    :const:`pvlib.albedo.SURFACE_ALBEDOS`.
+    :py:const:`pvlib.albedo.SURFACE_ALBEDOS`.
 
     Parameters
     ----------

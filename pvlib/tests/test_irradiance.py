@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 from numpy.testing import (assert_almost_equal,
                            assert_allclose)
-from pvlib import irradiance
+from pvlib import irradiance, albedo
 
 from .conftest import (
     assert_frame_equal,
@@ -1414,3 +1414,8 @@ def test_SURFACE_ALBEDOS_deprecated():
                       ' moved to the albedo module as of v0.11.0. Please use'
                       ' pvlib.albedo.SURFACE_ALBEDOS.'):
         irradiance.SURFACE_ALBEDOS
+
+
+@pytest.mark.filterwarnings("ignore:SURFACE_ALBEDOS")
+def test_SURFACE_ALBEDO_equals():
+    assert irradiance.SURFACE_ALBEDOS == albedo.SURFACE_ALBEDOS

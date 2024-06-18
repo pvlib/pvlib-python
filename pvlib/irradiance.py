@@ -22,30 +22,12 @@ import warnings
 
 # Deprecation warning based on https://peps.python.org/pep-0562/
 def __getattr__(attr):
-    if attr in ['SURFACE_ALBEDOS']:
+    if attr == 'SURFACE_ALBEDOS':
         warnings.warn(f"{attr} has been moved to the albedo module as of "
                       "v0.11.0. Please use pvlib.albedo.SURFACE_ALBEDOS.",
                       pvlibDeprecationWarning)
-        return globals()[f"_DEPRECATED_{attr}"]
+        return pvlib.albedo.SURFACE_ALBEDOS
     raise AttributeError(f"module {__name__!r} has no attribute {attr!r}")
-
-
-# see References section of get_ground_diffuse function
-_DEPRECATED_SURFACE_ALBEDOS = {
-    'urban': 0.18,
-    'grass': 0.20,
-    'fresh grass': 0.26,
-    'soil': 0.17,
-    'sand': 0.40,
-    'snow': 0.65,
-    'fresh snow': 0.75,
-    'asphalt': 0.12,
-    'concrete': 0.30,
-    'aluminum': 0.85,
-    'copper': 0.74,
-    'fresh steel': 0.35,
-    'dirty steel': 0.08,
-    'sea': 0.06}
 
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,

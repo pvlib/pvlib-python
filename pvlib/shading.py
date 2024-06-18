@@ -645,7 +645,7 @@ def direct_martinez(
     Examples
     --------
     Minimal example. For a complete example, see
-    :ref:`this gallery example <sphx_glr_gallery_plot_martinez_shade_loss.py>`.
+    :ref:`sphx_glr_gallery_plot_martinez_shade_loss.py`.
 
     >>> import numpy as np
     >>> from pvlib import shading

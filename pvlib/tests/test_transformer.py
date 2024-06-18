@@ -38,3 +38,23 @@ def test_simple_efficiency():
 
     # determine if expected results are obtained
     assert_allclose(calculated_output_power, expected_output_power)
+
+
+def test_simple_efficiency_known_values():
+    no_load_loss = 0.005
+    load_loss = 0.01
+    rating = 1000
+    args = (no_load_loss, load_loss, rating)
+
+    # verify correct behavior at no-load condition
+    assert_allclose(
+        transformer.simple_efficiency(no_load_loss*rating, *args),
+        0.0
+    )
+
+    # verify correct behavior at rated condition
+    assert_allclose(
+        transformer.simple_efficiency(rating*(1 + no_load_loss + load_loss),
+                                      *args),
+        rating,
+    )

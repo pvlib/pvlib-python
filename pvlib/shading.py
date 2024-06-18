@@ -616,8 +616,8 @@ def direct_martinez(
     :math:`D^{ISO} + R` is the sum of diffuse and albedo irradiances and
     :math:`G` is the global irradiance.
 
-    Blocks terminology
-    ^^^^^^^^^^^^^^^^^^
+    **Blocks terminology:**
+
     [1]_ defines a *block* as a group of solar cells protected by a bypass
     diode. Also, a *block* is shaded when at least one of its cells is shaded.
 

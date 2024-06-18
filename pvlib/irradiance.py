@@ -564,7 +564,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Notes
     -----
     Table of albedo values by ``surface_type`` are from [2]_, [3]_, [4]_;
-    see :py:data:`~pvlib.albedo.SURFACE_ALBEDOS`.
+    see :py:const:`~pvlib.albedo.SURFACE_ALBEDOS`.
 
     References
     ----------

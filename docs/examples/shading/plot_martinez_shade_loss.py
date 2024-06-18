@@ -261,9 +261,9 @@ fig.tight_layout()
 fig.show()
 
 # %%
-# Note how the half-cut cell module in portrait behaves worse that the
+# Note how the half-cut cell module in portrait performs better than the
 # normal module with three bypass diodes. This is because the number of shaded
-# blocks is less along the shaded length.
+# blocks is less along the shaded length is higher in the half-cut module.
 # This is the reason why half-cut cell modules are preferred in portrait
 # orientation.
 

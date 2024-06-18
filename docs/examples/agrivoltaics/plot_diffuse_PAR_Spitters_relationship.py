@@ -14,20 +14,20 @@ active radiation (PAR) from total PAR using Spitter's relationship.
 # crops are grown under solar panels. The diffuse fraction of PAR can be
 # calculated using the Spitter's relationship [1]_ implemented in
 # :py:func:`~pvlib.irradiance.diffuse_par_spitters`.
-# This model requires the solar zenith angle and the fraction of the global
+# This model requires the solar zenith angle and the fraction of the broadband
 # radiation that is diffuse as inputs.
 #
 # .. note::
-#    Understanding the distinction between the global radiation and the PAR is
-#    a key concept. The global radiation is the total amount of solar radiation
-#    that is usually accounted for in PV applications, while the PAR is a
-#    measurement of a narrower range of wavelengths that are used in
+#    Understanding the distinction between the broadband radiation and the PAR
+#    is a key concept. The broadband radiation is the total amount of solar
+#    radiation that is usually accounted for in PV applications, while the PAR
+#    is a measurement of a narrower range of wavelengths that are used in
 #    photosynthesis. See section on *Photosynthetically Active Radiation* in
 #    pp. 222-223 of [1]_.
 #
 # The key function used in this example is
 # :py:func:`pvlib.irradiance.diffuse_par_spitters` to calculate the diffuse
-# PAR fraction, as a function of global diffuse fraction and solar zenith.
+# PAR fraction, as a function of broadband diffuse fraction and solar zenith.
 #
 # References
 # ----------
@@ -73,13 +73,13 @@ solar_position.index = tmy.index  # reset index to end of the hour
 # %%
 # Calculate Photosynthetically Active Radiation
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# The total PAR can be approximated as 0.50 times the global horizontal
+# The total PAR can be approximated as 0.50 times the broadband horizontal
 # irradiance (GHI) for solar elevation higher that 10°.
 # See section on *Photosynthetically Active Radiation* in pp. 222-223 of [1]_.
 
 par = pd.DataFrame({"total": 0.50 * tmy["ghi"]}, index=tmy.index)
 
-# Calculate global irradiance diffuse fraction, input of the Spitter's model
+# Calculate broadband irradiance diffuse fraction, input of the Spitter's model
 tmy["diffuse_fraction"] = tmy["dhi"] / tmy["ghi"]
 
 # Calculate diffuse PAR fraction using Spitter's relationship
@@ -105,11 +105,11 @@ ax_l.set(
     title="Diffuse PAR using Spitter's relationship",
 )
 ax_l.xaxis.set_major_formatter(DateFormatter("%H:%M", tz=tmy.index.tz))
-ax_l.plot(tmy.index, tmy["ghi"], label="Global: total", color="deepskyblue")
+ax_l.plot(tmy.index, tmy["ghi"], label="Broadband: total", color="deepskyblue")
 ax_l.plot(
     tmy.index,
     tmy["dhi"],
-    label="Global: diffuse",
+    label="Broadband: diffuse",
     color="skyblue",
     linestyle="-.",
 )
@@ -129,7 +129,7 @@ ax_r.set(ylabel="Diffuse fraction")
 ax_r.plot(
     tmy.index,
     tmy["diffuse_fraction"],
-    label="Global diffuse fraction",
+    label="Broadband diffuse fraction",
     color="plum",
     linestyle=":",
 )

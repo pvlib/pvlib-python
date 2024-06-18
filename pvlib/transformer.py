@@ -11,7 +11,7 @@ def simple_efficiency(
         input_power, no_load_loss, load_loss, transformer_rating
 ):
     r'''
-    Calculate the energy at the output terminal of the transformer
+    Calculate the power at the output terminal of the transformer
     after taking into account efficiency using a simple calculation.
 
     The equation used in this function can be derived from [1]_.
@@ -27,7 +27,7 @@ def simple_efficiency(
     Parameters
     ----------
     input_power : numeric
-        The real power input to the transformer. [W]
+        The real AC power input to the transformer. [W]
 
     no_load_loss : numeric
         The constant losses experienced by a transformer, even
@@ -44,18 +44,18 @@ def simple_efficiency(
     Returns
     -------
     output_power : numeric
-        Real power output. [W]
+        Real AC power output. [W]
 
     Notes
     -------
-    First, assume that the load loss is proportional to the square of output
-    power.
+    First, assume that the load loss (as a fraction of rated power $P_{nom}$)
+    is proportional to the square of output power:
 
     .. math::
 
-       L_{load}(P_{out}) &= L_{load}(P_{rated}) \times P^2_{out}
+       L_{load}(P_{out}) &= L_{load}(P_{rated}) \times (P_{out} / P_{nom})^2
 
-       L_{load}(P_{out}) &= L_{full, load} \times P^2_{out}
+       L_{load}(P_{out}) &= L_{full, load} \times \times (P_{out} / P_{nom})^2
 
     Total loss is the variable load loss, plus a constant no-load loss:
 
@@ -63,37 +63,38 @@ def simple_efficiency(
 
        L_{total}(P_{out}) &= L_{no, load} + L_{load}(P_{out})
 
-       L_{total}(P_{out}) &= L_{no, load} + L_{full, load} \times P^2_{out}
+       L_{total}(P_{out}) &= L_{no, load} + L_{full, load} \times (P_{out} / P_{nom})^2
 
 
-    Conservation of energy:
+    By conservation of energy, total loss is the difference between input and
+    output power:
 
     .. math::
 
-       P_{in} &= P_{out} + L_{total}(P_{out})
+       \frac{P_{in}}{P_{nom}} &= \frac{P_{out}}{P_{nom}} + L_{total}(P_{out})
 
-       P_{in} &= P_{out} + L_{no, load} + L_{full, load} \times P^2_{out}
+       \frac{P_{in}}{P_{nom}} &= \frac{P_{out}}{P_{nom}} + L_{no, load} + L_{full, load} \times (P_{out} / P_{nom})^2
 
     Now use quadratic formula to solve for :math:`P_{out}` as a function of
     :math:`P_{in}`.
 
     .. math::
 
-       P_{out} &= \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+       \frac{P_{out}}{P_{nom}} &= \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 
        a &= L_{full, load}
 
        b &= 1
 
-       c &= L_{no, load} - P_{in}
+       c &= L_{no, load} - P_{in} / P_{nom}
 
     Therefore:
 
     .. math::
 
-       P_{out} = \frac{-1 \pm \sqrt{1 - 4 L_{full, load}
+       P_{out} = P_{nom} \frac{-1 \pm \sqrt{1 - 4 L_{full, load}
 
-       \times L_{no, load} - P_{in}}}{2 L_{full, load}}
+       \times (L_{no, load} - P_{in}/P_{nom})}}{2 L_{full, load}}
 
     Note that the positive root must be the correct one if the output power is
     positive.

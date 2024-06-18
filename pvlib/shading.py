@@ -609,8 +609,8 @@ def direct_martinez(
     fraction of the collector, :math:`N_{SB}` is the number of shaded blocks
     and :math:`N_{TB}` is the number of total blocks.
 
-    In (8), :math:`\frac{P_{S}}{P_{NS}}` is the fraction of DC power lost due to shading,
-    :math:`P_{S}` is the power output of the shaded module,
+    In (8), :math:`\frac{P_{S}}{P_{NS}}` is the fraction of DC power lost due
+    to shading, :math:`P_{S}` is the power output of the shaded module,
     :math:`P_{NS}` is the power output of the non-shaded module,
     :math:`B + D^{CIR}` is the beam and circumsolar irradiance,
     :math:`D^{ISO} + R` is the sum of diffuse and albedo irradiances and

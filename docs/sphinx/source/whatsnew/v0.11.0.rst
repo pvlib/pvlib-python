@@ -20,6 +20,10 @@ Breaking changes
 
 Deprecations
 ~~~~~~~~~~~~
+* Function :py:func:`pvlib.spectrum.get_am15g` has been deprecated in favor
+  of the new function :py:func:`pvlib.spectrum.get_reference_spectra`. Use
+  ``pvlib.spectrum.get_reference_spectra(standard="ASTM G173-03")["global"]``
+  instead. (:pull:`2039`)
 
 
 Enhancements
@@ -38,6 +42,9 @@ Enhancements
 * Add function :py:func:`pvlib.spectrum.spectral_factor_pvspec`, which calculates the
   spectral mismatch factor as a function of absolute airmass and clearsky index
   using the PVSPEC model. (:issue:`1950`, :issue:`2065`, :pull:`2072`)
+* Added extraterrestrial and direct spectra of the ASTM G173-03 standard with
+  the new function :py:func:`pvlib.spectrum.get_reference_spectra`.
+  (:issue:`1963`, :pull:`2039`)
 * Add function :py:func:`pvlib.irradiance.diffuse_par_spitters` to calculate the
   diffuse fraction of Photosynthetically Active Radiation (PAR) from the
   global diffuse fraction and the solar zenith.

@@ -119,27 +119,6 @@ shaded_fraction = pvlib.shading.shaded_fraction1d(
     cross_axis_slope=cross_axis_tilt,
 )
 
-clearsky = locus.get_clearsky(
-    times, solar_position=solar_pos, model="ineichen"
-)
-dhi, dni = (
-    clearsky["dhi"],
-    clearsky["dni"],
-)
-dni_extra = pvlib.irradiance.get_extra_radiation(times)
-airmass = pvlib.atmosphere.get_relative_airmass(solar_apparent_zenith)
-sky_diffuse = pvlib.irradiance.perez_driesse(
-    surface_tilt, surface_azimuth, dhi, dni,
-    solar_apparent_zenith, solar_azimuth, dni_extra, airmass,
-)  # fmt: skip
-poa_components = pvlib.irradiance.poa_components(
-    aoi, dni, sky_diffuse, poa_ground_diffuse=0
-)  # ignore ground diffuse for brevity
-poa_global, poa_direct = (
-    poa_components["poa_global"],
-    poa_components["poa_direct"],
-)
-
 # %%
 # Number of shaded blocks
 # -----------------------
@@ -190,6 +169,33 @@ shaded_blocks_per_module = {
     k: np.ceil(blocks_N * shaded_fraction)
     for k, blocks_N in blocks_per_module.items()
 }
+
+# %%
+# Plane of array irradiance example data
+# --------------------------------------
+# To calculate the power output losses due to shading, we need the plane of
+# array irradiance. For this example, we will use synthetic data:
+
+clearsky = locus.get_clearsky(
+    times, solar_position=solar_pos, model="ineichen"
+)
+dhi, dni = (
+    clearsky["dhi"],
+    clearsky["dni"],
+)
+dni_extra = pvlib.irradiance.get_extra_radiation(times)
+airmass = pvlib.atmosphere.get_relative_airmass(solar_apparent_zenith)
+sky_diffuse = pvlib.irradiance.perez_driesse(
+    surface_tilt, surface_azimuth, dhi, dni,
+    solar_apparent_zenith, solar_azimuth, dni_extra, airmass,
+)  # fmt: skip
+poa_components = pvlib.irradiance.poa_components(
+    aoi, dni, sky_diffuse, poa_ground_diffuse=0
+)  # ignore ground diffuse for brevity
+poa_global, poa_direct = (
+    poa_components["poa_global"],
+    poa_components["poa_direct"],
+)
 
 # %%
 # Results

@@ -662,10 +662,10 @@ def direct_martinez(
     >>> # calculation of the number of shaded blocks
     >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
     >>> # apply the Martinez power losses to the calculated shading
-    >>> power_loss = shading.direct_martinez(
+    >>> loss_fraction = shading.direct_martinez(
     >>>     POA_global, POA_direct_and_circumsolar,
     >>>     shaded_fraction, shaded_blocks, total_blocks)
-    >>> P_out_corrected = P_out_unshaded * (1 - power_loss)
+    >>> P_out_corrected = P_out_unshaded * (1 - loss_fraction)
 
     See Also
     --------

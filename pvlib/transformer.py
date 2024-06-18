@@ -105,30 +105,15 @@ def simple_efficiency(
     .. [1] Central Station Engineers of the Westinghouse Electric Corporation,
        "Electrical Transmission and Distribution Reference Book" 4th Edition.
        pg. 101.
-
     '''
 
-    # calculate the load loss in terms of VA instead of percent
-    loss_at_full_load = (
-        (no_load_loss + load_loss) * transformer_rating
-    )
-    no_load_loss = no_load_loss * transformer_rating
-    load_loss = loss_at_full_load - no_load_loss
+    input_power_normalized = input_power / transformer_rating
 
-    # calculate how much power is lost
-    combined_loss = (
-        (1 / (2 * load_loss)) *
-        (
-            (transformer_rating ** 2) +
-            (2 * load_loss * input_power) -
-            (transformer_rating * np.sqrt(
-                (transformer_rating ** 2) +
-                (4 * load_loss) * (input_power - no_load_loss)
-            ))
-        )
-    )
+    a = load_loss
+    b = 1
+    c = no_load_loss - input_power_normalized
+    
+    output_power_normalized = (-b + (b**2 - 4*a*c)**0.5) / (2 * a)
 
-    # calculate final output power given calculated losses
-    output_power = input_power - combined_loss
-
+    output_power = output_power_normalized * transformer_rating
     return output_power

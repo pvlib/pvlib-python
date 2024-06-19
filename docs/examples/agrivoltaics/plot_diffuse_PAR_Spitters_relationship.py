@@ -3,12 +3,12 @@ Calculating the diffuse PAR using Spitter's relationship
 =========================================================
 
 This example demonstrates how to calculate the diffuse photosynthetically
-active radiation (PAR) from total PAR using Spitter's relationship.
+active radiation (PAR) from broadband diffuse fraction.
 """
 
 # %%
 # The photosynthetically active radiation (PAR) is a key component in the
-# photosynthesis process of plants. As in photovoltaic systems, PAR can be
+# photosynthesis process of plants. As with broadband irradiance, PAR can be
 # divided into direct and diffuse components. The diffuse fraction of PAR
 # with respect to the total PAR is important in agrivoltaic systems, where
 # crops are grown under solar panels. The diffuse fraction of PAR can be
@@ -19,15 +19,11 @@ active radiation (PAR) from total PAR using Spitter's relationship.
 #
 # .. note::
 #    Understanding the distinction between the broadband radiation and the PAR
-#    is a key concept. The broadband radiation is the total amount of solar
-#    radiation that is usually accounted for in PV applications, while the PAR
+#    is a key concept. Broadband radiation is the total amount of solar
+#    radiation that is usually used as reference in PV applications, while PAR
 #    is a measurement of a narrower range of wavelengths that are used in
 #    photosynthesis. See section on *Photosynthetically Active Radiation* in
 #    pp. 222-223 of [1]_.
-#
-# The key function used in this example is
-# :py:func:`pvlib.irradiance.diffuse_par_spitters` to calculate the diffuse
-# PAR fraction, as a function of broadband diffuse fraction and solar zenith.
 #
 # References
 # ----------

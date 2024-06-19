@@ -3800,9 +3800,8 @@ def diffuse_par_spitters(solar_zenith, global_diffuse_fraction):
         {1 + \left(1 - \left(k_d^{model}\right)^2\right) \cos ^2 (90 - \beta)
         \cos ^3 \beta}
 
-    where :math:`k_d^{model}` is the diffuse fraction of the global radiation
-    provided by some model, and :math:`\beta` is the solar elevation angle
-    (in degrees [°]).
+    where :math:`k_d^{model}` is the diffuse fraction of the global radiation,
+    and :math:`\beta` is the solar elevation angle in degrees.
 
     A comparison using different models for the diffuse fraction of
     the global irradiance can be found in [2]_ in the context of Sweden.
@@ -3819,7 +3818,7 @@ def diffuse_par_spitters(solar_zenith, global_diffuse_fraction):
        pp. 536-549, Sep. 2022, :doi:`10.1016/j.solener.2022.05.046`.
     """
     # notation change:
-    #  cosd(90-x) = sind(x) and 90-solar_elevation = solar_zenith
+    # cosd(90-x) = sind(x) and 90-solar_elevation = solar_zenith
     cosd_solar_zenith = tools.cosd(solar_zenith)
     cosd_solar_elevation = tools.cosd(90 - solar_zenith)
     par_diffuse_fraction = (

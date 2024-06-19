@@ -3775,7 +3775,8 @@ def diffuse_par_spitters(solar_zenith, global_diffuse_fraction):
         Solar zenith angle. Degrees.
 
     global_diffuse_fraction : numeric
-        Fraction of the global radiation that is diffuse. Unitless [0, 1].
+        Fraction of the global broadband irradiance that is diffuse
+        :math:`dhi/ghi`. Unitless [0, 1].
 
     Returns
     -------

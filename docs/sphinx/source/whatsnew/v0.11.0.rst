@@ -16,6 +16,9 @@ Breaking changes
   (:pull:`1779`, :pull:`1989`)
 * The `leap_day` parameter in :py:func:`~pvlib.iotools.get_psm3`
   now defaults to True instead of False. (:issue:`1481`, :pull:`1991`)
+* :py:func:`~pvlib.iotools.get_psm3`, :py:func:`~pvlib.iotools.read_psm3`, and
+  :py:func:`~pvlib.iotools.parse_psm3` all now have ``map_variables=True`` by
+  default. (:issue:`1425`, :pull:`2094`)
 
 
 Deprecations

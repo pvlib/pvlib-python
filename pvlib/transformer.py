@@ -4,8 +4,6 @@ This module contains functions for transformer modeling.
 Transformer models calculate AC power output and losses at a given input power.
 """
 
-import numpy as np
-
 
 def simple_efficiency(
         input_power, no_load_loss, load_loss, transformer_rating
@@ -48,14 +46,14 @@ def simple_efficiency(
 
     Notes
     -------
-    First, assume that the load loss (as a fraction of rated power $P_{nom}$)
-    is proportional to the square of output power:
+    First, assume that the load loss (as a fraction of rated power
+    :math:`P_{nom}`$) is proportional to the square of output power:
 
     .. math::
 
        L_{load}(P_{out}) &= L_{load}(P_{rated}) \times (P_{out} / P_{nom})^2
 
-       L_{load}(P_{out}) &= L_{full, load} \times \times (P_{out} / P_{nom})^2
+       L_{load}(P_{out}) &= L_{full, load} \times (P_{out} / P_{nom})^2
 
     Total loss is the variable load loss, plus a constant no-load loss:
 
@@ -105,14 +103,14 @@ def simple_efficiency(
     .. [1] Central Station Engineers of the Westinghouse Electric Corporation,
        "Electrical Transmission and Distribution Reference Book" 4th Edition.
        pg. 101.
-    '''
+    '''  # noqa: E501
 
     input_power_normalized = input_power / transformer_rating
 
     a = load_loss
     b = 1
     c = no_load_loss - input_power_normalized
-    
+
     output_power_normalized = (-b + (b**2 - 4*a*c)**0.5) / (2 * a)
 
     output_power = output_power_normalized * transformer_rating

@@ -3820,7 +3820,7 @@ def diffuse_par_spitters(solar_zenith, global_diffuse_fraction):
     # notation change:
     # cosd(90-x) = sind(x) and 90-solar_elevation = solar_zenith
     cosd_solar_zenith = tools.cosd(solar_zenith)
-    cosd_solar_elevation = tools.cosd(90 - solar_zenith)
+    cosd_solar_elevation = tools.sind(solar_zenith)
     par_diffuse_fraction = (
         (1 + 0.3 * (1 - global_diffuse_fraction**2))
         * global_diffuse_fraction

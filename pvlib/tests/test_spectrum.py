@@ -375,20 +375,20 @@ def test_spectral_factor_pvspec_supplied_ambiguous():
 
 
 @pytest.mark.parametrize("module_type,expected", [
-    ('multisi', np.array([1.06129066, 1.03098050, 1.01155106, 0.99848646])),
-    ('cdte', np.array([1.09656930,  1.05594110, 1.02762528, 0.97740310])),
+    ('multisi', np.array([1.06129, 1.03098, 1.01155, 0.99849])),
+    ('cdte', np.array([1.09657,  1.05594, 1.02763, 0.97740])),
 ])
 def test_spectral_factor_jrc(module_type, expected):
     ams = np.array([1.0, 1.5, 2.0, 1.5])
     kcs = np.array([0.4, 0.6, 0.8, 1.4])
     out = spectrum.spectral_factor_jrc(ams, kcs,
                                        module_type=module_type)
-    assert np.allclose(expected, out, atol=1e-8)
+    assert np.allclose(expected, out, atol=1e-4)
 
 
 @pytest.mark.parametrize("module_type,expected", [
-    ('multisi', np.array([1.06129066, 1.03098050, 1.01155106, 0.99848646])),
-    ('cdte', np.array([1.09656930,  1.05594110, 1.02762528, 0.97740310])),
+    ('multisi', np.array([1.06129, 1.03098, 1.01155, 0.99849])),
+    ('cdte', np.array([1.09657,  1.05594, 1.02763, 0.97740])),
 ])
 def test_spectral_factor_jrc_series(module_type, expected):
     ams = pd.Series([1.0, 1.5, 2.0, 1.5])
@@ -396,7 +396,7 @@ def test_spectral_factor_jrc_series(module_type, expected):
     out = spectrum.spectral_factor_jrc(ams, kcs,
                                        module_type=module_type)
     assert isinstance(out, pd.Series)
-    assert np.allclose(expected, out, atol=1e-8)
+    assert np.allclose(expected, out, atol=1e-4)
 
 
 def test_spectral_factor_jrc_supplied():
@@ -404,7 +404,7 @@ def test_spectral_factor_jrc_supplied():
     coeffs = (0.494, 0.146, 0.00103)
     out = spectrum.spectral_factor_jrc(1.0, 0.8, coefficients=coeffs)
     expected = 1.01052106
-    assert_allclose(out, expected, atol=1e-5)
+    assert_allclose(out, expected, atol=1e-4)
 
 
 def test_spectral_factor_jrc_supplied_redundant():

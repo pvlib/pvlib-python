@@ -1420,6 +1420,7 @@ def test_SURFACE_ALBEDOS_deprecated():
 def test_SURFACE_ALBEDO_equals():
     assert irradiance.SURFACE_ALBEDOS == albedo.SURFACE_ALBEDOS
 
+
 def test_diffuse_par_spitters():
     solar_zenith, global_diffuse_fraction = np.meshgrid(
         [90, 85, 75, 60, 40, 30, 10, 0], [0.01, 0.1, 0.3, 0.6, 0.8, 0.99]

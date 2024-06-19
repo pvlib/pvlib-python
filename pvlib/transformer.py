@@ -61,7 +61,7 @@ def simple_efficiency(
 
        L_{total}(P_{out}) &= L_{no, load} + L_{load}(P_{out})
 
-       L_{total}(P_{out}) &= L_{no, load} + L_{full, load} \times (P_{out} / P_{nom})^2
+                          &= L_{no, load} + L_{full, load} \times (P_{out} / P_{nom})^2
 
 
     By conservation of energy, total loss is the difference between input and
@@ -71,7 +71,7 @@ def simple_efficiency(
 
        \frac{P_{in}}{P_{nom}} &= \frac{P_{out}}{P_{nom}} + L_{total}(P_{out})
 
-       \frac{P_{in}}{P_{nom}} &= \frac{P_{out}}{P_{nom}} + L_{no, load} + L_{full, load} \times (P_{out} / P_{nom})^2
+                              &= \frac{P_{out}}{P_{nom}} + L_{no, load} + L_{full, load} \times (P_{out} / P_{nom})^2
 
     Now use the quadratic formula to solve for :math:`P_{out}` as a function of
     :math:`P_{in}`.

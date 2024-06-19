@@ -33,6 +33,8 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add a simple transformer efficiency model :py:func:`pvlib.transformer.simple_efficiency`.
+  (:issue:`1269`, :pull:`2053`)
 * Add function :py:func:`pvlib.shading.shaded_fraction1d`, to calculate the
   shade perpendicular to ``axis_azimuth``. The function is applicable to both
   fixed-tilt and one-axis tracking systems.
@@ -70,6 +72,7 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Siddharth Kaul (:ghuser:`k10blogger`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)

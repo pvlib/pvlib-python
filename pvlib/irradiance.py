@@ -3791,13 +3791,13 @@ def diffuse_par_spitters(solar_zenith, global_diffuse_fraction):
     .. math::
 
         k_{diffuse\_PAR}^{model} = \frac{PAR_{diffuse}}{PAR_{total}} =
-        \frac{\left[1 + 0.3 \left(1 - \left(k_d^{model}\right) ^2\right)\right]
-        k_d^{model}}
-        {1 + \left(1 - \left(k_d^{model}\right)^2\right) \cos ^2 (90 - \beta)
+        \frac{\left[1 + 0.3 \left(1 - \left(k_d\right) ^2\right)\right]
+        k_d}
+        {1 + \left(1 - \left(k_d\right)^2\right) \cos ^2 (90 - \beta)
         \cos ^3 \beta}
 
-    where :math:`k_d^{model}` is the diffuse fraction of the global radiation,
-    and :math:`\beta` is the solar elevation angle in degrees.
+    where :math:`k_d` is the diffuse fraction of the global radiation, and
+    :math:`\beta` is the daily average of the solar elevation angle in degrees.
 
     A comparison using different models for the diffuse fraction of
     the global irradiance can be found in [2]_ in the context of Sweden.

@@ -844,12 +844,16 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
 
     where :math:`M` is the spectral mismatch factor, :math:`k_c` is the clear
     sky index, :math:`AM` is the air mass, :math:`e` is Euler's number, and
-    :math:`a_1, a_2, a_3` are module-specific coefficients. In the JRC model
-    publication, the model used to estimate the air mass (denoted as :math:`AM`
-    ) is not stated. The clear sky index, which is the ratio of GHI to clear
-    sky GHI, uses the ESRA model [2]_ to estimate the clear sky GHI. Prior to
-    the calculation of :math:`k_c`, the irradiance measurements are corrected
-    for angle of incidence using the Martin and Ruiz model [3]_.
+    :math:`a_1, a_2, a_3` are module-specific coefficients. The :math:`a_n`
+    coefficients available via the ``coefficients`` parameter differ from the
+    :math:`k_n` coefficients documented in [1]_ in that they are normalised by
+    the specific short-circuit current value, :math:`I_{sc0}^*, which is the
+    expected short-circuit current at standard test conditions indoors. The
+    model used to estimate the air mass (denoted as :math:`AM`) is not stated
+    in the original publication. The clear sky index, which is the ratio of GHI
+    to clear sky GHI, uses the ESRA model [2]_ to estimate the clear sky GHI.
+    Prior to the calculation of :math:`k_c`, the irradiance measurements are
+    corrected for angle of incidence using the Martin and Ruiz model [3]_.
 
     References
     ----------

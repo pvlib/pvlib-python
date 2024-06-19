@@ -47,7 +47,7 @@ def simple_efficiency(
     Notes
     -------
     First, assume that the load loss (as a fraction of rated power
-    :math:`P_{nom}`$) is proportional to the square of output power:
+    :math:`P_{nom}`) is proportional to the square of output power:
 
     .. math::
 

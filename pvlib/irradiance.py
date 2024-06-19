@@ -16,22 +16,18 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
+from pvlib._deprecation import pvlibDeprecationWarning
+import warnings
 
-# see References section of get_ground_diffuse function
-SURFACE_ALBEDOS = {'urban': 0.18,
-                   'grass': 0.20,
-                   'fresh grass': 0.26,
-                   'soil': 0.17,
-                   'sand': 0.40,
-                   'snow': 0.65,
-                   'fresh snow': 0.75,
-                   'asphalt': 0.12,
-                   'concrete': 0.30,
-                   'aluminum': 0.85,
-                   'copper': 0.74,
-                   'fresh steel': 0.35,
-                   'dirty steel': 0.08,
-                   'sea': 0.06}
+
+# Deprecation warning based on https://peps.python.org/pep-0562/
+def __getattr__(attr):
+    if attr == 'SURFACE_ALBEDOS':
+        warnings.warn(f"{attr} has been moved to the albedo module as of "
+                      "v0.11.0. Please use pvlib.albedo.SURFACE_ALBEDOS.",
+                      pvlibDeprecationWarning)
+        return pvlib.albedo.SURFACE_ALBEDOS
+    raise AttributeError(f"module {__name__!r} has no attribute {attr!r}")
 
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
@@ -550,7 +546,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Notes
     -----
     Table of albedo values by ``surface_type`` are from [2]_, [3]_, [4]_;
-    see :py:data:`~pvlib.irradiance.SURFACE_ALBEDOS`.
+    see :py:const:`~pvlib.albedo.SURFACE_ALBEDOS`.
 
     References
     ----------
@@ -565,7 +561,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
 
     if surface_type is not None:
-        albedo = SURFACE_ALBEDOS[surface_type]
+        albedo = pvlib.albedo.SURFACE_ALBEDOS[surface_type]
 
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surface_tilt))) * 0.5
 
@@ -2442,7 +2438,6 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
     else:
         # we are here because we ran out of coeffs to loop over and
         # therefore we have exceeded max_iterations
-        import warnings
         failed_points = best_diff[aoi_lt_90][~best_diff_lte_1_lt_90]
         warnings.warn(
             ('%s points failed to converge after %s iterations. best_diff:\n%s'
@@ -2806,8 +2801,8 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     References
     ----------
     .. [1] Orgill, J.F., Hollands, K.G.T., Correlation equation for hourly
-      diffuse radiation on a horizontal surface, Solar Energy 19(4), pp 357–359,
-      1977. Eqs. 3(a), 3(b) and 3(c)
+      diffuse radiation on a horizontal surface, Solar Energy 19(4),
+      pp 357–359, 1977. Eqs. 3(a), 3(b) and 3(c)
       :doi:`10.1016/0038-092X(77)90006-8`
 
     See Also

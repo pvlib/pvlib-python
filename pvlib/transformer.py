@@ -46,16 +46,16 @@ def simple_efficiency(
 
     Notes
     -------
-    First, assume that the load loss (as a fraction of rated power
+    First, assume that the load loss :math:`L_{load}` (as a fraction of rated power
     :math:`P_{nom}`) is proportional to the square of output power:
 
     .. math::
 
        L_{load}(P_{out}) &= L_{load}(P_{rated}) \times (P_{out} / P_{nom})^2
 
-       L_{load}(P_{out}) &= L_{full, load} \times (P_{out} / P_{nom})^2
+                         &= L_{full, load} \times (P_{out} / P_{nom})^2
 
-    Total loss is the variable load loss, plus a constant no-load loss:
+    Total loss is the constant no-load loss plus the variable load loss:
 
     .. math::
 
@@ -73,7 +73,7 @@ def simple_efficiency(
 
        \frac{P_{in}}{P_{nom}} &= \frac{P_{out}}{P_{nom}} + L_{no, load} + L_{full, load} \times (P_{out} / P_{nom})^2
 
-    Now use quadratic formula to solve for :math:`P_{out}` as a function of
+    Now use the quadratic formula to solve for :math:`P_{out}` as a function of
     :math:`P_{in}`.
 
     .. math::
@@ -94,7 +94,7 @@ def simple_efficiency(
 
        \times (L_{no, load} - P_{in}/P_{nom})}}{2 L_{full, load}}
 
-    Note that the positive root must be the correct one if the output power is
+    The positive root should be chosen, so that the output power is
     positive.
 
 

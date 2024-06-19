@@ -851,10 +851,10 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
     expected short-circuit current at standard test conditions indoors. The
     model used to estimate the air mass (denoted as :math:`AM`) is not stated
     in the original publication. The authors of [1]_ used the ESRA model [2]_
-    to estimate the clear sky GHI for the clear sky index, which is the ratio of GHI
-    to clear sky GHI. Also, prior to the calculation of :math:`k_c`, the irradiance
-    measurements were corrected for angle of incidence using the Martin
-     and Ruiz model [3]_.
+    to estimate the clear sky GHI for the clear sky index, which is the ratio
+    of GHI to clear sky GHI. Also, prior to the calculation of :math:`k_c`, the
+    irradiance measurements were corrected for angle of incidence using the
+    Martin and Ruiz model [3]_.
 
     References
     ----------

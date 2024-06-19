@@ -847,7 +847,7 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
     :math:`a_1, a_2, a_3` are module-specific coefficients. The :math:`a_n`
     coefficients available via the ``coefficients`` parameter differ from the
     :math:`k_n` coefficients documented in [1]_ in that they are normalised by
-    the specific short-circuit current value, :math:`I_{sc0}^*, which is the
+    the specific short-circuit current value, :math:`I_{sc0}^*`, which is the
     expected short-circuit current at standard test conditions indoors. The
     model used to estimate the air mass (denoted as :math:`AM`) is not stated
     in the original publication. The clear sky index, which is the ratio of GHI

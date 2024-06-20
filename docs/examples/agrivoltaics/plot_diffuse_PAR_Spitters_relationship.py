@@ -1,9 +1,9 @@
 """
-Calculating the diffuse PAR using Spitter's relationship
-=========================================================
+Calculating daily diffuse PAR using Spitter's relationship
+==========================================================
 
 This example demonstrates how to calculate the diffuse photosynthetically
-active radiation (PAR) from broadband diffuse fraction.
+active radiation (PAR) from diffuse fraction of broadband insolation.
 """
 
 # %%
@@ -14,15 +14,15 @@ active radiation (PAR) from broadband diffuse fraction.
 # crops are grown under solar panels. The diffuse fraction of PAR can be
 # calculated using the Spitter's relationship [1]_ implemented in
 # :py:func:`~pvlib.irradiance.diffuse_par_spitters`.
-# This model requires the solar zenith angle and the fraction of the broadband
-# radiation that is diffuse as inputs.
+# This model requires the average daily solar zenith angle and the
+# daily fraction of the broadband insolation that is diffuse as inputs.
 #
 # .. note::
-#    Understanding the distinction between the broadband radiation and the PAR
-#    is a key concept. Broadband radiation is the total amount of solar
-#    radiation that is usually used as reference in PV applications, while PAR
+#    Understanding the distinction between the broadband insolation and the PAR
+#    is a key concept. Broadband insolation is the total amount of solar
+#    energy that is usually used as reference in PV applications, while PAR
 #    is a measurement of a narrower range of wavelengths that are used in
-#    photosynthesis. See section on *Photosynthetically Active Radiation* in
+#    photosynthesis. See section on *Photosynthetically Active insolation* in
 #    pp. 222-223 of [1]_.
 #
 # References
@@ -39,21 +39,19 @@ active radiation (PAR) from broadband diffuse fraction.
 import pvlib
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.dates import DateFormatter
+from matplotlib.dates import AutoDateLocator, ConciseDateFormatter
 from pathlib import Path
 
-# Read some sample data
+# Read some example data
 DATA_FILE = Path(pvlib.__path__[0]).joinpath("data", "723170TYA.CSV")
 
 tmy, metadata = pvlib.iotools.read_tmy3(
-    DATA_FILE, coerce_year=1990, map_variables=True
+    DATA_FILE, coerce_year=2002, map_variables=True
 )
 tmy = tmy.filter(
     ["ghi", "dhi", "dni", "pressure", "temp_air"]
-)  # remaining data is not needed
-tmy = tmy[
-    "1990-04-11T06":"1990-04-11T22"
-]  # select a single day for this example
+)  # remaining columns are not needed
+tmy = tmy["2002-09-06":"2002-09-21"]  # select some days
 
 solar_position = pvlib.solarposition.get_solarposition(
     # TMY timestamp is at end of hour, so shift to center of interval
@@ -67,51 +65,71 @@ solar_position = pvlib.solarposition.get_solarposition(
 solar_position.index = tmy.index  # reset index to end of the hour
 
 # %%
+# Calculate daily values
+# ^^^^^^^^^^^^^^^^^^^^^^
+# The daily average solar zenith angle and the daily diffuse fraction of
+# broadband insolation are calculated as follows:
+
+daily_solar_zenith = solar_position["zenith"].resample("D").mean()
+# integration over the day with a time step of 1 hour
+daily_tmy = tmy[["ghi", "dhi"]].resample("D").sum() * 1
+daily_tmy["diffuse_fraction"] = daily_tmy["dhi"] / daily_tmy["ghi"]
+
+# %%
 # Calculate Photosynthetically Active Radiation
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # The total PAR can be approximated as 0.50 times the broadband horizontal
-# irradiance (GHI) for solar elevation higher that 10°.
+# insolation (integral of GHI) for an average solar elevation higher that 10°.
 # See section on *Photosynthetically Active Radiation* in pp. 222-223 of [1]_.
 
-par = pd.DataFrame({"total": 0.50 * tmy["ghi"]}, index=tmy.index)
+par = pd.DataFrame({"total": 0.50 * daily_tmy["ghi"]}, index=daily_tmy.index)
+if daily_solar_zenith.min() < 10:
+    raise ValueError(
+        "The total PAR can't be assumed to be half the broadband insolation "
+        + "for average zenith angles lower than 10°."
+    )
 
-# Calculate broadband irradiance diffuse fraction, input of the Spitter's model
-tmy["diffuse_fraction"] = tmy["dhi"] / tmy["ghi"]
+# Calculate broadband insolation diffuse fraction, input of the Spitter's model
+daily_tmy["diffuse_fraction"] = daily_tmy["dhi"] / daily_tmy["ghi"]
 
 # Calculate diffuse PAR fraction using Spitter's relationship
 par["diffuse_fraction"] = pvlib.irradiance.diffuse_par_spitters(
-    solar_position["zenith"], tmy["diffuse_fraction"]
+    solar_position["zenith"], daily_tmy["diffuse_fraction"]
 )
 
 # Finally, calculate the diffuse PAR
 par["diffuse"] = par["total"] * par["diffuse_fraction"]
-par[solar_position["zenith"] > 80] = (
-    0  # set to zero for elevation < 10 degrees
-)
 
 # %%
 # Plot the results
 # ^^^^^^^^^^^^^^^^
-# Irradiances on left axis, diffuse fractions on right axis
+# Insolation on left axis, diffuse fraction on right axis
 
 fig, ax_l = plt.subplots(figsize=(12, 6))
 ax_l.set(
     xlabel="Time",
-    ylabel="Irradiance $[W/m^2]$",
+    ylabel="Daily insolation $[Wh/m^2/day]$",
     title="Diffuse PAR using Spitter's relationship",
 )
-ax_l.xaxis.set_major_formatter(DateFormatter("%H:%M", tz=tmy.index.tz))
-ax_l.plot(tmy.index, tmy["ghi"], label="Broadband: total", color="deepskyblue")
+ax_l.xaxis.set_major_formatter(
+    ConciseDateFormatter(AutoDateLocator(), tz=daily_tmy.index.tz)
+)
 ax_l.plot(
-    tmy.index,
-    tmy["dhi"],
+    daily_tmy.index,
+    daily_tmy["ghi"],
+    label="Broadband: total",
+    color="deepskyblue",
+)
+ax_l.plot(
+    daily_tmy.index,
+    daily_tmy["dhi"],
     label="Broadband: diffuse",
     color="skyblue",
     linestyle="-.",
 )
-ax_l.plot(tmy.index, par["total"], label="PAR: total", color="orangered")
+ax_l.plot(daily_tmy.index, par["total"], label="PAR: total", color="orangered")
 ax_l.plot(
-    tmy.index,
+    daily_tmy.index,
     par["diffuse"],
     label="PAR: diffuse",
     color="coral",
@@ -123,14 +141,14 @@ ax_l.legend(loc="upper left")
 ax_r = ax_l.twinx()
 ax_r.set(ylabel="Diffuse fraction")
 ax_r.plot(
-    tmy.index,
-    tmy["diffuse_fraction"],
+    daily_tmy.index,
+    daily_tmy["diffuse_fraction"],
     label="Broadband diffuse fraction",
     color="plum",
     linestyle=":",
 )
 ax_r.plot(
-    tmy.index,
+    daily_tmy.index,
     par["diffuse_fraction"],
     label="PAR diffuse fraction",
     color="chocolate",

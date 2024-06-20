@@ -3763,26 +3763,31 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     return data
 
 
-def diffuse_par_spitters(solar_zenith, global_diffuse_fraction):
+def diffuse_par_spitters(daily_solar_zenith, global_diffuse_fraction):
     r"""
     Derive the diffuse fraction of photosynthetically active radiation (PAR).
 
-    The relationship is based on the work of Spitters et al. (1986) [1]_.
+    The relationship is based on the work of Spitters et al. (1986) [1]_. The
+    resulting value is the fraction of daily PAR that is diffuse.
+
+    .. note::
+       This diffuse fractions are defined as the ratio of
+       diffuse to global daily insolations, in J m⁻² day⁻¹ or equivalent.
 
     Parameters
     ----------
-    solar_zenith : numeric
-        Solar zenith angle. Degrees.
+    daily_solar_zenith : numeric
+        Average daily solar zenith angle. In degrees [°].
 
     global_diffuse_fraction : numeric
-        Fraction of the global broadband irradiance that is diffuse
-        :math:`dhi/ghi`. Unitless [0, 1].
+        Fraction of daily global broadband insolation that is diffuse.
+        Unitless [0, 1].
 
     Returns
     -------
     par_diffuse_fraction : numeric
-        Fraction of photosynthetically active radiation (PAR) that is diffuse.
-        Unitless [0, 1].
+        Fraction of daily photosynthetically active radiation (PAR) that is
+        diffuse. Unitless [0, 1].
 
     Notes
     -----
@@ -3796,11 +3801,11 @@ def diffuse_par_spitters(solar_zenith, global_diffuse_fraction):
         {1 + \left(1 - \left(k_d\right)^2\right) \cos ^2 (90 - \beta)
         \cos ^3 \beta}
 
-    where :math:`k_d` is the diffuse fraction of the global radiation, and
+    where :math:`k_d` is the diffuse fraction of the global insolation, and
     :math:`\beta` is the daily average of the solar elevation angle in degrees.
 
     A comparison using different models for the diffuse fraction of
-    the global irradiance can be found in [2]_ in the context of Sweden.
+    the global insolation can be found in [2]_ in the context of Sweden.
 
     References
     ----------
@@ -3815,8 +3820,8 @@ def diffuse_par_spitters(solar_zenith, global_diffuse_fraction):
     """
     # notation change:
     # cosd(90-x) = sind(x) and 90-solar_elevation = solar_zenith
-    cosd_solar_zenith = tools.cosd(solar_zenith)
-    cosd_solar_elevation = tools.sind(solar_zenith)
+    cosd_solar_zenith = tools.cosd(daily_solar_zenith)
+    cosd_solar_elevation = tools.sind(daily_solar_zenith)
     par_diffuse_fraction = (
         (1 + 0.3 * (1 - global_diffuse_fraction**2))
         * global_diffuse_fraction

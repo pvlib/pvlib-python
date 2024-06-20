@@ -566,7 +566,7 @@ def direct_martinez(
     A shading loss power factor for non-monolithic silicon
     modules and arrays with an arbitrary number of bypass diodes.
 
-    This experimental model cancels a fraction of the direct and circumsolar
+    This experimental model zeroes a fraction of the direct and circumsolar
     irradiance based on the number of *blocks* affected by the shadow.
     More on blocks in the *Notes* section and in [1]_.
 
@@ -618,8 +618,9 @@ def direct_martinez(
 
     **Blocks terminology:**
 
-    A *block* is defined in [1]_ as a group of solar cells protected by a bypass
-    diode. Also, a *block* is shaded when at least one of its cells is shaded.
+    A *block* is defined in [1]_ as a group of solar cells protected by a
+    bypass diode. Also, a *block* is shaded when at least one of its
+    cells is partially shaded.
 
     The total number of blocks and their layout depend on the module(s) used.
     Many manufacturers don't specify this information explicitly.

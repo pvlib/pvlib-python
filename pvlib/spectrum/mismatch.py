@@ -797,7 +797,7 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
 def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
                         coefficients=None):
     r"""
-    Estimate a technology-specific spectral mismatch modifier from absolute
+    Estimate a technology-specific spectral mismatch modifier from
     airmass and clear sky index using the JRC model.
 
     The JRC spectral mismatch model includes the effects of cloud cover on
@@ -809,8 +809,8 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
 
     Parameters
     ----------
-    airmass_absolute : numeric
-        absolute (pressure-adjusted) airmass. [unitless]
+    airmass : numeric
+        relative airmass. [unitless]
 
     clearsky_index: numeric
         clear sky index. [unitless]
@@ -836,7 +836,7 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
     Notes
     -----
     The JRC model parameterises the spectral mismatch factor as a function
-    of absolute air mass and the clear sky index as follows:
+    of air mass and the clear sky index as follows:
 
     .. math::
 

@@ -7,9 +7,9 @@ active radiation (PAR) from diffuse fraction of broadband insolation.
 """
 
 # %%
-# The photosynthetically active radiation (PAR) is a key component in the
-# photosynthesis process of plants. As with broadband irradiance, PAR can be
-# divided into direct and diffuse components. The diffuse fraction of PAR
+# The photosynthetically active radiation (PAR) is a key metric in quantifying
+# the photosynthesis process of plants. As with broadband irradiance, PAR can
+# be divided into direct and diffuse components. The diffuse fraction of PAR
 # with respect to the total PAR is important in agrivoltaic systems, where
 # crops are grown under solar panels. The diffuse fraction of PAR can be
 # calculated using the Spitter's relationship [1]_ implemented in
@@ -20,10 +20,10 @@ active radiation (PAR) from diffuse fraction of broadband insolation.
 # .. note::
 #    Understanding the distinction between the broadband insolation and the PAR
 #    is a key concept. Broadband insolation is the total amount of solar
-#    energy that is usually used as reference in PV applications, while PAR
-#    is a measurement of a narrower range of wavelengths that are used in
-#    photosynthesis. See section on *Photosynthetically Active insolation* in
-#    pp. 222-223 of [1]_.
+#    energy that gets to a surface, often used in PV applications, while PAR
+#    is a measurement of a narrower spectrum of wavelengths that are involved
+#    in photosynthesis. See section on *Photosynthetically Active insolation*
+#    in pp. 222-223 of [1]_.
 #
 # References
 # ----------
@@ -35,6 +35,8 @@ active radiation (PAR) from diffuse fraction of broadband insolation.
 #
 # Read some example data
 # ^^^^^^^^^^^^^^^^^^^^^^
+# Let's read some weather data from a TMY3 file and calculate the solar
+# position.
 
 import pvlib
 import pandas as pd
@@ -42,7 +44,7 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import AutoDateLocator, ConciseDateFormatter
 from pathlib import Path
 
-# Read some example data
+# Datafile found in the pvlib distribution
 DATA_FILE = Path(pvlib.__path__[0]).joinpath("data", "723170TYA.CSV")
 
 tmy, metadata = pvlib.iotools.read_tmy3(

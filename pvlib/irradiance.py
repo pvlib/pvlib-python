@@ -3765,7 +3765,8 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
 
 def diffuse_par_spitters(daily_solar_zenith, global_diffuse_fraction):
     r"""
-    Derive the diffuse fraction of photosynthetically active radiation (PAR).
+    Derive daily diffuse fraction of Photosynthetically Active Radiation (PAR)
+    from daily average solar zenith and diffuse fraction of daily insolation.
 
     The relationship is based on the work of Spitters et al. (1986) [1]_. The
     resulting value is the fraction of daily PAR that is diffuse.

@@ -55,6 +55,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import shapely.plotting
 import pandas as pd
 from pvlib.spatial import RectangularSurface
+from pvlib import solarposition
 
 # Kärrbo Prästgård, Västerås, Sweden
 latitude, longitude, altitude = 59.6099, 16.5448, 20  # °N, °E, m
@@ -68,8 +69,11 @@ dates = (
     .union(fall_equinox)
     .union(winter_solstice)
 )
-solar_azimuth = 155
-solar_zenith = 70
+solar_position = solarposition.get_solarposition(
+    dates, latitude, longitude, altitude
+)
+solar_azimuth = solar_position["azimuth"].iloc[0]
+solar_zenith = solar_position["apparent_zenith"].iloc[0]
 
 # %%
 # Fixed Tilt
@@ -100,16 +104,12 @@ pv_row2 = RectangularSurface(  # north-most row (highest Y-coordinate)
     length=20,
 )
 
-# %%
 shades_3d = field.get_3D_shades_from(
     solar_zenith, solar_azimuth, pv_row1, pv_row2
 )
-print(shades_3d)
-# %%
 shades_2d = field.get_2D_shades_from(
-    solar_zenith, solar_azimuth, pv_row1, pv_row2
+    solar_zenith, solar_azimuth, shades_3d=shades_3d
 )
-print(shades_2d)
 
 # %%
 # Plot both the 3D and 2D shades

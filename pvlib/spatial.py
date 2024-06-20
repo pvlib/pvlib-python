@@ -114,7 +114,7 @@ class FlatSurface:
     polygon : shapely.Polygon or array[N, 3]
         Shapely Polygon or boundaries to build it.
         Holes are ignored for now.
-    normal_rotation : float, default 0.0°
+    roll : float, default 0.0°
         Right-handed rotation around the surface normal vector defined by
         ``tilt`` and ``azimuth``. In degrees [°].
     reference_point : array-like, shape (3,), optional
@@ -146,8 +146,8 @@ class FlatSurface:
         return self._tilt
 
     @property
-    def normal_rotation(self):
-        return self._normal_rotation
+    def roll(self):
+        return self._roll
 
     @property
     def polygon(self):
@@ -162,12 +162,12 @@ class FlatSurface:
         azimuth,
         tilt,
         polygon_boundaries,
-        normal_rotation=0.0,
+        roll=0.0,
         reference_point=None,
     ):
         self._azimuth = np.array(azimuth)
         self._tilt = np.array(tilt)
-        self._normal_rotation = np.array(normal_rotation)
+        self._roll = np.array(roll)
         # works for polygon_boundaries := array[N, 3] | shapely.Polygon
         self._polygon = sp.Polygon(polygon_boundaries)
         # internal 2D coordinates-system to translate projections matrix
@@ -188,6 +188,9 @@ class FlatSurface:
         Transform a 3D point that **belongs** to the surface,
         to the 2D plane of this surface with respect to the local reference.
 
+        Essentially, it undoes the surface rotations to make the third
+        coordinate zero.
+
         Parameters
         ----------
         point : array-like, shape (N, 3)
@@ -197,10 +200,23 @@ class FlatSurface:
         -------
         array-like, shape (N, 2)
             Projected point.
+
+        Raises
+        ------
+        RuntimeError
+            If the 2D projection fails to transform to the surface plane.
+            Check the input points belong to the surface.
+
+        References
+        ----------
+        .. [1] Y. Cascone, V. Corrado, and V. Serra, 'Calculation procedure of
+           the shading factor under complex boundary conditions', Solar Energy,
+           vol. 85, no. 10, pp. 2524-2539, Oct. 2011,
+           :doi:`10.1016/j.solener.2011.07.011`.
         """
         # undo surface rotations to make the third coordinate zero
         _projection = self._get_projection_transform()
-        # Section 4.3 in [2]
+        # Section 4.3 in [1], with a plane point
         vertices_2d = _projection.apply(points - self.reference_point)
         if not np.allclose(vertices_2d[:, 2], 0.0, atol=1e-10):
             raise RuntimeError(
@@ -234,6 +250,20 @@ class FlatSurface:
         shapely.MultiPolygon
             Shapely Polygon objects representing the shades on this surface.
             These shades may overlap.
+
+        Notes
+        -----
+        This method is based on the algorithm presented in [1]_ to calculate
+        the shades, but adds an extra step (a point that belongs to the plane)
+        to project the objects onto the surface plane instead of the plane that
+        goes through the origin.
+
+        References
+        ----------
+        .. [1] Y. Cascone, V. Corrado, and V. Serra, 'Calculation procedure of
+           the shading factor under complex boundary conditions', Solar Energy,
+           vol. 85, no. 10, pp. 2524-2539, Oct. 2011,
+           :doi:`10.1016/j.solener.2011.07.011`.
         """
         solar_vec = solar_vec = _solar_vector(  # Eq. (8) -> x,y,z
             solar_zenith, solar_azimuth
@@ -268,8 +298,60 @@ class FlatSurface:
 
         return sp.MultiPolygon(map(get_3D_shade_from_flat_surface, others))
 
-    def get_2D_shades_from(self, solar_zenith, solar_azimuth, *others):
+    def get_2D_shades_from(
+        self, solar_zenith, solar_azimuth, *others, shades_3d=None
+    ):
+        """
+        Calculate 2D shades on this surface from obstacles ``others*``.
+
+        If ``shades`` is provided, the method will combine those shades with
+        the ones casted from the objects in ``others`` with the existing ones.
+        Use this parameter if you already have the 3D shades to avoid
+        recalculating them.
+
+        Parameters
+        ----------
+        solar_zenith : float
+            Solar zenith angle. In degrees [°].
+        solar_azimuth : float
+            Solar azimuth angle. N=0°, E=90°, S=180°, W=270°. In degrees [°].
+        others : FlatSurface or derived
+            Obstacles whose shadow will be projected onto this surface.
+        shades_3d : shapely.MultiPolygon, optional
+            Already calculated 3D shades to combine with the new ones, if any.
+            They can be obtained from :py:method:`get_3D_shades_from`.
+
+        Returns
+        -------
+        shapely.MultiPolygon
+            Collection of polygons representing the 2D shades clipped to
+            this surface.
+
+        Raises
+        ------
+        RuntimeError
+            If the 2D projection of the shades fails to transform to the
+            surface plane. In this case, you must ensure ``shades_3d`` is
+            correctly calculated and those shades belong to the object you
+            are projecting onto.
+
+        Notes
+        -----
+        This method is based on the algorithm presented in [1]_ to calculate
+        the shades, but adds an extra step to translate the projection objects
+        to the plane that goes through the origin, to remove the Z coordinate
+        and make the projection in 2D space.
+
+        References
+        ----------
+        .. [1] Y. Cascone, V. Corrado, and V. Serra, 'Calculation procedure of
+           the shading factor under complex boundary conditions', Solar Energy,
+           vol. 85, no. 10, pp. 2524-2539, Oct. 2011,
+           :doi:`10.1016/j.solener.2011.07.011`.
+        """
         shades = self.get_3D_shades_from(solar_zenith, solar_azimuth, *others)
+        if shades_3d is not None:
+            shades = sp.MultiPolygon(shades, shades_3d)
 
         # and clip the 2D shades to the surface in 2D
         _self_projected_polygon = self.representation_in_2D_space()
@@ -290,10 +372,29 @@ class FlatSurface:
         )
 
     def _get_projection_transform(self):
+        """
+        Get the transformation matrix to project points to the 2D plane of
+        this surface.
+
+        Returns
+        -------
+        scipy.spatial.transform.Rotation
+            Transformation matrix to project points to the 2D plane of this
+            surface.
+
+        References
+        ----------
+        .. [1] Y. Cascone, V. Corrado, and V. Serra, 'Calculation procedure of
+           the shading factor under complex boundary conditions', Solar Energy,
+           vol. 85, no. 10, pp. 2524-2539, Oct. 2011,
+           :doi:`10.1016/j.solener.2011.07.011`.
+        """
+        # Section 4.3 in [1], plus another rotation to align the surface:
+        # the rotation around the normal vector
         if self._rotation_inverse is None:
             self._rotation_inverse = Rotation.from_euler(
                 "zxz",
-                [self._azimuth - 180, -self._tilt, -self._normal_rotation],
+                [self._azimuth - 180, -self._tilt, -self._roll],
                 degrees=True,
             )
         return self._rotation_inverse
@@ -307,6 +408,11 @@ class FlatSurface:
         -------
         shapely.Polygon
             2D representation of the surface.
+
+        Notes
+        -----
+        This method is useful to plot the surface in 2D space and see
+        where the shadows are casted.
         """
         if self._projected_polygon is None:
             vertices = np.array(self._polygon.exterior.coords[:-1])
@@ -337,31 +443,48 @@ class FlatSurface:
 
 
 class RectangularSurface(FlatSurface):
-    def __init__(self, center, azimuth, tilt, axis_tilt, width, length):
-        """
-        Represents a rectangular surface in 3D space with a given ``azimuth``,
-        ``tilt``, ``axis_tilt`` and a center point. This is a subclass of
-        :py:class:`FlatSurface` handy for rectangular surfaces like PV arrays.
+    """
+    Represents a rectangular surface in 3D space with a given ``azimuth``,
+    ``tilt``, ``axis_tilt`` and a center point. This is a subclass of
+    :py:class:`~pvlib.spatial.FlatSurface` handy for rectangular surfaces
+    like PV arrays.
 
-        See :py:class:`FlatSurface` for information on methods and properties.
+    See :py:class:`pvlib.spatial.FlatSurface` for information on methods and
+    properties.
 
-        Parameters
-        ----------
-        center : array-like, shape (3,)
-            Center of the surface
-        azimuth : float
-            Azimuth of the surface. Positive is clockwise from the North in the
-            horizontal plane. North=0°, East=90°, South=180°, West=270°.
-            In degrees [°].
-        tilt : float
-            Tilt of the surface, angle it is inclined with respect to the
-            horizontal plane. Positive is downwards ``azimuth``.
-            In degrees [°].
-        width: width of the surface
-            For a horizontal surface, the width is parallel to the azimuth
-        length: length of the surface
-            Perpendicular to the surface azimuth
-        """
+    Parameters
+    ----------
+    center : array-like, shape (3,)
+        Center of the surface
+    azimuth : float
+        Azimuth of the surface. Positive is clockwise from the North in the
+        horizontal plane. North=0°, East=90°, South=180°, West=270°.
+        In degrees [°].
+    tilt : float
+        Tilt of the surface, angle it is inclined with respect to the
+        horizontal plane. Positive is downwards ``azimuth``.
+        In degrees [°].
+    axis_tilt : float
+        Rotation around the normal vector of the surface. Right-handed.
+        In degrees [°].
+    width: width of the surface
+        For a horizontal surface, the width is parallel to the azimuth
+    length: length of the surface
+        Perpendicular to the surface azimuth
+    reference_point : array-like, shape (3,), optional
+        Point to use as reference for 2D projections. If not provided, the
+        central point is used.
+    """
+    def __init__(
+        self,
+        center,
+        azimuth,
+        tilt,
+        axis_tilt,
+        width,
+        length,
+        reference_point=None,
+    ):
         corners = np.array(
             [
                 [-length / 2, -width / 2, 0],
@@ -383,8 +506,8 @@ class RectangularSurface(FlatSurface):
             azimuth=azimuth,
             tilt=tilt,
             polygon_boundaries=polygon,
-            normal_rotation=axis_tilt,
-            reference_point=center,
+            roll=axis_tilt,
+            reference_point=reference_point if reference_point else center,
         )
 
     def plot(self, ax=None, **kwargs):
@@ -393,7 +516,7 @@ class RectangularSurface(FlatSurface):
 
         Parameters
         ----------
-        ax : matplotlib.axes.Axes, optional
+        ax : mpl_toolkits.mplot3d.axes3d.Axes3D, optional
             Axes where to plot the surface. If None, a new figure is created.
         **kwargs : dict
             Additional arguments passed to

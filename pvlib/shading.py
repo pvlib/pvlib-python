@@ -563,7 +563,7 @@ def direct_martinez(
     total_blocks,
 ):
     r"""
-    A shading losses power factor for non-monolithic Silicon
+    A shading loss power factor for non-monolithic silicon
     modules and arrays with an arbitrary number of bypass diodes.
 
     This experimental model cancels a fraction of the direct and circumsolar
@@ -579,7 +579,7 @@ def direct_martinez(
     poa_direct : numeric
         Plane of array direct and circumsolar irradiance. [W/m²].
     shaded_fraction : numeric
-        Fraction of module surface area that is shaded. Unitless.
+        Fraction of module surface area that is shaded. [Unitless].
     shaded_blocks : numeric
         Number of blocks affected by the shadow. Unitless.
         If a floating point number is provided, it will be rounded up.
@@ -618,12 +618,12 @@ def direct_martinez(
 
     **Blocks terminology:**
 
-    [1]_ defines a *block* as a group of solar cells protected by a bypass
+    A *block* is defined in [1]_ as a group of solar cells protected by a bypass
     diode. Also, a *block* is shaded when at least one of its cells is shaded.
 
     The total number of blocks and their layout depend on the module(s) used.
     Many manufacturers don't specify this information explicitly.
-    However, we can infer these values from:
+    However, these values can be inferred from:
 
     - the number of bypass diodes
     - where and how many junction boxes are present on the back of the module

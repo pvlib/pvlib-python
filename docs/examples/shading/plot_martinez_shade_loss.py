@@ -4,8 +4,8 @@ Modelling shading losses in modules with bypass diodes
 """
 
 # %%
-# This example illustrates how to use the model proposed by Martinez et al.
-# [1]_. The model proposes a power output losses factor by adjusting
+# This example illustrates how to use the loss model proposed by Martinez et
+# al. [1]_. The model proposes a power output losses factor by adjusting
 # the incident direct and circumsolar beam irradiance fraction of a PV module
 # based on the number of shaded *blocks*. A *block* is defined as a group of
 # cells protected by a bypass diode. More information on *blocks* can be found
@@ -32,11 +32,11 @@ Modelling shading losses in modules with bypass diodes
 # - The rows have the same true-tracking tilt angles. True tracking
 #   is chosen in this example, so shading is significant.
 # - Terrain slope is 7 degrees downward to the east.
-# - Rows' axes are horizontal.
+# - Row axes are horizontal.
 # - The modules are comprised of multiple cells. We will compare these cases:
 #    - modules with one bypass diode
 #    - modules with three bypass diodes
-#    - half-cut cell modules with three bypass diodes on portrait and landscape
+#    - half-cut cell modules with three bypass diodes in portrait and landscape
 #
 # Setting up the system
 # ----------------------
@@ -71,8 +71,8 @@ times = pd.date_range("2001-04-11T04", "2001-04-11T20", freq="10min")
 # True-tracking algorithm and shaded fraction
 # -------------------------------------------
 # Since this model is about row-to-row shading, we will use the true-tracking
-# algorithm to calculate the trackers rotation. Back-tracking reduces the
-# shading between rows, but since this example is about shading, we will not
+# algorithm to calculate the trackers rotation. Back-tracking eliminates
+# shading between rows, and since this example is about shading, we will not
 # use it.
 #
 # Then, the next step is to calculate the fraction of shaded surface. This is
@@ -179,18 +179,14 @@ shaded_blocks_per_module = {
 clearsky = locus.get_clearsky(
     times, solar_position=solar_pos, model="ineichen"
 )
-dhi, dni = (
-    clearsky["dhi"],
-    clearsky["dni"],
-)
 dni_extra = pvlib.irradiance.get_extra_radiation(times)
 airmass = pvlib.atmosphere.get_relative_airmass(solar_apparent_zenith)
 sky_diffuse = pvlib.irradiance.perez_driesse(
-    surface_tilt, surface_azimuth, dhi, dni,
+    surface_tilt, surface_azimuth, clearsky["dhi"], clearsky["dni"],
     solar_apparent_zenith, solar_azimuth, dni_extra, airmass,
 )  # fmt: skip
 poa_components = pvlib.irradiance.poa_components(
-    aoi, dni, sky_diffuse, poa_ground_diffuse=0
+    aoi, clearsky["dni"], sky_diffuse, poa_ground_diffuse=0
 )  # ignore ground diffuse for brevity
 poa_global, poa_direct = (
     poa_components["poa_global"],

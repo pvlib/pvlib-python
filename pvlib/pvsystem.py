@@ -19,6 +19,7 @@ from typing import Optional, Union
 
 from pvlib._deprecation import deprecated, warn_deprecated
 
+import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
 from pvlib.tools import _build_kwargs, _build_args
@@ -131,13 +132,13 @@ class PVSystem:
 
     albedo : float, optional
         Ground surface albedo. If not supplied, then ``surface_type`` is used
-        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        to look up a value in  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`.
         If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
     surface_type : string, optional
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for
-        valid values.
+        The ground surface type. See  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`
+        for valid values.
 
     module : string, optional
         The model name of the modules.
@@ -907,13 +908,13 @@ class Array:
 
     albedo : float, optional
         Ground surface albedo. If not supplied, then ``surface_type`` is used
-        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        to look up a value in  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`.
         If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
     surface_type : string, optional
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for valid
-        values.
+        The ground surface type. See  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`
+        for valid values.
 
     module : string, optional
         The model name of the modules.
@@ -956,7 +957,7 @@ class Array:
 
         self.surface_type = surface_type
         if albedo is None:
-            self.albedo = irradiance.SURFACE_ALBEDOS.get(surface_type, 0.25)
+            self.albedo = pvlib.albedo.SURFACE_ALBEDOS.get(surface_type, 0.25)
         else:
             self.albedo = albedo
 

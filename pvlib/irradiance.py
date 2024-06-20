@@ -360,6 +360,13 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         * perez
         * perez-driesse
 
+    Hint
+    ----
+    The Perez transposition model feature discontinuities in the
+    predicted tilted diffuse irradiance due to relying discrete input values.
+    For applications that benefit from continuous output, consider using the
+    :py:func:`~pvlib.irradiance.perez-driesse`.
+
     Parameters
     ----------
     surface_tilt : numeric

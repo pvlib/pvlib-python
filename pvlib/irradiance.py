@@ -3761,3 +3761,76 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
         data = pd.DataFrame(data, index=datetime_or_doy)
 
     return data
+
+
+def diffuse_par_spitters(daily_solar_zenith, global_diffuse_fraction):
+    r"""
+    Derive daily diffuse fraction of Photosynthetically Active Radiation (PAR)
+    from daily average solar zenith and diffuse fraction of daily insolation.
+
+    The relationship is based on the work of Spitters et al. (1986) [1]_. The
+    resulting value is the fraction of daily PAR that is diffuse.
+
+    .. note::
+       The diffuse fraction is defined as the ratio of
+       diffuse to global daily insolation, in J m⁻² day⁻¹ or equivalent.
+
+    Parameters
+    ----------
+    daily_solar_zenith : numeric
+        Average daily solar zenith angle. In degrees [°].
+
+    global_diffuse_fraction : numeric
+        Fraction of daily global broadband insolation that is diffuse.
+        Unitless [0, 1].
+
+    Returns
+    -------
+    par_diffuse_fraction : numeric
+        Fraction of daily photosynthetically active radiation (PAR) that is
+        diffuse. Unitless [0, 1].
+
+    Notes
+    -----
+    The relationship is given by equations (9) & (10) in [1]_ and (1) in [2]_:
+
+    .. math::
+
+        k_{diffuse\_PAR}^{model} = \frac{PAR_{diffuse}}{PAR_{total}} =
+        \frac{\left[1 + 0.3 \left(1 - \left(k_d\right) ^2\right)\right]
+        k_d}
+        {1 + \left(1 - \left(k_d\right)^2\right) \cos ^2 (90 - \beta)
+        \cos ^3 \beta}
+
+    where :math:`k_d` is the diffuse fraction of the global insolation, and
+    :math:`\beta` is the daily average of the solar elevation angle in degrees.
+
+    A comparison using different models for the diffuse fraction of
+    the global insolation can be found in [2]_ in the context of Sweden.
+
+    References
+    ----------
+    .. [1] C. J. T. Spitters, H. A. J. M. Toussaint, and J. Goudriaan,
+       'Separating the diffuse and direct component of global radiation and its
+       implications for modeling canopy photosynthesis Part I. Components of
+       incoming radiation', Agricultural and Forest Meteorology, vol. 38,
+       no. 1, pp. 217-229, Oct. 1986, :doi:`10.1016/0168-1923(86)90060-2`.
+    .. [2] S. Ma Lu et al., 'Photosynthetically active radiation decomposition
+       models for agrivoltaic systems applications', Solar Energy, vol. 244,
+       pp. 536-549, Sep. 2022, :doi:`10.1016/j.solener.2022.05.046`.
+    """
+    # notation change:
+    # cosd(90-x) = sind(x) and 90-solar_elevation = solar_zenith
+    cosd_solar_zenith = tools.cosd(daily_solar_zenith)
+    cosd_solar_elevation = tools.sind(daily_solar_zenith)
+    par_diffuse_fraction = (
+        (1 + 0.3 * (1 - global_diffuse_fraction**2))
+        * global_diffuse_fraction
+        / (
+            1
+            + (1 - global_diffuse_fraction**2)
+            * cosd_solar_zenith**2
+            * cosd_solar_elevation**3
+        )
+    )
+    return par_diffuse_fraction

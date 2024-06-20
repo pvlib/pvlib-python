@@ -33,8 +33,9 @@ ax = plt.subplot(1, 1, 1, projection='polar')
 # draw the analemma loops
 points = ax.scatter(np.radians(solpos.azimuth), solpos.apparent_zenith,
                     s=2, label=None, c=solpos.index.dayofyear)
-times_ticks = pd.date_range('2019-01-01', '2020-01-01', freq='MS', tz=tz)
+# add and format colorbar
 cbar = ax.figure.colorbar(points)
+times_ticks = pd.date_range('2019-01-01', '2020-01-01', freq='MS', tz=tz)
 cbar.set_ticks(ticks=times_ticks.dayofyear, labels=[], minor=False)
 cbar.set_ticks(ticks=times_ticks.dayofyear+15,
                labels=times_ticks.strftime('%b'),
@@ -118,8 +119,9 @@ solpos = solpos.loc[solpos['apparent_elevation'] > 0, :]
 fig, ax = plt.subplots()
 points = ax.scatter(solpos.azimuth, solpos.apparent_elevation, s=2,
                     c=solpos.index.dayofyear, label=None)
-times_ticks = pd.date_range('2019-01-01', '2020-01-01', freq='MS', tz=tz)
+# add and format colorbar
 cbar = fig.colorbar(points)
+times_ticks = pd.date_range('2019-01-01', '2020-01-01', freq='MS', tz=tz)
 cbar.set_ticks(ticks=times_ticks.dayofyear, labels=[], minor=False)
 cbar.set_ticks(ticks=times_ticks.dayofyear+15,
                labels=times_ticks.strftime('%b'),
@@ -143,5 +145,7 @@ for date in pd.to_datetime(['2019-03-21', '2019-06-21', '2019-12-21']):
 ax.figure.legend(loc='upper center', bbox_to_anchor=[0.45, 1], ncols=3)
 ax.set_xlabel('Solar Azimuth (degrees)')
 ax.set_ylabel('Solar Elevation (degrees)')
+ax.set_xticks([0, 90, 180, 270, 360])
+ax.set_ylim(0, None)
 
 plt.show()

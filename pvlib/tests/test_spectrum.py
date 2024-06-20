@@ -426,6 +426,54 @@ def test_spectral_factor_pvspec_supplied_ambiguous():
                                         coefficients=None)
 
 
+@pytest.mark.parametrize("module_type,expected", [
+    ('multisi', np.array([1.06129, 1.03098, 1.01155, 0.99849])),
+    ('cdte', np.array([1.09657,  1.05594, 1.02763, 0.97740])),
+])
+def test_spectral_factor_jrc(module_type, expected):
+    ams = np.array([1.0, 1.5, 2.0, 1.5])
+    kcs = np.array([0.4, 0.6, 0.8, 1.4])
+    out = spectrum.spectral_factor_jrc(ams, kcs,
+                                       module_type=module_type)
+    assert np.allclose(expected, out, atol=1e-4)
+
+
+@pytest.mark.parametrize("module_type,expected", [
+    ('multisi', np.array([1.06129, 1.03098, 1.01155, 0.99849])),
+    ('cdte', np.array([1.09657,  1.05594, 1.02763, 0.97740])),
+])
+def test_spectral_factor_jrc_series(module_type, expected):
+    ams = pd.Series([1.0, 1.5, 2.0, 1.5])
+    kcs = pd.Series([0.4, 0.6, 0.8, 1.4])
+    out = spectrum.spectral_factor_jrc(ams, kcs,
+                                       module_type=module_type)
+    assert isinstance(out, pd.Series)
+    assert np.allclose(expected, out, atol=1e-4)
+
+
+def test_spectral_factor_jrc_supplied():
+    # use the multisi coeffs
+    coeffs = (0.494, 0.146, 0.00103)
+    out = spectrum.spectral_factor_jrc(1.0, 0.8, coefficients=coeffs)
+    expected = 1.01052106
+    assert_allclose(out, expected, atol=1e-4)
+
+
+def test_spectral_factor_jrc_supplied_redundant():
+    # Error when specifying both module_type and coefficients
+    coeffs = (0.494, 0.146, 0.00103)
+    with pytest.raises(ValueError, match='supply only one of'):
+        spectrum.spectral_factor_jrc(1.0, 0.8, module_type='multisi',
+                                     coefficients=coeffs)
+
+
+def test_spectral_factor_jrc_supplied_ambiguous():
+    # Error when specifying neither module_type nor coefficients
+    with pytest.raises(ValueError, match='No valid input provided'):
+        spectrum.spectral_factor_jrc(1.0, 0.8, module_type=None,
+                                     coefficients=None)
+
+
 @pytest.fixture
 def sr_and_eqe_fixture():
     # Just some arbitrary data for testing the conversion functions

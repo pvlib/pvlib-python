@@ -818,7 +818,7 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
     module_type : str, optional
         One of the following PV technology strings from [1]_:
 
-        * ``'cdte'``, - anonymous CdTe module.
+        * ``'cdte'`` - anonymous CdTe module.
         * ``'multisi'`` - anonymous multicrystalline Si module.
 
     coefficients : array-like, optional

@@ -26,16 +26,16 @@ import shapely.plotting
 # will be 30 degrees. The distance between the two rows will be 3 meters.
 
 solar_azimuth = 180  # degrees
-solar_zenith = 70  # degrees
+solar_zenith = 75  # degrees
 
 # Create the first row of panels
 row1 = RectangularSurface(  # south-most row
-    center=[0, 0, 3], azimuth=180, tilt=20, axis_tilt=0, width=2, length=20
+    center=[0, 0, 3], azimuth=165, tilt=20, axis_tilt=10, width=2, length=20
 )
 
 # Create the second row of panels
 row2 = RectangularSurface(  # north-most row
-    center=[0, 3, 3], azimuth=180, tilt=50, axis_tilt=0, width=2, length=20
+    center=[0, 3, 3], azimuth=165, tilt=20, axis_tilt=10, width=2, length=20
 )
 
 # Calculate the shadow
@@ -66,8 +66,13 @@ for shade in shades_3d.geoms:
     vertexes = shade.exterior.coords[:-1]
     ax1.add_collection3d(Poly3DCollection([vertexes], **shade_style))
 
+ax1.axis("equal")
+ax1.set_zlim(0)
+ax1.set_xlabel("West(-) <X> East(+) [m]")
+ax1.set_ylabel("South(-) <Y> North(+) [m]")
+
 row_style_2d = {**row_style, "add_points": False}
-row2_2d = row2.representation_in_2D_space(solar_zenith, solar_azimuth)
+row2_2d = row2.representation_in_2D_space()
 print(f"{row2_2d=}")
 shapely.plotting.plot_polygon(row2_2d, ax=ax2, **row_style_2d)
 shade_style_2d = {**shade_style, "add_points": False}

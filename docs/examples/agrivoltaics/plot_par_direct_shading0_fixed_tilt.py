@@ -54,8 +54,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import shapely.plotting
 import pandas as pd
-import numpy as np
-import shapely as sp
 from pvlib.spatial import RectangularSurface
 
 # Kärrbo Prästgård, Västerås, Sweden
@@ -79,7 +77,7 @@ solar_zenith = 70
 
 field = RectangularSurface(  # crops top surface
     center=[10, 5, 0],
-    azimuth=0,
+    azimuth=180,  # chosen instead of 0 (north) for intuitive visualization
     tilt=0,
     axis_tilt=0,
     width=10,
@@ -141,8 +139,8 @@ for shade in shades_3d.geoms:
 
 ax1.axis("equal")
 ax1.set_zlim(0)
-ax1.set_xlabel("West(-) <> East(+) [m]")
-ax1.set_ylabel("South(-) <> North(+) [m]")
+ax1.set_xlabel("West(-) <X> East(+) [m]")
+ax1.set_ylabel("South(-) <Y> North(+) [m]")
 
 field2d = field.representation_in_2D_space()
 field_style_2d = {**field_style, "add_points": False}

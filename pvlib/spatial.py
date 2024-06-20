@@ -2,7 +2,7 @@
 Spatial functions for shading and 3D scenes analysis.
 """
 
-from pvlib.tools import sind, cosd, acosd, atan2d
+from pvlib.tools import sind, cosd
 import numpy as np
 import shapely as sp
 import matplotlib.pyplot as plt
@@ -33,9 +33,10 @@ def _solar_vector(zenith, azimuth):
     .. [1] E. Lorenzo, L. Narvarte, and J. Muñoz, 'Tracking and
        back-tracking', Progress in Photovoltaics: Research and Applications,
        vol. 19, no. 6, pp. 747-753, 2011, :doi:`10.1002/pip.1085`.
-    .. [2] Kevin S. Anderson, Adam R. Jensen; Shaded fraction and backtracking
-       in single-axis trackers on rolling terrain. J. Renewable Sustainable
-       Energy 1 March 2024; 16 (2): 023504. :doi:`10.1063/5.0202220`.
+    .. [2] Kevin S. Anderson, Adam R. Jensen; Shaded fraction and
+       backtracking in single-axis trackers on rolling terrain. J. Renewable
+       Sustainable Energy 1 March 2024; 16 (2): 023504.
+       :doi:`10.1063/5.0202220`.
     """
     # Eq. (2), [1]; with zenith instead of elevation; coordinate system of [2]
     return np.array(
@@ -75,9 +76,10 @@ def _plane_normal_vector(tilt, azimuth):
        for the most representative agrivoltaic system layouts', Applied
        Energy, vol. 339, p. 120981, Jun. 2023,
        :doi:`10.1016/j.apenergy.2023.120981`.
-    .. [2] Kevin S. Anderson, Adam R. Jensen; Shaded fraction and backtracking
-       in single-axis trackers on rolling terrain. J. Renewable Sustainable
-       Energy 1 March 2024; 16 (2): 023504. :doi:`10.1063/5.0202220`.
+    .. [2] Kevin S. Anderson, Adam R. Jensen; Shaded fraction and
+       backtracking in single-axis trackers on rolling terrain. J. Renewable
+       Sustainable Energy 1 March 2024; 16 (2): 023504.
+       :doi:`10.1063/5.0202220`.
     """
     # Eq. (18) of [1], but coordinate system specified in Fig. 1, [2]
     return np.array(
@@ -85,7 +87,6 @@ def _plane_normal_vector(tilt, azimuth):
     )
 
 
-# %%
 class FlatSurface:
     """
     Represents a flat surface in 3D space with a given azimuth and tilt and
@@ -113,7 +114,12 @@ class FlatSurface:
     polygon : shapely.Polygon or array[N, 3]
         Shapely Polygon or boundaries to build it.
         Holes are ignored for now.
-
+    normal_rotation : float, default 0.0°
+        Right-handed rotation around the surface normal vector defined by
+        ``tilt`` and ``azimuth``. In degrees [°].
+    reference_point : array-like, shape (3,), optional
+        Point to use as reference for 2D projections. If not provided, the
+        first vertex of the polygon is used.
 
     References
     ----------
@@ -126,9 +132,9 @@ class FlatSurface:
        vol. 85, no. 10, pp. 2524-2539, Oct. 2011,
        :doi:`10.1016/j.solener.2011.07.011`.
     .. [3] Kevin S. Anderson, Adam R. Jensen; Shaded fraction and
-       backtracking
-       in single-axis trackers on rolling terrain. J. Renewable Sustainable
-       Energy 1 March 2024; 16 (2): 023504. :doi:`10.1063/5.0202220`.
+       backtracking in single-axis trackers on rolling terrain. J. Renewable
+       Sustainable Energy 1 March 2024; 16 (2): 023504.
+       :doi:`10.1063/5.0202220`.
     """
 
     @property
@@ -140,19 +146,68 @@ class FlatSurface:
         return self._tilt
 
     @property
+    def normal_rotation(self):
+        return self._normal_rotation
+
+    @property
     def polygon(self):
         return self._polygon
 
-    def __init__(self, azimuth, tilt, polygon_boundaries):
-        # Wrap these two attributes in 2D ndarrays for consistency
+    @property
+    def reference_point(self):
+        return self._reference_point
+
+    def __init__(
+        self,
+        azimuth,
+        tilt,
+        polygon_boundaries,
+        normal_rotation=0.0,
+        reference_point=None,
+    ):
         self._azimuth = np.array(azimuth)
         self._tilt = np.array(tilt)
+        self._normal_rotation = np.array(normal_rotation)
         # works for polygon_boundaries := array[N, 3] | shapely.Polygon
         self._polygon = sp.Polygon(polygon_boundaries)
         # internal 2D coordinates-system to translate projections matrix
         # only defined if needed later on
+        self._reference_point = (
+            reference_point
+            if reference_point is not None
+            else self._polygon.exterior.coords[0]
+        )
         self._rotation_inverse = None
         self._projected_polygon = None
+
+    def __repr__(self):
+        return None
+
+    def _transform_to_2D(self, points):
+        """
+        Transform a 3D point that **belongs** to the surface,
+        to the 2D plane of this surface with respect to the local reference.
+
+        Parameters
+        ----------
+        point : array-like, shape (N, 3)
+            Point to project.
+
+        Returns
+        -------
+        array-like, shape (N, 2)
+            Projected point.
+        """
+        # undo surface rotations to make the third coordinate zero
+        _projection = self._get_projection_transform()
+        # Section 4.3 in [2]
+        vertices_2d = _projection.apply(points - self.reference_point)
+        if not np.allclose(vertices_2d[:, 2], 0.0, atol=1e-10):
+            raise RuntimeError(
+                "Non-null third coordinate in 2D projection. "
+                + "This should not happen. Please report a bug."
+            )
+        return np.delete(vertices_2d, 2, axis=1)
 
     def get_3D_shades_from(self, solar_zenith, solar_azimuth, *others):
         """
@@ -176,8 +231,9 @@ class FlatSurface:
 
         Returns
         -------
-        tuple[shapely.Polygon]
+        shapely.MultiPolygon
             Shapely Polygon objects representing the shades on this surface.
+            These shades may overlap.
         """
         solar_vec = solar_vec = _solar_vector(  # Eq. (8) -> x,y,z
             solar_zenith, solar_azimuth
@@ -186,14 +242,10 @@ class FlatSurface:
             self._tilt, self._azimuth
         )
 
-        plane_point = np.array(
-            self._polygon.exterior.coords[0]
-        )  # any point on the plane
-
         def project_point_to_real_plane(vertex):  # vertex -> Px, Py, Pz
             # Similar to Eq. (20), but takes into account plane position so
             # result belongs to the plane that contains the bounded surface
-            t = ((plane_point - vertex) @ normal_vec) / (
+            t = ((self._reference_point - vertex) @ normal_vec) / (
                 solar_vec @ normal_vec
             )
             p_prime = vertex + (t * solar_vec.T).T  # Eq. (19)
@@ -217,86 +269,49 @@ class FlatSurface:
         return sp.MultiPolygon(map(get_3D_shade_from_flat_surface, others))
 
     def get_2D_shades_from(self, solar_zenith, solar_azimuth, *others):
-        solar_vec = solar_vec = _solar_vector(  # Eq. (8) -> x,y,z
-            solar_zenith, solar_azimuth
-        )
-        normal_vec = _plane_normal_vector(  # Eq. (18) -> a,b,c
-            self._tilt, self._azimuth
-        )
+        shades = self.get_3D_shades_from(solar_zenith, solar_azimuth, *others)
 
-        def project_point_to_origin_plane(vertex):  # vertex -> Px, Py, Pz
-            # Eq. (20), projects to plane that goes through the origin (0,0,0)
-            t = -(vertex @ normal_vec) / (solar_vec @ normal_vec)
-            p_prime = vertex + (t * solar_vec.T).T  # Eq. (19)
-            return p_prime
-
-        # undo surface rotations to make the third coordinate zero
-        _projection = self._get_projection_transform()
         # and clip the 2D shades to the surface in 2D
-        # _self_projected_polygon = self.representation_in_2D_space()
-        # print(f"{_self_projected_polygon=}")
-
-        # Section 4.3 in [2]
-        def transform_to_2D_reference_plane(vertices):
-            vertices_2d = _projection.apply(vertices)
-            if not np.allclose(vertices_2d[:, 2], 0.0, atol=1e-10):
-                raise RuntimeError(
-                    "Non-null third coordinate in 2D projection!"
-                )  # for debugging purposes; TODO: remove <<<<<< !!!!!! ######
-            return np.delete(vertices_2d, 2, axis=1)
+        _self_projected_polygon = self.representation_in_2D_space()
 
         def get_2D_shade_from_flat_surface(other):
-            coords_to_project = np.array(other.polygon.exterior.coords[:-1])
-            projected_vertices = np.fromiter(
-                map(project_point_to_origin_plane, coords_to_project),
-                dtype=(float, 3),
-                count=len(coords_to_project),  # speeds up allocation
-            )
+            coords_to_project = np.array(other.exterior.coords[:-1])
+
             # create shapely shade object and bound it to the surface
-            projected_vertices_2d = transform_to_2D_reference_plane(
-                projected_vertices
+            projected_vertices_2d = self._transform_to_2D(coords_to_project)
+            shade = sp.Polygon(projected_vertices_2d).intersection(
+                _self_projected_polygon
             )
-            shade = sp.Polygon(projected_vertices_2d)
-            # .intersection(
-            #     _self_projected_polygon
-            # )
-            print(f"{sp.Polygon(projected_vertices_2d)=}")
-            print(f"{shade=}")
+            # Return Polygons only, geometries with empty area are omitted
             return shade if isinstance(shade, sp.Polygon) else sp.Polygon()
 
-        return sp.MultiPolygon(map(get_2D_shade_from_flat_surface, others))
+        return sp.MultiPolygon(
+            map(get_2D_shade_from_flat_surface, shades.geoms)
+        )
 
     def _get_projection_transform(self):
         if self._rotation_inverse is None:
             self._rotation_inverse = Rotation.from_euler(
-                "ZXZ", [-self._azimuth, -self._tilt, 0], degrees=True
-            ).inv()
+                "zxz",
+                [self._azimuth - 180, -self._tilt, -self._normal_rotation],
+                degrees=True,
+            )
         return self._rotation_inverse
 
-    def representation_in_2D_space(self, solar_zenith, solar_azimuth):
-        if self._projected_polygon is None:
-            _projection = self._get_projection_transform()
-            solar_vec = solar_vec = _solar_vector(  # Eq. (8) -> x,y,z
-                solar_zenith, solar_azimuth
-            )
-            normal_vec = _plane_normal_vector(  # Eq. (18) -> a,b,c
-                self._tilt, self._azimuth
-            )
+    def representation_in_2D_space(self):
+        """
+        Get the 2D representation of the surface in its local plane, with
+        respect to the reference point.
 
-            def project_point_to_origin_plane(vertex):  # vertex -> Px, Py, Pz
-                # Eq. (20), projects to plane that goes through the origin (0,0,0)
-                t = -(vertex @ normal_vec) / (solar_vec @ normal_vec)
-                p_prime = vertex + (t * solar_vec.T).T  # Eq. (19)
-                return p_prime
-            vertices_to_project = self._polygon.exterior.coords[:-1]
-            origin_plane_vertices = np.fromiter(
-                map(project_point_to_origin_plane, vertices_to_project),
-                dtype=(float, 3),
-                count=len(vertices_to_project),  # speeds up allocation
-            )
-            projected_vertices = _projection.apply(origin_plane_vertices)
+        Returns
+        -------
+        shapely.Polygon
+            2D representation of the surface.
+        """
+        if self._projected_polygon is None:
+            vertices = np.array(self._polygon.exterior.coords[:-1])
             self._projected_polygon = sp.Polygon(
-                np.delete(projected_vertices, 2, axis=1)
+                self._transform_to_2D(vertices)
             )
         return self._projected_polygon
 
@@ -321,7 +336,6 @@ class FlatSurface:
         pass  # TODO: implement this method
 
 
-# %%
 class RectangularSurface(FlatSurface):
     def __init__(self, center, azimuth, tilt, axis_tilt, width, length):
         """
@@ -348,7 +362,6 @@ class RectangularSurface(FlatSurface):
         length: length of the surface
             Perpendicular to the surface azimuth
         """
-        self.center = np.array(center)
         corners = np.array(
             [
                 [-length / 2, -width / 2, 0],
@@ -359,35 +372,20 @@ class RectangularSurface(FlatSurface):
         )
         # rotate corners to match the surface orientation
         # note pvlib convention uses a left-handed azimuth rotation
+        # and tilt is defined as the angle from the horizontal plane
+        # downwards the azimuth direction (also left-handed)
+        # axis_tilt is the rotation around the normal vector, right-handed
         _rotation = Rotation.from_euler(
             "ZXZ", [-azimuth, -tilt, axis_tilt], degrees=True
         )
-        self._polygon = sp.Polygon(_rotation.apply(corners) + center)
-        super().__init__(azimuth, tilt, self._polygon)
-        self._rotation_inverse = _rotation.inv()
-
-    @classmethod
-    def _calc_surface_tilt_and_azimuth(cls, rotation_matrix):
-        """
-        Given the rotation matrix that results from the surface orientation in
-        terms of an ``surface_azimuth``, ``surface_tilt`` and ``axis_tilt``,
-        calculate the resulting tilt and azimuth angles of the surface.
-
-        Parameters
-        ----------
-        rotation_matrix : array[3, 3]
-            Rotation matrix.
-
-        Returns
-        -------
-        tilt, azimuth : float, float
-            Surface tilt and azimuth angles in degrees.
-        """
-        # tz as in K. Anderson and M. Mikofski paper, Fig. 1
-        tz_x, tz_y, tz_z = rotation_matrix[:, 2]  # := rot @ [0, 0, 1].T
-        tilt = acosd(tz_z)
-        azimuth = atan2d(tz_y, tz_x)
-        return tilt, azimuth
+        polygon = sp.Polygon(_rotation.apply(corners) + center)
+        super().__init__(
+            azimuth=azimuth,
+            tilt=tilt,
+            polygon_boundaries=polygon,
+            normal_rotation=axis_tilt,
+            reference_point=center,
+        )
 
     def plot(self, ax=None, **kwargs):
         """

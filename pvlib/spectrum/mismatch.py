@@ -858,7 +858,7 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
 
     References
     ----------
-    .. [1] Huld, T., Tony, S., and Ewan, D., 2009. A simple model
+    .. [1] Huld, T., Sample, T., and Dunlop, E., 2009. A simple model
        for estimating the influence of spectrum variations on PV performance.
        In Proceedings of the 24th European Photovoltaic Solar Energy
        Conference, Hamburg, Germany pp. 3385-3389. 2009. Accessed at:

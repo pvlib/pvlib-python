@@ -803,7 +803,7 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
     The JRC spectral mismatch model includes the effects of cloud cover on
     the irradiance spectrum. Model coefficients are derived using measurements
     of irradiance and module performance at the Joint Research Centre (JRC) in
-    Ispra, Italy (45°48'N, 8°37'E). Coefficients for two module types are
+    Ispra, Italy (45.80N, 8.62E). Coefficients for two module types are
     available via the ``module_type`` parameter. More details on the model can
     be found in [1]_.
 

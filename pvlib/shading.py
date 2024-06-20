@@ -581,7 +581,7 @@ def direct_martinez(
     shaded_fraction : numeric
         Fraction of module surface area that is shaded. [Unitless].
     shaded_blocks : numeric
-        Number of blocks affected by the shadow. Unitless.
+        Number of blocks affected by the shadow. [Unitless].
         If a floating point number is provided, it will be rounded up.
     total_blocks : int
         Number of total blocks. Unitless.
@@ -589,7 +589,7 @@ def direct_martinez(
     Returns
     -------
     shading_losses : numeric
-        Fraction of DC power lost due to shading. [unitless]
+        Fraction of DC power lost due to shading. [Unitless]
 
     Notes
     -----

@@ -140,7 +140,7 @@ for date in pd.to_datetime(['2019-03-21', '2019-06-21', '2019-12-21']):
     label = date.strftime('%Y-%m-%d')
     ax.plot(solpos.azimuth, solpos.apparent_elevation, label=label)
 
-ax.figure.legend(loc='upper left')
+ax.figure.legend(loc='upper center', bbox_to_anchor=[0.45, 1], ncols=3)
 ax.set_xlabel('Solar Azimuth (degrees)')
 ax.set_ylabel('Solar Elevation (degrees)')
 

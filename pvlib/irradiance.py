@@ -3772,8 +3772,8 @@ def diffuse_par_spitters(daily_solar_zenith, global_diffuse_fraction):
     resulting value is the fraction of daily PAR that is diffuse.
 
     .. note::
-       This diffuse fractions are defined as the ratio of
-       diffuse to global daily insolations, in J m⁻² day⁻¹ or equivalent.
+       The diffuse fraction is defined as the ratio of
+       diffuse to global daily insolation, in J m⁻² day⁻¹ or equivalent.
 
     Parameters
     ----------

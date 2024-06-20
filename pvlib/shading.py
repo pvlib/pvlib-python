@@ -566,8 +566,9 @@ def direct_martinez(
     A shading loss power factor for non-monolithic silicon
     modules and arrays with an arbitrary number of bypass diodes.
 
-    This experimental model zeroes a fraction of the direct and circumsolar
-    irradiance based on the number of *blocks* affected by the shadow.
+    This experimental model reduces the direct and circumsolar
+    irradiance reaching the module's cells based on the number of *blocks*
+    affected by the shadow.
     More on blocks in the *Notes* section and in [1]_.
 
     .. versionadded:: 0.11.0

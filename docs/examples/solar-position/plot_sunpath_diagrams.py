@@ -33,7 +33,13 @@ ax = plt.subplot(1, 1, 1, projection='polar')
 # draw the analemma loops
 points = ax.scatter(np.radians(solpos.azimuth), solpos.apparent_zenith,
                     s=2, label=None, c=solpos.index.dayofyear)
-ax.figure.colorbar(points)
+times_ticks = pd.date_range('2019-01-01', '2020-01-01', freq='MS', tz=tz)
+cbar = ax.figure.colorbar(points)
+cbar.set_ticks(ticks=times_ticks.dayofyear, labels=[], minor=False)
+cbar.set_ticks(ticks=times_ticks.dayofyear+15,
+               labels=times_ticks.strftime('%b'),
+               minor=True)
+cbar.ax.tick_params(which='minor', width=0)
 
 # draw hour labels
 for hour in np.unique(solpos.index.hour):
@@ -112,7 +118,13 @@ solpos = solpos.loc[solpos['apparent_elevation'] > 0, :]
 fig, ax = plt.subplots()
 points = ax.scatter(solpos.azimuth, solpos.apparent_elevation, s=2,
                     c=solpos.index.dayofyear, label=None)
-fig.colorbar(points)
+times_ticks = pd.date_range('2019-01-01', '2020-01-01', freq='MS', tz=tz)
+cbar = fig.colorbar(points)
+cbar.set_ticks(ticks=times_ticks.dayofyear, labels=[], minor=False)
+cbar.set_ticks(ticks=times_ticks.dayofyear+15,
+               labels=times_ticks.strftime('%b'),
+               minor=True)
+cbar.ax.tick_params(which='minor', width=0)
 
 for hour in np.unique(solpos.index.hour):
     # choose label position by the largest elevation for each hour

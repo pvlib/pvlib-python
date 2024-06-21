@@ -62,7 +62,7 @@ def power_mismatch_deline(
 
     Returns
     -------
-    loss : numeric
+    loss : numeric, same type as ``rmad``
         The power loss.
 
     Raises
@@ -170,4 +170,4 @@ def power_mismatch_deline(
             model_polynom = np.polynomial.Polynomial(coef=model)
 
     mismatch = model_polynom(rmad)
-    return type(rmad)(mismatch)
+    return type(rmad)(mismatch)  # return same type as input

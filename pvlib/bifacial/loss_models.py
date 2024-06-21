@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from typing import Literal
 
@@ -168,4 +169,6 @@ def power_mismatch_deline(
         else:  # expect an iterable
             model_polynom = np.polynomial.Polynomial(coef=model)
 
-    return model_polynom(rmad)
+    mismatch = model_polynom(rmad)
+    if isinstance(rmad, pd.Series):
+        mismatch = pd.Series(mismatch, index=rmad.index)

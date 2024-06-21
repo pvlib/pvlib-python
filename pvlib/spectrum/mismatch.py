@@ -794,6 +794,116 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     return mismatch
 
 
+def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
+                        coefficients=None):
+    r"""
+    Estimate a technology-specific spectral mismatch modifier from
+    airmass and clear sky index using the JRC model.
+
+    The JRC spectral mismatch model includes the effects of cloud cover on
+    the irradiance spectrum. Model coefficients are derived using measurements
+    of irradiance and module performance at the Joint Research Centre (JRC) in
+    Ispra, Italy (45.80N, 8.62E). Coefficients for two module types are
+    available via the ``module_type`` parameter. More details on the model can
+    be found in [1]_.
+
+    Parameters
+    ----------
+    airmass : numeric
+        relative airmass. [unitless]
+
+    clearsky_index: numeric
+        clear sky index. [unitless]
+
+    module_type : str, optional
+        One of the following PV technology strings from [1]_:
+
+        * ``'cdte'`` - anonymous CdTe module.
+        * ``'multisi'`` - anonymous multicrystalline Si module.
+
+    coefficients : array-like, optional
+        user-defined coefficients, if not using one of the default coefficient
+        sets via the ``module_type`` parameter.
+
+    Returns
+    -------
+    mismatch: numeric
+        spectral mismatch factor (unitless) which is multiplied
+        with broadband irradiance reaching a module's cells to estimate
+        effective irradiance, i.e., the irradiance that is converted to
+        electrical current.
+
+    Notes
+    -----
+    The JRC model parameterises the spectral mismatch factor as a function
+    of air mass and the clear sky index as follows:
+
+    .. math::
+
+        M = 1 + a_1(e^{-k_c}-e^{-1}) + a_2(k_c-1)+a_3(AM-1.5),
+
+    where :math:`M` is the spectral mismatch factor, :math:`k_c` is the clear
+    sky index, :math:`AM` is the air mass, :math:`e` is Euler's number, and
+    :math:`a_1, a_2, a_3` are module-specific coefficients. The :math:`a_n`
+    coefficients available via the ``coefficients`` parameter differ from the
+    :math:`k_n` coefficients documented in [1]_ in that they are normalised by
+    the specific short-circuit current value, :math:`I_{sc0}^*`, which is the
+    expected short-circuit current at standard test conditions indoors. The
+    model used to estimate the air mass (denoted as :math:`AM`) is not stated
+    in the original publication. The authors of [1]_ used the ESRA model [2]_
+    to estimate the clear sky GHI for the clear sky index, which is the ratio
+    of GHI to clear sky GHI. Also, prior to the calculation of :math:`k_c`, the
+    irradiance measurements were corrected for angle of incidence using the
+    Martin and Ruiz model [3]_.
+
+    References
+    ----------
+    .. [1] Huld, T., Sample, T., and Dunlop, E., 2009. A simple model
+       for estimating the influence of spectrum variations on PV performance.
+       In Proceedings of the 24th European Photovoltaic Solar Energy
+       Conference, Hamburg, Germany pp. 3385-3389. 2009. Accessed at:
+       https://www.researchgate.net/publication/256080247
+    .. [2] Rigollier, C., Bauer, O., and Wald, L., 2000. On the clear sky model
+       of the ESRA—European Solar Radiation Atlas—with respect to the Heliosat
+       method. Solar energy, 68(1), pp.33-48.
+       :doi:`10.1016/S0038-092X(99)00055-9`
+    .. [3] Martin, N. and Ruiz, J. M., 2001. Calculation of the PV modules
+       angular losses under field conditions by means of an analytical model.
+       Solar Energy Materials and Solar Cells, 70(1), 25-38.
+       :doi:`10.1016/S0927-0248(00)00408-6`
+    """
+
+    _coefficients = {}
+    _coefficients['multisi'] = (0.00172, 0.000508, 0.00000357)
+    _coefficients['cdte'] = (0.000643, 0.000130, 0.0000108)
+    # normalise coefficients by I*sc0, see [1]
+    _coefficients = {
+        'multisi': tuple(x / 0.00348 for x in _coefficients['multisi']),
+        'cdte': tuple(x / 0.001150 for x in _coefficients['cdte'])
+    }
+    if module_type is not None and coefficients is None:
+        coefficients = _coefficients[module_type.lower()]
+    elif module_type is None and coefficients is not None:
+        pass
+    elif module_type is None and coefficients is None:
+        raise ValueError('No valid input provided, both module_type and ' +
+                         'coefficients are None. module_type can be one of ' +
+                         ", ".join(_coefficients.keys()))
+    else:
+        raise ValueError('Cannot resolve input, must supply only one of ' +
+                         'module_type and coefficients. module_type can be ' +
+                         'one of' ", ".join(_coefficients.keys()))
+
+    coeff = coefficients
+    mismatch = (
+        1
+        + coeff[0] * (np.exp(-clearsky_index) - np.exp(-1))
+        + coeff[1] * (clearsky_index - 1)
+        + coeff[2] * (airmass - 1.5)
+    )
+    return mismatch
+
+
 def sr_to_qe(sr, wavelength=None, normalize=False):
     """
     Convert spectral responsivities to quantum efficiencies.

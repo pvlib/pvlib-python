@@ -253,14 +253,16 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
                                module_type=None, coefficients=None,
                                min_precipitable_water=0.1,
-                               max_precipitable_water=8):
+                               max_precipitable_water=8,
+                               min_airmass_absolute=0.58,
+                               max_airmass_absolute=10):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) air mass.
 
     Estimates a spectral mismatch modifier :math:`M` representing the effect on
     module short circuit current of variation in the spectral
-    irradiance. :math:`M`  is estimated from absolute (pressure currected) air
+    irradiance. :math:`M`  is estimated from absolute (pressure corrected) air
     mass, :math:`AM_a`, and precipitable water, :math:`Pw`, using the following
     function:
 
@@ -325,12 +327,20 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     min_precipitable_water : float, default 0.1
         minimum atmospheric precipitable water. Any ``precipitable_water``
         value lower than ``min_precipitable_water``
-        is set to ``min_precipitable_water`` to avoid model divergence. [cm]
+        is set to ``min_precipitable_water``. [cm]
 
     max_precipitable_water : float, default 8
         maximum atmospheric precipitable water. Any ``precipitable_water``
         value greater than ``max_precipitable_water``
-        is set to ``np.nan`` to avoid model divergence. [cm]
+        is set to ``np.nan``. [cm]
+
+    min_airmass_absolute : float, default 0.58
+        minimum absolute airmass. Any ``airmass_absolute`` value lower than
+        ``min_airmass_absolute`` is set to ``min_airmass_absolute``.
+
+    max_airmass_absolute : float, default 10
+        minimum absolute airmass. Any ``airmass_absolute`` value greater than
+        ``max_airmass_absolute`` is set to ``max_airmass_absolute``.
 
     Returns
     -------
@@ -360,31 +370,31 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     # --- Screen Input Data ---
 
     # *** Pw ***
-    # Replace Pw Values below 0.1 cm with 0.1 cm to prevent model from
-    # diverging"
+    # Replace Pw Values below min_pw with min_pw"
     pw = np.atleast_1d(precipitable_water)
     pw = pw.astype('float64')
     if np.min(pw) < min_precipitable_water:
         pw = np.maximum(pw, min_precipitable_water)
-        warn('Exceptionally low pw values replaced with '
-             f'{min_precipitable_water} cm to prevent model divergence')
+        warn('Low pw values replaced with 'f'{min_precipitable_water} cm in '
+             'the calculation of spectral mismatch')
 
-    # Warn user about Pw data that is exceptionally high
     if np.max(pw) > max_precipitable_water:
-        pw[pw > max_precipitable_water] = np.nan
-        warn('Exceptionally high pw values replaced by np.nan: '
-             'check input data.')
+        pw = np.minimum(pw, max_precipitable_water)
+        warn('High pw values replaced with 'f'{max_precipitable_water} cm in '
+             'the calculation of spectral mismatch')
 
     # *** AMa ***
-    # Replace Extremely High AM with AM 10 to prevent model divergence
+    # Replace Extremely High AM with max_am
     # AM > 10 will only occur very close to sunset
-    if np.max(airmass_absolute) > 10:
-        airmass_absolute = np.minimum(airmass_absolute, 10)
+    if np.max(airmass_absolute) > max_airmass_absolute:
+        airmass_absolute = np.minimum(airmass_absolute, max_airmass_absolute)
+    warn('High AMa values replaced with 'f'{max_airmass_absolute} in the'
+         ' calculation of spectral mismatch')
 
-    # Warn user about AMa data that is exceptionally low
-    if np.min(airmass_absolute) < 0.58:
-        warn('Exceptionally low air mass: ' +
-             'model not intended for extra-terrestrial use')
+    if np.min(airmass_absolute) < min_airmass_absolute:
+        airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
+        warn('Low AMa values replaced with 'f'{min_airmass_absolute} in the'
+             ' calculation of spectral mismatch')
         # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
         # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
         # population over 50,000.

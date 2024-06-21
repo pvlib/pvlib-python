@@ -170,5 +170,4 @@ def power_mismatch_deline(
             model_polynom = np.polynomial.Polynomial(coef=model)
 
     mismatch = model_polynom(rmad)
-    if isinstance(rmad, pd.Series):
-        mismatch = pd.Series(mismatch, index=rmad.index)
+    return type(rmad)(mismatch)

@@ -1,15 +1,15 @@
 .. _whatsnew_01100:
 
 
-v0.11.0 (Anticipated June, 2024)
---------------------------------
+v0.11.0 (June 21, 2024)
+-----------------------
 
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
 * The deprecated ``pvlib.modelchain.basic_chain`` has now been removed. (:pull:`1862`)
 * Remove the ``poa_horizontal_ratio`` function and all of its references. (:issue:`1697`, :pull:`2021`)
-* Updated `~pvlib.iotools.MIDC_VARIABLE_MAP`~ to reflect
+* Updated :py:const:`~pvlib.iotools.MIDC_VARIABLE_MAP` to reflect
   changes in instrumentation. (:pull:`2006`)
 * ``pvlib.iotools.read_srml_month_from_solardat`` was deprecated in v0.10.0 and has
   now been completely removed. The function is replaced by :py:func:`~pvlib.iotools.get_srml()`.
@@ -71,20 +71,9 @@ Enhancements
   now comes from :py:func:`~pvlib.location.lookup_altitude` (:issue:`1516`, :pull:`1850`)
 
 
-Bug fixes
-~~~~~~~~~
-
-
-Testing
-~~~~~~~
-
-
 Documentation
 ~~~~~~~~~~~~~
 * Configure mathjax to left-align and indent equations in docstrings. (:pull:`2056`)
-
-Requirements
-~~~~~~~~~~~~
 
 
 Contributors
@@ -98,3 +87,10 @@ Contributors
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Nicolas Martinez (:ghuser:`nicomt`)
 * :ghuser:`PhilBrk8`
+* John Obrecht (:ghuser:`jmobrecht`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Will Hobbs (:ghuser:`williamhobbs`)
+* Kevin Anderson (:ghuser:`kandersolar`)

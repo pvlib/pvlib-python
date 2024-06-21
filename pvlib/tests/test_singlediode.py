@@ -10,6 +10,7 @@ from pvlib.singlediode import (bishop88_mpp, estimate_voc, VOLTAGE_BUILTIN,
                                bishop88, bishop88_i_from_v, bishop88_v_from_i)
 from pvlib._deprecation import pvlibDeprecationWarning
 import pytest
+from numpy.testing import assert_array_equal
 from .conftest import DATA_DIR
 
 POA = 888
@@ -110,12 +111,11 @@ def build_precise_iv_curve_dataframe(file_csv, file_json):
 
     # parse strings to np.float64
     is_array = ['Currents', 'Voltages', 'diode_voltage']
-    joined[is_array] = joined[is_array].applymap(
-        lambda a: np.asarray(a, dtype=np.float64)
-    )
+    for col in is_array:
+        joined[col] = [np.asarray(a, dtype=np.float64) for a in joined[col]]
     is_number = ['v_oc', 'i_sc', 'v_mp', 'i_mp', 'p_mp', 'i_x', 'i_xx',
                  'Temperature']
-    joined[is_number] = joined[is_number].applymap(np.float64)
+    joined[is_number] = joined[is_number].astype(np.float64)
 
     joined['Boltzmann'] = scipy.constants.Boltzmann
     joined['Elementary Charge'] = scipy.constants.elementary_charge
@@ -168,17 +168,24 @@ def test_singlediode_precision(method, precise_iv_curves):
     assert np.allclose(pc['i_xx'], outs['i_xx'], atol=1e-6, rtol=0)
 
 
-def test_singlediode_lambert_negative_voc():
-
-    # Those values result in a negative v_oc out of `_lambertw_v_from_i`
-    x = np.array([0., 1.480501e-11, 0.178, 8000., 1.797559])
-    outs = pvsystem.singlediode(*x, method='lambertw')
-    assert outs['v_oc'] == 0
+def test_singlediode_lambert_negative_voc(mocker):
+    """Tests approximation to zero of v_oc when it is negative and small.
+    See singlediode.py:_lambertw > comment 'Set small elements <0 in v_oc to 0'
+    """
+    # Next values should result in a negative v_oc out of `_lambertw_v_from_i`
+    # however, we can't ensure that the output belongs to (-1e-12, 0), so we
+    # mock it. It depends on the platform and Python distro. See issue #2000.
+    patcher = mocker.patch("pvlib.singlediode._lambertw_v_from_i")
+    x = np.array([0.0, 1.480501e-11, 0.178, 8000.0, 1.797559])
+    patcher.return_value = -9.999e-13
+    outs = pvsystem.singlediode(*x, method="lambertw")
+    assert outs["v_oc"] == 0
 
     # Testing for an array
-    x  = np.array([x, x]).T
-    outs = pvsystem.singlediode(*x, method='lambertw')
-    assert np.array_equal(outs['v_oc'], [0, 0])
+    patcher.return_value = np.array([-9.999e-13, -1.001e-13])
+    x = np.array([x, x]).T
+    outs = pvsystem.singlediode(*x, method="lambertw")
+    assert_array_equal(outs["v_oc"], [0, 0])
 
 
 @pytest.mark.parametrize('method', ['lambertw'])
@@ -348,7 +355,7 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
         # other conditions with breakdown model on and recombination model off
         (
             (1.e-4, -5.5, 3.28),
-            (0., np.Inf),
+            (0., np.inf),
             POA,
             TCELL,
             {
@@ -557,3 +564,64 @@ def test_bishop88_full_output_kwarg(method, bishop88_arguments):
     assert isinstance(ret_val[1], tuple)  # second is output from optimizer
     # any root finder returns at least 2 elements with full_output=True
     assert len(ret_val[1]) >= 2
+
+
+@pytest.mark.parametrize('method', ['newton', 'brentq'])
+def test_bishop88_pdSeries_len_one(method, bishop88_arguments):
+    for k, v in bishop88_arguments.items():
+        bishop88_arguments[k] = pd.Series([v])
+
+    # should not raise error
+    bishop88_i_from_v(pd.Series([0]), **bishop88_arguments, method=method)
+    bishop88_v_from_i(pd.Series([0]), **bishop88_arguments, method=method)
+    bishop88_mpp(**bishop88_arguments, method=method)
+
+
+def _sde_check_solution(i, v, il, io, rs, rsh, a, d2mutau=0., NsVbi=np.inf):
+    vd = v + rs * i
+    return il - io*np.expm1(vd/a) - vd/rsh - il*d2mutau/(NsVbi - vd) - i
+
+
+@pytest.mark.parametrize('method', ['newton', 'brentq'])
+def test_bishop88_init_cond(method):
+    # GH 2013
+    p = {'alpha_sc': 0.0012256,
+         'gamma_ref': 1.2916241612804187,
+         'mu_gamma': 0.00047308959960937403,
+         'I_L_ref': 3.068717040806731,
+         'I_o_ref': 2.2691248021217617e-11,
+         'R_sh_ref': 7000,
+         'R_sh_0': 7000,
+         'R_s': 4.602,
+         'cells_in_series': 268,
+         'R_sh_exp': 5.5,
+         'EgRef': 1.5}
+    NsVbi = 268 * 0.9
+    d2mutau = 1.4
+    irrad = np.arange(20, 1100, 20)
+    tc = np.arange(-25, 74, 1)
+    weather = np.array(np.meshgrid(irrad, tc)).T.reshape(-1, 2)
+    # with the above parameters and weather conditions, a few combinations
+    # result in voc_est > NsVbi, which causes failure of brentq and newton
+    # when the recombination parameters NsVbi and d2mutau are used.
+    sde_params = pvsystem.calcparams_pvsyst(weather[:, 0], weather[:, 1], **p)
+    # test _mpp
+    result = bishop88_mpp(*sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+    imp, vmp, pmp = result
+    err = np.abs(_sde_check_solution(
+        imp, vmp, sde_params[0], sde_params[1], sde_params[2], sde_params[3],
+        sde_params[4], d2mutau=d2mutau, NsVbi=NsVbi))
+    bad_results = np.isnan(pmp) | (pmp < 0) | (err > 0.00001)  # 0.01mA error
+    assert not bad_results.any()
+    # test v_from_i
+    vmp2 = bishop88_v_from_i(imp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+    err = np.abs(_sde_check_solution(imp, vmp2, *sde_params, d2mutau=d2mutau,
+                                     NsVbi=NsVbi))
+    bad_results = np.isnan(vmp2) | (vmp2 < 0) | (err > 0.00001)
+    assert not bad_results.any()
+    # test v_from_i
+    imp2 = bishop88_i_from_v(vmp, *sde_params, d2mutau=d2mutau, NsVbi=NsVbi)
+    err = np.abs(_sde_check_solution(imp2, vmp, *sde_params, d2mutau=d2mutau,
+                                     NsVbi=NsVbi))
+    bad_results = np.isnan(imp2) | (imp2 < 0) | (err > 0.00001)
+    assert not bad_results.any()

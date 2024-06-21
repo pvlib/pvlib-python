@@ -56,10 +56,10 @@ jobs:
     strategy:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
         suffix: ['']  # the alternative to "-min"
         include:
-          - python-version: 3.7
+          - python-version: 3.8
             suffix: -min
 
     runs-on: ubuntu-latest
@@ -103,9 +103,11 @@ jobs:
         run: pytest pvlib/tests/iotools --cov=./ --cov-report=xml --remote-data
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == 3.7 && matrix.suffix == ''
-        uses: codecov/codecov-action@v3
+        if: matrix.python-version == 3.8 && matrix.suffix == ''
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
           verbose: true
           flags: remote-data  # flags are configured in codecov.yml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

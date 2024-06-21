@@ -172,7 +172,7 @@ def test_read_psm3_map_variables():
     data, metadata = psm3.read_psm3(MANUAL_TEST_DATA, map_variables=True)
     columns_mapped = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'dhi', 'ghi',
                       'dni', 'ghi_clear', 'dhi_clear', 'dni_clear',
-                      'Cloud Type', 'Dew Point', 'solar_zenith',
+                      'Cloud Type', 'temp_dew', 'solar_zenith',
                       'Fill Flag', 'albedo', 'wind_speed',
                       'wind_direction', 'precipitable_water',
                       'relative_humidity', 'temp_air', 'pressure']
@@ -196,21 +196,3 @@ def test_get_psm3_attribute_mapping(nrel_api_key):
     assert 'latitude' in meta.keys()
     assert 'longitude' in meta.keys()
     assert 'altitude' in meta.keys()
-
-
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_psm3_variable_map_deprecation_warning(nrel_api_key):
-    with pytest.warns(pvlibDeprecationWarning, match='names will be renamed'):
-        _ = psm3.read_psm3(MANUAL_TEST_DATA)
-
-
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_psm3_leap_day_deprecation_warning(nrel_api_key):
-    with pytest.warns(pvlibDeprecationWarning,
-                      match='default to leap_day=True'):
-        _, _ = psm3.get_psm3(LATITUDE, LONGITUDE, nrel_api_key, PVLIB_EMAIL,
-                             names=2019, interval=60,
-                             attributes=['ghi', 'wind_speed'],
-                             map_variables=True)

@@ -8,13 +8,13 @@ Deprecations
 * Moved :py:func:`pvlib.bifacial.pvfactors_timeseries` to
   :py:func:`pvlib.bifacial.pvfactors.pvfactors_timeseries`.
   :py:mod:`pvlib.bifacial` is now a sub-package. (:pull:`717`)
-* :py:func:`pvlib.modelchain.basic_chain` is deprecated.
+* ``pvlib.modelchain.basic_chain`` is deprecated.
   See :py:meth:`pvlib.modelchain.ModelChain.with_pvwatts` and
   :py:meth:`pvlib.modelchain.ModelChain.with_sapm` for alternative simplified
   :py:class:`~pvlib.modelchain.ModelChain` interfaces, although note that the
   inputs do not directly translate. (:pull:`1401`)
 * All functionality in the ``pvlib.forecast`` module is deprecated.
-  For details, see :ref:`forecasts`. (:issue:`1057`, :pull:`1426`)
+  For details, see ``forecasts``. (:issue:`1057`, :pull:`1426`)
 
 Enhancements
 ~~~~~~~~~~~~

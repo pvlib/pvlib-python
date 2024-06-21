@@ -4,8 +4,7 @@ import pytest
 
 from pvlib.iotools import srml
 from ..conftest import (DATA_DIR, RERUNS, RERUNS_DELAY, assert_index_equal,
-                        assert_frame_equal, fail_on_pvlib_version)
-from pvlib._deprecation import pvlibDeprecationWarning
+                        assert_frame_equal)
 
 srml_testfile = DATA_DIR / 'SRML-day-EUPO1801.txt'
 
@@ -17,7 +16,9 @@ def test_read_srml():
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_read_srml_remote():
-    srml.read_srml('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt')
+    srml.read_srml(
+        'http://solardata.uoregon.edu/download/Archive/EUPO1801.txt'
+    )
 
 
 def test_read_srml_columns_exist():
@@ -42,14 +43,14 @@ def test_read_srml_map_variables_false():
 
 def test_read_srml_nans_exist():
     data = srml.read_srml(srml_testfile)
-    assert isnan(data['dni_0'][1119])
-    assert data['dni_0_flag'][1119] == 99
+    assert isnan(data['dni_0'].iloc[1119])
+    assert data['dni_0_flag'].iloc[1119] == 99
 
 
 @pytest.mark.parametrize('url,year,month', [
-    ('http://solardat.uoregon.edu/download/Archive/EUPO1801.txt',
+    ('http://solardata.uoregon.edu/download/Archive/EUPO1801.txt',
      2018, 1),
-    ('http://solardat.uoregon.edu/download/Archive/EUPO1612.txt',
+    ('http://solardata.uoregon.edu/download/Archive/EUPO1612.txt',
      2016, 12),
 ])
 @pytest.mark.remote_data
@@ -79,52 +80,11 @@ def test__map_columns(column, expected):
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_srml():
-    url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
+    url = 'http://solardata.uoregon.edu/download/Archive/EUPO1801.txt'
     file_data = srml.read_srml(url)
     requested, _ = srml.get_srml(station='EU', start='2018-01-01',
                                  end='2018-01-31')
     assert_frame_equal(file_data, requested)
-
-
-@fail_on_pvlib_version('0.11')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_read_srml_month_from_solardat():
-    url = 'http://solardat.uoregon.edu/download/Archive/EUPO1801.txt'
-    file_data = srml.read_srml(url)
-    with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
-        requested = srml.read_srml_month_from_solardat('EU', 2018, 1)
-    assert file_data.equals(requested)
-
-
-@fail_on_pvlib_version('0.11')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_15_minute_dt_index():
-    with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
-        data = srml.read_srml_month_from_solardat('TW', 2019, 4, 'RQ')
-    start = pd.Timestamp('20190401 00:00')
-    start = start.tz_localize('Etc/GMT+8')
-    end = pd.Timestamp('20190430 23:45')
-    end = end.tz_localize('Etc/GMT+8')
-    assert data.index[0] == start
-    assert data.index[-1] == end
-    assert (data.index[3::4].minute == 45).all()
-
-
-@fail_on_pvlib_version('0.11')
-@pytest.mark.remote_data
-@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
-def test_hourly_dt_index():
-    with pytest.warns(pvlibDeprecationWarning, match='get_srml instead'):
-        data = srml.read_srml_month_from_solardat('CD', 1986, 4, 'PH')
-    start = pd.Timestamp('19860401 00:00')
-    start = start.tz_localize('Etc/GMT+8')
-    end = pd.Timestamp('19860430 23:00')
-    end = end.tz_localize('Etc/GMT+8')
-    assert data.index[0] == start
-    assert data.index[-1] == end
-    assert (data.index.minute == 0).all()
 
 
 @pytest.mark.remote_data
@@ -146,7 +106,7 @@ def test_get_srml_minute():
     expected_index = pd.date_range(start='2018-01-01', end='2018-01-31 23:59',
                                    freq='1min', tz='Etc/GMT+8')
     assert_index_equal(data_get.index, expected_index)
-    assert all([c in data_get.columns for c in data_read.columns])
+    assert all(c in data_get.columns for c in data_read.columns)
     # Check that all indices in example file are present in remote file
     assert data_read.index.isin(data_get.index).all()
     assert meta['station'] == 'EU'

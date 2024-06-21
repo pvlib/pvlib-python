@@ -75,7 +75,7 @@ def test_location_print_pytz():
 def times():
     return pd.date_range(start='20160101T0600-0700',
                          end='20160101T1800-0700',
-                         freq='3H')
+                         freq='3h')
 
 
 def test_get_clearsky(mocker, times):

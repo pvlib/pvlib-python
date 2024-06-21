@@ -6,8 +6,7 @@ from numpy import nan, array
 import pandas as pd
 
 import pytest
-from .conftest import (
-    assert_series_equal, assert_frame_equal, fail_on_pvlib_version)
+from .conftest import assert_series_equal, assert_frame_equal
 from numpy.testing import assert_allclose
 import unittest.mock as mock
 
@@ -1568,27 +1567,21 @@ def test_singlediode_floats():
             assert_allclose(v, expected[k], atol=1e-6)
 
 
-def test_singlediode_floats_ivcurve():
-    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
-        out = pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
-                                   method='lambertw')
+def test_singlediode_floats_expected():
+    out = pvsystem.singlediode(7., 6e-7, .1, 20., .5, method='lambertw')
     expected = {'i_xx': 4.264060478,
                 'i_mp': 6.136267360,
                 'v_oc': 8.106300147,
                 'p_mp': 38.19421055,
                 'i_x': 6.7558815684,
                 'i_sc': 6.965172322,
-                'v_mp': 6.224339375,
-                'i': np.array([
-                    6.965172322, 6.755881568, 2.664535259e-14]),
-                'v': np.array([
-                    0., 4.053150073, 8.106300147])}
+                'v_mp': 6.224339375}
     assert isinstance(out, dict)
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-6)
 
 
-def test_singlediode_series_ivcurve(cec_module_params):
+def test_singlediode_series_expected(cec_module_params):
     times = pd.date_range(start='2015-06-01', periods=3, freq='6h')
     effective_irradiance = pd.Series([0.0, 400.0, 800.0], index=times)
     IL, I0, Rs, Rsh, nNsVth = pvsystem.calcparams_desoto(
@@ -1603,9 +1596,7 @@ def test_singlediode_series_ivcurve(cec_module_params):
                                   EgRef=1.121,
                                   dEgdT=-0.0002677)
 
-    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
-        out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3,
-                                   method='lambertw')
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, method='lambertw')
 
     expected = OrderedDict([('i_sc', array([0., 3.01079860, 6.00726296])),
                             ('v_oc', array([0., 9.96959733, 10.29603253])),
@@ -1613,39 +1604,20 @@ def test_singlediode_series_ivcurve(cec_module_params):
                             ('v_mp', array([0., 8.321092255, 8.409413795])),
                             ('p_mp', array([0., 22.10320053, 44.49021934])),
                             ('i_x', array([0., 2.884132006, 5.746202281])),
-                            ('i_xx', array([0., 2.052691562, 3.909673879])),
-                            ('v', array([[0., 0., 0.],
-                                         [0., 4.984798663, 9.969597327],
-                                         [0., 5.148016266, 10.29603253]])),
-                            ('i', array([[0., 0., 0.],
-                                         [3.0107985972, 2.8841320056, 0.],
-                                         [6.0072629615, 5.7462022810, 0.]]))])
+                            ('i_xx', array([0., 2.052691562, 3.909673879]))])
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-2)
 
-    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
-        out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth, ivcurve_pnts=3)
+    out = pvsystem.singlediode(IL, I0, Rs, Rsh, nNsVth)
 
     expected['i_mp'] = pvsystem.i_from_v(out['v_mp'], IL, I0, Rs, Rsh, nNsVth,
                                          method='lambertw')
     expected['v_mp'] = pvsystem.v_from_i(out['i_mp'], IL, I0, Rs, Rsh, nNsVth,
                                          method='lambertw')
-    expected['i'] = pvsystem.i_from_v(out['v'].T, IL, I0, Rs, Rsh, nNsVth,
-                                      method='lambertw').T
-    expected['v'] = pvsystem.v_from_i(out['i'].T, IL, I0, Rs, Rsh, nNsVth,
-                                      method='lambertw').T
 
     for k, v in out.items():
         assert_allclose(v, expected[k], atol=1e-6)
-
-
-@fail_on_pvlib_version('0.11')
-@pytest.mark.parametrize('method', ['lambertw', 'brentq', 'newton'])
-def test_singlediode_ivcurvepnts_deprecation_warning(method):
-    with pytest.warns(pvlibDeprecationWarning, match='ivcurve_pnts'):
-        pvsystem.singlediode(7., 6e-7, .1, 20., .5, ivcurve_pnts=3,
-                             method=method)
 
 
 def test_scale_voltage_current_power():

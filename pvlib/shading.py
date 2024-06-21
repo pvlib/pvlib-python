@@ -555,6 +555,145 @@ def shaded_fraction1d(
     return np.clip(t_asterisk, 0, 1)
 
 
+def direct_martinez(
+    poa_global,
+    poa_direct,
+    shaded_fraction,
+    shaded_blocks,
+    total_blocks,
+):
+    r"""
+    A shading loss power factor for non-monolithic silicon
+    modules and arrays with an arbitrary number of bypass diodes.
+
+    This experimental model reduces the direct and circumsolar
+    irradiance reaching the module's cells based on the number of *blocks*
+    affected by the shadow.
+    More on blocks in the *Notes* section and in [1]_.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    poa_global : numeric
+        Plane of array global irradiance. [W/m²].
+    poa_direct : numeric
+        Plane of array direct and circumsolar irradiance. [W/m²].
+    shaded_fraction : numeric
+        Fraction of module surface area that is shaded. [Unitless].
+    shaded_blocks : numeric
+        Number of blocks affected by the shadow. [Unitless].
+        If a floating point number is provided, it will be rounded up.
+    total_blocks : int
+        Number of total blocks. Unitless.
+
+    Returns
+    -------
+    shading_losses : numeric
+        Fraction of DC power lost due to shading. [Unitless]
+
+    Notes
+    -----
+    The implemented equations are (6) and (8) from [1]_:
+
+    .. math::
+
+        (1 - F_{ES}) = (1 - F_{GS}) \left(1 - \frac{N_{SB}}{N_{TB} + 1}\right)
+        \quad \text{(6)}
+
+        \left(1 - \frac{P_{S}}{P_{NS}}\right) = \left(1 -
+        \frac{\left[(B + D^{CIR})(1 - F_{ES}) + D^{ISO} + R\right]}{G}\right)
+        \quad \text{(8)}
+
+    In (6), :math:`(1 - F_{ES})` is the correction factor to be multiplied by
+    the direct and circumsolar irradiance, :math:`F_{GS}` is the shaded
+    fraction of the collector, :math:`N_{SB}` is the number of shaded blocks
+    and :math:`N_{TB}` is the number of total blocks.
+
+    In (8), :math:`\frac{P_{S}}{P_{NS}}` is the fraction of DC power lost due
+    to shading, :math:`P_{S}` is the power output of the shaded module,
+    :math:`P_{NS}` is the power output of the non-shaded module,
+    :math:`B + D^{CIR}` is the beam and circumsolar irradiance,
+    :math:`D^{ISO} + R` is the sum of diffuse and albedo irradiances and
+    :math:`G` is the global irradiance.
+
+    **Blocks terminology:**
+
+    A *block* is defined in [1]_ as a group of solar cells protected by a
+    bypass diode. Also, a *block* is shaded when at least one of its
+    cells is partially shaded.
+
+    The total number of blocks and their layout depend on the module(s) used.
+    Many manufacturers don't specify this information explicitly.
+    However, these values can be inferred from:
+
+    - the number of bypass diodes
+    - where and how many junction boxes are present on the back of the module
+    - whether or not the module is comprised of *half-cut cells*
+
+    The latter two are heavily correlated.
+
+    For example:
+
+    1. A module with 1 bypass diode behaves as 1 block.
+    2. A module with 3 bypass diodes and 1 junction box is likely to have 3
+       blocks.
+    3. A half-cut module with 3 junction boxes (split junction boxes) is
+       likely to have 3x2 blocks. The number of blocks along the longest
+       side of the module is 2 and along the shortest side is 3.
+    4. A module without bypass diodes doesn't constitute a block, but may be
+       part of one.
+
+    Examples
+    --------
+    Minimal example. For a complete example, see
+    :ref:`sphx_glr_gallery_shading_plot_martinez_shade_loss.py`.
+
+    >>> import numpy as np
+    >>> from pvlib import shading
+    >>> total_blocks = 3  # blocks along the vertical of the module
+    >>> POA_direct_and_circumsolar, POA_diffuse = 600, 80  # W/m²
+    >>> POA_global = POA_direct_and_circumsolar + POA_diffuse
+    >>> P_out_unshaded = 3000  # W
+    >>> # calculation of the shaded fraction for the collector
+    >>> shaded_fraction = shading.shaded_fraction1d(
+    >>>     solar_zenith=80, solar_azimuth=180,
+    >>>     axis_azimuth=90, shaded_row_rotation=25,
+    >>>     collector_width=0.5, pitch=1, surface_to_axis_offset=0,
+    >>>     cross_axis_slope=5.711, shading_row_rotation=50)
+    >>> # calculation of the number of shaded blocks
+    >>> shaded_blocks = np.ceil(total_blocks*shaded_fraction)
+    >>> # apply the Martinez power losses to the calculated shading
+    >>> loss_fraction = shading.direct_martinez(
+    >>>     POA_global, POA_direct_and_circumsolar,
+    >>>     shaded_fraction, shaded_blocks, total_blocks)
+    >>> P_out_corrected = P_out_unshaded * (1 - loss_fraction)
+
+    See Also
+    --------
+    shaded_fraction1d : to calculate 1-dimensional shaded fraction
+
+    References
+    ----------
+    .. [1] F. Martínez-Moreno, J. Muñoz, and E. Lorenzo, 'Experimental model
+        to estimate shading losses on PV arrays', Solar Energy Materials and
+        Solar Cells, vol. 94, no. 12, pp. 2298-2303, Dec. 2010,
+        :doi:`10.1016/j.solmat.2010.07.029`.
+    """  # Contributed by Echedey Luis, 2024
+    beam_factor = (  # Eq. (6) of [1]
+        (1 - shaded_fraction)
+        * (1 - np.ceil(shaded_blocks) / (1 + total_blocks))
+    )
+    return (  # Eq. (8) of [1]
+        1
+        - (
+            poa_direct * beam_factor
+            + (poa_global - poa_direct)  # diffuse and albedo
+        )
+        / poa_global
+    )
+
+
 def linear_shade_loss(shaded_fraction, diffuse_fraction):
     r"""
     Fraction of power lost to linear shade loss.

@@ -67,9 +67,6 @@ Enhancements
   diffuse fraction of Photosynthetically Active Radiation (PAR) from the
   global diffuse fraction and the solar zenith.
   (:issue:`2047`, :pull:`2048`)
-* Add new losses function that accounts for non-uniform irradiance of bifacial
-  modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
-  (:issue:`2045`, :pr:`2046`)
 
 
 Bug fixes

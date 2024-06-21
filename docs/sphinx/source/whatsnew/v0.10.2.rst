@@ -19,8 +19,8 @@ Enhancements
 * Added a continuous version of the Erbs diffuse-fraction/decomposition model.
   :py:func:`pvlib.irradiance.erbs_driesse` (:issue:`1755`, :pull:`1834`)
 * Added :py:func:`~pvlib.iam.interp` option as AOI losses model in
-  :py:class:`pvlib.modelchain.ModelChain` and
-  :py:class:`pvlib.pvsystem.PVSystem`. (:issue:`1742`, :pull:`1832`)
+  :py:class:`~pvlib.modelchain.ModelChain` and
+  :py:class:`~pvlib.pvsystem.PVSystem`. (:issue:`1742`, :pull:`1832`)
 * :py:class:`~pvlib.pvsystem.PVSystem` objects with a single
   :py:class:`~pvlib.pvsystem.Array` can now be created without wrapping the
   ``Array`` in a list first. (:issue:`1831`, :pull:`1854`)

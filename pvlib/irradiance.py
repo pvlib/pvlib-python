@@ -404,6 +404,11 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     require ``'dni_extra'``. Values can be calculated using
     :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
+    The ``'Perez'`` transposition model features discontinuities in the
+    predicted tilted diffuse irradiance due to relying on discrete input
+    values. For applications that benefit from continuous output, consider
+    using :py:func:`~pvlib.irradiance.perez_driesse`.
+
     The ``'perez'`` and ``'perez-driesse'`` models require relative airmass
     (``airmass``) as input. If ``airmass`` is not provided, it is calculated
     using the defaults in :py:func:`~pvlib.atmosphere.get_relative_airmass`.
@@ -1003,6 +1008,13 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     irradiance, sun zenith angle, sun azimuth angle, and relative (not
     pressure-corrected) airmass. Optionally a selector may be used to
     use any of Perez's model coefficient sets.
+
+    Warning
+    -------
+    The Perez transposition model features discontinuities in the
+    predicted tilted diffuse irradiance due to relying on discrete input
+    values. For applications that benefit from continuous output, consider
+    using :py:func:`~pvlib.irradiance.perez_driesse`.
 
     Parameters
     ----------

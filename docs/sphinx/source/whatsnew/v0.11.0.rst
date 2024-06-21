@@ -67,14 +67,6 @@ Enhancements
   diffuse fraction of Photosynthetically Active Radiation (PAR) from the
   global diffuse fraction and the solar zenith.
   (:issue:`2047`, :pull:`2048`)
-
-
-Bug fixes
-~~~~~~~~~
-
-
-Testing
-~~~~~~~
 * Default altitude in :py:class:`pvlib.location.Location`
   now comes from :py:func:`~pvlib.location.lookup_altitude` (:issue:`1516`, :pull:`1850`)
 

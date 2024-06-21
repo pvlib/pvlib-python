@@ -57,6 +57,9 @@ Enhancements
 * Added extraterrestrial and direct spectra of the ASTM G173-03 standard with
   the new function :py:func:`pvlib.spectrum.get_reference_spectra`.
   (:issue:`1963`, :pull:`2039`)
+* Added function :py:func:`pvlib.shading.direct_martinez` to calculate
+  shading losses by taking into account the amount of bypass diodes of a module.
+  (:issue:`2063`, :pull:`2070`)
 * Add function :py:func:`pvlib.irradiance.diffuse_par_spitters` to calculate the
   diffuse fraction of Photosynthetically Active Radiation (PAR) from the
   global diffuse fraction and the solar zenith.

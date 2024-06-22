@@ -32,6 +32,8 @@ import shapely.plotting
 # of the first row will be 20 degrees, and the tilt angle of the second row
 # will be 30 degrees. The distance between the two rows will be 3 meters.
 # Also, we will assume scalar values for the solar azimuth and zenith angles.
+# Feel free to download the example and change the values to see how the
+# shades change.
 
 solar_azimuth = 165  # degrees
 solar_zenith = 75  # degrees
@@ -78,7 +80,10 @@ ax1 = fig.add_subplot(gs[0:7, 0], projection="3d")
 ax2 = fig.add_subplot(gs[8:, 0])
 
 # 3D plot
-ax1.view_init(elev=45, azim=-45)
+ax1.view_init(
+    elev=60,
+    azim=-30,  # matplotlib's azimuth is right-handed to Z+, measured from X+
+)
 row1.plot(ax=ax1, **row_style)
 row2.plot(ax=ax1, **row_style)
 for shade in shades_3d.geoms:
@@ -106,5 +111,5 @@ for shade in shades_2d.geoms:
 # The shaded fraction can be calculated by dividing the sum of the areas of the
 # shadows by the area of the surface. The shaded fraction is a scalar value.
 
-shaded_fraction = sum(shade.area for shade in shades_2d.geoms) / row2.area
+shaded_fraction = sum(shade.area for shade in shades_2d.geoms) / row2_2d.area
 print(f"The shaded fraction is {shaded_fraction:.2f}")

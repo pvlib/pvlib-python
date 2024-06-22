@@ -21,3 +21,4 @@ API reference
    scaling
    location
    transformer
+   floating

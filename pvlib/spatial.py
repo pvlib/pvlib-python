@@ -351,7 +351,7 @@ class FlatSurface:
         """
         shades = self.get_3D_shades_from(solar_zenith, solar_azimuth, *others)
         if shades_3d is not None:
-            shades = sp.MultiPolygon(shades, shades_3d)
+            shades = sp.MultiPolygon((shades.geoms, shades_3d.geoms))
 
         # and clip the 2D shades to the surface in 2D
         _self_projected_polygon = self.representation_in_2D_space()
@@ -475,6 +475,7 @@ class RectangularSurface(FlatSurface):
         Point to use as reference for 2D projections. If not provided, the
         central point is used.
     """
+
     def __init__(
         self,
         center,
@@ -528,5 +529,6 @@ class RectangularSurface(FlatSurface):
         x, y, z = np.hsplit(
             np.array(self._polygon.exterior.coords[:-1]).flatten(order="F"), 3
         )
-        ax.plot_trisurf(x, y, z, triangles=((0, 1, 2), (0, 2, 3)), **kwargs)
-        return ax
+        return ax.plot_trisurf(
+            x, y, z, triangles=((0, 1, 2), (0, 2, 3)), **kwargs
+        )

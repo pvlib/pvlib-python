@@ -52,8 +52,13 @@ system.
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import matplotlib.animation as animation
+from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
 import shapely.plotting
+import shapely as sp
 import pandas as pd
+import numpy as np
+from functools import partial
 from pvlib.spatial import RectangularSurface
 from pvlib import solarposition
 
@@ -69,91 +74,176 @@ dates = (
     .union(fall_equinox)
     .union(winter_solstice)
 )
+# dates = spring_equinox
 solar_position = solarposition.get_solarposition(
     dates, latitude, longitude, altitude
 )
-solar_azimuth = solar_position["azimuth"].iloc[0]
-solar_zenith = solar_position["apparent_zenith"].iloc[0]
+solar_zenith = solar_position["apparent_zenith"]
+solar_azimuth = solar_position["azimuth"]
+N = len(solar_zenith)
 
 # %%
 # Fixed Tilt
 # ----------
+# The fixed tilt system is composed of a crop field and two vertical rows of
+# PV panels. Rows are placed at the long sides of the field, with the panels
+# facing east and west. The field is 20 m long and 10 m wide, and the panels
+# are 2 m wide (height since they are vertical) and 20 m long.
 
-field = RectangularSurface(  # crops top surface
-    center=[10, 5, 0],
-    azimuth=180,  # chosen instead of 0 (north) for intuitive visualization
+field = RectangularSurface(  # crops surface
+    center=[5, 10, 0],
+    azimuth=90,
     tilt=0,
     axis_tilt=0,
     width=10,
     length=20,
 )
-pv_row1 = RectangularSurface(  # south-most row (lowest Y-coordinate)
-    center=[10, -10 / 2 + 5, 2 / 2],
-    azimuth=180,
-    tilt=90,
-    axis_tilt=0,
-    width=2,
-    length=20,
-)
-pv_row2 = RectangularSurface(  # north-most row (highest Y-coordinate)
-    center=[10, 10 / 2 + 5, 2 / 2],
-    azimuth=180,
-    tilt=90,
-    axis_tilt=0,
-    width=2,
-    length=20,
+pv_rows = (
+    RectangularSurface(  # west-most row (lowest X-coordinate)
+        center=[-10 / 2 + 5, 10, 2 / 2],
+        azimuth=90,
+        tilt=90,
+        axis_tilt=0,
+        width=2,
+        length=20,
+    ),
+    RectangularSurface(  # east-most row (highest X-coordinate)
+        center=[10 / 2 + 5, 10, 2 / 2],
+        azimuth=90,
+        tilt=90,
+        axis_tilt=0,
+        width=2,
+        length=20,
+    ),
 )
 
-shades_3d = field.get_3D_shades_from(
-    solar_zenith, solar_azimuth, pv_row1, pv_row2
-)
-shades_2d = field.get_2D_shades_from(
-    solar_zenith, solar_azimuth, shades_3d=shades_3d
-)
+
+# %%
+# Run the simulation
+# ------------------
+# The shading fraction is calculated at each instant in time, and the results
+# are stored in the `fixed_tilt_shaded_fraction` array. This is done because
+# the shading calculation API does not allow for vectorized calculations.
+
+# Allocate space for the shading results
+fixed_tilt_shaded_fraction = np.zeros((N,), dtype=float)
+
+
+# Shades callback
+def simulation_and_plot_callback(
+    timestamp_index, *, shade_3d_artists, shade_2d_artists
+):
+    print(f"{timestamp_index=}")
+    # Calculate the shades at an specific instant in time
+    solar_zenith_instant = solar_zenith.iloc[timestamp_index]
+    solar_azimuth_instant = solar_azimuth.iloc[timestamp_index]
+    # skip this instant if the sun is below the horizon
+    if solar_zenith_instant < 0:
+        fixed_tilt_shaded_fraction[timestamp_index] = 0
+        return *shade_3d_artists, *shade_2d_artists
+    # Calculate the shades, both in 3D and 2D
+    shades_3d = field.get_3D_shades_from(
+        solar_zenith_instant, solar_azimuth_instant, *pv_rows
+    )
+    shades_2d = field.get_2D_shades_from(
+        solar_zenith_instant, solar_azimuth_instant, shades_3d=shades_3d
+    )
+    # Plot the calculated shades
+    for index, shade in enumerate(shades_3d.geoms):  # 3D
+        if not shade.is_empty:
+            shade_3d_artists[index].set_verts(
+                [shade.exterior.coords],
+                closed=False,  # polygon is already closed
+            )
+    for index, shade in enumerate(shades_2d.geoms):  # 2D
+        if not shade.is_empty:
+            shade_2d_artists[index].set_path(
+                shapely.plotting._path_from_polygon(shade)
+            )
+
+    # Calculate the shaded fraction
+    fixed_tilt_shaded_fraction[timestamp_index] = (
+        sum(shade.area for shade in shades_2d.geoms) / field2d.area
+    )
+    return *shade_3d_artists, *shade_2d_artists
+
 
 # %%
 # Plot both the 3D and 2D shades
 # ------------------------------
 
+fig = plt.figure(figsize=(10, 10))
+gs = fig.add_gridspec(10, 1)
+
+# Plotting styles
 field_style = {"color": "forestgreen", "alpha": 0.5}
 row_style = {"color": "darkblue", "alpha": 0.5}
 shade_style = {"color": "dimgrey", "alpha": 0.8}
-
-fig = plt.figure(figsize=(10, 10))
-gs = fig.add_gridspec(10, 1)
+field_style_2d = {**field_style, "add_points": False}
+shade_style_2d = {**shade_style, "add_points": False}
 
 ax1 = fig.add_subplot(gs[0:6, 0], projection="3d")
 ax2 = fig.add_subplot(gs[8:, 0])
 
-ax1.view_init(elev=45, azim=-45)
-field.plot(ax=ax1, **field_style)
-pv_row1.plot(ax=ax1, **row_style)
-pv_row2.plot(ax=ax1, **row_style)
-for shade in shades_3d.geoms:
-    if shade.is_empty:
-        continue  # skip empty shades; else an exception will be raised
-    # use Matplotlib's Poly3DCollection natively since experimental
-    # shapely.plotting.plot_polygon does not support 3D
-    vertexes = shade.exterior.coords[:-1]
-    ax1.add_collection3d(Poly3DCollection([vertexes], **shade_style))
-
+# Upper plot, 3D
 ax1.axis("equal")
-ax1.set_zlim(0)
+ax1.view_init(
+    elev=45,
+    azim=-60,  # matplotlib's azimuth is right-handed to Z+, measured from X+
+)
+ax1.set_xlim(-0, 15)
+ax1.set_ylim(0, 20)
+ax1.set_zlim(0, 10)
 ax1.set_xlabel("West(-) <X> East(+) [m]")
 ax1.set_ylabel("South(-) <Y> North(+) [m]")
+field.plot(ax=ax1, **field_style)
+for pv_row in pv_rows:
+    pv_row.plot(ax=ax1, **row_style)
 
+# Lower plot, 2D
 field2d = field.representation_in_2D_space()
-field_style_2d = {**field_style, "add_points": False}
 shapely.plotting.plot_polygon(field2d, ax=ax2, **field_style_2d)
-shade_style_2d = {**shade_style, "add_points": False}
-for shade in shades_2d.geoms:
-    shapely.plotting.plot_polygon(shade, ax=ax2, **shade_style_2d)
+
+# Add empty shade artists for each shading object, in this case each of the
+# PV rows. Artists will be updated in the animation callback later.
+shade3d_artists = (
+    ax1.add_collection3d(Poly3DCollection([], **shade_style)),
+) * len(pv_rows)
+shade2d_artists = (
+    shapely.plotting.plot_polygon(
+        sp.Polygon([[0, 0]] * 4), ax=ax2, **shade_style_2d
+    ),
+) * len(pv_rows)
+
+ani = animation.FuncAnimation(
+    fig,
+    partial(
+        simulation_and_plot_callback,
+        shade_3d_artists=shade3d_artists,
+        shade_2d_artists=shade2d_artists,
+    ),
+    frames=np.arange(N),
+    interval=200,
+    blit=True,
+)
 
 # %%
-beam_shaded_fraction = (
-    sum(shade.area for shade in shades_2d.geoms) / field2d.area
-)
-print(beam_shaded_fraction)
+# Shaded Fraction vs. Time
+# ------------------------
+
+fig, ax = plt.subplots()
+
+ax.plot(dates, fixed_tilt_shaded_fraction, label="Fixed-Tilt")
+locator = AutoDateLocator()
+ax.xaxis.set_major_locator(locator)
+ax.xaxis.set_major_formatter(ConciseDateFormatter(locator))
+
+ax.set_xlabel("Time")
+ax.set_ylabel("Shaded Fraction [Unitless]")
+
+plt.legend()
+plt.show()
+
 
 # %%
 # References

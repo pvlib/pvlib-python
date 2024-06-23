@@ -3,7 +3,6 @@ channels:
     - defaults
 dependencies:
     - coveralls
-    - shapely >= 2.0.2
     - pip
     - pytest
     - pytest-cov
@@ -20,4 +19,5 @@ dependencies:
         - scipy==1.6.0
         - pytest-rerunfailures # conda version is >3.6
         - pytest-remotedata # conda package is 0.3.0, needs > 0.3.1
+        - shapely >= 2.0.2
         - requests-mock

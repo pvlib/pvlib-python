@@ -27,3 +27,4 @@ dependencies:
     - pip:
         - nrel-pysam>=2.0
         # - solarfactors  # required shapely<2 isn't available for 3.12
+        - shapely >= 2.0.2

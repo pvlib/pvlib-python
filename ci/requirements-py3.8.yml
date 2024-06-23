@@ -22,8 +22,8 @@ dependencies:
     - pytz
     - requests
     - scipy >= 1.6.0
-    - shapely >= 2.0.2
     - statsmodels
     - pip:
         - nrel-pysam>=2.0
         - solarfactors
+        - shapely >= 2.0.2

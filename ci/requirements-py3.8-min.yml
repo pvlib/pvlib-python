@@ -3,6 +3,7 @@ channels:
     - defaults
 dependencies:
     - coveralls
+    - shapely >= 2.0.2
     - pip
     - pytest
     - pytest-cov

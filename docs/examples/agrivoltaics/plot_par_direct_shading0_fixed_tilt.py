@@ -231,7 +231,7 @@ ani = animation.FuncAnimation(
     interval=200,
     blit=True,
 )
-ani.save("fixed_tilt_shading.gif", writer="pillow", fps=5)
+
 # %%
 # Shaded Fraction vs. Time
 # ------------------------

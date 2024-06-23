@@ -53,7 +53,7 @@ system.
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import matplotlib.animation as animation
-from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
+from matplotlib.dates import DateFormatter
 import shapely.plotting
 import shapely as sp
 import pandas as pd
@@ -131,12 +131,15 @@ fixed_tilt_shaded_fraction = np.zeros((N,), dtype=float)
 
 # Shades callback
 def simulation_and_plot_callback(
-    timestamp_index, *, shade_3d_artists, shade_2d_artists
+    timestamp_index, *, shade_3d_artists, shade_2d_artists, sun_annotation
 ):
-    print(f"{timestamp_index=}")
     # Calculate the shades at an specific instant in time
     solar_zenith_instant = solar_zenith.iloc[timestamp_index]
     solar_azimuth_instant = solar_azimuth.iloc[timestamp_index]
+    # Update the sun position text
+    sun_annotation.set_text(
+        f"Sun at γ={solar_zenith_instant:.2f}, β={solar_azimuth_instant:.2f}"
+    )
     # skip this instant if the sun is below the horizon
     if solar_zenith_instant < 0:
         fixed_tilt_shaded_fraction[timestamp_index] = 0
@@ -214,6 +217,7 @@ shade2d_artists = (
         sp.Polygon([[0, 0]] * 4), ax=ax2, **shade_style_2d
     ),
 ) * len(pv_rows)
+sun_text_artist = fig.text(0.5, 0.95, "Sun at γ=--, β=--", ha="center")
 
 ani = animation.FuncAnimation(
     fig,
@@ -221,25 +225,41 @@ ani = animation.FuncAnimation(
         simulation_and_plot_callback,
         shade_3d_artists=shade3d_artists,
         shade_2d_artists=shade2d_artists,
+        sun_annotation=sun_text_artist,
     ),
     frames=np.arange(N),
     interval=200,
     blit=True,
 )
-
+ani.save("fixed_tilt_shading.gif", writer="pillow", fps=5)
 # %%
 # Shaded Fraction vs. Time
 # ------------------------
+# Create a handy pandas series to plot the shaded fraction vs. time.
 
-fig, ax = plt.subplots()
+fixed_tilt_shaded_fraction = pd.Series(fixed_tilt_shaded_fraction, index=dates)
 
-ax.plot(dates, fixed_tilt_shaded_fraction, label="Fixed-Tilt")
-locator = AutoDateLocator()
-ax.xaxis.set_major_locator(locator)
-ax.xaxis.set_major_formatter(ConciseDateFormatter(locator))
+fig, axs = plt.subplots(ncols=4, sharey=True, figsize=(20, 5))
+fig.suptitle("Shaded Fraction vs. Time")
+fig.subplots_adjust(wspace=0)
 
-ax.set_xlabel("Time")
-ax.set_ylabel("Shaded Fraction [Unitless]")
+for ax, day_datetimes, title in zip(
+    axs,
+    (spring_equinox, summer_solstice, fall_equinox, winter_solstice),
+    ("Spring Equinox", "Summer Solstice", "Autumn Equinox", "Winter Solstice"),
+):
+    fixed_tilt_shaded_fraction[day_datetimes].plot(ax=ax)
+    ax.xaxis.set_major_formatter(DateFormatter("%H"))
+    ax.set_title(title)
+    ax.grid(True)
+for ax_a, ax_b in zip(axs[:-1], axs[1:]):
+    ax_a.spines.right.set_visible(False)
+    ax_b.spines.left.set_visible(False)
+    ax_a.tick_params(labelright=False)
+    ax_b.tick_params(labelleft=False)
+
+axs[0].set_ylabel("Shaded Fraction [Unitless]")
+axs[0].set_ylim(0, 1)
 
 plt.legend()
 plt.show()

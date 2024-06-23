@@ -232,6 +232,11 @@ ani = animation.FuncAnimation(
     blit=True,
 )
 
+# uncomment to run and save animation locally
+# ani.save("fixed_tilt_shading.gif", writer="pillow")
+
+plt.show()
+
 # %%
 # Shaded Fraction vs. Time
 # ------------------------
@@ -261,7 +266,6 @@ for ax_a, ax_b in zip(axs[:-1], axs[1:]):
 axs[0].set_ylabel("Shaded Fraction [Unitless]")
 axs[0].set_ylim(0, 1)
 
-plt.legend()
 plt.show()
 
 

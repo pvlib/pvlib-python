@@ -436,7 +436,8 @@ class FlatSurface:
         shapely.MultiPolygon
             Combined shades.
         """
-        return sp.ops.unary_union(shades)
+        # TODO: implement this method
+        return None
 
     def plot(self, ax=None, **kwargs):
         pass  # TODO: implement this method

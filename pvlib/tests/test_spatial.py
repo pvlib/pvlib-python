@@ -131,12 +131,10 @@ def test_RectangularSurface__init__():
         width=width,
         length=length,
     )
-    assert surface.center == center
+    assert surface.reference_point == center
     assert surface.azimuth == surface_azimuth
     assert surface.tilt == surface_tilt
-    assert surface.axis_tilt == axis_tilt
-    assert surface.width == width
-    assert surface.length == length
+    assert surface.roll == axis_tilt
     # construct from coordinates
     center = [0, 0, 0]
     surface_azimuth = 180
@@ -152,12 +150,10 @@ def test_RectangularSurface__init__():
         width=width,
         length=length,
     )
-    assert surface.center == center
+    assert surface.reference_point == center
     assert surface.azimuth == surface_azimuth
     assert surface.tilt == surface_tilt
-    assert surface.axis_tilt == axis_tilt
-    assert surface.width == width
-    assert surface.length == length
+    assert surface.roll == axis_tilt
 
 
 def test_RectangularSurface__calc_surface_tilt_and_azimuth():

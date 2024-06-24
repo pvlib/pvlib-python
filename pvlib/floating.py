@@ -23,9 +23,9 @@ def stream_temperature_stefan(temp_air):
 
     Notes
     -----
-    The equation for calculating the daily average stream water temperature
-    :math:`T_w` from the daily ambient air temperature :math:`T_{air}` is
-    provided in [1]_ and given by:
+    Daily average stream water temperature
+    :math:`T_w` is calculated from daily ambient air temperature :math:`T_{air}` as
+    provided in [1]_:
 
     .. math::
        :label: stream

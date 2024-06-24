@@ -9,8 +9,7 @@ import pandas as pd
 
 def stream_temperature_stefan(temp_air):
     r"""
-    Estimation of daily stream water temperature based on daily ambient
-    temperature.
+    Estimate daily stream water temperature from daily ambient air temperature.
 
     Parameters
     ----------

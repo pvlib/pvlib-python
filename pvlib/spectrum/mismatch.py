@@ -260,16 +260,10 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) air mass.
 
-    Estimates a spectral mismatch modifier :math:`M` representing the effect on
-    module short circuit current of variation in the spectral
-    irradiance. :math:`M`  is estimated from absolute (pressure corrected) air
-    mass, :math:`AM_a`, and precipitable water, :math:`Pw`, using the following
-    function:
-
-    .. math::
-
-        M = c_1 + c_2 AM_a  + c_3 Pw  + c_4 AM_a^{0.5}
-            + c_5 Pw^{0.5} + c_6 \frac{AM_a} {Pw^{0.5}}
+    Estimates the spectral mismatch modifier, :math:`M`, representing the effect
+    of variation in the spectral irradiance on the module short circuit current
+    :math:`M`  is estimated from absolute (pressure corrected) air mass,
+    :math:`AM_a`, and precipitable water, :math:`Pw`
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the
@@ -283,7 +277,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     * spectrum simulated on a plane normal to the sun
     * All other parameters fixed at G173 standard
 
-    From these simulated spectra, M is calculated using the known
+    From these simulated spectra, :math:`M` is calculated using the known
     quantum efficiency curves. Multiple linear regression is then
     applied to fit Eq. 1 to determine the coefficients for each module.
 
@@ -350,6 +344,20 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         effective irradiance, i.e., the irradiance that is converted to
         electrical current.
 
+    Notes
+    ----
+    The ``spectral_factor_firstsolar`` model takes the following form:
+
+    .. math::
+
+        M = c_1 + c_2 AM_a  + c_3 Pw  + c_4 AM_a^{0.5}
+            + c_5 Pw^{0.5} + c_6 \frac{AM_a} {Pw^{0.5}}.
+
+    The default values for the limits applied to :math::`AM_a` and :math::`Pw`
+    via the ``min_precipitable_water``, ``max_precipitable_water``,
+    ``min_airmass_absolute``, and ``max_airmass_absolute`` are set to prevent
+    divergence of the model presented above.
+
     References
     ----------
     .. [1] Gueymard, Christian. SMARTS2: a simple model of the atmospheric
@@ -376,12 +384,12 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     if np.min(pw) < min_precipitable_water:
         pw = np.maximum(pw, min_precipitable_water)
         warn('Low pw values replaced with 'f'{min_precipitable_water} cm in '
-             'the calculation of spectral mismatch')
+             'the calculation of spectral mismatch.')
 
     if np.max(pw) > max_precipitable_water:
-        pw = np.minimum(pw, max_precipitable_water)
-        warn('High pw values replaced with 'f'{max_precipitable_water} cm in '
-             'the calculation of spectral mismatch')
+        pw[pw > max_precipitable_water] = np.nan
+        warn('High pw values replaced with np.nan in '
+             'the calculation of spectral mismatch.')
 
     # *** AMa ***
     # Replace Extremely High AM with max_am
@@ -389,12 +397,12 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     if np.max(airmass_absolute) > max_airmass_absolute:
         airmass_absolute = np.minimum(airmass_absolute, max_airmass_absolute)
     warn('High AMa values replaced with 'f'{max_airmass_absolute} in the'
-         ' calculation of spectral mismatch')
+         ' calculation of spectral mismatch.')
 
     if np.min(airmass_absolute) < min_airmass_absolute:
         airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
         warn('Low AMa values replaced with 'f'{min_airmass_absolute} in the'
-             ' calculation of spectral mismatch')
+             ' calculation of spectral mismatch.')
         # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
         # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
         # population over 50,000.
@@ -486,7 +494,7 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     available here via the ``module_type`` parameter were determined
     by fitting the model equations to spectral factors calculated from
     global tilted spectral irradiance measurements taken in the city of
-    Jaén, Spain.  See [1]_ for details.
+    Jaén, Spain. See [1]_ for details.
 
     Parameters
     ----------

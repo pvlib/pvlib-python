@@ -246,7 +246,7 @@ def test_spectral_factor_firstsolar_range():
         out = spectrum.spectral_factor_firstsolar(np.array([.1, 3, 10]),
                                                   np.array([1, 3, 5]),
                                                   module_type='monosi')
-    expected = np.array([0.96080878, 1.03055092, 1.04932727])
+    expected = np.array([0.96080878, 1.03055092, np.nan])
     assert_allclose(out, expected, atol=1e-3)
     with pytest.warns(UserWarning, match='High pw values replaced with'):
         out = spectrum.spectral_factor_firstsolar(6, 1.5,

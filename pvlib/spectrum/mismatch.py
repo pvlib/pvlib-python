@@ -260,10 +260,10 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) air mass.
 
-    Estimates the spectral mismatch modifier, :math:`M`, representing the effect
-    of variation in the spectral irradiance on the module short circuit current
-    :math:`M`  is estimated from absolute (pressure corrected) air mass,
-    :math:`AM_a`, and precipitable water, :math:`Pw`
+    Estimates the spectral mismatch modifier, :math:`M`, representing the
+    effect of variation in the spectral irradiance on the module short circuit
+    current :math:`M`  is estimated from absolute (pressure corrected) air
+    mass, :math:`AM_a`, and precipitable water, :math:`Pw`
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the

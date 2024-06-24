@@ -32,7 +32,7 @@ def stream_temperature_stefan(temp_air):
 
         T_w = 5 + 0.75 \cdot T_{air}
 
-    The predicted daily stream water temperatrues of this equation had a
+    The predicted daily stream water temperatures had a
     standard deviation of 2.7 °C compared to measurements. Small, shallow
     streams had smaller deviations than large, deep rivers.
 

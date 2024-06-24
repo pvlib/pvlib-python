@@ -50,7 +50,7 @@ def stream_temperature_stefan(temp_air):
     References
     ----------
     .. [1] Stefan H. G., Preud'homme E. B. (1993). "Stream temperature
-       estimation from air temperature." IN: Journal of the American Water
+       estimation from air temperature." Journal of the American Water
        Resources Association 29-1: 27-45.
        :doi:`10.1111/j.1752-1688.1993.tb01502.x`
     """

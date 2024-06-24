@@ -7,25 +7,26 @@ import numpy as np
 import pandas as pd
 
 
-def daily_stream_temperature_stefan(temp_air):
+def stream_temperature_stefan(temp_air):
     r"""
-    Estimation of daily stream water temperature based on ambient temperature.
+    Estimation of daily stream water temperature based on daily ambient
+    temperature.
 
     Parameters
     ----------
     temp_air : numeric
-        Ambient dry bulb temperature. [degrees C]
+        Daily average ambient dry bulb temperature. [°C]
 
     Returns
     -------
-    daily_stream_temperature : numeric
-        Daily average stream water temperature. [degrees C]
+    water_temperature : numeric
+        Daily average stream water temperature. [°C]
 
     Notes
     -----
     The equation for calculating the daily average stream water temperature
-    :math:`T_w` using the ambient air temperature :math:`T_{air}` is provided
-    in [1]_ and given by:
+    :math:`T_w` from the daily ambient air temperature :math:`T_{air}` is
+    provided in [1]_ and given by:
 
     .. math::
        :label: stream
@@ -40,7 +41,12 @@ def daily_stream_temperature_stefan(temp_air):
     bodies that are well mixed in vertical and transverse direction of a cross
     section. Also, it is only tested on ice-free streams. Consequently, when
     the mean ambient air temperature is lower than -6 °C, the surface stream
-    water temperature is assumed to be zero.
+    water temperature is returned as NaN.
+
+    Warning
+    -------
+    The expression has been developed for inland streams and is thus not
+    suitable for estimating ocean temperature.
 
     References
     ----------
@@ -52,7 +58,7 @@ def daily_stream_temperature_stefan(temp_air):
 
     temp_stream = 5 + 0.75 * temp_air
 
-    temp_stream = np.where(temp_stream < 0, 0, temp_stream)
+    temp_stream = np.where(temp_stream < 0, np.nan, temp_stream)
 
     if isinstance(temp_air, pd.Series):
         temp_stream = pd.Series(temp_stream, index=temp_air.index)

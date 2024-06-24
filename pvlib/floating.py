@@ -24,8 +24,8 @@ def stream_temperature_stefan(temp_air):
     Notes
     -----
     Daily average stream water temperature
-    :math:`T_w` is calculated from daily ambient air temperature :math:`T_{air}` as
-    provided in [1]_:
+    :math:`T_w` is calculated from daily ambient air temperature
+    :math:`T_{air}` as provided in [1]_:
 
     .. math::
        :label: stream
@@ -37,10 +37,10 @@ def stream_temperature_stefan(temp_air):
     streams had smaller deviations than large, deep rivers.
 
     It should be noted that this equation is limited to streams, i.e., water
-    bodies that are well mixed in the vertical and transverse directions of a cross
-    section. Also, it is only tested on ice-free streams. Consequently, when
-    the mean ambient air temperature is lower than -6 °C, the surface stream
-    water temperature is returned as NaN.
+    bodies that are well mixed in the vertical and transverse directions of a
+    cross section. Also, it is only tested on ice-free streams. Consequently,
+    when the mean ambient air temperature is lower than -6 °C, the surface
+    stream water temperature is returned as NaN.
 
     Warning
     -------

@@ -9,4 +9,4 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   floating.daily_stream_temperature_stefan
+   floating.stream_temperature_stefan

@@ -25,7 +25,7 @@ def power_mismatch_deline(
     For example, if the fill factor of the module of interest is
     0.65, then set ``fillfactor=0.65``.
 
-    .. versionadded:: 0.11.0
+    .. versionadded:: 0.11.1
 
     Parameters
     ----------
@@ -63,7 +63,7 @@ def power_mismatch_deline(
     Returns
     -------
     loss : numeric, pd.Series if ``rmad`` is a pd.Series
-        The power loss.
+        The fractional power loss. [Unitless]
 
     Raises
     ------

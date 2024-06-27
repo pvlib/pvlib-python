@@ -100,11 +100,11 @@ ax.pcolormesh(
 
 def rmad(data, axis=None):
     """
-    Relative Mean Absolute Difference.
+    Relative Mean Absolute Difference. Output in percentage.
     https://stackoverflow.com/a/19472336/19371110
     """
     mad = np.mean(np.absolute(data - np.mean(data, axis)), axis)
-    return mad / np.mean(data, axis)
+    return mad / np.mean(data, axis) * 100
 
 
 rmad_cells = rmad(cells_irrad)

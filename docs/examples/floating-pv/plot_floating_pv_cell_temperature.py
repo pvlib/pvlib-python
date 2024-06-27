@@ -215,8 +215,8 @@ axes.plot(
     label='Land-based PV coeff.'
 )
 
-axes.set_ylim(20,45)
-axes.set_xlim('06','20')
+axes.set_ylim(20, 45)
+axes.set_xlim('06', '20')
 axes.grid()
 axes.legend(loc="upper left")
 plt.tight_layout()

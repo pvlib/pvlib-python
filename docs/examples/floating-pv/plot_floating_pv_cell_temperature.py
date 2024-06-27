@@ -107,7 +107,7 @@ References
     analysis of monofacial and bifacial photovoltaic modules for floating
     power plants', Applied Energy, vol 281, pp. 116084,
     :doi:`10.1016/j.apenergy.2020.116084`.
-""" # noqa: E501
+"""  # noqa: E501
 
 # %%
 # Read example weather data

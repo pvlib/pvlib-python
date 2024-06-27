@@ -4,9 +4,195 @@ Spatial functions for shading and 3D scenes analysis.
 
 from pvlib.tools import sind, cosd
 import numpy as np
-import shapely as sp
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
+
+import shapely
+
+try:
+    # import objects from shapely >= 2
+    from shapely import Polygon, MultiPolygon
+except ImportError:
+    # import objects from shapely < 2
+    from shapely.geometry import Polygon, MultiPolygon
+
+if not hasattr(shapely, "Polygon"):
+    shapely.Polygon = Polygon
+    shapely.MultiPolygon = MultiPolygon
+
+
+# --- BEGIN backport of shapely plotting capabilities ---
+def _default_ax():
+    import matplotlib.pyplot as plt
+
+    ax = plt.gca()
+    ax.grid(True)
+    ax.set_aspect("equal")
+    return ax
+
+
+def _path_from_polygon(polygon):
+    from matplotlib.path import Path
+
+    if isinstance(polygon, shapely.MultiPolygon):
+        return Path.make_compound_path(
+            *[_path_from_polygon(poly) for poly in polygon.geoms]
+        )
+    else:
+        return Path.make_compound_path(
+            Path(np.asarray(polygon.exterior.coords)[:, :2]),
+            *[
+                Path(np.asarray(ring.coords)[:, :2])
+                for ring in polygon.interiors
+            ],
+        )
+
+
+def patch_from_polygon(polygon, **kwargs):
+    """
+    Gets a Matplotlib patch from a (Multi)Polygon.
+
+    Note: this function is experimental, and mainly targeting (interactive)
+    exploration, debugging and illustration purposes.
+
+    Parameters
+    ----------
+    polygon : shapely.Polygon or shapely.MultiPolygon
+    **kwargs
+        Additional keyword arguments passed to the matplotlib Patch.
+
+    Returns
+    -------
+    Matplotlib artist (PathPatch)
+    """
+    from matplotlib.patches import PathPatch
+
+    return PathPatch(_path_from_polygon(polygon), **kwargs)
+
+
+def plot_polygon(
+    polygon,
+    ax=None,
+    add_points=True,
+    color=None,
+    facecolor=None,
+    edgecolor=None,
+    linewidth=None,
+    **kwargs,
+):
+    """
+    Plot a (Multi)Polygon.
+
+    Note: this function is experimental, and mainly targeting (interactive)
+    exploration, debugging and illustration purposes.
+
+    Parameters
+    ----------
+    polygon : shapely.Polygon or shapely.MultiPolygon
+    ax : matplotlib Axes, default None
+        The axes on which to draw the plot. If not specified, will get the
+        current active axes or create a new figure.
+    add_points : bool, default True
+        If True, also plot the coordinates (vertices) as points.
+    color : matplotlib color specification
+        Color for both the polygon fill (face) and boundary (edge). By default,
+        the fill is using an alpha of 0.3. You can specify `facecolor` and
+        `edgecolor` separately for greater control.
+    facecolor : matplotlib color specification
+        Color for the polygon fill.
+    edgecolor : matplotlib color specification
+        Color for the polygon boundary.
+    linewidth : float
+        The line width for the polygon boundary.
+    **kwargs
+        Additional keyword arguments passed to the matplotlib Patch.
+
+    Returns
+    -------
+    Matplotlib artist (PathPatch), if `add_points` is false.
+    A tuple of Matplotlib artists (PathPatch, Line2D), if `add_points` is true.
+    """
+    from matplotlib import colors
+
+    if ax is None:
+        ax = _default_ax()
+
+    if color is None:
+        color = "C0"
+    color = colors.to_rgba(color)
+
+    if facecolor is None:
+        facecolor = list(color)
+        facecolor[-1] = 0.3
+        facecolor = tuple(facecolor)
+
+    if edgecolor is None:
+        edgecolor = color
+
+    patch = patch_from_polygon(
+        polygon,
+        facecolor=facecolor,
+        edgecolor=edgecolor,
+        linewidth=linewidth,
+        **kwargs,
+    )
+    ax.add_patch(patch)
+    ax.autoscale_view()
+
+    if add_points:
+        line = plot_points(polygon, ax=ax, color=color)
+        return patch, line
+
+    return patch
+
+
+def plot_points(geom, ax=None, color=None, marker="o", **kwargs):
+    """
+    Plot a Point/MultiPoint or the vertices of any other geometry type.
+
+    Parameters
+    ----------
+    geom : shapely.Geometry
+        Any shapely Geometry object, from which all vertices are extracted
+        and plotted.
+    ax : matplotlib Axes, default None
+        The axes on which to draw the plot. If not specified, will get the
+        current active axes or create a new figure.
+    color : matplotlib color specification
+        Color for the filled points. You can use `markeredgecolor` and
+        `markerfacecolor` to have different edge and fill colors.
+    marker : str, default "o"
+        The matplotlib marker for the points.
+    **kwargs
+        Additional keyword arguments passed to matplotlib `plot` (Line2D).
+
+    Returns
+    -------
+    Matplotlib artist (Line2D)
+    """
+    if ax is None:
+        ax = _default_ax()
+
+    coords = shapely.get_coordinates(geom)
+    (line,) = ax.plot(
+        coords[:, 0],
+        coords[:, 1],
+        linestyle="",
+        marker=marker,
+        color=color,
+        **kwargs,
+    )
+    return line
+
+
+# patch shapely plotting capabilities if not found
+if not hasattr(shapely, "plotting"):
+    shapely.plotting = type("plotting", (), {})
+    shapely.plotting.plot_polygon = plot_polygon
+    shapely.plotting.plot_points = plot_points
+    shapely.plotting.patch_from_polygon = patch_from_polygon
+    shapely.plotting._path_from_polygon = _path_from_polygon
+# --- END backport of shapely plotting capabilities ---
 
 
 def _solar_vector(zenith, azimuth):
@@ -169,7 +355,7 @@ class FlatSurface:
         self._tilt = np.array(tilt)
         self._roll = np.array(roll)
         # works for polygon_boundaries := array[N, 3] | shapely.Polygon
-        self._polygon = sp.Polygon(polygon_boundaries)
+        self._polygon = Polygon(polygon_boundaries)
         # internal 2D coordinates-system to translate projections matrix
         # only defined if needed later on
         self._reference_point = (
@@ -291,12 +477,15 @@ class FlatSurface:
                 count=len(coords_to_project),  # speeds up allocation
             )
             # create shapely shade object and bound it to the surface
-            shade = sp.Polygon(projected_vertices).intersection(
-                _polygon, grid_size=1e-12
-            )
-            return shade if isinstance(shade, sp.Polygon) else sp.Polygon()
+            try:  # shapely > 2.0
+                shade = Polygon(projected_vertices).intersection(
+                    _polygon, grid_size=1e-12
+                )
+            except TypeError:  # shapely < 2.0
+                shade = Polygon(projected_vertices).intersection(_polygon)
+            return shade if isinstance(shade, Polygon) else Polygon()
 
-        return sp.MultiPolygon(map(get_3D_shade_from_flat_surface, others))
+        return MultiPolygon(map(get_3D_shade_from_flat_surface, others))
 
     def get_2D_shades_from(
         self, solar_zenith, solar_azimuth, *others, shades_3d=None
@@ -351,7 +540,7 @@ class FlatSurface:
         """
         shades = self.get_3D_shades_from(solar_zenith, solar_azimuth, *others)
         if shades_3d is not None:
-            shades = sp.MultiPolygon((shades.geoms, shades_3d.geoms))
+            shades = MultiPolygon((*shades.geoms, *shades_3d.geoms))
 
         # and clip the 2D shades to the surface in 2D
         _self_projected_polygon = self.representation_in_2D_space()
@@ -361,15 +550,13 @@ class FlatSurface:
 
             # create shapely shade object and bound it to the surface
             projected_vertices_2d = self._transform_to_2D(coords_to_project)
-            shade = sp.Polygon(projected_vertices_2d).intersection(
+            shade = Polygon(projected_vertices_2d).intersection(
                 _self_projected_polygon
             )
             # Return Polygons only, geometries with empty area are omitted
-            return shade if isinstance(shade, sp.Polygon) else sp.Polygon()
+            return shade if isinstance(shade, Polygon) else Polygon()
 
-        return sp.MultiPolygon(
-            map(get_2D_shade_from_flat_surface, shades.geoms)
-        )
+        return MultiPolygon(map(get_2D_shade_from_flat_surface, shades.geoms))
 
     def _get_projection_transform(self):
         """
@@ -416,9 +603,7 @@ class FlatSurface:
         """
         if self._projected_polygon is None:
             vertices = np.array(self._polygon.exterior.coords[:-1])
-            self._projected_polygon = sp.Polygon(
-                self._transform_to_2D(vertices)
-            )
+            self._projected_polygon = Polygon(self._transform_to_2D(vertices))
         return self._projected_polygon
 
     def combine_2D_shades(self, *shades):
@@ -503,7 +688,7 @@ class RectangularSurface(FlatSurface):
         _rotation = Rotation.from_euler(
             "ZXZ", [-azimuth, -tilt, axis_tilt], degrees=True
         )
-        polygon = sp.Polygon(_rotation.apply(corners) + center)
+        polygon = Polygon(_rotation.apply(corners) + center)
         super().__init__(
             azimuth=azimuth,
             tilt=tilt,

@@ -54,8 +54,11 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import matplotlib.animation as animation
 from matplotlib.dates import DateFormatter
-import shapely.plotting
-import shapely as sp
+import shapely
+try:
+    from shapely import Polygon  # shapely >= 2
+except ImportError:
+    from shapely.geometry import Polygon  # shapely < 2
 import pandas as pd
 import numpy as np
 from functools import partial
@@ -214,7 +217,7 @@ shade3d_artists = (
 ) * len(pv_rows)
 shade2d_artists = (
     shapely.plotting.plot_polygon(
-        sp.Polygon([[0, 0]] * 4), ax=ax2, **shade_style_2d
+        Polygon([[0, 0]] * 4), ax=ax2, **shade_style_2d
     ),
 ) * len(pv_rows)
 sun_text_artist = fig.text(0.5, 0.95, "Sun at γ=--, β=--", ha="center")

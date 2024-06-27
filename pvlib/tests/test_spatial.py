@@ -2,7 +2,7 @@
 
 from pvlib import spatial
 from numpy.testing import assert_allclose
-import shapely
+from shapely.geometry import Polygon
 
 import pytest
 
@@ -59,7 +59,7 @@ def test_FlatSurface__init__():
     # construct with native shapely polygon
     surface_azimuth = 180
     surface_tilt = 0
-    polygon = shapely.Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
+    polygon = Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
     surface = spatial.FlatSurface(
         azimuth=surface_azimuth,
         tilt=surface_tilt,
@@ -68,7 +68,7 @@ def test_FlatSurface__init__():
     assert surface.azimuth == surface_azimuth
     assert surface.tilt == surface_tilt
     assert surface.polygon == polygon
-    assert isinstance(surface.polygon, shapely.Polygon)
+    assert isinstance(surface.polygon, Polygon)
     # construct from coordinates
     surface_azimuth = 180
     surface_tilt = 0
@@ -78,14 +78,14 @@ def test_FlatSurface__init__():
     )
     assert surface.azimuth == surface_azimuth
     assert surface.tilt == surface_tilt
-    assert surface.polygon == shapely.Polygon(polygon)
-    assert isinstance(surface.polygon, shapely.Polygon)
+    assert surface.polygon == Polygon(polygon)
+    assert isinstance(surface.polygon, Polygon)
 
 
 def test_FlatSurface_readonly_properties():
     surface_azimuth = 180
     surface_tilt = 0
-    polygon = shapely.Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
+    polygon = Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
     surface = spatial.FlatSurface(
         azimuth=surface_azimuth,
         tilt=surface_tilt,

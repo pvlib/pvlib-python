@@ -65,6 +65,7 @@ doc = [
     'pillow',
     'sphinx-toggleprompt >= 0.0.5',
     'solarfactors',
+    'shapely',
 ]
 test = [
     'pytest',

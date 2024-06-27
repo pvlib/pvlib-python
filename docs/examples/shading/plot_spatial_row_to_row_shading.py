@@ -21,7 +21,7 @@ Spatial shading of a row-to-row shading system
 from pvlib.spatial import RectangularSurface
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-import shapely.plotting
+import shapely
 
 # %%
 # Description of the system

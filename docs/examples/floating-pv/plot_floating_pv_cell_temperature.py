@@ -54,43 +54,43 @@ The table below gives heat loss coefficients derrived for different systems
 and locations as found in the literature. In this example, the FPV cell
 temperature will be calculated using some of the coefficients below.
 
-+------------------------+-------------+--------------------------+----------------------------------+-----------+
-| System                 | Location    |:math:`U_{c}`             | :math:`U_{v}`                    | Reference |
-|                        |             |:math:`[W/(m^2 \cdot K)]` | :math:`[W/(m^3 \cdot K \cdot s)]`|           |
-+========================+=============+==========================+==================================+===========+
-| Monofacial module      | Netherlands | 24.4                     | 6.5                              | [1]_      |
-| open structure         |             |                          |                                  |           |
-| two-axis tracking      |             |                          |                                  |           |
-| small water footprint  |             |                          |                                  |           |
-+------------------------+-------------+--------------------------+----------------------------------+-----------+
-| Monofacial module      | Netherlands | 25.2                     | 3.7                              | [1]_      |
-| closed structure       |             |                          |                                  |           |
-| large water footprint  |             |                          |                                  |           |
-+------------------------+-------------+--------------------------+----------------------------------+-----------+
-| Monofacial module      | Singapore   | 34.8                     | 0.8                              | [1]_      |
-| closed structure       |             |                          |                                  |           |
-| large water footprint  |             |                          |                                  |           |
-+------------------------+-------------+--------------------------+----------------------------------+-----------+
-| Monofacial module      | Singapore   | 18.9                     | 8.9                              | [1]_      |
-| closed stucuture       |             |                          |                                  |           |
-| medium water footprint |             |                          |                                  |           |
-+------------------------+-------------+--------------------------+----------------------------------+-----------+
-| Monofacial module      | Singapore   | 35.3                     | 8.9                              | [1]_      |
-| open strucuture        |             |                          |                                  |           |
-| free-standing          |             |                          |                                  |           |
-+------------------------+-------------+--------------------------+----------------------------------+-----------+
-| Monofacial module      | Norway      | 86.5                     | 0                                | [2]_      |
-| in contact with        |             |                          |                                  |           |
-| water                  |             |                          |                                  |           |
-+------------------------+-------------+--------------------------+----------------------------------+-----------+
-| Monofacial module      | South Italy | 31.9                     | 1.5                              | [3]_      |
-| open structure         |             |                          |                                  |           |
-| free-standing          |             |                          |                                  |           |
-+------------------------+-------------+--------------------------+----------------------------------+-----------+
-| Bifacial module        | South Italy | 35.2                     | 1.5                              | [3]_      |
-| open structure         |             |                          |                                  |           |
-| free-standing          |             |                          |                                  |           |
-+------------------------+-------------+--------------------------+----------------------------------+-----------+
++-------------------------+-------------+--------------------------------+----------------------------------------+-----------+
+| System                  | Location    |:math:`U_{c}`                   | :math:`U_{v}`                          | Reference |
+|                         |             |:math:`[\frac{W}{m^2 \cdot K}]` | :math:`[\frac{W}{m^3 \cdot K \cdot s}]`|           |
++=========================+=============+================================+========================================+===========+
+| Monofacial module,      | Netherlands | 24.4                           | 6.5                                    | [1]_      |
+| open structure,         |             |                                |                                        |           |
+| two-axis tracking,      |             |                                |                                        |           |
+| small water footprint   |             |                                |                                        |           |
++-------------------------+-------------+--------------------------------+----------------------------------------+-----------+
+| Monofacial module,      | Netherlands | 25.2                           | 3.7                                    | [1]_      |
+| closed structure,       |             |                                |                                        |           |
+| large water footprint   |             |                                |                                        |           |
++-------------------------+-------------+--------------------------------+----------------------------------------+-----------+
+| Monofacial module,      | Singapore   | 34.8                           | 0.8                                    | [1]_      |
+| closed structure,       |             |                                |                                        |           |
+| large water footprint   |             |                                |                                        |           |
++-------------------------+-------------+--------------------------------+----------------------------------------+-----------+
+| Monofacial module,      | Singapore   | 18.9                           | 8.9                                    | [1]_      |
+| closed stucuture,       |             |                                |                                        |           |
+| medium water footprint  |             |                                |                                        |           |
++-------------------------+-------------+--------------------------------+----------------------------------------+-----------+
+| Monofacial module,      | Singapore   | 35.3                           | 8.9                                    | [1]_      |
+| open strucuture,        |             |                                |                                        |           |
+| free-standing           |             |                                |                                        |           |
++-------------------------+-------------+--------------------------------+----------------------------------------+-----------+
+| Monofacial module,      | Norway      | 86.5                           | 0                                      | [2]_      |
+| in contact with         |             |                                |                                        |           |
+| water                   |             |                                |                                        |           |
++-------------------------+-------------+--------------------------------+----------------------------------------+-----------+
+| Monofacial module,      | South Italy | 31.9                           | 1.5                                    | [3]_      |
+| open structure,         |             |                                |                                        |           |
+| free-standing           |             |                                |                                        |           |
++-------------------------+-------------+--------------------------------+----------------------------------------+-----------+
+| Bifacial module,        | South Italy | 35.2                           | 1.5                                    | [3]_      |
+| open structure,         |             |                                |                                        |           |
+| free-standing           |             |                                |                                        |           |
++-------------------------+-------------+--------------------------------+----------------------------------------+-----------+
 
 References
 ----------
@@ -119,7 +119,7 @@ import pvlib
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-# Assume a FPV system with the following specifications
+# Assume a FPV system on a lake with the following specifications
 tilt = 30  # degrees
 azimuth = 180  # south-facing
 

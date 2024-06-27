@@ -22,13 +22,13 @@ temperature :math:`T_{C}` is given by
 .. math::
     :label: pvsyst
 
-    T_{C} = T_{a} + \frac{\alpha E (1 - \eta_{m})}{U_{c} + U_{v} \cdot WS}
+    T_{C} = T_{a} + \frac{\alpha \cdot E \cdot (1 - \eta_{m})}{U_{c} + U_{v} \cdot WS}
 
 Where :math:`E` is the plane-of-array irradiance, :math:`T_{a}` is the
 ambient air temperature, :math:`WS` is the wind speed, :math:`\alpha` is the
 absorbed fraction of the incident irradiance, :math:`\eta_{m}` is the
-electrical efficiency of the module, :math:`U0` is the wind-idependent heat
-loss coefficient, and :math:`U1` is the wind-dependent heat loss coefficient.
+electrical efficiency of the module, :math:`U_{c}` is the wind-idependent heat
+loss coefficient, and :math:`U_{v}` is the wind-dependent heat loss coefficient.
 
 However, the default heat loss coefficient values of this model were
 specified for land-based PV systems and are not necessarily representative
@@ -54,43 +54,43 @@ The table below gives heat loss coefficients derrived for different systems
 and locations as found in the literature. In this example, the FPV cell
 temperature will be calculated using some of the coefficients below.
 
-+------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-| System                 | Location    |:math:`U_{c}`             | :math:`U_{v}`                    | Reference |  # noqa: E501
-|                        |             |:math:`[W/(m^2 \cdot K)]` | :math:`[W/(m^3 \cdot K \cdot s)]`|           |  # noqa: E501
-+========================+=============+==========================+==================================+===========+  # noqa: E501
-| Monofacial module      | Netherlands | 24.4                     | 6.5                              | [1]_      |  # noqa: E501
-| open structure         |             |                          |                                  |           |  # noqa: E501
-| two-axis tracking      |             |                          |                                  |           |  # noqa: E501
-| small water footprint  |             |                          |                                  |           |  # noqa: E501
-+------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-| Monofacial module      | Netherlands | 25.2                     | 3.7                              | [1]_      |  # noqa: E501
-| closed structure       |             |                          |                                  |           |  # noqa: E501
-| large water footprint  |             |                          |                                  |           |  # noqa: E501
-+------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-| Monofacial module      | Singapore   | 34.8                     | 0.8                              | [1]_      |  # noqa: E501
-| closed structure       |             |                          |                                  |           |  # noqa: E501
-| large water footprint  |             |                          |                                  |           |  # noqa: E501
-+------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-| Monofacial module      | Singapore   | 18.9                     | 8.9                              | [1]_      |  # noqa: E501
-| closed stucuture       |             |                          |                                  |           |  # noqa: E501
-| medium water footprint |             |                          |                                  |           |  # noqa: E501
-+------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-| Monofacial module      | Singapore   | 35.3                     | 8.9                              | [1]_      |  # noqa: E501
-| open strucuture        |             |                          |                                  |           |  # noqa: E501
-| free-standing          |             |                          |                                  |           |  # noqa: E501
-+------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-| Monofacial module      | Norway      | 86.5                     | 0                                | [2]_      |  # noqa: E501
-| in contact with        |             |                          |                                  |           |  # noqa: E501
-| water                  |             |                          |                                  |           |  # noqa: E501
-+------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-| Monofacial module      | South Italy | 31.9                     | 1.5                              | [3]_      |  # noqa: E501
-| open structure         |             |                          |                                  |           |  # noqa: E501
-| free-standing          |             |                          |                                  |           |  # noqa: E501
-+------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-| Bifacial module        | South Italy | 35.2                     | 1.5                              | [3]_      |  # noqa: E501
-| open structure         |             |                          |                                  |           |  # noqa: E501
-| free-standing          |             |                          |                                  |           |  # noqa: E501
-+------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
++------------------------+-------------+--------------------------+----------------------------------+-----------+
+| System                 | Location    |:math:`U_{c}`             | :math:`U_{v}`                    | Reference |
+|                        |             |:math:`[W/(m^2 \cdot K)]` | :math:`[W/(m^3 \cdot K \cdot s)]`|           |
++========================+=============+==========================+==================================+===========+
+| Monofacial module      | Netherlands | 24.4                     | 6.5                              | [1]_      |
+| open structure         |             |                          |                                  |           |
+| two-axis tracking      |             |                          |                                  |           |
+| small water footprint  |             |                          |                                  |           |
++------------------------+-------------+--------------------------+----------------------------------+-----------+
+| Monofacial module      | Netherlands | 25.2                     | 3.7                              | [1]_      |
+| closed structure       |             |                          |                                  |           |
+| large water footprint  |             |                          |                                  |           |
++------------------------+-------------+--------------------------+----------------------------------+-----------+
+| Monofacial module      | Singapore   | 34.8                     | 0.8                              | [1]_      |
+| closed structure       |             |                          |                                  |           |
+| large water footprint  |             |                          |                                  |           |
++------------------------+-------------+--------------------------+----------------------------------+-----------+
+| Monofacial module      | Singapore   | 18.9                     | 8.9                              | [1]_      |
+| closed stucuture       |             |                          |                                  |           |
+| medium water footprint |             |                          |                                  |           |
++------------------------+-------------+--------------------------+----------------------------------+-----------+
+| Monofacial module      | Singapore   | 35.3                     | 8.9                              | [1]_      |
+| open strucuture        |             |                          |                                  |           |
+| free-standing          |             |                          |                                  |           |
++------------------------+-------------+--------------------------+----------------------------------+-----------+
+| Monofacial module      | Norway      | 86.5                     | 0                                | [2]_      |
+| in contact with        |             |                          |                                  |           |
+| water                  |             |                          |                                  |           |
++------------------------+-------------+--------------------------+----------------------------------+-----------+
+| Monofacial module      | South Italy | 31.9                     | 1.5                              | [3]_      |
+| open structure         |             |                          |                                  |           |
+| free-standing          |             |                          |                                  |           |
++------------------------+-------------+--------------------------+----------------------------------+-----------+
+| Bifacial module        | South Italy | 35.2                     | 1.5                              | [3]_      |
+| open structure         |             |                          |                                  |           |
+| free-standing          |             |                          |                                  |           |
++------------------------+-------------+--------------------------+----------------------------------+-----------+
 
 References
 ----------
@@ -107,7 +107,7 @@ References
     analysis of monofacial and bifacial photovoltaic modules for floating
     power plants', Applied Energy, vol 281, pp. 116084,
     :doi:`10.1016/j.apenergy.2020.116084`.
-"""
+""" # noqa: E501
 
 # %%
 # Read example weather data

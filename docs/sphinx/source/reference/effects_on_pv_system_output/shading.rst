@@ -13,3 +13,4 @@ Shading
    shading.projected_solar_zenith_angle
    shading.shaded_fraction1d
    shading.direct_martinez
+   shading.linear_shade_loss

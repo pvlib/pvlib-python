@@ -389,3 +389,19 @@ def test_direct_martinez(direct_martinez_Table2):
     test_data, power_losses_expected = direct_martinez_Table2
     power_losses = shading.direct_martinez(**test_data)
     assert_allclose(power_losses, power_losses_expected, atol=5e-3)
+
+
+def test_linear_shade_loss():
+    test_data = pd.DataFrame(
+        columns=["shaded_fraction", "diffuse_ratio", "expected_loss"],
+        data=[
+            [0.11611, 0.2, 0.09289],
+            [0.11611, 0.0, 0.11611],  # no diffuse, shade fraction is the loss
+            [0.11611, 1.0, 0.00000],  # all diffuse, no shade loss
+            [0.16667, 0.2, 0.13333],
+            [0.03775, 0.2, 0.03019],
+        ]
+    )
+    loss = shading.linear_shade_loss(test_data["shaded_fraction"],
+                                     test_data["diffuse_ratio"])
+    assert_allclose(loss, test_data["expected_loss"], atol=1e-5)

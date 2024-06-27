@@ -53,6 +53,7 @@ optional = [
     'numba >= 0.17.0',
     'solarfactors',
     'statsmodels',
+    'shapely >= 2.0.2',
 ]
 doc = [
     'ipython',
@@ -64,6 +65,7 @@ doc = [
     'pillow',
     'sphinx-toggleprompt >= 0.0.5',
     'solarfactors',
+    'shapely',
 ]
 test = [
     'pytest',

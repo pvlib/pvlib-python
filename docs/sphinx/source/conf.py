@@ -372,6 +372,9 @@ sphinx_gallery_conf = {
 
     # https://sphinx-gallery.github.io/dev/configuration.html#removing-config-comments  # noqa: E501
     'remove_config_comments': True,
+
+    # allow creating animations with Matplotlib
+    'matplotlib_animations': True,
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html

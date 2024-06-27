@@ -18,7 +18,7 @@ from pvlib.tools import _degrees_to_index
 
 
 def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
-             altitude=0, dni_extra=1364., perez_enhancement=False):
+             altitude=0, dni_extra=1364., perez_enhancement=None):
     '''
     Determine clear sky GHI, DNI, and DHI from Ineichen/Perez model.
 
@@ -108,11 +108,18 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     cg1 = 5.09e-05 * altitude + 0.868
     cg2 = 3.92e-05 * altitude + 0.0387
 
-    ghi = np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1)))
-
     # https://github.com/pvlib/pvlib-python/issues/435
-    if perez_enhancement:
-        ghi *= np.exp(0.01*airmass_absolute**1.8)
+    # https://github.com/pvlib/pvlib-python/issues/1064
+    if perez_enhancement == True or perez_enhancement == 1:
+        ghi = np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1)) +
+                     0.01*airmass_absolute**1.8)
+    elif perez_enhancement == False or perez_enhancement == 0:
+        ghi = np.exp(-cg2*airmass_absolute*(fh1 + fh2*(tl - 1)))
+    else:
+        airmass_critical = (cg2*(fh1+fh2*(tl-1))/0.018)**1.25
+        airmass_clipped = np.fmin(airmass_absolute, airmass_critical)
+        ghi = np.exp(-cg2*airmass_clipped*(fh1 + fh2*(tl - 1)) + 
+                     0.01*airmass_clipped**1.8)
 
     # use fmax to map airmass nans to 0s. multiply and divide by tl to
     # reinsert tl nans

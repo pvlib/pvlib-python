@@ -1,4 +1,4 @@
-"""
+r"""
 Calculating the cell temperature for floating PV
 ================================================
 
@@ -22,7 +22,7 @@ temperature :math:`T_{C}` is given by
 .. math::
     :label: pvsyst
 
-    T_{C} = T_{a} + \frac{\alpha E (1 - \eta_{m})}{U_{c} + U_{v} \times WS}
+    T_{C} = T_{a} + \frac{\alpha E (1 - \eta_{m})}{U_{c} + U_{v} \cdot WS}
 
 Where :math:`E` is the plane-of-array irradiance, :math:`T_{a}` is the
 ambient air temperature, :math:`WS` is the wind speed, :math:`\alpha` is the
@@ -222,8 +222,7 @@ axes.legend(loc="upper left")
 plt.tight_layout()
 plt.show()
 
-#%%
-
+# %%
 # The above figure illustrates the necessity of choosing appropriate heat loss
 # coefficients when using the PVSyst model for calculating the cell temperature
 # for floating PV systems. A difference of up to 10 °C was obtained for the two

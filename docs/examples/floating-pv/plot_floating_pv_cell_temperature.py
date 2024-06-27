@@ -123,8 +123,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 # Assume a FPV system with the following specifications
-tilt = 30 # degrees
-azimuth = 180 # south-facing
+tilt = 30  # degrees
+azimuth = 180  # south-facing
 
 # Datafile found in the pvlib distribution
 data_file = Path(pvlib.__path__[0]).joinpath('data', '723170TYA.CSV')

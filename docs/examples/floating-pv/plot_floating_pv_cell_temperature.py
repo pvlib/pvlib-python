@@ -4,113 +4,111 @@ Calculating the cell temperature for floating PV
 
 This example demonstrates how to calculate the cell temperature for
 floating PV systems using the PVSyst temperature model.
+
+One of the primary benefits attributed to floating photovoltaic (FPV) systems
+is their lower operating temperatures, which are expected to increase the
+operating efficiency. In general, the temperature at which a photovoltaic
+module operates is influenced by various factors including solar radiation,
+ambient temperature, wind speed and direction, and the characteristics of the
+cell and module materials, as well as the mounting structure. Both radiative
+and convective heat transfers play roles in determining the module's
+temperature.
+
+One of the most common models for calculating the PV cell temperature is the
+empirical heat loss factor model suggested by Faiman and implemented in
+PVSyst (:py:func:`~pvlib.temperature.pvsyst_cell`). The PVSyst model for cell
+temperature :math:`T_{C}` is given by
+
+.. math::
+    :label: pvsyst
+
+    T_{C} = T_{a} + \frac{\alpha E (1 - \eta_{m})}{U_{c} + U_{v} \times WS}
+
+Where :math:`E` is the plane-of-array irradiance, :math:`T_{a}` is the
+ambient air temperature, :math:`WS` is the wind speed, :math:`\alpha` is the
+absorbed fraction of the incident irradiance, :math:`\eta_{m}` is the
+electrical efficiency of the module, :math:`U0` is the wind-idependent heat
+loss coefficient, and :math:`U1` is the wind-dependent heat loss coefficient.
+
+However, the default heat loss coefficient values of this model were
+specified for land-based PV systems and are not necessarily representative
+for FPV systems.
+
+In FPV systems, variations in heat loss coefficients are considerable, not
+only due to differences in design but also because of geographic factors.
+Systems with extensive water surfaces, closely packed modules, and restricted
+airflow behind the modules generally exhibit lower heat loss coefficients
+compared to those with smaller water surfaces and better airflow behind the
+modules.
+
+For FPV systems installed over water without direct contact, the module's
+operating temperature, much like in land-based systems, is mainly influenced
+by the mounting structure (which significantly affects the U-value), wind,
+and air temperature. Thus, factors that help reduce operating temperatures in
+such systems include lower air temperatures and changes in air flow beneath
+the modules (wind/convection). In some designs where the modules are in
+direct thermal contact with water, cooling effectiveness is largely dictated
+by the water temperature.
+
+The table below gives heat loss coefficients derrived for different systems
+and locations as found in the literature. In this example, the FPV cell
+temperature will be calculated using some of the coefficients below.
+
++------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
+| System                 | Location    |:math:`U_{c}`             | :math:`U_{v}`                    | Reference |  # noqa: E501
+|                        |             |:math:`[W/(m^2 \cdot K)]` | :math:`[W/(m^3 \cdot K \cdot s)]`|           |  # noqa: E501
++========================+=============+==========================+==================================+===========+  # noqa: E501
+| Monofacial module      | Netherlands | 24.4                     | 6.5                              | [1]_      |  # noqa: E501
+| open structure         |             |                          |                                  |           |  # noqa: E501
+| two-axis tracking      |             |                          |                                  |           |  # noqa: E501
+| small water footprint  |             |                          |                                  |           |  # noqa: E501
++------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
+| Monofacial module      | Netherlands | 25.2                     | 3.7                              | [1]_      |  # noqa: E501
+| closed structure       |             |                          |                                  |           |  # noqa: E501
+| large water footprint  |             |                          |                                  |           |  # noqa: E501
++------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
+| Monofacial module      | Singapore   | 34.8                     | 0.8                              | [1]_      |  # noqa: E501
+| closed structure       |             |                          |                                  |           |  # noqa: E501
+| large water footprint  |             |                          |                                  |           |  # noqa: E501
++------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
+| Monofacial module      | Singapore   | 18.9                     | 8.9                              | [1]_      |  # noqa: E501
+| closed stucuture       |             |                          |                                  |           |  # noqa: E501
+| medium water footprint |             |                          |                                  |           |  # noqa: E501
++------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
+| Monofacial module      | Singapore   | 35.3                     | 8.9                              | [1]_      |  # noqa: E501
+| open strucuture        |             |                          |                                  |           |  # noqa: E501
+| free-standing          |             |                          |                                  |           |  # noqa: E501
++------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
+| Monofacial module      | Norway      | 86.5                     | 0                                | [2]_      |  # noqa: E501
+| in contact with        |             |                          |                                  |           |  # noqa: E501
+| water                  |             |                          |                                  |           |  # noqa: E501             |                          |                                  |           |  # noqa: E501
++------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
+| Monofacial module      | South Italy | 31.9                     | 1.5                              | [3]_      |  # noqa: E501
+| open structure         |             |                          |                                  |           |  # noqa: E501
+| free-standing          |             |                          |                                  |           |  # noqa: E501
++------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
+| Bifacial module        | South Italy | 35.2                     | 1.5                              | [3]_      |  # noqa: E501
+| open structure         |             |                          |                                  |           |  # noqa: E501
+| free-standing          |             |                          |                                  |           |  # noqa: E501
++------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
+
+References
+----------
+.. [1] Dörenkämper M., Wahed A., Kumar A., de Jong M., Kroon J., Reindl T.
+    (2021), 'The cooling effect of floating PV in two different climate zones:
+    A comparison of field test data from the Netherlands and Singapore'
+    Solar Energy, vol. 214, pp. 239-247, :doi:`10.1016/j.solener.2020.11.029`.
+
+.. [2] Kjeldstad T., Lindholm D., Marstein E., Selj J. (2021), 'Cooling of
+    floating photovoltaics and the importance of water temperature', Solar
+    Energy, vol. 218, pp. 544-551, :doi:`10.1016/j.solener.2021.03.022`.
+
+.. [3] Tina G.M., Scavo F.B., Merlo L., Bizzarri F. (2021), 'Comparative
+    analysis of monofacial and bifacial photovoltaic modules for floating
+    power plants', Applied Energy, vol 281, pp. 116084,
+    :doi:`10.1016/j.apenergy.2020.116084`.
 """
 
-# %%
-
-# One of the primary benefits attributed to floating photovoltaic (FPV) systems
-# is their lower operating temperatures, which are expected to increase the
-# operating efficiency. In general, the temperature at which a photovoltaic
-# module operates is influenced by various factors including solar radiation,
-# ambient temperature, wind speed and direction, and the characteristics of the
-# cell and module materials, as well as the mounting structure. Both radiative
-# and convective heat transfers play roles in determining the module's
-# temperature.
-#
-# One of the most common models for calculating the PV cell temperature is the
-# empirical heat loss factor model suggested by Faiman and implemented in
-# PVSyst (:py:func:`~pvlib.temperature.pvsyst_cell`). The PVSyst model for cell
-# temperature :math:`T_{C}` is given by
-#
-# .. math::
-#    :label: pvsyst
-#
-#     T_{C} = T_{a} + \frac{\alpha E (1 - \eta_{m})}{U_{c} + U_{v} \times WS}
-#
-# Where :math:`E` is the plane-of-array irradiance, :math:`T_{a}` is the
-# ambient air temperature, :math:`WS` is the wind speed, :math:`\alpha` is the
-# absorbed fraction of the incident irradiance, :math:`\eta_{m}` is the
-# electrical efficiency of the module, :math:`U0` is the wind-idependent heat
-# loss coefficient, and :math:`U1` is the wind-dependent heat loss coefficient.
-#
-# However, the default heat loss coefficient values of this model were
-# specified for land-based PV systems and are not necessarily representative
-# for FPV systems.
-#
-# In FPV systems, variations in heat loss coefficients are considerable, not
-# only due to differences in design but also because of geographic factors.
-# Systems with extensive water surfaces, closely packed modules, and restricted
-# airflow behind the modules generally exhibit lower heat loss coefficients
-# compared to those with smaller water surfaces and better airflow behind the
-# modules.
-#
-# For FPV systems installed over water without direct contact, the module's
-# operating temperature, much like in land-based systems, is mainly influenced
-# by the mounting structure (which significantly affects the U-value), wind,
-# and air temperature. Thus, factors that help reduce operating temperatures in
-# such systems include lower air temperatures and changes in air flow beneath
-# the modules (wind/convection). In some designs where the modules are in
-# direct thermal contact with water, cooling effectiveness is largely dictated
-# by the water temperature.
-#
-# The table below gives heat loss coefficients derrived for different systems
-# and locations as found in the literature. In this example, the FPV cell
-# temperature will be calculated using some of the coefficients below.
-#
-# +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-# | System                 | Location    |:math:`U_{c}`             | :math:`U_{v}`                    | Reference |  # noqa: E501
-# |                        |             |:math:`[W/(m^2 \cdot K)]` | :math:`[W/(m^3 \cdot K \cdot s)]`|           |  # noqa: E501
-# +========================+=============+==========================+==================================+===========+  # noqa: E501
-# | Monofacial module      | Netherlands | 24.4                     | 6.5                              | [1]_      |  # noqa: E501
-# | open structure         |             |                          |                                  |           |  # noqa: E501
-# | two-axis tracking      |             |                          |                                  |           |  # noqa: E501
-# | small water footprint  |             |                          |                                  |           |  # noqa: E501
-# +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-# | Monofacial module      | Netherlands | 25.2                     | 3.7                              | [1]_      |  # noqa: E501
-# | closed structure       |             |                          |                                  |           |  # noqa: E501
-# | large water footprint  |             |                          |                                  |           |  # noqa: E501
-# +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-# | Monofacial module      | Singapore   | 34.8                     | 0.8                              | [1]_      |  # noqa: E501
-# | closed structure       |             |                          |                                  |           |  # noqa: E501
-# | large water footprint  |             |                          |                                  |           |  # noqa: E501
-# +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-# | Monofacial module      | Singapore   | 18.9                     | 8.9                              | [1]_      |  # noqa: E501
-# | closed stucuture       |             |                          |                                  |           |  # noqa: E501
-# | medium water footprint |             |                          |                                  |           |  # noqa: E501
-# +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-# | Monofacial module      | Singapore   | 35.3                     | 8.9                              | [1]_      |  # noqa: E501
-# | open strucuture        |             |                          |                                  |           |  # noqa: E501
-# | free-standing          |             |                          |                                  |           |  # noqa: E501
-# +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-# | Monofacial module      | Norway      | 86.5                     | 0                                | [2]_      |  # noqa: E501
-# | in contact with        |             |                          |                                  |           |  # noqa: E501
-# | water                  |             |                          |                                  |           |  # noqa: E501             |                          |                                  |           |  # noqa: E501
-# +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-# | Monofacial module      | South Italy | 31.9                     | 1.5                              | [3]_      |  # noqa: E501
-# | open structure         |             |                          |                                  |           |  # noqa: E501
-# | free-standing          |             |                          |                                  |           |  # noqa: E501
-# +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-# | Bifacial module        | South Italy | 35.2                     | 1.5                              | [3]_      |  # noqa: E501
-# | open structure         |             |                          |                                  |           |  # noqa: E501
-# | free-standing          |             |                          |                                  |           |  # noqa: E501
-# +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
-#
-# References
-# ----------
-# .. [1] Dörenkämper M., Wahed A., Kumar A., de Jong M., Kroon J., Reindl T.
-#    (2021), 'The cooling effect of floating PV in two different climate zones:
-#    A comparison of field test data from the Netherlands and Singapore'
-#    Solar Energy, vol. 214, pp. 239-247, :doi:`10.1016/j.solener.2020.11.029`.
-#
-# .. [2] Kjeldstad T., Lindholm D., Marstein E., Selj J. (2021), 'Cooling of
-#    floating photovoltaics and the importance of water temperature', Solar
-#    Energy, vol. 218, pp. 544-551, :doi:`10.1016/j.solener.2021.03.022`.
-#
-# .. [3] Tina G.M., Scavo F.B., Merlo L., Bizzarri F. (2021), 'Comparative
-#    analysis of monofacial and bifacial photovoltaic modules for floating
-#    power plants', Applied Energy, vol 281, pp. 116084,
-#    :doi:`10.1016/j.apenergy.2020.116084`.
-#
 # %%
 
 # Read example weather data
@@ -197,6 +195,7 @@ T_cell_land = pvlib.temperature.pvsyst_cell(
 # %%
 # Plot the results
 # ^^^^^^^^^^^^^^^^
+
 # Convert Dataframe Indexes to Hour:Minutes format to make plotting easier
 T_cell_floating.index = T_cell_floating.index.strftime("%H:%M")
 T_cell_land.index = T_cell_land.index.strftime("%H:%M")
@@ -222,6 +221,8 @@ axes.grid()
 axes.legend(loc="upper left")
 plt.tight_layout()
 plt.show()
+
+#%%
 
 # The above figure illustrates the necessity of choosing appropriate heat loss
 # coefficients when using the PVSyst model for calculating the cell temperature

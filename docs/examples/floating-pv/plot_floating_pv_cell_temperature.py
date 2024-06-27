@@ -81,7 +81,7 @@ temperature will be calculated using some of the coefficients below.
 +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
 | Monofacial module      | Norway      | 86.5                     | 0                                | [2]_      |  # noqa: E501
 | in contact with        |             |                          |                                  |           |  # noqa: E501
-| water                  |             |                          |                                  |           |  # noqa: E501             |                          |                                  |           |  # noqa: E501
+| water                  |             |                          |                                  |           |  # noqa: E501
 +------------------------+-------------+--------------------------+----------------------------------+-----------+  # noqa: E501
 | Monofacial module      | South Italy | 31.9                     | 1.5                              | [3]_      |  # noqa: E501
 | open structure         |             |                          |                                  |           |  # noqa: E501
@@ -110,7 +110,6 @@ References
 """
 
 # %%
-
 # Read example weather data
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
 # Read weather data from a TMY3 file and calculate the solar position and
@@ -167,7 +166,6 @@ irradiance = pvlib.irradiance.get_total_irradiance(
 )
 
 # %%
-
 # Calculate cell temperature
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 # The temperature of the PV cell is calculated for a floating PV system located
@@ -196,9 +194,9 @@ T_cell_land = pvlib.temperature.pvsyst_cell(
 # Plot the results
 # ^^^^^^^^^^^^^^^^
 
-# Convert Dataframe Indexes to Hour:Minutes format to make plotting easier
-T_cell_floating.index = T_cell_floating.index.strftime("%H:%M")
-T_cell_land.index = T_cell_land.index.strftime("%H:%M")
+# Convert Dataframe Indexes to Hour format to make plotting easier
+T_cell_floating.index = T_cell_floating.index.strftime("%H")
+T_cell_land.index = T_cell_land.index.strftime("%H")
 
 fig, axes = plt.subplots()
 axes.set(

@@ -43,7 +43,7 @@ row1 = RectangularSurface(  # south-most row
 )
 
 row2 = RectangularSurface(  # north-most row
-    center=[0, 3, 3], azimuth=165, tilt=20, axis_tilt=10, width=2, length=20
+    center=[0, 3, 3], azimuth=165, tilt=30, axis_tilt=10, width=2, length=20
 )
 
 # %%

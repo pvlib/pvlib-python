@@ -80,7 +80,7 @@ for tilt in range(0, 50, 10):
     column_name = f"FT-{tilt}"
     # TMYs are hourly, so we can just sum up irradiance [W/m^2] to get
     # insolation [Wh/m^2]:
-    df_monthly[column_name] = poa_irradiance.resample('m').sum()
+    df_monthly[column_name] = poa_irradiance.resample('ME').sum()
 
 # single-axis tracking:
 orientation = tracking.singleaxis(solar_position['apparent_zenith'],
@@ -95,15 +95,16 @@ poa_irradiance = calculate_poa(tmy,
                                solar_position,
                                orientation['surface_tilt'],
                                orientation['surface_azimuth'])
-df_monthly['SAT-0.4'] = poa_irradiance.resample('m').sum()
+df_monthly['SAT-0.4'] = poa_irradiance.resample('ME').sum()
 
 # calculate the percent difference from GHI
-ghi_monthly = tmy['ghi'].resample('m').sum()
+ghi_monthly = tmy['ghi'].resample('ME').sum()
 df_monthly = 100 * (df_monthly.divide(ghi_monthly, axis=0) - 1)
 
 df_monthly.plot()
 plt.xlabel('Month of Year')
 plt.ylabel('Monthly Transposition Gain [%]')
+plt.tight_layout()
 plt.show()
 
 

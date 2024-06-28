@@ -445,8 +445,9 @@ def make_github_url(file_name):
         if file_name.split("/")[-1] == "index":
             example_file = "README.rst"
         else:
+            example_folder = file_name.split("/")[-2]
             example_file = file_name.split("/")[-1].replace('.rst', '.py')
-        target_url = URL_BASE + "docs/examples/" + example_file
+        target_url = URL_BASE + "docs/examples/" + example_folder + "/" + example_file
 
     # is it an API autogen page?
     elif "generated" in file_name:

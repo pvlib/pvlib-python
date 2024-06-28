@@ -14,8 +14,8 @@ cell and module materials, as well as the mounting structure. Both radiative
 and convective heat transfers play roles in determining the module's
 temperature.
 
-One of the most common models for calculating the PV cell temperature is the
-empirical heat loss factor model suggested by Faiman and implemented in
+A popular model for calculating the PV cell temperature is the
+empirical heat loss factor model suggested by Faiman. A modified version of this model is implemented in
 PVSyst (:py:func:`~pvlib.temperature.pvsyst_cell`). The PVSyst model for cell
 temperature :math:`T_{C}` is given by
 

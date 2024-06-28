@@ -167,64 +167,51 @@ irradiance = pvlib.irradiance.get_total_irradiance(
 )
 
 # %%
-# Calculate cell temperature
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^
-# The temperature of the PV cell is calculated for a floating PV system located
-# on a lake:
+# Calculate and plot cell temperature
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# The temperature of the PV cell is calculated for lake-based floating PV
+# systems:
 
-# Monnofacial floating module open strucuture
-T_cell_floating = pvlib.temperature.pvsyst_cell(
-    poa_global=irradiance['poa_global'],
-    temp_air=tmy['temp_air'],
-    wind_speed=tmy['wind_speed'],
-    u_c=35.3,
-    u_v=8.9
-)
+# Make a dictionary containing all the sets of coefficients presented in the
+# above table.
+heat_loss_coeffs = {
+    'open_structure_small_footprint_tracking_NL': [24.4, 6.5],
+    'closed_structure_large_footprint_NL': [25.2, 3.7],
+    'closed_structure_large_footprint_SG': [34.8, 0.8],
+    'closed_structure_medium_footprint_SG': [18.9, 8.9],
+    'open_structure_free_standing_SG': [35.3, 8.9],
+    'in_contact_with_water_NO': [86.5, 0],
+    'open_strucutre_free_standing_IT': [31.9, 1.5],
+    'open_strucutre_free_standing_bifacial_IT': [35.2, 1.5],
+    'default_PVSyst_coeffs_for_land_systems': [29.0, 0]
+}
 
-# In order to idetify the effect of the heat loss coefficinets on the cell
-# temperature, the PV cell temperature for the same system is calculated
-# using the default coefficients of the equation. It should be noted that the
-# default coefficeints were derrived for land-based systems.
-T_cell_land = pvlib.temperature.pvsyst_cell(
-    poa_global=irradiance['poa_global'],
-    temp_air=tmy['temp_air'],
-    wind_speed=tmy['wind_speed']
-)
+# Plot the cell temperature for each set of the above heat loss coefficients
+for coeffs in heat_loss_coeffs:
+    T_cell = pvlib.temperature.pvsyst_cell(
+        poa_global=irradiance['poa_global'],
+        temp_air=tmy['temp_air'],
+        wind_speed=tmy['wind_speed'],
+        u_c=heat_loss_coeffs[coeffs][0],
+        u_v=heat_loss_coeffs[coeffs][1]
+    )
+    # Convert Dataframe Indexes to Hour format to make plotting easier
+    T_cell.index = T_cell.index.strftime("%H")
+    plt.plot(T_cell, label=coeffs)
 
-# %%
-# Plot the results
-# ^^^^^^^^^^^^^^^^
-
-# Convert Dataframe Indexes to Hour format to make plotting easier
-T_cell_floating.index = T_cell_floating.index.strftime("%H")
-T_cell_land.index = T_cell_land.index.strftime("%H")
-
-fig, axes = plt.subplots()
-axes.set(
-    xlabel="Hour",
-    ylabel="Temperature $[°C]$",
-    title="PV cell temperature for floating and land-based system"
-)
-
-axes.plot(
-    T_cell_floating,
-    label='Floating PV coeff.'
-)
-
-axes.plot(
-    T_cell_land,
-    label='Land-based PV coeff.'
-)
-
-axes.set_ylim(20, 45)
-axes.set_xlim('06', '20')
-axes.grid()
-axes.legend(loc="upper left")
+plt.xlabel('Hour')
+plt.ylabel('PV cell temperature\n$[°C]$')
+plt.ylim(20, 45)
+plt.xlim('06', '20')
+plt.grid()
+plt.legend(loc='upper left', frameon=False, ncols=2, fontsize='x-small',
+           bbox_to_anchor=(0, -0.2))
 plt.tight_layout()
 plt.show()
 
 # %%
 # The above figure illustrates the necessity of choosing appropriate heat loss
 # coefficients when using the PVSyst model for calculating the cell temperature
-# for floating PV systems. A difference of up to 10 °C was obtained for the two
-# sets of coefficients.
+# for floating PV systems. A difference of up to 11.5 °C was obtained when
+# using the default PVSyst coefficients and the coefficients when the panels
+# are in contact with water.

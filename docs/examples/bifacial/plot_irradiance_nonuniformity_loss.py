@@ -93,7 +93,7 @@ ax.pcolormesh(
 #
 # .. math::
 #
-#    \Delta \left[ \% \right] = \frac{1}{n^2 \bar{G}_{total}}
+#    \Delta \left[ unitless \right] = \frac{1}{n^2 \bar{G}_{total}}
 #    \sum_{i=1}^{n} \sum_{j=1}^{n} \lvert G_{total,i} - G_{total,j} \rvert
 #
 
@@ -117,8 +117,7 @@ print(rmad_cells == rmad(cells_irrad[:, 0]))
 # Mismatch Loss
 # ^^^^^^^^^^^^^
 # Calculate the power loss ratio due to the irradiance non-uniformity
-# with the function
-# :py:func:`pvlib.bifacial.power_mismatch_deline`.
+# with :py:func:`pvlib.bifacial.power_mismatch_deline`.
 
 mismatch_loss = power_mismatch_deline(rmad_cells)
 

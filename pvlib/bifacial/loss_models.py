@@ -4,7 +4,7 @@ import pandas as pd
 
 def power_mismatch_deline(
     rmad,
-    coefficients=(0, 0.142, 0.032),
+    coefficients=(0, 0.142, 0.032 * 100),
     fill_factor: float = None,
     fill_factor_reference: float = 0.79,
 ):
@@ -28,10 +28,11 @@ def power_mismatch_deline(
     rmad : numeric
         The Relative Mean Absolute Difference of the cell-by-cell total
         irradiance. [Unitless]
+
         Check out the *Notes* section for the equation to calculate it from the
         bifaciality and the front and back irradiances.
 
-    coefficients : float collection or numpy.polynomial.polynomial.Polynomial, default ``(0, 0.142, 0.032)``
+    coefficients : float collection or numpy.polynomial.polynomial.Polynomial, default ``(0, 0.142, 0.032 * 100)``
         The polynomial coefficients to use.
 
         If a :external:class:`numpy.polynomial.polynomial.Polynomial`,
@@ -64,10 +65,14 @@ def power_mismatch_deline(
 
     .. math::
 
-       M = 0.142 \Delta + 0.032 \Delta^2 \qquad \text{(11)}
+       M[\%] &= 0.142 \Delta[\%] + 0.032 \Delta^2[\%] \qquad \text{(11)}
+       M[-] &= 0.142 \Delta[-] + 0.032 \times 100 \Delta^2[-]
 
-    where :math:`\Delta` is the Relative Mean Absolute Difference of the
-    global irradiance, Eq. (4) of [1]_ and [2]_.
+    where the upper equation is in percentage (same as paper) and the lower
+    one is unitless. The implementation uses the unitless version, where
+    :math:`M[-]` is the mismatch power loss [unitless] and
+    :math:`\Delta[-]` is the Relative Mean Absolute Difference [unitless]
+    of the global irradiance, Eq. (4) of [1]_ and [2]_.
 
     The losses definition is Eq. (1) of [1]_, and it's defined as a loss of the
     output power:
@@ -138,7 +143,7 @@ def power_mismatch_deline(
         model_polynom = np.polynomial.Polynomial(coef=coefficients)
 
     if fill_factor:  # Eq. (7), [1]
-        # Modify output of a trained model with different fill factor
+        # Scale output of trained model to account for different fill factors
         model_polynom = model_polynom * fill_factor / fill_factor_reference
 
     mismatch = model_polynom(rmad)

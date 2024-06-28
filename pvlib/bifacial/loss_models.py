@@ -74,6 +74,8 @@ def power_mismatch_deline(
     :math:`M[-]` is the mismatch power loss [unitless] and
     :math:`\Delta[-]` is the Relative Mean Absolute Difference [unitless]
     of the global irradiance, Eq. (4) of [1]_ and [2]_.
+    Note that the n-th power coefficient is multiplied by :math:`100^(n-1)` to
+    convert the percentage to unitless.
 
     The losses definition is Eq. (1) of [1]_, and it's defined as a loss of the
     output power:

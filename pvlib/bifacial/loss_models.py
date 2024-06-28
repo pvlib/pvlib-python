@@ -100,7 +100,7 @@ def power_mismatch_deline(
     .. math::
 
        RMAD(k \cdot X + c) = RMAD(X) \cdot k \frac{k \bar{X}}{k \bar{X} + c}
-       = RMAD(X) \cdot k \frac{1}{1 + \frac{c}{k \bar{X}}}
+       = RMAD(X) \cdot \frac{k}{1 + \frac{c}{k \bar{X}}}
 
     by similarity with equation (2) of [1]_:
 

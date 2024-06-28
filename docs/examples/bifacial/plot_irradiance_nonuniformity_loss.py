@@ -103,8 +103,9 @@ def rmad(data, axis=None):
     Relative Mean Absolute Difference. Output is [Unitless].
     https://stackoverflow.com/a/19472336/19371110
     """
-    mad = np.mean(np.absolute(data - np.mean(data, axis)), axis)
-    return mad / np.mean(data, axis)
+    mean = np.mean(data, axis)
+    mad = np.mean(np.absolute(data - mean), axis)
+    return mad / mean
 
 
 rmad_cells = rmad(cells_irrad)

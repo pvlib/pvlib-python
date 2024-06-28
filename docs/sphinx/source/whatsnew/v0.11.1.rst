@@ -33,4 +33,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Echedey Luis (:ghuser:`echedey-ls`)

@@ -374,11 +374,6 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
        MMF Approach, TUV Rheinland Energy GmbH report 21237296.003,
        January 2017
     """
-
-    # --- Screen Input Data ---
-
-    # *** Pw ***
-    # Replace Pw Values below min_pw with min_pw"
     pw = np.atleast_1d(precipitable_water)
     pw = pw.astype('float64')
     if np.min(pw) < min_precipitable_water:
@@ -390,14 +385,6 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         pw[pw > max_precipitable_water] = np.nan
         warn('High pw values replaced with np.nan in '
              'the calculation of spectral mismatch.')
-
-    # *** AMa ***
-    # Replace Extremely High AM with max_am
-    # AM > 10 will only occur very close to sunset
-    if np.max(airmass_absolute) > max_airmass_absolute:
-        airmass_absolute = np.minimum(airmass_absolute, max_airmass_absolute)
-    warn('High AMa values replaced with 'f'{max_airmass_absolute} in the'
-         ' calculation of spectral mismatch.')
 
     if np.min(airmass_absolute) < min_airmass_absolute:
         airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
@@ -432,7 +419,6 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         raise TypeError('Cannot resolve input, must supply only one of ' +
                         'module_type and coefficients')
 
-    # Evaluate Spectral Shift
     coeff = coefficients
     ama = airmass_absolute
     modifier = (

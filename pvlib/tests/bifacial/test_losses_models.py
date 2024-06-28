@@ -20,12 +20,12 @@ def test_power_mismatch_deline():
     # as Polynomial class
     polynomial = np.polynomial.Polynomial([1, 1, 0])
     result_custom_mms = bifacial.power_mismatch_deline(
-        premise_rmads, model=polynomial
+        premise_rmads, coefficients=polynomial
     )
     assert_allclose(result_custom_mms, 1 + premise_rmads)
     # as list
     result_custom_mms = bifacial.power_mismatch_deline(
-        premise_rmads, model=[1, 1, 0]
+        premise_rmads, coefficients=[1, 1, 0]
     )
     assert_allclose(result_custom_mms, 1 + premise_rmads)
 

@@ -57,6 +57,7 @@ def power_mismatch_deline(
     -------
     loss : numeric
         The fractional power loss. [Unitless]
+
         Output will be a ``pandas.Series`` if ``rmad`` is a ``pandas.Series``.
 
     Notes

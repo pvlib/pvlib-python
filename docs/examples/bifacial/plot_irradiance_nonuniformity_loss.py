@@ -27,7 +27,7 @@ Calculate the DC power lost to non-uniformity in a bifacial PV array
 # The function
 # :py:func:`pvlib.bifacial.power_mismatch_deline` is
 # used to transform the Relative Mean Absolute Difference (RMAD) of the
-# irradiance into a power loss percentage. Down below you will find a
+# irradiance into a power loss mismatch. Down below you will find a
 # numpy-based implementation of the RMAD function.
 #
 # References
@@ -100,11 +100,11 @@ ax.pcolormesh(
 
 def rmad(data, axis=None):
     """
-    Relative Mean Absolute Difference. Output in percentage.
+    Relative Mean Absolute Difference. Output is [Unitless].
     https://stackoverflow.com/a/19472336/19371110
     """
     mad = np.mean(np.absolute(data - np.mean(data, axis)), axis)
-    return mad / np.mean(data, axis) * 100
+    return mad / np.mean(data, axis)
 
 
 rmad_cells = rmad(cells_irrad)
@@ -115,11 +115,14 @@ print(rmad_cells == rmad(cells_irrad[:, 0]))
 # %%
 # Mismatch Loss
 # ^^^^^^^^^^^^^
-# Calculate the power loss percentage due to the irradiance non-uniformity
+# Calculate the power loss ratio due to the irradiance non-uniformity
 # with the function
 # :py:func:`pvlib.bifacial.power_mismatch_deline`.
 
 mismatch_loss = power_mismatch_deline(rmad_cells)
 
 print(f"RMAD of the cells' irradiance: {rmad_cells:.3} [unitless]")
-print(f"Power loss due to the irradiance non-uniformity: {mismatch_loss:.3%}")
+print(
+    "Power loss due to the irradiance non-uniformity: "
+    + f"{mismatch_loss:.3} [unitless]"
+)

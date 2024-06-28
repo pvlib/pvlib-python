@@ -4,7 +4,7 @@ import pandas as pd
 
 def power_mismatch_deline(
     rmad,
-    model=(0, 0.142, 0.032),
+    coefficients=(0, 0.142, 0.032),
     fill_factor: float = None,
     fill_factor_reference: float = 0.79,
 ):
@@ -31,8 +31,8 @@ def power_mismatch_deline(
         Check out the *Notes* section for the equation to calculate it from the
         bifaciality and the front and back irradiances.
 
-    model : float collection or numpy.polynomial.polynomial.Polynomial, default ``(0, 0.142, 0.032)``
-        The model coefficients to use.
+    coefficients : float collection or numpy.polynomial.polynomial.Polynomial, default ``(0, 0.142, 0.032)``
+        The polynomial coefficients to use.
 
         If a :external:class:`numpy.polynomial.polynomial.Polynomial`,
         it is evaluated as is. If not a ``Polynomial``, it must be the
@@ -64,9 +64,9 @@ def power_mismatch_deline(
 
     .. math::
 
-       M[\%] = 0.142 \Delta[\%] + 0.032 \Delta[\%]^2 \qquad & \text{(11)}
+       M = 0.142 \Delta + 0.032 \Delta^2 \qquad \text{(11)}
 
-    where :math:`\Delta[\%]` is the Relative Mean Absolute Difference of the
+    where :math:`\Delta` is the Relative Mean Absolute Difference of the
     global irradiance, Eq. (4) of [1]_ and [2]_.
 
     The losses definition is Eq. (1) of [1]_, and it's defined as a loss of the
@@ -74,7 +74,7 @@ def power_mismatch_deline(
 
     .. math::
 
-       M[\%] = 1 - \frac{P_{Array}}{\sum P_{Cells}} \qquad \text{(1)}
+       M = 1 - \frac{P_{Array}}{\sum P_{Cells}} \qquad \text{(1)}
 
     To account for a module with a fill factor distinct from the one used to
     train the model (``0.79`` by default), the output of the model can be
@@ -82,7 +82,7 @@ def power_mismatch_deline(
 
     .. math::
 
-       M[\%]_{FF_1} = M[\%]_{FF_0} \frac{FF_1}{FF_0} \qquad \text{(7)}
+       M_{FF_1} = M_{FF_0} \frac{FF_1}{FF_0} \qquad \text{(7)}
 
     where parameter ``fill_factor`` is :math:`FF_1` and
     ``fill_factor_reference`` is :math:`FF_0`.
@@ -108,6 +108,13 @@ def power_mismatch_deline(
 
        G_{total\,i} = G_{front\,i} + \phi_{Bifi} G_{rear\,i} \qquad \text{(2)}
 
+    which yields:
+
+    .. math::
+
+       RMAD_{total} = RMAD_{rear} \frac{\phi_{Bifi}}
+       {1 + \frac{G_{front}}{\phi_{Bifi} \bar{G}_{rear}}}
+
     See Also
     --------
     `solarfactors <https://github.com/pvlib/solarfactors/>`_
@@ -125,10 +132,10 @@ def power_mismatch_deline(
        https://en.wikipedia.org/wiki/Mean_absolute_difference#Relative_mean_absolute_difference
        (accessed 2024-04-14).
     """  # noqa: E501
-    if isinstance(model, np.polynomial.Polynomial):
-        model_polynom = model
+    if isinstance(coefficients, np.polynomial.Polynomial):
+        model_polynom = coefficients
     else:  # expect an iterable
-        model_polynom = np.polynomial.Polynomial(coef=model)
+        model_polynom = np.polynomial.Polynomial(coef=coefficients)
 
     if fill_factor:  # Eq. (7), [1]
         # Modify output of a trained model with different fill factor

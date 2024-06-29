@@ -482,9 +482,4 @@ def make_github_url(file_name):
 html_context = {
     'make_github_url': make_github_url,
     'edit_page_url_template': '{{ make_github_url(file_name) }}',
-    "github_url": "https://github.com",
-    "github_user": "pvlib",
-    "github_repo": "pvlib-python",
-    "github_version": "main",
-    "doc_path": "docs/sphinx/source/",
 }

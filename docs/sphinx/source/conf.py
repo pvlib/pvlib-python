@@ -176,7 +176,7 @@ favicons = [
 
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+# html_theme_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -303,12 +303,15 @@ latex_documents = [
 
 # extlinks alias
 extlinks = {
-    'issue': ('https://github.com/pvlib/pvlib-python/issues/%s', 'GH%s'),
-    'pull': ('https://github.com/pvlib/pvlib-python/pull/%s', 'GH%s'),
-    'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s', 'wiki %s'),
-    'doi': ('http://dx.doi.org/%s', 'DOI: %s'),
-    'ghuser': ('https://github.com/%s', '@%s'),
-    'discuss': ('https://github.com/pvlib/pvlib-python/discussions/%s', 'GH%s'),
+    "issue": ("https://github.com/pvlib/pvlib-python/issues/%s", "GH%s"),
+    "pull": ("https://github.com/pvlib/pvlib-python/pull/%s", "GH%s"),
+    "wiki": ("https://github.com/pvlib/pvlib-python/wiki/%s", "wiki %s"),
+    "doi": ("http://dx.doi.org/%s", "DOI: %s"),
+    "ghuser": ("https://github.com/%s", "@%s"),
+    "discuss": (
+        "https://github.com/pvlib/pvlib-python/discussions/%s",
+        "GH%s",
+    ),
 }
 
 # -- Options for manual page output ---------------------------------------

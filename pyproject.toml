@@ -63,6 +63,7 @@ doc = [
     'docutils == 0.21',
     'pillow',
     'sphinx-toggleprompt == 0.5.2',
+    'sphinx-favicon',
     'solarfactors',
 ]
 test = [

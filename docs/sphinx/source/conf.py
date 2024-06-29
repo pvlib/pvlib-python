@@ -167,7 +167,7 @@ html_theme_options = {
     "footer_start": ["copyright"],
     "footer_center": ["sphinx-version"],
     "footer_end": ["sidebar-ethical-ads"],
-    "left_sidebar_end": [],
+    "primary_sidebar_end": [],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

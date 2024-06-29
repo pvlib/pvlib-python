@@ -24,6 +24,7 @@ import inspect
 # https://github.com/pypa/setuptools/issues/3044
 import distutils  # noqa: F401
 import pandas as pd
+
 pd.show_versions()
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -54,6 +55,7 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx_gallery.gen_gallery',
     'sphinx_toggleprompt',
+    'sphinx_favicon',
 ]
 
 mathjax3_config = {'chtml': {'displayAlign': 'left',
@@ -82,7 +84,7 @@ copyright = \
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-import pvlib
+import pvlib  # noqa: E402
 
 # The short X.Y version.
 version = '%s' % (pvlib.__version__)
@@ -144,7 +146,6 @@ html_theme_options = {
     "favicons": [
         {"rel": "icon", "sizes": "16x16", "href": "favicon-16x16.png"},
         {"rel": "icon", "sizes": "32x32", "href": "favicon-32x32.png"},
-    ],
     "icon_links": [
         {
             "name": "StackOverflow",
@@ -169,6 +170,13 @@ html_theme_options = {
     "footer_end": ["sidebar-ethical-ads"],
     "primary_sidebar_end": [],
 }
+
+# Add favicons from extension sphinx_favicon
+favicons = [
+    {"rel": "icon", "sizes": "16x16", "href": "favicon-16x16.png"},
+    {"rel": "icon", "sizes": "32x32", "href": "favicon-32x32.png"},
+]
+
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []

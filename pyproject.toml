@@ -57,12 +57,12 @@ optional = [
 doc = [
     'ipython',
     'matplotlib',
-    'sphinx == 7.3',
-    'pydata-sphinx-theme == 0.15',
+    'sphinx == 7.3.7',
+    'pydata-sphinx-theme == 0.15.4',
     'sphinx-gallery',
     'docutils == 0.21',
     'pillow',
-    'sphinx-toggleprompt == 0.5',
+    'sphinx-toggleprompt == 0.5.2',
     'solarfactors',
 ]
 test = [

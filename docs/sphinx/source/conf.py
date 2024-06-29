@@ -481,5 +481,4 @@ def make_github_url(file_name):
 # _templates/breadcrumbs.html
 html_context = {
     'make_github_url': make_github_url,
-    'edit_page_url_template': '{{ make_github_url(file_name) }}',
 }

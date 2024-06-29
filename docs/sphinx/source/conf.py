@@ -162,7 +162,7 @@ html_theme_options = {
             "icon": "fab fa-python",
         },
     ],
-    "use_edit_page_button": True,
+    "use_edit_page_button": False,
     "show_toc_level": 1,
     "footer_items": ["copyright", "sphinx-version", "sidebar-ethical-ads"],
     "left_sidebar_end": [],

@@ -164,7 +164,9 @@ html_theme_options = {
     ],
     "use_edit_page_button": False,
     "show_toc_level": 1,
-    "footer_items": ["copyright", "sphinx-version", "sidebar-ethical-ads"],
+    "footer_start": ["copyright"],
+    "footer_center": ["sphinx-version"],
+    "footer_end": ["sidebar-ethical-ads"],
     "left_sidebar_end": [],
 }
 

@@ -143,9 +143,6 @@ html_theme = "pydata_sphinx_theme"
 # https://pydata-sphinx-theme.rtfd.io/en/latest/user_guide/configuring.html
 html_theme_options = {
     "github_url": "https://github.com/pvlib/pvlib-python",
-    "favicons": [
-        {"rel": "icon", "sizes": "16x16", "href": "favicon-16x16.png"},
-        {"rel": "icon", "sizes": "32x32", "href": "favicon-32x32.png"},
     "icon_links": [
         {
             "name": "StackOverflow",

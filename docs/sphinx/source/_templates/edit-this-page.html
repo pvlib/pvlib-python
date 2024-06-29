@@ -12,7 +12,7 @@ the template here to change the "Edit this page" text to "View on GitHub".
 {% if sourcename is defined and theme_use_edit_page_button==true and page_source_suffix %}
 {% set src = sourcename.split('.') %}
 <div class="tocsection editthispage">
-    <a href="{{ make_github_url(sourcename) }}">
+    <a href="{{ get_edit_url() }}">
         <i class="fab fa-github-square"></i> {{ _("View on GitHub") }}
     </a>
 </div>

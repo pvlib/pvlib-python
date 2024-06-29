@@ -296,12 +296,12 @@ latex_documents = [
 
 # extlinks alias
 extlinks = {
-    'issue': ('https://github.com/pvlib/pvlib-python/issues/%s', 'GH'),
-    'pull': ('https://github.com/pvlib/pvlib-python/pull/%s', 'GH'),
-    'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s', 'wiki '),
-    'doi': ('http://dx.doi.org/%s', 'DOI: '),
-    'ghuser': ('https://github.com/%s', '@'),
-    'discuss': ('https://github.com/pvlib/pvlib-python/discussions/%s', 'GH'),
+    'issue': ('https://github.com/pvlib/pvlib-python/issues/%s', 'GH%s'),
+    'pull': ('https://github.com/pvlib/pvlib-python/pull/%s', 'GH%s'),
+    'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s', 'wiki %s'),
+    'doi': ('http://dx.doi.org/%s', 'DOI: %s'),
+    'ghuser': ('https://github.com/%s', '@%s'),
+    'discuss': ('https://github.com/pvlib/pvlib-python/discussions/%s', 'GH%s'),
 }
 
 # -- Options for manual page output ---------------------------------------

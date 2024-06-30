@@ -632,175 +632,6 @@ def sapm(aoi, module, upper=None):
     return iam
 
 
-def schlick(aoi):
-    """
-    Determine incidence angle modifier (IAM) for direct irradiance using the
-    Schlick approximation to the Fresnel equations.
-
-    The Schlick approximation was proposed in [1]_ as a computationally
-    efficient alternative to computing the Fresnel factor in computer
-    graphics contexts.  This implementation is a normalized form of the
-    equation in [1]_ so that it can be used as a PV IAM model.
-    Unlike other IAM models, this model has no ability to describe
-    different reflection profiles.
-
-    In PV contexts, the Schlick approximation has been used as an analytically
-    integrable alternative to the Fresnel equations for estimating IAM
-    for diffuse irradiance [2]_ (see :py:func:`schlick_diffuse`).
-
-    Parameters
-    ----------
-    aoi : numeric
-        The angle of incidence (AOI) between the module normal vector and the
-        sun-beam vector. Angles of nan will result in nan. [degrees]
-
-    Returns
-    -------
-    iam : numeric
-        The incident angle modifier.
-
-    References
-    ----------
-    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
-       rendering. Computer graphics forum 13 (1994).
-
-    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
-       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
-       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
-       :doi:`10.1016/j.rser.2022.112362`
-
-    See Also
-    --------
-    pvlib.iam.ashrae
-    pvlib.iam.interp
-    pvlib.iam.martin_ruiz
-    pvlib.iam.martin_ruiz_diffuse
-    pvlib.iam.physical
-    pvlib.iam.sapm
-    pvlib.iam.schlick
-    pvlib.iam.schlick_diffuse
-    """
-    iam = 1 - (1 - cosd(aoi)) ** 5
-    iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
-
-    # preserve input type
-    if np.isscalar(aoi):
-        iam = iam.item()
-    elif isinstance(aoi, pd.Series):
-        iam = pd.Series(iam, aoi.index)
-
-    return iam
-
-
-def schlick_diffuse(surface_tilt):
-    r"""
-    Determine the incidence angle modifiers (IAM) for diffuse sky and
-    ground-reflected irradiance on a tilted surface using the Schlick
-    incident angle model.
-
-    The Schlick equation (or "Schlick's approximation") [1]_ is an
-    approximation to the Fresnel reflection factor which can be recast as
-    a simple photovoltaic IAM model like so:
-
-    .. math::
-
-        IAM = 1 - (1 - \cos(aoi))^5
-
-    Unlike the Fresnel reflection factor itself, Schlick's approximation can
-    be integrated analytically to derive a closed-form equation for diffuse
-    IAM factors for the portions of the sky and ground visible
-    from a tilted surface if isotropic distributions are assumed.
-    This function implements the integration of the
-    Schlick approximation provided by Xie et al. [2]_.
-
-    Parameters
-    ----------
-    surface_tilt : numeric
-        Surface tilt angle measured from horizontal (e.g. surface facing
-        up = 0, surface facing horizon = 90). [degrees]
-
-    Returns
-    -------
-    iam_sky : numeric
-        The incident angle modifier for sky diffuse.
-
-    iam_ground : numeric
-        The incident angle modifier for ground-reflected diffuse.
-
-    Notes
-    -----
-    The analytical integration of the Schlick approximation was derived
-    as part of the FEDIS diffuse IAM model [2]_.  Compared with the model
-    implemented in this function, the FEDIS model includes an additional term
-    to account for reflection off a pyranometer's glass dome.  Because that
-    reflection should already be accounted for in the instrument's calibration,
-    the pvlib authors believe it is inappropriate to account for pyranometer
-    reflection again in an IAM model.  Thus, this function omits that term and
-    implements only the integrated Schlick approximation.
-
-    Note also that the output of this function (which is an exact integration)
-    can be compared with the output of :py:func:`marion_diffuse` which
-    numerically integrates the Schlick approximation:
-
-    .. code::
-
-        >>> pvlib.iam.marion_diffuse('schlick', surface_tilt=20)
-        {'sky': 0.9625000227247358,
-         'horizon': 0.7688174948510073,
-         'ground': 0.6267861879241405}
-
-        >>> pvlib.iam.schlick_diffuse(surface_tilt=20)
-        (0.9624993421569652, 0.6269387554469255)
-
-    References
-    ----------
-    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
-       rendering. Computer graphics forum 13 (1994).
-
-    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
-       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
-       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
-       :doi:`10.1016/j.rser.2022.112362`
-
-    See Also
-    --------
-    pvlib.iam.ashrae
-    pvlib.iam.interp
-    pvlib.iam.martin_ruiz
-    pvlib.iam.martin_ruiz_diffuse
-    pvlib.iam.physical
-    pvlib.iam.sapm
-    pvlib.iam.schlick
-    """
-    # these calculations are as in [2]_, but with the refractive index
-    # weighting coefficient w set to 1.0 (so it is omitted)
-
-    # relative transmittance of sky diffuse radiation by PV cover:
-    cosB = cosd(surface_tilt)
-    sinB = sind(surface_tilt)
-    cuk = (2 / (np.pi * (1 + cosB))) * (
-        (30/7)*np.pi - (160/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
-        + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
-        - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
-    )  # Eq 4 in [2]
-
-    # relative transmittance of ground-reflected radiation by PV cover:
-    with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6 in [2]
-        cug = 40 / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
-
-    cug = np.where(surface_tilt < 1e-6, 0, cug)
-
-    # respect input types:
-    if np.isscalar(surface_tilt):
-        cuk = cuk.item()
-        cug = cug.item()
-    elif isinstance(surface_tilt, pd.Series):
-        cuk = pd.Series(cuk, surface_tilt.index)
-        cug = pd.Series(cug, surface_tilt.index)
-
-    return cuk, cug
-
-
 def marion_diffuse(model, surface_tilt, **kwargs):
     """
     Determine diffuse irradiance incidence angle modifiers using Marion's
@@ -1013,6 +844,175 @@ def marion_integrate(function, surface_tilt, region, num=None):
         Fd = pd.Series(Fd, surface_tilt.index)
 
     return Fd
+
+
+def schlick(aoi):
+    """
+    Determine incidence angle modifier (IAM) for direct irradiance using the
+    Schlick approximation to the Fresnel equations.
+
+    The Schlick approximation was proposed in [1]_ as a computationally
+    efficient alternative to computing the Fresnel factor in computer
+    graphics contexts.  This implementation is a normalized form of the
+    equation in [1]_ so that it can be used as a PV IAM model.
+    Unlike other IAM models, this model has no ability to describe
+    different reflection profiles.
+
+    In PV contexts, the Schlick approximation has been used as an analytically
+    integrable alternative to the Fresnel equations for estimating IAM
+    for diffuse irradiance [2]_ (see :py:func:`schlick_diffuse`).
+
+    Parameters
+    ----------
+    aoi : numeric
+        The angle of incidence (AOI) between the module normal vector and the
+        sun-beam vector. Angles of nan will result in nan. [degrees]
+
+    Returns
+    -------
+    iam : numeric
+        The incident angle modifier.
+
+    References
+    ----------
+    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
+       rendering. Computer graphics forum 13 (1994).
+
+    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
+       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
+       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
+       :doi:`10.1016/j.rser.2022.112362`
+
+    See Also
+    --------
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.martin_ruiz_diffuse
+    pvlib.iam.physical
+    pvlib.iam.sapm
+    pvlib.iam.schlick
+    pvlib.iam.schlick_diffuse
+    """
+    iam = 1 - (1 - cosd(aoi)) ** 5
+    iam = np.where(np.abs(aoi) >= 90.0, 0.0, iam)
+
+    # preserve input type
+    if np.isscalar(aoi):
+        iam = iam.item()
+    elif isinstance(aoi, pd.Series):
+        iam = pd.Series(iam, aoi.index)
+
+    return iam
+
+
+def schlick_diffuse(surface_tilt):
+    r"""
+    Determine the incidence angle modifiers (IAM) for diffuse sky and
+    ground-reflected irradiance on a tilted surface using the Schlick
+    incident angle model.
+
+    The Schlick equation (or "Schlick's approximation") [1]_ is an
+    approximation to the Fresnel reflection factor which can be recast as
+    a simple photovoltaic IAM model like so:
+
+    .. math::
+
+        IAM = 1 - (1 - \cos(aoi))^5
+
+    Unlike the Fresnel reflection factor itself, Schlick's approximation can
+    be integrated analytically to derive a closed-form equation for diffuse
+    IAM factors for the portions of the sky and ground visible
+    from a tilted surface if isotropic distributions are assumed.
+    This function implements the integration of the
+    Schlick approximation provided by Xie et al. [2]_.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angle measured from horizontal (e.g. surface facing
+        up = 0, surface facing horizon = 90). [degrees]
+
+    Returns
+    -------
+    iam_sky : numeric
+        The incident angle modifier for sky diffuse.
+
+    iam_ground : numeric
+        The incident angle modifier for ground-reflected diffuse.
+
+    Notes
+    -----
+    The analytical integration of the Schlick approximation was derived
+    as part of the FEDIS diffuse IAM model [2]_.  Compared with the model
+    implemented in this function, the FEDIS model includes an additional term
+    to account for reflection off a pyranometer's glass dome.  Because that
+    reflection should already be accounted for in the instrument's calibration,
+    the pvlib authors believe it is inappropriate to account for pyranometer
+    reflection again in an IAM model.  Thus, this function omits that term and
+    implements only the integrated Schlick approximation.
+
+    Note also that the output of this function (which is an exact integration)
+    can be compared with the output of :py:func:`marion_diffuse` which
+    numerically integrates the Schlick approximation:
+
+    .. code::
+
+        >>> pvlib.iam.marion_diffuse('schlick', surface_tilt=20)
+        {'sky': 0.9625000227247358,
+         'horizon': 0.7688174948510073,
+         'ground': 0.6267861879241405}
+
+        >>> pvlib.iam.schlick_diffuse(surface_tilt=20)
+        (0.9624993421569652, 0.6269387554469255)
+
+    References
+    ----------
+    .. [1] Schlick, C. An inexpensive BRDF model for physically-based
+       rendering. Computer graphics forum 13 (1994).
+
+    .. [2] Xie, Y., M. Sengupta, A. Habte, A. Andreas, "The 'Fresnel Equations'
+       for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
+       Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
+       :doi:`10.1016/j.rser.2022.112362`
+
+    See Also
+    --------
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.martin_ruiz_diffuse
+    pvlib.iam.physical
+    pvlib.iam.sapm
+    pvlib.iam.schlick
+    """
+    # these calculations are as in [2]_, but with the refractive index
+    # weighting coefficient w set to 1.0 (so it is omitted)
+
+    # relative transmittance of sky diffuse radiation by PV cover:
+    cosB = cosd(surface_tilt)
+    sinB = sind(surface_tilt)
+    cuk = (2 / (np.pi * (1 + cosB))) * (
+        (30/7)*np.pi - (160/21)*np.radians(surface_tilt) - (10/3)*np.pi*cosB
+        + (160/21)*cosB*sinB - (5/3)*np.pi*cosB*sinB**2 + (20/7)*cosB*sinB**3
+        - (5/16)*np.pi*cosB*sinB**4 + (16/105)*cosB*sinB**5
+    )  # Eq 4 in [2]
+
+    # relative transmittance of ground-reflected radiation by PV cover:
+    with np.errstate(divide='ignore', invalid='ignore'):  # Eq 6 in [2]
+        cug = 40 / (21 * (1 - cosB)) - (1 + cosB) / (1 - cosB) * cuk
+
+    cug = np.where(surface_tilt < 1e-6, 0, cug)
+
+    # respect input types:
+    if np.isscalar(surface_tilt):
+        cuk = cuk.item()
+        cug = cug.item()
+    elif isinstance(surface_tilt, pd.Series):
+        cuk = pd.Series(cuk, surface_tilt.index)
+        cug = pd.Series(cug, surface_tilt.index)
+
+    return cuk, cug
 
 
 def _get_fittable_or_convertable_model(builtin_model_name):

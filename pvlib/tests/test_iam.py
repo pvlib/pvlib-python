@@ -548,7 +548,9 @@ def test_convert_custom_weight_func():
 
 
 def test_convert_model_not_implemented():
-    with pytest.raises(NotImplementedError, match='No implementation for model foo'):
+    with pytest.raises(
+        NotImplementedError, match='No implementation for model foo'
+    ):
         _iam.convert('ashrae', {'b': 0.1}, 'foo')
 
 
@@ -599,7 +601,9 @@ def test_fit_custom_weight_func():
 
 
 def test_fit_model_not_implemented():
-    with pytest.raises(NotImplementedError, match='No implementation for model foo'):
+    with pytest.raises(
+        NotImplementedError, match='No implementation for model foo'
+    ):
         _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'foo')
 
 

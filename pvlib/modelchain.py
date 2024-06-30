@@ -269,7 +269,7 @@ class ModelChainResult:
                  '\n')
         lines = []
         for attr in mc_attrs:
-            if not (attr.startswith('_') or attr=='times'):
+            if not (attr.startswith('_') or attr == 'times'):
                 lines.append(f' {attr}: ' + _mcr_repr(getattr(self, attr)))
         desc4 = '\n'.join(lines)
         return (desc1 + desc2 + desc3 + desc4)
@@ -385,7 +385,6 @@ class ModelChain:
         self.losses_model = losses_model
 
         self.results = ModelChainResult()
-
 
     @classmethod
     def with_pvwatts(cls, system, location,
@@ -785,8 +784,9 @@ class ModelChain:
         else:
             self._aoi_model = partial(model, self)
 
+    # FIXME What about diffuse versions of models? What about schlick,
+    # schlick_diffuse, and custom models?
 
-    # FIXME What about diffuse versions of models? What about schlick and custom models?
     def infer_aoi_model(self):
         module_parameters = tuple(
             array.module_parameters for array in self.system.arrays)
@@ -805,13 +805,14 @@ class ModelChain:
         elif iam_model_params['interp'] <= params:
             return self.interp_aoi_loss
 
-        raise ValueError('could not infer AOI model from '
-                            'system.arrays[i].module_parameters. Check that '
-                            'the module_parameters for all Arrays in '
-                            'system.arrays contain parameters for the '
-                            'physical, aoi, ashrae, martin_ruiz or interp '
-                            'model; explicitly set the model with the '
-                            'aoi_model kwarg; or set aoi_model="no_loss".')
+        raise ValueError(
+            'could not infer AOI model from '
+            'system.arrays[i].module_parameters. Check that the '
+            'module_parameters for all Arrays in system.arrays contain '
+            'parameters for the physical, aoi, ashrae, martin_ruiz or interp '
+            'model; explicitly set the model with the aoi_model kwarg; or '
+            'set aoi_model="no_loss".'
+        )
 
     def ashrae_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(

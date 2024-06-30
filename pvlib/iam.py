@@ -668,7 +668,7 @@ def schlick(aoi):
        for Diffuse radiation on Inclined photovoltaic Surfaces (FEDIS)",
        Renewable and Sustainable Energy Reviews, vol. 161, 112362. June 2022.
        :doi:`10.1016/j.rser.2022.112362`
-    
+
     See Also
     --------
     pvlib.iam.ashrae
@@ -1036,8 +1036,8 @@ def _check_params(builtin_model_name, params):
 
     if passed_params != exp_params:
         raise ValueError(
-            f"The {builtin_model_name} model was expecting to be passed {exp_params},"
-            f"but was handed {passed_params}"
+            f"The {builtin_model_name} model was expecting to be passed"
+            f"{exp_params}, but was handed {passed_params}"
         )
 
 

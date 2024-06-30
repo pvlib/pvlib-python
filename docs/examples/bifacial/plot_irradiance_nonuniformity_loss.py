@@ -2,7 +2,7 @@
 Plot Irradiance Non-uniformity Loss
 ===================================
 
-Calculate the DC power lost to non-uniformity in a bifacial PV array
+Calculate the DC power lost to irradiance non-uniformity in a bifacial PV array.
 """
 
 # %%
@@ -18,7 +18,7 @@ Calculate the DC power lost to non-uniformity in a bifacial PV array
 # the whole module is computationally expensive, so a simple model to account
 # for this loss is of interest. Deline et al. [1]_ proposed a model based on
 # the Relative Mean Absolute Difference (RMAD) of the irradiance of each cell.
-# They did also use the standard deviation of the cells' irradiances, but they
+# They considered the standard deviation of the cells' irradiances, but they
 # found that the RMAD was a better predictor of the mismatch loss.
 #
 # This example demonstrates how to model the irradiance non-uniformity loss

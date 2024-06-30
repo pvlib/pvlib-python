@@ -29,7 +29,7 @@ def power_mismatch_deline(
         The Relative Mean Absolute Difference of the cell-by-cell total
         irradiance. [Unitless]
 
-        See the *Notes* section for the equation to calculate `rmad` from the
+        See the *Notes* section for the equation to calculate ``rmad`` from the
         bifaciality and the front and back irradiances.
 
     coefficients : float collection or numpy.polynomial.polynomial.Polynomial, default ``(0, 0.142, 0.032 * 100)``
@@ -46,12 +46,10 @@ def power_mismatch_deline(
         Fill factor at standard test condition (STC) of the module.
         Accounts for different fill factors between the trained model and the
         module under non-uniform irradiance.
-        If not provided, the default `fill_factor_reference` of 0.79 is used.
+        If not provided, the default ``fill_factor_reference`` of 0.79 is used.
 
     fill_factor_reference : float, default 0.79
         Fill factor at STC of the module used to train the model.
-        If ``fill_factor`` is provided, this value is used to scale the output
-        of the model.
 
     Returns
     -------

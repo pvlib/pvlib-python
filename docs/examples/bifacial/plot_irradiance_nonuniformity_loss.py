@@ -2,7 +2,8 @@
 Plot Irradiance Non-uniformity Loss
 ===================================
 
-Calculate the DC power lost to irradiance non-uniformity in a bifacial PV array.
+Calculate the DC power lost to irradiance non-uniformity in a bifacial PV
+array.
 """
 
 # %%

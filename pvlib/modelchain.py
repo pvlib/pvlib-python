@@ -785,28 +785,33 @@ class ModelChain:
         else:
             self._aoi_model = partial(model, self)
 
+
+    # FIXME What about diffuse versions of models? What about schlick and custom models?
     def infer_aoi_model(self):
         module_parameters = tuple(
             array.module_parameters for array in self.system.arrays)
         params = _common_keys(module_parameters)
-        if iam._IAM_MODEL_PARAMS['physical'] <= params:
+
+        iam_model_params = iam.get_builtin_models_params()
+
+        if iam_model_params['physical'] <= params:
             return self.physical_aoi_loss
-        elif iam._IAM_MODEL_PARAMS['sapm'] <= params:
+        elif iam_model_params['sapm'] <= params:
             return self.sapm_aoi_loss
-        elif iam._IAM_MODEL_PARAMS['ashrae'] <= params:
+        elif iam_model_params['ashrae'] <= params:
             return self.ashrae_aoi_loss
-        elif iam._IAM_MODEL_PARAMS['martin_ruiz'] <= params:
+        elif iam_model_params['martin_ruiz'] <= params:
             return self.martin_ruiz_aoi_loss
-        elif iam._IAM_MODEL_PARAMS['interp'] <= params:
+        elif iam_model_params['interp'] <= params:
             return self.interp_aoi_loss
-        else:
-            raise ValueError('could not infer AOI model from '
-                             'system.arrays[i].module_parameters. Check that '
-                             'the module_parameters for all Arrays in '
-                             'system.arrays contain parameters for the '
-                             'physical, aoi, ashrae, martin_ruiz or interp '
-                             'model; explicitly set the model with the '
-                             'aoi_model kwarg; or set aoi_model="no_loss".')
+
+        raise ValueError('could not infer AOI model from '
+                            'system.arrays[i].module_parameters. Check that '
+                            'the module_parameters for all Arrays in '
+                            'system.arrays contain parameters for the '
+                            'physical, aoi, ashrae, martin_ruiz or interp '
+                            'model; explicitly set the model with the '
+                            'aoi_model kwarg; or set aoi_model="no_loss".')
 
     def ashrae_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(

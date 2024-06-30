@@ -331,7 +331,9 @@ def test_marion_diffuse_iam_function_without_kwargs():
 
 
 def test_marion_diffuse_iam_with_kwargs():
-    """Test custom IAM function (iam.interp) with kwargs and scalar input."""
+    """
+    Test custom IAM function (using iam.interp) with kwargs and scalar input.
+    """
     expected = {
         'sky': 0.9688222974371822,
         'horizon': 0.94824614710175,
@@ -350,7 +352,7 @@ def test_marion_diffuse_iam_with_kwargs():
 
 
 def test_marion_diffuse_invalid():
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         _iam.marion_diffuse('not_a_model', 20)
 
 
@@ -546,7 +548,7 @@ def test_convert_custom_weight_func():
 
 
 def test_convert_model_not_implemented():
-    with pytest.raises(NotImplementedError, match='model has not been'):
+    with pytest.raises(NotImplementedError, match='No implementation for model foo'):
         _iam.convert('ashrae', {'b': 0.1}, 'foo')
 
 
@@ -597,7 +599,7 @@ def test_fit_custom_weight_func():
 
 
 def test_fit_model_not_implemented():
-    with pytest.raises(NotImplementedError, match='model has not been'):
+    with pytest.raises(NotImplementedError, match='No implementation for model foo'):
         _iam.fit(np.array([0, 10]), np.array([1, 0.99]), 'foo')
 
 

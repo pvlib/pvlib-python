@@ -1506,7 +1506,7 @@ def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
     'sapm', 'ashrae', 'physical', 'martin_ruiz', 'interp'
 ])
 def test_infer_aoi_model(location, system_no_aoi, aoi_model):
-    for k in iam._IAM_MODEL_PARAMS[aoi_model]:
+    for k in iam.get_builtin_models_params()[aoi_model]:
         system_no_aoi.arrays[0].module_parameters.update({k: 1.0})
     mc = ModelChain(system_no_aoi, location, spectral_model='no_loss')
     assert isinstance(mc, ModelChain)

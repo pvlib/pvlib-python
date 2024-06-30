@@ -16,22 +16,18 @@ from scipy.optimize import bisect
 from pvlib import atmosphere, solarposition, tools
 import pvlib  # used to avoid dni name collision in complete_irradiance
 
+from pvlib._deprecation import pvlibDeprecationWarning
+import warnings
 
-# see References section of get_ground_diffuse function
-SURFACE_ALBEDOS = {'urban': 0.18,
-                   'grass': 0.20,
-                   'fresh grass': 0.26,
-                   'soil': 0.17,
-                   'sand': 0.40,
-                   'snow': 0.65,
-                   'fresh snow': 0.75,
-                   'asphalt': 0.12,
-                   'concrete': 0.30,
-                   'aluminum': 0.85,
-                   'copper': 0.74,
-                   'fresh steel': 0.35,
-                   'dirty steel': 0.08,
-                   'sea': 0.06}
+
+# Deprecation warning based on https://peps.python.org/pep-0562/
+def __getattr__(attr):
+    if attr == 'SURFACE_ALBEDOS':
+        warnings.warn(f"{attr} has been moved to the albedo module as of "
+                      "v0.11.0. Please use pvlib.albedo.SURFACE_ALBEDOS.",
+                      pvlibDeprecationWarning)
+        return pvlib.albedo.SURFACE_ALBEDOS
+    raise AttributeError(f"module {__name__!r} has no attribute {attr!r}")
 
 
 def get_extra_radiation(datetime_or_doy, solar_constant=1366.1,
@@ -232,48 +228,6 @@ def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     return aoi_value
 
 
-def poa_horizontal_ratio(surface_tilt, surface_azimuth,
-                         solar_zenith, solar_azimuth):
-    """
-    Calculates the ratio of the beam components of the plane of array
-    irradiance and the horizontal irradiance.
-
-    Input all angles in degrees.
-
-    Parameters
-    ----------
-    surface_tilt : numeric
-        Panel tilt from horizontal.
-    surface_azimuth : numeric
-        Panel azimuth from north.
-    solar_zenith : numeric
-        Solar zenith angle.
-    solar_azimuth : numeric
-        Solar azimuth angle.
-
-    Returns
-    -------
-    ratio : numeric
-        Ratio of the plane of array irradiance to the horizontal plane
-        irradiance
-    """
-
-    cos_poa_zen = aoi_projection(surface_tilt, surface_azimuth,
-                                 solar_zenith, solar_azimuth)
-
-    cos_solar_zenith = tools.cosd(solar_zenith)
-
-    # ratio of tilted and horizontal beam irradiance
-    ratio = cos_poa_zen / cos_solar_zenith
-
-    try:
-        ratio.name = 'poa_ratio'
-    except AttributeError:
-        pass
-
-    return ratio
-
-
 def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    dni):
     """
@@ -450,6 +404,11 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     require ``'dni_extra'``. Values can be calculated using
     :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
+    The ``'Perez'`` transposition model features discontinuities in the
+    predicted tilted diffuse irradiance due to relying on discrete input
+    values. For applications that benefit from continuous output, consider
+    using :py:func:`~pvlib.irradiance.perez_driesse`.
+
     The ``'perez'`` and ``'perez-driesse'`` models require relative airmass
     (``airmass``) as input. If ``airmass`` is not provided, it is calculated
     using the defaults in :py:func:`~pvlib.atmosphere.get_relative_airmass`.
@@ -592,7 +551,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Notes
     -----
     Table of albedo values by ``surface_type`` are from [2]_, [3]_, [4]_;
-    see :py:data:`~pvlib.irradiance.SURFACE_ALBEDOS`.
+    see :py:const:`~pvlib.albedo.SURFACE_ALBEDOS`.
 
     References
     ----------
@@ -607,7 +566,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
 
     if surface_type is not None:
-        albedo = SURFACE_ALBEDOS[surface_type]
+        albedo = pvlib.albedo.SURFACE_ALBEDOS[surface_type]
 
     diffuse_irrad = ghi * albedo * (1 - np.cos(np.radians(surface_tilt))) * 0.5
 
@@ -896,8 +855,8 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     .. math::
 
-       I_{d} = DHI (A R_b + (1 - A) (\frac{1 + \cos\beta}{2})
-       (1 + \sqrt{\frac{I_{hb}}{I_h}} \sin^3(\beta/2)) )
+       I_{d} = DHI \left(A R_b + (1 - A) \left(\frac{1 + \cos\beta}{2}\right)
+       \left(1 + \sqrt{\frac{I_{hb}}{I_h}} \sin^3(\beta/2)\right) \right)
 
     Reindl's 1990 model determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a
@@ -1049,6 +1008,13 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     irradiance, sun zenith angle, sun azimuth angle, and relative (not
     pressure-corrected) airmass. Optionally a selector may be used to
     use any of Perez's model coefficient sets.
+
+    Warning
+    -------
+    The Perez transposition model features discontinuities in the
+    predicted tilted diffuse irradiance due to relying on discrete input
+    values. For applications that benefit from continuous output, consider
+    using :py:func:`~pvlib.irradiance.perez_driesse`.
 
     Parameters
     ----------
@@ -1551,9 +1517,9 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
         Solar azimuth angle. [degree]
     poa_global : numeric
         Plane-of-array global irradiance, aka global tilted irradiance. [W/m^2]
-    dni_extra : None or numeric, default None
+    dni_extra : numeric, optional
         Extraterrestrial direct normal irradiance. [W/m^2]
-    airmass : None or numeric, default None
+    airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]
@@ -2334,10 +2300,10 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
     data : DataFrame
         Contains the following keys/columns:
 
-            * ``ghi``: the modeled global horizontal irradiance in W/m^2.
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
+        * ``ghi``: the modeled global horizontal irradiance in W/m^2.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
 
     References
     ----------
@@ -2484,7 +2450,6 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
     else:
         # we are here because we ran out of coeffs to loop over and
         # therefore we have exceeded max_iterations
-        import warnings
         failed_points = best_diff[aoi_lt_90][~best_diff_lte_1_lt_90]
         warnings.warn(
             ('%s points failed to converge after %s iterations. best_diff:\n%s'
@@ -2618,11 +2583,11 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     References
     ----------
@@ -2721,11 +2686,11 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     Raises
     ------
@@ -2839,17 +2804,17 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     References
     ----------
     .. [1] Orgill, J.F., Hollands, K.G.T., Correlation equation for hourly
-      diffuse radiation on a horizontal surface, Solar Energy 19(4), pp 357–359,
-      1977. Eqs. 3(a), 3(b) and 3(c)
+      diffuse radiation on a horizontal surface, Solar Energy 19(4),
+      pp 357–359, 1977. Eqs. 3(a), 3(b) and 3(c)
       :doi:`10.1016/0038-092X(77)90006-8`
 
     See Also
@@ -2934,11 +2899,11 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     References
     ----------
@@ -3771,11 +3736,11 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     data: OrderedDict or DataFrame
         Contains the following keys/columns:
 
-            * ``dni``: the modeled direct normal irradiance in W/m^2.
-            * ``dhi``: the modeled diffuse horizontal irradiance in
-              W/m^2.
-            * ``kt``: Ratio of global to extraterrestrial irradiance
-              on a horizontal plane.
+        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dhi``: the modeled diffuse horizontal irradiance in
+          W/m^2.
+        * ``kt``: Ratio of global to extraterrestrial irradiance
+          on a horizontal plane.
 
     References
     -------
@@ -3808,3 +3773,76 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
         data = pd.DataFrame(data, index=datetime_or_doy)
 
     return data
+
+
+def diffuse_par_spitters(daily_solar_zenith, global_diffuse_fraction):
+    r"""
+    Derive daily diffuse fraction of Photosynthetically Active Radiation (PAR)
+    from daily average solar zenith and diffuse fraction of daily insolation.
+
+    The relationship is based on the work of Spitters et al. (1986) [1]_. The
+    resulting value is the fraction of daily PAR that is diffuse.
+
+    .. note::
+       The diffuse fraction is defined as the ratio of
+       diffuse to global daily insolation, in J m⁻² day⁻¹ or equivalent.
+
+    Parameters
+    ----------
+    daily_solar_zenith : numeric
+        Average daily solar zenith angle. In degrees [°].
+
+    global_diffuse_fraction : numeric
+        Fraction of daily global broadband insolation that is diffuse.
+        Unitless [0, 1].
+
+    Returns
+    -------
+    par_diffuse_fraction : numeric
+        Fraction of daily photosynthetically active radiation (PAR) that is
+        diffuse. Unitless [0, 1].
+
+    Notes
+    -----
+    The relationship is given by equations (9) & (10) in [1]_ and (1) in [2]_:
+
+    .. math::
+
+        k_{diffuse\_PAR}^{model} = \frac{PAR_{diffuse}}{PAR_{total}} =
+        \frac{\left[1 + 0.3 \left(1 - \left(k_d\right) ^2\right)\right]
+        k_d}
+        {1 + \left(1 - \left(k_d\right)^2\right) \cos ^2 (90 - \beta)
+        \cos ^3 \beta}
+
+    where :math:`k_d` is the diffuse fraction of the global insolation, and
+    :math:`\beta` is the daily average of the solar elevation angle in degrees.
+
+    A comparison using different models for the diffuse fraction of
+    the global insolation can be found in [2]_ in the context of Sweden.
+
+    References
+    ----------
+    .. [1] C. J. T. Spitters, H. A. J. M. Toussaint, and J. Goudriaan,
+       'Separating the diffuse and direct component of global radiation and its
+       implications for modeling canopy photosynthesis Part I. Components of
+       incoming radiation', Agricultural and Forest Meteorology, vol. 38,
+       no. 1, pp. 217-229, Oct. 1986, :doi:`10.1016/0168-1923(86)90060-2`.
+    .. [2] S. Ma Lu et al., 'Photosynthetically active radiation decomposition
+       models for agrivoltaic systems applications', Solar Energy, vol. 244,
+       pp. 536-549, Sep. 2022, :doi:`10.1016/j.solener.2022.05.046`.
+    """
+    # notation change:
+    # cosd(90-x) = sind(x) and 90-solar_elevation = solar_zenith
+    cosd_solar_zenith = tools.cosd(daily_solar_zenith)
+    cosd_solar_elevation = tools.sind(daily_solar_zenith)
+    par_diffuse_fraction = (
+        (1 + 0.3 * (1 - global_diffuse_fraction**2))
+        * global_diffuse_fraction
+        / (
+            1
+            + (1 - global_diffuse_fraction**2)
+            * cosd_solar_zenith**2
+            * cosd_solar_elevation**3
+        )
+    )
+    return par_diffuse_fraction

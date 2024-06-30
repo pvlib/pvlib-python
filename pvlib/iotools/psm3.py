@@ -62,8 +62,8 @@ REQUEST_VARIABLE_MAP = {
 
 
 def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
-             attributes=ATTRIBUTES, leap_day=None, full_name=PVLIB_PYTHON,
-             affiliation=PVLIB_PYTHON, map_variables=None, url=None,
+             attributes=ATTRIBUTES, leap_day=True, full_name=PVLIB_PYTHON,
+             affiliation=PVLIB_PYTHON, map_variables=True, url=None,
              timeout=30):
     """
     Retrieve NSRDB PSM3 timeseries weather data from the PSM3 API. The NSRDB
@@ -105,14 +105,14 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
         for lists of available fields. Alternatively, pvlib names may also be
         used (e.g. 'ghi' rather than 'GHI'); see :const:`REQUEST_VARIABLE_MAP`.
         To retrieve all available fields, set ``attributes=[]``.
-    leap_day : boolean, default False
+    leap_day : bool, default : True
         include leap day in the results. Only used for single-year requests
         (i.e., it is ignored for tmy/tgy/tdy requests).
     full_name : str, default 'pvlib python'
         optional
     affiliation : str, default 'pvlib python'
         optional
-    map_variables : boolean, optional
+    map_variables : bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
         where applicable. See variable :const:`VARIABLE_MAP`.
     url : str, optional
@@ -179,14 +179,6 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     # convert pvlib names in attributes to psm3 convention
     attributes = [REQUEST_VARIABLE_MAP.get(a, a) for a in attributes]
 
-    if (leap_day is None) and (not names.startswith('t')):
-        warnings.warn(
-            'The ``get_psm3`` function will default to leap_day=True '
-            'starting in pvlib 0.11.0. Specify leap_day=True '
-            'to enable this behavior now, or specify leap_day=False '
-            'to hide this warning.', pvlibDeprecationWarning)
-        leap_day = False
-
     # required query-string parameters for request to PSM3 API
     params = {
         'api_key': api_key,
@@ -227,7 +219,7 @@ def get_psm3(latitude, longitude, api_key, email, names='tmy', interval=60,
     return parse_psm3(fbuf, map_variables)
 
 
-def parse_psm3(fbuf, map_variables=None):
+def parse_psm3(fbuf, map_variables=True):
     """
     Parse an NSRDB PSM3 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
@@ -241,9 +233,9 @@ def parse_psm3(fbuf, map_variables=None):
     ----------
     fbuf: file-like object
         File-like object containing data to read.
-    map_variables: bool
+    map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------
@@ -356,13 +348,6 @@ def parse_psm3(fbuf, map_variables=None):
     tz = 'Etc/GMT%+d' % -metadata['Time Zone']
     data.index = pd.DatetimeIndex(dtidx).tz_localize(tz)
 
-    if map_variables is None:
-        warnings.warn(
-            'PSM3 variable names will be renamed to pvlib conventions by '
-            'default starting in pvlib 0.11.0. Specify map_variables=True '
-            'to enable that behavior now, or specify map_variables=False '
-            'to hide this warning.', pvlibDeprecationWarning)
-        map_variables = False
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
         metadata['latitude'] = metadata.pop('Latitude')
@@ -372,7 +357,7 @@ def parse_psm3(fbuf, map_variables=None):
     return data, metadata
 
 
-def read_psm3(filename, map_variables=None):
+def read_psm3(filename, map_variables=True):
     """
     Read an NSRDB PSM3 weather file (formatted as SAM CSV). The NSRDB
     is described in [1]_ and the SAM CSV format is described in [2]_.
@@ -386,9 +371,9 @@ def read_psm3(filename, map_variables=None):
     ----------
     filename: str
         Filename of a file containing data to read.
-    map_variables: bool
+    map_variables: bool, default True
         When true, renames columns of the Dataframe to pvlib variable names
-        where applicable. See variable VARIABLE_MAP.
+        where applicable. See variable :const:`VARIABLE_MAP`.
 
     Returns
     -------

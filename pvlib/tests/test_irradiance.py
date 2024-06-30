@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 from numpy.testing import (assert_almost_equal,
                            assert_allclose)
-from pvlib import irradiance
+from pvlib import irradiance, albedo
 
 from .conftest import (
     assert_frame_equal,
@@ -18,6 +18,7 @@ from .conftest import (
     requires_numba
 )
 
+from pvlib._deprecation import pvlibDeprecationWarning
 
 # fixtures create realistic test input data
 # test input data generated at Location(32.2, -111, 'US/Arizona', 700)
@@ -1053,7 +1054,7 @@ def test_erbs_all_scalar():
     out = irradiance.erbs(ghi, zenith, doy)
 
     for k, v in out.items():
-        assert_allclose(v, expected[k], 5)
+        assert_allclose(v, expected[k], 1e-2)
 
 
 def test_dirindex(times):
@@ -1406,3 +1407,35 @@ def test_louche():
     out = irradiance.louche(ghi, zenith, index)
 
     assert_frame_equal(out, expected)
+
+
+def test_SURFACE_ALBEDOS_deprecated():
+    with pytest.warns(pvlibDeprecationWarning, match='SURFACE_ALBEDOS has been'
+                      ' moved to the albedo module as of v0.11.0. Please use'
+                      ' pvlib.albedo.SURFACE_ALBEDOS.'):
+        irradiance.SURFACE_ALBEDOS
+
+
+@pytest.mark.filterwarnings("ignore:SURFACE_ALBEDOS")
+def test_SURFACE_ALBEDO_equals():
+    assert irradiance.SURFACE_ALBEDOS == albedo.SURFACE_ALBEDOS
+
+
+def test_diffuse_par_spitters():
+    solar_zenith, global_diffuse_fraction = np.meshgrid(
+        [90, 85, 75, 60, 40, 30, 10, 0], [0.01, 0.1, 0.3, 0.6, 0.8, 0.99]
+    )
+    solar_zenith = solar_zenith.ravel()
+    global_diffuse_fraction = global_diffuse_fraction.ravel()
+    result = irradiance.diffuse_par_spitters(
+        solar_zenith, global_diffuse_fraction
+    )
+    expected = np.array([
+        0.01300, 0.01290, 0.01226, 0.01118, 0.01125, 0.01189, 0.01293, 0.01300,
+        0.12970, 0.12874, 0.12239, 0.11174, 0.11236, 0.11868, 0.12905, 0.12970,
+        0.38190, 0.37931, 0.36201, 0.33273, 0.33446, 0.35188, 0.38014, 0.38190,
+        0.71520, 0.71178, 0.68859, 0.64787, 0.65033, 0.67472, 0.71288, 0.71520,
+        0.88640, 0.88401, 0.86755, 0.83745, 0.83931, 0.85746, 0.88478, 0.88640,
+        0.99591, 0.99576, 0.99472, 0.99270, 0.99283, 0.99406, 0.99581, 0.99591,
+    ])  # fmt: skip
+    assert_allclose(result, expected, atol=1e-5)

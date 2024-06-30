@@ -352,7 +352,7 @@ def test_marion_diffuse_iam_with_kwargs():
 
 
 def test_marion_diffuse_invalid():
-    with pytest.raises(KeyError):
+    with pytest.raises(ValueError, match='model must be one of: '):
         _iam.marion_diffuse('not_a_model', 20)
 
 

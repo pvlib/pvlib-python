@@ -693,7 +693,13 @@ def marion_diffuse(model, surface_tilt, **kwargs):
         iam_model = model
     else:
         # Check that a builtin diffuse IAM function has been specified.
-        iam_model = get_builtin_diffuse_models()[model]
+        builtin_diffuse_models = get_builtin_diffuse_models()
+        try:
+            iam_model = builtin_diffuse_models[model]
+        except KeyError as exc:
+            raise ValueError(
+                f'model must be one of: {set(builtin_diffuse_models.keys())}'
+            ) from exc
 
     iam_function = functools.partial(iam_model, **kwargs)
 

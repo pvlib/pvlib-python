@@ -2,8 +2,8 @@ r"""
 Calculating the cell temperature for floating PV
 ================================================
 
-This example demonstrates how to calculate the cell temperature for
-floating photovoltaic (FPV) systems using the PVSyst temperature model.
+This example uses the PVSyst temperature model to calculate the
+cell temperature for floating photovoltaic (FPV) systems.
 
 One of the primary benefits attributed to FPV systems
 is lower operating temperatures, which are expected to increase the

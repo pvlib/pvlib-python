@@ -38,7 +38,7 @@ def get_builtin_models():
         'physical': {
             'callable': physical,
             'params_required': set(),
-            'params_optional': {'n', 'K', 'L'},
+            'params_optional': {'n', 'K', 'L', 'n_ar'},
         },
         'sapm': {
             'callable': sapm,
@@ -122,7 +122,7 @@ def ashrae(aoi, b=0.05):
     return iam
 
 
-def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
+def physical(aoi, n=1.526, K=4.0, L=0.002, n_ar=None):
     r"""
     Determine the incidence angle modifier using refractive index ``n``,
     extinction coefficient ``K``, glazing thickness ``L`` and refractive
@@ -1005,7 +1005,7 @@ def _get_fittable_or_convertable_model(builtin_model_name):
 
 
 def _check_params(builtin_model_name, params):
-    # check that parameters passed in with IAM model belong to model
+    # check that parameters passed in with IAM model belong to the model
     handed_params = set(params.keys())
     builtin_model = get_builtin_models()[builtin_model_name]
     expected_params = builtin_model["params_required"].union(

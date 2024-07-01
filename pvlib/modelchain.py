@@ -326,9 +326,10 @@ class ModelChain:
     aoi_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'physical', 'ashrae', 'sapm', 'martin_ruiz',
-        'interp' and 'no_loss'. The ModelChain instance will be passed as the
-        first argument to a user-defined function.
+        Valid strings are 'ashrae', 'interp', 'martin_ruiz', 'physical',
+        'sapm', 'schlick', 'no_loss'.
+        The ModelChain instance will be passed as the first argument to a
+        user-defined function.
 
     spectral_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
@@ -770,7 +771,9 @@ class ModelChain:
 
     @aoi_model.setter
     def aoi_model(self, model):
-        if isinstance(model, str):
+        if model is None:
+            self._aoi_model = self.infer_aoi_model()
+        elif isinstance(model, str):
             model = model.lower()
             if model == 'ashrae':
                 self._aoi_model = self.ashrae_aoi_loss
@@ -792,6 +795,68 @@ class ModelChain:
             self._aoi_model = partial(model, self)
         else:
             raise ValueError(f"Unsupported AOI model {model}")
+
+    def infer_aoi_model(self):
+        """
+        Infer AOI model by checking for at least one required or optional
+        model parameter in module_parameter collected across all arrays.
+        """
+        module_parameters = tuple(
+            array.module_parameters for array in self.system.arrays
+        )
+        params = _common_keys(module_parameters)
+        builtin_models = pvlib.iam.get_builtin_models()
+
+        if any(
+            param in params for 
+            param in builtin_models['ashrae']["params_required"].union(
+                builtin_models['ashrae']["params_optional"]
+            )
+        ):
+            return self.ashrae_aoi_loss
+
+        if any(
+            param in params for 
+            param in builtin_models['interp']["params_required"].union(
+                builtin_models['interp']["params_optional"]
+            )
+        ):
+            return self.interp_aoi_loss
+
+        if any(
+            param in params for 
+            param in builtin_models['martin_ruiz']["params_required"].union(
+                builtin_models['martin_ruiz']["params_optional"]
+            )
+        ):
+            return self.martin_ruiz_aoi_loss
+
+        if any(
+            param in params for 
+            param in builtin_models['physical']["params_required"].union(
+                builtin_models['physical']["params_optional"]
+            )
+        ):
+            return self.physical_aoi_loss
+
+        if any(
+            param in params for 
+            param in builtin_models['sapm']["params_required"].union(
+                builtin_models['sapm']["params_optional"]
+            )
+        ):
+            return self.sapm_aoi_loss
+
+        # schlick model has no parameters to distinguish.
+
+        raise ValueError(
+            'Could not infer AOI model from '
+            'system.arrays[i].module_parameters. Check that the '
+            'module_parameters for all Arrays in system.arrays contain '
+            'parameters for the ashrae, interp, martin_ruiz, physical, or '
+            'sapm model; explicitly set the model (esp. the parameter-free '
+            'schlick) with the aoi_model kwarg or set aoi_model="no_loss".'
+        )
 
     def ashrae_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(

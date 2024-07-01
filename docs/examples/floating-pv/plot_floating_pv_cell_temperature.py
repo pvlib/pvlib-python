@@ -51,7 +51,7 @@ the modules (wind/convection). In some designs where the modules are in
 direct thermal contact with water, cooling effectiveness is largely dictated
 by the water temperature.
 
-The table below gives heat loss coefficients derrived for different systems
+The table below gives heat loss coefficients derived for different systems
 and locations as found in the literature. In this example, the FPV cell
 temperature will be calculated using some of the coefficients below.
 

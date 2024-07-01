@@ -19,6 +19,7 @@ from typing import Optional, Union
 
 from pvlib._deprecation import deprecated, warn_deprecated
 
+import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, spectrum, temperature)
 from pvlib.tools import _build_kwargs, _build_args
@@ -131,13 +132,13 @@ class PVSystem:
 
     albedo : float, optional
         Ground surface albedo. If not supplied, then ``surface_type`` is used
-        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        to look up a value in  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`.
         If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
     surface_type : string, optional
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for
-        valid values.
+        The ground surface type. See  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`
+        for valid values.
 
     module : string, optional
         The model name of the modules.
@@ -721,15 +722,13 @@ class PVSystem:
         )
 
     def singlediode(self, photocurrent, saturation_current,
-                    resistance_series, resistance_shunt, nNsVth,
-                    ivcurve_pnts=None):
+                    resistance_series, resistance_shunt, nNsVth):
         """Wrapper around the :py:func:`pvlib.pvsystem.singlediode` function.
 
         See :py:func:`pvsystem.singlediode` for details
         """
         return singlediode(photocurrent, saturation_current,
-                           resistance_series, resistance_shunt, nNsVth,
-                           ivcurve_pnts=ivcurve_pnts)
+                           resistance_series, resistance_shunt, nNsVth)
 
     def i_from_v(self, voltage, photocurrent, saturation_current,
                  resistance_series, resistance_shunt, nNsVth):
@@ -907,13 +906,13 @@ class Array:
 
     albedo : float, optional
         Ground surface albedo. If not supplied, then ``surface_type`` is used
-        to look up a value in ``irradiance.SURFACE_ALBEDOS``.
+        to look up a value in  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`.
         If ``surface_type`` is also not supplied then a ground surface albedo
         of 0.25 is used.
 
     surface_type : string, optional
-        The ground surface type. See ``irradiance.SURFACE_ALBEDOS`` for valid
-        values.
+        The ground surface type. See  :py:const:`pvlib.albedo.SURFACE_ALBEDOS`
+        for valid values.
 
     module : string, optional
         The model name of the modules.
@@ -956,7 +955,7 @@ class Array:
 
         self.surface_type = surface_type
         if albedo is None:
-            self.albedo = irradiance.SURFACE_ALBEDOS.get(surface_type, 0.25)
+            self.albedo = pvlib.albedo.SURFACE_ALBEDOS.get(surface_type, 0.25)
         else:
             self.albedo = albedo
 
@@ -2351,8 +2350,7 @@ def sapm_effective_irradiance(poa_direct, poa_diffuse, airmass_absolute, aoi,
 
 
 def singlediode(photocurrent, saturation_current, resistance_series,
-                resistance_shunt, nNsVth, ivcurve_pnts=None,
-                method='lambertw'):
+                resistance_shunt, nNsVth, method='lambertw'):
     r"""
     Solve the single diode equation to obtain a photovoltaic IV curve.
 
@@ -2404,14 +2402,6 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         junction in Kelvin, and :math:`q` is the charge of an electron
         (coulombs). ``0 < nNsVth``.  [V]
 
-    ivcurve_pnts : int, optional
-        Number of points in the desired IV curve. If not specified or 0, no
-        points on the IV curves will be produced.
-
-        .. deprecated:: 0.10.0
-           Use :py:func:`pvlib.pvsystem.v_from_i` and
-           :py:func:`pvlib.pvsystem.i_from_v` instead.
-
     method : str, default 'lambertw'
         Determines the method used to calculate points on the IV curve. The
         options are ``'lambertw'``, ``'newton'``, or ``'brentq'``.
@@ -2429,12 +2419,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         * i_x - current, in amperes, at ``v = 0.5*v_oc``.
         * i_xx - current, in amperes, at ``v = 0.5*(v_oc+v_mp)``.
 
-        A dict is returned when the input parameters are scalars or
-        ``ivcurve_pnts > 0``. If ``ivcurve_pnts > 0``, the output dictionary
-        will also include the keys:
-
-        * i - IV curve current in amperes.
-        * v - IV curve voltage in volts.
+        A dict is returned when the input parameters are scalars.
 
     See also
     --------
@@ -2458,13 +2443,6 @@ def singlediode(photocurrent, saturation_current, resistance_series,
     that guarantees convergence by bounding the voltage between zero and
     open-circuit.
 
-    If the method is either ``'newton'`` or ``'brentq'`` and ``ivcurve_pnts``
-    are indicated, then :func:`pvlib.singlediode.bishop88` [4]_ is used to
-    calculate the points on the IV curve points at diode voltages from zero to
-    open-circuit voltage with a log spacing that gets closer as voltage
-    increases. If the method is ``'lambertw'`` then the calculated points on
-    the IV curve are linearly spaced.
-
     References
     ----------
     .. [1] S.R. Wenham, M.A. Green, M.E. Watt, "Applied Photovoltaics" ISBN
@@ -2481,21 +2459,13 @@ def singlediode(photocurrent, saturation_current, resistance_series,
        photovoltaic cell interconnection circuits" JW Bishop, Solar Cell (1988)
        https://doi.org/10.1016/0379-6787(88)90059-2
     """
-    if ivcurve_pnts:
-        warn_deprecated('0.10.0', name='pvlib.pvsystem.singlediode',
-                        alternative=('pvlib.pvsystem.v_from_i and '
-                                     'pvlib.pvsystem.i_from_v'),
-                        obj_type='parameter ivcurve_pnts',
-                        removal='0.11.0')
     args = (photocurrent, saturation_current, resistance_series,
             resistance_shunt, nNsVth)  # collect args
     # Calculate points on the IV curve using the LambertW solution to the
     # single diode equation
     if method.lower() == 'lambertw':
-        out = _singlediode._lambertw(*args, ivcurve_pnts)
+        out = _singlediode._lambertw(*args)
         points = out[:7]
-        if ivcurve_pnts:
-            ivcurve_i, ivcurve_v = out[7:]
     else:
         # Calculate points on the IV curve using either 'newton' or 'brentq'
         # methods. Voltages are determined by first solving the single diode
@@ -2517,21 +2487,10 @@ def singlediode(photocurrent, saturation_current, resistance_series,
         )
         points = i_sc, v_oc, i_mp, v_mp, p_mp, i_x, i_xx
 
-        # calculate the IV curve if requested using bishop88
-        if ivcurve_pnts:
-            vd = v_oc * (
-                (11.0 - np.logspace(np.log10(11.0), 0.0, ivcurve_pnts)) / 10.0
-            )
-            ivcurve_i, ivcurve_v, _ = _singlediode.bishop88(vd, *args)
-
     columns = ('i_sc', 'v_oc', 'i_mp', 'v_mp', 'p_mp', 'i_x', 'i_xx')
 
-    if all(map(np.isscalar, args)) or ivcurve_pnts:
+    if all(map(np.isscalar, args)):
         out = {c: p for c, p in zip(columns, points)}
-
-        if ivcurve_pnts:
-            out.update(i=ivcurve_i, v=ivcurve_v)
-
         return out
 
     points = np.atleast_1d(*points)  # convert scalars to 1d-arrays

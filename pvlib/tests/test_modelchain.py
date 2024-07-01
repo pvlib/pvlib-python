@@ -2,17 +2,14 @@ import sys
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from pvlib import iam, modelchain, pvsystem, temperature, inverter
 from pvlib.modelchain import ModelChain
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
-from pvlib._deprecation import pvlibDeprecationWarning
 
 from .conftest import assert_series_equal, assert_frame_equal
-import pytest
-
-from .conftest import fail_on_pvlib_version
 
 
 @pytest.fixture(scope='function')
@@ -1428,7 +1425,7 @@ def constant_aoi_loss(mc):
 
 
 @pytest.mark.parametrize('aoi_model', [
-    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+    'ashrae', 'martin_ruiz', 'physical', 'sapm', 'schlick'  # not interp
 ])
 def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
                     weather, mocker):
@@ -1444,7 +1441,7 @@ def test_aoi_models(sapm_dc_snl_ac_system, location, aoi_model,
 
 
 @pytest.mark.parametrize('aoi_model', [
-    'sapm', 'ashrae', 'physical', 'martin_ruiz'
+    'ashrae', 'martin_ruiz', 'physical', 'sapm', 'schlick'  # not interp
 ])
 def test_aoi_models_singleon_weather_single_array(
         sapm_dc_snl_ac_system, location, aoi_model, weather):
@@ -1503,11 +1500,14 @@ def test_aoi_model_user_func(sapm_dc_snl_ac_system, location, weather, mocker):
 
 
 @pytest.mark.parametrize('aoi_model', [
-    'sapm', 'ashrae', 'physical', 'martin_ruiz', 'interp'
+    'ashrae', 'interp', 'martin_ruiz', 'physical', 'sapm'
 ])
 def test_infer_aoi_model(location, system_no_aoi, aoi_model):
-    for k in iam._IAM_MODEL_PARAMS[aoi_model]:
-        system_no_aoi.arrays[0].module_parameters.update({k: 1.0})
+    builtin_models = iam.get_builtin_models()[aoi_model]
+    params = builtin_models["params_required"].union(
+        builtin_models["params_optional"]
+    )
+    system_no_aoi.arrays[0].module_parameters.update({params.pop(): 1.0})
     mc = ModelChain(system_no_aoi, location, spectral_model='no_loss')
     assert isinstance(mc, ModelChain)
 
@@ -1515,11 +1515,10 @@ def test_infer_aoi_model(location, system_no_aoi, aoi_model):
 @pytest.mark.parametrize('aoi_model,model_kwargs', [
     # model_kwargs has both required and optional kwargs; test all
     ('physical',
-     {'n': 1.526, 'K': 4.0, 'L': 0.002,  # required
-      'n_ar': 1.8}),  # extra
+     {'n': 1.526, 'K': 4.0, 'L': 0.002}),  # optional
     ('interp',
      {'theta_ref': (0, 75, 85, 90), 'iam_ref': (1, 0.8, 0.42, 0),  # required
-      'method': 'cubic', 'normalize': False})])  # extra
+      'method': 'cubic', 'normalize': False})])  # optional
 def test_infer_aoi_model_with_extra_params(location, system_no_aoi, aoi_model,
                                            model_kwargs, weather, mocker):
     # test extra parameters not defined at iam._IAM_MODEL_PARAMS are passed
@@ -1533,8 +1532,7 @@ def test_infer_aoi_model_with_extra_params(location, system_no_aoi, aoi_model,
 
 
 def test_infer_aoi_model_invalid(location, system_no_aoi):
-    exc_text = 'could not infer AOI model'
-    with pytest.raises(ValueError, match=exc_text):
+    with pytest.raises(ValueError, match='could not infer AOI model'):
         ModelChain(system_no_aoi, location, spectral_model='no_loss')
 
 

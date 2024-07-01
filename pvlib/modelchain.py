@@ -269,7 +269,7 @@ class ModelChainResult:
                  '\n')
         lines = []
         for attr in mc_attrs:
-            if not (attr.startswith('_') or attr == 'times'):
+            if not (attr.startswith('_') or attr=='times'):
                 lines.append(f' {attr}: ' + _mcr_repr(getattr(self, attr)))
         desc4 = '\n'.join(lines)
         return (desc1 + desc2 + desc3 + desc4)

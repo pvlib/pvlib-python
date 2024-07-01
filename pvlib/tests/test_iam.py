@@ -58,15 +58,6 @@ def test_get_builtin_models():
             params_optional_expected, model
 
 
-def get_default_args(func):
-    signature = inspect.signature(func)
-    return {
-        k: v.default
-        for k, v in signature.parameters.items()
-        if v.default is not inspect.Parameter.empty
-    }
-
-
 def test_ashrae():
     thetas = np.array([-90., -67.5, -45., -22.5, 0., 22.5, 45., 67.5, 89., 90.,
                        np.nan])

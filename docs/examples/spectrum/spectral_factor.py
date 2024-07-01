@@ -16,9 +16,10 @@ mismatch factor from atmopsheric variable inputs.
 # mismatch factor, :math:`M`, using proxies of the prevaiing spectral
 # irradiance conditions, such as air mass and clearsky index, which are easily
 # derived from common ground-based measurements such as broadband irradiance.
-# More information on a range of spectral factor models, as wel as the
+# More information on a range of spectral factor models, as well as the
 # variables upon which they are based, can be found in [1]_.
 
+import pathlib
 from matplotlib import pyplot as plt
 import pandas as pd
 import pvlib as pv
@@ -31,9 +32,9 @@ from pvlib.atmosphere import get_relative_airmass
 # location of Greensboro, North Carolina, from the pvlib data directory. This
 # TMY3 file is constructed using the median month from each year between 1980
 # and 2003, from which we extract the first week of August 2001 to analyse.
-meteo, metadata = pv.iotools.read_tmy3(
-    r'C:\Users\ezxrd3\Documents\GitHub\pvlib-python\pvlib\data\723170TYA.csv',
-    map_variables=True)
+DATA_DIR = pathlib.Path(pv.__file__).parent / 'data'
+meteo, metadata = pv.iotools.read_tmy3(DATA_DIR / '723170TYA.CSV',
+                                       map_variables=True)
 meteo = meteo.sort_index()
 meteo = meteo.between_time('06:00', '20:00').loc['2001-08-01':'2001-08-07']
 
@@ -139,3 +140,15 @@ df_results.index = df_results.index.strftime("%H:%M")
 fig2, ax1 = plt.subplots()
 df_results.plot(ax=ax1)
 plt.show()
+
+"""
+References
+----------
+.. [1] Daxini, Rajiv, and Yupeng Wu (2023). "Review of methods to account for
+      the solar spectral influence on photovoltaic device performance." Energy
+      286
+      :doi:`10.1364/AO.28.004735`
+.. [2] Kasten, F. and Young, A.T., 1989. Revised optical air mass tables
+   and approximation formula. Applied Optics, 28(22), pp.4735-4738.
+   :doi:`10.1364/AO.28.004735`
+"""

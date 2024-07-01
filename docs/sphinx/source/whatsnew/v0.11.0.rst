@@ -53,12 +53,6 @@ Enhancements
   spectral mismatch factor as a function of absolute airmass and clearsky index
   using the PVSPEC model. (:issue:`1950`, :issue:`2065`, :pull:`2072`)
 
-Bug fixes
-~~~~~~~~~
-* Changes clearsky.lookup_linke_turbidity and irradiance.get_extra_radiation to use UTC instead of local
-   timezone when determining day of year. (:issue:`2054`, :pull:`2055`)
-
-
 Testing
 ~~~~~~~
 * Add function :py:func:`pvlib.spectrum.spectral_factor_pvspec`, which
@@ -94,7 +88,6 @@ Contributors
 * Kurt Rhee (:ghuser:`kurt-rhee`)
 * Mark Mikofski (:ghuser:`mikofski`)
 * Siddharth Kaul (:ghuser:`k10blogger`)
-* Yunho Kee (:ghuser:`yhkee0404`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Mark Campanelli (:ghuser:`markcampanelli`)
 * Rajiv Daxini (:ghuser:`RDaxini`)

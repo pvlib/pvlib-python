@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from copy import deepcopy
 import itertools
 
 import numpy as np
@@ -29,7 +28,8 @@ from pvlib.tests.test_singlediode import get_pvsyst_fs_495
     ('interp', {'iam_ref': (1., 0.85), 'theta_ref': (0., 80.)}),
     ('martin_ruiz', {'a_r': 0.16}),
     ('physical', {'K': 4, 'L': 0.002, 'n': 1.526}),
-    ('sapm',
+    (
+        'sapm',
         {
             k: v for k, v in pvsystem.retrieve_sam(
                 'SandiaMod')['Canadian_Solar_CS5P_220M___2009_'].items()

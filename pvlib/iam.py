@@ -19,8 +19,8 @@ from pvlib.tools import cosd, sind, acosd
 
 def get_builtin_models():
     """
-    Return builtin IAM models' usage information.
-    
+    Get builtin IAM models' usage information.
+
     Returns
     -------
     info : dict

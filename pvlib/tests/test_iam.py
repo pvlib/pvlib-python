@@ -3,6 +3,7 @@ Created on Wed Oct  2 10:14:16 2019
 
 @author: cwhanse
 """
+import inspect
 
 import numpy as np
 import pandas as pd
@@ -13,6 +14,57 @@ from numpy.testing import assert_allclose
 import scipy.interpolate
 
 from pvlib import iam as _iam
+
+
+def test_get_builtin_models():
+    builtin_models = _iam.get_builtin_models()
+
+    models = set(builtin_models.keys())
+    models_expected = {
+        "ashrae", "interp", "martin_ruiz", "physical", "sapm", "schlick"
+    }
+    assert set(models) == models_expected
+
+    for model in models:
+        builtin_model = builtin_models[model]
+
+        if model == "sapm":
+            # sapm has exceptional interface requiring module_parameters.
+            params_required_expected = set(
+                k for k, v in inspect.signature(
+                    builtin_model["func"]
+                ).parameters.items() if v.default is inspect.Parameter.empty
+            )
+            assert {"aoi", "module"} == params_required_expected, model
+
+            assert builtin_model["params_required"] == \
+                {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'}, model
+        else:
+            params_required_expected = set(
+                k for k, v in inspect.signature(
+                    builtin_model["func"]
+                ).parameters.items() if v.default is inspect.Parameter.empty
+            )
+            assert builtin_model["params_required"].union(
+                {"aoi"}
+            ) == params_required_expected, model
+
+        params_optional_expected = set(
+            k for k, v in inspect.signature(
+                builtin_model["func"]
+            ).parameters.items() if v.default is not inspect.Parameter.empty
+        )
+        assert builtin_model["params_optional"] == \
+            params_optional_expected, model
+
+
+def get_default_args(func):
+    signature = inspect.signature(func)
+    return {
+        k: v.default
+        for k, v in signature.parameters.items()
+        if v.default is not inspect.Parameter.empty
+    }
 
 
 def test_ashrae():

@@ -26,12 +26,13 @@ def get_builtin_models():
     info : dict
         A dictionary of dictionaries keyed by builtin IAM model name, with
         each model dictionary containing:
-        - callable : callable
+
+        * 'func': callable
             The callable model function
-        - params_required : set of str
-            The callable's required parameters
-        - params_optional : set of str
-            The callable's optional parameters
+        * 'params_required': set of str
+            The model function's required parameters
+        * 'params_optional': set of str
+            The model function's optional parameters
 
     See Also
     --------
@@ -44,32 +45,33 @@ def get_builtin_models():
     """
     return {
         'ashrae': {
-            'callable': ashrae,
+            'func': ashrae,
             'params_required': set(),
             'params_optional': {'b'},
         },
         'interp': {
-            'callable': interp,
+            'func': interp,
             'params_required': {'theta_ref', 'iam_ref'},
             'params_optional': {'method', 'normalize'},
         },
         'martin_ruiz': {
-            'callable': martin_ruiz,
+            'func': martin_ruiz,
             'params_required': set(),
             'params_optional': {'a_r'},
         },
         'physical': {
-            'callable': physical,
+            'func': physical,
             'params_required': set(),
             'params_optional': {'n', 'K', 'L', 'n_ar'},
         },
         'sapm': {
-            'callable': sapm,
+            'func': sapm,
+            # param_required must appear in module parameter.
             'params_required': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
             'params_optional': {'upper'},
         },
         'schlick': {
-            'callable': schlick,
+            'func': schlick,
             'params_required': set(),
             'params_optional': set(),
         },
@@ -687,7 +689,7 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     """
     if callable(model):
         # A callable IAM model function was specified.
-        model_callable = model
+        func = model
     else:
         # Check that a builtin IAM function was specified.
         builtin_models = get_builtin_models()
@@ -699,9 +701,9 @@ def marion_diffuse(model, surface_tilt, **kwargs):
                 f'model must be one of: {builtin_models.keys()}'
             ) from exc
 
-        model_callable = model["callable"]
+        func = model["func"]
 
-    iam_function = functools.partial(model_callable, **kwargs)
+    iam_function = functools.partial(func, **kwargs)
 
     return {
         region: marion_integrate(iam_function, surface_tilt, region)

@@ -1184,7 +1184,7 @@ class Array:
 
         if model == "sapm":
             # sapm has exceptional interface requiring module_parameters.
-            return model_info["callable"](
+            return model_info["func"](
                 aoi, self.module_parameters, **params_optional
             )
 
@@ -1192,7 +1192,7 @@ class Array:
             model_info["params_required"], self.module_parameters
         )
 
-        return model_info["callable"](
+        return model_info["func"](
             aoi, **params_required, **params_optional
         )
 

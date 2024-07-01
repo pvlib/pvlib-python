@@ -51,6 +51,16 @@ def test_PVSystem_get_iam(mocker, iam_model, model_params):
     assert 0 < iam < 1
 
 
+def test_PVSystem_get_iam_unsupported_model():
+    iam_model = 'foobar'
+    system = pvsystem.PVSystem()
+
+    with pytest.raises(
+        ValueError, match=f'{iam_model} is not a valid IAM model'
+    ):
+        system.get_iam(45, iam_model=iam_model)
+
+
 def test_PVSystem_multi_array_get_iam():
     model_params = {'b': 0.05}
     system = pvsystem.PVSystem(

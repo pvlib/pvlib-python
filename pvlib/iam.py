@@ -18,7 +18,30 @@ from pvlib.tools import cosd, sind, acosd
 
 
 def get_builtin_models():
-    """Return a dictionary of builtin IAM models' usage information."""
+    """
+    Return builtin IAM models' usage information.
+    
+    Returns
+    -------
+    info : dict
+        A dictionary of dictionaries keyed by builtin IAM model name, with
+        each model dictionary containing:
+        - callable : callable
+            The callable model function
+        - params_required : set of str
+            The callable's required parameters
+        - params_optional : set of str
+            The callable's optional parameters
+
+    See Also
+    --------
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    pvlib.iam.sapm
+    pvlib.iam.schlick
+    """
     return {
         'ashrae': {
             'callable': ashrae,

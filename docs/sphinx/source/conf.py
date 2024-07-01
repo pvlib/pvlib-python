@@ -443,7 +443,7 @@ def make_github_url(file_name):
     # is it a gallery page?
     if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):
         example_folder = file_name.split("/")[-2]
-        if file_name.split("/")[-1] == "index":
+        if file_name.split("/")[-1] == "index.rst":
             example_file = example_folder + "README.rst"
         else:
             example_file = file_name.split("/")[-1].replace('.rst', '.py')

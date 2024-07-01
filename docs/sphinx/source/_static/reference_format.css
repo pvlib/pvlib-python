@@ -1,13 +1,5 @@
 /* no reference superscript */
 .footnote-reference {
-    font-size: 100% !important;  /* default is 90% */
-    top: 0.0em !important;  /* default is -0.4em */
-}
-
-/* reference number in brackets */
-.footnote-reference::before {
-  content: '[';
-}
-.footnote-reference::after {
-  content: ']';
+  font-size: 100% !important;
+  vertical-align: baseline !important;
 }

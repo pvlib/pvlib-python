@@ -93,6 +93,7 @@ def power_mismatch_deline(
 
     where parameter ``fill_factor`` is :math:`FF_1` and
     ``fill_factor_reference`` is :math:`FF_0`.
+
     In the section *See Also*, you will find two packages that can be used to
     calculate the irradiance at different points of the module.
 

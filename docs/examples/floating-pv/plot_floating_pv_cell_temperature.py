@@ -86,7 +86,7 @@ temperature will be calculated using some of the coefficients below.
    | - In contact with water  |             |                                |                                        |           |
    | - Calculated using water |             |                                |                                        |           |
    |   temperature as         |             |                                |                                        |           |
-   |   :math:` T_{amb}`       |             |                                |                                        |           |
+   |   :math:`T_{amb}`        |             |                                |                                        |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
    | - Monofacial module      | South Italy | 31.9                           | 1.5                                    | [3]_      |
    | - Open structure         |             |                                |                                        |           |

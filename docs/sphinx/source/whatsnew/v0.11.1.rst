@@ -10,6 +10,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add new losses function that accounts for non-uniform irradiance on bifacial
+  modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
+  (:issue:`2045`, :pull:`2046`)
 
 
 Bug fixes
@@ -30,4 +33,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Echedey Luis (:ghuser:`echedey-ls`)

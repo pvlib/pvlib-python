@@ -85,7 +85,8 @@ temperature will be calculated using some of the coefficients below.
    | - Monofacial module      | Norway      | 71                             | 0                                      | [2]_      |
    | - In contact with water  |             |                                |                                        |           |
    | - Calculated using water |             |                                |                                        |           |
-   |   temperature as T_{amb} |             |                                |                                        |           |
+   |   temperature as         |             |                                |                                        |           |
+   |   :math:` T_{amb}`       |             |                                |                                        |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
    | - Monofacial module      | South Italy | 31.9                           | 1.5                                    | [3]_      |
    | - Open structure         |             |                                |                                        |           |

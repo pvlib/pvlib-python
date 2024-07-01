@@ -63,33 +63,38 @@ temperature will be calculated using some of the coefficients below.
    +==========================+=============+================================+========================================+===========+
    | - Monofacial module      | Netherlands | 24.4                           | 6.5                                    | [1]_      |
    | - Open structure         |             |                                |                                        |           |
-   | - Two-axis tracking      |             |                                |                                        |           |
+   | - Two-axis tracking      |             | 57                             | 0                                      |           |
    | - Small water footprint  |             |                                |                                        |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
    | - Monofacial module      | Netherlands | 25.2                           | 3.7                                    | [1]_      |
    | - Closed structure       |             |                                |                                        |           |
-   | - Large water footprint  |             |                                |                                        |           |
+   | - Large water footprint  |             | 37                             | 0                                      |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
    | - Monofacial module      | Singapore   | 34.8                           | 0.8                                    | [1]_      |
    | - Closed structure       |             |                                |                                        |           |
-   | - Large water footprint  |             |                                |                                        |           |
+   | - Large water footprint  |             | 36                             | 0                                      |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
    | - Monofacial module      | Singapore   | 18.9                           | 8.9                                    | [1]_      |
    | - Closed structure       |             |                                |                                        |           |
-   | - Medium water footprint |             |                                |                                        |           |
+   | - Medium water footprint |             | 41                             | 0                                      |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
    | - Monofacial module      | Singapore   | 35.3                           | 8.9                                    | [1]_      |
    | - Open structure         |             |                                |                                        |           |
-   | - Free-standing          |             |                                |                                        |           |
+   | - Free-standing          |             | 55                             | 0                                      |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
    | - Monofacial module      | Norway      | 86.5                           | 0                                      | [2]_      |
    | - In contact with water  |             |                                |                                        |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
-   | - Monofacial module      | South Italy | 31.9                           | 1.5                                    | [3]_      |
+   | - Monofacial module      | Norway      | 71                             | 0                                      | [3]_      |
+   | - In contact with water  |             |                                |                                        |           |
+   | - Using water temperature|             |                                |                                        |           |
+   |   instead of air         |             |                                |                                        |           |
+   +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
+   | - Monofacial module      | South Italy | 31.9                           | 1.5                                    | [4]_      |
    | - Open structure         |             |                                |                                        |           |
    | - Free-standing          |             |                                |                                        |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
-   | - Bifacial module        | South Italy | 35.2                           | 1.5                                    | [3]_      |
+   | - Bifacial module        | South Italy | 35.2                           | 1.5                                    | [4]_      |
    | - Open structure         |             |                                |                                        |           |
    | - Free-standing          |             |                                |                                        |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
@@ -101,11 +106,15 @@ References
     A comparison of field test data from the Netherlands and Singapore'
     Solar Energy, vol. 214, pp. 239-247, :doi:`10.1016/j.solener.2020.11.029`.
 
-.. [2] Kjeldstad T., Lindholm D., Marstein E., Selj J. (2021), 'Cooling of
+.. [2] Lindholm D., Kjeldstad T., Selj J., Marstein E.S., Fjær H.G. (2021),
+    'Heat loss coefficients computed for floating PV modules', Progress in
+    Photovoltaics, vol. 29, pp. 1262-1273, :doi:`10.1002/pip.34511262`.
+
+.. [3] Kjeldstad T., Lindholm D., Marstein E., Selj J. (2021), 'Cooling of
     floating photovoltaics and the importance of water temperature', Solar
     Energy, vol. 218, pp. 544-551, :doi:`10.1016/j.solener.2021.03.022`.
 
-.. [3] Tina G.M., Scavo F.B., Merlo L., Bizzarri F. (2021), 'Comparative
+.. [4] Tina G.M., Scavo F.B., Merlo L., Bizzarri F. (2021), 'Comparative
     analysis of monofacial and bifacial photovoltaic modules for floating
     power plants', Applied Energy, vol 281, pp. 116084,
     :doi:`10.1016/j.apenergy.2020.116084`.
@@ -171,20 +180,27 @@ irradiance = pvlib.irradiance.get_total_irradiance(
 # Calculate and plot cell temperature
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # The temperature of the PV cell is calculated for lake-based floating PV
-# systems:
+# systems. Note that for the systems having two sets of heat loss coefficients
+# only one of the sets was used since the results are almost identical and it
+# would be hard to distinguish the lines in the figure.
 
 # Make a dictionary containing all the sets of coefficients presented in the
 # above table.
 heat_loss_coeffs = {
-    'open_structure_small_footprint_tracking_NL': [24.4, 6.5],
-    'closed_structure_large_footprint_NL': [25.2, 3.7],
-    'closed_structure_large_footprint_SG': [34.8, 0.8],
-    'closed_structure_medium_footprint_SG': [18.9, 8.9],
-    'open_structure_free_standing_SG': [35.3, 8.9],
-    'in_contact_with_water_NO': [86.5, 0],
-    'open_strucutre_free_standing_IT': [31.9, 1.5],
-    'open_strucutre_free_standing_bifacial_IT': [35.2, 1.5],
-    'default_PVSyst_coeffs_for_land_systems': [29.0, 0]
+    'open_structure_small_footprint_tracking_NL': [24.4, 6.5, 'C0', 'solid'],
+    'open_structure_small_footprint_tracking_NL_2': [57, 0, 'C0', 'dashed'],
+    'closed_structure_large_footprint_NL': [25.2, 3.7, 'C1', 'solid'],
+    'closed_structure_large_footprint_NL_2': [37, 0, 'C1', 'dashed'],
+    'closed_structure_large_footprint_SG': [34.8, 0.8, 'C2', 'solid'],
+    'closed_structure_large_footprint_SG_2': [36, 0, 'C2', 'dashed'],
+    'closed_structure_medium_footprint_SG': [18.9, 8.9, 'C3', 'solid'],
+    'closed_structure_medium_footprint_SG_2': [41, 0, 'C3', 'dashed'],
+    'open_structure_free_standing_SG': [35.3, 8.9, 'C4', 'solid'],
+    'open_structure_free_standing_SG_2': [55, 0, 'C4', 'dashed'],
+    'in_contact_with_water_NO': [86.5, 0, 'C5', 'solid'],
+    'open_strucutre_free_standing_IT': [31.9, 1.5, 'C6', 'solid'],
+    'open_strucutre_free_standing_bifacial_IT': [35.2, 1.5, 'C7', 'solid'],
+    'default_PVSyst_coeffs_for_land_systems': [29.0, 0, 'C8', 'solid']
 }
 
 # Plot the cell temperature for each set of the above heat loss coefficients
@@ -198,7 +214,8 @@ for coeffs in heat_loss_coeffs:
     )
     # Convert Dataframe Indexes to Hour format to make plotting easier
     T_cell.index = T_cell.index.strftime("%H")
-    plt.plot(T_cell, label=coeffs)
+    plt.plot(T_cell, label=coeffs, c=heat_loss_coeffs[coeffs][2],
+             ls=heat_loss_coeffs[coeffs][3])
 
 plt.xlabel('Hour')
 plt.ylabel('PV cell temperature\n$[°C]$')

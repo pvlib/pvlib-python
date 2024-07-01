@@ -808,7 +808,7 @@ class ModelChain:
         builtin_models = pvlib.iam.get_builtin_models()
 
         if any(
-            param in params for 
+            param in params for
             param in builtin_models['ashrae']["params_required"].union(
                 builtin_models['ashrae']["params_optional"]
             )
@@ -816,7 +816,7 @@ class ModelChain:
             return self.ashrae_aoi_loss
 
         if any(
-            param in params for 
+            param in params for
             param in builtin_models['interp']["params_required"].union(
                 builtin_models['interp']["params_optional"]
             )
@@ -824,7 +824,7 @@ class ModelChain:
             return self.interp_aoi_loss
 
         if any(
-            param in params for 
+            param in params for
             param in builtin_models['martin_ruiz']["params_required"].union(
                 builtin_models['martin_ruiz']["params_optional"]
             )
@@ -832,7 +832,7 @@ class ModelChain:
             return self.martin_ruiz_aoi_loss
 
         if any(
-            param in params for 
+            param in params for
             param in builtin_models['physical']["params_required"].union(
                 builtin_models['physical']["params_optional"]
             )
@@ -840,7 +840,7 @@ class ModelChain:
             return self.physical_aoi_loss
 
         if any(
-            param in params for 
+            param in params for
             param in builtin_models['sapm']["params_required"].union(
                 builtin_models['sapm']["params_optional"]
             )

@@ -333,7 +333,7 @@ def test_ModelChain_creation(sapm_dc_snl_ac_system, location):
 
 
 def test_with_sapm(sapm_dc_snl_ac_system, location, weather):
-    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc = ModelChain.with_sapm(sapm_dc_snl_ac_system, location)
     assert mc.dc_model == mc.sapm
     mc.run_model(weather)
 
@@ -629,9 +629,8 @@ def test_run_model_arrays_weather(sapm_dc_snl_ac_system_same_arrays,
 
 
 def test_run_model_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(
-        sapm_dc_snl_ac_system, location, transposition_model='perez'
-    )
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    transposition_model='perez')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
@@ -643,11 +642,9 @@ def test_run_model_perez(sapm_dc_snl_ac_system, location):
 
 
 def test_run_model_gueymard_perez(sapm_dc_snl_ac_system, location):
-    mc = ModelChain(
-        sapm_dc_snl_ac_system, location,
-        airmass_model='gueymard1993',
-        transposition_model='perez',
-    )
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    airmass_model='gueymard1993',
+                    transposition_model='perez')
     times = pd.date_range('20160101 1200-0700', periods=2, freq='6h')
     irradiance = pd.DataFrame({'dni': 900, 'ghi': 600, 'dhi': 150},
                               index=times)
@@ -664,6 +661,7 @@ def test_run_model_with_weather_sapm_temp(sapm_dc_snl_ac_system, location,
     weather['wind_speed'] = 5
     weather['temp_air'] = 10
     mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.temperature_model = 'sapm'
     m_sapm = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_sapm.call_count == 1
@@ -683,12 +681,8 @@ def test_run_model_with_weather_pvsyst_temp(sapm_dc_snl_ac_system, location,
     sapm_dc_snl_ac_system.arrays[0].racking_model = 'freestanding'
     sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters = \
         temperature._temperature_model_params('pvsyst', 'freestanding')
-    mc = ModelChain(
-        sapm_dc_snl_ac_system,
-        location,
-        aoi_model='sapm',
-        temperature_model='pvsyst',
-    )
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.temperature_model = 'pvsyst'
     m_pvsyst = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_pvsyst.call_count == 1
@@ -706,12 +700,8 @@ def test_run_model_with_weather_faiman_temp(sapm_dc_snl_ac_system, location,
     sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters = {
         'u0': 25.0, 'u1': 6.84
     }
-    mc = ModelChain(
-        sapm_dc_snl_ac_system,
-        location,
-        aoi_model='sapm',
-        temperature_model='faiman',
-    )
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.temperature_model = 'faiman'
     m_faiman = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_faiman.call_count == 1
@@ -728,12 +718,8 @@ def test_run_model_with_weather_fuentes_temp(sapm_dc_snl_ac_system, location,
     sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters = {
         'noct_installed': 45, 'surface_tilt': 30,
     }
-    mc = ModelChain(
-        sapm_dc_snl_ac_system,
-        location,
-        aoi_model='sapm',
-        temperature_model='fuentes',
-    )
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.temperature_model = 'fuentes'
     m_fuentes = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_fuentes.call_count == 1
@@ -750,12 +736,8 @@ def test_run_model_with_weather_noct_sam_temp(sapm_dc_snl_ac_system, location,
     sapm_dc_snl_ac_system.arrays[0].temperature_model_parameters = {
         'noct': 45, 'module_efficiency': 0.2
     }
-    mc = ModelChain(
-        sapm_dc_snl_ac_system,
-        location,
-        aoi_model='sapm',
-        temperature_model='noct_sam'
-    )
+    mc = ModelChain(sapm_dc_snl_ac_system, location)
+    mc.temperature_model = 'noct_sam'
     m_noct_sam = mocker.spy(sapm_dc_snl_ac_system, 'get_cell_temperature')
     mc.run_model(weather)
     assert m_noct_sam.call_count == 1
@@ -1790,9 +1772,8 @@ def test_bad_get_orientation():
 # tests for PVSystem with multiple Arrays
 def test_with_sapm_pvsystem_arrays(sapm_dc_snl_ac_system_Array, location,
                                    weather):
-    mc = ModelChain(
-        sapm_dc_snl_ac_system_Array, location, ac_model='sandia'
-    )
+    mc = ModelChain.with_sapm(sapm_dc_snl_ac_system_Array, location,
+                              ac_model='sandia')
     assert mc.dc_model == mc.sapm
     assert mc.ac_model == mc.sandia_inverter
     mc.run_model(weather)
@@ -2007,7 +1988,8 @@ def test__irrad_for_celltemp():
 
 def test_ModelChain___repr__(sapm_dc_snl_ac_system, location):
 
-    mc = ModelChain(sapm_dc_snl_ac_system, location, name='my mc')
+    mc = ModelChain(sapm_dc_snl_ac_system, location,
+                    name='my mc')
 
     expected = '\n'.join([
         'ModelChain: ',

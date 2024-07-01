@@ -20,10 +20,11 @@ mismatch factor from atmopsheric variable inputs.
 # variables upon which they are based, can be found in [1]_.
 
 # Let's import some data. This example uses a Typical Meteorological Year 3
-# (TMY3) file for the
-# location of Greensboro, North Carolina, from the pvlib data directory. This
-# TMY3 file is constructed using the median month from each year between 1980
-# and 2003, from which we extract the first week of August 2001 to analyse.
+# (TMY3) file for the location of Greensboro, North Carolina, from the pvlib
+# data directory. This TMY3 file is constructed using the median month from
+# each year between 1980 and 2003, from which we extract the first week of
+# August 2001 to analyse.
+
 # %%
 import pathlib
 from matplotlib import pyplot as plt
@@ -62,10 +63,10 @@ meteo = meteo.between_time('06:00', '20:00').loc['2001-08-01':'2001-08-07']
 # %%
 # First Solar
 # -----------
-# The First Solar function (:py:func:`pvlib.spectrum.spectral_factor_firstsolar
-# `)
-# for the spectral mismatch factor calculates :math:`M` using :math:`AM_a` and
-# the atmospheric precipitable water content, :math:`W`, as inputs.
+# The First Solar function
+# (:py:func:`pvlib.spectrum.spectral_factor_firstsolar`) for the spectral
+# mismatch factor calculates :math:`M` using :math:`AM_a` and the atmospheric
+# precipitable water content, :math:`W`, as inputs.
 
 # %%
 # Calculation of inputs
@@ -106,7 +107,6 @@ w = meteo.precipitable_water
 # %%
 # Calculation of Spectral Mismatch
 # --------------------------------
-
 # Let's calculate the spectral mismatch factor using the three pvlib functions.
 # First, we need to import some model coefficients for the SAPM spectral factor
 # function, which, unlike the other two functions, lacks built-in coefficients.

@@ -19,6 +19,12 @@ mismatch factor from atmopsheric variable inputs.
 # More information on a range of spectral factor models, as well as the
 # variables upon which they are based, can be found in [1]_.
 
+# Let's import some data. This example uses a Typical Meteorological Year 3
+# (TMY3) file for the
+# location of Greensboro, North Carolina, from the pvlib data directory. This
+# TMY3 file is constructed using the median month from each year between 1980
+# and 2003, from which we extract the first week of August 2001 to analyse.
+
 import pathlib
 from matplotlib import pyplot as plt
 import pandas as pd
@@ -27,11 +33,6 @@ from pvlib import location
 from pvlib.solarposition import get_solarposition
 from pvlib.atmosphere import get_relative_airmass
 
-# Let's import some data. This example uses a Typical Meteorological Year 3
-# (TMY3) file for the
-# location of Greensboro, North Carolina, from the pvlib data directory. This
-# TMY3 file is constructed using the median month from each year between 1980
-# and 2003, from which we extract the first week of August 2001 to analyse.
 DATA_DIR = pathlib.Path(pv.__file__).parent / 'data'
 meteo, metadata = pv.iotools.read_tmy3(DATA_DIR / '723170TYA.CSV',
                                        map_variables=True)
@@ -42,26 +43,28 @@ meteo = meteo.between_time('06:00', '20:00').loc['2001-08-01':'2001-08-07']
 # pvlib Spectral Factor Functions
 # -----------------------------
 # This example demonstrates the application of three pvlib spectral factor
-# functions, namely `sapm`_, `pvspec`, and `firstsolar`_.
+# functions, namely `SAPM`_, `PVSPEC`_, and `firstsolar`_.
 
 # %%
 # SAPM
 # ----
-# The SAPM function for the spectral mismatch
-# factor calculates :math:`M` using absolute airmass, :math:`AM_a` as an input.
+# The SAPM function (:py:func:`pvlib.spectrum.spectral_factor_sapm`) for the
+# spectral mismatch factor calculates :math:`M` using absolute airmass,
+# :math:`AM_a` as an input.
 
 # %%
 # PVSPEC
 # ------
-# The PVSPEC function for the spectral mismatch factor calculates :math:`M`
-# using :math:`AM_a` and the clearsky index, :math:`k_c` as inputs.
+# The PVSPEC function (:py:func:`pvlib.spectrum.spectral_factor_pvspec`) for
+# the spectral mismatch factor calculates :math:`M` using :math:`AM_a` and the
+# clearsky index, :math:`k_c` as inputs.
 
 # %%
 # First Solar
 # -----------
-# The First Solar function for the spectral mismatch factor calculates
-# :math:`M` using :math:`AM_a` and the atmospheric precipitable water content,
-# :math:`W`, as inputs.
+# The First Solar function (:py:func:`pvlib.spectrum.spectral_factor_pvspec`)
+# for the spectral mismatch factor calculates :math:`M` using :math:`AM_a` and
+# the atmospheric precipitable water content, :math:`W`, as inputs.
 
 # %%
 # Calculation of inputs
@@ -101,6 +104,7 @@ w = meteo.precipitable_water
 
 # %%
 # Calculation of Spectral Mismatch
+# --------------------------------
 
 # Let's calculate the spectral mismatch factor using the three pvlib functions.
 # First, we need to import some model coefficients for the SAPM spectral factor
@@ -116,7 +120,7 @@ df_results = pd.concat([m_sapm, m_pvspec, m_fs], axis=1)
 df_results.columns = ['SAPM', 'PVSPEC', 'FS']
 # %%
 # Comparison Plots
-
+# ----------------
 # We can plot the results to visualisee variability between the models. Note
 # that this is not an exact comparison since the exact same PV modules has
 # not been modelled in each case, only the same module technology.
@@ -141,14 +145,13 @@ fig2, ax1 = plt.subplots()
 df_results.plot(ax=ax1)
 plt.show()
 
-"""
-References
-----------
-.. [1] Daxini, Rajiv, and Yupeng Wu (2023). "Review of methods to account for
-      the solar spectral influence on photovoltaic device performance." Energy
-      286
-      :doi:`10.1364/AO.28.004735`
-.. [2] Kasten, F. and Young, A.T., 1989. Revised optical air mass tables
-   and approximation formula. Applied Optics, 28(22), pp.4735-4738.
-   :doi:`10.1364/AO.28.004735`
-"""
+# %%
+# References
+# ----------
+# .. [1] Daxini, Rajiv, and Yupeng Wu (2023). "Review of methods to account for
+#        the solar spectral influence on photovoltaic device performance."
+#        Energy 286
+#        :doi:`10.1364/AO.28.004735`
+# .. [2] Kasten, F. and Young, A.T., 1989. Revised optical air mass tables
+#        and approximation formula. Applied Optics, 28(22), pp.4735-4738.
+#        :doi:`10.1364/AO.28.004735`

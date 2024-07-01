@@ -442,10 +442,10 @@ def make_github_url(file_name):
 
     # is it a gallery page?
     if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):
+        example_folder = file_name.split("/")[-2]
         if file_name.split("/")[-1] == "index":
-            example_file = "README.rst"
+            example_file = example_folder + "README.rst"
         else:
-            example_folder = file_name.split("/")[-2]
             example_file = file_name.split("/")[-1].replace('.rst', '.py')
         target_url = URL_BASE + "docs/examples/" + example_folder + "/" + example_file  # noqa: E501
 

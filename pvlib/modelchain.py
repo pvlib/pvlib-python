@@ -783,10 +783,9 @@ class ModelChain:
                 self._aoi_model = self.schlick_aoi_loss
             else:
                 raise ValueError(model + ' is not a valid aoi loss model')
-        elif callable(model):
-            self._aoi_model = partial(model, self)
         else:
-            raise ValueError(f"Unsupported AOI model {model}")
+            # Assume callable model.
+            self._aoi_model = partial(model, self)
 
     def infer_aoi_model(self):
         """

@@ -8,7 +8,6 @@ import functools
 import io
 import itertools
 from pathlib import Path
-import inspect
 from urllib.request import urlopen
 import numpy as np
 from scipy import constants
@@ -17,7 +16,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pvlib._deprecation import deprecated, warn_deprecated
+from pvlib._deprecation import deprecated
 
 import pvlib  # used to avoid albedo name collision in the Array class
 from pvlib import (atmosphere, iam, inverter, irradiance,
@@ -391,8 +390,8 @@ class PVSystem:
             The angle of incidence in degrees.
 
         aoi_model : string, default 'physical'
-            The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz', 'sapm' and 'interp'.
+            The IAM model to be used. Valid strings are 'ashrae', 'interp',
+            'martin_ruiz', 'physical', 'sapm', and  'schlick'.
         Returns
         -------
         iam : numeric or tuple of numeric
@@ -1139,12 +1138,15 @@ class Array:
 
     def get_iam(self, aoi, iam_model='physical'):
         """
-        Determine the incidence angle modifier using the method specified by
+        Determine the incidence-angle modifier (IAM) for the given
+        angle of incidence (AOI) using the method specified by
         ``iam_model``.
 
         Parameters for the selected IAM model are expected to be in
-        ``Array.module_parameters``. Default parameters are available for
-        the 'physical', 'ashrae' and 'martin_ruiz' models.
+        ``Array.module_parameters``. A minimal set of default parameters
+        are available for the 'ashrae', 'martin_ruiz', and 'physical'
+        models, but not for 'interp', 'sapm'. The 'schlick' model does not
+        take any parameters.
 
         Parameters
         ----------
@@ -1152,13 +1154,13 @@ class Array:
             The angle of incidence in degrees.
 
         aoi_model : string, default 'physical'
-            The IAM model to be used. Valid strings are 'physical', 'ashrae',
-            'martin_ruiz', 'sapm' and 'interp'.
+            The IAM model to be used. Valid strings are 'ashrae', 'interp',
+            'martin_ruiz', 'physical', 'sapm', and 'schlick'.
 
         Returns
         -------
         iam : numeric
-            The AOI modifier.
+            The IAM at the specified AOI.
 
         Raises
         ------
@@ -1166,18 +1168,35 @@ class Array:
             if `iam_model` is not a valid model name.
         """
         model = iam_model.lower()
-        if model in ['ashrae', 'physical', 'martin_ruiz', 'interp']:
-            func = getattr(iam, model)  # get function at pvlib.iam
-            # get all parameters from function signature to retrieve them from
-            # module_parameters if present
-            params = set(inspect.signature(func).parameters.keys())
-            params.discard('aoi')  # exclude aoi so it can't be repeated
-            kwargs = _build_kwargs(params, self.module_parameters)
-            return func(aoi, **kwargs)
-        elif model == 'sapm':
-            return iam.sapm(aoi, self.module_parameters)
-        else:
-            raise ValueError(model + ' is not a valid IAM model')
+
+        try:
+            model_info = iam.get_builtin_models()[model]
+        except KeyError as exc:
+            raise ValueError(f'{iam_model} is not a valid IAM model') from exc
+
+        for param in model_info["params_required"]:
+            if param not in self.module_parameters:
+                raise KeyError(
+                    f"Missing required {param} in module_parameters"
+                )
+
+        params_optional = _build_kwargs(
+            model_info["params_optional"], self.module_parameters
+        )
+
+        if model == "sapm":
+            # sapm has exceptional interface requiring module_parameters.
+            return model_info["callable"](
+                aoi, self.module_parameters, **params_optional
+            )
+
+        params_required = _build_kwargs(
+            model_info["params_required"], self.module_parameters
+        )
+
+        return model_info["callable"](
+            aoi, **params_required, **params_optional
+        )
 
     def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
                              effective_irradiance=None):

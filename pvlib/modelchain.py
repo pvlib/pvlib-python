@@ -13,7 +13,7 @@ import pandas as pd
 from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
 
-from pvlib import pvsystem, iam
+from pvlib import pvsystem
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib.tools import _build_kwargs
@@ -355,16 +355,23 @@ class ModelChain:
         Name of ModelChain instance.
     """
 
-    def __init__(self, system, location,
-                 clearsky_model='ineichen',
-                 transposition_model='haydavies',
-                 solar_position_method='nrel_numpy',
-                 airmass_model='kastenyoung1989',
-                 dc_model=None, ac_model=None, aoi_model=None,
-                 spectral_model=None, temperature_model=None,
-                 dc_ohmic_model='no_loss',
-                 losses_model='no_loss', name=None):
-
+    def __init__(
+        self,
+        system,
+        location,
+        clearsky_model='ineichen',
+        transposition_model='haydavies',
+        solar_position_method='nrel_numpy',
+        airmass_model='kastenyoung1989',
+        dc_model=None,
+        ac_model=None,
+        aoi_model=None,
+        spectral_model=None,
+        temperature_model=None,
+        dc_ohmic_model='no_loss',
+        losses_model='no_loss',
+        name=None,
+    ):
         self.name = name
         self.system = system
 
@@ -763,75 +770,44 @@ class ModelChain:
 
     @aoi_model.setter
     def aoi_model(self, model):
-        if model is None:
-            self._aoi_model = self.infer_aoi_model()
-        elif isinstance(model, str):
+        if isinstance(model, str):
             model = model.lower()
             if model == 'ashrae':
                 self._aoi_model = self.ashrae_aoi_loss
+            elif model == 'interp':
+                self._aoi_model = self.interp_aoi_loss
+            elif model == 'martin_ruiz':
+                self._aoi_model = self.martin_ruiz_aoi_loss
+            elif model == 'no_loss':
+                self._aoi_model = self.no_aoi_loss
             elif model == 'physical':
                 self._aoi_model = self.physical_aoi_loss
             elif model == 'sapm':
                 self._aoi_model = self.sapm_aoi_loss
-            elif model == 'martin_ruiz':
-                self._aoi_model = self.martin_ruiz_aoi_loss
-            elif model == 'interp':
-                self._aoi_model = self.interp_aoi_loss
-            elif model == 'no_loss':
-                self._aoi_model = self.no_aoi_loss
+            elif model == 'schlick':
+                self._aoi_model = self.schlick_aoi_loss
             else:
                 raise ValueError(model + ' is not a valid aoi loss model')
-        else:
+        elif callable(model):
             self._aoi_model = partial(model, self)
-
-    # FIXME What about diffuse versions of models? What about schlick,
-    # schlick_diffuse, and custom models?
-
-    def infer_aoi_model(self):
-        module_parameters = tuple(
-            array.module_parameters for array in self.system.arrays)
-        params = _common_keys(module_parameters)
-
-        iam_model_params = iam.get_builtin_models_params()
-
-        if iam_model_params['physical'] <= params:
-            return self.physical_aoi_loss
-        elif iam_model_params['sapm'] <= params:
-            return self.sapm_aoi_loss
-        elif iam_model_params['ashrae'] <= params:
-            return self.ashrae_aoi_loss
-        elif iam_model_params['martin_ruiz'] <= params:
-            return self.martin_ruiz_aoi_loss
-        elif iam_model_params['interp'] <= params:
-            return self.interp_aoi_loss
-
-        raise ValueError(
-            'could not infer AOI model from '
-            'system.arrays[i].module_parameters. Check that the '
-            'module_parameters for all Arrays in system.arrays contain '
-            'parameters for the physical, aoi, ashrae, martin_ruiz or interp '
-            'model; explicitly set the model with the aoi_model kwarg; or '
-            'set aoi_model="no_loss".'
-        )
+        else:
+            raise ValueError(f"Unsupported AOI model {model}")
 
     def ashrae_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='ashrae'
+            self.results.aoi, iam_model='ashrae'
         )
         return self
 
     def physical_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='physical'
+            self.results.aoi, iam_model='physical'
         )
         return self
 
     def sapm_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='sapm'
+            self.results.aoi, iam_model='sapm'
         )
         return self
 
@@ -843,8 +819,13 @@ class ModelChain:
 
     def interp_aoi_loss(self):
         self.results.aoi_modifier = self.system.get_iam(
-            self.results.aoi,
-            iam_model='interp'
+            self.results.aoi, iam_model='interp'
+        )
+        return self
+
+    def schlick_aoi_loss(self):
+        self.results.aoi_modifier = self.system.get_iam(
+            self.results.aoi, iam_model='schlick'
         )
         return self
 

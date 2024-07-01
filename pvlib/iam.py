@@ -18,58 +18,38 @@ from pvlib.tools import cosd, sind, acosd
 
 
 def get_builtin_models():
-    """Return a dictionary of all builtin IAM models."""
-
+    """Return a dictionary of builtin IAM models' usage information."""
     return {
-        'ashrae': ashrae,
-        'interp': interp,
-        'martin_ruiz': martin_ruiz,
-        'martin_ruiz_diffuse': martin_ruiz_diffuse,
-        'physical': physical,
-        'sapm': sapm,
-        'schlick': schlick,
-        'schlick_diffuse': schlick_diffuse,
-    }
-
-
-def get_builtin_direct_models():
-    """Return a dictionary of all builtin direct IAM models."""
-
-    return {
-        'ashrae': ashrae,
-        'interp': interp,
-        'martin_ruiz': martin_ruiz,
-        'physical': physical,
-        'sapm': sapm,
-        'schlick': schlick,
-    }
-
-
-def get_builtin_diffuse_models():
-    """Return a dictionary of builtin diffuse IAM models."""
-
-    return {
-        'ashrae': ashrae,
-        'interp': interp,
-        'martin_ruiz_diffuse': martin_ruiz_diffuse,
-        'physical': physical,
-        'sapm': sapm,
-        'schlick_diffuse': schlick_diffuse,
-    }
-
-
-def get_builtin_models_params():
-    """Return a dictionary of builtin IAM models' paramseter."""
-
-    return {
-        'ashrae': {'b'},
-        'interp': {'theta_ref', 'iam_ref'},
-        'martin_ruiz': {'a_r'},
-        'martin_ruiz_diffuse': {'a_r', 'c1', 'c2'},
-        'physical': {'n', 'K', 'L'},
-        'sapm': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
-        'schlick': set(),
-        'schlick_diffuse': set(),
+        'ashrae': {
+            'callable': ashrae,
+            'params_required': set(),
+            'params_optional': {'b'},
+        },
+        'interp': {
+            'callable': interp,
+            'params_required': {'theta_ref', 'iam_ref'},
+            'params_optional': {'method', 'normalize'},
+        },
+        'martin_ruiz': {
+            'callable': martin_ruiz,
+            'params_required': set(),
+            'params_optional': {'a_r'},
+        },
+        'physical': {
+            'callable': physical,
+            'params_required': set(),
+            'params_optional': {'n', 'K', 'L'},
+        },
+        'sapm': {
+            'callable': sapm,
+            'params_required': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
+            'params_optional': {'upper'},
+        },
+        'schlick': {
+            'callable': schlick,
+            'params_required': set(),
+            'params_optional': set(),
+        },
     }
 
 
@@ -125,11 +105,9 @@ def ashrae(aoi, b=0.05):
     --------
     pvlib.iam.interp
     pvlib.iam.martin_ruiz
-    pvlib.iam.martin_ruiz_diffuse
     pvlib.iam.physical
     pvlib.iam.sapm
     pvlib.iam.schlick
-    pvlib.iam.schlick_diffuse
     """
 
     iam = 1 - b * (1 / np.cos(np.radians(aoi)) - 1)
@@ -206,10 +184,8 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
     pvlib.iam.ashrae
     pvlib.iam.interp
     pvlib.iam.martin_ruiz
-    pvlib.iam.martin_ruiz_diffuse
     pvlib.iam.sapm
     pvlib.iam.schlick
-    pvlib.iam.schlick_diffuse
     """
     n1, n3 = 1, n
     if n_ar is None or np.allclose(n_ar, n1):
@@ -343,11 +319,10 @@ def martin_ruiz(aoi, a_r=0.16):
     --------
     pvlib.iam.ashrae
     pvlib.iam.interp
-    pvlib.iam.martin_ruiz_diffuse
     pvlib.iam.physical
     pvlib.iam.sapm
     pvlib.iam.schlick
-    pvlib.iam.schlick_diffuse
+    pvlib.iam.martin_ruiz_diffuse
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
@@ -429,12 +404,8 @@ def martin_ruiz_diffuse(surface_tilt, a_r=0.16, c1=0.4244, c2=None):
 
     See Also
     --------
-    pvlib.iam.ashrae
-    pvlib.iam.interp
     pvlib.iam.martin_ruiz
-    pvlib.iam.physical
-    pvlib.iam.sapm
-    pvlib.iam.schlick
+    pvlib.iam.marion_diffuse
     pvlib.iam.schlick_diffuse
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct. 2019
@@ -524,11 +495,9 @@ def interp(aoi, theta_ref, iam_ref, method='linear', normalize=True):
     --------
     pvlib.iam.ashrae
     pvlib.iam.martin_ruiz
-    pvlib.iam.martin_ruiz_diffuse
     pvlib.iam.physical
     pvlib.iam.sapm
     pvlib.iam.schlick
-    pvlib.iam.schlick_diffuse
     '''
     # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July, 2019
 
@@ -577,7 +546,7 @@ def sapm(aoi, module, upper=None):
         See the :py:func:`sapm` notes section for more details.
 
     upper : float, optional
-        Upper limit on the results.
+        Upper limit on the results. None means no upper limiting.
 
     Returns
     -------
@@ -610,10 +579,8 @@ def sapm(aoi, module, upper=None):
     pvlib.iam.ashrae
     pvlib.iam.interp
     pvlib.iam.martin_ruiz
-    pvlib.iam.martin_ruiz_diffuse
     pvlib.iam.physical
     pvlib.iam.schlick
-    pvlib.iam.schlick_diffuse
     """
 
     aoi_coeff = [module['B5'], module['B4'], module['B3'], module['B2'],
@@ -668,6 +635,13 @@ def marion_diffuse(model, surface_tilt, **kwargs):
     See Also
     --------
     pvlib.iam.marion_integrate
+    pvlib.iam.ashrae
+    pvlib.iam.interp
+    pvlib.iam.martin_ruiz
+    pvlib.iam.physical
+    pvlib.iam.schlick
+    pvlib.iam.martin_ruiz_diffuse
+    pvlib.iam.schlick_diffuse
 
     References
     ----------
@@ -689,19 +663,20 @@ def marion_diffuse(model, surface_tilt, **kwargs):
      'ground': array([0.77004435, 0.8522436 ])}
     """
     if callable(model):
-        # A (diffuse) IAM model function was specified.
-        iam_model = model
+        # A callable IAM model function was specified.
+        model_callable = model
     else:
-        # Check that a builtin diffuse IAM function has been specified.
-        builtin_diffuse_models = get_builtin_diffuse_models()
+        # Check that a builtin IAM function was specified.
+        builtin_models = get_builtin_models()
+
         try:
-            iam_model = builtin_diffuse_models[model]
+            model_callable = builtin_models[model]["callable"]
         except KeyError as exc:
             raise ValueError(
-                f'model must be one of: {set(builtin_diffuse_models.keys())}'
+                f'model must be one of: {builtin_models.keys()}'
             ) from exc
 
-    iam_function = functools.partial(iam_model, **kwargs)
+    iam_function = functools.partial(model_callable, **kwargs)
 
     return {
         region: marion_integrate(iam_function, surface_tilt, region)
@@ -894,10 +869,8 @@ def schlick(aoi):
     pvlib.iam.ashrae
     pvlib.iam.interp
     pvlib.iam.martin_ruiz
-    pvlib.iam.martin_ruiz_diffuse
     pvlib.iam.physical
     pvlib.iam.sapm
-    pvlib.iam.schlick
     pvlib.iam.schlick_diffuse
     """
     iam = 1 - (1 - cosd(aoi)) ** 5
@@ -984,13 +957,9 @@ def schlick_diffuse(surface_tilt):
 
     See Also
     --------
-    pvlib.iam.ashrae
-    pvlib.iam.interp
-    pvlib.iam.martin_ruiz
-    pvlib.iam.martin_ruiz_diffuse
-    pvlib.iam.physical
-    pvlib.iam.sapm
     pvlib.iam.schlick
+    pvlib.iam.marion_diffuse
+    pvlib.iam.martin_ruiz_diffuse
     """
     # these calculations are as in [2]_, but with the refractive index
     # weighting coefficient w set to 1.0 (so it is omitted)
@@ -1036,14 +1005,17 @@ def _get_fittable_or_convertable_model(builtin_model_name):
 
 
 def _check_params(builtin_model_name, params):
-    # check that the parameters passed in with the model belong to the model
-    passed_params = set(params.keys())
-    exp_params = get_builtin_models_params()[builtin_model_name]
+    # check that parameters passed in with IAM model belong to model
+    handed_params = set(params.keys())
+    builtin_model = get_builtin_models()[builtin_model_name]
+    expected_params = builtin_model["params_required"].union(
+        builtin_model["params_optional"]
+    )
 
-    if passed_params != exp_params:
+    if handed_params != expected_params:
         raise ValueError(
             f"The {builtin_model_name} model was expecting to be passed"
-            f"{exp_params}, but was handed {passed_params}"
+            f"{expected_params}, but was handed {handed_params}"
         )
 
 

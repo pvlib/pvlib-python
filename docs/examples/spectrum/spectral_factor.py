@@ -24,7 +24,7 @@ mismatch factor from atmopsheric variable inputs.
 # location of Greensboro, North Carolina, from the pvlib data directory. This
 # TMY3 file is constructed using the median month from each year between 1980
 # and 2003, from which we extract the first week of August 2001 to analyse.
-
+# %%
 import pathlib
 from matplotlib import pyplot as plt
 import pandas as pd
@@ -62,7 +62,8 @@ meteo = meteo.between_time('06:00', '20:00').loc['2001-08-01':'2001-08-07']
 # %%
 # First Solar
 # -----------
-# The First Solar function (:py:func:`pvlib.spectrum.spectral_factor_pvspec`)
+# The First Solar function (:py:func:`pvlib.spectrum.spectral_factor_firstsolar
+# `)
 # for the spectral mismatch factor calculates :math:`M` using :math:`AM_a` and
 # the atmospheric precipitable water content, :math:`W`, as inputs.
 

@@ -56,7 +56,27 @@ def test_PVSystem_get_iam_unsupported_model():
     system = pvsystem.PVSystem()
 
     with pytest.raises(
-        ValueError, match=f'{iam_model} is not a valid IAM model'
+        ValueError, match=f'{iam_model} is not a valid iam_model'
+    ):
+        system.get_iam(45, iam_model=iam_model)
+
+
+@pytest.mark.parametrize('iam_model,model_params', [
+    ('interp', {'iam_ref': (1., 0.85)}),  # missing theta_ref
+    (
+        'sapm',
+        {
+            k: v for k, v in pvsystem.retrieve_sam(
+                'SandiaMod')['Canadian_Solar_CS5P_220M___2009_'].items()
+            if k in ('B0', 'B1', 'B2', 'B3', 'B4')  # missing B5
+        }
+    ),
+])
+def test_PVSystem_get_iam_missing_required_param(iam_model, model_params):
+    system = pvsystem.PVSystem(module_parameters=model_params)
+
+    with pytest.raises(
+        KeyError, match="is missing in module_parameters"
     ):
         system.get_iam(45, iam_model=iam_model)
 

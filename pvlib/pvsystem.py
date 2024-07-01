@@ -1172,13 +1172,11 @@ class Array:
         try:
             model_info = iam.get_builtin_models()[model]
         except KeyError as exc:
-            raise ValueError(f'{iam_model} is not a valid IAM model') from exc
+            raise ValueError(f'{iam_model} is not a valid iam_model') from exc
 
         for param in model_info["params_required"]:
             if param not in self.module_parameters:
-                raise KeyError(
-                    f"Missing required {param} in module_parameters"
-                )
+                raise KeyError(f"{param} is missing in module_parameters")
 
         params_optional = _build_kwargs(
             model_info["params_optional"], self.module_parameters

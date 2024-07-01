@@ -1518,7 +1518,7 @@ def test_infer_aoi_model(location, system_no_aoi, aoi_model):
      {'n': 1.526, 'K': 4.0, 'L': 0.002}),  # optional
     ('interp',
      {'theta_ref': (0, 75, 85, 90), 'iam_ref': (1, 0.8, 0.42, 0),  # required
-      'method': 'cubic', 'normalize': False})])  # extra
+      'method': 'cubic', 'normalize': False})])  # optional
 def test_infer_aoi_model_with_extra_params(location, system_no_aoi, aoi_model,
                                            model_kwargs, weather, mocker):
     # test extra parameters not defined at iam._IAM_MODEL_PARAMS are passed
@@ -1532,7 +1532,7 @@ def test_infer_aoi_model_with_extra_params(location, system_no_aoi, aoi_model,
 
 
 def test_infer_aoi_model_invalid(location, system_no_aoi):
-    with pytest.raises(ValueError, match='Could not infer AOI model'):
+    with pytest.raises(ValueError, match='could not infer AOI model'):
         ModelChain(system_no_aoi, location, spectral_model='no_loss')
 
 

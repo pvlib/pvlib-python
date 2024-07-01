@@ -670,11 +670,13 @@ def marion_diffuse(model, surface_tilt, **kwargs):
         builtin_models = get_builtin_models()
 
         try:
-            model_callable = builtin_models[model]["callable"]
+            model = builtin_models[model]
         except KeyError as exc:
             raise ValueError(
                 f'model must be one of: {builtin_models.keys()}'
             ) from exc
+
+        model_callable = model["callable"]
 
     iam_function = functools.partial(model_callable, **kwargs)
 
@@ -1011,6 +1013,9 @@ def _check_params(builtin_model_name, params):
     expected_params = builtin_model["params_required"].union(
         builtin_model["params_optional"]
     )
+
+    if builtin_model_name == 'physical':
+        expected_params.remove('n_ar')  # Not required.
 
     if handed_params != expected_params:
         raise ValueError(

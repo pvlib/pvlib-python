@@ -327,9 +327,8 @@ class ModelChain:
         If not specified, the model will be inferred from the parameters that
         are common to all of system.arrays[i].module_parameters.
         Valid strings are 'ashrae', 'interp', 'martin_ruiz', 'physical',
-        'sapm', 'schlick', 'no_loss'.
-        The ModelChain instance will be passed as the first argument to a
-        user-defined function.
+        'sapm', 'schlick', 'no_loss'. The ModelChain instance will be passed
+        as the first argument to a user-defined function.
 
     spectral_model : str, or function, optional
         If not specified, the model will be inferred from the parameters that
@@ -356,23 +355,16 @@ class ModelChain:
         Name of ModelChain instance.
     """
 
-    def __init__(
-        self,
-        system,
-        location,
-        clearsky_model='ineichen',
-        transposition_model='haydavies',
-        solar_position_method='nrel_numpy',
-        airmass_model='kastenyoung1989',
-        dc_model=None,
-        ac_model=None,
-        aoi_model=None,
-        spectral_model=None,
-        temperature_model=None,
-        dc_ohmic_model='no_loss',
-        losses_model='no_loss',
-        name=None,
-    ):
+    def __init__(self, system, location,
+                 clearsky_model='ineichen',
+                 transposition_model='haydavies',
+                 solar_position_method='nrel_numpy',
+                 airmass_model='kastenyoung1989',
+                 dc_model=None, ac_model=None, aoi_model=None,
+                 spectral_model=None, temperature_model=None,
+                 dc_ohmic_model='no_loss',
+                 losses_model='no_loss', name=None):
+
         self.name = name
         self.system = system
 
@@ -850,7 +842,7 @@ class ModelChain:
         # schlick model has no parameters to distinguish.
 
         raise ValueError(
-            'Could not infer AOI model from '
+            'could not infer AOI model from '
             'system.arrays[i].module_parameters. Check that the '
             'module_parameters for all Arrays in system.arrays contain '
             'parameters for the ashrae, interp, martin_ruiz, physical, or '

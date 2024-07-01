@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from copy import deepcopy
 import itertools
 
 import numpy as np
@@ -25,16 +26,29 @@ from pvlib.tests.test_singlediode import get_pvsyst_fs_495
 
 @pytest.mark.parametrize('iam_model,model_params', [
     ('ashrae', {'b': 0.05}),
-    ('physical', {'K': 4, 'L': 0.002, 'n': 1.526}),
+    ('interp', {'iam_ref': (1., 0.85), 'theta_ref': (0., 80.)}),
     ('martin_ruiz', {'a_r': 0.16}),
+    ('physical', {'K': 4, 'L': 0.002, 'n': 1.526}),
+    ('sapm',
+        {
+            k: v for k, v in pvsystem.retrieve_sam(
+                'SandiaMod')['Canadian_Solar_CS5P_220M___2009_'].items()
+            if k in ('B0', 'B1', 'B2', 'B3', 'B4', 'B5')
+        }
+    ),
+    ('schlick', {}),
 ])
 def test_PVSystem_get_iam(mocker, iam_model, model_params):
     m = mocker.spy(_iam, iam_model)
     system = pvsystem.PVSystem(module_parameters=model_params)
-    thetas = 1
+    thetas = 45
     iam = system.get_iam(thetas, iam_model=iam_model)
-    m.assert_called_with(thetas, **model_params)
-    assert iam < 1.
+    if iam_model == "sapm":
+        # sapm has exceptional interface.
+        m.assert_called_with(thetas, model_params)
+    else:
+        m.assert_called_with(thetas, **model_params)
+    assert 0 < iam < 1
 
 
 def test_PVSystem_multi_array_get_iam():

@@ -42,14 +42,13 @@ airflow behind the modules generally exhibit lower heat loss coefficients
 compared to those with smaller water surfaces and better airflow behind the
 modules.
 
-For FPV systems installed over water without direct contact, the module's
-operating temperature, much like in land-based systems, is mainly influenced
-by the mounting structure (which significantly affects the U-value), wind,
-and air temperature. Thus, factors that help reduce operating temperatures in
-such systems include lower air temperatures and changes in air flow beneath
-the modules (wind/convection). In some designs where the modules are in
-direct thermal contact with water, cooling effectiveness is largely dictated
-by the water temperature.
+For FPV systems, the module's operating temperature, much like in land-based
+systems, is mainly influenced by the mounting structure (which significantly
+affects both U-value coefficients), wind, and air temperature. Thus, factors
+that help reduce operating temperatures in such systems include lower air
+temperatures and changes in air flow beneath the modules (wind/convection).
+In some designs where the modules are in direct thermal contact with water,
+cooling effectiveness is largely dictated by the water temperature.
 
 The table below gives heat loss coefficients derived for different systems
 and locations as found in the literature. In this example, the FPV cell

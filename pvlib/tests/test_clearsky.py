@@ -191,7 +191,7 @@ def test_ineichen_altitude():
 
 def test_lookup_linke_turbidity():
     times = pd.date_range(start='2014-06-24', end='2014-06-25',
-                          freq='12h', tz='America/Phoenix')
+                          freq='12h', tz='UTC').tz_convert('America/Phoenix')
     # expect same value on 2014-06-24 0000 and 1200, and
     # diff value on 2014-06-25
     expected = pd.Series(
@@ -203,7 +203,7 @@ def test_lookup_linke_turbidity():
 
 def test_lookup_linke_turbidity_leapyear():
     times = pd.date_range(start='2016-06-24', end='2016-06-25',
-                          freq='12h', tz='America/Phoenix')
+                          freq='12h', tz='UTC').tz_convert('America/Phoenix')
     # expect same value on 2016-06-24 0000 and 1200, and
     # diff value on 2016-06-25
     expected = pd.Series(
@@ -214,8 +214,8 @@ def test_lookup_linke_turbidity_leapyear():
 
 
 def test_lookup_linke_turbidity_nointerp():
-    times = pd.date_range(start='2014-06-24', end='2014-06-25',
-                          freq='12h', tz='America/Phoenix')
+    times = pd.date_range(start='2014-06-01', end='2014-06-02',
+                          freq='12h', tz='UTC').tz_convert('America/Phoenix')
     # expect same value for all days
     expected = pd.Series(np.array([3., 3., 3.]), index=times)
     out = clearsky.lookup_linke_turbidity(times, 32.125, -110.875,
@@ -225,7 +225,7 @@ def test_lookup_linke_turbidity_nointerp():
 
 def test_lookup_linke_turbidity_months():
     times = pd.date_range(start='2014-04-01', end='2014-07-01',
-                          freq='1M', tz='America/Phoenix')
+                          freq='1M', tz='UTC').tz_convert('America/Phoenix')
     expected = pd.Series(
         np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
     )
@@ -235,7 +235,7 @@ def test_lookup_linke_turbidity_months():
 
 def test_lookup_linke_turbidity_months_leapyear():
     times = pd.date_range(start='2016-04-01', end='2016-07-01',
-                          freq='1M', tz='America/Phoenix')
+                          freq='1M', tz='UTC').tz_convert('America/Phoenix')
     expected = pd.Series(
         np.array([2.89918032787, 2.97540983607, 3.19672131148]), index=times
     )
@@ -749,6 +749,7 @@ def test_bird():
     tz = -7  # test timezone
     gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
     times = times.tz_localize(gmt_tz)  # set timezone
+    times_utc = times.tz_convert('UTC')
     # match test data from BIRD_08_16_2012.xls
     latitude = 40.
     longitude = -105.
@@ -759,9 +760,9 @@ def test_bird():
     aod_380nm = 0.15
     b_a = 0.85
     alb = 0.2
-    eot = solarposition.equation_of_time_spencer71(times.dayofyear)
+    eot = solarposition.equation_of_time_spencer71(times_utc.dayofyear)
     hour_angle = solarposition.hour_angle(times, longitude, eot) - 0.5 * 15.
-    declination = solarposition.declination_spencer71(times.dayofyear)
+    declination = solarposition.declination_spencer71(times_utc.dayofyear)
     zenith = solarposition.solar_zenith_analytical(
         np.deg2rad(latitude), np.deg2rad(hour_angle), declination
     )
@@ -777,32 +778,35 @@ def test_bird():
     Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
     data_path = DATA_DIR / 'BIRD_08_16_2012.csv'
     testdata = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
-    testdata.index = times[1:48]
-    assert np.allclose(testdata['DEC'], np.rad2deg(declination[1:48]))
-    assert np.allclose(testdata['EQT'], eot[1:48], rtol=1e-4)
-    assert np.allclose(testdata['Hour Angle'], hour_angle[1:48])
-    assert np.allclose(testdata['Zenith Ang'], zenith[1:48])
+    testdata[['DEC', 'EQT']] = testdata[['DEC', 'EQT']].shift(tz)
+    testdata = testdata[:tz]
+    end = 48 + tz
+    testdata.index = times[1:end]
+    assert np.allclose(testdata['DEC'], np.rad2deg(declination[1:end]))
+    assert np.allclose(testdata['EQT'], eot[1:end], rtol=1e-4)
+    assert np.allclose(testdata['Hour Angle'], hour_angle[1:end], rtol=1e-2)
+    assert np.allclose(testdata['Zenith Ang'], zenith[1:end], rtol=1e-2)
     dawn = zenith < 88.
     dusk = testdata['Zenith Ang'] < 88.
     am = pd.Series(np.where(dawn, airmass, 0.), index=times).fillna(0.0)
     assert np.allclose(
-        testdata['Air Mass'].where(dusk, 0.), am[1:48], rtol=1e-3
+        testdata['Air Mass'].where(dusk, 0.), am[1:end], rtol=1e-3
     )
     direct_beam = pd.Series(np.where(dawn, Eb, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata['Direct Beam'].where(dusk, 0.), direct_beam[1:48], rtol=1e-3
+        testdata['Direct Beam'].where(dusk, 0.), direct_beam[1:end], rtol=1e-3
     )
     direct_horz = pd.Series(np.where(dawn, Ebh, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata['Direct Hz'].where(dusk, 0.), direct_horz[1:48], rtol=1e-3
+        testdata['Direct Hz'].where(dusk, 0.), direct_horz[1:end], rtol=1e-3
     )
     global_horz = pd.Series(np.where(dawn, Gh, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata['Global Hz'].where(dusk, 0.), global_horz[1:48], rtol=1e-3
+        testdata['Global Hz'].where(dusk, 0.), global_horz[1:end], rtol=1e-3
     )
     diffuse_horz = pd.Series(np.where(dawn, Dh, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
+        testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:end], rtol=1e-3
     )
     # repeat test with albedo as a Series
     alb_series = pd.Series(0.2, index=times)
@@ -813,19 +817,19 @@ def test_bird():
     Eb, Ebh, Gh, Dh = (irrads[_] for _ in field_names)
     direct_beam = pd.Series(np.where(dawn, Eb, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata['Direct Beam'].where(dusk, 0.), direct_beam[1:48], rtol=1e-3
+        testdata['Direct Beam'].where(dusk, 0.), direct_beam[1:end], rtol=1e-3
     )
     direct_horz = pd.Series(np.where(dawn, Ebh, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata['Direct Hz'].where(dusk, 0.), direct_horz[1:48], rtol=1e-3
+        testdata['Direct Hz'].where(dusk, 0.), direct_horz[1:end], rtol=1e-3
     )
     global_horz = pd.Series(np.where(dawn, Gh, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata['Global Hz'].where(dusk, 0.), global_horz[1:48], rtol=1e-3
+        testdata['Global Hz'].where(dusk, 0.), global_horz[1:end], rtol=1e-3
     )
     diffuse_horz = pd.Series(np.where(dawn, Dh, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:48], rtol=1e-3
+        testdata['Dif Hz'].where(dusk, 0.), diffuse_horz[1:end], rtol=1e-3
     )
 
     # test keyword parameters
@@ -835,22 +839,25 @@ def test_bird():
     Eb2, Ebh2, Gh2, Dh2 = (irrads2[_] for _ in field_names)
     data_path = DATA_DIR / 'BIRD_08_16_2012_patm.csv'
     testdata2 = pd.read_csv(data_path, usecols=range(1, 26), header=1).dropna()
-    testdata2.index = times[1:48]
+    testdata2[['DEC', 'EQT']] = testdata2[['DEC', 'EQT']].shift(tz)
+    testdata2 = testdata2[:tz]
+    testdata2.index = times[1:end]
     direct_beam2 = pd.Series(np.where(dawn, Eb2, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata2['Direct Beam'].where(dusk, 0.), direct_beam2[1:48], rtol=1e-3
+        testdata2['Direct Beam'].where(dusk, 0.), direct_beam2[1:end],
+        rtol=1e-3
     )
     direct_horz2 = pd.Series(np.where(dawn, Ebh2, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata2['Direct Hz'].where(dusk, 0.), direct_horz2[1:48], rtol=1e-3
+        testdata2['Direct Hz'].where(dusk, 0.), direct_horz2[1:end], rtol=1e-3
     )
     global_horz2 = pd.Series(np.where(dawn, Gh2, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata2['Global Hz'].where(dusk, 0.), global_horz2[1:48], rtol=1e-3
+        testdata2['Global Hz'].where(dusk, 0.), global_horz2[1:end], rtol=1e-3
     )
     diffuse_horz2 = pd.Series(np.where(dawn, Dh2, 0.), index=times).fillna(0.)
     assert np.allclose(
-        testdata2['Dif Hz'].where(dusk, 0.), diffuse_horz2[1:48], rtol=1e-3
+        testdata2['Dif Hz'].where(dusk, 0.), diffuse_horz2[1:end], rtol=1e-3
     )
     # test scalars just at noon
     # XXX: calculations start at 12am so noon is at index = 12

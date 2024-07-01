@@ -66,7 +66,8 @@ def get_builtin_models():
         },
         'sapm': {
             'func': sapm,
-            # param_required must appear in module parameter.
+            # Exceptional interface: Parameters inside params_required must
+            # appear in the required module dictionary parameter.
             'params_required': {'B0', 'B1', 'B2', 'B3', 'B4', 'B5'},
             'params_optional': {'upper'},
         },

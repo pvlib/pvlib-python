@@ -166,7 +166,9 @@ html_theme_options = {
     "footer_center": ["sphinx-version"],
     "footer_end": ["sidebar-ethical-ads"],
     "primary_sidebar_end": [],
-}
+    # https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/layout.html#hide-the-previous-and-next-buttons
+    "show_prev_next": False,  # disable next/previous links
+}  # noqa: E501
 
 # Add favicons from extension sphinx_favicon
 favicons = [

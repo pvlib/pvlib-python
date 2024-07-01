@@ -82,19 +82,16 @@ temperature will be calculated using some of the coefficients below.
    | - Open structure         |             |                                |                                        |           |
    | - Free-standing          |             | 55                             | 0                                      |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
-   | - Monofacial module      | Norway      | 86.5                           | 0                                      | [2]_      |
+   | - Monofacial module      | Norway      | 71                             | 0                                      | [2]_      |
    | - In contact with water  |             |                                |                                        |           |
+   | - Calculated using water |             |                                |                                        |           |
+   |   temperature as T_{amb} |             |                                |                                        |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
-   | - Monofacial module      | Norway      | 71                             | 0                                      | [3]_      |
-   | - In contact with water  |             |                                |                                        |           |
-   | - Using water temperature|             |                                |                                        |           |
-   |   instead of air         |             |                                |                                        |           |
-   +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
-   | - Monofacial module      | South Italy | 31.9                           | 1.5                                    | [4]_      |
+   | - Monofacial module      | South Italy | 31.9                           | 1.5                                    | [3]_      |
    | - Open structure         |             |                                |                                        |           |
    | - Free-standing          |             |                                |                                        |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
-   | - Bifacial module        | South Italy | 35.2                           | 1.5                                    | [4]_      |
+   | - Bifacial module        | South Italy | 35.2                           | 1.5                                    | [3]_      |
    | - Open structure         |             |                                |                                        |           |
    | - Free-standing          |             |                                |                                        |           |
    +--------------------------+-------------+--------------------------------+----------------------------------------+-----------+
@@ -106,15 +103,11 @@ References
     A comparison of field test data from the Netherlands and Singapore'
     Solar Energy, vol. 214, pp. 239-247, :doi:`10.1016/j.solener.2020.11.029`.
 
-.. [2] Lindholm D., Kjeldstad T., Selj J., Marstein E.S., Fjær H.G. (2021),
-    'Heat loss coefficients computed for floating PV modules', Progress in
-    Photovoltaics, vol. 29, pp. 1262-1273, :doi:`10.1002/pip.34511262`.
-
-.. [3] Kjeldstad T., Lindholm D., Marstein E., Selj J. (2021), 'Cooling of
+.. [2] Kjeldstad T., Lindholm D., Marstein E., Selj J. (2021), 'Cooling of
     floating photovoltaics and the importance of water temperature', Solar
     Energy, vol. 218, pp. 544-551, :doi:`10.1016/j.solener.2021.03.022`.
 
-.. [4] Tina G.M., Scavo F.B., Merlo L., Bizzarri F. (2021), 'Comparative
+.. [3] Tina G.M., Scavo F.B., Merlo L., Bizzarri F. (2021), 'Comparative
     analysis of monofacial and bifacial photovoltaic modules for floating
     power plants', Applied Energy, vol 281, pp. 116084,
     :doi:`10.1016/j.apenergy.2020.116084`.
@@ -180,9 +173,7 @@ irradiance = pvlib.irradiance.get_total_irradiance(
 # Calculate and plot cell temperature
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # The temperature of the PV cell is calculated for lake-based floating PV
-# systems. Note that for the systems having two sets of heat loss coefficients
-# only one of the sets was used since the results are almost identical and it
-# would be hard to distinguish the lines in the figure.
+# systems.
 
 # Make a dictionary containing all the sets of coefficients presented in the
 # above table.
@@ -197,7 +188,7 @@ heat_loss_coeffs = {
     'closed_structure_medium_footprint_SG_2': [41, 0, 'C3', 'dashed'],
     'open_structure_free_standing_SG': [35.3, 8.9, 'C4', 'solid'],
     'open_structure_free_standing_SG_2': [55, 0, 'C4', 'dashed'],
-    'in_contact_with_water_NO': [86.5, 0, 'C5', 'solid'],
+    'in_contact_with_water_NO': [71, 0, 'C5', 'solid'],
     'open_strucutre_free_standing_IT': [31.9, 1.5, 'C6', 'solid'],
     'open_strucutre_free_standing_bifacial_IT': [35.2, 1.5, 'C7', 'solid'],
     'default_PVSyst_coeffs_for_land_systems': [29.0, 0, 'C8', 'solid']
@@ -215,7 +206,7 @@ for coeffs in heat_loss_coeffs:
     # Convert Dataframe Indexes to Hour format to make plotting easier
     T_cell.index = T_cell.index.strftime("%H")
     plt.plot(T_cell, label=coeffs, c=heat_loss_coeffs[coeffs][2],
-             ls=heat_loss_coeffs[coeffs][3])
+             ls=heat_loss_coeffs[coeffs][3], alpha=0.8)
 
 plt.xlabel('Hour')
 plt.ylabel('PV cell temperature\n$[°C]$')
@@ -230,6 +221,16 @@ plt.show()
 # %%
 # The figure above illustrates the necessity of choosing appropriate heat loss
 # coefficients when using the PVSyst model for calculating the cell temperature
-# for floating PV systems. A difference of up to 11.5 °C was obtained when
+# for floating PV systems. A difference of up to 10.3 °C was obtained when
 # using the default PVSyst coefficients and the coefficients when the panels
 # are in contact with water.
+#
+# It should be noted that, for the systems having both a single U-value and
+# a combination of Uc and Uv, approximately the same results were obtained
+# in the literature. However, in this example, there is a difference in the
+# calculated cell temperatures. The reason is that the wind speed in the
+# presented example is probably quite different than the one measured
+# in the corresponding test sites, making the division between
+# wind-dependent and -independent heat loss coefficients less accurate for wide
+# use. Thus, it is suggested to use the single heat loss U-values for system
+# simulations.

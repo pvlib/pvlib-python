@@ -447,7 +447,11 @@ def make_github_url(file_name):
             example_file = "README.rst"
         else:
             example_file = file_name.split("/")[-1].replace('.rst', '.py')
-        target_url = URL_BASE + "docs/examples/" + example_folder + "/" + example_file  # noqa: E501
+
+        if example_folder == 'gallery':
+            target_url = URL_BASE + "docs/examples/" + example_file  # noqa: E501
+        else:
+            target_url = URL_BASE + "docs/examples/" + example_folder + "/" + example_file  # noqa: E501
 
     # is it an API autogen page?
     elif "generated" in file_name:

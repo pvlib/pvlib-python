@@ -104,6 +104,7 @@ df_monthly = 100 * (df_monthly.divide(ghi_monthly, axis=0) - 1)
 df_monthly.plot()
 plt.xlabel('Month of Year')
 plt.ylabel('Monthly Transposition Gain [%]')
+plt.tight_layout()
 plt.show()
 
 

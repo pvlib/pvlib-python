@@ -2,7 +2,7 @@
 Spectral Mismatch Estimation
 ============================
 Comparison of spectral factor calculation methods used to estimate the spectral
-mismatch factor,:math:`M`, from atmopsheric variable inputs.
+mismatch factor, :math:`M`, from atmospheric variable inputs.
 """
 
 # %%

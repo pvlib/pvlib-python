@@ -262,8 +262,8 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
 
     Estimates the spectral mismatch modifier, :math:`M`, representing the
     effect of variation in the spectral irradiance on the module short circuit
-    current :math:`M`  is estimated from absolute (pressure corrected) air
-    mass, :math:`AM_a`, and precipitable water, :math:`Pw`
+    current :math:`M`  is estimated from absolute (pressure-corrected) air
+    mass, :math:`AM_a`, and precipitable water, :math:`Pw`.
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the
@@ -279,10 +279,8 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
 
     From these simulated spectra, :math:`M` is calculated using the known
     quantum efficiency curves. Multiple linear regression is then
-    applied to fit Eq. 1 to determine the coefficients for each module.
-
-    Based on the PVLIB Matlab function ``pvl_FSspeccorr`` by Mitchell
-    Lee and Alex Panchula of First Solar, 2016 [2]_.
+    applied to fit Eq. 1 to determine the coefficients for each module. More
+    details on the model can be found in [2]_.
 
     Parameters
     ----------
@@ -290,7 +288,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         atmospheric precipitable water. [cm]
 
     airmass_absolute : numeric
-        absolute (pressure-adjusted) air mass. [unitless]
+        absolute (pressure-corrected) air mass. [unitless]
 
     module_type : str, optional
         a string specifying a cell type. Values of 'cdte', 'monosi', 'xsi',

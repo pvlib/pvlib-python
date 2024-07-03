@@ -3,8 +3,9 @@ from numpy.testing import assert_allclose, assert_approx_equal, assert_equal
 import pandas as pd
 import numpy as np
 from pvlib import spectrum
+from pvlib._deprecation import pvlibDeprecationWarning
 
-from .conftest import DATA_DIR, assert_series_equal
+from .conftest import DATA_DIR, assert_series_equal, fail_on_pvlib_version
 
 SPECTRL2_TEST_DATA = DATA_DIR / 'spectrl2_example_spectra.csv'
 
@@ -124,19 +125,70 @@ def test_get_example_spectral_response():
     assert_allclose(sr, expected, rtol=1e-5)
 
 
+@fail_on_pvlib_version('0.12')
 def test_get_am15g():
     # test that the reference spectrum is read and interpolated correctly
-    e = spectrum.get_am15g()
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="get_reference_spectra instead"):
+        e = spectrum.get_am15g()
     assert_equal(len(e), 2002)
     assert_equal(np.sum(e.index), 2761442)
     assert_approx_equal(np.sum(e), 1002.88, significant=6)
 
-    wavelength = [270, 850, 950, 1200, 4001]
-    expected = [0.0, 0.893720, 0.147260, 0.448250, 0.0]
+    wavelength = [270, 850, 950, 1200, 1201.25, 4001]
+    expected = [0.0, 0.893720, 0.147260, 0.448250, 0.4371025, 0.0]
 
-    e = spectrum.get_am15g(wavelength)
+    with pytest.warns(pvlibDeprecationWarning,
+                      match="get_reference_spectra instead"):
+        e = spectrum.get_am15g(wavelength)
     assert_equal(len(e), len(wavelength))
     assert_allclose(e, expected, rtol=1e-6)
+
+
+@pytest.mark.parametrize(
+    "reference_identifier,expected_sums",
+    [
+        (
+            "ASTM G173-03",  # reference_identifier
+            {  # expected_sums
+                "extraterrestrial": 1356.15,
+                "global": 1002.88,
+                "direct": 887.65,
+            },
+        ),
+    ],
+)
+def test_get_reference_spectra(reference_identifier, expected_sums):
+    # test reading of a standard spectrum
+    standard = spectrum.get_reference_spectra(standard=reference_identifier)
+    assert set(standard.columns) == expected_sums.keys()
+    assert standard.index.name == "wavelength"
+    assert standard.index.is_monotonic_increasing is True
+    expected_sums = pd.Series(expected_sums)  # convert prior to comparison
+    assert_series_equal(np.sum(standard, axis=0), expected_sums, atol=1e-2)
+
+
+def test_get_reference_spectra_custom_wavelengths():
+    # test that the spectrum is interpolated correctly when custom wavelengths
+    # are specified
+    # only checked for ASTM G173-03 reference spectrum
+    wavelength = [270, 850, 951.634, 1200, 4001]
+    expected_sums = pd.Series(
+        {"extraterrestrial": 2.23266, "global": 1.68952, "direct": 1.58480}
+    )  # for given ``wavelength``
+    standard = spectrum.get_reference_spectra(
+        wavelength, standard="ASTM G173-03"
+    )
+    assert_equal(len(standard), len(wavelength))
+    # check no NaN values were returned
+    assert not standard.isna().any().any()  # double any to return one value
+    assert_series_equal(np.sum(standard, axis=0), expected_sums, atol=1e-4)
+
+
+def test_get_reference_spectra_invalid_reference():
+    # test that an invalid reference identifier raises a ValueError
+    with pytest.raises(ValueError, match="Invalid standard identifier"):
+        spectrum.get_reference_spectra(standard="invalid")
 
 
 def test_calc_spectral_mismatch_field(spectrl2_data):
@@ -149,7 +201,7 @@ def test_calc_spectral_mismatch_field(spectrl2_data):
     e_sun = e_sun.set_index('wavelength')
     e_sun = e_sun.transpose()
 
-    e_ref = spectrum.get_am15g()
+    e_ref = spectrum.get_reference_spectra(standard='ASTM G173-03')["global"]
     sr = spectrum.get_example_spectral_response()
 
     # test with single sun spectrum, same as ref spectrum
@@ -367,6 +419,54 @@ def test_spectral_factor_pvspec_supplied_ambiguous():
     with pytest.raises(ValueError, match='No valid input provided'):
         spectrum.spectral_factor_pvspec(1.5, 0.8, module_type=None,
                                         coefficients=None)
+
+
+@pytest.mark.parametrize("module_type,expected", [
+    ('multisi', np.array([1.06129, 1.03098, 1.01155, 0.99849])),
+    ('cdte', np.array([1.09657,  1.05594, 1.02763, 0.97740])),
+])
+def test_spectral_factor_jrc(module_type, expected):
+    ams = np.array([1.0, 1.5, 2.0, 1.5])
+    kcs = np.array([0.4, 0.6, 0.8, 1.4])
+    out = spectrum.spectral_factor_jrc(ams, kcs,
+                                       module_type=module_type)
+    assert np.allclose(expected, out, atol=1e-4)
+
+
+@pytest.mark.parametrize("module_type,expected", [
+    ('multisi', np.array([1.06129, 1.03098, 1.01155, 0.99849])),
+    ('cdte', np.array([1.09657,  1.05594, 1.02763, 0.97740])),
+])
+def test_spectral_factor_jrc_series(module_type, expected):
+    ams = pd.Series([1.0, 1.5, 2.0, 1.5])
+    kcs = pd.Series([0.4, 0.6, 0.8, 1.4])
+    out = spectrum.spectral_factor_jrc(ams, kcs,
+                                       module_type=module_type)
+    assert isinstance(out, pd.Series)
+    assert np.allclose(expected, out, atol=1e-4)
+
+
+def test_spectral_factor_jrc_supplied():
+    # use the multisi coeffs
+    coeffs = (0.494, 0.146, 0.00103)
+    out = spectrum.spectral_factor_jrc(1.0, 0.8, coefficients=coeffs)
+    expected = 1.01052106
+    assert_allclose(out, expected, atol=1e-4)
+
+
+def test_spectral_factor_jrc_supplied_redundant():
+    # Error when specifying both module_type and coefficients
+    coeffs = (0.494, 0.146, 0.00103)
+    with pytest.raises(ValueError, match='supply only one of'):
+        spectrum.spectral_factor_jrc(1.0, 0.8, module_type='multisi',
+                                     coefficients=coeffs)
+
+
+def test_spectral_factor_jrc_supplied_ambiguous():
+    # Error when specifying neither module_type nor coefficients
+    with pytest.raises(ValueError, match='No valid input provided'):
+        spectrum.spectral_factor_jrc(1.0, 0.8, module_type=None,
+                                     coefficients=None)
 
 
 @pytest.fixture

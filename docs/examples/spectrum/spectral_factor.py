@@ -68,8 +68,8 @@ tz = 'Etc/GMT+5'
 loc = location.Location(lat, lon, tz=tz, name='Greensboro, NC')
 
 # Calculate solar position parameters
-solpos = get_solarposition(
-    meteo.index.shift(freq="-30min"), lat, lon, alt,
+solpos = loc.get_solarposition(
+    meteo.index.shift(freq="-30min"),
     pressure=meteo.pressure*100,  # convert from millibar to Pa
     temperature=meteo.temp_air)
 solpos.index = meteo.index  # reset index to end of the hour

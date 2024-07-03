@@ -540,7 +540,7 @@ def spectral_factor_sapm(airmass_absolute, module):
     module-specific coefficients. Module coefficients for the SAPM are
     available in the SAPM database and can be retrieved for use in the
     ``module`` parameter through
-    :pyfunc:`pvlib.pvsystem.retrieve_sam()`. More details on the
+    :py:func:`pvlib.pvsystem.retrieve_sam()`. More details on the
     SAPM can be found in [1]_, while a full description of the procedure to
     determine the empirical model coefficients, including those for the SAPM
     spectral correction, can be found in [2]_.

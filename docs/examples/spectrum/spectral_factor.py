@@ -31,7 +31,6 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import pvlib as pv
 from pvlib import location
-from pvlib.solarposition import get_solarposition
 from pvlib.atmosphere import get_relative_airmass
 
 DATA_DIR = pathlib.Path(pv.__file__).parent / 'data'

@@ -581,7 +581,7 @@ def spectral_factor_sapm(airmass_absolute, module):
            Photovoltaic Array Performance Model", (No. SAND2004-3535), Sandia
            National Laboratories, Albuquerque, NM (United States).
            :doi:`10.2172/919131`
-    .. [2] King, B., Hansen, C., Riley, D., Robinson, C.,and& Pratt, L.
+    .. [2] King, B., Hansen, C., Riley, D., Robinson, C., and Pratt, L.
            (2016). Procedure to determine coefficients for the Sandia Array
            Performance Model (SAPM) (No. SAND2016-5284). Sandia National
            Laboratories, Albuquerque, NM (United States).

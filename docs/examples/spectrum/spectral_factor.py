@@ -9,16 +9,16 @@ mismatch factor from atmopsheric variable inputs.
 # Introduction
 # ------------
 # This example demonstrates how to use different `spectrum.spectral_factor`
-# models in pvlib to calculate the spectral mismatch factor, :math:`M`. While
-# :math:`M` for a photovoltaic (PV) module can be calculated exactly using
+# models in pvlib to calculate the spectral mismatch factor, M. While
+# M for a photovoltaic (PV) module can be calculated exactly using
 # spectral irradiance and module spectral response data, these data are not
 # always available. pvlib provides several functions to estimate the spectral
-# mismatch factor, :math:`M`, using proxies of the prevaiing spectral
+# mismatch factor, M, using proxies of the prevaiing spectral
 # irradiance conditions, such as air mass and clearsky index, which are easily
 # derived from common ground-based measurements such as broadband irradiance.
 # More information on a range of spectral factor models, as well as the
 # variables upon which they are based, can be found in [1]_.
-
+#
 # Let's import some data. This example uses a Typical Meteorological Year 3
 # (TMY3) file for the location of Greensboro, North Carolina, from the pvlib
 # data directory. This TMY3 file is constructed using the median month from
@@ -38,7 +38,8 @@ DATA_DIR = pathlib.Path(pv.__file__).parent / 'data'
 meteo, metadata = pv.iotools.read_tmy3(DATA_DIR / '723170TYA.CSV',
                                        map_variables=True)
 meteo = meteo.sort_index()
-meteo = meteo.between_time('06:00', '20:00').loc['2001-08-01':'2001-08-07']
+# meteo = meteo.between_time('06:00', '20:00').loc['2001-08-01':'2001-08-07']
+meteo = meteo.loc['2001-08-01':'2001-08-07']
 
 # %%
 # pvlib Spectral Factor Functions
@@ -48,24 +49,25 @@ meteo = meteo.between_time('06:00', '20:00').loc['2001-08-01':'2001-08-07']
 
 # %%
 # SAPM
-# ----
+# ^^^^
 # The SAPM function (:py:func:`pvlib.spectrum.spectral_factor_sapm`) for the
-# spectral mismatch factor calculates :math:`M` using absolute airmass,
+# spectral mismatch factor calculates M using absolute airmass,
 # :math:`AM_a` as an input.
 
 # %%
 # PVSPEC
+# ^^^^^^
 # ------
 # The PVSPEC function (:py:func:`pvlib.spectrum.spectral_factor_pvspec`) for
-# the spectral mismatch factor calculates :math:`M` using :math:`AM_a` and the
+# the spectral mismatch factor calculates M using :math:`AM_a` and the
 # clearsky index, :math:`k_c` as inputs.
 
 # %%
 # First Solar
-# -----------
+# ^^^^^^^^^^^
 # The First Solar function
 # (:py:func:`pvlib.spectrum.spectral_factor_firstsolar`) for the spectral
-# mismatch factor calculates :math:`M` using :math:`AM_a` and the atmospheric
+# mismatch factor calculates M using :math:`AM_a` and the atmospheric
 # precipitable water content, :math:`W`, as inputs.
 
 # %%
@@ -113,7 +115,7 @@ w = meteo.precipitable_water
 
 # Import some for a mc-Si module from the SAPM module database.
 module = pv.pvsystem.retrieve_sam('SandiaMod')['LG_LG290N1C_G3__2013_']
-# Calculate :math:`M` using the three models for an mc-Si PV module.
+# Calculate M using the three models for an mc-Si PV module.
 m_sapm = pv.spectrum.spectral_factor_sapm(ama, module)
 m_pvspec = pv.spectrum.spectral_factor_pvspec(ama, kc, 'multisi')
 m_fs = pv.spectrum.spectral_factor_firstsolar(w, ama, 'multisi')
@@ -126,33 +128,29 @@ df_results.columns = ['SAPM', 'PVSPEC', 'FS']
 # that this is not an exact comparison since the exact same PV modules has
 # not been modelled in each case, only the same module technology.
 
-# Convert Dataframe Indexes to Month-Day our:Minute format
-df_results.index = df_results.index.strftime("%m-%d")
-
-# Plot :math:`M`
+# Plot M
 fig1, ax1 = plt.subplots()
 df_results.plot(ax=ax1)
 
 ax1.set_xlabel('Date (m-d H:M)')
 ax1.set_ylabel('Mismatch (-)')
 ax1.legend()
+ax1.set_ylim(0.8, 1.2)
 plt.show()
 
 # We can also zoom in one one day, for example August 1st.
-df_results.index = m_fs.index
-df_results = df_results.loc['2001-08-01':'2001-08-01']
-df_results.index = df_results.index.strftime("%H:%M")
 fig2, ax1 = plt.subplots()
-df_results.plot(ax=ax1)
+df_results.loc['2001-08-01'].plot(ax=ax1)
+ax1.set_ylim(0.8, 1.2)
 plt.show()
 
 # %%
 # References
 # ----------
-# .. [1] Daxini, Rajiv, and Yupeng Wu (2023). "Review of methods to account for
-#        the solar spectral influence on photovoltaic device performance."
+# .. [1] Daxini, Rajiv, and Wu, Yupeng (2023). "Review of methods to account
+#        for the solar spectral influence on photovoltaic device performance."
 #        Energy 286
-#        :doi:`10.1364/AO.28.004735`
+#        :doi:`10.1016/j.energy.2023.129461`
 # .. [2] Kasten, F. and Young, A.T., 1989. Revised optical air mass tables
 #        and approximation formula. Applied Optics, 28(22), pp.4735-4738.
 #        :doi:`10.1364/AO.28.004735`

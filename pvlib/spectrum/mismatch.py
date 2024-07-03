@@ -535,7 +535,7 @@ def spectral_factor_sapm(airmass_absolute, module):
     equivalent to the spectral mismatch factor, using absolute
     (pressure-corrected) air mass, :math:`AM_a`.
 
-    The SAPM spetral factor function is part of the broader Sandia Array
+    The SAPM spectral factor function is part of the broader Sandia Array
     Performance Model, which defines five points on an IV curve using empirical
     module-specific coefficients. Module coefficients for the SAPM are
     available in the SAPM database and can be retrieved for use in the

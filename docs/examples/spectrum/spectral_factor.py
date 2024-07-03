@@ -86,7 +86,8 @@ cs = loc.get_clearsky(meteo.index)
 kc = cs.ghi/meteo.ghi
 
 # :math:`W` is provided in the TMY3 file but in other cases can be calculated
-# from temperature and relative humidity.
+# from temperature and relative humidity
+# (see :py:func:`pvlib.atmosphere.gueymard94_pw`).
 
 w = meteo.precipitable_water
 

@@ -107,7 +107,7 @@ df_results.columns = ['SAPM', 'PVSPEC', 'FS']
 # %%
 # Comparison Plots
 # ----------------
-# We can plot the results to visualisee variability between the models. Note
+# We can plot the results to visualise variability between the models. Note
 # that this is not an exact comparison since the exact same PV modules has
 # not been modelled in each case, only the same module technology.
 

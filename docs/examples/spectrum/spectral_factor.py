@@ -2,15 +2,15 @@
 Spectral Mismatch Estimation
 ============================
 Comparison of spectral factor calculation methods used to estimate the spectral
-mismatch factor from atmopsheric variable inputs.
+mismatch factor,:math:`M`, from atmopsheric variable inputs.
 """
 
 # %%
 # Introduction
 # ------------
 # This example demonstrates how to use different `spectrum.spectral_factor`
-# models in pvlib to calculate the spectral mismatch factor, M. While
-# M for a photovoltaic (PV) module can be calculated exactly using
+# models in pvlib to calculate the spectral mismatch factor, :math:`M`. While
+# :math:`M` for a photovoltaic (PV) module can be calculated exactly using
 # spectral irradiance and module spectral response data, these data are not
 # always available. pvlib provides several functions to estimate the spectral
 # mismatch factor, M, using proxies of the prevaiing spectral
@@ -51,15 +51,14 @@ meteo = meteo.loc['2001-08-01':'2001-08-07']
 # SAPM
 # ^^^^
 # The SAPM function (:py:func:`pvlib.spectrum.spectral_factor_sapm`) for the
-# spectral mismatch factor calculates M using absolute airmass,
+# spectral mismatch factor calculates :math:`M` using absolute airmass,
 # :math:`AM_a` as an input.
 
 # %%
 # PVSPEC
 # ^^^^^^
-# ------
 # The PVSPEC function (:py:func:`pvlib.spectrum.spectral_factor_pvspec`) for
-# the spectral mismatch factor calculates M using :math:`AM_a` and the
+# the spectral mismatch factor calculates :math:`M` using :math:`AM_a` and the
 # clearsky index, :math:`k_c` as inputs.
 
 # %%
@@ -67,7 +66,7 @@ meteo = meteo.loc['2001-08-01':'2001-08-07']
 # ^^^^^^^^^^^
 # The First Solar function
 # (:py:func:`pvlib.spectrum.spectral_factor_firstsolar`) for the spectral
-# mismatch factor calculates M using :math:`AM_a` and the atmospheric
+# mismatch factor calculates :math:`M` using :math:`AM_a` and the atmospheric
 # precipitable water content, :math:`W`, as inputs.
 
 # %%
@@ -135,13 +134,13 @@ df_results.plot(ax=ax1)
 ax1.set_xlabel('Date (m-d H:M)')
 ax1.set_ylabel('Mismatch (-)')
 ax1.legend()
-ax1.set_ylim(0.8, 1.2)
+ax1.set_ylim(0.85, 1.15)
 plt.show()
 
 # We can also zoom in one one day, for example August 1st.
 fig2, ax1 = plt.subplots()
 df_results.loc['2001-08-01'].plot(ax=ax1)
-ax1.set_ylim(0.8, 1.2)
+ax1.set_ylim(0.85, 1.15)
 plt.show()
 
 # %%

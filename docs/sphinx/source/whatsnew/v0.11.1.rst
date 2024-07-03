@@ -15,6 +15,7 @@ Enhancements
   (:issue:`2045`, :pull:`2046`)
 * Add new parameters for min/max absolute air mass to
   :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
+  (:issue:`2086`, :pull:`2100`)
 
 
 Bug fixes

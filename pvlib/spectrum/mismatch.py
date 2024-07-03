@@ -540,8 +540,8 @@ def spectral_factor_sapm(airmass_absolute, module):
     module-specific coefficients. Module coefficients for the SAPM are
     available in the SAPM database and can be retrieved for use in the
     ``module`` parameter through
-    :pyfunc:`pv.pvsystem.retrieve_sam('SandiaMod')`. More details on the SAPM
-    can be found in [1]_, while a full description of the procedure to
+    :pyfunc:`pvlib.pvsystem.retrieve_sam('SandiaMod')`. More details on the
+    SAPM can be found in [1]_, while a full description of the procedure to
     determine the empirical model coefficients, including those for the SAPM
     spectral correction, can be found in [2]_.
 
@@ -560,6 +560,21 @@ def spectral_factor_sapm(airmass_absolute, module):
     :math:`f_1` : numeric
         The SAPM spectral loss coefficient.
 
+    Notes
+    -----
+    The SAPM spectral correction functions parameterises :math:`f_1` as a
+    fourth order polynomial function of absolute air mass:
+
+    .. math::
+
+        f_1 = A_0 + A_1 AM_a + A_2 AM_a^2 + A_3 AM_a^3 + A_4 AM_a^4,
+
+    where :math:`f_1` is the spectral correction factor, :math:A_{0-4} are the
+    module-specific coefficients, and :math:`AM_a` is the absolute airmass,
+    which is calculated by applying a pressure correction to the relative
+    airmass. More detail on how this spectral correction function was developed
+    can be found in [3]_.
+
     References
     ----------
     .. [1] King, D., Kratochvil, J., and Boyson W. (2004), "Sandia
@@ -577,20 +592,6 @@ def spectral_factor_sapm(airmass_absolute, module):
            Specialists Conference (PVSC). IEEE, 1997.
            :doi:`10.1109/PVSC.1997.654283`
 
-    Notes
-    -----
-    The SAPM spectral correction functions parameterises :math:`f_1` as a
-    fourth order polynomial function of absolute air mass:
-
-    .. math::
-
-        f_1 = A_0 + A_1 AM_a + A_2 AM_a^2 + A_3 AM_a^3 + A_4 AM_a^4,
-
-    where :math:`f_1` is the spectral correction factor, :math:A_{0-4} are the
-    module-specific coefficients, and :math:`AM_a` is the absolute airmass,
-    which is calculated by applying a pressure correction to the relative
-    airmass. More detail on how this spectral correction function was developed
-    can be found in [3]_.
     """
 
     am_coeff = [module['A4'], module['A3'], module['A2'], module['A1'],

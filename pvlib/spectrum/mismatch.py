@@ -540,7 +540,7 @@ def spectral_factor_sapm(airmass_absolute, module):
     module-specific coefficients. Module coefficients for the SAPM are
     available in the SAPM database and can be retrieved for use in the
     ``module`` parameter through
-    :pyfunc:`pvlib.pvsystem.retrieve_sam('SandiaMod')`. More details on the
+    :pyfunc:`pvlib.pvsystem.retrieve_sam()`. More details on the
     SAPM can be found in [1]_, while a full description of the procedure to
     determine the empirical model coefficients, including those for the SAPM
     spectral correction, can be found in [2]_.
@@ -549,7 +549,7 @@ def spectral_factor_sapm(airmass_absolute, module):
     ----------
     airmass_absolute : numeric
         Absolute airmass [unitless]
-        Note: `np.nan` airmass values will result in 0 output.
+        Note: ``np.nan`` airmass values will result in 0 output.
 
     module : dict-like
         A dict, Series, or DataFrame defining the SAPM performance parameters
@@ -569,7 +569,7 @@ def spectral_factor_sapm(airmass_absolute, module):
 
         f_1 = a_0 + a_1 AM_a + a_2 AM_a^2 + a_3 AM_a^3 + a_4 AM_a^4,
 
-    where :math:`f_1` is the spectral correction factor, :math:`a_{0--4}` are
+    where :math:`f_1` is the spectral correction factor, :math:`a_{0-4}` are
     the module-specific coefficients, and :math:`AM_a` is the absolute airmass,
     which is calculated by applying a pressure correction to the relative
     airmass. More detail on how this spectral correction function was developed

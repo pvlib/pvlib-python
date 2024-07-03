@@ -553,7 +553,8 @@ def spectral_factor_sapm(airmass_absolute, module):
         Note: ``np.nan`` airmass values will result in 0 output.
 
     module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance parameters
+        A dict, Series, or DataFrame defining the SAPM performance parameters.
+        Must contain keys `'A0'` through `'A4'`.
         See the :py:func:`pvlib.pvsystem.sapm` notes section for more details.
 
     Returns

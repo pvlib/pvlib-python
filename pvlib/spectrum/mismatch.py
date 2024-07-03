@@ -549,6 +549,7 @@ def spectral_factor_sapm(airmass_absolute, module):
     ----------
     airmass_absolute : numeric
         Absolute airmass [unitless]
+
         Note: ``np.nan`` airmass values will result in 0 output.
 
     module : dict-like

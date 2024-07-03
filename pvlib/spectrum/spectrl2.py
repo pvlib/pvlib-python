@@ -288,7 +288,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
                 aerosol_turbidity_500nm, scattering_albedo_400nm, alpha,
                 wavelength_variation_factor, aerosol_asymmetry_factor]))
 
-        dayofyear = original_index.dayofyear.values
+        dayofyear = pvlib.tools._pandas_to_doy(original_index).values
 
     if not is_pandas and dayofyear is None:
         raise ValueError('dayofyear must be specified if not using pandas '

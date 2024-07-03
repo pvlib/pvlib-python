@@ -531,26 +531,66 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
 
 def spectral_factor_sapm(airmass_absolute, module):
     """
-    Calculates the SAPM spectral loss coefficient, F1.
+    Calculates a module-specific SAPM spectral loss coefficient, :math:`f_1`,
+    equivalent to the spectral mismatch factor, using absolute
+    (pressure-corrected) air mass, :math:`AM_a`.
+
+    The SAPM spetral factor function is part of the broader Sandia Array
+    Performance Model, which defines five points on an IV curve using empirical
+    module-specific coefficients. Module coefficients for the SAPM are
+    available in the SAPM database and can be retrieved for use in the
+    ``module`` parameter through
+    :pyfunc:`pv.pvsystem.retrieve_sam('SandiaMod')`. More details on the SAPM
+    can be found in [1]_, while a full description of the procedure to
+    determine the empirical model coefficients, including those for the SAPM
+    spectral correction, can be found in [2]_.
 
     Parameters
     ----------
     airmass_absolute : numeric
-        Absolute airmass
+        Absolute airmass [unitless]
+        Note: `np.nan` airmass values will result in 0 output.
 
     module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the :py:func:`sapm` notes section for more
-        details.
+        A dict, Series, or DataFrame defining the SAPM performance parameters
+        See the :py:func:`pvlib.pvsystem.sapm` notes section for more details.
 
     Returns
     -------
-    F1 : numeric
+    :math:`f_1` : numeric
         The SAPM spectral loss coefficient.
+
+    References
+    ----------
+    .. [1] King, D., Kratochvil, J., and Boyson W. (2004), "Sandia
+           Photovoltaic Array Performance Model", (No. SAND2004-3535), Sandia
+           National Laboratories, Albuquerque, NM (United States).
+           :doi:`10.2172/919131`
+    .. [2] King, B., Hansen, C., Riley, D., Robinson, C.,and& Pratt, L.
+           (2016). Procedure to determine coefficients for the Sandia Array
+           Performance Model (SAPM) (No. SAND2016-5284). Sandia National
+           Laboratories, Albuquerque, NM (United States).
+           :doi:`10.2172/1256510`
+    .. [3] King, D., Kratochvil, J., and Boyson, W. "Measuring solar spectral
+           and angle-of-incidence effects on photovoltaic modules and solar
+           irradiance sensors." Conference Record of the 26th IEEE Potovoltaic
+           Specialists Conference (PVSC). IEEE, 1997.
+           :doi:`10.1109/PVSC.1997.654283`
 
     Notes
     -----
-    nan airmass values will result in 0 output.
+    The SAPM spectral correction functions parameterises :math:`f_1` as a
+    fourth order polynomial function of absolute air mass:
+
+    .. math::
+
+        f_1 = A_0 + A_1 AM_a + A_2 AM_a^2 + A_3 AM_a^3 + A_4 AM_a^4,
+
+    where :math:`f_1` is the spectral correction factor, :math:A_{0-4} are the
+    module-specific coefficients, and :math:`AM_a` is the absolute airmass,
+    which is calculated by applying a pressure correction to the relative
+    airmass. More detail on how this spectral correction function was developed
+    can be found in [3]_.
     """
 
     am_coeff = [module['A4'], module['A3'], module['A2'], module['A1'],
@@ -581,7 +621,7 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     available here via the ``module_type`` parameter were determined
     by fitting the model equations to spectral factors calculated from
     global tilted spectral irradiance measurements taken in the city of
-    Jaén, Spain.  See [1]_ for details.
+    Jaén, Spain. See [1]_ for details.
 
     Parameters
     ----------

@@ -45,29 +45,14 @@ meteo = meteo.loc['2001-08-01':'2001-08-07']
 # pvlib Spectral Factor Functions
 # -----------------------------
 # This example demonstrates the application of three pvlib spectral factor
-# functions, namely `SAPM`_, `PVSPEC`_, and `firstsolar`_.
-
-# %%
-# SAPM
-# ^^^^
-# The SAPM function (:py:func:`pvlib.spectrum.spectral_factor_sapm`) for the
-# spectral mismatch factor calculates :math:`M` using absolute airmass,
-# :math:`AM_a` as an input.
-
-# %%
-# PVSPEC
-# ^^^^^^
-# The PVSPEC function (:py:func:`pvlib.spectrum.spectral_factor_pvspec`) for
-# the spectral mismatch factor calculates :math:`M` using :math:`AM_a` and the
-# clearsky index, :math:`k_c` as inputs.
-
-# %%
-# First Solar
-# ^^^^^^^^^^^
-# The First Solar function
-# (:py:func:`pvlib.spectrum.spectral_factor_firstsolar`) for the spectral
-# mismatch factor calculates :math:`M` using :math:`AM_a` and the atmospheric
-# precipitable water content, :math:`W`, as inputs.
+# functions:
+#
+# - :py:func:`~pvlib.spectrum.spectral_factor_sapm`, which requires only
+#   the absolute airmass :math:`AM_a`
+# - :py:func:`~pvlib.spectrum.spectral_factor_pvspec`, which requires
+#   :math:`AM_a` and the clearsky index :math:`k_c`
+# - :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`, which requires
+#   :math:`AM_a` and the atmospheric precipitable water content :math:`W`
 
 # %%
 # Calculation of inputs

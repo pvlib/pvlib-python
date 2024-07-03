@@ -535,12 +535,12 @@ def spectral_factor_sapm(airmass_absolute, module):
     equivalent to the spectral mismatch factor, using absolute
     (pressure-corrected) air mass, :math:`AM_a`.
 
-    The SAPM spetral factor function is part of the broader Sandia Array
+    The SAPM spectral factor function is part of the broader Sandia Array
     Performance Model, which defines five points on an IV curve using empirical
     module-specific coefficients. Module coefficients for the SAPM are
     available in the SAPM database and can be retrieved for use in the
     ``module`` parameter through
-    :pyfunc:`pvlib.pvsystem.retrieve_sam()`. More details on the
+    :py:func:`pvlib.pvsystem.retrieve_sam()`. More details on the
     SAPM can be found in [1]_, while a full description of the procedure to
     determine the empirical model coefficients, including those for the SAPM
     spectral correction, can be found in [2]_.
@@ -553,7 +553,8 @@ def spectral_factor_sapm(airmass_absolute, module):
         Note: ``np.nan`` airmass values will result in 0 output.
 
     module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance parameters
+        A dict, Series, or DataFrame defining the SAPM performance parameters.
+        Must contain keys `'A0'` through `'A4'`.
         See the :py:func:`pvlib.pvsystem.sapm` notes section for more details.
 
     Returns

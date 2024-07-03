@@ -80,7 +80,7 @@ ama = amr*(meteo.pressure/1013.25)  # absolute airmass
 # the modelled clearky GHI.
 
 cs = loc.get_clearsky(meteo.index)
-kc = cs.ghi/meteo.ghi
+kc = pv.irradiance.clearsky_index(meteo.ghi, cs.ghi)
 
 # :math:`W` is provided in the TMY3 file but in other cases can be calculated
 # from temperature and relative humidity

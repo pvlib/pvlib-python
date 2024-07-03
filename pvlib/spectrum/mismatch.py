@@ -531,9 +531,8 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
 
 def spectral_factor_sapm(airmass_absolute, module):
     """
-    Calculates a module-specific SAPM spectral loss coefficient, :math:`f_1`,
-    equivalent to the spectral mismatch factor, using absolute
-    (pressure-corrected) air mass, :math:`AM_a`.
+    Calculates the spectral mismatch factor, :math:`f_1`,
+    using the Sandia Array Performance Model approach.
 
     The SAPM spectral factor function is part of the broader Sandia Array
     Performance Model, which defines five points on an IV curve using empirical

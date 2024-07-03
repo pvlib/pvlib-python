@@ -36,9 +36,7 @@ from pvlib.atmosphere import get_relative_airmass
 
 DATA_DIR = pathlib.Path(pv.__file__).parent / 'data'
 meteo, metadata = pv.iotools.read_tmy3(DATA_DIR / '723170TYA.CSV',
-                                       map_variables=True)
-meteo = meteo.sort_index()
-# meteo = meteo.between_time('06:00', '20:00').loc['2001-08-01':'2001-08-07']
+                                       coerce_year=2001, map_variables=True)
 meteo = meteo.loc['2001-08-01':'2001-08-07']
 
 # %%

@@ -567,10 +567,10 @@ def spectral_factor_sapm(airmass_absolute, module):
 
     .. math::
 
-        f_1 = A_0 + A_1 AM_a + A_2 AM_a^2 + A_3 AM_a^3 + A_4 AM_a^4,
+        f_1 = a_0 + a_1 AM_a + a_2 AM_a^2 + a_3 AM_a^3 + a_4 AM_a^4,
 
-    where :math:`f_1` is the spectral correction factor, :math:A_{0-4} are the
-    module-specific coefficients, and :math:`AM_a` is the absolute airmass,
+    where :math:`f_1` is the spectral correction factor, :math:`a_{0--4}` are
+    the module-specific coefficients, and :math:`AM_a` is the absolute airmass,
     which is calculated by applying a pressure correction to the relative
     airmass. More detail on how this spectral correction function was developed
     can be found in [3]_.

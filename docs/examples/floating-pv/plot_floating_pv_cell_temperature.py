@@ -231,7 +231,7 @@ plt.show()
 # are in contact with water.
 #
 # It should be noted that, for the systems having both a single U-value and
-# a combination of Uc and Uv, approximately the same results were obtained
+# a combination of :math:`U_c` and :math:`U_v`, approximately the same results were obtained
 # in the literature. However, in this example, there is a difference in the
 # calculated cell temperatures. The reason is that the wind speed in the
 # presented example is probably quite different than the one measured

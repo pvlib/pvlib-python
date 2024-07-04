@@ -112,19 +112,21 @@ df_results.columns = ['SAPM', 'PVSPEC', 'FS']
 # not been modelled in each case, only the same module technology.
 
 # Plot M
-fig1, ax1 = plt.subplots()
-df_results.plot(ax=ax1)
-
-ax1.set_xlabel('Date (m-d H:M)')
+fig1, (ax1, ax2) = plt.subplots(2, 1)
+df_results.plot(ax=ax1, legend=False)
+ax1.set_xlabel('Day')
 ax1.set_ylabel('Mismatch (-)')
-ax1.legend()
 ax1.set_ylim(0.85, 1.15)
-plt.show()
 
 # We can also zoom in one one day, for example August 2nd.
-fig2, ax2 = plt.subplots()
+# fig2, ax2 = plt.subplots()
 df_results.loc['2001-08-02'].plot(ax=ax2)
+ax2.set_xlabel('Time')
+ax2.set_ylabel('Mismatch (-)')
 ax2.set_ylim(0.85, 1.15)
+
+plt.tight_layout()
+
 plt.show()
 
 # %%

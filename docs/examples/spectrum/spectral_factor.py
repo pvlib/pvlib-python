@@ -120,7 +120,7 @@ ax1.set_ylabel('Mismatch (-)')
 ax1.legend()
 ax1.set_ylim(0.85, 1.15)
 plt.show()
-
+# %%
 # We can also zoom in one one day, for example August 1st.
 fig2, ax1 = plt.subplots()
 df_results.loc['2001-08-02'].plot(ax=ax1)

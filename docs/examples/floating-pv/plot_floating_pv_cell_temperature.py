@@ -51,7 +51,7 @@ systems, is mainly influenced by the mounting structure (which significantly
 affects both U-value coefficients), wind, and air temperature. Thus, factors
 that help reduce operating temperatures in such systems include lower air
 temperatures and changes in air flow beneath the modules (wind/convection).
-In some designs where the modules are in direct thermal contact with water,
+In some designs, where the modules are in direct thermal contact with water,
 cooling effectiveness is largely dictated by the water temperature.
 
 The table below gives heat loss coefficients derived for different systems

@@ -18,14 +18,14 @@ A popular model for calculating the PV cell temperature is the
 empirical heat loss factor model suggested by Faiman. A modified version of
 this model is implemented in PVSyst
 (:py:func:`~pvlib.temperature.pvsyst_cell`). The PVSyst model for cell
-temperature :math:`T_{C}` is given by
+temperature :math:`T_{C}` is given by:
 
 .. math::
     :label: pvsyst
 
-    T_{C} = T_{a} + \frac{\alpha \cdot E \cdot (1 - \eta_{m})}{U_{c} + U_{v} \cdot WS}
+    T_{C} = T_{a} + \frac{\alpha \cdot E \cdot (1 - \eta_{m})}{U_{c} + U_{v} \cdot WS},
 
-Where :math:`E` is the plane-of-array irradiance, :math:`T_{a}` is the
+where :math:`E` is the plane-of-array irradiance, :math:`T_{a}` is the
 ambient air temperature, :math:`WS` is the wind speed, :math:`\alpha` is the
 absorbed fraction of the incident irradiance, :math:`\eta_{m}` is the
 electrical efficiency of the module, :math:`U_{c}` is the wind-independent heat

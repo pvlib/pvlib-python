@@ -12,6 +12,13 @@ Functions for calculating front and back surface irradiance
    bifacial.infinite_sheds.get_irradiance
    bifacial.infinite_sheds.get_irradiance_poa
 
+Loss models that are specific to bifacial PV systems
+
+.. autosummary::
+   :toctree: generated/
+
+   bifacial.power_mismatch_deline
+
 Utility functions for bifacial modeling
 
 .. autosummary::

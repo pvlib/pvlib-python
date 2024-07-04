@@ -13,6 +13,9 @@ Enhancements
 * Add function :py:func:`pvlib.floating.stream_temperature_stefan`, to calculate the
   water temperature for inland water bodies.
   (:pull:`2104`)
+* Add new losses function that accounts for non-uniform irradiance on bifacial
+  modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
+  (:issue:`2045`, :pull:`2046`)
 
 Bug fixes
 ~~~~~~~~~
@@ -33,3 +36,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Echedey Luis (:ghuser:`echedey-ls`)

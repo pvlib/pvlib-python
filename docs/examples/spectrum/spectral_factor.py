@@ -75,13 +75,13 @@ solpos.index = meteo.index  # reset index to end of the hour
 amr = pvlib.atmosphere.get_relative_airmass(solpos.apparent_zenith).dropna()
 # relative airmass
 ama = amr*(meteo.pressure/1013.25)  # absolute airmass
-
+# %%
 # Now we calculate the clearsky index, :math:`kc`, by comparing the TMY3 GHI to
 # the modelled clearky GHI.
 
 cs = loc.get_clearsky(meteo.index)
 kc = pvlib.irradiance.clearsky_index(meteo.ghi, cs.ghi)
-
+# %%
 # :math:`W` is provided in the TMY3 file but in other cases can be calculated
 # from temperature and relative humidity
 # (see :py:func:`pvlib.atmosphere.gueymard94_pw`).

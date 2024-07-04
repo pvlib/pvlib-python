@@ -15,10 +15,10 @@ and convective heat transfers play roles in determining the module's
 temperature.
 
 A popular model for calculating the PV cell temperature is the
-empirical heat loss factor model suggested by Faiman (:py:func:`pvlib.temperature.faiman`). A modified version of
-this model is implemented in PVSyst
-(:py:func:`~pvlib.temperature.pvsyst_cell`). The PVSyst model for cell
-temperature :math:`T_{C}` is given by:
+empirical heat loss factor model suggested by Faiman
+(:py:func:`pvlib.temperature.faiman`). A modified version of this model is
+implemented in PVSyst (:py:func:`~pvlib.temperature.pvsyst_cell`).
+The PVSyst model for cell temperature :math:`T_{C}` is given by:
 
 .. math::
     :label: pvsyst
@@ -231,11 +231,8 @@ plt.show()
 # are in contact with water.
 #
 # It should be noted that, for the systems having both a single U-value and
-# a combination of :math:`U_c` and :math:`U_v`, approximately the same results were obtained
-# in the literature. However, in this example, there is a difference in the
-# calculated cell temperatures. The reason is that the wind speed in the
-# presented example is probably quite different than the one measured
-# in the corresponding test sites, making the division between
-# wind-dependent and -independent heat loss coefficients less accurate for wide
-# use. Thus, it is suggested to use the single heat loss U-values for system
-# simulations.
+# a combination of :math:`U_c` and :math:`U_v`, approximately the same results
+# were obtained in the literature. However, in this example, there is a
+# difference in the calculated cell temperatures. The reason is that the wind
+# speed in the presented example is probably quite different than the one
+# measured in the corresponding test sites.

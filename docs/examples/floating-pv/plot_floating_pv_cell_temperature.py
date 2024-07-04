@@ -226,7 +226,7 @@ plt.show()
 # %%
 # The figure above illustrates the necessity of choosing appropriate heat loss
 # coefficients when using the PVSyst model for calculating the cell temperature
-# for floating PV systems. A difference of up to 10.3 °C was obtained when
+# for floating PV systems. A difference of up to 10.3°C was obtained when
 # using the default PVSyst coefficients and the coefficients when the panels
 # are in contact with water.
 #

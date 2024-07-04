@@ -194,8 +194,8 @@ heat_loss_coeffs = {
     'open_structure_free_standing_SG': [35.3, 8.9, 'C4', 'solid'],
     'open_structure_free_standing_SG_2': [55, 0, 'C4', 'dashed'],
     'in_contact_with_water_NO': [71, 0, 'C5', 'solid'],
-    'open_strucutre_free_standing_IT': [31.9, 1.5, 'C6', 'solid'],
-    'open_strucutre_free_standing_bifacial_IT': [35.2, 1.5, 'C7', 'solid'],
+    'open_structure_free_standing_IT': [31.9, 1.5, 'C6', 'solid'],
+    'open_structure_free_standing_bifacial_IT': [35.2, 1.5, 'C7', 'solid'],
     'default_PVSyst_coeffs_for_land_systems': [29.0, 0, 'C8', 'solid']
 }
 

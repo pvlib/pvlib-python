@@ -29,13 +29,12 @@ mismatch factor, :math:`M`, from atmospheric variable inputs.
 import pathlib
 from matplotlib import pyplot as plt
 import pandas as pd
-import pvlib as pv
+import pvlib
 from pvlib import location
-from pvlib.atmosphere import get_relative_airmass
 
-DATA_DIR = pathlib.Path(pv.__file__).parent / 'data'
-meteo, metadata = pv.iotools.read_tmy3(DATA_DIR / '723170TYA.CSV',
-                                       coerce_year=2001, map_variables=True)
+DATA_DIR = pathlib.Path(pvlib.__file__).parent / 'data'
+meteo, metadata = pvlib.iotools.read_tmy3(DATA_DIR / '723170TYA.CSV',
+                                          coerce_year=2001, map_variables=True)
 meteo = meteo.loc['2001-08-01':'2001-08-07']
 
 # %%
@@ -73,14 +72,15 @@ solpos = loc.get_solarposition(
     temperature=meteo.temp_air)
 solpos.index = meteo.index  # reset index to end of the hour
 
-amr = get_relative_airmass(solpos.apparent_zenith).dropna()  # relative airmass
+amr = pvlib.atmosphere.get_relative_airmass(solpos.apparent_zenith).dropna()
+# relative airmass
 ama = amr*(meteo.pressure/1013.25)  # absolute airmass
 
 # Now we calculate the clearsky index, :math:`kc`, by comparing the TMY3 GHI to
 # the modelled clearky GHI.
 
 cs = loc.get_clearsky(meteo.index)
-kc = pv.irradiance.clearsky_index(meteo.ghi, cs.ghi)
+kc = pvlib.irradiance.clearsky_index(meteo.ghi, cs.ghi)
 
 # :math:`W` is provided in the TMY3 file but in other cases can be calculated
 # from temperature and relative humidity
@@ -96,11 +96,11 @@ w = meteo.precipitable_water
 # function, which, unlike the other two functions, lacks built-in coefficients.
 
 # Import some for a mc-Si module from the SAPM module database.
-module = pv.pvsystem.retrieve_sam('SandiaMod')['LG_LG290N1C_G3__2013_']
+module = pvlib.pvsystem.retrieve_sam('SandiaMod')['LG_LG290N1C_G3__2013_']
 # Calculate M using the three models for an mc-Si PV module.
-m_sapm = pv.spectrum.spectral_factor_sapm(ama, module)
-m_pvspec = pv.spectrum.spectral_factor_pvspec(ama, kc, 'multisi')
-m_fs = pv.spectrum.spectral_factor_firstsolar(w, ama, 'multisi')
+m_sapm = pvlib.spectrum.spectral_factor_sapm(ama, module)
+m_pvspec = pvlib.spectrum.spectral_factor_pvspec(ama, kc, 'multisi')
+m_fs = pvlib.spectrum.spectral_factor_firstsolar(w, ama, 'multisi')
 df_results = pd.concat([m_sapm, m_pvspec, m_fs], axis=1)
 df_results.columns = ['SAPM', 'PVSPEC', 'FS']
 # %%
@@ -122,7 +122,7 @@ plt.show()
 
 # We can also zoom in one one day, for example August 1st.
 fig2, ax1 = plt.subplots()
-df_results.loc['2001-08-01'].plot(ax=ax1)
+df_results.loc['2001-08-02'].plot(ax=ax1)
 ax1.set_ylim(0.85, 1.15)
 plt.show()
 

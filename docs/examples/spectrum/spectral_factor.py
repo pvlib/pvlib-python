@@ -111,7 +111,7 @@ df_results.columns = ['SAPM', 'PVSPEC', 'FS']
 # not been modelled in each case, only the same module technology.
 
 # Plot M
-fig1, ax1 = plt.subplots()
+fig1, ax1 = plt.subplots(figsize=(9.6, 7.2))
 df_results.plot(ax=ax1)
 
 ax1.set_xlabel('Date (m-d H:M)')
@@ -121,7 +121,7 @@ ax1.set_ylim(0.85, 1.15)
 plt.show()
 
 # We can also zoom in one one day, for example August 1st.
-fig2, ax1 = plt.subplots()
+fig2, ax1 = plt.subplots(figsize=(9.6, 7.2))
 df_results.loc['2001-08-02'].plot(ax=ax1)
 ax1.set_ylim(0.85, 1.15)
 plt.show()

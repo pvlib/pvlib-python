@@ -77,7 +77,7 @@ amr = pvlib.atmosphere.get_relative_airmass(solpos.apparent_zenith).dropna()
 ama = amr*(meteo.pressure/1013.25)  # absolute airmass
 # %%
 # Now we calculate the clearsky index, :math:`k_c`, by comparing the TMY3 GHI
-# to the modelled clearky GHI.
+# to the modelled clearsky GHI.
 
 cs = loc.get_clearsky(meteo.index)
 kc = pvlib.irradiance.clearsky_index(meteo.ghi, cs.ghi)
@@ -119,7 +119,6 @@ ax1.set_ylabel('Mismatch (-)')
 ax1.set_ylim(0.85, 1.15)
 
 # We can also zoom in one one day, for example August 2nd.
-# fig2, ax2 = plt.subplots()
 df_results.loc['2001-08-02'].plot(ax=ax2)
 ax2.set_xlabel('Time')
 ax2.set_ylabel('Mismatch (-)')

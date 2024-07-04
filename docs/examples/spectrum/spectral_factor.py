@@ -12,8 +12,8 @@ mismatch factor, :math:`M`, from atmospheric variable inputs.
 # models in pvlib to calculate the spectral mismatch factor, :math:`M`. While
 # :math:`M` for a photovoltaic (PV) module can be calculated exactly using
 # spectral irradiance and module spectral response data, these data are not
-# always available. pvlib provides several functions to estimate the spectral
-# mismatch factor, M, using proxies of the prevailing spectral
+# always available. Pvlib provides several functions to estimate the spectral
+# mismatch factor, :math:`M`, using proxies of the prevailing spectral
 # irradiance conditions, such as air mass and clearsky index, which are easily
 # derived from common ground-based measurements such as broadband irradiance.
 # More information on a range of spectral factor models, as well as the

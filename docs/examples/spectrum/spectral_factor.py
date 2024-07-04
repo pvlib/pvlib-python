@@ -44,11 +44,11 @@ meteo = meteo.loc['2001-08-01':'2001-08-07']
 # spectral factor functions:
 #
 # - :py:func:`~pvlib.spectrum.spectral_factor_sapm`, which requires only
-#   the absolute airmass :math:`AM_a`
+#   the absolute airmass, :math:`AM_a`
 # - :py:func:`~pvlib.spectrum.spectral_factor_pvspec`, which requires
-#   :math:`AM_a` and the clearsky index :math:`k_c`
+#   :math:`AM_a` and the clearsky index, :math:`k_c`
 # - :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`, which requires
-#   :math:`AM_a` and the atmospheric precipitable water content :math:`W`
+#   :math:`AM_a` and the atmospheric precipitable water content, :math:`W`
 
 # %%
 # Calculation of inputs
@@ -120,11 +120,11 @@ ax1.set_ylabel('Mismatch (-)')
 ax1.legend()
 ax1.set_ylim(0.85, 1.15)
 plt.show()
-# %%
-# We can also zoom in one one day, for example August 1st.
-fig2, ax1 = plt.subplots()
-df_results.loc['2001-08-02'].plot(ax=ax1)
-ax1.set_ylim(0.85, 1.15)
+
+# We can also zoom in one one day, for example August 2nd.
+fig2, ax2 = plt.subplots()
+df_results.loc['2001-08-02'].plot(ax=ax2)
+ax2.set_ylim(0.85, 1.15)
 plt.show()
 
 # %%

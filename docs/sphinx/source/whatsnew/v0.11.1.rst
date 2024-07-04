@@ -10,7 +10,9 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
-
+* Add function :py:func:`pvlib.floating.stream_temperature_stefan`, to calculate the
+  water temperature for inland water bodies.
+  (:pull:`2104`)
 
 Bug fixes
 ~~~~~~~~~
@@ -30,4 +32,4 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)

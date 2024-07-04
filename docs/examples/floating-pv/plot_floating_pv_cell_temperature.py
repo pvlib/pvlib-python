@@ -37,7 +37,7 @@ wind-independent (:math:`U_{c}`) heat loss coefficient.
 
 However, the default heat loss coefficient values of this model were
 specified for land-based PV systems and are not necessarily representative
-for FPV systems.
+of FPV systems.
 
 In FPV systems, variations in heat loss coefficients are considerable, not
 only due to differences in design but also because of geographic factors.

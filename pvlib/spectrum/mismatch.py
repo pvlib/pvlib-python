@@ -359,7 +359,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
                                module_type=None, coefficients=None,
                                min_precipitable_water=0.1,
                                max_precipitable_water=8,
-                               min_airmass_absolute=0.58,
+                               min_airmass_absolute=1.0,
                                max_airmass_absolute=10):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
@@ -393,7 +393,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         atmospheric precipitable water. [cm]
 
     airmass_absolute : numeric
-        absolute (pressure-corrected) air mass. [unitless]
+        absolute (pressure-adjusted) air mass. [unitless]
 
     module_type : str, optional
         a string specifying a cell type. Values of 'cdte', 'monosi', 'xsi',
@@ -433,11 +433,11 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
 
     min_airmass_absolute : float, default 0.58
         minimum absolute airmass. Any ``airmass_absolute`` value lower than
-        ``min_airmass_absolute`` is set to ``min_airmass_absolute``.
+        ``min_airmass_absolute`` is set to ``min_airmass_absolute``. [unitless]
 
     max_airmass_absolute : float, default 10
         minimum absolute airmass. Any ``airmass_absolute`` value greater than
-        ``max_airmass_absolute`` is set to ``max_airmass_absolute``.
+        ``max_airmass_absolute`` is set to ``max_airmass_absolute``. [unitless]
 
     Returns
     -------
@@ -456,7 +456,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         M = c_1 + c_2 AM_a  + c_3 Pw  + c_4 AM_a^{0.5}
             + c_5 Pw^{0.5} + c_6 \frac{AM_a} {Pw^{0.5}}.
 
-    The default values for the limits applied to :math::`AM_a` and :math::`Pw`
+    The default values for the limits applied to :math:`AM_a` and :math:`Pw`
     via the ``min_precipitable_water``, ``max_precipitable_water``,
     ``min_airmass_absolute``, and ``max_airmass_absolute`` are set to prevent
     divergence of the model presented above.

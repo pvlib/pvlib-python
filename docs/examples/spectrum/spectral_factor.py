@@ -1,6 +1,7 @@
 """
 Spectral Mismatch Estimation
 ============================
+
 Comparison of spectral factor calculation methods used to estimate the spectral
 mismatch factor, :math:`M`, from atmospheric variable inputs.
 """
@@ -8,11 +9,11 @@ mismatch factor, :math:`M`, from atmospheric variable inputs.
 # %%
 # Introduction
 # ------------
-# This example demonstrates how to use different `spectrum.spectral_factor`
+# This example demonstrates how to use different ``spectrum.spectral_factor_*``
 # models in pvlib-python to calculate the spectral mismatch factor, :math:`M`.
 # While :math:`M` for a photovoltaic (PV) module can be calculated exactly
 # using spectral irradiance and module spectral response data, these data are
-# not always available. pvlib-python provides several functions to estimate the
+# often not available. pvlib-python provides several functions to estimate the
 # spectral mismatch factor, :math:`M`, using proxies of the prevailing spectral
 # irradiance conditions, such as air mass and clearsky index, which are easily
 # derived from common ground-based measurements such as broadband irradiance.
@@ -76,8 +77,8 @@ amr = pvlib.atmosphere.get_relative_airmass(solpos.apparent_zenith).dropna()
 # relative airmass
 ama = amr*(meteo.pressure/1013.25)  # absolute airmass
 # %%
-# Now we calculate the clearsky index, :math:`k_c`, by comparing the TMY3 GHI
-# to the modelled clearsky GHI.
+# Now we calculate the clearsky index, :math:`k_c`, which is the ratio of GHI
+# to clearsky GHI.
 
 cs = loc.get_clearsky(meteo.index)
 kc = pvlib.irradiance.clearsky_index(meteo.ghi, cs.ghi)
@@ -98,10 +99,12 @@ w = meteo.precipitable_water
 
 # Import some for a mc-Si module from the SAPM module database.
 module = pvlib.pvsystem.retrieve_sam('SandiaMod')['LG_LG290N1C_G3__2013_']
+#
 # Calculate M using the three models for an mc-Si PV module.
 m_sapm = pvlib.spectrum.spectral_factor_sapm(ama, module)
 m_pvspec = pvlib.spectrum.spectral_factor_pvspec(ama, kc, 'multisi')
 m_fs = pvlib.spectrum.spectral_factor_firstsolar(w, ama, 'multisi')
+
 df_results = pd.concat([m_sapm, m_pvspec, m_fs], axis=1)
 df_results.columns = ['SAPM', 'PVSPEC', 'FS']
 # %%
@@ -115,13 +118,13 @@ df_results.columns = ['SAPM', 'PVSPEC', 'FS']
 fig1, (ax1, ax2) = plt.subplots(2, 1)
 df_results.plot(ax=ax1, legend=False)
 ax1.set_xlabel('Day')
-ax1.set_ylabel('Mismatch (-)')
+ax1.set_ylabel('Spectral mismatch (-)')
 ax1.set_ylim(0.85, 1.15)
 
 # We can also zoom in one one day, for example August 2nd.
 df_results.loc['2001-08-02'].plot(ax=ax2)
 ax2.set_xlabel('Time')
-ax2.set_ylabel('Mismatch (-)')
+ax2.set_ylabel('Spectral mismatch (-)')
 ax2.set_ylim(0.85, 1.15)
 
 plt.tight_layout()
@@ -131,7 +134,7 @@ plt.show()
 # %%
 # References
 # ----------
-# .. [1] Daxini, Rajiv, and Wu, Yupeng (2023). "Review of methods to account
+# .. [1] Daxini, R., and Wu, Y., 2023. "Review of methods to account
 #        for the solar spectral influence on photovoltaic device performance."
 #        Energy 286
 #        :doi:`10.1016/j.energy.2023.129461`

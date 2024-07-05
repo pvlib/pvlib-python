@@ -25,7 +25,7 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-* Add new example to the example gallery to demonstrate the application of
+* Added gallery example demonstrating the application of
   several spectral mismatch factor models.
   (:issue:`2107`, :pull:`2114`)
 

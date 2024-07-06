@@ -35,7 +35,7 @@ the wind-dependent heat loss coefficient (:math:`U_{v}`) can be set to zero,
 and the denominator is thus reduced to a single combined U-value
 (:math:`U_{c}`).
 
-However, the default heat loss coefficient values of this model were
+However, the default heat loss coefficient values of the PVSyst model were
 specified for land-based PV systems and are not necessarily representative
 of FPV systems.
 

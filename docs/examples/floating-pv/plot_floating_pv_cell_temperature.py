@@ -57,8 +57,7 @@ cooling effectiveness is largely dictated by the water temperature.
 The table below gives heat loss coefficients derived for different systems
 and locations as found in the literature. It should be noted that, for some
 systems, there are two sets of coefficients, where the second set uses only
-one heat loss coefficient (i.e., only :math:`U_{c}`). In this example, the FPV
-cell temperature will be calculated using the coefficients below.
+one heat loss coefficient (i.e., only :math:`U_{c}`).
 
 .. table:: Heat transfer coefficients for different PV systems
    :widths: 40 15 15 15 15

@@ -45,10 +45,9 @@ temperatures and changes in air flow beneath the modules (wind/convection).
 In some designs, where the modules are in direct thermal contact with water,
 cooling effectiveness is largely dictated by the water temperature.
 
-Systems with extensive water surfaces, closely packed modules, and restricted
-airflow behind the modules generally exhibit lower heat loss coefficients
-compared to those with smaller water surfaces and better airflow behind the
-modules.
+Systems with closely packed modules and restricted airflow behind the modules
+generally exhibit lower heat loss coefficients compared to those with better
+airflow behind the modules.
 
 The table below gives heat loss coefficients derived for different FPV systems
 and locations as found in the literature. It should be noted that, for some

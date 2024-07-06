@@ -217,7 +217,7 @@ for coeffs in heat_loss_coeffs:
 
 plt.xlabel('Hour')
 plt.ylabel('PV cell temperature\n$[°C]$')
-plt.ylim(20, 45)
+plt.ylim(10, 45)
 plt.xlim('06', '20')
 plt.grid()
 plt.legend(loc='upper left', frameon=False, ncols=2, fontsize='x-small',

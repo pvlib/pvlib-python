@@ -1,5 +1,5 @@
 r"""
-Calculating the cell temperature for floating PV
+Temperature modeling for floating PV
 ================================================
 
 This example uses the PVSyst temperature model to calculate

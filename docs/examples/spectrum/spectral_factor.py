@@ -2,8 +2,8 @@
 Spectral Mismatch Estimation
 ============================
 
-Comparison of spectral factor calculation methods used to estimate the spectral
-mismatch factor, :math:`M`, from atmospheric variable inputs.
+Comparison of methods to estimate the spectral mismatch factor
+from atmospheric variable inputs.
 """
 
 # %%
@@ -120,9 +120,11 @@ df_results.plot(ax=ax1, legend=False)
 ax1.set_xlabel('Day')
 ax1.set_ylabel('Spectral mismatch (-)')
 ax1.set_ylim(0.85, 1.15)
+ax1.legend(loc='upper center', frameon=False, ncols=3,
+           bbox_to_anchor=(0.5, 1.3))
 
 # We can also zoom in one one day, for example August 2nd.
-df_results.loc['2001-08-02'].plot(ax=ax2)
+df_results.loc['2001-08-02'].plot(ax=ax2, legend=False)
 ax2.set_xlabel('Time')
 ax2.set_ylabel('Spectral mismatch (-)')
 ax2.set_ylim(0.85, 1.15)

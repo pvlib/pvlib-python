@@ -32,8 +32,8 @@ electrical efficiency of the module, :math:`U_{c}` is the wind-independent heat
 loss coefficient, and :math:`U_{v}` is the wind-dependent heat loss coefficient.
 It should be noted that in many cases, similar to land-based PV systems,
 the wind-dependent heat loss coefficient (:math:`U_{v}`) can be set to zero,
-and the denominator is thus reduced to a single U-value equal to the
-wind-independent heat loss coefficient (:math:`U_{c}`).
+and the denominator is thus reduced to a single combined U-value
+(:math:`U_{c}`).
 
 However, the default heat loss coefficient values of this model were
 specified for land-based PV systems and are not necessarily representative

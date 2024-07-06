@@ -54,7 +54,7 @@ temperatures and changes in air flow beneath the modules (wind/convection).
 In some designs, where the modules are in direct thermal contact with water,
 cooling effectiveness is largely dictated by the water temperature.
 
-The table below gives heat loss coefficients derived for different systems
+The table below gives heat loss coefficients derived for different FPV systems
 and locations as found in the literature. It should be noted that, for some
 systems, there are two sets of coefficients, where the second set uses only
 one heat loss coefficient (i.e., only :math:`U_{c}`).

@@ -25,7 +25,8 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-* Gallery example on cell temperature for floating PV. (:pull:`2110`)
+* Added gallery example on calculating cell temperature for
+  floating PV. (:pull:`2110`)
 
 Requirements
 ~~~~~~~~~~~~

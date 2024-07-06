@@ -10,9 +10,7 @@ for lower operating temperatures, which are expected to increase the
 operating efficiency. In general, the temperature at which a photovoltaic
 module operates is influenced by various factors including solar radiation,
 ambient temperature, wind speed and direction, and the characteristics of the
-cell and module materials, as well as the mounting structure. Both radiative
-and convective heat transfers play roles in determining the module's
-temperature.
+cell and module materials, as well as the mounting structure.
 
 A popular model for calculating PV cell temperature is the
 empirical heat loss factor model suggested by Faiman
@@ -229,6 +227,6 @@ plt.show()
 # using the default PVSyst coefficients versus using coefficients for systems
 # where panels are in contact with water.
 #
-# It should be noted that, using the single combined U-value versus the 
+# It should be noted that, using the single combined U-value versus the
 # :math:`U_c` and :math:`U_v` gives significantly different results, even
 # when using the coefficients derived from the same system.

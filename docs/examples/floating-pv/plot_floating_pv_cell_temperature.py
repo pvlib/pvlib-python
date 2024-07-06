@@ -232,9 +232,6 @@ plt.show()
 # using the default PVSyst coefficients and the coefficients when the panels
 # are in contact with water.
 #
-# It should be noted that, for the systems having both a single U-value and
-# a combination of :math:`U_c` and :math:`U_v`, approximately the same results
-# were obtained in the literature. However, in this example, there is a
-# difference in the calculated cell temperatures. The reason is that the wind
-# speed in the presented example is probably quite different than the one
-# measured in the corresponding test sites.
+# It should be noted that, using the single combined U-value versus the 
+# :math:`U_c` and :math:`U_v` gives significantly different results, even
+# when using the coefficients derived from the same system.

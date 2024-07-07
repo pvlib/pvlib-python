@@ -379,7 +379,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     * :math:`0.5 \textrm{cm} <= Pw <= 5 \textrm{cm}`
     * :math:`1.0 <= AM_a <= 5.0`
     * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
-    * spectrum simulated on a plane normal to the sun
+    * spectrum simulated on an equatorial facing surface with 37° tilt
     * All other parameters fixed at G173 standard
 
     From these simulated spectra, :math:`M` is calculated using the known

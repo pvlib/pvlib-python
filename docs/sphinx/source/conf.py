@@ -75,9 +75,9 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pvlib python'
-copyright = '''Copyright (c) 2023 pvlib python Contributors
-    Copyright (c) 2014 PVLIB python Development Team
-    Copyright (c) 2013 Sandia National Laboratories'''
+copyright = '''pvlib python Contributors (2023); 
+    PVLIB python Development Team (2014);
+    Sandia National Laboratories (2013)'''
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

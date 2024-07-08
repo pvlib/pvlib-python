@@ -74,9 +74,9 @@ solpos = loc.get_solarposition(
     temperature=meteo.temp_air)
 solpos.index = meteo.index  # reset index to end of the hour
 
-amr = pvlib.atmosphere.get_relative_airmass(solpos.apparent_zenith).dropna()
-# relative airmass
-ama = amr*(meteo.pressure/1013.25)  # absolute airmass
+airmass_relative = pvlib.atmosphere.get_relative_airmass(
+                                               solpos.apparent_zenith).dropna()
+airmass_absolute = airmass_relative*(meteo.pressure/1013.25)
 # %%
 # Now we calculate the clearsky index, :math:`k_c`, which is the ratio of GHI
 # to clearsky GHI.
@@ -102,9 +102,11 @@ w = meteo.precipitable_water
 module = pvlib.pvsystem.retrieve_sam('SandiaMod')['LG_LG290N1C_G3__2013_']
 #
 # Calculate M using the three models for an mc-Si PV module.
-m_sapm = pvlib.spectrum.spectral_factor_sapm(ama, module)
-m_pvspec = pvlib.spectrum.spectral_factor_pvspec(ama, kc, 'multisi')
-m_fs = pvlib.spectrum.spectral_factor_firstsolar(w, ama, 'multisi')
+m_sapm = pvlib.spectrum.spectral_factor_sapm(airmass_absolute, module)
+m_pvspec = pvlib.spectrum.spectral_factor_pvspec(airmass_absolute, kc,
+                                                 'multisi')
+m_fs = pvlib.spectrum.spectral_factor_firstsolar(w, airmass_absolute,
+                                                 'multisi')
 
 df_results = pd.concat([m_sapm, m_pvspec, m_fs], axis=1)
 df_results.columns = ['SAPM', 'PVSPEC', 'FS']

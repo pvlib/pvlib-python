@@ -81,7 +81,8 @@ airmass_absolute = airmass_relative*(meteo.pressure/1013.25)
 # Now we calculate the clearsky index, :math:`k_c`, which is the ratio of GHI
 # to clearsky GHI.
 
-cs = loc.get_clearsky(meteo.index)
+cs = loc.get_clearsky(meteo.index.shift(freq="-30min"))
+cs.index = meteo.index  # reset index to end of the hour
 kc = pvlib.irradiance.clearsky_index(meteo.ghi, cs.ghi)
 # %%
 # :math:`W` is provided in the TMY3 file but in other cases can be calculated

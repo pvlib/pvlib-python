@@ -75,7 +75,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pvlib python'
-copyright = '''pvlib python Contributors (2023); 
+copyright = '''pvlib python Contributors (2023);
     PVLIB python Development Team (2014);
     Sandia National Laboratories (2013)'''
 

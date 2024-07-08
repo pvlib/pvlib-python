@@ -76,7 +76,7 @@ solpos.index = meteo.index  # reset index to end of the hour
 
 airmass_relative = pvlib.atmosphere.get_relative_airmass(
     solpos.apparent_zenith).dropna()
-airmass_absolute = pvlib.atmosphere.get_absolute_airmass(airmass_relative)
+airmass_absolute = pvlib.atmosphere.get_absolute_airmass(airmass_relative, pressure=meteo.pressure*100)
 # %%
 # Now we calculate the clearsky index, :math:`k_c`, which is the ratio of GHI
 # to clearsky GHI.

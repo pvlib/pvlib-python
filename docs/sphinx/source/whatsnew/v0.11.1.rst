@@ -25,7 +25,8 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-
+* Added gallery example on calculating cell temperature for
+  floating PV. (:pull:`2110`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -33,4 +34,7 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Leonardo Micheli (:ghuser:`lmicheli`)
 * Echedey Luis (:ghuser:`echedey-ls`)
+

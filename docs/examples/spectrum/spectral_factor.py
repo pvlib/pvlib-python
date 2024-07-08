@@ -20,7 +20,8 @@ from atmospheric variable inputs.
 # More information on a range of spectral factor models, as well as the
 # variables upon which they are based, can be found in [1]_.
 #
-# Let's import some data. This example uses a Typical Meteorological Year 3
+# To demonstrate this functionality, first we need to import some data.
+# This example uses a Typical Meteorological Year 3
 # (TMY3) file for the location of Greensboro, North Carolina, from the
 # pvlib-python data directory. This TMY3 file is constructed using the median
 # month from each year between 1980 and 2003, from which we extract the first

@@ -559,7 +559,7 @@ def spectral_factor_sapm(airmass_absolute, module):
     Returns
     -------
     f1 : numeric
-        The SAPM spectral loss coefficient.
+        The spectral mismatch factor. [unitless]
 
     Notes
     -----

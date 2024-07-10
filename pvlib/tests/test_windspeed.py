@@ -15,7 +15,7 @@ from numpy.testing import assert_allclose
         (5, 4, 5, 5.067393209486324),
         (7, 6, 10, 7.2178684911195905),
         (10, 8, 20, 10.565167835216586),
-        (12, 10, 30, 12.817653329393977),])
+        (12, 10, 30, 12.817653329393977)])
 def test_wind_speed_at_height_hellmann(wind_speed_measured,
                                        height_measured,
                                        height_desired,

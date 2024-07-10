@@ -59,12 +59,21 @@ def test_wind_speed_at_height_hellmann_ndarray(wind_speeds_measured,
                                                heights_measured,
                                                heights_desired,
                                                wind_speeds_calc):
-    result = windspeed.wind_speed_at_height_hellmann(
+    # test wind speed estimation by passing in surface_type
+    result_surface = windspeed.wind_speed_at_height_hellmann(
         wind_speeds_measured.to_numpy(),
         heights_measured,
         heights_desired,
         surface_type='unstable_air_above_open_water_surface')
-    assert_allclose(wind_speeds_calc.to_numpy(), result)
+    assert_allclose(wind_speeds_calc.to_numpy(), result_surface)
+    # test wind speed estimation by passing in the exponent corresponding
+    # to the surface_type above
+    result_exponent = windspeed.wind_speed_at_height_hellmann(
+        wind_speeds_measured.to_numpy(),
+        heights_measured,
+        heights_desired,
+        exponent=0.06)
+    assert_allclose(wind_speeds_calc.to_numpy(), result_exponent)
 
 
 def test_wind_speed_at_height_hellmann_series(wind_speeds_measured,

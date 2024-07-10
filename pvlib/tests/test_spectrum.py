@@ -264,6 +264,22 @@ def test_spectral_factor_firstsolar_supplied():
     assert_allclose(out, expected, atol=1e-3)
 
 
+def test_spectral_factor_firstsolar_large_airmass_supplied_max():
+    # test airmass > user-defined maximum is treated same as airmass=maximum
+    m_eq10 = spectrum.spectral_factor_firstsolar(1, 11, 'monosi',
+                                                 max_airmass_absolute=11)
+    m_gt10 = spectrum.spectral_factor_firstsolar(1, 15, 'monosi',
+                                                 max_airmass_absolute=11)
+    assert_allclose(m_eq10, m_gt10)
+
+
+def test_spectral_factor_firstsolar_large_airmass():
+    # test that airmass > 10 is treated same as airmass=10
+    m_eq10 = spectrum.spectral_factor_firstsolar(1, 10, 'monosi')
+    m_gt10 = spectrum.spectral_factor_firstsolar(1, 15, 'monosi')
+    assert_allclose(m_eq10, m_gt10)
+
+
 def test_spectral_factor_firstsolar_ambiguous():
     with pytest.raises(TypeError):
         spectrum.spectral_factor_firstsolar(1, 1)

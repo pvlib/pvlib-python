@@ -77,7 +77,7 @@ def wind_speed_at_height_hellmann(wind_speed_measured, height_measured,
     .. math::
        :label: wind speed
 
-        \windspeed_h = windspeed_{href} \cdot (\frac{h}{h_{ref}})^a
+        windspeed_h = windspeed_{href} \cdot \left( \frac{h}{h_{ref}} \right)^a
 
     where :math:`h` [m] is the height at which we would like to calculate the
     wind speed, :math:`h_{ref}` [m] is the reference height at which the wind

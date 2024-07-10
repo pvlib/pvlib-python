@@ -25,3 +25,4 @@ wrap the functions listed below. See its documentation for details.
    system_models
    parameters
    other
+   windspeed

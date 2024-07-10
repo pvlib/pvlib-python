@@ -266,11 +266,11 @@ def test_spectral_factor_firstsolar_supplied():
 
 def test_spectral_factor_firstsolar_large_airmass_supplied_max():
     # test airmass > user-defined maximum is treated same as airmass=maximum
-    m_eq10 = spectrum.spectral_factor_firstsolar(1, 11, 'monosi',
+    m_eq11 = spectrum.spectral_factor_firstsolar(1, 11, 'monosi',
                                                  max_airmass_absolute=11)
-    m_gt10 = spectrum.spectral_factor_firstsolar(1, 15, 'monosi',
+    m_gt11 = spectrum.spectral_factor_firstsolar(1, 15, 'monosi',
                                                  max_airmass_absolute=11)
-    assert_allclose(m_eq10, m_gt10)
+    assert_allclose(m_eq11, m_gt11)
 
 
 def test_spectral_factor_firstsolar_large_airmass():

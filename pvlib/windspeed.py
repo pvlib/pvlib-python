@@ -136,7 +136,7 @@ def wind_speed_at_height_hellmann(wind_speed_measured, height_measured,
        function of height above ground: An analysis of data obtained at the
        southwest residential experiment station, Las Cruses, New Mexico."
        SAND84-2530, Sandia National Laboratories.
-       `link <https://www.osti.gov/biblio/5628264>`_
+       `source <https://web.archive.org/web/20230418202422/https://www2.jpl.nasa.gov/adv_tech/photovol/2016CTR/SNL%20-%20Est%20Wind%20Speed%20vs%20Height_1985.pdf>`_  # noqa:E501
     """
     if surface_type is not None and exponent is None:
         # use the Hellmann exponent from dictionary

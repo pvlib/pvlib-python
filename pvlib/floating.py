@@ -40,18 +40,14 @@ def stream_temperature_stefan(temp_air):
     bodies that are well mixed in the vertical and transverse directions of a
     cross section. Also, it is only tested on ice-free streams. Consequently,
     when the mean ambient air temperature is lower than -6.66 °C, the surface
-    stream water temperature is returned as NaN.
+    stream water temperature is returned as ``np.nan``.
 
-    While this equation was created for estimating stream temperature,
-    there are a number of publications that have used it for estimating the
-    lakewater and seawater temperature for floating PV, although without
-    providing any proof of the formula's validity for such purposes.
+    Although this model was developed to estimate stream temperature,
+    a number of publications have used it to estimate lakewater and
+    seawater temperatures for floating PV without evidence of validity
+    for such applications.
 
-    Warning
-    -------
-    The expression has been developed for inland streams and is thus not
-    suitable for estimating ocean temperature.
-
+    
     References
     ----------
     .. [1] Stefan H. G., Preud'homme E. B. (1993). "Stream temperature

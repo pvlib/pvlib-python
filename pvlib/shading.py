@@ -692,3 +692,62 @@ def direct_martinez(
         )
         / poa_global
     )
+
+
+def linear_shade_loss(shaded_fraction, diffuse_fraction):
+    r"""
+    Fraction of power lost to linear shade loss.
+
+    Linear shade loss is applicable to monolithic thin film modules like
+    First Solar CdTe, where the shadow is perpendicular to cell scribe lines.
+
+    .. versionadded:: 0.10.5
+
+    Parameters
+    ----------
+    shaded_fraction : numeric
+        The fraction of the collector width shaded by an adjacent row. A
+        value of 1 corresponds to completely shaded and zero is no shading.
+    diffuse_fraction : numeric
+        The ratio of diffuse plane of array (POA) irradiance to global POA.
+        A value of 1 corresponds to all incident irradiance being diffuse,
+        and a value of zero corresponds to all irradiance being direct.
+
+    Returns
+    -------
+    linear_shade_loss : numeric
+        The fraction of power lost due to linear shading. A value of 1 is all
+        power lost and zero is no loss.
+
+    Notes
+    -----
+    The reasoning behind this loss model is described in sections 4.2 and 4.3
+    of [1]_.
+
+    The loss is calculated as:
+
+    .. math::
+
+        \text{loss} = \text{shaded_fraction}\cdot(1-\text{diffuse_fraction})
+
+    See also
+    --------
+    pvlib.shading.shaded_fraction1d : 1-dimensional shaded fraction calculation
+
+    Example
+    -------
+    >>> from pvlib import shading
+    >>> sf = shading.shaded_fraction1d(80, 180, 90, 25,
+             collector_width=0.5, row_pitch=1, surface_to_axis_offset=0,
+             cross_axis_slope=5.711, shading_tracker_tilt=50)
+    >>> loss = shading.linear_shade_loss(sf, diffuse_fraction=0.2)
+    >>> P_no_shade = 100  # [kWdc]  DC output from modules
+    >>> P_linear_shade = P_no_shade * (1-loss)  # [kWdc] output after loss
+    75.51797783654133
+
+    References
+    ----------
+    .. [1] First Solar, “First Solar Series 4 Module.” [Online]. Available at: https://web.archive.org/web/20230512210902/https://www.firstsolar.com/-/media/First-Solar/Technical-Documents/User-Guides/Series-4-Module-User-Guide-North-America.ashx?la=en [accessed 2024-04-12]
+    .. [2] First Solar, “Diffuse Irradiance and Tracker Simulations,” May 01-02, 2013. http://web.archive.org/web/20170127080529/https://energy.sandia.gov/wp-content/gallery/uploads/26-Littmann-Tracking-and-Diffuse-Shading.pdf0_.pdf [accessed 2024-04-12]
+    """  # noqa: E501
+    return shaded_fraction * (1 - diffuse_fraction)

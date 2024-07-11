@@ -359,7 +359,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
                                module_type=None, coefficients=None,
                                min_precipitable_water=0.1,
                                max_precipitable_water=8,
-                               min_airmass_absolute=1.0,
+                               min_airmass_absolute=0.58,
                                max_airmass_absolute=10):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute

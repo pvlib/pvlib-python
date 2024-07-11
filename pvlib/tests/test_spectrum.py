@@ -474,6 +474,43 @@ def test_spectral_factor_jrc_supplied_ambiguous():
                                      coefficients=None)
 
 
+@pytest.mark.parametrize("module_type,expected", [
+    ('multisi', pd.Series([0.98897, 1.000677, 1.00829])),
+    ('cdte', pd.Series([0.94950, 0.98647, 1.04016])),
+    ('asi-t', pd.Series([0.92752, 1.02894, 1.13527])),
+])
+def test_spectral_factor_daxini_series(module_type, expected):
+    apes = pd.Series([1.82, 1.87, 1.95])
+    bands = pd.Series([2, 4, 8])
+    out = spectrum.spectral_factor_daxini(apes, bands,
+                                          module_type=module_type)
+    assert isinstance(out, pd.Series)
+    assert np.allclose(expected, out, atol=1e-5)
+
+
+def test_spectral_factor_daxini_supplied():
+    # use the cdte coeffs
+    coeffs = (-0.5313, 0.7208, 0.02232, 0.05321, 1.629e-4, -0.01445)
+    out = spectrum.spectral_factor_daxini(1.87, 4, coefficients=coeffs)
+    expected = 0.98647
+    assert_allclose(out, expected, atol=1e-5)
+
+
+def test_spectral_factor_daxini_supplied_redundant():
+    # Error when specifying both module_type and coefficients
+    coeffs = (-0.5313, 0.7208, 0.02232, 0.05321, 1.629e-4, -0.01445)
+    with pytest.raises(ValueError, match='supply only one of'):
+        spectrum.spectral_factor_daxini(1.87, 4, module_type='cdte',
+                                        coefficients=coeffs)
+
+
+def test_spectral_factor_daxini_supplied_ambiguous():
+    # Error when specifying neither module_type nor coefficients
+    with pytest.raises(ValueError, match='No valid input provided'):
+        spectrum.spectral_factor_daxini(1.87, 4, module_type=None,
+                                        coefficients=None)
+
+
 @pytest.fixture
 def sr_and_eqe_fixture():
     # Just some arbitrary data for testing the conversion functions

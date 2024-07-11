@@ -836,6 +836,131 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
     return mismatch
 
 
+def spectral_factor_daxini(ape, band_depth, module_type=None,
+                           coefficients=None):
+    r"""
+    Estimate a technology-specific spectral mismatch modifier from the average
+    photon energy (APE) and the depth of a water absorption band using the
+    Daxini model.
+
+    Parameters
+    ----------
+    ape : numeric
+        Average photon energy (APE, :math:`\varphi`) [eV]
+
+    band_depth : numeric
+        Depth of a spectral band, :math:`\varepsilon` [:math:`Wm^-2`]
+
+    module_type : str, optional. The default is None.
+        One of the following PV technology strings from [1]_:
+
+        * ``asi-t`` - anyonymous triple junction amorphous Si
+        * ``'cdte'`` - anyonymous CdTe module.
+        * ``'multisi'`` - anyonymous multicrystalline Si module.
+
+    coefficients : array-ike, optional
+        User-defined coefficients, if not using one of the default coefficient
+        sets via the ``module_type`` parameter. The default is None.
+
+    Returns
+    -------
+    mismatch: numeric
+        spectral mismatch factor [unitless], which is multiplied
+        with broadband irradiance reaching a module's cells to estimate
+        effective irradiance, i.e., the irradiance that is converted to
+        electrical current.
+
+    Notes
+    -----
+    The Daxini model parameterises the spectral mismatch factor, :math:`M`, as
+    a function of the average photon energy, :math:`\varphi`, and the depth of
+    a water absorption band, :math:`\varepsilon`, as follows:
+
+    .. math::
+
+        M = a_0 + a_1\varphi + a_2\varepsilon + a_3\varphi^2 + a_4\varepsilon^2
+        + a_5\varphi\varepsilon,
+
+    where :math:`a_{0-5}` are module-specific coefficients. In [1]_,
+    :math:`\varphi` is calculated between the limits of 350nm to 1050nm.
+    While several atmopsheric windows and water absorption bands within the
+    spectral irradiance range 350nm-1050nm are tested as candidates for
+    :math:`\varepsilon`, ultimately the 650nm-670nm is recommended for the PV
+    devices analysed in the study. It should be noted that "depth" here refers
+    to the area beneath the spectral irradiance curve within the specified
+    wavelength limits, which in this case are 650nm-670nm. Therefore,
+    :math:`\varepsilon` is calculated by integrating the spectral irradiance,
+    with respect to wavelength, between 650nm-670nm. The purpose of this second
+    index, used in conjunction with the APE, is to distinguish between
+    different spectra that have the same or similar APE values, which reduces
+    the reliability of an single-variable APE spectral mismatch estimation
+    function.
+
+    The model is developed and validated using one year of outdoor
+    meteorological, PV, and spectral irradiance data measured at the National
+    Renewable Energy Laboratory in Golden, Colorado, USA. The data used are
+    publicly available and can be found at [2]_ and [3]_. The primary
+    publications associated with these data releases are [4]_, and [5] and
+    [6]_, respectively.
+
+    References
+    ----------
+    .. [1] Daxini, R., et al., 2023 "Modelling the spectral influence on
+           photovoltaic device performance using the average photon energy and
+           the depth of a water absorption band for improved forecasting."
+           Energy 284: 129046.
+           :doi:`10.1016/j.energy.2023.129046`
+    .. [2] Measurement and Instrumentation Data Center (MIDC)
+           :doi:`10.5439/1052221
+    .. [3] Data for Validating Models for PV Module Performance
+           :doi:`10.21948/1811521`
+    .. [4] Stoffel, T., and Andreas, A. NREL Solar Radiation Research
+           laboratory (SRRL): Baseline measurement system (BMS); Golden,
+           Colorado (data). No. NREL/DA-5500-56488. National Renewable Energy
+           Laboratory.(NREL), Golden, CO (United States), 1981.
+           :doi:`10.5439/1052221`
+    .. [5] Marion, B., et al. Data for validating models for PV module
+           performance. EMN-DURMAT (EMN-DuraMAT); National Renewable Energy
+           Laboratory (NREL), Golden, CO (United States), 2021.
+           :doi:`10.21948/1811521`
+    .. [6] Marion, B., et al. User's manual for data for validating models for
+           PV module performance. No. NREL/TP-5200-61610. National Renewable
+           Energy Laboratory (NREL), Golden, CO (United States), 2014.
+           :doi:`10.2172/1130632`
+    """
+
+    _coefficients = {}
+    _coefficients['multisi'] = (-0.3998, 1.101, 0.03366, -0.1837,
+                                1.493e-4, -0.02046)
+    _coefficients['cdte'] = (-0.5313, 0.7208, 0.02232, 0.05321,
+                             1.629e-4, -0.01445)
+    _coefficients['asi-t'] = (-21.94, 22.62, -0.01393, -5.521,
+                              1.7341e-4, 0.003860)
+
+    if module_type is not None and coefficients is None:
+        coefficients = _coefficients[module_type.lower()]
+    elif module_type is None and coefficients is not None:
+        pass
+    elif module_type is None and coefficients is None:
+        raise ValueError('No valid input provided, both module_type and ' +
+                         'coefficients are None. module_type can be one of ' +
+                         ", ".join(_coefficients.keys()))
+    else:
+        raise ValueError('Cannot resolve input, must supply only one of ' +
+                         'module_type and coefficients. module_type can be ' +
+                         'one of' ", ".join(_coefficients.keys()))
+
+    coeff = coefficients
+    e = band_depth
+
+    mismatch = (
+        coeff[0] + coeff[1]*ape + coeff[2]*e + coeff[3]*ape**2
+        + coeff[4]*e**2 + coeff[5]*ape*e
+    )
+
+    return mismatch
+
+
 def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
                         coefficients=None):
     r"""

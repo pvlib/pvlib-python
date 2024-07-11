@@ -849,16 +849,18 @@ def spectral_factor_daxini(ape, band_depth, module_type=None,
         Average photon energy (APE, :math:`\varphi`) [eV]
 
     band_depth : numeric
-        Depth of a spectral band, :math:`\varepsilon` [:math:`Wm^-2`]
+        Depth of a spectral band, :math:`\varepsilon` [Wm:math:`^{-2}`]
 
-    module_type : str, optional. The default is None.
+    module_type : str, optional
         One of the following PV technology strings from [1]_:
 
-        * ``asi-t`` - anyonymous triple junction amorphous Si
+        * ``asi-t`` - anyonymous triple junction amorphous Si module
         * ``'cdte'`` - anyonymous CdTe module.
-        * ``'multisi'`` - anyonymous multicrystalline Si module.
+        * ``'multisi'`` - anyonymous multicrystalline Si module
 
-    coefficients : array-ike, optional
+        The default is None.
+
+    coefficients : array-like, optional
         User-defined coefficients, if not using one of the default coefficient
         sets via the ``module_type`` parameter. The default is None.
 
@@ -884,23 +886,22 @@ def spectral_factor_daxini(ape, band_depth, module_type=None,
     where :math:`a_{0-5}` are module-specific coefficients. In [1]_,
     :math:`\varphi` is calculated between the limits of 350nm to 1050nm.
     While several atmopsheric windows and water absorption bands within the
-    spectral irradiance range 350nm-1050nm are tested as candidates for
+    spectral irradiance range 350nm-1050nm were tested as candidates for
     :math:`\varepsilon`, ultimately the 650nm-670nm is recommended for the PV
     devices analysed in the study. It should be noted that "depth" here refers
     to the area beneath the spectral irradiance curve within the specified
     wavelength limits, which in this case are 650nm-670nm. Therefore,
     :math:`\varepsilon` is calculated by integrating the spectral irradiance,
     with respect to wavelength, between 650nm-670nm. The purpose of this second
-    index, used in conjunction with the APE, is to distinguish between
-    different spectra that have the same or similar APE values, which reduces
-    the reliability of an single-variable APE spectral mismatch estimation
-    function.
+    index is to distinguish between different spectra that have the same or
+    similar APE values, the occurance of which reduces the reliability of a
+    single-variable APE spectral mismatch estimation function.
 
     The model is developed and validated using one year of outdoor
     meteorological, PV, and spectral irradiance data measured at the National
     Renewable Energy Laboratory in Golden, Colorado, USA. The data used are
     publicly available and can be found at [2]_ and [3]_. The primary
-    publications associated with these data releases are [4]_, and [5] and
+    publications associated with these data releases are [4]_, and [5]_ and
     [6]_, respectively.
 
     References
@@ -911,7 +912,7 @@ def spectral_factor_daxini(ape, band_depth, module_type=None,
            Energy 284: 129046.
            :doi:`10.1016/j.energy.2023.129046`
     .. [2] Measurement and Instrumentation Data Center (MIDC)
-           :doi:`10.5439/1052221
+           :doi:`10.5439/1052221`
     .. [3] Data for Validating Models for PV Module Performance
            :doi:`10.21948/1811521`
     .. [4] Stoffel, T., and Andreas, A. NREL Solar Radiation Research

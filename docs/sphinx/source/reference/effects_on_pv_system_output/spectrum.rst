@@ -16,5 +16,6 @@ Spectrum
    spectrum.spectral_factor_sapm
    spectrum.spectral_factor_pvspec
    spectrum.spectral_factor_jrc
+   spectrum.spectral_factor_daxini
    spectrum.sr_to_qe
    spectrum.qe_to_sr

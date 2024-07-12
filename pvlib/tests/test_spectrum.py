@@ -296,7 +296,7 @@ def test_spectral_factor_firstsolar_low_airmass():
     m_eq58 = spectrum.spectral_factor_firstsolar(1, 0.58, 'monosi')
     m_lt58 = spectrum.spectral_factor_firstsolar(1, 0.1, 'monosi')
     assert_allclose(m_eq58, m_lt58)
-    with pytest.warns(UserWarning, match='Low AMa values replaced with'):
+    with pytest.warns(UserWarning, match='Low airmass values replaced'):
         _ = spectrum.spectral_factor_firstsolar(1, 0.1, 'monosi')
 
 

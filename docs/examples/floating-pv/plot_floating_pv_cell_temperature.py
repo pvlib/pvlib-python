@@ -19,7 +19,6 @@ has been proposed by PVSyst (:py:func:`~pvlib.temperature.pvsyst_cell`).
 The PVSyst model for cell temperature :math:`T_{C}` is given by:
 
 .. math::
-    :label: pvsyst
 
     T_{C} = T_{a} + \frac{\alpha \cdot E \cdot (1 - \eta_{m})}{U_{c} + U_{v} \cdot WS},
 

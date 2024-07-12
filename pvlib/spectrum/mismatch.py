@@ -459,7 +459,9 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     The default values for the limits applied to :math:`AM_a` and :math:`Pw`
     via the ``min_precipitable_water``, ``max_precipitable_water``,
     ``min_airmass_absolute``, and ``max_airmass_absolute`` are set to prevent
-    divergence of the model presented above.
+    divergence of the model presented above. These default values were
+    determined by the publication authors in the original pvlib-python
+    implementation (:pull:`208`).
 
     References
     ----------
@@ -481,12 +483,13 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     pw = pw.astype('float64')
     if np.min(pw) < min_precipitable_water:
         pw = np.maximum(pw, min_precipitable_water)
-        warn('Low pw values replaced with 'f'{min_precipitable_water} cm in '
-             'the calculation of spectral mismatch.')
+        warn('Low precipitable water values replaced with '
+             f'{min_precipitable_water} cm in the calculation of spectral '
+             'mismatch.')
 
     if np.max(pw) > max_precipitable_water:
         pw[pw > max_precipitable_water] = np.nan
-        warn('High pw values replaced with np.nan in '
+        warn('High preciptable water values replaced with np.nan in '
              'the calculation of spectral mismatch.')
 
     airmass_absolute = np.minimum(airmass_absolute, max_airmass_absolute)

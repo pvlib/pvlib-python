@@ -489,7 +489,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
 
     if np.max(pw) > max_precipitable_water:
         pw[pw > max_precipitable_water] = np.nan
-        warn('High preciptable water values replaced with np.nan in '
+        warn('High precipitable water values replaced with np.nan in '
              'the calculation of spectral mismatch.')
 
     airmass_absolute = np.minimum(airmass_absolute, max_airmass_absolute)

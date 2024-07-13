@@ -165,7 +165,7 @@ html_theme_options = {
     # "footer_start": [],  # "copyright", "sphinx-version"
     # "footer_center": [],
     "footer_end": [],
-    "primary_sidebar_end": [],
+    # "primary_sidebar_end": [],
     # https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/layout.html#hide-the-previous-and-next-buttons
     "show_prev_next": False,  # disable next/previous links
 }  # noqa: E501

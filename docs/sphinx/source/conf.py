@@ -162,9 +162,9 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "show_toc_level": 1,
-    "footer_start": ["copyright"],
-    "footer_center": ["sphinx-version"],
-    "footer_end": ["sidebar-ethical-ads"],
+    # "footer_start": [],  # "copyright", "sphinx-version"
+    # "footer_center": [],
+    "footer_end": [],
     "primary_sidebar_end": [],
     # https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/layout.html#hide-the-previous-and-next-buttons
     "show_prev_next": False,  # disable next/previous links
@@ -215,9 +215,9 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {
-    "**": ["sidebar-nav-bs"]
-}
+# html_sidebars = {
+#     "**": ["sidebar-nav-bs"]
+# }
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.

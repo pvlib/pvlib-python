@@ -336,12 +336,6 @@ def gueymard94_pw(temp_air, relative_humidity):
     return pw
 
 
-first_solar_spectral_correction = deprecated(
-    since='0.10.0',
-    alternative='pvlib.spectrum.spectral_factor_firstsolar'
-)(pvlib.spectrum.spectral_factor_firstsolar)
-
-
 def bird_hulstrom80_aod_bb(aod380, aod500):
     """
     Approximate broadband aerosol optical depth.

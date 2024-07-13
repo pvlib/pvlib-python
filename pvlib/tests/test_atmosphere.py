@@ -88,12 +88,6 @@ def test_gueymard94_pw():
     assert_allclose(pws, expected, atol=0.01)
 
 
-def test_first_solar_spectral_correction_deprecated():
-    with pytest.warns(pvlibDeprecationWarning,
-                      match='Use pvlib.spectrum.spectral_factor_firstsolar'):
-        atmosphere.first_solar_spectral_correction(1, 1, 'cdte')
-
-
 def test_kasten96_lt():
     """Test Linke turbidity factor calculated from AOD, Pwat and AM"""
     amp = np.array([1, 3, 5])

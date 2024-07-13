@@ -3,6 +3,7 @@ import pandas as pd
 
 from pvlib.tools import cosd, sind, tand, acosd, asind
 from pvlib import irradiance
+from pvlib import shading
 
 
 def singleaxis(apparent_zenith, apparent_azimuth,
@@ -44,12 +45,21 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         A value denoting the compass direction along which the axis of
         rotation lies. Measured in decimal degrees east of north.
 
-    max_angle : float, default 90
+    max_angle : float or tuple, default 90
         A value denoting the maximum rotation angle, in decimal degrees,
         of the one-axis tracker from its horizontal position (horizontal
-        if axis_tilt = 0). A max_angle of 90 degrees allows the tracker
-        to rotate to a vertical position to point the panel towards a
-        horizon. max_angle of 180 degrees allows for full rotation.
+        if axis_tilt = 0). If a float is provided, it represents the maximum
+        rotation angle, and the minimum rotation angle is assumed to be the
+        opposite of the maximum angle. If a tuple of (min_angle, max_angle) is
+        provided, it represents both the minimum and maximum rotation angles.
+
+        A rotation to 'max_angle' is a counter-clockwise rotation about the
+        y-axis of the tracker coordinate system. For example, for a tracker
+        with 'axis_azimuth' oriented to the south, a rotation to 'max_angle'
+        is towards the west, and a rotation toward 'min_angle' is in the
+        opposite direction, toward the east. Hence a max_angle of 180 degrees
+        (equivalent to max_angle = (-180, 180)) allows the tracker to achieve
+        its full rotation capability.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"
@@ -117,51 +127,20 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     if apparent_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
         raise ValueError('Input dimensions must not exceed 1')
 
-    # Calculate sun position x, y, z using coordinate system as in [1], Eq 1.
-
-    # NOTE: solar elevation = 90 - solar zenith, then use trig identities:
-    # sin(90-x) = cos(x) & cos(90-x) = sin(x)
-    sin_zenith = sind(apparent_zenith)
-    x = sin_zenith * sind(apparent_azimuth)
-    y = sin_zenith * cosd(apparent_azimuth)
-    z = cosd(apparent_zenith)
-
-    # Assume the tracker reference frame is right-handed. Positive y-axis is
-    # oriented along tracking axis; from north, the y-axis is rotated clockwise
-    # by the axis azimuth and tilted from horizontal by the axis tilt. The
-    # positive x-axis is 90 deg clockwise from the y-axis and parallel to
-    # horizontal (e.g., if the y-axis is south, the x-axis is west); the
-    # positive z-axis is normal to the x and y axes, pointed upward.
-
-    # Calculate sun position (xp, yp, zp) in tracker coordinate system using
-    # [1] Eq 4.
-
-    cos_axis_azimuth = cosd(axis_azimuth)
-    sin_axis_azimuth = sind(axis_azimuth)
-    cos_axis_tilt = cosd(axis_tilt)
-    sin_axis_tilt = sind(axis_tilt)
-    xp = x*cos_axis_azimuth - y*sin_axis_azimuth
-    # not necessary to calculate y'
-    # yp = (x*cos_axis_tilt*sin_axis_azimuth
-    #       + y*cos_axis_tilt*cos_axis_azimuth
-    #       - z*sin_axis_tilt)
-    zp = (x*sin_axis_tilt*sin_axis_azimuth
-          + y*sin_axis_tilt*cos_axis_azimuth
-          + z*cos_axis_tilt)
-
     # The ideal tracking angle wid is the rotation to place the sun position
-    # vector (xp, yp, zp) in the (y, z) plane, which is normal to the panel and
+    # vector (xp, yp, zp) in the (x, z) plane, which is normal to the panel and
     # contains the axis of rotation.  wid = 0 indicates that the panel is
     # horizontal. Here, our convention is that a clockwise rotation is
     # positive, to view rotation angles in the same frame of reference as
     # azimuth. For example, for a system with tracking axis oriented south, a
     # rotation toward the east is negative, and a rotation to the west is
     # positive. This is a right-handed rotation around the tracker y-axis.
-
-    # Calculate angle from x-y plane to projection of sun vector onto x-z plane
-    # using [1] Eq. 5.
-
-    wid = np.degrees(np.arctan2(xp, zp))
+    wid = shading.projected_solar_zenith_angle(
+        axis_tilt=axis_tilt,
+        axis_azimuth=axis_azimuth,
+        solar_zenith=apparent_zenith,
+        solar_azimuth=apparent_azimuth,
+    )
 
     # filter for sun above panel horizon
     zen_gt_90 = apparent_zenith > 90
@@ -190,7 +169,16 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # NOTE: max_angle defined relative to zero-point rotation, not the
     # system-plane normal
-    tracker_theta = np.clip(tracker_theta, -max_angle, max_angle)
+
+    # Determine minimum and maximum rotation angles based on max_angle.
+    # If max_angle is a single value, assume min_angle is the negative.
+    if np.isscalar(max_angle):
+        min_angle = -max_angle
+    else:
+        min_angle, max_angle = max_angle
+
+    # Clip tracker_theta between the minimum and maximum angles.
+    tracker_theta = np.clip(tracker_theta, min_angle, max_angle)
 
     # Calculate auxiliary angles
     surface = calc_surface_orientation(tracker_theta, axis_tilt, axis_azimuth)

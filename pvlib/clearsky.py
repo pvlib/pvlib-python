@@ -25,11 +25,11 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
     Implements the Ineichen and Perez clear sky model for global
     horizontal irradiance (GHI), direct normal irradiance (DNI), and
     calculates the clear-sky diffuse horizontal (DHI) component as the
-    difference between GHI and DNI*cos(zenith) as presented in [1, 2]. A
+    difference between GHI and DNI*cos(zenith) as presented in [1]_ [2]_. A
     report on clear sky models found the Ineichen/Perez model to have
-    excellent performance with a minimal input data set [3].
+    excellent performance with a minimal input data set [3]_.
 
-    Default values for monthly Linke turbidity provided by SoDa [4, 5].
+    Default values for monthly Linke turbidity provided by SoDa [4]_, [5]_.
 
     Parameters
     -----------
@@ -80,12 +80,12 @@ def ineichen(apparent_zenith, airmass_absolute, linke_turbidity,
        Clear Sky Models: Implementation and Analysis", Sandia National
        Laboratories, SAND2012-2389, 2012.
 
-    .. [4] http://www.soda-is.com/eng/services/climat_free_eng.php#c5 (obtained
-       July 17, 2012).
+    .. [4] https://www.soda-pro.com/help/general-knowledge/linke-turbidity-factor
+       (accessed February 2, 2024).
 
     .. [5] J. Remund, et. al., "Worldwide Linke Turbidity Information", Proc.
        ISES Solar World Congress, June 2003. Goteborg, Sweden.
-    '''
+    '''  # noqa: E501
 
     # ghi is calculated using either the equations in [1] by setting
     # perez_enhancement=False (default behavior) or using the model
@@ -159,7 +159,7 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
 
     longitude : float or int
 
-    filepath : None or string, default None
+    filepath : string, optional
         The path to the ``.h5`` file.
 
     interp_turbidity : bool, default True
@@ -644,8 +644,38 @@ def _clear_sample_index(clear_windows, samples_per_window, align, H):
     return clear_samples
 
 
-def detect_clearsky(measured, clearsky, times=None, window_length=10,
-                    mean_diff=75, max_diff=75,
+def _clearsky_get_threshold(sample_interval):
+    """
+    Returns threshold values for kwargs in detect_clearsky. See
+    Table 1 in [1].
+
+    References
+    ----------
+    .. [1] Jordan, D.C. and C. Hansen, "Clear-sky detection for PV
+       degradation analysis using multiple regression", Renewable Energy,
+       v209, p. 393-400, 2023.
+    """
+
+    if (sample_interval < 1 or sample_interval > 30):
+        raise ValueError("`infer_limits=True` can only be used for inputs \
+                          with time step from 1 to 30 minutes")
+
+    data_freq = np.array([1, 5, 15, 30])
+
+    window_length = np.interp(sample_interval, data_freq, [50, 60, 90, 120])
+    mean_diff = np.interp(sample_interval, data_freq, [75, 75, 75, 75])
+    max_diff = np.interp(sample_interval, data_freq, [60, 65, 75, 90])
+    lower_line_length = np.interp(sample_interval, data_freq, [-45,-45,-45,-45])
+    upper_line_length = np.interp(sample_interval, data_freq, [80, 80, 80, 80])
+    var_diff = np.interp(sample_interval, data_freq, [0.005, 0.01, 0.032, 0.07])
+    slope_dev = np.interp(sample_interval, data_freq, [50, 60, 75, 96])
+
+    return (window_length, mean_diff, max_diff, lower_line_length,
+            upper_line_length, var_diff, slope_dev)
+
+
+def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
+                    window_length=10, mean_diff=75, max_diff=75,
                     lower_line_length=-5, upper_line_length=10,
                     var_diff=0.005, slope_dev=8, max_iterations=20,
                     return_components=False):
@@ -673,9 +703,12 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         Time series of measured GHI. [W/m2]
     clearsky : array or Series
         Time series of the expected clearsky GHI. [W/m2]
-    times : DatetimeIndex or None, default None.
-        Times of measured and clearsky values. If None the index of measured
-        will be used.
+    times : DatetimeIndex, optional
+        Times of measured and clearsky values. If not specified, the index of
+        ``measured`` will be used.
+    infer_limits : bool, default False
+        If True, does not use passed in kwargs (or defaults), but instead
+        interpolates these values from Table 1 in [2]_.
     window_length : int, default 10
         Length of sliding time window in minutes. Must be greater than 2
         periods.
@@ -731,6 +764,9 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
     .. [1] Reno, M.J. and C.W. Hansen, "Identification of periods of clear
        sky irradiance in time series of GHI measurements" Renewable Energy,
        v90, p. 520-531, 2016.
+    .. [2] Jordan, D.C. and C. Hansen, "Clear-sky detection for PV
+       degradation analysis using multiple regression", Renewable Energy,
+       v209, p. 393-400, 2023. :doi:`10.1016/j.renene.2023.04.035`
 
     Notes
     -----
@@ -772,6 +808,21 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
 
     sample_interval, samples_per_window = \
         tools._get_sample_intervals(times, window_length)
+
+    # if infer_limits, find threshold values using the sample interval
+    if infer_limits:
+        window_length, mean_diff, max_diff, lower_line_length, \
+            upper_line_length, var_diff, slope_dev = \
+                _clearsky_get_threshold(sample_interval)
+
+        # recalculate samples_per_window using returned window_length
+        _, samples_per_window = \
+            tools._get_sample_intervals(times, window_length)
+
+    # check that we have enough data to produce a nonempty hankel matrix
+    if len(times) < samples_per_window:
+        raise ValueError(f"times has only {len(times)} entries, but it must \
+                           have at least {samples_per_window} entries")
 
     # generate matrix of integers for creating windows with indexing
     H = hankel(np.arange(samples_per_window),
@@ -826,7 +877,22 @@ def detect_clearsky(measured, clearsky, times=None, window_length=10,
         def rmse(alpha):
             return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
 
-        alpha = minimize_scalar(rmse).x
+        optimize_result = minimize_scalar(rmse)
+        if not optimize_result.success:
+            try:
+                message = "Optimizer exited unsuccessfully: " \
+                           + optimize_result.message
+            except AttributeError:
+                message = "Optimizer exited unsuccessfully: \
+                           No message explaining the failure was returned. \
+                           If you would like to see this message, please \
+                           update your scipy version (try version 1.8.0 \
+                           or beyond)."
+            raise RuntimeError(message)
+
+        else:
+            alpha = optimize_result.x
+
         if round(alpha*10000) == round(previous_alpha*10000):
             break
     else:
@@ -927,8 +993,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     .. [3] `NREL Bird Clear Sky Model <http://rredc.nrel.gov/solar/models/
        clearsky/>`_
 
-    .. [4] `SERI/TR-642-761 <http://rredc.nrel.gov/solar/pubs/pdfs/
-       tr-642-761.pdf>`_
+    .. [4] `SERI/TR-642-761 <https://www.nrel.gov/docs/legosti/old/761.pdf>`_
 
     .. [5] `Error Reports <http://rredc.nrel.gov/solar/models/clearsky/
        error_reports.html>`_

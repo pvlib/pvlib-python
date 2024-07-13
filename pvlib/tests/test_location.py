@@ -12,6 +12,7 @@ import pytz
 from pytz.exceptions import UnknownTimeZoneError
 
 import pvlib
+from pvlib import location
 from pvlib.location import Location, lookup_altitude
 from pvlib.solarposition import declination_spencer71
 from pvlib.solarposition import equation_of_time_spencer71
@@ -74,7 +75,7 @@ def test_location_print_pytz():
 def times():
     return pd.date_range(start='20160101T0600-0700',
                          end='20160101T1800-0700',
-                         freq='3H')
+                         freq='3h')
 
 
 def test_get_clearsky(mocker, times):
@@ -328,21 +329,28 @@ def test_extra_kwargs():
         Location(32.2, -111, arbitrary_kwarg='value')
 
 
-def test_lookup_altitude():
-    max_alt_error = 125
-    # location name, latitude, longitude, altitude
-    test_locations = [
-        ('Tucson, USA', 32.2540, -110.9742, 724),
-        ('Lusaka, Zambia', -15.3875, 28.3228, 1253),
-        ('Tokio, Japan', 35.6762, 139.6503, 40),
-        ('Canberra, Australia', -35.2802, 149.1310, 566),
-        ('Bogota, Colombia', 4.7110, -74.0721, 2555),
-        ('Dead Sea, West Bank', 31.525849, 35.449214, -415),
-        ('New Delhi, India', 28.6139, 77.2090, 214),
-        ('Null Island,  Atlantic Ocean', 0, 0, 0),
-    ]
+@pytest.mark.parametrize('lat,lon,expected_alt', [
+    pytest.param(32.2540, -110.9742, 724, id='Tucson, USA'),
+    pytest.param(-15.3875, 28.3228, 1253, id='Lusaka, Zambia'),
+    pytest.param(35.6762, 139.6503, 40, id='Tokyo, Japan'),
+    pytest.param(-35.2802, 149.1310, 566, id='Canberra, Australia'),
+    pytest.param(4.7110, -74.0721, 2555, id='Bogota, Colombia'),
+    pytest.param(31.525849, 35.449214, -415, id='Dead Sea, West Bank'),
+    pytest.param(28.6139, 77.2090, 214, id='New Delhi, India'),
+    pytest.param(0, 0, 0, id='Null Island,  Atlantic Ocean'),
+])
+def test_lookup_altitude(lat, lon, expected_alt):
+    alt_found = lookup_altitude(lat, lon)
+    assert alt_found == pytest.approx(expected_alt, abs=125)
 
-    for name, lat, lon, expected_alt in test_locations:
-        alt_found = lookup_altitude(lat, lon)
-        assert abs(alt_found - expected_alt) < max_alt_error, \
-            f'Max error exceded for {name} - e: {expected_alt} f: {alt_found}'
+
+def test_location_lookup_altitude(mocker):
+    mocker.spy(location, 'lookup_altitude')
+    tus = Location(32.2, -111, 'US/Arizona', 700, 'Tucson')
+    location.lookup_altitude.assert_not_called()
+    assert tus.altitude == 700
+    location.lookup_altitude.reset_mock()
+
+    tus = Location(32.2, -111, 'US/Arizona')
+    location.lookup_altitude.assert_called_once_with(32.2, -111)
+    assert tus.altitude == location.lookup_altitude(32.2, -111)

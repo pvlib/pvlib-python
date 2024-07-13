@@ -14,7 +14,7 @@ User Guide
    timetimezones
    clearsky
    bifacial
-   comparison_pvlib_matlab
+   weather_data
    variables_style_rules
    singlediode
    faq

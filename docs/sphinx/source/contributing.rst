@@ -29,12 +29,8 @@ pvlib-python, git, or Python:
   `easy <https://github.com/pvlib/pvlib-python/labels/easy>`_,
   or `help wanted <https://github.com/pvlib/pvlib-python/labels/help%20wanted>`_.
 * Improve the documentation and the unit tests.
-* Improve the IPython/Jupyter Notebook tutorials or write new ones that
+* Improve the Example Gallery or add new examples that
   demonstrate how to use pvlib-python in your area of expertise.
-* If you have MATLAB experience, you can help us keep pvlib-python
-  up to date with PVLIB_MATLAB or help us develop common unit tests.
-  For more, see `Issue #2 <https://github.com/pvlib/pvlib-python/issues/2>`_
-  and `Issue #3 <https://github.com/pvlib/pvlib-python/issues/3>`_.
 * Tell your friends and colleagues about pvlib-python.
 * Add your project to our
   `Projects and publications that use pvlib-python wiki
@@ -261,7 +257,7 @@ First, install the ``doc`` dependencies specified in the
 `setup.py <https://github.com/pvlib/pvlib-python/blob/main/setup.py>`_.
 An easy way to do this is with::
 
-    pip install pvlib[doc]
+    pip install pvlib[doc]    # on Mac:  pip install "pvlib[doc]"
 
 Note: Anaconda users may have trouble using the above command to update an
 older version of docutils. If that happens, you can update it with ``conda``

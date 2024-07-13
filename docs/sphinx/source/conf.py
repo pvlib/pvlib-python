@@ -56,6 +56,9 @@ extensions = [
     'sphinx_toggleprompt',
 ]
 
+mathjax3_config = {'chtml': {'displayAlign': 'left',
+                             'displayIndent': '2em'}}
+
 napoleon_use_rtype = False  # group rtype on same line together with return
 
 # Add any paths that contain templates here, relative to this directory.
@@ -72,8 +75,9 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pvlib python'
-copyright = \
-    '2013-2021, Sandia National Laboratories and pvlib python Development Team'
+copyright = '''pvlib python Contributors (2023);
+    PVLIB python Development Team (2014);
+    Sandia National Laboratories (2013)'''
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -297,7 +301,8 @@ extlinks = {
     'pull': ('https://github.com/pvlib/pvlib-python/pull/%s', 'GH'),
     'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s', 'wiki '),
     'doi': ('http://dx.doi.org/%s', 'DOI: '),
-    'ghuser': ('https://github.com/%s', '@')
+    'ghuser': ('https://github.com/%s', '@'),
+    'discuss': ('https://github.com/pvlib/pvlib-python/discussions/%s', 'GH'),
 }
 
 # -- Options for manual page output ---------------------------------------
@@ -356,15 +361,18 @@ suppress_warnings = ['ref.footnote']
 sphinx_gallery_conf = {
     'examples_dirs': ['../../examples'],  # location of gallery scripts
     'gallery_dirs': ['gallery'],  # location of generated output
-    # sphinx-gallery only shows plots from plot_*.py files by default:
-    # 'filename_pattern': '*.py',
+    # execute all scripts except for ones in the "system-models" directory:
+    'filename_pattern': '^((?!system-models).)*$',
 
     # directory where function/class granular galleries are stored
     'backreferences_dir': 'reference/generated/gallery_backreferences',
 
     # Modules for which function/class level galleries are created. In
-    # this case only pvlib, could include others though.  must be tuple of str
+    # this case only pvlib, could include others though. Must be tuple of str
     'doc_module': ('pvlib',),
+
+    # https://sphinx-gallery.github.io/dev/configuration.html#removing-config-comments  # noqa: E501
+    'remove_config_comments': True,
 }
 # supress warnings in gallery output
 # https://sphinx-gallery.github.io/stable/configuration.html
@@ -435,11 +443,16 @@ def make_github_url(file_name):
 
     # is it a gallery page?
     if any(d in file_name for d in sphinx_gallery_conf['gallery_dirs']):
-        if file_name.split("/")[-1] == "index":
+        example_folder = file_name.split("/")[-2]
+        if file_name.split("/")[-1] == "index.rst":
             example_file = "README.rst"
         else:
             example_file = file_name.split("/")[-1].replace('.rst', '.py')
-        target_url = URL_BASE + "docs/examples/" + example_file
+
+        if example_folder == 'gallery':
+            target_url = URL_BASE + "docs/examples/" + example_file  # noqa: E501
+        else:
+            target_url = URL_BASE + "docs/examples/" + example_folder + "/" + example_file  # noqa: E501
 
     # is it an API autogen page?
     elif "generated" in file_name:

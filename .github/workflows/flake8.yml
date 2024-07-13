@@ -1,0 +1,27 @@
+name: Python Flake8 Linter
+on:
+  pull_request:
+jobs:
+  flake8-linter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+      - name: Install Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install Flake8 5.0.4 linter
+        run: pip install flake8==5.0.4  # use this version for --diff option
+      - name: Setup Flake8 output matcher for PR annotations
+        run: echo '::add-matcher::.github/workflows/flake8-linter-matcher.json'
+      - name: Fetch pull request target branch
+        run: |
+          git remote add upstream https://github.com/pvlib/pvlib-python.git
+          git fetch upstream $GITHUB_BASE_REF
+      - name: Run Flake8 linter
+        run: git diff upstream/$GITHUB_BASE_REF HEAD -- "*.py" | flake8
+          --exclude pvlib/version.py
+          --ignore E201,E241,E226,W503,W504
+          --max-line-length 79
+          --diff

@@ -201,8 +201,9 @@ def test_read_pvgis_hourly_bad_extension():
     # Test if ValueError is raised if an unkonwn pvgis_format is specified
     with pytest.raises(ValueError, match="pvgis format 'txt' was unknown"):
         read_pvgis_hourly(testfile_pv_json, pvgis_format='txt')
-    # Test if TypeError is raised if input is a buffer and pvgis_format=None
-    with pytest.raises(TypeError, match="expected str, bytes or os.PathLike"):
+    # Test if TypeError is raised if input is a buffer and pvgis_format=None.
+    # The error text changed in python 3.12. This regex matches both versions:
+    with pytest.raises(TypeError, match="str.*os.PathLike"):
         read_pvgis_hourly(io.StringIO())
 
 
@@ -496,7 +497,7 @@ def test_get_pvgis_tmy_error():
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_map_variables(pvgis_tmy_mapped_columns):
     actual, _, _, _ = get_pvgis_tmy(45, 8, map_variables=True)
-    assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
+    assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 
 @pytest.mark.remote_data
@@ -519,7 +520,7 @@ def test_read_pvgis_horizon_invalid_coords():
 def test_read_pvgis_tmy_map_variables(pvgis_tmy_mapped_columns):
     fn = DATA_DIR / 'tmy_45.000_8.000_2005_2016.json'
     actual, _, _, _ = read_pvgis_tmy(fn, map_variables=True)
-    assert all([c in pvgis_tmy_mapped_columns for c in actual.columns])
+    assert all(c in pvgis_tmy_mapped_columns for c in actual.columns)
 
 
 def test_read_pvgis_tmy_json(expected, month_year_expected, inputs_expected,

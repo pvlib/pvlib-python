@@ -362,8 +362,9 @@ def pvsyst_cell(poa_global, temp_air, wind_speed=1.0, u_c=29.0, u_v=0.0,
 
     References
     ----------
-    .. [1] "PVsyst 6 Help", Files.pvsyst.com, 2018. [Online]. Available:
-       http://files.pvsyst.com/help/index.html. [Accessed: 10- Dec- 2018].
+    .. [1] "PVsyst 7 Help", [Online]. Available:
+       https://www.pvsyst.com/help/index.html?thermal_loss.htm.
+       [Accessed: 30-Jan-2024].
 
     .. [2] Faiman, D. (2008). "Assessing the outdoor operating temperature of
        photovoltaic modules." Progress in Photovoltaics 16(4): 307-315.
@@ -678,7 +679,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
 
     wind_height : float, default 9.144
         The height above ground at which ``wind_speed`` is measured. The
-        PVWatts defauls is 9.144 [m]
+        PVWatts default is 9.144 [m]
 
     emissivity : float, default 0.84
         The effectiveness of the module at radiating thermal energy. [unitless]
@@ -721,7 +722,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
            http://prod.sandia.gov/techlib/access-control.cgi/1985/850330.pdf
     .. [2] Dobos, A. P., 2014, "PVWatts Version 5 Manual", NREL/TP-6A20-62641,
            National Renewable Energy Laboratory, Golden CO.
-           doi:10.2172/1158421.
+           :doi:`10.2172/1158421`.
     """
     # ported from the FORTRAN77 code provided in Appendix A of Fuentes 1987;
     # nearly all variable names are kept the same for ease of comparison.
@@ -872,8 +873,8 @@ def noct_sam(poa_global, temp_air, wind_speed, noct, module_efficiency,
         :math:`\eta_{m} = \frac{V_{mp} I_{mp}}{A \times 1000 W/m^2}`
         where A is module area [m^2].
 
-    effective_irradiance : numeric, default None.
-        The irradiance that is converted to photocurrent. If None,
+    effective_irradiance : numeric, optional
+        The irradiance that is converted to photocurrent. If not specified,
         assumed equal to poa_global. [W/m^2]
 
     transmittance_absorptance : numeric, default 0.9
@@ -962,6 +963,7 @@ def prilliman(temp_cell, wind_speed, unit_mass=11.1, coefficients=None):
 
     unit_mass : float, default 11.1
         Total mass of module divided by its one-sided surface area [kg/m^2]
+        One-sided surface area is equal to module height times width
 
     coefficients : 4-element list-like, optional
         Values for coefficients a_0 through a_3, see Eq. 9 of [1]_

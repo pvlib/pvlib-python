@@ -1,0 +1,12 @@
+.. _whatsnew_01010:
+
+
+v0.10.1 (July 3, 2023)
+----------------------
+
+To resolve an installation issue with ``pvfactors`` and ``shapely``,
+this release drops the optional ``pvfactors`` dependency and replaces
+it with ``solarfactors``, a fork of ``pvfactors`` maintained by the
+pvlib community.  This change should not affect any user code.
+(:issue:`1796`, :pull:`1797`, :discuss:`1657`)
+

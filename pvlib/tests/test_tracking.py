@@ -151,6 +151,22 @@ def test_max_angle():
     assert_frame_equal(expect, tracker_data)
 
 
+def test_min_angle():
+    apparent_zenith = pd.Series([60])
+    apparent_azimuth = pd.Series([270])
+    tracker_data = tracking.singleaxis(apparent_zenith, apparent_azimuth,
+                                       axis_tilt=0, axis_azimuth=0,
+                                       max_angle=(-45, 50), backtrack=True,
+                                       gcr=2.0/7.0)
+
+    expect = pd.DataFrame({'aoi': 15, 'surface_azimuth': 270,
+                           'surface_tilt': 45, 'tracker_theta': -45},
+                          index=[0], dtype=np.float64)
+    expect = expect[SINGLEAXIS_COL_ORDER]
+
+    assert_frame_equal(expect, tracker_data)
+
+
 def test_backtrack():
     apparent_zenith = pd.Series([80])
     apparent_azimuth = pd.Series([90])
@@ -300,7 +316,7 @@ def test_calc_axis_tilt():
     starttime = '2017-01-01T00:30:00-0300'
     stoptime = '2017-12-31T23:59:59-0300'
     lat, lon = -27.597300, -48.549610
-    times = pd.DatetimeIndex(pd.date_range(starttime, stoptime, freq='H'))
+    times = pd.DatetimeIndex(pd.date_range(starttime, stoptime, freq='h'))
     solpos = pvlib.solarposition.get_solarposition(times, lat, lon)
     # singleaxis tracker w/slope data
     slope_azimuth, slope_tilt = 77.34, 10.1149
@@ -378,7 +394,7 @@ def test_singleaxis_aoi_gh1221():
     # vertical tracker
     loc = pvlib.location.Location(40.1134, -88.3695)
     dr = pd.date_range(
-        start='02-Jun-1998 00:00:00', end='02-Jun-1998 23:55:00', freq='5T',
+        start='02-Jun-1998 00:00:00', end='02-Jun-1998 23:55:00', freq='5min',
         tz='Etc/GMT+6')
     sp = loc.get_solarposition(dr)
     tr = pvlib.tracking.singleaxis(

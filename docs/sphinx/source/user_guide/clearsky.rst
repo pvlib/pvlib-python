@@ -344,15 +344,6 @@ Validation
 
 See [Ine02]_, [Ren12]_.
 
-Will Holmgren compared pvlib's Ineichen model and climatological
-turbidity to `SoDa's McClear service
-<http://www.soda-pro.com/web-services/radiation/cams-mcclear>`_ in
-Arizona. Here are links to an
-`ipynb notebook
-<https://forecasting.energy.arizona.edu/media/ineichen_vs_mcclear.ipynb>`_
-and its `html rendering
-<https://forecasting.energy.arizona.edu/media/ineichen_vs_mcclear.html>`_.
-
 
 .. _simplified_solis:
 
@@ -370,9 +361,7 @@ Aerosol and precipitable water data
 There are a number of sources for aerosol and precipitable water data
 of varying accuracy, global coverage, and temporal resolution.
 Ground based aerosol data can be obtained from
-`Aeronet <http://aeronet.gsfc.nasa.gov>`_. Precipitable water can be obtained
-from `radiosondes <http://weather.uwyo.edu/upperair/sounding.html>`_,
-`ESRL GPS-MET <http://gpsmet.noaa.gov/cgi-bin/gnuplots/rti.cgi>`_, or
+`Aeronet <http://aeronet.gsfc.nasa.gov>`_. Precipitable water can be
 derived from surface relative humidity using functions such as
 :py:func:`pvlib.atmosphere.gueymard94_pw`.
 Numerous gridded products from satellites, weather models, and climate models
@@ -577,9 +566,6 @@ Validation
 
 See [Ine16]_.
 
-We encourage users to compare the pvlib implementation to Ineichen's
-`Excel tool <http://www.unige.ch/energie/fr/equipe/ineichen/solis-tool/>`_.
-
 .. _detect_clearsky:
 
 Detect Clearsky
@@ -642,7 +628,7 @@ Now we run the synthetic data and clear sky estimate through the
 
 .. ipython:: python
 
-    clear_samples = clearsky.detect_clearsky(ghi, cs['ghi'], cs.index, 10)
+    clear_samples = clearsky.detect_clearsky(ghi, cs['ghi'])
 
     fig, ax = plt.subplots()
 

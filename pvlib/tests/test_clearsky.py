@@ -533,6 +533,49 @@ def detect_clearsky_data():
     return expected, cs
 
 
+@pytest.fixture
+def detect_clearsky_threshold_data():
+    # this is (roughly) just a 2 hour period of the same data in
+    # detect_clearsky_data (which only spans 30 minutes)
+    data_file = DATA_DIR / 'detect_clearsky_threshold_data.csv'
+    expected = pd.read_csv(
+        data_file, index_col=0, parse_dates=True, comment='#')
+    expected = expected.tz_localize('UTC').tz_convert('Etc/GMT+7')
+    metadata = {}
+    with data_file.open() as f:
+        for line in f:
+            if line.startswith('#'):
+                key, value = line.strip('# \n').split(':')
+                metadata[key] = float(value)
+            else:
+                break
+    metadata['window_length'] = int(metadata['window_length'])
+    loc = Location(metadata['latitude'], metadata['longitude'],
+                   altitude=metadata['elevation'])
+    # specify turbidity to guard against future lookup changes
+    cs = loc.get_clearsky(expected.index, linke_turbidity=2.658197)
+    return expected, cs
+
+
+def test_clearsky_get_threshold():
+    out = clearsky._clearsky_get_threshold(4.5)
+    expected = (58.75, 75, 64.375, -45, 80.0, 0.009375, 58.75)
+    assert np.allclose(out, expected)
+
+
+def test_clearsky_get_threshold_raises_error():
+    with pytest.raises(ValueError, match='can only be used for inputs'):
+        clearsky._clearsky_get_threshold(0.5)
+
+
+def test_detect_clearsky_calls_threshold(mocker, detect_clearsky_threshold_data):
+    threshold_spy = mocker.spy(clearsky, '_clearsky_get_threshold')
+    expected, cs = detect_clearsky_threshold_data
+    threshold_actual = clearsky.detect_clearsky(expected['GHI'], cs['ghi'],
+                       infer_limits=True)
+    assert threshold_spy.call_count == 1
+
+
 def test_detect_clearsky(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     clear_samples = clearsky.detect_clearsky(
@@ -588,7 +631,7 @@ def test_detect_clearsky_window(detect_clearsky_data):
     clear_samples = clearsky.detect_clearsky(
         expected['GHI'], cs['ghi'], window_length=3)
     expected = expected['Clear or not'].copy()
-    expected.iloc[-3:] = True
+    expected.iloc[-3:] = 1
     assert_series_equal(expected, clear_samples,
                         check_dtype=False, check_names=False)
 
@@ -627,6 +670,18 @@ def test_detect_clearsky_missing_index(detect_clearsky_data):
     expected, cs = detect_clearsky_data
     with pytest.raises(ValueError):
         clearsky.detect_clearsky(expected['GHI'].values, cs['ghi'].values)
+
+
+def test_detect_clearsky_not_enough_data(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    with pytest.raises(ValueError, match='have at least'):
+       clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=60)
+
+
+def test_detect_clearsky_optimizer_failed(detect_clearsky_data):
+    expected, cs = detect_clearsky_data
+    with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
+        clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=15)
 
 
 @pytest.fixture
@@ -690,7 +745,7 @@ def test__calc_stats(detect_clearsky_helper_data):
 def test_bird():
     """Test Bird/Hulstrom Clearsky Model"""
     times = pd.date_range(start='1/1/2015 0:00', end='12/31/2015 23:00',
-                          freq='H')
+                          freq='h')
     tz = -7  # test timezone
     gmt_tz = pytz.timezone('Etc/GMT%+d' % -(tz))
     times = times.tz_localize(gmt_tz)  # set timezone
@@ -800,7 +855,8 @@ def test_bird():
     # test scalars just at noon
     # XXX: calculations start at 12am so noon is at index = 12
     irrads3 = clearsky.bird(
-        zenith[12], airmass[12], aod_380nm, aod_500nm, h2o_cm, dni_extra=etr[12]
+        zenith[12], airmass[12], aod_380nm, aod_500nm, h2o_cm,
+        dni_extra=etr.iloc[12]
     )
     Eb3, Ebh3, Gh3, Dh3 = (irrads3[_] for _ in field_names)
     # XXX: testdata starts at 1am so noon is at index = 11

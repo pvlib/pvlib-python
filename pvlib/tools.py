@@ -11,7 +11,7 @@ import warnings
 
 def cosd(angle):
     """
-    Cosine with angle input in degrees
+    Trigonometric cosine with angle input in degrees.
 
     Parameters
     ----------
@@ -23,14 +23,13 @@ def cosd(angle):
     result : float or array-like
         Cosine of the angle
     """
-
     res = np.cos(np.radians(angle))
     return res
 
 
 def sind(angle):
     """
-    Sine with angle input in degrees
+    Trigonometric sine with angle input in degrees.
 
     Parameters
     ----------
@@ -42,14 +41,13 @@ def sind(angle):
     result : float
         Sin of the angle
     """
-
     res = np.sin(np.radians(angle))
     return res
 
 
 def tand(angle):
     """
-    Tan with angle input in degrees
+    Trigonometric tangent with angle input in degrees.
 
     Parameters
     ----------
@@ -61,14 +59,13 @@ def tand(angle):
     result : float
         Tan of the angle
     """
-
     res = np.tan(np.radians(angle))
     return res
 
 
 def asind(number):
     """
-    Inverse Sine returning an angle in degrees
+    Trigonometric inverse sine returning an angle in degrees.
 
     Parameters
     ----------
@@ -80,14 +77,13 @@ def asind(number):
     result : float
         arcsin result
     """
-
     res = np.degrees(np.arcsin(number))
     return res
 
 
 def acosd(number):
     """
-    Inverse Cosine returning an angle in degrees
+    Trigonometric inverse cosine returning an angle in degrees.
 
     Parameters
     ----------
@@ -99,8 +95,25 @@ def acosd(number):
     result : float
         arccos result
     """
-
     res = np.degrees(np.arccos(number))
+    return res
+
+
+def atand(number):
+    """
+    Trigonometric inverse tangent returning an angle in degrees.
+
+    Parameters
+    ----------
+    number : float
+        Input number
+
+    Returns
+    -------
+    result : float
+        arctan result
+    """
+    res = np.degrees(np.arctan(number))
     return res
 
 
@@ -494,3 +507,30 @@ def get_pandas_index(*args):
         (a.index for a in args if isinstance(a, (pd.DataFrame, pd.Series))),
         None
     )
+
+
+def normalize_max2one(a):
+    r"""
+    Normalize an array so that the largest absolute value is ±1.
+
+    Handles both numpy arrays and pandas objects.
+    On 2D arrays, normalization is row-wise.
+    On pandas DataFrame, normalization is column-wise.
+
+    If all values of row are 0, the array is set to NaNs.
+
+    Parameters
+    ----------
+    a : array-like
+        The array to normalize.
+
+    Returns
+    -------
+    array-like
+        The normalized array.
+    """
+    try:  # expect numpy array
+        res = a / np.max(np.absolute(a), axis=-1, keepdims=True)
+    except ValueError:  # fails for pandas objects
+        res = a.div(a.abs().max(axis=0, skipna=True))
+    return res

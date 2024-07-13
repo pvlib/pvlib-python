@@ -1,0 +1,86 @@
+.. _whatsnew_01020:
+
+
+v0.10.2 (September 21, 2023)
+----------------------------
+
+
+Enhancements
+~~~~~~~~~~~~
+* Added .pan/.ond reader function :py:func:`pvlib.iotools.read_panond`. (:issue:`1747`, :pull:`1749`)
+* Added support for dates to be specified as strings in the iotools get functions:
+  :py:func:`~pvlib.iotools.get_pvgis_hourly`, :py:func:`~pvlib.iotools.get_cams`,
+  :py:func:`~pvlib.iotools.get_bsrn`, and :py:func:`~pvlib.iotools.read_midc_raw_data_from_nrel`.
+  (:pull:`1800`)
+* Added support for asymmetric limiting angles in :py:func:`pvlib.tracking.singleaxis`
+  and :py:class:`~pvlib.pvsystem.SingleAxisTrackerMount`. (:issue:`1777`, :pull:`1809`, :pull:`1852`)
+* Added option to infer threshold values for
+  :py:func:`pvlib.clearsky.detect_clearsky` (:issue:`1808`, :pull:`1784`)
+* Added a continuous version of the Erbs diffuse-fraction/decomposition model.
+  :py:func:`pvlib.irradiance.erbs_driesse` (:issue:`1755`, :pull:`1834`)
+* Added :py:func:`~pvlib.iam.interp` option as AOI losses model in
+  :py:class:`~pvlib.modelchain.ModelChain` and
+  :py:class:`~pvlib.pvsystem.PVSystem`. (:issue:`1742`, :pull:`1832`)
+* :py:class:`~pvlib.pvsystem.PVSystem` objects with a single
+  :py:class:`~pvlib.pvsystem.Array` can now be created without wrapping the
+  ``Array`` in a list first. (:issue:`1831`, :pull:`1854`)
+
+
+Bug fixes
+~~~~~~~~~
+* :py:func:`~pvlib.iotools.get_psm3` no longer incorrectly returns clear-sky
+  DHI instead of clear-sky GHI when requesting ``ghi_clear``. (:pull:`1819`)
+* :py:func:`pvlib.singlediode.bishop88` with ``method='newton'`` no longer
+  crashes when passed ``pandas.Series`` of length one.
+  (:issue:`1787`, :pull:`1822`)
+* :py:class:`~pvlib.pvsystem.PVSystem` now correctly passes ``n_ar`` module
+  parameter to :py:func:`pvlib.iam.physical` when this IAM model is specified
+  or inferred. (:pull:`1832`)
+
+
+Testing
+~~~~~~~
+* Added GitHub action to lint file changes with Flake8, replacing Stickler-CI.
+  (:issue:`776`, :issue:`1722`, :pull:`1723`, :pull:`1786`)
+
+
+Documentation
+~~~~~~~~~~~~~
+* Added docstring detail for :py:func:`pvlib.iam.schlick_diffuse`.
+  (:issue:`1811`, :pull:`1812`)
+* Specified that :py:func:`pvlib.singlediode.bishop88`,
+  :py:func:`pvlib.singlediode.bishop88_i_from_v`, and
+  :py:func:`pvlib.singlediode.bishop88_v_from_i` parameters ``breakdown_factor``,
+  ``breakdown_voltage``, and ``breakdown_exp`` should be floats.
+  (:issue:`1820`, :pull:`1821`)
+* Fix and update example in :py:func:`pvlib.pvsystem.retrieve_sam`.
+  (:issue:`1741`, :pull:`1833`)
+* Fix error in :py:func:`pvlib.iotools.get_pvgis_hourly` documentation of ``surface_azimuth``.
+  (:issue:`1724`, :pull:`1838`)
+* Update definition of ``snow_events`` parameter for :py:func:`pvlib.snow.loss_townsend`.
+  (:issue:`1839`, :pull:`1840`)
+* Added gallery example demonstrating how horizon profile data from :py:func:`pvlib.iotools.get_pvgis_horizon`, 
+  can be used to apply horizon shading to time series dni and global poa data. (:pull:`1849`)
+
+
+Contributors
+~~~~~~~~~~~~
+* Connor Krening (:ghuser:`ckrening`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
+* Michal Arieli (:ghuser:`MichalArieli`)
+* Abigail Jones (:ghuser:`ajonesr`)
+* Taos Transue (:ghuser:`reepoi`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Todd Karin (:ghuser:`toddkarin`)
+* NativeSci (:ghuser:`nativesci`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Lukas Grossar (:ghuser:`tongpu`)
+* Areeba Turabi (:ghuser:`aturabi`)
+* Saurabh Aneja (:ghuser:`spaneja`)
+* Miroslav Šedivý (:ghuser:`eumiro`)
+* kjsauer (:ghuser:`kjsauer`)
+* Jules Chéron (:ghuser:`jules-ch`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* Kevin Anderson (:ghuser:`kandersolar`)

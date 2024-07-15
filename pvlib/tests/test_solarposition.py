@@ -8,6 +8,7 @@ import pandas as pd
 from .conftest import assert_frame_equal, assert_series_equal
 from numpy.testing import assert_allclose
 import pytest
+import pytz
 
 from pvlib.location import Location
 from pvlib import solarposition, spa
@@ -683,6 +684,10 @@ def test_hour_angle_with_tricky_timezones():
         '2014-09-07 10:00:00',
         '2014-09-07 11:00:00',
     ]).tz_localize('America/Santiago')
+
+    with pytest.raises(pytz.exceptions.NonExistentTimeError):
+        times.normalize()
+    
     # should not raise `pytz.exceptions.NonExistentTimeError`
     solarposition.hour_angle(times, longitude, eot)
 
@@ -691,6 +696,10 @@ def test_hour_angle_with_tricky_timezones():
         '2014-11-02 10:00:00',
         '2014-11-02 11:00:00',
     ]).tz_localize('America/Havana')
+
+    with pytest.raises(pytz.exceptions.AmbiguousTimeError):
+        times.normalize()
+
     # should not raise `pytz.exceptions.AmbiguousTimeError`
     solarposition.hour_angle(times, longitude, eot)
 

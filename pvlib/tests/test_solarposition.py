@@ -687,7 +687,7 @@ def test_hour_angle_with_tricky_timezones():
 
     with pytest.raises(pytz.exceptions.NonExistentTimeError):
         times.normalize()
-    
+
     # should not raise `pytz.exceptions.NonExistentTimeError`
     solarposition.hour_angle(times, longitude, eot)
 

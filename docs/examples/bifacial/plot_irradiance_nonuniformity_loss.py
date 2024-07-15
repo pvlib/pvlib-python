@@ -40,13 +40,6 @@ array.
 #
 # .. sectionauthor:: Echedey Luis <echelual (at) gmail.com>
 
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.cm import ScalarMappable
-from matplotlib.colors import Normalize
-
-from pvlib.bifacial import power_mismatch_deline
-
 # %%
 # Problem description
 # -------------------
@@ -58,12 +51,20 @@ from pvlib.bifacial import power_mismatch_deline
 #
 # Here we set and plot the global irradiance level of each cell.
 
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
+
+from pvlib.bifacial import power_mismatch_deline
+
 x = np.arange(12, 0, -1)
 y = np.arange(6, 0, -1)
 cells_irrad = np.repeat([1059, 976, 967, 986, 1034, 1128], len(x)).reshape(
     len(y), len(x)
 )
 
+# plot the irradiance levels of each cell
 color_map = "gray"
 color_norm = Normalize(930, 1150)
 

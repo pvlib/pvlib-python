@@ -673,6 +673,28 @@ def test_hour_angle():
     assert np.allclose(hours, expected)
 
 
+def test_hour_angle_with_tricky_timezones():
+    # tests timezones that have a DST shift at midnight
+
+    eot = np.array([-3.935172, -4.117227])
+
+    longitude = 70.6693
+    times = pd.DatetimeIndex([
+        '2014-09-07 10:00:00',
+        '2014-09-07 11:00:00',
+    ]).tz_localize('America/Santiago')
+    # should not raise `pytz.exceptions.NonExistentTimeError`
+    solarposition.hour_angle(times, longitude, eot)
+
+    longitude = 82.3666
+    times = pd.DatetimeIndex([
+        '2014-11-02 10:00:00',
+        '2014-11-02 11:00:00',
+    ]).tz_localize('America/Havana')
+    # should not raise `pytz.exceptions.AmbiguousTimeError`
+    solarposition.hour_angle(times, longitude, eot)
+
+
 def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
     """Test geometric calculations for sunrise, sunset, and transit times"""
     times = expected_rise_set_spa.index

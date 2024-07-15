@@ -401,8 +401,8 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         module_type selects default coefficients for the following modules:
 
         * ``'cdte'`` - First Solar Series 4-2 CdTe module.
-        * ``'monosi'``, 'xsi' - First Solar TetraSun module.
-        * ``'multisi'``, 'polysi' - anonymous multi-crystalline silicon module.
+        * ``'monosi'``, ``'xsi'`` - First Solar TetraSun module.
+        * ``'multisi'``, ``'polysi'`` - anonymous multi-crystalline silicon module.
         * ``'cigs'`` - anonymous copper indium gallium selenide module.
         * ``'asi'`` - anonymous amorphous silicon module.
 

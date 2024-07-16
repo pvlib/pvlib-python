@@ -5,9 +5,6 @@ absolute airmass and to determine pressure from altitude or vice versa.
 
 import numpy as np
 import pandas as pd
-import pvlib
-
-from pvlib._deprecation import deprecated
 
 APPARENT_ZENITH_MODELS = ('simple', 'kasten1966', 'kastenyoung1989',
                           'gueymard1993', 'pickering2002')

@@ -499,7 +499,8 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
         warn('Low airmass values replaced with 'f'{min_airmass_absolute} in '
              'the calculation of spectral mismatch.')
-        # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
+        # pvlib.atmosphere.get_absolute_airmass(1,
+        # pvlib.atmosphere.alt2pres(4340)) = 0.58 Elevation of
         # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
         # population over 50,000.
 

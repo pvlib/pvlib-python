@@ -677,13 +677,15 @@ def test_hour_angle():
 def test_hour_angle_with_tricky_timezones():
     # tests timezones that have a DST shift at midnight
 
-    eot = np.array([-3.935172, -4.117227])
+    eot = np.array([-3.935172, -4.117227, -4.026295, -4.026295])
 
     longitude = 70.6693
     times = pd.DatetimeIndex([
-        '2014-09-07 10:00:00',
-        '2014-09-07 11:00:00',
-    ]).tz_localize('America/Santiago')
+        '2014-09-06 23:00:00',
+        '2014-09-07 00:00:00',
+        '2014-09-07 01:00:00',
+        '2014-09-07 02:00:00',
+    ]).tz_localize('America/Santiago', nonexistent='shift_forward')
 
     with pytest.raises(pytz.exceptions.NonExistentTimeError):
         times.normalize()
@@ -693,9 +695,11 @@ def test_hour_angle_with_tricky_timezones():
 
     longitude = 82.3666
     times = pd.DatetimeIndex([
-        '2014-11-02 10:00:00',
-        '2014-11-02 11:00:00',
-    ]).tz_localize('America/Havana')
+        '2014-11-01 23:00:00',
+        '2014-11-02 00:00:00',
+        '2014-11-02 01:00:00',
+        '2014-11-02 02:00:00',
+    ]).tz_localize('America/Havana', ambiguous=[True, True, False, False])
 
     with pytest.raises(pytz.exceptions.AmbiguousTimeError):
         times.normalize()

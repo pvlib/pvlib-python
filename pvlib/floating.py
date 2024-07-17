@@ -28,7 +28,6 @@ def stream_temperature_stefan(temp_air):
     :math:`T_{air}` as provided in [1]_:
 
     .. math::
-       :label: stream
 
         T_w = 5 + 0.75 \cdot T_{air}
 

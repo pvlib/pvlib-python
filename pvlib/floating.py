@@ -46,7 +46,6 @@ def stream_temperature_stefan(temp_air):
     seawater temperatures for floating PV without evidence of validity
     for such applications.
 
-    
     References
     ----------
     .. [1] Stefan H. G., Preud'homme E. B. (1993). "Stream temperature

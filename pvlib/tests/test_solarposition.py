@@ -702,10 +702,7 @@ def test_hour_angle_with_tricky_timezones():
     ]).tz_localize('America/Havana', ambiguous=[True, True, False, False])
 
     with pytest.raises(pytz.exceptions.AmbiguousTimeError):
-        times.normalize()
-
-    # should not raise `pytz.exceptions.AmbiguousTimeError`
-    solarposition.hour_angle(times, longitude, eot)
+        solarposition.hour_angle(times, longitude, eot)
 
 
 def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):

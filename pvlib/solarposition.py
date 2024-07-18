@@ -1399,7 +1399,6 @@ def hour_angle(times, longitude, equation_of_time):
     naive_normalized_times = times.tz_localize(None).normalize()
 
     # Use Pandas functionality for shifting nonexistent times forward
-    # or infering ambiguous times (which arose from normalizing)
     normalized_times = naive_normalized_times.tz_localize(
         times.tz, nonexistent='shift_forward', ambiguous='raise')
 

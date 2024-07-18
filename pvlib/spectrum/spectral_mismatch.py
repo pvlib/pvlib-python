@@ -156,7 +156,7 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         * ``'cdte'`` - First Solar Series 4-2 CdTe module.
         * ``'monosi'``, ``'xsi'`` - First Solar TetraSun module.
         * ``'multisi'``, ``'polysi'`` - anonymous multi-crystalline silicon
-        module.
+          module.
         * ``'cigs'`` - anonymous copper indium gallium selenide module.
         * ``'asi'`` - anonymous amorphous silicon module.
 

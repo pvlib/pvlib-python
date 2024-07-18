@@ -1,8 +1,7 @@
 """
 The ``mismatch`` module provides functions for spectral mismatch calculations.
 """
-
-from pvlib.spectrum import get_reference_spectra
+import pvlib
 import numpy as np
 import pandas as pd
 from scipy.integrate import trapezoid
@@ -84,7 +83,8 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
     # get the reference spectrum at wavelengths matching the measured spectra
     if e_ref is None:
-        e_ref = get_reference_spectra(wavelengths=e_sun.T.index)["global"]
+        e_ref = pvlib.spectrum.get_reference_spectra(
+            wavelengths=e_sun.T.index)["global"]
 
     # interpolate the sr at the wavelengths of the spectra
     # reference spectrum wavelengths may differ if e_ref is from caller

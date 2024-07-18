@@ -3,11 +3,9 @@ The ``mismatch`` module provides functions for spectral mismatch calculations.
 """
 
 from pvlib.spectrum import get_reference_spectra
-from pvlib.tools import normalize_max2one
 import numpy as np
 import pandas as pd
 from scipy.integrate import trapezoid
-
 from warnings import warn
 
 

@@ -7,72 +7,8 @@ import pvlib
 from pvlib._deprecation import deprecated
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d
 from pathlib import Path
-from warnings import warn
 from functools import partial
-    '''
-    Generate a generic smooth spectral response (SR) for tests and experiments.
-
-    Parameters
-    ----------
-    wavelength: 1-D sequence of numeric, optional
-        Wavelengths at which spectral response values are generated.
-        By default ``wavelength`` is from 280 to 1200 in 5 nm intervals. [nm]
-
-    Returns
-    -------
-    spectral_response : pandas.Series
-        The relative spectral response indexed by ``wavelength`` in nm. [-]
-
-    Notes
-    -----
-    This spectral response is based on measurements taken on a c-Si cell.
-    A small number of points near the measured curve are used to define
-    a cubic spline having no undue oscillations, as shown in [1]_.  The spline
-    can be interpolated at arbitrary wavelengths to produce a continuous,
-    smooth curve , which makes it suitable for experimenting with spectral
-    data of different resolutions.
-
-    References
-    ----------
-    .. [1] Driesse, Anton, and Stein, Joshua. "Global Normal Spectral
-       Irradiance in Albuquerque: a One-Year Open Dataset for PV Research".
-       United States 2020. :doi:`10.2172/1814068`.
-    '''
-    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
-
-    SR_DATA = np.array([[290, 0.00],
-                        [350, 0.27],
-                        [400, 0.37],
-                        [500, 0.52],
-                        [650, 0.71],
-                        [800, 0.88],
-                        [900, 0.97],
-                        [950, 1.00],
-                        [1000, 0.93],
-                        [1050, 0.58],
-                        [1100, 0.21],
-                        [1150, 0.05],
-                        [1190, 0.00]]).transpose()
-
-    if wavelength is None:
-        resolution = 5.0
-        wavelength = np.arange(280, 1200 + resolution, resolution)
-
-    interpolator = interp1d(SR_DATA[0], SR_DATA[1],
-                            kind='cubic',
-                            bounds_error=False,
-                            fill_value=0.0,
-                            copy=False,
-                            assume_sorted=True)
-
-    sr = pd.Series(data=interpolator(wavelength), index=wavelength)
-
-    sr.index.name = 'wavelength'
-    sr.name = 'spectral_response'
-
-    return sr
 
 
 @deprecated(

@@ -16,7 +16,10 @@ Enhancements
 * Add new parameters for min/max absolute air mass to
   :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
   (:issue:`2086`, :pull:`2100`)
-
+* Restructured the pvlib/spectrum folder by breaking the contents of
+  pvlib/spectrum/mismatch.py into pvlib/spectrum/spectral_mismatch.py,
+  pvlib/spectrum/spectral_irradiance.py, and
+  pvlib/spectrum/spectral_response.py. (:issue:`2125`, :pull:`2136`)
 
 Bug fixes
 ~~~~~~~~~

@@ -8,7 +8,6 @@ from pvlib._deprecation import deprecated
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
-
 from pathlib import Path
 from warnings import warn
 from functools import partial

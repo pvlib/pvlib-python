@@ -399,12 +399,12 @@ def _coerce_and_rotate_pvgis(pvgis_data, tz, year):
     # assert tz//1 == tz
     tzname = f'Etc/GMT{-tz:+d}'
     # check if February is leap year
-    feb1 = pvgis_data[pvgis_data.index.month==2].index.year[0]
+    feb1 = pvgis_data[pvgis_data.index.month == 2].index.year[0]
     if calendar.isleap(feb1):
         # replace Feb year with a non-leap year
         pvgis_data.index = [
-            timestamp.replace(year=1990) if timestamp.month==2 else ts
-            for timestamp in pvgis_data.index]
+            ts.replace(year=1990) if ts.month == 2 else ts
+            for ts in pvgis_data.index]
     pvgis_data = pd.concat(
         [pvgis_data.iloc[-tz:], pvgis_data.iloc[:-tz]],
         axis=0).tz_convert(tzname)

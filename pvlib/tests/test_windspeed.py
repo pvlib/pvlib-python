@@ -95,6 +95,14 @@ def test_wind_speed_at_height_hellmann_invalid():
         windspeed.wind_speed_at_height_hellmann(wind_speed_measured=10,
                                                 height_measured=5,
                                                 height_desired=10)
+    with pytest.raises(ValueError, match='Either a `surface_type` has to be '
+                       'chosen or an exponent'):
+        # no exponent or surface_type given
+        windspeed.wind_speed_at_height_hellmann(wind_speed_measured=10,
+                                                height_measured=5,
+                                                height_desired=10,
+                                                exponent=1.2,
+                                                surface_type="surf")
     with pytest.raises(KeyError, match='not_an_exponent'):
         # invalid surface_type
         windspeed.wind_speed_at_height_hellmann(wind_speed_measured=10,

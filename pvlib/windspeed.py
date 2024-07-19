@@ -18,9 +18,9 @@ HELLMANN_SURFACE_EXPONENTS = {
 }
 
 
-def wind_speed_at_height_hellmann(wind_speed_measured, height_measured,
-                                  height_desired, exponent=None,
-                                  surface_type=None):
+def windspeed_hellmann(wind_speed_measured, height_measured,
+                       height_desired, exponent=None,
+                       surface_type=None):
     r"""
     Estimate wind speed for different heights.
 

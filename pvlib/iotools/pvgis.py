@@ -390,9 +390,25 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     raise ValueError(err_msg)
 
 
+def _coerce_and_rotate_pvgis(pvgis_data, tz, year):
+    """
+    After converting TZ, rotate indices so timeseries starts at midnight
+    and force all indices to a common year. Only works for integer TZ.
+    """
+    # assert tz//1 == tz
+    tzname = f'Etc/GMT{-tz:+d}'
+    pvgis_data = pd.concat(
+        [pvgis_data.iloc[-tz:], pvgis_data.iloc[:-tz]],
+        axis=0).tz_convert(tzname)
+    pvgis_data.index = [
+        timestamp.replace(year=year) for timestamp in pvgis_data.index]
+    return pvgis_data
+
+
 def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None,
-                  map_variables=True, url=URL, timeout=30):
+                  map_variables=True, url=URL, timeout=30,
+                  utc_offset=0, coerce_year=1990):
     """
     Get TMY data from PVGIS.
 
@@ -424,6 +440,12 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     timeout : int, default 30
         time in seconds to wait for server response before timeout
+    utc_offset: int, default 0
+        Use to specify a timezone other than the default UTC zero. Will force
+        year to ``coerce_year`` if not zero.
+    coerce_year: int, default 1990
+        Use to force indices to desired year. Ignored if ``utc_offset`` is
+        zero.
 
     Returns
     -------
@@ -509,6 +531,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
 
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
+
+    if utc_offset != 0:
+        data = _coerce_and_rotate_pvgis(data, utc_offset, coerce_year)
 
     return data, months_selected, inputs, meta
 

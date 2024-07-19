@@ -440,13 +440,13 @@ def _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data):
 def test_get_pvgis_tmy_coerce_year():
     """test utc_offset and coerce_year work as expected"""
     pvgis_data = get_pvgis_tmy(45, 8, utc_offset=2)  # Turin
-    jan1_midnight1990 = pd.TimeStamp('1990-01-01 00:00:00', tz='Etc/GMT-2')
-    dec31_midnight1990 = pd.TimeStamp('1990-12-31 23:00:00', tz='Etc/GMT-2')
+    jan1_midnight1990 = pd.Timestamp('1990-01-01 00:00:00', tz='Etc/GMT-2')
+    dec31_midnight1990 = pd.Timestamp('1990-12-31 23:00:00', tz='Etc/GMT-2')
     assert pvgis_data[0].index[0] == jan1_midnight1990
     assert pvgis_data[0].index[-1] == dec31_midnight1990
     pvgis_data = get_pvgis_tmy(45, 8, utc_offset=2, coerce_year=2021)  # Turin
-    jan1_midnight2021 = pd.TimeStamp('2021-01-01 00:00:00', tz='Etc/GMT-2')
-    dec31_midnight2021 = pd.TimeStamp('2021-12-31 23:00:00', tz='Etc/GMT-2')
+    jan1_midnight2021 = pd.Timestamp('2021-01-01 00:00:00', tz='Etc/GMT-2')
+    dec31_midnight2021 = pd.Timestamp('2021-12-31 23:00:00', tz='Etc/GMT-2')
     assert pvgis_data[0].index[0] == jan1_midnight2021
     assert pvgis_data[0].index[-1] == dec31_midnight2021
 

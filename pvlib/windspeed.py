@@ -72,7 +72,7 @@ def wind_speed_at_height_hellmann(wind_speed_measured, height_measured,
     Notes
     -----
     The equation for calculating the wind speed at a height of :math:`h` is
-    given by the following power law equation [1]_, [2]_:
+    given by the following power law equation [1]_[2]_:
 
     .. math::
        :label: wind speed
@@ -98,17 +98,17 @@ def wind_speed_at_height_hellmann(wind_speed_measured, height_measured,
     | Stable    | 0.27               | 0.34             | 0.60             |
     +-----------+--------------------+------------------+------------------+
 
-    In a report by SANDIA [3]_, this equation was experimentally tested for a
+    In a report by Sandia [3]_, this equation was experimentally tested for a
     height of 30 ft (9.144 m) and the following coefficients were recommended:
     :math:`h_{ref} = 9.144` [m], :math:`a = 0.219` [-], and
     :math:`windspeed_{href}` is the wind speed at a height of 9.144 [m].
 
-    It should be noted that the equation retuns a value of NaN if the
+    It should be noted that the equation returns a value of NaN if the
     calculated wind speed is negative or a complex number.
 
     Warning
     -------
-    Module temperature functions often require wind speeds at a heigt of 10 m
+    Module temperature functions often require wind speeds at a height of 10 m
     and not the wind speed at the module height.
 
     For example, the following temperature functions require the input wind
@@ -136,8 +136,8 @@ def wind_speed_at_height_hellmann(wind_speed_measured, height_measured,
        function of height above ground: An analysis of data obtained at the
        southwest residential experiment station, Las Cruses, New Mexico."
        SAND84-2530, Sandia National Laboratories.
-       `source <https://web.archive.org/web/20230418202422/https://www2.jpl.nasa.gov/adv_tech/photovol/2016CTR/SNL%20-%20Est%20Wind%20Speed%20vs%20Height_1985.pdf>`_  # noqa:E501
-    """
+       Accessed at https://web.archive.org/web/20230418202422/https://www2.jpl.nasa.gov/adv_tech/photovol/2016CTR/SNL%20-%20Est%20Wind%20Speed%20vs%20Height_1985.pdf
+    """  # noqa:E501
     if surface_type is not None and exponent is None:
         # use the Hellmann exponent from dictionary
         exponent = HELLMANN_SURFACE_EXPONENTS[surface_type]
@@ -146,7 +146,7 @@ def wind_speed_at_height_hellmann(wind_speed_measured, height_measured,
         pass
     else:
         raise ValueError(
-            "Either a `surface_type` has to be chosen or an exponent")
+            "Either a 'surface_type' or an 'exponent' parameter must be given")
 
     wind_speed = wind_speed_measured * (
         (height_desired / height_measured) ** exponent)
@@ -156,7 +156,7 @@ def wind_speed_at_height_hellmann(wind_speed_measured, height_measured,
     if isinstance(wind_speed, complex):
         wind_speed = np.nan
 
-    # if wind speed is nagative return NaN
+    # if wind speed is negative return NaN
     wind_speed = np.where(wind_speed < 0, np.nan, wind_speed)
 
     if isinstance(wind_speed_measured, pd.Series):

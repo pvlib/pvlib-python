@@ -437,6 +437,18 @@ def _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data):
 
 @pytest.mark.remote_data
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
+def test_get_pvgis_tmy_coerce_year():
+    """test utc_offset and coerce_year work as expected""" 
+    pvgis_data = get_pvgis_tmy(45, 8, utc_offset=+2)  # Turin
+    assert pvgis_data[0].index.iloc[0] == pd.TimeStamp('1990-01-01 00:00:00', tz='Etc/GMT-2')
+    assert pvgis_data[0].index.iloc[-1] == pd.TimeStamp('1990-12-31 23:00:00', tz='Etc/GMT-2')
+    pvgis_data = get_pvgis_tmy(45, 8, utc_offset=+2, coerce_year=2021)  # Turin
+    assert pvgis_data[0].index.iloc[0] == pd.TimeStamp('2021-01-01 00:00:00', tz='Etc/GMT-2')
+    assert pvgis_data[0].index.iloc[-1] == pd.TimeStamp('2021-12-31 23:00:00', tz='Etc/GMT-2')
+
+
+@pytest.mark.remote_data
+@pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_csv(expected, month_year_expected, inputs_expected,
                            meta_expected, csv_meta):
     pvgis_data = get_pvgis_tmy(45, 8, outputformat='csv', map_variables=False)

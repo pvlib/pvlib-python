@@ -590,4 +590,3 @@ def test_average_photon_energy_series():
     expected = 1.45029
 
     assert_allclose(ape, expected, rtol=1e-4)
-

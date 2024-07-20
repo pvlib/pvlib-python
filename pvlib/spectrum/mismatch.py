@@ -10,6 +10,7 @@ import pandas as pd
 import scipy.constants
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
+from scipy import constants
 
 from pathlib import Path
 from warnings import warn
@@ -1100,3 +1101,20 @@ def qe_to_sr(qe, wavelength=None, normalize=False):
         spectral_responsivity = normalize_max2one(spectral_responsivity)
 
     return spectral_responsivity
+
+
+def average_photon_energy(spectral_irr):
+    si = spectral_irr
+    hclambda = pd.Series((constants.h*constants.c)/(si.T.index*1e-9))
+    hclambda.index = si.T.index  # set wavelength as the index
+    pfd = si.div(hclambda)  # calculate the photon flux density
+
+    def integrate(e):  # define a helper function
+        return trapezoid(e, x=e.T.index, axis=-1)
+
+    int_si = integrate(si)  # integrate spectral irradiance wrt wavelength
+    int_pfd = integrate(pfd)  # integrate photon flux density wrt wavelength
+
+    ape = (1/constants.elementary_charge)*int_si/int_pfd
+
+    return ape

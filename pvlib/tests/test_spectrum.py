@@ -576,3 +576,18 @@ def test_qe_and_sr_reciprocal_conversion(sr_and_eqe_fixture):
     assert_allclose(sr, sr_and_eqe_fixture["spectral_response"])
     qe = spectrum.sr_to_qe(sr)
     assert_allclose(qe, sr_and_eqe_fixture["quantum_efficiency"])
+
+
+def test_average_photon_energy_series():
+    # test that the APE is calculated correctly with single spectrum
+    # series input
+
+    si = spectrum.get_reference_spectra()
+    si = si['global']
+
+    ape = spectrum.average_photon_energy(si)
+
+    expected = 1.45029
+
+    assert_allclose(ape, expected, rtol=1e-4)
+

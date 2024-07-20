@@ -16,6 +16,10 @@ Enhancements
 * Add new parameters for min/max absolute air mass to
   :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
   (:issue:`2086`, :pull:`2100`)
+* Add ``utc_offset`` and ``coerce_year`` arguments to
+  :py:func:`pvlib.iotools.get_pvgis_tmy` to allow user to specify time zone,
+  rotate indices of TMY to begin at midnight, and force indices to desired
+  year. (:issue:`2139`, :pull:`2138`)
 
 
 Bug fixes
@@ -45,4 +49,4 @@ Contributors
 * Leonardo Micheli (:ghuser:`lmicheli`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
-
+* Mark A. Mikofski (:ghuser:`mikofski`)

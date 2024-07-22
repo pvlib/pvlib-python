@@ -595,7 +595,7 @@ def windspeed_hellmann(wind_speed_reference, height_reference,
     ------
     ValueError
         If neither of ``exponent`` nor a ``surface_type`` is given.
-        If both ``exponent`` nor a ``surface_type`` is given. These parameters
+        If both ``exponent`` and a ``surface_type`` is given. These parameters
         are mutually exclusive.
 
     KeyError

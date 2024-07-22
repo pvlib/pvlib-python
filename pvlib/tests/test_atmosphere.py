@@ -133,85 +133,52 @@ def test_bird_hulstrom80_aod_bb():
     assert np.isclose(0.11738229553812768, bird_hulstrom)
 
 
-@pytest.mark.parametrize(
-    'wind_speed_reference,height_reference,height_desired,wind_speed_calc',
-    [
-        (10, -2, 5, np.nan),
-        (-10, 2, 5, np.nan),
-        (5, 4, 5, 5.067393209486324),
-        (7, 6, 10, 7.2178684911195905),
-        (10, 8, 20, 10.565167835216586),
-        (12, 10, 30, 12.817653329393977)])
-def test_windspeed_hellmann(wind_speed_reference,
-                            height_reference,
-                            height_desired,
-                            wind_speed_calc):
-    result = atmosphere.windspeed_hellmann(
-        wind_speed_reference,
-        height_reference,
-        height_desired,
-        surface_type='unstable_air_above_open_water_surface')
-    assert_allclose(result, wind_speed_calc)
-
-
 @pytest.fixture
-def times():
-    return pd.date_range(start="2015-01-01 00:00", end="2015-01-01 05:00",
-                         freq="1h")
+def windspeeds_data_hellman():
+    data = pd.DataFrame(
+        index=pd.date_range(start="2015-01-01 00:00", end="2015-01-01 05:00",
+                            freq="1h"),
+        columns=["wind_ref", "height_ref", "height_desired", "wind_calc"],
+        data=[
+            (10, -2, 5, np.nan),
+            (-10, 2, 5, np.nan),
+            (5, 4, 5, 5.067393209486324),
+            (7, 6, 10, 7.2178684911195905),
+            (10, 8, 20, 10.565167835216586),
+            (12, 10, 30, 12.817653329393977)
+        ]
+    )
+    return data
 
 
-@pytest.fixture
-def wind_speeds_reference(times):
-    return pd.Series([10, -10, 5, 7, 10, 12], index=times)
-
-
-@pytest.fixture
-def heights_reference(times):
-    return np.array([-2, 2, 4, 6, 8, 10])
-
-
-@pytest.fixture
-def heights_desired():
-    return np.array([5, 5, 5, 10, 20, 30])
-
-
-@pytest.fixture
-def wind_speeds_calc(times):
-    return pd.Series([np.nan, np.nan, 5.067393209486324, 7.2178684911195905,
-                      10.565167835216586, 12.817653329393977], index=times)
-
-
-def test_windspeed_hellmann_ndarray(wind_speeds_reference,
-                                    heights_reference,
-                                    heights_desired,
-                                    wind_speeds_calc):
+def test_windspeed_hellmann_ndarray(windspeeds_data_hellman):
     # test wind speed estimation by passing in surface_type
     result_surface = atmosphere.windspeed_hellmann(
-        wind_speeds_reference.to_numpy(),
-        heights_reference,
-        heights_desired,
+        windspeeds_data_hellman["wind_ref"].to_numpy(),
+        windspeeds_data_hellman["height_ref"],
+        windspeeds_data_hellman["height_desired"],
         surface_type='unstable_air_above_open_water_surface')
-    assert_allclose(wind_speeds_calc.to_numpy(), result_surface)
+    assert_allclose(windspeeds_data_hellman["wind_calc"].to_numpy(),
+                    result_surface)
     # test wind speed estimation by passing in the exponent corresponding
     # to the surface_type above
     result_exponent = atmosphere.windspeed_hellmann(
-        wind_speeds_reference.to_numpy(),
-        heights_reference,
-        heights_desired,
+        windspeeds_data_hellman["wind_ref"].to_numpy(),
+        windspeeds_data_hellman["height_ref"],
+        windspeeds_data_hellman["height_desired"],
         exponent=0.06)
-    assert_allclose(wind_speeds_calc.to_numpy(), result_exponent)
+    assert_allclose(windspeeds_data_hellman["wind_calc"].to_numpy(),
+                    result_exponent)
 
 
-def test_windspeed_hellmann_series(wind_speeds_reference,
-                                   heights_reference,
-                                   heights_desired,
-                                   wind_speeds_calc):
+def test_windspeed_hellmann_series(windspeeds_data_hellman):
     result = atmosphere.windspeed_hellmann(
-        wind_speeds_reference,
-        heights_reference,
-        heights_desired,
+        windspeeds_data_hellman["wind_ref"],
+        windspeeds_data_hellman["height_ref"],
+        windspeeds_data_hellman["height_desired"],
         surface_type='unstable_air_above_open_water_surface')
-    assert_series_equal(wind_speeds_calc, result)
+    assert_series_equal(windspeeds_data_hellman["wind_calc"],
+                        result, check_names=False)
 
 
 def test_windspeed_hellmann_invalid():

@@ -215,13 +215,13 @@ def test_windspeed_hellmann_series(wind_speeds_reference,
 
 
 def test_windspeed_hellmann_invalid():
-    with pytest.raises(ValueError, match="Either a 'surface_type' or an"
+    with pytest.raises(ValueError, match="Either a 'surface_type' or an "
                        "'exponent' parameter must be given"):
         # no exponent or surface_type given
         atmosphere.windspeed_hellmann(wind_speed_reference=10,
                                       height_reference=5,
                                       height_desired=10)
-    with pytest.raises(ValueError, match="Either a 'surface_type' or an"
+    with pytest.raises(ValueError, match="Either a 'surface_type' or an "
                        "'exponent' parameter must be given"):
         # no exponent or surface_type given
         atmosphere.windspeed_hellmann(wind_speed_reference=10,

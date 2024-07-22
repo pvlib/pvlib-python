@@ -556,7 +556,7 @@ def windspeed_hellmann(wind_speed_reference, height_reference,
     r"""
     Estimate wind speed for different heights.
 
-    The model is based on the power law equation by Hellmann [1]_[2]_.
+    The model is based on the power law equation by Hellmann [1]_ [2]_.
 
     Parameters
     ----------
@@ -604,7 +604,7 @@ def windspeed_hellmann(wind_speed_reference, height_reference,
     Notes
     -----
     The equation for calculating the wind speed at a height of :math:`h` is
-    given by the following power law equation [1]_[2]_:
+    given by the following power law equation [1]_ [2]_:
 
     .. math::
        :label: wind speed
@@ -668,7 +668,7 @@ def windspeed_hellmann(wind_speed_reference, height_reference,
        function of height above ground: An analysis of data obtained at the
        southwest residential experiment station, Las Cruses, New Mexico."
        SAND84-2530, Sandia National Laboratories.
-       Accessed at
+       Accessed at:
        https://web.archive.org/web/20230418202422/https://www2.jpl.nasa.gov/adv_tech/photovol/2016CTR/SNL%20-%20Est%20Wind%20Speed%20vs%20Height_1985.pdf
     """  # noqa:E501
     if surface_type is not None and exponent is None:

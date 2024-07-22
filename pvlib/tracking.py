@@ -127,15 +127,17 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     if apparent_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
         raise ValueError('Input dimensions must not exceed 1')
 
-    # The ideal tracking angle wid is the rotation to place the sun position
+    # The ideal tracking angle omega_ideal is the rotation to place the sun position
     # vector (xp, yp, zp) in the (x, z) plane, which is normal to the panel and
-    # contains the axis of rotation.  wid = 0 indicates that the panel is
+    # contains the axis of rotation.  omega_id = 0 indicates that the panel is
     # horizontal. Here, our convention is that a clockwise rotation is
     # positive, to view rotation angles in the same frame of reference as
     # azimuth. For example, for a system with tracking axis oriented south, a
     # rotation toward the east is negative, and a rotation to the west is
     # positive. This is a right-handed rotation around the tracker y-axis.
-    wid = shading.projected_solar_zenith_angle(
+    # Omega_ideal is the plaintext representation of the ideal tracking
+    # angle from Lorenzo et al 2011. https://doi.org/10.1002/pip.1085
+    omega_ideal = shading.projected_solar_zenith_angle(
         axis_tilt=axis_tilt,
         axis_azimuth=axis_azimuth,
         solar_zenith=apparent_zenith,
@@ -144,7 +146,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # filter for sun above panel horizon
     zen_gt_90 = apparent_zenith > 90
-    wid[zen_gt_90] = np.nan
+    omega_ideal[zen_gt_90] = np.nan
 
     # Account for backtracking
     if backtrack:
@@ -153,19 +155,19 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         axes_distance = 1/(gcr * cosd(cross_axis_tilt))
 
         # NOTE: account for rare angles below array, see GH 824
-        temp = np.abs(axes_distance * cosd(wid - cross_axis_tilt))
+        temp = np.abs(axes_distance * cosd(omega_ideal - cross_axis_tilt))
 
         # backtrack angle using [1], Eq. 14
         with np.errstate(invalid='ignore'):
-            wc = np.degrees(-np.sign(wid)*np.arccos(temp))
+            wc = np.degrees(-np.sign(omega_ideal)*np.arccos(temp))
 
         # NOTE: in the middle of the day, arccos(temp) is out of range because
         # there's no row-to-row shade to avoid, & backtracking is unnecessary
         # [1], Eqs. 15-16
         with np.errstate(invalid='ignore'):
-            tracker_theta = wid + np.where(temp < 1, wc, 0)
+            tracker_theta = omega_ideal + np.where(temp < 1, wc, 0)
     else:
-        tracker_theta = wid
+        tracker_theta = omega_ideal
 
     # NOTE: max_angle defined relative to zero-point rotation, not the
     # system-plane normal

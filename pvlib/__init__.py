@@ -27,5 +27,4 @@ from pvlib import (  # noqa: F401
     temperature,
     tools,
     tracking,
-    windspeed,
 )

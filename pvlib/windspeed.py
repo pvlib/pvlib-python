@@ -18,7 +18,7 @@ HELLMANN_SURFACE_EXPONENTS = {
 }
 
 
-def windspeed_hellmann(wind_speed_measured, height_measured,
+def windspeed_hellmann(wind_speed_reference, height_reference,
                        height_desired, exponent=None,
                        surface_type=None):
     r"""
@@ -28,10 +28,10 @@ def windspeed_hellmann(wind_speed_measured, height_measured,
 
     Parameters
     ----------
-    wind_speed_measured : numeric
+    wind_speed_reference : numeric
         Measured wind speed. [m/s]
 
-    height_measured : float
+    height_reference : float
         The height at which the wind speed is measured. [m]
 
     height_desired : float
@@ -77,11 +77,11 @@ def windspeed_hellmann(wind_speed_measured, height_measured,
     .. math::
        :label: wind speed
 
-        windspeed_h = windspeed_{href} \cdot \left( \frac{h}{h_{ref}} \right)^a
+        U_{w,h} = U_{w,ref} \cdot \left( \frac{h}{h_{ref}} \right)^a
 
     where :math:`h` [m] is the height at which we would like to calculate the
     wind speed, :math:`h_{ref}` [m] is the reference height at which the wind
-    speed is known, and :math:`windspeed_h` [m/s] and :math:`windspeed_{href}`
+    speed is known, and :math:`U_{w,h}` [m/s] and :math:`U_{w,ref}`
     [m/s] are the corresponding wind speeds at these heights. :math:`a` is a
     value that depends on the surface type. Some values found in the literature
     [1]_ for :math:`a` are the following:
@@ -136,7 +136,8 @@ def windspeed_hellmann(wind_speed_measured, height_measured,
        function of height above ground: An analysis of data obtained at the
        southwest residential experiment station, Las Cruses, New Mexico."
        SAND84-2530, Sandia National Laboratories.
-       Accessed at https://web.archive.org/web/20230418202422/https://www2.jpl.nasa.gov/adv_tech/photovol/2016CTR/SNL%20-%20Est%20Wind%20Speed%20vs%20Height_1985.pdf
+       Accessed at
+       https://web.archive.org/web/20230418202422/https://www2.jpl.nasa.gov/adv_tech/photovol/2016CTR/SNL%20-%20Est%20Wind%20Speed%20vs%20Height_1985.pdf
     """  # noqa:E501
     if surface_type is not None and exponent is None:
         # use the Hellmann exponent from dictionary
@@ -148,8 +149,8 @@ def windspeed_hellmann(wind_speed_measured, height_measured,
         raise ValueError(
             "Either a 'surface_type' or an 'exponent' parameter must be given")
 
-    wind_speed = wind_speed_measured * (
-        (height_desired / height_measured) ** exponent)
+    wind_speed = wind_speed_reference * (
+        (height_desired / height_reference) ** exponent)
 
     # if the provided height is negative the calculated wind speed is complex
     # so a NaN value is returned
@@ -159,7 +160,7 @@ def windspeed_hellmann(wind_speed_measured, height_measured,
     # if wind speed is negative return NaN
     wind_speed = np.where(wind_speed < 0, np.nan, wind_speed)
 
-    if isinstance(wind_speed_measured, pd.Series):
-        wind_speed = pd.Series(wind_speed, index=wind_speed_measured.index)
+    if isinstance(wind_speed_reference, pd.Series):
+        wind_speed = pd.Series(wind_speed, index=wind_speed_reference.index)
 
     return wind_speed

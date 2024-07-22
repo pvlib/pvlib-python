@@ -6,9 +6,16 @@ from pvlib import irradiance
 from pvlib import shading
 
 
-def singleaxis(apparent_zenith, apparent_azimuth,
-               axis_tilt=0, axis_azimuth=0, max_angle=90,
-               backtrack=True, gcr=2.0/7.0, cross_axis_tilt=0):
+def singleaxis(
+    apparent_zenith,
+    apparent_azimuth,
+    axis_tilt=0,
+    axis_azimuth=0,
+    max_angle=90,
+    backtrack=True,
+    gcr=2.0 / 7.0,
+    cross_axis_tilt=0,
+):
     """
     Determine the rotation angle of a single-axis tracker when given particular
     solar zenith and azimuth angles.
@@ -125,18 +132,19 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     apparent_zenith = np.atleast_1d(apparent_zenith)
 
     if apparent_azimuth.ndim > 1 or apparent_zenith.ndim > 1:
-        raise ValueError('Input dimensions must not exceed 1')
+        raise ValueError("Input dimensions must not exceed 1")
 
-    # The ideal tracking angle omega_ideal is the rotation to place the sun position
-    # vector (xp, yp, zp) in the (x, z) plane, which is normal to the panel and
-    # contains the axis of rotation.  omega_id = 0 indicates that the panel is
-    # horizontal. Here, our convention is that a clockwise rotation is
-    # positive, to view rotation angles in the same frame of reference as
-    # azimuth. For example, for a system with tracking axis oriented south, a
-    # rotation toward the east is negative, and a rotation to the west is
-    # positive. This is a right-handed rotation around the tracker y-axis.
-    # Omega_ideal is the plaintext representation of the ideal tracking
-    # angle from Lorenzo et al 2011. https://doi.org/10.1002/pip.1085
+    # The ideal tracking angle omega_ideal is the rotation to place the sun
+    # position vector (xp, yp, zp) in the (x, z) plane, which is normal to the
+    # panel and contains the axis of rotation.  omega_id = 0 indicates that
+    # the panel is horizontal. Here, our convention is that a clockwise
+    # rotation is positive, to view rotation angles in the same frame of
+    # reference as azimuth. For example, for a system with tracking axis
+    # oriented south, a rotation toward the east is negative, and a rotation
+    # to the west is positive. This is a right-handed rotation around the
+    # tracker y-axis.  Omega_ideal is the plaintext representation of the
+    # ideal tracking angle from Lorenzo et al 2011.
+    # https://doi.org/10.1002/pip.1085
     omega_ideal = shading.projected_solar_zenith_angle(
         axis_tilt=axis_tilt,
         axis_azimuth=axis_azimuth,
@@ -152,19 +160,19 @@ def singleaxis(apparent_zenith, apparent_azimuth,
     if backtrack:
         # distance between rows in terms of rack lengths relative to cross-axis
         # tilt
-        axes_distance = 1/(gcr * cosd(cross_axis_tilt))
+        axes_distance = 1 / (gcr * cosd(cross_axis_tilt))
 
         # NOTE: account for rare angles below array, see GH 824
         temp = np.abs(axes_distance * cosd(omega_ideal - cross_axis_tilt))
 
         # backtrack angle using [1], Eq. 14
-        with np.errstate(invalid='ignore'):
-            wc = np.degrees(-np.sign(omega_ideal)*np.arccos(temp))
+        with np.errstate(invalid="ignore"):
+            wc = np.degrees(-np.sign(omega_ideal) * np.arccos(temp))
 
         # NOTE: in the middle of the day, arccos(temp) is out of range because
         # there's no row-to-row shade to avoid, & backtracking is unnecessary
         # [1], Eqs. 15-16
-        with np.errstate(invalid='ignore'):
+        with np.errstate(invalid="ignore"):
             tracker_theta = omega_ideal + np.where(temp < 1, wc, 0)
     else:
         tracker_theta = omega_ideal
@@ -184,14 +192,19 @@ def singleaxis(apparent_zenith, apparent_azimuth,
 
     # Calculate auxiliary angles
     surface = calc_surface_orientation(tracker_theta, axis_tilt, axis_azimuth)
-    surface_tilt = surface['surface_tilt']
-    surface_azimuth = surface['surface_azimuth']
-    aoi = irradiance.aoi(surface_tilt, surface_azimuth,
-                         apparent_zenith, apparent_azimuth)
+    surface_tilt = surface["surface_tilt"]
+    surface_azimuth = surface["surface_azimuth"]
+    aoi = irradiance.aoi(
+        surface_tilt, surface_azimuth, apparent_zenith, apparent_azimuth
+    )
 
     # Bundle DataFrame for return values and filter for sun below horizon.
-    out = {'tracker_theta': tracker_theta, 'aoi': aoi,
-           'surface_azimuth': surface_azimuth, 'surface_tilt': surface_tilt}
+    out = {
+        "tracker_theta": tracker_theta,
+        "aoi": aoi,
+        "surface_azimuth": surface_azimuth,
+        "surface_tilt": surface_tilt,
+    }
     if index is not None:
         out = pd.DataFrame(out, index=index)
         out[zen_gt_90] = np.nan
@@ -233,25 +246,28 @@ def calc_surface_orientation(tracker_theta, axis_tilt=0, axis_azimuth=0):
        Tracking of One-Axis Trackers", Technical Report NREL/TP-6A20-58891,
        July 2013. :doi:`10.2172/1089596`
     """
-    with np.errstate(invalid='ignore', divide='ignore'):
+    with np.errstate(invalid="ignore", divide="ignore"):
         surface_tilt = acosd(cosd(tracker_theta) * cosd(axis_tilt))
 
         # clip(..., -1, +1) to prevent arcsin(1 + epsilon) issues:
-        azimuth_delta = asind(np.clip(sind(tracker_theta) / sind(surface_tilt),
-                                      a_min=-1, a_max=1))
+        azimuth_delta = asind(
+            np.clip(sind(tracker_theta) / sind(surface_tilt), a_min=-1, a_max=1)
+        )
         # Combine Eqs 2, 3, and 4:
-        azimuth_delta = np.where(abs(tracker_theta) < 90,
-                                 azimuth_delta,
-                                 -azimuth_delta + np.sign(tracker_theta) * 180)
+        azimuth_delta = np.where(
+            abs(tracker_theta) < 90,
+            azimuth_delta,
+            -azimuth_delta + np.sign(tracker_theta) * 180,
+        )
         # handle surface_tilt=0 case:
         azimuth_delta = np.where(sind(surface_tilt) != 0, azimuth_delta, 90)
         surface_azimuth = (axis_azimuth + azimuth_delta) % 360
 
     out = {
-        'surface_tilt': surface_tilt,
-        'surface_azimuth': surface_azimuth,
+        "surface_tilt": surface_tilt,
+        "surface_azimuth": surface_azimuth,
     }
-    if hasattr(tracker_theta, 'index'):
+    if hasattr(tracker_theta, "index"):
         out = pd.DataFrame(out)
     return out
 
@@ -322,8 +338,8 @@ def _calc_tracker_norm(ba, bg, dg):
     sin_bg = sind(bg)
     sin_dg = sind(dg)
     vx = sin_dg * cos_ba * cos_bg
-    vy = sind(ba)*sin_bg + cosd(dg)*cos_ba*cos_bg
-    vz = -sin_dg*sin_bg*cos_ba
+    vy = sind(ba) * sin_bg + cosd(dg) * cos_ba * cos_bg
+    vz = -sin_dg * sin_bg * cos_ba
     return vx, vy, vz
 
 
@@ -347,12 +363,12 @@ def _calc_beta_c(v, dg, ba):
     """
     vnorm = np.sqrt(np.dot(v, v))
     beta_c = np.arcsin(
-        ((v[0]*cosd(dg) - v[1]*sind(dg)) * sind(ba) + v[2]*cosd(ba)) / vnorm)
+        ((v[0] * cosd(dg) - v[1] * sind(dg)) * sind(ba) + v[2] * cosd(ba)) / vnorm
+    )
     return beta_c
 
 
-def calc_cross_axis_tilt(
-        slope_azimuth, slope_tilt, axis_azimuth, axis_tilt):
+def calc_cross_axis_tilt(slope_azimuth, slope_tilt, axis_azimuth, axis_tilt):
     """
     Calculate the angle, relative to horizontal, of the line formed by the
     intersection between the slope containing the tracker axes and a plane

@@ -14,6 +14,9 @@ Enhancements
   modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
   (:issue:`2045`, :pull:`2046`)
 
+* Added function for calculating wind speed at different heights,
+  :py:func:`pvlib.atmosphere.windspeed_hellmann`.
+  (:issue:`2118`, :pull:`2124`)
 
 Bug fixes
 ~~~~~~~~~
@@ -34,3 +37,5 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+

@@ -1,5 +1,5 @@
 from pvlib.spectrum.spectrl2 import spectrl2  # noqa: F401
-from pvlib.spectrum.spectral_mismatch import (  # noqa: F401
+from pvlib.spectrum.mismatch import (  # noqa: F401
     calc_spectral_mismatch_field,
     spectral_factor_caballero,
     spectral_factor_firstsolar,
@@ -7,11 +7,11 @@ from pvlib.spectrum.spectral_mismatch import (  # noqa: F401
     spectral_factor_pvspec,
     spectral_factor_jrc
 )
-from pvlib.spectrum.spectral_irradiance import (  # noqa: F401
+from pvlib.spectrum.irradiance import (  # noqa: F401
     get_am15g,
     get_reference_spectra
 )
-from pvlib.spectrum.spectral_response import (  # noqa: F401
+from pvlib.spectrum.response import (  # noqa: F401
     get_example_spectral_response,
     sr_to_qe,
     qe_to_sr

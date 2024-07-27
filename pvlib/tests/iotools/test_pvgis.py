@@ -439,16 +439,34 @@ def _compare_pvgis_tmy_basic(expected, meta_expected, pvgis_data):
 @pytest.mark.flaky(reruns=RERUNS, reruns_delay=RERUNS_DELAY)
 def test_get_pvgis_tmy_coerce_year():
     """test utc_offset and coerce_year work as expected"""
-    pvgis_data = get_pvgis_tmy(45, 8, utc_offset=2)  # Turin
-    jan1_midnight1990 = pd.Timestamp('1990-01-01 00:00:00', tz='Etc/GMT-2')
-    dec31_midnight1990 = pd.Timestamp('1990-12-31 23:00:00', tz='Etc/GMT-2')
-    assert pvgis_data[0].index[0] == jan1_midnight1990
-    assert pvgis_data[0].index[-1] == dec31_midnight1990
-    pvgis_data = get_pvgis_tmy(45, 8, utc_offset=2, coerce_year=2021)  # Turin
-    jan1_midnight2021 = pd.Timestamp('2021-01-01 00:00:00', tz='Etc/GMT-2')
-    dec31_midnight2021 = pd.Timestamp('2021-12-31 23:00:00', tz='Etc/GMT-2')
-    assert pvgis_data[0].index[0] == jan1_midnight2021
-    assert pvgis_data[0].index[-1] == dec31_midnight2021
+    base_case, _, _, _ = get_pvgis_tmy(45, 8)  # Turin
+    assert str(base_case.index.tz) == 'UTC'
+    noon_test_data = [
+        base_case[base_case.index.month == m].iloc[12]
+        for m in range(1, 13)]
+    cet_tz = 1  # Turin time is CET
+    cet_name = 'Etc/GMT-1'
+    # check indices of rolled data after converting timezone
+    pvgis_data, _, _, _ = get_pvgis_tmy(45, 8, utc_offset=cet_tz)
+    jan1_midnight = pd.Timestamp('1990-01-01 00:00:00', tz=cet_name)
+    dec31_midnight = pd.Timestamp('1990-12-31 23:00:00', tz=cet_name)
+    assert pvgis_data.index[0] == jan1_midnight
+    assert pvgis_data.index[-1] == dec31_midnight
+    # spot check rolled data matches original
+    for m, test_case in enumerate(noon_test_data):
+        expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12+cet_tz]
+        assert all(test_case == expected)
+    # repeat tests with year coerced
+    test_yr = 2021
+    pvgis_data, _, _, _ = get_pvgis_tmy(
+        45, 8, utc_offset=cet_tz, coerce_year=test_yr)
+    jan1_midnight = pd.Timestamp(f'{test_yr}-01-01 00:00:00', tz=cet_name)
+    dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz=cet_name)
+    assert pvgis_data.index[0] == jan1_midnight
+    assert pvgis_data.index[-1] == dec31_midnight
+    for m, test_case in enumerate(noon_test_data):
+        expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12+cet_tz]
+        assert all(test_case == expected)
 
 
 @pytest.mark.remote_data

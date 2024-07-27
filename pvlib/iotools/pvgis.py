@@ -22,8 +22,6 @@ import numpy as np
 import pandas as pd
 import pytz
 from pvlib.iotools import read_epw, parse_epw
-import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 

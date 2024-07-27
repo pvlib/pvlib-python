@@ -14,12 +14,13 @@ More detailed information about the API for TMY and hourly radiation are here:
 * `monthly radiation
   <https://ec.europa.eu/jrc/en/PVGIS/tools/monthly-radiation>`_
 """
-import calendar
 import io
 import json
 from pathlib import Path
 import requests
+import numpy as np
 import pandas as pd
+import pytz
 from pvlib.iotools import read_epw, parse_epw
 import warnings
 from pvlib._deprecation import pvlibDeprecationWarning
@@ -396,21 +397,15 @@ def _coerce_and_rotate_pvgis(pvgis_data, tz, year):
     After converting TZ, rotate indices so timeseries starts at midnight
     and force all indices to a common year. Only works for integer TZ.
     """
-    # assert tz//1 == tz
-    tzname = f'Etc/GMT{-tz:+d}'
-    # check if February is leap year
-    feb1 = pvgis_data[pvgis_data.index.month == 2].index.year[0]
-    if calendar.isleap(feb1):
-        # replace Feb year with a non-leap year
-        pvgis_data.index = [
-            ts.replace(year=1990) if ts.month == 2 else ts
-            for ts in pvgis_data.index]
-    pvgis_data = pd.concat(
-        [pvgis_data.iloc[-tz:], pvgis_data.iloc[:-tz]],
-        axis=0).tz_convert(tzname)
-    pvgis_data.index = [
-        timestamp.replace(year=year) for timestamp in pvgis_data.index]
-    return pvgis_data
+    tzname = pytz.timezone(f'Etc/GMT{-tz:+d}')
+    new_index = [
+        timestamp.replace(year=year, tzinfo=tzname)
+        for timestamp in pvgis_data.index]
+    new_pvgis_data = pd.DataFrame(
+        np.roll(pvgis_data, tz, axis=0),
+        columns=pvgis_data.columns,
+        index=new_index)
+    return new_pvgis_data
 
 
 def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,

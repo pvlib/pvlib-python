@@ -13,6 +13,9 @@ Enhancements
 * Add new losses function that accounts for non-uniform irradiance on bifacial
   modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
   (:issue:`2045`, :pull:`2046`)
+* Add new parameters for min/max absolute air mass to
+  :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
+  (:issue:`2086`, :pull:`2100`)
 
 
 Bug fixes
@@ -25,7 +28,12 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Added gallery example demonstrating the application of
+  several spectral mismatch factor models.
+  (:issue:`2107`, :pull:`2114`)
 
+* Added gallery example on calculating cell temperature for
+  floating PV. (:pull:`2110`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -35,3 +43,8 @@ Contributors
 ~~~~~~~~~~~~
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Chris Deline (:ghuser:`cdeline`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Leonardo Micheli (:ghuser:`lmicheli`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+

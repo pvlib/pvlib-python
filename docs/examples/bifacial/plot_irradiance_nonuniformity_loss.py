@@ -99,13 +99,12 @@ ax.pcolormesh(
 #
 
 
-def rmad(data, axis=None):
+def rmad(data):
     """
-    Relative Mean Absolute Difference. Output is [Unitless].
-    https://stackoverflow.com/a/19472336/19371110
+    Relative Mean Absolute Difference. Output is [Unitless]. Eq. (4) of [1]_.
     """
-    mean = np.mean(data, axis)
-    mad = np.mean(np.absolute(data - mean), axis)
+    mean = np.mean(data)
+    mad = np.mean(np.absolute(np.subtract.outer(data, data)))
     return mad / mean
 
 

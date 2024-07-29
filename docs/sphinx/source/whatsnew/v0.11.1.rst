@@ -34,3 +34,4 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Chris Deline (:ghuser:`cdeline`)

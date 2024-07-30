@@ -8,6 +8,7 @@ from pvlib import (  # noqa: F401
     atmosphere,
     bifacial,
     clearsky,
+    floating,
     iam,
     inverter,
     iotools,

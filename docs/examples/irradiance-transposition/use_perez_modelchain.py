@@ -56,8 +56,7 @@ system = PVSystem(arrays = None,
                   inverter_parameters=cec_inverter,
                   temperature_model_parameters=temperature_model_parameters)
 
-mc = ModelChain(system, location=loc,
-                aoi_model="no_loss", spectral_model="no_loss")
+mc = ModelChain(system, location=loc)
 
 # Cape Canaveral seems like the most likely match for climate 
 model_perez = 'capecanaveral1988'
@@ -99,7 +98,6 @@ plt.plot(ac_power_default.loc[start:stop],
          label="Default Composite Perez Model")
 plt.plot(ac_power_new_perez.loc[start:stop],
          label="Cape Canaveral Perez Model")
-
 plt.xticks(rotation=90)
 plt.ylabel("AC Power ($W$)")
 plt.legend()

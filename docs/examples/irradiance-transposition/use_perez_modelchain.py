@@ -23,11 +23,7 @@ import pvlib
 import os
 import matplotlib.pyplot as plt
 
-# Define a system in Florida
-lat, lon = 30.1702, -85.65963
-# weather_data, weather_meta = get_psm3(lat, lon, interval=30, names=2012,
-#                              map_variables=True, leap_day=False)
-
+# load in TMY weather data from North Carolina included with pvlib
 PVLIB_DIR = pvlib.__path__[0]
 DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
 
@@ -44,19 +40,16 @@ loc = location.Location.from_tmy(metadata)
 surface_tilt = metadata['latitude']
 surface_azimuth = 180
 
-# define some parameters for the module and inverter
+# define an example module and inverter
 sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
-
 cec_inverters = pvlib.pvsystem.retrieve_sam('cecinverter')
-
 sandia_module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
-
 cec_inverter = cec_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
 
 temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
 # define the system and ModelChain
-system = PVSystem(arrays = None, 
+system = PVSystem(arrays = None,
                   surface_tilt=surface_tilt,
                   surface_azimuth=surface_azimuth,
                   module_parameters=sandia_module,
@@ -66,7 +59,7 @@ system = PVSystem(arrays = None,
 mc = ModelChain(system, location=loc,
                 aoi_model="no_loss", spectral_model="no_loss")
 
-# since we're in FL, we'll likely want FL coefficients 
+# Cape Canaveral seems like the most likely match for climate 
 model_perez = 'capecanaveral1988'
 
 solar_position = loc.get_solarposition(times=weather_data.index)
@@ -110,3 +103,5 @@ plt.plot(ac_power_new_perez.loc[start:stop],
 plt.xticks(rotation=90)
 plt.ylabel("AC Power ($W$)")
 plt.legend()
+#%%
+# Note that there is a small, but noticeable difference from the default coefficients that may add up over longer periods of time. 

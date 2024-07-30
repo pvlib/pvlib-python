@@ -1,8 +1,8 @@
 """
-The ``mismatch`` module provides functions for spectral mismatch calculations.
-Spectral mismatch models quantify the effect on a device's photocurrent
-(or its short-circuit current) of changes in the solar spectrum due to the
-atmosphere.
+The ``mismatch`` module in the ``spectrum`` package provides functions for
+spectral mismatch calculations. Spectral mismatch models quantify the effect on
+a device's photocurrent (or its short-circuit current) of changes in the solar
+spectrum due to the atmosphere.
 """
 import pvlib
 import numpy as np

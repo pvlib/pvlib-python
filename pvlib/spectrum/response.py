@@ -1,6 +1,6 @@
 """
-The ``spectral_response`` module provides functions for spectral response and
-quantum efficiency calculations.
+The ``response`` module in the ``spectrum`` package provides functions for
+spectral response and quantum efficiency calculations.
 """
 from pvlib.tools import normalize_max2one
 import numpy as np

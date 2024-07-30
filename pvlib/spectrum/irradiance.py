@@ -1,6 +1,6 @@
 """
-The ``spectral_irradiance`` module provides functions for calculations related
-to spectral irradiance  data.
+The ``irradiance`` module in the ``spectrum`` package provides functions for
+calculations related to spectral irradiance data.
 """
 
 import pvlib

@@ -5,14 +5,14 @@ from pvlib.spectrum.mismatch import (  # noqa: F401
     spectral_factor_firstsolar,
     spectral_factor_sapm,
     spectral_factor_pvspec,
-    spectral_factor_jrc
+    spectral_factor_jrc,
 )
 from pvlib.spectrum.irradiance import (  # noqa: F401
     get_am15g,
-    get_reference_spectra
+    get_reference_spectra,
 )
 from pvlib.spectrum.response import (  # noqa: F401
     get_example_spectral_response,
     sr_to_qe,
-    qe_to_sr
+    qe_to_sr,
 )

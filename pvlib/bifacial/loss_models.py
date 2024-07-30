@@ -101,6 +101,14 @@ def power_mismatch_deline(
        The global irradiance RMAD is different from the backside irradiance
        RMAD.
 
+    RMAD of a variable :math:`G_{total}` is defined as:
+
+    .. math::
+
+        RMAD \left[ unitless \right] = \Delta \left[ unitless \right] =
+        \frac{1}{n^2 \bar{G}_{total}} \sum_{i=1}^{n} \sum_{j=1}^{n}
+        \lvert G_{total,i} - G_{total,j} \rvert
+
     In case the RMAD of the backside irradiance is known, the global RMAD can
     be calculated as follows, assuming the front irradiance RMAD is
     negligible [2]_:

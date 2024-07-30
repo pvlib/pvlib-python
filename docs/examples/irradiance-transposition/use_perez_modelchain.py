@@ -6,8 +6,8 @@ This example demonstrates how to customize the ModelChain
 to use site-specifc Perez coefficients.
 """
 
-#%%
-# The :py:class:`pvlib.modelchain.ModelChain` object provides a useful interface
+# %%
+# The :py:class:`pvlib.modelchain.ModelChain` object provides a useful method
 # for easily constructing a model with a simple, unified interface.
 # However, a user may want to customize their models in various ways.
 # One such example is during the irradiance transposition step.
@@ -16,7 +16,8 @@ to use site-specifc Perez coefficients.
 # It has been noted that these coefficients can be specific to
 # various climates, so users may see a boost in model performance
 # when using the correct set of parameters.
-# However, the base `pvlib.modelchain.ModelChain` only supports the default coefficients.
+# However, the base `pvlib.modelchain.ModelChain`
+# only supports the default coefficients.
 # This example shows how the `pvlib.modelchain.ModelChain` can
 # be adjusted to use a different set of Perez coefficients.
 
@@ -36,10 +37,10 @@ DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
 tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990,
                                   map_variables=True)
 
-weather_data = pd.DataFrame({'ghi': tmy['ghi'], 'dhi': tmy['dhi'], 'dni': tmy['dni'],
-                   'temp_air': tmy['temp_air'],
-                   'wind_speed': tmy['wind_speed'],
-                   })
+weather_data = pd.DataFrame({'ghi': tmy['ghi'], 'dhi': tmy['dhi'],
+                             'dni': tmy['dni'],
+                             'temp_air': tmy['temp_air'],
+                             'wind_speed': tmy['wind_speed']})
 
 loc = location.Location.from_tmy(metadata)
 
@@ -52,15 +53,15 @@ cec_inverters = pvlib.pvsystem.retrieve_sam('cecinverter')
 sandia_module = sandia_modules['Canadian_Solar_CS5P_220M___2009_']
 cec_inverter = cec_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
 
-temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+temp_params = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
 # define the system and ModelChain
-system = PVSystem(arrays = None,
+system = PVSystem(arrays=None,
                   surface_tilt=surface_tilt,
                   surface_azimuth=surface_azimuth,
                   module_parameters=sandia_module,
                   inverter_parameters=cec_inverter,
-                  temperature_model_parameters=temperature_model_parameters)
+                  temperature_model_parameters=temp_params)
 
 mc = ModelChain(system, location=loc)
 
@@ -107,6 +108,6 @@ plt.plot(ac_power_new_perez.loc[start:stop],
 plt.xticks(rotation=90)
 plt.ylabel("AC Power ($W$)")
 plt.legend()
-#%%
+# %%
 # Note that there is a small, but noticeable difference from the default
 # coefficients that may add up over longer periods of time.

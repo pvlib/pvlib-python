@@ -409,7 +409,7 @@ def _coerce_and_roll_pvgis_tmy(pvgis_data, tz, year):
 def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None,
                   map_variables=True, url=URL, timeout=30,
-                  utc_offset=0, coerce_year=1990):
+                  utc_offset=None, coerce_year=None):
     """
     Get TMY data from PVGIS.
 
@@ -441,13 +441,13 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     timeout : int, default 30
         time in seconds to wait for server response before timeout
-    utc_offset: int, default 0
+    utc_offset: int, default None
         Use to specify a time zone other than the default UTC zero and roll
-        dataframe by ``utc_offset`` so that it starts at midnight on January
-        1st. If not zero, will also force year to ``coerce_year``.
-    coerce_year: int, default 1990
-        Use to force indices to desired year. Ignored if ``utc_offset`` is
-        zero.
+        dataframe by ``utc_offset`` so it starts at midnight on January 1st.
+        Ignored if ``None``, otherwise will also force year to ``coerce_year``.
+    coerce_year: int, default None
+        Use to force indices to desired year. Will default to 1990 if
+        ``coerce_year`` is ``None``, but ``utc_offset`` is not ``None``.
 
     Returns
     -------
@@ -534,7 +534,14 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
 
-    if utc_offset != 0:
+    if utc_offset is not None or coerce_year is not None:
+        # XXX: be explicit, test for identity not implicit booleaness
+        # utc_offset None but coerce_year isn't, set year with utc zero
+        if utc_offset is None:  # XXX: None and zero are both False
+            utc_offset = 0
+        # coerce_year is None but utc_off isn't, set year to 1990
+        if coerce_year is None:  # more explicit than (coerce_year or 1990)
+            coerce_year = 1990
         data = _coerce_and_roll_pvgis_tmy(data, utc_offset, coerce_year)
 
     return data, months_selected, inputs, meta

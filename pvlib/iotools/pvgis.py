@@ -442,8 +442,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     timeout : int, default 30
         time in seconds to wait for server response before timeout
     utc_offset: int, default 0
-        Use to specify a timezone other than the default UTC zero. Will force
-        year to ``coerce_year`` if not zero.
+        Use to specify a time zone other than the default UTC zero and roll
+        dataframe by ``utc_offset`` so that it starts at midnight on January
+        1st. If not zero, will also force year to ``coerce_year``.
     coerce_year: int, default 1990
         Use to force indices to desired year. Ignored if ``utc_offset`` is
         zero.

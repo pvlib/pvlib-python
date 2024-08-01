@@ -117,6 +117,7 @@ plt.xticks(rotation=90)
 plt.ylabel("AC Power ($W$)")
 plt.legend()
 plt.tight_layout()
+plt.show()
 # %%
 # Note that there is a small, but noticeable difference from the default
 # coefficients that may add up over longer periods of time.

@@ -1112,15 +1112,16 @@ def average_photon_energy(spectral_irr):
     ----------
     spectral_irr : numeric, :py:class:`pandas.Series` or
     :py:class:`pandas.DataFrame`
+
         Spectral irradiance [W/m^2)/nm].
-    A single spectrum must be a :py:class:`pandas.Series` with wavelength as
-    the index, while multiple spectra must be a :py:class:`pandas.DataFrame`
-    with column headers as wavelength.
+        A single spectrum must be a :py:class:`pandas.Series` with wavelength
+        as the index, while multiple spectra must be a
+        :py:class:`pandas.DataFrame` with column headers as wavelength.
 
     Returns
     -------
     ape : numeric or array
-        Average photon energy [eV].
+        Average Photon Energy [eV].
 
     Notes
     -----
@@ -1135,12 +1136,12 @@ def average_photon_energy(spectral_irr):
 
         E_\gamma = \frac{hc}{\lambda},
 
-    where \(\lambda\) is the energy of a photon with wavelength \(\lambda\),
-    \(h\) is Planck's constant, and \(c\) is the speed of light. Therefore,
-    the average energy of all photons within a single spectral
-    distribution provides an indication of the general shape of the spectrum.
-    A higher average photon energy (shorter wavelength) indicates a
-    blue-shifted spectrum, while a lower average photon energy
+    where :math:`E_\gamma` is the energy of a photon with wavelength
+    :math:`\lambda`, :math:`h` is the Planck constant, and :math:`c` is the
+    speed of light. Therefore, the average energy of all photons within a
+    single spectral distribution provides an indication of the general shape of
+    the spectrum. A higher average photon energy (shorter wavelength) indicates
+    a blue-shifted spectrum, while a lower average photon energy
     (longer wavelength) would indicate a red-shifted spectrum. This value
     of the average photon energy can be calculated by dividing the total number
     of photons in the spectrum by the total energy in the spectrum as
@@ -1151,12 +1152,13 @@ def average_photon_energy(spectral_irr):
                 \int_a^b \Phi_\lambda \, d\lambda}
             {\int_a^b E_\lambda \, d\lambda}.
 
-    \(\Phi_\lambda\) is the photon flux density as a function of wavelength,
-    and \(q\) is the elementary charge used here so that the average photon
-    energy, \(\varphi\), is expressed in electronvolts (eV). The integration
-    limits, (\a\) and (\b\), define the wavelength range within which the
-    APE is calculated. By default, this function will calculate the value for
-    APE based on full wavelength range of the input spectral irradiance.
+    :math:`\Phi_\lambda` is the photon flux density as a function of
+    wavelength, :math:`q` is the elementary charge used here so that the
+    average photon energy, :math:`\varphi`, is expressed in electronvolts (eV).
+    The integration limits, :math:`a` and :math:`b`, define the wavelength
+    range within which the APE is calculated. By default, this function
+    calculates the value for APE based on full wavelength range of the
+    ``spectral_irr`` parameter.
 
     References
     ----------

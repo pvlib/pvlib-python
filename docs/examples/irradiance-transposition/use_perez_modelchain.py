@@ -65,6 +65,11 @@ system = PVSystem(arrays=None,
 
 mc = ModelChain(system, location=loc)
 
+# %%
+# Now, let's calculate POA irradiance values outside of the ``ModelChain``.
+# We do this for both the default Perez coefficients and the desired
+# alternative Perez coefficients.  This enables comparison at the end.
+
 # Cape Canaveral seems like the most likely match for climate
 model_perez = 'capecanaveral1988'
 

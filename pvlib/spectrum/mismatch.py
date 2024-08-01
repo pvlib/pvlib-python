@@ -1105,53 +1105,67 @@ def qe_to_sr(qe, wavelength=None, normalize=False):
 
 def average_photon_energy(spectral_irr):
     r"""
-    Calculate the average photon energy of a spectral irradiance distribution.
+    Calculate the average photon energy of one or more spectral irradiance
+    distributions.
 
     Parameters
     ----------
-    spectral_irr : numeric
+    spectral_irr : numeric, :py:class:`pandas.Series` or
+    :py:class:`pandas.DataFrame`
         Spectral irradiance [W/m^2)/nm].
+    A single spectrum must be a :py:class:`pandas.Series` with wavelength as
+    the index, while multiple spectra must be a :py:class:`pandas.DataFrame`
+    with column headers as wavelength.
 
     Returns
     -------
-    ape : numeric
+    ape : numeric or array
         Average photon energy [eV].
 
     Notes
     -----
-    The average photon energy is an index used to characterise the solar
-    spectrum. It is calculated based on the principle that a photon's
-    wavelength is inversely proportional to its energy:
+    The average photon energy (APE) is an index used to characterise the solar
+    spectrum. It has been used widely in the Physics literature since the
+    1900s, but its application for solar spectral irradiance characterisation
+    in the context of PV performance modelling was proposed in [1]_. The APE
+    is calculated based on the principle that a photon's wavelength is
+    inversely proportional to its energy:
 
     .. math::
 
         E_\gamma = \frac{hc}{\lambda},
 
     where \(\lambda\) is the energy of a photon with wavelength \(\lambda\),
-    \(h\) is Planck's constant, and \(c\) is the speed of light. If one
-    considers the average energy of all photons within a single spectral
-    distribution, an indication of the general shape of the spectrum may be
-    obtained. A higher average photon energy (shorter wavelength) indicates a
+    \(h\) is Planck's constant, and \(c\) is the speed of light. Therefore,
+    the average energy of all photons within a single spectral
+    distribution provides an indication of the general shape of the spectrum.
+    A higher average photon energy (shorter wavelength) indicates a
     blue-shifted spectrum, while a lower average photon energy
     (longer wavelength) would indicate a red-shifted spectrum. This value
     of the average photon energy can be calculated by dividing the total number
-    of photons in the spectrum by the total energy in the spectrum as follows:
+    of photons in the spectrum by the total energy in the spectrum as
+    follows [1]_:
 
         ..math::
             \varphi[eV] = \frac{1}{q}\cdot\frac{
-                \int_a^b \Phi(\lambda)\,d\lambda}
-            {\int_a^b E(\lambda)\,d\lambda}.
+                \int_a^b \Phi_\lambda \, d\lambda}
+            {\int_a^b E_\lambda \, d\lambda}.
 
-    \(\Phi(\lambda)\) is the photon flux density as a function of wavelength,
-    and \(q\) is the elementary charge used here such that the average photon
-    energy, \(\varphi\), is express in electronvolts (eV). The APE value is
-    dependent on the integration limits (\a\) and (\b\)
-
+    \(\Phi_\lambda\) is the photon flux density as a function of wavelength,
+    and \(q\) is the elementary charge used here so that the average photon
+    energy, \(\varphi\), is expressed in electronvolts (eV). The integration
+    limits, (\a\) and (\b\), define the wavelength range within which the
+    APE is calculated. By default, this function will calculate the value for
+    APE based on full wavelength range of the input spectral irradiance.
 
     References
     ----------
-    .. [1]
+    .. [1] Jardine, C., et al., 2002, January. Influence of spectral effects on
+       the performance of multijunction amorphous silicon cells. In Proc.
+       Photovoltaic in Europe Conference (pp. 1756-1759).
+
     """
+
     si = spectral_irr
     hclambda = pd.Series((constants.h*constants.c)/(si.T.index*1e-9))
     hclambda.index = si.T.index  # set wavelength as the index

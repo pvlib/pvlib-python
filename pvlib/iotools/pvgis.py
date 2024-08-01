@@ -443,13 +443,13 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     timeout : int, default 30
         time in seconds to wait for server response before timeout
-    roll_utc_offset: int, default None
+    roll_utc_offset: int, optional
         Use to specify a time zone other than the default UTC zero and roll
         dataframe by ``roll_utc_offset`` so it starts at midnight on January
         1st. Ignored if ``None``, otherwise will force year to ``coerce_year``.
-    coerce_year: int, default None
+    coerce_year: int, optional
         Use to force indices to desired year. Will default to 1990 if
-        ``coerce_year`` is ``None``, but ``roll_utc_offset`` is not ``None``.
+        ``coerce_year`` is not specified, but ``roll_utc_offset`` is specified.
 
     Returns
     -------

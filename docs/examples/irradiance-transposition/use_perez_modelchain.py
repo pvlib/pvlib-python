@@ -1,6 +1,6 @@
 """
 Use different Perez coefficients with the ModelChain
-=================
+====================================================
 
 This example demonstrates how to customize the ModelChain
 to use site-specifc Perez coefficients.

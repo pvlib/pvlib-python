@@ -16,9 +16,9 @@ to use site-specifc Perez coefficients.
 # It has been noted that these coefficients can be specific to
 # various climates, so users may see a boost in model performance
 # when using the correct set of parameters.
-# However, the base `pvlib.modelchain.ModelChain`
+# However, the base  :py:class:`~pvlib.modelchain.ModelChain`
 # only supports the default coefficients.
-# This example shows how the `pvlib.modelchain.ModelChain` can
+# This example shows how the  :py:class:`~pvlib.modelchain.ModelChain` can
 # be adjusted to use a different set of Perez coefficients.
 
 import pandas as pd

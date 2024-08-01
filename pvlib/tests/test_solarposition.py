@@ -8,6 +8,7 @@ import pandas as pd
 from .conftest import assert_frame_equal, assert_series_equal
 from numpy.testing import assert_allclose
 import pytest
+import pytz
 
 from pvlib.location import Location
 from pvlib import solarposition, spa
@@ -671,6 +672,37 @@ def test_hour_angle():
     # sunrise: 4 seconds, sunset: 48 seconds, transit: 0.2 seconds
     # but the differences may be due to other SPA input parameters
     assert np.allclose(hours, expected)
+
+
+def test_hour_angle_with_tricky_timezones():
+    # tests timezones that have a DST shift at midnight
+
+    eot = np.array([-3.935172, -4.117227, -4.026295, -4.026295])
+
+    longitude = 70.6693
+    times = pd.DatetimeIndex([
+        '2014-09-06 23:00:00',
+        '2014-09-07 00:00:00',
+        '2014-09-07 01:00:00',
+        '2014-09-07 02:00:00',
+    ]).tz_localize('America/Santiago', nonexistent='shift_forward')
+
+    with pytest.raises(pytz.exceptions.NonExistentTimeError):
+        times.normalize()
+
+    # should not raise `pytz.exceptions.NonExistentTimeError`
+    solarposition.hour_angle(times, longitude, eot)
+
+    longitude = 82.3666
+    times = pd.DatetimeIndex([
+        '2014-11-01 23:00:00',
+        '2014-11-02 00:00:00',
+        '2014-11-02 01:00:00',
+        '2014-11-02 02:00:00',
+    ]).tz_localize('America/Havana', ambiguous=[True, True, False, False])
+
+    with pytest.raises(pytz.exceptions.AmbiguousTimeError):
+        solarposition.hour_angle(times, longitude, eot)
 
 
 def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):

@@ -20,7 +20,8 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* Handle DST transitions that happen at midnight in :py:func:`pvlib.solarposition.hour_angle`
+  (:issue:`2132` :pull:`2133`)
 
 Testing
 ~~~~~~~
@@ -45,4 +46,4 @@ Contributors
 * Leonardo Micheli (:ghuser:`lmicheli`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
-
+* Scott Nelson (:ghuser:`scttnlsn`)

@@ -1391,7 +1391,17 @@ def hour_angle(times, longitude, equation_of_time):
         times = times.tz_localize('utc')
     tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
 
-    hrs_minus_tzs = (times - times.normalize()) / pd.Timedelta('1h') - tzs
+    # Some timezones have a DST shift at midnight:
+    #   11:59pm -> 1:00am - results in a nonexistent midnight
+    #   12:59am -> 12:00am - results in an ambiguous midnight
+    # We remove the timezone before normalizing for this reason.
+    naive_normalized_times = times.tz_localize(None).normalize()
+
+    # Use Pandas functionality for shifting nonexistent times forward
+    normalized_times = naive_normalized_times.tz_localize(
+        times.tz, nonexistent='shift_forward', ambiguous='raise')
+
+    hrs_minus_tzs = (times - normalized_times) / pd.Timedelta('1h') - tzs
 
     # ensure array return instead of a version-dependent pandas <T>Index
     return np.asarray(

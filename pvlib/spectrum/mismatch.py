@@ -1112,8 +1112,7 @@ def average_photon_energy(spectral_irr):
     ----------
     spectral_irr : pandas.Series or pandas.DataFrame
 
-        Spectral irradiance, must be positive.
-        :raw-latex:`\mathrm{Wm^{-2}nm^{-1}}`.
+        Spectral irradiance, must be positive. :math:`\mathrm{Wm^{-2}nm^{-1}}`
 
         A single spectrum must be a :py:class:`pandas.Series` with wavelength
         [nm] as the index, while multiple spectra must be a

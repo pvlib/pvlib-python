@@ -1110,13 +1110,12 @@ def average_photon_energy(spectral_irr):
 
     Parameters
     ----------
-    spectral_irr : numeric, :py:class:`pandas.Series` or
-    :py:class:`pandas.DataFrame`
+    spectral_irr : pandas.Series or pandas.DataFrame
 
-        Spectral irradiance [W/m^2)/nm].
+        Spectral irradiance [math:`Wm^{-2}nm^{-1}`].
         A single spectrum must be a :py:class:`pandas.Series` with wavelength
-        as the index, while multiple spectra must be a
-        :py:class:`pandas.DataFrame` with column headers as wavelength.
+        [nm] as the index, while multiple spectra must be a
+        :py:class:`pandas.DataFrame` with column headers as wavelength [nm].
 
     Returns
     -------
@@ -1139,17 +1138,17 @@ def average_photon_energy(spectral_irr):
     where :math:`E_\gamma` is the energy of a photon with wavelength
     :math:`\lambda`, :math:`h` is the Planck constant, and :math:`c` is the
     speed of light. Therefore, the average energy of all photons within a
-    single spectral distribution provides an indication of the general shape of
-    the spectrum. A higher average photon energy (shorter wavelength) indicates
-    a blue-shifted spectrum, while a lower average photon energy
-    (longer wavelength) would indicate a red-shifted spectrum. This value
-    of the average photon energy can be calculated by dividing the total number
-    of photons in the spectrum by the total energy in the spectrum as
-    follows [1]_:
+    single spectral irradiance distribution provides an indication of the
+    general shape of the spectrum. A higher average photon energy
+    (shorter wavelength) indicates a blue-shifted spectrum, while a lower
+    average photon energy (longer wavelength) would indicate a red-shifted
+    spectrum. This value of the average photon energy can be calculated by
+    dividing the total number of photons in the spectrum by the total energy in
+    the spectrum as follows [1]_:
 
         ..math::
-            \varphi[eV] = \frac{1}{q}\cdot\frac{
-                \int_a^b \Phi_\lambda \, d\lambda}
+
+            \varphi = \frac{1}{q} \cdot \frac{\int_a^b \Phi_\lambda \,d\lambda}
             {\int_a^b E_\lambda \, d\lambda}.
 
     :math:`\Phi_\lambda` is the photon flux density as a function of

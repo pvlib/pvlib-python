@@ -1112,7 +1112,7 @@ def average_photon_energy(spectral_irr):
     ----------
     spectral_irr : pandas.Series or pandas.DataFrame
 
-        Spectral irradiance [math:`Wm^{-2}nm^{-1}`].
+        Spectral irradiance [:math:`Wm^{-2}nm^{-1}`].
         A single spectrum must be a :py:class:`pandas.Series` with wavelength
         [nm] as the index, while multiple spectra must be a
         :py:class:`pandas.DataFrame` with column headers as wavelength [nm].
@@ -1146,10 +1146,10 @@ def average_photon_energy(spectral_irr):
     dividing the total number of photons in the spectrum by the total energy in
     the spectrum as follows [1]_:
 
-        ..math::
+    ..math::
 
-            \varphi = \frac{1}{q} \cdot \frac{\int_a^b \Phi_\lambda \,d\lambda}
-            {\int_a^b E_\lambda \, d\lambda}.
+        \varphi = \frac{1}{q} \cdot \frac{\int_a^b \Phi_\lambda \,d\lambda}
+        {\int_a^b E_\lambda \, d\lambda}.
 
     :math:`\Phi_\lambda` is the photon flux density as a function of
     wavelength, :math:`q` is the elementary charge used here so that the

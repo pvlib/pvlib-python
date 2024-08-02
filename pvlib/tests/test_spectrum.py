@@ -605,3 +605,31 @@ def test_average_photon_energy_dataframe():
     expected = [1.36848, 1.45017, 1.40885]
 
     assert_allclose(ape, expected, rtol=1e-4)
+
+
+def test_average_photon_energy_invalid_type():
+    # test that spectral_irr argument is either a pandas Series or dataframe
+    spectral_irr = 5
+    with pytest.raises(TypeError, match='must be either a pandas Series or'
+                       ' DataFrame'):
+        spectrum.average_photon_energy(spectral_irr)
+
+
+def test_average_photon_energy_neg_irr_series():
+    # test for handling of negative spectral irradiance values with a
+    # pandas Series input
+
+    spectral_irr = spectrum.get_reference_spectra()['global']*-1
+
+    with pytest.raises(ValueError, match='must be positive'):
+        spectrum.average_photon_energy(spectral_irr)
+
+
+def test_average_photon_energy_neg_irr_dataframe():
+    # test for handling of negative spectral irradiance values with a
+    # pandas Series input
+
+    spectral_irr = spectrum.get_reference_spectra().T*-1
+
+    with pytest.raises(ValueError, match='must be positive'):
+        spectrum.average_photon_energy(spectral_irr)

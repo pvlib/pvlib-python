@@ -1112,7 +1112,9 @@ def average_photon_energy(spectral_irr):
     ----------
     spectral_irr : pandas.Series or pandas.DataFrame
 
-        Spectral irradiance [:math:`Wm^{-2}nm^{-1}`].
+        Spectral irradiance, must be positive.
+        :raw-latex:`\mathrm{Wm^{-2}nm^{-1}}`.
+
         A single spectrum must be a :py:class:`pandas.Series` with wavelength
         [nm] as the index, while multiple spectra must be a
         :py:class:`pandas.DataFrame` with column headers as wavelength [nm].
@@ -1146,9 +1148,9 @@ def average_photon_energy(spectral_irr):
     dividing the total number of photons in the spectrum by the total energy in
     the spectrum as follows [1]_:
 
-    ..math::
+    .. math::
 
-        \varphi = \frac{1}{q} \cdot \frac{\int_a^b \Phi_\lambda \,d\lambda}
+        \varphi = \frac{1}{q} \cdot \frac{\int_a^b \Phi_\lambda \, d\lambda}
         {\int_a^b E_\lambda \, d\lambda}.
 
     :math:`\Phi_\lambda` is the photon flux density as a function of
@@ -1168,6 +1170,16 @@ def average_photon_energy(spectral_irr):
     """
 
     si = spectral_irr
+
+    if not isinstance(si, (pd.Series, pd.DataFrame)):
+        raise TypeError('`spectral_irr` must be either a'
+                        ' pandas Series or DataFrame')
+    # check si type
+
+    if (si < 0).any().any():
+        raise ValueError('Spectral irradiance data must be positive')
+    # check if si contains any negative irradiance values
+
     hclambda = pd.Series((constants.h*constants.c)/(si.T.index*1e-9))
     hclambda.index = si.T.index  # set wavelength as the index
     pfd = si.div(hclambda)  # calculate the photon flux density
@@ -1179,5 +1191,6 @@ def average_photon_energy(spectral_irr):
     int_pfd = integrate(pfd)  # integrate photon flux density wrt wavelength
 
     ape = (1/constants.elementary_charge)*int_si/int_pfd
+    # calculate the average photon energy (ape) in electronvolts (eV)
 
     return ape

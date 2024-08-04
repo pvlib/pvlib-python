@@ -71,7 +71,7 @@ def power_mismatch_deline(
     where the upper equation is in percentage (same as paper) and the lower
     one is unitless. The implementation uses the unitless version, where
     :math:`M[-]` is the mismatch power loss [unitless] and
-    :math:`\Delta[-]` is the Relative Mean Absolute Difference [unitless]
+    :math:`\Delta[-]` is the Relative Mean Absolute Difference (RMAD) [unitless]
     of the global irradiance, Eq. (4) of [1]_ and [2]_.
     Note that the n-th power coefficient is multiplied by :math:`100^{n-1}`
     to convert the percentage to unitless.

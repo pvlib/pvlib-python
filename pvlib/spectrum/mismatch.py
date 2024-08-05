@@ -1,260 +1,15 @@
 """
-The ``mismatch`` module provides functions for spectral mismatch calculations.
+The ``mismatch`` module in the ``spectrum`` package provides functions for
+spectral mismatch calculations. Spectral mismatch models quantify the effect on
+a device's photocurrent (or its short-circuit current) of changes in the solar
+spectrum due to the atmosphere.
 """
-
 import pvlib
-from pvlib._deprecation import deprecated
-from pvlib.tools import normalize_max2one
 import numpy as np
 import pandas as pd
-import scipy.constants
 from scipy.integrate import trapezoid
-from scipy.interpolate import interp1d
-from scipy import constants
 
-from pathlib import Path
 from warnings import warn
-from functools import partial
-
-
-_PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION = (
-    scipy.constants.speed_of_light
-    * scipy.constants.Planck
-    / scipy.constants.elementary_charge
-    * 1e9
-)
-
-
-def get_example_spectral_response(wavelength=None):
-    '''
-    Generate a generic smooth spectral response (SR) for tests and experiments.
-
-    Parameters
-    ----------
-    wavelength: 1-D sequence of numeric, optional
-        Wavelengths at which spectral response values are generated.
-        By default ``wavelength`` is from 280 to 1200 in 5 nm intervals. [nm]
-
-    Returns
-    -------
-    spectral_response : pandas.Series
-        The relative spectral response indexed by ``wavelength`` in nm. [-]
-
-    Notes
-    -----
-    This spectral response is based on measurements taken on a c-Si cell.
-    A small number of points near the measured curve are used to define
-    a cubic spline having no undue oscillations, as shown in [1]_.  The spline
-    can be interpolated at arbitrary wavelengths to produce a continuous,
-    smooth curve , which makes it suitable for experimenting with spectral
-    data of different resolutions.
-
-    References
-    ----------
-    .. [1] Driesse, Anton, and Stein, Joshua. "Global Normal Spectral
-       Irradiance in Albuquerque: a One-Year Open Dataset for PV Research".
-       United States 2020. :doi:`10.2172/1814068`.
-    '''
-    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
-
-    SR_DATA = np.array([[290, 0.00],
-                        [350, 0.27],
-                        [400, 0.37],
-                        [500, 0.52],
-                        [650, 0.71],
-                        [800, 0.88],
-                        [900, 0.97],
-                        [950, 1.00],
-                        [1000, 0.93],
-                        [1050, 0.58],
-                        [1100, 0.21],
-                        [1150, 0.05],
-                        [1190, 0.00]]).transpose()
-
-    if wavelength is None:
-        resolution = 5.0
-        wavelength = np.arange(280, 1200 + resolution, resolution)
-
-    interpolator = interp1d(SR_DATA[0], SR_DATA[1],
-                            kind='cubic',
-                            bounds_error=False,
-                            fill_value=0.0,
-                            copy=False,
-                            assume_sorted=True)
-
-    sr = pd.Series(data=interpolator(wavelength), index=wavelength)
-
-    sr.index.name = 'wavelength'
-    sr.name = 'spectral_response'
-
-    return sr
-
-
-@deprecated(
-    since="0.11",
-    removal="0.12",
-    name="pvlib.spectrum.get_am15g",
-    alternative="pvlib.spectrum.get_reference_spectra",
-    addendum=(
-        "The new function reads more data. Use it with "
-        + "standard='ASTM G173-03' and extract the 'global' column."
-    ),
-)
-def get_am15g(wavelength=None):
-    r"""
-    Read the ASTM G173-03 AM1.5 global spectrum on a 37-degree tilted surface,
-    optionally interpolated to the specified wavelength(s).
-
-    Global (tilted) irradiance includes direct and diffuse irradiance from sky
-    and ground reflections, and is more formally called hemispherical
-    irradiance (on a tilted surface).  In the context of photovoltaic systems
-    the irradiance on a flat receiver is frequently called plane-of-array (POA)
-    irradiance.
-
-    Parameters
-    ----------
-    wavelength: 1-D sequence of numeric, optional
-        Wavelengths at which the spectrum is interpolated.
-        By default the 2002 wavelengths of the standard are returned. [nm].
-
-    Returns
-    -------
-    am15g: pandas.Series
-        The AM1.5g standard spectrum indexed by ``wavelength``. [W/(m²nm)].
-
-    Notes
-    -----
-    If ``wavelength`` is specified this function uses linear interpolation.
-
-    If the values in ``wavelength`` are too widely spaced, the integral of the
-    spectrum may deviate from the standard value of 1000.37 W/m².
-
-    The values in the data file provided with pvlib-python are copied from an
-    Excel file distributed by NREL, which is found here:
-    https://www.nrel.gov/grid/solar-resource/assets/data/astmg173.xls
-
-    More information about reference spectra is found here:
-    https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html
-
-    See Also
-    --------
-    pvlib.spectrum.get_reference_spectra : reads also the direct and
-      extraterrestrial components of the spectrum.
-
-    References
-    ----------
-    .. [1] ASTM "G173-03 Standard Tables for Reference Solar Spectral
-       Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
-    """  # noqa: E501
-    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Aug. 2022
-    # modified by @echedey-ls, as a wrapper of spectrum.get_reference_spectra
-    standard = get_reference_spectra(wavelength, standard="ASTM G173-03")
-    return standard["global"]
-
-
-def get_reference_spectra(wavelengths=None, standard="ASTM G173-03"):
-    r"""
-    Read a standard spectrum specified by ``standard``, optionally
-    interpolated to the specified wavelength(s).
-
-    Defaults to ``ASTM G173-03`` AM1.5 standard [1]_, which returns
-    ``extraterrestrial``, ``global`` and ``direct`` spectrum on a 37-degree
-    tilted surface, optionally interpolated to the specified wavelength(s).
-
-    Parameters
-    ----------
-    wavelengths : numeric, optional
-        Wavelengths at which the spectrum is interpolated. [nm].
-        If not provided, the original wavelengths from the specified standard
-        are used. Values outside that range are filled with zeros.
-
-    standard : str, default "ASTM G173-03"
-        The reference standard to be read. Only the reference
-        ``"ASTM G173-03"`` is available at the moment.
-
-    Returns
-    -------
-    standard_spectra : pandas.DataFrame
-        The standard spectrum by ``wavelength [nm]``. [W/(m²nm)].
-        Column names are ``extraterrestrial``, ``direct`` and ``global``.
-
-    Notes
-    -----
-    If ``wavelength`` is specified, linear interpolation is used.
-
-    If the values in ``wavelength`` are too widely spaced, the integral of each
-    spectrum may deviate from its standard value.
-    For global spectra, it is about 1000.37 W/m².
-
-    The values of the ASTM G173-03 provided with pvlib-python are copied from
-    an Excel file distributed by NREL, which is found here [2]_:
-    https://www.nrel.gov/grid/solar-resource/assets/data/astmg173.xls
-
-    Examples
-    --------
-    >>> from pvlib import spectrum
-    >>> am15 = spectrum.get_reference_spectra()
-    >>> am15_extraterrestrial, am15_global, am15_direct = \
-    >>>     am15['extraterrestrial'], am15['global'], am15['direct']
-    >>> print(am15.head())
-                extraterrestrial        global        direct
-    wavelength
-    280.0                  0.082  4.730900e-23  2.536100e-26
-    280.5                  0.099  1.230700e-21  1.091700e-24
-    281.0                  0.150  5.689500e-21  6.125300e-24
-    281.5                  0.212  1.566200e-19  2.747900e-22
-    282.0                  0.267  1.194600e-18  2.834600e-21
-
-    >>> am15 = spectrum.get_reference_spectra([300, 500, 800, 1100])
-    >>> print(am15)
-                extraterrestrial   global    direct
-    wavelength
-    300                  0.45794  0.00102  0.000456
-    500                  1.91600  1.54510  1.339100
-    800                  1.12480  1.07250  0.988590
-    1100                 0.60000  0.48577  0.461130
-
-    References
-    ----------
-    .. [1] ASTM "G173-03 Standard Tables for Reference Solar Spectral
-       Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface."
-    .. [2] “Reference Air Mass 1.5 Spectra,” www.nrel.gov.
-       https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html
-    """  # Contributed by Echedey Luis, inspired by Anton Driesse (get_am15g)
-    SPECTRA_FILES = {
-        "ASTM G173-03": "ASTMG173.csv",
-    }
-    pvlib_datapath = Path(pvlib.__path__[0]) / "data"
-
-    try:
-        filepath = pvlib_datapath / SPECTRA_FILES[standard]
-    except KeyError:
-        raise ValueError(
-            f"Invalid standard identifier '{standard}'. Available "
-            + "identifiers are: "
-            + ", ".join(SPECTRA_FILES.keys())
-        )
-
-    standard = pd.read_csv(
-        filepath,
-        header=1,  # expect first line of description, then column names
-        index_col=0,  # first column is "wavelength"
-        dtype=float,
-    )
-
-    if wavelengths is not None:
-        interpolator = partial(
-            np.interp, xp=standard.index, left=0.0, right=0.0
-        )
-        standard = pd.DataFrame(
-            index=wavelengths,
-            data={
-                col: interpolator(x=wavelengths, fp=standard[col])
-                for col in standard.columns
-            },
-        )
-
-    return standard
 
 
 def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
@@ -332,7 +87,8 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 
     # get the reference spectrum at wavelengths matching the measured spectra
     if e_ref is None:
-        e_ref = get_reference_spectra(wavelengths=e_sun.T.index)["global"]
+        e_ref = pvlib.spectrum.get_reference_spectra(
+            wavelengths=e_sun.T.index)["global"]
 
     # interpolate the sr at the wavelengths of the spectra
     # reference spectrum wavelengths may differ if e_ref is from caller
@@ -359,21 +115,17 @@ def calc_spectral_mismatch_field(sr, e_sun, e_ref=None):
 def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
                                module_type=None, coefficients=None,
                                min_precipitable_water=0.1,
-                               max_precipitable_water=8):
+                               max_precipitable_water=8,
+                               min_airmass_absolute=0.58,
+                               max_airmass_absolute=10):
     r"""
     Spectral mismatch modifier based on precipitable water and absolute
     (pressure-adjusted) air mass.
 
-    Estimates a spectral mismatch modifier :math:`M` representing the effect on
-    module short circuit current of variation in the spectral
-    irradiance. :math:`M`  is estimated from absolute (pressure currected) air
-    mass, :math:`AM_a`, and precipitable water, :math:`Pw`, using the following
-    function:
-
-    .. math::
-
-        M = c_1 + c_2 AM_a  + c_3 Pw  + c_4 AM_a^{0.5}
-            + c_5 Pw^{0.5} + c_6 \frac{AM_a} {Pw^{0.5}}
+    Estimates the spectral mismatch modifier, :math:`M`, representing the
+    effect of variation in the spectral irradiance on the module short circuit
+    current :math:`M`  is estimated from absolute (pressure-corrected) air
+    mass, :math:`AM_a`, and precipitable water, :math:`Pw`.
 
     Default coefficients are determined for several cell types with
     known quantum efficiency curves, by using the Simple Model of the
@@ -384,15 +136,13 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     * :math:`0.5 \textrm{cm} <= Pw <= 5 \textrm{cm}`
     * :math:`1.0 <= AM_a <= 5.0`
     * Spectral range is limited to that of CMP11 (280 nm to 2800 nm)
-    * spectrum simulated on a plane normal to the sun
+    * Spectrum simulated on an equatorial facing surface with 37° tilt
     * All other parameters fixed at G173 standard
 
-    From these simulated spectra, M is calculated using the known
+    From these simulated spectra, :math:`M` is calculated using the known
     quantum efficiency curves. Multiple linear regression is then
-    applied to fit Eq. 1 to determine the coefficients for each module.
-
-    Based on the PVLIB Matlab function ``pvl_FSspeccorr`` by Mitchell
-    Lee and Alex Panchula of First Solar, 2016 [2]_.
+    applied to fit Eq. 1 to determine the coefficients for each module. More
+    details on the model can be found in [2]_.
 
     Parameters
     ----------
@@ -407,11 +157,12 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         'multisi', and 'polysi' (can be lower or upper case). If provided,
         module_type selects default coefficients for the following modules:
 
-        * 'cdte' - First Solar Series 4-2 CdTe module.
-        * 'monosi', 'xsi' - First Solar TetraSun module.
-        * 'multisi', 'polysi' - anonymous multi-crystalline silicon module.
-        * 'cigs' - anonymous copper indium gallium selenide module.
-        * 'asi' - anonymous amorphous silicon module.
+        * ``'cdte'`` - First Solar Series 4-2 CdTe module.
+        * ``'monosi'``, ``'xsi'`` - First Solar TetraSun module.
+        * ``'multisi'``, ``'polysi'`` - anonymous multi-crystalline silicon
+          module.
+        * ``'cigs'`` - anonymous copper indium gallium selenide module.
+        * ``'asi'`` - anonymous amorphous silicon module.
 
         The module used to calculate the spectral correction
         coefficients corresponds to the Multi-crystalline silicon
@@ -431,12 +182,20 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
     min_precipitable_water : float, default 0.1
         minimum atmospheric precipitable water. Any ``precipitable_water``
         value lower than ``min_precipitable_water``
-        is set to ``min_precipitable_water`` to avoid model divergence. [cm]
+        is set to ``min_precipitable_water``. [cm]
 
     max_precipitable_water : float, default 8
         maximum atmospheric precipitable water. Any ``precipitable_water``
         value greater than ``max_precipitable_water``
-        is set to ``np.nan`` to avoid model divergence. [cm]
+        is set to ``np.nan``. [cm]
+
+    min_airmass_absolute : float, default 0.58
+        minimum absolute airmass. Any ``airmass_absolute`` value lower than
+        ``min_airmass_absolute`` is set to ``min_airmass_absolute``. [unitless]
+
+    max_airmass_absolute : float, default 10
+        minimum absolute airmass. Any ``airmass_absolute`` value greater than
+        ``max_airmass_absolute`` is set to ``max_airmass_absolute``. [unitless]
 
     Returns
     -------
@@ -445,6 +204,22 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         with broadband irradiance reaching a module's cells to estimate
         effective irradiance, i.e., the irradiance that is converted to
         electrical current.
+
+    Notes
+    ----
+    The ``spectral_factor_firstsolar`` model takes the following form:
+
+    .. math::
+
+        M = c_1 + c_2 AM_a  + c_3 Pw  + c_4 AM_a^{0.5}
+            + c_5 Pw^{0.5} + c_6 \frac{AM_a} {Pw^{0.5}}.
+
+    The default values for the limits applied to :math:`AM_a` and :math:`Pw`
+    via the ``min_precipitable_water``, ``max_precipitable_water``,
+    ``min_airmass_absolute``, and ``max_airmass_absolute`` are set to prevent
+    divergence of the model presented above. These default values were
+    determined by the publication authors in the original pvlib-python
+    implementation (:pull:`208`).
 
     References
     ----------
@@ -462,36 +237,27 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
        MMF Approach, TUV Rheinland Energy GmbH report 21237296.003,
        January 2017
     """
-
-    # --- Screen Input Data ---
-
-    # *** Pw ***
-    # Replace Pw Values below 0.1 cm with 0.1 cm to prevent model from
-    # diverging"
     pw = np.atleast_1d(precipitable_water)
     pw = pw.astype('float64')
     if np.min(pw) < min_precipitable_water:
         pw = np.maximum(pw, min_precipitable_water)
-        warn('Exceptionally low pw values replaced with '
-             f'{min_precipitable_water} cm to prevent model divergence')
+        warn('Low precipitable water values replaced with '
+             f'{min_precipitable_water} cm in the calculation of spectral '
+             'mismatch.')
 
-    # Warn user about Pw data that is exceptionally high
     if np.max(pw) > max_precipitable_water:
         pw[pw > max_precipitable_water] = np.nan
-        warn('Exceptionally high pw values replaced by np.nan: '
-             'check input data.')
+        warn('High precipitable water values replaced with np.nan in '
+             'the calculation of spectral mismatch.')
 
-    # *** AMa ***
-    # Replace Extremely High AM with AM 10 to prevent model divergence
-    # AM > 10 will only occur very close to sunset
-    if np.max(airmass_absolute) > 10:
-        airmass_absolute = np.minimum(airmass_absolute, 10)
+    airmass_absolute = np.minimum(airmass_absolute, max_airmass_absolute)
 
-    # Warn user about AMa data that is exceptionally low
-    if np.min(airmass_absolute) < 0.58:
-        warn('Exceptionally low air mass: ' +
-             'model not intended for extra-terrestrial use')
-        # pvl_absoluteairmass(1,pvl_alt2pres(4340)) = 0.58 Elevation of
+    if np.min(airmass_absolute) < min_airmass_absolute:
+        airmass_absolute = np.maximum(airmass_absolute, min_airmass_absolute)
+        warn('Low airmass values replaced with 'f'{min_airmass_absolute} in '
+             'the calculation of spectral mismatch.')
+        # pvlib.atmosphere.get_absolute_airmass(1,
+        # pvlib.atmosphere.alt2pres(4340)) = 0.58 Elevation of
         # Mina Pirquita, Argentian = 4340 m. Highest elevation city with
         # population over 50,000.
 
@@ -520,7 +286,6 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
         raise TypeError('Cannot resolve input, must supply only one of ' +
                         'module_type and coefficients')
 
-    # Evaluate Spectral Shift
     coeff = coefficients
     ama = airmass_absolute
     modifier = (
@@ -532,26 +297,68 @@ def spectral_factor_firstsolar(precipitable_water, airmass_absolute,
 
 def spectral_factor_sapm(airmass_absolute, module):
     """
-    Calculates the SAPM spectral loss coefficient, F1.
+    Calculates the spectral mismatch factor, :math:`f_1`,
+    using the Sandia Array Performance Model approach.
+
+    The SAPM spectral factor function is part of the broader Sandia Array
+    Performance Model, which defines five points on an IV curve using empirical
+    module-specific coefficients. Module coefficients for the SAPM are
+    available in the SAPM database and can be retrieved for use in the
+    ``module`` parameter through
+    :py:func:`pvlib.pvsystem.retrieve_sam()`. More details on the
+    SAPM can be found in [1]_, while a full description of the procedure to
+    determine the empirical model coefficients, including those for the SAPM
+    spectral correction, can be found in [2]_.
 
     Parameters
     ----------
     airmass_absolute : numeric
-        Absolute airmass
+        Absolute airmass [unitless]
+
+        Note: ``np.nan`` airmass values will result in 0 output.
 
     module : dict-like
-        A dict, Series, or DataFrame defining the SAPM performance
-        parameters. See the :py:func:`sapm` notes section for more
-        details.
+        A dict, Series, or DataFrame defining the SAPM parameters.
+        Must contain keys `'A0'` through `'A4'`.
+        See the :py:func:`pvlib.pvsystem.sapm` notes section for more details.
 
     Returns
     -------
-    F1 : numeric
-        The SAPM spectral loss coefficient.
+    f1 : numeric
+        The spectral mismatch factor. [unitless]
 
     Notes
     -----
-    nan airmass values will result in 0 output.
+    The SAPM spectral correction functions parameterises :math:`f_1` as a
+    fourth order polynomial function of absolute air mass:
+
+    .. math::
+
+        f_1 = a_0 + a_1 AM_a + a_2 AM_a^2 + a_3 AM_a^3 + a_4 AM_a^4,
+
+    where :math:`f_1` is the spectral mismatch factor, :math:`a_{0-4}` are
+    the module-specific coefficients, and :math:`AM_a` is the absolute airmass,
+    which is calculated by applying a pressure correction to the relative
+    airmass. More detail on how this spectral correction function was developed
+    can be found in [3]_.
+
+    References
+    ----------
+    .. [1] King, D., Kratochvil, J., and Boyson W. (2004), "Sandia
+           Photovoltaic Array Performance Model", (No. SAND2004-3535), Sandia
+           National Laboratories, Albuquerque, NM (United States).
+           :doi:`10.2172/919131`
+    .. [2] King, B., Hansen, C., Riley, D., Robinson, C., and Pratt, L.
+           (2016). Procedure to determine coefficients for the Sandia Array
+           Performance Model (SAPM) (No. SAND2016-5284). Sandia National
+           Laboratories, Albuquerque, NM (United States).
+           :doi:`10.2172/1256510`
+    .. [3] King, D., Kratochvil, J., and Boyson, W. "Measuring solar spectral
+           and angle-of-incidence effects on photovoltaic modules and solar
+           irradiance sensors." Conference Record of the 26th IEEE Potovoltaic
+           Specialists Conference (PVSC). IEEE, 1997.
+           :doi:`10.1109/PVSC.1997.654283`
+
     """
 
     am_coeff = [module['A4'], module['A3'], module['A2'], module['A1'],
@@ -582,7 +389,7 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
     available here via the ``module_type`` parameter were determined
     by fitting the model equations to spectral factors calculated from
     global tilted spectral irradiance measurements taken in the city of
-    Jaén, Spain.  See [1]_ for details.
+    Jaén, Spain. See [1]_ for details.
 
     Parameters
     ----------
@@ -599,8 +406,8 @@ def spectral_factor_caballero(precipitable_water, airmass_absolute, aod500,
         One of the following PV technology strings from [1]_:
 
         * ``'cdte'`` - anonymous CdTe module.
-        * ``'monosi'``, - anonymous sc-si module.
-        * ``'multisi'``, - anonymous mc-si- module.
+        * ``'monosi'`` - anonymous sc-si module.
+        * ``'multisi'`` - anonymous mc-si- module.
         * ``'cigs'`` - anonymous copper indium gallium selenide module.
         * ``'asi'`` - anonymous amorphous silicon module.
         * ``'perovskite'`` - anonymous pervoskite module.
@@ -714,8 +521,8 @@ def spectral_factor_pvspec(airmass_absolute, clearsky_index,
 
         * ``'fs4-1'`` - First Solar series 4-1 and earlier CdTe module.
         * ``'fs4-2'`` - First Solar 4-2 and later CdTe module.
-        * ``'monosi'``, - anonymous monocrystalline Si module.
-        * ``'multisi'``, - anonymous multicrystalline Si module.
+        * ``'monosi'`` - anonymous monocrystalline Si module.
+        * ``'multisi'`` - anonymous multicrystalline Si module.
         * ``'cigs'`` - anonymous copper indium gallium selenide module.
         * ``'asi'`` - anonymous amorphous silicon module.
 
@@ -903,290 +710,3 @@ def spectral_factor_jrc(airmass, clearsky_index, module_type=None,
         + coeff[2] * (airmass - 1.5)
     )
     return mismatch
-
-
-def sr_to_qe(sr, wavelength=None, normalize=False):
-    """
-    Convert spectral responsivities to quantum efficiencies.
-    If ``wavelength`` is not provided, the spectral responsivity ``sr`` must be
-    a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
-    wavelengths in the index.
-
-    Provide wavelengths in nanometers, [nm].
-
-    Conversion is described in [1]_.
-
-    .. versionadded:: 0.11.0
-
-    Parameters
-    ----------
-    sr : numeric, pandas.Series or pandas.DataFrame
-        Spectral response, [A/W].
-        Index must be the wavelength in nanometers, [nm].
-
-    wavelength : numeric, optional
-        Points where spectral response is measured, in nanometers, [nm].
-
-    normalize : bool, default False
-        If True, the quantum efficiency is normalized so that the maximum value
-        is 1.
-        For ``pandas.DataFrame``, normalization is done for each column.
-        For 2D arrays, normalization is done for each sub-array.
-
-    Returns
-    -------
-    quantum_efficiency : numeric, same type as ``sr``
-        Quantum efficiency, in the interval [0, 1].
-
-    Notes
-    -----
-    - If ``sr`` is of type ``pandas.Series`` or ``pandas.DataFrame``,
-      column names will remain unchanged in the returned object.
-    - If ``wavelength`` is provided it will be used independently of the
-      datatype of ``sr``.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> import pandas as pd
-    >>> from pvlib import spectrum
-    >>> wavelengths = np.array([350, 550, 750])
-    >>> spectral_response = np.array([0.25, 0.40, 0.57])
-    >>> quantum_efficiency = spectrum.sr_to_qe(spectral_response, wavelengths)
-    >>> print(quantum_efficiency)
-    array([0.88560142, 0.90170326, 0.94227991])
-
-    >>> spectral_response_series = pd.Series(spectral_response, index=wavelengths, name="dataset")
-    >>> qe = spectrum.sr_to_qe(spectral_response_series)
-    >>> print(qe)
-    350    0.885601
-    550    0.901703
-    750    0.942280
-    Name: dataset, dtype: float64
-
-    >>> qe = spectrum.sr_to_qe(spectral_response_series, normalize=True)
-    >>> print(qe)
-    350    0.939850
-    550    0.956938
-    750    1.000000
-    Name: dataset, dtype: float64
-
-    References
-    ----------
-    .. [1] “Spectral Response,” PV Performance Modeling Collaborative (PVPMC).
-        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/effective-irradiance/spectral-response/
-    .. [2] “Spectral Response | PVEducation,” www.pveducation.org.
-        https://www.pveducation.org/pvcdrom/solar-cell-operation/spectral-response
-
-    See Also
-    --------
-    pvlib.spectrum.qe_to_sr
-    """  # noqa: E501
-    if wavelength is None:
-        if hasattr(sr, "index"):  # true for pandas objects
-            # use reference to index values instead of index alone so
-            # sr / wavelength returns a series with the same name
-            wavelength = sr.index.array
-        else:
-            raise TypeError(
-                "'sr' must have an '.index' attribute"
-                + " or 'wavelength' must be provided"
-            )
-    quantum_efficiency = (
-        sr
-        / wavelength
-        * _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
-    )
-
-    if normalize:
-        quantum_efficiency = normalize_max2one(quantum_efficiency)
-
-    return quantum_efficiency
-
-
-def qe_to_sr(qe, wavelength=None, normalize=False):
-    """
-    Convert quantum efficiencies to spectral responsivities.
-    If ``wavelength`` is not provided, the quantum efficiency ``qe`` must be
-    a :py:class:`pandas.Series` or :py:class:`pandas.DataFrame`, with the
-    wavelengths in the index.
-
-    Provide wavelengths in nanometers, [nm].
-
-    Conversion is described in [1]_.
-
-    .. versionadded:: 0.11.0
-
-    Parameters
-    ----------
-    qe : numeric, pandas.Series or pandas.DataFrame
-        Quantum efficiency.
-        If pandas subtype, index must be the wavelength in nanometers, [nm].
-
-    wavelength : numeric, optional
-        Points where quantum efficiency is measured, in nanometers, [nm].
-
-    normalize : bool, default False
-        If True, the spectral response is normalized so that the maximum value
-        is 1.
-        For ``pandas.DataFrame``, normalization is done for each column.
-        For 2D arrays, normalization is done for each sub-array.
-
-    Returns
-    -------
-    spectral_response : numeric, same type as ``qe``
-        Spectral response, [A/W].
-
-    Notes
-    -----
-    - If ``qe`` is of type ``pandas.Series`` or ``pandas.DataFrame``,
-      column names will remain unchanged in the returned object.
-    - If ``wavelength`` is provided it will be used independently of the
-      datatype of ``qe``.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> import pandas as pd
-    >>> from pvlib import spectrum
-    >>> wavelengths = np.array([350, 550, 750])
-    >>> quantum_efficiency = np.array([0.86, 0.90, 0.94])
-    >>> spectral_response = spectrum.qe_to_sr(quantum_efficiency, wavelengths)
-    >>> print(spectral_response)
-    array([0.24277287, 0.39924442, 0.56862085])
-
-    >>> quantum_efficiency_series = pd.Series(quantum_efficiency, index=wavelengths, name="dataset")
-    >>> sr = spectrum.qe_to_sr(quantum_efficiency_series)
-    >>> print(sr)
-    350    0.242773
-    550    0.399244
-    750    0.568621
-    Name: dataset, dtype: float64
-
-    >>> sr = spectrum.qe_to_sr(quantum_efficiency_series, normalize=True)
-    >>> print(sr)
-    350    0.426950
-    550    0.702128
-    750    1.000000
-    Name: dataset, dtype: float64
-
-    References
-    ----------
-    .. [1] “Spectral Response,” PV Performance Modeling Collaborative (PVPMC).
-        https://pvpmc.sandia.gov/modeling-guide/2-dc-module-iv/effective-irradiance/spectral-response/
-    .. [2] “Spectral Response | PVEducation,” www.pveducation.org.
-        https://www.pveducation.org/pvcdrom/solar-cell-operation/spectral-response
-
-    See Also
-    --------
-    pvlib.spectrum.sr_to_qe
-    """  # noqa: E501
-    if wavelength is None:
-        if hasattr(qe, "index"):  # true for pandas objects
-            # use reference to index values instead of index alone so
-            # sr / wavelength returns a series with the same name
-            wavelength = qe.index.array
-        else:
-            raise TypeError(
-                "'qe' must have an '.index' attribute"
-                + " or 'wavelength' must be provided"
-            )
-    spectral_responsivity = (
-        qe
-        * wavelength
-        / _PLANCK_BY_LIGHT_SPEED_OVER_ELEMENTAL_CHARGE_BY_BILLION
-    )
-
-    if normalize:
-        spectral_responsivity = normalize_max2one(spectral_responsivity)
-
-    return spectral_responsivity
-
-
-def average_photon_energy(spectral_irr):
-    r"""
-    Calculate the average photon energy of one or more spectral irradiance
-    distributions.
-
-    Parameters
-    ----------
-    spectral_irr : pandas.Series or pandas.DataFrame
-
-        Spectral irradiance, must be positive. [Wm⁻²nm⁻¹]
-
-        A single spectrum must be a :py:class:`pandas.Series` with wavelength
-        [nm] as the index, while multiple spectra must be a
-        :py:class:`pandas.DataFrame` with column headers as wavelength [nm].
-
-    Returns
-    -------
-    ape : numeric or array
-        Average Photon Energy [eV].
-
-    Notes
-    -----
-    The average photon energy (APE) is an index used to characterise the solar
-    spectrum. It has been used widely in the Physics literature since the
-    1900s, but its application for solar spectral irradiance characterisation
-    in the context of PV performance modelling was proposed in [1]_. The APE
-    is calculated based on the principle that a photon's wavelength is
-    inversely proportional to its energy:
-
-    .. math::
-
-        E_\gamma = \frac{hc}{\lambda},
-
-    where :math:`E_\gamma` is the energy of a photon with wavelength
-    :math:`\lambda`, :math:`h` is the Planck constant, and :math:`c` is the
-    speed of light. Therefore, the average energy of all photons within a
-    single spectral irradiance distribution provides an indication of the
-    general shape of the spectrum. A higher average photon energy
-    (shorter wavelength) indicates a blue-shifted spectrum, while a lower
-    average photon energy (longer wavelength) would indicate a red-shifted
-    spectrum. This value of the average photon energy can be calculated by
-    dividing the total number of photons in the spectrum by the total energy in
-    the spectrum as follows [1]_:
-
-    .. math::
-
-        \varphi = \frac{1}{q} \cdot \frac{\int_a^b E_\lambda \, d\lambda}
-        {\int_a^b \Phi_\lambda \, d\lambda}.
-
-    :math:`\Phi_\lambda` is the photon flux density as a function of
-    wavelength, :math:`q` is the elementary charge used here so that the
-    average photon energy, :math:`\varphi`, is expressed in electronvolts (eV).
-    The integration limits, :math:`a` and :math:`b`, define the wavelength
-    range within which the APE is calculated. By default, this function
-    calculates the value for APE based on full wavelength range of the
-    ``spectral_irr`` parameter.
-
-    References
-    ----------
-    .. [1] Jardine, C., et al., 2002, January. Influence of spectral effects on
-       the performance of multijunction amorphous silicon cells. In Proc.
-       Photovoltaic in Europe Conference (pp. 1756-1759).
-
-    """
-
-    si = spectral_irr
-
-    if not isinstance(si, (pd.Series, pd.DataFrame)):
-        raise TypeError('`spectral_irr` must be either a'
-                        ' pandas Series or DataFrame')
-
-    if (si < 0).any().any():
-        raise ValueError('Spectral irradiance data must be positive')
-
-    hclambda = pd.Series((constants.h*constants.c)/(si.T.index*1e-9))
-    hclambda.index = si.T.index
-    pfd = si.div(hclambda)
-
-    def integrate(e):
-        return trapezoid(e, x=e.T.index, axis=-1)
-
-    int_si = integrate(si)
-    int_pfd = integrate(pfd)
-
-    ape = (1/constants.elementary_charge)*int_si/int_pfd
-
-    return ape

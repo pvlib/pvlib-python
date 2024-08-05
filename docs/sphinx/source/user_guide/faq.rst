@@ -123,7 +123,7 @@ If you see a function in the pvlib documentation that doesn't seem to exist
 in your pvlib installation, the documentation is likely for a different version
 of pvlib.  You can check your installed pvlib version by running
 ``print(pvlib.__version__)`` in python.  To switch documentation versions, use
-the `v:` version switcher widget in the bottom right corner of this page.
+the `v:` version switcher widget in the bottom left corner of this page.
 
 You can also upgrade your installed pvlib to the latest compatible version
 with ``pip install -U pvlib``, but be sure to check the :ref:`whatsnew`

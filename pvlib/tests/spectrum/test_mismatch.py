@@ -80,6 +80,22 @@ def test_spectral_factor_firstsolar_supplied():
     assert_allclose(out, expected, atol=1e-3)
 
 
+def test_spectral_factor_firstsolar_large_airmass_supplied_max():
+    # test airmass > user-defined maximum is treated same as airmass=maximum
+    m_eq11 = spectrum.spectral_factor_firstsolar(1, 11, 'monosi',
+                                                 max_airmass_absolute=11)
+    m_gt11 = spectrum.spectral_factor_firstsolar(1, 15, 'monosi',
+                                                 max_airmass_absolute=11)
+    assert_allclose(m_eq11, m_gt11)
+
+
+def test_spectral_factor_firstsolar_large_airmass():
+    # test that airmass > 10 is treated same as airmass=10
+    m_eq10 = spectrum.spectral_factor_firstsolar(1, 10, 'monosi')
+    m_gt10 = spectrum.spectral_factor_firstsolar(1, 15, 'monosi')
+    assert_allclose(m_eq10, m_gt10)
+
+
 def test_spectral_factor_firstsolar_ambiguous():
     with pytest.raises(TypeError):
         spectrum.spectral_factor_firstsolar(1, 1)
@@ -92,36 +108,34 @@ def test_spectral_factor_firstsolar_ambiguous_both():
         spectrum.spectral_factor_firstsolar(1, 1, 'cdte', coefficients=coeffs)
 
 
-def test_spectral_factor_firstsolar_large_airmass():
-    # test that airmass > 10 is treated same as airmass==10
-    m_eq10 = spectrum.spectral_factor_firstsolar(1, 10, 'monosi')
-    m_gt10 = spectrum.spectral_factor_firstsolar(1, 15, 'monosi')
-    assert_allclose(m_eq10, m_gt10)
-
-
 def test_spectral_factor_firstsolar_low_airmass():
-    with pytest.warns(UserWarning, match='Exceptionally low air mass'):
+    m_eq58 = spectrum.spectral_factor_firstsolar(1, 0.58, 'monosi')
+    m_lt58 = spectrum.spectral_factor_firstsolar(1, 0.1, 'monosi')
+    assert_allclose(m_eq58, m_lt58)
+    with pytest.warns(UserWarning, match='Low airmass values replaced'):
         _ = spectrum.spectral_factor_firstsolar(1, 0.1, 'monosi')
 
 
 def test_spectral_factor_firstsolar_range():
-    with pytest.warns(UserWarning, match='Exceptionally high pw values'):
-        out = spectrum.spectral_factor_firstsolar(np.array([.1, 3, 10]),
-                                                  np.array([1, 3, 5]),
-                                                  module_type='monosi')
+    out = spectrum.spectral_factor_firstsolar(np.array([.1, 3, 10]),
+                                              np.array([1, 3, 5]),
+                                              module_type='monosi')
     expected = np.array([0.96080878, 1.03055092, np.nan])
     assert_allclose(out, expected, atol=1e-3)
-    with pytest.warns(UserWarning, match='Exceptionally high pw values'):
+    with pytest.warns(UserWarning, match='High precipitable water values '
+                      'replaced'):
         out = spectrum.spectral_factor_firstsolar(6, 1.5,
                                                   max_precipitable_water=5,
                                                   module_type='monosi')
-    with pytest.warns(UserWarning, match='Exceptionally low pw values'):
+    with pytest.warns(UserWarning, match='Low precipitable water values '
+                      'replaced'):
         out = spectrum.spectral_factor_firstsolar(np.array([0, 3, 8]),
                                                   np.array([1, 3, 5]),
                                                   module_type='monosi')
     expected = np.array([0.96080878, 1.03055092, 1.04932727])
     assert_allclose(out, expected, atol=1e-3)
-    with pytest.warns(UserWarning, match='Exceptionally low pw values'):
+    with pytest.warns(UserWarning, match='Low precipitable water values '
+                      'replaced'):
         out = spectrum.spectral_factor_firstsolar(0.2, 1.5,
                                                   min_precipitable_water=1,
                                                   module_type='monosi')

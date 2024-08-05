@@ -16,7 +16,13 @@ Enhancements
 * Add new parameters for min/max absolute air mass to
   :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
   (:issue:`2086`, :pull:`2100`)
-
+* Restructured the pvlib/spectrum folder by breaking up the contents of
+  pvlib/spectrum/mismatch.py into pvlib/spectrum/mismatch.py,
+  pvlib/spectrum/irradiance.py, and
+  pvlib/spectrum/response.py. (:issue:`2125`, :pull:`2136`)
+* Added function for calculating wind speed at different heights,
+  :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
+  (:issue:`2118`, :pull:`2124`)
 
 Bug fixes
 ~~~~~~~~~
@@ -45,4 +51,3 @@ Contributors
 * Leonardo Micheli (:ghuser:`lmicheli`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
-

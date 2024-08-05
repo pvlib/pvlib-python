@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pvlib import spectrum
 
-from .conftest import assert_series_equal
+from ..conftest import assert_series_equal
 
 
 def test_calc_spectral_mismatch_field(spectrl2_data):

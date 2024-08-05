@@ -5,7 +5,7 @@ import numpy as np
 from pvlib import spectrum
 from pvlib._deprecation import pvlibDeprecationWarning
 
-from .conftest import assert_series_equal, fail_on_pvlib_version
+from ..conftest import assert_series_equal, fail_on_pvlib_version
 
 
 @fail_on_pvlib_version('0.12')

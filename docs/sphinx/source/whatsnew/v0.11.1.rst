@@ -35,6 +35,11 @@ Documentation
 * Added gallery example on calculating cell temperature for
   floating PV. (:pull:`2110`)
 
+* Added gallery example demonstrating how to use
+  different Perez coefficients in a ModelChain.
+  (:issue:`2127`, :pull:`2148`)
+
+
 Requirements
 ~~~~~~~~~~~~
 
@@ -45,4 +50,5 @@ Contributors
 * Leonardo Micheli (:ghuser:`lmicheli`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Ben Pierce (:ghuser:`bgpierc`)
 

@@ -550,9 +550,9 @@ HELLMANN_SURFACE_EXPONENTS = {
 }
 
 
-def windspeed_hellmann(wind_speed_reference, height_reference,
-                       height_desired, exponent=None,
-                       surface_type=None):
+def windspeed_power_law(wind_speed_reference, height_reference,
+                        height_desired, exponent=None,
+                        surface_type=None):
     r"""
     Estimate wind speed for different heights.
 
@@ -603,6 +603,20 @@ def windspeed_hellmann(wind_speed_reference, height_reference,
 
     Notes
     -----
+    Module temperature functions often require wind speeds at a height of 10 m
+    and not the wind speed at the module height.
+
+    For example, the following temperature functions require the input wind
+    speed to be 10 m: :py:func:`~pvlib.temperature.sapm_cell`, and
+    :py:func:`~pvlib.temperature.sapm_module` whereas the
+    :py:func:`~pvlib.temperature.fuentes` model requires wind speed at 9.144 m.
+
+    Additionally, the heat loss coefficients of some models have been developed
+    for wind speed measurements at 10 m (e.g.,
+    :py:func:`~pvlib.temperature.pvsyst_cell`,
+    :py:func:`~pvlib.temperature.faiman`, and
+    :py:func:`~pvlib.temperature.faiman_rad`).
+
     The equation for calculating the wind speed at a height of :math:`h` is
     given by the following power law equation [1]_ [2]_:
 
@@ -637,23 +651,6 @@ def windspeed_hellmann(wind_speed_reference, height_reference,
 
     It should be noted that the equation returns a value of NaN if the
     calculated wind speed is negative or a complex number.
-
-    Warning
-    -------
-    Module temperature functions often require wind speeds at a height of 10 m
-    and not the wind speed at the module height.
-
-    For example, the following temperature functions require the input wind
-    speed to be 10 m: :py:func:`~pvlib.temperature.sapm_cell`,
-    :py:func:`~pvlib.temperature.sapm_module`, and
-    :py:func:`~pvlib.temperature.generic_linear`, whereas the
-    :py:func:`~pvlib.temperature.fuentes` model requires wind speed at 9.144 m.
-
-    Additionally, the heat loss coefficients of some models have been developed
-    for wind speed measurements at 10 m (e.g.,
-    :py:func:`~pvlib.temperature.pvsyst_cell`,
-    :py:func:`~pvlib.temperature.faiman`, and
-    :py:func:`~pvlib.temperature.faiman_rad`).
 
     References
     ----------

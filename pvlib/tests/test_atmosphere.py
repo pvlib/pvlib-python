@@ -134,7 +134,7 @@ def test_bird_hulstrom80_aod_bb():
 
 
 @pytest.fixture
-def windspeeds_data_hellman():
+def windspeeds_data_power_law():
     data = pd.DataFrame(
         index=pd.date_range(start="2015-01-01 00:00", end="2015-01-01 05:00",
                             freq="1h"),
@@ -151,54 +151,54 @@ def windspeeds_data_hellman():
     return data
 
 
-def test_windspeed_hellmann_ndarray(windspeeds_data_hellman):
+def test_windspeed_power_law_ndarray(windspeeds_data_power_law):
     # test wind speed estimation by passing in surface_type
-    result_surface = atmosphere.windspeed_hellmann(
-        windspeeds_data_hellman["wind_ref"].to_numpy(),
-        windspeeds_data_hellman["height_ref"],
-        windspeeds_data_hellman["height_desired"],
+    result_surface = atmosphere.windspeed_power_law(
+        windspeeds_data_power_law["wind_ref"].to_numpy(),
+        windspeeds_data_power_law["height_ref"],
+        windspeeds_data_power_law["height_desired"],
         surface_type='unstable_air_above_open_water_surface')
-    assert_allclose(windspeeds_data_hellman["wind_calc"].to_numpy(),
+    assert_allclose(windspeeds_data_power_law["wind_calc"].to_numpy(),
                     result_surface)
     # test wind speed estimation by passing in the exponent corresponding
     # to the surface_type above
-    result_exponent = atmosphere.windspeed_hellmann(
-        windspeeds_data_hellman["wind_ref"].to_numpy(),
-        windspeeds_data_hellman["height_ref"],
-        windspeeds_data_hellman["height_desired"],
+    result_exponent = atmosphere.windspeed_power_law(
+        windspeeds_data_power_law["wind_ref"].to_numpy(),
+        windspeeds_data_power_law["height_ref"],
+        windspeeds_data_power_law["height_desired"],
         exponent=0.06)
-    assert_allclose(windspeeds_data_hellman["wind_calc"].to_numpy(),
+    assert_allclose(windspeeds_data_power_law["wind_calc"].to_numpy(),
                     result_exponent)
 
 
-def test_windspeed_hellmann_series(windspeeds_data_hellman):
-    result = atmosphere.windspeed_hellmann(
-        windspeeds_data_hellman["wind_ref"],
-        windspeeds_data_hellman["height_ref"],
-        windspeeds_data_hellman["height_desired"],
+def test_windspeed_power_law_series(windspeeds_data_power_law):
+    result = atmosphere.windspeed_power_law(
+        windspeeds_data_power_law["wind_ref"],
+        windspeeds_data_power_law["height_ref"],
+        windspeeds_data_power_law["height_desired"],
         surface_type='unstable_air_above_open_water_surface')
-    assert_series_equal(windspeeds_data_hellman["wind_calc"],
+    assert_series_equal(windspeeds_data_power_law["wind_calc"],
                         result, check_names=False)
 
 
-def test_windspeed_hellmann_invalid():
+def test_windspeed_power_law_invalid():
     with pytest.raises(ValueError, match="Either a 'surface_type' or an "
                        "'exponent' parameter must be given"):
         # no exponent or surface_type given
-        atmosphere.windspeed_hellmann(wind_speed_reference=10,
-                                      height_reference=5,
-                                      height_desired=10)
+        atmosphere.windspeed_power_law(wind_speed_reference=10,
+                                       height_reference=5,
+                                       height_desired=10)
     with pytest.raises(ValueError, match="Either a 'surface_type' or an "
                        "'exponent' parameter must be given"):
         # no exponent or surface_type given
-        atmosphere.windspeed_hellmann(wind_speed_reference=10,
-                                      height_reference=5,
-                                      height_desired=10,
-                                      exponent=1.2,
-                                      surface_type="surf")
+        atmosphere.windspeed_power_law(wind_speed_reference=10,
+                                       height_reference=5,
+                                       height_desired=10,
+                                       exponent=1.2,
+                                       surface_type="surf")
     with pytest.raises(KeyError, match='not_an_exponent'):
         # invalid surface_type
-        atmosphere.windspeed_hellmann(wind_speed_reference=10,
-                                      height_reference=5,
-                                      height_desired=10,
-                                      surface_type='not_an_exponent')
+        atmosphere.windspeed_power_law(wind_speed_reference=10,
+                                       height_reference=5,
+                                       height_desired=10,
+                                       surface_type='not_an_exponent')

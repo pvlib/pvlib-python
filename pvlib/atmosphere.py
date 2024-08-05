@@ -684,13 +684,9 @@ def windspeed_hellmann(wind_speed_reference, height_reference,
     wind_speed = wind_speed_reference * (
         (height_desired / height_reference) ** exponent)
 
-    # if the provided height is negative the calculated wind speed is complex
-    # so a NaN value is returned
-    if isinstance(wind_speed, complex):
-        wind_speed = np.nan
-
-    # if wind speed is negative return NaN
-    wind_speed = np.where(wind_speed < 0, np.nan, wind_speed)
+    # if wind speed is negative or complex return NaN
+    wind_speed = np.where(np.iscomplex(wind_speed) | wind_speed < 0,
+                          np.nan, wind_speed)
 
     if isinstance(wind_speed_reference, pd.Series):
         wind_speed = pd.Series(wind_speed, index=wind_speed_reference.index)

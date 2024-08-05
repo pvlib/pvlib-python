@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from functools import partial
+from scipy import constants
+from scipy.integrate import trapezoid
 
 
 @deprecated(
@@ -176,3 +178,92 @@ def get_reference_spectra(wavelengths=None, standard="ASTM G173-03"):
         )
 
     return standard
+
+
+def average_photon_energy(spectral_irr):
+    r"""
+    Calculate the average photon energy of one or more spectral irradiance
+    distributions.
+
+    Parameters
+    ----------
+    spectral_irr : pandas.Series or pandas.DataFrame
+
+        Spectral irradiance, must be positive. [Wm⁻²nm⁻¹]
+
+        A single spectrum must be a :py:class:`pandas.Series` with wavelength
+        [nm] as the index, while multiple spectra must be a
+        :py:class:`pandas.DataFrame` with column headers as wavelength [nm].
+
+    Returns
+    -------
+    ape : numeric or array
+        Average Photon Energy [eV].
+
+    Notes
+    -----
+    The average photon energy (APE) is an index used to characterise the solar
+    spectrum. It has been used widely in the Physics literature since the
+    1900s, but its application for solar spectral irradiance characterisation
+    in the context of PV performance modelling was proposed in [1]_. The APE
+    is calculated based on the principle that a photon's wavelength is
+    inversely proportional to its energy:
+
+    .. math::
+
+        E_\gamma = \frac{hc}{\lambda},
+
+    where :math:`E_\gamma` is the energy of a photon with wavelength
+    :math:`\lambda`, :math:`h` is the Planck constant, and :math:`c` is the
+    speed of light. Therefore, the average energy of all photons within a
+    single spectral irradiance distribution provides an indication of the
+    general shape of the spectrum. A higher average photon energy
+    (shorter wavelength) indicates a blue-shifted spectrum, while a lower
+    average photon energy (longer wavelength) would indicate a red-shifted
+    spectrum. This value of the average photon energy can be calculated by
+    dividing the total number of photons in the spectrum by the total energy in
+    the spectrum as follows [1]_:
+
+    .. math::
+
+        \varphi = \frac{1}{q} \cdot \frac{\int_a^b E_\lambda \, d\lambda}
+        {\int_a^b \Phi_\lambda \, d\lambda}.
+
+    :math:`\Phi_\lambda` is the photon flux density as a function of
+    wavelength, :math:`q` is the elementary charge used here so that the
+    average photon energy, :math:`\varphi`, is expressed in electronvolts (eV).
+    The integration limits, :math:`a` and :math:`b`, define the wavelength
+    range within which the APE is calculated. By default, this function
+    calculates the value for APE based on full wavelength range of the
+    ``spectral_irr`` parameter.
+
+    References
+    ----------
+    .. [1] Jardine, C., et al., 2002, January. Influence of spectral effects on
+       the performance of multijunction amorphous silicon cells. In Proc.
+       Photovoltaic in Europe Conference (pp. 1756-1759).
+
+    """
+
+    si = spectral_irr
+
+    if not isinstance(si, (pd.Series, pd.DataFrame)):
+        raise TypeError('`spectral_irr` must be either a'
+                        ' pandas Series or DataFrame')
+
+    if (si < 0).any().any():
+        raise ValueError('Spectral irradiance data must be positive')
+
+    hclambda = pd.Series((constants.h*constants.c)/(si.T.index*1e-9))
+    hclambda.index = si.T.index
+    pfd = si.div(hclambda)
+
+    def integrate(e):
+        return trapezoid(e, x=e.T.index, axis=-1)
+
+    int_si = integrate(si)
+    int_pfd = integrate(pfd)
+
+    ape = (1/constants.elementary_charge)*int_si/int_pfd
+
+    return ape

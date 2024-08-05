@@ -1173,7 +1173,6 @@ def average_photon_energy(spectral_irr):
     if not isinstance(si, (pd.Series, pd.DataFrame)):
         raise TypeError('`spectral_irr` must be either a'
                         ' pandas Series or DataFrame')
-    # check si type
 
     if (si < 0).any().any():
         raise ValueError('Spectral irradiance data must be positive')

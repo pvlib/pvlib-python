@@ -1149,8 +1149,8 @@ def average_photon_energy(spectral_irr):
 
     .. math::
 
-        \varphi = \frac{1}{q} \cdot \frac{\int_a^b \Phi_\lambda \, d\lambda}
-        {\int_a^b E_\lambda \, d\lambda}.
+        \varphi = \frac{1}{q} \cdot \frac{\int_a^b E_\lambda \, d\lambda}
+        {\int_a^b \Phi_\lambda \, d\lambda}.
 
     :math:`\Phi_\lambda` is the photon flux density as a function of
     wavelength, :math:`q` is the elementary charge used here so that the
@@ -1177,19 +1177,17 @@ def average_photon_energy(spectral_irr):
 
     if (si < 0).any().any():
         raise ValueError('Spectral irradiance data must be positive')
-    # check if si contains any negative irradiance values
 
     hclambda = pd.Series((constants.h*constants.c)/(si.T.index*1e-9))
-    hclambda.index = si.T.index  # set wavelength as the index
-    pfd = si.div(hclambda)  # calculate the photon flux density
+    hclambda.index = si.T.index
+    pfd = si.div(hclambda)
 
-    def integrate(e):  # define a helper function
+    def integrate(e):
         return trapezoid(e, x=e.T.index, axis=-1)
 
-    int_si = integrate(si)  # integrate spectral irradiance wrt wavelength
-    int_pfd = integrate(pfd)  # integrate photon flux density wrt wavelength
+    int_si = integrate(si)
+    int_pfd = integrate(pfd)
 
     ape = (1/constants.elementary_charge)*int_si/int_pfd
-    # calculate the average photon energy (ape) in electronvolts (eV)
 
     return ape

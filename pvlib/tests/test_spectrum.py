@@ -597,13 +597,8 @@ def test_average_photon_energy_dataframe():
     # dataframe input
 
     si = spectrum.get_reference_spectra().T
-    # Generate three spectra and orientate the dataframe according to the
-    # function requirements
-
     ape = spectrum.average_photon_energy(si)
-
     expected = [1.36848, 1.45017, 1.40885]
-
     assert_allclose(ape, expected, rtol=1e-4)
 
 

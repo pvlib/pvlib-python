@@ -20,7 +20,10 @@ Enhancements
   :py:func:`pvlib.iotools.get_pvgis_tmy` to allow user to specify time zone,
   rotate indices of TMY to begin at midnight, and force indices to desired
   year. (:issue:`2139`, :pull:`2138`)
-
+* Restructured the pvlib/spectrum folder by breaking up the contents of
+  pvlib/spectrum/mismatch.py into pvlib/spectrum/mismatch.py,
+  pvlib/spectrum/irradiance.py, and
+  pvlib/spectrum/response.py. (:issue:`2125`, :pull:`2136`)
 * Added function for calculating wind speed at different heights,
   :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)

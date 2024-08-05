@@ -570,7 +570,7 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
         The height above ground at which the wind speed will be estimated. [m]
 
     exponent : float, optional
-        Exponent based on the surface type. [-]
+        Exponent based on the surface type. [unitless]
 
     surface_type : string, optional
         If supplied, overrides ``exponent``. Can be one of the following
@@ -645,8 +645,9 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
        +-----------+--------------------+------------------+------------------+
 
     In a report by Sandia [3]_, the equation was experimentally tested for a
-    height of 30 ft (:math:`h_{ref} = 9.144` [m]) and a coefficient of
-    :math:`a = 0.219` [-] was recommended.
+    height of 30 ft (:math:`h_{ref} = 9.144` [m]) at their test site in
+    Albuquerque for a period of six weeks where a coefficient of
+    :math:`a = 0.219` was calculated.
 
     It should be noted that the equation returns a value of NaN if the
     reference heights or wind speed are negative.

@@ -11,5 +11,5 @@ from pvlib.spectrum.mismatch import (  # noqa: F401
     spectral_factor_jrc,
     sr_to_qe,
     qe_to_sr,
-    average_photon_energy
+    average_photon_energy,
 )

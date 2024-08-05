@@ -627,7 +627,7 @@ def test_average_photon_energy_neg_irr_series():
 
 def test_average_photon_energy_neg_irr_dataframe():
     # test for handling of negative spectral irradiance values with a
-    # pandas Series input
+    # pandas DataFrame input
 
     spectral_irr = spectrum.get_reference_spectra().T*-1
 

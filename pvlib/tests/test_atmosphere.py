@@ -131,3 +131,74 @@ def test_bird_hulstrom80_aod_bb():
     aod380, aod500 = 0.22072480948195175, 0.1614279181106312
     bird_hulstrom = atmosphere.bird_hulstrom80_aod_bb(aod380, aod500)
     assert np.isclose(0.11738229553812768, bird_hulstrom)
+
+
+@pytest.fixture
+def windspeeds_data_powerlaw():
+    data = pd.DataFrame(
+        index=pd.date_range(start="2015-01-01 00:00", end="2015-01-01 05:00",
+                            freq="1h"),
+        columns=["wind_ref", "height_ref", "height_desired", "wind_calc"],
+        data=[
+            (10, -2, 5, np.nan),
+            (-10, 2, 5, np.nan),
+            (5, 4, 5, 5.067393209486324),
+            (7, 6, 10, 7.2178684911195905),
+            (10, 8, 20, 10.565167835216586),
+            (12, 10, 30, 12.817653329393977)
+        ]
+    )
+    return data
+
+
+def test_windspeed_powerlaw_ndarray(windspeeds_data_powerlaw):
+    # test wind speed estimation by passing in surface_type
+    result_surface = atmosphere.windspeed_powerlaw(
+        windspeeds_data_powerlaw["wind_ref"].to_numpy(),
+        windspeeds_data_powerlaw["height_ref"],
+        windspeeds_data_powerlaw["height_desired"],
+        surface_type='unstable_air_above_open_water_surface')
+    assert_allclose(windspeeds_data_powerlaw["wind_calc"].to_numpy(),
+                    result_surface)
+    # test wind speed estimation by passing in the exponent corresponding
+    # to the surface_type above
+    result_exponent = atmosphere.windspeed_powerlaw(
+        windspeeds_data_powerlaw["wind_ref"].to_numpy(),
+        windspeeds_data_powerlaw["height_ref"],
+        windspeeds_data_powerlaw["height_desired"],
+        exponent=0.06)
+    assert_allclose(windspeeds_data_powerlaw["wind_calc"].to_numpy(),
+                    result_exponent)
+
+
+def test_windspeed_powerlaw_series(windspeeds_data_powerlaw):
+    result = atmosphere.windspeed_powerlaw(
+        windspeeds_data_powerlaw["wind_ref"],
+        windspeeds_data_powerlaw["height_ref"],
+        windspeeds_data_powerlaw["height_desired"],
+        surface_type='unstable_air_above_open_water_surface')
+    assert_series_equal(windspeeds_data_powerlaw["wind_calc"],
+                        result, check_names=False)
+
+
+def test_windspeed_powerlaw_invalid():
+    with pytest.raises(ValueError, match="Either a 'surface_type' or an "
+                       "'exponent' parameter must be given"):
+        # no exponent or surface_type given
+        atmosphere.windspeed_powerlaw(wind_speed_reference=10,
+                                      height_reference=5,
+                                      height_desired=10)
+    with pytest.raises(ValueError, match="Either a 'surface_type' or an "
+                       "'exponent' parameter must be given"):
+        # no exponent or surface_type given
+        atmosphere.windspeed_powerlaw(wind_speed_reference=10,
+                                      height_reference=5,
+                                      height_desired=10,
+                                      exponent=1.2,
+                                      surface_type="surf")
+    with pytest.raises(KeyError, match='not_an_exponent'):
+        # invalid surface_type
+        atmosphere.windspeed_powerlaw(wind_speed_reference=10,
+                                      height_reference=5,
+                                      height_desired=10,
+                                      surface_type='not_an_exponent')

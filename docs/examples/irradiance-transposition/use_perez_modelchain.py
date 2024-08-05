@@ -14,8 +14,8 @@ to use site-specific Perez coefficients.
 # The Perez models perform very well on field data, but
 # they require a set of fitted coefficients from various sites.
 # It has been noted that these coefficients can be specific to
-# various climates, so users may see a boost in model performance
-# when using the correct set of parameters.
+# various climates, so users may see improved model accuracy
+# when using a site-specific set of coefficients.
 # However, the base  :py:class:`~pvlib.modelchain.ModelChain`
 # only supports the default coefficients.
 # This example shows how the  :py:class:`~pvlib.modelchain.ModelChain` can

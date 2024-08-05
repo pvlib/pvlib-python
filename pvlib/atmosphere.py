@@ -564,10 +564,10 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
         Measured wind speed. [m/s]
 
     height_reference : float
-        The height at which the wind speed is measured. [m]
+        The height above ground at which the wind speed is measured. [m]
 
     height_desired : float
-        The height at which the wind speed will be estimated. [m]
+        The height above ground at which the wind speed will be estimated. [m]
 
     exponent : float, optional
         Exponent based on the surface type. [-]
@@ -623,14 +623,14 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
     .. math::
        :label: wind speed
 
-        U_{w,h} = U_{w,ref} \cdot \left( \frac{h}{h_{ref}} \right)^a
+        WS_{h} = WS_{ref} \cdot \left( \frac{h}{h_{ref}} \right)^a
 
     where :math:`h` [m] is the height at which we would like to calculate the
     wind speed, :math:`h_{ref}` [m] is the reference height at which the wind
-    speed is known, and :math:`U_{w,h}` [m/s] and :math:`U_{w,ref}`
-    [m/s] are the corresponding wind speeds at these heights. :math:`a` is a
-    value that depends on the surface type. Some values found in the literature
-    [1]_ for :math:`a` are the following:
+    speed is known, and :math:`WS_{h}` [m/s] and :math:`WS_{ref}`
+    [m/s] are the corresponding wind speeds at these heights. The exponent
+    :math:`a` [unitless] depends on the surface type. Some values found in the
+    literature [1]_ for :math:`a` are:
 
     .. table:: Values for the Hellmann-exponent
 
@@ -644,13 +644,12 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
        | Stable    | 0.27               | 0.34             | 0.60             |
        +-----------+--------------------+------------------+------------------+
 
-    In a report by Sandia [3]_, this equation was experimentally tested for a
-    height of 30 ft (9.144 m) and the following coefficients were recommended:
-    :math:`h_{ref} = 9.144` [m], :math:`a = 0.219` [-], and
-    :math:`windspeed_{href}` is the wind speed at a height of 9.144 [m].
+    In a report by Sandia [3]_, the equation was experimentally tested for a
+    height of 30 ft (:math:`h_{ref} = 9.144` [m]) and a coefficient of
+    :math:`a = 0.219` [-] was recommended.
 
     It should be noted that the equation returns a value of NaN if the
-    calculated wind speed is negative or a complex number.
+    reference heights or wind speed are negative.
 
     References
     ----------

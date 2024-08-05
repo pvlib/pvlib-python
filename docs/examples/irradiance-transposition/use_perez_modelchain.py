@@ -8,8 +8,8 @@ to use site-specific Perez coefficients.
 
 # %%
 # The :py:class:`pvlib.modelchain.ModelChain` object provides a useful method
-# for easily constructing a model with a simple, unified interface.
-# However, a user may want to customize their models in various ways.
+# for easily constructing a system model with a simple, unified interface.
+# However, a user may want to customize the steps in the system model in various ways.
 # One such example is during the irradiance transposition step.
 # The Perez models perform very well on field data, but
 # they require a set of fitted coefficients from various sites.

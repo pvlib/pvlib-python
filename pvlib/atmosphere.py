@@ -681,7 +681,7 @@ def windspeed_powerlaw(wind_speed_reference, height_reference,
         (height_desired / height_reference) ** exponent)
 
     # if wind speed is negative or complex return NaN
-    wind_speed = np.where(np.iscomplex(wind_speed) or wind_speed < 0,
+    wind_speed = np.where(np.iscomplex(wind_speed) | (wind_speed < 0),
                           np.nan, wind_speed)
 
     if isinstance(wind_speed_reference, pd.Series):

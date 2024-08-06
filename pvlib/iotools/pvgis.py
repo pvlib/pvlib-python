@@ -405,6 +405,7 @@ def _coerce_and_roll_tmy(pvgis_data, tz, year):
         np.roll(pvgis_data, tz, axis=0),
         columns=pvgis_data.columns,
         index=new_index)
+    new_pvgis_data.index.name = f'time({tzname})'
     return new_pvgis_data
 
 

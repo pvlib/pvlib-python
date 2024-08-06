@@ -441,6 +441,7 @@ def test_get_pvgis_tmy_coerce_year():
     """test utc_offset and coerce_year work as expected"""
     base_case, _, _, _ = get_pvgis_tmy(45, 8)  # Turin
     assert str(base_case.index.tz) == 'UTC'
+    assert base_case.index.name == 'time(UTC)'
     noon_test_data = [
         base_case[base_case.index.month == m].iloc[12]
         for m in range(1, 13)]
@@ -452,6 +453,7 @@ def test_get_pvgis_tmy_coerce_year():
     dec31_midnight = pd.Timestamp('1990-12-31 23:00:00', tz=cet_name)
     assert pvgis_data.index[0] == jan1_midnight
     assert pvgis_data.index[-1] == dec31_midnight
+    assert pvgis_data.index.name == f'time({cet_name})'
     # spot check rolled data matches original
     for m, test_case in enumerate(noon_test_data):
         expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12+cet_tz]
@@ -464,6 +466,7 @@ def test_get_pvgis_tmy_coerce_year():
     dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz=cet_name)
     assert pvgis_data.index[0] == jan1_midnight
     assert pvgis_data.index[-1] == dec31_midnight
+    assert pvgis_data.index.name == f'time({cet_name})'
     for m, test_case in enumerate(noon_test_data):
         expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12+cet_tz]
         assert all(test_case == expected)
@@ -473,6 +476,7 @@ def test_get_pvgis_tmy_coerce_year():
     dec31_midnight = pd.Timestamp(f'{test_yr}-12-31 23:00:00', tz='UTC')
     assert pvgis_data.index[0] == jan1_midnight
     assert pvgis_data.index[-1] == dec31_midnight
+    assert pvgis_data.index.name == 'time(UTC)'
     for m, test_case in enumerate(noon_test_data):
         expected = pvgis_data[pvgis_data.index.month == m+1].iloc[12]
         assert all(test_case == expected)

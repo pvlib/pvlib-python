@@ -390,7 +390,7 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     raise ValueError(err_msg)
 
 
-def _coerce_and_roll_pvgis_tmy(pvgis_data, tz, year):
+def _coerce_and_roll_tmy(pvgis_data, tz, year):
     """
     After converting TZ, roll dataframe so timeseries starts at midnight
     and force all indices to a common year. Only works for integer TZ.
@@ -544,7 +544,7 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         # coerce_year is None but utc_off isn't, set year to 1990
         if coerce_year is None:  # more explicit than (coerce_year or 1990)
             coerce_year = 1990
-        data = _coerce_and_roll_pvgis_tmy(data, roll_utc_offset, coerce_year)
+        data = _coerce_and_roll_tmy(data, roll_utc_offset, coerce_year)
 
     return data, months_selected, inputs, meta
 

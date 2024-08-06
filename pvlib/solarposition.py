@@ -869,6 +869,102 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
     return DFOut
 
 
+def michalsky(time, lat, lon):
+    """
+    Calculate solar position using Michalsky's algorithm.
+
+    Michalsky's algorithm [1]_ has a stated accuracy of 0.01 degrees
+    through the year 2050.
+
+    Parameters
+    ----------
+    time : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
+    latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
+    longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
+
+    Returns
+    -------
+    DataFrame with the following columns (all values in degrees):
+
+        * apparent_elevation : sun elevation, accounting for
+          atmospheric refraction.
+        * elevation : actual sun elevation (not accounting for refraction).
+        * azimuth : sun azimuth, east of north.
+        * apparent_zenith : sun zenith, accounting for atmospheric
+          refraction.
+        * zenith : actual sun zenith (not accounting for refraction).
+
+    References
+    ----------
+    .. [1] Michalsky, J., 1988. The Astronomical Almanac's algorithm for
+       approximate solar position (1950–2050). Solar Energy vol. 40 (3),
+       pp. 227-235. :doi:`10.1016/0038-092X(88)90045-X`
+    .. [2] Michalsky, J., 1988. Errata. Solar Energy vol. 41 (1), p. 113.
+       :doi:`10.1016/0038-092X(88)90122-3`
+    """
+    lat = np.radians(lat)
+    lon = np.radians(lon)
+    unixtime = _datetime_to_unixtime(time)
+    # unix time is the number of seconds since 1970-01-01, but Michalsky needs
+    # number of days since 2000-01-01 12:00.  The difference is 10957.5 days.
+    n = unixtime / 86400 - 10957.5
+    hour = ((unixtime / 86400) % 1)*24
+
+    # ecliptic coordinates
+    L = 280.460 + 0.9856474 * n
+    g = np.radians(357.528 + 0.9856003 * n)
+    # Note: there is a typo in the reference math vs appendix (0.02 vs 0.2).
+    # 0.02 gives much better agreement with SPA, so use that one.
+    l = np.radians(L + 1.915 * np.sin(g) + 0.020 * np.sin(2*g))
+    ep = np.radians(23.439 - 0.0000004 * n)
+
+    # celestial coordinates
+    ra = np.arctan2(np.cos(ep) * np.sin(l), np.cos(l))
+    dec = np.arcsin(np.sin(ep) * np.sin(l))
+
+    # local coordinates
+    gmst = np.radians(6.697375 + 0.0657098242 * n + hour)
+    lmst = gmst + lon / 15
+    ha = 15*lmst - ra  # Eq 3
+    el = np.arcsin(  # Eq 4
+        np.sin(dec) * np.sin(lat) + np.cos(dec) * np.cos(lat) * np.cos(ha)
+    )
+    az = np.arcsin(  # Eq 5
+        -np.cos(dec) * np.sin(ha) / np.cos(el)
+    )
+    elc = np.arcsin(np.sin(dec) / np.sin(lat))
+
+    el = np.degrees(el)
+    az = np.degrees(az)
+    elc = np.degrees(elc)
+
+    az = np.where(el >= elc, 180 - az, az)
+    az = np.where((el <= elc) & (ha > 0), 360 + az, az) % 360
+
+    # refraction correction
+    r = (
+        3.51561
+        * (0.1594 + 0.0196 * el + 0.00002 * el**2)
+        / (1 + 0.505 * el + 0.0845 * el**2)
+    )
+    apparent_elevation = el + r
+
+    result = pd.DataFrame({
+        'elevation': el,
+        'azimuth': az,
+        'zenith': 90 - el,
+        'apparent_elevation': apparent_elevation,
+        'apparent_zenith': 90 - apparent_elevation,
+        # TODO equation of time?
+    }, index=time)
+    return result
+
+
 def calc_time(lower_bound, upper_bound, latitude, longitude, attribute, value,
               altitude=0, pressure=101325, temperature=12, horizon='+0:00',
               xtol=1.0e-12):

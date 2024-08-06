@@ -393,11 +393,14 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
 def _coerce_and_roll_tmy(pvgis_data, tz, year):
     """
     After converting TZ, roll dataframe so timeseries starts at midnight
-    and force all indices to a common year. Only works for integer TZ.
+    and force all indices to a common year. Only works for integer TZ, but
+    ``None`` and ``False`` are re-interpreted as zero / UTC.
     """
-    tzname = (
-        pytz.timezone(f'Etc/GMT{-tz:+d}') if tz != 0
-        else pytz.timezone('UTC'))
+    if tz:
+        tzname = pytz.timezone(f'Etc/GMT{-tz:+d}')
+    else:
+        tz = 0
+        tzname = pytz.timezone('UTC')
     new_index = [
         timestamp.replace(year=year, tzinfo=tzname)
         for timestamp in pvgis_data.index]
@@ -537,14 +540,9 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
 
-    if roll_utc_offset is not None or coerce_year is not None:
-        # XXX: be explicit, test for identity not implicit booleaness
-        # roll_utc_offset None but coerce_year isn't, set year with utc zero
-        if roll_utc_offset is None:  # XXX: None and zero are both False
-            roll_utc_offset = 0
-        # coerce_year is None but utc_off isn't, set year to 1990
-        if coerce_year is None:  # more explicit than (coerce_year or 1990)
-            coerce_year = 1990
+    if not (roll_utc_offset is None and coerce_year is None):
+        # roll_utc_offset is specified, but coerce_year isn't
+        coerce_year = coerce_year or 1990
         data = _coerce_and_roll_tmy(data, roll_utc_offset, coerce_year)
 
     return data, months_selected, inputs, meta

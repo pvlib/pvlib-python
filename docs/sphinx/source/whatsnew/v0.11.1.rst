@@ -41,6 +41,8 @@ Documentation
 * Added gallery example on calculating cell temperature for
   floating PV. (:pull:`2110`)
 
+* Removed unused "times" input from dni_et() function (:issue:`2105`)
+
 Requirements
 ~~~~~~~~~~~~
 
@@ -51,3 +53,4 @@ Contributors
 * Leonardo Micheli (:ghuser:`lmicheli`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Jose Meza (:ghuser:`JoseMezaMendieta`)

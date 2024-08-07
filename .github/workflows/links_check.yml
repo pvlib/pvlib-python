@@ -1,0 +1,29 @@
+name: Check Documentation Links
+
+on:
+  schedule:
+    # Biweekly at 00:00 on first and third Mondays
+    - cron: "0 0 1-7,15-21 * 1"
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  doc:
+    name: Check Links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - name: Install PVLIB documentation dependencies
+        run: python -m pip install -e .[doc]
+
+      - name: Run Sphinx linkcheck builder
+        run: |
+            cd docs/sphinx
+            python -m sphinx -b linkcheck -T -W --keep-going source build/linkcheck

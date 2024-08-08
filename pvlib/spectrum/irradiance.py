@@ -199,6 +199,8 @@ def average_photon_energy(spectral_irr):
     -------
     ape : numeric or array
         Average Photon Energy [eV].
+        Note: returns ``np.nan`` in the case of 0 Wm⁻²nm⁻¹  spectral irradiance
+        input.
 
     Notes
     -----
@@ -226,16 +228,15 @@ def average_photon_energy(spectral_irr):
 
     .. math::
 
-        \varphi = \frac{1}{q} \cdot \frac{\int_a^b E_\lambda \, d\lambda}
-        {\int_a^b \Phi_\lambda \, d\lambda}.
+        \overline{E_\lambda} = \frac{1}{q} \cdot \frac{\int G(\lambda) \,
+                                                       d\lambda}
+        {\int \Phi(\lambda) \, d\lambda}.
 
-    :math:`\Phi_\lambda` is the photon flux density as a function of
+    :math:`\Phi(\lambda)` is the photon flux density as a function of
     wavelength, :math:`q` is the elementary charge used here so that the
-    average photon energy, :math:`\varphi`, is expressed in electronvolts (eV).
-    The integration limits, :math:`a` and :math:`b`, define the wavelength
-    range within which the APE is calculated. By default, this function
-    calculates the value for APE based on full wavelength range of the
-    ``spectral_irr`` parameter.
+    average photon energy, :math:`\overline{E(\lambda)}`, is expressed in
+    electronvolts (eV). By default, this function calculates the value for APE
+    based on full wavelength range of the ``spectral_irr`` parameter.
 
     References
     ----------
@@ -264,6 +265,7 @@ def average_photon_energy(spectral_irr):
     int_si = integrate(si)
     int_pfd = integrate(pfd)
 
-    ape = (1/constants.elementary_charge)*int_si/int_pfd
+    with np.errstate(invalid='ignore'):
+        ape = (1/constants.elementary_charge)*int_si/int_pfd
 
     return ape

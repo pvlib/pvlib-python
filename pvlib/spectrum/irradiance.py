@@ -228,13 +228,14 @@ def average_photon_energy(spectral_irr):
 
     .. math::
 
-        \overline{E_\lambda} = \frac{1}{q} \cdot \frac{\int G(\lambda) \,
+        \overline{E_\gamma} = \frac{1}{q} \cdot \frac{\int G(\lambda) \,
                                                        d\lambda}
         {\int \Phi(\lambda) \, d\lambda}.
 
     :math:`\Phi(\lambda)` is the photon flux density as a function of
-    wavelength, :math:`q` is the elementary charge used here so that the
-    average photon energy, :math:`\overline{E(\lambda)}`, is expressed in
+    wavelength, :math:`G(\lambda)` is the spectral irradiance, :math:`q` is the
+    elementary charge used here so that the average photon energy,
+    :math:`\overline{E_\gamma}`, is expressed in
     electronvolts (eV). By default, this function calculates the value for APE
     based on full wavelength range of the ``spectral_irr`` parameter.
 

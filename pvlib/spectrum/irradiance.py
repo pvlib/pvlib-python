@@ -180,7 +180,7 @@ def get_reference_spectra(wavelengths=None, standard="ASTM G173-03"):
     return standard
 
 
-def average_photon_energy(spectral_irr):
+def average_photon_energy(spectrum):
     r"""
     Calculate the average photon energy of one or more spectral irradiance
     distributions.
@@ -247,26 +247,24 @@ def average_photon_energy(spectral_irr):
 
     """
 
-    si = spectral_irr
-
-    if not isinstance(si, (pd.Series, pd.DataFrame)):
+    if not isinstance(spectrum, (pd.Series, pd.DataFrame)):
         raise TypeError('`spectral_irr` must be either a'
                         ' pandas Series or DataFrame')
 
-    if (si < 0).any().any():
+    if (spectrum < 0).any().any():
         raise ValueError('Spectral irradiance data must be positive')
 
-    hclambda = pd.Series((constants.h*constants.c)/(si.T.index*1e-9))
-    hclambda.index = si.T.index
-    pfd = si.div(hclambda)
+    hclambda = pd.Series((constants.h*constants.c)/(spectrum.T.index*1e-9))
+    hclambda.index = spectrum.T.index
+    pfd = spectrum.div(hclambda)
 
     def integrate(e):
         return trapezoid(e, x=e.T.index, axis=-1)
 
-    int_si = integrate(si)
+    int_spectrum = integrate(spectrum)
     int_pfd = integrate(pfd)
 
     with np.errstate(invalid='ignore'):
-        ape = (1/constants.elementary_charge)*int_si/int_pfd
+        ape = (1/constants.elementary_charge)*int_spectrum/int_pfd
 
     return ape

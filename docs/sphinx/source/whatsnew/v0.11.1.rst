@@ -49,6 +49,8 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Chris Deline (:ghuser:`cdeline`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Leonardo Micheli (:ghuser:`lmicheli`)
 * Echedey Luis (:ghuser:`echedey-ls`)

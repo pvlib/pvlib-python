@@ -19,7 +19,7 @@ Enhancements
 * Restructured the pvlib/spectrum folder by breaking up the contents of
   pvlib/spectrum/mismatch.py into pvlib/spectrum/mismatch.py,
   pvlib/spectrum/irradiance.py, and
-  pvlib/spectrum/response.py. (:issue:`2125`, :pull:`2136`)
+  pvlib/spectrum/response.py. (:issue:`2125`, :pull:`2136`, :pull:`2151`)
 * Added function for calculating wind speed at different heights,
   :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)
@@ -41,13 +41,18 @@ Documentation
 * Added gallery example on calculating cell temperature for
   floating PV. (:pull:`2110`)
 
+* Removed unused "times" input from dni_et() function (:issue:`2105`)
+
 Requirements
 ~~~~~~~~~~~~
 
 
 Contributors
 ~~~~~~~~~~~~
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Chris Deline (:ghuser:`cdeline`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Leonardo Micheli (:ghuser:`lmicheli`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Jose Meza (:ghuser:`JoseMezaMendieta`)

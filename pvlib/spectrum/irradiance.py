@@ -236,8 +236,8 @@ def average_photon_energy(spectrum):
     wavelength, :math:`G(\lambda)` is the spectral irradiance, :math:`q` is the
     elementary charge used here so that the average photon energy,
     :math:`\overline{E_\gamma}`, is expressed in
-    electronvolts (eV). By default, this function calculates the value for APE
-    based on full wavelength range of the ``spectrum`` parameter.
+    electronvolts (eV). By default, this function calculates the value for the
+    APE based on the full wavelength range of the ``spectrum`` parameter.
 
     References
     ----------

@@ -187,7 +187,7 @@ def average_photon_energy(spectrum):
 
     Parameters
     ----------
-    spectral_irr : pandas.Series or pandas.DataFrame
+    spectrum : pandas.Series or pandas.DataFrame
 
         Spectral irradiance, must be positive. [Wm⁻²nm⁻¹]
 
@@ -237,7 +237,7 @@ def average_photon_energy(spectrum):
     elementary charge used here so that the average photon energy,
     :math:`\overline{E_\gamma}`, is expressed in
     electronvolts (eV). By default, this function calculates the value for APE
-    based on full wavelength range of the ``spectral_irr`` parameter.
+    based on full wavelength range of the ``spectrum`` parameter.
 
     References
     ----------
@@ -248,7 +248,7 @@ def average_photon_energy(spectrum):
     """
 
     if not isinstance(spectrum, (pd.Series, pd.DataFrame)):
-        raise TypeError('`spectral_irr` must be either a'
+        raise TypeError('`spectrum` must be either a'
                         ' pandas Series or DataFrame')
 
     if (spectrum < 0).any().any():

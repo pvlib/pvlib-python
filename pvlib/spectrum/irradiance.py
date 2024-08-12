@@ -192,7 +192,7 @@ def average_photon_energy(spectrum):
         Spectral irradiance, must be positive. [Wm⁻²nm⁻¹]
 
         A single spectrum must be a :py:class:`pandas.Series` with wavelength
-        [nm] as the index, while multiple spectra must be a
+        [nm] as the index, while multiple spectra must be rows in a
         :py:class:`pandas.DataFrame` with column headers as wavelength [nm].
 
     Returns
@@ -208,8 +208,8 @@ def average_photon_energy(spectrum):
     spectrum. It has been used widely in the Physics literature since the
     1900s, but its application for solar spectral irradiance characterisation
     in the context of PV performance modelling was proposed in [1]_. The APE
-    is calculated based on the principle that a photon's wavelength is
-    inversely proportional to its energy:
+    is calculated based on the principle that a photon's energy is
+    inversely proportional to its wavelength:
 
     .. math::
 
@@ -236,8 +236,7 @@ def average_photon_energy(spectrum):
     wavelength, :math:`G(\lambda)` is the spectral irradiance, :math:`q` is the
     elementary charge used here so that the average photon energy,
     :math:`\overline{E_\gamma}`, is expressed in
-    electronvolts (eV). By default, this function calculates the value for the
-    APE based on the full wavelength range of the ``spectrum`` parameter.
+    electronvolts (eV). The integrals are computed over the full wavelength range of the ``spectrum`` parameter.
 
     References
     ----------

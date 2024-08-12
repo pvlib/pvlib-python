@@ -101,7 +101,8 @@ class Location:
         Parameters
         ----------
         tmy_metadata : dict
-            Returned from tmy.readtmy2 or tmy.readtmy3
+            Returned from :py:func:`~pvlib.iotools.read_tmy2` or
+            :py:func:`~pvlib.iotools.read_tmy3`
         tmy_data : DataFrame, optional
             Optionally attach the TMY data to this object.
 
@@ -145,14 +146,13 @@ class Location:
         Parameters
         ----------
         metadata : dict
-            Returned from epw.read_epw
+            Returned from :py:func:`~pvlib.iotools.read_epw`
         data : DataFrame, optional
             Optionally attach the epw data to this object.
 
         Returns
         -------
-        Location object (or the child class of Location that you
-        called this method from).
+        Location
         """
 
         latitude = metadata['latitude']
@@ -282,7 +282,7 @@ class Location:
         """
         Calculate the relative and absolute airmass.
 
-        Automatically chooses zenith or apparant zenith
+        Automatically chooses zenith or apparent zenith
         depending on the selected model.
 
         Parameters

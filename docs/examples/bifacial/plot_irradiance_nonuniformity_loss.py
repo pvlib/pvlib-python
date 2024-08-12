@@ -40,6 +40,17 @@ array.
 #
 # .. sectionauthor:: Echedey Luis <echelual (at) gmail.com>
 
+# %%
+# Problem description
+# -------------------
+# Let's set a fixed irradiance to each cell row of the PV array with the values
+# described in Figure 1 (A), [1]_. We will cover this case for educational
+# purposes, although it can be achieved with the packages
+# `solarfactors <https://github.com/pvlib/solarfactors/>`_ and
+# `bifacial_radiance <https://github.com/NREL/bifacial_radiance>`_.
+#
+# Here we set and plot the global irradiance level of each cell.
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import ScalarMappable
@@ -47,23 +58,13 @@ from matplotlib.colors import Normalize
 
 from pvlib.bifacial import power_mismatch_deline
 
-# %%
-# Problem description
-# -------------------
-# Let's set a fixed irradiance to each cell row of the PV array with the values
-# described in Figure 1 (A), [1]_. We will cover this case for educational
-# purposes, although it can be achieved with the packages
-# :ref:`solarfactors <https://github.com/pvlib/solarfactors/>` and
-# :ref:`bifacial_radiance <https://github.com/NREL/bifacial_radiance>`.
-#
-# Here we set and plot the global irradiance level of each cell.
-
 x = np.arange(12, 0, -1)
 y = np.arange(6, 0, -1)
 cells_irrad = np.repeat([1059, 976, 967, 986, 1034, 1128], len(x)).reshape(
     len(y), len(x)
 )
 
+# plot the irradiance levels of each cell
 color_map = "gray"
 color_norm = Normalize(930, 1150)
 
@@ -99,13 +100,12 @@ ax.pcolormesh(
 #
 
 
-def rmad(data, axis=None):
+def rmad(data):
     """
-    Relative Mean Absolute Difference. Output is [Unitless].
-    https://stackoverflow.com/a/19472336/19371110
+    Relative Mean Absolute Difference. Output is [Unitless]. Eq. (4) of [1]_.
     """
-    mean = np.mean(data, axis)
-    mad = np.mean(np.absolute(data - mean), axis)
+    mean = np.mean(data)
+    mad = np.mean(np.absolute(np.subtract.outer(data, data)))
     return mad / mean
 
 

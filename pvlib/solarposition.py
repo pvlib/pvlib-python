@@ -22,7 +22,6 @@ import numpy as np
 import pandas as pd
 import scipy.optimize as so
 import warnings
-import datetime
 
 from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime

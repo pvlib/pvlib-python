@@ -13,7 +13,16 @@ Enhancements
 * Add new losses function that accounts for non-uniform irradiance on bifacial
   modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
   (:issue:`2045`, :pull:`2046`)
-
+* Add new parameters for min/max absolute air mass to
+  :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
+  (:issue:`2086`, :pull:`2100`)
+* Restructured the pvlib/spectrum folder by breaking up the contents of
+  pvlib/spectrum/mismatch.py into pvlib/spectrum/mismatch.py,
+  pvlib/spectrum/irradiance.py, and
+  pvlib/spectrum/response.py. (:issue:`2125`, :pull:`2136`, :pull:`2151`)
+* Added function for calculating wind speed at different heights,
+  :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
+  (:issue:`2118`, :pull:`2124`)
 
 Bug fixes
 ~~~~~~~~~
@@ -27,7 +36,14 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
+* Added gallery example demonstrating the application of
+  several spectral mismatch factor models.
+  (:issue:`2107`, :pull:`2114`)
 
+* Added gallery example on calculating cell temperature for
+  floating PV. (:pull:`2110`)
+
+* Removed unused "times" input from dni_et() function (:issue:`2105`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -37,4 +53,9 @@ Contributors
 ~~~~~~~~~~~~
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Yunho Kee (:ghuser:`yhkee0404`)
-
+* Chris Deline (:ghuser:`cdeline`)
+* Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
+* Leonardo Micheli (:ghuser:`lmicheli`)
+* Echedey Luis (:ghuser:`echedey-ls`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
+* Jose Meza (:ghuser:`JoseMezaMendieta`)

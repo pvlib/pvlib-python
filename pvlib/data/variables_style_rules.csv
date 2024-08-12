@@ -49,7 +49,7 @@ transposition_factor; the gain ratio of the radiation on inclined plane to globa
 pdc0; nameplate DC rating
 pdc, dc; dc power
 gamma_pdc; module temperature coefficient. Typically in units of 1/C.
-pac, ac; ac powe.
+pac, ac; ac power
 eta_inv; inverter efficiency
 eta_inv_ref; reference inverter efficiency
 eta_inv_nom; nominal inverter efficiency

@@ -59,7 +59,7 @@ def ephem_data(times):
 
 
 @pytest.fixture
-def dni_et(times):
+def dni_et():
     return np.array(
         [1321.1655834833093, 1321.1655834833093, 1321.1655834833093,
          1321.1655834833093])

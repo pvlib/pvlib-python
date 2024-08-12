@@ -194,10 +194,9 @@ def get_solrad(station, start, end,
     # Use pd.to_datetime so that strings (e.g. '2021-01-01') are accepted
     start = pd.to_datetime(start)
     end = pd.to_datetime(end)
+    dates = pd.date_range(start.floor('d'), end, freq='d')
 
     # Generate list of filenames
-    dates = tools._pandas_to_utc(
-        pd.date_range(start.floor('d'), end, freq='d'))
     station = station.lower()
     filenames = [
         f"{station}/{d.year}/{station}{d.strftime('%y')}{d.dayofyear:03}.dat"

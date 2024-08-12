@@ -4,7 +4,6 @@ import pandas as pd
 import warnings
 import requests
 import io
-from pvlib import tools
 
 # pvlib conventions
 BASE_HEADERS = (

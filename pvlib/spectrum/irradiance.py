@@ -205,7 +205,7 @@ def average_photon_energy(spectrum):
     Notes
     -----
     The average photon energy (APE) is an index used to characterise the solar
-    spectrum. It has been used widely in the Physics literature since the
+    spectrum. It has been used widely in the physics literature since the
     1900s, but its application for solar spectral irradiance characterisation
     in the context of PV performance modelling was proposed in [1]_. The APE
     is calculated based on the principle that a photon's energy is
@@ -235,8 +235,9 @@ def average_photon_energy(spectrum):
     :math:`\Phi(\lambda)` is the photon flux density as a function of
     wavelength, :math:`G(\lambda)` is the spectral irradiance, :math:`q` is the
     elementary charge used here so that the average photon energy,
-    :math:`\overline{E_\gamma}`, is expressed in
-    electronvolts (eV). The integrals are computed over the full wavelength range of the ``spectrum`` parameter.
+    :math:`\overline{E_\gamma}`, is expressed in electronvolts (eV). The
+    integrals are computed over the full wavelength range of the ``spectrum``
+    parameter.
 
     References
     ----------

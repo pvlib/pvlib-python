@@ -24,6 +24,7 @@ import inspect
 # https://github.com/pypa/setuptools/issues/3044
 import distutils  # noqa: F401
 import pandas as pd
+
 pd.show_versions()
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -54,6 +55,7 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinx_gallery.gen_gallery',
     'sphinx_toggleprompt',
+    'sphinx_favicon',
 ]
 
 mathjax3_config = {'chtml': {'displayAlign': 'left',
@@ -83,7 +85,7 @@ copyright = '''pvlib python Contributors (2023);
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-import pvlib
+import pvlib  # noqa: E402
 
 # The short X.Y version.
 version = '%s' % (pvlib.__version__)
@@ -142,10 +144,6 @@ html_theme = "pydata_sphinx_theme"
 # https://pydata-sphinx-theme.rtfd.io/en/latest/user_guide/configuring.html
 html_theme_options = {
     "github_url": "https://github.com/pvlib/pvlib-python",
-    "favicons": [
-        {"rel": "icon", "sizes": "16x16", "href": "favicon-16x16.png"},
-        {"rel": "icon", "sizes": "32x32", "href": "favicon-32x32.png"},
-    ],
     "icon_links": [
         {
             "name": "StackOverflow",
@@ -165,12 +163,23 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "show_toc_level": 1,
-    "footer_items": ["copyright", "sphinx-version", "sidebar-ethical-ads"],
-    "left_sidebar_end": [],
-}
+    # "footer_start": [],  # "copyright", "sphinx-version"
+    # "footer_center": [],
+    "footer_end": [],
+    # "primary_sidebar_end": [],
+    # https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/layout.html#hide-the-previous-and-next-buttons
+    "show_prev_next": False,  # disable next/previous links
+}  # noqa: E501
+
+# Add favicons from extension sphinx_favicon
+favicons = [
+    {"rel": "icon", "sizes": "16x16", "href": "favicon-16x16.png"},
+    {"rel": "icon", "sizes": "32x32", "href": "favicon-32x32.png"},
+]
+
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+# html_theme_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -196,40 +205,42 @@ html_static_path = ['_static']
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
-#html_extra_path = []
+# html_extra_path = []
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-#html_last_updated_fmt = '%b %d, %Y'
+# html_last_updated_fmt = '%b %d, %Y'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
-#html_use_smartypants = True
+# html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-# html_sidebars = {}
+# html_sidebars = {
+#     "**": ["sidebar-nav-bs"]
+# }
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-#html_additional_pages = {}
+# html_additional_pages = {}
 
 # If false, no module index is generated.
-#html_domain_indices = True
+# html_domain_indices = True
 
 # If false, no index is generated.
-#html_use_index = True
+# html_use_index = True
 
 # If true, the index is split into individual pages for each letter.
-#html_split_index = False
+# html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-#html_show_sphinx = True
+# html_show_sphinx = True
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-html_show_copyright = False
+# html_show_copyright = False
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -297,12 +308,15 @@ latex_documents = [
 
 # extlinks alias
 extlinks = {
-    'issue': ('https://github.com/pvlib/pvlib-python/issues/%s', 'GH'),
-    'pull': ('https://github.com/pvlib/pvlib-python/pull/%s', 'GH'),
-    'wiki': ('https://github.com/pvlib/pvlib-python/wiki/%s', 'wiki '),
-    'doi': ('http://dx.doi.org/%s', 'DOI: '),
-    'ghuser': ('https://github.com/%s', '@'),
-    'discuss': ('https://github.com/pvlib/pvlib-python/discussions/%s', 'GH'),
+    "issue": ("https://github.com/pvlib/pvlib-python/issues/%s", "GH%s"),
+    "pull": ("https://github.com/pvlib/pvlib-python/pull/%s", "GH%s"),
+    "wiki": ("https://github.com/pvlib/pvlib-python/wiki/%s", "wiki %s"),
+    "doi": ("http://dx.doi.org/%s", "DOI: %s"),
+    "ghuser": ("https://github.com/%s", "@%s"),
+    "discuss": (
+        "https://github.com/pvlib/pvlib-python/discussions/%s",
+        "GH%s",
+    ),
 }
 
 # -- Options for manual page output ---------------------------------------

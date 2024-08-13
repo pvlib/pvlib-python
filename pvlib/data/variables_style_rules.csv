@@ -10,6 +10,7 @@ bhi;beam/direct horizontal irradiance
 ghi;global horizontal irradiance
 ghi_extra;horizontal irradiance at top of atmosphere (extraterrestrial)
 gri;ground-reflected irradiance
+ape;average photon energy
 aoi;angle of incidence between :math:`90\deg` and :math:`90\deg`
 aoi_projection;cos(aoi)
 airmass;airmass

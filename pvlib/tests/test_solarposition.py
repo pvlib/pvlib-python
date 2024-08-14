@@ -675,6 +675,7 @@ def test_hour_angle():
 
 
 def test_hour_angle_with_tricky_timezones():
+    # GH 2132
     # tests timezones that have a DST shift at midnight
 
     eot = np.array([-3.935172, -4.117227, -4.026295, -4.026295])

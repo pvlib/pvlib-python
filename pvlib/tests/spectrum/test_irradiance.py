@@ -91,9 +91,9 @@ def test_average_photon_energy_dataframe():
 
     spectra = spectrum.get_reference_spectra().T
     ape = spectrum.average_photon_energy(spectra)
-    expected = [1.36848, 1.45017, 1.40885]
-    assert isinstance(ape, pd.Series)
-    assert_allclose(ape, expected, rtol=1e-4)
+    expected = pd.Series([1.36848, 1.45017, 1.40885])
+    expected.index = spectra.index
+    assert_series_equal(ape, expected, rtol=1e-4)
 
 
 def test_average_photon_energy_invalid_type():

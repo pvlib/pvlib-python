@@ -405,7 +405,7 @@ def _coerce_and_roll_tmy(tmy_data, tz, year):
     new_index = pd.DatetimeIndex([
         timestamp.replace(year=year, tzinfo=tzname)
         for timestamp in tmy_data.index],
-        name = f'time({tzname})')
+        name=f'time({tzname})')
     new_tmy_data = pd.DataFrame(
         np.roll(tmy_data, tz, axis=0),
         columns=tmy_data.columns,

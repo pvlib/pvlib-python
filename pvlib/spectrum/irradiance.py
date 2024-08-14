@@ -199,7 +199,7 @@ def average_photon_energy(spectrum):
     -------
     ape : numeric or array
         Average Photon Energy [eV].
-        Note: returns ``np.nan`` in the case of 0 Wm⁻²nm⁻¹  spectral irradiance
+        Note: returns ``np.nan`` in the case of all-zero spectral irradiance
         input.
 
     Notes
@@ -207,8 +207,8 @@ def average_photon_energy(spectrum):
     The average photon energy (APE) is an index used to characterise the solar
     spectrum. It has been used widely in the physics literature since the
     1900s, but its application for solar spectral irradiance characterisation
-    in the context of PV performance modelling was proposed in [1]_. The APE
-    is calculated based on the principle that a photon's energy is
+    in the context of PV performance modelling was proposed in 2002 [1]_. The
+    APE is calculated based on the principle that a photon's energy is
     inversely proportional to its wavelength:
 
     .. math::
@@ -244,7 +244,6 @@ def average_photon_energy(spectrum):
     .. [1] Jardine, C., et al., 2002, January. Influence of spectral effects on
        the performance of multijunction amorphous silicon cells. In Proc.
        Photovoltaic in Europe Conference (pp. 1756-1759).
-
     """
 
     if not isinstance(spectrum, (pd.Series, pd.DataFrame)):

@@ -78,10 +78,10 @@ def test_average_photon_energy_series():
     # test that the APE is calculated correctly with single spectrum
     # series input
 
-    si = spectrum.get_reference_spectra()
-    si = si['global']
+    spectra = spectrum.get_reference_spectra()
+    spectra = spectra['global']
 
-    ape = spectrum.average_photon_energy(si)
+    ape = spectrum.average_photon_energy(spectra)
 
     expected = 1.45017
 
@@ -92,50 +92,50 @@ def test_average_photon_energy_dataframe():
     # test that the APE is calculated correctly with multiple spectra
     # dataframe input
 
-    si = spectrum.get_reference_spectra().T
-    ape = spectrum.average_photon_energy(si)
+    spectra = spectrum.get_reference_spectra().T
+    ape = spectrum.average_photon_energy(spectra)
     expected = [1.36848, 1.45017, 1.40885]
     assert_allclose(ape, expected, rtol=1e-4)
 
 
 def test_average_photon_energy_invalid_type():
     # test that spectrum argument is either a pandas Series or dataframe
-    si = 5
+    spectra = 5
     with pytest.raises(TypeError, match='must be either a pandas Series or'
                        ' DataFrame'):
-        spectrum.average_photon_energy(si)
+        spectrum.average_photon_energy(spectra)
 
 
 def test_average_photon_energy_neg_irr_series():
     # test for handling of negative spectral irradiance values with a
     # pandas Series input
 
-    si = spectrum.get_reference_spectra()['global']*-1
+    spectra = spectrum.get_reference_spectra()['global']*-1
 
     with pytest.raises(ValueError, match='must be positive'):
-        spectrum.average_photon_energy(si)
+        spectrum.average_photon_energy(spectra)
 
 
 def test_average_photon_energy_neg_irr_dataframe():
     # test for handling of negative spectral irradiance values with a
     # pandas DataFrame input
 
-    si = spectrum.get_reference_spectra().T*-1
+    spectra = spectrum.get_reference_spectra().T*-1
 
     with pytest.raises(ValueError, match='must be positive'):
-        spectrum.average_photon_energy(si)
+        spectrum.average_photon_energy(spectra)
 
 
 def test_average_photon_energy_zero_irr():
     # test for handling of zero spectral irradiance values with
     # pandas DataFrame and pandas Series input
 
-    si_df_zero = spectrum.get_reference_spectra().T
-    si_df_zero.iloc[1] = 0
-    si_series_zero = spectrum.get_reference_spectra()['global']*0
+    spectra_df_zero = spectrum.get_reference_spectra().T
+    spectra_df_zero.iloc[1] = 0
+    spectra_series_zero = spectrum.get_reference_spectra()['global']*0
 
-    out_1 = spectrum.average_photon_energy(si_df_zero)
-    out_2 = spectrum.average_photon_energy(si_series_zero)
+    out_1 = spectrum.average_photon_energy(spectra_df_zero)
+    out_2 = spectrum.average_photon_energy(spectra_series_zero)
 
     expected_1 = np.array([1.36848, np.nan, 1.40885])
     expected_2 = np.nan

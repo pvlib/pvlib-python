@@ -179,7 +179,7 @@ averaged_irradiance = pvlib.bifacial.infinite_sheds.get_irradiance_poa(
     solar_position['apparent_zenith'], solar_position['azimuth'],
     gcr, axis_height, pitch,
     psm3['ghi'], psm3['dhi'], psm3['dni'], psm3['albedo'],
-    model='haydavies', dni_extra=dni_extra,
+    model='haydavies', dni_extra=dni_extra
 )
 
 # %%
@@ -191,7 +191,7 @@ cell_temperature_steady_state = pvlib.temperature.faiman(
     poa_global=averaged_irradiance['poa_global'],
     temp_air=psm3['temp_air'],
     wind_speed=psm3['wind_speed'],
-    **temperature_model_parameters,
+    **temperature_model_parameters
 )
 
 cell_temperature = pvlib.temperature.prilliman(
@@ -213,7 +213,7 @@ weather_inputs = pd.DataFrame({
     'poa_direct': averaged_irradiance['poa_direct'],
     'poa_diffuse': averaged_irradiance['poa_diffuse'],
     'cell_temperature': cell_temperature,
-    'precipitable_water': psm3['precipitable_water'],  # for the spectral model
+    'precipitable_water': psm3['precipitable_water']  # for the spectral model
 })
 model.run_model_from_poa(weather_inputs)
 

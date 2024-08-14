@@ -18,3 +18,4 @@ Spectrum
    spectrum.spectral_factor_jrc
    spectrum.sr_to_qe
    spectrum.qe_to_sr
+   spectrum.average_photon_energy

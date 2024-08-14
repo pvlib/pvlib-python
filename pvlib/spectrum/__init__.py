@@ -10,6 +10,7 @@ from pvlib.spectrum.mismatch import (  # noqa: F401
 from pvlib.spectrum.irradiance import (  # noqa: F401
     get_am15g,
     get_reference_spectra,
+    average_photon_energy,
 )
 from pvlib.spectrum.response import (  # noqa: F401
     get_example_spectral_response,

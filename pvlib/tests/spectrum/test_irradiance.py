@@ -80,21 +80,19 @@ def test_average_photon_energy_series():
 
     spectra = spectrum.get_reference_spectra()
     spectra = spectra['global']
-
     ape = spectrum.average_photon_energy(spectra)
-
     expected = 1.45017
-
     assert_allclose(ape, expected, rtol=1e-4)
 
 
 def test_average_photon_energy_dataframe():
     # test that the APE is calculated correctly with multiple spectra
-    # dataframe input
+    # dataframe input and that the output is a series
 
     spectra = spectrum.get_reference_spectra().T
     ape = spectrum.average_photon_energy(spectra)
     expected = [1.36848, 1.45017, 1.40885]
+    assert isinstance(ape, pd.Series)
     assert_allclose(ape, expected, rtol=1e-4)
 
 
@@ -111,7 +109,6 @@ def test_average_photon_energy_neg_irr_series():
     # pandas Series input
 
     spectra = spectrum.get_reference_spectra()['global']*-1
-
     with pytest.raises(ValueError, match='must be positive'):
         spectrum.average_photon_energy(spectra)
 
@@ -133,12 +130,9 @@ def test_average_photon_energy_zero_irr():
     spectra_df_zero = spectrum.get_reference_spectra().T
     spectra_df_zero.iloc[1] = 0
     spectra_series_zero = spectrum.get_reference_spectra()['global']*0
-
     out_1 = spectrum.average_photon_energy(spectra_df_zero)
     out_2 = spectrum.average_photon_energy(spectra_series_zero)
-
     expected_1 = np.array([1.36848, np.nan, 1.40885])
     expected_2 = np.nan
-
     assert_allclose(out_1, expected_1, atol=1e-3)
     assert_allclose(out_2, expected_2, atol=1e-3)

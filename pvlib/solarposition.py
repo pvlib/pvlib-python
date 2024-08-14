@@ -1361,8 +1361,8 @@ def hour_angle(times, longitude, equation_of_time):
         Corresponding timestamps, must be localized to the timezone for the
         ``longitude``.
         
-        A `pytz.exceptions.AmbiguousTimeError` could be raised if any of the
-        given times are on a day where the local daylight savings transition happened
+        A `pytz.exceptions.AmbiguousTimeError` will be raised if any of the
+        given times are on a day when the local daylight savings transition happens
         at midnight.  If you're working with such a timezone, consider converting to
         a non-DST timezone (i.e. GMT-4) before calling this function.
     longitude : numeric

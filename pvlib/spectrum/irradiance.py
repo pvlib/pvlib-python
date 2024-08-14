@@ -223,8 +223,8 @@ def average_photon_energy(spectra):
     (shorter wavelength) indicates a blue-shifted spectrum, while a lower
     average photon energy (longer wavelength) would indicate a red-shifted
     spectrum. This value of the average photon energy can be calculated by
-    dividing the total number of photons in the spectrum by the total energy in
-    the spectrum as follows [1]_:
+    dividing the total energy in the spectrum by the total number of photons
+    in the spectrum as follows [1]_:
 
     .. math::
 

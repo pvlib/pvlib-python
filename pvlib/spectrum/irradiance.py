@@ -180,14 +180,14 @@ def get_reference_spectra(wavelengths=None, standard="ASTM G173-03"):
     return standard
 
 
-def average_photon_energy(spectrum):
+def average_photon_energy(spectra):
     r"""
     Calculate the average photon energy of one or more spectral irradiance
     distributions.
 
     Parameters
     ----------
-    spectrum : pandas.Series or pandas.DataFrame
+    spectra : pandas.Series or pandas.DataFrame
 
         Spectral irradiance, must be positive. [Wm⁻²nm⁻¹]
 
@@ -236,7 +236,7 @@ def average_photon_energy(spectrum):
     wavelength, :math:`G(\lambda)` is the spectral irradiance, :math:`q` is the
     elementary charge used here so that the average photon energy,
     :math:`\overline{E_\gamma}`, is expressed in electronvolts (eV). The
-    integrals are computed over the full wavelength range of the ``spectrum``
+    integrals are computed over the full wavelength range of the ``spectra``
     parameter.
 
     References
@@ -246,24 +246,24 @@ def average_photon_energy(spectrum):
        Photovoltaic in Europe Conference (pp. 1756-1759).
     """
 
-    if not isinstance(spectrum, (pd.Series, pd.DataFrame)):
-        raise TypeError('`spectrum` must be either a'
+    if not isinstance(spectra, (pd.Series, pd.DataFrame)):
+        raise TypeError('`spectra` must be either a'
                         ' pandas Series or DataFrame')
 
-    if (spectrum < 0).any().any():
+    if (spectra < 0).any().any():
         raise ValueError('Spectral irradiance data must be positive')
 
-    hclambda = pd.Series((constants.h*constants.c)/(spectrum.T.index*1e-9))
-    hclambda.index = spectrum.T.index
-    pfd = spectrum.div(hclambda)
+    hclambda = pd.Series((constants.h*constants.c)/(spectra.T.index*1e-9))
+    hclambda.index = spectra.T.index
+    pfd = spectra.div(hclambda)
 
     def integrate(e):
         return trapezoid(e, x=e.T.index, axis=-1)
 
-    int_spectrum = integrate(spectrum)
+    int_spectra = integrate(spectra)
     int_pfd = integrate(pfd)
 
     with np.errstate(invalid='ignore'):
-        ape = (1/constants.elementary_charge)*int_spectrum/int_pfd
+        ape = (1/constants.elementary_charge)*int_spectra/int_pfd
 
     return ape

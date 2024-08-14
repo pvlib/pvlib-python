@@ -390,26 +390,27 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     raise ValueError(err_msg)
 
 
-def _coerce_and_roll_tmy(pvgis_data, tz, year):
+def _coerce_and_roll_tmy(tmy_data, tz, year):
     """
-    After converting TZ, roll dataframe so timeseries starts at midnight
-    and force all indices to a common year. Only works for integer TZ, but
-    ``None`` and ``False`` are re-interpreted as zero / UTC.
+    Assumes ``tmy_data`` input is UTC, converts from UTC to ``tz``, rolls
+    dataframe so timeseries starts at midnight, and forces all indices to
+    ``year``. Only works for integer ``tz``, but ``None`` and ``False`` are
+    re-interpreted as zero / UTC.
     """
     if tz:
         tzname = pytz.timezone(f'Etc/GMT{-tz:+d}')
     else:
         tz = 0
         tzname = pytz.timezone('UTC')
-    new_index = [
+    new_index = pd.DatetimeIndex([
         timestamp.replace(year=year, tzinfo=tzname)
-        for timestamp in pvgis_data.index]
-    new_pvgis_data = pd.DataFrame(
-        np.roll(pvgis_data, tz, axis=0),
-        columns=pvgis_data.columns,
+        for timestamp in tmy_data.index],
+        name = f'time({tzname})')
+    new_tmy_data = pd.DataFrame(
+        np.roll(tmy_data, tz, axis=0),
+        columns=tmy_data.columns,
         index=new_index)
-    new_pvgis_data.index.name = f'time({tzname})'
-    return new_pvgis_data
+    return new_tmy_data
 
 
 def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,

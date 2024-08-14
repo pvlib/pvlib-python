@@ -12,7 +12,7 @@ Enhancements
 ~~~~~~~~~~~~
 * Add new function to calculate the average photon energy,
   :py:func:`pvlib.spectrum.average_photon_energy`.
-  (:issue:`2135`, :'pull:`2140')
+  (:issue:`2135`, :`pull:`2140')
 * Add new losses function that accounts for non-uniform irradiance on bifacial
   modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
   (:issue:`2045`, :pull:`2046`)

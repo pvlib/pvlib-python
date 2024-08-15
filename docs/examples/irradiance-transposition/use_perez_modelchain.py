@@ -3,7 +3,7 @@ Use different Perez coefficients with the ModelChain
 ====================================================
 
 This example demonstrates how to customize the ModelChain
-to use site-specific Perez coefficients.
+to use site-specific Perez transposition coefficients.
 """
 
 # %%

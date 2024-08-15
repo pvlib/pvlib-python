@@ -98,7 +98,9 @@ POA_irradiance_new_perez = irradiance.get_total_irradiance(
     dni_extra=dni_extra)
 
 # %%
-# Now, run the ``ModelChain`` with both sets of irradiance data and compare:
+# Now, run the ``ModelChain`` with both sets of irradiance data and compare
+# (note that to use POA irradiance as input to the ModelChain the method
+# `.run_model_from_poa` is used):
 
 mc.run_model_from_poa(POA_irradiance)
 ac_power_default = mc.results.ac

@@ -24,7 +24,7 @@ import scipy.optimize as so
 import warnings
 
 from pvlib import atmosphere
-from pvlib.tools import datetime_to_djd, djd_to_datetime
+from pvlib.tools import datetime_to_djd, djd_to_datetime, sind, cosd
 
 
 def get_solarposition(time, latitude, longitude,
@@ -87,7 +87,6 @@ def get_solarposition(time, latitude, longitude,
 
     .. [3] NREL SPA code: https://midcdmz.nrel.gov/spa/
     """
-
     if altitude is None and pressure is None:
         altitude = 0.
         pressure = 101325.
@@ -188,7 +187,6 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     --------
     pyephem, spa_python, ephemeris
     """
-
     # Added by Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
     # Edited by Will Holmgren (@wholmgren), University of Arizona, 2014
     # Edited by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
@@ -240,8 +238,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 
 
 def _spa_python_import(how):
-    """Compile spa.py appropriately"""
-
+    """Compile spa.py appropriately."""
     from pvlib import spa
 
     # check to see if the spa module was compiled with numba
@@ -354,11 +351,10 @@ def spa_python(time, latitude, longitude,
     .. [3] USNO delta T:
        https://maia.usno.navy.mil/products/deltaT
 
-    See also
+    See Also
     --------
     pyephem, spa_c, ephemeris
     """
-
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
     lat = latitude
@@ -470,7 +466,7 @@ def pvsyst(times, latitude, longitude):
 
     azimuth = np.rad2deg(np.arcsin(
         cosd(declination)*sind(hour_angle) / cosd(elevation))
-        ) + 180
+    ) + 180
 
     data = pd.DataFrame({
         'elevation': elevation,

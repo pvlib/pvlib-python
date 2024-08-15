@@ -42,6 +42,9 @@ weather_data = tmy[['ghi', 'dhi', 'dni', 'temp_air', 'wind_speed']]
 
 loc = location.Location.from_tmy(metadata)
 
+#%%
+# Now, let's set up a standard PV model using the ``ModelChain``
+
 surface_tilt = metadata['latitude']
 surface_azimuth = 180
 

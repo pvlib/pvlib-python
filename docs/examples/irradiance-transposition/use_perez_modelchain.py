@@ -12,8 +12,8 @@ to use site-specific Perez transposition coefficients.
 # However, a user may want to customize the steps
 # in the system model in various ways.
 # One such example is during the irradiance transposition step.
-# The Perez models perform very well on field data, but
-# they require a set of fitted coefficients from various sites.
+# The Perez model perform very well on field data, but
+# it requires a set of fitted coefficients from various sites.
 # It has been noted that these coefficients can be specific to
 # various climates, so users may see improved model accuracy
 # when using a site-specific set of coefficients.

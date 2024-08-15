@@ -71,7 +71,7 @@ def power_mismatch_deline(
     where the upper equation is in percentage (same as paper) and the lower
     one is unitless. The implementation uses the unitless version, where
     :math:`M[-]` is the mismatch power loss [unitless] and
-    :math:`\Delta[-]` is the Relative Mean Absolute Difference [unitless]
+    :math:`\Delta[-]` is the Relative Mean Absolute Difference (RMAD) [unitless]
     of the global irradiance, Eq. (4) of [1]_ and [2]_.
     Note that the n-th power coefficient is multiplied by :math:`100^{n-1}`
     to convert the percentage to unitless.
@@ -100,6 +100,14 @@ def power_mismatch_deline(
     .. note::
        The global irradiance RMAD is different from the backside irradiance
        RMAD.
+
+    RMAD of a variable :math:`G_{total}` is defined as:
+
+    .. math::
+
+        RMAD \left[ unitless \right] = \Delta \left[ unitless \right] =
+        \frac{1}{n^2 \bar{G}_{total}} \sum_{i=1}^{n} \sum_{j=1}^{n}
+        \lvert G_{total,i} - G_{total,j} \rvert
 
     In case the RMAD of the backside irradiance is known, the global RMAD can
     be calculated as follows, assuming the front irradiance RMAD is

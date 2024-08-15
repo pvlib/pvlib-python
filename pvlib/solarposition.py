@@ -476,7 +476,7 @@ def pvsyst(times, latitude, longitude):
         'elevation': elevation,
         'azimuth': azimuth,
         'zenith': 90 - elevation,
-        'equation_of_time': equation_of_time,  # [hours]
+        'equation_of_time': equation_of_time*60,  # [minutes]
         'declination': declination,
         'hour_angle': hour_angle,
         },

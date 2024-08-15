@@ -227,7 +227,7 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
 
     Returns
     -------
-        dict
+    : dict
         A dict of arrays.  With the exception of `wavelength`, which has length
         122, each array has shape (122, N) where N is the length of the
         input ``apparent_zenith``.  All values are spectral irradiance

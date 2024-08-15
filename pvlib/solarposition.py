@@ -475,7 +475,7 @@ def pvsyst(times, latitude, longitude):
         'equation_of_time': equation_of_time*60,  # [minutes]
         'declination': declination,
         'hour_angle': hour_angle,
-        },
+    },
         index=times,
     )
     return data

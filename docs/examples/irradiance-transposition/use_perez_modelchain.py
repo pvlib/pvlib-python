@@ -38,10 +38,7 @@ DATA_FILE = os.path.join(PVLIB_DIR, 'data', '723170TYA.CSV')
 tmy, metadata = iotools.read_tmy3(DATA_FILE, coerce_year=1990,
                                   map_variables=True)
 
-weather_data = pd.DataFrame({'ghi': tmy['ghi'], 'dhi': tmy['dhi'],
-                             'dni': tmy['dni'],
-                             'temp_air': tmy['temp_air'],
-                             'wind_speed': tmy['wind_speed']})
+weather_data = tmy[['ghi', 'dhi', 'dni', 'temp_air', 'wind_speed']]
 
 loc = location.Location.from_tmy(metadata)
 

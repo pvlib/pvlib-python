@@ -18,10 +18,10 @@ import io
 import json
 from pathlib import Path
 import requests
+import numpy as np
 import pandas as pd
+import pytz
 from pvlib.iotools import read_epw, parse_epw
-import warnings
-from pvlib._deprecation import pvlibDeprecationWarning
 
 URL = 'https://re.jrc.ec.europa.eu/api/'
 
@@ -390,9 +390,33 @@ def read_pvgis_hourly(filename, pvgis_format=None, map_variables=True):
     raise ValueError(err_msg)
 
 
+def _coerce_and_roll_tmy(tmy_data, tz, year):
+    """
+    Assumes ``tmy_data`` input is UTC, converts from UTC to ``tz``, rolls
+    dataframe so timeseries starts at midnight, and forces all indices to
+    ``year``. Only works for integer ``tz``, but ``None`` and ``False`` are
+    re-interpreted as zero / UTC.
+    """
+    if tz:
+        tzname = pytz.timezone(f'Etc/GMT{-tz:+d}')
+    else:
+        tz = 0
+        tzname = pytz.timezone('UTC')
+    new_index = pd.DatetimeIndex([
+        timestamp.replace(year=year, tzinfo=tzname)
+        for timestamp in tmy_data.index],
+        name=f'time({tzname})')
+    new_tmy_data = pd.DataFrame(
+        np.roll(tmy_data, tz, axis=0),
+        columns=tmy_data.columns,
+        index=new_index)
+    return new_tmy_data
+
+
 def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
                   userhorizon=None, startyear=None, endyear=None,
-                  map_variables=True, url=URL, timeout=30):
+                  map_variables=True, url=URL, timeout=30,
+                  roll_utc_offset=None, coerce_year=None):
     """
     Get TMY data from PVGIS.
 
@@ -424,6 +448,13 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
         base url of PVGIS API, append ``tmy`` to get TMY endpoint
     timeout : int, default 30
         time in seconds to wait for server response before timeout
+    roll_utc_offset: int, optional
+        Use to specify a time zone other than the default UTC zero and roll
+        dataframe by ``roll_utc_offset`` so it starts at midnight on January
+        1st. Ignored if ``None``, otherwise will force year to ``coerce_year``.
+    coerce_year: int, optional
+        Use to force indices to desired year. Will default to 1990 if
+        ``coerce_year`` is not specified, but ``roll_utc_offset`` is specified.
 
     Returns
     -------
@@ -509,6 +540,11 @@ def get_pvgis_tmy(latitude, longitude, outputformat='json', usehorizon=True,
 
     if map_variables:
         data = data.rename(columns=VARIABLE_MAP)
+
+    if not (roll_utc_offset is None and coerce_year is None):
+        # roll_utc_offset is specified, but coerce_year isn't
+        coerce_year = coerce_year or 1990
+        data = _coerce_and_roll_tmy(data, roll_utc_offset, coerce_year)
 
     return data, months_selected, inputs, meta
 

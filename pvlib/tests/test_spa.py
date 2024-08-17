@@ -423,3 +423,9 @@ class NumbaSpaTest(unittest.TestCase, SpaBase):
             nresult, self.spa.solar_position(
                 times, lat, lon, elev, pressure, temp, delta_t,
                 atmos_refract, numthreads=3, sst=True)[:3], 5)
+
+    def test_solar_position_warn_too_many_threads(self):
+        two_timestamps = np.array([unixtimes[0], unixtimes[0]])
+        with self.assertWarnsRegex(UserWarning, '.*Only using 2 threads.'):
+            self.spa.solar_position(two_timestamps, lat, lon, elev, pressure,
+                                    temp, delta_t, atmos_refract, numthreads=3)

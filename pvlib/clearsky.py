@@ -9,7 +9,6 @@ import calendar
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
 import h5py
 
@@ -848,14 +847,16 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
     for iteration in range(max_iterations):
         scaled_clear = alpha * clear
         clear_line_length = _line_length_windowed(
-            scaled_clear, H, samples_per_window, sample_interval)
+            scaled_clear, H, samples_per_window, sample_interval
+        )
 
         line_diff = meas_line_length - clear_line_length
         slope_max_diff = _max_diff_windowed(
-            meas - scaled_clear, H, samples_per_window)
+            meas - scaled_clear, H, samples_per_window
+        )
         # evaluate comparison criteria
-        c1 = np.abs(meas_mean - alpha*clear_mean) < mean_diff
-        c2 = np.abs(meas_max - alpha*clear_max) < max_diff
+        c1 = np.abs(meas_mean - alpha * clear_mean) < mean_diff
+        c2 = np.abs(meas_max - alpha * clear_max) < max_diff
         c3 = (line_diff > lower_line_length) & (line_diff < upper_line_length)
         c4 = meas_slope_nstd < var_diff
         c5 = slope_max_diff < slope_dev
@@ -863,10 +864,11 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         clear_windows = c1 & c2 & c3 & c4 & c5 & c6
 
         # create array to return
-        clear_samples = np.full_like(meas, False, dtype='bool')
+        clear_samples = np.full_like(meas, False, dtype="bool")
         # find the samples contained in any window classified as clear
-        idx = _clear_sample_index(clear_windows, samples_per_window, 'center',
-                                  H)
+        idx = _clear_sample_index(
+            clear_windows, samples_per_window, "center", H
+        )
         clear_samples[idx] = True
 
         # find a new alpha
@@ -874,31 +876,22 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         clear_meas = meas[clear_samples]
         clear_clear = clear[clear_samples]
 
-        def rmse(alpha):
-            return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
+        # Arg min of MSE between model and observations
+        C = (clear_clear**2).sum()
+        if not (pd.isna(C) or C == 0):  # safety check
+            # only update alpha if C is strictly positive
+            alpha = (clear_meas * clear_clear).sum() / C
 
-        optimize_result = minimize_scalar(rmse)
-        if not optimize_result.success:
-            try:
-                message = "Optimizer exited unsuccessfully: " \
-                           + optimize_result.message
-            except AttributeError:
-                message = "Optimizer exited unsuccessfully: \
-                           No message explaining the failure was returned. \
-                           If you would like to see this message, please \
-                           update your scipy version (try version 1.8.0 \
-                           or beyond)."
-            raise RuntimeError(message)
-
-        else:
-            alpha = optimize_result.x
-
-        if round(alpha*10000) == round(previous_alpha*10000):
+        if round(alpha * 10000) == round(previous_alpha * 10000):
             break
     else:
         import warnings
-        warnings.warn('rescaling failed to converge after %s iterations'
-                      % max_iterations, RuntimeWarning)
+
+        warnings.warn(
+            "rescaling failed to converge after %s iterations"
+            % max_iterations,
+            RuntimeWarning,
+        )
 
     # be polite about returning the same type as was input
     if ispandas:

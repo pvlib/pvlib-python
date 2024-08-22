@@ -1550,7 +1550,7 @@ def calcparams_desoto(effective_irradiance, temp_cell,
         Light-generated current in amperes
 
     saturation_current : numeric
-        Diode saturation curent in amperes
+        Diode saturation current in amperes
 
     resistance_series : numeric
         Series resistance in ohms

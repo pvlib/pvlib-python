@@ -1474,7 +1474,7 @@ class ModelChain:
         data : DataFrame, or tuple or list of DataFrame
             Contains plane-of-array irradiance data. Required column names
             include ``'poa_global'``, ``'poa_direct'`` and ``'poa_diffuse'``.
-            Columns with weather-related data are ssigned to the
+            Columns with weather-related data are signed to the
             ``weather`` attribute.  If columns for ``'temp_air'`` and
             ``'wind_speed'`` are not provided, air temperature of 20 C and wind
             speed of 0 m/s are assumed.

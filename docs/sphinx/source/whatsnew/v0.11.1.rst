@@ -70,3 +70,5 @@ Contributors
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
 * Luiz Reis (:ghuser:`luizreiscver`)
+* Eduardo Sarquis (:ghuser:`EduardoSarquis`)
+

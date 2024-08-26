@@ -1012,13 +1012,12 @@ def muneer(surface_tilt, dhi, b):
     b : numeric
         Radiance distribution index, introduced by Moon and Spencer [2]_ to model
         luminance distribution of overcast sky.
-        
-        'best' values of b as found for Easthampstead data:
-           isotropic: b = 0
-           shaded surface: b = 5.73
-           sunlit surface under overcast sky: b = 1.68
-           sunlit surface under non-overcast sky: b = -0.62
-        
+        Recommend values from [X]_:
+
+           - isotropic: b = 0
+           - shaded surface: b = 5.73
+           - sunlit surface, overcast sky: b = 1.68
+           - sunlit surface, non-overcast sky: b = -0.62
 
     Returns
     -------

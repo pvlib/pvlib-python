@@ -1010,8 +1010,8 @@ def muneer(surface_tilt, dhi, b):
         Diffuse horizontal irradiance. [W/m^2]
 
     b : numeric
-        Radiance distribution index, introduced by Moon and Spencer [2]_ to model
-        luminance distribution of overcast sky. [unitless]
+        Radiance distribution index, introduced by Moon and Spencer [2]_
+        to model luminance distribution of overcast sky. [unitless]
         Recommend values from [1]_:
 
            - isotropic: b = 0

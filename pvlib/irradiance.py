@@ -1011,7 +1011,7 @@ def muneer(surface_tilt, dhi, b):
     
     b : numeric
         Radiance distribution index, introduced by Moon and Spencer [2]_ to model
-        luminance distribution of overcast sky.
+        luminance distribution of overcast sky. [unitless]
         Recommend values from [X]_:
 
            - isotropic: b = 0

@@ -1007,7 +1007,7 @@ def muneer(surface_tilt, dhi, b):
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     dhi : numeric
-        Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
+        Diffuse horizontal irradiance. [W/m^2]
     
     b : numeric
         Radiance distribution index, introduced by Moon and Spencer [2]_ to model

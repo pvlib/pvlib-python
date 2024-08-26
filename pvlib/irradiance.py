@@ -1022,7 +1022,7 @@ def muneer(surface_tilt, dhi, b):
     Returns
     -------
     poa_sky_diffuse : numeric
-        The sky diffuse component of the solar radiation.
+        In-plane diffuse irradiance from the sky. [W/m^2]
 
     References
     ----------

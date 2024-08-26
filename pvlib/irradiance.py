@@ -994,6 +994,56 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
     return sky_diffuse
 
 
+def muneer(surface_tilt, dhi, b):
+    '''
+    Determine diffuse irradiance from the sky on a tilted surface using
+    the Muneer [1]_ model.
+    
+     Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angle in decimal degrees. Tilt must be >=0 and
+        <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    dhi : numeric
+        Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
+    
+    b : numeric
+        Radiance distribution index, introduced by Moon and Spencer [2]_ to model
+        luminance distribution of overcast sky.
+        
+        'best' values of b as found for Easthampstead data:
+           isotropic: b = 0
+           shaded surface: b = 5.73
+           sunlit surface under overcast sky: b = 1.68
+           sunlit surface under non-overcast sky: b = -0.62
+        
+
+    Returns
+    -------
+    diffuse : numeric
+        The sky diffuse component of the solar radiation.
+
+    References
+    ----------
+    .. [1] Muneer, T., 1990, Solar radiation model for Europe.
+       Building services engineering research and technology, 11: 153-163.
+       
+    .. [2] Moon P and Spencer D E Illumination from a non-uniform sky
+       Trans. Illum. Eng. Soc. (London) 37 707-725 (1942)
+    '''
+
+    term1 = 2 * b / (np.pi * (3 + 2 * b))
+    term2 = (tools.sind(surface_tilt)
+        - surface_tilt * tools.cosd(surface_tilt)
+        - np.pi * (1 - tools.cosd(surface_tilt)) * 0.5
+    )
+    sky_diffuse = dhi * ((1 + tools.cosd(surface_tilt)) * 0.5 + term1 * term2)
+
+    return sky_diffuse
+
+
 def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
           solar_zenith, solar_azimuth, airmass,
           model='allsitescomposite1990', return_components=False):

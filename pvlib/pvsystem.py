@@ -841,7 +841,7 @@ class PVSystem:
     @_unwrap_single_value
     def pvwatts_dc(self, g_poa_effective, temp_cell):
         """
-        Calcuates DC power according to the PVWatts model using
+        Calculates DC power according to the PVWatts model using
         :py:func:`pvlib.pvsystem.pvwatts_dc`, `self.module_parameters['pdc0']`,
         and `self.module_parameters['gamma_pdc']`.
 

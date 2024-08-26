@@ -998,7 +998,7 @@ def muneer(surface_tilt, dhi, b):
     '''
     Determine sky diffuse irradiance on a tilted surface using the
     Muneer [1]_ model.
-    
+
      Parameters
     ----------
     surface_tilt : numeric
@@ -1008,7 +1008,7 @@ def muneer(surface_tilt, dhi, b):
 
     dhi : numeric
         Diffuse horizontal irradiance. [W/m^2]
-    
+
     b : numeric
         Radiance distribution index, introduced by Moon and Spencer [2]_ to model
         luminance distribution of overcast sky. [unitless]
@@ -1036,7 +1036,8 @@ def muneer(surface_tilt, dhi, b):
     '''
 
     term1 = 2 * b / (np.pi * (3 + 2 * b))
-    term2 = (tools.sind(surface_tilt)
+    term2 = (
+        tools.sind(surface_tilt)
         - surface_tilt * tools.cosd(surface_tilt)
         - np.pi * (1 - tools.cosd(surface_tilt)) * 0.5
     )

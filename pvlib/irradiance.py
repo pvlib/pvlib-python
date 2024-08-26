@@ -1012,7 +1012,7 @@ def muneer(surface_tilt, dhi, b):
     b : numeric
         Radiance distribution index, introduced by Moon and Spencer [2]_ to model
         luminance distribution of overcast sky. [unitless]
-        Recommend values from [X]_:
+        Recommend values from [1]_:
 
            - isotropic: b = 0
            - shaded surface: b = 5.73
@@ -1026,11 +1026,13 @@ def muneer(surface_tilt, dhi, b):
 
     References
     ----------
-    .. [1] Muneer, T., 1990, Solar radiation model for Europe.
-       Building services engineering research and technology, 11: 153-163.
-       
-    .. [2] Moon P and Spencer D E Illumination from a non-uniform sky
-       Trans. Illum. Eng. Soc. (London) 37 707-725 (1942)
+    .. [1] Muneer, T., 1990. Solar radiation model for Europe. Building
+       Services Engineering Research and Technology 11, 153-163.
+       :doi:`10.1177/014362449001100405`
+
+    .. [2] Moon, P., Spencer, D.E., 1942. Illumination from a non-uniform sky.
+       Trans. Illum. Eng. Soc. (London) 37, 707-725.
+       :doi:`10.1177/096032719302500301`
     '''
 
     term1 = 2 * b / (np.pi * (3 + 2 * b))

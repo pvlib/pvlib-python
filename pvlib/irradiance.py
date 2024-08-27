@@ -998,7 +998,9 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b, solar_zenith=N
            solar_azimuth=None, projection_ratio=None):
     '''
     Determine sky diffuse irradiance on a tilted surface using the
-    Muneer [1]_ model.
+    Muneer model.
+    
+    This model is described in [1]_.
 
      Parameters
     ----------
@@ -1024,7 +1026,7 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b, solar_zenith=N
     b : numeric
         Radiance distribution index, introduced by Moon and Spencer [2]_
         to model luminance distribution of overcast sky. [unitless]
-        Recommend values from [1]_:
+        Recommended values from [1]_:
 
            - isotropic: b = 0
            - shaded surface: b = 5.73

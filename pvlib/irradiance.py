@@ -994,7 +994,8 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
     return sky_diffuse
 
 
-def muneer(surface_tilt, dhi, b):
+def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b, solar_zenith=None,
+           solar_azimuth=None, projection_ratio=None):
     '''
     Determine sky diffuse irradiance on a tilted surface using the
     Muneer [1]_ model.
@@ -1002,12 +1003,23 @@ def muneer(surface_tilt, dhi, b):
      Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angle in decimal degrees. Tilt must be >=0 and
-        <=180. The tilt angle is defined as degrees from horizontal
+        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        and <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. surface_azimuth must
+        be >=0 and <=360. The azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : numeric
         Diffuse horizontal irradiance. [W/m^2]
+    
+    ghi : numeric
+        Global horizontal irradiance in W/m^2.
+    
+    dni_extra : numeric
+        Extraterrestrial normal irradiance in W/m^2.
 
     b : numeric
         Radiance distribution index, introduced by Moon and Spencer [2]_
@@ -1018,6 +1030,21 @@ def muneer(surface_tilt, dhi, b):
            - shaded surface: b = 5.73
            - sunlit surface, overcast sky: b = 1.68
            - sunlit surface, non-overcast sky: b = -0.62
+    
+    solar_zenith : numeric, optional
+        Solar apparent (refraction-corrected) zenith angles in decimal
+        degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
+        supply ``projection_ratio``.
+
+    solar_azimuth : numeric, optional
+        Solar azimuth angles in decimal degrees. Must supply
+        ``solar_zenith`` and ``solar_azimuth`` or supply
+        ``projection_ratio``.
+
+    projection_ratio : numeric, optional
+        Ratio of angle of incidence projection to solar zenith angle
+        projection. Must supply ``solar_zenith`` and ``solar_azimuth``
+        or supply ``projection_ratio``.
 
     Returns
     -------
@@ -1034,14 +1061,30 @@ def muneer(surface_tilt, dhi, b):
        Trans. Illum. Eng. Soc. (London) 37, 707-725.
        :doi:`10.1177/096032719302500301`
     '''
+    
+    # if necessary, calculate ratio of titled and horizontal beam irradiance
+    if projection_ratio is None:
+        cos_tt = aoi_projection(surface_tilt, surface_azimuth,
+                                solar_zenith, solar_azimuth)
+        cos_tt = np.maximum(cos_tt, 0)  # GH 526
+        cos_solar_zenith = tools.cosd(solar_zenith)
+        Rb = cos_tt / np.maximum(cos_solar_zenith, 0.01745)  # GH 432
+    else:
+        Rb = projection_ratio
 
-    term1 = 2 * b / (np.pi * (3 + 2 * b))
-    term2 = (
+    T_term1 = (1 + tools.cosd(surface_tilt)) * 0.5
+    T_term2 = 2 * b / (np.pi * (3 + 2 * b))
+    T_term3 = (
         tools.sind(surface_tilt)
-        - surface_tilt * tools.cosd(surface_tilt)
+        - np.radians(surface_tilt) * tools.cosd(surface_tilt)
         - np.pi * (1 - tools.cosd(surface_tilt)) * 0.5
     )
-    sky_diffuse = dhi * ((1 + tools.cosd(surface_tilt)) * 0.5 + term1 * term2)
+    T = T_term1 + T_term2 * T_term3
+    
+    horizontal_extra = dni_extra * np.maximum(cos_solar_zenith, 0.01745)
+    F = (ghi - dhi) / horizontal_extra
+    
+    sky_diffuse = dhi*(T*(1-F) + F*Rb)
 
     return sky_diffuse
 

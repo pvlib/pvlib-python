@@ -997,7 +997,9 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
 def muneer(surface_tilt, dhi, b):
     '''
     Determine sky diffuse irradiance on a tilted surface using the
-    Muneer [1]_ model.
+    Muneer model.
+    
+    This model is described in [1]_.
 
      Parameters
     ----------

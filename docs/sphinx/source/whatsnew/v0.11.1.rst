@@ -30,6 +30,9 @@ Enhancements
 * Added function for calculating wind speed at different heights,
   :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)
+* ``delta_t`` can now be specified with an array in the SPA functions.
+  The numba implementation now also allows calculation of ``delta_t``
+  internally.  (:issue:`2189`, :pull:`2190`)
 
 Bug fixes
 ~~~~~~~~~
@@ -69,3 +72,4 @@ Contributors
 * Mark A. Mikofski (:ghuser:`mikofski`)
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
+* Kevin Anderson (:ghuser:`kandersolar`)

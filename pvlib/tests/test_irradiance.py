@@ -293,7 +293,8 @@ def test_muneer(irrad_data, ephem_data, dni_et):
                             dni_et, solar_zenith=ephem_data['apparent_zenith'],
                             solar_azimuth=ephem_data['azimuth'])
     out_Rb = irradiance.muneer(40, 180, irrad_data['dhi'], irrad_data['ghi'],
-                               dni_et, solar_zenith=ephem_data['apparent_zenith'],
+                               dni_et,
+                               solar_zenith=ephem_data['apparent_zenith'],
                                projection_ratio=projection_ratio)
     expected = pd.Series(np.array(
         [0.,   25.173,  100.757,   31.121]),

@@ -73,3 +73,6 @@ Contributors
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
 * Kevin Anderson (:ghuser:`kandersolar`)
+* Bernat Nicolau (:ghuser:`BernatNicolau`)
+* Eduardo Sarquis (:ghuser:`EduardoSarquis`)
+

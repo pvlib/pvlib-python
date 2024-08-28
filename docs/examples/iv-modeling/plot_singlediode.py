@@ -114,6 +114,8 @@ for idx, case in conditions.iterrows():
     # mark the MPP
     plt.plot([v_mp], [i_mp], ls='', marker='o', c='k')
 
+plt.xlim(left=0)
+plt.ylim(bottom=0)
 plt.legend(loc=(1.0, 0))
 plt.xlabel('Module voltage [V]')
 plt.ylabel('Module current [A]')

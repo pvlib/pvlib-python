@@ -1008,7 +1008,7 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
     Determine sky diffuse irradiance on a tilted surface using the
     Muneer model.
 
-    This model is described in [1]_.
+    This Muneer transposition model is described in [1]_.
 
     Parameters
     ----------

@@ -323,7 +323,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     Notes
     -----
     Models ``'haydavies'``, ``'reindl'``, ``'perez'``, ``'perez-driesse'``
-    and ``'muneer'`` require ``'dni_extra'``. Values can be calculated 
+    and ``'muneer'`` require ``'dni_extra'``. Values can be calculated
     using :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
     The ``'perez'`` and ``'perez-driesse'`` models require relative airmass

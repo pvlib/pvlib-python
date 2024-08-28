@@ -284,11 +284,12 @@ def test_perez_driesse(irrad_data, ephem_data, dni_et, relative_airmass):
         [0.,   29.991,  np.nan,   47.397]),
         index=irrad_data.index)
     assert_series_equal(out, expected, check_less_precise=2)
-    
+
+
 def test_muneer(irrad_data, ephem_data, dni_et):
     out = irradiance.muneer(40, 180, irrad_data['dhi'], irrad_data['ghi'],
-                                   dni_et, solar_zenith=ephem_data['apparent_zenith'],
-                                   solar_azimuth=ephem_data['azimuth'])
+                            dni_et, solar_zenith=ephem_data['apparent_zenith'],
+                            solar_azimuth=ephem_data['azimuth'])
     expected = pd.Series(np.array(
         [0.,   25.173,  100.757,   31.121]),
         index=irrad_data.index)

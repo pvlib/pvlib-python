@@ -312,13 +312,11 @@ def spa_python(time, latitude, longitude,
         avg. yearly air pressure in Pascals.
     temperature : int or float, optional, default 12
         avg. yearly air temperature in degrees C.
-    delta_t : float, optional, default 67.0
+    delta_t : float or array, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
-        *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.*
         The USNO has historical and forecasted delta_t [3]_.
     atmos_refrac : float, optional
         The approximate atmospheric refraction (in degrees)
@@ -378,7 +376,8 @@ def spa_python(time, latitude, longitude,
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
+    if delta_t is None:
+        delta_t = spa.calculate_deltat(time.year, time.month)
 
     app_zenith, zenith, app_elevation, elevation, azimuth, eot = \
         spa.solar_position(unixtime, lat, lon, elev, pressure, temperature,
@@ -418,13 +417,11 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
         Options are 'numpy' or 'numba'. If numba >= 0.17.0
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
-    delta_t : float, optional, default 67.0
+    delta_t : float or array, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using times.year and times.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
-        *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.*
     numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
 
@@ -457,7 +454,8 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(times.year, times.month)
+    if delta_t is None:
+        delta_t = spa.calculate_deltat(times.year, times.month)
 
     transit, sunrise, sunset = spa.transit_sunrise_sunset(
         unixtime, lat, lon, delta_t, numthreads)
@@ -980,13 +978,11 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
         is installed, how='numba' will compile the spa functions
         to machine code and run them multithreaded.
 
-    delta_t : float, optional, default 67.0
+    delta_t : float or array, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
         using time.year and time.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
-        *Note: delta_t = None will break code using nrel_numba,
-        this will be fixed in a future version.*
 
     numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
@@ -1013,7 +1009,8 @@ def nrel_earthsun_distance(time, how='numpy', delta_t=67.0, numthreads=4):
 
     spa = _spa_python_import(how)
 
-    delta_t = delta_t or spa.calculate_deltat(time.year, time.month)
+    if delta_t is None:
+        delta_t = spa.calculate_deltat(time.year, time.month)
 
     dist = spa.earthsun_distance(unixtime, delta_t, numthreads)
 

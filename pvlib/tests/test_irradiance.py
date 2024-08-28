@@ -284,6 +284,15 @@ def test_perez_driesse(irrad_data, ephem_data, dni_et, relative_airmass):
         [0.,   29.991,  np.nan,   47.397]),
         index=irrad_data.index)
     assert_series_equal(out, expected, check_less_precise=2)
+    
+def test_muneer(irrad_data, ephem_data, dni_et):
+    out = irradiance.muneer(40, 180, irrad_data['dhi'], irrad_data['ghi'],
+                                   dni_et, solar_zenith=ephem_data['apparent_zenith'],
+                                   solar_azimuth=ephem_data['azimuth'])
+    expected = pd.Series(np.array(
+        [0.,   25.173,  100.757,   31.121]),
+        index=irrad_data.index)
+    assert_series_equal(out, expected, check_less_precise=2)
 
 
 def test_perez_driesse_airmass(irrad_data, ephem_data, dni_et):
@@ -443,7 +452,8 @@ def test_perez_driesse_scalar():
 
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher', 'haydavies',
-                                   'reindl', 'king', 'perez', 'perez-driesse'])
+                                   'reindl', 'king', 'perez', 'perez-driesse',
+                                   'muneer'])
 def test_sky_diffuse_zenith_close_to_90(model):
     # GH 432
     sky_diffuse = irradiance.get_sky_diffuse(
@@ -495,7 +505,8 @@ def test_campbell_norman():
 def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
                               relative_airmass):
     models = ['isotropic', 'klucher',
-              'haydavies', 'reindl', 'king', 'perez', 'perez-driesse']
+              'haydavies', 'reindl', 'king', 'perez', 'perez-driesse',
+              'muneer']
 
     for model in models:
         total = irradiance.get_total_irradiance(
@@ -514,7 +525,8 @@ def test_get_total_irradiance(irrad_data, ephem_data, dni_et,
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
                                    'haydavies', 'reindl', 'king',
-                                   'perez', 'perez-driesse'])
+                                   'perez', 'perez-driesse',
+                                   'muneer'])
 def test_get_total_irradiance_albedo(
         irrad_data, ephem_data, dni_et, relative_airmass, model):
     albedo = pd.Series(0.2, index=ephem_data.index)
@@ -534,7 +546,8 @@ def test_get_total_irradiance_albedo(
 
 @pytest.mark.parametrize('model', ['isotropic', 'klucher',
                                    'haydavies', 'reindl', 'king',
-                                   'perez', 'perez-driesse'])
+                                   'perez', 'perez-driesse',
+                                   'muneer'])
 def test_get_total_irradiance_scalars(model):
     total = irradiance.get_total_irradiance(
         32, 180,

@@ -310,7 +310,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
         ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
-        ``'perez-driesse'`` and ``'muneer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         '``.
+        ``'perez-driesse'`` and ``'muneer
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
 
@@ -347,7 +347,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth,
                     dni, ghi, dhi, dni_extra=None, airmass=None,
                     model='isotropic',
-                    model_perez='allsitescomposite1990', b = 5.73):
+                    model_perez='allsitescomposite1990', b=5.73):
     r"""
     Determine in-plane sky diffuse irradiance component
     using the specified sky diffuse irradiance model.
@@ -389,7 +389,8 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
     b : numeric, default 5.73
-        Used only if ``model='muneer'``. See :py:func:`~pvlib.irradiance.muneer`.
+        Used only if ``model='muneer'``.
+        See :py:func:`~pvlib.irradiance.muneer`.
 
     Returns
     -------
@@ -405,7 +406,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     Notes
     -----
     Models ``'haydavies'``, ``'reindl'``, ``'perez'``, ``'perez-driesse'``
-    and ``'muneer'`` require ``'dni_extra'``. Values can be calculated 
+    and ``'muneer'`` require ``'dni_extra'``. Values can be calculated
     using :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
     The ``'Perez'`` transposition model features discontinuities in the
@@ -1001,12 +1002,12 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
     return sky_diffuse
 
 
-def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b = 5.73,
+def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
            solar_zenith=None, solar_azimuth=None, projection_ratio=None):
     '''
     Determine sky diffuse irradiance on a tilted surface using the
     Muneer model.
-    
+
     This model is described in [1]_.
 
     Parameters
@@ -1023,10 +1024,10 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b = 5.73,
 
     dhi : numeric
         Diffuse horizontal irradiance. [W/m^2]
-    
+
     ghi : numeric
         Global horizontal irradiance in W/m^2.
-    
+
     dni_extra : numeric
         Extraterrestrial normal irradiance in W/m^2.
 
@@ -1039,7 +1040,7 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b = 5.73,
            - shaded surface: b = 5.73 (default)
            - sunlit surface, overcast sky: b = 1.68
            - sunlit surface, non-overcast sky: b = -0.62
-    
+
     solar_zenith : numeric
         Solar apparent (refraction-corrected) zenith angles in decimal
         degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
@@ -1070,7 +1071,7 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b = 5.73,
        Trans. Illum. Eng. Soc. (London) 37, 707-725.
        :doi:`10.1177/096032719302500301`
     '''
-    
+
     cos_solar_zenith = tools.cosd(solar_zenith)
     # if necessary, calculate ratio of titled and horizontal beam irradiance
     if projection_ratio is None:
@@ -1089,10 +1090,10 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b = 5.73,
         - np.pi * (1 - tools.cosd(surface_tilt)) * 0.5
     )
     T = T_term1 + T_term2 * T_term3
-    
+
     horizontal_extra = dni_extra * np.maximum(cos_solar_zenith, 0.01745)
     F = (ghi - dhi) / horizontal_extra
-    
+
     sky_diffuse = dhi*(T*(1-F) + F*Rb)
 
     return sky_diffuse

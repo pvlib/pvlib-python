@@ -31,7 +31,7 @@ Enhancements
   :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)
 * Added function for determine sky diffuse irradiance on a tilted surface
-  using the Muneer model.
+  using the Muneer model,
   :py:func:`pvlib.irradiance.muneer`.
   (:issue:`2117`, :pull:`2184`)
 

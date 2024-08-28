@@ -478,12 +478,11 @@ def test_get_solarposition_altitude(
 
 @pytest.mark.parametrize("delta_t, method", [
     (None, 'nrel_numpy'),
-    pytest.param(
-        None, 'nrel_numba',
-        marks=[pytest.mark.xfail(
-            reason='spa.calculate_deltat not implemented for numba yet')]),
+    (None, 'nrel_numba'),
     (67.0, 'nrel_numba'),
     (67.0, 'nrel_numpy'),
+    (np.array([67.0, 67.0]), 'nrel_numpy'),
+    (np.array([67.0, 67.0]), 'nrel_numba'),
     ])
 def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
                                   golden):

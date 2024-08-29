@@ -813,9 +813,6 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
        radiation incident on an inclined surface. In: Hay, J.E., Won, T.K.
        (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
        Ministry of Supply and Services, Canada.
-    .. [2] Loutzenhiser P.G. et. al. "Empirical validation of models to
-       compute solar irradiance on inclined surfaces for building energy
-       simulation" 2007, Solar Energy vol. 81. pp. 254-267.
     '''
 
     # if necessary, calculate ratio of titled and horizontal beam irradiance

@@ -70,7 +70,6 @@ Contributors
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
 * Marcos R. Escudero (:ghuser:`marc-resc`)
-* Marcos R. Escudero (:ghuser:`mrue-pv`)
 * Bernat Nicolau (:ghuser:`BernatNicolau`)
 * Eduardo Sarquis (:ghuser:`EduardoSarquis`)
 

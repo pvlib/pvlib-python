@@ -263,7 +263,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
                          dni, ghi, dhi, dni_extra=None, airmass=None,
                          albedo=0.25, surface_type=None,
                          model='isotropic',
-                         model_perez='allsitescomposite1990'):
+                         model_perez='allsitescomposite1990', b=5.73):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
@@ -313,6 +313,9 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         ``'perez-driesse'`` and ``'muneer
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
+    b : numeric, default 5.73
+        Used only if ``model='muneer'``.
+        See :py:func:`~pvlib.irradiance.muneer`.
 
     Returns
     -------
@@ -334,7 +337,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     poa_sky_diffuse = get_sky_diffuse(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
-        model_perez=model_perez)
+        model_perez=model_perez, b=b)
 
     poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
                                             surface_type)

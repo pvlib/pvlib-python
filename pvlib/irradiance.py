@@ -746,10 +746,10 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         Diffuse horizontal irradiance in W/m^2.
 
     dni : numeric
-        Direct normal irradiance in W/m^2.
+        Direct normal irradiance in Wm⁻².
 
     dni_extra : numeric
-        Extraterrestrial normal irradiance in W/m^2.
+        Extraterrestrial normal irradiance in Wm⁻².
 
     solar_zenith : numeric, optional
         Solar apparent (refraction-corrected) zenith angles in decimal

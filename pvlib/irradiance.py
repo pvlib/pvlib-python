@@ -720,13 +720,10 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
               solar_zenith=None, solar_azimuth=None, projection_ratio=None,
               return_components=False):
     r'''
-    Determine diffuse irradiance from the sky on a tilted surface using
-    Hay & Davies' 1980 model
+    Determine diffuse irradiance from the sky on a tilted surface using the
+    Hay and Davies (1980) model [1]_.
 
-    .. math::
-        I_{d} = DHI ( A R_b + (1 - A) (\frac{1 + \cos\beta}{2}) )
-
-    Hay and Davies' 1980 model determines the diffuse irradiance from
+    The Hay and Davies model determines the diffuse irradiance from
     the sky (ground reflected irradiance is not included in this
     algorithm) on a tilted surface using the surface tilt angle, surface
     azimuth angle, diffuse horizontal irradiance, direct normal
@@ -793,20 +790,31 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Notes
     ------
+    The expression for the diffuse irradiance, :math:`I_d` in the Hay and
+    Davies model is as follows:
+
+    .. math::
+            I_{d} = DHI ( A R_b + (1 - A) (\frac{1 + \cos\beta}{2}) ).
+
+    :math:`DHI` is the diffuse horizontal irradiance,
+    :math:`A` is the anisotropy index, which is the ratio of the direct normal
+    irradiance to the extraterrestrial irradiation,
+    :math:`R_b` is the cosine of the ratio of angle of incidence (AOI) to the
+    cosine of the zenith angle.
+
     When supplying ``projection_ratio``, consider constraining its values
     when zenith angle approaches 90 degrees or angle of incidence
     projection is negative. See code for details.
 
     References
     -----------
-    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to
-       compute solar irradiance on inclined surfaces for building energy
-       simulation" 2007, Solar Energy vol. 81. pp. 254-267
-
-    .. [2] Hay, J.E., Davies, J.A., 1980. Calculations of the solar
+    .. [1] Hay, J.E., Davies, J.A., 1980. Calculations of the solar
        radiation incident on an inclined surface. In: Hay, J.E., Won, T.K.
        (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
        Ministry of Supply and Services, Canada.
+    .. [2] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267.
     '''
 
     # if necessary, calculate ratio of titled and horizontal beam irradiance

@@ -69,4 +69,4 @@ Contributors
 * Mark A. Mikofski (:ghuser:`mikofski`)
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
-* Marcos R. Escudero (:ghuser:`mrue-pv`)
+* Marcos R. Escudero (:ghuser:`marc-resc`)

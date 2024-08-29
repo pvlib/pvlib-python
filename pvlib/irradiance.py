@@ -463,15 +463,15 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
         surface, from :func:`aoi`.
 
     dni : numeric
-        Direct normal irradiance (W/m^2), as measured from a TMY file or
+        Direct normal irradiance (Wm⁻²), as measured from a TMY file or
         calculated with a clearsky model.
 
     poa_sky_diffuse : numeric
-        Diffuse irradiance (W/m^2) in the plane of the modules, as
+        Diffuse irradiance (Wm⁻²) in the plane of the modules, as
         calculated by a diffuse irradiance translation function
 
     poa_ground_diffuse : numeric
-        Ground reflected irradiance (W/m^2) in the plane of the modules,
+        Ground reflected irradiance (Wm⁻²) in the plane of the modules,
         as calculated by an albedo model (eg. :func:`grounddiffuse`)
 
     Returns
@@ -479,12 +479,12 @@ def poa_components(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     irrads : OrderedDict or DataFrame
         Contains the following keys:
 
-        * ``poa_global`` : Total in-plane irradiance (W/m^2)
-        * ``poa_direct`` : Total in-plane beam irradiance (W/m^2)
-        * ``poa_diffuse`` : Total in-plane diffuse irradiance (W/m^2)
-        * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky (W/m^2)
+        * ``poa_global`` : Total in-plane irradiance (Wm⁻²)
+        * ``poa_direct`` : Total in-plane beam irradiance (Wm⁻²)
+        * ``poa_diffuse`` : Total in-plane diffuse irradiance (Wm⁻²)
+        * ``poa_sky_diffuse`` : In-plane diffuse irradiance from sky (Wm⁻²)
         * ``poa_ground_diffuse`` : In-plane diffuse irradiance from ground
-          (W/m^2)
+          (Wm⁻²)
 
     Notes
     ------
@@ -529,7 +529,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
         (e.g. surface facing up = 0, surface facing horizon = 90).
 
     ghi : numeric
-        Global horizontal irradiance. :math:`W/m^2`
+        Global horizontal irradiance. :math:`Wm⁻²`
 
     albedo : numeric, default 0.25
         Ground reflectance, typically 0.1-0.4 for surfaces on Earth
@@ -546,7 +546,7 @@ def get_ground_diffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     Returns
     -------
     grounddiffuse : numeric
-        Ground reflected irradiance. :math:`W/m^2`
+        Ground reflected irradiance. :math:`Wm⁻²`
 
     Notes
     -----
@@ -602,7 +602,7 @@ def isotropic(surface_tilt, dhi):
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     dhi : numeric
-        Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
+        Diffuse horizontal irradiance in Wm⁻². DHI must be >=0.
 
     Returns
     -------
@@ -663,10 +663,10 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : numeric
-        Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
+        Diffuse horizontal irradiance in Wm⁻². DHI must be >=0.
 
     ghi : numeric
-        Global irradiance in W/m^2. DNI must be >=0.
+        Global irradiance in Wm⁻². DNI must be >=0.
 
     solar_zenith : numeric
         Apparent (refraction-corrected) zenith angles in decimal
@@ -743,7 +743,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         South=180, East=90, West=270).
 
     dhi : numeric
-        Diffuse horizontal irradiance in W/m^2.
+        Diffuse horizontal irradiance in Wm⁻².
 
     dni : numeric
         Direct normal irradiance in Wm⁻².
@@ -884,16 +884,16 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         South=180 East = 90, West = 270).
 
     dhi : numeric
-        diffuse horizontal irradiance in W/m^2.
+        diffuse horizontal irradiance in Wm⁻².
 
     dni : numeric
-        direct normal irradiance in W/m^2.
+        direct normal irradiance in Wm⁻².
 
     ghi: numeric
-        Global irradiance in W/m^2.
+        Global irradiance in Wm⁻².
 
     dni_extra : numeric
-        Extraterrestrial normal irradiance in W/m^2.
+        Extraterrestrial normal irradiance in Wm⁻².
 
     solar_zenith : numeric
         Apparent (refraction-corrected) zenith angles in decimal degrees.
@@ -978,10 +978,10 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
         surface facing horizon = 90)
 
     dhi : numeric
-        Diffuse horizontal irradiance in W/m^2.
+        Diffuse horizontal irradiance in Wm⁻².
 
     ghi : numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance in Wm⁻².
 
     solar_zenith : numeric
         Apparent (refraction-corrected) zenith angles in decimal degrees.
@@ -1035,13 +1035,13 @@ def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : numeric
-        Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
+        Diffuse horizontal irradiance in Wm⁻². DHI must be >=0.
 
     dni : numeric
-        Direct normal irradiance in W/m^2. DNI must be >=0.
+        Direct normal irradiance in Wm⁻². DNI must be >=0.
 
     dni_extra : numeric
-        Extraterrestrial normal irradiance in W/m^2.
+        Extraterrestrial normal irradiance in Wm⁻².
 
     solar_zenith : numeric
         apparent (refraction-corrected) zenith angles in decimal
@@ -1301,13 +1301,13 @@ def perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : numeric
-        Diffuse horizontal irradiance in W/m^2. dhi must be >=0.
+        Diffuse horizontal irradiance in Wm⁻². dhi must be >=0.
 
     dni : numeric
-        Direct normal irradiance in W/m^2. dni must be >=0.
+        Direct normal irradiance in Wm⁻². dni must be >=0.
 
     dni_extra : numeric
-        Extraterrestrial normal irradiance in W/m^2.
+        Extraterrestrial normal irradiance in Wm⁻².
 
     solar_zenith : numeric
         apparent (refraction-corrected) zenith angles in decimal
@@ -1522,16 +1522,16 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     solar_azimuth : numeric
         Solar azimuth angle. [degree]
     poa_global : numeric
-        Plane-of-array global irradiance, aka global tilted irradiance. [W/m^2]
+        Plane-of-array global irradiance, aka global tilted irradiance. [Wm⁻²]
     dni_extra : numeric, optional
-        Extraterrestrial direct normal irradiance. [W/m^2]
+        Extraterrestrial direct normal irradiance. [Wm⁻²]
     airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25
         Ground surface albedo. [unitless]
     xtol : numeric, default 0.01
         Convergence criterion. The estimated GHI will be within xtol of the
-        true value. Must be positive. [W/m^2]
+        true value. Must be positive. [Wm⁻²]
     full_output : boolean, default False
         If full_output is False, only ghi is returned, otherwise the return
         value is (ghi, converged, niter). (see Returns section for details).
@@ -1539,7 +1539,7 @@ def ghi_from_poa_driesse_2023(surface_tilt, surface_azimuth,
     Returns
     -------
     ghi : numeric
-        Estimated GHI. [W/m^2]
+        Estimated GHI. [Wm⁻²]
     converged : boolean, optional
         Present if full_output=True. Indicates which elements converged
         successfully.
@@ -1598,7 +1598,7 @@ def clearsky_index(ghi, clearsky_ghi, max_clearsky_index=2.0):
     Parameters
     ----------
     ghi : numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance in Wm⁻².
 
     clearsky_ghi : numeric
         Modeled clearsky GHI
@@ -1641,7 +1641,7 @@ def clearness_index(ghi, solar_zenith, extra_radiation, min_cos_zenith=0.065,
     Parameters
     ----------
     ghi : numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance in Wm⁻².
 
     solar_zenith : numeric
         True (not refraction-corrected) solar zenith angle in decimal
@@ -1754,7 +1754,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
     Parameters
     ----------
     ghi : numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance in Wm⁻².
 
     solar_zenith : numeric
         True (not refraction-corrected) solar zenith angles in decimal
@@ -1787,7 +1787,7 @@ def disc(ghi, solar_zenith, datetime_or_doy, pressure=101325,
         Contains the following keys:
 
         * ``dni``: The modeled direct normal irradiance
-          in W/m^2 provided by the
+          in Wm⁻² provided by the
           Direct Insolation Simulation Code (DISC) model.
         * ``kt``: Ratio of global to extraterrestrial
           irradiance on a horizontal plane.
@@ -1900,7 +1900,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     Parameters
     ----------
     ghi : array-like
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance in Wm⁻².
 
     solar_zenith : array-like
         True (not refraction-corrected) solar_zenith angles in decimal
@@ -1938,7 +1938,7 @@ def dirint(ghi, solar_zenith, times, pressure=101325., use_delta_kt_prime=True,
     Returns
     -------
     dni : array-like
-        The modeled direct normal irradiance in W/m^2 provided by the
+        The modeled direct normal irradiance in Wm⁻² provided by the
         DIRINT model.
 
     Notes
@@ -2142,13 +2142,13 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     Parameters
     ----------
     ghi : array-like
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance in Wm⁻².
 
     ghi_clearsky : array-like
-        Global horizontal irradiance from clear sky model, in W/m^2.
+        Global horizontal irradiance from clear sky model, in Wm⁻².
 
     dni_clearsky : array-like
-        Direct normal irradiance from clear sky model, in W/m^2.
+        Direct normal irradiance from clear sky model, in Wm⁻².
 
     zenith : array-like
         True (not refraction-corrected) zenith angles in decimal
@@ -2187,7 +2187,7 @@ def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
     Returns
     -------
     dni : array-like
-        The modeled direct normal irradiance in W/m^2.
+        The modeled direct normal irradiance in Wm⁻².
 
     Notes
     -----
@@ -2234,12 +2234,12 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
 
         Model performance is poor for AOI greater than approximately
         80 degrees `and` plane of array irradiance greater than
-        approximately 200 W/m^2.
+        approximately 200 Wm⁻².
 
     Parameters
     ----------
     poa_global : array-like
-        Plane of array global irradiance in W/m^2.
+        Plane of array global irradiance in Wm⁻².
 
     aoi : array-like
         Angle of incidence of solar rays with respect to the module
@@ -2306,10 +2306,10 @@ def gti_dirint(poa_global, aoi, solar_zenith, solar_azimuth, times,
     data : DataFrame
         Contains the following keys/columns:
 
-        * ``ghi``: the modeled global horizontal irradiance in W/m^2.
-        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``ghi``: the modeled global horizontal irradiance in Wm⁻².
+        * ``dni``: the modeled direct normal irradiance in Wm⁻².
         * ``dhi``: the modeled diffuse horizontal irradiance in
-          W/m^2.
+          Wm⁻².
 
     References
     ----------
@@ -2390,7 +2390,7 @@ def _gti_dirint_lt_90(poa_global, aoi, aoi_lt_90, solar_zenith, solar_azimuth,
     for iteration, coeff in enumerate(coeffs):
 
         # test if difference between modeled GTI and
-        # measured GTI (poa_global) is less than 1 W/m^2
+        # measured GTI (poa_global) is less than 1 Wm⁻²
         # only test for aoi less than 90 deg
         best_diff_lte_1 = best_diff <= 1
         best_diff_lte_1_lt_90 = best_diff_lte_1[aoi_lt_90]
@@ -2571,7 +2571,7 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     Parameters
     ----------
     ghi: numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance in Wm⁻².
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
     datetime_or_doy : int, float, array, pd.DatetimeIndex
@@ -2589,9 +2589,9 @@ def erbs(ghi, zenith, datetime_or_doy, min_cos_zenith=0.065, max_zenith=87):
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dni``: the modeled direct normal irradiance in Wm⁻².
         * ``dhi``: the modeled diffuse horizontal irradiance in
-          W/m^2.
+          Wm⁻².
         * ``kt``: Ratio of global to extraterrestrial irradiance
           on a horizontal plane.
 
@@ -2669,7 +2669,7 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     Parameters
     ----------
     ghi: numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance in Wm⁻².
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
     datetime_or_doy : int, float, array or pd.DatetimeIndex, optional
@@ -2692,9 +2692,9 @@ def erbs_driesse(ghi, zenith, datetime_or_doy=None, dni_extra=None,
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dni``: the modeled direct normal irradiance in Wm⁻².
         * ``dhi``: the modeled diffuse horizontal irradiance in
-          W/m^2.
+          Wm⁻².
         * ``kt``: Ratio of global to extraterrestrial irradiance
           on a horizontal plane.
 
@@ -2790,7 +2790,7 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     Parameters
     ----------
     ghi: numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance in Wm⁻².
     zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
     datetime_or_doy : int, float, array, pd.DatetimeIndex
@@ -2810,9 +2810,9 @@ def orgill_hollands(ghi, zenith, datetime_or_doy, dni_extra=None,
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dni``: the modeled direct normal irradiance in Wm⁻².
         * ``dhi``: the modeled diffuse horizontal irradiance in
-          W/m^2.
+          Wm⁻².
         * ``kt``: Ratio of global to extraterrestrial irradiance
           on a horizontal plane.
 
@@ -2883,7 +2883,7 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     Parameters
     ----------
     ghi: numeric
-        Global horizontal irradiance. [W/m^2]
+        Global horizontal irradiance. [Wm⁻²]
     solar_zenith: numeric
         True (not refraction-corrected) zenith angles in decimal degrees.
     datetime_or_doy : numeric, pandas.DatetimeIndex
@@ -2905,9 +2905,9 @@ def boland(ghi, solar_zenith, datetime_or_doy, a_coeff=8.645, b_coeff=0.613,
     data : OrderedDict or DataFrame
         Contains the following keys/columns:
 
-        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dni``: the modeled direct normal irradiance in Wm⁻².
         * ``dhi``: the modeled diffuse horizontal irradiance in
-          W/m^2.
+          Wm⁻².
         * ``kt``: Ratio of global to extraterrestrial irradiance
           on a horizontal plane.
 
@@ -2996,7 +2996,7 @@ def campbell_norman(zenith, transmittance, pressure=101325.0,
     -------
     irradiance: DataFrame
         Modeled direct normal irradiance, direct horizontal irradiance,
-        and global horizontal irradiance in W/m^2
+        and global horizontal irradiance in Wm⁻²
 
     References
     ----------
@@ -3053,7 +3053,7 @@ def _liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     -------
     irradiance: DataFrame
         Modeled direct normal irradiance, direct horizontal irradiance,
-        and global horizontal irradiance in W/m^2
+        and global horizontal irradiance in Wm⁻²
 
     References
     ----------
@@ -3727,7 +3727,7 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     Parameters
     ----------
     ghi : numeric
-        Global horizontal irradiance. [W/m^2]
+        Global horizontal irradiance. [Wm⁻²]
 
     solar_zenith : numeric
         True (not refraction-corrected) zenith angles in decimal
@@ -3742,9 +3742,9 @@ def louche(ghi, solar_zenith, datetime_or_doy, max_zenith=90):
     data: OrderedDict or DataFrame
         Contains the following keys/columns:
 
-        * ``dni``: the modeled direct normal irradiance in W/m^2.
+        * ``dni``: the modeled direct normal irradiance in Wm⁻².
         * ``dhi``: the modeled diffuse horizontal irradiance in
-          W/m^2.
+          Wm⁻².
         * ``kt``: Ratio of global to extraterrestrial irradiance
           on a horizontal plane.
 

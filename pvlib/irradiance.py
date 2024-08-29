@@ -794,7 +794,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Davies sky diffuse model is as follows:
 
     .. math::
-            I_{d} = DHI ( A R_b + (1 - A) (\frac{1 + \cos\theta_T}{2}) ).
+            I_{d} = DHI ( A\cdot R_b + (1 - A) (\frac{1 + \cos\theta_T}{2}) ).
 
     :math:`DHI` is the diffuse horizontal irradiance,
     :math:`A` is the anisotropy index, which is the ratio of the direct normal

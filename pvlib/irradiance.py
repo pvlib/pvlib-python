@@ -804,7 +804,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     finally :math:`\theta_T` is the tilt angle of the array.
 
     When supplying ``projection_ratio``, consider constraining its values
-    when zenith angle approaches 90 degrees or angle of incidence
+    when the zenith angle approaches 90 degrees or the angle of incidence
     projection is negative. See code for details.
 
     References

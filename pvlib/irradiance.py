@@ -879,7 +879,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
         direct normal irradiance in W/m^2.
 
     ghi: numeric
-        Global irradiance in W/m^2.
+        Global horizontal irradiance in W/m^2.
 
     dni_extra : numeric
         Extraterrestrial normal irradiance in W/m^2.
@@ -912,11 +912,11 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     and global horizontal irradiances, respectively. :math:`A` is the
     anisotropy index, which is the ratio of the direct normal irradiance to the
     extraterrestrial irradiation, :math:`R_b` is the projection ratio, which is
-    defined as the cosine of the ratio of angle of incidence (AOI) to the
+    defined as the cosine of the ratio of angle of incidence to the
     cosine of the zenith angle, and :math:`\theta_T` is the tilt angle of the
     array.
 
-    The poa_sky_diffuse calculation is generated from Loutzenhiser et al.
+    The ``poa_sky_diffuse`` calculation is generated from Loutzenhiser et al.
     (2007) [3]_, Equation 8. The beam and ground reflectance portion of the
     equation have been removed, therefore the model described here generates
     ONLY the diffuse radiation from the sky and circumsolar, so the form of the

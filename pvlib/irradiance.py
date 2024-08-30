@@ -682,7 +682,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     DHI is the diffuse horizontal irradiance, :math:`\theta_T` is the surface
     tilt angle, :math:`\theta_z` is the solar zenith angle, and :math:`\theta`
     is the angle of incidence. :math:`F'` is a modulating function to account
-    for when skies change from clear to overcast, and is defined as follows:
+    for when the sky changes from clear to overcast, and is defined as follows:
 
     .. math::
 

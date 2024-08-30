@@ -670,7 +670,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     from the sky (ground reflected irradiance is not included in this
     algorithm) on a tilted surface using the surface tilt angle, surface
     azimuth angle, diffuse horizontal irradiance, direct normal irradiance,
-    global mhorizontal irradiance, extraterrestrial irradiance, sun zenith
+    global horizontal irradiance, extraterrestrial irradiance, sun zenith
     angle, and sun azimuth angle. The expression for the diffuse irradiance,
     :math:`I_d`, is as follows:
 
@@ -680,13 +680,15 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
        (1 + F' \cos^2\theta\sin^3\theta_z).
 
     DHI is the diffuse horizontal irradiance, :math:`\theta_T` is the surface
-    tilt angle, :math:`\theta_z` is the solar zenith angle. :math:`F'` is a
-    modulating function to account for when skies change from clear to
-    overcast, and is defined as follows:
+    tilt angle, :math:`\theta_z` is the solar zenith angle, and :math:`\theta`
+    is the angle of incidence. :math:`F'` is a modulating function to account
+    for when skies change from clear to overcast, and is defined as follows:
 
     .. math::
 
-       F' = 1 - (I_{d0} / GHI)^2
+       F' = 1 - (DHI / GHI)^2,
+
+    where GHI is the global horiztonal irradiance.
 
     References
     ----------

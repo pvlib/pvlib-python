@@ -630,50 +630,32 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
             solar_azimuth):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface
-    using Klucher's 1979 model
-
-    .. math::
-
-       I_{d} = DHI \frac{1 + \cos\beta}{2} (1 + F' \sin^3(\beta/2))
-       (1 + F' \cos^2\theta\sin^3\theta_z)
-
-    where
-
-    .. math::
-
-       F' = 1 - (I_{d0} / GHI)^2
-
-    Klucher's 1979 model determines the diffuse irradiance from the sky
-    (ground reflected irradiance is not included in this algorithm) on a
-    tilted surface using the surface tilt angle, surface azimuth angle,
-    diffuse horizontal irradiance, direct normal irradiance, global
-    horizontal irradiance, extraterrestrial irradiance, sun zenith
-    angle, and sun azimuth angle.
+    using the Klucher (1979) model [1]_.
 
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        Surface tilt angles in decimal degrees. ``surface_tilt`` must be >=0
         and <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. surface_azimuth must
+        Surface azimuth angles in decimal degrees. ``surface_azimuth`` must
         be >=0 and <=360. The Azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : numeric
-        Diffuse horizontal irradiance in W/m^2. DHI must be >=0.
+        Diffuse horizontal irradiance in W/m^2. ``dhi`` must be >=0.
 
     ghi : numeric
-        Global irradiance in W/m^2. DNI must be >=0.
+        Global irradiance in W/m^2. ``ghi`` must be >=0.
 
     solar_zenith : numeric
         Apparent (refraction-corrected) zenith angles in decimal
-        degrees. solar_zenith must be >=0 and <=180.
+        degrees. ``solar_zenith`` must be >=0 and <=180.
 
     solar_azimuth : numeric
-        Sun azimuth angles in decimal degrees. solar_azimuth must be >=0
+        Sun azimuth angles in decimal degrees. ``solar_azimuth`` must be >=0
         and <=360. The Azimuth convention is defined as degrees east of
         north (e.g. North = 0, East = 90, West = 270).
 
@@ -682,13 +664,33 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     diffuse : numeric
         The sky diffuse component of the solar radiation.
 
+    Notes
+    -----
+    The Klucher (1979) model determines the diffuse irradiance
+    from the sky (ground reflected irradiance is not included in this
+    algorithm) on a tilted surface using the surface tilt angle, surface
+    azimuth angle, diffuse horizontal irradiance, direct normal irradiance,
+    global mhorizontal irradiance, extraterrestrial irradiance, sun zenith
+    angle, and sun azimuth angle. The expression for the diffuse irradiance,
+    :math:`I_d`, is as follows:
+
+    .. math::
+
+       I_{d} = DHI \frac{1 + \cos\theta_T}{2} (1 + F' \sin^3(\theta_T/2))
+       (1 + F' \cos^2\theta\sin^3\theta_z).
+
+    DHI is the diffuse horizontal irradiance, :math:`\theta_T` is the surface
+    tilt angle, :math:`\theta_z` is the solar zenith angle. :math:`F'` is a
+    modulating function to account for when skies change from clear to
+    overcast, and is defined as follows:
+
+    .. math::
+
+       F' = 1 - (I_{d0} / GHI)^2
+
     References
     ----------
-    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-       solar irradiance on inclined surfaces for building energy simulation"
-       2007, Solar Energy vol. 81. pp. 254-267
-
-    .. [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on
+    .. [1] Klucher, T.M., 1979. Evaluation of models to predict insolation on
        tilted surfaces. Solar Energy 23 (2), 111-114.
     '''
 

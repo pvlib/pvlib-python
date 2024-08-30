@@ -692,7 +692,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     References
     ----------
-    .. [1] Klucher, T.M., 1979. Evaluation of models to predict insolation on
+    .. [1] Klucher, T. M., 1979. Evaluation of models to predict insolation on
        tilted surfaces. Solar Energy 23 (2), 111-114.
        :doi:`10.1016/0038-092X(79)90110-5`
     '''

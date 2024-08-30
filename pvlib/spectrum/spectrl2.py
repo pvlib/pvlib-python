@@ -212,8 +212,8 @@ def spectrl2(apparent_zenith, aoi, surface_tilt, ground_albedo,
     aerosol_turbidity_500nm : numeric
         Aerosol turbidity at 500 nm. [unitless]
     dayofyear : numeric, optional
-        The day of year [1-365].  Must be provided if ``apparent_zenith`` is
-        not a pandas.Series.
+        The day of year [1-365]. Must be provided if ``apparent_zenith`` is
+        not a ``pandas.Series``.
     scattering_albedo_400nm : numeric, default 0.945
         Aerosol single scattering albedo at 400nm. The default value of 0.945
         is suggested in [1]_ for a rural aerosol model. [unitless]

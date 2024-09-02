@@ -326,8 +326,8 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     Notes
     -----
     Models ``'haydavies'``, ``'reindl'``, ``'perez'``, ``'perez-driesse'``,
-    and ``'muneer'`` require ``'dni_extra'``. Values of ``'dni_extra'`` can be calculated
-    using :py:func:`~pvlib.irradiance.get_extra_radiation`.
+    and ``'muneer'`` require ``'dni_extra'``. Values of ``'dni_extra'``
+    can be calculated using :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
     The ``'perez'`` and ``'perez-driesse'`` models require relative airmass
     (``airmass``) as an input. If ``airmass`` is not provided, it is calculated
@@ -1018,8 +1018,7 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
     ----------
     surface_tilt : numeric
         Surface tilt angles in decimal degrees. ``surface_tilt`` must
-        be >=0
-        and <=180. The tilt angle is defined as degrees from horizontal
+        be >=0 and <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth : numeric

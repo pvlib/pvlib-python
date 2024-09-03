@@ -1073,7 +1073,6 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
 
     .. [2] Moon, P., Spencer, D.E., 1942. Illumination from a non-uniform sky.
        Trans. Illum. Eng. Soc. (London) 37, 707-725.
-       :doi:`10.1177/096032719302500301`
     '''
 
     cos_solar_zenith = tools.cosd(solar_zenith)

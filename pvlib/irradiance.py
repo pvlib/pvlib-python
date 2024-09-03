@@ -1109,7 +1109,7 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
     sky_diffuse = np.where(low_elevation_condition,
                            sky_diffuse_low, sky_diffuse_high)
     if isinstance(sky_diffuse_low, pd.Series):
-        sky_diffuse = pd.Series(sky_diffuse_low,
+        sky_diffuse = pd.Series(sky_diffuse,
                                 index=sky_diffuse_low.index)
 
     return sky_diffuse

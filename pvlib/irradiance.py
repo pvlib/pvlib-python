@@ -1050,15 +1050,14 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
         degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
         supply ``projection_ratio``.
 
-    solar_azimuth : numeric, optional
+    solar_azimuth : numeric
         Solar azimuth angles in decimal degrees. Must supply
         ``solar_zenith`` and ``solar_azimuth`` or supply
         ``projection_ratio``.
 
     projection_ratio : numeric, optional
         Ratio of angle of incidence projection to solar zenith angle
-        projection. Must supply ``solar_zenith`` and ``solar_azimuth``
-        or supply ``projection_ratio``.
+        projection.
 
     Returns
     -------

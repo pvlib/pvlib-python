@@ -69,3 +69,4 @@ Contributors
 * Mark A. Mikofski (:ghuser:`mikofski`)
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
+* Carlos Cárdenas-Bravo (:ghuser:`cardenca`)

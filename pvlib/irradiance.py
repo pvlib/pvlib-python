@@ -1100,7 +1100,7 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
 
     numer_low = tools.sind(surface_tilt) * \
         tools.cosd(surface_azimuth - solar_azimuth)
-    denom_low = np.maximum(0.1 - 0.008 * solar_elevation, 1e-10)
+    denom_low = np.maximum(0.1 - 0.008 * solar_elevation, 0.35025)  # GH 432
 
     sky_diffuse_low = dhi*(T*(1-F) + F*(numer_low/denom_low))
     sky_diffuse_high = dhi*(T*(1-F) + F*Rb)

@@ -790,7 +790,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Notes
     ------
-    The expression for the diffuse irradiance, :math:`I_d` in the Hay and
+    The expression for the diffuse irradiance, :math:`I_d`, in the Hay and
     Davies sky diffuse model is as follows:
 
     .. math::
@@ -801,12 +801,12 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     :math:`A` is the anisotropy index, which is the ratio of the direct normal
     irradiance to the extraterrestrial irradiation,
     :math:`R_b` is the projection ratio, which is defined as the ratio of the
-    cosine of angle of incidence (AOI) to the cosine of the zenith angle, and
-    finally :math:`\theta_T` is the tilt angle of the array.
+    cosine of the angle of incidence (AOI) to the cosine of the zenith angle,
+    and finally :math:`\theta_T` is the tilt angle of the array.
 
     When supplying ``projection_ratio``, consider constraining its values
-    when the zenith angle approaches 90 degrees or the angle of incidence
-    projection is negative. See code for details.
+    when the zenith angle approaches 90 degrees or the AOI projection is
+    negative. See code for details.
 
     References
     -----------

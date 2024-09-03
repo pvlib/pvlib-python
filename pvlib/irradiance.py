@@ -721,7 +721,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
               return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using the
-    Hay and Davies (1980) model [1]_.
+    Hay and Davies (1980) model [1]_[2]_.
 
     The Hay and Davies model determines the diffuse irradiance from
     the sky (ground reflected irradiance is not included in this
@@ -814,6 +814,10 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
        (Eds.), Proc. of First Canadian Solar Radiation Data Workshop, 59.
        Ministry of Supply and Services, Canada. Available from:
        https://archive.org/details/proceedingsfirst00cana/mode/2up
+    .. [2] Loutzenhiser P.G. et. al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
+       :doi:'10.1016/j.solener.2006.03.009`
     '''
 
     # if necessary, calculate ratio of titled and horizontal beam irradiance

@@ -44,15 +44,14 @@ Documentation
 * Added gallery example demonstrating the application of
   several spectral mismatch factor models.
   (:issue:`2107`, :pull:`2114`)
-
 * Added gallery example on calculating cell temperature for
   floating PV. (:pull:`2110`)
-
 * Added gallery example demonstrating how to use
   different Perez coefficients in a ModelChain.
   (:issue:`2127`, :pull:`2148`)
-
 * Removed unused "times" input from dni_et() function (:issue:`2105`)
+* Updated :py:func:`pvlib.irradiance.haydavies` to include equation variable
+  definitions and a new "notes" section (:issue:`2183`, :pull:`2191`)
 
 Requirements
 ~~~~~~~~~~~~

@@ -330,10 +330,10 @@ def test_muneer(irrad_data, ephem_data, dni_et):
     expected_f = 100.759
     assert_series_equal(out, expected, check_less_precise=2)
     assert_series_equal(out_Rb, expected, check_less_precise=2)
-    assert_series_equal(out_np, expected.values, check_less_precise=2)
-    assert_series_equal(out_np_Rb, expected.values, check_less_precise=2)
-    assert_series_equal(out_f, expected_f, check_less_precise=2)
-    assert_series_equal(out_f_Rb, expected_f, check_less_precise=2)
+    assert_almost_equal(out_np, expected.values, decimal=2)
+    assert_almost_equal(out_np_Rb, expected.values, decimal=2)
+    assert_almost_equal(out_f, expected_f, decimal=2)
+    assert_almost_equal(out_f_Rb, expected_f, decimal=2)
 
 
 def test_perez_driesse_airmass(irrad_data, ephem_data, dni_et):

@@ -175,8 +175,7 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     Linke turbidity is obtained from a file of historical monthly averages.
     The returned value for each time is either the monthly value or an
     interpolated value to smooth the transition between months.
-    Interpolation is done on the day of year, and for this purpose time is
-    first converted to UTC.
+    Interpolation is done on the day of year as determined by UTC.
     """
 
     # The .h5 file 'LinkeTurbidities.h5' contains a single 2160 x 4320 x 12

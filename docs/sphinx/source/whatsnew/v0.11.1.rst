@@ -10,12 +10,19 @@ Deprecations
 
 Enhancements
 ~~~~~~~~~~~~
+* Add new function to calculate the average photon energy,
+  :py:func:`pvlib.spectrum.average_photon_energy`.
+  (:issue:`2135`, :pull:`2140`)
 * Add new losses function that accounts for non-uniform irradiance on bifacial
   modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
   (:issue:`2045`, :pull:`2046`)
 * Add new parameters for min/max absolute air mass to
   :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
   (:issue:`2086`, :pull:`2100`)
+* Add ``roll_utc_offset`` and ``coerce_year`` arguments to
+  :py:func:`pvlib.iotools.get_pvgis_tmy` to allow user to specify time zone,
+  rotate indices of TMY to begin at midnight, and force indices to desired
+  year. (:issue:`2139`, :pull:`2138`)
 * Restructured the pvlib/spectrum folder by breaking up the contents of
   pvlib/spectrum/mismatch.py into pvlib/spectrum/mismatch.py,
   pvlib/spectrum/irradiance.py, and
@@ -43,6 +50,10 @@ Documentation
 * Added gallery example on calculating cell temperature for
   floating PV. (:pull:`2110`)
 
+* Added gallery example demonstrating how to use
+  different Perez coefficients in a ModelChain.
+  (:issue:`2127`, :pull:`2148`)
+
 * Removed unused "times" input from dni_et() function (:issue:`2105`)
 
 Requirements
@@ -58,4 +69,10 @@ Contributors
 * Leonardo Micheli (:ghuser:`lmicheli`)
 * Echedey Luis (:ghuser:`echedey-ls`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
+* Mark A. Mikofski (:ghuser:`mikofski`)
+* Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
+* Carlos Cárdenas-Bravo (:ghuser:`cardenca`)
+* Marcos R. Escudero (:ghuser:`marc-resc`)
+* Bernat Nicolau (:ghuser:`BernatNicolau`)
+* Eduardo Sarquis (:ghuser:`EduardoSarquis`)

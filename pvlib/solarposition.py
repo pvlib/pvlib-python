@@ -711,11 +711,11 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
         * apparent_elevation : apparent sun elevation accounting for
           atmospheric refraction.
+          This is the complement of the apparent zenith angle.
         * elevation : actual elevation (not accounting for refraction)
           of the sun in decimal degrees, 0 = on horizon.
           The complement of the zenith angle.
         * azimuth : Azimuth of the sun in decimal degrees East of North.
-          This is the complement of the apparent zenith angle.
         * apparent_zenith : apparent sun zenith accounting for atmospheric
           refraction.
         * zenith : Solar zenith angle

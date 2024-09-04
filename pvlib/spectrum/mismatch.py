@@ -8,6 +8,7 @@ import pvlib
 import numpy as np
 import pandas as pd
 from scipy.integrate import trapezoid
+
 from warnings import warn
 
 

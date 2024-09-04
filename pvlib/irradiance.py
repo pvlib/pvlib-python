@@ -1056,7 +1056,8 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
         ``projection_ratio``.
 
     projection_ratio : numeric, optional
-        Ratio of cosing of angle of incidence to cosine of solar zenith angle. [unitless]
+        Ratio of cosing of angle of incidence to cosine of solar zenith
+        angle. [unitless]
 
     Returns
     -------

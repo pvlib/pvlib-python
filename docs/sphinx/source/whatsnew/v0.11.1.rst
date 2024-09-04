@@ -34,10 +34,10 @@ Enhancements
 Bug fixes
 ~~~~~~~~~
 * Changes clearsky.lookup_linke_turbidity and irradiance.get_extra_radiation to use UTC instead of local
-   timezone when determining day of year. pandas does not account for timezone when computing day of year.
-   Instead, pandas returns the DOY using only the time part of the datetime. As a consequence the same
-   datetime with different localizations can yield different DOY values, which can cause small inconsistencies
-   in some solar position and clear sky calculations. (:issue:`2054`, :pull:`2055`)
+  timezone when determining day of year. pandas does not account for timezone when computing day of year.
+  Instead, pandas returns the DOY using only the time part of the datetime. As a consequence the same
+  datetime with different localizations can yield different DOY values, which can cause small inconsistencies
+  in some solar position and clear sky calculations. (:issue:`2054`, :pull:`2055`)
 
 
 Testing

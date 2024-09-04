@@ -1030,10 +1030,10 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
         Diffuse horizontal irradiance. [W/m^2]
 
     ghi : numeric
-        Global horizontal irradiance in W/m^2.
+        Global horizontal irradiance. [W/m^2]
 
     dni_extra : numeric
-        Extraterrestrial normal irradiance in W/m^2.
+        Extraterrestrial normal irradiance. [W/m^2]
 
     b : numeric, default 5.73
         Radiance distribution index, introduced by Moon and Spencer [2]_

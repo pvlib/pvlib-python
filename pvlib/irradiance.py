@@ -1070,7 +1070,8 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
        Services Engineering Research and Technology 11, 153-163.
        :doi:`10.1177/014362449001100405`
 
-    .. [2] Moon, P., and Spencer, D. E., 1942. Illumination from a non-uniform sky.
+    .. [2] Moon, P., and Spencer, D. E., 1942. Illumination from a
+       non-uniform sky.
        Trans. Illum. Eng. Soc. (London) 37, 707-725.
     '''
 

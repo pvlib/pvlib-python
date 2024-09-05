@@ -79,7 +79,7 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         intersection between the slope containing the tracker axes and a plane
         perpendicular to the tracker axes. The cross-axis tilt should be
         specified using a right-handed convention. For example, trackers with
-        axis azimuth of 180 degrees (heading south) will have a negative 
+        axis azimuth of 180 degrees (heading south) will have a negative
         cross-axis tilt if the tracker axes plane slopes down to the east and
         positive cross-axis tilt if the tracker axes plane slopes down to the
         west. Use :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate

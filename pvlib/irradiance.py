@@ -1119,7 +1119,7 @@ def muneer1990(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
 
 def muneer2004(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
                solar_zenith=None, solar_azimuth=None, projection_ratio=None,
-               location="northern_europe"):
+               location="southern_europe"):
     '''
     Determine sky diffuse irradiance on a tilted surface using the
     Muneer model.
@@ -1211,10 +1211,13 @@ def muneer2004(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
         np.maximum(cos_solar_zenith, 0.01745)  # GH 432
     F = (ghi - dhi) / horizontal_extra
 
+    solar_elevation = np.pi/2 - np.radians(solar_zenith)
+    low_elevation_condition = solar_elevation < 0.1
+
     aoi_ = aoi(surface_tilt, surface_azimuth,
                solar_zenith, solar_azimuth)
-    low_elevation_condition = aoi_ >= 90
-    F = np.where(low_elevation_condition, 0, F)
+    overcast_condition = aoi_ >= 90
+    F = np.where(overcast_condition, 0, F)
 
     T_term1 = (1 + tools.cosd(surface_tilt)) * 0.5
 
@@ -1226,6 +1229,7 @@ def muneer2004(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
     T_term2 = np.array([T_term2_model0, T_term2_model1,
                        T_term2_model2, T_term2_model3])
     T_term2 = T_term2[desired_index]
+    T_term2 = np.where(overcast_condition, 0.25227, T_term2)
 
     T_term3 = (
         tools.sind(surface_tilt)
@@ -1235,7 +1239,6 @@ def muneer2004(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
 
     T = T_term1 + T_term2 * T_term3
 
-    solar_elevation = np.pi/2 - np.radians(solar_zenith)
     numer_low = tools.sind(surface_tilt) * \
         tools.cosd(surface_azimuth - solar_azimuth)
     denom_low = 0.1 - 0.008 * solar_elevation
@@ -1243,7 +1246,6 @@ def muneer2004(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
     sky_diffuse_low = dhi*(T*(1-F) + F*(numer_low/denom_low))
     sky_diffuse_high = dhi*(T*(1-F) + F*Rb)
 
-    low_elevation_condition = solar_elevation < 0.1
     sky_diffuse = np.where(low_elevation_condition,
                            sky_diffuse_low, sky_diffuse_high)
     if isinstance(ghi, pd.Series):

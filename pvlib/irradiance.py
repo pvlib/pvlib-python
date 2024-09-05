@@ -453,8 +453,8 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         sky = perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                             solar_zenith, solar_azimuth, airmass)
     elif model == 'muneer':
-        sky = muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
-                     b, solar_zenith, solar_azimuth)
+        sky = muneer2004(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
+                         solar_zenith, solar_azimuth)
     else:
         raise ValueError(f'invalid model selection {model}')
 
@@ -1006,8 +1006,8 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
     return sky_diffuse
 
 
-def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
-           solar_zenith=None, solar_azimuth=None, projection_ratio=None):
+def muneer1990(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
+               solar_zenith=None, solar_azimuth=None, projection_ratio=None):
     '''
     Determine sky diffuse irradiance on a tilted surface using the
     Muneer model.
@@ -1114,6 +1114,141 @@ def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
         sky_diffuse = pd.Series(sky_diffuse,
                                 index=sky_diffuse_low.index)
 
+    return sky_diffuse
+
+
+def muneer2004(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
+               solar_zenith=None, solar_azimuth=None, projection_ratio=None,
+               location="northern_europe"):
+    '''
+    Determine sky diffuse irradiance on a tilted surface using the
+    Muneer model.
+
+    This Muneer transposition model is originally described in [1]_, and
+    improved for low solar elevations in [2]_.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. ``surface_tilt`` must
+        be >=0 and <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. ``surface_azimuth``
+        must be >=0 and <=360. The azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    dhi : numeric
+        Diffuse horizontal irradiance. [W/m^2]
+
+    ghi : numeric
+        Global horizontal irradiance. [W/m^2]
+
+    dni_extra : numeric
+        Extraterrestrial normal irradiance. [W/m^2]
+
+    location : string, default 'northern_europe'
+        A string which selects the desired equation for calculating the second
+        term of T of Muneer model based on location. If location is not
+        provided as an input, the default, 'northern_europe' will be used.
+        All possible location selections are:
+
+        * 'northern_europe'
+        * 'southern_europe'
+        * 'japan'
+        * 'globe'
+
+    solar_zenith : numeric
+        Solar apparent (refraction-corrected) zenith angles in decimal
+        degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
+        supply ``projection_ratio``.
+
+    solar_azimuth : numeric
+        Solar azimuth angles in decimal degrees. Must supply
+        ``solar_zenith`` and ``solar_azimuth`` or supply
+        ``projection_ratio``.
+
+    projection_ratio : numeric, optional
+        Ratio of cosine of angle of incidence to cosine of solar zenith
+        angle. [unitless]
+
+    Returns
+    -------
+    poa_sky_diffuse : numeric
+        In-plane diffuse irradiance from the sky. [W/m^2]
+
+    References
+    ----------
+    .. [1] Muneer, T., Gueymard, C., & Kambezidis, H., 2004. Hourly horizontal
+       irradiation and illuminance. 157-158
+       :doi:`10.1016/B978-075065974-1/50011-5`
+
+    .. [2] Gracia, A., & Huld, T., 2013. Performance comparison of different
+       models for the estimation of global irradiance on inclined surfaces:
+       validation of the model implemented in PVGIS. Centro Común de
+       Investigación, Instituto de Energía y Transporte.
+       :doi:`10.2790/91554`
+
+    '''
+    available_locations = ["northern_europe", "southern_europe", "japan",
+                           "globe"]
+    if location not in available_locations:
+        raise ValueError
+    desired_index = available_locations.index(location)
+
+    cos_solar_zenith = tools.cosd(solar_zenith)
+    # if necessary, calculate ratio of titled and horizontal beam irradiance
+    if projection_ratio is None:
+        cos_tt = aoi_projection(surface_tilt, surface_azimuth,
+                                solar_zenith, solar_azimuth)
+        cos_tt = np.maximum(cos_tt, 0)  # GH 526
+        Rb = cos_tt / np.maximum(cos_solar_zenith, 0.01745)  # GH 432
+    else:
+        Rb = projection_ratio
+
+    horizontal_extra = dni_extra * \
+        np.maximum(cos_solar_zenith, 0.01745)  # GH 432
+    F = (ghi - dhi) / horizontal_extra
+
+    aoi_ = aoi(surface_tilt, surface_azimuth,
+               solar_zenith, solar_azimuth)
+    low_elevation_condition = aoi_ >= 90
+    F = np.where(low_elevation_condition, 0, F)
+
+    T_term1 = (1 + tools.cosd(surface_tilt)) * 0.5
+
+    # term 2 depending on the selected location
+    T_term2_model0 = 0.00333 - 0.415 * F - 0.6987 * F ** 2
+    T_term2_model1 = 0.00263 - 0.712 * F - 0.6883 * F ** 2
+    T_term2_model2 = 0.08000 - 1.050 * F - 2.8400 * F ** 2
+    T_term2_model3 = 0.04000 - 0.820 * F - 2.0260 * F ** 2
+    T_term2 = np.array([T_term2_model0, T_term2_model1,
+                       T_term2_model2, T_term2_model3])
+    T_term2 = T_term2[desired_index]
+
+    T_term3 = (
+        tools.sind(surface_tilt)
+        - np.radians(surface_tilt) * tools.cosd(surface_tilt)
+        - np.pi * (1 - tools.cosd(surface_tilt)) * 0.5
+    )
+
+    T = T_term1 + T_term2 * T_term3
+
+    solar_elevation = np.pi/2 - np.radians(solar_zenith)
+    numer_low = tools.sind(surface_tilt) * \
+        tools.cosd(surface_azimuth - solar_azimuth)
+    denom_low = 0.1 - 0.008 * solar_elevation
+
+    sky_diffuse_low = dhi*(T*(1-F) + F*(numer_low/denom_low))
+    sky_diffuse_high = dhi*(T*(1-F) + F*Rb)
+
+    low_elevation_condition = solar_elevation < 0.1
+    sky_diffuse = np.where(low_elevation_condition,
+                           sky_diffuse_low, sky_diffuse_high)
+    if isinstance(ghi, pd.Series):
+        sky_diffuse = pd.Series(sky_diffuse,
+                                index=ghi.index)
     return sky_diffuse
 
 

@@ -70,7 +70,7 @@ Requests <https://help.github.com/articles/using-pull-requests/>`_.
 We strongly recommend using virtual environments for development.
 Virtual environments make it trivial to switch between different
 versions of software. This `astropy guide
-<http://astropy.readthedocs.org/en/latest/development/workflow/
+<https://astropy-astrofrog.readthedocs.io/en/latest/development/workflow/
 virtual_pythons.html>`_ is a good reference for virtual environments. If
 this is your first pull request, don't worry about using a virtual
 environment.

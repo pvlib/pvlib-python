@@ -1094,9 +1094,8 @@ def muneer1990(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
     )
     T = T_term1 + T_term2 * T_term3
 
-    horizontal_extra = dni_extra * \
-        np.maximum(cos_solar_zenith, 0.01745)  # GH 432
-    F = (ghi - dhi) / horizontal_extra
+    F = pvlib.irradiance.clearness_index(
+        ghi - dhi, solar_zenith, dni_extra)
 
     solar_elevation = np.pi/2 - np.radians(solar_zenith)
 
@@ -1207,9 +1206,8 @@ def muneer2004(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
     else:
         Rb = projection_ratio
 
-    horizontal_extra = dni_extra * \
-        np.maximum(cos_solar_zenith, 0.01745)  # GH 432
-    F = (ghi - dhi) / horizontal_extra
+    F = pvlib.irradiance.clearness_index(
+        ghi - dhi, solar_zenith, dni_extra)
 
     solar_elevation = np.pi/2 - np.radians(solar_zenith)
     low_elevation_condition = solar_elevation < 0.1

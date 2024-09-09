@@ -13,7 +13,7 @@ Example of a custom Mount class.
 # with :py:class:`~pvlib.modelchain.ModelChain`.
 
 import pvlib
-from pvlib import pvsystem, location, modelchain, iotools, tools
+from pvlib import pvsystem, location, modelchain, iotools
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
 import pandas as pd
 import pathlib

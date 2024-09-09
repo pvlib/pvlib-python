@@ -56,10 +56,10 @@ def singleaxis(apparent_zenith, apparent_azimuth,
         A rotation to ``max_angle`` is a counter-clockwise rotation about the
         y-axis of the tracker coordinate system. For example, for a tracker
         with ``axis_azimuth`` oriented to the south, a rotation to
-        ``max_angle`` is towards the west, and a rotation toward ``-max_angle`` is
-        in the opposite direction, toward the east. Hence, a max_angle of 180
-        degrees (equivalent to max_angle = (-180, 180)) allows the tracker to
-        achieve its full rotation capability.
+        ``max_angle`` is towards the west, and a rotation toward ``-max_angle``
+        is in the opposite direction, toward the east. Hence, a ``max_angle``
+        of 180 degrees (equivalent to max_angle = (-180, 180)) allows the
+        tracker to achieve its full rotation capability.
 
     backtrack : bool, default True
         Controls whether the tracker has the capability to "backtrack"

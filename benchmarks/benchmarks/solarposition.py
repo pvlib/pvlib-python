@@ -5,7 +5,7 @@ ASV benchmarks for solarposition.py
 import datetime
 import pandas as pd
 import pvlib
-from pvlib import solarposition, tools
+from pvlib import solarposition
 
 from packaging.version import Version
 
@@ -51,7 +51,7 @@ class SolarPosition:
             self.times_daily, self.lat, self.lon)
 
     def time_sun_rise_set_transit_geometric_full_comparison(self, ndays):
-        dayofyear = tools._pandas_to_doy(self.times_daily)
+        dayofyear = self.times_daily.dayofyear
         declination = solarposition.declination_spencer71(dayofyear)
         equation_of_time = solarposition.equation_of_time_spencer71(dayofyear)
         solarposition.sun_rise_set_transit_geometric(

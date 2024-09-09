@@ -214,7 +214,7 @@ def test_lookup_linke_turbidity_leapyear():
 
 
 def test_lookup_linke_turbidity_nointerp():
-    times = pd.date_range(start='2014-06-01', end='2014-06-02',
+    times = pd.date_range(start='2014-06-24', end='2014-06-25',
                           freq='12h', tz='America/Phoenix')
     # expect same value for all days
     expected = pd.Series(np.array([3., 3., 3.]), index=times)

@@ -19,7 +19,7 @@ Recreating Figure 5-1A from the SPECTRL2 NREL Technical Report.
 # .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
 #    direct and diffuse irradiance on horizontal and tilted planes at the
 #    earth's surface for cloudless atmospheres", NREL Technical Report
-#    TR-215-2436 doi:10.2172/5986936.
+#    TR-215-2436 :doi:`10.2172/5986936`
 
 # %%
 # The SPECTRL2 model has several inputs; some can be calculated with pvlib,

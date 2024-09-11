@@ -497,6 +497,11 @@ html_context = {
 
 
 # -- sphinxcontrib-bibtex configuration -----------------------------------
+# https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html
 # bibtex_encoding = 'utf-8-sig'  # default
 # bibtex_default_style = 'alpha'  # default, https://www.overleaf.com/learn/latex/Bibtex_bibliography_styles  # noqa: E501
+# bibtex_reference_style = 'label'  # default
+# bibtex_foot_reference_style = 'foot'  # default, the only one provided
+# bibtex_tooltips = True  # default
+# bibtex_tooltips_style = bibtex_default_style  # default
 bibtex_bibfiles = ['citations.bib']

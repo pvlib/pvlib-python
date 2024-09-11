@@ -292,13 +292,13 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     solar_azimuth : numeric
         Solar azimuth angle. [degree]
     dni : numeric
-        Direct Normal Irradiance. [W/m2]
+        Direct Normal Irradiance. [\wm2]
     ghi : numeric
-        Global horizontal irradiance. [W/m2]
+        Global horizontal irradiance. [\wm2]
     dhi : numeric
-        Diffuse horizontal irradiance. [W/m2]
+        Diffuse horizontal irradiance. [:wm2:]
     dni_extra : numeric, optional
-        Extraterrestrial direct normal irradiance. [W/m2]
+        Extraterrestrial direct normal irradiance. [:wm2:]
     airmass : numeric, optional
         Relative airmass (not adjusted for pressure). [unitless]
     albedo : numeric, default 0.25

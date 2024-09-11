@@ -25,6 +25,9 @@ import inspect
 import distutils  # noqa: F401
 import pandas as pd
 
+from docutils import nodes
+from docutils.parsers.rst import roles
+
 pd.show_versions()
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -495,3 +498,17 @@ html_context = {
     'make_github_url': make_github_url,
     'edit_page_url_template': '{{ make_github_url(file_name) }}',
 }
+
+def wm2_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    # Create a node with the desired text
+    node = nodes.Text('Wm⁻²')
+    return [node], []
+
+
+def wm2nm1_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    # Create a node with the desired text
+    node = nodes.Text('Wm⁻²nm⁻¹')
+    return [node], []
+
+roles.register_canonical_role('wm2', wm2_role)
+roles.register_canonical_role('wm2nm1', wm2nm1_role)

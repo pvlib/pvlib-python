@@ -1,8 +1,8 @@
 """
-Spectral Mismatch Estimation
+Average Photon Energy Calculation
 ============================
 
-Calculation of the Average Photon Energy from Spectrl2 output.
+Calculation of the Average Photon Energy from SPECTRL2 output.
 """
 
 # %%

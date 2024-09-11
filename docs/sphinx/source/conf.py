@@ -56,6 +56,7 @@ extensions = [
     'sphinx_gallery.gen_gallery',
     'sphinx_toggleprompt',
     'sphinx_favicon',
+    'sphinxcontrib.bibtex',
 ]
 
 mathjax3_config = {'chtml': {'displayAlign': 'left',
@@ -493,3 +494,9 @@ html_context = {
     'make_github_url': make_github_url,
     'edit_page_url_template': '{{ make_github_url(file_name) }}',
 }
+
+
+# -- sphinxcontrib-bibtex configuration -----------------------------------
+# bibtex_encoding = 'utf-8-sig'  # default
+# bibtex_default_style = 'alpha'  # default, https://www.overleaf.com/learn/latex/Bibtex_bibliography_styles  # noqa: E501
+bibtex_bibfiles = ['citations.bib']

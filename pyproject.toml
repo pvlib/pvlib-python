@@ -65,6 +65,7 @@ doc = [
     'pillow',
     'sphinx-toggleprompt == 0.5.2',
     'sphinx-favicon',
+    'sphinxcontrib-bibtex == 2.6.2',
     'solarfactors',
 ]
 test = [

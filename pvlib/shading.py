@@ -420,8 +420,9 @@ def shaded_fraction1d(
     .. figure:: ../../_images/Anderson_Jensen_2024_Fig3.png
         :alt: Diagram showing the two rows and the parameters of the model.
 
-        Figure 3 of [1]_. See correspondence between this nomenclature and the
-        function parameters in the table below.
+        Figure 3 of :footcite:`Anderson_Jensen_2024`. See correspondence
+        between this nomenclature and the function parameters in the table
+        below.
 
     +------------------+----------------------------+---------------------+
     | Symbol           | Parameter                  | Units               |
@@ -507,11 +508,9 @@ def shaded_fraction1d(
 
     References
     ----------
-    .. [1] Kevin S. Anderson, Adam R. Jensen; Shaded fraction and backtracking
-        in single-axis trackers on rolling terrain. J. Renewable Sustainable
-        Energy 1 March 2024; 16 (2): 023504. :doi:`10.1063/5.0202220`
+    .. footbibliography::
     """
-    # For nomenclature you may refer to [1].
+    # For nomenclature you may refer to [Anderson_Jensen_2024].
 
     # rotation of row casting the shadow defaults to shaded row's one
     if shading_row_rotation is None:
@@ -532,7 +531,7 @@ def shaded_fraction1d(
 
     cos_theta_2_S_diff_abs = np.abs(cosd(thetas_2_S_diff))
 
-    # Eq. (12) of [1]
+    # Eq. (12) of [Anderson_Jensen_2024]
     t_asterisk = (
         0.5
         + np.abs(cosd(thetas_1_S_diff)) / cos_theta_2_S_diff_abs / 2

@@ -13,13 +13,6 @@ Recreating Figure 5-1A from the SPECTRL2 NREL Technical Report.
 # This example recreates an example figure from the SPECTRL2 NREL Technical
 # Report [1]_. The figure shows modeled spectra at hourly intervals across
 # a single morning.
-#
-# References
-# ----------
-# .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
-#    direct and diffuse irradiance on horizontal and tilted planes at the
-#    earth's surface for cloudless atmospheres", NREL Technical Report
-#    TR-215-2436 :doi:`10.2172/5986936`
 
 # %%
 # The SPECTRL2 model has several inputs; some can be calculated with pvlib,
@@ -97,3 +90,11 @@ plt.show()
 # position and the solar position calculation in the technical report does not
 # exactly match the one used here.  However, the differences are minor enough
 # to not materially change the spectra.
+
+# %%
+# References
+# ----------
+# .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
+#    direct and diffuse irradiance on horizontal and tilted planes at the
+#    earth's surface for cloudless atmospheres", NREL Technical Report
+#    TR-215-2436 :doi:`10.2172/5986936`

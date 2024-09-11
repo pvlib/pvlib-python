@@ -46,11 +46,10 @@ relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
 
 # %%
 # With all the necessary inputs in hand we can model spectral irradiance using
-# :py:func:`pvlib.spectrum.spectrl2`.  Note that because we are calculating
-# the spectra for more than one set of conditions,
-# :py:func:`pvlib.spectrum.spectrl2`` will return a dictionary of 2-D arrays
-# for the spectral irradiance components (one dimension for wavelength, one for
-# time), as well as a separate 1-D array for wavelength.
+# :py:func:`pvlib.spectrum.spectrl2`. Note that because we are calculating
+# the spectra for more than one set of conditions, the spectral irradiance
+# components will be returned in a dictionary as 2-D arrays, with one dimension
+# for wavelength and one for time.
 
 spectra = spectrum.spectrl2(
     apparent_zenith=solpos.apparent_zenith,

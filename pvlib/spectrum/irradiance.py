@@ -189,7 +189,7 @@ def average_photon_energy(spectra):
     ----------
     spectra : pandas.Series or pandas.DataFrame
 
-        Spectral irradiance, must be positive. [:wm2nm1:]
+        Spectral irradiance, must be positive. [ :wm2nm1: and :wm2nm12: ]
 
         A single spectrum must be a :py:class:`pandas.Series` with wavelength
         [nm] as the index, while multiple spectra must be rows in a

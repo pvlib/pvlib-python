@@ -25,9 +25,11 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # import the required packages and define some basic system parameters and
 # and meteorological conditions.
 # %%
-from pvlib import spectrum, solarposition, irradiance, atmosphere
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.integrate import trapezoid
+from pvlib import spectrum, solarposition, irradiance, atmosphere
 
 lat, lon = 39.742, -105.18 # NREL SRRL location
 tilt = 25
@@ -38,7 +40,7 @@ tau500 = 0.1
 ozone = 0.31  # atm-cm
 albedo = 0.2
 
-times = pd.date_range('2023-01-01 12:00', freq='D', periods=7,
+times = pd.date_range('2023-01-01 08:00', freq='h', periods=9,
                       tz='America/Denver')
 solpos = solarposition.get_solarposition(times, lat, lon)
 aoi = irradiance.aoi(tilt, azimuth, solpos.apparent_zenith, solpos.azimuth)
@@ -58,7 +60,7 @@ relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
 # The next section will show how to convert this output into a suitable
 # input for :pyfunc:`~average_photon_energy`.
 
-spectra = spectrum.spectrl2(
+spectra_components = spectrum.spectrl2(
     apparent_zenith=solpos.apparent_zenith,
     aoi=aoi,
     surface_tilt=tilt,
@@ -69,11 +71,89 @@ spectra = spectrum.spectrl2(
     ozone=ozone,
     aerosol_turbidity_500nm=tau500,
 )
+
 # %%
-# another section
-# --------------------------------
+# Visualising the spectral data
+# -----------------------------
+# Let's take a look at the spectral irradiance data simulated on the hour for
+# eight hours on the first day of 2023.
+
+plt.figure()
+plt.plot(spectra_components['wavelength'], spectra_components['poa_global'])
+plt.xlim(200, 2700)
+plt.ylim(0, 1.8)
+plt.ylabel(r"Irradiance (Wm⁻²nm⁻¹")
+plt.xlabel(r"Wavelength (nm)")
+time_labels = times.strftime("%H:%M")
+labels = [
+    "{}, AM {:0.02f}".format(*vals)
+    for vals in zip(time_labels, relative_airmass)
+]
+plt.legend(labels)
+plt.show()
+
+# Given the changing irradiance throughout the day, it is not obvious from
+# inspection how the relative distribution of light changes as a function of
+# wavelength. We can normalise the spectral irradiance curves to get an idea
+# of this shift in the shape of the spectrum over the course of the day. In
+# this example, we normalise by dividing each spectral irradiance value by the
+# total irradiance, as calculated by integrating the entire spectral irradiance
+# distribution with respect to wavelength.
+
+poa_global = spectra_components['poa_global']
+wavelength = spectra_components['wavelength']
+
+broadband_irradiance = np.array([trapezoid(poa_global[:, i], wavelength)
+                                 for i in range(poa_global.shape[1])])
+
+poa_global_normalised = poa_global / broadband_irradiance
+
+# Plot the normalised spectra
+
+plt.figure()
+plt.plot(wavelength, poa_global_normalised)
+plt.xlim(200, 2700)
+plt.ylim(0, 0.0018)
+plt.ylabel(r"Normalised Irradiance (nm⁻¹)")
+plt.xlabel(r"Wavelength (nm)")
+time_labels = times.strftime("%H:%M")
+labels = [
+    "{}, AM {:0.02f}".format(*vals)
+    for vals in zip(time_labels, relative_airmass)
+]
+plt.legend(labels)
+plt.show()
+
+# Now we can see from XX figure numbers? XX that at the start and end of the
+# day, the spectrum is red shifted, meaning there is a greater proportion of
+# longer wavelength radiation. Meanwhile, during the middle of the day there is
+# a blue shift in the spectral distribution, indicating a greater prevalence of
+# shorter wavelength radiation.
+
+# How can we quantify this shift? That is where the average photon energy comes
+# into play.
+
 # %%
-#
+# Calculating the average photon energy
+# -------------------------------------
+# To calculate the APE, first we must convert our output spectra from from the
+# simulation into a compatible input for
+# :pyfunc:`pvlib.spectrum.average_photon_energy`. Since we have more than one
+# spectral irradiance distribution, a :py:class:`pandas.DataFrame` is
+# appropriate. We also need to set the column headers as wavelength, so each
+# row is a single spectral irradiance distribution. It is important to remember
+# here that the calculation of APE is dependent on the integration limits, i.e.
+# the wavelength range of the spectral irradiance input. APE values are only
+# comparable if calculated between the same integration limits. In this case,
+# our APE values are calculated between 300nm and 4000nm.
+
+spectra = pd.DataFrame(poa_global).T  # convert to dataframe and transpose
+spectra.index = time_labels  # add time index
+spectra.columns = wavelength  # add wavelength column headers
+
+ape = spectrum.average_photon_energy(spectra)
+
+# XX table? add values /  arrow(s) to graph XX
 
 # %%
 # References
@@ -90,4 +170,3 @@ spectra = spectrum.spectrl2(
 #        Energy 286 :doi:`10.1016/j.energy.2023.129461`
 # .. [4] Bird Simple Spectral Model: spectrl2_2.c.
 #        https://www.nrel.gov/grid/solar-resource/spectral.html
-

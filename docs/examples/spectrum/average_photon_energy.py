@@ -98,11 +98,11 @@ plt.show()
 # %%
 # Given the changing irradiance throughout the day, it is not obvious from
 # inspection how the relative distribution of light changes as a function of
-# wavelength. We can normalise the spectral irradiance curves to get an idea
-# of this shift in the shape of the spectrum over the course of the day. In
+# wavelength. We can normalise the spectral irradiance curves to visualise
+# this shift in the shape of the spectrum over the course of the day. In
 # this example, we normalise by dividing each spectral irradiance value by the
-# total irradiance, as calculated by integrating the entire spectral irradiance
-# distribution with respect to wavelength.
+# total broadband irradiance, which we calculate by integrating the entire
+# spectral irradiance distribution with respect to wavelength.
 
 poa_global = spectra_components['poa_global']
 wavelength = spectra_components['wavelength']
@@ -127,16 +127,13 @@ labels = [
 plt.legend(labels)
 plt.show()
 
-
-# XX figure layout --- one on top of another? increase size/readability
-
 # %%
-# Now we can see from XX figure numbers? XX that at the start and end of the
-# day, the spectrum is red shifted, meaning there is a greater proportion of
-# longer wavelength radiation. Meanwhile, during the middle of the day there is
-# a blue shift in the spectral distribution, indicating a greater prevalence of
-# shorter wavelength radiation.
-
+# We can now see from the normalised irradiance curves that at the start and
+# end of the day, the spectrum is red shifted, meaning there is a greater
+# proportion of longer wavelength radiation. Meanwhile, during the middle of
+# the day, there is a blue shift in the spectral distribution, indicating a
+# greater prevalence of shorter wavelength radiation.
+#
 # How can we quantify this shift? That is where the average photon energy comes
 # into play.
 
@@ -149,7 +146,7 @@ plt.show()
 # spectral irradiance distribution, a :py:class:`pandas.DataFrame` is
 # appropriate. We also need to set the column headers as wavelength, so each
 # row is a single spectral irradiance distribution. It is important to remember
-# here that the calculation of APE is dependent on the integration limits, i.e.
+# here that the resulting APE values depend on the integration limits, i.e.
 # the wavelength range of the spectral irradiance input. APE values are only
 # comparable if calculated between the same integration limits. In this case,
 # our APE values are calculated between 300nm and 4000nm.

@@ -41,7 +41,8 @@ def stream_temperature_stefan(temp_air):
     when the mean ambient air temperature is lower than -6.66 °C, the surface
     stream water temperature is returned as ``np.nan``.
 
-    Although this model was developed to estimate stream temperature,
+..warning::
+    This model was developed to estimate stream temperature. A number of
     a number of publications have used it to estimate lakewater and
     seawater temperatures for floating PV without evidence of validity
     for such applications.

@@ -11,7 +11,7 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 * Add function :py:func:`pvlib.floating.stream_temperature_stefan`, to calculate the
-  water temperature for inland water bodies.
+  water temperature for streams and rivers.
   (:pull:`2104`)
 * Add new losses function that accounts for non-uniform irradiance on bifacial
   modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.

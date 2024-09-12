@@ -24,7 +24,7 @@ import scipy.optimize as so
 import warnings
 
 from pvlib import atmosphere
-from pvlib.tools import datetime_to_djd, djd_to_datetime
+from pvlib.tools import datetime_to_djd, djd_to_datetime, sind, cosd
 
 
 def get_solarposition(time, latitude, longitude,
@@ -87,7 +87,6 @@ def get_solarposition(time, latitude, longitude,
 
     .. [3] NREL SPA code: https://midcdmz.nrel.gov/spa/
     """
-
     if altitude is None and pressure is None:
         altitude = 0.
         pressure = 101325.
@@ -188,7 +187,6 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
     --------
     pyephem, spa_python, ephemeris
     """
-
     # Added by Rob Andrews (@Calama-Consulting), Calama Consulting, 2014
     # Edited by Will Holmgren (@wholmgren), University of Arizona, 2014
     # Edited by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
@@ -240,8 +238,7 @@ def spa_c(time, latitude, longitude, pressure=101325, altitude=0,
 
 
 def _spa_python_import(how):
-    """Compile spa.py appropriately"""
-
+    """Compile spa.py appropriately."""
     from pvlib import spa
 
     # check to see if the spa module was compiled with numba
@@ -354,11 +351,10 @@ def spa_python(time, latitude, longitude,
     .. [3] USNO delta T:
        https://maia.usno.navy.mil/products/deltaT
 
-    See also
+    See Also
     --------
     pyephem, spa_c, ephemeris
     """
-
     # Added by Tony Lorenzo (@alorenzo175), University of Arizona, 2015
 
     lat = latitude
@@ -391,6 +387,98 @@ def spa_python(time, latitude, longitude,
                           index=time)
 
     return result
+
+
+def pvsyst(times, latitude, longitude):
+    """
+    Calculate solar position according to pvsyst algorithm.
+
+    See [1]_ for algorithm description.
+
+    Parameters
+    ----------
+    times : pandas.DatetimeIndex
+        Must be localized or UTC will be assumed.
+    latitude : float
+        Latitude in decimal degrees. Positive north of equator, negative
+        to south.
+    longitude : float
+        Longitude in decimal degrees. Positive east of prime meridian,
+        negative to west.
+
+    Returns
+    -------
+    pandas.DataFrame
+        index is the same as input `times` argument
+        The DataFrame will have the following columns:
+        elevation, azimuth, zenith, equation_of_time,
+        declination, and hour_angle.
+
+    References
+    ----------
+    .. [1] `pvsysts solar geometry
+       <https://web.archive.org/web/20240302011841/https://www.pvsyst.com/help/solar_geometry.htm>`_
+    """
+    dayofyear = times.dayofyear
+    dayorigin = 79 + np.mod(times.year, 4) / 4
+    daysinyear = 365 + times.is_leap_year
+
+    ecliptic_angle = 23.433  # ecliptic angle
+
+    declination = np.rad2deg(np.arcsin(
+        sind(ecliptic_angle)
+        * np.sin(2*np.pi*(dayofyear - dayorigin) / daysinyear)
+    ))
+
+    declination = declination + np.where(
+        dayofyear > 172,
+        1.5*np.sin(2*np.pi*(dayofyear - 173)/daysinyear),
+        0,
+    )
+
+    year_angle = 2 * np.pi * (dayofyear - 1) / 365.25
+
+    equation_of_time = (
+        + 0.0072*np.cos(year_angle)
+        - 0.0528*np.cos(2*year_angle)
+        - 0.0012*np.cos(3*year_angle)
+        - 0.1229*np.sin(year_angle)
+        - 0.1565*np.sin(2*year_angle)
+        - 0.0041*np.sin(3*year_angle)
+    )
+
+    tz_offset = (
+        times.tz_localize(None)
+        - times.tz_convert('UTC').tz_localize(None)
+    ).total_seconds()/60/60
+
+    DHLegHSol = tz_offset - longitude/15 - equation_of_time
+
+    legal_time = times.hour + times.minute/60 + times.second/60/60
+    standard_time = legal_time - DHLegHSol
+
+    hour_angle = 15*(standard_time - 12)
+
+    elevation = np.rad2deg(np.arcsin(
+        sind(latitude)*sind(declination)
+        + cosd(latitude)*cosd(declination)*cosd(hour_angle)
+    ))
+
+    azimuth = np.rad2deg(np.arcsin(
+        cosd(declination)*sind(hour_angle) / cosd(elevation))
+    ) + 180
+
+    data = pd.DataFrame({
+        'elevation': elevation,
+        'azimuth': azimuth,
+        'zenith': 90 - elevation,
+        'equation_of_time': equation_of_time*60,  # [minutes]
+        'declination': declination,
+        'hour_angle': hour_angle,
+    },
+        index=times,
+    )
+    return data
 
 
 def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',

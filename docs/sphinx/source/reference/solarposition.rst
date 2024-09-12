@@ -19,6 +19,7 @@ unless you know that you need a different function.
    solarposition.ephemeris
    solarposition.pyephem
    solarposition.spa_c
+   solarposition.pvsyst
 
 
 Additional functions for quantities closely related to solar position.

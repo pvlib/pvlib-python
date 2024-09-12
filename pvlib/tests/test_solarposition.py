@@ -139,7 +139,8 @@ def test_spa_python_numpy_physical_dst(expected_solpos, golden):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden):
+@pytest.mark.parametrize('delta_t', [65.0, None])
+def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
     # solution from NREL SAP web calculator
     south = Location(-35.0, 0.0, tz='UTC')
     times = pd.DatetimeIndex([datetime.datetime(1996, 7, 5, 0),
@@ -160,7 +161,7 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden):
 
     result = solarposition.sun_rise_set_transit_spa(times, south.latitude,
                                                     south.longitude,
-                                                    delta_t=65.0)
+                                                    delta_t=delta_t)
     result_rounded = pd.DataFrame(index=result.index)
     # need to iterate because to_datetime does not accept 2D data
     # the rounding fails on pandas < 0.17
@@ -172,7 +173,7 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden):
     # test for Golden, CO compare to NREL SPA
     result = solarposition.sun_rise_set_transit_spa(
         expected_rise_set_spa.index, golden.latitude, golden.longitude,
-        delta_t=65.0)
+        delta_t=delta_t)
 
     # round to nearest minute
     result_rounded = pd.DataFrame(index=result.index)

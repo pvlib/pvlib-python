@@ -530,17 +530,18 @@ def test_get_solarposition_method_pyephem(expected_solpos, golden):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-def test_nrel_earthsun_distance():
+@pytest.mark.parametrize('delta_t', [64.0, None])
+def test_nrel_earthsun_distance(delta_t):
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
                               datetime.datetime(2015, 8, 2)]
                              ).tz_localize('MST')
-    result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
+    result = solarposition.nrel_earthsun_distance(times, delta_t=delta_t)
     expected = pd.Series(np.array([0.983289204601, 1.01486146446]),
                          index=times)
     assert_series_equal(expected, result)
 
     times = datetime.datetime(2015, 1, 2)
-    result = solarposition.nrel_earthsun_distance(times, delta_t=64.0)
+    result = solarposition.nrel_earthsun_distance(times, delta_t=delta_t)
     expected = pd.Series(np.array([0.983289204601]),
                          index=pd.DatetimeIndex([times, ]))
     assert_series_equal(expected, result)

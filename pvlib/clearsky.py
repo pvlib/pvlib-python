@@ -256,12 +256,7 @@ def _interpolate_turbidity(lts, time):
 
     time_utc = tools._pandas_to_utc(time)
 
-    # handle leap years
-    try:
-        isleap = time_utc.is_leap_year
-    except AttributeError:
-        year = time_utc.year
-        isleap = _is_leap_year(year)
+    isleap = time_utc.is_leap_year
 
     dayofyear = time_utc.dayofyear
     days_leap = _calendar_month_middles(2016)

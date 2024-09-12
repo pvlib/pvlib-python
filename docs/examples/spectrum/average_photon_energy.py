@@ -11,7 +11,7 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # This example demonstrates how to use the
 # :py:func:`~pvlib.spectrum.average_photon_energy` function to calculate the
 # Average Photon Energy (APE, :math:`\overline{E_\gamma}`) of spectral
-# irradiance distributions simulated using :pyfunc:`~pvlib.spectrum.spectrl2`.
+# irradiance distributions simulated using :py:func:`~pvlib.spectrum.spectrl2`.
 # More information on the SPECTRL2 model can be found in [2]_
 # The APE parameter is a useful indicator of the overall shape of the solar
 # spectrum [1]_. Higher (lower) APE values indicate a blue (red) shift in the
@@ -20,10 +20,13 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 #
 # To demonstrate this functionality, first we need to simulate some spectra
 # using :py:func:`~pvlib.spectrum.spectrl2`. In this example, we will simulate
-# spectra following a similar structure to that which is followed in
-# XX link example XX, which reproduces a figure from [4]_. The first step is to
+# spectra following a similar method to that which is followed in the
+# `Modelling Spectral Irradiance
+# <https://pvlib-python.readthedocs.io/en/stable/gallery/spectrum/plot_spectrl2_fig51A.html>`_
+# example, which reproduces a figure from [4]_. The first step is to
 # import the required packages and define some basic system parameters and
 # and meteorological conditions.
+
 # %%
 import numpy as np
 import pandas as pd
@@ -31,9 +34,9 @@ import matplotlib.pyplot as plt
 from scipy.integrate import trapezoid
 from pvlib import spectrum, solarposition, irradiance, atmosphere
 
-lat, lon = 39.742, -105.18 # NREL SRRL location
+lat, lon = 39.742, -105.18  # NREL SRRL location
 tilt = 25
-azimuth = 180 # south-facing system
+azimuth = 180  # south-facing system
 pressure = 81190  # at 1828 metres AMSL, roughly
 water_vapor_content = 0.5  # cm
 tau500 = 0.1
@@ -56,9 +59,9 @@ relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
 # more than one set of conditions, the function will return a dictionary
 # containing 2-D arrays for the spectral irradiance components and a 1-D array
 # of shape (122,) for wavelength. For each of the 2-D arrays, one dimension is
-# for wavelength in nm and one is for irradiance in Wm⁻².
-# The next section will show how to convert this output into a suitable
-# input for :pyfunc:`~average_photon_energy`.
+# for wavelength in nm and one is for irradiance in Wm⁻²nm⁻¹. The next section
+# will show how to convert this output into a suitable input for
+# :py:func:`~average_photon_energy`.
 
 spectra_components = spectrum.spectrl2(
     apparent_zenith=solpos.apparent_zenith,
@@ -92,6 +95,7 @@ labels = [
 plt.legend(labels)
 plt.show()
 
+# %%
 # Given the changing irradiance throughout the day, it is not obvious from
 # inspection how the relative distribution of light changes as a function of
 # wavelength. We can normalise the spectral irradiance curves to get an idea
@@ -109,7 +113,6 @@ broadband_irradiance = np.array([trapezoid(poa_global[:, i], wavelength)
 poa_global_normalised = poa_global / broadband_irradiance
 
 # Plot the normalised spectra
-
 plt.figure()
 plt.plot(wavelength, poa_global_normalised)
 plt.xlim(200, 2700)
@@ -124,6 +127,10 @@ labels = [
 plt.legend(labels)
 plt.show()
 
+
+# XX figure layout --- one on top of another? increase size/readability
+
+# %%
 # Now we can see from XX figure numbers? XX that at the start and end of the
 # day, the spectrum is red shifted, meaning there is a greater proportion of
 # longer wavelength radiation. Meanwhile, during the middle of the day there is
@@ -138,7 +145,7 @@ plt.show()
 # -------------------------------------
 # To calculate the APE, first we must convert our output spectra from from the
 # simulation into a compatible input for
-# :pyfunc:`pvlib.spectrum.average_photon_energy`. Since we have more than one
+# :py:func:`pvlib.spectrum.average_photon_energy`. Since we have more than one
 # spectral irradiance distribution, a :py:class:`pandas.DataFrame` is
 # appropriate. We also need to set the column headers as wavelength, so each
 # row is a single spectral irradiance distribution. It is important to remember

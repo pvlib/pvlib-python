@@ -278,7 +278,7 @@ latex_elements = {
 
 # Additional stuff for the LaTeX preamble.
 # 'preamble':
-# }
+ }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
@@ -511,12 +511,12 @@ def wm2nm1_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
 
 
 def wm2_role2(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    node = nodes.raw('', '<span style="font-family: serif;">Wm<sup>-2</sup></span>', format='html')  # noqa: E501
+    node = nodes.raw('', '<span style="font-family: Arial, sans-serif;">Wm<sup>-2</sup></span>', format='html')  # noqa: E501
     return [node], []
 
 
 def wm2nm1_role2(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    node = nodes.raw('', '<span style="font-family: serif;">Wm<sup>-2</sup>nm<sup>-1</sup></span>', format='html')  # noqa: E501
+    node = nodes.raw('', '<span style="font-family: Arial, sans-serif;">Wm<sup>-2</sup>nm<sup>-1</sup></span>', format='html')  # noqa: E501
     return [node], []
 
 

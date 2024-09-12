@@ -669,12 +669,30 @@ def test_hour_angle():
         '2015-01-02 12:04:44.6340'
     ]).tz_localize('Etc/GMT+7')
     eot = np.array([-3.935172, -4.117227, -4.026295])
-    hours = solarposition.hour_angle(times, longitude, eot)
+    hourangle = solarposition.hour_angle(times, longitude, eot)
     expected = (-70.682338, 70.72118825000001, 0.000801250)
     # FIXME: there are differences from expected NREL SPA calculator values
     # sunrise: 4 seconds, sunset: 48 seconds, transit: 0.2 seconds
     # but the differences may be due to other SPA input parameters
-    assert np.allclose(hours, expected)
+    assert np.allclose(hourangle, expected)
+
+    hours = solarposition._hour_angle_to_hours(
+        times, hourangle, longitude, eot)
+    result = solarposition._times_to_hours_after_local_midnight(times)
+    assert np.allclose(result, hours)
+
+    result = solarposition._local_times_from_hours_since_midnight(times, hours)
+    assert result.equals(times)
+
+    times = times.tz_convert(None)
+    with pytest.raises(ValueError):
+        solarposition.hour_angle(times, longitude, eot)
+    with pytest.raises(ValueError):
+        solarposition._hour_angle_to_hours(times, hourangle, longitude, eot)
+    with pytest.raises(ValueError):
+        solarposition._times_to_hours_after_local_midnight(times)
+    with pytest.raises(ValueError):
+        solarposition._local_times_from_hours_since_midnight(times, hours)
 
 
 def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):

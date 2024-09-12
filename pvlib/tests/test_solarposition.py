@@ -686,6 +686,10 @@ def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):
     eot = solarposition.equation_of_time_spencer71(
         times_utc.dayofyear)  # minutes
     decl = solarposition.declination_spencer71(times_utc.dayofyear)  # radians
+    with pytest.raises(ValueError):
+        solarposition.sun_rise_set_transit_geometric(
+            times.tz_convert(None), latitude=latitude, longitude=longitude,
+            declination=decl, equation_of_time=eot)
     sr, ss, st = solarposition.sun_rise_set_transit_geometric(
         times, latitude=latitude, longitude=longitude, declination=decl,
         equation_of_time=eot)

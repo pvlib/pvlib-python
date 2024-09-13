@@ -136,6 +136,9 @@ plt.show()
 #
 # How can we quantify this shift? That is where the average photon energy comes
 # into play.
+#
+# XX shifted relative to what --- itself, reference // clarify --- e.g. AM1.5
+# below
 
 # %%
 # Calculating the average photon energy
@@ -157,8 +160,10 @@ spectra.columns = wavelength  # add wavelength column headers
 
 ape = spectrum.average_photon_energy(spectra)
 
+# %%
 # XX table? add values /  arrow(s) to graph XX
-
+# XX add AM1.5 graph/ape value
+# plot hourly ape with AM1.5 APE constant line?
 # %%
 # References
 # ----------

@@ -497,31 +497,8 @@ html_context = {
     'edit_page_url_template': '{{ make_github_url(file_name) }}',
 }
 
-
-def wm2_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    # Create a node with the desired text
-    node = nodes.Text('Wm⁻²')
-    return [node], []
-
-
-def wm2nm1_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    # Create a node with the desired text
-    node = nodes.Text('Wm⁻²nm⁻¹')
-    return [node], []
-
-
-def wm2_role2(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    node = nodes.raw('', '<span style="font-family: Arial, sans-serif;">Wm<sup>-2</sup></span>', format='html')  # noqa: E501
-    return [node], []
-
-
-def wm2nm1_role2(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    node = nodes.raw('', '<span style="font-family: Arial, sans-serif;">Wm<sup>-2</sup>nm<sup>-1</sup></span>', format='html')  # noqa: E501
-    return [node], []
-
-
-roles.register_canonical_role('wm2', wm2_role)
-roles.register_canonical_role('wm2nm1', wm2nm1_role)
-
-roles.register_canonical_role('wm22', wm2_role2)
-roles.register_canonical_role('wm2nm12', wm2nm1_role2)
+# list of abbreviations for typing out units with nonstandard formatting such
+# as superscript
+rst_prolog = """
+.. |wm2| replace:: Wm⁻²
+"""

@@ -1008,7 +1008,7 @@ def bird(
     zenith is never explicitly defined in the report, since the purpose
     was to compare existing clear sky models with "rigorous radiative
     transfer models" (RTM) it is possible that apparent zenith was
-    obtained as output from the RTM. However, the implentation presented
+    obtained as output from the RTM. However, the implementation presented
     in PVLIB is tested against the NREL Excel implementation by Daryl
     Myers which uses an analytical expression for solar zenith instead
     of apparent zenith.

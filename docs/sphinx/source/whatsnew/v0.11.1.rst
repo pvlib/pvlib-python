@@ -73,4 +73,8 @@ Contributors
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
 * Andrew B Godbehere (:ghuser:`agodbehere`)
+* Luiz Reis (:ghuser:`luizreiscver`)
+* Carlos Cárdenas-Bravo (:ghuser:`cardenca`)
+* Marcos R. Escudero (:ghuser:`marc-resc`)
+* Bernat Nicolau (:ghuser:`BernatNicolau`)
 * Eduardo Sarquis (:ghuser:`EduardoSarquis`)

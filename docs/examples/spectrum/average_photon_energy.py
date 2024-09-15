@@ -205,7 +205,10 @@ plt.show()
 #     - 1.38
 #   * - 16:00
 #     - 1.28
-
+#
+# %%
+# As expected, the morning and evening spectra have a lower APE while a higher
+# APE is observed closer to the middle of the day.
 # %%
 # References
 # ----------

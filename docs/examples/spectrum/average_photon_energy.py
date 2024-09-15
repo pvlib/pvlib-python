@@ -161,9 +161,51 @@ spectra.columns = wavelength  # add wavelength column headers
 ape = spectrum.average_photon_energy(spectra)
 
 # %%
-# XX table? add values /  arrow(s) to graph XX
-# XX add AM1.5 graph/ape value
-# plot hourly ape with AM1.5 APE constant line?
+# We can update the normalised spectral irradiance plot to include each
+# spectrum's irradiance distribution APE value in the legend. Note that the
+# units of the average photon energy here are electronvolts (eV).
+
+plt.figure()
+plt.plot(wavelength, poa_global_normalised)
+plt.xlim(200, 2700)
+plt.ylim(0, 0.0018)
+plt.ylabel(r"Normalised Irradiance (nm⁻¹)")
+plt.xlabel(r"Wavelength (nm)")
+time_labels = times.strftime("%H:%M")
+labels = [
+    "{}, APE {:0.02f}".format(*vals)
+    for vals in zip(time_labels, ape)
+]
+plt.legend(labels)
+plt.show()
+
+# %%
+# The table below summarises the hourly APE values observed throughout the day.
+# .. list-table:: Hourly APE values
+#   :widths: 25 25
+#   :header-rows: 1
+#
+#   * - Time
+#     - APE (eV)
+#   * - 08:00
+#     - 1.25
+#   * - 09:00
+#     - 1.37
+#   * - 10:00
+#     - 1.40
+#   * - 11:00
+#     - 1.41
+#   * - 12:00
+#     - 1.42
+#   * - 13:00
+#     - 1.41
+#   * - 14:00
+#     - 1.40
+#   * - 15:00
+#     - 1.38
+#   * - 16:00
+#     - 1.28
+
 # %%
 # References
 # ----------

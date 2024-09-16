@@ -371,9 +371,9 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     solar_azimuth : numeric
         Solar azimuth angle. [degree]
     dni : numeric
-        Direct Normal Irradiance. [W/m2]
+        Direct Normal Irradiance. [|wm2|]
     ghi : numeric
-        Global horizontal irradiance. [W/m2]
+        Global horizontal irradiance. [Wm|^-2|]
     dhi : numeric
         Diffuse horizontal irradiance. [W/m2]
     dni_extra : numeric, optional

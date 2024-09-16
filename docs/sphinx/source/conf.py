@@ -25,9 +25,6 @@ import inspect
 import distutils  # noqa: F401
 import pandas as pd
 
-from docutils import nodes
-from docutils.parsers.rst import roles
-
 pd.show_versions()
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -501,4 +498,9 @@ html_context = {
 # as superscript
 rst_prolog = """
 .. |wm2| replace:: Wm⁻²
+.. |wm2nm1| replace:: Wm⁻²nm⁻¹
+.. |degc| replace:: °C
+.. |deg| replace:: °
+.. |^-1| replace:: ⁻¹
+.. |^-2| replace:: ⁻²
 """

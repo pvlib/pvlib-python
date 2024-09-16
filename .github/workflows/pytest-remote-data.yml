@@ -56,11 +56,8 @@ jobs:
     strategy:
       fail-fast: false  # don't cancel other matrix jobs when one fails
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
+        python-version: [3.9, "3.10", "3.11", "3.12"]
         suffix: ['']  # the alternative to "-min"
-        include:
-          - python-version: 3.8
-            suffix: -min
 
     runs-on: ubuntu-latest
     if: (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'remote-data')) || (github.event_name == 'push')

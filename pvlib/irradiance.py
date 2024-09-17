@@ -795,14 +795,14 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     .. math::
             I_{d} = DHI \left( A\cdot R_b + (1 - A) \left(\frac{
-                1 + \cos\theta_T}{2}\right ) \right ).
+                1 + \cos\beta}{2}\right ) \right ).
 
     :math:`DHI` is the diffuse horizontal irradiance,
     :math:`A` is the anisotropy index, which is the ratio of the direct normal
     irradiance to the extraterrestrial irradiation,
     :math:`R_b` is the projection ratio, which is defined as the ratio of the
     cosine of the angle of incidence (AOI) to the cosine of the zenith angle,
-    and finally :math:`\theta_T` is the tilt angle of the array.
+    and finally :math:`\beta` is the tilt angle of the array.
 
     When supplying ``projection_ratio``, consider constraining its values
     when the zenith angle approaches 90 degrees or the AOI projection is

@@ -816,7 +816,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
        Ministry of Supply and Services, Canada. Available from:
        https://archive.org/details/proceedingsfirst00cana/mode/2up
        (Last accessed: 17/09/24)
-    .. [2] Loutzenhiser P. G. et. al. "Empirical validation of models to
+    .. [2] Loutzenhiser P. G. et al. "Empirical validation of models to
        compute solar irradiance on inclined surfaces for building energy
        simulation" 2007, Solar Energy vol. 81. pp. 254-267
        :doi:`10.1016/j.solener.2006.03.009`

@@ -495,8 +495,7 @@ html_context = {
     'edit_page_url_template': '{{ make_github_url(file_name) }}',
 }
 
-# list of abbreviations for typing out units with nonstandard formatting such
-# as superscript
+# list of abbreviations for typing out units with nonstandard formatting
 rst_prolog = """
 .. |wm2| replace:: Wm⁻²
 .. |wm2nm1| replace:: Wm⁻²nm⁻¹

@@ -12,10 +12,10 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # :py:func:`~pvlib.spectrum.average_photon_energy` function to calculate the
 # Average Photon Energy (APE, :math:`\overline{E_\gamma}`) of spectral
 # irradiance distributions simulated using :py:func:`~pvlib.spectrum.spectrl2`.
-# More information on the SPECTRL2 model can be found in [2]_
+# More information on the SPECTRL2 model can be found in [2]_.
 # The APE parameter is a useful indicator of the overall shape of the solar
 # spectrum [1]_. Higher (lower) APE values indicate a blue (red) shift in the
-# spectrum and is one of a variety of such characterisation indexes that are
+# spectrum and is one of a variety of such characterisation methods that is
 # used in the PV performance literature [3]_.
 #
 # To demonstrate this functionality, first we need to simulate some spectra
@@ -83,7 +83,7 @@ plt.figure()
 plt.plot(spectra_components['wavelength'], spectra_components['poa_global'])
 plt.xlim(200, 2700)
 plt.ylim(0, 1.8)
-plt.ylabel(r"Irradiance (Wm⁻²nm⁻¹")
+plt.ylabel(r"Spectral irradiance (Wm⁻²nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
 time_labels = times.strftime("%H:%M")
 labels = [
@@ -94,9 +94,9 @@ plt.legend(labels)
 plt.show()
 
 # %%
-# Given the changing irradiance throughout the day, it is not obvious from
-# inspection how the relative distribution of light changes as a function of
-# wavelength. We can normalise the spectral irradiance curves to visualise
+# Given the changing broadband irradiance throughout the day, it is not obvious
+# from inspection how the relative distribution of light changes as a function
+# of wavelength. We can normalise the spectral irradiance curves to visualise
 # this shift in the shape of the spectrum over the course of the day. In
 # this example, we normalise by dividing each spectral irradiance value by the
 # total broadband irradiance, which we calculate by integrating the entire
@@ -129,14 +129,11 @@ plt.show()
 # We can now see from the normalised irradiance curves that at the start and
 # end of the day, the spectrum is red shifted, meaning there is a greater
 # proportion of longer wavelength radiation. Meanwhile, during the middle of
-# the day, there is a blue shift in the spectral distribution, indicating a
-# greater prevalence of shorter wavelength radiation.
+# the day, there is a greater prevalence of shorter wavelength radiation — a
+# blue shifted spectrum.
 #
-# How can we quantify this shift? That is where the average photon energy comes
+# How can we quantify this shift? This is where the average photon energy comes
 # into play.
-#
-# XX shifted relative to what --- itself, reference // clarify --- e.g. AM1.5
-# below
 
 # %%
 # Calculating the average photon energy
@@ -159,9 +156,9 @@ spectra.columns = wavelength  # add wavelength column headers
 ape = spectrum.average_photon_energy(spectra)
 
 # %%
-# We can update the normalised spectral irradiance plot to include each
-# spectrum's irradiance distribution APE value in the legend. Note that the
-# units of the average photon energy here are electronvolts (eV).
+# We can update the normalised spectral irradiance plot to include the APE
+# value of each spectral irradiance distribution in the legend. Note that the
+# units of the APE are electronvolts (eV).
 
 plt.figure()
 plt.plot(wavelength, poa_global_normalised)
@@ -182,22 +179,6 @@ plt.show()
 # APE is observed closer to the middle of the day. For reference, AM1.5 between
 # 300 and 4000 nm is 1.4501 eV. This indicates that the simulated spectra are
 # slightly red shifted with respect to the AM1.5 standard reference spectrum.
-# The table below summarises the APE values calculated for our day under the
-# specified atmospheric conditions.
-
-#    =================== ==========
-#    Time                 APE (eV)
-#    =================== ==========
-#    08:00               1.25
-#    09:00               1.37
-#    10:00               1.40
-#    11:00               1.41
-#    12:00               1.42
-#    13:00               1.41
-#    14:00               1.40
-#    15:00               1.38
-#    16:00               1.28
-#    =================== ==========
 
 # %%
 # References

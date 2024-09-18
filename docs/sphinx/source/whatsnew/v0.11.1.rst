@@ -33,12 +33,19 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-* Changes clearsky.lookup_linke_turbidity and irradiance.get_extra_radiation to use UTC instead of local
-  timezone when determining day of year. pandas does not account for timezone when computing day of year.
-  Instead, pandas returns the DOY using only the time part of the datetime. As a consequence the same
-  datetime with different localizations can yield different DOY values, which can cause small inconsistencies
-  in some solar position and clear sky calculations. (:issue:`2054`, :pull:`2055`)
-
+* To prevent simulation output from differing slightly based on the time zone
+  of the time stamps, models that use day of year for sun position and
+  irradiance calculations now determine the day of year according to the UTC
+  equivalent of the specified time stamps.  The following functions are affected:
+  :py:func:`~pvlib.clearsky.lookup_linke_turbidity`,
+  :py:func:`~pvlib.irradiance.get_extra_radiation`,
+  :py:func:`~pvlib.irradiance.disc`,
+  :py:func:`~pvlib.irradiance.dirint`,
+  :py:func:`~pvlib.spectrum.spectrl2`. (:issue:`2054`, :pull:`2055`)
+* :py:func:`~pvlib.solarposition.hour_angle` and
+  :py:func:`~pvlib.solarposition.sun_rise_set_transit_geometric` now raise
+  ``ValueError`` when given timezone-naive inputs, instead of assuming UTC.
+  (:pull:`2055`)
 
 Testing
 ~~~~~~~

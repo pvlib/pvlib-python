@@ -59,9 +59,7 @@ relative_airmass = atmosphere.get_relative_airmass(solpos.apparent_zenith,
 # more than one set of conditions, the function will return a dictionary
 # containing 2-D arrays for the spectral irradiance components and a 1-D array
 # of shape (122,) for wavelength. For each of the 2-D arrays, one dimension is
-# for wavelength in nm and one is for irradiance in Wm⁻²nm⁻¹. The next section
-# will show how to convert this output into a suitable input for
-# :py:func:`~average_photon_energy`.
+# for wavelength in nm and one is for irradiance in Wm⁻²nm⁻¹.
 
 spectra_components = spectrum.spectrl2(
     apparent_zenith=solpos.apparent_zenith,
@@ -181,13 +179,26 @@ plt.show()
 
 # %%
 # As expected, the morning and evening spectra have a lower APE while a higher
-# APE is observed closer to the middle of the day.
-# XXX for reference am1.5 between 300 and 4000 nm is 1.4501 eV
-# =============================================================================
-# am15 = spectrum.get_am15g()
-# am15 = am15[am15.index>=300]
-# ape_am15 = spectrum.average_photon_energy(am15)
-# =============================================================================
+# APE is observed closer to the middle of the day. For reference, AM1.5 between
+# 300 and 4000 nm is 1.4501 eV. This indicates that the simulated spectra are
+# slightly red shifted with respect to the AM1.5 standard reference spectrum.
+# The table below summarises the APE values calculated for our day under the
+# specified atmospheric conditions.
+
+#    =================== ==========
+#    Time                 APE (eV)
+#    =================== ==========
+#    08:00               1.25
+#    09:00               1.37
+#    10:00               1.40
+#    11:00               1.41
+#    12:00               1.42
+#    13:00               1.41
+#    14:00               1.40
+#    15:00               1.38
+#    16:00               1.28
+#    =================== ==========
+
 # %%
 # References
 # ----------

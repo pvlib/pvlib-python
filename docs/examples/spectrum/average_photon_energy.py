@@ -204,13 +204,14 @@ plt.show()
 # ----------
 # .. [1] Jardine, C., et al., 2002, January. Influence of spectral effects on
 #        the performance of multijunction amorphous silicon cells. In Proc.
-#        Photovoltaic in Europe Conference (pp. 1756-1759).
+#        Photovoltaic in Europe Conference (pp. 1756-1759)
 # .. [2] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
 #        direct and diffuse irradiance on horizontal and tilted planes at the
 #        earth's surface for cloudless atmospheres", NREL Technical Report
-#        TR-215-2436 :doi:`10.2172/5986936`.
+#        TR-215-2436 :doi:`10.2172/5986936`
 # .. [3] Daxini, R., and Wu, Y., 2023. "Review of methods to account
 #        for the solar spectral influence on photovoltaic device performance."
 #        Energy 286 :doi:`10.1016/j.energy.2023.129461`
-# .. [4] Bird Simple Spectral Model: spectrl2_2.c.
+# .. [4] Bird Simple Spectral Model: spectrl2_2.c
 #        https://www.nrel.gov/grid/solar-resource/spectral.html
+#        (Last accessed: 18/09/2024)

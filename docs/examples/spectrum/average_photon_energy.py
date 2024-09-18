@@ -180,35 +180,14 @@ plt.legend(labels)
 plt.show()
 
 # %%
-# The table below summarises the hourly APE values observed throughout the day.
-# .. list-table:: Hourly APE values
-#   :widths: 25 25
-#   :header-rows: 1
-#
-#   * - Time
-#     - APE (eV)
-#   * - 08:00
-#     - 1.25
-#   * - 09:00
-#     - 1.37
-#   * - 10:00
-#     - 1.40
-#   * - 11:00
-#     - 1.41
-#   * - 12:00
-#     - 1.42
-#   * - 13:00
-#     - 1.41
-#   * - 14:00
-#     - 1.40
-#   * - 15:00
-#     - 1.38
-#   * - 16:00
-#     - 1.28
-#
-# %%
 # As expected, the morning and evening spectra have a lower APE while a higher
 # APE is observed closer to the middle of the day.
+# XXX for reference am1.5 between 300 and 4000 nm is 1.4501 eV
+# =============================================================================
+# am15 = spectrum.get_am15g()
+# am15 = am15[am15.index>=300]
+# ape_am15 = spectrum.average_photon_energy(am15)
+# =============================================================================
 # %%
 # References
 # ----------

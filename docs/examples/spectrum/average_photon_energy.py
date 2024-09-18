@@ -12,9 +12,9 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # :py:func:`~pvlib.spectrum.average_photon_energy` function to calculate the
 # Average Photon Energy (APE, :math:`\overline{E_\gamma}`) of spectral
 # irradiance distributions simulated using :py:func:`~pvlib.spectrum.spectrl2`.
-# More information on the SPECTRL2 model can be found in [2]_.
+# More information on the SPECTRL2 model can be found in [1]_.
 # The APE parameter is a useful indicator of the overall shape of the solar
-# spectrum [1]_. Higher (lower) APE values indicate a blue (red) shift in the
+# spectrum [2]_. Higher (lower) APE values indicate a blue (red) shift in the
 # spectrum and is one of a variety of such characterisation methods that is
 # used in the PV performance literature [3]_.
 #
@@ -183,13 +183,13 @@ plt.show()
 # %%
 # References
 # ----------
-# .. [1] Jardine, C., et al., 2002, January. Influence of spectral effects on
-#        the performance of multijunction amorphous silicon cells. In Proc.
-#        Photovoltaic in Europe Conference (pp. 1756-1759)
-# .. [2] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
+# .. [1] Bird, R, and Riordan, C., 1984, "Simple solar spectral model for
 #        direct and diffuse irradiance on horizontal and tilted planes at the
 #        earth's surface for cloudless atmospheres", NREL Technical Report
 #        TR-215-2436 :doi:`10.2172/5986936`
+# .. [2] Jardine, C., et al., 2002, January. Influence of spectral effects on
+#        the performance of multijunction amorphous silicon cells. In Proc.
+#        Photovoltaic in Europe Conference (pp. 1756-1759)
 # .. [3] Daxini, R., and Wu, Y., 2023. "Review of methods to account
 #        for the solar spectral influence on photovoltaic device performance."
 #        Energy 286 :doi:`10.1016/j.energy.2023.129461`

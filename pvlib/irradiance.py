@@ -263,7 +263,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
                          dni, ghi, dhi, dni_extra=None, airmass=None,
                          albedo=0.25, surface_type=None,
                          model='isotropic',
-                         model_perez='allsitescomposite1990'):
+                         model_perez='allsitescomposite1990', b=5.73):
     r"""
     Determine total in-plane irradiance and its beam, sky diffuse and ground
     reflected components, using the specified sky diffuse irradiance model.
@@ -280,6 +280,7 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
         * king
         * perez
         * perez-driesse
+        * muneer
 
     Parameters
     ----------
@@ -309,9 +310,12 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
         ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
-        ``'perez-driesse'``.
+        ``'perez-driesse'`` and ``'muneer
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
+    b : numeric, default 5.73
+        Used only if ``model='muneer'``.
+        See :py:func:`~pvlib.irradiance.muneer`.
 
     Returns
     -------
@@ -321,19 +325,19 @@ def get_total_irradiance(surface_tilt, surface_azimuth,
 
     Notes
     -----
-    Models ``'haydavies'``, ``'reindl'``, ``'perez'`` and ``'perez-driesse'``
-    require ``'dni_extra'``. Values can be calculated using
-    :py:func:`~pvlib.irradiance.get_extra_radiation`.
+    Models ``'haydavies'``, ``'reindl'``, ``'perez'``, ``'perez-driesse'``,
+    and ``'muneer'`` require ``'dni_extra'``. Values of ``'dni_extra'``
+    can be calculated using :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
     The ``'perez'`` and ``'perez-driesse'`` models require relative airmass
-    (``airmass``) as input. If ``airmass`` is not provided, it is calculated
+    (``airmass``) as an input. If ``airmass`` is not provided, it is calculated
     using the defaults in :py:func:`~pvlib.atmosphere.get_relative_airmass`.
     """
 
     poa_sky_diffuse = get_sky_diffuse(
         surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         dni, ghi, dhi, dni_extra=dni_extra, airmass=airmass, model=model,
-        model_perez=model_perez)
+        model_perez=model_perez, b=b)
 
     poa_ground_diffuse = get_ground_diffuse(surface_tilt, ghi, albedo,
                                             surface_type)
@@ -346,7 +350,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
                     solar_zenith, solar_azimuth,
                     dni, ghi, dhi, dni_extra=None, airmass=None,
                     model='isotropic',
-                    model_perez='allsitescomposite1990'):
+                    model_perez='allsitescomposite1990', b=5.73):
     r"""
     Determine in-plane sky diffuse irradiance component
     using the specified sky diffuse irradiance model.
@@ -359,6 +363,7 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         * king
         * perez
         * perez-driesse
+        * muneer
 
     Parameters
     ----------
@@ -383,9 +388,12 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     model : str, default 'isotropic'
         Irradiance model. Can be one of ``'isotropic'``, ``'klucher'``,
         ``'haydavies'``, ``'reindl'``, ``'king'``, ``'perez'``,
-        ``'perez-driesse'``.
+        ``'perez-driesse'``, ``'muneer'``.
     model_perez : str, default 'allsitescomposite1990'
         Used only if ``model='perez'``. See :py:func:`~pvlib.irradiance.perez`.
+    b : numeric, default 5.73
+        Used only if ``model='muneer'``.
+        See :py:func:`~pvlib.irradiance.muneer`.
 
     Returns
     -------
@@ -395,14 +403,15 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
     Raises
     ------
     ValueError
-        If model is one of ``'haydavies'``, ``'reindl'``, ``'perez'``,  or
-        ``'perez_driesse'`` and ``dni_extra`` is not specified.
+        If model is one of ``'haydavies'``, ``'reindl'``, ``'perez'``,
+        ``'perez_driesse'``, or ``'muneer'`` and ``dni_extra`` is not
+        specified.
 
     Notes
     -----
-    Models ``'haydavies'``, ``'reindl'``, ``'perez'`` and ``'perez-driesse'``
-    require ``'dni_extra'``. Values can be calculated using
-    :py:func:`~pvlib.irradiance.get_extra_radiation`.
+    Models ``'haydavies'``, ``'reindl'``, ``'perez'``, ``'perez-driesse'``
+    and ``'muneer'`` require ``'dni_extra'``. Values can be calculated
+    using :py:func:`~pvlib.irradiance.get_extra_radiation`.
 
     The ``'Perez'`` transposition model features discontinuities in the
     predicted tilted diffuse irradiance due to relying on discrete input
@@ -443,6 +452,9 @@ def get_sky_diffuse(surface_tilt, surface_azimuth,
         # perez_driesse will calculate its own airmass if needed
         sky = perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                             solar_zenith, solar_azimuth, airmass)
+    elif model == 'muneer':
+        sky = muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra,
+                     b, solar_zenith, solar_azimuth)
     else:
         raise ValueError(f'invalid model selection {model}')
 
@@ -990,6 +1002,117 @@ def king(surface_tilt, dhi, ghi, solar_zenith):
                    (0.012 * solar_zenith - 0.04) *
                    (1 - tools.cosd(surface_tilt)) / 2)
     sky_diffuse = np.maximum(sky_diffuse, 0)
+
+    return sky_diffuse
+
+
+def muneer(surface_tilt, surface_azimuth, dhi, ghi, dni_extra, b=5.73,
+           solar_zenith=None, solar_azimuth=None, projection_ratio=None):
+    '''
+    Determine sky diffuse irradiance on a tilted surface using the
+    Muneer model.
+
+    This Muneer transposition model is described in [1]_.
+
+    Parameters
+    ----------
+    surface_tilt : numeric
+        Surface tilt angles in decimal degrees. ``surface_tilt`` must
+        be >=0 and <=180. The tilt angle is defined as degrees from horizontal
+        (e.g. surface facing up = 0, surface facing horizon = 90)
+
+    surface_azimuth : numeric
+        Surface azimuth angles in decimal degrees. ``surface_azimuth``
+        must be >=0 and <=360. The azimuth convention is defined as degrees
+        east of north (e.g. North = 0, South=180 East = 90, West = 270).
+
+    dhi : numeric
+        Diffuse horizontal irradiance. [W/m^2]
+
+    ghi : numeric
+        Global horizontal irradiance. [W/m^2]
+
+    dni_extra : numeric
+        Extraterrestrial normal irradiance. [W/m^2]
+
+    b : numeric, default 5.73
+        Radiance distribution index, introduced by Moon and Spencer [2]_
+        to model luminance distribution of overcast sky. [unitless]
+        Recommended values from [1]_:
+
+           - isotropic: b = 0
+           - shaded surface: b = 5.73 (default)
+           - sunlit surface, overcast sky: b = 1.68
+           - sunlit surface, non-overcast sky: b = -0.62
+
+    solar_zenith : numeric
+        Solar apparent (refraction-corrected) zenith angles in decimal
+        degrees. Must supply ``solar_zenith`` and ``solar_azimuth`` or
+        supply ``projection_ratio``.
+
+    solar_azimuth : numeric
+        Solar azimuth angles in decimal degrees. Must supply
+        ``solar_zenith`` and ``solar_azimuth`` or supply
+        ``projection_ratio``.
+
+    projection_ratio : numeric, optional
+        Ratio of cosine of angle of incidence to cosine of solar zenith
+        angle. [unitless]
+
+    Returns
+    -------
+    poa_sky_diffuse : numeric
+        In-plane diffuse irradiance from the sky. [W/m^2]
+
+    References
+    ----------
+    .. [1] Muneer, T., 1990. Solar radiation model for Europe. Building
+       Services Engineering Research and Technology 11, 153-163.
+       :doi:`10.1177/014362449001100405`
+
+    .. [2] Moon, P., and Spencer, D. E., 1942. Illumination from a
+       non-uniform sky.
+       Trans. Illum. Eng. Soc. (London) 37, 707-725.
+    '''
+
+    cos_solar_zenith = tools.cosd(solar_zenith)
+    # if necessary, calculate ratio of titled and horizontal beam irradiance
+    if projection_ratio is None:
+        cos_tt = aoi_projection(surface_tilt, surface_azimuth,
+                                solar_zenith, solar_azimuth)
+        cos_tt = np.maximum(cos_tt, 0)  # GH 526
+        Rb = cos_tt / np.maximum(cos_solar_zenith, 0.01745)  # GH 432
+    else:
+        Rb = projection_ratio
+
+    T_term1 = (1 + tools.cosd(surface_tilt)) * 0.5
+    T_term2 = 2 * b / (np.pi * (3 + 2 * b))
+    T_term3 = (
+        tools.sind(surface_tilt)
+        - np.radians(surface_tilt) * tools.cosd(surface_tilt)
+        - np.pi * (1 - tools.cosd(surface_tilt)) * 0.5
+    )
+    T = T_term1 + T_term2 * T_term3
+
+    horizontal_extra = dni_extra * \
+        np.maximum(cos_solar_zenith, 0.01745)  # GH 432
+    F = (ghi - dhi) / horizontal_extra
+
+    solar_elevation = np.pi/2 - np.radians(solar_zenith)
+
+    numer_low = tools.sind(surface_tilt) * \
+        tools.cosd(surface_azimuth - solar_azimuth)
+    denom_low = 0.1 - 0.008 * solar_elevation
+
+    sky_diffuse_low = dhi*(T*(1-F) + F*(numer_low/denom_low))
+    sky_diffuse_high = dhi*(T*(1-F) + F*Rb)
+
+    low_elevation_condition = solar_elevation < 0.1
+    sky_diffuse = np.where(low_elevation_condition,
+                           sky_diffuse_low, sky_diffuse_high)
+    if isinstance(sky_diffuse_low, pd.Series):
+        sky_diffuse = pd.Series(sky_diffuse,
+                                index=sky_diffuse_low.index)
 
     return sky_diffuse
 

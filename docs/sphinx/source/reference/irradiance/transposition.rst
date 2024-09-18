@@ -15,4 +15,5 @@ Transposition models
    irradiance.klucher
    irradiance.reindl
    irradiance.king
+   irradiance.muneer
    irradiance.ghi_from_poa_driesse_2023

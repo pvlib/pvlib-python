@@ -630,7 +630,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
             solar_azimuth):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface
-    using the Klucher (1979) model [1]_[2]_.
+    using the Klucher (1979) model [1]_ [2]_.
 
     Parameters
     ----------
@@ -676,10 +676,10 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     .. math::
 
-       I_{d} = DHI \frac{1 + \cos\theta_T}{2} (1 + F' \sin^3(\theta_T/2))
+       I_{d} = DHI \frac{1 + \cos\beta}{2} (1 + F' \sin^3(\beta/2))
        (1 + F' \cos^2\theta\sin^3\theta_z).
 
-    DHI is the diffuse horizontal irradiance, :math:`\theta_T` is the surface
+    DHI is the diffuse horizontal irradiance, :math:`\beta` is the surface
     tilt angle, :math:`\theta_z` is the solar zenith angle, and :math:`\theta`
     is the angle of incidence. :math:`F'` is a modulating function to account
     for when the sky changes from clear to overcast, and is defined as follows:
@@ -698,6 +698,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     .. [2] Loutzenhiser P.G. et. al. "Empirical validation of models to
        compute solar irradiance on inclined surfaces for building energy
        simulation" 2007, Solar Energy vol. 81. pp. 254-267
+       :doi:`10.1016/j.solener.2006.03.009`
     '''
 
     # zenith angle with respect to panel normal.

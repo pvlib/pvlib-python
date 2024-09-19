@@ -432,7 +432,8 @@ def test_convert_cec_pvsyst():
 
 
 def test_convert_pvsyst_cec():
-    trina660_pvsyst = {'alpha_sc': 0.0074, 'I_o_ref': 3.3e-11, 'EgRef': 1.121,
+    trina660_pvsyst = {'alpha_sc': 0.0074, 'I_L_ref': 18.464391,
+                       'I_o_ref': 3.3e-11, 'EgRef': 1.121,
                        'R_s': 0.156, 'R_sh_ref': 200, 'R_sh_0': 800,
                        'R_sh_exp': 5.5, 'gamma_ref': 1.002, 'mu_gamma': 1e-3,
                        'cells_in_series': 66}

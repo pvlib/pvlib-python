@@ -28,7 +28,7 @@ CONSTANTS = {'E0': 1000.0, 'T0': 25.0, 'k': constants.k, 'q': constants.e}
 
 IEC61853 = pd.DataFrame(
     columns=['effective_irradiance', 'temp_cell'],
-    data = np.array(
+    data=np.array(
         [[100, 100, 100, 100, 200, 200, 200, 200, 400, 400, 400, 400,
           600, 600, 600, 600, 800, 800, 800, 800, 1000, 1000, 1000, 1000,
           1100, 1100, 1100, 1100],
@@ -1556,7 +1556,7 @@ def convert_pvsyst_cec(pvsyst_model):
 
     Parameters
     ----------
-    cec_model : dict or DataFrame
+    pvsyst_model : dict or DataFrame
         Must include keys: 'alpha_sc', 'I_L_ref', 'I_o_ref', 'EgRef', 'R_s',
         'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'gamma_ref', 'mu_gamma',
         'cells_in_series'

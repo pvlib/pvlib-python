@@ -445,8 +445,7 @@ def test_convert_pvsyst_cec():
                     'dEgdT': -0.0002677,
                     'R_s': 0.09436341848926795,
                     'a_ref': 1.2954800250731866,
-                    'Adjust': 0.0011675969492410047,
-                    'cells_in_series': 66}
+                    'Adjust': 0.0011675969492410047}
 
     assert np.all([np.isclose(trina660_cec_est[k], cec_expected[k],
                               rtol=1e-3)

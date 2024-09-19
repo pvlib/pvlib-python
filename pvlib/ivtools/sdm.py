@@ -1462,6 +1462,10 @@ def convert_cec_pvsyst(cec_model, cells_in_series):
     Reference conditions are irradiance of 1000 W/m⁻² and cell temperature of
     25 °C.
 
+    See Also
+    --------
+    pvlib.ivtools.sdm.convert_pvsyst_cec
+
     References
     ----------
     .. [1] L. Deville et al., "Parameter Translation for Photovoltaic Single
@@ -1591,6 +1595,10 @@ def convert_pvsyst_cec(pvsyst_model):
     -----
     Reference conditions are irradiance of 1000 W/m⁻² and cell temperature of
     25 °C.
+
+    See Also
+    --------
+    pvlib.ivtools.sdm.convert_cec_pvsyst
 
     References
     ----------

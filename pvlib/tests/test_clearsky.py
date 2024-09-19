@@ -1,17 +1,22 @@
 from collections import OrderedDict
 
 import numpy as np
-import pandas as pd
-import pytest
-import pytz
 from numpy import nan
-from numpy.testing import assert_allclose
+import pandas as pd
+import pytz
 from scipy.linalg import hankel
 
-from pvlib import atmosphere, clearsky, irradiance, solarposition
-from pvlib.location import Location
+import pytest
+from numpy.testing import assert_allclose
+from .conftest import assert_frame_equal, assert_series_equal
 
-from .conftest import DATA_DIR, assert_frame_equal, assert_series_equal
+from pvlib.location import Location
+from pvlib import clearsky
+from pvlib import solarposition
+from pvlib import atmosphere
+from pvlib import irradiance
+
+from .conftest import DATA_DIR
 
 
 def test_ineichen_series():
@@ -672,16 +677,12 @@ def test_detect_clearsky_not_enough_data(detect_clearsky_data):
     with pytest.raises(ValueError, match='have at least'):
        clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=60)
 
-@pytest.mark.parametrize("window_length", [5, 10, 15, 20, 25])
-def test_detect_clearsky_optimizer_not_failed(
-        detect_clearsky_data, 
-        window_length
-    ):
+
+def test_detect_clearsky_optimizer_failed(detect_clearsky_data):
     expected, cs = detect_clearsky_data
-    clear_samples = clearsky.detect_clearsky(
-        expected["GHI"], cs["ghi"], window_length=window_length
-    )
-    assert isinstance(clear_samples, pd.Series)
+    with pytest.raises(RuntimeError, match='Optimizer exited unsuccessfully'):
+        clearsky.detect_clearsky(expected['GHI'], cs['ghi'], window_length=15)
+
 
 @pytest.fixture
 def detect_clearsky_helper_data():

@@ -31,7 +31,7 @@ jobs:
     steps:
       # We check out only a limited depth and then pull tags to save time
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 100
 
@@ -60,7 +60,7 @@ jobs:
 
       - name: Install bare Python ${{ matrix.python-version }}${{ matrix.suffix }}
         if: matrix.environment-type == 'bare'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 

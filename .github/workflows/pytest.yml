@@ -55,6 +55,7 @@ jobs:
 
       - name: List installed package versions (conda)
         if: matrix.environment-type == 'conda'
+        shell: bash -l {0}  # necessary for conda env to be active
         run: micromamba list
 
       - name: Install bare Python ${{ matrix.python-version }}${{ matrix.suffix }}
@@ -65,6 +66,7 @@ jobs:
 
       - name: Install pvlib
         if: matrix.environment-type == 'conda'
+        shell: bash -l {0}
         run: python -m pip install --no-deps .
 
       - name: Set up bare environment
@@ -74,6 +76,7 @@ jobs:
           pip freeze
 
       - name: Run tests
+        shell: bash -l {0}  # necessary for conda env to be active
         run: |
           # ignore iotools; those tests are run in a separate workflow
           pytest pvlib --cov=./ --cov-report=xml --ignore=pvlib/tests/iotools

@@ -11,6 +11,9 @@ on:
 jobs:
   quick-benchmarks:
     runs-on: ubuntu-latest
+    defaults: 
+      run:
+        shell: bash -el {0}
 
     steps:
       - uses: actions/checkout@v4

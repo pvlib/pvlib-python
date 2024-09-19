@@ -89,9 +89,11 @@ jobs:
           REQUIREMENTS: ci/requirements-py${{ matrix.python-version }}${{ matrix.suffix }}.yml
 
       - name: List installed package versions
+        shell: bash -l {0}  # necessary for conda env to be active
         run: conda list
 
       - name: Run tests
+        shell: bash -l {0}  # necessary for conda env to be active
         env:
           # copy GitHub Secrets into environment variables for the tests to access
           NREL_API_KEY: ${{ secrets.NRELAPIKEY }}

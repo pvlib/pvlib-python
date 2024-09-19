@@ -3,15 +3,14 @@ The ``clearsky`` module contains several methods
 to calculate clear sky GHI, DNI, and DHI.
 """
 
+import calendar
 import os
 from collections import OrderedDict
-import calendar
 
+import h5py
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
-import h5py
 
 from pvlib import atmosphere, tools
 from pvlib.tools import _degrees_to_index
@@ -874,24 +873,11 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         clear_meas = meas[clear_samples]
         clear_clear = clear[clear_samples]
 
-        def rmse(alpha):
-            return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
-
-        optimize_result = minimize_scalar(rmse)
-        if not optimize_result.success:
-            try:
-                message = "Optimizer exited unsuccessfully: " \
-                           + optimize_result.message
-            except AttributeError:
-                message = "Optimizer exited unsuccessfully: \
-                           No message explaining the failure was returned. \
-                           If you would like to see this message, please \
-                           update your scipy version (try version 1.8.0 \
-                           or beyond)."
-            raise RuntimeError(message)
-
-        else:
-            alpha = optimize_result.x
+        # Compute arg min of MSE between model and observations
+        C = (clear_clear**2).sum()
+        if not (pd.isna(C) or C == 0):  # safety check
+            # only update alpha if C is strictly positive
+            alpha = (clear_meas * clear_clear).sum() / C
 
         if round(alpha*10000) == round(previous_alpha*10000):
             break

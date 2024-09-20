@@ -140,4 +140,4 @@ pvlib python is a `NumFOCUS Affiliated Project <https://numfocus.org/sponsored-p
    gallery/index
    reference/index
    whatsnew
-   contributing
+   contributing/index

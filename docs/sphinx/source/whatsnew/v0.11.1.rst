@@ -54,6 +54,8 @@ Documentation
 
 * Removed unused "times" input from dni_et() function (:issue:`2105`)
 
+* Split the contributing page into several pages (:issue:`2210`, :pull:`2219`)
+
 Requirements
 ~~~~~~~~~~~~
 

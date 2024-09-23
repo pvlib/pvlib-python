@@ -30,9 +30,9 @@ Enhancements
 * Added function for calculating wind speed at different heights,
   :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)
-* Implemented closed-form solution for alpha in detect_clearsky, obviating
-  the call to scipy.optimize that was prone to runtime errors and minimizing
-  computation, :py:func:`pvlib.clearsky.detect_clearsky`. Resolves :issue:`2712`.
+* Implemented closed-form solution for alpha in :py:func:`pvlib.clearsky.detect_clearsky`, 
+  obviating the call to scipy.optimize that was prone to runtime errors and minimizing
+  computation. (:issue:`2171`, :issue:`2216`, :pull:`2217`).
 
 
 Bug fixes

@@ -5,8 +5,8 @@ Testing
 
 .. _overview:
 
-Oveview
-~~~~~~~
+Overview
+~~~~~~~~
 
 Developers **must** include comprehensive tests for any additions or
 modifications to pvlib. New unit test code should be placed in the

@@ -24,7 +24,7 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # `Modelling Spectral Irradiance
 # <https://pvlib-python.readthedocs.io/en/stable/gallery/spectrum/plot_spectrl2_fig51A.html>`_
 # example, which reproduces a figure from [4]_. The first step is to
-# import the required packages and define some basic system parameters and
+# import the required packages and define some basic system parameters
 # and meteorological conditions.
 
 # %%
@@ -119,7 +119,7 @@ plt.ylabel(r"Normalised Irradiance (nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
 time_labels = times.strftime("%H:%M")
 labels = [
-    "{}, AM {:0.02f}".format(*vals)
+    "{}, AM={:0.02f}".format(*vals)
     for vals in zip(time_labels, relative_airmass)
 ]
 plt.legend(labels)
@@ -138,7 +138,7 @@ plt.show()
 # %%
 # Calculating the average photon energy
 # -------------------------------------
-# To calculate the APE, first we must convert our output spectra from from the
+# To calculate the APE, first we must convert our output spectra from the
 # simulation into a compatible input for
 # :py:func:`pvlib.spectrum.average_photon_energy`. Since we have more than one
 # spectral irradiance distribution, a :py:class:`pandas.DataFrame` is
@@ -168,7 +168,7 @@ plt.ylabel(r"Normalised Irradiance (nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
 time_labels = times.strftime("%H:%M")
 labels = [
-    "{}, APE {:0.02f}".format(*vals)
+    "{}, APE={:0.02f}".format(*vals)
     for vals in zip(time_labels, ape)
 ]
 plt.legend(labels)

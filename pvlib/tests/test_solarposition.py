@@ -490,7 +490,7 @@ def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
                           periods=2, freq='D', tz=golden.tz)
     with warnings.catch_warnings():
-        # don't warn on method reload or num threads
+        # don't warn on method reload
         warnings.simplefilter("ignore")
         ephem_data = solarposition.get_solarposition(times, golden.latitude,
                                                      golden.longitude,
@@ -838,7 +838,7 @@ def test_spa_python_numba_physical(expected_solpos, golden_mst):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 12, 30, 30),
                           periods=1, freq='D', tz=golden_mst.tz)
     with warnings.catch_warnings():
-        # don't warn on method reload or num threads
+        # don't warn on method reload
         # ensure that numpy is the most recently used method so that
         # we can use the warns filter below
         warnings.simplefilter("ignore")
@@ -865,7 +865,7 @@ def test_spa_python_numba_physical_dst(expected_solpos, golden):
                           periods=1, freq='D', tz=golden.tz)
 
     with warnings.catch_warnings():
-        # don't warn on method reload or num threads
+        # don't warn on method reload
         warnings.simplefilter("ignore")
         ephem_data = solarposition.spa_python(times, golden.latitude,
                                               golden.longitude, pressure=82000,

@@ -1411,7 +1411,8 @@ def _pvsyst_objfun(pvs_mod, cec_ivs, ee, tc, cs):
     return mean_abs_diff
 
 
-def convert_cec_pvsyst(cec_model, cells_in_series):
+def convert_cec_pvsyst(cec_model, cells_in_series, method='Nelder-Mead',
+                       options=None):
     r"""
     Convert a CEC model to a PVsyst model.
 
@@ -1426,6 +1427,10 @@ def convert_cec_pvsyst(cec_model, cells_in_series):
         'R_sh_ref', 'R_s', 'Adjust'
     cell_in_series : int
         Number of cells in series.
+    method : str, default 'Nelder-Mead'
+        Method for scipy.optimize.minimize.
+    options : dict, optional
+        Solver options passed to scipy.optimize.minimize
 
     Returns
     -------
@@ -1474,6 +1479,8 @@ def convert_cec_pvsyst(cec_model, cells_in_series):
     .. [2] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
     """
+    if options==None:
+        options = {'maxiter': 5000, 'maxfev': 5000, 'xatol': 0.001}
 
     # calculate target IV curve values
     cec_params = calcparams_cec(
@@ -1504,8 +1511,10 @@ def convert_cec_pvsyst(cec_model, cells_in_series):
         _pvsyst_objfun, initial,
         args=(cec_ivs, IEC61853['effective_irradiance'],
               IEC61853['temp_cell'], cells_in_series),
-        method='Nelder-Mead', bounds=bounds,
-        options={'maxiter': 5000, 'maxfev': 5000, 'xatol': 0.001})
+        method='Nelder-Mead',
+        bounds=bounds,
+        options=options)
+
     alpha_sc, gamma, mu_gamma, I_L_ref, I_o_ref, Rsh_mult, R_sh_ref, R_s = \
         result.x
 
@@ -1550,7 +1559,7 @@ def _cec_objfun(cec_mod, pvs_ivs, ee, tc, alpha_sc):
     return mean_diff
 
 
-def convert_pvsyst_cec(pvsyst_model):
+def convert_pvsyst_cec(pvsyst_model, method='Nelder-Mead', options=None):
     r"""
     Convert a PVsyst model to a CEC model.
 
@@ -1564,6 +1573,10 @@ def convert_pvsyst_cec(pvsyst_model):
         Must include keys: 'alpha_sc', 'I_L_ref', 'I_o_ref', 'EgRef', 'R_s',
         'R_sh_ref', 'R_sh_0', 'R_sh_exp', 'gamma_ref', 'mu_gamma',
         'cells_in_series'
+    method : str, default 'Nelder-Mead'
+        Method for scipy.optimize.minimize.
+    options : dict, optional
+        Solver options passed to scipy.optimize.minimize
 
     Returns
     -------
@@ -1608,6 +1621,10 @@ def convert_pvsyst_cec(pvsyst_model):
     .. [2] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
     """
+
+    if options==None:
+        options = {'maxiter': 5000, 'maxfev': 5000, 'xatol': 0.001}
+
     # calculate target IV curve values
     pvs_params = calcparams_pvsyst(
         IEC61853['effective_irradiance'],
@@ -1641,8 +1658,10 @@ def convert_pvsyst_cec(pvsyst_model):
         _cec_objfun, initial,
         args=(pvsyst_ivs, IEC61853['effective_irradiance'],
               IEC61853['temp_cell'], pvsyst_model['alpha_sc']),
-        method='Nelder-Mead', bounds=bounds,
-        options={'maxiter': 5000, 'maxfev': 5000, 'xatol': 0.001})
+        method='Nelder-Mead',
+        bounds=bounds,
+        options=options)
+
     I_L_ref, I_o_ref, a_ref, R_sh_ref, R_s, Adjust = result.x
 
     return {'alpha_sc': pvsyst_model['alpha_sc'],

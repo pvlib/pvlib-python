@@ -51,6 +51,7 @@ Documentation
 * Added gallery example demonstrating how to use
   different Perez coefficients in a ModelChain.
   (:issue:`2127`, :pull:`2148`)
+* Fixed examples in :py:func:`pvlib.shading.shaded_fraction1d`. (:pull:`#2215`)
 
 * Removed unused "times" input from dni_et() function (:issue:`2105`)
 

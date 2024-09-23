@@ -106,7 +106,7 @@ def test_get_extra_radiation_epoch_year():
 @requires_numba
 def test_get_extra_radiation_nrel_numba(times):
     with warnings.catch_warnings():
-        # don't warn on method reload or num threads
+        # don't warn on method reload
         warnings.simplefilter("ignore")
         result = irradiance.get_extra_radiation(
             times, method='nrel', how='numba', numthreads=4)

@@ -76,8 +76,8 @@ spectra_components = spectrum.spectrl2(
 # %%
 # Visualising the spectral data
 # -----------------------------
-# Let's take a look at the spectral irradiance data simulated on the hour for
-# eight hours on the first day of 2023.
+# Let's take a look at the spectral irradiance data simulated hourly for eight
+# hours on the first day of 2023.
 
 plt.figure()
 plt.plot(spectra_components['wavelength'], spectra_components['poa_global'])

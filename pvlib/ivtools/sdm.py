@@ -1414,11 +1414,13 @@ def _pvsyst_objfun(pvs_mod, cec_ivs, ee, tc, cs):
 def convert_cec_pvsyst(cec_model, cells_in_series, method='Nelder-Mead',
                        options=None):
     r"""
-    Convert a CEC model to a PVsyst model.
+    Convert a set of CEC model parameters to an equivalent set of PVsyst model
+    parameters.
 
-    Uses optimization to fit the PVsyst model to :math:`I_{sc}`,
-    :math:`V_{oc}`, :math:`V_{mp}`, :math:`I_{mp}`, and :math:`P_{mp}`,
-    calculated using the input CEC model at the IEC 61853-3 conditions [2]_.
+    Parameter conversion uses optimization as described in [1]_ to fit the
+    PVsyst model to :math:`I_{sc}`, :math:`V_{oc}`, :math:`V_{mp}`,
+    :math:`I_{mp}`, and :math:`P_{mp}`, calculated using the input CEC model
+    at the IEC 61853-3 conditions [2]_.
 
     Parameters
     ----------
@@ -1430,7 +1432,7 @@ def convert_cec_pvsyst(cec_model, cells_in_series, method='Nelder-Mead',
     method : str, default 'Nelder-Mead'
         Method for scipy.optimize.minimize.
     options : dict, optional
-        Solver options passed to scipy.optimize.minimize
+        Solver options passed to scipy.optimize.minimize.
 
     Returns
     -------
@@ -1479,7 +1481,7 @@ def convert_cec_pvsyst(cec_model, cells_in_series, method='Nelder-Mead',
     .. [2] "IEC 61853-3 Photovoltaic (PV) module performance testing and energy
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
     """
-    if options==None:
+    if options is None:
         options = {'maxiter': 5000, 'maxfev': 5000, 'xatol': 0.001}
 
     # calculate target IV curve values
@@ -1561,11 +1563,13 @@ def _cec_objfun(cec_mod, pvs_ivs, ee, tc, alpha_sc):
 
 def convert_pvsyst_cec(pvsyst_model, method='Nelder-Mead', options=None):
     r"""
-    Convert a PVsyst model to a CEC model.
+    Convert a set of PVsyst model parameters to an equivalent set of CEC model
+    parameters.
 
-    Uses optimization to fit the CEC model to :math:`I_{sc}`,
-    :math:`V_{oc}`, :math:`V_{mp}`, :math:`I_{mp}`, and :math:`P_{mp}`,
-    calculated using the input PVsyst model at the IEC 61853-3 conditions [2]_.
+    Parameter conversion uses optimization as described in [1]_ to fit the
+    CEC model to :math:`I_{sc}`, :math:`V_{oc}`, :math:`V_{mp}`,
+    :math:`I_{mp}`, and :math:`P_{mp}`, calculated using the input PVsyst model
+    at the IEC 61853-3 conditions [2]_.
 
     Parameters
     ----------
@@ -1576,7 +1580,7 @@ def convert_pvsyst_cec(pvsyst_model, method='Nelder-Mead', options=None):
     method : str, default 'Nelder-Mead'
         Method for scipy.optimize.minimize.
     options : dict, optional
-        Solver options passed to scipy.optimize.minimize
+        Solver options passed to scipy.optimize.minimize.
 
     Returns
     -------
@@ -1622,7 +1626,7 @@ def convert_pvsyst_cec(pvsyst_model, method='Nelder-Mead', options=None):
        rating - Part 3: Energy rating of PV modules". IEC, Geneva, 2018.
     """
 
-    if options==None:
+    if options is None:
         options = {'maxiter': 5000, 'maxfev': 5000, 'xatol': 0.001}
 
     # calculate target IV curve values

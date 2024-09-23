@@ -30,6 +30,8 @@ Enhancements
 * Added function for calculating wind speed at different heights,
   :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)
+* The multithreaded SPA functions no longer emit a warning when calculating
+  solar positions for short time series. (:pull:`2170`)
 
 Bug fixes
 ~~~~~~~~~

@@ -773,9 +773,9 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Returns
     --------
     numeric, OrderedDict, or DataFrame
-        Return type controlled by `return_components` argument.
-        If ``return_components=False``, `sky_diffuse` is returned.
-        If ``return_components=True``, `diffuse_components` is returned.
+        Return type controlled by ``return_components`` argument.
+        If `False`, ``sky_diffuse`` is returned.
+        If `True`, ``diffuse_components`` is returned.
 
     sky_diffuse : numeric
         The sky diffuse component of the solar radiation on a tilted
@@ -790,8 +790,8 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Notes
     ------
-    The expression for the diffuse irradiance, :math:`I_d`, in the Hay and
-    Davies sky diffuse model is as follows:
+    In the Hay and Davies (1980) model, sky diffuse irradiance, :math:`I_d`,
+    is as follows:
 
     .. math::
             I_{d} = DHI \left( A\cdot R_b + (1 - A) \left(\frac{
@@ -804,7 +804,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     cosine of the angle of incidence (AOI) to the cosine of the zenith angle,
     and finally :math:`\beta` is the tilt angle of the array.
 
-    When supplying ``projection_ratio``, consider constraining its values
+    If supplying ``projection_ratio``, consider constraining its values
     when the zenith angle approaches 90 degrees or the AOI projection is
     negative. See code for details.
 

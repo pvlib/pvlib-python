@@ -603,11 +603,11 @@ def test_poa_components(irrad_data, ephem_data, dni_et, relative_airmass):
 
 @pytest.mark.parametrize('pressure,expected', [
     (93193,  [[830.46567,   0.79742,   0.93505],
-              [676.09497,   0.63776,   3.02102]]),
+              [676.18340,   0.63782,   3.02102]]),
     (None,   [[868.72425,   0.79742,   1.01664],
-              [680.66679,   0.63776,   3.28463]]),
+              [680.73800,   0.63782,   3.28463]]),
     (101325, [[868.72425,   0.79742,   1.01664],
-              [680.66679,   0.63776,   3.28463]])
+              [680.73800,   0.63782,   3.28463]])
 ])
 def test_disc_value(pressure, expected):
     # see GH 449 for pressure=None vs. 101325.
@@ -1080,7 +1080,7 @@ def test_dirindex(times):
                                             pressure=pressure,
                                             use_delta_kt_prime=True,
                                             temp_dew=tdew).values
-    expected_out = np.array([np.nan, 0., 748.31562753, 630.72592644])
+    expected_out = np.array([np.nan, 0., 748.31562800, 630.73752100])
 
     tolerance = 1e-8
     assert np.allclose(out, expected_out, rtol=tolerance, atol=0,

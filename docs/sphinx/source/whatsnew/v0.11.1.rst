@@ -39,7 +39,19 @@ Enhancements
 
 Bug fixes
 ~~~~~~~~~
-
+* To prevent simulation output from differing slightly based on the time zone
+  of the time stamps, models that use day of year for sun position and
+  irradiance calculations now determine the day of year according to the UTC
+  equivalent of the specified time stamps.  The following functions are affected:
+  :py:func:`~pvlib.clearsky.lookup_linke_turbidity`,
+  :py:func:`~pvlib.irradiance.get_extra_radiation`,
+  :py:func:`~pvlib.irradiance.disc`,
+  :py:func:`~pvlib.irradiance.dirint`,
+  :py:func:`~pvlib.spectrum.spectrl2`. (:issue:`2054`, :pull:`2055`)
+* :py:func:`~pvlib.solarposition.hour_angle` and
+  :py:func:`~pvlib.solarposition.sun_rise_set_transit_geometric` now raise
+  ``ValueError`` when given timezone-naive inputs, instead of assuming UTC.
+  (:pull:`2055`)
 
 Testing
 ~~~~~~~
@@ -70,6 +82,7 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Yunho Kee (:ghuser:`yhkee0404`)
 * Chris Deline (:ghuser:`cdeline`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Leonardo Micheli (:ghuser:`lmicheli`)

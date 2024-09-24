@@ -168,6 +168,13 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     Returns
     -------
     turbidity : Series
+
+    Notes
+    -----
+    Linke turbidity is obtained from a file of historical monthly averages.
+    The returned value for each time is either the monthly value or an
+    interpolated value to smooth the transition between months.
+    Interpolation is done on the day of year as determined by UTC.
     """
 
     # The .h5 file 'LinkeTurbidities.h5' contains a single 2160 x 4320 x 12
@@ -200,7 +207,7 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
     else:
-        months = time.month - 1
+        months = tools._pandas_to_utc(time).month - 1
         linke_turbidity = pd.Series(lts[months], index=time)
 
     linke_turbidity /= 20.
@@ -246,14 +253,11 @@ def _interpolate_turbidity(lts, time):
     # Jan 1 - Jan 15 and Dec 16 - Dec 31.
     lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
 
-    # handle leap years
-    try:
-        isleap = time.is_leap_year
-    except AttributeError:
-        year = time.year
-        isleap = _is_leap_year(year)
+    time_utc = tools._pandas_to_utc(time)
 
-    dayofyear = time.dayofyear
+    isleap = time_utc.is_leap_year
+
+    dayofyear = time_utc.dayofyear
     days_leap = _calendar_month_middles(2016)
     days_no_leap = _calendar_month_middles(2015)
 

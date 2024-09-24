@@ -1,6 +1,6 @@
 """
 Average Photon Energy Calculation
-============================
+=================================
 
 Calculation of the Average Photon Energy from SPECTRL2 output.
 """
@@ -85,12 +85,12 @@ plt.xlim(200, 2700)
 plt.ylim(0, 1.8)
 plt.ylabel(r"Spectral irradiance (Wm⁻²nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
-time_labels = times.strftime("%H:%M")
+time_labels = times.strftime("%H%M")
 labels = [
-    "{}, AM={:0.02f}".format(*vals)
-    for vals in zip(time_labels, relative_airmass)
+    f"{t}, {am_:0.02f}"
+    for t, am_ in zip(time_labels, relative_airmass)
 ]
-plt.legend(labels)
+plt.legend(labels, title="Time, AM")
 plt.show()
 
 # %%
@@ -116,12 +116,12 @@ plt.xlim(200, 2700)
 plt.ylim(0, 0.0018)
 plt.ylabel(r"Normalised Irradiance (nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
-time_labels = times.strftime("%H:%M")
+time_labels = times.strftime("%H%M")
 labels = [
-    "{}, AM={:0.02f}".format(*vals)
-    for vals in zip(time_labels, relative_airmass)
+    f"{t}, {am_:0.02f}"
+    for t, am_ in zip(time_labels, relative_airmass)
 ]
-plt.legend(labels)
+plt.legend(labels, title="Time, AM")
 plt.show()
 
 # %%
@@ -165,12 +165,12 @@ plt.xlim(200, 2700)
 plt.ylim(0, 0.0018)
 plt.ylabel(r"Normalised Irradiance (nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
-time_labels = times.strftime("%H:%M")
+time_labels = times.strftime("%H%M")
 labels = [
-    "{}, APE={:0.02f}".format(*vals)
-    for vals in zip(time_labels, ape)
+    f"{t}, {ape_:0.02f}"
+    for t, ape_ in zip(time_labels, ape)
 ]
-plt.legend(labels)
+plt.legend(labels,  title="Time, APE (eV)")
 plt.show()
 
 # %%

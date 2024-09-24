@@ -11,7 +11,7 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # This example demonstrates how to use the
 # :py:func:`~pvlib.spectrum.average_photon_energy` function to calculate the
 # Average Photon Energy (APE, :math:`\overline{E_\gamma}`) of spectral
-# irradiance distributions.  This example uses spectral irradiance simulated
+# irradiance distributions. This example uses spectral irradiance simulated
 # using :py:func:`~pvlib.spectrum.spectrl2`, but the same method is
 # applicable to spectral irradiance from any source.
 # More information on the SPECTRL2 model can be found in [1]_.
@@ -23,11 +23,10 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # To demonstrate this functionality, first we will simulate some spectra
 # using :py:func:`~pvlib.spectrum.spectrl2`. In this example, we will simulate
 # spectra following a similar method to that which is followed in the
-# `Modelling Spectral Irradiance
-# <https://pvlib-python.readthedocs.io/en/stable/gallery/spectrum/plot_spectrl2_fig51A.html>`_
-# example, which reproduces a figure from [4]_. The first step is to
-# import the required packages and define some basic system parameters
-# and meteorological conditions.
+# :ref:`sphx_glr_gallery_spectrum_plot_spectrl2_fig51A.py` example, which
+# reproduces a figure from [4]_. The first step is to import the required
+# packages and define some basic system parameters and meteorological
+# conditions.
 
 # %%
 import pandas as pd

@@ -662,7 +662,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     Returns
     -------
     diffuse : numeric
-        The sky diffuse component of the solar radiation.
+        The sky diffuse component of the solar radiation. [Wm⁻²]
 
     Notes
     -----

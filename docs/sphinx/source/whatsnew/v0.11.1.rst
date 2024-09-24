@@ -56,7 +56,8 @@ Documentation
 
 Requirements
 ~~~~~~~~~~~~
-
+* Python 3.9 or greater. (:pull:`2213`)
+* Minimum numpy version increased to v1.19.3. (:pull:`2213`)
 
 Contributors
 ~~~~~~~~~~~~

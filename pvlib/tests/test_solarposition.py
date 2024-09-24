@@ -791,8 +791,8 @@ def test_get_solarposition_microsecond_index(method, tz):
         # don't warn on method reload
         warnings.simplefilter("ignore")
 
-        sp_ns = solarposition.get_solarposition(index_ns, 40, -80, method=method)
-        sp_us = solarposition.get_solarposition(index_us, 40, -80, method=method)
+        sp_ns = solarposition.get_solarposition(index_ns, 0, 0, method=method)
+        sp_us = solarposition.get_solarposition(index_us, 0, 0, method=method)
 
     assert_frame_equal(sp_ns, sp_us, check_index_type=False)
 

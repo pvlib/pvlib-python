@@ -30,10 +30,28 @@ Enhancements
 * Added function for calculating wind speed at different heights,
   :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)
+* The multithreaded SPA functions no longer emit a warning when calculating
+  solar positions for short time series. (:pull:`2170`)
+* Implemented closed-form solution for alpha in :py:func:`pvlib.clearsky.detect_clearsky`, 
+  obviating the call to scipy.optimize that was prone to runtime errors and minimizing
+  computation. (:issue:`2171`, :issue:`2216`, :pull:`2217`).
+
 
 Bug fixes
 ~~~~~~~~~
-
+* To prevent simulation output from differing slightly based on the time zone
+  of the time stamps, models that use day of year for sun position and
+  irradiance calculations now determine the day of year according to the UTC
+  equivalent of the specified time stamps.  The following functions are affected:
+  :py:func:`~pvlib.clearsky.lookup_linke_turbidity`,
+  :py:func:`~pvlib.irradiance.get_extra_radiation`,
+  :py:func:`~pvlib.irradiance.disc`,
+  :py:func:`~pvlib.irradiance.dirint`,
+  :py:func:`~pvlib.spectrum.spectrl2`. (:issue:`2054`, :pull:`2055`)
+* :py:func:`~pvlib.solarposition.hour_angle` and
+  :py:func:`~pvlib.solarposition.sun_rise_set_transit_geometric` now raise
+  ``ValueError`` when given timezone-naive inputs, instead of assuming UTC.
+  (:pull:`2055`)
 
 Testing
 ~~~~~~~
@@ -44,15 +62,20 @@ Documentation
 * Added gallery example demonstrating the application of
   several spectral mismatch factor models.
   (:issue:`2107`, :pull:`2114`)
-
+* Added gallery example demonstrating the application of
+  :py:func:`~pvlib.spectrum.average_photon_energy`. (:issue:`2194`, :pull:`2206`)
 * Added gallery example on calculating cell temperature for
   floating PV. (:pull:`2110`)
-
 * Added gallery example demonstrating how to use
   different Perez coefficients in a ModelChain.
   (:issue:`2127`, :pull:`2148`)
+* Fixed examples in :py:func:`pvlib.shading.shaded_fraction1d`. (:pull:`#2215`)
 
 * Removed unused "times" input from dni_et() function (:issue:`2105`)
+* Updated :py:func:`pvlib.irradiance.haydavies` to include equation variable
+  definitions and a new "notes" section (:issue:`2183`, :pull:`2191`)
+
+* Split the contributing page into several pages (:issue:`2210`, :pull:`2219`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -61,6 +84,7 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Echedey Luis (:ghuser:`echedey-ls`)
+* Yunho Kee (:ghuser:`yhkee0404`)
 * Chris Deline (:ghuser:`cdeline`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Leonardo Micheli (:ghuser:`lmicheli`)
@@ -74,3 +98,4 @@ Contributors
 * Marcos R. Escudero (:ghuser:`marc-resc`)
 * Bernat Nicolau (:ghuser:`BernatNicolau`)
 * Eduardo Sarquis (:ghuser:`EduardoSarquis`)
+* Andrew B Godbehere (:ghuser:`agodbehere`)

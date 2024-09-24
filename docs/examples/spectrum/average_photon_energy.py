@@ -11,14 +11,16 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # This example demonstrates how to use the
 # :py:func:`~pvlib.spectrum.average_photon_energy` function to calculate the
 # Average Photon Energy (APE, :math:`\overline{E_\gamma}`) of spectral
-# irradiance distributions simulated using :py:func:`~pvlib.spectrum.spectrl2`.
+# irradiance distributions.  This example uses spectral irradiance simulated
+# using :py:func:`~pvlib.spectrum.spectrl2`, but the same method is
+# applicable to spectral irradiance from any source.
 # More information on the SPECTRL2 model can be found in [1]_.
 # The APE parameter is a useful indicator of the overall shape of the solar
 # spectrum [2]_. Higher (lower) APE values indicate a blue (red) shift in the
 # spectrum and is one of a variety of such characterisation methods that is
 # used in the PV performance literature [3]_.
 #
-# To demonstrate this functionality, first we need to simulate some spectra
+# To demonstrate this functionality, first we will simulate some spectra
 # using :py:func:`~pvlib.spectrum.spectrl2`. In this example, we will simulate
 # spectra following a similar method to that which is followed in the
 # `Modelling Spectral Irradiance
@@ -105,8 +107,7 @@ plt.show()
 poa_global = spectra_components['poa_global']
 wavelength = spectra_components['wavelength']
 
-broadband_irradiance = np.array([trapezoid(poa_global[:, i], wavelength)
-                                 for i in range(poa_global.shape[1])])
+broadband_irradiance = trapezoid(poa_global, wavelength, axis=0)
 
 poa_global_normalised = poa_global / broadband_irradiance
 

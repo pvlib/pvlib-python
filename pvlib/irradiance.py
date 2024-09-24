@@ -645,10 +645,10 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : numeric
-        Diffuse horizontal irradiance. [Wm⁻²] DHI must be >=0.
+        Diffuse horizontal irradiancem, must be >=0. [Wm⁻²]
 
     ghi : numeric
-        Global irradiance. [Wm⁻²] DNI must be >=0.
+        Global horizontal irradiance, must be >=0. [Wm⁻²]
 
     solar_zenith : numeric
         Apparent (refraction-corrected) zenith angles in decimal
@@ -692,10 +692,10 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     References
     ----------
-    .. [1] Klucher, T. M., 1979. Evaluation of models to predict insolation on
-       tilted surfaces. Solar Energy 23 (2), 111-114.
+    .. [1] Klucher, T. M. "Evaluation of models to predict insolation on
+       tilted surfaces" 1979, Solar Energy vol. 23 (2), pp. 111-114
        :doi:`10.1016/0038-092X(79)90110-5`
-    .. [2] Loutzenhiser P.G. et. al. "Empirical validation of models to
+    .. [2] Loutzenhiser P. G. et al. "Empirical validation of models to
        compute solar irradiance on inclined surfaces for building energy
        simulation" 2007, Solar Energy vol. 81. pp. 254-267
        :doi:`10.1016/j.solener.2006.03.009`

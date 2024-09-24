@@ -74,7 +74,7 @@ Documentation
 * Removed unused "times" input from dni_et() function (:issue:`2105`)
 * Updated :py:func:`pvlib.irradiance.haydavies` to include equation variable
   definitions and a new "notes" section (:issue:`2183`, :pull:`2191`)
-* Updated :py:func:`pvlib.irradiance.haydavies` to include equation variable
+* Updated :py:func:`pvlib.irradiance.klucher` to include equation variable
   definitions and a new "notes" section (:issue:`2183`, :pull:`2192`)
 * Split the contributing page into several pages (:issue:`2210`, :pull:`2219`)
 

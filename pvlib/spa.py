@@ -924,7 +924,7 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
                          atmos_refract, sst, esd], dtype=np.float64)
 
     # turn delta_t into an array if it isn't already
-    delta_t = np.full_like(unixtime, delta_t)
+    delta_t = np.full_like(unixtime, delta_t, dtype=np.float64)
 
     # construct dims x ulength array to put the results in
     ulength = unixtime.shape[0]

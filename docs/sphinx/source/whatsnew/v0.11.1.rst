@@ -41,6 +41,9 @@ Documentation
   several spectral mismatch factor models.
   (:issue:`2107`, :pull:`2114`)
 
+* Added gallery example demonstrating the application of
+  :py:func:`average_photon_energy`. (:issue:`2194`, :pull:`2206`)
+
 * Added gallery example on calculating cell temperature for
   floating PV. (:pull:`2110`)
 

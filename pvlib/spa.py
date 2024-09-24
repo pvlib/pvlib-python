@@ -940,8 +940,6 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
         unixtime = unixtime.astype(np.float64)
 
     if ulength < numthreads:
-        warnings.warn('The number of threads is more than the length of '
-                      'the time array. Only using %s threads.'.format(ulength))
         numthreads = ulength
 
     if numthreads <= 1:

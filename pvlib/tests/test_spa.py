@@ -234,7 +234,7 @@ class SpaBase:
 
     def test_solar_position(self):
         with warnings.catch_warnings():
-            # don't warn on method reload or num threads
+            # don't warn on method reload
             warnings.simplefilter("ignore")
             spa_out_0 = self.spa.solar_position(
                 unixtimes, lat, lon, elev, pressure, temp, delta_t,

@@ -484,7 +484,7 @@ def test_get_solarposition_altitude(
     (67.0, 'nrel_numpy'),
     (np.array([67.0, 67.0]), 'nrel_numpy'),
     (np.array([67.0, 67.0]), 'nrel_numba'),
-    ])
+])
 def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
                                   golden):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),

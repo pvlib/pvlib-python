@@ -9,7 +9,6 @@ import calendar
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize_scalar
 from scipy.linalg import hankel
 import h5py
 
@@ -169,6 +168,13 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     Returns
     -------
     turbidity : Series
+
+    Notes
+    -----
+    Linke turbidity is obtained from a file of historical monthly averages.
+    The returned value for each time is either the monthly value or an
+    interpolated value to smooth the transition between months.
+    Interpolation is done on the day of year as determined by UTC.
     """
 
     # The .h5 file 'LinkeTurbidities.h5' contains a single 2160 x 4320 x 12
@@ -201,7 +207,7 @@ def lookup_linke_turbidity(time, latitude, longitude, filepath=None,
     if interp_turbidity:
         linke_turbidity = _interpolate_turbidity(lts, time)
     else:
-        months = time.month - 1
+        months = tools._pandas_to_utc(time).month - 1
         linke_turbidity = pd.Series(lts[months], index=time)
 
     linke_turbidity /= 20.
@@ -247,14 +253,11 @@ def _interpolate_turbidity(lts, time):
     # Jan 1 - Jan 15 and Dec 16 - Dec 31.
     lts_concat = np.concatenate([[lts[-1]], lts, [lts[0]]])
 
-    # handle leap years
-    try:
-        isleap = time.is_leap_year
-    except AttributeError:
-        year = time.year
-        isleap = _is_leap_year(year)
+    time_utc = tools._pandas_to_utc(time)
 
-    dayofyear = time.dayofyear
+    isleap = time_utc.is_leap_year
+
+    dayofyear = time_utc.dayofyear
     days_leap = _calendar_month_middles(2016)
     days_no_leap = _calendar_month_middles(2015)
 
@@ -874,25 +877,11 @@ def detect_clearsky(measured, clearsky, times=None, infer_limits=False,
         clear_meas = meas[clear_samples]
         clear_clear = clear[clear_samples]
 
-        def rmse(alpha):
-            return np.sqrt(np.mean((clear_meas - alpha*clear_clear)**2))
-
-        optimize_result = minimize_scalar(rmse)
-        if not optimize_result.success:
-            try:
-                message = "Optimizer exited unsuccessfully: " \
-                           + optimize_result.message
-            except AttributeError:
-                message = "Optimizer exited unsuccessfully: \
-                           No message explaining the failure was returned. \
-                           If you would like to see this message, please \
-                           update your scipy version (try version 1.8.0 \
-                           or beyond)."
-            raise RuntimeError(message)
-
-        else:
-            alpha = optimize_result.x
-
+        # Compute arg min of MSE between model and observations
+        C = (clear_clear**2).sum()
+        if not (pd.isna(C) or C == 0):  # safety check
+            # only update alpha if C is strictly positive
+            alpha = (clear_meas * clear_clear).sum() / C
         if round(alpha*10000) == round(previous_alpha*10000):
             break
     else:
@@ -941,7 +930,7 @@ def bird(zenith, airmass_relative, aod380, aod500, precipitable_water,
     zenith is never explicitly defined in the report, since the purpose
     was to compare existing clear sky models with "rigorous radiative
     transfer models" (RTM) it is possible that apparent zenith was
-    obtained as output from the RTM. However, the implentation presented
+    obtained as output from the RTM. However, the implementation presented
     in PVLIB is tested against the NREL Excel implementation by Daryl
     Myers which uses an analytical expression for solar zenith instead
     of apparent zenith.

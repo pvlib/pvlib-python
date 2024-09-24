@@ -30,7 +30,6 @@ Calculation of the Average Photon Energy from SPECTRL2 output.
 # and meteorological conditions.
 
 # %%
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.integrate import trapezoid
@@ -89,7 +88,7 @@ plt.ylabel(r"Spectral irradiance (Wm⁻²nm⁻¹)")
 plt.xlabel(r"Wavelength (nm)")
 time_labels = times.strftime("%H:%M")
 labels = [
-    "{}, AM {:0.02f}".format(*vals)
+    "{}, AM={:0.02f}".format(*vals)
     for vals in zip(time_labels, relative_airmass)
 ]
 plt.legend(labels)
@@ -104,16 +103,16 @@ plt.show()
 # total broadband irradiance, which we calculate by integrating the entire
 # spectral irradiance distribution with respect to wavelength.
 
-poa_global = spectra_components['poa_global']
+spectral_poa = spectra_components['poa_global']
 wavelength = spectra_components['wavelength']
 
-broadband_irradiance = trapezoid(poa_global, wavelength, axis=0)
+broadband_irradiance = trapezoid(spectral_poa, wavelength, axis=0)
 
-poa_global_normalised = poa_global / broadband_irradiance
+spectral_poa_normalised = spectral_poa / broadband_irradiance
 
 # Plot the normalised spectra
 plt.figure()
-plt.plot(wavelength, poa_global_normalised)
+plt.plot(wavelength, spectral_poa_normalised)
 plt.xlim(200, 2700)
 plt.ylim(0, 0.0018)
 plt.ylabel(r"Normalised Irradiance (nm⁻¹)")
@@ -150,7 +149,7 @@ plt.show()
 # comparable if calculated between the same integration limits. In this case,
 # our APE values are calculated between 300nm and 4000nm.
 
-spectra = pd.DataFrame(poa_global).T  # convert to dataframe and transpose
+spectra = pd.DataFrame(spectral_poa).T  # convert to dataframe and transpose
 spectra.index = time_labels  # add time index
 spectra.columns = wavelength  # add wavelength column headers
 
@@ -162,7 +161,7 @@ ape = spectrum.average_photon_energy(spectra)
 # units of the APE are electronvolts (eV).
 
 plt.figure()
-plt.plot(wavelength, poa_global_normalised)
+plt.plot(wavelength, spectral_poa_normalised)
 plt.xlim(200, 2700)
 plt.ylim(0, 0.0018)
 plt.ylabel(r"Normalised Irradiance (nm⁻¹)")

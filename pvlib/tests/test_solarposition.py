@@ -139,7 +139,7 @@ def test_spa_python_numpy_physical_dst(expected_solpos, golden):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-@pytest.mark.parametrize('delta_t', [65.0, None])
+@pytest.mark.parametrize('delta_t', [65.0, None, np.array([65, 65])])
 def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
     # solution from NREL SAP web calculator
     south = Location(-35.0, 0.0, tz='UTC')
@@ -529,7 +529,7 @@ def test_get_solarposition_method_pyephem(expected_solpos, golden):
     assert_frame_equal(expected_solpos, ephem_data[expected_solpos.columns])
 
 
-@pytest.mark.parametrize('delta_t', [64.0, None])
+@pytest.mark.parametrize('delta_t', [64.0, None, np.array([64, 64])])
 def test_nrel_earthsun_distance(delta_t):
     times = pd.DatetimeIndex([datetime.datetime(2015, 1, 2),
                               datetime.datetime(2015, 8, 2)]
@@ -539,11 +539,12 @@ def test_nrel_earthsun_distance(delta_t):
                          index=times)
     assert_series_equal(expected, result)
 
-    times = datetime.datetime(2015, 1, 2)
-    result = solarposition.nrel_earthsun_distance(times, delta_t=delta_t)
-    expected = pd.Series(np.array([0.983289204601]),
-                         index=pd.DatetimeIndex([times, ]))
-    assert_series_equal(expected, result)
+    if np.size(delta_t) == 1:  # skip the array delta_t
+        times = datetime.datetime(2015, 1, 2)
+        result = solarposition.nrel_earthsun_distance(times, delta_t=delta_t)
+        expected = pd.Series(np.array([0.983289204601]),
+                             index=pd.DatetimeIndex([times, ]))
+        assert_series_equal(expected, result)
 
 
 def test_equation_of_time():

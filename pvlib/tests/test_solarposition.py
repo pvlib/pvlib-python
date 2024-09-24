@@ -478,12 +478,13 @@ def test_get_solarposition_altitude(
 
 
 @pytest.mark.parametrize("delta_t, method", [
-    (None, 'nrel_numpy'),
     (None, 'nrel_numba'),
     (67.0, 'nrel_numba'),
+    (np.array([67.0, 67.0]), 'nrel_numba'),
+    # minimize reloads, with numpy being last
+    (None, 'nrel_numpy'),
     (67.0, 'nrel_numpy'),
     (np.array([67.0, 67.0]), 'nrel_numpy'),
-    (np.array([67.0, 67.0]), 'nrel_numba'),
 ])
 def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
                                   golden):
@@ -770,6 +771,7 @@ def test__datetime_to_unixtime_units(unit, tz):
 
 
 @requires_pandas_2_0
+@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
 @pytest.mark.parametrize('method', [
     'nrel_numpy',
     'ephemeris',
@@ -777,7 +779,6 @@ def test__datetime_to_unixtime_units(unit, tz):
     pytest.param('nrel_numba', marks=requires_numba),
     pytest.param('nrel_c', marks=requires_spa_c),
 ])
-@pytest.mark.parametrize('tz', [None, 'utc', 'US/Eastern'])
 def test_get_solarposition_microsecond_index(method, tz):
     # https://github.com/pvlib/pvlib-python/issues/1932
 
@@ -786,8 +787,12 @@ def test_get_solarposition_microsecond_index(method, tz):
     index_ns = pd.date_range(unit='ns', **kwargs)
     index_us = pd.date_range(unit='us', **kwargs)
 
-    sp_ns = solarposition.get_solarposition(index_ns, 40, -80, method=method)
-    sp_us = solarposition.get_solarposition(index_us, 40, -80, method=method)
+    with warnings.catch_warnings():
+        # don't warn on method reload
+        warnings.simplefilter("ignore")
+
+        sp_ns = solarposition.get_solarposition(index_ns, 40, -80, method=method)
+        sp_us = solarposition.get_solarposition(index_us, 40, -80, method=method)
 
     assert_frame_equal(sp_ns, sp_us, check_index_type=False)
 

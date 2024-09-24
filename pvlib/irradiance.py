@@ -645,7 +645,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : numeric
-        Diffuse horizontal irradiancem, must be >=0. [Wm⁻²]
+        Diffuse horizontal irradiance, must be >=0. [Wm⁻²]
 
     ghi : numeric
         Global horizontal irradiance, must be >=0. [Wm⁻²]

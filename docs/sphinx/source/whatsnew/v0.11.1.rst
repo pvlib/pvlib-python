@@ -55,6 +55,9 @@ Bug fixes
 
 Testing
 ~~~~~~~
+* Updated the tests for :py:func:`~pvlib.iotools.get_pvgis_hourly`
+  and :py:func:`~pvlib.iotools.read_pvgis_hourly` as the default
+  API endpoint has changed from 5.1 to 5.2. (:pull:`2222`)
 
 
 Documentation

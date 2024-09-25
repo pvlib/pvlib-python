@@ -925,7 +925,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     and global horizontal irradiances, respectively. :math:`A` is the
     anisotropy index, which is the ratio of the direct normal irradiance to the
     extraterrestrial irradiation, :math:`R_b` is the projection ratio, which is
-    defined as the cosine of the ratio of angle of incidence to the
+    defined as the ratio of the cosine of the angle of incidence (AOI) to the
     cosine of the zenith angle, and :math:`\theta_T` is the tilt angle of the
     array.
 

@@ -66,14 +66,14 @@ jobs:
     if: (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'remote-data')) || (github.event_name == 'push')
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: github.event_name == 'pull_request_target'
         # pull_request_target runs in the context of the target branch (pvlib/main),
         # but what we need is the hypothetical merge commit from the PR:
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         if: github.event_name == 'push'
 
       - name: Set up conda environment

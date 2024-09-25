@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     # fetch all commits and tags so versioneer works
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 

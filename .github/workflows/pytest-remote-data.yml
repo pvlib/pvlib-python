@@ -77,7 +77,7 @@ jobs:
         if: github.event_name == 'push'
 
       - name: Set up conda environment
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: test_env
           environment-file: ${{ env.REQUIREMENTS }}

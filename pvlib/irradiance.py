@@ -942,11 +942,11 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
        :doi:`10.1016/0038-092X(90)90060-P`
     .. [2] Reindl, D. T., Beckmann, W. A., Duffie, J. A., 1990b. Evaluation of
        hourly tilted surface radiation models. Solar Energy 45(1), 9-17.
-       :doi:'10.1016/0038-092X(90)90061-G'
-    .. [3] Loutzenhiser P. G. et. al. "Empirical validation of models to
+       :doi:`10.1016/0038-092X(90)90061-G`
+    .. [3] Loutzenhiser P. G. et. al., 2007. Empirical validation of models to
        compute solar irradiance on inclined surfaces for building energy
-       simulation" 2007, Solar Energy vol. 81. pp. 254-267
-       :doi:'10.1016/j.solener.2006.03.009'
+       simulation. Solar Energy 81(2), 254-267
+       :doi:`10.1016/j.solener.2006.03.009`
     '''
 
     cos_tt = aoi_projection(surface_tilt, surface_azimuth,

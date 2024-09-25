@@ -669,10 +669,9 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
     The Klucher (1979) model determines the diffuse irradiance
     from the sky (ground reflected irradiance is not included in this
     algorithm) on a tilted surface using the surface tilt angle, surface
-    azimuth angle, diffuse horizontal irradiance, direct normal irradiance,
-    global horizontal irradiance, extraterrestrial irradiance, sun zenith
-    angle, and sun azimuth angle. The expression for the diffuse irradiance,
-    :math:`I_d`, is as follows:
+    azimuth angle, diffuse horizontal irradiance, global horizontal irradiance,
+    sun zenith angle, and sun azimuth angle. The expression for the sky diffuse
+    irradiance, :math:`I_d`, is as follows:
 
     .. math::
 

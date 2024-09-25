@@ -72,8 +72,8 @@ Documentation
 * Fixed examples in :py:func:`pvlib.shading.shaded_fraction1d`. (:pull:`#2215`)
 
 * Removed unused "times" input from dni_et() function (:issue:`2105`)
-* Updated model description, added equation variable, and created a new "notes"
-  section in :py:func:`pvlib.irradiance.haydavies` and
+* Updated model description, added equation variable definitions, and created a 
+  new "notes" section in :py:func:`pvlib.irradiance.haydavies` and
   :py:func:`pvlib.irradiance.klucher` (:issue:`2183`, :pull:`2191`,
   :pull:`2192`)
 * Split the contributing page into several pages (:issue:`2210`, :pull:`2219`)

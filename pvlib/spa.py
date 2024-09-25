@@ -952,7 +952,7 @@ def solar_position_numba(unixtime, lat, lon, elev, pressure, temp, delta_t,
     split2 = np.array_split(result, numthreads, axis=1)
     chunks = [
         [a0, a1, loc_args, a2]
-        for i, (a0, a1, a2) in enumerate(zip(split0, split1, split2))
+        for a0, a1, a2 in zip(split0, split1, split2)
     ]
     # Spawn one thread per chunk
     threads = [threading.Thread(target=solar_position_loop, args=chunk)

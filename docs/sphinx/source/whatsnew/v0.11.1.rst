@@ -79,7 +79,8 @@ Documentation
 
 Requirements
 ~~~~~~~~~~~~
-
+* Python 3.9 or greater. (:pull:`2213`)
+* Minimum numpy version increased to v1.19.3. (:pull:`2213`)
 
 Contributors
 ~~~~~~~~~~~~
@@ -98,4 +99,5 @@ Contributors
 * Marcos R. Escudero (:ghuser:`marc-resc`)
 * Bernat Nicolau (:ghuser:`BernatNicolau`)
 * Eduardo Sarquis (:ghuser:`EduardoSarquis`)
+* Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Andrew B Godbehere (:ghuser:`agodbehere`)

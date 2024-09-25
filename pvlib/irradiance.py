@@ -851,13 +851,13 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
            solar_zenith, solar_azimuth):
     r'''
     Determine the diffuse irradiance from the sky on a tilted surface using
-    the Reindl (1990) model [1, 2]_.
+    the Reindl (1990) model.
 
-    The Reindl model determines the diffuse irradiance from the sky
+    The Reindl model [1]_ [2]_ determines the diffuse irradiance from the sky
     (ground reflected irradiance is not included in this algorithm) on a
     tilted surface using the surface tilt angle, surface azimuth angle,
     diffuse horizontal irradiance, direct normal irradiance, global
-    horizontal irradiance, extraterrestrial irradiance, sun zenith
+    horizontal irradiance, extraterrestrial normal irradiance, sun zenith
     angle, and sun azimuth angle.
 
     Parameters
@@ -899,8 +899,8 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
 
     Notes
     -----
-    The Reindl (1990) model for the sky diffuse irradiance, :math:`I_d`, is as
-    follows:
+    The Reindl (1990) model  for the sky diffuse irradiance,
+    :math:`I_d`, is as follows:
 
     .. math::
 
@@ -1268,8 +1268,8 @@ def _f(i, j, zeta):
          [+0.328, +0.471, -0.216, +0.069, -0.105, -0.028],
          [+0.557, +0.241, -0.300, +0.086, -0.085, -0.012],
          [+0.861, -0.323, -0.355, +0.240, -0.467, -0.008],
-         [ 1.212, -1.239, -0.444, +0.305, -0.797, +0.047],
-         [ 1.099, -1.847, -0.365, +0.275, -1.132, +0.124],
+         [1.212, -1.239, -0.444, +0.305, -0.797, +0.047],
+         [1.099, -1.847, -0.365, +0.275, -1.132, +0.124],
          [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
          [+0.544, +0.157, -0.213, +0.118, -1.455, +0.292],
          [+0.000, +0.000, +0.000, +0.000, +0.000, +0.000],

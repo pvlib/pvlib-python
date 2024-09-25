@@ -506,6 +506,21 @@ def test_get_solarposition_deltat(delta_t, method, expected_solpos_multi,
     assert_frame_equal(this_expected, ephem_data[this_expected.columns])
 
 
+@pytest.mark.parametrize("method", ['nrel_numba', 'nrel_numpy'])
+def test_spa_array_delta_t(method):
+    # make sure that time-varying delta_t produces different answers
+    times = pd.to_datetime(["2019-01-01", "2019-01-01"]).tz_localize("UTC")
+    expected = pd.Series([257.26969492, 257.2701359], index=times)
+    with warnings.catch_warnings():
+        # don't warn on method reload
+        warnings.simplefilter("ignore")
+        ephem_data = solarposition.get_solarposition(times, 40, -80,
+                                                     delta_t=np.array([67, 0]),
+                                                     method=method)
+
+    assert_series_equal(ephem_data['azimuth'], expected, check_names=False)
+
+
 def test_get_solarposition_no_kwargs(expected_solpos, golden):
     times = pd.date_range(datetime.datetime(2003, 10, 17, 13, 30, 30),
                           periods=1, freq='D', tz=golden.tz)

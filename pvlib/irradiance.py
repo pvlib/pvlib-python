@@ -630,7 +630,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
             solar_azimuth):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface
-    using the Klucher (1979) model [1]_ [2]_.
+    using the Klucher (1979) model.
 
     Parameters
     ----------
@@ -666,7 +666,7 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
 
     Notes
     -----
-    The Klucher (1979) model determines the diffuse irradiance
+    The Klucher (1979) model  [1]_ [2]_ determines the diffuse irradiance
     from the sky (ground reflected irradiance is not included in this
     algorithm) on a tilted surface using the surface tilt angle, surface
     azimuth angle, diffuse horizontal irradiance, global horizontal irradiance,
@@ -729,7 +729,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
               return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using the
-    Hay and Davies (1980) model [1]_ [2]_.
+    Hay and Davies (1980) model.
 
     The Hay and Davies model determines the diffuse irradiance from
     the sky (ground reflected irradiance is not included in this
@@ -798,8 +798,8 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Notes
     ------
-    In the Hay and Davies (1980) model, sky diffuse irradiance, :math:`I_d`,
-    is as follows:
+    In the Hay and Davies (1980) model  [1]_ [2]_, sky diffuse irradiance,
+    :math:`I_d`, is as follows:
 
     .. math::
             I_{d} = DHI \left( A\cdot R_b + (1 - A) \left(\frac{

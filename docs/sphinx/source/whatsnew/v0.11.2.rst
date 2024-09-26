@@ -1,0 +1,30 @@
+.. _whatsnew_01120:
+
+
+v0.11.2 (Anticipated December, 2024)
+------------------------------------
+
+Deprecations
+~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+
+Documentation
+~~~~~~~~~~~~~
+
+
+Testing
+~~~~~~~
+
+
+Requirements
+~~~~~~~~~~~~
+
+
+Contributors
+~~~~~~~~~~~~
+
+

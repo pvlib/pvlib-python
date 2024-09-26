@@ -1,26 +1,22 @@
 .. _whatsnew_01110:
 
 
-v0.11.1 (Anticipated Sep, 2024)
--------------------------------
-
-Deprecations
-~~~~~~~~~~~~
-
+v0.11.1 (September 26, 2024)
+----------------------------
 
 Enhancements
 ~~~~~~~~~~~~
 * Add new function to calculate the average photon energy,
-  :py:func:`pvlib.spectrum.average_photon_energy`.
+  :py:func:`~pvlib.spectrum.average_photon_energy`.
   (:issue:`2135`, :pull:`2140`)
 * Add new losses function that accounts for non-uniform irradiance on bifacial
-  modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
+  modules, :py:func:`~pvlib.bifacial.power_mismatch_deline`.
   (:issue:`2045`, :pull:`2046`)
 * Add new parameters for min/max absolute air mass to
-  :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
+  :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`.
   (:issue:`2086`, :pull:`2100`)
 * Add ``roll_utc_offset`` and ``coerce_year`` arguments to
-  :py:func:`pvlib.iotools.get_pvgis_tmy` to allow user to specify time zone,
+  :py:func:`~pvlib.iotools.get_pvgis_tmy` to allow user to specify time zone,
   rotate indices of TMY to begin at midnight, and force indices to desired
   year. (:issue:`2139`, :pull:`2138`)
 * Restructured the pvlib/spectrum folder by breaking up the contents of
@@ -28,14 +24,16 @@ Enhancements
   pvlib/spectrum/irradiance.py, and
   pvlib/spectrum/response.py. (:issue:`2125`, :pull:`2136`, :pull:`2151`)
 * Added function for calculating wind speed at different heights,
-  :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
+  :py:func:`~pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)
+* ``delta_t`` can now be specified with an array in the SPA functions.
+  The numba implementation now also allows calculation of ``delta_t``
+  internally.  (:issue:`2189`, :pull:`2190`)
 * The multithreaded SPA functions no longer emit a warning when calculating
   solar positions for short time series. (:pull:`2170`)
-* Implemented closed-form solution for alpha in :py:func:`pvlib.clearsky.detect_clearsky`, 
-  obviating the call to scipy.optimize that was prone to runtime errors and minimizing
+* Implemented closed-form solution for alpha in :py:func:`~pvlib.clearsky.detect_clearsky`, 
+  obviating the call to scipy.optimize, which was prone to runtime errors, and minimizing
   computation. (:issue:`2171`, :issue:`2216`, :pull:`2217`).
-
 
 Bug fixes
 ~~~~~~~~~
@@ -55,27 +53,30 @@ Bug fixes
 
 Testing
 ~~~~~~~
-
+* Updated the tests for :py:func:`~pvlib.iotools.get_pvgis_tmy`
+  and :py:func:`~pvlib.iotools.read_pvgis_tmy` as the default
+  API endpoint has changed from 5.1 to 5.2. (:pull:`2222`)
+* Removed unused ``times`` input from ``dni_et`` fixture. (:issue:`2105`, :pull:`2156`)
 
 Documentation
 ~~~~~~~~~~~~~
-* Added gallery example demonstrating the application of
-  several spectral mismatch factor models.
-  (:issue:`2107`, :pull:`2114`)
-* Added gallery example demonstrating the application of
-  :py:func:`~pvlib.spectrum.average_photon_energy`. (:issue:`2194`, :pull:`2206`)
-* Added gallery example on calculating cell temperature for
-  floating PV. (:pull:`2110`)
-* Added gallery example demonstrating how to use
-  different Perez coefficients in a ModelChain.
-  (:issue:`2127`, :pull:`2148`)
-* Fixed examples in :py:func:`pvlib.shading.shaded_fraction1d`. (:pull:`#2215`)
+* Added new gallery example pages for:
+  
+  - Demonstrating the application of several spectral mismatch factor models.
+    (:issue:`2107`, :pull:`2114`)
+  - Demonstrating the application of :py:func:`~pvlib.spectrum.average_photon_energy`.
+    (:issue:`2194`, :pull:`2206`)
+  - Calculating cell temperature for floating PV. (:pull:`2110`)
+  - Demonstrating how to use different Perez coefficients in a ModelChain.
+    (:issue:`2127`, :pull:`2148`)
 
-* Removed unused "times" input from dni_et() function (:issue:`2105`)
-* Updated :py:func:`pvlib.irradiance.haydavies` to include equation variable
-  definitions and a new "notes" section (:issue:`2183`, :pull:`2191`)
-
-* Split the contributing page into several pages (:issue:`2210`, :pull:`2219`)
+* Fixed examples in :py:func:`~pvlib.shading.shaded_fraction1d`. (:pull:`2215`)
+* Updated model description, added equation variable definitions, and created a 
+  new "notes" section in :py:func:`~pvlib.irradiance.haydavies` and
+  :py:func:`~pvlib.irradiance.klucher`. (:issue:`2183`, :pull:`2191`,
+  :pull:`2192`)
+* Document units with Wm⁻² instead of W/m^2 throughout ``pvlib.irradiance``. (:issue:`2205`, :pull:`2191`)
+* Split the contributing page into several pages. (:issue:`2210`, :pull:`2219`)
 
 Requirements
 ~~~~~~~~~~~~
@@ -89,11 +90,11 @@ Contributors
 * Chris Deline (:ghuser:`cdeline`)
 * Ioannis Sifnaios (:ghuser:`IoannisSifnaios`)
 * Leonardo Micheli (:ghuser:`lmicheli`)
-* Echedey Luis (:ghuser:`echedey-ls`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
 * Mark A. Mikofski (:ghuser:`mikofski`)
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 * Luiz Reis (:ghuser:`luizreiscver`)
 * Carlos Cárdenas-Bravo (:ghuser:`cardenca`)
 * Marcos R. Escudero (:ghuser:`marc-resc`)
@@ -101,3 +102,11 @@ Contributors
 * Eduardo Sarquis (:ghuser:`EduardoSarquis`)
 * Adam R. Jensen (:ghuser:`AdamRJensen`)
 * Andrew B Godbehere (:ghuser:`agodbehere`)
+* Cliff Hansen (:ghuser:`cwhanse`)
+* Anton Driesse (:ghuser:`adriesse`)
+* Miguel Angel Sevillano Bendezú (:ghuser:`msevillanob`)
+* Erfan (:ghuser:`Metal-Bat`)
+* Will Holmgren (:ghuser:`wholmgren`)
+* Kurt Rhee (:ghuser:`kurt-rhee`)
+* :ghuser:`PhilBrk8`
+* Mark Campanelli (:ghuser:`markcampanelli`)

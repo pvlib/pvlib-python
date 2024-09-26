@@ -70,6 +70,59 @@ the ``docs/readthedocs.org:pvlib-python`` link within the checks
 status box at the bottom of the pull request.
 
 
+.. _references:
+
+References
+----------
+All pertinent information within a docstring should include a proper reference.
+In pvlib-python, we are transitioning to a standardised referencing system. We
+encourage using the `IEEE style <https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf>`_
+with numeric in-text citations, but overall the most important feature of all
+references is that they include sufficient information to make locating the
+original source as easy as possible. As a bare minimum, we advise including:
+
+XXX ok to link a pdf? originally from `this page <https://ieeeaccess.ieee.org/guide-for-authors/preparing-your-article/>`_
+
+* Author list (can be abbreviated with et al.)
+* Publication title
+* Publication source (journal title, laboratory name, etc.)
+* Year of publication
+* DOI (if available) XXX "or other link"? but don't want to encourage too many
+  non-permanent URLs that may break at a later date though
+
+For journal articles, the recommended style citation is as follows:
+
+    Author initials. Author Surname, "Title of article," abbreviated journal
+    title, vol. number, issue number, page numbers, Abbreviated Month Year.
+
+The example below shows how to cite material and generate a reference list
+using the IEEE style in a docstring::
+
+    This is the recommended citation for the pvlib-python project [1]_. There
+    are also some conference papers linked to pvlib, for example [2]_.
+
+    References
+    ----------
+    .. [1] K. Anderson, C. Hansen, W. Holmgren, A. Jensen, M. Mikofski,
+           and A Driesse. “pvlib python: 2023 project update.” J. Open Source
+           Softw. 8(92), 5994, (2023). :doi:`10.21105/joss.05994`.
+
+    .. [2] J. S. Stein, “The Photovoltaic Performance Modeling Collaborative
+           (PVPMC),” In Proc. 38th IEEE Photovoltaic Specialists Conference
+           (PVSC), Austin, TX, USA, 2012, pp. 3048-3052,
+           :doi:`10.1109/PVSC.2012.6318225`.
+
+Things to note:
+
+* In text numeric citations require a number inside square brackets, followed
+  by an underscore, e.g. `[1]_`
+* To include a DOI, you can use the existing `Sphinx role <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html>`_,
+  with the DOI string, e.g. `:doi:10.21105/joss.05994`.
+* The citation formatting must be consistent within the same docstring, for
+  example if you abbreviate the author list after one author in the first
+  citation then you should do so in all citations.
+
+
 .. _building-the-documentation:
 
 Building the documentation

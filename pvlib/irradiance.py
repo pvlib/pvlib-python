@@ -630,66 +630,74 @@ def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
             solar_azimuth):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface
-    using Klucher's 1979 model
-
-    .. math::
-
-       I_{d} = DHI \frac{1 + \cos\beta}{2} (1 + F' \sin^3(\beta/2))
-       (1 + F' \cos^2\theta\sin^3\theta_z)
-
-    where
-
-    .. math::
-
-       F' = 1 - (I_{d0} / GHI)^2
-
-    Klucher's 1979 model determines the diffuse irradiance from the sky
-    (ground reflected irradiance is not included in this algorithm) on a
-    tilted surface using the surface tilt angle, surface azimuth angle,
-    diffuse horizontal irradiance, direct normal irradiance, global
-    horizontal irradiance, extraterrestrial irradiance, sun zenith
-    angle, and sun azimuth angle.
+    using the Klucher (1979) model.
 
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. surface_tilt must be >=0
+        Surface tilt angles in decimal degrees. ``surface_tilt`` must be >=0
         and <=180. The tilt angle is defined as degrees from horizontal
         (e.g. surface facing up = 0, surface facing horizon = 90)
 
     surface_azimuth : numeric
-        Surface azimuth angles in decimal degrees. surface_azimuth must
+        Surface azimuth angles in decimal degrees. ``surface_azimuth`` must
         be >=0 and <=360. The Azimuth convention is defined as degrees
         east of north (e.g. North = 0, South=180 East = 90, West = 270).
 
     dhi : numeric
-        Diffuse horizontal irradiance. [Wm⁻²] DHI must be >=0.
+        Diffuse horizontal irradiance, must be >=0. [Wm⁻²]
 
     ghi : numeric
-        Global irradiance. [Wm⁻²] DNI must be >=0.
+        Global horizontal irradiance, must be >=0. [Wm⁻²]
 
     solar_zenith : numeric
         Apparent (refraction-corrected) zenith angles in decimal
-        degrees. solar_zenith must be >=0 and <=180.
+        degrees. ``solar_zenith`` must be >=0 and <=180.
 
     solar_azimuth : numeric
-        Sun azimuth angles in decimal degrees. solar_azimuth must be >=0
+        Sun azimuth angles in decimal degrees. ``solar_azimuth`` must be >=0
         and <=360. The Azimuth convention is defined as degrees east of
         north (e.g. North = 0, East = 90, West = 270).
 
     Returns
     -------
     diffuse : numeric
-        The sky diffuse component of the solar radiation.
+        The sky diffuse component of the solar radiation. [Wm⁻²]
+
+    Notes
+    -----
+    The Klucher (1979) model  [1]_ [2]_ determines the diffuse irradiance
+    from the sky (ground reflected irradiance is not included in this
+    algorithm) on a tilted surface using the surface tilt angle, surface
+    azimuth angle, diffuse horizontal irradiance, global horizontal irradiance,
+    sun zenith angle, and sun azimuth angle. The expression for the sky diffuse
+    irradiance, :math:`I_d`, is as follows:
+
+    .. math::
+
+       I_{d} = DHI \frac{1 + \cos\beta}{2} (1 + F' \sin^3(\beta/2))
+       (1 + F' \cos^2\theta\sin^3\theta_z).
+
+    DHI is the diffuse horizontal irradiance, :math:`\beta` is the surface
+    tilt angle, :math:`\theta_z` is the solar zenith angle, and :math:`\theta`
+    is the angle of incidence. :math:`F'` is a modulating function to account
+    for when the sky changes from clear to overcast, and is defined as follows:
+
+    .. math::
+
+       F' = 1 - (DHI / GHI)^2,
+
+    where GHI is the global horiztonal irradiance.
 
     References
     ----------
-    .. [1] Loutzenhiser P.G. et. al. "Empirical validation of models to compute
-       solar irradiance on inclined surfaces for building energy simulation"
-       2007, Solar Energy vol. 81. pp. 254-267
-
-    .. [2] Klucher, T.M., 1979. Evaluation of models to predict insolation on
-       tilted surfaces. Solar Energy 23 (2), 111-114.
+    .. [1] Klucher, T. M. "Evaluation of models to predict insolation on
+       tilted surfaces" 1979, Solar Energy vol. 23 (2), pp. 111-114
+       :doi:`10.1016/0038-092X(79)90110-5`
+    .. [2] Loutzenhiser P. G. et al. "Empirical validation of models to
+       compute solar irradiance on inclined surfaces for building energy
+       simulation" 2007, Solar Energy vol. 81. pp. 254-267
+       :doi:`10.1016/j.solener.2006.03.009`
     '''
 
     # zenith angle with respect to panel normal.
@@ -721,7 +729,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
               return_components=False):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using the
-    Hay and Davies (1980) model [1]_ [2]_.
+    Hay and Davies (1980) model.
 
     The Hay and Davies model determines the diffuse irradiance from
     the sky (ground reflected irradiance is not included in this
@@ -790,8 +798,8 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     Notes
     ------
-    In the Hay and Davies (1980) model, sky diffuse irradiance, :math:`I_d`,
-    is as follows:
+    In the Hay and Davies (1980) model  [1]_ [2]_, sky diffuse irradiance,
+    :math:`I_d`, is as follows:
 
     .. math::
             I_{d} = DHI \left( A\cdot R_b + (1 - A) \left(\frac{

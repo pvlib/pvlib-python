@@ -1,12 +1,8 @@
 .. _whatsnew_01110:
 
 
-v0.11.1 (Anticipated Sep, 2024)
--------------------------------
-
-Deprecations
-~~~~~~~~~~~~
-
+v0.11.1 (September 26, 2024)
+----------------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -39,7 +35,6 @@ Enhancements
   obviating the call to scipy.optimize that was prone to runtime errors and minimizing
   computation. (:issue:`2171`, :issue:`2216`, :pull:`2217`).
 
-
 Bug fixes
 ~~~~~~~~~
 * To prevent simulation output from differing slightly based on the time zone
@@ -62,7 +57,6 @@ Testing
   and :py:func:`~pvlib.iotools.read_pvgis_tmy` as the default
   API endpoint has changed from 5.1 to 5.2. (:pull:`2222`)
 
-
 Documentation
 ~~~~~~~~~~~~~
 * Added gallery example demonstrating the application of
@@ -76,7 +70,6 @@ Documentation
   different Perez coefficients in a ModelChain.
   (:issue:`2127`, :pull:`2148`)
 * Fixed examples in :py:func:`pvlib.shading.shaded_fraction1d`. (:pull:`#2215`)
-
 * Removed unused "times" input from dni_et() function (:issue:`2105`)
 * Updated model description, added equation variable definitions, and created a 
   new "notes" section in :py:func:`pvlib.irradiance.haydavies` and

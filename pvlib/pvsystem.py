@@ -349,6 +349,9 @@ class PVSystem:
         If passed as a tuple the length must be the same as the number of
         Arrays.
 
+        If `dni_extra` is omitted and parameters are passed as float, then
+        ``dni_extra=1367`` is assumed.
+
         Returns
         -------
         poa_irradiance : DataFrame or tuple of DataFrame
@@ -1111,6 +1114,11 @@ class Array:
         poa_irradiance : DataFrame
             Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
             'poa_sky_diffuse', 'poa_ground_diffuse'``.
+
+        Notes
+        -----
+        If `dni_extra` is omitted and parameters are passed as float, then
+        ``dni_extra=1367`` is assumed.
 
         See also
         --------

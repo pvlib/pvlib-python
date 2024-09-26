@@ -1120,8 +1120,11 @@ class Array:
             albedo = self.albedo
 
         # not needed for all models, but this is easier
-        if dni_extra is None:
+        if dni_extra is None and hasattr(solar_zenith, 'index'):
             dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
+        else:
+            # use the solar constant
+            dni_extra = 1367
 
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)

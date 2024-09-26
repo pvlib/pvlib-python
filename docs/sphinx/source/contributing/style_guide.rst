@@ -112,12 +112,14 @@ using the IEEE style in a docstring::
            (PVSC), Austin, TX, USA, 2012, pp. 3048-3052,
            :doi:`10.1109/PVSC.2012.6318225`.
 
+XXX other examples? XXX
+
 Things to note:
 
 * In text numeric citations require a number inside square brackets, followed
-  by an underscore, e.g. `[1]_`
+  by an underscore, e.g. ``[1]_``
 * To include a DOI, you can use the existing `Sphinx role <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html>`_,
-  with the DOI string, e.g. `:doi:10.21105/joss.05994`.
+  with the DOI string, e.g. `` :doi:`10.21105/joss.05994` ``.
 * The citation formatting must be consistent within the same docstring, for
   example if you abbreviate the author list after one author in the first
   citation then you should do so in all citations.

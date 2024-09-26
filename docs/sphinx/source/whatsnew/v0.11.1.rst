@@ -56,6 +56,7 @@ Testing
 * Updated the tests for :py:func:`~pvlib.iotools.get_pvgis_tmy`
   and :py:func:`~pvlib.iotools.read_pvgis_tmy` as the default
   API endpoint has changed from 5.1 to 5.2. (:pull:`2222`)
+* Removed unused ``times`` input from ``dni_et`` fixture. (:issue:`2105`, :pull:`2156`)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -69,13 +70,12 @@ Documentation
 * Added gallery example demonstrating how to use
   different Perez coefficients in a ModelChain.
   (:issue:`2127`, :pull:`2148`)
-* Fixed examples in :py:func:`pvlib.shading.shaded_fraction1d`. (:pull:`#2215`)
-* Removed unused "times" input from dni_et() function (:issue:`2105`)
+* Fixed examples in :py:func:`pvlib.shading.shaded_fraction1d`. (:pull:`2215`)
 * Updated model description, added equation variable definitions, and created a 
   new "notes" section in :py:func:`pvlib.irradiance.haydavies` and
-  :py:func:`pvlib.irradiance.klucher` (:issue:`2183`, :pull:`2191`,
+  :py:func:`pvlib.irradiance.klucher`. (:issue:`2183`, :pull:`2191`,
   :pull:`2192`)
-* Split the contributing page into several pages (:issue:`2210`, :pull:`2219`)
+* Split the contributing page into several pages. (:issue:`2210`, :pull:`2219`)
 
 Requirements
 ~~~~~~~~~~~~

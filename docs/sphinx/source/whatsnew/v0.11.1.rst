@@ -7,16 +7,16 @@ v0.11.1 (September 26, 2024)
 Enhancements
 ~~~~~~~~~~~~
 * Add new function to calculate the average photon energy,
-  :py:func:`pvlib.spectrum.average_photon_energy`.
+  :py:func:`~pvlib.spectrum.average_photon_energy`.
   (:issue:`2135`, :pull:`2140`)
 * Add new losses function that accounts for non-uniform irradiance on bifacial
-  modules, :py:func:`pvlib.bifacial.power_mismatch_deline`.
+  modules, :py:func:`~pvlib.bifacial.power_mismatch_deline`.
   (:issue:`2045`, :pull:`2046`)
 * Add new parameters for min/max absolute air mass to
-  :py:func:`pvlib.spectrum.spectral_factor_firstsolar`.
+  :py:func:`~pvlib.spectrum.spectral_factor_firstsolar`.
   (:issue:`2086`, :pull:`2100`)
 * Add ``roll_utc_offset`` and ``coerce_year`` arguments to
-  :py:func:`pvlib.iotools.get_pvgis_tmy` to allow user to specify time zone,
+  :py:func:`~pvlib.iotools.get_pvgis_tmy` to allow user to specify time zone,
   rotate indices of TMY to begin at midnight, and force indices to desired
   year. (:issue:`2139`, :pull:`2138`)
 * Restructured the pvlib/spectrum folder by breaking up the contents of
@@ -24,14 +24,14 @@ Enhancements
   pvlib/spectrum/irradiance.py, and
   pvlib/spectrum/response.py. (:issue:`2125`, :pull:`2136`, :pull:`2151`)
 * Added function for calculating wind speed at different heights,
-  :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
+  :py:func:`~pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)
 * ``delta_t`` can now be specified with an array in the SPA functions.
   The numba implementation now also allows calculation of ``delta_t``
   internally.  (:issue:`2189`, :pull:`2190`)
 * The multithreaded SPA functions no longer emit a warning when calculating
   solar positions for short time series. (:pull:`2170`)
-* Implemented closed-form solution for alpha in :py:func:`pvlib.clearsky.detect_clearsky`, 
+* Implemented closed-form solution for alpha in :py:func:`~pvlib.clearsky.detect_clearsky`, 
   obviating the call to scipy.optimize, which was prone to runtime errors, and minimizing
   computation. (:issue:`2171`, :issue:`2216`, :pull:`2217`).
 
@@ -70,10 +70,10 @@ Documentation
   - Demonstrating how to use different Perez coefficients in a ModelChain.
     (:issue:`2127`, :pull:`2148`)
 
-* Fixed examples in :py:func:`pvlib.shading.shaded_fraction1d`. (:pull:`2215`)
+* Fixed examples in :py:func:`~pvlib.shading.shaded_fraction1d`. (:pull:`2215`)
 * Updated model description, added equation variable definitions, and created a 
-  new "notes" section in :py:func:`pvlib.irradiance.haydavies` and
-  :py:func:`pvlib.irradiance.klucher`. (:issue:`2183`, :pull:`2191`,
+  new "notes" section in :py:func:`~pvlib.irradiance.haydavies` and
+  :py:func:`~pvlib.irradiance.klucher`. (:issue:`2183`, :pull:`2191`,
   :pull:`2192`)
 * Document units with Wm⁻² instead of W/m^2 throughout ``pvlib.irradiance``. (:issue:`2205`, :pull:`2191`)
 * Split the contributing page into several pages. (:issue:`2210`, :pull:`2219`)

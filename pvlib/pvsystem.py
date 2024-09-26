@@ -2872,7 +2872,7 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
                          modules_per_string=1,
                          strings=1):
     """
-    Calculates the equivalent resistance of the conductors from a percent
+    Calculate the equivalent resistance of the conductors from the percent
     ohmic loss of an array at reference conditions.
 
     Parameters
@@ -2882,7 +2882,8 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
     imp_ref: numeric
         Maximum power current of one module at reference conditions. [A]
     dc_ohmic_percent: numeric
-        Array DC loss as a percent, e.g. 1.5% loss is input as 1.5.
+        Array DC power loss as a percent of DC power loss at reference
+        conditions. In percent, e.g. 1.5% loss is input as 1.5.
     modules_per_string: int, default 1
         Number of series-connected modules per string in the array.
     strings: int, default 1
@@ -2902,7 +2903,8 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
     Equivalent resistance is calculated as:
 
     .. math::
-        Rw = (L_{stc} / 100) * (Varray / Iarray)
+
+        Rw = (L_{stc} / 100) \times (Varray / Iarray)
 
     :math:`Rw` is the equivalent resistance in ohms.
     :math:`Varray` is the array voltage, equal to ``vmp_ref`` times
@@ -2936,7 +2938,7 @@ def dc_ohmic_losses(resistance, current):
     Returns
     ----------
     loss: numeric
-        Power Loss [W]
+        Power loss. [W]
 
     See Also
     --------
@@ -2948,6 +2950,7 @@ def dc_ohmic_losses(resistance, current):
     flowing through a conductor. Ohmic loss :math:`L` is computed as
 
     .. math::
+
         L = I \times R^2
 
     where :math:`I` is the current (A) and :math:`R` is the resistance of the

@@ -30,6 +30,9 @@ Enhancements
 * Added function for calculating wind speed at different heights,
   :py:func:`pvlib.atmosphere.windspeed_powerlaw`.
   (:issue:`2118`, :pull:`2124`)
+* ``delta_t`` can now be specified with an array in the SPA functions.
+  The numba implementation now also allows calculation of ``delta_t``
+  internally.  (:issue:`2189`, :pull:`2190`)
 * The multithreaded SPA functions no longer emit a warning when calculating
   solar positions for short time series. (:pull:`2170`)
 * Implemented closed-form solution for alpha in :py:func:`pvlib.clearsky.detect_clearsky`, 
@@ -98,6 +101,7 @@ Contributors
 * Mark A. Mikofski (:ghuser:`mikofski`)
 * Ben Pierce (:ghuser:`bgpierc`)
 * Jose Meza (:ghuser:`JoseMezaMendieta`)
+* Kevin Anderson (:ghuser:`kandersolar`)
 * Luiz Reis (:ghuser:`luizreiscver`)
 * Carlos Cárdenas-Bravo (:ghuser:`cardenca`)
 * Marcos R. Escudero (:ghuser:`marc-resc`)

@@ -32,7 +32,7 @@ Enhancements
 * The multithreaded SPA functions no longer emit a warning when calculating
   solar positions for short time series. (:pull:`2170`)
 * Implemented closed-form solution for alpha in :py:func:`pvlib.clearsky.detect_clearsky`, 
-  obviating the call to scipy.optimize that was prone to runtime errors and minimizing
+  obviating the call to scipy.optimize, which was prone to runtime errors, and minimizing
   computation. (:issue:`2171`, :issue:`2216`, :pull:`2217`).
 
 Bug fixes
@@ -60,21 +60,22 @@ Testing
 
 Documentation
 ~~~~~~~~~~~~~
-* Added gallery example demonstrating the application of
-  several spectral mismatch factor models.
-  (:issue:`2107`, :pull:`2114`)
-* Added gallery example demonstrating the application of
-  :py:func:`~pvlib.spectrum.average_photon_energy`. (:issue:`2194`, :pull:`2206`)
-* Added gallery example on calculating cell temperature for
-  floating PV. (:pull:`2110`)
-* Added gallery example demonstrating how to use
-  different Perez coefficients in a ModelChain.
-  (:issue:`2127`, :pull:`2148`)
+* Added new gallery example pages for:
+  
+  - Demonstrating the application of several spectral mismatch factor models.
+    (:issue:`2107`, :pull:`2114`)
+  - Demonstrating the application of :py:func:`~pvlib.spectrum.average_photon_energy`.
+    (:issue:`2194`, :pull:`2206`)
+  - Calculating cell temperature for floating PV. (:pull:`2110`)
+  - Demonstrating how to use different Perez coefficients in a ModelChain.
+    (:issue:`2127`, :pull:`2148`)
+
 * Fixed examples in :py:func:`pvlib.shading.shaded_fraction1d`. (:pull:`2215`)
 * Updated model description, added equation variable definitions, and created a 
   new "notes" section in :py:func:`pvlib.irradiance.haydavies` and
   :py:func:`pvlib.irradiance.klucher`. (:issue:`2183`, :pull:`2191`,
   :pull:`2192`)
+* Document units with Wm⁻² instead of W/m^2 throughout ``pvlib.irradiance``. (:issue:`2205`, :pull:`2191`)
 * Split the contributing page into several pages. (:issue:`2210`, :pull:`2219`)
 
 Requirements

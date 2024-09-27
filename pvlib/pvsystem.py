@@ -2925,7 +2925,7 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
 
 
 def dc_ohmic_losses(resistance, current):
-    """
+    r"""
     Returns ohmic losses in units of power from the equivalent
     resistance of the wires and the operating current.
 

@@ -81,8 +81,6 @@ with numeric in-text citations, but overall the most important feature of all
 references is that they include sufficient information to make locating the
 original source as easy as possible. As a bare minimum, we advise including:
 
-XXX ok to link a pdf? originally from `this page <https://ieeeaccess.ieee.org/guide-for-authors/preparing-your-article/>`_
-
 * Author list (can be abbreviated with et al.)
 * Publication title
 * Publication source (journal title, laboratory name, etc.)
@@ -111,8 +109,6 @@ using the IEEE style in a docstring::
            (PVPMC),” In Proc. 38th IEEE Photovoltaic Specialists Conference
            (PVSC), Austin, TX, USA, 2012, pp. 3048-3052,
            :doi:`10.1109/PVSC.2012.6318225`.
-
-XXX other examples? XXX
 
 Things to note:
 

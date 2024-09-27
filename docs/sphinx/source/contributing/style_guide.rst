@@ -77,13 +77,11 @@ References
 All pertinent information within a docstring should include a proper reference.
 In pvlib-python, we are transitioning to a standardised referencing system. We
 encourage using the `IEEE style <https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf>`_
-with numeric in-text citations, but overall the most important feature of all
-references is that they include sufficient information to make locating the
-original source as easy as possible. As a bare minimum, we advise including:
+with numeric in-text citations. At minimum, a reference should include:
 
 * Author list (can be abbreviated with et al.)
 * Publication title
-* Publication source (journal title, laboratory name, etc.)
+* Publisher (journal title, laboratory name, etc.)
 * Year of publication
 * DOI (if available)
 
@@ -91,7 +89,7 @@ The recommended citation style for several media types is as follows:
 
 **Journal article**:
 
-    Author initials. Author Surname, "Title of article," abbreviated journal
+    Author initials and surname, "Title of article," abbreviated journal
     title, vol. number, issue number, page numbers, Abbreviated Month Year.
 
 **Book**:
@@ -136,12 +134,12 @@ using the IEEE style in a docstring::
 
 Things to note:
 
-* In text numeric citations require a number inside square brackets, followed
+* In-text numeric citations are a number inside square brackets, followed
   by an underscore, e.g. ``[1]_``.
 * To include a DOI, you can use the existing ``:doi:``
   `Sphinx role <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html>`_,
   followed by the DOI string inside a set of backticks.
-* The citation formatting must be consistent within the same docstring, for
+* The citation formatting should be consistent within the same docstring, for
   example if you abbreviate the author list after one author in the first
   citation then you should do so in all citations.
 

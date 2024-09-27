@@ -2871,7 +2871,7 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
                          modules_per_string=1,
                          strings=1):
-    """
+    r"""
     Calculate the equivalent resistance of the conductors from the percent
     ohmic loss of an array at reference conditions.
 
@@ -2904,12 +2904,13 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
 
     .. math::
 
-        Rw = (L_{stc} / 100) \times (Varray / Iarray)
+        R_w = \left(\frac{L_{stc}}{100}\right) \times \left(\frac{
+        V_{array}}{I_{array}}\right)
 
-    :math:`Rw` is the equivalent resistance in ohms.
-    :math:`Varray` is the array voltage, equal to ``vmp_ref`` times
+    :math:`R_w` is the equivalent resistance in ohms.
+    :math:`V_{array}` is the array voltage, equal to ``vmp_ref`` times
     ``modules_per_string``.
-    :math:`Iarray` is the array current, equal to ``imp_ref`` times
+    :math:`I_{array}` is the array current, equal to ``imp_ref`` times
     ``strings``.
     :math:`L_{stc}` is the input DC loss percent at reference conditions.
 
@@ -2947,7 +2948,7 @@ def dc_ohmic_losses(resistance, current):
     Notes
     -----
     Ohmic (also termed joule or heat) loss is the power lost due to current
-    flowing through a conductor. Ohmic loss :math:`L` is computed as
+    flowing through a conductor. Ohmic loss, :math:`L`, is computed as
 
     .. math::
 

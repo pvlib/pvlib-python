@@ -99,8 +99,8 @@ The recommended citation style for several media types is as follows:
 
 **Technical report**:
 
-    Author initials. Author Surname, “Report title” Abbrev. Name of Co.,
-    City of Co., Abbrev. State, Country, Rep. xxx, year
+    Author initials. Author Surname, “Report title” Abbrev. Name of company,
+    City of company, Abbrev. State, Country, Rep. xxx, year
 
 The example below shows how to cite material and generate a reference list
 using the IEEE style in a docstring::
@@ -128,8 +128,8 @@ using the IEEE style in a docstring::
 
     .. [4] R. Bird, and C. Riordan, “Simple solar spectral model for direct and
            diffuse irradiance on horizontal and tilted planes at the earth’s
-           surface for cloudless atmospheres”, NREL, CO, USA, Technical Report
-           TR-215-2436, 1984, :doi:`10.2172/5986936`
+           surface for cloudless atmospheres”, NREL, Golden, CO, USA, Technical
+           Report TR-215-2436, 1984, :doi:`10.2172/5986936`
 
 Things to note:
 

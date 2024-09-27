@@ -323,13 +323,13 @@ class PVSystem:
             Solar zenith angle.
         solar_azimuth : float or Series
             Solar azimuth angle.
-        dni : float or Series or tuple of float or Series
+        dni : float or Series or tuple of Series
             Direct Normal Irradiance. [W/m2]
-        ghi : float or Series or tuple of float or Series
+        ghi : float or Series or tuple of Series
             Global horizontal irradiance. [W/m2]
-        dhi : float or Series or tuple of float or Series
+        dhi : float or Series or tuple of Series
             Diffuse horizontal irradiance. [W/m2]
-        dni_extra : float, Series or tuple of float or Series, optional
+        dni_extra : float, Series or tuple of Series, optional
             Extraterrestrial direct normal irradiance. [W/m2]
         airmass : float or Series, optional
             Airmass. [unitless]
@@ -344,13 +344,15 @@ class PVSystem:
         Notes
         -----
         Each of `dni`, `ghi`, and `dni` parameters may be passed as a tuple
-        to provide different irradiance for each array in the system. If not
-        passed as a tuple then the same value is used for input to each Array.
-        If passed as a tuple the length must be the same as the number of
-        Arrays.
+        of Series to provide different irradiance for each array in the system.
+        If passed as a tuple of Series the tuple length must be the same
+        as the number of Arrays. If not passed as a tuple then the same values
+        are used for each Array.
 
-        If `dni_extra` is omitted and parameters are passed as float, then
-        ``dni_extra=1367`` is assumed.
+        Some sky irradiance models require `dni_extra`. For these models,
+        if `dni_extra` is not provided and ``solar_zenith`` has a
+        ``DatetimeIndex``, then `dni_extra` is calculated.
+        Otherwise, ``dni_extra=1367`` is assumed.
 
         Returns
         -------
@@ -1117,8 +1119,10 @@ class Array:
 
         Notes
         -----
-        If `dni_extra` is omitted and parameters are passed as float, then
-        ``dni_extra=1367`` is assumed.
+        Some sky irradiance models require `dni_extra`. For these models,
+        if `dni_extra` is not provided and ``solar_zenith`` has a
+        ``DatetimeIndex``, then `dni_extra` is calculated.
+        Otherwise, ``dni_extra=1367`` is assumed.
 
         See also
         --------
@@ -1127,8 +1131,9 @@ class Array:
         if albedo is None:
             albedo = self.albedo
 
-        # not needed for all models, but this is easier
-        if dni_extra is None and hasattr(solar_zenith, 'index'):
+        # dni_extra is not needed for all models, but this is easier
+        if dni_extra is None and hasattr(solar_zenith, 'index') and \
+            isinstance(solar_zenith.index, pd.DatetimeIndex):
             dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
         else:
             # use the solar constant

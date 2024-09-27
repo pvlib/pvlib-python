@@ -89,16 +89,16 @@ original source as easy as possible. As a bare minimum, we advise including:
 
 The recommended citation style for several media types is as follows:
 
-Journal article:
+**Journal article**:
     Author initials. Author Surname, "Title of article," abbreviated journal
     title, vol. number, issue number, page numbers, Abbreviated Month Year.
 
-Book:
+**Book**:
     Author initials. Author Surname, “Chapter title” in Book Title, xth ed.
     City of Publisher, (only U.S. State), Country: Abbrev. of Publisher, year,
     ch. x, sec. x, pp. xxx–xxx.
 
-Technical report:
+**Technical report**:
     Author initials. Author Surname, “Report title” Abbrev. Name of Co.,
     City of Co., Abbrev. State, Country, Rep. xxx, year
 

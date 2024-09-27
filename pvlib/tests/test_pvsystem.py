@@ -1896,7 +1896,7 @@ def test_PVSystem_get_irradiance_float():
     for k, v in irradiance.items():
         assert np.isclose(v, expected[k], rtol=1e-6)
 
-    
+
 def test_PVSystem_get_irradiance_albedo(solar_pos):
     system = pvsystem.PVSystem(surface_tilt=32, surface_azimuth=135)
     irrads = pd.DataFrame({'dni': [900, 0], 'ghi': [600, 0], 'dhi': [100, 0],

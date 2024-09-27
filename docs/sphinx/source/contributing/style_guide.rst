@@ -85,19 +85,31 @@ original source as easy as possible. As a bare minimum, we advise including:
 * Publication title
 * Publication source (journal title, laboratory name, etc.)
 * Year of publication
-* DOI (if available) XXX "or other link"? but don't want to encourage too many
-  non-permanent URLs that may break at a later date though
+* DOI (if available)
 
-For journal articles, the recommended citation style is as follows:
+The recommended citation style for several media types is as follows:
 
+Journal article:
     Author initials. Author Surname, "Title of article," abbreviated journal
     title, vol. number, issue number, page numbers, Abbreviated Month Year.
+
+Book:
+    Author initials. Author Surname, “Chapter title” in Book Title, xth ed.
+    City of Publisher, (only U.S. State), Country: Abbrev. of Publisher, year,
+    ch. x, sec. x, pp. xxx–xxx.
+
+Technical report:
+    Author initials. Author Surname, “Report title” Abbrev. Name of Co.,
+    City of Co., Abbrev. State, Country, Rep. xxx, year
 
 The example below shows how to cite material and generate a reference list
 using the IEEE style in a docstring::
 
     This is the recommended citation for the pvlib-python project [1]_. There
     are also some conference papers linked to pvlib, for example [2]_.
+    
+    Other types of reference you may find in the pvlib-python documentation
+    include books [3]_ and technical reports [4]_.
 
     References
     ----------
@@ -110,13 +122,22 @@ using the IEEE style in a docstring::
            (PVSC), Austin, TX, USA, 2012, pp. 3048-3052,
            :doi:`10.1109/PVSC.2012.6318225`.
 
+    .. [3] J. A. Duffie and W. A. Beckman, “Solar Radiation" in Solar
+           Engineering of Thermal Processes, 3rd ed, New York, USA, J. Wiley
+           and Sons, 2006, ch. 1, sec. 1.5, pp.9-11
+
+    .. [4] R. Bird, and C. Riordan, “Simple solar spectral model for direct and
+           diffuse irradiance on horizontal and tilted planes at the earth’s
+           surface for cloudless atmospheres”, NREL, CO, USA, Technical Report
+           TR-215-2436, 1984, :doi:`10.2172/5986936`
+
 Things to note:
 
 * In text numeric citations require a number inside square brackets, followed
   by an underscore, e.g. ``[1]_``.
 * To include a DOI, you can use the existing ``:doi:``
   `Sphinx role <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html>`_,
-  with the DOI string.
+  followed by the DOI string inside a set of backticks.
 * The citation formatting must be consistent within the same docstring, for
   example if you abbreviate the author list after one author in the first
   citation then you should do so in all citations.

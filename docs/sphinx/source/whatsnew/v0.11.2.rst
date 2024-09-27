@@ -11,11 +11,18 @@ Deprecations
 Enhancements
 ~~~~~~~~~~~~
 
+Bug Fixes
+~~~~~~~~~
+* :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` accepts float inputs.
+  (:issue:`1338`, :pull:`2227`)
 
 Documentation
 ~~~~~~~~~~~~~
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
   :py:func:`~pvlib.pvsystem.dc_ohmic_loss` for clarity. (:issue:`1601`, :pull:`2229`)
+* Clarified that :py:meth:`~pvlib.pvsystem.PVSystem.get_irradiance` and
+  :py:meth:`~pvlib.pvsystem.Array.get_irradiance` do not accept tuple of float
+  as input. (:pull:`2227`)
 
 
 Testing

@@ -74,9 +74,8 @@ status box at the bottom of the pull request.
 
 References
 ----------
-All pertinent information within a docstring should include a proper reference.
-In pvlib-python, we are transitioning to a standardised referencing system. We
-encourage using the `IEEE style <https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf>`_
+pvlib-python is transitioning to a standard reference format. We encourage
+using the `IEEE style <https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf>`_
 with numeric in-text citations. At minimum, a reference should include:
 
 * Author list (can be abbreviated with et al.)

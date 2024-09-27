@@ -14,6 +14,8 @@ Enhancements
 
 Documentation
 ~~~~~~~~~~~~~
+* Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
+  :py:func:`~pvlib.pvsystem.dc_ohmic_loss` for clarity. (:issue:`1601`, :pull:`2229`)
 
 
 Testing
@@ -26,5 +28,5 @@ Requirements
 
 Contributors
 ~~~~~~~~~~~~
-
+* Cliff Hansen (:ghuser:`cwhanse`)
 

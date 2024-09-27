@@ -90,7 +90,7 @@ XXX ok to link a pdf? originally from `this page <https://ieeeaccess.ieee.org/gu
 * DOI (if available) XXX "or other link"? but don't want to encourage too many
   non-permanent URLs that may break at a later date though
 
-For journal articles, the recommended style citation is as follows:
+For journal articles, the recommended citation style is as follows:
 
     Author initials. Author Surname, "Title of article," abbreviated journal
     title, vol. number, issue number, page numbers, Abbreviated Month Year.
@@ -117,9 +117,10 @@ XXX other examples? XXX
 Things to note:
 
 * In text numeric citations require a number inside square brackets, followed
-  by an underscore, e.g. ``[1]_``
-* To include a DOI, you can use the existing `Sphinx role <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html>`_,
-  with the DOI string, e.g. `` :doi:`10.21105/joss.05994` ``.
+  by an underscore, e.g. ``[1]_``.
+* To include a DOI, you can use the existing ``:doi:``
+  `Sphinx role <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html>`_,
+  with the DOI string.
 * The citation formatting must be consistent within the same docstring, for
   example if you abbreviate the author list after one author in the first
   citation then you should do so in all citations.

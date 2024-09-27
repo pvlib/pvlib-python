@@ -99,8 +99,8 @@ The recommended citation style for several media types is as follows:
 
 **Technical report**:
 
-    Author initials. Author Surname, “Report title” Abbrev. Name of company,
-    City of company, Abbrev. State, Country, Rep. xxx, year
+    Author initials. Author Surname, “Report title” Abbrev. publisher name,
+    City of publisher, Abbrev. State, Country, Rep. xxx, year
 
 The example below shows how to cite material and generate a reference list
 using the IEEE style in a docstring::

@@ -74,11 +74,11 @@ status box at the bottom of the pull request.
 
 References
 ----------
-pvlib-python is transitioning to a standard reference format. We encourage
-using the `IEEE style <https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf>`_
-with numeric in-text citations. At minimum, a reference should include:
+pvlib-python is transitioning to the `IEEE reference style <https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf>`_,
+which should be used in all new contributions. At minimum, a reference should
+include:
 
-* Author list (can be abbreviated with et al.)
+* Author list (for more than six authors, list only the first with et al.)
 * Publication title
 * Publisher (journal title, laboratory name, etc.)
 * Year of publication
@@ -138,9 +138,6 @@ Things to note:
 * To include a DOI, you can use the existing ``:doi:``
   `Sphinx role <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html>`_,
   followed by the DOI string inside a set of backticks.
-* The citation formatting should be consistent within the same docstring, for
-  example if you abbreviate the author list after one author in the first
-  citation then you should do so in all citations.
 
 
 .. _building-the-documentation:

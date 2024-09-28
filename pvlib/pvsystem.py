@@ -165,16 +165,16 @@ class PVSystem:
 
     inverter : string, optional
         The model name of the inverters.
-        May be used to look up the inverter_parameters dictionary
+        May be used to look up the ``inverter_parameters`` dictionary
         via some other method.
 
     inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
     racking_model : string, default None
-        Valid strings are ``open_rack``, ``close_mount``, and
-        ``insulated_back``.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are `open_rack`, `close_mount`, `freestanding`, or
+        `insulated_back`.
+        Used to identify a parameter set for the cell temperature model.
 
     losses_parameters : dict or Series, optional
         Losses parameters as defined by PVWatts or other.
@@ -1376,10 +1376,11 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional, default None
-        Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
-        Used to identify a parameter set for the SAPM cell temperature model.
+        Valid strings are `open_rack', `close_mount`, `freestanding`, or
+        `insulated_back`.
+        Used to identify a parameter set for the cell temperature model.
 
-    module_height : float, optional
+    module_height : float, optional, default None
        The height above ground of the center of the module [m]. Used for
        the Fuentes cell temperature model.
     """
@@ -1452,7 +1453,7 @@ class SingleAxisTrackerMount(AbstractMount):
         :func:`~pvlib.tracking.calc_cross_axis_tilt` to calculate
         `cross_axis_tilt`. [degrees]
 
-    racking_model : str, optional, default None
+    racking_model : str, optional
         Valid strings are 'open_rack', 'close_mount', and 'insulated_back'.
         Used to identify a parameter set for the SAPM cell temperature model.
 

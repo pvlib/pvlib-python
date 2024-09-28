@@ -188,7 +188,7 @@ class PVSystem:
     Raises
     ------
     ValueError
-        If `arrays` is not None and has length 0.
+        If ``arrays`` is not None and has length 0.
 
     See also
     --------
@@ -1376,7 +1376,7 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional, default None
-        Valid strings are `open_rack', `close_mount`, `freestanding`, or
+        Valid strings are `open_rack`, `close_mount`, `freestanding`, or
         `insulated_back`.
         Used to identify a parameter set for the cell temperature model.
 

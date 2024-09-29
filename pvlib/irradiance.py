@@ -745,6 +745,10 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         defined as degrees from horizontal (e.g. surface facing up = 0,
         surface facing horizon = 90)
 
+    surface_tilt : numeric
+        Panel tilt from the horizontal, in decimal degrees, see
+        :term:`surface_tilt`.
+
     surface_azimuth : numeric
         Surface azimuth angles in decimal degrees. The azimuth
         convention is defined as degrees east of north (e.g. North=0,
@@ -755,6 +759,12 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
 
     dni : numeric
         Direct normal irradiance. [Wm⁻²]
+
+    dni : numeric
+        Direct normal irradiance, see :term:`dni`. [Wm⁻²]
+
+    dni : numeric
+        :term:`Direct Normal Irradiance<dni>` [Wm⁻²]
 
     dni_extra : numeric
         Extraterrestrial normal irradiance. [Wm⁻²]

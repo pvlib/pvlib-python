@@ -142,8 +142,6 @@ class PVSystem:
 
     module : string, optional
         The model name of the modules.
-        May be used to look up the ``module_parameters`` dictionary
-        via some other method.
 
     module_type : string, default `glass_polymer`
          Describes the module's construction. Valid strings are `glass_polymer`
@@ -165,8 +163,6 @@ class PVSystem:
 
     inverter : string, optional
         The model name of the inverters.
-        May be used to look up the ``inverter_parameters`` dictionary
-        via some other method.
 
     inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.

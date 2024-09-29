@@ -8,7 +8,7 @@ Deprecations
 ~~~~~~~~~~~~
 * Changed the `g_poa_effective` parameter name to
   `effective_irradiance` in :py:func:`~pvlib.pvsystem.PVSystem.pvwatts_dc`.
-  (:pull:`2235`)
+  (:issue:`1253`, :pull:`2235`)
 
 Enhancements
 ~~~~~~~~~~~~

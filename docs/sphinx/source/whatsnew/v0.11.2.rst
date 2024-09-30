@@ -16,7 +16,11 @@ Documentation
 ~~~~~~~~~~~~~
 * Edited docstrings for :py:func:`~pvlib.pvsystem.dc_ohms_from_percent` and
   :py:func:`~pvlib.pvsystem.dc_ohmic_loss` for clarity. (:issue:`1601`, :pull:`2229`)
-
+* Corrected the default values for module height and racking model to None in
+  the :py:class:`~pvlib.pvsystem.PVSystem` and
+  :py:class:`~pvlib.pvsystem.FixedMount` docstrings, added the freestanding
+  racking model option, and various formatting edits for clarity.
+  (:issue:`1942`, :pull:`2232`)
 
 Testing
 ~~~~~~~
@@ -29,4 +33,5 @@ Requirements
 Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
+* Rajiv Daxini (:ghuser:`RDaxini`)
 

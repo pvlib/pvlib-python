@@ -167,7 +167,7 @@ class PVSystem:
     inverter_parameters : dict or Series, optional
         Inverter parameters as defined by the SAPM, CEC, or other.
 
-    racking_model : string, default None
+    racking_model : string, optional
         Valid strings are `open_rack`, `close_mount`, `freestanding`, or
         `insulated_back`.
         Used to identify a parameter set for the cell temperature model.
@@ -1371,12 +1371,12 @@ class FixedMount(AbstractMount):
         Azimuth angle of the module surface. North=0, East=90, South=180,
         West=270. [degrees]
 
-    racking_model : str, optional, default None
+    racking_model : str, optional
         Valid strings are `open_rack`, `close_mount`, `freestanding`, or
         `insulated_back`.
         Used to identify a parameter set for the cell temperature model.
 
-    module_height : float, optional, default None
+    module_height : float, optional
        The height above ground of the center of the module [m]. Used for
        the Fuentes cell temperature model.
     """

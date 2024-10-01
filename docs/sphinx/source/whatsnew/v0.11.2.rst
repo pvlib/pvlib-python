@@ -21,6 +21,8 @@ Documentation
   :py:class:`~pvlib.pvsystem.FixedMount` docstrings, added the freestanding
   racking model option, and various formatting edits for clarity.
   (:issue:`1942`, :pull:`2232`)
+  :py:func:`~pvlib.pvsystem.dc_ohmic_losses` for clarity. (:issue:`1601`, :pull:`2229`)
+
 
 Testing
 ~~~~~~~

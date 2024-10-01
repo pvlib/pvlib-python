@@ -143,9 +143,9 @@ class PVSystem:
     module : string, optional
         The model name of the modules.
 
-    module_type : string, default `glass_polymer`
-         Describes the module's construction. Valid strings are `glass_polymer`
-         and `glass_glass`. Used for cell and module temperature calculations.
+    module_type : string, default 'glass_polymer'
+         Describes the module's construction. Valid strings are 'glass_polymer'
+         and 'glass_glass'. Used for cell and module temperature calculations.
 
     module_parameters : dict or Series, optional
         Module parameters as defined by the SAPM, CEC, or other.
@@ -168,8 +168,8 @@ class PVSystem:
         Inverter parameters as defined by the SAPM, CEC, or other.
 
     racking_model : string, optional
-        Valid strings are `open_rack`, `close_mount`, `freestanding`, or
-        `insulated_back`.
+        Valid strings are 'open_rack', 'close_mount', 'freestanding', or
+        'insulated_back'.
         Used to identify a parameter set for the cell temperature model.
 
     losses_parameters : dict or Series, optional
@@ -1372,8 +1372,8 @@ class FixedMount(AbstractMount):
         West=270. [degrees]
 
     racking_model : str, optional
-        Valid strings are `open_rack`, `close_mount`, `freestanding`, or
-        `insulated_back`.
+        Valid strings are 'open_rack', 'close_mount', 'freestanding', or
+        'insulated_back'.
         Used to identify a parameter set for the cell temperature model.
 
     module_height : float, optional

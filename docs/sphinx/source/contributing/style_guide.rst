@@ -115,7 +115,8 @@ using the IEEE style in a docstring::
     ----------
     .. [1] K. Anderson, C. Hansen, W. Holmgren, A. Jensen, M. Mikofski,
            and A Driesse. “pvlib python: 2023 project update.” J. Open Source
-           Softw. 8(92), 5994, (2023). :doi:`10.21105/joss.05994`
+           Softw. vol. 8, no. 92, pp. 5994, Dec 2023,
+           :doi:`10.21105/joss.05994`
 
     .. [2] J. S. Stein, “The Photovoltaic Performance Modeling Collaborative
            (PVPMC),” In Proc. 38th IEEE Photovoltaic Specialists Conference

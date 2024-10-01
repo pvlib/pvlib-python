@@ -153,7 +153,7 @@ class PVSystem:
     temperature_model_parameters : dict or Series, optional
         Temperature model parameters as required by one of the models in
         :py:mod:`pvlib.temperature` (excluding ``poa_global``, ``temp_air`` and
-                                     ``wind_speed``).
+        ``wind_speed``).
 
     modules_per_string: int or float, default 1
         See system topology discussion above.

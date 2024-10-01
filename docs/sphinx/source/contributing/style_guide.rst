@@ -127,7 +127,7 @@ using the IEEE style in a docstring::
            Engineering of Thermal Processes, 3rd ed, New York, USA, J. Wiley
            and Sons, 2006, ch. 1, sec. 1.5, pp.9-11
 
-    .. [4] R. Bird, and C. Riordan, "Simple solar spectral model for direct and
+    .. [4] R. Bird and C. Riordan, "Simple solar spectral model for direct and
            diffuse irradiance on horizontal and tilted planes at the earth’s
            surface for cloudless atmospheres", NREL, Golden, CO, USA, Technical
            Report TR-215-2436, 1984, :doi:`10.2172/5986936`

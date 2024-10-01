@@ -93,13 +93,13 @@ The recommended citation style for several media types is as follows:
 
 **Book**:
 
-    Author initials. Author Surname, “Chapter title” in Book Title, xth ed.
+    Author initials. Author Surname, "Chapter title" in Book Title, xth ed.
     City of Publisher, (only U.S. State), Country: Abbrev. of Publisher, year,
     ch. x, sec. x, pp. xxx–xxx.
 
 **Technical report**:
 
-    Author initials. Author Surname, “Report title” Abbrev. publisher name,
+    Author initials. Author Surname, "Report title" Abbrev. publisher name,
     City of publisher, Abbrev. State, Country, Rep. xxx, year
 
 The example below shows how to cite material and generate a reference list
@@ -114,22 +114,22 @@ using the IEEE style in a docstring::
     References
     ----------
     .. [1] K. Anderson, C. Hansen, W. Holmgren, A. Jensen, M. Mikofski,
-           and A Driesse. “pvlib python: 2023 project update.” J. Open Source
+           and A Driesse. "pvlib python: 2023 project update." J. Open Source
            Softw. vol. 8, no. 92, pp. 5994, Dec 2023,
            :doi:`10.21105/joss.05994`
 
-    .. [2] J. S. Stein, “The Photovoltaic Performance Modeling Collaborative
-           (PVPMC),” In Proc. 38th IEEE Photovoltaic Specialists Conference
+    .. [2] J. S. Stein, "The Photovoltaic Performance Modeling Collaborative
+           (PVPMC)," In Proc. 38th IEEE Photovoltaic Specialists Conference
            (PVSC), Austin, TX, USA, 2012, pp. 3048-3052,
            :doi:`10.1109/PVSC.2012.6318225`
 
-    .. [3] J. A. Duffie and W. A. Beckman, “Solar Radiation" in Solar
+    .. [3] J. A. Duffie and W. A. Beckman, "Solar Radiation" in Solar
            Engineering of Thermal Processes, 3rd ed, New York, USA, J. Wiley
            and Sons, 2006, ch. 1, sec. 1.5, pp.9-11
 
-    .. [4] R. Bird, and C. Riordan, “Simple solar spectral model for direct and
+    .. [4] R. Bird, and C. Riordan, "Simple solar spectral model for direct and
            diffuse irradiance on horizontal and tilted planes at the earth’s
-           surface for cloudless atmospheres”, NREL, Golden, CO, USA, Technical
+           surface for cloudless atmospheres", NREL, Golden, CO, USA, Technical
            Report TR-215-2436, 1984, :doi:`10.2172/5986936`
 
 Things to note:

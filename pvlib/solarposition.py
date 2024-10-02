@@ -390,6 +390,7 @@ def spa_python(time, latitude, longitude,
     return result
 
 
+@renamed_kwarg_warning("0.11.2", "times", "date", "0.12.0")
 def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
                              delta_t=67.0, numthreads=4):
     """
@@ -405,8 +406,12 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
 
     Parameters
     ----------
-    times : pandas.DatetimeIndex
+    date : pandas.DatetimeIndex
         Must be localized to the timezone for ``latitude`` and ``longitude``.
+    
+        .. deprecated:: 0.11.2 until 0.12.0
+            Renamed from ``times`` to ``date``.
+
     latitude : float
         Latitude in degrees, positive north of equator, negative to south
     longitude : float
@@ -418,7 +423,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     delta_t : float or array, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
-        using times.year and times.month from pandas.DatetimeIndex.
+        using date.year and date.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
     numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
@@ -426,7 +431,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     Returns
     -------
     pandas.DataFrame
-        index is the same as input `times` argument
+        index is the same as input ``date`` argument
         columns are 'sunrise', 'sunset', and 'transit'
 
     References
@@ -440,25 +445,25 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     lat = latitude
     lon = longitude
 
-    # times must be localized
-    if times.tz:
-        tzinfo = times.tz
+    # date must be localized
+    if date.tz:
+        tzinfo = date.tz
     else:
-        raise ValueError('times must be localized')
+        raise ValueError("'date' must be localized")
 
     # must convert to midnight UTC on day of interest
-    times_utc = times.tz_convert('UTC')
-    unixtime = _datetime_to_unixtime(times_utc.normalize())
+    date_utc = date.tz_convert('UTC')
+    unixtime = _datetime_to_unixtime(date_utc.normalize())
 
     spa = _spa_python_import(how)
 
     if delta_t is None:
-        delta_t = spa.calculate_deltat(times_utc.year, times_utc.month)
+        delta_t = spa.calculate_deltat(date_utc.year, date_utc.month)
 
     transit, sunrise, sunset = spa.transit_sunrise_sunset(
         unixtime, lat, lon, delta_t, numthreads)
 
-    # arrays are in seconds since epoch format, need to conver to timestamps
+    # arrays are in seconds since epoch format, need to convert to timestamps
     transit = pd.to_datetime(transit*1e9, unit='ns', utc=True).tz_convert(
         tzinfo).tolist()
     sunrise = pd.to_datetime(sunrise*1e9, unit='ns', utc=True).tz_convert(
@@ -466,7 +471,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     sunset = pd.to_datetime(sunset*1e9, unit='ns', utc=True).tz_convert(
         tzinfo).tolist()
 
-    return pd.DataFrame(index=times, data={'sunrise': sunrise,
+    return pd.DataFrame(index=date, data={'sunrise': sunrise,
                                            'sunset': sunset,
                                            'transit': transit})
 

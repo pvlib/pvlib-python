@@ -188,6 +188,13 @@ def test_sun_rise_set_transit_spa(expected_rise_set_spa, golden, delta_t):
     assert_frame_equal(expected_rise_set_spa, result_rounded)
 
 
+@fail_on_pvlib_version("0.12")
+def test_sun_rise_set_transit_spa_renamed_kwarg_warning():
+    # test to remember to remove renamed_kwarg_warning after the grace period
+    # and modify docs as needed
+    pass
+
+
 @requires_ephem
 def test_sun_rise_set_transit_ephem(expected_rise_set_ephem, golden):
     # test for Golden, CO compare to USNO, using local midnight

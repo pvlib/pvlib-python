@@ -390,8 +390,8 @@ def spa_python(time, latitude, longitude,
     return result
 
 
-@renamed_kwarg_warning("0.11.2", "times", "date", "0.12.0")
-def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
+@renamed_kwarg_warning("0.11.2", "times", "date", "0.12")
+def sun_rise_set_transit_spa(date, latitude, longitude, how='numpy',
                              delta_t=67.0, numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
@@ -408,7 +408,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     ----------
     date : pandas.DatetimeIndex
         Must be localized to the timezone for ``latitude`` and ``longitude``.
-    
+
         .. deprecated:: 0.11.2 until 0.12.0
             Renamed from ``times`` to ``date``.
 

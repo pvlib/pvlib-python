@@ -354,7 +354,7 @@ def renamed_kwarg_warning(since, old_param_name, new_param_name, removal=""):
     >>> def some_function(new_name=None):
     >>>     pass
     >>> some_function(old_name=1)
-    Parameter 'old_name' has been renamed since 1.4.0. and 
+    Parameter 'old_name' has been renamed since 1.4.0. and
     will be removed in 1.6.0. Please use 'new_name' instead.
 
     >>> @renamed_kwarg_warning("1.4.0", "old_name", "new_name")

@@ -21,7 +21,8 @@ def renamed_kwarg_func():
 
 def test_renamed_kwarg_warning(renamed_kwarg_func):
     # assert no warning is raised when using the new kwarg
-    assert renamed_kwarg_func(new_kwarg=1) == 1
+    assert renamed_kwarg_func(new_kwarg=1) == 1  # as keyword argument
+    assert renamed_kwarg_func(1) == 1  # as positional argument
 
     # assert a warning is raised when using the old kwarg
     with pytest.warns(Warning, match="Parameter 'old_kwarg' has been renamed"):

@@ -5,7 +5,11 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from .conftest import assert_frame_equal, assert_series_equal
+from .conftest import (
+    assert_frame_equal,
+    assert_series_equal,
+    fail_on_pvlib_version,
+)
 from numpy.testing import assert_allclose
 import pytest
 
@@ -709,6 +713,12 @@ def test_hour_angle():
         solarposition._times_to_hours_after_local_midnight(times)
     with pytest.raises(ValueError):
         solarposition._local_times_from_hours_since_midnight(times, hours)
+
+
+@fail_on_pvlib_version('0.12')
+def test_hour_angle_renamed_kwarg_warning():
+    # test to remember to remove renamed_kwarg_warning
+    pass
 
 
 def test_sun_rise_set_transit_geometric(expected_rise_set_spa, golden_mst):

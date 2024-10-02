@@ -25,6 +25,7 @@ import warnings
 
 from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime
+from pvlib._deprecation import renamed_kwarg_warning
 
 
 def get_solarposition(time, latitude, longitude,
@@ -1340,15 +1341,20 @@ def solar_zenith_analytical(latitude, hourangle, declination):
     )
 
 
-def hour_angle(times, longitude, equation_of_time):
+@renamed_kwarg_warning("0.11.2", "times", "time", "0.12.0")
+def hour_angle(time, longitude, equation_of_time):
     """
     Hour angle in local solar time. Zero at local solar noon.
 
     Parameters
     ----------
-    times : :class:`pandas.DatetimeIndex`
+    time : :class:`pandas.DatetimeIndex`
         Corresponding timestamps, must be localized to the timezone for the
         ``longitude``.
+
+        .. versionchanged:: 0.11.2
+            Renamed from ``times`` to ``time``.
+
     longitude : numeric
         Longitude in degrees
     equation_of_time : numeric
@@ -1376,14 +1382,14 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_pvcdrom
     """
 
-    # times must be localized
-    if not times.tz:
-        raise ValueError('times must be localized')
+    # time must be localized
+    if not time.tz:
+        raise ValueError('time must be localized')
 
-    # hours - timezone = (times - normalized_times) - (naive_times - times)
-    tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
+    # hours - timezone = (time - normalized_time) - (naive_time - time)
+    tzs = np.array([ts.utcoffset().total_seconds() for ts in time]) / 3600
 
-    hrs_minus_tzs = _times_to_hours_after_local_midnight(times) - tzs
+    hrs_minus_tzs = _times_to_hours_after_local_midnight(time) - tzs
 
     return 15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.
 

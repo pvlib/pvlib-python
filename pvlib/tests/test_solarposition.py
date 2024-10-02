@@ -717,7 +717,7 @@ def test_hour_angle():
 
 @fail_on_pvlib_version('0.12')
 def test_hour_angle_renamed_kwarg_warning():
-    # test to remember to remove renamed_kwarg_warning
+    # test to remember to remove renamed_kwarg_warning after the grace period
     pass
 
 

@@ -471,9 +471,10 @@ def sun_rise_set_transit_spa(date, latitude, longitude, how='numpy',
     sunset = pd.to_datetime(sunset*1e9, unit='ns', utc=True).tz_convert(
         tzinfo).tolist()
 
-    return pd.DataFrame(index=date, data={'sunrise': sunrise,
-                                           'sunset': sunset,
-                                           'transit': transit})
+    return pd.DataFrame(
+        index=date,
+        data={"sunrise": sunrise, "sunset": sunset, "transit": transit},
+    )
 
 
 def _ephem_convert_to_seconds_and_microseconds(date):

@@ -350,9 +350,19 @@ def renamed_kwarg_warning(since, old_param_name, new_param_name, removal=""):
 
     Examples
     --------
-    @renamed_kwarg('1.4.0', 'old_name', 'new_name')
-    def some_function(new_name=None):
-        pass
+    >>> @renamed_kwarg_warning("1.4.0", "old_name", "new_name", "1.6.0")
+    >>> def some_function(new_name=None):
+    >>>     pass
+    >>> some_function(old_name=1)
+    Parameter 'old_name' has been renamed since 1.4.0. and 
+    will be removed in 1.6.0. Please use 'new_name' instead.
+
+    >>> @renamed_kwarg_warning("1.4.0", "old_name", "new_name")
+    >>> def some_function(new_name=None):
+    >>>     pass
+    >>> some_function(old_name=1)
+    Parameter 'old_name' has been renamed since 1.4.0. and
+    will be removed soon. Please use 'new_name' instead.
     """
 
     def deprecate(func, old=old_param_name, new=new_param_name, since=since):
@@ -367,8 +377,8 @@ def renamed_kwarg_warning(since, old_param_name, new_param_name, removal=""):
                 warnings.warn(
                     f"Parameter '{old}' has been renamed since {since}. "
                     f"and will be removed "
-                    + ("in {removal}." if removal else "soon.")
-                    + f"Please use '{new}' instead.",
+                    + (f"in {removal}" if removal else "soon")
+                    + f". Please use '{new}' instead.",
                     _projectWarning,
                     stacklevel=2,
                 )

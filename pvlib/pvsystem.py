@@ -2871,46 +2871,49 @@ def pvwatts_losses(soiling=2, shading=3, snow=0, mismatch=2, wiring=2,
 def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
                          modules_per_string=1,
                          strings=1):
-    """
-    Calculates the equivalent resistance of the wires from a percent
-    ohmic loss at STC.
-
-    Equivalent resistance is calculated with the function:
-
-    .. math::
-        Rw = (L_{stc} / 100) * (Varray / Iarray)
-
-    :math:`Rw` is the equivalent resistance in ohms
-    :math:`Varray` is the Vmp of the modules times modules per string
-    :math:`Iarray` is the Imp of the modules times strings per array
-    :math:`L_{stc}` is the input dc loss percent
+    r"""
+    Calculate the equivalent resistance of the conductors from the percent
+    ohmic loss of an array at reference conditions.
 
     Parameters
     ----------
     vmp_ref: numeric
-        Voltage at maximum power in reference conditions [V]
+        Maximum power voltage of one module at reference conditions. [V]
     imp_ref: numeric
-        Current at maximum power in reference conditions [V]
-    dc_ohmic_percent: numeric, default 0
-        input dc loss as a percent, e.g. 1.5% loss is input as 1.5
+        Maximum power current of one module at reference conditions. [A]
+    dc_ohmic_percent: numeric
+        Array DC power loss as a percent of DC power loss at reference
+        conditions. In percent, e.g. 1.5% loss is input as 1.5.
     modules_per_string: int, default 1
-        Number of modules per string in the array.
+        Number of series-connected modules per string in the array.
     strings: int, default 1
         Number of parallel strings in the array.
 
     Returns
     ----------
     Rw: numeric
-        Equivalent resistance [ohm]
+        Equivalent resistance. [ohm]
 
     See Also
     --------
     pvlib.pvsystem.dc_ohmic_losses
 
-    References
-    ----------
-    .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
-       https://www.pvsyst.com/help/ohmic_loss.htm
+    Notes
+    -----
+    Equivalent resistance is calculated as:
+
+    .. math::
+
+        R_w = \left(\frac{L_{stc}}{100}\right) \times \left(\frac{
+        V_{array}}{I_{array}}\right)
+
+    :math:`R_w` is the equivalent resistance in ohms.
+    :math:`V_{array}` is the array voltage, equal to ``vmp_ref`` times
+    ``modules_per_string``.
+    :math:`I_{array}` is the array current, equal to ``imp_ref`` times
+    ``strings``.
+    :math:`L_{stc}` is the input DC loss percent at reference conditions.
+
     """
     vmp = modules_per_string * vmp_ref
 
@@ -2922,30 +2925,37 @@ def dc_ohms_from_percent(vmp_ref, imp_ref, dc_ohmic_percent,
 
 
 def dc_ohmic_losses(resistance, current):
-    """
+    r"""
     Returns ohmic losses in units of power from the equivalent
     resistance of the wires and the operating current.
 
     Parameters
     ----------
     resistance: numeric
-        Equivalent resistance of wires [ohm]
+        Equivalent resistance of wires. [ohm]
     current: numeric, float or array-like
-        Operating current [A]
+        Operating current. [A]
 
     Returns
     ----------
     loss: numeric
-        Power Loss [W]
+        Power loss. [W]
 
     See Also
     --------
     pvlib.pvsystem.dc_ohms_from_percent
 
-    References
-    ----------
-    .. [1] PVsyst 7 Help. "Array ohmic wiring loss".
-       https://www.pvsyst.com/help/ohmic_loss.htm
+    Notes
+    -----
+    Ohmic (also termed joule or heat) loss is the power lost due to current
+    flowing through a conductor. Ohmic loss, :math:`L`, is computed as
+
+    .. math::
+
+        L = I^2 \times R
+
+    where :math:`I` is the current (A) and :math:`R` is the resistance of the
+    conductor (ohms).
     """
     return resistance * current * current
 

@@ -875,7 +875,7 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     the Reindl (1990) model.
 
     The Reindl (1990) model [1]_ [2]_ determines the diffuse irradiance from
-    the sky (ground reflected irradiance is not included in this algorithm) on
+    the sky on
     a tilted surface using the surface tilt angle, surface azimuth angle,
     diffuse horizontal irradiance, direct normal irradiance, global
     horizontal irradiance, extraterrestrial normal irradiance, sun zenith
@@ -933,11 +933,11 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
     and global horizontal irradiances, respectively. :math:`A` is the
     anisotropy index, which is the ratio of the direct normal irradiance to the
     extraterrestrial irradiation, :math:`R_b` is the projection ratio, which is
-    defined as the ratio of the cosine of the angle of incidence (AOI) to the
+    the ratio of the cosine of the angle of incidence (AOI) to the
     cosine of the zenith angle, and :math:`\theta_T` is the tilt angle of the
     array.
 
-    The ``poa_sky_diffuse`` calculation is generated from Loutzenhiser et al.
+    Implementation is based on Loutzenhiser et al.
     (2007) [3]_, Equation 8. The beam and ground reflectance portion of the
     equation have been removed, therefore the model described here generates
     ONLY the diffuse radiation from the sky and circumsolar, so the form of the

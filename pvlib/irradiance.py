@@ -929,13 +929,13 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
                          \left(\frac{1 + \cos\theta_T}{2}\right)
        \left(1 + \sqrt{\frac{BHI}{GHI}} \sin^3(\theta_T/2)\right) \right).
 
-    :math:`DHI`, :math:`BHI`, and :math:`GHI` are the diffuse, beam (direct)
-    and global horizontal irradiances, respectively. :math:`A` is the
-    anisotropy index, which is the ratio of the direct normal irradiance to the
-    direct extraterrestrial irradiation, :math:`R_b` is the projection ratio,
-    which is defined as the ratio of the cosine of the angle of incidence (AOI)
-    to the cosine of the zenith angle, and :math:`\theta_T` is the tilt angle
-    of the array.
+    :math:`DHI`, :math:`BHI`, and :math:`GHI` are the diffuse horizontal, beam
+    (direct) horizontal and global horizontal irradiances, respectively.
+    :math:`A` is the anisotropy index, which is the ratio of the direct normal
+    irradiance to the direct extraterrestrial irradiation, :math:`R_b` is the
+    projection ratio, which is defined as the ratio of the cosine of the angle
+    of incidence (AOI) to the cosine of the zenith angle, and :math:`\theta_T`
+    is the tilt angle of the array.
 
     The ``poa_sky_diffuse`` calculation is generated from Loutzenhiser et al.
     (2007) [3]_, Equation 8. The beam and ground reflectance portion of the

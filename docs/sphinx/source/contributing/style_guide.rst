@@ -136,9 +136,9 @@ Things to note:
 
 * In-text numeric citations are a number inside square brackets, followed
   by an underscore, e.g. ``[1]_``.
-* To include a DOI, you can use the existing ``:doi:``
+* To include a DOI, you can use pvlib's custom ``:doi:``
   `Sphinx role <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html>`_,
-  followed by the DOI string inside a set of backticks.
+  followed by the DOI inside a set of backticks.
 
 
 .. _building-the-documentation:

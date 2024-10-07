@@ -21,7 +21,6 @@ poa_direct;direct/beam irradiation in plane
 poa_diffuse;total diffuse irradiation in plane. sum of ground and sky diffuse.
 poa_global;global irradiation in plane. sum of diffuse and beam projection.
 poa_sky_diffuse;diffuse irradiation in plane from scattered light in the atmosphere (without ground reflected irradiation)
-g_poa_effective;broadband plane of array effective irradiance.
 surface_tilt;tilt angle of the surface
 surface_azimuth;azimuth angle of the surface
 solar_zenith;zenith angle of the sun in degrees

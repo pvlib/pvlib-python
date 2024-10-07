@@ -25,6 +25,7 @@ import warnings
 
 from pvlib import atmosphere, tools
 from pvlib.tools import datetime_to_djd, djd_to_datetime
+from pvlib._deprecation import renamed_kwarg_warning
 
 
 def get_solarposition(time, latitude, longitude,
@@ -389,7 +390,8 @@ def spa_python(time, latitude, longitude,
     return result
 
 
-def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
+@renamed_kwarg_warning("0.11.2", "times", "time", "0.12")
+def sun_rise_set_transit_spa(time, latitude, longitude, how='numpy',
                              delta_t=67.0, numthreads=4):
     """
     Calculate the sunrise, sunset, and sun transit times using the
@@ -404,8 +406,12 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
 
     Parameters
     ----------
-    times : pandas.DatetimeIndex
+    time : pandas.DatetimeIndex
         Must be localized to the timezone for ``latitude`` and ``longitude``.
+
+        .. deprecated:: 0.11.2
+            Renamed from ``times`` to ``time``. Removal scheduled for v0.12.0.
+
     latitude : float
         Latitude in degrees, positive north of equator, negative to south
     longitude : float
@@ -417,7 +423,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     delta_t : float or array, optional, default 67.0
         Difference between terrestrial time and UT1.
         If delta_t is None, uses spa.calculate_deltat
-        using times.year and times.month from pandas.DatetimeIndex.
+        using time.year and time.month from pandas.DatetimeIndex.
         For most simulations the default delta_t is sufficient.
     numthreads : int, optional, default 4
         Number of threads to use if how == 'numba'.
@@ -425,7 +431,7 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     Returns
     -------
     pandas.DataFrame
-        index is the same as input `times` argument
+        index is the same as input ``time`` argument
         columns are 'sunrise', 'sunset', and 'transit'
 
     References
@@ -439,25 +445,25 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     lat = latitude
     lon = longitude
 
-    # times must be localized
-    if times.tz:
-        tzinfo = times.tz
+    # time must be localized
+    if time.tz:
+        tzinfo = time.tz
     else:
-        raise ValueError('times must be localized')
+        raise ValueError("'time' must be localized")
 
     # must convert to midnight UTC on day of interest
-    times_utc = times.tz_convert('UTC')
-    unixtime = _datetime_to_unixtime(times_utc.normalize())
+    time_utc = time.tz_convert('UTC')
+    unixtime = _datetime_to_unixtime(time_utc.normalize())
 
     spa = _spa_python_import(how)
 
     if delta_t is None:
-        delta_t = spa.calculate_deltat(times_utc.year, times_utc.month)
+        delta_t = spa.calculate_deltat(time_utc.year, time_utc.month)
 
     transit, sunrise, sunset = spa.transit_sunrise_sunset(
         unixtime, lat, lon, delta_t, numthreads)
 
-    # arrays are in seconds since epoch format, need to conver to timestamps
+    # arrays are in seconds since epoch format, need to convert to timestamps
     transit = pd.to_datetime(transit*1e9, unit='ns', utc=True).tz_convert(
         tzinfo).tolist()
     sunrise = pd.to_datetime(sunrise*1e9, unit='ns', utc=True).tz_convert(
@@ -465,9 +471,10 @@ def sun_rise_set_transit_spa(times, latitude, longitude, how='numpy',
     sunset = pd.to_datetime(sunset*1e9, unit='ns', utc=True).tz_convert(
         tzinfo).tolist()
 
-    return pd.DataFrame(index=times, data={'sunrise': sunrise,
-                                           'sunset': sunset,
-                                           'transit': transit})
+    return pd.DataFrame(
+        index=time,
+        data={"sunrise": sunrise, "sunset": sunset, "transit": transit},
+    )
 
 
 def _ephem_convert_to_seconds_and_microseconds(date):
@@ -1340,15 +1347,20 @@ def solar_zenith_analytical(latitude, hourangle, declination):
     )
 
 
-def hour_angle(times, longitude, equation_of_time):
+@renamed_kwarg_warning("0.11.2", "times", "time", "0.12.0")
+def hour_angle(time, longitude, equation_of_time):
     """
     Hour angle in local solar time. Zero at local solar noon.
 
     Parameters
     ----------
-    times : :class:`pandas.DatetimeIndex`
+    time : :class:`pandas.DatetimeIndex`
         Corresponding timestamps, must be localized to the timezone for the
         ``longitude``.
+
+        .. versionchanged:: 0.11.2
+            Renamed from ``times`` to ``time``.
+
     longitude : numeric
         Longitude in degrees
     equation_of_time : numeric
@@ -1376,14 +1388,14 @@ def hour_angle(times, longitude, equation_of_time):
     equation_of_time_pvcdrom
     """
 
-    # times must be localized
-    if not times.tz:
-        raise ValueError('times must be localized')
+    # time must be localized
+    if not time.tz:
+        raise ValueError('time must be localized')
 
-    # hours - timezone = (times - normalized_times) - (naive_times - times)
-    tzs = np.array([ts.utcoffset().total_seconds() for ts in times]) / 3600
+    # hours - timezone = (time - normalized_time) - (naive_time - time)
+    tzs = np.array([ts.utcoffset().total_seconds() for ts in time]) / 3600
 
-    hrs_minus_tzs = _times_to_hours_after_local_midnight(times) - tzs
+    hrs_minus_tzs = _times_to_hours_after_local_midnight(time) - tzs
 
     return 15. * (hrs_minus_tzs - 12.) + longitude + equation_of_time / 4.
 

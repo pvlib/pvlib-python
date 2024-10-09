@@ -31,6 +31,6 @@ Contributors
 ~~~~~~~~~~~~
 * Cliff Hansen (:ghuser:`cwhanse`)
 * Rajiv Daxini (:ghuser:`RDaxini`)
-* Mark Mikofski (:ghuser: `mikofski`)
-* matsuobasho (:ghuser: `matsuobasho`)
+* Mark Mikofski (:ghuser:`mikofski`)
+* matsuobasho (:ghuser:`matsuobasho`)
 

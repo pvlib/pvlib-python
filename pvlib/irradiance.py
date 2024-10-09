@@ -758,13 +758,7 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
         Diffuse horizontal irradiance. [Wm⁻²]
 
     dni : numeric
-        Direct normal irradiance. [Wm⁻²]
-
-    dni : numeric
         Direct normal irradiance, see :term:`dni`. [Wm⁻²]
-
-    dni : numeric
-        :term:`Direct Normal Irradiance<dni>` [Wm⁻²]
 
     dni_extra : numeric
         Extraterrestrial normal irradiance. [Wm⁻²]

@@ -740,11 +740,6 @@ def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
     Parameters
     ----------
     surface_tilt : numeric
-        Surface tilt angles in decimal degrees. The tilt angle is
-        defined as degrees from horizontal (e.g. surface facing up = 0,
-        surface facing horizon = 90)
-
-    surface_tilt : numeric
         Panel tilt from the horizontal, in decimal degrees, see
         :term:`surface_tilt`.
 

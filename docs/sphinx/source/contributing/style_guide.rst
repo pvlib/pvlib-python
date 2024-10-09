@@ -79,7 +79,6 @@ When specifying parameters and their units, please follow these guidelines:
 - Use the recommended parameter name and units by :ref:`variables_style_rules` where possible.
 - Enclose units in square brackets, e.g. ``[W]``.
 - Use unicode superscripts symbols for exponents, e.g. ``m²``.
-
   These superscripts characters are ``⁰``, ``¹``, ``²``, ``³``, ``⁴``, ``⁵``, ``⁶``, ``⁷``, ``⁸``, ``⁹``, ``⁺``, ``⁻``. Degree symbol is ``°``.
 
 - Link to a brief description of the magnitude in the :ref:`variables_style_rules` section if it exists, via the sphinx role |:term:`glossary_term`|. For example, to document ``dni`` use:

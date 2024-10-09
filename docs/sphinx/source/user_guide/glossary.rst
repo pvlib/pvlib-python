@@ -15,10 +15,11 @@ Glossary
         Relative airmass
     
     albedo
-        Ratio of reflected solar irradiance to global horizontal irradiance, unitless
+        Ratio of reflected solar irradiance to global horizontal irradiance
+        [unitless]
     
     aoi
-        Angle of incidence between :math:`90\deg` and :math:`90\deg`
+        Angle of incidence between ±90°
     
     aoi_projection
         cos(aoi)
@@ -37,6 +38,7 @@ Glossary
 
     dni
         Direct normal irradiance
+
     dni
         Direct normal irradiance [Wm⁻²]. Amount of radiation received per unit
         area by a surface perpendicular (normal) to the sun's rays that
@@ -61,7 +63,7 @@ Glossary
         Reference inverter efficiency
 
     g_poa_effective
-        Broadband plane of array effective irradiance.
+        Broadband plane of array effective irradiance
 
     gamma_pdc
         Module temperature coefficient. Typically in units of 1/C.

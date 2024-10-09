@@ -37,9 +37,6 @@ Glossary
         Diffuse horizontal irradiance
 
     dni
-        Direct normal irradiance
-
-    dni
         Direct normal irradiance [Wm⁻²]. Amount of radiation received per unit
         area by a surface perpendicular (normal) to the sun's rays that
         propagate in a straight line from the sun.

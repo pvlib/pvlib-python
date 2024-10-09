@@ -19,7 +19,7 @@ Glossary
         [unitless]
     
     aoi
-        Angle of incidence between ±90°
+        Angle of incidence between :math:`90\deg` and :math:`90\deg`
     
     aoi_projection
         cos(aoi)

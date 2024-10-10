@@ -292,7 +292,7 @@ def martin_ruiz(aoi, a_r=0.16):
     pvlib.iam.interp
     pvlib.iam.sapm
     '''
-    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct. 2019
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. July 2019
 
     aoi_input = aoi
 

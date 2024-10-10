@@ -293,6 +293,8 @@ def martin_ruiz(aoi, a_r=0.16):
     pvlib.iam.sapm
     '''
 
+    # Contributed by Anton Driesse (@adriesse), PV Performance Labs. Oct. 2019
+
     aoi_input = aoi
 
     aoi = np.asanyarray(aoi)

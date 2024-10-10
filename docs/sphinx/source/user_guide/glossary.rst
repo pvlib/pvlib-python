@@ -184,10 +184,8 @@ There is a convention on consistent variable names throughout the library:
 
 
 For further explanation of the variables, common symbols, and
-units, refer to the following sources:
+units, refer to the following sources from `SoDa Service <http://www.soda-pro.com/home>`_:
 
-Explanation of Solar irradiation and solar geometry by `SoDa Service <http://www.soda-pro.com/home>`_:
-  
    * `Acronyms, Terminology and Units <https://www.soda-pro.com/help/general/acronyms-terminology-and-units>`_
    * `Plane orientations and radiation components <https://www.soda-pro.com/help/general/plane-orientations-and-radiation-components>`_
    * `Time references <https://www.soda-pro.com/help/general/time-references>`_

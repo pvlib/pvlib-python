@@ -183,8 +183,8 @@ There is a convention on consistent variable names throughout the library:
         Wind speed
 
 
-For a definition and further explanation on the variables, common symbols and
-units refer to the following sources:
+For further explanation of the variables, common symbols, and
+units, refer to the following sources:
 
 Explanation of Solar irradiation and solar geometry by `SoDa Service <http://www.soda-pro.com/home>`_:
   

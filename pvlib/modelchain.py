@@ -876,7 +876,7 @@ class ModelChain:
         else:
             self._spectral_model = partial(model, self)
 
-    def infer_spectral_model(self):  # TODO: support other spectral models?
+    def infer_spectral_model(self):
         """Infer spectral model from system attributes."""
         module_parameters = tuple(
             array.module_parameters for array in self.system.arrays)
@@ -913,7 +913,6 @@ class ModelChain:
                 )
                 return self.no_spectral_loss
         else:
-            # TODO: list valid models in message down below
             raise ValueError(
                 "could not infer spectral model from "
                 "system.arrays[i].module_parameters. Check that "

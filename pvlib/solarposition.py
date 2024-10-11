@@ -409,8 +409,8 @@ def sun_rise_set_transit_spa(time, latitude, longitude, how='numpy',
     time : pandas.DatetimeIndex
         Must be localized to the timezone for ``latitude`` and ``longitude``.
 
-        .. deprecated:: 0.11.2
-            Renamed from ``times`` to ``time``. Removal scheduled for v0.12.0.
+        .. versionchanged:: 0.11.2
+            Renamed from ``times`` to ``time``. Removal in ``v0.12.0``.
 
     latitude : float
         Latitude in degrees, positive north of equator, negative to south
@@ -1359,7 +1359,7 @@ def hour_angle(time, longitude, equation_of_time):
         ``longitude``.
 
         .. versionchanged:: 0.11.2
-            Renamed from ``times`` to ``time``.
+            Renamed from ``times`` to ``time``. Removal in ``v0.12.0``.
 
     longitude : numeric
         Longitude in degrees

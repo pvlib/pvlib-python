@@ -330,10 +330,15 @@ class ModelChain:
         'interp' and 'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
-    spectral_model : str, or function, optional
+    spectral_model : str or function, optional
         If not specified, the model will be inferred from the parameters that
-        are common to all of system.arrays[i].module_parameters.
-        Valid strings are 'sapm', 'first_solar', 'no_loss'.
+        are common to all of system.arrays[i].module_parameters. Valid strings
+        are:
+
+        - ``'sapm'``
+        - ``'first_solar'``
+        - ``'no_loss'``
+
         The ModelChain instance will be passed as the first argument to
         a user-defined function.
 
@@ -855,9 +860,7 @@ class ModelChain:
 
     @spectral_model.setter
     def spectral_model(self, model):
-        if model is None:
-            self._spectral_model = self.infer_spectral_model()
-        elif isinstance(model, str):
+        if isinstance(model, str):
             model = model.lower()
             if model == 'first_solar':
                 self._spectral_model = self.first_solar_spectral_loss
@@ -867,29 +870,60 @@ class ModelChain:
                 self._spectral_model = self.no_spectral_loss
             else:
                 raise ValueError(model + ' is not a valid spectral loss model')
+        elif model is None:
+            # None is a valid value, model inference will be done later
+            self._spectral_model = None
         else:
             self._spectral_model = partial(model, self)
 
-    def infer_spectral_model(self):
+    def infer_spectral_model(self):  # TODO: support other spectral models?
         """Infer spectral model from system attributes."""
         module_parameters = tuple(
             array.module_parameters for array in self.system.arrays)
         params = _common_keys(module_parameters)
         if {'A4', 'A3', 'A2', 'A1', 'A0'} <= params:
             return self.sapm_spectral_loss
-        elif ((('Technology' in params or
-                'Material' in params) and
-               (self.system._infer_cell_type() is not None)) or
-              'first_solar_spectral_coefficients' in params):
+        elif "first_solar_spectral_coefficients" in params:
+            # user explicitly sets spectral coefficients
             return self.first_solar_spectral_loss
+        elif (
+            # cell type is known or can be inferred
+            ("Technology" in params or "Material" in params)
+            and (self.system._infer_cell_type() is not None)
+        ):
+            # This suggests models that provide default parameters per cell
+            # type can be used. However, some of them depend on other weather
+            # parameters, so we need to check if they are available.
+            # At this point, weather may not be available, so let's take that
+            # into account.
+            if self.results is not None and self.results.weather is not None:
+                # weather is available
+                if "precipitable_water" in self.results.weather:
+                    return self.first_solar_spectral_loss
+                else:
+                    return self.no_spectral_loss
+            else:
+                # weather is not available, so it's unknown what model to use.
+                # Warn user about this and default to no_spectral_loss.
+                warnings.warn(
+                    "Weather data is not available to infer spectral model. "
+                    "Defaulting to 'no_loss'. Explicitly set the "
+                    "spectral model with the 'spectral_model' kwarg to "
+                    "suppress this warning."
+                )
+                return self.no_spectral_loss
         else:
-            raise ValueError('could not infer spectral model from '
-                             'system.arrays[i].module_parameters. Check that '
-                             'the module_parameters for all Arrays in '
-                             'system.arrays contain valid '
-                             'first_solar_spectral_coefficients, a valid '
-                             'Material or Technology value, or set '
-                             'spectral_model="no_loss".')
+            # TODO: list valid models in message down below
+            raise ValueError(
+                "could not infer spectral model from "
+                "system.arrays[i].module_parameters. Check that "
+                "the module_parameters for all Arrays in "
+                "system.arrays contain valid "
+                "valid spectral coefficients, a valid "
+                "Material or Technology value, or a valid model "
+                "string; explicitly set the model with the "
+                "'spectral_model' kwarg."
+            )
 
     def first_solar_spectral_loss(self):
         self.results.spectral_modifier = self.system.first_solar_spectral_loss(
@@ -1678,7 +1712,13 @@ class ModelChain:
         weather = _to_tuple(weather)
         self.prepare_inputs(weather)
         self.aoi_model()
+
+        # spectral model is optional, and weather may impact model inference
+        # check if spectral model inference is requested by means of "None"
+        if self._spectral_model is None:
+            self._spectral_model = self.infer_spectral_model()
         self.spectral_model()
+
         self.effective_irradiance_model()
 
         self._run_from_effective_irrad(weather)

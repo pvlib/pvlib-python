@@ -367,7 +367,7 @@ class ModelChain:
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
-                 spectral_model=None, temperature_model=None,
+                 spectral_model='no_loss', temperature_model=None,
                  dc_ohmic_model='no_loss',
                  losses_model='no_loss', name=None):
 

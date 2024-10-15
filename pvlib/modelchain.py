@@ -1596,7 +1596,7 @@ class ModelChain:
         ----------
         data : DataFrame
             May contain columns ``'cell_temperature'`` or
-            ``'module_temperaure'``.
+            ``'module_temperature'``.
 
         Returns
         -------

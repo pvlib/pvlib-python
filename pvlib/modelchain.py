@@ -330,7 +330,7 @@ class ModelChain:
         'interp' and 'no_loss'. The ModelChain instance will be passed as the
         first argument to a user-defined function.
 
-    spectral_model : str or function, default ``'no_loss'``
+    spectral_model : str or function, optional
         Valid strings are:
 
         - ``'sapm'``
@@ -339,6 +339,8 @@ class ModelChain:
 
         The ModelChain instance will be passed as the first argument to
         a user-defined function.
+
+        By default, it will be inferred from the system attributes only.
 
         See :py:func:`~pvlib.modelchain.ModelChain.infer_spectral_model` to
         infer the spectral model from system and weather information.
@@ -367,7 +369,7 @@ class ModelChain:
                  solar_position_method='nrel_numpy',
                  airmass_model='kastenyoung1989',
                  dc_model=None, ac_model=None, aoi_model=None,
-                 spectral_model='no_loss', temperature_model=None,
+                 spectral_model=None, temperature_model=None,
                  dc_ohmic_model='no_loss',
                  losses_model='no_loss', name=None):
 
@@ -870,6 +872,8 @@ class ModelChain:
                 self._spectral_model = self.no_spectral_loss
             else:
                 raise ValueError(model + ' is not a valid spectral loss model')
+        elif model is None:
+            self._spectral_model = self.infer_spectral_model(weather=None)
         else:
             self._spectral_model = partial(model, self)
 

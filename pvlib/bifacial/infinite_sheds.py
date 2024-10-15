@@ -250,12 +250,19 @@ def get_irradiance_poa(surface_tilt, surface_azimuth, solar_zenith,
         on the surface that is not reflected away. [unitless]
 
     npoints : int, default 100
-        Number of discretization points for calculating integrated view
-        factors.
+
+        .. deprecated:: v0.11.2
+
+           This parameter has no effect; integrated view factors are now
+           calculated exactly instead of with discretized approximations.
 
     vectorize : bool, default False
-        If True, vectorize the view factor calculation across ``surface_tilt``.
-        This increases speed with the cost of increased memory usage.
+
+        .. deprecated:: v0.11.2
+
+           This parameter has no effect; calculations are now vectorized
+           with no memory usage penality.
+
 
     Returns
     -------
@@ -470,12 +477,18 @@ def get_irradiance(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
         etc. A negative value is a reduction in back irradiance. [unitless]
 
     npoints : int, default 100
-        Number of discretization points for calculating integrated view
-        factors.
+
+        .. deprecated:: v0.11.2
+
+           This parameter has no effect; integrated view factors are now
+           calculated exactly instead of with discretized approximations.
 
     vectorize : bool, default False
-        If True, vectorize the view factor calculation across ``surface_tilt``.
-        This increases speed with the cost of increased memory usage.
+
+        .. deprecated:: v0.11.2
+
+           This parameter has no effect; calculations are now vectorized
+           with no memory usage penality.
 
     Returns
     -------

@@ -3,9 +3,6 @@
 Tracking
 ========
 
-Functions
----------
-
 .. autosummary::
    :toctree: generated/
 

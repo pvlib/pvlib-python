@@ -269,8 +269,8 @@ def martin_ruiz(aoi, a_r=0.16):
 
     which is presented as :math:`AL(\alpha) = 1 - IAM` in equation 4 of [1]_,
     with :math:`\alpha` representing the angle of incidence AOI. Thus IAM = 1
-    at AOI = 0, and IAM = 0 at AOI = 90.  This equation is only valid for
-    0 <= aoi <= 90, therefore `iam` is constrained to 0.0 outside this
+    at AOI = 0°, and IAM = 0 at AOI = 90°.  This equation is only valid for
+    0° <= aoi <= 90°, therefore `iam` is constrained to 0.0 outside this
     interval.
 
     References

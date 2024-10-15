@@ -88,7 +88,7 @@ An easy way to do this is with::
 
 Note: Anaconda users may have trouble using the above command to update an
 older version of docutils. If that happens, you can update it with ``conda``
-(e.g. ``conda install docutils=0.15.2``) and run the above command again.
+(e.g. ``conda install docutils=0.21``) and run the above command again.
 
 Once the ``doc`` dependencies are installed, navigate to ``/docs/sphinx`` and
 execute::
@@ -106,6 +106,107 @@ for more information.
 Note that Windows users need not have the ``make`` utility installed as pvlib
 includes a ``make.bat`` batch file that emulates its interface.
 
+
+.. _example-docstring:
+
+Example Docstring
+-----------------
+
+Here is a template for a function docstring that tries to encapsulate all
+the features that may be used in any docstring. This is a template, so
+not all sections are required for every function, but is a good starting point.
+
+.. code-block:: python
+
+    def example_function(poa_global, exponents, degree_symbol,
+                        default_arg='someval', optional_arg=None):
+        r"""
+        A brief summary of the function.
+
+        A longer description of the function. This can include references
+        to literature [1]_, websites, and other code elements such as
+        functions (:py:func:`pvlib.location.lookup_altitude`) and
+        classes (:py:class:`pvlib.location.Location`).
+
+        .. versionadded:: 0.0.1
+
+        .. note:: This docstring is a template.
+
+        .. warning:: Code body is not included in this example!
+
+        Parameters
+        ----------
+        poa_global : numeric
+            Plane-of-array global irradiance, see :term:`poa_global`. [Wm⁻²].
+        exponents : array-like
+            A list of exponents. [x⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻].
+        degree_symbol : numeric
+            It's different from superscript zero. [°].
+        default_arg : string, default ``'someval'``.
+            Text enclosed in double backticks mean code formatting.
+        optional_arg : integer, optional
+            A description of ``optional_arg``. [Unitless].
+
+        Returns
+        -------
+        name : numeric
+            A description of the return value.
+
+        Raises
+        ------
+        ValueError
+            If ``poa_global`` is negative.
+        KeyError
+            If ``default_arg`` does not exist.
+
+        Notes
+        -----
+        This section can include additional information about the function.
+
+        For example, an equation using LaTeX markup:
+
+        .. math::
+
+            a = \left(\frac{b}{c}\right)^2
+
+        where :math:`a` is the result of the equation, :math:`b` and :math:`c`
+        are inputs.
+
+        Or a figure with a caption:
+
+        .. figure:: ../../_images/pvlib_logo_horiz.png
+            :scale: 10%
+            :alt: alternate text
+            :align: center
+
+            Figure caption.
+
+        See Also
+        --------
+        pvlib.location.lookup_altitude
+        pvlib.location.Location
+
+        Examples
+        --------
+        >>> example_function(1, 1, 1)
+        'None'
+
+        References
+        ----------
+        A IEEE citation to a relevant reference. You may use an automatic
+        citation generator to format the citation correctly.
+
+        .. [1] Anderson, K., Hansen, C., Holmgren, W., Jensen, A., Mikofski, M.,
+        and Driesse, A. “pvlib python: 2023 project update.” Journal of Open
+        Source Software, 8(92), 5994, (2023). :doi:`10.21105/joss.05994`.
+        """
+        return "None"
+
+A preview on how this would render in the documentation can be seen in the
+following file: :download:`Example docstring<../_images/example_function_screenshot.png>`.
+
+Remember that to show the docstring in the documentation, you must list
+the function in the appropriate ``.rst`` file in the ``docs/sphinx/source/reference`` file.
 
 .. _example-gallery:
 

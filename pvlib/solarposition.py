@@ -410,7 +410,8 @@ def sun_rise_set_transit_spa(time, latitude, longitude, how='numpy',
         Must be localized to the timezone for ``latitude`` and ``longitude``.
 
         .. versionchanged:: 0.11.2
-            Renamed from ``times`` to ``time``. Removal in ``v0.12.0``.
+            The ``times` parameter has been renamed ``time``. The deprecated
+            ``times`` parameter will be removed in ``v0.12.0``.
 
     latitude : float
         Latitude in degrees, positive north of equator, negative to south
